@@ -38,6 +38,7 @@ conf_forward:
     - -XStandaloneDeriving
     - -XTypeApplications
     - -XTypeFamilies
+    - -XImportQualifiedPost
 conf_errorHandling:
   econf_ExactPrintFallback: ExactPrintFallbackModeInline
   econf_Werror: false

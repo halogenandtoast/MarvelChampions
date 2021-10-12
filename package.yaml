@@ -3,12 +3,37 @@ name:                MarvelChampions
 dependencies:
 - base >= 4.7 && < 5
 - relude
+- MonadRandom
+- mtl
+- text
+- exceptions
+- unordered-containers
 
 default-extensions:
 - NoImplicitPrelude
+- LambdaCase
+- DerivingStrategies
+- GeneralizedNewtypeDeriving
+- FlexibleContexts
+- DeriveGeneric
+- TypeOperators
+- OverloadedStrings
+- ImportQualifiedPost
+- BlockArguments
+- MultiParamTypeClasses
+- FunctionalDependencies
+- TupleSections
+- KindSignatures
+- TypeFamilies
+- TypeApplications
+- ScopedTypeVariables
+- RankNTypes
 
 library:
   source-dirs: library
+  dependencies:
+  - uuid
+  - vector
 
 executables:
   MarvelChampions-exe:
