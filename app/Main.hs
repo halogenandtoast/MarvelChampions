@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Marvel.Game
 
 main :: IO ()
-main = someFunc
+main = runGame
