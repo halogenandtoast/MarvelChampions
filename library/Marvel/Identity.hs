@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.AlterEgo
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Hero
 import Marvel.Hp
@@ -17,9 +18,9 @@ import Marvel.Identity.Attrs as X
 data PlayerIdentity = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
 
-lookupAlterEgo :: CardCode -> IdentityId -> Maybe PlayerIdentity
-lookupAlterEgo code ident =
-  AlterEgoSide <$> (lookup code allAlterEgos <*> Just ident)
+lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentity
+lookupAlterEgo cardDef ident =
+  AlterEgoSide <$> (lookup (toCardCode cardDef) allAlterEgos <*> Just ident)
 
 instance HasStartingHP PlayerIdentity where
   startingHP = defaultHasStartingHP

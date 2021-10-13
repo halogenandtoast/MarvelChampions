@@ -3,6 +3,7 @@ module Marvel.Game where
 import Marvel.Prelude
 
 import Control.Monad.Catch
+import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Exception
@@ -38,8 +39,7 @@ runGameMessage msg g = case msg of
       [] -> throwM NoPlayers
       players@(p : _) -> choosePlayerOrder (toId p) players
     pure $ g { gameState = InProgress }
-  SetPlayerOrder xs ->
-    pure $ g { gamePlayers = xs }
+  SetPlayerOrder xs -> pure $ g { gamePlayers = xs }
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
@@ -60,10 +60,9 @@ chooseOrRunOne ident = \case
   [choice] -> pushAll $ choiceMessages choice
   choices -> push (Ask ident $ ChooseOne choices)
 
-choosePlayerOrder
-  :: MonadGame env m => IdentityId -> [Player] -> m ()
-choosePlayerOrder ident xs = push (Ask ident $
-  ChoosePlayerOrder (Unsorted xs) mempty)
+choosePlayerOrder :: MonadGame env m => IdentityId -> [Player] -> m ()
+choosePlayerOrder ident xs =
+  push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
 
 cardLabel :: HasCardCode a => a -> [Message] -> Choice
 cardLabel a = CardLabel (toCardCode a)
@@ -101,12 +100,15 @@ addPlayer :: MonadGame env m => Player -> m ()
 addPlayer player = withGame_ $ playersL %~ (player :)
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
-withGame body = do
+withGame f = do
   game <- asks $ view gameL
-  atomicModifyIORef' game body
+  atomicModifyIORef' game f
 
 withGame_ :: MonadGame env m => (Game -> Game) -> m ()
-withGame_ body = withGame ((, ()) . body)
+withGame_ f = withGame ((, ()) . f)
+
+withGameM :: MonadGame env m => (Game -> m Game) -> m ()
+withGameM f = getGame >>= f >>= withGame_ . const
 
 class
   ( MonadCatch m
@@ -120,11 +122,14 @@ class
   => MonadGame env m | env -> m
 
 createPlayer :: MonadGame env m => CardCode -> m ()
-createPlayer code = do
+createPlayer cardCode = do
   ident <- getRandom
-  case lookupAlterEgo code ident of
-    Nothing -> throwM (MissingCardCode "createPlayer" code)
-    Just character -> addPlayer $ newPlayer character
+  let
+    mAlterEgo = do
+      def <- lookup cardCode allAlterEgosMap
+      lookupAlterEgo def ident
+  maybe missinCardCode (addPlayer . newPlayer) mAlterEgo
+  where missinCardCode = throwM (MissingCardCode "createPlayer" cardCode)
 
 getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks (view gameL)
@@ -136,13 +141,7 @@ runGameMessages = do
     Nothing -> pure ()
     Just msg -> case msg of
       Ask ident choices -> do
-        ref <- asks $ view gameL
-        game <- readIORef ref
-        atomicWriteIORef ref
-          $ game { gameQuestion = fromList [(ident, choices)] }
+        withGame_ $ questionL .~ fromList [(ident, choices)]
       other -> do
-        ref <- asks $ view gameL
-        game <- readIORef ref
-        game' <- runMessage other game
-        atomicWriteIORef ref game'
+        withGameM $ runMessage other
         runGameMessages

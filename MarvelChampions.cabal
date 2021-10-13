@@ -13,6 +13,10 @@ build-type:     Simple
 library
   exposed-modules:
       Marvel.AlterEgo
+      Marvel.AlterEgo.AlterEgos
+      Marvel.AlterEgo.AlterEgos.CarolDanvers
+      Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
       Marvel.Card.Code
       Marvel.Card.Def
