@@ -43,14 +43,13 @@ newtype GameError = GameError { unGameError :: String }
 instance Exception GameError
 
 runApp :: (MonadCatch m, MonadIO m) => Env -> AppT a -> m a
-runApp env body = handleAll handler $
-  liftIO $ runReaderT (unAppT body) env
+runApp env body = handleAll handler $ liftIO $ runReaderT (unAppT body) env
   where handler e = throwM $ GameError $ displayException e
 
 createAndRunGame :: AppT ()
 createAndRunGame = do
-  createPlayer "01001"
-  createPlayer "01010"
+  createPlayer "01001a"
+  createPlayer "01010a"
   push StartGame
   runGame
 

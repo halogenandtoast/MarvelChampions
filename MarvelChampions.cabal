@@ -13,7 +13,9 @@ build-type:     Simple
 library
   exposed-modules:
       Marvel.AlterEgo
+      Marvel.AlterEgo.Cards
       Marvel.Card.Code
+      Marvel.Card.Def
       Marvel.Entity
       Marvel.Exception
       Marvel.Game
@@ -22,10 +24,12 @@ library
       Marvel.Identity
       Marvel.Identity.Attrs
       Marvel.Message
+      Marvel.Name
       Marvel.Player
       Marvel.Prelude
       Marvel.Queue
       Marvel.Scenario
+      Marvel.Trait
       Marvel.Villain
   other-modules:
       Paths_MarvelChampions
@@ -51,6 +55,7 @@ library
       ScopedTypeVariables
       RankNTypes
       RecordWildCards
+      DeriveAnyClass
   build-depends:
       MonadRandom
     , base >=4.7 && <5
@@ -90,6 +95,7 @@ executable MarvelChampions-exe
       ScopedTypeVariables
       RankNTypes
       RecordWildCards
+      DeriveAnyClass
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
@@ -130,6 +136,7 @@ test-suite MarvelChampions-test
       ScopedTypeVariables
       RankNTypes
       RecordWildCards
+      DeriveAnyClass
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions

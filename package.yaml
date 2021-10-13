@@ -30,6 +30,7 @@ default-extensions:
 - ScopedTypeVariables
 - RankNTypes
 - RecordWildCards
+- DeriveAnyClass
 
 library:
   source-dirs: library

@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import GHC.Generics
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Hp
 
@@ -11,9 +12,11 @@ newtype IdentityId = IdentityId UUID
   deriving newtype (Show, Eq, Random, Hashable)
 
 data IdentityAttrs = IdentityAttrs
-  { identityId :: IdentityId
-  , identityCardCode :: CardCode
+  { identityAttrsId :: IdentityId
+  , identityAttrsCardDef :: CardDef
   , identityAttrsStartingHP :: HP
+  , identityAttrsMaxHP :: HP
+  , identityAttrsCurrentHP :: HP
   }
   deriving stock (Show, Eq)
 
@@ -21,11 +24,11 @@ instance HasStartingHP IdentityAttrs where
   startingHP = identityAttrsStartingHP
 
 instance HasCardCode IdentityAttrs where
-  toCardCode = identityCardCode
+  toCardCode = toCardCode . identityAttrsCardDef
 
 instance Entity IdentityAttrs where
   type EntityId IdentityAttrs = IdentityId
-  toId = identityId
+  toId = identityAttrsId
 
 class HasIdentityAttrs a where
   toIdentityAttrs :: a -> IdentityAttrs

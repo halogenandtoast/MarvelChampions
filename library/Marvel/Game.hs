@@ -62,8 +62,8 @@ runGameMessage msg g = case msg of
   _ -> pure g
 
 instance RunMessage Game where
-  runMessage msg g = traverseOf scenarioL (runMessage msg) g
-    >>= runGameMessage msg
+  runMessage msg g =
+    traverseOf scenarioL (runMessage msg) g >>= runGameMessage msg
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
