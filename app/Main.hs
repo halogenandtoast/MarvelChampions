@@ -44,6 +44,7 @@ createAndRunGame = do
   createPlayer "01001"
   createPlayer "01010"
   push StartGame
+  runGame
 
 runGame :: AppT ()
 runGame = do
@@ -53,15 +54,17 @@ runGame = do
   case HashMap.toList (gameQuestion result) of
     [(ident, question)] -> do
       messages <- handleQuestion ident question
+      print messages
       pushAll messages
+      withGame_ (questionL .~ mempty)
       runGame
     _ -> pure ()
 
-keepAsking :: forall a m . (Show a, Read a, MonadIO m) => Text -> m a
+keepAsking :: (Show a, Read a, MonadIO m) => Text -> m a
 keepAsking s = do
   putStr $ T.unpack s
   liftIO $ hFlush stdout
-  mresult <- readMaybe @a . T.unpack <$> getLine
+  mresult <- readMaybe . T.unpack <$> getLine
   case mresult of
     Nothing -> keepAsking s
     Just a -> pure a
@@ -70,7 +73,7 @@ handleQuestion :: MonadIO m => IdentityId -> Question -> m [Message]
 handleQuestion _ = \case
   ChooseOne [] -> pure []
   ChooseOne choices -> do
-    i <- keepAsking @Int
+    i <- keepAsking
       ("Choose one:\n\n"
       <> unlines (zipWith (curry tshow) [1 :: Int ..] choices)
       )
@@ -82,8 +85,6 @@ newEnv = Env <$> newIORef newGame <*> newIORef []
 main :: IO ()
 main = do
   env <- newEnv
-  _ <- runApp env createAndRunGame
-  result <- readIORef $ envGame env
-  queue <- readIORef $ envQueue env
-  print result
-  print queue
+  runApp env createAndRunGame
+  print =<< readIORef (envGame env)
+  print =<< readIORef (envQueue env)

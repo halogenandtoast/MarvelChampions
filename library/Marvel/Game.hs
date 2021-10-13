@@ -48,7 +48,7 @@ instance RunMessage Game where
       pure $ g { gameState = InProgress }
     ChoosePlayerOrder _ (Unsorted []) (Sorted ys) ->
       pure $ g { gamePlayers = ys }
-    ChoosePlayerOrder _ (Unsorted [x]) (Sorted ys) ->
+    ChoosePlayerOrder _ (Unsorted [x]) (Sorted ys) -> do
       pure $ g { gamePlayers = ys ++ [x] }
     ChoosePlayerOrder ident (Unsorted xs) (Sorted ys) -> do
       chooseOrRunOne
@@ -80,6 +80,9 @@ cardLabel a = CardLabel (toCardCode a)
 
 playersL :: Lens' Game [Player]
 playersL = lens gamePlayers \m x -> m { gamePlayers = x }
+
+questionL :: Lens' Game (HashMap IdentityId Question)
+questionL = lens gameQuestion \m x -> m { gameQuestion = x }
 
 class HasGame a where
   gameL :: Lens' a (IORef Game)
@@ -124,6 +127,7 @@ createPlayer code = do
 runGameMessages :: MonadGame env m => m ()
 runGameMessages = do
   mMsg <- pop
+  liftIO $ print mMsg
   case mMsg of
     Nothing -> pure ()
     Just msg -> case msg of
