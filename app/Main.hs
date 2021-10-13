@@ -33,7 +33,7 @@ newtype GameError = GameError { unGameError :: String }
 instance Exception GameError
 
 runApp :: (MonadCatch m, MonadIO m) => Env -> AppT a -> m a
-runApp env body = handleAll handler $ do
+runApp env body = handleAll handler $
   liftIO $ runReaderT (unAppT body) env
 
 handler :: (MonadThrow m, MonadIO m) => SomeException -> m a
@@ -56,7 +56,7 @@ runGame = do
       messages <- handleQuestion ident question
       print messages
       pushAll messages
-      withGame_ (questionL .~ mempty)
+      withGame_ $ questionL .~ mempty
       runGame
     _ -> pure ()
 
