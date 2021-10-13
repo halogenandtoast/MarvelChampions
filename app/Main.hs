@@ -17,7 +17,16 @@ data Env = Env
   }
 
 newtype AppT a = AppT { unAppT :: ReaderT Env IO a }
-  deriving newtype (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadRandom, MonadThrow, MonadCatch)
+  deriving newtype
+    ( Functor
+    , Applicative
+    , Monad
+    , MonadIO
+    , MonadReader Env
+    , MonadRandom
+    , MonadThrow
+    , MonadCatch
+    )
 
 instance MonadGame Env AppT
 
@@ -35,9 +44,7 @@ instance Exception GameError
 runApp :: (MonadCatch m, MonadIO m) => Env -> AppT a -> m a
 runApp env body = handleAll handler $
   liftIO $ runReaderT (unAppT body) env
-
-handler :: (MonadThrow m, MonadIO m) => SomeException -> m a
-handler e = throwM $ GameError $ displayException e
+  where handler e = throwM $ GameError $ displayException e
 
 createAndRunGame :: AppT ()
 createAndRunGame = do
@@ -49,12 +56,10 @@ createAndRunGame = do
 runGame :: AppT ()
 runGame = do
   runGameMessages
-  ref <- asks $ view gameL
-  result <- readIORef ref
-  case HashMap.toList (gameQuestion result) of
+  game <- getGame
+  case HashMap.toList (gameQuestion game) of
     [(ident, question)] -> do
       messages <- handleQuestion ident question
-      print messages
       pushAll messages
       withGame_ $ questionL .~ mempty
       runGame

@@ -124,10 +124,12 @@ createPlayer code = do
     Nothing -> throwM (MissingCardCode "createPlayer" code)
     Just character -> addPlayer $ newPlayer character
 
+getGame :: MonadGame env m => m Game
+getGame = readIORef =<< asks (view gameL)
+
 runGameMessages :: MonadGame env m => m ()
 runGameMessages = do
   mMsg <- pop
-  liftIO $ print mMsg
   case mMsg of
     Nothing -> pure ()
     Just msg -> case msg of
