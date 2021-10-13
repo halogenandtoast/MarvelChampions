@@ -15,14 +15,16 @@ newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid)
 
 data Message
-  = ChoosePlayerOrder IdentityId (Unsorted Player) (Sorted Player)
-  | StartGame
+  = StartGame
   | StartScenario
   | AddVillain CardCode
+  | SetPlayerOrder [Player]
   | Ask IdentityId Question
   deriving stock Show
 
-newtype Question = ChooseOne [Choice]
+data Question
+  = ChooseOne [Choice]
+  | ChoosePlayerOrder (Unsorted Player) (Sorted Player)
   deriving stock Show
 
 data Choice = CardLabel CardCode [Message]

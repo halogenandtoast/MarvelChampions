@@ -30,30 +30,16 @@ data Game = Game
   }
   deriving stock Show
 
-choosePlayerOrder
-  :: MonadGame env m => IdentityId -> Unsorted Player -> Sorted Player -> m ()
-choosePlayerOrder ident (Unsorted xs) (Sorted ys) = chooseOrRunOne
-  ident
-  (toChoice <$> xs)
- where
-  toChoice x = cardLabel x [ChoosePlayerOrder ident (unsorted x) (sorted x)]
-  unsorted x = Unsorted $ filter (/= x) xs
-  sorted x = Sorted $ ys <> [x]
-
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g = case msg of
   StartGame -> do
     push StartScenario
     case gamePlayers g of
       [] -> throwM NoPlayers
-      players@(p : _) -> choosePlayerOrder (toId p) (Unsorted players) mempty
+      players@(p : _) -> choosePlayerOrder (toId p) players
     pure $ g { gameState = InProgress }
-  ChoosePlayerOrder _ (Unsorted []) (Sorted ys) ->
-    pure $ g { gamePlayers = ys }
-  ChoosePlayerOrder _ (Unsorted [x]) (Sorted ys) -> do
-    pure $ g { gamePlayers = ys ++ [x] }
-  ChoosePlayerOrder ident unsorted sorted ->
-    g <$ choosePlayerOrder ident unsorted sorted
+  SetPlayerOrder xs ->
+    pure $ g { gamePlayers = xs }
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
@@ -73,6 +59,11 @@ chooseOrRunOne ident = \case
   [] -> throwM NoChoices
   [choice] -> pushAll $ choiceMessages choice
   choices -> push (Ask ident $ ChooseOne choices)
+
+choosePlayerOrder
+  :: MonadGame env m => IdentityId -> [Player] -> m ()
+choosePlayerOrder ident xs = push (Ask ident $
+  ChoosePlayerOrder (Unsorted xs) mempty)
 
 cardLabel :: HasCardCode a => a -> [Message] -> Choice
 cardLabel a = CardLabel (toCardCode a)

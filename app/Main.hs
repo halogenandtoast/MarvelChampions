@@ -66,13 +66,13 @@ runGame = do
 
 keepAsking :: (Read a, MonadIO m) => Text -> m a
 keepAsking s = do
-  putStr $ T.unpack s
+  putStr $ T.unpack s <> "> "
   liftIO $ hFlush stdout
   mresult <- readMaybe . T.unpack <$> getLine
   maybe (keepAsking s) pure mresult
 
 handleQuestion :: MonadIO m => IdentityId -> Question -> m [Message]
-handleQuestion _ = \case
+handleQuestion ident = \case
   ChooseOne [] -> pure []
   ChooseOne choices -> do
     i <- keepAsking
@@ -80,6 +80,19 @@ handleQuestion _ = \case
       <> unlines (zipWith (curry tshow) [1 :: Int ..] choices)
       )
     pure . concatMap choiceMessages . maybeToList $ choices !!? (i - 1)
+  ChoosePlayerOrder (Unsorted []) (Sorted ys) ->
+    pure [SetPlayerOrder ys]
+  ChoosePlayerOrder (Unsorted [x]) (Sorted ys) ->
+    pure [SetPlayerOrder $ ys ++ [x]]
+  ChoosePlayerOrder unsorted@(Unsorted xs) sorted@(Sorted ys) -> do
+    let idx = length ys + 1
+    i <- keepAsking
+      ("Choose player " <> show idx <> ":\n\n"
+      <> unlines (zipWith (curry tshow) [1 :: Int ..] xs)
+      )
+    case xs !!? (i - 1) of
+      Just n -> pure [Ask ident $ ChoosePlayerOrder (Unsorted $ filter (/= n) xs) (Sorted $ ys ++ [n])]
+      Nothing -> pure [Ask ident $ ChoosePlayerOrder unsorted sorted]
 
 newEnv :: Scenario -> IO Env
 newEnv scenario = Env <$> newIORef (newGame scenario) <*> newIORef []
