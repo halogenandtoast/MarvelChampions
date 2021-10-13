@@ -116,6 +116,7 @@ executable MarvelChampions-exe
     , exceptions
     , lens
     , mtl
+    , pretty-simple
     , relude
     , text
     , unordered-containers

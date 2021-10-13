@@ -10,6 +10,7 @@ import Marvel.Message
 import Marvel.Queue
 import Marvel.Scenario
 import System.IO (hFlush)
+import Text.Pretty.Simple
 
 data Env = Env
   { envGame :: IORef Game
@@ -103,6 +104,6 @@ main = case lookupScenario "01094" of
   Just scenario -> do
     env <- newEnv scenario
     runApp env createAndRunGame
-    print =<< readIORef (envGame env)
-    print =<< readIORef (envQueue env)
+    pPrint =<< readIORef (envGame env)
+    pPrint =<< readIORef (envQueue env)
   Nothing -> error "Invalid Scenario"

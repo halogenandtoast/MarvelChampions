@@ -50,6 +50,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - MarvelChampions
+    - pretty-simple
 
 tests:
   MarvelChampions-test:

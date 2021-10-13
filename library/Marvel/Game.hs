@@ -132,8 +132,8 @@ createPlayer cardCode = do
     mAlterEgo = do
       def <- lookup cardCode allAlterEgosMap
       lookupAlterEgo def ident
-  maybe missinCardCode (addPlayer . newPlayer) mAlterEgo
-  where missinCardCode = throwM (MissingCardCode "createPlayer" cardCode)
+  maybe missingCardCode (addPlayer . newPlayer) mAlterEgo
+  where missingCardCode = throwM (MissingCardCode "createPlayer" cardCode)
 
 getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks (view gameL)
