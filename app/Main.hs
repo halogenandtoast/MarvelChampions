@@ -3,7 +3,6 @@ module Main where
 import Marvel.Prelude
 
 import Control.Monad.Catch
-import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
 import Marvel.Game
 import Marvel.Identity.Attrs
@@ -43,7 +42,7 @@ newtype GameError = GameError { unGameError :: String }
 instance Exception GameError
 
 runApp :: (MonadCatch m, MonadIO m) => Env -> AppT a -> m a
-runApp env body = handleAll handler $ liftIO $ runReaderT (unAppT body) env
+runApp env body = liftIO $ handleAll handler $ runReaderT (unAppT body) env
   where handler e = throwM $ GameError $ displayException e
 
 createAndRunGame :: AppT ()
@@ -57,7 +56,7 @@ runGame :: AppT ()
 runGame = do
   runGameMessages
   game <- getGame
-  case HashMap.toList (gameQuestion game) of
+  case toPairs (gameQuestion game) of
     [(ident, question)] -> do
       messages <- handleQuestion ident question
       pushAll messages
@@ -65,14 +64,12 @@ runGame = do
       runGame
     _ -> pure ()
 
-keepAsking :: (Show a, Read a, MonadIO m) => Text -> m a
+keepAsking :: (Read a, MonadIO m) => Text -> m a
 keepAsking s = do
   putStr $ T.unpack s
   liftIO $ hFlush stdout
   mresult <- readMaybe . T.unpack <$> getLine
-  case mresult of
-    Nothing -> keepAsking s
-    Just a -> pure a
+  maybe (keepAsking s) pure mresult
 
 handleQuestion :: MonadIO m => IdentityId -> Question -> m [Message]
 handleQuestion _ = \case
