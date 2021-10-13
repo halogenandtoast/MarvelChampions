@@ -10,6 +10,8 @@ import Marvel.Identity
 import Marvel.Message
 import Marvel.Player
 import Marvel.Queue
+import Marvel.Scenario
+import Marvel.Villain
 
 data Phase = PlayerPhase | VillainPhase
   deriving stock Show
@@ -23,48 +25,45 @@ data Game = Game
   , -- players in player order
     gamePlayers :: [Player]
   , gameQuestion :: HashMap IdentityId Question
+  , gameVillains :: HashMap VillainId Villain
+  , gameScenario :: Scenario
   }
   deriving stock Show
 
+choosePlayerOrder
+  :: MonadGame env m => IdentityId -> Unsorted Player -> Sorted Player -> m ()
+choosePlayerOrder ident (Unsorted xs) (Sorted ys) = chooseOrRunOne
+  ident
+  (toChoice <$> xs)
+ where
+  toChoice x = cardLabel x [ChoosePlayerOrder ident (unsorted x) (sorted x)]
+  unsorted x = Unsorted $ filter (/= x) xs
+  sorted x = Sorted $ ys <> [x]
+
+runGameMessage :: MonadGame env m => Message -> Game -> m Game
+runGameMessage msg g = case msg of
+  StartGame -> do
+    push StartScenario
+    case gamePlayers g of
+      [] -> throwM NoPlayers
+      players@(p : _) -> choosePlayerOrder (toId p) (Unsorted players) mempty
+    pure $ g { gameState = InProgress }
+  ChoosePlayerOrder _ (Unsorted []) (Sorted ys) ->
+    pure $ g { gamePlayers = ys }
+  ChoosePlayerOrder _ (Unsorted [x]) (Sorted ys) -> do
+    pure $ g { gamePlayers = ys ++ [x] }
+  ChoosePlayerOrder ident unsorted sorted ->
+    g <$ choosePlayerOrder ident unsorted sorted
+  AddVillain cardCode -> do
+    villainId <- getRandom
+    case lookupVillain cardCode villainId of
+      Just villain -> pure $ g & villainsL . at villainId ?~ villain
+      Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
+  _ -> pure g
+
 instance RunMessage Game where
-  runMessage g = \case
-    Ask{} -> pure g
-    StartGame -> do
-      case gamePlayers g of
-        [] -> throwM NoPlayers
-        players@(p : _) -> chooseOrRunOne
-          (toId p)
-          (map
-            (\x -> cardLabel
-              x
-              [ ChoosePlayerOrder
-                  (toId p)
-                  (Unsorted $ filter (/= x) players)
-                  (Sorted [x])
-              ]
-            )
-            players
-          )
-      pure $ g { gameState = InProgress }
-    ChoosePlayerOrder _ (Unsorted []) (Sorted ys) ->
-      pure $ g { gamePlayers = ys }
-    ChoosePlayerOrder _ (Unsorted [x]) (Sorted ys) -> do
-      pure $ g { gamePlayers = ys ++ [x] }
-    ChoosePlayerOrder ident (Unsorted xs) (Sorted ys) -> do
-      chooseOrRunOne
-        ident
-        (map
-          (\x -> cardLabel
-            x
-            [ ChoosePlayerOrder
-                ident
-                (Unsorted $ filter (/= x) xs)
-                (Sorted $ ys <> [x])
-            ]
-          )
-          xs
-        )
-      pure g
+  runMessage msg g = traverseOf scenarioL (runMessage msg) g
+    >>= runGameMessage msg
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
@@ -84,6 +83,12 @@ playersL = lens gamePlayers \m x -> m { gamePlayers = x }
 questionL :: Lens' Game (HashMap IdentityId Question)
 questionL = lens gameQuestion \m x -> m { gameQuestion = x }
 
+scenarioL :: Lens' Game Scenario
+scenarioL = lens gameScenario \m x -> m { gameScenario = x }
+
+villainsL :: Lens' Game (HashMap VillainId Villain)
+villainsL = lens gameVillains \m x -> m { gameVillains = x }
+
 class HasGame a where
   gameL :: Lens' a (IORef Game)
 
@@ -92,8 +97,14 @@ class HasGame a where
 -- 1. Select Identities: This should be done and provided via the frontend
 -- 2. Set Hit Points: Use startingHP from Identity
 -- 3. Select First Player: Handle via Game Messages
-newGame :: Game
-newGame = Game PlayerPhase Unstarted mempty mempty
+-- 4. Set Aside Obligations TODO later
+-- 5. Set Aside Nemesis Sets TODO later
+-- 6. Shuffle Player Decks TODO later
+-- 7. Collect Tokens and Status Cards NOOP
+-- 8. Select Villain
+-- 9. Set villain's head count
+newGame :: Scenario -> Game
+newGame = Game PlayerPhase Unstarted mempty mempty mempty
 
 addPlayer :: MonadGame env m => Player -> m ()
 addPlayer player = withGame_ $ playersL %~ (player :)
@@ -141,6 +152,6 @@ runGameMessages = do
       other -> do
         ref <- asks $ view gameL
         game <- readIORef ref
-        game' <- runMessage game other
+        game' <- runMessage other game
         atomicWriteIORef ref game'
         runGameMessages

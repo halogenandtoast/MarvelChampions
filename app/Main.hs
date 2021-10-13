@@ -9,6 +9,7 @@ import Marvel.Game
 import Marvel.Identity.Attrs
 import Marvel.Message
 import Marvel.Queue
+import Marvel.Scenario
 import System.IO (hFlush)
 
 data Env = Env
@@ -84,12 +85,14 @@ handleQuestion _ = \case
       )
     pure . concatMap choiceMessages . maybeToList $ choices !!? (i - 1)
 
-newEnv :: IO Env
-newEnv = Env <$> newIORef newGame <*> newIORef []
+newEnv :: Scenario -> IO Env
+newEnv scenario = Env <$> newIORef (newGame scenario) <*> newIORef []
 
 main :: IO ()
-main = do
-  env <- newEnv
-  runApp env createAndRunGame
-  print =<< readIORef (envGame env)
-  print =<< readIORef (envQueue env)
+main = case lookupScenario "01094" of
+  Just scenario -> do
+    env <- newEnv scenario
+    runApp env createAndRunGame
+    print =<< readIORef (envGame env)
+    print =<< readIORef (envQueue env)
+  Nothing -> error "Invalid Scenario"

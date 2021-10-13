@@ -8,6 +8,7 @@ dependencies:
 - text
 - exceptions
 - unordered-containers
+- lens
 
 default-extensions:
 - NoImplicitPrelude
@@ -28,6 +29,7 @@ default-extensions:
 - TypeApplications
 - ScopedTypeVariables
 - RankNTypes
+- RecordWildCards
 
 library:
   source-dirs: library

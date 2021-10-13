@@ -25,6 +25,8 @@ library
       Marvel.Player
       Marvel.Prelude
       Marvel.Queue
+      Marvel.Scenario
+      Marvel.Villain
   other-modules:
       Paths_MarvelChampions
   hs-source-dirs:
@@ -48,10 +50,12 @@ library
       TypeApplications
       ScopedTypeVariables
       RankNTypes
+      RecordWildCards
   build-depends:
       MonadRandom
     , base >=4.7 && <5
     , exceptions
+    , lens
     , mtl
     , relude
     , text
@@ -85,12 +89,14 @@ executable MarvelChampions-exe
       TypeApplications
       ScopedTypeVariables
       RankNTypes
+      RecordWildCards
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
     , MonadRandom
     , base >=4.7 && <5
     , exceptions
+    , lens
     , mtl
     , relude
     , text
@@ -123,12 +129,14 @@ test-suite MarvelChampions-test
       TypeApplications
       ScopedTypeVariables
       RankNTypes
+      RecordWildCards
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
     , MonadRandom
     , base >=4.7 && <5
     , exceptions
+    , lens
     , mtl
     , relude
     , text
