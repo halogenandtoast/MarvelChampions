@@ -3,8 +3,9 @@ module Marvel.Hp where
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.GameValue
 
-newtype HP = HP Int
+newtype HP = HP GameValue
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 class HasStartingHP a where

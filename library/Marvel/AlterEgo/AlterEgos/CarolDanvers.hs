@@ -3,11 +3,12 @@ module Marvel.AlterEgo.AlterEgos.CarolDanvers where
 import Marvel.Prelude
 
 import Marvel.AlterEgo.Attrs
+import Marvel.GameValue
 import Marvel.AlterEgo.Cards qualified as Cards
 
 carolDanvers :: AlterEgoCard CarolDanvers
 carolDanvers =
-  alterEgo CarolDanvers Cards.carolDanvers (HP 12) (HandSize 6) (Rec 4)
+  alterEgo CarolDanvers Cards.carolDanvers (HP $ Static 12) (HandSize 6) (Rec 4)
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving anyclass IsAlterEgo

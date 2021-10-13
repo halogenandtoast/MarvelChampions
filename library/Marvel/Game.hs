@@ -93,7 +93,7 @@ class HasGame a where
 -- 6. Shuffle Player Decks TODO later
 -- 7. Collect Tokens and Status Cards NOOP
 -- 8. Select Villain
--- 9. Set villain's head count
+-- 9. Set villain's hp count
 newGame :: Scenario -> Game
 newGame = Game PlayerPhase Unstarted mempty mempty mempty
 
