@@ -5,7 +5,7 @@ import Marvel.Prelude
 import GHC.Generics
 
 newtype HP = HP Int
-  deriving newtype (Show, Eq)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 class HasStartingHP a where
   startingHP :: a -> HP

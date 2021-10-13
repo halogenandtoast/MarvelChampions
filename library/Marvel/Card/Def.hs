@@ -7,7 +7,8 @@ import Marvel.Name
 import Marvel.Trait
 
 data CardType = AlterEgoType
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data CardDef = CardDef
   { cdCardCode :: CardCode
@@ -15,7 +16,8 @@ data CardDef = CardDef
   , cdTraits :: HashSet Trait
   , cdCardType :: CardType
   }
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 instance HasCardCode CardDef where
   toCardCode = cdCardCode

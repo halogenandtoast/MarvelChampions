@@ -37,6 +37,8 @@ library:
   dependencies:
   - uuid
   - vector
+  - template-haskell
+  - aeson
 
 executables:
   MarvelChampions-exe:

@@ -9,7 +9,7 @@ import Marvel.Entity
 import Marvel.Hp
 
 newtype IdentityId = IdentityId UUID
-  deriving newtype (Show, Eq, Random, Hashable)
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON)
 
 data IdentityAttrs = IdentityAttrs
   { identityAttrsId :: IdentityId
@@ -18,7 +18,8 @@ data IdentityAttrs = IdentityAttrs
   , identityAttrsMaxHP :: HP
   , identityAttrsCurrentHP :: HP
   }
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 instance HasStartingHP IdentityAttrs where
   startingHP = identityAttrsStartingHP

@@ -18,6 +18,7 @@ library
       Marvel.AlterEgo.AlterEgos.PeterParker
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
+      Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
       Marvel.Entity
@@ -33,6 +34,7 @@ library
       Marvel.Prelude
       Marvel.Queue
       Marvel.Scenario
+      Marvel.TH
       Marvel.Trait
       Marvel.Villain
   other-modules:
@@ -62,11 +64,13 @@ library
       DeriveAnyClass
   build-depends:
       MonadRandom
+    , aeson
     , base >=4.7 && <5
     , exceptions
     , lens
     , mtl
     , relude
+    , template-haskell
     , text
     , unordered-containers
     , uuid

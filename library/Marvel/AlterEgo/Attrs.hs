@@ -5,16 +5,25 @@ module Marvel.AlterEgo.Attrs
 
 import Marvel.Prelude
 
+import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Hp as X
 import Marvel.Identity.Attrs as X
 
 alterEgo
-  :: (AlterEgoAttrs -> a) -> CardDef -> HP -> HandSize -> Rec -> IdentityId -> a
-alterEgo f cardDef hp handSize recovery identityAttrsId = f $ AlterEgoAttrs
-  { alterEgoIdentityAttrs = IdentityAttrs { .. }
-  , alterEgoBaseHandSize = handSize
-  , alterEgoBaseRecovery = recovery
+  :: (AlterEgoAttrs -> a)
+  -> CardDef
+  -> HP
+  -> HandSize
+  -> Rec
+  -> CardBuilder IdentityId a
+alterEgo f cardDef hp handSize recovery = CardBuilder
+  { cbCardCode = cdCardCode cardDef
+  , cbCardBuilder = \identityAttrsId -> f $ AlterEgoAttrs
+    { alterEgoIdentityAttrs = IdentityAttrs { .. }
+    , alterEgoBaseHandSize = handSize
+    , alterEgoBaseRecovery = recovery
+    }
   }
  where
   identityAttrsCardDef = cardDef
@@ -24,18 +33,21 @@ alterEgo f cardDef hp handSize recovery identityAttrsId = f $ AlterEgoAttrs
 
 class IsAlterEgo a
 
+type AlterEgoCard a = CardBuilder IdentityId a
+
 newtype HandSize = HandSize Int
-  deriving newtype (Show, Eq)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 newtype Rec = Rec Int
-  deriving newtype (Show, Eq)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 data AlterEgoAttrs = AlterEgoAttrs
   { alterEgoIdentityAttrs :: IdentityAttrs
   , alterEgoBaseHandSize :: HandSize
   , alterEgoBaseRecovery :: Rec
   }
-  deriving stock (Show, Eq)
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 instance HasStartingHP AlterEgoAttrs where
   startingHP = startingHP . toIdentityAttrs
