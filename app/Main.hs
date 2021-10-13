@@ -45,20 +45,20 @@ runApp :: (MonadCatch m, MonadIO m) => Env -> AppT a -> m a
 runApp env body = liftIO $ handleAll handler $ runReaderT (unAppT body) env
   where handler e = throwM $ GameError $ displayException e
 
+-- | Create and run a game
+-- This is specific to testing in the terminal UI
 createAndRunGame :: AppT ()
 createAndRunGame = do
   createPlayer "01001a"
-  createPlayer "01010a"
-  push StartGame
   runGame
 
 runGame :: AppT ()
 runGame = do
   runGameMessages
-  game <- getGame
-  case toPairs (gameQuestion game) of
-    [(ident, question)] -> do
-      messages <- handleQuestion ident question
+  question <- getsGame gameQuestion
+  case toPairs question of
+    [(ident, q)] -> do
+      messages <- handleQuestion ident q
       pushAll messages
       withGame_ $ questionL .~ mempty
       runGame
@@ -71,31 +71,32 @@ keepAsking s = do
   mresult <- readMaybe . T.unpack <$> getLine
   maybe (keepAsking s) pure mresult
 
+asOptions :: Show a => [a] -> [Text]
+asOptions = zipWith (curry tshow) [1 :: Int ..]
+
 handleQuestion :: MonadIO m => IdentityId -> Question -> m [Message]
 handleQuestion ident = \case
   ChooseOne [] -> pure []
   ChooseOne choices -> do
-    i <- keepAsking
-      ("Choose one:\n\n"
-      <> unlines (zipWith (curry tshow) [1 :: Int ..] choices)
-      )
+    i <- keepAsking ("Choose one:\n\n" <> unlines (asOptions choices))
     pure . concatMap choiceMessages . maybeToList $ choices !!? (i - 1)
-  ChoosePlayerOrder (Unsorted []) (Sorted ys) ->
-    pure [SetPlayerOrder ys]
+  ChoosePlayerOrder (Unsorted []) (Sorted ys) -> pure [SetPlayerOrder ys]
   ChoosePlayerOrder (Unsorted [x]) (Sorted ys) ->
     pure [SetPlayerOrder $ ys ++ [x]]
   ChoosePlayerOrder unsorted@(Unsorted xs) sorted@(Sorted ys) -> do
     let idx = length ys + 1
     i <- keepAsking
-      ("Choose player " <> show idx <> ":\n\n"
-      <> unlines (zipWith (curry tshow) [1 :: Int ..] xs)
-      )
+      ("Choose player " <> show idx <> ":\n\n" <> unlines (asOptions xs))
     case xs !!? (i - 1) of
-      Just n -> pure [Ask ident $ ChoosePlayerOrder (Unsorted $ filter (/= n) xs) (Sorted $ ys ++ [n])]
+      Just n -> pure
+        [ Ask ident $ ChoosePlayerOrder
+            (Unsorted $ filter (/= n) xs)
+            (Sorted $ ys ++ [n])
+        ]
       Nothing -> pure [Ask ident $ ChoosePlayerOrder unsorted sorted]
 
 newEnv :: Scenario -> IO Env
-newEnv scenario = Env <$> newIORef (newGame scenario) <*> newIORef []
+newEnv scenario = Env <$> newIORef (newGame scenario) <*> newIORef [StartGame]
 
 main :: IO ()
 main = case lookupScenario "01094" of

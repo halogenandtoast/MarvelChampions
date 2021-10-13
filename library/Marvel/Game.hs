@@ -13,6 +13,7 @@ import Marvel.Player
 import Marvel.Queue
 import Marvel.Scenario
 import Marvel.Villain
+import Marvel.Villain.Attrs
 
 data Phase = PlayerPhase | VillainPhase
   deriving stock Show
@@ -43,7 +44,7 @@ runGameMessage msg g = case msg of
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
-      Just villain -> pure $ g & villainsL . at villainId ?~ villain
+      Just x -> pure $ g & villainsL . at villainId ?~ x
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   _ -> pure g
 
@@ -109,6 +110,9 @@ withGame_ f = withGame ((, ()) . f)
 
 withGameM :: MonadGame env m => (Game -> m Game) -> m ()
 withGameM f = getGame >>= f >>= withGame_ . const
+
+getsGame :: MonadGame env m => (Game -> a) -> m a
+getsGame f = withGame (id &&& f)
 
 class
   ( MonadCatch m

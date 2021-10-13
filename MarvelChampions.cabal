@@ -37,6 +37,10 @@ library
       Marvel.TH
       Marvel.Trait
       Marvel.Villain
+      Marvel.Villain.Attrs
+      Marvel.Villain.Cards
+      Marvel.Villain.Villains.Klaw
+      Marvel.Villain.Villains.Rhino
   other-modules:
       Paths_MarvelChampions
   hs-source-dirs:

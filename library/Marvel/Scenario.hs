@@ -33,11 +33,13 @@ newtype KlawScenario = KlawScenario ScenarioAttrs
 instance RunMessage KlawScenario where
   runMessage msg (KlawScenario attrs) = KlawScenario <$> runMessage msg attrs
 
-newtype ScenarioAttrs = ScenarioAttrs { scenarioVillains :: [CardCode] }
+newtype ScenarioAttrs = ScenarioAttrs
+  { scenarioVillains :: [CardCode]
+  }
   deriving stock Show
 
 instance RunMessage ScenarioAttrs where
-  runMessage msg attrs@ScenarioAttrs{..} = case msg of
+  runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       pushAll $ map AddVillain scenarioVillains
       pure attrs

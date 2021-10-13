@@ -6,7 +6,7 @@ import Marvel.Card.Code
 import Marvel.Name
 import Marvel.Trait
 
-data CardType = AlterEgoType
+data CardType = AlterEgoType | VillainType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

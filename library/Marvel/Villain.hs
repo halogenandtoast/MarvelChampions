@@ -1,29 +1,22 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Villain where
 
 import Marvel.Prelude
 
+import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.TH
+import Marvel.Villain.Attrs
+import Marvel.Villain.Villains.Klaw
+import Marvel.Villain.Villains.Rhino
 
-newtype VillainId = VillainId UUID
-  deriving newtype (Show, Eq, Random, Hashable)
 
-data Villain = Rhino' Rhino | Klaw' Klaw
-  deriving stock Show
+$(buildEntity "Villain")
 
 lookupVillain :: CardCode -> VillainId -> Maybe Villain
-lookupVillain cardCode villainId = lookup cardCode allVillains <*> pure villainId
+lookupVillain cardCode villainId =
+  lookup cardCode allVillains <*> pure villainId
 
 allVillains :: HashMap CardCode (VillainId -> Villain)
-allVillains = fromList [("01094", Rhino' . rhino)]
-
-newtype Rhino = Rhino VillainAttrs
-  deriving newtype Show
-
-rhino :: VillainId -> Rhino
-rhino = Rhino . VillainAttrs
-
-newtype Klaw = Klaw VillainAttrs
-  deriving newtype Show
-
-newtype VillainAttrs = VillainAttrs { villainId :: VillainId }
-  deriving stock Show
+allVillains = fromList
+  $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
