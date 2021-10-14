@@ -2,10 +2,11 @@ module Marvel.Message where
 
 import Marvel.Prelude
 
+import Marvel.Card.PlayerCard
 import Marvel.Card.Code
 import {-# SOURCE #-} Marvel.Game
-import Marvel.Identity
-import Marvel.Player
+import {-# SOURCE #-} Marvel.Identity
+import {-# SOURCE #-} Marvel.Identity.Attrs
 import GHC.Generics
 
 newtype Sorted a = Sorted { unSorted :: [a] }
@@ -18,13 +19,17 @@ data Message
   = StartGame
   | StartScenario
   | AddVillain CardCode
-  | SetPlayerOrder [Player]
+  | SetPlayerOrder [PlayerIdentity]
+  | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
+  deriving stock Show
+
+newtype IdentityMessage = SetDeck [PlayerCard]
   deriving stock Show
 
 data Question
   = ChooseOne [Choice]
-  | ChoosePlayerOrder (Unsorted Player) (Sorted Player)
+  | ChoosePlayerOrder (Unsorted PlayerIdentity) (Sorted PlayerIdentity)
   deriving stock Show
 
 data Choice = CardLabel CardCode [Message]

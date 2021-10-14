@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Marvel.Card.Def
+import Marvel.Message
 import Marvel.Hp as X
 import Marvel.Identity.Attrs as X
 
@@ -30,6 +31,7 @@ alterEgo f cardDef hp handSize recovery = CardBuilder
   identityAttrsStartingHP = hp
   identityAttrsCurrentHP = hp
   identityAttrsMaxHP = hp
+  identityAttrsDeck = []
 
 class IsAlterEgo a
 
@@ -48,6 +50,11 @@ data AlterEgoAttrs = AlterEgoAttrs
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance RunMessage AlterEgoAttrs where
+  runMessage msg x = do
+    identityAttrs' <- runMessage msg (alterEgoIdentityAttrs x)
+    pure $ x { alterEgoIdentityAttrs = identityAttrs' }
 
 instance HasStartingHP AlterEgoAttrs where
   startingHP = startingHP . toIdentityAttrs

@@ -5,7 +5,9 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.PlayerCard
 import Marvel.Entity
+import Marvel.Message
 import Marvel.Hp
 
 newtype IdentityId = IdentityId UUID
@@ -17,9 +19,13 @@ data IdentityAttrs = IdentityAttrs
   , identityAttrsStartingHP :: HP
   , identityAttrsMaxHP :: HP
   , identityAttrsCurrentHP :: HP
+  , identityAttrsDeck :: [PlayerCard]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance RunMessage IdentityAttrs where
+  runMessage _ = pure
 
 instance HasStartingHP IdentityAttrs where
   startingHP = identityAttrsStartingHP

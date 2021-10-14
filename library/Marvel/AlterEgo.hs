@@ -7,9 +7,13 @@ import Marvel.AlterEgo.AlterEgos
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Message
 import Marvel.TH
 
 $(buildEntity "AlterEgo")
+
+instance RunMessage AlterEgo where
+  runMessage = genericRunMessage
 
 allAlterEgos :: HashMap CardCode (IdentityId -> AlterEgo)
 allAlterEgos = fromList

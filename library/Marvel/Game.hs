@@ -9,7 +9,6 @@ import Marvel.Entity
 import Marvel.Exception
 import Marvel.Identity
 import Marvel.Message
-import Marvel.Player
 import Marvel.Queue
 import Marvel.Scenario
 import Marvel.Villain
@@ -25,7 +24,7 @@ data Game = Game
   { gamePhase :: Phase
   , gameState :: GameState
   , -- players in player order
-    gamePlayers :: [Player]
+    gamePlayers :: [PlayerIdentity]
   , gameQuestion :: HashMap IdentityId Question
   , gameVillains :: HashMap VillainId Villain
   , gameScenario :: Scenario
@@ -50,7 +49,9 @@ runGameMessage msg g = case msg of
 
 instance RunMessage Game where
   runMessage msg g =
-    traverseOf scenarioL (runMessage msg) g >>= runGameMessage msg
+    traverseOf scenarioL (runMessage msg) g
+      >>= traverseOf (playersL . each) (runMessage msg)
+      >>= runGameMessage msg
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
@@ -61,14 +62,14 @@ chooseOrRunOne ident = \case
   [choice] -> pushAll $ choiceMessages choice
   choices -> push (Ask ident $ ChooseOne choices)
 
-choosePlayerOrder :: MonadGame env m => IdentityId -> [Player] -> m ()
+choosePlayerOrder :: MonadGame env m => IdentityId -> [PlayerIdentity] -> m ()
 choosePlayerOrder ident xs =
   push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
 
 cardLabel :: HasCardCode a => a -> [Message] -> Choice
 cardLabel a = CardLabel (toCardCode a)
 
-playersL :: Lens' Game [Player]
+playersL :: Lens' Game [PlayerIdentity]
 playersL = lens gamePlayers \m x -> m { gamePlayers = x }
 
 questionL :: Lens' Game (HashMap IdentityId Question)
@@ -97,7 +98,7 @@ class HasGame a where
 newGame :: Scenario -> Game
 newGame = Game PlayerPhase Unstarted mempty mempty mempty
 
-addPlayer :: MonadGame env m => Player -> m ()
+addPlayer :: MonadGame env m => PlayerIdentity -> m ()
 addPlayer player = withGame_ $ playersL %~ (player :)
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
@@ -132,7 +133,7 @@ createPlayer cardCode = do
     mAlterEgo = do
       def <- lookup cardCode allAlterEgosMap
       lookupAlterEgo def ident
-  maybe missingCardCode (addPlayer . newPlayer) mAlterEgo
+  maybe missingCardCode addPlayer mAlterEgo
   where missingCardCode = throwM (MissingCardCode "createPlayer" cardCode)
 
 getGame :: MonadGame env m => m Game

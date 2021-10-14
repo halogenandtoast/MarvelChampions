@@ -3,7 +3,7 @@ module Marvel.Prelude
   , module X
   ) where
 
-import Control.Lens as X (Lens', at, lens, traverseOf, view, (%~), (.~), (?~))
+import Control.Lens as X (Lens', at, each, lens, traverseOf, view, (%~), (.~), (?~))
 import Control.Monad.Random as X (MonadRandom, Random, getRandom)
 import Data.Aeson as X (FromJSON(..), ToJSON(..))
 import Data.UUID as X (UUID)

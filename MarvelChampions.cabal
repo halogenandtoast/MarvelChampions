@@ -21,6 +21,7 @@ library
       Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
+      Marvel.Card.PlayerCard
       Marvel.Entity
       Marvel.Exception
       Marvel.Game
@@ -31,7 +32,6 @@ library
       Marvel.Identity.Attrs
       Marvel.Message
       Marvel.Name
-      Marvel.Player
       Marvel.Prelude
       Marvel.Queue
       Marvel.Scenario
