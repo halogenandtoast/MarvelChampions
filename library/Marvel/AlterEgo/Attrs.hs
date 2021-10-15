@@ -7,9 +7,10 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Marvel.Card.Def
-import Marvel.Message
 import Marvel.Hp as X
+import Marvel.Id as X
 import Marvel.Identity.Attrs as X
+import Marvel.Message
 
 alterEgo
   :: (AlterEgoAttrs -> a)
@@ -20,18 +21,12 @@ alterEgo
   -> CardBuilder IdentityId a
 alterEgo f cardDef hp handSize recovery = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \identityAttrsId -> f $ AlterEgoAttrs
-    { alterEgoIdentityAttrs = IdentityAttrs { .. }
+  , cbCardBuilder = \ident -> f $ AlterEgoAttrs
+    { alterEgoIdentityAttrs = defaultAttrs ident cardDef hp
     , alterEgoBaseHandSize = handSize
     , alterEgoBaseRecovery = recovery
     }
   }
- where
-  identityAttrsCardDef = cardDef
-  identityAttrsStartingHP = hp
-  identityAttrsCurrentHP = hp
-  identityAttrsMaxHP = hp
-  identityAttrsDeck = []
 
 class IsAlterEgo a
 

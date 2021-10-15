@@ -2,20 +2,19 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Control.Monad.Catch
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
+import Marvel.Debug
 import Marvel.Entity
 import Marvel.Exception
 import Marvel.Identity
 import Marvel.Message
+import Marvel.Phase
+import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
 import Marvel.Villain
 import Marvel.Villain.Attrs
-
-data Phase = PlayerPhase | VillainPhase
-  deriving stock Show
 
 data GameState = Unstarted | InProgress | Finished
   deriving stock Show
@@ -30,6 +29,9 @@ data Game = Game
   , gameScenario :: Scenario
   }
   deriving stock Show
+
+getPlayers :: MonadGame env m => m [IdentityId]
+getPlayers = map toId <$> getsGame gamePlayers
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g = case msg of
@@ -53,21 +55,6 @@ instance RunMessage Game where
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= runGameMessage msg
 
-chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
-chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
-
-chooseOrRunOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
-chooseOrRunOne ident = \case
-  [] -> throwM NoChoices
-  [choice] -> pushAll $ choiceMessages choice
-  choices -> push (Ask ident $ ChooseOne choices)
-
-choosePlayerOrder :: MonadGame env m => IdentityId -> [PlayerIdentity] -> m ()
-choosePlayerOrder ident xs =
-  push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
-
-cardLabel :: HasCardCode a => a -> [Message] -> Choice
-cardLabel a = CardLabel (toCardCode a)
 
 playersL :: Lens' Game [PlayerIdentity]
 playersL = lens gamePlayers \m x -> m { gamePlayers = x }
@@ -122,6 +109,7 @@ class
   , MonadReader env m
   , HasGame env
   , HasQueue env
+  , HasDebugLogger env
   , MonadRandom m
   )
   => MonadGame env m | env -> m
@@ -144,9 +132,11 @@ runGameMessages = do
   mMsg <- pop
   case mMsg of
     Nothing -> pure ()
-    Just msg -> case msg of
-      Ask ident choices -> do
-        withGame_ $ questionL .~ fromList [(ident, choices)]
-      other -> do
-        withGameM $ runMessage other
-        runGameMessages
+    Just msg -> do
+      debug msg
+      case msg of
+        Ask ident choices -> do
+          withGame_ $ questionL .~ fromList [(ident, choices)]
+        other -> do
+          withGameM $ runMessage other
+          runGameMessages

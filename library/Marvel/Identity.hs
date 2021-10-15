@@ -11,8 +11,8 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Hero
 import Marvel.Hp
-import Marvel.Message
 import Marvel.Identity.Attrs as X
+import Marvel.Message
 
 -- | Player Identity
 -- An Identity is either a Hero or an alter ego

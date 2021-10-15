@@ -3,7 +3,9 @@ module Marvel.Scenario where
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import {-# SOURCE #-} Marvel.Game
 import Marvel.Message
+import Marvel.Phase
 import Marvel.Queue
 
 data Scenario = RhinoScenario' RhinoScenario | KlawScenario' KlawScenario
@@ -41,6 +43,10 @@ newtype ScenarioAttrs = ScenarioAttrs
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
-      pushAll $ map AddVillain scenarioVillains
+      pushAll $ map AddVillain scenarioVillains <> [BeginPhase PlayerPhase]
+      pure attrs
+    BeginPhase PlayerPhase -> do
+      players <- getPlayers
+      pushAll $ map (($ BeginTurn) . IdentityMessage) players
       pure attrs
     _ -> pure attrs

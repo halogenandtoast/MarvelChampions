@@ -22,17 +22,21 @@ library
       Marvel.Card.Code
       Marvel.Card.Def
       Marvel.Card.PlayerCard
+      Marvel.Debug
       Marvel.Entity
       Marvel.Exception
       Marvel.Game
       Marvel.GameValue
       Marvel.Hero
       Marvel.Hp
+      Marvel.Id
       Marvel.Identity
       Marvel.Identity.Attrs
       Marvel.Message
       Marvel.Name
+      Marvel.Phase
       Marvel.Prelude
+      Marvel.Question
       Marvel.Queue
       Marvel.Scenario
       Marvel.TH

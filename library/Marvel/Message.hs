@@ -2,42 +2,27 @@ module Marvel.Message where
 
 import Marvel.Prelude
 
-import Marvel.Card.PlayerCard
-import Marvel.Card.Code
-import {-# SOURCE #-} Marvel.Game
-import {-# SOURCE #-} Marvel.Identity
-import {-# SOURCE #-} Marvel.Identity.Attrs
 import GHC.Generics
-
-newtype Sorted a = Sorted { unSorted :: [a] }
-  deriving newtype (Show, Semigroup, Monoid)
-
-newtype Unsorted a = Unsorted { unUnsorted :: [a] }
-  deriving newtype (Show, Semigroup, Monoid)
+import Marvel.Card.Code
+import Marvel.Card.PlayerCard
+import {-# SOURCE #-} Marvel.Game
+import Marvel.Id
+import {-# SOURCE #-} Marvel.Identity
+import Marvel.Phase
+import {-# SOURCE #-} Marvel.Question
 
 data Message
   = StartGame
   | StartScenario
+  | BeginPhase Phase
   | AddVillain CardCode
   | SetPlayerOrder [PlayerIdentity]
   | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
   deriving stock Show
 
-newtype IdentityMessage = SetDeck [PlayerCard]
+data IdentityMessage = SetDeck [PlayerCard] | BeginTurn | TakeAction | CheckIfPassed
   deriving stock Show
-
-data Question
-  = ChooseOne [Choice]
-  | ChoosePlayerOrder (Unsorted PlayerIdentity) (Sorted PlayerIdentity)
-  deriving stock Show
-
-data Choice = CardLabel CardCode [Message]
-  deriving stock Show
-
-choiceMessages :: Choice -> [Message]
-choiceMessages = \case
-  CardLabel _ msgs -> msgs
 
 class RunMessage a where
   runMessage :: MonadGame env m => Message -> a -> m a
@@ -45,7 +30,8 @@ class RunMessage a where
 class RunMessage' f where
   runMessage' :: MonadGame env m => Message -> f p -> m (f p)
 
-genericRunMessage :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
+genericRunMessage
+  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
 genericRunMessage msg = fmap to . runMessage' msg . from
 
 instance RunMessage' f => RunMessage' (M1 i c f) where

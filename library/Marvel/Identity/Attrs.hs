@@ -1,4 +1,7 @@
-module Marvel.Identity.Attrs where
+module Marvel.Identity.Attrs
+  ( module Marvel.Identity.Attrs
+  , module X
+  ) where
 
 import Marvel.Prelude
 
@@ -7,11 +10,11 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Entity
-import Marvel.Message
+import {-# SOURCE #-} Marvel.Game
 import Marvel.Hp
-
-newtype IdentityId = IdentityId UUID
-  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON)
+import Marvel.Id as X
+import Marvel.Message
+import Marvel.Queue
 
 data IdentityAttrs = IdentityAttrs
   { identityAttrsId :: IdentityId
@@ -20,12 +23,46 @@ data IdentityAttrs = IdentityAttrs
   , identityAttrsMaxHP :: HP
   , identityAttrsCurrentHP :: HP
   , identityAttrsDeck :: [PlayerCard]
+  , identityAttrsPassed :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+defaultAttrs :: IdentityId -> CardDef -> HP -> IdentityAttrs
+defaultAttrs ident cardDef hp = IdentityAttrs
+  { identityAttrsId = ident
+  , identityAttrsCardDef = cardDef
+  , identityAttrsStartingHP = hp
+  , identityAttrsCurrentHP = hp
+  , identityAttrsMaxHP = hp
+  , identityAttrsDeck = []
+  , identityAttrsPassed = False
+  }
+
+deckL :: Lens' IdentityAttrs [PlayerCard]
+deckL = lens identityAttrsDeck \m x -> m { identityAttrsDeck = x }
+
+passedL :: Lens' IdentityAttrs Bool
+passedL = lens identityAttrsPassed \m x -> m { identityAttrsPassed = x }
+
+takeTurn :: MonadGame env m => IdentityAttrs -> m IdentityAttrs
+takeTurn attrs = do
+  pushAll $ map (IdentityMessage $ toId attrs) [TakeAction, CheckIfPassed]
+  pure attrs
+
+runIdentityMessage
+  :: MonadGame env m => IdentityMessage -> IdentityAttrs -> m IdentityAttrs
+runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
+  BeginTurn -> takeTurn attrs
+  CheckIfPassed -> if identityAttrsPassed then pure attrs else takeTurn attrs
+  SetDeck cards -> pure $ attrs & deckL .~ cards
+  TakeAction -> pure $ attrs & passedL .~ True
+
 instance RunMessage IdentityAttrs where
-  runMessage _ = pure
+  runMessage msg attrs = case msg of
+    IdentityMessage ident msg' | ident == toId attrs ->
+      runIdentityMessage msg' attrs
+    _ -> pure attrs
 
 instance HasStartingHP IdentityAttrs where
   startingHP = identityAttrsStartingHP

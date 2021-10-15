@@ -2,19 +2,22 @@ module Main where
 
 import Marvel.Prelude
 
-import Control.Monad.Catch
 import Data.Text qualified as T
+import Marvel.Debug
 import Marvel.Game
 import Marvel.Identity.Attrs
 import Marvel.Message
+import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
 import System.IO (hFlush)
 import Text.Pretty.Simple
 
+
 data Env = Env
   { envGame :: IORef Game
   , envQueue :: IORef Queue
+  , envDebugLogger :: Maybe DebugLogger
   }
 
 newtype AppT a = AppT { unAppT :: ReaderT Env IO a }
@@ -36,6 +39,9 @@ instance HasGame Env where
 
 instance HasQueue Env where
   queueL = lens envQueue \m x -> m { envQueue = x }
+
+instance HasDebugLogger Env where
+  debugL = lens envDebugLogger \m x -> m { envDebugLogger = x }
 
 newtype GameError = GameError { unGameError :: String }
   deriving newtype Show
@@ -96,8 +102,13 @@ handleQuestion ident = \case
         ]
       Nothing -> pure [Ask ident $ ChoosePlayerOrder unsorted sorted]
 
+debugLogger :: DebugLogger
+debugLogger = DebugLogger pPrint
+
 newEnv :: Scenario -> IO Env
-newEnv scenario = Env <$> newIORef (newGame scenario) <*> newIORef [StartGame]
+newEnv scenario =
+  Env <$> newIORef (newGame scenario) <*> newIORef [StartGame] <*> pure
+    (Just debugLogger)
 
 main :: IO ()
 main = case lookupScenario "01094" of

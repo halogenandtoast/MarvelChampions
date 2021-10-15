@@ -2,7 +2,8 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Control.Monad.Catch
+import Marvel.Debug
+import Marvel.Id
 import {-# SOURCE #-} Marvel.Queue
 
 class HasGame a
@@ -14,6 +15,9 @@ class
   , MonadReader env m
   , HasGame env
   , HasQueue env
+  , HasDebugLogger env
   , MonadRandom m
   )
   => MonadGame env m | env -> m
+
+getPlayers :: MonadGame env m => m [IdentityId]
