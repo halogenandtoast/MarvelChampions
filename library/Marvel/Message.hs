@@ -7,7 +7,6 @@ import Marvel.Card.Code
 import Marvel.Card.PlayerCard
 import {-# SOURCE #-} Marvel.Game
 import Marvel.Id
-import {-# SOURCE #-} Marvel.Identity
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 
@@ -16,12 +15,18 @@ data Message
   | StartScenario
   | BeginPhase Phase
   | AddVillain CardCode
-  | SetPlayerOrder [PlayerIdentity]
+  | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
   deriving stock Show
 
-data IdentityMessage = SetDeck [PlayerCard] | BeginTurn | TakeAction | CheckIfPassed
+data IdentityMessage
+  = SetDeck [PlayerCard]
+  | BeginTurn
+  | PlayerTurnOption
+  | CheckIfPassed
+  | ChooseOtherForm
+  | EndedTurn
   deriving stock Show
 
 class RunMessage a where

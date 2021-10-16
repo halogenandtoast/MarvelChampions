@@ -23,7 +23,8 @@ data Game = Game
   { gamePhase :: Phase
   , gameState :: GameState
   , -- players in player order
-    gamePlayers :: [PlayerIdentity]
+    gamePlayerOrder :: [IdentityId]
+  , gamePlayers :: HashMap IdentityId PlayerIdentity
   , gameQuestion :: HashMap IdentityId Question
   , gameVillains :: HashMap VillainId Villain
   , gameScenario :: Scenario
@@ -31,17 +32,17 @@ data Game = Game
   deriving stock Show
 
 getPlayers :: MonadGame env m => m [IdentityId]
-getPlayers = map toId <$> getsGame gamePlayers
+getPlayers = getsGame gamePlayerOrder
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
-    case gamePlayers of
+    case gamePlayerOrder of
       [] -> throwM NoPlayers
-      players@(p : _) -> choosePlayerOrder (toId p) players
+      players@(p : _) -> choosePlayerOrder p players
     pure $ g { gameState = InProgress }
-  SetPlayerOrder xs -> pure $ g { gamePlayers = xs }
+  SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
@@ -55,7 +56,10 @@ instance RunMessage Game where
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= runGameMessage msg
 
-playersL :: Lens' Game [PlayerIdentity]
+playerOrderL :: Lens' Game [IdentityId]
+playerOrderL = lens gamePlayerOrder \m x -> m { gamePlayerOrder = x }
+
+playersL :: Lens' Game (HashMap IdentityId PlayerIdentity)
 playersL = lens gamePlayers \m x -> m { gamePlayers = x }
 
 questionL :: Lens' Game (HashMap IdentityId Question)
@@ -82,10 +86,12 @@ class HasGame a where
 -- 8. Select Villain
 -- 9. Set villain's hp count
 newGame :: Scenario -> Game
-newGame = Game PlayerPhase Unstarted mempty mempty mempty
+newGame = Game PlayerPhase Unstarted mempty mempty mempty mempty
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
-addPlayer player = withGame_ $ playersL %~ (player :)
+addPlayer player = withGame_
+  $ (playersL %~ insert (toId player) player)
+  . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -129,13 +135,11 @@ getGame = readIORef =<< asks game
 runGameMessages :: MonadGame env m => m ()
 runGameMessages = do
   mMsg <- pop
-  case mMsg of
-    Nothing -> pure ()
-    Just msg -> do
-      debug msg
-      case msg of
-        Ask ident choices -> do
-          withGame_ $ questionL .~ fromList [(ident, choices)]
-        other -> do
-          withGameM $ runMessage other
-          runGameMessages
+  debug =<< getGame
+  for_ mMsg debug
+  for_ mMsg \case
+    Ask ident choices -> do
+      withGame_ $ questionL .~ fromList [(ident, choices)]
+    other -> do
+      withGameM $ runMessage other
+      runGameMessages

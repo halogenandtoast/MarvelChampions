@@ -10,10 +10,12 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Entity
+import Marvel.Exception
 import {-# SOURCE #-} Marvel.Game
 import Marvel.Hp
 import Marvel.Id as X
 import Marvel.Message
+import Marvel.Question
 import Marvel.Queue
 
 data IdentityAttrs = IdentityAttrs
@@ -47,7 +49,7 @@ passedL = lens identityAttrsPassed \m x -> m { identityAttrsPassed = x }
 
 takeTurn :: MonadGame env m => IdentityAttrs -> m IdentityAttrs
 takeTurn attrs = do
-  pushAll $ map (IdentityMessage $ toId attrs) [TakeAction, CheckIfPassed]
+  pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
   pure attrs
 
 runIdentityMessage
@@ -56,7 +58,20 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
   BeginTurn -> takeTurn attrs
   CheckIfPassed -> if identityAttrsPassed then pure attrs else takeTurn attrs
   SetDeck cards -> pure $ attrs & deckL .~ cards
-  TakeAction -> pure $ attrs & passedL .~ True
+  PlayerTurnOption -> do
+    -- called options in rule book
+    -- Change form -- limited to once per turn
+    -- Play
+    -- Use basic ability
+    -- Use ally card to attack or thwart
+    -- Trigger an Action
+    -- Ask another player to trigger an action
+    -- (implicit end turn)
+    chooseOne (toId attrs) [ChangeForm, EndTurn]
+    pure attrs
+  EndedTurn -> do
+    pure $ attrs & passedL .~ True
+  ChooseOtherForm -> throwM $ UnhandledMessage "ChooseOtherForm must be handled by AlterEgo/Hero"
 
 instance RunMessage IdentityAttrs where
   runMessage msg attrs = case msg of

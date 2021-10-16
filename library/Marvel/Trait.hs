@@ -3,7 +3,8 @@ module Marvel.Trait where
 import Marvel.Prelude
 
 data Trait
-  = Brute
+  = Avenger
+  | Brute
   | Criminal
   | Genius
   | MastersOfEvil

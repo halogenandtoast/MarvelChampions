@@ -2,6 +2,7 @@ module Marvel.Exception where
 
 import Marvel.Prelude
 
+import Data.Text qualified as T
 import Marvel.Card.Code
 
 data MissingCardCode = MissingCardCode String CardCode
@@ -23,3 +24,8 @@ data NoChoices = NoChoices
 instance Exception NoChoices where
   displayException NoChoices = "Tried to ask a question with no choices"
 
+newtype UnhandledMessage = UnhandledMessage Text
+  deriving stock Show
+
+instance Exception UnhandledMessage where
+  displayException (UnhandledMessage s) = T.unpack s

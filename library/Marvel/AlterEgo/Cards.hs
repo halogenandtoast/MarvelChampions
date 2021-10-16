@@ -22,7 +22,7 @@ alterEgo cardCode name traits = CardDef
   }
 
 peterParker :: CardDef
-peterParker = alterEgo "01001a" "Peter Parker" [Genius]
+peterParker = alterEgo "01001b" "Peter Parker" [Genius]
 
 carolDanvers :: CardDef
-carolDanvers = alterEgo "01010a" "Carol Danvers" [Shield, Soldier]
+carolDanvers = alterEgo "01010b" "Carol Danvers" [Shield, Soldier]

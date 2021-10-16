@@ -3,9 +3,9 @@ module Marvel.AlterEgo.AlterEgos.CarolDanvers where
 import Marvel.Prelude
 
 import Marvel.AlterEgo.Attrs
+import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.GameValue
 import Marvel.Message
-import Marvel.AlterEgo.Cards qualified as Cards
 
 carolDanvers :: AlterEgoCard CarolDanvers
 carolDanvers =

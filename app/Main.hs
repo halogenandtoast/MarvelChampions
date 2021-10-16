@@ -57,6 +57,7 @@ runApp env body = liftIO $ handleAll handler $ runReaderT (unAppT body) env
 createAndRunGame :: AppT ()
 createAndRunGame = do
   createPlayer "01001a"
+  createPlayer "01010a"
   runGame
 
 runGame :: AppT ()
@@ -86,7 +87,7 @@ handleQuestion ident = \case
   ChooseOne [] -> pure []
   ChooseOne choices -> do
     i <- keepAsking ("Choose one:\n\n" <> unlines (asOptions choices))
-    pure . concatMap choiceMessages . maybeToList $ choices !!? (i - 1)
+    pure . concatMap (choiceMessages ident) . maybeToList $ choices !!? (i - 1)
   ChoosePlayerOrder (Unsorted []) (Sorted ys) -> pure [SetPlayerOrder ys]
   ChoosePlayerOrder (Unsorted [x]) (Sorted ys) ->
     pure [SetPlayerOrder $ ys ++ [x]]

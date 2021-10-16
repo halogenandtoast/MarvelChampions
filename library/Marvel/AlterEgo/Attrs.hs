@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Marvel.Card.Def
+import Marvel.Card.Side
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Identity.Attrs as X
@@ -25,6 +26,7 @@ alterEgo f cardDef hp handSize recovery = CardBuilder
     { alterEgoIdentityAttrs = defaultAttrs ident cardDef hp
     , alterEgoBaseHandSize = handSize
     , alterEgoBaseRecovery = recovery
+    , alterEgoHeroForms = [A]
     }
   }
 
@@ -42,6 +44,7 @@ data AlterEgoAttrs = AlterEgoAttrs
   { alterEgoIdentityAttrs :: IdentityAttrs
   , alterEgoBaseHandSize :: HandSize
   , alterEgoBaseRecovery :: Rec
+  , alterEgoHeroForms :: [Side]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
