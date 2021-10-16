@@ -35,13 +35,13 @@ newtype AppT a = AppT { unAppT :: ReaderT Env IO a }
 instance MonadGame Env AppT
 
 instance HasGame Env where
-  gameL = lens envGame \m x -> m { envGame = x }
+  game = envGame
 
 instance HasQueue Env where
-  queueL = lens envQueue \m x -> m { envQueue = x }
+  queue = envQueue
 
 instance HasDebugLogger Env where
-  debugL = lens envDebugLogger \m x -> m { envDebugLogger = x }
+  debugLogger = envDebugLogger
 
 newtype GameError = GameError { unGameError :: String }
   deriving newtype Show
@@ -102,13 +102,13 @@ handleQuestion ident = \case
         ]
       Nothing -> pure [Ask ident $ ChoosePlayerOrder unsorted sorted]
 
-debugLogger :: DebugLogger
-debugLogger = DebugLogger pPrint
+prettyLogger :: DebugLogger
+prettyLogger = DebugLogger pPrint
 
 newEnv :: Scenario -> IO Env
 newEnv scenario =
   Env <$> newIORef (newGame scenario) <*> newIORef [StartGame] <*> pure
-    (Just debugLogger)
+    (Just prettyLogger)
 
 main :: IO ()
 main = case lookupScenario "01094" of

@@ -7,15 +7,15 @@ import Marvel.Message
 type Queue = [Message]
 
 class HasQueue a where
-  queueL :: Lens' a (IORef Queue)
+  queue :: a -> IORef Queue
 
 withQueue
   :: (HasQueue env, MonadReader env m, MonadIO m)
   => (Queue -> (Queue, a))
   -> m a
 withQueue body = do
-  queue <- asks $ view queueL
-  atomicModifyIORef' queue body
+  ref <- asks queue
+  atomicModifyIORef' ref body
 
 withQueue_
   :: (HasQueue env, MonadReader env m, MonadIO m) => (Queue -> Queue) -> m ()

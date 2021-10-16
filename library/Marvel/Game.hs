@@ -34,10 +34,10 @@ getPlayers :: MonadGame env m => m [IdentityId]
 getPlayers = map toId <$> getsGame gamePlayers
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
-runGameMessage msg g = case msg of
+runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
-    case gamePlayers g of
+    case gamePlayers of
       [] -> throwM NoPlayers
       players@(p : _) -> choosePlayerOrder (toId p) players
     pure $ g { gameState = InProgress }
@@ -55,7 +55,6 @@ instance RunMessage Game where
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= runGameMessage msg
 
-
 playersL :: Lens' Game [PlayerIdentity]
 playersL = lens gamePlayers \m x -> m { gamePlayers = x }
 
@@ -69,7 +68,7 @@ villainsL :: Lens' Game (HashMap VillainId Villain)
 villainsL = lens gameVillains \m x -> m { gameVillains = x }
 
 class HasGame a where
-  gameL :: Lens' a (IORef Game)
+  game :: a -> IORef Game
 
 -- | Create a new game
 -- Breaking down setup:
@@ -90,8 +89,8 @@ addPlayer player = withGame_ $ playersL %~ (player :)
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
-  game <- asks $ view gameL
-  atomicModifyIORef' game f
+  gameRef <- asks game
+  atomicModifyIORef' gameRef f
 
 withGame_ :: MonadGame env m => (Game -> Game) -> m ()
 withGame_ f = withGame ((, ()) . f)
@@ -125,7 +124,7 @@ createPlayer cardCode = do
   where missingCardCode = throwM (MissingCardCode "createPlayer" cardCode)
 
 getGame :: MonadGame env m => m Game
-getGame = readIORef =<< asks (view gameL)
+getGame = readIORef =<< asks game
 
 runGameMessages :: MonadGame env m => m ()
 runGameMessages = do
