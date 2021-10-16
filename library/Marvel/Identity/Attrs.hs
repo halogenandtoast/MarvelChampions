@@ -71,7 +71,8 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
     pure attrs
   EndedTurn -> do
     pure $ attrs & passedL .~ True
-  ChooseOtherForm -> throwM $ UnhandledMessage "ChooseOtherForm must be handled by AlterEgo/Hero"
+  ChooseOtherForm -> throwM
+    $ UnhandledMessage "ChooseOtherForm must be handled by AlterEgo/Hero"
 
 instance RunMessage IdentityAttrs where
   runMessage msg attrs = case msg of
@@ -90,25 +91,39 @@ instance Entity IdentityAttrs where
   toId = identityAttrsId
 
 class HasIdentityAttrs a where
-  toIdentityAttrs :: a -> IdentityAttrs
+  identityAttrsL :: Lens' a IdentityAttrs
 
 instance HasIdentityAttrs IdentityAttrs where
-  toIdentityAttrs = id
+  identityAttrsL = id
 
 genericToIdentityAttrs
-  :: (HasIdentityAttrs' (Rep a), Generic a) => a -> IdentityAttrs
-genericToIdentityAttrs = toIdentityAttrs' . from
+  :: (HasIdentityAttrs' (Rep a), Generic a) => Lens' a IdentityAttrs
+genericToIdentityAttrs = lens
+  (view identityAttrsL' . from)
+  (\m x -> to $ set identityAttrsL' x (from m))
+
+-- (IdentityAttrs -> f IdentityAttrs) -> (a -> f a)
 
 class HasIdentityAttrs' f where
-  toIdentityAttrs' :: f p -> IdentityAttrs
+  identityAttrsL' :: Lens' (f p) IdentityAttrs
 
 instance HasIdentityAttrs' f => HasIdentityAttrs' (M1 i c f) where
-  toIdentityAttrs' = toIdentityAttrs' . unM1
+  identityAttrsL' = lens
+    (view identityAttrsL' . unM1)
+    (\m x -> M1 $ set identityAttrsL' x (unM1 m))
 
 instance (HasIdentityAttrs' l, HasIdentityAttrs' r) => HasIdentityAttrs' (l :+: r) where
-  toIdentityAttrs' = \case
-    L1 x -> toIdentityAttrs' x
-    R1 x -> toIdentityAttrs' x
+  identityAttrsL' = lens
+    (\case
+      L1 x -> view identityAttrsL' x
+      R1 x -> view identityAttrsL' x
+    )
+    (\m x -> case m of
+      L1 l -> L1 $ set identityAttrsL' x l
+      R1 r -> R1 $ set identityAttrsL' x r
+    )
 
 instance HasIdentityAttrs c => HasIdentityAttrs' (K1 i c) where
-  toIdentityAttrs' = toIdentityAttrs . unK1
+  identityAttrsL' = lens
+    (view identityAttrsL . unK1)
+    (\m x -> K1 $ set identityAttrsL x (unK1 m))

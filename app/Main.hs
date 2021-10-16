@@ -56,8 +56,8 @@ runApp env body = liftIO $ handleAll handler $ runReaderT (unAppT body) env
 -- This is specific to testing in the terminal UI
 createAndRunGame :: AppT ()
 createAndRunGame = do
-  createPlayer "01001a"
-  createPlayer "01010a"
+  createPlayer "01001"
+  createPlayer "01010"
   runGame
 
 runGame :: AppT ()

@@ -3,6 +3,7 @@ module Marvel.Question where
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Card.Side
 import Marvel.Exception
 import {-# SOURCE #-} Marvel.Game
 import Marvel.Id
@@ -20,7 +21,7 @@ newtype Sorted a = Sorted { unSorted :: [a] }
 newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid)
 
-data Choice = CardLabel CardCode [Message] | EndTurn | ChangeForm
+data Choice = CardLabel CardCode [Message] | EndTurn | ChangeForm | ChangeToForm Side
   deriving stock Show
 
 choiceMessages :: IdentityId -> Choice -> [Message]
@@ -28,6 +29,7 @@ choiceMessages ident = \case
   CardLabel _ msgs -> msgs
   EndTurn -> [IdentityMessage ident EndedTurn]
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
+  ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

@@ -67,7 +67,7 @@ instance RunMessage HeroAttrs where
     pure $ x { heroIdentityAttrs = identityAttrs' }
 
 instance HasStartingHP HeroAttrs where
-  startingHP = startingHP . toIdentityAttrs
+  startingHP = startingHP . view identityAttrsL
 
 instance HasIdentityAttrs HeroAttrs where
-  toIdentityAttrs = heroIdentityAttrs
+  identityAttrsL = lens heroIdentityAttrs \m x -> m { heroIdentityAttrs = x }

@@ -6,37 +6,70 @@ module Marvel.Identity
 import Marvel.Prelude
 
 import Marvel.AlterEgo
+import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.Side
 import Marvel.Entity
 import Marvel.Hero
-import Marvel.Hp
 import Marvel.Identity.Attrs as X
 import Marvel.Message
 
--- | Player Identity
--- An Identity is either a Hero or an alter ego
-data PlayerIdentity = HeroSide Hero | AlterEgoSide AlterEgo
+data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
 
-instance RunMessage PlayerIdentity where
-  runMessage msg = \case
-    HeroSide x -> HeroSide <$> runMessage msg x
-    AlterEgoSide x -> AlterEgoSide <$> runMessage msg x
+-- | Player Identity
+-- An Identity is either a Hero or an alter ego
+data PlayerIdentity = PlayerIdentity
+  { playerIdentitySide :: PlayerIdentitySide
+  , playerIdentitySides :: HashMap Side PlayerIdentitySide
+  }
+  deriving stock (Show, Eq, Generic)
 
-lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentity
+createIdentity :: PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
+createIdentity alterEgoSide heroSide = PlayerIdentity
+  { playerIdentitySide = alterEgoSide
+  , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
+  }
+
+instance RunMessage PlayerIdentity where
+  runMessage msg player = case msg of
+    IdentityMessage ident (ChangedToForm side) | ident == toId player -> do
+      let
+        newSide =
+          fromMaybe (error "stuff") $ lookup side (playerIdentitySides player)
+      pure $ player { playerIdentitySide = newSide }
+    other -> case playerIdentitySide player of
+      HeroSide x -> do
+        newSide <- HeroSide <$> runMessage other x
+        pure $ player { playerIdentitySide = newSide }
+      AlterEgoSide x -> do
+        newSide <- AlterEgoSide <$> runMessage other x
+        pure $ player { playerIdentitySide = newSide }
+
+lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupAlterEgo cardDef ident =
   AlterEgoSide <$> (lookup (toCardCode cardDef) allAlterEgos <*> Just ident)
 
+lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
+lookupHero cardDef ident =
+  HeroSide <$> (lookup (toCardCode cardDef) allHeroes <*> Just ident)
+
 instance HasStartingHP PlayerIdentity where
-  startingHP = defaultHasStartingHP
+  startingHP = startingHP . view identityAttrsL
 
 instance HasCardCode PlayerIdentity where
-  toCardCode = toCardCode . toIdentityAttrs
+  toCardCode = toCardCode . view identityAttrsL
 
 instance HasIdentityAttrs PlayerIdentity where
-  toIdentityAttrs = genericToIdentityAttrs
+  identityAttrsL = lens
+    (view identityAttrsL . playerIdentitySide)
+    \m x ->
+      m { playerIdentitySide = set identityAttrsL x (playerIdentitySide m) }
+
+instance HasIdentityAttrs PlayerIdentitySide where
+  identityAttrsL = genericToIdentityAttrs
 
 instance Entity PlayerIdentity where
   type EntityId PlayerIdentity = IdentityId
-  toId = toId . toIdentityAttrs
+  toId = toId . view identityAttrsL

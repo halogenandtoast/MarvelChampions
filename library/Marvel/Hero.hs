@@ -17,11 +17,11 @@ instance RunMessage Hero where
   runMessage = genericRunMessage
 
 allHeroes :: HashMap CardCode (IdentityId -> Hero)
-allHeroes = fromList
-  $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Hero")
+allHeroes =
+  fromList $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Hero")
 
 instance HasStartingHP Hero where
   startingHP = defaultHasStartingHP
 
 instance HasIdentityAttrs Hero where
-  toIdentityAttrs = genericToIdentityAttrs
+  identityAttrsL = genericToIdentityAttrs

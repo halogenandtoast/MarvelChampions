@@ -23,4 +23,4 @@ instance HasStartingHP AlterEgo where
   startingHP = defaultHasStartingHP
 
 instance HasIdentityAttrs AlterEgo where
-  toIdentityAttrs = genericToIdentityAttrs
+  identityAttrsL = genericToIdentityAttrs

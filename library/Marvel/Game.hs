@@ -7,6 +7,7 @@ import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Entity
 import Marvel.Exception
+import Marvel.Hero.Cards
 import Marvel.Identity
 import Marvel.Message
 import Marvel.Phase
@@ -89,9 +90,10 @@ newGame :: Scenario -> Game
 newGame = Game PlayerPhase Unstarted mempty mempty mempty mempty
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
-addPlayer player = withGame_
-  $ (playersL %~ insert (toId player) player)
-  . (playerOrderL <>~ [toId player])
+addPlayer player =
+  withGame_
+    $ (playersL %~ insert (toId player) player)
+    . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -124,10 +126,15 @@ createPlayer cardCode = do
   ident <- getRandom
   let
     mAlterEgo = do
-      def <- lookup cardCode allAlterEgosMap
+      def <- lookup (toAlterEgoCardCode cardCode) allAlterEgosMap
       lookupAlterEgo def ident
-  maybe missingCardCode addPlayer mAlterEgo
-  where missingCardCode = throwM (MissingCardCode "createPlayer" cardCode)
+    mHero = do
+      def <- lookup (toHeroCardCode cardCode) allHeroesMap
+      lookupHero def ident
+  case (mAlterEgo, mHero) of
+    (Just alterEgoSide, Just heroSide) ->
+      addPlayer $ createIdentity alterEgoSide heroSide
+    _ -> error "stuff"
 
 getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks game
@@ -137,9 +144,11 @@ runGameMessages = do
   mMsg <- pop
   debug =<< getGame
   for_ mMsg debug
-  for_ mMsg \case
-    Ask ident choices -> do
-      withGame_ $ questionL .~ fromList [(ident, choices)]
-    other -> do
-      withGameM $ runMessage other
-      runGameMessages
+  for_
+    mMsg
+    \case
+      Ask ident choices -> do
+        withGame_ $ questionL .~ fromList [(ident, choices)]
+      other -> do
+        withGameM $ runMessage other
+        runGameMessages

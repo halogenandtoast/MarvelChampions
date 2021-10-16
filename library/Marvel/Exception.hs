@@ -12,6 +12,12 @@ instance Exception MissingCardCode where
   displayException (MissingCardCode fName code) =
     fName <> ": Failed to lookup card with card code " <> show code
 
+newtype ChangeFormFailure = ChangeFormFailure Text
+  deriving stock Show
+
+instance Exception ChangeFormFailure where
+  displayException (ChangeFormFailure s) = T.unpack s
+
 data NoPlayers = NoPlayers
   deriving stock Show
 

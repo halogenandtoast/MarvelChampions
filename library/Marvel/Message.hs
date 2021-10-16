@@ -5,6 +5,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
+import Marvel.Card.Side
 import {-# SOURCE #-} Marvel.Game
 import Marvel.Id
 import Marvel.Phase
@@ -27,6 +28,7 @@ data IdentityMessage
   | CheckIfPassed
   | ChooseOtherForm
   | EndedTurn
+  | ChangedToForm Side
   deriving stock Show
 
 class RunMessage a where
