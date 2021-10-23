@@ -72,4 +72,6 @@ instance HasIdentityAttrs PlayerIdentitySide where
 
 instance Entity PlayerIdentity where
   type EntityId PlayerIdentity = IdentityId
-  toId = toId . view identityAttrsL
+  type EntityAttrs PlayerIdentity = IdentityAttrs
+  toId = toId . toAttrs
+  toAttrs = view identityAttrsL

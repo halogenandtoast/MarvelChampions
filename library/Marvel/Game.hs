@@ -15,19 +15,22 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
 import Marvel.Villain
-import Marvel.Villain.Attrs
 
 data GameState = Unstarted | InProgress | Finished
   deriving stock Show
+
+type EntityMap a = HashMap (EntityId a) a
 
 data Game = Game
   { gamePhase :: Phase
   , gameState :: GameState
   , -- players in player order
     gamePlayerOrder :: [IdentityId]
-  , gamePlayers :: HashMap IdentityId PlayerIdentity
+
+  , gamePlayers :: EntityMap PlayerIdentity
+  , gameVillains :: EntityMap Villain
+
   , gameQuestion :: HashMap IdentityId Question
-  , gameVillains :: HashMap VillainId Villain
   , gameScenario :: Scenario
   }
   deriving stock Show

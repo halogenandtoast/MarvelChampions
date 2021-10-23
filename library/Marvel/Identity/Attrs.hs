@@ -17,6 +17,7 @@ import Marvel.Id as X
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Source
 
 data IdentityAttrs = IdentityAttrs
   { identityAttrsId :: IdentityId
@@ -29,6 +30,9 @@ data IdentityAttrs = IdentityAttrs
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance IsSource IdentityAttrs where
+  toSource = IdentitySource . toId
 
 defaultAttrs :: IdentityId -> CardDef -> HP -> IdentityAttrs
 defaultAttrs ident cardDef hp = IdentityAttrs
@@ -51,6 +55,19 @@ takeTurn :: MonadGame env m => IdentityAttrs -> m IdentityAttrs
 takeTurn attrs = do
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
   pure attrs
+
+data Criteria = IsSelf
+data Limit = PerTurn Natural | PerRound Natural
+data PlayerOption = LimitedOption Source Criteria Limit Choice
+
+limitedOption :: IsSource a => a -> Criteria -> Limit -> Choice -> PlayerOption
+limitedOption a = LimitedOption (toSource a)
+
+class HasOptions a where
+  getOptions :: a -> [PlayerOption]
+
+instance HasOptions IdentityAttrs where
+  getOptions a = [limitedOption a IsSelf (PerTurn 1) ChangeForm]
 
 runIdentityMessage
   :: MonadGame env m => IdentityMessage -> IdentityAttrs -> m IdentityAttrs

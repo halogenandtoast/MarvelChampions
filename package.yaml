@@ -32,6 +32,7 @@ default-extensions:
 - RecordWildCards
 - DeriveAnyClass
 - StandaloneDeriving
+- FlexibleInstances
 
 library:
   source-dirs: library

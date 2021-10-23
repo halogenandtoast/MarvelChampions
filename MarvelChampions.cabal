@@ -45,6 +45,7 @@ library
       Marvel.Question
       Marvel.Queue
       Marvel.Scenario
+      Marvel.Source
       Marvel.TH
       Marvel.Trait
       Marvel.Villain
@@ -78,6 +79,7 @@ library
       RecordWildCards
       DeriveAnyClass
       StandaloneDeriving
+      FlexibleInstances
   build-depends:
       MonadRandom
     , aeson
@@ -121,6 +123,7 @@ executable MarvelChampions-exe
       RecordWildCards
       DeriveAnyClass
       StandaloneDeriving
+      FlexibleInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
@@ -164,6 +167,7 @@ test-suite MarvelChampions-test
       RecordWildCards
       DeriveAnyClass
       StandaloneDeriving
+      FlexibleInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions

@@ -5,13 +5,19 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Entity
 import Marvel.TH
 import Marvel.Villain.Attrs
 import Marvel.Villain.Villains.Klaw
 import Marvel.Villain.Villains.Rhino
 
-
 $(buildEntity "Villain")
+
+instance Entity Villain where
+  type EntityId Villain = VillainId
+  type EntityAttrs Villain = VillainAttrs
+  toId = toId . toAttrs
+  toAttrs = genericToAttrs
 
 lookupVillain :: CardCode -> VillainId -> Maybe Villain
 lookupVillain cardCode villainId =
