@@ -65,7 +65,9 @@ data HeroAttrs = HeroAttrs
 
 instance Entity HeroAttrs where
   type EntityId HeroAttrs = IdentityId
-  toId = toId . view identityAttrsL
+  type EntityAttrs HeroAttrs = IdentityAttrs
+  toId = toId . toAttrs
+  toAttrs = view identityAttrsL
 
 instance RunMessage HeroAttrs where
   runMessage msg x = case msg of

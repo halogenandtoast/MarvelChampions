@@ -99,7 +99,9 @@ instance HasCardCode IdentityAttrs where
 
 instance Entity IdentityAttrs where
   type EntityId IdentityAttrs = IdentityId
+  type EntityAttrs IdentityAttrs = IdentityAttrs
   toId = identityAttrsId
+  toAttrs = id
 
 class HasIdentityAttrs a where
   identityAttrsL :: (CoerceRole f, Functor f) => (IdentityAttrs -> f IdentityAttrs) -> (a -> f a)

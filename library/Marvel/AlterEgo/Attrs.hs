@@ -53,7 +53,9 @@ data AlterEgoAttrs = AlterEgoAttrs
 
 instance Entity AlterEgoAttrs where
   type EntityId AlterEgoAttrs = IdentityId
-  toId = toId . view identityAttrsL
+  type EntityAttrs AlterEgoAttrs = IdentityAttrs
+  toId = toId . toAttrs
+  toAttrs = view identityAttrsL
 
 instance RunMessage AlterEgoAttrs where
   runMessage msg x = case msg of
