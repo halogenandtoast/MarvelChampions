@@ -59,20 +59,14 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
   CheckIfPassed -> if identityAttrsPassed then pure attrs else takeTurn attrs
   SetDeck cards -> pure $ attrs & deckL .~ cards
   PlayerTurnOption -> do
-    -- called options in rule book
-    -- Change form -- limited to once per turn
-    -- Play
-    -- Use basic ability
-    -- Use ally card to attack or thwart
-    -- Trigger an Action
-    -- Ask another player to trigger an action
-    -- (implicit end turn)
     chooseOne (toId attrs) [ChangeForm, EndTurn]
     pure attrs
   EndedTurn -> do
     pure $ attrs & passedL .~ True
   ChooseOtherForm -> throwM
     $ UnhandledMessage "ChooseOtherForm must be handled by AlterEgo/Hero"
+  ChangedToForm _ ->
+    throwM $ UnhandledMessage "ChangedToForm must be handled by PlayerIdentity"
 
 instance RunMessage IdentityAttrs where
   runMessage msg attrs = case msg of
@@ -101,8 +95,6 @@ genericToIdentityAttrs
 genericToIdentityAttrs = lens
   (view identityAttrsL' . from)
   (\m x -> to $ set identityAttrsL' x (from m))
-
--- (IdentityAttrs -> f IdentityAttrs) -> (a -> f a)
 
 class HasIdentityAttrs' f where
   identityAttrsL' :: Lens' (f p) IdentityAttrs

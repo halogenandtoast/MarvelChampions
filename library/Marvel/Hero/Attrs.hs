@@ -8,10 +8,12 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Card.Side
+import Marvel.Entity
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Identity.Attrs as X
 import Marvel.Message
+import Marvel.Question
 
 hero
   :: (HeroAttrs -> a)
@@ -61,10 +63,18 @@ data HeroAttrs = HeroAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+instance Entity HeroAttrs where
+  type EntityId HeroAttrs = IdentityId
+  toId = toId . view identityAttrsL
+
 instance RunMessage HeroAttrs where
-  runMessage msg x = do
-    identityAttrs' <- runMessage msg (heroIdentityAttrs x)
-    pure $ x { heroIdentityAttrs = identityAttrs' }
+  runMessage msg x = case msg of
+    IdentityMessage ident ChooseOtherForm | ident == toId x -> do
+      chooseOrRunOne ident $ map ChangeToForm (heroAlterEgoForms x)
+      pure x
+    other -> do
+      identityAttrs' <- runMessage other (heroIdentityAttrs x)
+      pure $ x { heroIdentityAttrs = identityAttrs' }
 
 instance HasStartingHP HeroAttrs where
   startingHP = startingHP . view identityAttrsL
