@@ -21,10 +21,5 @@ newtype SpiderMan = SpiderMan HeroAttrs
   deriving anyclass IsHero
   deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON)
 
-instance HasIdentityAttrs SpiderMan where
-  identityAttrsL = lens
-    (\(SpiderMan attrs) -> view identityAttrsL attrs)
-    \(SpiderMan attrs) x -> SpiderMan $ set identityAttrsL x attrs
-
-instance RunMessage SpiderMan where
-  runMessage msg (SpiderMan attrs) = SpiderMan <$> runMessage msg attrs
+deriving newtype instance HasIdentityAttrs SpiderMan
+deriving newtype instance RunMessage SpiderMan

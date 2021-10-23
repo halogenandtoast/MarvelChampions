@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Message where
 
 import Marvel.Prelude
@@ -31,14 +34,21 @@ data IdentityMessage
   | ChangedToForm Side
   deriving stock Show
 
+class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
+
+instance (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
+
 class RunMessage a where
-  runMessage :: MonadGame env m => Message -> a -> m a
+  runMessage :: (MonadGame env m, CoerceRole m) => Message -> a -> m a
 
 class RunMessage' f where
-  runMessage' :: MonadGame env m => Message -> f p -> m (f p)
+  runMessage' :: (MonadGame env m, CoerceRole m) => Message -> f p -> m (f p)
 
 genericRunMessage
-  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
+  :: (MonadGame env m, RunMessage' (Rep a), Generic a, CoerceRole m)
+  => Message
+  -> a
+  -> m a
 genericRunMessage msg = fmap to . runMessage' msg . from
 
 instance RunMessage' f => RunMessage' (M1 i c f) where

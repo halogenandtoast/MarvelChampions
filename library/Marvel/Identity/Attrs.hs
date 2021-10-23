@@ -85,7 +85,7 @@ instance Entity IdentityAttrs where
   toId = identityAttrsId
 
 class HasIdentityAttrs a where
-  identityAttrsL :: Lens' a IdentityAttrs
+  identityAttrsL :: (CoerceRole f, Functor f) => (IdentityAttrs -> f IdentityAttrs) -> (a -> f a)
 
 instance HasIdentityAttrs IdentityAttrs where
   identityAttrsL = id

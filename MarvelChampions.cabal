@@ -77,6 +77,7 @@ library
       RankNTypes
       RecordWildCards
       DeriveAnyClass
+      StandaloneDeriving
   build-depends:
       MonadRandom
     , aeson
@@ -119,6 +120,7 @@ executable MarvelChampions-exe
       RankNTypes
       RecordWildCards
       DeriveAnyClass
+      StandaloneDeriving
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
@@ -161,6 +163,7 @@ test-suite MarvelChampions-test
       RankNTypes
       RecordWildCards
       DeriveAnyClass
+      StandaloneDeriving
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions

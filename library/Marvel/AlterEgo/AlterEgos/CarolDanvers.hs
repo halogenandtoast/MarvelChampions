@@ -15,10 +15,5 @@ newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving anyclass IsAlterEgo
   deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON)
 
-instance HasIdentityAttrs CarolDanvers where
-  identityAttrsL = lens
-    (\(CarolDanvers attrs) -> view identityAttrsL attrs)
-    \(CarolDanvers attrs) x -> CarolDanvers $ set identityAttrsL x attrs
-
-instance RunMessage CarolDanvers where
-  runMessage msg (CarolDanvers x) = CarolDanvers <$> runMessage msg x
+deriving newtype instance HasIdentityAttrs CarolDanvers
+deriving newtype instance RunMessage CarolDanvers

@@ -139,7 +139,7 @@ createPlayer cardCode = do
 getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks game
 
-runGameMessages :: MonadGame env m => m ()
+runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
   mMsg <- pop
   debug =<< getGame
