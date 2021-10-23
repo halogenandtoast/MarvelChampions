@@ -13,7 +13,6 @@ import Marvel.Scenario
 import System.IO (hFlush)
 import Text.Pretty.Simple
 
-
 data Env = Env
   { envGame :: IORef Game
   , envQueue :: IORef Queue
@@ -107,9 +106,10 @@ prettyLogger :: DebugLogger
 prettyLogger = DebugLogger pPrint
 
 newEnv :: Scenario -> IO Env
-newEnv scenario =
-  Env <$> newIORef (newGame scenario) <*> newIORef [StartGame] <*> pure
-    (Just prettyLogger)
+newEnv scenario = Env
+  <$> newIORef (newGame scenario)
+  <*> newIORef [StartGame]
+  <*> pure (Just prettyLogger)
 
 main :: IO ()
 main = case lookupScenario "01094" of

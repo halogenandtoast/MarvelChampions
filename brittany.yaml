@@ -15,6 +15,7 @@ conf_debug:
 conf_forward:
   options_ghc:
     - -XBangPatterns
+    - -XBlockArguments
     - -XDataKinds
     - -XDeriveAnyClass
     - -XDeriveFoldable

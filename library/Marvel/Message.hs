@@ -35,7 +35,6 @@ data IdentityMessage
   deriving stock Show
 
 class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
-
 instance (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
 
 class RunMessage a where

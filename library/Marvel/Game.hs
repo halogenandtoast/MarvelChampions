@@ -75,25 +75,13 @@ villainsL = lens gameVillains \m x -> m { gameVillains = x }
 class HasGame a where
   game :: a -> IORef Game
 
--- | Create a new game
--- Breaking down setup:
--- 1. Select Identities: This should be done and provided via the frontend
--- 2. Set Hit Points: Use startingHP from Identity
--- 3. Select First Player: Handle via Game Messages
--- 4. Set Aside Obligations TODO later
--- 5. Set Aside Nemesis Sets TODO later
--- 6. Shuffle Player Decks TODO later
--- 7. Collect Tokens and Status Cards NOOP
--- 8. Select Villain
--- 9. Set villain's hp count
 newGame :: Scenario -> Game
 newGame = Game PlayerPhase Unstarted mempty mempty mempty mempty
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
-addPlayer player =
-  withGame_
-    $ (playersL %~ insert (toId player) player)
-    . (playerOrderL <>~ [toId player])
+addPlayer player = withGame_
+  $ (playersL %~ insert (toId player) player)
+  . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -144,11 +132,9 @@ runGameMessages = do
   mMsg <- pop
   debug =<< getGame
   for_ mMsg debug
-  for_
-    mMsg
-    \case
-      Ask ident choices -> do
-        withGame_ $ questionL .~ fromList [(ident, choices)]
-      other -> do
-        withGameM $ runMessage other
-        runGameMessages
+  for_ mMsg $ \case
+    Ask ident choices -> do
+      withGame_ $ questionL .~ fromList [(ident, choices)]
+    other -> do
+      withGameM $ runMessage other
+      runGameMessages
