@@ -6,6 +6,7 @@ module Marvel.Message where
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
@@ -22,6 +23,7 @@ data Message
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
+  | RunAbility IdentityId Ability
   deriving stock Show
 
 data IdentityMessage
@@ -60,3 +62,4 @@ instance (RunMessage' l, RunMessage' r) => RunMessage' (l :+: r) where
 
 instance RunMessage c => RunMessage' (K1 i c) where
   runMessage' msg = fmap K1 . runMessage msg . unK1
+

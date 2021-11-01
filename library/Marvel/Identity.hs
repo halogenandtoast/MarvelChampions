@@ -5,6 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
@@ -60,6 +61,9 @@ instance HasStartingHP PlayerIdentity where
 
 instance HasCardCode PlayerIdentity where
   toCardCode = toCardCode . view identityAttrsL
+
+instance HasAbilities PlayerIdentity where
+  getAbilities = getAbilities . view identityAttrsL
 
 instance HasIdentityAttrs PlayerIdentity where
   identityAttrsL = lens

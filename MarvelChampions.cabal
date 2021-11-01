@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Marvel.Ability
       Marvel.AlterEgo
       Marvel.AlterEgo.AlterEgos
       Marvel.AlterEgo.AlterEgos.CarolDanvers

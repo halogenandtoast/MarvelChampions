@@ -7,7 +7,7 @@ import Marvel.Message
 type Queue = [Message]
 
 class HasQueue a where
-  queue :: a -> IORef Queue
+   queue :: a -> IORef Queue
 
 withQueue
   :: (HasQueue env, MonadReader env m, MonadIO m)

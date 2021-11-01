@@ -2,6 +2,7 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
 import Marvel.Debug
@@ -26,11 +27,12 @@ data Game = Game
   , gameState :: GameState
   , -- players in player order
     gamePlayerOrder :: [IdentityId]
-
   , gamePlayers :: EntityMap PlayerIdentity
   , gameVillains :: EntityMap Villain
-
   , gameQuestion :: HashMap IdentityId Question
+  , gameUsedAbilities :: HashMap IdentityId [Ability]
+
+  -- leave last for `newGame`
   , gameScenario :: Scenario
   }
   deriving stock Show
@@ -79,12 +81,13 @@ class HasGame a where
   game :: a -> IORef Game
 
 newGame :: Scenario -> Game
-newGame = Game PlayerPhase Unstarted mempty mempty mempty mempty
+newGame = Game PlayerPhase Unstarted mempty mempty mempty mempty mempty
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
-addPlayer player = withGame_
-  $ (playersL %~ insert (toId player) player)
-  . (playerOrderL <>~ [toId player])
+addPlayer player =
+  withGame_
+    $ (playersL %~ insert (toId player) player)
+    . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -129,6 +132,9 @@ createPlayer cardCode = do
 
 getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks game
+
+instance HasAbilities Game where
+  getAbilities g = concatMap getAbilities (elems $ gamePlayers g)
 
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do

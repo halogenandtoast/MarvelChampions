@@ -6,6 +6,7 @@ module Marvel.Identity.Attrs
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
@@ -56,18 +57,13 @@ takeTurn attrs = do
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
   pure attrs
 
-data Criteria = IsSelf
-data Limit = PerTurn Natural | PerRound Natural
-data PlayerOption = LimitedOption Source Criteria Limit Choice
+instance HasAbilities IdentityAttrs where
+  getAbilities a = [limitedAbility a (PerTurn 1) 100 IsSelf ChangeForm]
 
-limitedOption :: IsSource a => a -> Criteria -> Limit -> Choice -> PlayerOption
-limitedOption a = LimitedOption (toSource a)
-
-class HasOptions a where
-  getOptions :: a -> [PlayerOption]
-
-instance HasOptions IdentityAttrs where
-  getOptions a = [limitedOption a IsSelf (PerTurn 1) ChangeForm]
+getChoices :: MonadGame env m => IdentityAttrs -> m [Choice]
+getChoices _ = do
+  abilities <- getsGame getAbilities
+  pure $ map UseAbility abilities
 
 runIdentityMessage
   :: MonadGame env m => IdentityMessage -> IdentityAttrs -> m IdentityAttrs
@@ -76,7 +72,8 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
   CheckIfPassed -> if identityAttrsPassed then pure attrs else takeTurn attrs
   SetDeck cards -> pure $ attrs & deckL .~ cards
   PlayerTurnOption -> do
-    chooseOne (toId attrs) [ChangeForm, EndTurn]
+    choices <- getChoices attrs
+    chooseOne (toId attrs) choices
     pure attrs
   EndedTurn -> do
     pure $ attrs & passedL .~ True

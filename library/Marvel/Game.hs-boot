@@ -2,6 +2,7 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Debug
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Queue
@@ -20,4 +21,9 @@ class
   )
   => MonadGame env m | env -> m
 
+data Game
+
 getPlayers :: MonadGame env m => m [IdentityId]
+getsGame :: MonadGame env m => (Game -> a) -> m a
+
+instance HasAbilities Game

@@ -2,6 +2,7 @@ module Marvel.Question where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Side
 import Marvel.Exception
@@ -21,13 +22,14 @@ newtype Sorted a = Sorted { unSorted :: [a] }
 newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid)
 
-data Choice = CardLabel CardCode [Message] | EndTurn | ChangeForm | ChangeToForm Side
+data Choice = CardLabel CardCode Choice | EndTurn | UseAbility Ability | ChangeForm | ChangeToForm Side
   deriving stock Show
 
 choiceMessages :: IdentityId -> Choice -> [Message]
 choiceMessages ident = \case
-  CardLabel _ msgs -> msgs
+  CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
+  UseAbility a -> choiceMessages ident $ abilityChoice a
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
 
@@ -44,5 +46,5 @@ choosePlayerOrder :: MonadGame env m => IdentityId -> [IdentityId] -> m ()
 choosePlayerOrder ident xs =
   push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
 
-cardLabel :: HasCardCode a => a -> [Message] -> Choice
+cardLabel :: HasCardCode a => a -> Choice -> Choice
 cardLabel a = CardLabel (toCardCode a)

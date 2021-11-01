@@ -13,7 +13,7 @@ class Entity a where
 class HasAttrs' attrs f where
   toAttrs' :: f p -> attrs
 
-genericToAttrs :: (Generic a, HasAttrs' attrs (Rep a), Entity a, attrs ~ EntityAttrs a) => a -> attrs
+genericToAttrs :: (Generic a, HasAttrs' attrs (Rep a)) => a -> attrs
 genericToAttrs = toAttrs' . from
 
 instance HasAttrs' attrs f => HasAttrs' attrs (M1 i c f) where
