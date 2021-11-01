@@ -22,14 +22,19 @@ newtype Sorted a = Sorted { unSorted :: [a] }
 newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid)
 
-data Choice = CardLabel CardCode Choice | EndTurn | UseAbility Ability | ChangeForm | ChangeToForm Side
-  deriving stock Show
+data Choice
+  = CardLabel CardCode Choice
+  | EndTurn
+  | UseAbility Ability
+  | ChangeForm
+  | ChangeToForm Side
+  deriving stock (Show, Eq)
 
 choiceMessages :: IdentityId -> Choice -> [Message]
 choiceMessages ident = \case
   CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
-  UseAbility a -> choiceMessages ident $ abilityChoice a
+  UseAbility a -> UsedAbility ident a : choiceMessages ident (abilityChoice a)
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
 

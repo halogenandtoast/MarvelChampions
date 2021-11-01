@@ -9,10 +9,10 @@ data AbilityType = Response
   deriving stock Show
 
 data Criteria = IsSelf
-  deriving stock Show
+  deriving stock (Show, Eq)
 
 data Limit = PerTurn Natural | PerRound Natural | NoLimit
-  deriving stock Show
+  deriving stock (Show, Eq)
 
 ability :: IsSource a => a -> Int -> Criteria -> Choice -> Ability
 ability a = limitedAbility (toSource a) NoLimit
@@ -34,7 +34,7 @@ data Ability = Ability
   , abilityLimit :: Limit
   , abilityChoice :: Choice
   }
-  deriving stock Show
+  deriving stock (Show, Eq)
 
 class HasAbilities a where
   getAbilities :: a -> [Ability]

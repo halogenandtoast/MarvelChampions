@@ -17,3 +17,7 @@ import Data.Text qualified as T
 
 tshow :: Show a => a -> T.Text
 tshow = T.pack . show
+
+count :: (a -> Bool) -> [a] -> Int
+count _ [] = 0
+count f (x : xs) = let n = if f x then 1 else 0 in n + count f xs

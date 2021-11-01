@@ -54,6 +54,7 @@ runGameMessage msg g@Game {..} = case msg of
     case lookupVillain cardCode villainId of
       Just x -> pure $ g & villainsL . at villainId ?~ x
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
+  UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
   _ -> pure g
 
 instance RunMessage Game where
@@ -76,6 +77,9 @@ scenarioL = lens gameScenario \m x -> m { gameScenario = x }
 
 villainsL :: Lens' Game (HashMap VillainId Villain)
 villainsL = lens gameVillains \m x -> m { gameVillains = x }
+
+usedAbilitiesL :: Lens' Game (HashMap IdentityId [Ability])
+usedAbilitiesL = lens gameUsedAbilities \m x -> m { gameUsedAbilities = x }
 
 class HasGame a where
   game :: a -> IORef Game
@@ -102,6 +106,9 @@ withGameM f = getGame >>= f >>= withGame_ . const
 
 getsGame :: MonadGame env m => (Game -> a) -> m a
 getsGame f = withGame (id &&& f)
+
+getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
+getUsedAbilities = getsGame (view usedAbilitiesL)
 
 class
   ( MonadCatch m

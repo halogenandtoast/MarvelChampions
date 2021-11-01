@@ -28,6 +28,7 @@ library
       Marvel.Entity
       Marvel.Exception
       Marvel.Game
+      Marvel.Game.Source
       Marvel.GameValue
       Marvel.Hero
       Marvel.Hero.Attrs

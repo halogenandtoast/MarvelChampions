@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Id
 
 data Source = IdentitySource IdentityId | VillainSource VillainId
-  deriving stock Show
+  deriving stock (Show, Eq)
 
 class IsSource a where
   toSource :: a -> Source

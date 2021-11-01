@@ -9,3 +9,4 @@ instance Show Question
 data Choice
 
 instance Show Choice
+instance Eq Choice

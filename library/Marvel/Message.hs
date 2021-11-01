@@ -23,7 +23,7 @@ data Message
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
-  | RunAbility IdentityId Ability
+  | UsedAbility IdentityId Ability
   deriving stock Show
 
 data IdentityMessage

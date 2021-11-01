@@ -5,6 +5,7 @@ module Marvel.Identity.Attrs
 
 import Marvel.Prelude
 
+import Data.HashMap.Strict qualified as HashMap
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
@@ -12,7 +13,7 @@ import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.Exception
-import {-# SOURCE #-} Marvel.Game
+import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Id as X
 import Marvel.Message
@@ -60,10 +61,28 @@ takeTurn attrs = do
 instance HasAbilities IdentityAttrs where
   getAbilities a = [limitedAbility a (PerTurn 1) 100 IsSelf ChangeForm]
 
+passesUseLimit
+  :: IdentityAttrs -> HashMap IdentityId [Ability] -> Ability -> Bool
+passesUseLimit x aMap a = case abilityLimit a of
+  NoLimit -> True
+  PerTurn n -> count (== a) usedAbilities < fromIntegral n
+  PerRound n -> count (== a) usedAbilities < fromIntegral n
+  where usedAbilities = HashMap.findWithDefault [] (toId x) aMap
+
+passesCriteria :: IdentityAttrs -> Ability -> Bool
+passesCriteria x a = case abilityCriteria a of
+  IsSelf -> toSource x == abilitySource a
+
 getChoices :: MonadGame env m => IdentityAttrs -> m [Choice]
-getChoices _ = do
+getChoices attrs = do
   abilities <- getsGame getAbilities
-  pure $ map UseAbility abilities
+  usedAbilities <- getUsedAbilities
+  let
+    validAbilities = filter
+      (and . sequence [passesUseLimit attrs usedAbilities, passesCriteria attrs]
+      )
+      abilities
+  pure $ map UseAbility validAbilities
 
 runIdentityMessage
   :: MonadGame env m => IdentityMessage -> IdentityAttrs -> m IdentityAttrs
@@ -73,7 +92,7 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
   SetDeck cards -> pure $ attrs & deckL .~ cards
   PlayerTurnOption -> do
     choices <- getChoices attrs
-    chooseOne (toId attrs) choices
+    chooseOne (toId attrs) (EndTurn : choices)
     pure attrs
   EndedTurn -> do
     pure $ attrs & passedL .~ True
