@@ -5,9 +5,12 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
+import Marvel.Card.Code
 import Marvel.GameValue
+import Marvel.Hand
 import Marvel.Message
 import Marvel.Question
+import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 
@@ -17,17 +20,20 @@ peterParker =
 
 newtype PeterParker = PeterParker AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode)
 
 instance HasAbilities PeterParker where
   getAbilities a =
-    withIdentityAttrs a getAbilities
-      <> [ label "Scientist" $ ability
-             a
-             Resource
-             IsSelf
-             (GenerateResources [Mental])
-         ]
+    [label "Scientist" $ ability a Resource IsSelf (GenerateResources [Mental])]
 
-deriving newtype instance HasIdentityAttrs PeterParker
-deriving newtype instance RunMessage PeterParker
+instance RunMessage PeterParker where
+  runMessage msg a@(PeterParker attrs) = case msg of
+    IdentityMessage ident SetupIdentity | ident == alterEgoIdentityId attrs ->
+      do
+        pushAll
+          [ IdentityMessage
+              ident
+              (DrawStartingHand $ alterEgoBaseHandSize attrs)
+          ]
+        pure a
+    _ -> pure a

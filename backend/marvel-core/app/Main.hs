@@ -9,6 +9,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import Marvel.Card.Code
 import Marvel.Debug
+import Marvel.Deck
 import Marvel.Game
 import Marvel.Id
 import Marvel.Identity
@@ -88,7 +89,11 @@ loadDecklist decklist = do
 
 toDeck :: Decklist -> IO [PlayerCard]
 toDeck =
-  traverse toCard . concatMap (uncurry (flip replicate)) . Map.toList . slots
+  fmap Deck
+    . traverse toCard
+    . concatMap (uncurry (flip replicate))
+    . Map.toList
+    . slots
 
 toCard :: CardCode -> IO PlayerCard
 toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)

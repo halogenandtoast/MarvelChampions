@@ -8,7 +8,6 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Game.Source
 import Marvel.Id
@@ -28,7 +27,7 @@ data Message
   deriving anyclass (ToJSON, FromJSON)
 
 data IdentityMessage
-  = SetDeck [PlayerCard]
+  = SetDeck Deck
   | BeginTurn
   | PlayerTurnOption
   | CheckIfPassed
@@ -36,6 +35,9 @@ data IdentityMessage
   | EndedTurn
   | ChangedToForm Side
   | RanAbility Natural
+  | SetupIdentity
+  | DrawStartingHand HandSize
+  | SideMessage IdentityMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

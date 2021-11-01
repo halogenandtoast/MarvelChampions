@@ -27,5 +27,5 @@ allHeroes =
 instance HasStartingHP Hero where
   startingHP = defaultHasStartingHP
 
-instance HasIdentityAttrs Hero where
-  identityAttrsL = genericToIdentityAttrs
+instance HasCardCode Hero where
+  toCardCode = genericToCardCode

@@ -7,11 +7,12 @@ import qualified Data.Aeson.Diff as Diff
 import Marvel.Ability
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
-import Marvel.Card.PlayerCard
 import Marvel.Debug
+import Marvel.Deck
 import Marvel.Entity
 import Marvel.Exception
 import Marvel.Hero.Cards
+import Marvel.Id
 import Marvel.Identity
 import Marvel.Message
 import Marvel.Phase
@@ -66,6 +67,7 @@ runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
+    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder
     case gamePlayerOrder of
       [] -> throwM NoPlayers
       players@(p : _) -> choosePlayerOrder p players

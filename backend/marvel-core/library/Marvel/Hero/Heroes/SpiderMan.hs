@@ -3,7 +3,9 @@ module Marvel.Hero.Heroes.SpiderMan where
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Card.Code
 import Marvel.GameValue
+import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Message
@@ -26,7 +28,7 @@ instance HasAbilities SpiderMan where
 
 newtype SpiderMan = SpiderMan HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode)
 
-deriving newtype instance HasIdentityAttrs SpiderMan
-deriving newtype instance RunMessage SpiderMan
+instance RunMessage SpiderMan where
+  runMessage _ = pure

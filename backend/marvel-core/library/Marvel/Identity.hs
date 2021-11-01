@@ -1,6 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Identity
   ( module Marvel.Identity
-  , module X
   ) where
 
 import Marvel.Prelude
@@ -10,12 +10,17 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Card.PlayerCard
 import Marvel.Card.Side
+import Marvel.Deck
 import Marvel.Entity
+import Marvel.Exception
+import {-# SOURCE #-} Marvel.Game
+import Marvel.Hand
 import Marvel.Hero
-import Marvel.Identity.Attrs as X
 import Marvel.Message
+import Marvel.Question
+import Marvel.Queue
+import Marvel.Source
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
@@ -24,35 +29,50 @@ data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
 -- | Player Identity
 -- An Identity is either a Hero or an alter ego
 data PlayerIdentity = PlayerIdentity
-  { playerIdentitySide :: PlayerIdentitySide
+  { playerIdentityId :: IdentityId
+  , playerIdentitySide :: Side
   , playerIdentitySides :: HashMap Side PlayerIdentitySide
+  , playerIdentityStartingHP :: HP
+  , playerIdentityMaxHP :: HP
+  , playerIdentityCurrentHP :: HP
+  , playerIdentityDeck :: Deck
+  , playerIdentityHand :: Hand
+  , playerIdentityPassed :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-createIdentity :: PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
-createIdentity alterEgoSide heroSide = PlayerIdentity
-  { playerIdentitySide = alterEgoSide
+makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+
+instance IsSource PlayerIdentity where
+  toSource = IdentitySource . playerIdentityId
+
+currentIdentity :: PlayerIdentity -> PlayerIdentitySide
+currentIdentity a =
+  case lookup (playerIdentitySide a) (playerIdentitySides a) of
+    Nothing -> error "Should not happen"
+    Just s -> s
+
+createIdentity
+  :: IdentityId -> PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
+createIdentity ident alterEgoSide heroSide = PlayerIdentity
+  { playerIdentitySide = B
   , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
+  , playerIdentityId = ident
+  , playerIdentityStartingHP = hp
+  , playerIdentityCurrentHP = hp
+  , playerIdentityMaxHP = hp
+  , playerIdentityDeck = Deck []
+  , playerIdentityHand = Hand []
+  , playerIdentityPassed = False
   }
+ where
+  hp = case alterEgoSide of
+    AlterEgoSide x -> startingHP x
+    HeroSide x -> startingHP x
 
-setDeck :: [PlayerCard] -> PlayerIdentity -> PlayerIdentity
-setDeck deck = identityAttrsL . deckL .~ deck
-
-instance RunMessage PlayerIdentity where
-  runMessage msg player = case msg of
-    IdentityMessage ident (ChangedToForm side) | ident == toId player -> do
-      let
-        newSide =
-          fromMaybe (error "stuff") $ lookup side (playerIdentitySides player)
-      pure $ player { playerIdentitySide = newSide }
-    other -> case playerIdentitySide player of
-      HeroSide x -> do
-        newSide <- HeroSide <$> runMessage other x
-        pure $ player { playerIdentitySide = newSide }
-      AlterEgoSide x -> do
-        newSide <- AlterEgoSide <$> runMessage other x
-        pure $ player { playerIdentitySide = newSide }
+setDeck :: Deck -> PlayerIdentity -> PlayerIdentity
+setDeck deck = deckL .~ deck
 
 lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupAlterEgo cardDef ident =
@@ -62,28 +82,93 @@ lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
   HeroSide <$> (lookup (toCardCode cardDef) allHeroes <*> Just ident)
 
-instance HasStartingHP PlayerIdentity where
-  startingHP = startingHP . view identityAttrsL
-
-instance HasCardCode PlayerIdentity where
-  toCardCode = toCardCode . view identityAttrsL
+takeTurn :: MonadGame env m => PlayerIdentity -> m PlayerIdentity
+takeTurn attrs = do
+  pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
+  pure attrs
 
 instance HasAbilities PlayerIdentity where
-  getAbilities x = case playerIdentitySide x of
-    HeroSide a -> getAbilities a
-    AlterEgoSide a -> getAbilities a
+  getAbilities a =
+    let
+      sideAbilities = case currentIdentity a of
+        HeroSide x -> getAbilities x
+        AlterEgoSide x -> getAbilities x
+    in [limitedAbility a (PerTurn 1) Action IsSelf ChangeForm] <> sideAbilities
 
-instance HasIdentityAttrs PlayerIdentity where
-  identityAttrsL = lens
-    (view identityAttrsL . playerIdentitySide)
-    \m x ->
-      m { playerIdentitySide = set identityAttrsL x (playerIdentitySide m) }
+getChoices :: MonadGame env m => PlayerIdentity -> m [Choice]
+getChoices attrs = do
+  let ident = toId attrs
+  abilities <- getsGame getAbilities
+  usedAbilities <- getUsedAbilities
+  let
+    validAbilities = filter
+      (and . sequence
+        [ passesUseLimit ident usedAbilities
+        , passesCriteria ident
+        , passesTiming ident
+        , passesTypeIsRelevant ident
+        ]
+      )
+      abilities
+  pure $ map UseAbility validAbilities
 
-instance HasIdentityAttrs PlayerIdentitySide where
-  identityAttrsL = genericToIdentityAttrs
+runIdentityMessage
+  :: (MonadGame env m, CoerceRole m)
+  => IdentityMessage
+  -> PlayerIdentity
+  -> m PlayerIdentity
+runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
+  BeginTurn -> takeTurn attrs
+  CheckIfPassed -> if playerIdentityPassed then pure attrs else takeTurn attrs
+  SetDeck deck -> pure $ attrs & deckL .~ deck
+  PlayerTurnOption -> do
+    choices <- getChoices attrs
+    chooseOne (toId attrs) (EndTurn : choices)
+    pure attrs
+  EndedTurn -> do
+    pure $ attrs & passedL .~ True
+  DrawStartingHand (HandSize n) -> do
+    let (hand, deck) = splitAt n (unDeck playerIdentityDeck)
+    pure $ attrs & handL .~ Hand hand & deckL .~ Deck deck
+  SetupIdentity ->
+    throwM $ UnhandledMessage "SetupIdentity must be handled by AlterEgo/Hero"
+  ChooseOtherForm -> do
+    let otherForms = keys playerIdentitySides
+    chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
+    pure attrs
+  RanAbility _ ->
+    throwM $ UnhandledMessage "RanAbility must be handled by AlterEgo/Hero"
+  ChangedToForm _ ->
+    throwM $ UnhandledMessage "ChangedToForm must be handled by PlayerIdentity"
+  SideMessage other -> case currentIdentity attrs of
+    HeroSide x -> do
+      newSide <-
+        HeroSide <$> runMessage (IdentityMessage playerIdentityId other) x
+      pure $ attrs & sidesL . at playerIdentitySide ?~ newSide
+    AlterEgoSide x -> do
+      newSide <-
+        AlterEgoSide <$> runMessage (IdentityMessage playerIdentityId other) x
+      pure $ attrs & sidesL . at playerIdentitySide ?~ newSide
+
+
+instance RunMessage PlayerIdentity where
+  runMessage msg attrs = case msg of
+    IdentityMessage ident msg' | ident == toId attrs ->
+      runIdentityMessage msg' attrs
+    _ -> pure attrs
+
+instance HasStartingHP PlayerIdentity where
+  startingHP a = case currentIdentity a of
+    HeroSide x -> startingHP x
+    AlterEgoSide x -> startingHP x
+
+instance HasCardCode PlayerIdentity where
+  toCardCode a = case currentIdentity a of
+    HeroSide x -> toCardCode x
+    AlterEgoSide x -> toCardCode x
 
 instance Entity PlayerIdentity where
   type EntityId PlayerIdentity = IdentityId
-  type EntityAttrs PlayerIdentity = IdentityAttrs
-  toId = toId . toAttrs
-  toAttrs = view identityAttrsL
+  type EntityAttrs PlayerIdentity = PlayerIdentity
+  toId = playerIdentityId
+  toAttrs = id

@@ -26,5 +26,5 @@ allAlterEgos = fromList
 instance HasStartingHP AlterEgo where
   startingHP = defaultHasStartingHP
 
-instance HasIdentityAttrs AlterEgo where
-  identityAttrsL = genericToIdentityAttrs
+instance HasCardCode AlterEgo where
+  toCardCode = genericToCardCode
