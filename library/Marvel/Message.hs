@@ -8,9 +8,10 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Card.PlayerCard
 import Marvel.Card.Side
+import Marvel.Deck
 import {-# SOURCE #-} Marvel.Game
+import Marvel.Hand
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
@@ -27,7 +28,7 @@ data Message
   deriving stock Show
 
 data IdentityMessage
-  = SetDeck [PlayerCard]
+  = SetDeck Deck
   | BeginTurn
   | PlayerTurnOption
   | CheckIfPassed
@@ -35,6 +36,9 @@ data IdentityMessage
   | EndedTurn
   | ChangedToForm Side
   | RanAbility Natural
+  | SetupIdentity
+  | DrawStartingHand HandSize
+  | SideMessage IdentityMessage
   deriving stock Show
 
 class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f

@@ -2,6 +2,7 @@ module Marvel.Card.Def where
 
 import Marvel.Prelude
 
+import GHC.Generics
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Name
@@ -34,3 +35,12 @@ data CardDef = CardDef
 
 instance HasCardCode CardDef where
   toCardCode = cdCardCode
+
+class HasCardDef a where
+  getCardDef :: a -> CardDef
+
+class HasCardDef' f where
+  getCardDef' :: f p -> CardDef
+
+genericGetCardDef :: (Generic a, HasCardDef' (Rep a)) => a -> CardDef
+genericGetCardDef = getCardDef' . from

@@ -29,12 +29,13 @@ library
       Marvel.Card.PlayerCard
       Marvel.Card.Side
       Marvel.Debug
+      Marvel.Deck
       Marvel.Entity
       Marvel.Event.Cards
       Marvel.Exception
       Marvel.Game
-      Marvel.Game.Source
       Marvel.GameValue
+      Marvel.Hand
       Marvel.Hero
       Marvel.Hero.Attrs
       Marvel.Hero.Cards
@@ -44,7 +45,6 @@ library
       Marvel.Hp
       Marvel.Id
       Marvel.Identity
-      Marvel.Identity.Attrs
       Marvel.Message
       Marvel.Name
       Marvel.Phase

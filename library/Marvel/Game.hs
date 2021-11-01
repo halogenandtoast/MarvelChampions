@@ -6,11 +6,12 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
-import Marvel.Card.PlayerCard
 import Marvel.Debug
+import Marvel.Deck
 import Marvel.Entity
 import Marvel.Exception
 import Marvel.Hero.Cards
+import Marvel.Id
 import Marvel.Identity
 import Marvel.Message
 import Marvel.Phase
@@ -48,6 +49,7 @@ runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
+    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder
     case gamePlayerOrder of
       [] -> throwM NoPlayers
       players@(p : _) -> choosePlayerOrder p players
@@ -108,7 +110,7 @@ class
   )
   => MonadGame env m | env -> m
 
-createPlayer :: MonadGame env m => CardCode -> [PlayerCard] -> m ()
+createPlayer :: MonadGame env m => CardCode -> Deck -> m ()
 createPlayer cardCode deck = do
   ident <- getRandom
   let

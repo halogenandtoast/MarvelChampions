@@ -9,6 +9,7 @@ import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Marvel.Card.Code
 import Marvel.Debug
+import Marvel.Deck
 import Marvel.Game
 import Marvel.Identity.Attrs
 import Marvel.Message
@@ -87,9 +88,13 @@ loadDecklist decklist = do
   let ident = toBaseCardCode $ investigator_code decklist
   createPlayer ident =<< toDeck decklist
 
-toDeck :: Decklist -> AppT [PlayerCard]
+toDeck :: Decklist -> AppT Deck
 toDeck =
-  traverse toCard . concatMap (uncurry (flip replicate)) . Map.toList . slots
+  fmap Deck
+    . traverse toCard
+    . concatMap (uncurry (flip replicate))
+    . Map.toList
+    . slots
 
 toCard :: CardCode -> AppT PlayerCard
 toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)

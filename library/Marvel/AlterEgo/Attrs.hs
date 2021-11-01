@@ -5,16 +5,13 @@ module Marvel.AlterEgo.Attrs
 
 import Marvel.Prelude
 
-import Marvel.Ability
 import Marvel.Card.Builder
+import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
-import Marvel.Entity
+import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Identity.Attrs as X
-import Marvel.Message
-import Marvel.Question
 import Marvel.Source
 
 alterEgo
@@ -27,10 +24,12 @@ alterEgo
 alterEgo f cardDef hp handSize recovery = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \ident -> f $ AlterEgoAttrs
-    { alterEgoIdentityAttrs = defaultAttrs ident cardDef hp
+    { alterEgoIdentityId = ident
     , alterEgoBaseHandSize = handSize
     , alterEgoBaseRecovery = recovery
     , alterEgoHeroForms = [A]
+    , alterEgoStartingHP = hp
+    , alterEgoCardDef = cardDef
     }
   }
 
@@ -38,45 +37,25 @@ class IsAlterEgo a
 
 type AlterEgoCard a = CardBuilder IdentityId a
 
-newtype HandSize = HandSize Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
-
 newtype Rec = Rec Int
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 data AlterEgoAttrs = AlterEgoAttrs
-  { alterEgoIdentityAttrs :: IdentityAttrs
+  { alterEgoIdentityId :: IdentityId
   , alterEgoBaseHandSize :: HandSize
   , alterEgoBaseRecovery :: Rec
   , alterEgoHeroForms :: [Side]
+  , alterEgoStartingHP :: HP
+  , alterEgoCardDef :: CardDef
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+instance HasCardCode AlterEgoAttrs where
+  toCardCode = toCardCode . alterEgoCardDef
+
 instance IsSource AlterEgoAttrs where
-  toSource = toSource . toAttrs
-
-instance HasAbilities AlterEgoAttrs where
-  getAbilities = getAbilities . toAttrs
-
-instance Entity AlterEgoAttrs where
-  type EntityId AlterEgoAttrs = IdentityId
-  type EntityAttrs AlterEgoAttrs = IdentityAttrs
-  toId = toId . toAttrs
-  toAttrs = view identityAttrsL
-
-instance RunMessage AlterEgoAttrs where
-  runMessage msg x = case msg of
-    IdentityMessage ident ChooseOtherForm | ident == toId x -> do
-      chooseOrRunOne ident $ map ChangeToForm (alterEgoHeroForms x)
-      pure x
-    other -> do
-      identityAttrs' <- runMessage other (alterEgoIdentityAttrs x)
-      pure $ x { alterEgoIdentityAttrs = identityAttrs' }
+  toSource = IdentitySource . alterEgoIdentityId
 
 instance HasStartingHP AlterEgoAttrs where
-  startingHP = startingHP . view identityAttrsL
-
-instance HasIdentityAttrs AlterEgoAttrs where
-  identityAttrsL =
-    lens alterEgoIdentityAttrs \m x -> m { alterEgoIdentityAttrs = x }
+  startingHP = alterEgoStartingHP

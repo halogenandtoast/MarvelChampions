@@ -3,7 +3,9 @@ module Marvel.Hero.Heroes.CaptainMarvel where
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Card.Code
 import Marvel.GameValue
+import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Message
@@ -20,8 +22,10 @@ captainMarvel = hero
 
 newtype CaptainMarvel = CaptainMarvel HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode)
 
-deriving newtype instance HasAbilities CaptainMarvel
-deriving newtype instance HasIdentityAttrs CaptainMarvel
-deriving newtype instance RunMessage CaptainMarvel
+instance HasAbilities CaptainMarvel where
+  getAbilities _ = []
+
+instance RunMessage CaptainMarvel where
+  runMessage _ = pure
