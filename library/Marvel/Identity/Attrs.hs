@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Identity.Attrs
   ( module Marvel.Identity.Attrs
   , module X
@@ -5,7 +6,6 @@ module Marvel.Identity.Attrs
 
 import Marvel.Prelude
 
-import Data.HashMap.Strict qualified as HashMap
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
@@ -33,6 +33,8 @@ data IdentityAttrs = IdentityAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+makeLensesWith (suffixedWithFields "identityAttrs") ''IdentityAttrs
+
 instance IsSource IdentityAttrs where
   toSource = IdentitySource . toId
 
@@ -47,39 +49,27 @@ defaultAttrs ident cardDef hp = IdentityAttrs
   , identityAttrsPassed = False
   }
 
-deckL :: Lens' IdentityAttrs [PlayerCard]
-deckL = lens identityAttrsDeck \m x -> m { identityAttrsDeck = x }
-
-passedL :: Lens' IdentityAttrs Bool
-passedL = lens identityAttrsPassed \m x -> m { identityAttrsPassed = x }
-
 takeTurn :: MonadGame env m => IdentityAttrs -> m IdentityAttrs
 takeTurn attrs = do
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
   pure attrs
 
 instance HasAbilities IdentityAttrs where
-  getAbilities a = [limitedAbility a (PerTurn 1) 100 IsSelf ChangeForm]
-
-passesUseLimit
-  :: IdentityAttrs -> HashMap IdentityId [Ability] -> Ability -> Bool
-passesUseLimit x aMap a = case abilityLimit a of
-  NoLimit -> True
-  PerTurn n -> count (== a) usedAbilities < fromIntegral n
-  PerRound n -> count (== a) usedAbilities < fromIntegral n
-  where usedAbilities = HashMap.findWithDefault [] (toId x) aMap
-
-passesCriteria :: IdentityAttrs -> Ability -> Bool
-passesCriteria x a = case abilityCriteria a of
-  IsSelf -> toSource x == abilitySource a
+  getAbilities a = [limitedAbility a (PerTurn 1) Action IsSelf ChangeForm]
 
 getChoices :: MonadGame env m => IdentityAttrs -> m [Choice]
 getChoices attrs = do
+  let ident = toId attrs
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
   let
     validAbilities = filter
-      (and . sequence [passesUseLimit attrs usedAbilities, passesCriteria attrs]
+      (and . sequence
+        [ passesUseLimit ident usedAbilities
+        , passesCriteria ident
+        , passesTiming ident
+        , passesTypeIsRelevant ident
+        ]
       )
       abilities
   pure $ map UseAbility validAbilities
@@ -98,6 +88,8 @@ runIdentityMessage msg attrs@IdentityAttrs {..} = case msg of
     pure $ attrs & passedL .~ True
   ChooseOtherForm -> throwM
     $ UnhandledMessage "ChooseOtherForm must be handled by AlterEgo/Hero"
+  RanAbility _ ->
+    throwM $ UnhandledMessage "RanAbility must be handled by AlterEgo/Hero"
   ChangedToForm _ ->
     throwM $ UnhandledMessage "ChangedToForm must be handled by PlayerIdentity"
 
@@ -124,6 +116,9 @@ class HasIdentityAttrs a where
 
 instance HasIdentityAttrs IdentityAttrs where
   identityAttrsL = id
+
+withIdentityAttrs :: HasIdentityAttrs a => a -> (IdentityAttrs -> b) -> b
+withIdentityAttrs a f = f (view identityAttrsL a)
 
 genericToIdentityAttrs
   :: (HasIdentityAttrs' (Rep a), Generic a) => Lens' a IdentityAttrs

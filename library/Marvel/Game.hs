@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Game where
 
 import Marvel.Prelude
@@ -5,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
+import Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Entity
 import Marvel.Exception
@@ -37,6 +39,8 @@ data Game = Game
   }
   deriving stock Show
 
+makeLensesWith suffixedFields ''Game
+
 getPlayers :: MonadGame env m => m [IdentityId]
 getPlayers = getsGame gamePlayerOrder
 
@@ -62,24 +66,6 @@ instance RunMessage Game where
     traverseOf scenarioL (runMessage msg) g
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= runGameMessage msg
-
-playerOrderL :: Lens' Game [IdentityId]
-playerOrderL = lens gamePlayerOrder \m x -> m { gamePlayerOrder = x }
-
-playersL :: Lens' Game (HashMap IdentityId PlayerIdentity)
-playersL = lens gamePlayers \m x -> m { gamePlayers = x }
-
-questionL :: Lens' Game (HashMap IdentityId Question)
-questionL = lens gameQuestion \m x -> m { gameQuestion = x }
-
-scenarioL :: Lens' Game Scenario
-scenarioL = lens gameScenario \m x -> m { gameScenario = x }
-
-villainsL :: Lens' Game (HashMap VillainId Villain)
-villainsL = lens gameVillains \m x -> m { gameVillains = x }
-
-usedAbilitiesL :: Lens' Game (HashMap IdentityId [Ability])
-usedAbilitiesL = lens gameUsedAbilities \m x -> m { gameUsedAbilities = x }
 
 class HasGame a where
   game :: a -> IORef Game
@@ -122,8 +108,8 @@ class
   )
   => MonadGame env m | env -> m
 
-createPlayer :: MonadGame env m => CardCode -> m ()
-createPlayer cardCode = do
+createPlayer :: MonadGame env m => CardCode -> [PlayerCard] -> m ()
+createPlayer cardCode deck = do
   ident <- getRandom
   let
     mAlterEgo = do
@@ -134,7 +120,7 @@ createPlayer cardCode = do
       lookupHero def ident
   case (mAlterEgo, mHero) of
     (Just alterEgoSide, Just heroSide) ->
-      addPlayer $ createIdentity alterEgoSide heroSide
+      addPlayer $ setDeck deck $ createIdentity alterEgoSide heroSide
     _ -> error "stuff"
 
 getGame :: MonadGame env m => m Game

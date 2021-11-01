@@ -2,6 +2,7 @@ module Marvel.AlterEgo.AlterEgos.CarolDanvers where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.GameValue
@@ -16,4 +17,5 @@ newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON)
 
 deriving newtype instance HasIdentityAttrs CarolDanvers
+deriving newtype instance HasAbilities CarolDanvers
 deriving newtype instance RunMessage CarolDanvers

@@ -34,6 +34,7 @@ data IdentityMessage
   | ChooseOtherForm
   | EndedTurn
   | ChangedToForm Side
+  | RanAbility Natural
   deriving stock Show
 
 class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f

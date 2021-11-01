@@ -53,6 +53,11 @@ executables:
     dependencies:
     - MarvelChampions
     - pretty-simple
+    - uri-bytestring
+    - regex-posix
+    - array
+    - http-conduit
+    - containers
 
 tests:
   MarvelChampions-test:

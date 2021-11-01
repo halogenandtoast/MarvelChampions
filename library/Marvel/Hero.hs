@@ -3,6 +3,7 @@ module Marvel.Hero where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -15,6 +16,9 @@ $(buildEntity "Hero")
 
 instance RunMessage Hero where
   runMessage = genericRunMessage
+
+instance HasAbilities Hero where
+  getAbilities = genericGetAbilities
 
 allHeroes :: HashMap CardCode (IdentityId -> Hero)
 allHeroes =

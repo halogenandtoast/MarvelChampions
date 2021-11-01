@@ -5,6 +5,7 @@ module Marvel.AlterEgo.Attrs
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Card.Side
@@ -14,6 +15,7 @@ import Marvel.Id as X
 import Marvel.Identity.Attrs as X
 import Marvel.Message
 import Marvel.Question
+import Marvel.Source
 
 alterEgo
   :: (AlterEgoAttrs -> a)
@@ -50,6 +52,12 @@ data AlterEgoAttrs = AlterEgoAttrs
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance IsSource AlterEgoAttrs where
+  toSource = toSource . toAttrs
+
+instance HasAbilities AlterEgoAttrs where
+  getAbilities = getAbilities . toAttrs
 
 instance Entity AlterEgoAttrs where
   type EntityId AlterEgoAttrs = IdentityId

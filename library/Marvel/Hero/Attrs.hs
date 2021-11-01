@@ -5,6 +5,7 @@ module Marvel.Hero.Attrs
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Card.Side
@@ -14,6 +15,7 @@ import Marvel.Id as X
 import Marvel.Identity.Attrs as X
 import Marvel.Message
 import Marvel.Question
+import Marvel.Source
 
 hero
   :: (HeroAttrs -> a)
@@ -62,6 +64,12 @@ data HeroAttrs = HeroAttrs
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance IsSource HeroAttrs where
+  toSource = toSource . toAttrs
+
+instance HasAbilities HeroAttrs where
+  getAbilities = getAbilities . toAttrs
 
 instance Entity HeroAttrs where
   type EntityId HeroAttrs = IdentityId

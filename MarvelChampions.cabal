@@ -13,19 +13,24 @@ build-type:     Simple
 library
   exposed-modules:
       Marvel.Ability
+      Marvel.Ability.Type
+      Marvel.Ally.Cards
       Marvel.AlterEgo
       Marvel.AlterEgo.AlterEgos
       Marvel.AlterEgo.AlterEgos.CarolDanvers
       Marvel.AlterEgo.AlterEgos.PeterParker
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
+      Marvel.Aspect
       Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
+      Marvel.Card.Id
       Marvel.Card.PlayerCard
       Marvel.Card.Side
       Marvel.Debug
       Marvel.Entity
+      Marvel.Event.Cards
       Marvel.Exception
       Marvel.Game
       Marvel.Game.Source
@@ -43,13 +48,18 @@ library
       Marvel.Message
       Marvel.Name
       Marvel.Phase
+      Marvel.PlayerCard
       Marvel.Prelude
       Marvel.Question
       Marvel.Queue
+      Marvel.Resource
+      Marvel.Resource.Cards
       Marvel.Scenario
       Marvel.Source
+      Marvel.Support.Cards
       Marvel.TH
       Marvel.Trait
+      Marvel.Upgrade.Cards
       Marvel.Villain
       Marvel.Villain.Attrs
       Marvel.Villain.Cards
@@ -130,14 +140,19 @@ executable MarvelChampions-exe
   build-depends:
       MarvelChampions
     , MonadRandom
+    , array
     , base >=4.7 && <5
+    , containers
     , exceptions
+    , http-conduit
     , lens
     , mtl
     , pretty-simple
+    , regex-posix
     , relude
     , text
     , unordered-containers
+    , uri-bytestring
   default-language: Haskell2010
 
 test-suite MarvelChampions-test

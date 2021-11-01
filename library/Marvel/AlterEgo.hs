@@ -3,6 +3,7 @@ module Marvel.AlterEgo where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.AlterEgo.AlterEgos
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Builder
@@ -14,6 +15,9 @@ $(buildEntity "AlterEgo")
 
 instance RunMessage AlterEgo where
   runMessage = genericRunMessage
+
+instance HasAbilities AlterEgo where
+  getAbilities = genericGetAbilities
 
 allAlterEgos :: HashMap CardCode (IdentityId -> AlterEgo)
 allAlterEgos = fromList

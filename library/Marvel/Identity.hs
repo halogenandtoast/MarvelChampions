@@ -10,6 +10,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Entity
 import Marvel.Hero
@@ -32,6 +33,9 @@ createIdentity alterEgoSide heroSide = PlayerIdentity
   { playerIdentitySide = alterEgoSide
   , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
   }
+
+setDeck :: [PlayerCard] -> PlayerIdentity -> PlayerIdentity
+setDeck deck = identityAttrsL . deckL .~ deck
 
 instance RunMessage PlayerIdentity where
   runMessage msg player = case msg of
@@ -63,7 +67,9 @@ instance HasCardCode PlayerIdentity where
   toCardCode = toCardCode . view identityAttrsL
 
 instance HasAbilities PlayerIdentity where
-  getAbilities = getAbilities . view identityAttrsL
+  getAbilities x = case playerIdentitySide x of
+    HeroSide a -> getAbilities a
+    AlterEgoSide a -> getAbilities a
 
 instance HasIdentityAttrs PlayerIdentity where
   identityAttrsL = lens

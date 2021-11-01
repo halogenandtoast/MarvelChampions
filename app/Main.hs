@@ -1,17 +1,27 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# OPTIONS_GHC -Wno-deprecations #-}
 module Main where
 
 import Marvel.Prelude
 
+import Data.Array qualified as A
+import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
+import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Game
 import Marvel.Identity.Attrs
 import Marvel.Message
+import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
+import Network.HTTP.Simple
 import System.IO (hFlush)
 import Text.Pretty.Simple
+import Text.Regex.Posix
+import URI.ByteString (URI, pathL, serializeURIRef')
+import URI.ByteString.QQ
 
 data Env = Env
   { envGame :: IORef Game
@@ -55,9 +65,50 @@ runApp env body = liftIO $ handleAll handler $ runReaderT (unAppT body) env
 -- This is specific to testing in the terminal UI
 createAndRunGame :: AppT ()
 createAndRunGame = do
-  createPlayer "01001"
-  createPlayer "01010"
+  loadDecklistFromUrl
+    [uri|https://marvelcdb.com/decklist/view/103/spider-man-and-friends-solo-play-expert-mode-1.0|]
   runGame
+
+loadDecklistFromUrl :: URI -> AppT ()
+loadDecklistFromUrl url = do
+  res <- httpJSON
+    =<< parseRequest (decodeUtf8 . serializeURIRef' $ toApiUrl url)
+  loadDecklist $ getResponseBody res
+
+data Decklist = Decklist
+  { investigator_code :: CardCode
+  , slots :: Map CardCode Int
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass FromJSON
+
+loadDecklist :: Decklist -> AppT ()
+loadDecklist decklist = do
+  let ident = toBaseCardCode $ investigator_code decklist
+  createPlayer ident =<< toDeck decklist
+
+toDeck :: Decklist -> AppT [PlayerCard]
+toDeck =
+  traverse toCard . concatMap (uncurry (flip replicate)) . Map.toList . slots
+
+toCard :: CardCode -> AppT PlayerCard
+toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)
+
+toApiUrl :: URI -> URI
+toApiUrl url = url & pathL %~ toPublicDeckPath
+
+toPublicDeckPath :: ByteString -> ByteString
+toPublicDeckPath bs = "/api/public/decklist/" <> matches <> ".json"
+ where
+  matches :: ByteString
+  matches =
+    case
+        matchOnceText
+          (makeRegex @_ @_ @_ @ByteString "decklist/view/([0-9]+)" :: Regex)
+          bs
+      of
+        Nothing -> error "failed"
+        Just (_, mt, _) -> fst $ mt A.! 1
 
 runGame :: AppT ()
 runGame = do
@@ -106,10 +157,9 @@ prettyLogger :: DebugLogger
 prettyLogger = DebugLogger pPrint
 
 newEnv :: Scenario -> IO Env
-newEnv scenario = Env
-  <$> newIORef (newGame scenario)
-  <*> newIORef [StartGame]
-  <*> pure (Just prettyLogger)
+newEnv scenario =
+  Env <$> newIORef (newGame scenario) <*> newIORef [StartGame] <*> pure
+    (Just prettyLogger)
 
 main :: IO ()
 main = case lookupScenario "01094" of

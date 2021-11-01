@@ -6,7 +6,7 @@ import Data.Text qualified as T
 import Marvel.Card.Side
 
 newtype CardCode = CardCode { unCardCode :: Text }
-  deriving newtype (IsString, Show, Eq, Hashable, ToJSON, FromJSON)
+  deriving newtype (IsString, Show, Eq, Ord, Hashable, ToJSON, FromJSON, FromJSONKey)
 
 toBaseCardCode :: CardCode -> CardCode
 toBaseCardCode cardCode = case T.unsnoc $ unCardCode cardCode of

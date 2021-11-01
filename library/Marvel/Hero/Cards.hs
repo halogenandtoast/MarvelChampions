@@ -17,8 +17,12 @@ hero :: CardCode -> Name -> [Trait] -> CardDef
 hero cardCode name traits = CardDef
   { cdCardCode = cardCode
   , cdName = name
+  , cdCost = Nothing
   , cdTraits = fromList traits
   , cdCardType = HeroType
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdResources = []
   }
 
 spiderMan :: CardDef

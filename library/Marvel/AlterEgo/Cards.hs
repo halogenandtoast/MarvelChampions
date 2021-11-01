@@ -17,8 +17,12 @@ alterEgo :: CardCode -> Name -> [Trait] -> CardDef
 alterEgo cardCode name traits = CardDef
   { cdCardCode = cardCode
   , cdName = name
+  , cdCost = Nothing
   , cdTraits = fromList traits
   , cdCardType = AlterEgoType
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdResources = []
   }
 
 peterParker :: CardDef

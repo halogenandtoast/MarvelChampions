@@ -17,8 +17,12 @@ villain :: CardCode -> Name -> [Trait] -> CardDef
 villain cardCode name traits = CardDef
   { cdCardCode = cardCode
   , cdName = name
+  , cdCost = Nothing
   , cdTraits = fromList traits
   , cdCardType = VillainType
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdResources = []
   }
 
 rhino :: CardDef

@@ -2,7 +2,7 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Marvel.Ability
+import Marvel.Ability.Type
 import Marvel.Debug
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Queue
