@@ -10,7 +10,7 @@ import Data.Text qualified as T
 import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Game
-import Marvel.Identity.Attrs
+import Marvel.Id
 import Marvel.Message
 import Marvel.PlayerCard
 import Marvel.Question
