@@ -106,7 +106,7 @@ class
   , HasDebugLogger env
   , MonadRandom m
   )
-  => MonadGame env m | env -> m
+  => MonadGame env m | env -> m, m -> env
 
 createPlayer :: MonadGame env m => CardCode -> [PlayerCard] -> m ()
 createPlayer cardCode deck = do

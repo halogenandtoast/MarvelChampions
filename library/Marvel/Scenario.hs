@@ -3,7 +3,7 @@ module Marvel.Scenario where
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import {-# SOURCE #-} Marvel.Game
+import Marvel.Game.Source
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue

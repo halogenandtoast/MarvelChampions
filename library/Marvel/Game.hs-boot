@@ -19,7 +19,7 @@ class
   , HasDebugLogger env
   , MonadRandom m
   )
-  => MonadGame env m | env -> m
+  => MonadGame env m | env -> m, m -> env
 
 data Game
 

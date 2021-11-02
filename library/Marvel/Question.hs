@@ -6,7 +6,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Side
 import Marvel.Exception
-import {-# SOURCE #-} Marvel.Game
+import Marvel.Game.Source
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Queue

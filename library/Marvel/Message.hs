@@ -10,7 +10,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
-import {-# SOURCE #-} Marvel.Game
+import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
