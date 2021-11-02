@@ -1,0 +1,24 @@
+/health HealthR GET
+/api ApiP:
+  /v1 ApiV1P:
+    /authenticate ApiV1AuthenticationR POST
+    /register ApiV1RegistrationR POST
+    /whoami ApiV1CurrentUserR GET
+    /marvel ApiV1MarvelP:
+      /cards ApiV1MarvelCardsR GET
+      /heroes ApiV1MarvelHeroesR GET
+      /decks ApiV1MarvelDecksP:
+        / ApiV1MarvelDecksR GET POST
+        /#MarvelDeckId ApiV1MarvelDeckP:
+          / ApiV1MarvelDeckR DELETE
+      /games ApiV1MarvelGamesP:
+        / ApiV1MarvelGamesR GET POST
+        /#MarvelGameId ApiV1MarvelGameP:
+          / ApiV1MarvelGameR GET PUT DELETE
+          /raw ApiV1MarvelGameRawR PUT
+          /join ApiV1MarvelPendingGameR PUT
+          /replay/#Int ApiV1MarvelGameReplayR GET
+          /undo ApiV1MarvelGameUndoR PUT
+          /spectate ApiV1MarvelGameSpectateR GET
+
+!/ StaticR Static appStatic

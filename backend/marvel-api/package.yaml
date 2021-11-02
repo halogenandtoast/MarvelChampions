@@ -1,0 +1,110 @@
+name:                marvel-api
+version:             0.1.0.0
+
+dependencies:
+- base >= 4.7 && < 5
+
+default-extensions:
+  - BangPatterns
+  - DataKinds
+  - DeriveAnyClass
+  - DeriveFoldable
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DeriveTraversable
+  - DerivingStrategies
+  - DerivingVia
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NoImplicitPrelude
+  - NoMonomorphismRestriction
+  - OverloadedStrings
+  - RankNTypes
+  - RecordWildCards
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TypeApplications
+  - TypeFamilies
+  - ImportQualifiedPost
+
+library:
+  source-dirs: library
+  dependencies:
+  - marvel-core
+  - jwt
+  - containers
+  - yesod-core
+  - text
+  - aeson
+  - aeson-casing
+  - aeson-diff
+  - persistent
+  - persistent-postgresql
+  - http-api-data
+  - path-pieces
+  - uuid
+  - bytestring
+  - errors
+  - hashable
+  - warp
+  - yaml
+  - uri-bytestring
+  - file-embed
+  - string-conversions
+  - yesod-static
+  - monad-logger
+  - wai
+  - wai-logger
+  - directory
+  - fast-logger
+  - unix
+  - http-client
+  - stm
+  - yesod-persistent
+  - MonadRandom
+  - lens
+  - unordered-containers
+  - exceptions
+  - yesod-websockets
+  - websockets
+  - esqueleto
+  - conduit
+  - unliftio
+  - http-conduit
+  - bcrypt
+  - wai-extra
+  - regex-posix
+  - wai-app-static
+  - case-insensitive
+  - template-haskell
+  - http-client-tls
+  - http-types
+  - data-default
+  - relude
+
+executables:
+  marvel-api:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - marvel-api
+
+tests:
+  marvel-api-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - marvel-api

@@ -1,0 +1,33 @@
+---
+require-stack-version: ">= 2.3.1"
+concurrent-tests: false
+
+resolver: lts-18.14
+
+ghc-options:
+  "$locals":
+    -fhide-source-paths
+    -Weverything
+    -Wno-missing-exported-signatures
+    -Wno-missed-specialisations
+    -Wno-all-missed-specialisations
+    -Wno-unsafe
+    -Wno-safe
+    -Wno-missing-local-signatures
+    -Wno-monomorphism-restriction
+    -Wno-missing-import-lists
+    -Wno-missing-export-lists
+    -Wno-incomplete-uni-patterns
+    -Wno-partial-fields
+    -Wno-implicit-prelude
+    -Wno-deriving-typeable
+    -Wno-missing-monadfail-instances
+    -fignore-optim-changes
+    -Wno-missing-safe-haskell-mode
+    -Wno-prepositive-qualified-module
+    -fwrite-ide-info
+    -hiedir=.hie
+
+packages:
+  - marvel-core
+  - marvel-api

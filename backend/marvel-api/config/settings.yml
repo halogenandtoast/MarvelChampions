@@ -1,0 +1,9 @@
+static-dir: "_env:STATIC_DIR:../../frontend/dist"
+host: "_env:HOST:*4"
+port: "_env:PORT:3000"
+ip-from-header: "_env:IP_FROM_HEADER:false"
+jwt-secret: "_env:JWT_SECRET:marvel"
+database-url: "_env:DATABASE_URL:postgres://localhost:5432/marvel-champions-backend"
+database-pool-size: "_env:DB_POOL:10"
+detailed-logging: false
+should-log-all: false

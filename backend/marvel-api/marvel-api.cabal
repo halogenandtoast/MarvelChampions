@@ -1,0 +1,209 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           marvel-api
+version:        0.1.0.0
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Api.Handler.Marvel.Cards
+      Api.Handler.Marvel.Decks
+      Api.Handler.Marvel.Games
+      Api.Handler.Marvel.Heroes
+      Api.Handler.Marvel.PendingGames
+      Api.Handler.Marvel.Replay
+      Api.Handler.Marvel.Undo
+      Api.Marvel.Helpers
+      Api.Marvel.Types.MultiplayerVariant
+      Application
+      Auth.JWT
+      Base.Api.Handler.Authentication
+      Base.Api.Handler.CurrentUser
+      Base.Api.Handler.Registration
+      Base.Util
+      Config
+      Entity.Marvel.Deck
+      Entity.Marvel.Game
+      Entity.Marvel.MarvelDBDecklist
+      Entity.Marvel.Player
+      Entity.User
+      Foundation
+      Handler.Health
+      Import
+      Import.NoFoundation
+      Json
+      Model
+      Orphans
+      Settings
+      Settings.StaticFiles
+      Types
+  other-modules:
+      Paths_marvel_api
+  hs-source-dirs:
+      library
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NoMonomorphismRestriction
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+      ImportQualifiedPost
+  build-depends:
+      MonadRandom
+    , aeson
+    , aeson-casing
+    , aeson-diff
+    , base >=4.7 && <5
+    , bcrypt
+    , bytestring
+    , case-insensitive
+    , conduit
+    , containers
+    , data-default
+    , directory
+    , errors
+    , esqueleto
+    , exceptions
+    , fast-logger
+    , file-embed
+    , hashable
+    , http-api-data
+    , http-client
+    , http-client-tls
+    , http-conduit
+    , http-types
+    , jwt
+    , lens
+    , marvel-core
+    , monad-logger
+    , path-pieces
+    , persistent
+    , persistent-postgresql
+    , regex-posix
+    , relude
+    , stm
+    , string-conversions
+    , template-haskell
+    , text
+    , unix
+    , unliftio
+    , unordered-containers
+    , uri-bytestring
+    , uuid
+    , wai
+    , wai-app-static
+    , wai-extra
+    , wai-logger
+    , warp
+    , websockets
+    , yaml
+    , yesod-core
+    , yesod-persistent
+    , yesod-static
+    , yesod-websockets
+  default-language: Haskell2010
+
+executable marvel-api
+  main-is: Main.hs
+  other-modules:
+      Paths_marvel_api
+  hs-source-dirs:
+      app
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NoMonomorphismRestriction
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+      ImportQualifiedPost
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , marvel-api
+  default-language: Haskell2010
+
+test-suite marvel-api-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_marvel_api
+  hs-source-dirs:
+      test
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NoMonomorphismRestriction
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+      ImportQualifiedPost
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , marvel-api
+  default-language: Haskell2010
