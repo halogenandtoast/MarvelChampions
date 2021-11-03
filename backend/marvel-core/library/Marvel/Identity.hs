@@ -40,9 +40,14 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityPassed :: Bool
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+
+instance ToJSON PlayerIdentity where
+  toJSON = genericToJSON $ aesonOptions $ Just "playerIdentity"
+
+instance FromJSON PlayerIdentity where
+  parseJSON = genericParseJSON $ aesonOptions $ Just "playerIdentity"
 
 instance IsSource PlayerIdentity where
   toSource = IdentitySource . playerIdentityId

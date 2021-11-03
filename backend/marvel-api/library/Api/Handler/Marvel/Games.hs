@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Api.Handler.Marvel.Games
@@ -21,11 +22,13 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import Data.Traversable (for)
 import Database.Esqueleto.Experimental hiding (update)
+import Database.Esqueleto.Internal.Internal (SqlSelect)
 import Json
 import Marvel.Card.Code
-import Marvel.Entity (toId)
+import Marvel.Entity (EntityId, toId)
 import Marvel.Game
 import Marvel.Id
+import Marvel.Identity
 import Marvel.Message
 import Marvel.Scenario
 import Network.WebSockets (ConnectionException)
@@ -62,7 +65,7 @@ catchingConnectionException f =
 data GetGameJson = GetGameJson
   { identityId :: Maybe IdentityId
   , multiplayerMode :: MultiplayerVariant
-  , game :: MarvelGame
+  , game :: ApiGame
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
@@ -79,7 +82,10 @@ getApiV1MarvelGameR gameId = do
     investigatorId = case marvelGameMultiplayerVariant ge of
       Solo -> coerce gameActivePlayer
       WithFriends -> coerce marvelPlayerIdentityId
-  pure $ GetGameJson (Just investigatorId) (marvelGameMultiplayerVariant ge) ge
+  pure $ GetGameJson
+    (Just investigatorId)
+    (marvelGameMultiplayerVariant ge)
+    (toApiGame $ Entity gameId ge)
 
 getApiV1MarvelGameSpectateR :: MarvelGameId -> Handler GetGameJson
 getApiV1MarvelGameSpectateR gameId = do
@@ -88,12 +94,24 @@ getApiV1MarvelGameSpectateR gameId = do
   let
     Game {..} = marvelGameCurrentData ge
     identityId = coerce gameActivePlayer
-  pure $ GetGameJson (Just identityId) (marvelGameMultiplayerVariant ge) ge
+  pure $ GetGameJson
+    (Just identityId)
+    (marvelGameMultiplayerVariant ge)
+    (toApiGame $ Entity gameId ge)
 
-getApiV1MarvelGamesR :: Handler [Entity MarvelGame]
+data ApiGame = ApiGame
+  { id :: Key MarvelGame
+  , name :: Text
+  , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
+  , scenario :: Scenario
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+getApiV1MarvelGamesR :: Handler [ApiGame]
 getApiV1MarvelGamesR = do
   userId <- requireUserId
-  runDB $ select $ do
+  runDB $ selectMap toApiGame $ do
     (players :& games) <-
       from
       $ table @MarvelPlayer
@@ -103,6 +121,20 @@ getApiV1MarvelGamesR = do
            )
     where_ (players ^. MarvelPlayerUserId ==. val userId)
     pure games
+
+selectMap
+  :: (SqlSelect (SqlExpr a) a, MonadIO m)
+  => (a -> b)
+  -> SqlQuery (SqlExpr a)
+  -> SqlPersistT m [b]
+selectMap f = fmap (map f) . select
+
+toApiGame :: Entity MarvelGame -> ApiGame
+toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
+  = ApiGame gameId marvelGameName players scenario
+ where
+  players = gamePlayers marvelGameCurrentData
+  scenario = gameScenario marvelGameCurrentData
 
 data CreateGamePost = CreateGamePost
   { deckIds :: [Maybe MarvelDeckId]

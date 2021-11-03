@@ -9,7 +9,9 @@ import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Side
+import Marvel.Deck
 import Marvel.Game.Source
+import Marvel.Hand
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question

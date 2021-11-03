@@ -138,7 +138,7 @@ class
   )
   => MonadGame env m | env -> m, m -> env
 
-initPlayer :: MonadRandom m => CardCode -> [PlayerCard] -> m PlayerIdentity
+initPlayer :: MonadRandom m => CardCode -> Deck -> m PlayerIdentity
 initPlayer cardCode deck = do
   ident <- getRandom
   let
@@ -150,10 +150,10 @@ initPlayer cardCode deck = do
       lookupHero def ident
   case (mAlterEgo, mHero) of
     (Just alterEgoSide, Just heroSide) ->
-      pure . setDeck deck $ createIdentity alterEgoSide heroSide
+      pure . setDeck deck $ createIdentity ident alterEgoSide heroSide
     _ -> error "stuff"
 
-createPlayer :: MonadGame env m => CardCode -> [PlayerCard] -> m ()
+createPlayer :: MonadGame env m => CardCode -> Deck -> m ()
 createPlayer cardCode deck = do
   playerIdentity <- initPlayer cardCode deck
   addPlayer playerIdentity

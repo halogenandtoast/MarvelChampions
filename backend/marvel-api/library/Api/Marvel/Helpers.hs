@@ -10,6 +10,7 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Map.Strict as Map
 import Marvel.Card.Code
 import Marvel.Debug
+import Marvel.Deck
 import Marvel.Game
 import Marvel.Message
 import Marvel.PlayerCard
@@ -63,14 +64,18 @@ getChannel gameId = do
         $ \gameChannels' -> (Map.insert gameId chan gameChannels', ())
       pure chan
 
-toDeck :: MarvelDBDecklist -> IO [PlayerCard]
+toDeck :: MarvelDBDecklist -> IO Deck
 toDeck =
-  traverse toCard . concatMap (uncurry (flip replicate)) . Map.toList . slots
+  fmap Deck
+    . traverse toCard
+    . concatMap (uncurry (flip replicate))
+    . Map.toList
+    . slots
 
 toCard :: CardCode -> IO PlayerCard
 toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)
 
-loadDecklist :: MarvelDeck -> IO (CardCode, [PlayerCard])
+loadDecklist :: MarvelDeck -> IO (CardCode, Deck)
 loadDecklist marvelDeck = (heroCardCode, ) <$> toDeck decklist
  where
   decklist = marvelDeckList marvelDeck
