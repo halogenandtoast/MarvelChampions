@@ -1,10 +1,22 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
+  <div id="app">
+    <Nav/>
+    <router-view/>
   </div>
-  <router-view/>
 </template>
+
+<script lang="ts">
+import { defineComponent, onMounted } from 'vue'
+import { useStore } from 'vuex'
+import Nav from '@/components/Nav.vue'
+export default defineComponent({
+  components: { Nav },
+  setup() {
+    const store = useStore()
+    onMounted(async () => await store.dispatch('loadUserFromStorage'))
+  }
+})
+</script>
 
 <style lang="scss">
 #app {

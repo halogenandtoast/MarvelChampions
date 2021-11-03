@@ -15,7 +15,7 @@ import Orphans ()
 import Relude
 
 share [mkPersist sqlSettings] [persistLowerCase|
-MarvelDeck sql=arkham_decks
+MarvelDeck sql=marvel_decks
   Id UUID default=uuid_generate_v4()
   userId UserId OnDeleteCascade
   name Text
