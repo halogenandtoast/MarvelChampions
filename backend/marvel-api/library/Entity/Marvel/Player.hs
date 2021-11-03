@@ -17,7 +17,7 @@ mkPersist sqlSettings [persistLowerCase|
 MarvelPlayer sql=marvel_players
   userId UserId OnDeleteCascade
   marvelGameId MarvelGameId OnDeleteCascade
-  identityId UUID
+  identityId UUID sqltype=uuid
   UniquePlayer userId marvelGameId
   deriving Generic Show
 |]

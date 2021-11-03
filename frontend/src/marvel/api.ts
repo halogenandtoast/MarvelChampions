@@ -31,7 +31,7 @@ export const newGame = (
   gameName: string,
   multiplayerVariant: string,
 ): Promise<Game> => api
-  .post('arkham/games', {
+  .post('marvel/games', {
     deckIds,
     playerCount,
     scenarioId,
@@ -39,3 +39,17 @@ export const newGame = (
     multiplayerVariant,
   })
   .then((resp) => gameDecoder.decodeToPromise(resp.data));
+
+interface FetchData {
+  identityId: string
+  game: Game
+}
+
+export const fetchGame = (gameId: string): Promise<FetchData> => api
+  .get(`marvel/games/${gameId}`)
+  .then((resp) => {
+    const { identityId, game } = resp.data;
+    return gameDecoder
+      .decodeToPromise(game)
+      .then((gameData) => Promise.resolve({ identityId, game: gameData }));
+  });
