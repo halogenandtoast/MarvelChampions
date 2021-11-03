@@ -95,6 +95,7 @@ library
   build-depends:
       MonadRandom
     , aeson
+    , aeson-casing
     , aeson-diff
     , base >=4.7 && <5
     , exceptions

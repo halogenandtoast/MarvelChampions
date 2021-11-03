@@ -28,7 +28,7 @@ instance RunMessage RhinoScenario where
   runMessage msg (RhinoScenario attrs) = RhinoScenario <$> runMessage msg attrs
 
 rhinoScenario :: RhinoScenario
-rhinoScenario = RhinoScenario $ ScenarioAttrs ["01094"]
+rhinoScenario = RhinoScenario $ ScenarioAttrs "01094" ["01094"]
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON)
@@ -36,8 +36,9 @@ newtype KlawScenario = KlawScenario ScenarioAttrs
 instance RunMessage KlawScenario where
   runMessage msg (KlawScenario attrs) = KlawScenario <$> runMessage msg attrs
 
-newtype ScenarioAttrs = ScenarioAttrs
-  { scenarioVillains :: [CardCode]
+data ScenarioAttrs = ScenarioAttrs
+  { scenarioId :: CardCode
+  , scenarioVillains :: [CardCode]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

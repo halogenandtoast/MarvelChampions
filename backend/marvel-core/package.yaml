@@ -42,6 +42,7 @@ library:
   - unordered-containers
   - aeson
   - aeson-diff
+  - aeson-casing
 
 executables:
   marvel-core:

@@ -24,6 +24,7 @@ data GameState = Unstarted | InProgress | Finished
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+
 type EntityMap a = HashMap (EntityId a) a
 
 data Game = Game
@@ -41,9 +42,14 @@ data Game = Game
   , gameScenario :: Scenario
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 makeLensesWith suffixedFields ''Game
+
+instance ToJSON Game where
+  toJSON = genericToJSON $ aesonOptions $ Just "game"
+
+instance FromJSON Game where
+  parseJSON = genericParseJSON $ aesonOptions $ Just "game"
 
 diff :: Game -> Game -> Diff.Patch
 diff a b = Diff.diff (toJSON a) (toJSON b)

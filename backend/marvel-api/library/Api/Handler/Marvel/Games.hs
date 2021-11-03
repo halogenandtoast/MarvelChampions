@@ -23,7 +23,7 @@ import Data.Traversable (for)
 import Database.Esqueleto.Experimental hiding (update)
 import Json
 import Marvel.Card.Code
-import Marvel.Entity
+import Marvel.Entity (toId)
 import Marvel.Game
 import Marvel.Id
 import Marvel.Message
@@ -90,10 +90,10 @@ getApiV1MarvelGameSpectateR gameId = do
     identityId = coerce gameActivePlayer
   pure $ GetGameJson (Just identityId) (marvelGameMultiplayerVariant ge) ge
 
-getApiV1MarvelGamesR :: Handler [MarvelGame]
+getApiV1MarvelGamesR :: Handler [Entity MarvelGame]
 getApiV1MarvelGamesR = do
   userId <- requireUserId
-  games <- runDB $ select $ do
+  runDB $ select $ do
     (players :& games) <-
       from
       $ table @MarvelPlayer
@@ -103,7 +103,6 @@ getApiV1MarvelGamesR = do
            )
     where_ (players ^. MarvelPlayerUserId ==. val userId)
     pure games
-  pure $ map entityVal games
 
 data CreateGamePost = CreateGamePost
   { deckIds :: [Maybe MarvelDeckId]

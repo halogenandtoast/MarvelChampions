@@ -5,6 +5,7 @@ module Marvel.Prelude
 
 import Control.Lens as X
   (Lens', at, each, lens, set, traverseOf, view, (%~), (.~), (<>~), (?~))
+import Control.Lens.TH as X
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
 import Control.Monad.Random as X (MonadRandom, Random, getRandom)
 import Data.Aeson as X
@@ -13,7 +14,7 @@ import Data.Vector as X (Vector)
 import Relude as X hiding (One)
 import Relude.Extra.Map as X
 
-import Control.Lens.TH as X
+import Data.Aeson.Casing (camelCase)
 import qualified Data.Char as C
 import qualified Data.Text as T
 import Language.Haskell.TH hiding (location)
@@ -41,3 +42,7 @@ suffixedWithFields suffix =
 
 suffixedFields :: LensRules
 suffixedFields = defaultFieldRules & lensField .~ suffixedNamer
+
+aesonOptions :: Maybe String -> Options
+aesonOptions ms = defaultOptions { fieldLabelModifier = camelCase . drop len }
+  where len = maybe 0 length ms

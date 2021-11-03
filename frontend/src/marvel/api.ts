@@ -53,3 +53,7 @@ export const fetchGame = (gameId: string): Promise<FetchData> => api
       .decodeToPromise(game)
       .then((gameData) => Promise.resolve({ identityId, game: gameData }));
   });
+
+export const fetchGames = (): Promise<Game[]> => api
+  .get('marvel/games')
+  .then((resp) => JsonDecoder.array(gameDecoder, 'MarvelGame[]').decodeToPromise(resp.data));
