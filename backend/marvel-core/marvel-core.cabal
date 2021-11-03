@@ -34,6 +34,7 @@ library
       Marvel.Event.Cards
       Marvel.Exception
       Marvel.Game
+      Marvel.Game.Source
       Marvel.GameValue
       Marvel.Hand
       Marvel.Hero

@@ -87,7 +87,7 @@ loadDecklist decklist = do
   let ident = toBaseCardCode $ investigator_code decklist
   initPlayer ident =<< toDeck decklist
 
-toDeck :: Decklist -> IO [PlayerCard]
+toDeck :: Decklist -> IO Deck
 toDeck =
   fmap Deck
     . traverse toCard
