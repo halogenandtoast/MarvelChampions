@@ -58,6 +58,7 @@ library
       Marvel.Scenario
       Marvel.Source
       Marvel.Support.Cards
+      Marvel.Target
       Marvel.TH
       Marvel.Trait
       Marvel.Upgrade.Cards
@@ -102,6 +103,7 @@ library
     , exceptions
     , lens
     , mtl
+    , random-shuffle
     , relude
     , template-haskell
     , text

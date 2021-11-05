@@ -4,7 +4,7 @@ module Marvel.Prelude
   ) where
 
 import Control.Lens as X
-  (Lens', at, each, lens, set, traverseOf, view, (%~), (.~), (<>~), (?~))
+  (Lens', at, each, lens, set, traverseOf, view, (%~), (.~), (<>~), (?~), (^.))
 import Control.Lens.TH as X
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
 import Control.Monad.Random as X (MonadRandom, Random, getRandom)

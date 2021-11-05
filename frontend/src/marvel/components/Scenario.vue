@@ -1,7 +1,12 @@
 <template>
   <div>
     <img :src="scenarioImg" alt="Scenario" />
-    <Player v-for="player in game.players" :key="player.id" :player="player" />
+    <Player
+      v-for="player in game.players"
+      :key="player.id"
+      :player="player"
+      :game="game"
+    />
   </div>
 </template>
 

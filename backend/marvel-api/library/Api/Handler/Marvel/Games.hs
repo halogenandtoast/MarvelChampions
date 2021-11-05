@@ -25,11 +25,13 @@ import Database.Esqueleto.Experimental hiding (update)
 import Database.Esqueleto.Internal.Internal (SqlSelect)
 import Json
 import Marvel.Card.Code
+import Marvel.Debug
 import Marvel.Entity (EntityId, toId)
 import Marvel.Game
 import Marvel.Id
 import Marvel.Identity
 import Marvel.Message
+import Marvel.Question
 import Marvel.Scenario
 import Network.WebSockets (ConnectionException)
 import UnliftIO.Exception (bracket, catch)
@@ -104,6 +106,7 @@ data ApiGame = ApiGame
   , name :: Text
   , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
   , scenario :: Scenario
+  , question :: HashMap IdentityId Question
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
@@ -131,10 +134,11 @@ selectMap f = fmap (map f) . select
 
 toApiGame :: Entity MarvelGame -> ApiGame
 toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = ApiGame gameId marvelGameName players scenario
+  = ApiGame gameId marvelGameName players scenario question
  where
   players = gamePlayers marvelGameCurrentData
   scenario = gameScenario marvelGameCurrentData
+  question = gameQuestion marvelGameCurrentData
 
 data CreateGamePost = CreateGamePost
   { deckIds :: [Maybe MarvelDeckId]
@@ -162,7 +166,9 @@ postApiV1MarvelGamesR = do
       let g = newGame player scenario
       gameRef <- newIORef g
       queueRef <- newIORef [StartGame]
-      runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
+      runGameApp
+        (GameApp gameRef queueRef (Just $ DebugLogger print))
+        runGameMessages
       ge <- readIORef gameRef
       let
         diffUp = diff g ge

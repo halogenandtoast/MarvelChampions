@@ -7,10 +7,11 @@ import Marvel.Card.Code
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
-import Marvel.Hero.Cards qualified as Cards
+import qualified Marvel.Hero.Cards as Cards
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
+import Marvel.Target
 
 spiderMan :: HeroCard SpiderMan
 spiderMan = hero
@@ -24,11 +25,13 @@ spiderMan = hero
 
 instance HasAbilities SpiderMan where
   getAbilities a =
-    [label "Spider-Sense" $ ability a Interrupt IsSelf (RunAbility 1)]
+    [ label "Spider-Sense"
+        $ ability a Interrupt IsSelf (RunAbility (toTarget a) 1)
+    ]
 
 newtype SpiderMan = SpiderMan HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, IsTarget, HasCardCode)
 
 instance RunMessage SpiderMan where
   runMessage _ = pure

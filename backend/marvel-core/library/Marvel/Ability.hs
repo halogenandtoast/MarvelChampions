@@ -5,8 +5,9 @@ module Marvel.Ability
 
 import Marvel.Prelude
 
-import Data.HashMap.Strict qualified as HashMap
+import qualified Data.HashMap.Strict as HashMap
 import Marvel.Ability.Type as X
+import Marvel.Game.Source
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
@@ -60,3 +61,6 @@ passesTypeIsRelevant _ a = case abilityType a of
   HeroAction -> False
   AlterEgoAction -> False
   Special -> False
+
+class PerformAbility a where
+  performAbility :: MonadGame env m => a -> Natural -> m ()

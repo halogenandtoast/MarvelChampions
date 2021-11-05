@@ -1,8 +1,5 @@
 import { JsonDecoder } from 'ts.data.json'
-
-export interface CardDef {
-  cdCardCode: string
-}
+import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
 export interface HeroSideContentsContents {
   heroCardDef: CardDef
@@ -34,13 +31,10 @@ type Side = HeroSide | AlterEgoSide
 
 export interface Identity {
   id: string
+  hand: CardDef[]
   side: string
   sides: Record<string, Side>
 }
-
-export const cardDefDecoder = JsonDecoder.object<CardDef>({
-  cdCardCode: JsonDecoder.string
-}, 'CardDef')
 
 export const heroSideContentsContentsDecoder = JsonDecoder.object<HeroSideContentsContents>({
   heroCardDef: cardDefDecoder
@@ -73,6 +67,7 @@ export const sideDecoder = JsonDecoder.oneOf<Side>([heroSideDecoder, alterEgoSid
 export const identityDecoder = JsonDecoder.object<Identity>(
   {
     id: JsonDecoder.string,
+    hand: JsonDecoder.array(JsonDecoder.tuple([JsonDecoder.string, cardDefDecoder], '[cardCode, card][]'), 'CardDef[]').map(cards => cards.map(([,card]) => card)),
     side: JsonDecoder.string,
     sides: JsonDecoder.array(JsonDecoder.
       tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides))
