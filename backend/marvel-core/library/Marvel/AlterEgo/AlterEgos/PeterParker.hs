@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.AlterEgo.Attrs
-import Marvel.AlterEgo.Cards qualified as Cards
+import qualified Marvel.AlterEgo.Cards as Cards
 import Marvel.Card.Code
 import Marvel.GameValue
 import Marvel.Hand
@@ -28,12 +28,11 @@ instance HasAbilities PeterParker where
 
 instance RunMessage PeterParker where
   runMessage msg a@(PeterParker attrs) = case msg of
-    IdentityMessage ident SetupIdentity | ident == alterEgoIdentityId attrs ->
-      do
-        pushAll
-          [ IdentityMessage
-              ident
-              (DrawStartingHand $ alterEgoBaseHandSize attrs)
-          ]
-        pure a
+    IdentityMessage ident (SideMessage msg')
+      | ident == alterEgoIdentityId attrs -> case msg' of
+        SetupIdentity -> do
+          pushAll $ map
+            (IdentityMessage ident)
+            [ShuffleDeck, DrawStartingHand $ alterEgoBaseHandSize attrs]
+          pure a
     _ -> pure a

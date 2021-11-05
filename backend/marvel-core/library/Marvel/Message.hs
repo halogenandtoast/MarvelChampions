@@ -9,12 +9,12 @@ import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Side
-import Marvel.Deck
 import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
+import Marvel.Target
 
 data Message
   = StartGame
@@ -25,21 +25,24 @@ data Message
   | IdentityMessage IdentityId IdentityMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
+  | RanAbility Target Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 data IdentityMessage
-  = SetDeck Deck
-  | BeginTurn
+  = BeginTurn
   | PlayerTurnOption
   | CheckIfPassed
   | ChooseOtherForm
   | EndedTurn
   | ChangedToForm Side
-  | RanAbility Natural
-  | SetupIdentity
   | DrawStartingHand HandSize
-  | SideMessage IdentityMessage
+  | ShuffleDeck
+  | SideMessage SideMessage
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data SideMessage = SetupIdentity
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

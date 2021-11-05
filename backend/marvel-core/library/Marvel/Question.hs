@@ -11,6 +11,7 @@ import Marvel.Id
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Queue
 import Marvel.Resource
+import Marvel.Target
 
 data Question
   = ChooseOne [Choice]
@@ -28,7 +29,7 @@ data Choice
   = CardLabel CardCode Choice
   | EndTurn
   | UseAbility Ability
-  | RunAbility Natural
+  | RunAbility Target Natural
   | ChangeForm
   | ChangeToForm Side
   | GenerateResources [Resource]
@@ -40,7 +41,7 @@ choiceMessages ident = \case
   CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
   UseAbility a -> UsedAbility ident a : choiceMessages ident (abilityChoice a)
-  RunAbility n -> [IdentityMessage ident $ RanAbility n]
+  RunAbility target n -> [RanAbility target n]
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
   GenerateResources _ -> []

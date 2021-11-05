@@ -15,7 +15,6 @@ conf_debug:
 conf_forward:
   options_ghc:
     - -XBangPatterns
-    - -XBlockArguments
     - -XDataKinds
     - -XDeriveAnyClass
     - -XDeriveFoldable
@@ -39,7 +38,6 @@ conf_forward:
     - -XStandaloneDeriving
     - -XTypeApplications
     - -XTypeFamilies
-    - -XImportQualifiedPost
 conf_errorHandling:
   econf_ExactPrintFallback: ExactPrintFallbackModeInline
   econf_Werror: false

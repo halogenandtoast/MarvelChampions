@@ -13,14 +13,14 @@ import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Deck
 import Marvel.Entity
-import Marvel.Exception
-import {-# SOURCE #-} Marvel.Game
+import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Hero
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
+import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
@@ -125,34 +125,31 @@ runIdentityMessage
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   BeginTurn -> takeTurn attrs
   CheckIfPassed -> if playerIdentityPassed then pure attrs else takeTurn attrs
-  SetDeck deck -> pure $ attrs & deckL .~ deck
   PlayerTurnOption -> do
     choices <- getChoices attrs
     chooseOne (toId attrs) (EndTurn : choices)
     pure attrs
   EndedTurn -> do
     pure $ attrs & passedL .~ True
+  ShuffleDeck -> do
+    deck <- shuffleM (unDeck $ attrs ^. deckL)
+    pure $ attrs & deckL .~ Deck deck
   DrawStartingHand (HandSize n) -> do
     let (hand, deck) = splitAt n (unDeck playerIdentityDeck)
     pure $ attrs & handL .~ Hand hand & deckL .~ Deck deck
-  SetupIdentity ->
-    throwM $ UnhandledMessage "SetupIdentity must be handled by AlterEgo/Hero"
   ChooseOtherForm -> do
     let otherForms = keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
-  RanAbility _ ->
-    throwM $ UnhandledMessage "RanAbility must be handled by AlterEgo/Hero"
-  ChangedToForm _ ->
-    throwM $ UnhandledMessage "ChangedToForm must be handled by PlayerIdentity"
-  SideMessage other -> case currentIdentity attrs of
+  ChangedToForm side -> pure $ attrs & sideL .~ side
+  SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-
-        HeroSide <$> runMessage (IdentityMessage playerIdentityId other) x
+        HeroSide <$> runMessage (IdentityMessage playerIdentityId msg) x
       pure $ attrs & sidesL . at playerIdentitySide ?~ newSide
     AlterEgoSide x -> do
       newSide <-
-        AlterEgoSide <$> runMessage (IdentityMessage playerIdentityId other) x
+        AlterEgoSide <$> runMessage (IdentityMessage playerIdentityId msg) x
       pure $ attrs & sidesL . at playerIdentitySide ?~ newSide
 
 

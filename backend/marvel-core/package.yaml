@@ -43,6 +43,7 @@ library:
   - aeson
   - aeson-diff
   - aeson-casing
+  - random-shuffle
 
 executables:
   marvel-core:

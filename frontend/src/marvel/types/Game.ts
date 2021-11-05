@@ -1,11 +1,28 @@
 import { JsonDecoder } from 'ts.data.json'
 import { Identity, identityDecoder } from '@/marvel/types/Identity'
+import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
+
+export function choices(game: Game, identityId: string): Choice[] {
+  const question = game.question[identityId]
+
+  if (!question) {
+    return []
+  }
+
+  switch (question.tag) {
+    case 'ChooseOne':
+      return question.contents
+    default:
+      return []
+  }
+}
 
 export interface Game {
   id: string
   name: string
   players: Record<string, Identity>
   scenario: Scenario
+  question: Record<string, Question>
 }
 
 export interface Scenario {
@@ -32,4 +49,5 @@ export const gameDecoder = JsonDecoder.object<Game>(
     name: JsonDecoder.string,
     players: JsonDecoder.dictionary<Identity>(identityDecoder, 'Dict<UUID, Identity>'),
     scenario: scenarioDecoder,
+    question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
   }, 'Game')

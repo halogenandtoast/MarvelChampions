@@ -13,6 +13,7 @@ import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Source
+import Marvel.Target
 
 hero
   :: (HeroAttrs -> a)
@@ -71,3 +72,6 @@ instance HasCardCode HeroAttrs where
 
 instance IsSource HeroAttrs where
   toSource = IdentitySource . heroIdentityId
+
+instance IsTarget HeroAttrs where
+  toTarget = IdentityTarget . heroIdentityId

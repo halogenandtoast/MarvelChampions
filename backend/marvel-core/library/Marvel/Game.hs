@@ -25,7 +25,6 @@ data GameState = Unstarted | InProgress | Finished
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-
 type EntityMap a = HashMap (EntityId a) a
 
 data Game = Game
@@ -67,9 +66,10 @@ runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
-    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder
+    pushAll $ map (`IdentityMessage` SideMessage SetupIdentity) gamePlayerOrder
     case gamePlayerOrder of
       [] -> throwM NoPlayers
+      [p] -> push (SetPlayerOrder [p])
       players@(p : _) -> choosePlayerOrder p players
     pure $ g { gameState = InProgress }
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
@@ -167,7 +167,7 @@ instance HasAbilities Game where
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
   mMsg <- pop
-  debug =<< getGame
+  -- debug =<< getGame
   for_ mMsg debug
   for_ mMsg $ \case
     Ask ident choices -> do
