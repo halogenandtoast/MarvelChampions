@@ -26,18 +26,18 @@ putApiV1MarvelGameUndoR gameId = do
       case patch marvelGameCurrentData (stepPatchDown step) of
         Error e -> error $ show e
         Success ge -> do
-          liftIO $ atomically $ writeTChan writeChannel (encode $ GameUpdate ge)
+          let
+            game' = MarvelGame
+              marvelGameName
+              ge
+              remaining
+              marvelGameLog
+              marvelGameMultiplayerVariant
+          liftIO $ atomically $ writeTChan
+            writeChannel
+            (encode $ GameUpdate $ toApiGame $ Entity gameId game')
           runDB $ do
-            replace
-              gameId
-              (MarvelGame
-                marvelGameName
-                ge
-                remaining
-                marvelGameLog
-                marvelGameMultiplayerVariant
-              )
-
+            replace gameId game'
             replace pid $ marvelPlayer
               { marvelPlayerIdentityId = coerce (view activePlayerL ge)
               }

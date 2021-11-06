@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TupleSections #-}
 module Api.Marvel.Helpers where
 
@@ -11,12 +12,35 @@ import qualified Data.Map.Strict as Map
 import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Deck
+import Marvel.Entity (EntityId)
 import Marvel.Game
+import Marvel.Id
+import Marvel.Identity
 import Marvel.Message
 import Marvel.PlayerCard
+import Marvel.Question
 import Marvel.Queue
+import Marvel.Scenario
 
-data ApiResponse = GameUpdate Game | GameMessage Text
+data ApiGame = ApiGame
+  { id :: Key MarvelGame
+  , name :: Text
+  , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
+  , scenario :: Scenario
+  , question :: HashMap IdentityId Question
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+toApiGame :: Entity MarvelGame -> ApiGame
+toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
+  = ApiGame gameId marvelGameName players scenario question
+ where
+  players = gamePlayers marvelGameCurrentData
+  scenario = gameScenario marvelGameCurrentData
+  question = gameQuestion marvelGameCurrentData
+
+data ApiResponse = GameUpdate ApiGame | GameMessage Text
   deriving stock Generic
   deriving anyclass ToJSON
 

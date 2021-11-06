@@ -41,17 +41,23 @@ putApiV1MarvelPendingGameR gameId = do
   let
     diffUp = diff marvelGameCurrentData updatedGame
     diffDown = diff updatedGame marvelGameCurrentData
+    game' = MarvelGame
+      marvelGameName
+      updatedGame
+      (Step diffUp diffDown updatedQueue : marvelGameSteps)
+      updatedMessages
+      marvelGameMultiplayerVariant
 
   writeChannel <- getChannel gameId
-  liftIO $ atomically $ writeTChan writeChannel $ encode $ GameUpdate
-    updatedGame
+  liftIO
+    $ atomically
+    $ writeTChan writeChannel
+    $ encode
+    $ GameUpdate
+    $ toApiGame
+    $ Entity gameId game'
 
-  runDB $ replace gameId $ MarvelGame
-    marvelGameName
-    updatedGame
-    (Step diffUp diffDown updatedQueue : marvelGameSteps)
-    updatedMessages
-    marvelGameMultiplayerVariant
+  runDB $ replace gameId game'
 
   pure $ MarvelGame
     marvelGameName

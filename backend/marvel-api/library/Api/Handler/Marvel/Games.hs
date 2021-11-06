@@ -1,4 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Api.Handler.Marvel.Games
@@ -18,6 +17,7 @@ import Api.Marvel.Types.MultiplayerVariant
 import Conduit
 import Control.Concurrent.STM.TChan
 import Control.Lens (view)
+import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import Data.Traversable (for)
@@ -26,10 +26,9 @@ import Database.Esqueleto.Internal.Internal (SqlSelect)
 import Json
 import Marvel.Card.Code
 import Marvel.Debug
-import Marvel.Entity (EntityId, toId)
+import Marvel.Entity (toId)
 import Marvel.Game
 import Marvel.Id
-import Marvel.Identity
 import Marvel.Message
 import Marvel.Question
 import Marvel.Scenario
@@ -101,16 +100,6 @@ getApiV1MarvelGameSpectateR gameId = do
     (marvelGameMultiplayerVariant ge)
     (toApiGame $ Entity gameId ge)
 
-data ApiGame = ApiGame
-  { id :: Key MarvelGame
-  , name :: Text
-  , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
-  , scenario :: Scenario
-  , question :: HashMap IdentityId Question
-  }
-  deriving stock (Show, Generic)
-  deriving anyclass ToJSON
-
 getApiV1MarvelGamesR :: Handler [ApiGame]
 getApiV1MarvelGamesR = do
   userId <- requireUserId
@@ -132,14 +121,6 @@ selectMap
   -> SqlPersistT m [b]
 selectMap f = fmap (map f) . select
 
-toApiGame :: Entity MarvelGame -> ApiGame
-toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = ApiGame gameId marvelGameName players scenario question
- where
-  players = gamePlayers marvelGameCurrentData
-  scenario = gameScenario marvelGameCurrentData
-  question = gameQuestion marvelGameCurrentData
-
 data CreateGamePost = CreateGamePost
   { deckIds :: [Maybe MarvelDeckId]
   , playerCount :: Int
@@ -150,7 +131,7 @@ data CreateGamePost = CreateGamePost
   deriving stock (Show, Generic)
   deriving anyclass FromJSON
 
-postApiV1MarvelGamesR :: Handler MarvelGame
+postApiV1MarvelGamesR :: Handler ApiGame
 postApiV1MarvelGamesR = do
   userId <- requireUserId
   CreateGamePost {..} <- requireCheckJsonBody
@@ -174,25 +155,26 @@ postApiV1MarvelGamesR = do
         diffUp = diff g ge
         diffDown = diff ge g
       updatedQueue <- readIORef queueRef
-      runDB $ do
-        gameId <- insert $ MarvelGame
+      let
+        createdGame = MarvelGame
           gameName
           ge
           [Step diffUp diffDown updatedQueue]
           []
           multiplayerVariant
+      gameId <- runDB $ do
+        gameId <- insert createdGame
         insert_ $ MarvelPlayer userId gameId (coerce $ toId player)
-      pure $ MarvelGame
-        gameName
-        ge
-        [Step diffUp diffDown updatedQueue]
-        []
-        multiplayerVariant
+        pure gameId
+      pure $ toApiGame $ Entity gameId createdGame
 
 newtype Answer
   = Answer QuestionResponse
   deriving stock Generic
-  deriving anyclass FromJSON
+
+instance FromJSON Answer where
+  parseJSON =
+    genericParseJSON $ defaultOptions { tagSingleConstructors = True }
 
 data QuestionResponse = QuestionResponse
   { qrChoice :: Int
@@ -225,13 +207,14 @@ putApiV1MarvelGameR :: MarvelGameId -> Handler ()
 putApiV1MarvelGameR gameId = do
   userId <- requireUserId
   MarvelGame {..} <- runDB $ get404 gameId
-  -- response <- requireCheckJsonBody
+  response <- requireCheckJsonBody
   Entity pid marvelPlayer <- runDB $ getBy404 (UniquePlayer userId gameId)
   let
     gameJson = marvelGameCurrentData
-    -- investigatorId =
-    --   fromMaybe (coerce marvelPlayerIdentityId) (answerIdentity response)
-    messages = [] -- handleAnswer gameJson investigatorId response
+    identityId = fromMaybe
+      (coerce $ marvelPlayerIdentityId marvelPlayer)
+      (answerIdentity response)
+    messages = handleAnswer gameJson identityId response
 
   let currentQueue = maybe [] stepMessages $ head <$> nonEmpty marvelGameSteps
 
@@ -247,20 +230,25 @@ putApiV1MarvelGameR gameId = do
 
   updatedQueue <- readIORef queueRef
   updatedLog <- (marvelGameLog <>) <$> readIORef logRef
-  void $ runDB $ do
-    replace gameId $ MarvelGame
+  let
+    updatedGame = MarvelGame
       marvelGameName
       ge
       (Step diffUp diffDown updatedQueue : marvelGameSteps)
       updatedLog
       marvelGameMultiplayerVariant
+
+  void $ runDB $ do
+    replace gameId updatedGame
     case marvelGameMultiplayerVariant of
       Solo -> replace pid $ marvelPlayer
         { marvelPlayerIdentityId = coerce (view activePlayerL ge)
         }
       WithFriends -> pure ()
 
-  liftIO $ atomically $ writeTChan writeChannel (encode $ GameUpdate ge)
+  liftIO $ atomically $ writeTChan
+    writeChannel
+    (encode $ GameUpdate $ toApiGame $ Entity gameId updatedGame)
 
 newtype RawGameJsonPut = RawGameJsonPut
   { gameMessage :: Message
@@ -288,18 +276,17 @@ putApiV1MarvelGameRawR gameId = do
     diffUp = diff marvelGameCurrentData ge
     diffDown = diff ge marvelGameCurrentData
   updatedLog <- (marvelGameLog <>) <$> readIORef logRef
-  liftIO $ atomically $ writeTChan writeChannel (encode $ GameUpdate ge)
-  void $ runDB
-    (replace
-      gameId
-      (MarvelGame
-        marvelGameName
-        ge
-        (Step diffUp diffDown updatedQueue : marvelGameSteps)
-        updatedLog
-        marvelGameMultiplayerVariant
-      )
-    )
+  let
+    updatedGame = MarvelGame
+      marvelGameName
+      ge
+      (Step diffUp diffDown updatedQueue : marvelGameSteps)
+      updatedLog
+      marvelGameMultiplayerVariant
+  liftIO $ atomically $ writeTChan
+    writeChannel
+    (encode $ GameUpdate $ toApiGame $ Entity gameId updatedGame)
+  void $ runDB $ replace gameId updatedGame
 
 deleteApiV1MarvelGameR :: MarvelGameId -> Handler ()
 deleteApiV1MarvelGameR gameId = void $ runDB $ do
@@ -310,13 +297,13 @@ deleteApiV1MarvelGameR gameId = void $ runDB $ do
     games <- from $ table @MarvelGame
     where_ $ games ^. persistIdField ==. val gameId
 
--- answerIdentity :: Answer -> Maybe IdentityId
--- answerIdentity (Answer response) = qrIdentityId response
+answerIdentity :: Answer -> Maybe IdentityId
+answerIdentity (Answer response) = qrIdentityId response
 
--- handleAnswer :: Game -> IdentityId -> Answer -> [Message]
--- handleAnswer Game {..} identityId = \case
---   Answer response -> case HashMap.lookup identityId gameQuestion of
---     Just (ChooseOne qs) -> case qs !!? qrChoice response of
---       Nothing -> [Ask identityId $ ChooseOne qs]
---       Just msg -> [msg]
---     _ -> error "Wrong question type"
+handleAnswer :: Game -> IdentityId -> Answer -> [Message]
+handleAnswer Game {..} identityId = \case
+  Answer response -> case HashMap.lookup identityId gameQuestion of
+    Just (ChooseOne qs) -> case qs !!? qrChoice response of
+      Nothing -> [Ask identityId $ ChooseOne qs]
+      Just choice -> choiceMessages identityId choice
+    _ -> error "Wrong question type"
