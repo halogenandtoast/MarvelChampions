@@ -6,6 +6,7 @@
       :key="player.id"
       :player="player"
       :game="game"
+      @choose="$emit('choose', $event)"
     />
   </div>
 </template>

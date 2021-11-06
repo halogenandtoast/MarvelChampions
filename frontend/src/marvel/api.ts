@@ -57,3 +57,9 @@ export const fetchGame = (gameId: string): Promise<FetchData> => api
 export const fetchGames = (): Promise<Game[]> => api
   .get('marvel/games')
   .then((resp) => JsonDecoder.array(gameDecoder, 'MarvelGame[]').decodeToPromise(resp.data));
+
+export const updateGame = (gameId: string, choice: number, investigatorId: string | null): Promise<void> => api
+  .put(`marvel/games/${gameId}`, {tag: 'Answer', contents: { choice, investigatorId }})
+
+export const deleteGame = (gameId: string): Promise<void> => api
+  .delete(`marvel/games/${gameId}`);
