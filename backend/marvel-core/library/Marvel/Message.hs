@@ -72,4 +72,3 @@ instance (RunMessage' l, RunMessage' r) => RunMessage' (l :+: r) where
 
 instance RunMessage c => RunMessage' (K1 i c) where
   runMessage' msg = fmap K1 . runMessage msg . unK1
-

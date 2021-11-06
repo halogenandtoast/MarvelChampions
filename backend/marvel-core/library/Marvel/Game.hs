@@ -7,6 +7,8 @@ import qualified Data.Aeson.Diff as Diff
 import Marvel.Ability
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
+import Marvel.Card.Def
+import Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Deck
 import Marvel.Entity
@@ -18,6 +20,7 @@ import Marvel.Message
 import Marvel.Phase
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Villain
 
@@ -179,3 +182,8 @@ runGameMessages = do
 -- TODO: implement this for api
 replayChoices :: MonadGame env m => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
+
+getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
+getAvailableResourcesFor c = do
+  players <- toList <$> getsGame gamePlayers
+  pure $ concatMap (`resourcesFor` c) players

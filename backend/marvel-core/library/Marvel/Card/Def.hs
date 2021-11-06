@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Card.Def where
 
 import Marvel.Prelude
@@ -5,9 +6,13 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Aspect
 import Marvel.Card.Code
+import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+
+class HasResources a where
+  resourcesFor :: a -> PlayerCard -> [Resource]
 
 data CardType
   = AlterEgoType

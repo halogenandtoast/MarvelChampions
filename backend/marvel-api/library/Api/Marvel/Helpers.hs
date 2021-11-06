@@ -97,7 +97,9 @@ toDeck =
     . slots
 
 toCard :: CardCode -> IO PlayerCard
-toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)
+toCard code = do
+  cardId <- getRandom
+  pure $ PlayerCard cardId (lookupPlayerCard code) Nothing Nothing
 
 loadDecklist :: MarvelDeck -> IO (CardCode, Deck)
 loadDecklist marvelDeck = (heroCardCode, ) <$> toDeck decklist

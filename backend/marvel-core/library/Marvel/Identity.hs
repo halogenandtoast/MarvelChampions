@@ -10,6 +10,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Deck
 import Marvel.Entity
@@ -42,6 +43,10 @@ data PlayerIdentity = PlayerIdentity
   deriving stock (Show, Eq, Generic)
 
 makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+
+instance HasResources PlayerIdentity where
+  resourcesFor player card =
+    concatMap (`resourcesFor` card) (unHand $ playerIdentityHand player)
 
 instance ToJSON PlayerIdentity where
   toJSON = genericToJSON $ aesonOptions $ Just "playerIdentity"
@@ -77,7 +82,12 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
     HeroSide x -> startingHP x
 
 setDeck :: Deck -> PlayerIdentity -> PlayerIdentity
-setDeck deck = deckL .~ deck
+setDeck deck player = player & deckL .~ deck'
+ where
+  ident = toId player
+  deck' = Deck $ map
+    (\c -> c { pcOwner = Just ident, pcController = Just ident })
+    (unDeck deck)
 
 lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupAlterEgo cardDef ident =
@@ -100,11 +110,22 @@ instance HasAbilities PlayerIdentity where
         AlterEgoSide x -> getAbilities x
     in [limitedAbility a (PerTurn 1) Action IsSelf ChangeForm] <> sideAbilities
 
+isPlayable :: MonadGame env m => PlayerCard -> m Bool
+isPlayable c = do
+  resources <- getAvailableResourcesFor c
+  let cost = cdCost $ getCardDef c
+  pure $ maybe False (length resources >=) cost
+
+getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
+getPlayableCards player = filterM isPlayable cards
+  where cards = unHand $ playerIdentityHand player
+
 getChoices :: MonadGame env m => PlayerIdentity -> m [Choice]
 getChoices attrs = do
   let ident = toId attrs
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
+  playableCards <- getPlayableCards attrs
   let
     validAbilities = filter
       (and . sequence
@@ -115,7 +136,7 @@ getChoices attrs = do
         ]
       )
       abilities
-  pure $ map UseAbility validAbilities
+  pure $ map UseAbility validAbilities <> map PlayCard playableCards
 
 runIdentityMessage
   :: (MonadGame env m, CoerceRole m)
