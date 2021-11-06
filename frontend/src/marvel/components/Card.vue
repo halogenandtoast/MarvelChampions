@@ -6,12 +6,12 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import { CardDef } from '@/marvel/types/CardDef'
+import { PlayerCard } from '@/marvel/types/Identity'
 
 export default defineComponent({
-  props: { card: { type: Object as () => CardDef, required: true } },
+  props: { card: { type: Object as () => PlayerCard, required: true } },
   setup(props) {
-    const cardImage = computed(() => `/img/marvel/cards/${props.card.cdCardCode}.jpg`)
+    const cardImage = computed(() => `/img/marvel/cards/${props.card.pcCardDef.cdCardCode}.jpg`)
 
     return { cardImage }
   }

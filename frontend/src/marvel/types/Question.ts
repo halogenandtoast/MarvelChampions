@@ -1,9 +1,13 @@
 import { JsonDecoder } from 'ts.data.json'
 
-export type Choice = EndTurn | UseAbility
+export type Choice = EndTurn | UseAbility | PlayCard
 
 export interface EndTurn {
   tag: 'EndTurn'
+}
+
+export interface PlayCard {
+  tag: 'PlayCard'
 }
 
 export const endTurnDecoder = JsonDecoder.object<EndTurn>({ tag: JsonDecoder.isExactly('EndTurn') }, 'EndTurn')
@@ -26,6 +30,10 @@ export const useAbilityDecoder = JsonDecoder.object<UseAbility>({
   contents: useAbilityContentsDecoder
 }, 'UseAbility')
 
+export const playCardDecoder = JsonDecoder.object<PlayCard>({
+  tag: JsonDecoder.isExactly('PlayCard'),
+}, 'PlayCard')
+
 export interface UseAbilityContents {
   abilityChoice: AbilityChoice
 }
@@ -46,6 +54,7 @@ export interface ChooseOne {
 export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   [ endTurnDecoder
   , useAbilityDecoder
+  , playCardDecoder
   ], 'Question'
 )
 

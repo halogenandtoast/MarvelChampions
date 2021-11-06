@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Exception
 import Marvel.Game.Source
@@ -33,6 +34,7 @@ data Choice
   | ChangeForm
   | ChangeToForm Side
   | GenerateResources [Resource]
+  | PlayCard PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

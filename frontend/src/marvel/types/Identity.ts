@@ -31,9 +31,13 @@ type Side = HeroSide | AlterEgoSide
 
 export interface Identity {
   id: string
-  hand: CardDef[]
+  hand: PlayerCard[]
   side: string
   sides: Record<string, Side>
+}
+
+export interface PlayerCard {
+  pcCardDef: CardDef
 }
 
 export const heroSideContentsContentsDecoder = JsonDecoder.object<HeroSideContentsContents>({
@@ -64,10 +68,14 @@ export const alterEgoSideDecoder = JsonDecoder.object<AlterEgoSide>({
 
 export const sideDecoder = JsonDecoder.oneOf<Side>([heroSideDecoder, alterEgoSideDecoder], 'Side')
 
+export const playerCardDecoder = JsonDecoder.object<PlayerCard>({
+  pcCardDef: cardDefDecoder
+}, 'PlayerCard')
+
 export const identityDecoder = JsonDecoder.object<Identity>(
   {
     id: JsonDecoder.string,
-    hand: JsonDecoder.array(JsonDecoder.tuple([JsonDecoder.string, cardDefDecoder], '[cardCode, card][]'), 'CardDef[]').map(cards => cards.map(([,card]) => card)),
+    hand: JsonDecoder.array(playerCardDecoder, 'PlayerCard[]'),
     side: JsonDecoder.string,
     sides: JsonDecoder.array(JsonDecoder.
       tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides))

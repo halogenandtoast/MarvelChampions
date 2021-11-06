@@ -96,7 +96,9 @@ toDeck =
     . slots
 
 toCard :: CardCode -> IO PlayerCard
-toCard code = PlayerCard <$> getRandom <*> pure (lookupPlayerCard code)
+toCard code = do
+  cardId <- getRandom
+  pure $ PlayerCard cardId (lookupPlayerCard code) Nothing Nothing
 
 toApiUrl :: URI -> URI
 toApiUrl url = url & pathL %~ toPublicDeckPath

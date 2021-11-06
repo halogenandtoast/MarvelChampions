@@ -4,7 +4,21 @@ import Marvel.Prelude
 
 import Marvel.Card.Def
 import Marvel.Card.Id
+import Marvel.Id
 
-data PlayerCard = PlayerCard CardId CardDef
+data PlayerCard = PlayerCard
+  { pcCardId :: CardId
+  , pcCardDef :: CardDef
+  , pcOwner :: Maybe IdentityId
+  , pcController :: Maybe IdentityId
+  }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+instance HasCardDef PlayerCard where
+  getCardDef = pcCardDef
+
+instance HasResources PlayerCard where
+  resourcesFor x c = do
+    guard $ x /= c
+    cdResources $ getCardDef x
