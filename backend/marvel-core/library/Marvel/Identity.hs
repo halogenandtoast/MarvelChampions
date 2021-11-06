@@ -138,7 +138,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     let (hand, deck) = splitAt n (unDeck playerIdentityDeck)
     pure $ attrs & handL .~ Hand hand & deckL .~ Deck deck
   ChooseOtherForm -> do
-    let otherForms = keys playerIdentitySides
+    let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
   ChangedToForm side -> pure $ attrs & sideL .~ side
