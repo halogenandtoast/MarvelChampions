@@ -1,19 +1,32 @@
 <template>
   <div class="card">
-    <img :src="cardImage" alt="card" />
+    <img :src="cardImage" alt="card" :class="{ active: playCardAction !== -1 }" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import { PlayerCard } from '@/marvel/types/Identity'
+import { Identity, PlayerCard } from '@/marvel/types/Identity'
+import { Game } from '@/marvel/types/Game'
+import * as MarvelGame from '@/marvel/types/Game'
 
 export default defineComponent({
-  props: { card: { type: Object as () => PlayerCard, required: true } },
+  props: {
+    card: { type: Object as () => PlayerCard, required: true },
+    player: { type: Object as () => Identity, required: true },
+    game: { type: Object as () => Game, required: true }
+  },
   setup(props) {
     const cardImage = computed(() => `/img/marvel/cards/${props.card.pcCardDef.cdCardCode}.jpg`)
+    const choices = computed(() => MarvelGame.choices(props.game, props.player.id))
 
-    return { cardImage }
+    const playCardAction = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'PlayCard' && c.contents.pcCardId === props.card.pcCardId)
+    })
+
+    return { cardImage, playCardAction }
   }
 })
 </script>
@@ -23,6 +36,11 @@ export default defineComponent({
   img {
     width: 150px;
     margin: 2px;
+    border-radius: 10px;
   }
+}
+
+.active {
+  border: 2px solid #FF00FF;
 }
 </style>

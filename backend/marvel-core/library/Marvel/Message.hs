@@ -8,6 +8,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Game.Source
 import Marvel.Hand
@@ -39,6 +40,7 @@ data IdentityMessage
   | DrawStartingHand HandSize
   | ShuffleDeck
   | SideMessage SideMessage
+  | PlayedCard PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

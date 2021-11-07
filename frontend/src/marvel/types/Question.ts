@@ -1,4 +1,5 @@
 import { JsonDecoder } from 'ts.data.json'
+import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
 export type Choice = EndTurn | UseAbility | PlayCard
 
@@ -7,7 +8,8 @@ export interface EndTurn {
 }
 
 export interface PlayCard {
-  tag: 'PlayCard'
+  tag: 'PlayCard',
+  contents: PlayerCard,
 }
 
 export const endTurnDecoder = JsonDecoder.object<EndTurn>({ tag: JsonDecoder.isExactly('EndTurn') }, 'EndTurn')
@@ -32,6 +34,7 @@ export const useAbilityDecoder = JsonDecoder.object<UseAbility>({
 
 export const playCardDecoder = JsonDecoder.object<PlayCard>({
   tag: JsonDecoder.isExactly('PlayCard'),
+  contents: playerCardDecoder,
 }, 'PlayCard')
 
 export interface UseAbilityContents {
