@@ -86,16 +86,20 @@ runGameMessage msg g@Game {..} = case msg of
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
   SetActiveCost activeCost -> do
     cards <- getAvailablePaymentSources
-    push $ Ask (activeCostIdentityId activeCost) $ ChooseOne $ map
-      PayWithCard
-      cards
+    pushAll
+      $ Ask
+          (activeCostIdentityId activeCost)
+          (ChooseOne $ map PayWithCard cards)
+      : [ FinishPayment | resourceCostPaid activeCost ]
     pure $ g & activeCostL ?~ activeCost
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
       cards <- getAvailablePaymentSources
-      push $ Ask (activeCostIdentityId activeCost) $ ChooseOne $ map
-        PayWithCard
-        cards
+      pushAll
+        $ Ask
+            (activeCostIdentityId activeCost)
+            (ChooseOne $ map PayWithCard cards)
+        : [ FinishPayment | resourceCostPaid activeCost ]
       pure $ g & activeCostL ?~ activeCost
         { activeCostPayment = activeCostPayment activeCost <> payment
         }
