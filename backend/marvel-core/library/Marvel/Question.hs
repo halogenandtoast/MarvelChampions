@@ -2,6 +2,9 @@ module Marvel.Question where
 
 import Marvel.Prelude
 
+import Data.List (partition)
+import qualified Data.List as L
+import Data.Traversable (for)
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
@@ -29,9 +32,19 @@ instance Semigroup Cost where
   x <> Costs ys = Costs $ x : ys
   x <> y = Costs [x, y]
 
+costResources :: Cost -> [Maybe Resource]
+costResources NoCost = []
+costResources (ResourceCost r) = [r]
+costResources (Costs ps) = concatMap costResources ps
+
 data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+paymentResources :: Payment -> [Resource]
+paymentResources NoPayment = []
+paymentResources (ResourcePayment r) = [r]
+paymentResources (Payments ps) = concatMap paymentResources ps
 
 instance Semigroup Payment where
   NoPayment <> x = x
@@ -52,6 +65,26 @@ data ActiveCost = ActiveCost
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+resourceCostPaid :: ActiveCost -> Bool
+resourceCostPaid ActiveCost {..} =
+  let
+    (rs, mrs) =
+      first catMaybes $ partition isJust (costResources activeCostCost)
+    prs = paymentResources activeCostPayment
+  in flip evalState prs $ do
+    l <- fmap and $ for rs $ \r -> do
+      prs' <- get
+      case (r `elem` prs', Wild `elem` prs') of
+        (False, False) -> pure False
+        (True, _) -> do
+          put $ L.delete r prs'
+          pure True
+        (_, True) -> do
+          put $ L.delete Wild prs'
+          pure True
+    prs' <- get
+    pure $ l && length prs' >= length mrs
 
 newtype ActiveCostTarget = ForCard PlayerCard
   deriving stock (Show, Eq, Generic)
