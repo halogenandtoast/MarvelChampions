@@ -1,6 +1,7 @@
 <template>
   <div class="card">
-    <img :src="cardImage" alt="card" :class="{ active: playCardAction !== -1 }" />
+    <img :src="cardImage" alt="card" :class="{ active: playCardAction !== -1 }" @click="$emit('choose', playCardAction)" />
+    <button v-if="payWithCardAction !== -1" @click="$emit('choose', payWithCardAction)">Pay</button>
   </div>
 </template>
 
@@ -26,13 +27,21 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'PlayCard' && c.contents.pcCardId === props.card.pcCardId)
     })
 
-    return { cardImage, playCardAction }
+    const payWithCardAction = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'PayWithCard' && c.contents.pcCardId === props.card.pcCardId)
+    })
+
+    return { cardImage, playCardAction, payWithCardAction }
   }
 })
 </script>
 
 <style scoped lang="scss">
 .card {
+  display: flex;
+  flex-direction: column;
   img {
     width: 150px;
     margin: 2px;

@@ -27,6 +27,10 @@ data Message
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
+  | SetActiveCost ActiveCost
+  | Paid Payment
+  | FinishPayment
+  | PutCardIntoPlay IdentityId PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -41,6 +45,7 @@ data IdentityMessage
   | ShuffleDeck
   | SideMessage SideMessage
   | PlayedCard PlayerCard
+  | PayedWithCard PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
