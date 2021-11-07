@@ -9,6 +9,7 @@ import Marvel.Id
 data PlayerCard = PlayerCard
   { pcCardId :: CardId
   , pcCardDef :: CardDef
+  , pcCardType :: CardType
   , pcOwner :: Maybe IdentityId
   , pcController :: Maybe IdentityId
   }

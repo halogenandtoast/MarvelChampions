@@ -29,8 +29,8 @@ data Message
   | RanAbility Target Natural
   | SetActiveCost ActiveCost
   | Paid Payment
-  | FinishPayment
-  | PutCardIntoPlay IdentityId PlayerCard
+  | FinishedPayment
+  | PutCardIntoPlay IdentityId PlayerCard Payment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -46,6 +46,7 @@ data IdentityMessage
   | SideMessage SideMessage
   | PlayedCard PlayerCard
   | PayedWithCard PlayerCard
+  | AllyCreated AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

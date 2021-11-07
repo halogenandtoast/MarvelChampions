@@ -112,6 +112,7 @@ data Choice
   | GenerateResources [Resource]
   | PlayCard PlayerCard
   | PayWithCard PlayerCard
+  | FinishPayment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -125,6 +126,7 @@ choiceMessages ident = \case
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
   PlayCard x -> [IdentityMessage ident $ PlayedCard x]
   PayWithCard c -> [IdentityMessage ident $ PayedWithCard c]
+  FinishPayment -> [FinishedPayment]
   GenerateResources _ -> []
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()

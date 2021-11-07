@@ -7,3 +7,6 @@ newtype IdentityId = IdentityId UUID
 
 newtype VillainId = VillainId UUID
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
+newtype AllyId = AllyId UUID
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

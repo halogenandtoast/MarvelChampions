@@ -5,6 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -39,6 +40,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityDeck :: Deck
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
+  , playerIdentityAllies :: HashSet AllyId
   }
   deriving stock (Show, Eq, Generic)
 
@@ -176,6 +178,8 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   PayedWithCard card -> do
     push $ Paid $ mconcat $ map ResourcePayment (cdResources $ getCardDef card)
     pure $ attrs & handL %~ Hand . filter (/= card) . unHand
+  AllyCreated allyId -> do
+    pure $ attrs & alliesL %~ HashSet.insert allyId
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

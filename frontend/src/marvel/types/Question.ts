@@ -1,10 +1,14 @@
 import { JsonDecoder } from 'ts.data.json'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
-export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard
+export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment
 
 export interface EndTurn {
   tag: 'EndTurn'
+}
+
+export interface FinishPayment {
+  tag: 'FinishPayment'
 }
 
 export interface PlayCard {
@@ -18,6 +22,8 @@ export interface PayWithCard {
 }
 
 export const endTurnDecoder = JsonDecoder.object<EndTurn>({ tag: JsonDecoder.isExactly('EndTurn') }, 'EndTurn')
+
+export const finishPaymentDecoder = JsonDecoder.object<FinishPayment>({ tag: JsonDecoder.isExactly('FinishPayment') }, 'FinishPayment')
 
 export interface UseAbility {
   tag: 'UseAbility'
@@ -73,6 +79,7 @@ export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   , useAbilityDecoder
   , playCardDecoder
   , payWithCardDecoder
+  , finishPaymentDecoder
   ], 'Question'
 )
 

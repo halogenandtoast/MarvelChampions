@@ -4,6 +4,10 @@
     <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
   </div>
   <button
+    v-if="finishPaymentAction !== -1"
+    @click="$emit('choose', finishPaymentAction)"
+  >Finish Payment</button>
+  <button
     :disabled="changeFormAction === -1"
     @click="$emit('choose', changeFormAction)"
   >Change Form</button>
@@ -57,7 +61,13 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'UseAbility' && c.contents.abilityChoice.tag === 'ChangeForm')
     })
 
-    return { playerImg, choices, endTurnAction, changeFormAction }
+    const finishPaymentAction = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'FinishPayment')
+    })
+
+    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction }
   }
 })
 </script>

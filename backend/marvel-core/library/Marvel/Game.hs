@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import qualified Data.Aeson.Diff as Diff
 import Marvel.Ability
+import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -86,31 +87,44 @@ runGameMessage msg g@Game {..} = case msg of
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
   SetActiveCost activeCost -> do
     cards <- getAvailablePaymentSources
-    pushAll
-      $ Ask
-          (activeCostIdentityId activeCost)
-          (ChooseOne $ map PayWithCard cards)
-      : [ FinishPayment | resourceCostPaid activeCost ]
+    push $ Ask
+      (activeCostIdentityId activeCost)
+      (ChooseOne
+      $ map PayWithCard cards
+      <> [ FinishPayment | resourceCostPaid activeCost ]
+      )
     pure $ g & activeCostL ?~ activeCost
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
+      let
+        activeCost' = activeCost
+          { activeCostPayment = activeCostPayment activeCost <> payment
+          }
       cards <- getAvailablePaymentSources
-      pushAll
-        $ Ask
-            (activeCostIdentityId activeCost)
-            (ChooseOne $ map PayWithCard cards)
-        : [ FinishPayment | resourceCostPaid activeCost ]
-      pure $ g & activeCostL ?~ activeCost
-        { activeCostPayment = activeCostPayment activeCost <> payment
-        }
+      push $ Ask
+        (activeCostIdentityId activeCost)
+        (ChooseOne
+        $ map PayWithCard cards
+        <> [ FinishPayment | resourceCostPaid activeCost' ]
+        )
+      pure $ g & activeCostL ?~ activeCost'
     Nothing -> error "No cost"
-  FinishPayment -> case g ^. activeCostL of
+  FinishedPayment -> case g ^. activeCostL of
     Just activeCost -> do
       case activeCostTarget activeCost of
         ForCard card -> do
-          push $ PutCardIntoPlay (activeCostIdentityId activeCost) card
+          push $ PutCardIntoPlay
+            (activeCostIdentityId activeCost)
+            card
+            (activeCostPayment activeCost)
           pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
+  PutCardIntoPlay ident card payment -> do
+    case cdCardType (getCardDef card) of
+      AllyType -> do
+        ally <- createAlly ident card
+        push $ IdentityMessage ident (AllyCreated $ toId ally)
+        pure $ g & alliesL %~ insert (toId ally) ally
   _ -> pure g
 
 instance RunMessage Game where
@@ -121,6 +135,9 @@ instance RunMessage Game where
 
 class HasGame a where
   game :: a -> IORef Game
+
+createAlly :: IdentityId -> PlayerCard -> Ally
+createAlly ident card = lookupAlly (toCardCode card) (AllyId $ toCardId card)
 
 newGame :: PlayerIdentity -> Scenario -> Game
 newGame player scenario = Game
