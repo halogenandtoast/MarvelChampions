@@ -14,6 +14,10 @@ library
   exposed-modules:
       Marvel.Ability
       Marvel.Ability.Type
+      Marvel.Ally
+      Marvel.Ally.Allies
+      Marvel.Ally.Allies.BlackCatFeliciaHardy
+      Marvel.Ally.Attrs
       Marvel.Ally.Cards
       Marvel.AlterEgo
       Marvel.AlterEgo.AlterEgos

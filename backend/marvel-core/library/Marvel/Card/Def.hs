@@ -22,6 +22,7 @@ data CardType
   | EventType
   | SupportType
   | ResourceType
+  | UpgradeType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
