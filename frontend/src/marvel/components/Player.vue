@@ -1,7 +1,7 @@
 <template>
   <div class="player">
     <img :src="playerImg" alt="player" width="150" />
-    <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" />
+    <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
   </div>
   <button
     :disabled="changeFormAction === -1"

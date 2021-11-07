@@ -36,6 +36,9 @@ import Network.WebSockets (ConnectionException)
 import UnliftIO.Exception (bracket, catch)
 import Yesod.WebSockets
 
+logger :: Maybe DebugLogger
+logger = Just $ DebugLogger print
+
 gameStream :: MarvelGameId -> WebSocketsT Handler ()
 gameStream gameId = catchingConnectionException $ do
   writeChannel <- lift $ getChannel gameId
@@ -147,9 +150,7 @@ postApiV1MarvelGamesR = do
       let g = newGame player scenario
       gameRef <- newIORef g
       queueRef <- newIORef [StartGame]
-      runGameApp
-        (GameApp gameRef queueRef (Just $ DebugLogger print))
-        runGameMessages
+      runGameApp (GameApp gameRef queueRef logger) runGameMessages
       ge <- readIORef gameRef
       let
         diffUp = diff g ge
@@ -222,7 +223,7 @@ putApiV1MarvelGameR gameId = do
   queueRef <- newIORef (messages <> currentQueue)
   logRef <- newIORef []
   writeChannel <- getChannel gameId
-  runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
+  runGameApp (GameApp gameRef queueRef logger) runGameMessages
   ge <- readIORef gameRef
   let
     diffUp = diff marvelGameCurrentData ge
@@ -269,7 +270,7 @@ putApiV1MarvelGameRawR gameId = do
   queueRef <- newIORef (message : currentQueue)
   logRef <- newIORef []
   writeChannel <- getChannel gameId
-  runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
+  runGameApp (GameApp gameRef queueRef logger) runGameMessages
   ge <- readIORef gameRef
   updatedQueue <- readIORef queueRef
   let

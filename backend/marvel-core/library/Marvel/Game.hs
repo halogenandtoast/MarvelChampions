@@ -13,6 +13,7 @@ import Marvel.Debug
 import Marvel.Deck
 import Marvel.Entity
 import Marvel.Exception
+import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
 import Marvel.Identity
@@ -40,6 +41,7 @@ data Game = Game
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [Ability]
   , gameActivePlayer :: IdentityId
+  , gameActiveCost :: Maybe ActiveCost
 
   -- leave last for `newGame`
   , gameScenario :: Scenario
@@ -82,6 +84,29 @@ runGameMessage msg g@Game {..} = case msg of
       Just x -> pure $ g & villainsL . at villainId ?~ x
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
+  SetActiveCost activeCost -> do
+    cards <- getAvailablePaymentSources
+    push $ Ask (activeCostIdentityId activeCost) $ ChooseOne $ map
+      PayWithCard
+      cards
+    pure $ g & activeCostL ?~ activeCost
+  Paid payment -> case g ^. activeCostL of
+    Just activeCost -> do
+      cards <- getAvailablePaymentSources
+      push $ Ask (activeCostIdentityId activeCost) $ ChooseOne $ map
+        PayWithCard
+        cards
+      pure $ g & activeCostL ?~ activeCost
+        { activeCostPayment = activeCostPayment activeCost <> payment
+        }
+    Nothing -> error "No cost"
+  FinishPayment -> case g ^. activeCostL of
+    Just activeCost -> do
+      case activeCostTarget activeCost of
+        ForCard card -> do
+          push $ PutCardIntoPlay (activeCostIdentityId activeCost) card
+          pure $ g & activeCostL .~ Nothing
+    Nothing -> error "no active cost"
   _ -> pure g
 
 instance RunMessage Game where
@@ -101,6 +126,7 @@ newGame player scenario = Game
   , gamePlayers = fromList [(toId player, player)]
   , gameVillains = mempty
   , gameQuestion = mempty
+  , gameActiveCost = Nothing
   , gameUsedAbilities = mempty
   , gameActivePlayer = toId player
   , gameScenario = scenario
@@ -182,6 +208,11 @@ runGameMessages = do
 -- TODO: implement this for api
 replayChoices :: MonadGame env m => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
+
+getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
+getAvailablePaymentSources = do
+  players <- toList <$> getsGame gamePlayers
+  pure $ concatMap (unHand . playerIdentityHand) players
 
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
 getAvailableResourcesFor c = do

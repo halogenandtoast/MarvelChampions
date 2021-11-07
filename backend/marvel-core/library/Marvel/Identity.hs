@@ -163,6 +163,19 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
   ChangedToForm side -> pure $ attrs & sideL .~ side
+  PlayedCard card -> case cdCost (getCardDef card) of
+    Just cost -> do
+      let cost' = mconcat $ replicate cost (ResourceCost Nothing)
+      push $ SetActiveCost $ ActiveCost
+        (toId attrs)
+        (ForCard card)
+        cost'
+        NoPayment
+      pure $ attrs & handL %~ Hand . filter (/= card) . unHand
+    Nothing -> error "Invalid cost"
+  PayedWithCard card -> do
+    push $ Paid $ mconcat $ map ResourcePayment (cdResources $ getCardDef card)
+    pure $ attrs & handL %~ Hand . filter (/= card) . unHand
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

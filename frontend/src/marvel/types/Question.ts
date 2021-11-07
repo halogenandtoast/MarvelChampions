@@ -1,7 +1,7 @@
 import { JsonDecoder } from 'ts.data.json'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
-export type Choice = EndTurn | UseAbility | PlayCard
+export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard
 
 export interface EndTurn {
   tag: 'EndTurn'
@@ -9,6 +9,11 @@ export interface EndTurn {
 
 export interface PlayCard {
   tag: 'PlayCard',
+  contents: PlayerCard,
+}
+
+export interface PayWithCard {
+  tag: 'PayWithCard',
   contents: PlayerCard,
 }
 
@@ -37,6 +42,11 @@ export const playCardDecoder = JsonDecoder.object<PlayCard>({
   contents: playerCardDecoder,
 }, 'PlayCard')
 
+export const payWithCardDecoder = JsonDecoder.object<PayWithCard>({
+  tag: JsonDecoder.isExactly('PayWithCard'),
+  contents: playerCardDecoder,
+}, 'PayWithCard')
+
 export interface UseAbilityContents {
   abilityChoice: AbilityChoice
 }
@@ -47,17 +57,22 @@ export interface ChangeForm {
   tag: 'ChangeForm'
 }
 
-export type Question = ChooseOne
+export type Question = ChooseOne | ChoosePayment
 
 export interface ChooseOne {
   tag: 'ChooseOne'
   contents: Choice[]
 }
 
+export interface ChoosePayment {
+  tag: 'ChoosePayment'
+}
+
 export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   [ endTurnDecoder
   , useAbilityDecoder
   , playCardDecoder
+  , payWithCardDecoder
   ], 'Question'
 )
 
@@ -67,7 +82,13 @@ export const chooseOneDecoder = JsonDecoder.object<ChooseOne>(
     contents: JsonDecoder.array<Choice>(choiceDecoder, 'Choice[]')
   }, 'ChooseOne')
 
+export const choosePaymentDecoder = JsonDecoder.object<ChoosePayment>(
+  {
+    tag: JsonDecoder.isExactly('ChoosePayment'),
+  }, 'ChoosePayment')
+
 export const questionDecoder = JsonDecoder.oneOf<Question>(
   [ chooseOneDecoder
+  , choosePaymentDecoder
   ], 'Question'
 )

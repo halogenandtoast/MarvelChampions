@@ -14,6 +14,49 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Target
 
+data Cost = Costs [Cost] | ResourceCost (Maybe Resource) | NoCost
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+instance Monoid Cost where
+  mempty = NoCost
+
+instance Semigroup Cost where
+  NoCost <> x = x
+  x <> NoCost = x
+  Costs xs <> Costs ys = Costs $ xs <> ys
+  Costs xs <> y = Costs $ xs <> [y]
+  x <> Costs ys = Costs $ x : ys
+  x <> y = Costs [x, y]
+
+data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+instance Semigroup Payment where
+  NoPayment <> x = x
+  x <> NoPayment = x
+  Payments xs <> Payments ys = Payments $ xs <> ys
+  x <> Payments ys = Payments $ x : ys
+  Payments xs <> y = Payments $ xs <> [y]
+  x <> y = Payments [x, y]
+
+instance Monoid Payment where
+  mempty = NoPayment
+
+data ActiveCost = ActiveCost
+  { activeCostIdentityId :: IdentityId
+  , activeCostTarget :: ActiveCostTarget
+  , activeCostCost :: Cost
+  , activeCostPayment :: Payment
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+newtype ActiveCostTarget = ForCard PlayerCard
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Question
   = ChooseOne [Choice]
   | ChoosePlayerOrder (Unsorted IdentityId) (Sorted IdentityId)
@@ -35,6 +78,7 @@ data Choice
   | ChangeToForm Side
   | GenerateResources [Resource]
   | PlayCard PlayerCard
+  | PayWithCard PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -47,6 +91,7 @@ choiceMessages ident = \case
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
   PlayCard x -> [IdentityMessage ident $ PlayedCard x]
+  PayWithCard c -> [IdentityMessage ident $ PayedWithCard c]
   GenerateResources _ -> []
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
