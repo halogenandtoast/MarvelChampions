@@ -46,6 +46,7 @@ choiceMessages ident = \case
   RunAbility target n -> [RanAbility target n]
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
+  PlayCard x -> [IdentityMessage ident $ PlayedCard x]
   GenerateResources _ -> []
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
