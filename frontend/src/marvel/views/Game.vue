@@ -77,8 +77,9 @@ export default defineComponent({
           })
         }
 
-    fetchGame(props.gameId).then(({ game: newGame }) => {
+    fetchGame(props.gameId).then(({ game: newGame, identityId: newIdentityId }) => {
       game.value = newGame
+      identityId.value = newIdentityId
       connect()
     });
 

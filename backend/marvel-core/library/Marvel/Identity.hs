@@ -177,7 +177,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       pure $ attrs & handL %~ Hand . filter (/= card) . unHand
     Nothing -> error "Invalid cost"
   PayedWithCard card -> do
-    push $ Paid $ mconcat $ map ResourcePayment (cdResources $ getCardDef card)
+    push $ Spent card
     pure $ attrs & handL %~ Hand . filter (/= card) . unHand
   AllyCreated allyId -> do
     pure $ attrs & alliesL %~ HashSet.insert allyId

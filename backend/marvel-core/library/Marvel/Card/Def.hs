@@ -26,6 +26,15 @@ data CardType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data CardMatcher = AnyCard | CardWithAspect Aspect
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
+cardMatch matcher a = case matcher of
+  AnyCard -> True
+  CardWithAspect aspect -> cdAspect (getCardDef a) == Just aspect
+
 data CardDef = CardDef
   { cdCardCode :: CardCode
   , cdName :: Name
@@ -34,10 +43,13 @@ data CardDef = CardDef
   , cdCardType :: CardType
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
-  , cdResources :: [Resource]
+  , cdResources :: [(CardMatcher, Resource)]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+resourcesL :: Lens' CardDef [(CardMatcher, Resource)]
+resourcesL = lens cdResources $ \m x -> m { cdResources = x }
 
 instance HasCardCode CardDef where
   toCardCode = cdCardCode

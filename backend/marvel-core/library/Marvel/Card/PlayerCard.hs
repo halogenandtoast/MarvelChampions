@@ -25,4 +25,4 @@ instance HasCardDef PlayerCard where
 instance HasResources PlayerCard where
   resourcesFor x c = do
     guard $ x /= c
-    cdResources $ getCardDef x
+    map snd $ filter ((`cardMatch` c) . fst) $ cdResources $ getCardDef x
