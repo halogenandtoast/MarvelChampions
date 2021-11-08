@@ -29,6 +29,7 @@ data Message
   | AddVillain CardCode
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
+  | VillainMessage VillainId VillainMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
@@ -40,6 +41,10 @@ data Message
   | PutCardIntoPlay IdentityId PlayerCard Payment
   | CheckWindows [Window]
   | EndCheckWindows
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+newtype VillainMessage = SetVillainHP Int
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

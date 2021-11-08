@@ -13,6 +13,7 @@ import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Source
+import Marvel.Stats
 
 alterEgo
   :: (AlterEgoAttrs -> a)
@@ -36,9 +37,6 @@ alterEgo f cardDef hp handSize recovery = CardBuilder
 class IsAlterEgo a
 
 type AlterEgoCard a = CardBuilder IdentityId a
-
-newtype Rec = Rec Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 data AlterEgoAttrs = AlterEgoAttrs
   { alterEgoIdentityId :: IdentityId

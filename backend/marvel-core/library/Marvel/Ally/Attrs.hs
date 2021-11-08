@@ -8,6 +8,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Source
+import Marvel.Stats
 import Marvel.Target
 
 class IsAlly a
@@ -47,12 +48,6 @@ ally f cardDef thw atk = CardBuilder
   }
 
 class IsHero a
-
-newtype Atk = Atk Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
-
-newtype Thw = Thw Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 instance Entity AllyAttrs where
   type EntityId AllyAttrs = AllyId

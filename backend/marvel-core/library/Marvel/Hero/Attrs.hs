@@ -13,6 +13,7 @@ import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Source
+import Marvel.Stats
 import Marvel.Target
 
 hero
@@ -41,15 +42,6 @@ hero f cardDef hp handSize thw atk def = CardBuilder
 class IsHero a
 
 type HeroCard a = CardBuilder IdentityId a
-
-newtype Atk = Atk Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
-
-newtype Thw = Thw Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
-
-newtype Def = Def Int
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 data HeroAttrs = HeroAttrs
   { heroIdentityId :: IdentityId

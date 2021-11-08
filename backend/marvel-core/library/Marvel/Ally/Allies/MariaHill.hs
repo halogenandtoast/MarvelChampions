@@ -13,6 +13,7 @@ import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
+import Marvel.Stats
 import Marvel.Target
 import Marvel.Window
 
