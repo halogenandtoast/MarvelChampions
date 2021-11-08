@@ -104,6 +104,15 @@ runGameMessage msg g@Game {..} = case msg of
       <> [ FinishPayment | resourceCostPaid activeCost ]
       )
     pure $ g & activeCostL ?~ activeCost
+  Spent discard -> case g ^. activeCostL of
+    Just activeCost -> do
+      case activeCostTarget activeCost of
+        ForCard card -> do
+          push $ Paid $ mconcat $ map
+            ResourcePayment
+            (resourcesFor discard card)
+          pure g
+    Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
       let

@@ -32,7 +32,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdCardType = SupportType
   , cdUnique = False
   , cdAspect = mAspect
-  , cdResources = resources
+  , cdResources = map (AnyCard, ) resources
   }
 
 spiderTracer :: CardDef

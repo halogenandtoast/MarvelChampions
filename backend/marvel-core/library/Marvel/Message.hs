@@ -28,6 +28,7 @@ data Message
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
   | SetActiveCost ActiveCost
+  | Spent PlayerCard
   | Paid Payment
   | FinishedPayment
   | PutCardIntoPlay IdentityId PlayerCard Payment

@@ -35,12 +35,14 @@ baseResource code name traits resources mAspect = CardDef
   , cdCardType = ResourceType
   , cdUnique = False
   , cdAspect = mAspect
-  , cdResources = resources
+  , cdResources = map (AnyCard, ) resources
   }
 
 thePowerOfLeadership :: CardDef
 thePowerOfLeadership =
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
+    & resourcesL
+    <>~ [(CardWithAspect Leadership, Wild)]
 
 energy :: CardDef
 energy = basicResource "01088" "Energy" [] [Energy, Energy]
