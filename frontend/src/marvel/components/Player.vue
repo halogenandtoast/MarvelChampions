@@ -4,7 +4,16 @@
       <Ally v-for="ally in allies" :key="ally.contents.allyId" :ally="ally" :game="game" :player="player" @choose="$emit('choose', $event)" />
     </div>
     <div class="identity">
-      <img :src="playerImg" alt="player" width="150" />
+      <div>
+        <img :src="playerImg" alt="player" width="150" />
+        <AbilityButton
+              v-for="ability in abilities"
+              :key="ability"
+              :ability="choices[ability]"
+              :data-image="image"
+              @click="$emit('choose', ability)"
+              />
+      </div>
       <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
     </div>
     <button
@@ -30,9 +39,10 @@ import * as MarvelGame from '@/marvel/types/Game'
 import { Identity } from '@/marvel/types/Identity'
 import Card from '@/marvel/components/Card.vue'
 import Ally from '@/marvel/components/Ally.vue'
+import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 export default defineComponent({
-  components: { Card, Ally },
+  components: { Card, Ally, AbilityButton },
   props: {
     game: { type: Object as () => Game, required: true },
     player: { type: Object as () => Identity, required: true },
@@ -75,7 +85,16 @@ export default defineComponent({
 
     const allies = computed(() => props.player.allies.map((allyId) => props.game.allies[allyId]))
 
-    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction, allies }
+    const abilities = computed(() => {
+      return choices.value.reduce<number[]>((acc, v, i) => {
+        if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.player.id) {
+          return [...acc, i]
+        }
+        return acc
+      }, [])
+    })
+
+    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction, allies, abilities }
   }
 })
 </script>

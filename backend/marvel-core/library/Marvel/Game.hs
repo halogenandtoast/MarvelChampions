@@ -70,6 +70,12 @@ patch g p = case Diff.patch p (toJSON g) of
 getPlayers :: MonadGame env m => m [IdentityId]
 getPlayers = getsGame gamePlayerOrder
 
+getActivePlayer :: MonadGame env m => m PlayerIdentity
+getActivePlayer = getsGame $ \g ->
+  case lookup (g ^. activePlayerL) (g ^. playersL) of
+    Just p -> p
+    Nothing -> error "Missing player"
+
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
@@ -89,10 +95,12 @@ runGameMessage msg g@Game {..} = case msg of
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
   SetActiveCost activeCost -> do
     cards <- getAvailablePaymentSources
+    abilities <- getResourceAbilities
     push $ Ask
       (activeCostIdentityId activeCost)
       (ChooseOne
       $ map PayWithCard cards
+      <> map UseAbility abilities
       <> [ FinishPayment | resourceCostPaid activeCost ]
       )
     pure $ g & activeCostL ?~ activeCost
@@ -103,10 +111,12 @@ runGameMessage msg g@Game {..} = case msg of
           { activeCostPayment = activeCostPayment activeCost <> payment
           }
       cards <- getAvailablePaymentSources
+      abilities <- getResourceAbilities
       push $ Ask
         (activeCostIdentityId activeCost)
         (ChooseOne
         $ map PayWithCard cards
+        <> map UseAbility abilities
         <> [ FinishPayment | resourceCostPaid activeCost' ]
         )
       pure $ g & activeCostL ?~ activeCost'
@@ -244,3 +254,14 @@ getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
 getAvailableResourcesFor c = do
   players <- toList <$> getsGame gamePlayers
   pure $ concatMap (`resourcesFor` c) players
+
+getResourceAbilities :: MonadGame env m => m [Ability]
+getResourceAbilities = do
+  player <- getActivePlayer
+  abilities <- getsGame getAbilities
+  usedAbilities <- getUsedAbilities
+  pure $ filter
+    (and . sequence
+      [passesUseLimit (toId player) usedAbilities, (== Resource) . abilityType]
+    )
+    abilities

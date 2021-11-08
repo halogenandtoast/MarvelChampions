@@ -24,7 +24,13 @@ newtype PeterParker = PeterParker AlterEgoAttrs
 
 instance HasAbilities PeterParker where
   getAbilities a =
-    [label "Scientist" $ ability a Resource IsSelf (GenerateResources [Mental])]
+    [ label "Scientist" $ limitedAbility
+        a
+        (PerRound 1)
+        Resource
+        IsSelf
+        (Pay $ ResourcePayment Mental)
+    ]
 
 instance RunMessage PeterParker where
   runMessage msg a@(PeterParker attrs) = case msg of
