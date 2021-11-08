@@ -35,7 +35,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdCardType = SupportType
   , cdUnique = False
   , cdAspect = mAspect
-  , cdResources = map (AnyCard, ) resources
+  , cdResources = map (PrintedResource, ) resources
   }
 
 unique :: CardDef -> CardDef

@@ -44,7 +44,7 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdCardType = EventType
   , cdUnique = False
   , cdAspect = mAspect
-  , cdResources = map (AnyCard, ) resources
+  , cdResources = map (PrintedResource, ) resources
   }
 
 backflip :: CardDef

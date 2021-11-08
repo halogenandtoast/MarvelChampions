@@ -14,6 +14,7 @@ import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Deck
+import qualified Marvel.Discard as Discard
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hand
@@ -38,6 +39,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityMaxHP :: HP
   , playerIdentityCurrentHP :: HP
   , playerIdentityDeck :: Deck
+  , playerIdentityDiscard :: Discard.Discard
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
@@ -75,6 +77,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityCurrentHP = hp
   , playerIdentityMaxHP = hp
   , playerIdentityDeck = Deck []
+  , playerIdentityDiscard = Discard.Discard []
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
@@ -111,7 +114,9 @@ instance HasAbilities PlayerIdentity where
       sideAbilities = case currentIdentity a of
         HeroSide x -> getAbilities x
         AlterEgoSide x -> getAbilities x
-    in [limitedAbility a (PerTurn 1) Action IsSelf ChangeForm] <> sideAbilities
+    in
+      [limitedAbility a 100 (PerTurn 1) Action IsSelf ChangeForm]
+        <> sideAbilities
 
 isPlayable :: MonadGame env m => PlayerCard -> m Bool
 isPlayable c = do
@@ -161,6 +166,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DrawStartingHand (HandSize n) -> do
     let (hand, deck) = splitAt n (unDeck playerIdentityDeck)
     pure $ attrs & handL .~ Hand hand & deckL .~ Deck deck
+  DrawCards fromZone n -> case fromZone of
+    FromDeck -> do
+      let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
+      pure $ attrs & handL %~ Hand . (<> cards) . unHand & deckL .~ Deck deck
   ChooseOtherForm -> do
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
@@ -181,6 +190,19 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & handL %~ Hand . filter (/= card) . unHand
   AllyCreated allyId -> do
     pure $ attrs & alliesL %~ HashSet.insert allyId
+  AddToHand card ->
+    pure
+      $ attrs
+      & (handL %~ Hand . (card :) . unHand)
+      & (discardL %~ Discard.Discard . filter (/= card) . Discard.unDiscard)
+  Discard fromZone n mTarget -> case fromZone of
+    FromDeck -> do
+      let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
+      for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards
+      pure
+        $ attrs
+        & (discardL %~ Discard.Discard . (cards <>) . Discard.unDiscard)
+        & (deckL .~ Deck deck')
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

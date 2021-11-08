@@ -1,7 +1,7 @@
 import { JsonDecoder } from 'ts.data.json'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
-export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment
+export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment | Label
 
 export interface EndTurn {
   tag: 'EndTurn'
@@ -40,15 +40,34 @@ export const sourceDecoder = JsonDecoder.object<Source>({ tag: JsonDecoder.strin
 
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
 
+export const labelDecoder = JsonDecoder.object<Label>({ tag: JsonDecoder.isExactly('Label') }, 'Label')
+
+
 export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
+export const runDecoder = JsonDecoder.object<Run>({ tag: JsonDecoder.isExactly('Run') }, 'Run')
+export const runAbilityDecoder = JsonDecoder.object<RunAbility>({ tag: JsonDecoder.isExactly('RunAbility') }, 'RunAbility')
 
 
-export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([changeFormDecoder, payDecoder], 'AbilityChoice')
+export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([changeFormDecoder, payDecoder, runDecoder, runAbilityDecoder], 'AbilityChoice')
+
+export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
+  JsonDecoder.isExactly('Interrupt'),
+  JsonDecoder.isExactly('HeroInterrupt'),
+  JsonDecoder.isExactly('ForcedInterrupt'),
+  JsonDecoder.isExactly('Resource'),
+  JsonDecoder.isExactly('HeroResource'),
+  JsonDecoder.isExactly('Response'),
+  JsonDecoder.isExactly('ForcedResponse'),
+  JsonDecoder.isExactly('Action'),
+  JsonDecoder.isExactly('HeroAction'),
+  JsonDecoder.isExactly('AlterEgoAction'),
+  JsonDecoder.isExactly('Special')], 'AbilityType')
 
 export const useAbilityContentsDecoder = JsonDecoder.object<UseAbilityContents>({
-  abilityChoice: abilityChoiceDecoder,
+  abilityChoices: JsonDecoder.array<AbilityChoice>(abilityChoiceDecoder, 'AbilityChoice[]'),
   abilityLabel: JsonDecoder.nullable(JsonDecoder.string),
   abilitySource: sourceDecoder,
+  abilityType: abilityTypeDecoder,
 }, 'UseAbilityContents')
 
 export const useAbilityDecoder = JsonDecoder.object<UseAbility>({
@@ -66,20 +85,46 @@ export const payWithCardDecoder = JsonDecoder.object<PayWithCard>({
   contents: playerCardDecoder,
 }, 'PayWithCard')
 
+export type AbilityType =
+  'Interrupt' |
+  'HeroInterrupt' |
+  'ForcedInterrupt' |
+  'Resource' |
+  'HeroResource' |
+  'Response' |
+  'ForcedResponse' |
+  'Action' |
+  'HeroAction' |
+  'AlterEgoAction' |
+  'Special'
+
 export interface UseAbilityContents {
-  abilityChoice: AbilityChoice
+  abilityChoices: AbilityChoice[]
   abilitySource: Source
   abilityLabel: string | null
+  abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility
 
 export interface ChangeForm {
   tag: 'ChangeForm'
 }
 
+export interface Label {
+  tag: 'Label'
+}
+
 export interface Pay {
   tag: 'Pay'
+}
+
+export interface Run {
+  tag: 'Run'
+}
+
+export interface RunAbility {
+  tag: 'RunAbility'
 }
 
 export type Question = ChooseOne | ChoosePayment
@@ -99,6 +144,7 @@ export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   , playCardDecoder
   , payWithCardDecoder
   , finishPaymentDecoder
+  , labelDecoder
   ], 'Question'
 )
 

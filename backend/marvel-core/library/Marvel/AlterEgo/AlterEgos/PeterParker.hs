@@ -26,6 +26,7 @@ instance HasAbilities PeterParker where
   getAbilities a =
     [ label "Scientist" $ limitedAbility
         a
+        1
         (PerRound 1)
         Resource
         IsSelf

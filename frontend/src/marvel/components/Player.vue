@@ -81,7 +81,7 @@ export default defineComponent({
     const changeFormAction = computed(() => {
       return choices
         .value
-        .findIndex((c) => c.tag === 'UseAbility' && c.contents.abilityChoice.tag === 'ChangeForm')
+        .findIndex((c) => c.tag === 'UseAbility' && c.contents.abilityChoices[0]?.tag === 'ChangeForm')
     })
 
     const finishPaymentAction = computed(() => {

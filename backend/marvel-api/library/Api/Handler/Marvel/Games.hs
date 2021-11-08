@@ -33,11 +33,12 @@ import Marvel.Message
 import Marvel.Question
 import Marvel.Scenario
 import Network.WebSockets (ConnectionException)
+import Text.Pretty.Simple
 import UnliftIO.Exception (bracket, catch)
 import Yesod.WebSockets
 
 logger :: Maybe DebugLogger
-logger = Just $ DebugLogger print
+logger = Just $ DebugLogger pPrint
 
 gameStream :: MarvelGameId -> WebSocketsT Handler ()
 gameStream gameId = catchingConnectionException $ do

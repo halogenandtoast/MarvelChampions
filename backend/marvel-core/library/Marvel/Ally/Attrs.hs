@@ -7,6 +7,8 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Source
+import Marvel.Target
 
 class IsAlly a
 
@@ -57,3 +59,13 @@ instance Entity AllyAttrs where
   type EntityAttrs AllyAttrs = AllyAttrs
   toId = allyId
   toAttrs = id
+
+instance IsSource AllyAttrs where
+  toSource = AllySource . toId
+
+instance IsTarget AllyAttrs where
+  toTarget = AllyTarget . toId
+
+isTarget :: (Entity a, EntityAttrs a ~ AllyAttrs) => a -> Target -> Bool
+isTarget a = (== toTarget (toAttrs a))
+

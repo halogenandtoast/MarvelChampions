@@ -26,7 +26,7 @@ spiderMan = hero
 instance HasAbilities SpiderMan where
   getAbilities a =
     [ label "Spider-Sense"
-        $ ability a Interrupt IsSelf (RunAbility (toTarget a) 1)
+        $ ability a 1 Interrupt IsSelf (RunAbility (toTarget a) 1)
     ]
 
 newtype SpiderMan = SpiderMan HeroAttrs

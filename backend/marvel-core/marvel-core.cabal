@@ -35,6 +35,7 @@ library
       Marvel.Card.Side
       Marvel.Debug
       Marvel.Deck
+      Marvel.Discard
       Marvel.Entity
       Marvel.Event.Cards
       Marvel.Exception
@@ -72,6 +73,7 @@ library
       Marvel.Villain.Cards
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Rhino
+      Marvel.Window
   other-modules:
       Paths_marvel_core
   hs-source-dirs:
