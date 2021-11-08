@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Ally.Allies.BlackCatFeliciaHardy where
 
 import Marvel.Prelude
@@ -5,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Ally.Attrs
 import qualified Marvel.Ally.Cards as Cards
 import Marvel.Card.Code
+import Marvel.Entity
 
 blackCatFeliciaHardy :: AllyCard BlackCatFeliciaHardy
 blackCatFeliciaHardy =
@@ -12,4 +14,4 @@ blackCatFeliciaHardy =
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
   deriving anyclass IsAlly
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity)

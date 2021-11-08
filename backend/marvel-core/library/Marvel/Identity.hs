@@ -77,6 +77,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityDeck = Deck []
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
+  , playerIdentityAllies = mempty
   }
  where
   hp = case alterEgoSide of

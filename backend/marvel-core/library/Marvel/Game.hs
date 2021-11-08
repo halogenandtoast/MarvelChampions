@@ -9,6 +9,7 @@ import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.Id
 import Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Deck
@@ -17,7 +18,7 @@ import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
-import Marvel.Identity
+import Marvel.Identity hiding (alliesL)
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Question
@@ -39,6 +40,7 @@ data Game = Game
     gamePlayerOrder :: [IdentityId]
   , gamePlayers :: EntityMap PlayerIdentity
   , gameVillains :: EntityMap Villain
+  , gameAllies :: EntityMap Ally
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [Ability]
   , gameActivePlayer :: IdentityId
@@ -119,12 +121,13 @@ runGameMessage msg g@Game {..} = case msg of
             (activeCostPayment activeCost)
           pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
-  PutCardIntoPlay ident card payment -> do
+  PutCardIntoPlay ident card _payment -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
-        ally <- createAlly ident card
+        let ally = createAlly ident card
         push $ IdentityMessage ident (AllyCreated $ toId ally)
         pure $ g & alliesL %~ insert (toId ally) ally
+      _ -> error "Unhandled"
   _ -> pure g
 
 instance RunMessage Game where
@@ -137,7 +140,8 @@ class HasGame a where
   game :: a -> IORef Game
 
 createAlly :: IdentityId -> PlayerCard -> Ally
-createAlly ident card = lookupAlly (toCardCode card) (AllyId $ toCardId card)
+createAlly ident card =
+  lookupAlly (toCardCode card) ident (AllyId $ unCardId $ pcCardId card)
 
 newGame :: PlayerIdentity -> Scenario -> Game
 newGame player scenario = Game
@@ -151,6 +155,7 @@ newGame player scenario = Game
   , gameUsedAbilities = mempty
   , gameActivePlayer = toId player
   , gameScenario = scenario
+  , gameAllies = mempty
   }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()

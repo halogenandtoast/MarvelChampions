@@ -1,20 +1,25 @@
 <template>
   <div class="player">
-    <img :src="playerImg" alt="player" width="150" />
-    <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
+    <div class="table">
+      <Ally v-for="ally in allies" :key="ally.contents.allyId" :ally="ally" :game="game" :player="player" @choose="$emit('choose', $event)" />
+    </div>
+    <div class="identity">
+      <img :src="playerImg" alt="player" width="150" />
+      <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
+    </div>
+    <button
+      v-if="finishPaymentAction !== -1"
+      @click="$emit('choose', finishPaymentAction)"
+    >Finish Payment</button>
+    <button
+      :disabled="changeFormAction === -1"
+      @click="$emit('choose', changeFormAction)"
+    >Change Form</button>
+    <button
+      :disabled="endTurnAction === -1"
+      @click="$emit('choose', endTurnAction)"
+    >End turn</button>
   </div>
-  <button
-    v-if="finishPaymentAction !== -1"
-    @click="$emit('choose', finishPaymentAction)"
-  >Finish Payment</button>
-  <button
-    :disabled="changeFormAction === -1"
-    @click="$emit('choose', changeFormAction)"
-  >Change Form</button>
-  <button
-    :disabled="endTurnAction === -1"
-    @click="$emit('choose', endTurnAction)"
-  >End turn</button>
 </template>
 
 <script lang="ts">
@@ -24,9 +29,10 @@ import { Game } from '@/marvel/types/Game'
 import * as MarvelGame from '@/marvel/types/Game'
 import { Identity } from '@/marvel/types/Identity'
 import Card from '@/marvel/components/Card.vue'
+import Ally from '@/marvel/components/Ally.vue'
 
 export default defineComponent({
-  components: { Card },
+  components: { Card, Ally },
   props: {
     game: { type: Object as () => Game, required: true },
     player: { type: Object as () => Identity, required: true },
@@ -67,13 +73,15 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'FinishPayment')
     })
 
-    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction }
+    const allies = computed(() => props.player.allies.map((allyId) => props.game.allies[allyId]))
+
+    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction, allies }
   }
 })
 </script>
 
 <style scoped lang="scss">
-.player {
+.identity {
   display: flex;
 }
 </style>

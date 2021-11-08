@@ -1,5 +1,6 @@
 import { JsonDecoder } from 'ts.data.json'
 import { Identity, identityDecoder } from '@/marvel/types/Identity'
+import { Ally, allyDecoder } from '@/marvel/types/Ally'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
 
 export function choices(game: Game, identityId: string): Choice[] {
@@ -21,6 +22,7 @@ export interface Game {
   id: string
   name: string
   players: Record<string, Identity>
+  allies: Record<string, Ally>
   scenario: Scenario
   question: Record<string, Question>
 }
@@ -48,6 +50,7 @@ export const gameDecoder = JsonDecoder.object<Game>(
     id: JsonDecoder.string,
     name: JsonDecoder.string,
     players: JsonDecoder.dictionary<Identity>(identityDecoder, 'Dict<UUID, Identity>'),
+    allies: JsonDecoder.dictionary<Ally>(allyDecoder, 'Dict<UUID, Ally>'),
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
   }, 'Game')
