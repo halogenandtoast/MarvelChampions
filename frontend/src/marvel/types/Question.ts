@@ -30,12 +30,25 @@ export interface UseAbility {
   contents: UseAbilityContents
 }
 
+export interface Source {
+  tag: string,
+  contents: string
+}
+
+export const sourceDecoder = JsonDecoder.object<Source>({ tag: JsonDecoder.string, contents: JsonDecoder.string }, 'Source')
+
+
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
 
-export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([changeFormDecoder], 'AbilityChoice')
+export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
+
+
+export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([changeFormDecoder, payDecoder], 'AbilityChoice')
 
 export const useAbilityContentsDecoder = JsonDecoder.object<UseAbilityContents>({
-  abilityChoice: abilityChoiceDecoder
+  abilityChoice: abilityChoiceDecoder,
+  abilityLabel: JsonDecoder.nullable(JsonDecoder.string),
+  abilitySource: sourceDecoder,
 }, 'UseAbilityContents')
 
 export const useAbilityDecoder = JsonDecoder.object<UseAbility>({
@@ -55,12 +68,18 @@ export const payWithCardDecoder = JsonDecoder.object<PayWithCard>({
 
 export interface UseAbilityContents {
   abilityChoice: AbilityChoice
+  abilitySource: Source
+  abilityLabel: string | null
 }
 
-type AbilityChoice = ChangeForm
+type AbilityChoice = ChangeForm | Pay
 
 export interface ChangeForm {
   tag: 'ChangeForm'
+}
+
+export interface Pay {
+  tag: 'Pay'
 }
 
 export type Question = ChooseOne | ChoosePayment
