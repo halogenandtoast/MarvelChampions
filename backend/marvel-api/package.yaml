@@ -85,6 +85,7 @@ library:
   - http-client-tls
   - http-types
   - data-default
+  - pretty-simple
   - relude
 
 executables:

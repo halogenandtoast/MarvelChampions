@@ -42,7 +42,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdCardType = AllyType
   , cdUnique = True
   , cdAspect = mAspect
-  , cdResources = map (AnyCard, ) resources
+  , cdResources = map (PrintedResource, ) resources
   }
 
 blackCatFeliciaHardy :: CardDef

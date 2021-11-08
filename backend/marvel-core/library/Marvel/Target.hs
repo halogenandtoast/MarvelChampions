@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Id
 
-data Target = IdentityTarget IdentityId | VillainTarget VillainId
+data Target = IdentityTarget IdentityId | VillainTarget VillainId | AllyTarget AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

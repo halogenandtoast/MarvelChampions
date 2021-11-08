@@ -26,6 +26,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Villain
+import Marvel.Window
 
 data GameState = Unstarted | InProgress | Finished
   deriving stock (Show, Eq, Generic)
@@ -45,6 +46,7 @@ data Game = Game
   , gameUsedAbilities :: HashMap IdentityId [Ability]
   , gameActivePlayer :: IdentityId
   , gameActiveCost :: Maybe ActiveCost
+  , gameWindowDepth :: Int
 
   -- leave last for `newGame`
   , gameScenario :: Scenario
@@ -75,6 +77,15 @@ getActivePlayer = getsGame $ \g ->
   case lookup (g ^. activePlayerL) (g ^. playersL) of
     Just p -> p
     Nothing -> error "Missing player"
+
+runPreGameMessage :: MonadGame env m => Message -> Game -> m Game
+runPreGameMessage msg g = case msg of
+  CheckWindows{} -> do
+    push EndCheckWindows
+    pure $ g & windowDepthL +~ 1
+  -- We want to empty the queue for triggering a resolution
+  EndCheckWindows -> pure $ g & windowDepthL -~ 1
+  _ -> pure g
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
@@ -144,15 +155,55 @@ runGameMessage msg g@Game {..} = case msg of
     case cdCardType (getCardDef card) of
       AllyType -> do
         let ally = createAlly ident card
-        push $ IdentityMessage ident (AllyCreated $ toId ally)
+        pushAll
+          [ IdentityMessage ident (AllyCreated $ toId ally)
+          , CheckWindows [Window After $ PlayedAlly (toId ally)]
+          , EndCheckWindows
+          ]
         pure $ g & alliesL %~ insert (toId ally) ally
       _ -> error "Unhandled"
+  EndCheckWindows -> pure g
+  CheckWindows windows -> do
+    abilities <- getsGame getAbilities
+    usedAbilities <- getUsedAbilities
+    ident <- toId <$> getActivePlayer
+    let
+      validAbilities = filter
+        (and . sequence
+          [ passesUseLimit ident usedAbilities
+          , passesCriteria ident
+          , \a -> any (`abilityInWindow` a) windows
+          ]
+        )
+        abilities
+      forcedAbiltiies = filter isForcedAbility validAbilities
+    case (forcedAbiltiies, validAbilities) of
+      ([], []) -> pure ()
+      ([], as) ->
+        push
+          $ Ask ident
+          . ChooseOne
+          $ Label "Use no responses/interrupts" []
+          : map (UseAbility . (choicesL <>~ [Run [CheckWindows windows]])) as
+      (forced, _) -> push $ Ask ident . ChooseOne $ map
+        (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
+        forced
+    pure g
   _ -> pure g
+
+abilityInWindow :: Window -> Ability -> Bool
+abilityInWindow window a = maybe
+  False
+  (\matcher -> windowMatches matcher window source)
+  (abilityWindow a)
+  where source = abilitySource a
 
 instance RunMessage Game where
   runMessage msg g =
-    traverseOf scenarioL (runMessage msg) g
+    runPreGameMessage msg g
+      >>= traverseOf scenarioL (runMessage msg)
       >>= traverseOf (playersL . each) (runMessage msg)
+      >>= traverseOf (alliesL . each) (runMessage msg)
       >>= runGameMessage msg
 
 class HasGame a where
@@ -171,6 +222,7 @@ newGame player scenario = Game
   , gameVillains = mempty
   , gameQuestion = mempty
   , gameActiveCost = Nothing
+  , gameWindowDepth = 0
   , gameUsedAbilities = mempty
   , gameActivePlayer = toId player
   , gameScenario = scenario
@@ -237,6 +289,7 @@ getGame = readIORef =<< asks game
 
 instance HasAbilities Game where
   getAbilities g = concatMap getAbilities (elems $ gamePlayers g)
+    <> concatMap getAbilities (elems $ gameAllies g)
 
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do

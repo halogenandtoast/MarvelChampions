@@ -104,6 +104,7 @@ newtype Unsorted a = Unsorted { unUnsorted :: [a] }
 
 data Choice
   = CardLabel CardCode Choice
+  | Label Text [Choice]
   | EndTurn
   | UseAbility Ability
   | RunAbility Target Natural
@@ -113,14 +114,18 @@ data Choice
   | PayWithCard PlayerCard
   | FinishPayment
   | Pay Payment
+  | Run [Message]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 choiceMessages :: IdentityId -> Choice -> [Message]
 choiceMessages ident = \case
+  Run msgs -> msgs
+  Label _ choices -> concatMap (choiceMessages ident) choices
   CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
-  UseAbility a -> UsedAbility ident a : choiceMessages ident (abilityChoice a)
+  UseAbility a ->
+    UsedAbility ident a : concatMap (choiceMessages ident) (abilityChoices a)
   RunAbility target n -> [RanAbility target n]
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]

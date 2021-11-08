@@ -26,14 +26,23 @@ data CardType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data CardMatcher = AnyCard | CardWithAspect Aspect
+data CardMatcher = AnyCard | CardWithAspect Aspect | CardWithResource Resource
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
 cardMatch matcher a = case matcher of
   AnyCard -> True
-  CardWithAspect aspect -> cdAspect (getCardDef a) == Just aspect
+  CardWithAspect aspect -> cdAspect def == Just aspect
+  CardWithResource resource ->
+    resource `elem` map snd (filter isPrintedResource $ cdResources def)
+ where
+  def = getCardDef a
+  isPrintedResource (restriction, _) = restriction == PrintedResource
+
+data ResourceRestriction = PrintedResource | ResourceForCardsMatching CardMatcher
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data CardDef = CardDef
   { cdCardCode :: CardCode
@@ -43,12 +52,12 @@ data CardDef = CardDef
   , cdCardType :: CardType
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
-  , cdResources :: [(CardMatcher, Resource)]
+  , cdResources :: [(ResourceRestriction, Resource)]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-resourcesL :: Lens' CardDef [(CardMatcher, Resource)]
+resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
 resourcesL = lens cdResources $ \m x -> m { cdResources = x }
 
 instance HasCardCode CardDef where

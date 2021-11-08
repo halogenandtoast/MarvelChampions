@@ -3,12 +3,14 @@ module Marvel.Ally where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Ally.Allies
 import Marvel.Ally.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Message
 import Marvel.TH
 
 $(buildEntity "Ally")
@@ -28,3 +30,9 @@ instance Entity Ally where
   type EntityAttrs Ally = AllyAttrs
   toId = toId . toAttrs
   toAttrs = genericToAttrs
+
+instance RunMessage Ally where
+  runMessage = genericRunMessage
+
+instance HasAbilities Ally where
+  getAbilities = genericGetAbilities

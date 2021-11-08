@@ -16,6 +16,11 @@ import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Target
+import Marvel.Window
+
+data FromZone = FromDeck
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data Message
   = StartGame
@@ -27,11 +32,14 @@ data Message
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
+  | WithDiscarded Target FromZone [PlayerCard]
   | SetActiveCost ActiveCost
   | Spent PlayerCard
   | Paid Payment
   | FinishedPayment
   | PutCardIntoPlay IdentityId PlayerCard Payment
+  | CheckWindows [Window]
+  | EndCheckWindows
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -43,11 +51,14 @@ data IdentityMessage
   | EndedTurn
   | ChangedToForm Side
   | DrawStartingHand HandSize
+  | DrawCards FromZone Natural
   | ShuffleDeck
   | SideMessage SideMessage
   | PlayedCard PlayerCard
   | PayedWithCard PlayerCard
   | AllyCreated AllyId
+  | AddToHand PlayerCard
+  | Discard FromZone Natural (Maybe Target)
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
