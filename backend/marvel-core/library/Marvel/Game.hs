@@ -47,8 +47,6 @@ data Game = Game
   , gameActivePlayer :: IdentityId
   , gameActiveCost :: Maybe ActiveCost
   , gameWindowDepth :: Int
-
-  -- leave last for `newGame`
   , gameScenario :: Scenario
   }
   deriving stock (Show, Eq, Generic)
@@ -71,6 +69,9 @@ patch g p = case Diff.patch p (toJSON g) of
 
 getPlayers :: MonadGame env m => m [IdentityId]
 getPlayers = getsGame gamePlayerOrder
+
+getPlayerCount :: MonadGame env m => m Int
+getPlayerCount = length <$> getsGame gamePlayerOrder
 
 getActivePlayer :: MonadGame env m => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
@@ -100,8 +101,11 @@ runGameMessage msg g@Game {..} = case msg of
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   AddVillain cardCode -> do
     villainId <- getRandom
+    playerCount <- getPlayerCount
     case lookupVillain cardCode villainId of
-      Just x -> pure $ g & villainsL . at villainId ?~ x
+      Just x -> do
+        push $ VillainMessage villainId $ SetVillainHP playerCount
+        pure $ g & villainsL . at villainId ?~ x
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
   SetActiveCost activeCost -> do

@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
-import { UseAbility } from '@/arkham/types/Question';
+import { UseAbility } from '@/marvel/types/Question';
 export default defineComponent({
   props: {
     ability: { type: Object as () => UseAbility, required: true }

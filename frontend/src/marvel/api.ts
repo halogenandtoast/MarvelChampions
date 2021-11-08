@@ -63,3 +63,6 @@ export const updateGame = (gameId: string, choice: number, investigatorId: strin
 
 export const deleteGame = (gameId: string): Promise<void> => api
   .delete(`marvel/games/${gameId}`);
+
+export const undoStep = (gameId: string): Promise<void> => api
+  .put(`marvel/games/${gameId}/undo`)

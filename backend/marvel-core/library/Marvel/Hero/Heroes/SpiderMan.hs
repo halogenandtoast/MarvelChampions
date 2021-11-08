@@ -11,6 +11,7 @@ import qualified Marvel.Hero.Cards as Cards
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
+import Marvel.Stats
 import Marvel.Target
 
 spiderMan :: HeroCard SpiderMan

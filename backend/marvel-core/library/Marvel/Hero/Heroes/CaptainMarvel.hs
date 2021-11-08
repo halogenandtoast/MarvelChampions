@@ -7,8 +7,9 @@ import Marvel.Card.Code
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
-import Marvel.Hero.Cards qualified as Cards
+import qualified Marvel.Hero.Cards as Cards
 import Marvel.Message
+import Marvel.Stats
 
 captainMarvel :: HeroCard CaptainMarvel
 captainMarvel = hero

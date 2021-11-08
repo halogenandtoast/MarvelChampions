@@ -4,11 +4,12 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.AlterEgo.Attrs
-import Marvel.AlterEgo.Cards qualified as Cards
+import qualified Marvel.AlterEgo.Cards as Cards
 import Marvel.Card.Code
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
+import Marvel.Stats
 
 carolDanvers :: AlterEgoCard CarolDanvers
 carolDanvers =

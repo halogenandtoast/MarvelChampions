@@ -13,6 +13,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
+import Marvel.Stats
 
 peterParker :: AlterEgoCard PeterParker
 peterParker =

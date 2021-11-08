@@ -10,6 +10,7 @@
         @choose="choose"
         @update="update"
       />
+      <button @click="undo">Undo</button>
       <div v-if="game.gameOver">
         <p>Game over</p>
       </div>
@@ -20,7 +21,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import * as Marvel from '@/marvel/types/Game'
-import { fetchGame, updateGame } from '@/marvel/api'
+import { fetchGame, updateGame, undoStep } from '@/marvel/api'
 import Scenario from '@/marvel/components/Scenario.vue'
 
 export default defineComponent({
@@ -93,7 +94,11 @@ export default defineComponent({
       game.value = state;
     }
 
-    return { ready, game, identityId, choose, update }
+    async function undo() {
+      undoStep(props.gameId);
+    }
+
+    return { ready, game, identityId, choose, update, undo }
   }
 })
 </script>
