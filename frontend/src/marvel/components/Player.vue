@@ -1,7 +1,14 @@
 <template>
   <div class="player">
     <div class="table">
-      <Ally v-for="ally in allies" :key="ally.contents.allyId" :ally="ally" :game="game" :player="player" @choose="$emit('choose', $event)" />
+      <Ally
+        v-for="ally in allies"
+        :key="ally.contents.allyId"
+        :ally="ally"
+        :game="game"
+        :identityId="identityId"
+        @choose="$emit('choose', $event)"
+      />
     </div>
     <div class="identity">
       <div>
@@ -14,7 +21,7 @@
               @click="$emit('choose', ability)"
               />
       </div>
-      <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :player="player" @choose="$emit('choose', $event)" />
+      <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
     </div>
     <button
       v-if="finishPaymentAction !== -1"

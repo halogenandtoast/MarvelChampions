@@ -22,11 +22,13 @@ import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
+import Marvel.Villain
 
 data ApiGame = ApiGame
   { id :: Key MarvelGame
   , name :: Text
   , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
+  , villains :: HashMap (EntityId Villain) Villain
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
   , allies :: HashMap AllyId Ally
@@ -42,6 +44,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         { id = gameId
         , name = marvelGameName
         , players = gamePlayers
+        , villains = gameVillains
         , scenario = gameScenario
         , question = gameQuestion
         , allies = gameAllies

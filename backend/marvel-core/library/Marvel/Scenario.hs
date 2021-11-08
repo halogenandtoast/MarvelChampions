@@ -8,7 +8,7 @@ import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue
 
-data Scenario = RhinoScenario' RhinoScenario | KlawScenario' KlawScenario
+data Scenario = TheBreakIn' TheBreakIn | KlawScenario' KlawScenario
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -19,16 +19,16 @@ lookupScenario :: CardCode -> Maybe Scenario
 lookupScenario = flip lookup allScenarios
 
 allScenarios :: HashMap CardCode Scenario
-allScenarios = fromList [("01094", RhinoScenario' rhinoScenario)]
+allScenarios = fromList [("01097", TheBreakIn' rhinoScenario)]
 
-newtype RhinoScenario = RhinoScenario ScenarioAttrs
+newtype TheBreakIn = TheBreakIn ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
-instance RunMessage RhinoScenario where
-  runMessage msg (RhinoScenario attrs) = RhinoScenario <$> runMessage msg attrs
+instance RunMessage TheBreakIn where
+  runMessage msg (TheBreakIn attrs) = TheBreakIn <$> runMessage msg attrs
 
-rhinoScenario :: RhinoScenario
-rhinoScenario = RhinoScenario $ ScenarioAttrs "01094" ["01094"]
+rhinoScenario :: TheBreakIn
+rhinoScenario = TheBreakIn $ ScenarioAttrs "01097" ["01094"]
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON)
