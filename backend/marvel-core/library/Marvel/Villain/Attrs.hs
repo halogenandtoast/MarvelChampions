@@ -1,4 +1,7 @@
-module Marvel.Villain.Attrs (module Marvel.Villain.Attrs, module X) where
+module Marvel.Villain.Attrs
+  ( module Marvel.Villain.Attrs
+  , module X
+  ) where
 
 import Marvel.Prelude
 
@@ -15,10 +18,14 @@ type VillainCard a = CardBuilder VillainId a
 villain :: (VillainAttrs -> a) -> CardDef -> VillainCard a
 villain f cardDef = CardBuilder
   { cbCardCode = toCardCode cardDef
-  , cbCardBuilder = \villainId -> f $ VillainAttrs { .. }
+  , cbCardBuilder = \ident ->
+    f $ VillainAttrs { villainId = ident, villainCardDef = cardDef }
   }
 
-newtype VillainAttrs = VillainAttrs { villainId :: VillainId }
+data VillainAttrs = VillainAttrs
+  { villainId :: VillainId
+  , villainCardDef :: CardDef
+  }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
