@@ -34,6 +34,7 @@ export interface Identity {
   hand: PlayerCard[]
   side: string
   sides: Record<string, Side>
+  allies: string[]
 }
 
 export interface PlayerCard {
@@ -80,5 +81,6 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     hand: JsonDecoder.array(playerCardDecoder, 'PlayerCard[]'),
     side: JsonDecoder.string,
     sides: JsonDecoder.array(JsonDecoder.
-      tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides))
+      tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides)),
+    allies: JsonDecoder.array<string>(JsonDecoder.string, 'AllyId[]'),
   }, 'Identity')

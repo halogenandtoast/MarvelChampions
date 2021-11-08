@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Card.PlayerCard
+import Marvel.Entity
 import Marvel.Id
 
 class IsAlly a
@@ -18,6 +18,7 @@ data AllyAttrs = AllyAttrs
   , allyDamage :: Int
   , allyThwart :: Thw
   , allyAttack :: Atk
+  , allyController :: IdentityId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -39,6 +40,7 @@ ally f cardDef thw atk = CardBuilder
     , allyDamage = 0
     , allyAttack = atk
     , allyThwart = thw
+    , allyController = ident
     }
   }
 
@@ -49,3 +51,9 @@ newtype Atk = Atk Int
 
 newtype Thw = Thw Int
   deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance Entity AllyAttrs where
+  type EntityId AllyAttrs = AllyId
+  type EntityAttrs AllyAttrs = AllyAttrs
+  toId = allyId
+  toAttrs = id

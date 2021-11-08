@@ -45,23 +45,6 @@ library:
   - aeson-casing
   - random-shuffle
 
-executables:
-  marvel-core:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - marvel-core
-    - pretty-simple
-    - uri-bytestring
-    - regex-posix
-    - array
-    - http-conduit
-    - containers
-
 tests:
   MarvelChampions-test:
     main:                Spec.hs

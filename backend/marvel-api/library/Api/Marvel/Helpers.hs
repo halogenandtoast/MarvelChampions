@@ -9,6 +9,7 @@ import Control.Monad.Catch (MonadCatch, MonadThrow)
 import Control.Monad.Random (MonadRandom(..))
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Map.Strict as Map
+import Marvel.Ally
 import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Deck
@@ -28,17 +29,23 @@ data ApiGame = ApiGame
   , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
+  , allies :: HashMap AllyId Ally
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
 
 toApiGame :: Entity MarvelGame -> ApiGame
 toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = ApiGame gameId marvelGameName players scenario question
- where
-  players = gamePlayers marvelGameCurrentData
-  scenario = gameScenario marvelGameCurrentData
-  question = gameQuestion marvelGameCurrentData
+  = let Game {..} = marvelGameCurrentData
+    in
+      ApiGame
+        { id = gameId
+        , name = marvelGameName
+        , players = gamePlayers
+        , scenario = gameScenario
+        , question = gameQuestion
+        , allies = gameAllies
+        }
 
 data ApiResponse = GameUpdate ApiGame | GameMessage Text
   deriving stock Generic
