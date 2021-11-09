@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Message
 import Marvel.TH
 import Marvel.Villain.Attrs
 import Marvel.Villain.Villains.Klaw
@@ -26,3 +27,6 @@ lookupVillain cardCode villainId =
 allVillains :: HashMap CardCode (VillainId -> Villain)
 allVillains = fromList
   $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
+
+instance RunMessage Villain where
+  runMessage = genericRunMessage

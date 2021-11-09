@@ -44,7 +44,7 @@ data Message
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-newtype VillainMessage = SetVillainHP Int
+data VillainMessage = SetVillainHp
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
