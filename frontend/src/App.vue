@@ -19,6 +19,11 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+@font-face {
+  font-family: "Exo2";
+  src: url("/fonts/eco2.ttf");
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

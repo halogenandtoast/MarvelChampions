@@ -15,6 +15,7 @@ import Marvel.Hand
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
+import Marvel.Source
 import Marvel.Target
 import Marvel.Window
 
@@ -30,6 +31,7 @@ data Message
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
   | VillainMessage VillainId VillainMessage
+  | EventMessage EventId EventMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
@@ -44,7 +46,11 @@ data Message
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data VillainMessage = SetVillainHp
+data VillainMessage = SetVillainHp | VillainDamaged Source Natural
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data EventMessage = PlayedEvent IdentityId Payment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

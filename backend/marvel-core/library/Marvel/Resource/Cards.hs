@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -34,6 +35,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdTraits = fromList traits
   , cdCardType = ResourceType
   , cdUnique = False
+  , cdCriteria = NoCriteria
   , cdAspect = mAspect
   , cdResources = map (PrintedResource, ) resources
   }

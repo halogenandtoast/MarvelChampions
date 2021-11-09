@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -42,6 +43,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdCardType = AllyType
   , cdUnique = True
   , cdAspect = mAspect
+  , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
   }
 

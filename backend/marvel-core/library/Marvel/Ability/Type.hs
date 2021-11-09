@@ -3,6 +3,7 @@ module Marvel.Ability.Type where
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
 import Marvel.Window
@@ -24,10 +25,6 @@ data AbilityType
   deriving anyclass (ToJSON, FromJSON)
 
 data AbilitySubType = Attack | Defense | Thwart
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-data Criteria = IsSelf | NoCriteria
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Criteria
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs

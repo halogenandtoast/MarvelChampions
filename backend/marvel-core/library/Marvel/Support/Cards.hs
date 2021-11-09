@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -35,6 +36,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdCardType = SupportType
   , cdUnique = False
   , cdAspect = mAspect
+  , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
   }
 

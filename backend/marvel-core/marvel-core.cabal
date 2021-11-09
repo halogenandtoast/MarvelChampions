@@ -33,11 +33,16 @@ library
       Marvel.Card.Id
       Marvel.Card.PlayerCard
       Marvel.Card.Side
+      Marvel.Criteria
       Marvel.Debug
       Marvel.Deck
       Marvel.Discard
       Marvel.Entity
+      Marvel.Event
+      Marvel.Event.Attrs
       Marvel.Event.Cards
+      Marvel.Event.Events
+      Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
       Marvel.Game
       Marvel.Game.Source
@@ -52,11 +57,13 @@ library
       Marvel.Hp
       Marvel.Id
       Marvel.Identity
+      Marvel.Matchers
       Marvel.Message
       Marvel.Name
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
+      Marvel.Query
       Marvel.Question
       Marvel.Queue
       Marvel.Resource

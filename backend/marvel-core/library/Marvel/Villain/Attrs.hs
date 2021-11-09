@@ -10,19 +10,18 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity as X
-import Marvel.GameValue
 import Marvel.Game.Source
-import Marvel.Message
+import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Id as X (VillainId)
+import Marvel.Message
 import Marvel.Stats
 
 class IsVillain a
 
 type VillainCard a = CardBuilder VillainId a
 
-villain
-  :: (VillainAttrs -> a) -> CardDef -> Sch -> Atk -> HP -> VillainCard a
+villain :: (VillainAttrs -> a) -> CardDef -> Sch -> Atk -> HP -> VillainCard a
 villain f cardDef sch atk startingHp = CardBuilder
   { cbCardCode = toCardCode cardDef
   , cbCardBuilder = \ident -> f $ VillainAttrs
@@ -56,13 +55,16 @@ instance Entity VillainAttrs where
   toId = villainId
   toAttrs = id
 
-runVillainMessage :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
+runVillainMessage
+  :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
 runVillainMessage msg attrs = case msg of
-  SetVillainHp ->  do
+  SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
-    pure $ attrs & hpL .~  hp & maxHpL .~ hp
+    pure $ attrs & hpL .~ hp & maxHpL .~ hp
+  VillainDamaged _ n -> pure $ attrs & hpL %~ max 0 . subtract (fromIntegral n)
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of
-    VillainMessage villainId msg' | villainId == toId attrs -> runVillainMessage msg' attrs
+    VillainMessage villainId msg' | villainId == toId attrs ->
+      runVillainMessage msg' attrs
     _ -> pure attrs

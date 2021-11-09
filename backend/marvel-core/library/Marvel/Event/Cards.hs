@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -44,6 +45,7 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdCardType = EventType
   , cdUnique = False
   , cdAspect = mAspect
+  , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
   }
 
@@ -52,15 +54,21 @@ backflip = identityEvent "01003" "Backflip" 0 [Defense, Skill] [Physical]
 
 enhancedSpiderSense :: CardDef
 enhancedSpiderSense =
-  identityEvent "01004" "Enhanced Spider-Sense" 1 [Superpower] [Mental]
+  (identityEvent "01004" "Enhanced Spider-Sense" 1 [Superpower] [Mental])
+    { cdCriteria = InHeroForm
+    }
+
 
 swingingWebKick :: CardDef
-swingingWebKick = identityEvent
-  "01005"
-  "Swinging Web Kick"
-  3
-  [Aerial, Attack, Superpower]
-  [Mental]
+swingingWebKick = (identityEvent
+                    "01005"
+                    "Swinging Web Kick"
+                    3
+                    [Aerial, Attack, Superpower]
+                    [Mental]
+                  )
+  { cdCriteria = InHeroForm
+  }
 
 getReady :: CardDef
 getReady = event "01069" "Get Ready" 0 [] [Physical] Leadership

@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Trait
 
@@ -22,6 +23,7 @@ hero cardCode name traits = CardDef
   , cdCardType = HeroType
   , cdUnique = True
   , cdAspect = Nothing
+  , cdCriteria = NoCriteria
   , cdResources = []
   }
 
