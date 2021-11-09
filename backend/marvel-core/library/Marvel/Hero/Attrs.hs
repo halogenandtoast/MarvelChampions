@@ -9,9 +9,15 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
+import Marvel.Entity
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
+import Marvel.Matchers
+import Marvel.Message
+import Marvel.Query
+import Marvel.Question
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
@@ -67,3 +73,30 @@ instance IsSource HeroAttrs where
 
 instance IsTarget HeroAttrs where
   toTarget = IdentityTarget . heroIdentityId
+
+instance Entity HeroAttrs where
+  type EntityId HeroAttrs = IdentityId
+  type EntityAttrs HeroAttrs = HeroAttrs
+  toId = heroIdentityId
+  toAttrs = id
+
+damageChoice :: HeroAttrs -> EnemyId -> Choice
+damageChoice attrs = \case
+  EnemyVillainId vid -> TargetLabel
+    (VillainTarget vid)
+    [ Damage
+        (VillainTarget vid)
+        (IdentitySource $ heroIdentityId attrs)
+        (unAtk $ heroBaseAttack attrs)
+    ]
+
+instance RunMessage HeroAttrs where
+  runMessage msg a = case msg of
+    IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
+      case msg' of
+        Attacked -> do
+          enemies <- selectList AnyEnemy
+          push $ Ask ident $ ChooseOne $ map (damageChoice a) enemies
+          pure a
+        _ -> pure a
+    _ -> pure a

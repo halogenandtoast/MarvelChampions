@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.AlterEgo.AlterEgos.PeterParker where
 
 import Marvel.Prelude
@@ -6,7 +7,9 @@ import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import qualified Marvel.AlterEgo.Cards as Cards
 import Marvel.Card.Code
+import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
@@ -22,7 +25,7 @@ peterParker =
 
 newtype PeterParker = PeterParker AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode, Entity)
 
 instance HasAbilities PeterParker where
   getAbilities a =
@@ -32,6 +35,7 @@ instance HasAbilities PeterParker where
         (PerRound 1)
         Resource
         IsSelf
+        NoCost
         (Pay $ ResourcePayment Mental)
     ]
 
@@ -44,4 +48,5 @@ instance RunMessage PeterParker where
             (IdentityMessage ident)
             [ShuffleDeck, DrawStartingHand $ alterEgoBaseHandSize attrs]
           pure a
+        _ -> PeterParker <$> runMessage msg attrs
     _ -> pure a

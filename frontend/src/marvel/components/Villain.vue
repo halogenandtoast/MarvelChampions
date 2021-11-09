@@ -2,6 +2,7 @@
   <div class="villain">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)"/>
     <div class="hp">{{villain.contents.villainHp}}</div>
+    <div v-if="villain.contents.villainStunned">Stunned</div>
   </div>
 </template>
 
@@ -41,10 +42,11 @@ export default defineComponent({
 .hp {
   font-family: "Exo2";
   font-weight: bold;
+  font-size: 1.2em;
   background: #8E1C21;
   display: inline-block;
-  padding: 0 5px;
-  border: 10px solid #383839;
+  padding: 0 10px;
+  border: 5px solid #383839;
   color: white;
   border-radius: 10px;
 }

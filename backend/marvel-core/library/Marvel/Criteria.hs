@@ -2,7 +2,12 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
-data Criteria = IsSelf | NoCriteria | InHeroForm | Criteria [Criteria]
+data Criteria
+  = IsSelf
+  | NoCriteria
+  | InHeroForm
+  | Unexhausted
+  | Criteria [Criteria]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

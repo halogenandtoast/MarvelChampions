@@ -32,6 +32,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainHp = 1
     , villainScheme = sch
     , villainAttack = atk
+    , villainStunned = False
     }
   }
 
@@ -43,6 +44,7 @@ data VillainAttrs = VillainAttrs
   , villainMaxHp :: Int
   , villainScheme :: Sch
   , villainAttack :: Atk
+  , villainStunned :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -62,6 +64,7 @@ runVillainMessage msg attrs = case msg of
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
     pure $ attrs & hpL .~ hp & maxHpL .~ hp
   VillainDamaged _ n -> pure $ attrs & hpL %~ max 0 . subtract (fromIntegral n)
+  VillainStunned _ -> pure $ attrs & stunnedL .~ True
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of

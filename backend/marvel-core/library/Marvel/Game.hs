@@ -350,6 +350,15 @@ gameSelectIdentity = \case
   HeroIdentity -> do
     identities <- toList <$> getsGame gamePlayers
     pure $ HashSet.fromList $ map toId $ filter isHero identities
+  UnexhaustedIdentity -> do
+    identities <- toList <$> getsGame gamePlayers
+    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) identities
+
+gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
+gameSelectAlly = \case
+  UnexhaustedAlly -> do
+    allies <- toList <$> getsGame gameAllies
+    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) allies
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case

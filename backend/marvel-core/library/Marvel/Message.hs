@@ -32,6 +32,7 @@ data Message
   | IdentityMessage IdentityId IdentityMessage
   | VillainMessage VillainId VillainMessage
   | EventMessage EventId EventMessage
+  | AllyMessage AllyId AllyMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
@@ -46,11 +47,15 @@ data Message
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data VillainMessage = SetVillainHp | VillainDamaged Source Natural
+data VillainMessage = SetVillainHp | VillainDamaged Source Natural | VillainStunned Source
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 data EventMessage = PlayedEvent IdentityId Payment
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data AllyMessage = ExhaustedAlly | AllyAttacked | AllyThwarted | AllyDamaged Source Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -66,14 +71,20 @@ data IdentityMessage
   | ShuffleDeck
   | SideMessage SideMessage
   | PlayedCard PlayerCard
-  | PayedWithCard PlayerCard
+  | PaidWithCard PlayerCard
   | AllyCreated AllyId
   | AddToHand PlayerCard
-  | Discard FromZone Natural (Maybe Target)
+  | DiscardFrom FromZone Natural (Maybe Target)
+  | DiscardCard PlayerCard
+  | ExhaustedIdentity
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SideMessage = SetupIdentity
+data SideMessage
+  = SetupIdentity
+  | Recovered
+  | Attacked
+  | Thwarted
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

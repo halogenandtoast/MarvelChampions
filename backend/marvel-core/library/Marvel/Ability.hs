@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import qualified Data.HashMap.Strict as HashMap
 import Marvel.Ability.Type as X
+import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Game.Source
 import Marvel.Id
@@ -17,7 +18,14 @@ import Marvel.Source
 import Marvel.Window
 
 ability
-  :: IsSource a => a -> Natural -> AbilityType -> Criteria -> Choice -> Ability
+  :: IsSource a
+  => a
+  -> Natural
+  -> AbilityType
+  -> Criteria
+  -> Cost
+  -> Choice
+  -> Ability
 ability a idx aType =
   limitedAbility (toSource a) idx (defaultAbilityLimit aType) aType
 
@@ -27,15 +35,17 @@ windowAbility
   -> Natural
   -> WindowMatcher
   -> AbilityType
+  -> Cost
   -> Choice
   -> Ability
-windowAbility a idx window aType choice =
+windowAbility a idx window aType cost choice =
   limitedAbility
       (toSource a)
       idx
       (defaultAbilityLimit aType)
       aType
       NoCriteria
+      cost
       choice
     & windowL
     ?~ window
@@ -47,14 +57,16 @@ limitedAbility
   -> Limit
   -> AbilityType
   -> Criteria
+  -> Cost
   -> Choice
   -> Ability
-limitedAbility a idx limit aType criteria choice = Ability
+limitedAbility a idx limit aType criteria cost choice = Ability
   { abilitySource = toSource a
   , abilityIndex = idx
   , abilityCriteria = criteria
   , abilityLimit = limit
   , abilityTiming = pure DuringOwnTurn
+  , abilityCost = cost
   , abilityChoices = [choice]
   , abilityType = aType
   , abilitySubType = Nothing
@@ -80,7 +92,21 @@ passesCriteria x a = go (abilityCriteria a)
     IsSelf -> pure $ toSource x == source
     NoCriteria -> pure True
     InHeroForm -> member x <$> select HeroIdentity
+    Unexhausted -> member x <$> select UnexhaustedIdentity
     Criteria xs -> allM go xs
+  source = abilitySource a
+
+passesCanAffordCost :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesCanAffordCost _ a = go (abilityCost a)
+ where
+  go = \case
+    NoCost -> pure True
+    ExhaustCost -> case source of
+      IdentitySource ident -> member ident <$> select UnexhaustedIdentity
+      AllySource ident -> member ident <$> select UnexhaustedAlly
+      _ -> error "Unhandled"
+    ResourceCost _ -> error "Unhandled"
+    Costs xs -> allM go xs
   source = abilitySource a
 
 passesTiming :: IdentityId -> Ability -> Bool
@@ -99,6 +125,7 @@ passesTypeIsRelevant _ a = case abilityType a of
   Response -> False
   ForcedResponse -> False
   Action -> True
+  Basic -> True
   HeroAction -> False
   AlterEgoAction -> False
   Special -> False
@@ -119,6 +146,7 @@ isForcedAbility a = case abilityType a of
   HeroAction -> False
   AlterEgoAction -> False
   Special -> False
+  Basic -> False
 
 defaultAbilityLimit :: AbilityType -> Limit
 defaultAbilityLimit = \case
@@ -133,3 +161,4 @@ defaultAbilityLimit = \case
   HeroAction -> NoLimit
   AlterEgoAction -> NoLimit
   Special -> NoLimit
+  Basic -> NoLimit

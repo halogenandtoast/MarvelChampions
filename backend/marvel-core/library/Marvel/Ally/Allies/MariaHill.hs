@@ -7,6 +7,7 @@ import Marvel.Ability
 import Marvel.Ally.Attrs
 import qualified Marvel.Ally.Cards as Cards
 import Marvel.Card.Code
+import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message
@@ -18,11 +19,18 @@ import Marvel.Target
 import Marvel.Window
 
 mariaHill :: AllyCard MariaHill
-mariaHill = ally MariaHill Cards.mariaHill (Thw 2) (Atk 1)
+mariaHill = ally MariaHill Cards.mariaHill (Thw 2, 1) (Atk 1, 1)
 
 instance HasAbilities MariaHill where
   getAbilities a =
-    [windowAbility a 1 (PlayThis After) Response (RunAbility (toTarget a) 1)]
+    [ windowAbility
+        a
+        1
+        (PlayThis After)
+        Response
+        NoCost
+        (RunAbility (toTarget a) 1)
+    ]
 
 newtype MariaHill = MariaHill AllyAttrs
   deriving anyclass IsAlly
@@ -34,4 +42,4 @@ instance RunMessage MariaHill where
       players <- getPlayers
       pushAll $ map (\p -> IdentityMessage p $ DrawCards FromDeck 1) players
       pure a
-    _ -> pure a
+    _ -> MariaHill <$> runMessage msg (toAttrs a)

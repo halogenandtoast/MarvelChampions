@@ -34,6 +34,9 @@ instance RunMessage SwingingWebKick where
     EventMessage eid msg' | eid == toId a -> case msg' of
       PlayedEvent identityId _ -> do
         enemies <- selectList AnyEnemy
-        push $ Ask identityId $ ChooseOne $ map (damageChoice eid) enemies
+        pushAll
+          [ Ask identityId $ ChooseOne $ map (damageChoice eid) enemies
+          , IdentityMessage identityId $ DiscardCard (toCard $ toAttrs a)
+          ]
         pure a
     _ -> pure a

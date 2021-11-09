@@ -9,9 +9,11 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
+import Marvel.Entity
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
+import Marvel.Message
 import Marvel.Source
 import Marvel.Stats
 
@@ -57,3 +59,17 @@ instance IsSource AlterEgoAttrs where
 
 instance HasStartingHP AlterEgoAttrs where
   startingHP = alterEgoStartingHP
+
+instance Entity AlterEgoAttrs where
+  type EntityId AlterEgoAttrs = IdentityId
+  type EntityAttrs AlterEgoAttrs = AlterEgoAttrs
+  toId = toId . toAttrs
+  toAttrs = id
+
+instance RunMessage AlterEgoAttrs where
+  runMessage msg a = case msg of
+    IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
+      case msg' of
+        Thwarted -> pure a
+        _ -> pure a
+    _ -> pure a

@@ -37,6 +37,8 @@ gameSelectIdentity
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 
+gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
+
 instance HasAbilities Game
 
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]

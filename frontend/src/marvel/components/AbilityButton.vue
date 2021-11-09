@@ -11,7 +11,7 @@ export default defineComponent({
   },
   setup(props) {
     const label = computed(() => {
-      const { abilityLabel, abilityType } = props.ability.contents
+      const { abilityLabel, abilityType, abilityChoices } = props.ability.contents
       if (abilityLabel) {
         return abilityLabel
       }
@@ -22,6 +22,22 @@ export default defineComponent({
 
       if (abilityType == "Response") {
         return "Response"
+      }
+
+      if (abilityType == "Basic") {
+        const basicType = abilityChoices[0]?.tag
+        switch(basicType) {
+          case 'AllyAttack': return 'Attack'
+          case 'AllyThwart': return 'Thwart'
+          default: return basicType
+        }
+      }
+
+      if (abilityType == "Action") {
+        const actionTag = abilityChoices[0]?.tag
+        if (actionTag == "ChangeForm") {
+          return "Change Form"
+        }
       }
 
       return null

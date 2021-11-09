@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Ally.Attrs where
 
 import Marvel.Prelude
@@ -7,6 +8,11 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Matchers
+import Marvel.Message
+import Marvel.Query
+import Marvel.Question
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
@@ -18,13 +24,18 @@ type AllyCard a = CardBuilder (IdentityId, AllyId) a
 data AllyAttrs = AllyAttrs
   { allyId :: AllyId
   , allyCardDef :: CardDef
-  , allyDamage :: Int
+  , allyDamage :: Natural
   , allyThwart :: Thw
+  , allyThwartConsequentialDamage :: Natural
   , allyAttack :: Atk
+  , allyAttackConsequentialDamage :: Natural
   , allyController :: IdentityId
+  , allyExhausted :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+makeLensesWith suffixedFields ''AllyAttrs
 
 instance HasCardCode AllyAttrs where
   toCardCode = toCardCode . allyCardDef
@@ -32,22 +43,24 @@ instance HasCardCode AllyAttrs where
 ally
   :: (AllyAttrs -> a)
   -> CardDef
-  -> Thw
-  -> Atk
+  -> (Thw, Natural)
+  -> (Atk, Natural)
   -> CardBuilder (IdentityId, AllyId) a
-ally f cardDef thw atk = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(ident, aid) -> f $ AllyAttrs
-    { allyId = aid
-    , allyCardDef = cardDef
-    , allyDamage = 0
-    , allyAttack = atk
-    , allyThwart = thw
-    , allyController = ident
+ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \(ident, aid) -> f $ AllyAttrs
+      { allyId = aid
+      , allyCardDef = cardDef
+      , allyDamage = 0
+      , allyAttack = atk
+      , allyAttackConsequentialDamage = atkConsequentialDamage
+      , allyThwart = thw
+      , allyThwartConsequentialDamage = thwConsequentialDamage
+      , allyController = ident
+      , allyExhausted = False
+      }
     }
-  }
-
-class IsHero a
 
 instance Entity AllyAttrs where
   type EntityId AllyAttrs = AllyId
@@ -64,3 +77,36 @@ instance IsTarget AllyAttrs where
 isTarget :: (Entity a, EntityAttrs a ~ AllyAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
+damageChoice :: AllyAttrs -> EnemyId -> Choice
+damageChoice attrs = \case
+  EnemyVillainId vid -> TargetLabel
+    (VillainTarget vid)
+    [ Damage
+        (VillainTarget vid)
+        (AllySource $ allyId attrs)
+        (unAtk $ allyAttack attrs)
+    ]
+
+stunChoice :: AllyAttrs -> EnemyId -> Choice
+stunChoice attrs = \case
+  EnemyVillainId vid -> TargetLabel
+    (VillainTarget vid)
+    [Stun (VillainTarget vid) (AllySource $ allyId attrs)]
+
+instance RunMessage AllyAttrs where
+  runMessage msg a = case msg of
+    AllyMessage ident msg' | ident == allyId a -> case msg' of
+      ExhaustedAlly -> do
+        pure $ a & exhaustedL .~ True
+      AllyAttacked -> do
+        enemies <- selectList AnyEnemy
+        pushAll
+          $ Ask (allyController a) (ChooseOne $ map (damageChoice a) enemies)
+          : [ AllyMessage
+                ident
+                (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
+            | allyAttackConsequentialDamage a > 0
+            ]
+        pure a
+      AllyDamaged _ n -> pure $ a & damageL +~ n
+    _ -> pure a

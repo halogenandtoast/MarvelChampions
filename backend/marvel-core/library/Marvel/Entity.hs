@@ -4,6 +4,9 @@ import Marvel.Prelude
 
 import GHC.Generics
 
+class Exhaustable a where
+  isExhausted :: a -> Bool
+
 class Entity a where
   type EntityId a
   type EntityAttrs a

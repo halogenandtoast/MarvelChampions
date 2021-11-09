@@ -1,7 +1,13 @@
 import { JsonDecoder } from 'ts.data.json'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
-export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment | Label | TargetLabel
+export type Choice = EndTurn
+  | UseAbility
+  | PlayCard
+  | PayWithCard
+  | FinishPayment
+  | Label
+  | TargetLabel
 
 export interface EndTurn {
   tag: 'EndTurn'
@@ -16,6 +22,26 @@ export interface PlayCard {
   contents: PlayerCard,
 }
 
+export interface Recover {
+  tag: 'Recover'
+}
+
+export interface Attack {
+  tag: 'Attack'
+}
+
+export interface AllyAttack {
+  tag: 'AllyAttack'
+}
+
+export interface AllyThwart {
+  tag: 'AllyThwart'
+}
+
+export interface Thwart {
+  tag: 'Thwart'
+}
+
 export interface PayWithCard {
   tag: 'PayWithCard',
   contents: PlayerCard,
@@ -24,6 +50,14 @@ export interface PayWithCard {
 export const endTurnDecoder = JsonDecoder.object<EndTurn>({ tag: JsonDecoder.isExactly('EndTurn') }, 'EndTurn')
 
 export const finishPaymentDecoder = JsonDecoder.object<FinishPayment>({ tag: JsonDecoder.isExactly('FinishPayment') }, 'FinishPayment')
+
+export const recoverDecoder = JsonDecoder.object<Recover>({ tag: JsonDecoder.isExactly('Recover') }, 'Recover')
+
+export const attackDecoder = JsonDecoder.object<Attack>({ tag: JsonDecoder.isExactly('Attack') }, 'Attack')
+export const allyAttackDecoder = JsonDecoder.object<AllyAttack>({ tag: JsonDecoder.isExactly('AllyAttack') }, 'AllyAttack')
+export const allyThwartDecoder = JsonDecoder.object<AllyThwart>({ tag: JsonDecoder.isExactly('AllyThwart') }, 'AllyThwart')
+
+export const thwartDecoder = JsonDecoder.object<Thwart>({ tag: JsonDecoder.isExactly('Thwart') }, 'Thwart')
 
 export interface UseAbility {
   tag: 'UseAbility'
@@ -49,7 +83,16 @@ export const runDecoder = JsonDecoder.object<Run>({ tag: JsonDecoder.isExactly('
 export const runAbilityDecoder = JsonDecoder.object<RunAbility>({ tag: JsonDecoder.isExactly('RunAbility') }, 'RunAbility')
 
 
-export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([changeFormDecoder, payDecoder, runDecoder, runAbilityDecoder], 'AbilityChoice')
+export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
+  changeFormDecoder,
+  payDecoder,
+  runDecoder,
+  runAbilityDecoder,
+  recoverDecoder,
+  attackDecoder,
+  allyAttackDecoder,
+  allyThwartDecoder,
+  thwartDecoder], 'AbilityChoice')
 
 export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
   JsonDecoder.isExactly('Interrupt'),
@@ -62,6 +105,7 @@ export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
   JsonDecoder.isExactly('Action'),
   JsonDecoder.isExactly('HeroAction'),
   JsonDecoder.isExactly('AlterEgoAction'),
+  JsonDecoder.isExactly('Basic'),
   JsonDecoder.isExactly('Special')], 'AbilityType')
 
 export const useAbilityContentsDecoder = JsonDecoder.object<UseAbilityContents>({
@@ -97,7 +141,8 @@ export type AbilityType =
   'Action' |
   'HeroAction' |
   'AlterEgoAction' |
-  'Special'
+  'Special' |
+  'Basic'
 
 export interface UseAbilityContents {
   abilityChoices: AbilityChoice[]
@@ -106,7 +151,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | AllyThwart | Thwart
 
 export interface ChangeForm {
   tag: 'ChangeForm'

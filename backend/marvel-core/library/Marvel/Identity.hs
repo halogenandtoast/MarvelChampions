@@ -13,9 +13,10 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
+import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Deck
-import qualified Marvel.Discard as Discard
+import Marvel.Discard
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hand
@@ -42,10 +43,11 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityMaxHP :: HP
   , playerIdentityCurrentHP :: HP
   , playerIdentityDeck :: Deck
-  , playerIdentityDiscard :: Discard.Discard
+  , playerIdentityDiscard :: Discard
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
+  , playerIdentityExhausted :: Bool
   }
   deriving stock (Show, Eq, Generic)
 
@@ -56,6 +58,8 @@ isHero player = case currentIdentity player of
   HeroSide _ -> True
   AlterEgoSide _ -> False
 
+instance Exhaustable PlayerIdentity where
+  isExhausted = playerIdentityExhausted
 
 instance HasResources PlayerIdentity where
   resourcesFor player card =
@@ -86,10 +90,11 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityCurrentHP = hp
   , playerIdentityMaxHP = hp
   , playerIdentityDeck = Deck []
-  , playerIdentityDiscard = Discard.Discard []
+  , playerIdentityDiscard = Discard []
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
+  , playerIdentityExhausted = False
   }
  where
   hp = case alterEgoSide of
@@ -124,7 +129,7 @@ instance HasAbilities PlayerIdentity where
         HeroSide x -> getAbilities x
         AlterEgoSide x -> getAbilities x
     in
-      [limitedAbility a 100 (PerTurn 1) Action IsSelf ChangeForm]
+      [limitedAbility a 100 (PerTurn 1) Action IsSelf NoCost ChangeForm]
         <> sideAbilities
 
 isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
@@ -141,6 +146,7 @@ isPlayable attrs c = do
     IsSelf -> error "Irrelevant"
     NoCriteria -> pure True
     InHeroForm -> member ident <$> select HeroIdentity
+    Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
 
 getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
@@ -157,6 +163,7 @@ getChoices attrs = do
     (andM . sequence
       [ pure . passesUseLimit ident usedAbilities
       , passesCriteria ident
+      , passesCanAffordCost ident
       , pure . passesTiming ident
       , pure . passesTypeIsRelevant ident
       ]
@@ -203,24 +210,30 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         NoPayment
       pure $ attrs & handL %~ Hand . filter (/= card) . unHand
     Nothing -> error "Invalid cost"
-  PayedWithCard card -> do
+  PaidWithCard card -> do
     push $ Spent card
-    pure $ attrs & handL %~ Hand . filter (/= card) . unHand
+    pure
+      $ attrs
+      & (handL %~ Hand . filter (/= card) . unHand)
+      & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
     pure $ attrs & alliesL %~ HashSet.insert allyId
   AddToHand card ->
     pure
       $ attrs
       & (handL %~ Hand . (card :) . unHand)
-      & (discardL %~ Discard.Discard . filter (/= card) . Discard.unDiscard)
-  Discard fromZone n mTarget -> case fromZone of
+      & (discardL %~ Discard . filter (/= card) . unDiscard)
+  DiscardCard card ->
+    pure $ attrs & (discardL %~ Discard . (card :) . unDiscard)
+  DiscardFrom fromZone n mTarget -> case fromZone of
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
       for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards
       pure
         $ attrs
-        & (discardL %~ Discard.Discard . (cards <>) . Discard.unDiscard)
+        & (discardL %~ Discard . (cards <>) . unDiscard)
         & (deckL .~ Deck deck')
+  ExhaustedIdentity -> pure $ attrs & exhaustedL .~ True
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

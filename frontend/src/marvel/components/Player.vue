@@ -11,8 +11,11 @@
       />
     </div>
     <div class="identity">
+      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
       <div>
-        <img :src="playerImg" alt="player" width="150" />
+        <div class="identityCard" :class="{ exhausted: player.exhausted }">
+          <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
+        </div>
         <AbilityButton
               v-for="ability in abilities"
               :key="ability"
@@ -21,16 +24,13 @@
               @click="$emit('choose', ability)"
               />
       </div>
+      <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
       <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
     </div>
     <button
       v-if="finishPaymentAction !== -1"
       @click="$emit('choose', finishPaymentAction)"
     >Finish Payment</button>
-    <button
-      :disabled="changeFormAction === -1"
-      @click="$emit('choose', changeFormAction)"
-    >Change Form</button>
     <button
       :disabled="endTurnAction === -1"
       @click="$emit('choose', endTurnAction)"
@@ -68,6 +68,8 @@ export default defineComponent({
       }
     })
 
+    const topOfDiscard = computed(() => props.player.discard[0])
+
     const playerImg = computed(() => `/img/marvel/cards/${playerCardCode.value}.jpg`)
 
     const choices = computed(() => MarvelGame.choices(props.game, props.player.id))
@@ -76,12 +78,6 @@ export default defineComponent({
       return choices
         .value
         .findIndex((c) => c.tag === 'EndTurn')
-    })
-
-    const changeFormAction = computed(() => {
-      return choices
-        .value
-        .findIndex((c) => c.tag === 'UseAbility' && c.contents.abilityChoices[0]?.tag === 'ChangeForm')
     })
 
     const finishPaymentAction = computed(() => {
@@ -101,7 +97,15 @@ export default defineComponent({
       }, [])
     })
 
-    return { playerImg, choices, endTurnAction, changeFormAction, finishPaymentAction, allies, abilities }
+    return {
+      playerImg,
+      choices,
+      endTurnAction,
+      finishPaymentAction,
+      allies,
+      abilities,
+      topOfDiscard
+    }
   }
 })
 </script>
@@ -110,4 +114,22 @@ export default defineComponent({
 .identity {
   display: flex;
 }
+
+.discard {
+  filter: grayscale(1);
+}
+
+.deck {
+  margin-left: 2px;
+  border-radius: 10px;
+}
+
+.exhausted {
+  margin: auto 30px;
+  .identityCardImg {
+    transform: rotate(90deg);
+    display: block;
+  }
+}
+
 </style>
