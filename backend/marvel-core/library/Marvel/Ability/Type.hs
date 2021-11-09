@@ -3,6 +3,7 @@ module Marvel.Ability.Type where
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.Cost
 import Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
@@ -20,6 +21,7 @@ data AbilityType
   | HeroAction
   | AlterEgoAction
   | Special
+  | Basic
   -- | WhenRevealed
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -47,6 +49,7 @@ data Ability = Ability
   , abilitySubType :: Maybe AbilitySubType
   , abilityLabel :: Maybe Text
   , abilityWindow :: Maybe WindowMatcher
+  , abilityCost :: Cost
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON, FromJSON)

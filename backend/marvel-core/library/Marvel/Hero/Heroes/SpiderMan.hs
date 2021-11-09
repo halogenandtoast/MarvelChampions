@@ -1,10 +1,13 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Hero.Heroes.SpiderMan where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
@@ -28,12 +31,12 @@ spiderMan = hero
 instance HasAbilities SpiderMan where
   getAbilities a =
     [ label "Spider-Sense"
-        $ ability a 1 Interrupt IsSelf (RunAbility (toTarget a) 1)
+        $ ability a 1 Interrupt IsSelf NoCost (RunAbility (toTarget a) 1)
     ]
 
 newtype SpiderMan = SpiderMan HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, IsTarget, HasCardCode)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, IsTarget, HasCardCode, Entity)
 
 instance RunMessage SpiderMan where
-  runMessage _ = pure
+  runMessage msg (SpiderMan attrs) = SpiderMan <$> runMessage msg attrs

@@ -5,10 +5,11 @@ import Marvel.Prelude
 import Data.List (partition)
 import qualified Data.List as L
 import Data.Traversable (for)
-import Marvel.Ability
+import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
+import Marvel.Cost
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
@@ -17,26 +18,6 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-
-data Cost = Costs [Cost] | ResourceCost (Maybe Resource) | NoCost
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-instance Monoid Cost where
-  mempty = NoCost
-
-instance Semigroup Cost where
-  NoCost <> x = x
-  x <> NoCost = x
-  Costs xs <> Costs ys = Costs $ xs <> ys
-  Costs xs <> y = Costs $ xs <> [y]
-  x <> Costs ys = Costs $ x : ys
-  x <> y = Costs [x, y]
-
-costResources :: Cost -> [Maybe Resource]
-costResources NoCost = []
-costResources (ResourceCost r) = [r]
-costResources (Costs ps) = concatMap costResources ps
 
 data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
   deriving stock (Show, Eq, Generic)
@@ -118,6 +99,12 @@ data Choice
   | Pay Payment
   | Run [Message]
   | Damage Target Source Natural
+  | Stun Target Source
+  | Recover
+  | Attack
+  | Thwart
+  | AllyAttack AllyId
+  | AllyThwart AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -128,18 +115,36 @@ choiceMessages ident = \case
   TargetLabel _ choices -> concatMap (choiceMessages ident) choices
   CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
-  UseAbility a ->
-    UsedAbility ident a : concatMap (choiceMessages ident) (abilityChoices a)
+  UseAbility a -> UsedAbility ident a : costMessages a <> concatMap
+    (choiceMessages ident)
+    (abilityChoices a)
   RunAbility target n -> [RanAbility target n]
   ChangeForm -> [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
   PlayCard x -> [IdentityMessage ident $ PlayedCard x]
-  PayWithCard c -> [IdentityMessage ident $ PayedWithCard c]
+  PayWithCard c -> [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> [FinishedPayment]
   Pay payment -> [Paid payment]
   Damage target source n -> case target of
     VillainTarget vid -> [VillainMessage vid $ VillainDamaged source n]
     _ -> error "can not damage target"
+  Stun target source -> case target of
+    VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
+    _ -> error "can not damage target"
+  Recover -> [IdentityMessage ident $ SideMessage Recovered]
+  Attack -> [IdentityMessage ident $ SideMessage Attacked]
+  Thwart -> [IdentityMessage ident $ SideMessage Thwarted]
+  AllyAttack allyId -> [AllyMessage allyId AllyAttacked]
+  AllyThwart allyId -> [AllyMessage allyId AllyThwarted]
+
+costMessages :: Ability -> [Message]
+costMessages a = case abilityCost a of
+  NoCost -> []
+  ExhaustCost -> case abilitySource a of
+    IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
+    AllySource ident -> [AllyMessage ident ExhaustedAlly]
+    _ -> error "Unhandled"
+  _ -> error "Unhandled"
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

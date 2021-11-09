@@ -4,3 +4,4 @@ module Marvel.Ally.Allies
 
 import Marvel.Ally.Allies.BlackCatFeliciaHardy as X
 import Marvel.Ally.Allies.MariaHill as X
+import Marvel.Ally.Allies.MockingbirdBobbiMorse as X

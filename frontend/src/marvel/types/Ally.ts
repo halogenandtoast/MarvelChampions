@@ -9,12 +9,16 @@ export interface Ally {
 export interface AllyContents {
   allyId: string
   allyCardDef: CardDef
+  allyDamage: number
+  allyExhausted: boolean
 }
 
 export const allyContentsDecoder = JsonDecoder.object<AllyContents>(
   {
     allyId: JsonDecoder.string,
     allyCardDef: cardDefDecoder,
+    allyDamage: JsonDecoder.number,
+    allyExhausted: JsonDecoder.boolean,
   }, 'AllyContents')
 
 export const allyDecoder = JsonDecoder.object<Ally>(

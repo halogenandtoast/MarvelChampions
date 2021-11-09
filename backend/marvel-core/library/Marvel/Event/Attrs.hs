@@ -5,6 +5,8 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.Id
+import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Source
@@ -49,3 +51,11 @@ instance IsTarget EventAttrs where
 
 isTarget :: (Entity a, EntityAttrs a ~ EventAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
+
+toCard :: EventAttrs -> PlayerCard
+toCard a = PlayerCard
+  { pcCardId = CardId . unEventId $ toId a
+  , pcCardDef = eventCardDef a
+  , pcOwner = Just $ eventController a
+  , pcController = Just $ eventController a
+  }

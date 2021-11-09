@@ -8,6 +8,7 @@ import Marvel.Ally.Attrs
 import qualified Marvel.Ally.Cards as Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Cost
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Question
@@ -20,7 +21,7 @@ import Marvel.Window
 
 blackCatFeliciaHardy :: AllyCard BlackCatFeliciaHardy
 blackCatFeliciaHardy =
-  ally BlackCatFeliciaHardy Cards.blackCatFeliciaHardy (Thw 1) (Atk 1)
+  ally BlackCatFeliciaHardy Cards.blackCatFeliciaHardy (Thw 1, 1) (Atk 1, 0)
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
   deriving anyclass IsAlly
@@ -33,13 +34,14 @@ instance HasAbilities BlackCatFeliciaHardy where
         1
         (PlayThis After)
         ForcedResponse
+        NoCost
         (RunAbility (toTarget a) 1)
     ]
 
 instance RunMessage BlackCatFeliciaHardy where
   runMessage msg a = case msg of
     RanAbility target 1 | isTarget a target -> do
-      push $ IdentityMessage (allyController $ toAttrs a) $ Discard
+      push $ IdentityMessage (allyController $ toAttrs a) $ DiscardFrom
         FromDeck
         2
         (Just target)
@@ -49,4 +51,4 @@ instance RunMessage BlackCatFeliciaHardy where
         $ map (IdentityMessage (allyController $ toAttrs a) . AddToHand)
         $ filter (cardMatch $ CardWithResource Mental) cards
       pure a
-    _ -> pure a
+    _ -> BlackCatFeliciaHardy <$> runMessage msg (toAttrs a)

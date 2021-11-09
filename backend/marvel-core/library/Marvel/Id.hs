@@ -14,5 +14,5 @@ newtype EnemyId = EnemyVillainId VillainId
 newtype AllyId = AllyId UUID
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
-newtype EventId = EventId UUID
+newtype EventId = EventId { unEventId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

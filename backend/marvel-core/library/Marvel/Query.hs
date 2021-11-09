@@ -10,6 +10,7 @@ import Marvel.Matchers
 type family QueryElement a where
   QueryElement IdentityMatcher = IdentityId
   QueryElement EnemyMatcher = EnemyId
+  QueryElement AllyMatcher = AllyId
 
 class Query a where
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
@@ -23,3 +24,6 @@ instance Query IdentityMatcher where
 
 instance Query EnemyMatcher where
   select = gameSelectEnemy
+
+instance Query AllyMatcher where
+  select = gameSelectAlly

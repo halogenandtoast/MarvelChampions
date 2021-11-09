@@ -1,6 +1,7 @@
 <template>
   <div class="ally">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted }" />
+    <div v-if="ally.contents.allyDamage > 0" class="damage">{{ally.contents.allyDamage}}</div>
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"
@@ -46,5 +47,9 @@ export default defineComponent({
 <style scoped lang="scss">
 .ally {
   display: inline-block;
+}
+
+.exhausted {
+  transform: rotate(90deg);
 }
 </style>

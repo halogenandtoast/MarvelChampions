@@ -1,9 +1,11 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Hero.Heroes.CaptainMarvel where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
@@ -23,7 +25,7 @@ captainMarvel = hero
 
 newtype CaptainMarvel = CaptainMarvel HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode, Entity)
 
 instance HasAbilities CaptainMarvel where
   getAbilities _ = []

@@ -6,6 +6,7 @@ export interface VillainContents {
   villainCardDef: CardDef
   villainHp: number
   villainMaxHp: number
+  villainStunned: boolean
 }
 
 export interface Villain {
@@ -18,6 +19,7 @@ export const villainContentsDecoder = JsonDecoder.object<VillainContents>({
   villainCardDef: cardDefDecoder,
   villainHp: JsonDecoder.number,
   villainMaxHp: JsonDecoder.number,
+  villainStunned: JsonDecoder.boolean,
 }, 'VillainContents')
 
 export const villainDecoder = JsonDecoder.object<Villain>({

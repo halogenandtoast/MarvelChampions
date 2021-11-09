@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.AlterEgo.AlterEgos.CarolDanvers where
 
 import Marvel.Prelude
@@ -6,6 +7,7 @@ import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import qualified Marvel.AlterEgo.Cards as Cards
 import Marvel.Card.Code
+import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
@@ -17,7 +19,7 @@ carolDanvers =
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode)
+  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode, Entity)
 
 instance HasAbilities CarolDanvers where
   getAbilities _ = []

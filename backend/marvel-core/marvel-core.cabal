@@ -18,6 +18,7 @@ library
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy
       Marvel.Ally.Allies.MariaHill
+      Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Attrs
       Marvel.Ally.Cards
       Marvel.AlterEgo
@@ -33,6 +34,7 @@ library
       Marvel.Card.Id
       Marvel.Card.PlayerCard
       Marvel.Card.Side
+      Marvel.Cost
       Marvel.Criteria
       Marvel.Debug
       Marvel.Deck

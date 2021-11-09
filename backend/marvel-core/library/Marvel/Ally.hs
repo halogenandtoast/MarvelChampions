@@ -3,14 +3,18 @@ module Marvel.Ally where
 
 import Marvel.Prelude
 
-import Marvel.Ability
+import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Ally.Allies
 import Marvel.Ally.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Question
+import Marvel.Source
 import Marvel.TH
 
 $(buildEntity "Ally")
@@ -34,5 +38,16 @@ instance Entity Ally where
 instance RunMessage Ally where
   runMessage = genericRunMessage
 
+instance Exhaustable Ally where
+  isExhausted = allyExhausted . toAttrs
+
+instance IsSource Ally where
+  toSource = AllySource . toId
+
 instance HasAbilities Ally where
-  getAbilities = genericGetAbilities
+  getAbilities a = genericGetAbilities a <> basicAbilities
+   where
+    basicAbilities =
+      [ ability a 300 Basic NoCriteria ExhaustCost (AllyThwart $ toId a)
+      , ability a 301 Basic NoCriteria ExhaustCost (AllyAttack $ toId a)
+      ]
