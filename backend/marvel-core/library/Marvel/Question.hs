@@ -15,6 +15,7 @@ import Marvel.Id
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Queue
 import Marvel.Resource
+import Marvel.Source
 import Marvel.Target
 
 data Cost = Costs [Cost] | ResourceCost (Maybe Resource) | NoCost
@@ -105,6 +106,7 @@ newtype Unsorted a = Unsorted { unUnsorted :: [a] }
 data Choice
   = CardLabel CardCode Choice
   | Label Text [Choice]
+  | TargetLabel Target [Choice]
   | EndTurn
   | UseAbility Ability
   | RunAbility Target Natural
@@ -115,6 +117,7 @@ data Choice
   | FinishPayment
   | Pay Payment
   | Run [Message]
+  | Damage Target Source Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -122,6 +125,7 @@ choiceMessages :: IdentityId -> Choice -> [Message]
 choiceMessages ident = \case
   Run msgs -> msgs
   Label _ choices -> concatMap (choiceMessages ident) choices
+  TargetLabel _ choices -> concatMap (choiceMessages ident) choices
   CardLabel _ choice -> choiceMessages ident choice
   EndTurn -> [IdentityMessage ident EndedTurn]
   UseAbility a ->
@@ -133,6 +137,9 @@ choiceMessages ident = \case
   PayWithCard c -> [IdentityMessage ident $ PayedWithCard c]
   FinishPayment -> [FinishedPayment]
   Pay payment -> [Paid payment]
+  Damage target source n -> case target of
+    VillainTarget vid -> [VillainMessage vid $ VillainDamaged source n]
+    _ -> error "can not damage target"
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

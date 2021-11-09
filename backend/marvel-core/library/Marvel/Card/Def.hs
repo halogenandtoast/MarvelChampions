@@ -7,6 +7,7 @@ import GHC.Generics
 import Marvel.Aspect
 import Marvel.Card.Code
 import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -52,6 +53,7 @@ data CardDef = CardDef
   , cdCardType :: CardType
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
+  , cdCriteria :: Criteria
   , cdResources :: [(ResourceRestriction, Resource)]
   }
   deriving stock (Show, Eq, Generic)

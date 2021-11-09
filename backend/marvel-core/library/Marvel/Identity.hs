@@ -13,13 +13,16 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
+import Marvel.Criteria
 import Marvel.Deck
 import qualified Marvel.Discard as Discard
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Hero
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -47,6 +50,12 @@ data PlayerIdentity = PlayerIdentity
   deriving stock (Show, Eq, Generic)
 
 makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+
+isHero :: PlayerIdentity -> Bool
+isHero player = case currentIdentity player of
+  HeroSide _ -> True
+  AlterEgoSide _ -> False
+
 
 instance HasResources PlayerIdentity where
   resourcesFor player card =
@@ -118,14 +127,24 @@ instance HasAbilities PlayerIdentity where
       [limitedAbility a 100 (PerTurn 1) Action IsSelf ChangeForm]
         <> sideAbilities
 
-isPlayable :: MonadGame env m => PlayerCard -> m Bool
-isPlayable c = do
+isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
+isPlayable attrs c = do
   resources <- getAvailableResourcesFor c
-  let cost = cdCost $ getCardDef c
-  pure $ maybe False (length resources >=) cost
+  passedCriteria <- checkCriteria (cdCriteria def)
+  pure $ canPayCost resources && passedCriteria
+ where
+  cost = cdCost def
+  canPayCost resources = maybe False (length resources >=) cost
+  ident = toId attrs
+  def = getCardDef c
+  checkCriteria = \case
+    IsSelf -> error "Irrelevant"
+    NoCriteria -> pure True
+    InHeroForm -> member ident <$> select HeroIdentity
+    Criteria xs -> allM checkCriteria xs
 
 getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
-getPlayableCards player = filterM isPlayable cards
+getPlayableCards player = filterM (isPlayable player) cards
   where cards = unHand $ playerIdentityHand player
 
 getChoices :: MonadGame env m => PlayerIdentity -> m [Choice]
@@ -134,16 +153,15 @@ getChoices attrs = do
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
   playableCards <- getPlayableCards attrs
-  let
-    validAbilities = filter
-      (and . sequence
-        [ passesUseLimit ident usedAbilities
-        , passesCriteria ident
-        , passesTiming ident
-        , passesTypeIsRelevant ident
-        ]
-      )
-      abilities
+  validAbilities <- filterM
+    (andM . sequence
+      [ pure . passesUseLimit ident usedAbilities
+      , passesCriteria ident
+      , pure . passesTiming ident
+      , pure . passesTypeIsRelevant ident
+      ]
+    )
+    abilities
   pure $ map UseAbility validAbilities <> map PlayCard playableCards
 
 runIdentityMessage

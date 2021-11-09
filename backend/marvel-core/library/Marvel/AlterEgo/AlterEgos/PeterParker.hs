@@ -6,6 +6,7 @@ import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import qualified Marvel.AlterEgo.Cards as Cards
 import Marvel.Card.Code
+import Marvel.Criteria
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message

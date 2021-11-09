@@ -1,7 +1,7 @@
 import { JsonDecoder } from 'ts.data.json'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
 
-export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment | Label
+export type Choice = EndTurn | UseAbility | PlayCard | PayWithCard | FinishPayment | Label | TargetLabel
 
 export interface EndTurn {
   tag: 'EndTurn'
@@ -41,6 +41,7 @@ export const sourceDecoder = JsonDecoder.object<Source>({ tag: JsonDecoder.strin
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
 
 export const labelDecoder = JsonDecoder.object<Label>({ tag: JsonDecoder.isExactly('Label') }, 'Label')
+export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({ tag: JsonDecoder.isExactly('TargetLabel') }, 'Label')
 
 
 export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
@@ -115,6 +116,10 @@ export interface Label {
   tag: 'Label'
 }
 
+export interface TargetLabel {
+  tag: 'TargetLabel'
+}
+
 export interface Pay {
   tag: 'Pay'
 }
@@ -145,6 +150,7 @@ export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   , payWithCardDecoder
   , finishPaymentDecoder
   , labelDecoder
+  , targetLabelDecoder
   ], 'Question'
 )
 

@@ -7,8 +7,11 @@ import Marvel.Prelude
 
 import qualified Data.HashMap.Strict as HashMap
 import Marvel.Ability.Type as X
+import Marvel.Criteria
 import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Matchers
+import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
 import Marvel.Window
@@ -70,10 +73,15 @@ passesUseLimit x aMap a = case abilityLimit a of
   PerWindow n -> count (== a) usedAbilities < n
   where usedAbilities = HashMap.findWithDefault [] x aMap
 
-passesCriteria :: IdentityId -> Ability -> Bool
-passesCriteria x a = case abilityCriteria a of
-  IsSelf -> IdentitySource x == abilitySource a
-  NoCriteria -> True
+passesCriteria :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesCriteria x a = go (abilityCriteria a)
+ where
+  go = \case
+    IsSelf -> pure $ toSource x == source
+    NoCriteria -> pure True
+    InHeroForm -> member x <$> select HeroIdentity
+    Criteria xs -> allM go xs
+  source = abilitySource a
 
 passesTiming :: IdentityId -> Ability -> Bool
 passesTiming _ a = all passes (toList $ abilityTiming a)

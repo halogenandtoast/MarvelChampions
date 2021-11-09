@@ -6,6 +6,7 @@ import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Id
+import Marvel.Matchers
 import {-# SOURCE #-} Marvel.Queue
 import Marvel.Resource
 
@@ -29,6 +30,12 @@ getPlayers :: MonadGame env m => m [IdentityId]
 getPlayerCount :: MonadGame env m => m Int
 getsGame :: MonadGame env m => (Game -> a) -> m a
 getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
+
+-- Matchers
+gameSelectIdentity
+  :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
+
+gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 
 instance HasAbilities Game
 

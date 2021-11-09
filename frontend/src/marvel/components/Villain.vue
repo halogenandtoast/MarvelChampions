@@ -1,7 +1,7 @@
 <template>
   <div class="villain">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
-    <div>{{villain.contents.villainHp}} / {{villain.contents.villainMaxHp}}</div>
+    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)"/>
+    <div class="hp">{{villain.contents.villainHp}}</div>
   </div>
 </template>
 
@@ -9,6 +9,7 @@
 import { defineComponent, computed } from 'vue'
 import { Game } from '@/marvel/types/Game'
 import { Villain } from '@/marvel/types/Villain'
+import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 
 export default defineComponent({
@@ -21,7 +22,13 @@ export default defineComponent({
   setup(props) {
     const card = computed(() => ({ pcCardId: props.villain.contents.villainId, pcCardDef: props.villain.contents.villainCardDef }))
 
-    return { card }
+    const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
+
+    const activeAbility = computed(() => {
+      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel')
+    })
+
+    return { card, activeAbility }
   }
 })
 </script>
@@ -29,5 +36,16 @@ export default defineComponent({
 <style scoped lang="scss">
 .villain {
   display: inline-block;
+}
+
+.hp {
+  font-family: "Exo2";
+  font-weight: bold;
+  background: #8E1C21;
+  display: inline-block;
+  padding: 0 5px;
+  border: 10px solid #383839;
+  color: white;
+  border-radius: 10px;
 }
 </style>

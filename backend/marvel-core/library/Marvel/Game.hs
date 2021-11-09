@@ -4,6 +4,7 @@ module Marvel.Game where
 import Marvel.Prelude
 
 import qualified Data.Aeson.Diff as Diff
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -14,11 +15,13 @@ import Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Deck
 import Marvel.Entity
+import Marvel.Event
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
 import Marvel.Identity hiding (alliesL)
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Question
@@ -42,6 +45,7 @@ data Game = Game
   , gamePlayers :: EntityMap PlayerIdentity
   , gameVillains :: EntityMap Villain
   , gameAllies :: EntityMap Ally
+  , gameEvents :: EntityMap Event
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [Ability]
   , gameActivePlayer :: IdentityId
@@ -101,7 +105,6 @@ runGameMessage msg g@Game {..} = case msg of
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   AddVillain cardCode -> do
     villainId <- getRandom
-    playerCount <- getPlayerCount
     case lookupVillain cardCode villainId of
       Just x -> do
         push $ VillainMessage villainId SetVillainHp
@@ -155,32 +158,34 @@ runGameMessage msg g@Game {..} = case msg of
             (activeCostPayment activeCost)
           pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
-  PutCardIntoPlay ident card _payment -> do
+  PutCardIntoPlay ident card payment -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
         let ally = createAlly ident card
         pushAll
           [ IdentityMessage ident (AllyCreated $ toId ally)
           , CheckWindows [Window After $ PlayedAlly (toId ally)]
-          , EndCheckWindows
           ]
         pure $ g & alliesL %~ insert (toId ally) ally
+      EventType -> do
+        let event = createEvent ident card
+        push $ EventMessage (toId event) $ PlayedEvent ident payment
+        pure $ g & eventsL %~ insert (toId event) event
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
   CheckWindows windows -> do
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities
     ident <- toId <$> getActivePlayer
-    let
-      validAbilities = filter
-        (and . sequence
-          [ passesUseLimit ident usedAbilities
-          , passesCriteria ident
-          , \a -> any (`abilityInWindow` a) windows
-          ]
-        )
-        abilities
-      forcedAbiltiies = filter isForcedAbility validAbilities
+    validAbilities <- filterM
+      (andM . sequence
+        [ pure . passesUseLimit ident usedAbilities
+        , passesCriteria ident
+        , \a -> pure $ any (`abilityInWindow` a) windows
+        ]
+      )
+      abilities
+    let forcedAbiltiies = filter isForcedAbility validAbilities
     case (forcedAbiltiies, validAbilities) of
       ([], []) -> pure ()
       ([], as) ->
@@ -209,6 +214,7 @@ instance RunMessage Game where
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= traverseOf (alliesL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
+      >>= traverseOf (eventsL . each) (runMessage msg)
       >>= runGameMessage msg
 
 class HasGame a where
@@ -217,6 +223,10 @@ class HasGame a where
 createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =
   lookupAlly (toCardCode card) ident (AllyId $ unCardId $ pcCardId card)
+
+createEvent :: IdentityId -> PlayerCard -> Event
+createEvent ident card =
+  lookupEvent (toCardCode card) ident (EventId $ unCardId $ pcCardId card)
 
 newGame :: PlayerIdentity -> Scenario -> Game
 newGame player scenario = Game
@@ -232,6 +242,7 @@ newGame player scenario = Game
   , gameActivePlayer = toId player
   , gameScenario = scenario
   , gameAllies = mempty
+  , gameEvents = mempty
   }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
@@ -332,3 +343,16 @@ getResourceAbilities = do
       [passesUseLimit (toId player) usedAbilities, (== Resource) . abilityType]
     )
     abilities
+
+gameSelectIdentity
+  :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
+gameSelectIdentity = \case
+  HeroIdentity -> do
+    identities <- toList <$> getsGame gamePlayers
+    pure $ HashSet.fromList $ map toId $ filter isHero identities
+
+gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
+gameSelectEnemy = \case
+  AnyEnemy -> do
+    villains <- toList <$> getsGame gameVillains
+    pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
