@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Villain.Attrs
   ( module Marvel.Villain.Attrs
   , module X
@@ -10,6 +11,8 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity as X
 import Marvel.GameValue
+import Marvel.Game.Source
+import Marvel.Message
 import Marvel.Hp
 import Marvel.Id as X (VillainId)
 import Marvel.Stats
@@ -19,27 +22,33 @@ class IsVillain a
 type VillainCard a = CardBuilder VillainId a
 
 villain
-  :: (VillainAttrs -> a) -> CardDef -> Sch -> Atk -> GameValue -> VillainCard a
-villain f cardDef sch atk startingHP = CardBuilder
+  :: (VillainAttrs -> a) -> CardDef -> Sch -> Atk -> HP -> VillainCard a
+villain f cardDef sch atk startingHp = CardBuilder
   { cbCardCode = toCardCode cardDef
   , cbCardBuilder = \ident -> f $ VillainAttrs
     { villainId = ident
     , villainCardDef = cardDef
-    , villainStartingHP = startingHP
-    , villainMaxHP = startingHP
-    , villainHP = HP $ Static 1 -- placeholder
+    , villainStartingHp = startingHp
+    , villainMaxHp = 1
+    , villainHp = 1
+    , villainScheme = sch
+    , villainAttack = atk
     }
   }
 
 data VillainAttrs = VillainAttrs
   { villainId :: VillainId
   , villainCardDef :: CardDef
-  , villainHP :: HP
-  , villainStartingHP :: GameValue
-  , villainMaxHP :: GameValue
+  , villainHp :: Int
+  , villainStartingHp :: HP
+  , villainMaxHp :: Int
+  , villainScheme :: Sch
+  , villainAttack :: Atk
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+makeLensesWith suffixedFields ''VillainAttrs
 
 instance Entity VillainAttrs where
   type EntityId VillainAttrs = VillainId
@@ -47,3 +56,13 @@ instance Entity VillainAttrs where
   toId = villainId
   toAttrs = id
 
+runVillainMessage :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
+runVillainMessage msg attrs = case msg of
+  SetVillainHp ->  do
+    hp <- fromGameValue (unHp $ villainStartingHp attrs)
+    pure $ attrs & hpL .~  hp & maxHpL .~ hp
+
+instance RunMessage VillainAttrs where
+  runMessage msg attrs = case msg of
+    VillainMessage villainId msg' | villainId == toId attrs -> runVillainMessage msg' attrs
+    _ -> pure attrs

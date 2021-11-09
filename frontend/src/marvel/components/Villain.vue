@@ -1,6 +1,7 @@
 <template>
   <div class="villain">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
+    <div>{{villain.contents.villainHp}} / {{villain.contents.villainMaxHp}}</div>
   </div>
 </template>
 
@@ -24,3 +25,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<style scoped lang="scss">
+.villain {
+  display: inline-block;
+}
+</style>

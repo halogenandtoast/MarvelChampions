@@ -26,6 +26,7 @@ class
 data Game
 
 getPlayers :: MonadGame env m => m [IdentityId]
+getPlayerCount :: MonadGame env m => m Int
 getsGame :: MonadGame env m => (Game -> a) -> m a
 getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
 

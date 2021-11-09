@@ -104,7 +104,7 @@ runGameMessage msg g@Game {..} = case msg of
     playerCount <- getPlayerCount
     case lookupVillain cardCode villainId of
       Just x -> do
-        push $ VillainMessage villainId $ SetVillainHP playerCount
+        push $ VillainMessage villainId SetVillainHp
         pure $ g & villainsL . at villainId ?~ x
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a -> pure $ g & usedAbilitiesL %~ insertWith (<>) ident [a]
@@ -208,6 +208,7 @@ instance RunMessage Game where
       >>= traverseOf scenarioL (runMessage msg)
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= traverseOf (alliesL . each) (runMessage msg)
+      >>= traverseOf (villainsL . each) (runMessage msg)
       >>= runGameMessage msg
 
 class HasGame a where

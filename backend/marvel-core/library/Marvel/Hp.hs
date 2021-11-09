@@ -5,7 +5,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.GameValue
 
-newtype HP = HP GameValue
+newtype HP = HP { unHp :: GameValue }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 class HasStartingHP a where
