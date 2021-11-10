@@ -60,6 +60,15 @@ instance RunMessage ScenarioAttrs where
       pushAll $ map (($ BeginTurn) . IdentityMessage) players <> [BeginPhase VillainPhase]
       pure attrs
     BeginPhase VillainPhase -> do
+      pushAll [PlaceThreat, VillainAndMinionsActivate, DealEncounterCards, RevealEncounterCards, PassFirstPlayer, EndRound]
+      pure attrs
+    PlaceThreat -> do
       additionalThreat <- fromGameValue scenarioAcceleration
       pure $ attrs & threatL +~ fromIntegral additionalThreat
+    EndRound -> do
+      push BeginRound
+      pure attrs
+    BeginRound -> do
+      push (BeginPhase PlayerPhase)
+      pure attrs
     _ -> pure attrs

@@ -27,6 +27,13 @@ data Message
   = StartGame
   | StartScenario
   | BeginPhase Phase
+  | PlaceThreat
+  | VillainAndMinionsActivate
+  | DealEncounterCards
+  | RevealEncounterCards
+  | PassFirstPlayer
+  | EndRound
+  | BeginRound
   | AddVillain CardCode
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
