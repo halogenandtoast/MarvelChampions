@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Game.Source
+import Marvel.GameValue
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue
@@ -28,7 +29,7 @@ instance RunMessage TheBreakIn where
   runMessage msg (TheBreakIn attrs) = TheBreakIn <$> runMessage msg attrs
 
 rhinoScenario :: TheBreakIn
-rhinoScenario = TheBreakIn $ ScenarioAttrs "01097" ["01094"]
+rhinoScenario = TheBreakIn $ ScenarioAttrs "01097" ["01094"] (Static 0) (PerPlayer 1) 0
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON)
@@ -39,9 +40,15 @@ instance RunMessage KlawScenario where
 data ScenarioAttrs = ScenarioAttrs
   { scenarioId :: CardCode
   , scenarioVillains :: [CardCode]
+  , scenarioInitialThreat :: GameValue
+  , scenarioAcceleration :: GameValue
+  , scenarioThreat :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+threatL :: Lens' ScenarioAttrs Natural
+threatL = lens scenarioThreat $ \m x -> m { scenarioThreat = x }
 
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
@@ -50,6 +57,9 @@ instance RunMessage ScenarioAttrs where
       pure attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll $ map (($ BeginTurn) . IdentityMessage) players
+      pushAll $ map (($ BeginTurn) . IdentityMessage) players <> [BeginPhase VillainPhase]
       pure attrs
+    BeginPhase VillainPhase -> do
+      additionalThreat <- fromGameValue scenarioAcceleration
+      pure $ attrs & threatL +~ fromIntegral additionalThreat
     _ -> pure attrs

@@ -310,12 +310,12 @@ instance HasAbilities Game where
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
   mMsg <- pop
-  -- debug =<< getGame
   for_ mMsg debug
   for_ mMsg $ \case
     Ask ident choices -> do
       withGame_ $ questionL .~ fromList [(ident, choices)]
     other -> do
+      withGame_ $ questionL .~ mempty
       withGameM $ runMessage other
       runGameMessages
 
