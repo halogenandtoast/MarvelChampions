@@ -35,11 +35,13 @@ export interface Scenario {
 
 export interface ScenarioContents {
   scenarioId: string
+  scenarioThreat: number
 }
 
 export const scenarioContentsDecoder = JsonDecoder.object<ScenarioContents>(
   {
-    scenarioId: JsonDecoder.string
+    scenarioId: JsonDecoder.string,
+    scenarioThreat: JsonDecoder.number
   }, 'ScenarioContents')
 
 export const scenarioDecoder = JsonDecoder.object<Scenario>(

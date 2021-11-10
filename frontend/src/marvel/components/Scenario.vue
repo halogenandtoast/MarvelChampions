@@ -1,6 +1,7 @@
 <template>
   <div>
     <img :src="scenarioImg" alt="Scenario" />
+    <div>{{game.scenario.contents.scenarioThreat}}</div>
     <Villain
       v-for="villain in game.villains"
       :key="villain.contents.villainId"
