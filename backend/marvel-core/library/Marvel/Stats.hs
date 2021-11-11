@@ -11,7 +11,7 @@ newtype Thw = Thw { unThw :: Natural }
 newtype Def = Def Int
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
-newtype Sch = Sch Int
+newtype Sch = Sch { unSch :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 newtype Rec = Rec Int

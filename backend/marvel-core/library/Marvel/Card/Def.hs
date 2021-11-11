@@ -5,9 +5,12 @@ import Marvel.Prelude
 
 import GHC.Generics
 import Marvel.Aspect
+import Marvel.Boost
 import Marvel.Card.Code
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Criteria
+import Marvel.EncounterSet
+import Marvel.Keyword
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -24,6 +27,10 @@ data CardType
   | SupportType
   | ResourceType
   | UpgradeType
+  | AttachmentType
+  | MinionType
+  | TreacheryType
+  | SideSchemeType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -50,11 +57,15 @@ data CardDef = CardDef
   , cdName :: Name
   , cdCost :: Maybe Int
   , cdTraits :: HashSet Trait
+  , cdKeywords :: HashSet Keyword
   , cdCardType :: CardType
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
   , cdCriteria :: Criteria
   , cdResources :: [(ResourceRestriction, Resource)]
+  , cdBoostIcons :: [BoostIcon]
+  , cdEncounterSet :: Maybe EncounterSet
+  , cdEncounterSetQuantity :: Maybe Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

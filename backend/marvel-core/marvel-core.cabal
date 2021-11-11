@@ -28,9 +28,12 @@ library
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
       Marvel.Aspect
+      Marvel.Attachment.Cards
+      Marvel.Boost
       Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
+      Marvel.Card.EncounterCard
       Marvel.Card.Id
       Marvel.Card.PlayerCard
       Marvel.Card.Side
@@ -39,6 +42,8 @@ library
       Marvel.Debug
       Marvel.Deck
       Marvel.Discard
+      Marvel.EncounterCard
+      Marvel.EncounterSet
       Marvel.Entity
       Marvel.Event
       Marvel.Event.Attrs
@@ -59,8 +64,10 @@ library
       Marvel.Hp
       Marvel.Id
       Marvel.Identity
+      Marvel.Keyword
       Marvel.Matchers
       Marvel.Message
+      Marvel.Minion.Cards
       Marvel.Name
       Marvel.Phase
       Marvel.PlayerCard
@@ -71,12 +78,15 @@ library
       Marvel.Resource
       Marvel.Resource.Cards
       Marvel.Scenario
+      Marvel.Scenario.Attrs
+      Marvel.SideScheme.Cards
       Marvel.Source
       Marvel.Stats
       Marvel.Support.Cards
       Marvel.Target
       Marvel.TH
       Marvel.Trait
+      Marvel.Treachery.Cards
       Marvel.Upgrade.Cards
       Marvel.Villain
       Marvel.Villain.Attrs
@@ -118,6 +128,7 @@ library
     , aeson-diff
     , base >=4.7 && <5
     , exceptions
+    , extra
     , lens
     , mtl
     , random-shuffle
@@ -164,6 +175,7 @@ test-suite MarvelChampions-test
       MonadRandom
     , base >=4.7 && <5
     , exceptions
+    , extra
     , lens
     , marvel-core
     , mtl

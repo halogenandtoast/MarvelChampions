@@ -20,11 +20,15 @@ hero cardCode name traits = CardDef
   , cdName = name
   , cdCost = Nothing
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = HeroType
   , cdUnique = True
   , cdAspect = Nothing
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdBoostIcons = []
   }
 
 spiderMan :: CardDef

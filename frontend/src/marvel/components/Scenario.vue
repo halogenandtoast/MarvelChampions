@@ -1,23 +1,31 @@
 <template>
-  <div>
-    <img :src="scenarioImg" alt="Scenario" class="scenario" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
-    <div>{{game.scenario.contents.scenarioThreat}}</div>
-    <Villain
-      v-for="villain in game.villains"
-      :key="villain.contents.villainId"
-      :villain="villain"
-      :identityId="identityId"
-      :game="game"
-      @choose="$emit('choose', $event)"
-    />
-    <Player
-      v-for="player in game.players"
-      :key="player.id"
-      :player="player"
-      :identityId="identityId"
-      :game="game"
-      @choose="$emit('choose', $event)"
-    />
+  <div class="scenario">
+    <div class="encounter">
+      <Villain
+        v-for="villain in game.villains"
+        :key="villain.contents.villainId"
+        :villain="villain"
+        :identityId="identityId"
+        :game="game"
+        @choose="$emit('choose', $event)"
+      />
+      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
+      <img src="/img/marvel/encounter-back.png" alt="deck" width="150" height="209" class="deck" />
+      <div class="mainScheme">
+        <img :src="scenarioImg" alt="Scenario" height="200" class="scenario" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
+        <div>{{game.scenario.contents.scenarioThreat}}</div>
+      </div>
+    </div>
+    <div>
+      <Player
+        v-for="player in game.players"
+        :key="player.id"
+        :player="player"
+        :identityId="identityId"
+        :game="game"
+        @choose="$emit('choose', $event)"
+      />
+    </div>
   </div>
 </template>
 
@@ -25,13 +33,14 @@
 
 import { defineComponent, computed } from 'vue'
 import { Game } from '@/marvel/types/Game'
+import Card from '@/marvel/components/Card.vue'
 import Player from '@/marvel/components/Player.vue'
 import Villain from '@/marvel/components/Villain.vue'
 import * as MarvelGame from '@/marvel/types/Game'
 
 export default defineComponent({
   props: { game: { type: Object as () => Game, required: true }, identityId: { type: String, required: true } },
-  components: { Player, Villain },
+  components: { Player, Villain, Card },
   setup(props) {
     const scenarioImg = computed(() => `/img/marvel/cards/${props.game.scenario.contents.scenarioId}.jpg`)
 
@@ -41,7 +50,9 @@ export default defineComponent({
       return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.game.scenario.contents.scenarioId)
     })
 
-    return { scenarioImg, activeAbility }
+    const topOfDiscard = computed(() => props.game.scenario.contents.scenarioDiscard[0])
+
+    return { scenarioImg, activeAbility, topOfDiscard }
   }
 })
 </script>
@@ -53,5 +64,13 @@ export default defineComponent({
 
 .active {
   border: 4px solid #ff00ff;
+}
+
+.encounter {
+  display: flex;
+}
+
+.discard {
+  filter: grayscale(1);
 }
 </style>

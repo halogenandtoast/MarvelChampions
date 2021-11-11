@@ -18,19 +18,19 @@ export default defineComponent({
     game: { type: Object as () => Game, required: true }
   },
   setup(props) {
-    const cardImage = computed(() => `/img/marvel/cards/${props.card.pcCardDef.cdCardCode}.jpg`)
+    const cardImage = computed(() => `/img/marvel/cards/${props.card.cardDef.cdCardCode}.jpg`)
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const playCardAction = computed(() => {
       return choices
         .value
-        .findIndex((c) => c.tag === 'PlayCard' && c.contents.pcCardId === props.card.pcCardId)
+        .findIndex((c) => c.tag === 'PlayCard' && c.contents.cardId === props.card.cardId)
     })
 
     const payWithCardAction = computed(() => {
       return choices
         .value
-        .findIndex((c) => c.tag === 'PayWithCard' && c.contents.pcCardId === props.card.pcCardId)
+        .findIndex((c) => c.tag === 'PayWithCard' && c.contents.cardId === props.card.cardId)
     })
 
     return { cardImage, playCardAction, payWithCardAction }

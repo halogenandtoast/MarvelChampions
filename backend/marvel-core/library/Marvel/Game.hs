@@ -28,6 +28,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
+import Marvel.Scenario.Attrs (scenarioId)
 import Marvel.Villain
 import Marvel.Window
 
@@ -366,9 +367,19 @@ gameSelectEnemy = \case
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
 
+gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
+gameSelectVillain = \case
+  ActiveVillain -> do
+    villains <- toList <$> getsGame gameVillains
+    pure $ HashSet.fromList $ map toId villains
+
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectScheme = \case
   AnyScheme -> do
+    mainSchemeId <-
+      SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
+    pure $ HashSet.singleton mainSchemeId
+  MainScheme -> do
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId

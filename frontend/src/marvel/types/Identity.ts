@@ -40,8 +40,8 @@ export interface Identity {
 }
 
 export interface PlayerCard {
-  pcCardId: string
-  pcCardDef: CardDef
+  cardId: string
+  cardDef: CardDef
 }
 
 export const heroSideContentsContentsDecoder = JsonDecoder.object<HeroSideContentsContents>({
@@ -73,9 +73,9 @@ export const alterEgoSideDecoder = JsonDecoder.object<AlterEgoSide>({
 export const sideDecoder = JsonDecoder.oneOf<Side>([heroSideDecoder, alterEgoSideDecoder], 'Side')
 
 export const playerCardDecoder = JsonDecoder.object<PlayerCard>({
-  pcCardId: JsonDecoder.string,
-  pcCardDef: cardDefDecoder
-}, 'PlayerCard')
+  cardId: JsonDecoder.string,
+  cardDef: cardDefDecoder
+}, 'PlayerCard', { cardId: 'pcCardId', cardDef: 'pcCardDef' })
 
 export const identityDecoder = JsonDecoder.object<Identity>(
   {

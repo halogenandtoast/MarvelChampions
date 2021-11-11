@@ -21,8 +21,10 @@ import Control.Lens as X
   )
 import Control.Lens.TH as X
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
+import Control.Monad.Extra as X (concatMapM)
 import Control.Monad.Random as X (MonadRandom, Random, getRandom)
 import Data.Aeson as X
+import Data.Traversable as X (for)
 import Data.UUID as X (UUID)
 import Data.Vector as X (Vector)
 import Relude as X hiding (One)

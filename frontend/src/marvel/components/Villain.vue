@@ -21,7 +21,7 @@ export default defineComponent({
     villain: { type: Object as () => Villain, required: true }
   },
   setup(props) {
-    const card = computed(() => ({ pcCardId: props.villain.contents.villainId, pcCardDef: props.villain.contents.villainCardDef }))
+    const card = computed(() => ({ cardId: props.villain.contents.villainId, cardDef: props.villain.contents.villainCardDef }))
 
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
