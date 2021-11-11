@@ -31,7 +31,8 @@ instance RunMessage TheBreakIn where
   runMessage msg (TheBreakIn attrs) = TheBreakIn <$> runMessage msg attrs
 
 rhinoScenario :: TheBreakIn
-rhinoScenario = TheBreakIn $ ScenarioAttrs "01097" ["01094"] (Static 0) (PerPlayer 1) 0
+rhinoScenario =
+  TheBreakIn $ ScenarioAttrs "01097" ["01094"] (Static 0) (PerPlayer 1) 0
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
@@ -64,7 +65,8 @@ data ScenarioAttrs = ScenarioAttrs
 threatL :: Lens' ScenarioAttrs Natural
 threatL = lens scenarioThreat $ \m x -> m { scenarioThreat = x }
 
-runMainSchemeMessage :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
+runMainSchemeMessage
+  :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
 runMainSchemeMessage msg attrs = case msg of
   MainSchemeThwarted _ n -> pure $ attrs & threatL %~ max 0 . subtract n
 
@@ -75,10 +77,26 @@ instance RunMessage ScenarioAttrs where
       pure attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll $ map (($ BeginTurn) . IdentityMessage) players <> [BeginPhase VillainPhase]
+      pushAll
+        $ map (($ BeginTurn) . IdentityMessage) players
+        <> [EndPhase PlayerPhase]
+      pure attrs
+    EndPhase PlayerPhase -> do
+      players <- getPlayers
+      pushAll
+        $ map (($ DrawOrDiscardToHandLimit) . IdentityMessage) players
+        <> map (($ ReadyCards) . IdentityMessage) players
+        <> [BeginPhase VillainPhase]
       pure attrs
     BeginPhase VillainPhase -> do
-      pushAll [PlaceThreat, VillainAndMinionsActivate, DealEncounterCards, RevealEncounterCards, PassFirstPlayer, EndRound]
+      pushAll
+        [ PlaceThreat
+        , VillainAndMinionsActivate
+        , DealEncounterCards
+        , RevealEncounterCards
+        , PassFirstPlayer
+        , EndRound
+        ]
       pure attrs
     PlaceThreat -> do
       additionalThreat <- fromGameValue scenarioAcceleration

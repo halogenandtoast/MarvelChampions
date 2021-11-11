@@ -11,7 +11,6 @@ import Marvel.Card.Code
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Game.Source
-import Marvel.Hand
 import Marvel.Id
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
@@ -27,6 +26,7 @@ data Message
   = StartGame
   | StartScenario
   | BeginPhase Phase
+  | EndPhase Phase
   | PlaceThreat
   | VillainAndMinionsActivate
   | DealEncounterCards
@@ -67,7 +67,7 @@ data EventMessage = PlayedEvent IdentityId Payment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data AllyMessage = ExhaustedAlly | AllyAttacked | AllyThwarted | AllyDamaged Source Natural
+data AllyMessage = ExhaustedAlly | ReadiedAlly | AllyAttacked | AllyThwarted | AllyDamaged Source Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -78,7 +78,6 @@ data IdentityMessage
   | ChooseOtherForm
   | EndedTurn
   | ChangedToForm Side
-  | DrawStartingHand HandSize
   | DrawCards FromZone Natural
   | ShuffleDeck
   | SideMessage SideMessage
@@ -89,12 +88,14 @@ data IdentityMessage
   | DiscardFrom FromZone Natural (Maybe Target)
   | DiscardCard PlayerCard
   | ExhaustedIdentity
+  | DrawOrDiscardToHandLimit
+  | ReadyCards
+  | SetupIdentity
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 data SideMessage
-  = SetupIdentity
-  | Recovered
+  =  Recovered
   | Attacked
   | Thwarted
   deriving stock (Show, Eq, Generic)

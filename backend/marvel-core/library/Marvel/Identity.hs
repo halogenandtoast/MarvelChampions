@@ -176,6 +176,11 @@ runIdentityMessage
   -> PlayerIdentity
   -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
+  SetupIdentity -> do
+    pushAll
+      $ IdentityMessage (toId attrs)
+      <$> [ShuffleDeck, DrawOrDiscardToHandLimit]
+    pure attrs
   BeginTurn -> do
     takeTurn attrs
     pure $ attrs & passedL .~ False
@@ -191,13 +196,23 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   ShuffleDeck -> do
     deck <- shuffleM (unDeck $ attrs ^. deckL)
     pure $ attrs & deckL .~ Deck deck
-  DrawStartingHand (HandSize n) -> do
-    let (hand, deck) = splitAt n (unDeck playerIdentityDeck)
-    pure $ attrs & handL .~ Hand hand & deckL .~ Deck deck
+  DrawOrDiscardToHandLimit -> do
+    let
+      diff = unHandSize (handSize attrs)
+        - fromIntegral (length $ unHand playerIdentityHand)
+    when
+      (diff > 0)
+      (push $ IdentityMessage (toId attrs) $ DrawCards FromDeck diff)
+    pure attrs
   DrawCards fromZone n -> case fromZone of
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
       pure $ attrs & handL %~ Hand . (<> cards) . unHand & deckL .~ Deck deck
+  ReadyCards -> do
+    pushAll $ map
+      (($ ReadiedAlly) . AllyMessage)
+      (HashSet.toList playerIdentityAllies)
+    pure $ attrs & exhaustedL .~ False
   ChooseOtherForm -> do
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
@@ -258,6 +273,11 @@ instance HasStartingHP PlayerIdentity where
   startingHP a = case currentIdentity a of
     HeroSide x -> startingHP x
     AlterEgoSide x -> startingHP x
+
+instance HasHandSize PlayerIdentity where
+  handSize a = case currentIdentity a of
+    HeroSide x -> handSize x
+    AlterEgoSide x -> handSize x
 
 instance HasCardCode PlayerIdentity where
   toCardCode a = case currentIdentity a of

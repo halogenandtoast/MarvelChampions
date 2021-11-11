@@ -31,11 +31,11 @@ hero
   -> Atk
   -> Def
   -> CardBuilder IdentityId a
-hero f cardDef hp handSize thw atk def = CardBuilder
+hero f cardDef hp hSize thw atk def = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \ident -> f $ HeroAttrs
     { heroIdentityId = ident
-    , heroBaseHandSize = handSize
+    , heroBaseHandSize = hSize
     , heroBaseThwart = thw
     , heroBaseAttack = atk
     , heroBaseDefense = def
@@ -64,6 +64,9 @@ data HeroAttrs = HeroAttrs
 
 instance HasStartingHP HeroAttrs where
   startingHP = heroStartingHP
+
+instance HasHandSize HeroAttrs where
+  handSize = heroBaseHandSize
 
 instance HasCardCode HeroAttrs where
   toCardCode = toCardCode . heroCardDef

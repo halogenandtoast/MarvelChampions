@@ -14,7 +14,6 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Stats
@@ -25,7 +24,7 @@ peterParker =
 
 newtype PeterParker = PeterParker AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, HasCardCode, Entity)
+  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, IsSource, HasCardCode, Entity)
 
 instance HasAbilities PeterParker where
   getAbilities a =
@@ -40,13 +39,4 @@ instance HasAbilities PeterParker where
     ]
 
 instance RunMessage PeterParker where
-  runMessage msg a@(PeterParker attrs) = case msg of
-    IdentityMessage ident (SideMessage msg')
-      | ident == alterEgoIdentityId attrs -> case msg' of
-        SetupIdentity -> do
-          pushAll $ map
-            (IdentityMessage ident)
-            [ShuffleDeck, DrawStartingHand $ alterEgoBaseHandSize attrs]
-          pure a
-        _ -> PeterParker <$> runMessage msg attrs
-    _ -> pure a
+  runMessage msg (PeterParker attrs) = PeterParker <$> runMessage msg attrs

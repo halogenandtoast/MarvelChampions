@@ -11,6 +11,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Hand
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
@@ -30,7 +31,10 @@ allAlterEgos = fromList
   $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "AlterEgo")
 
 instance HasStartingHP AlterEgo where
-  startingHP = defaultHasStartingHP
+  startingHP = genericHasStartingHP
+
+instance HasHandSize AlterEgo where
+  handSize = genericHasHandSize
 
 instance HasCardCode AlterEgo where
   toCardCode = genericToCardCode

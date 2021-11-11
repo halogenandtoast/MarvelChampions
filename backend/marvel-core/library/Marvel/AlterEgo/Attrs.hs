@@ -24,11 +24,11 @@ alterEgo
   -> HandSize
   -> Rec
   -> CardBuilder IdentityId a
-alterEgo f cardDef hp handSize recovery = CardBuilder
+alterEgo f cardDef hp hSize recovery = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \ident -> f $ AlterEgoAttrs
     { alterEgoIdentityId = ident
-    , alterEgoBaseHandSize = handSize
+    , alterEgoBaseHandSize = hSize
     , alterEgoBaseRecovery = recovery
     , alterEgoHeroForms = [A]
     , alterEgoStartingHP = hp
@@ -56,6 +56,9 @@ instance HasCardCode AlterEgoAttrs where
 
 instance IsSource AlterEgoAttrs where
   toSource = IdentitySource . alterEgoIdentityId
+
+instance HasHandSize AlterEgoAttrs where
+  handSize = alterEgoBaseHandSize
 
 instance HasStartingHP AlterEgoAttrs where
   startingHP = alterEgoStartingHP
