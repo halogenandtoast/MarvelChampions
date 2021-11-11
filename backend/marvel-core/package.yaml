@@ -8,6 +8,7 @@ dependencies:
 - text
 - exceptions
 - lens
+- extra
 
 default-extensions:
 - NoImplicitPrelude

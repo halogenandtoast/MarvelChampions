@@ -3,6 +3,7 @@ import { Identity, identityDecoder } from '@/marvel/types/Identity'
 import { Villain, villainDecoder } from '@/marvel/types/Villain'
 import { Ally, allyDecoder } from '@/marvel/types/Ally'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
+import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
 export function choices(game: Game, identityId: string): Choice[] {
   const question = game.question[identityId]
@@ -33,15 +34,27 @@ export interface Scenario {
   contents: ScenarioContents
 }
 
+export interface EncounterCard {
+  cardId: string
+  cardDef: CardDef
+}
+
+export const encounterCardDecoder = JsonDecoder.object<EncounterCard>({
+  cardId: JsonDecoder.string,
+  cardDef: cardDefDecoder
+}, 'EncounterCard', { cardId: 'ecCardId', cardDef: 'ecCardDef' })
+
 export interface ScenarioContents {
   scenarioId: string
   scenarioThreat: number
+  scenarioDiscard: EncounterCard[]
 }
 
 export const scenarioContentsDecoder = JsonDecoder.object<ScenarioContents>(
   {
     scenarioId: JsonDecoder.string,
-    scenarioThreat: JsonDecoder.number
+    scenarioThreat: JsonDecoder.number,
+    scenarioDiscard: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
   }, 'ScenarioContents')
 
 export const scenarioDecoder = JsonDecoder.object<Scenario>(

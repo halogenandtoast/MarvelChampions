@@ -42,11 +42,15 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdName = name
   , cdCost = Just cost
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = EventType
   , cdUnique = False
   , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
+  , cdBoostIcons = []
   }
 
 backflip :: CardDef

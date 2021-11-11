@@ -6,16 +6,23 @@ module Marvel.Villain.Attrs
 
 import Marvel.Prelude
 
+import Marvel.Boost
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.EncounterCard
 import Marvel.Entity as X
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
+import Marvel.Id
 import Marvel.Id as X (VillainId)
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
+import Marvel.Queue
 import Marvel.Stats
+import Marvel.Target
 
 class IsVillain a
 
@@ -33,6 +40,8 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainScheme = sch
     , villainAttack = atk
     , villainStunned = False
+    , villainBoostCards = mempty
+    , villainBoost = 0
     }
   }
 
@@ -45,6 +54,8 @@ data VillainAttrs = VillainAttrs
   , villainScheme :: Sch
   , villainAttack :: Atk
   , villainStunned :: Bool
+  , villainBoostCards :: [EncounterCard]
+  , villainBoost :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -65,9 +76,35 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & hpL .~ hp & maxHpL .~ hp
   VillainDamaged _ n -> pure $ attrs & hpL %~ max 0 . subtract (fromIntegral n)
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
+  VillainSchemes -> do
+    pushAll
+      [ DealBoost (toTarget attrs)
+      , VillainMessage (toId attrs) VillainFlipBoostCards
+      , VillainMessage (toId attrs) VillainSchemed
+      ]
+    pure attrs
+  VillainSchemed -> do
+    mainScheme <- selectJust MainScheme
+    case mainScheme of
+      SchemeMainSchemeId mainSchemeId -> do
+        let threat = unSch (villainScheme attrs) + villainBoost attrs
+        push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
+        pure $ attrs & boostL .~ 0
+  DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
+  VillainFlipBoostCards -> do
+    let
+      boost = foldr
+        ((+) . boostCount . cdBoostIcons . ecCardDef)
+        0
+        (villainBoostCards attrs)
+    pushAll $ map DiscardedEncounterCard (villainBoostCards attrs)
+    pure $ attrs & boostCardsL .~ mempty & boostL .~ boost
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of
     VillainMessage villainId msg' | villainId == toId attrs ->
       runVillainMessage msg' attrs
     _ -> pure attrs
+
+instance IsTarget VillainAttrs where
+  toTarget = VillainTarget . villainId

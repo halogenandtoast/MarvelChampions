@@ -40,11 +40,15 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdName = name
   , cdCost = Just cost
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = AllyType
   , cdUnique = True
   , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
+  , cdBoostIcons = []
   }
 
 blackCatFeliciaHardy :: CardDef

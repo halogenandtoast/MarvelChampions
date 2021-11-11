@@ -20,11 +20,15 @@ villain cardCode name traits = CardDef
   , cdName = name
   , cdCost = Nothing
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = VillainType
   , cdUnique = True
   , cdAspect = Nothing
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdBoostIcons = []
   }
 
 rhino :: CardDef

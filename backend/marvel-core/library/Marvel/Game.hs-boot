@@ -34,13 +34,12 @@ getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
 -- Matchers
 gameSelectIdentity
   :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
-
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
-
+gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
+gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 
 instance HasAbilities Game
 
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
 
-gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)

@@ -8,6 +8,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Game.Source
@@ -27,10 +28,6 @@ data Message
   | StartScenario
   | BeginPhase Phase
   | EndPhase Phase
-  | PlaceThreat
-  | VillainAndMinionsActivate
-  | DealEncounterCards
-  | RevealEncounterCards
   | PassFirstPlayer
   | EndRound
   | BeginRound
@@ -52,14 +49,26 @@ data Message
   | PutCardIntoPlay IdentityId PlayerCard Payment
   | CheckWindows [Window]
   | EndCheckWindows
+  | DealBoost Target
+  | FlipBoostCards Target
+  | DealEncounterCard IdentityId
+  | DiscardedEncounterCard EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data VillainMessage = SetVillainHp | VillainDamaged Source Natural | VillainStunned Source
+data VillainMessage
+  = SetVillainHp
+  | VillainDamaged Source Natural
+  | VillainStunned Source
+  | DealtBoost EncounterCard
+  | VillainFlipBoostCards
+  | VillainAttacks IdentityId
+  | VillainSchemes
+  | VillainSchemed
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data MainSchemeMessage = MainSchemeThwarted Source Natural
+data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThreat Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -91,6 +100,9 @@ data IdentityMessage
   | DrawOrDiscardToHandLimit
   | ReadyCards
   | SetupIdentity
+  | VillainAndMinionsActivate
+  | DealtEncounterCard EncounterCard
+  | RevealEncounterCards
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

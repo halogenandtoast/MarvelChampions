@@ -33,11 +33,15 @@ baseResource code name traits resources mAspect = CardDef
   , cdName = name
   , cdCost = Nothing
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = ResourceType
   , cdUnique = False
   , cdCriteria = NoCriteria
   , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdResources = map (PrintedResource, ) resources
+  , cdBoostIcons = []
   }
 
 thePowerOfLeadership :: CardDef

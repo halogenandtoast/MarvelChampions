@@ -5,14 +5,17 @@ import Marvel.Prelude
 data Trait
   = Aerial
   | Android
+  | Armor
   | Attack
   | Avenger
   | Brute
   | Condition
   | Criminal
   | Defense
+  | Elite
   | Genius
   | HeroForHire
+  | Hydra
   | Item
   | Location
   | MastersOfEvil
@@ -24,5 +27,6 @@ data Trait
   | Superpower
   | Tactic
   | Tech
+  | Weapon
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

@@ -11,6 +11,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Cost
@@ -48,6 +49,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
   , playerIdentityExhausted :: Bool
+  , playerIdentityEncounterCards :: [EncounterCard]
   }
   deriving stock (Show, Eq, Generic)
 
@@ -95,6 +97,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
   , playerIdentityExhausted = False
+  , playerIdentityEncounterCards = []
   }
  where
   hp = case alterEgoSide of
@@ -252,6 +255,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         & (discardL %~ Discard . (cards <>) . unDiscard)
         & (deckL .~ Deck deck')
   ExhaustedIdentity -> pure $ attrs & exhaustedL .~ True
+  VillainAndMinionsActivate -> do
+    villain <- selectJust ActiveVillain
+    case currentIdentity attrs of
+      HeroSide _ -> push $ VillainMessage villain (VillainAttacks $ toId attrs)
+      AlterEgoSide _ -> push $ VillainMessage villain VillainSchemes
+    pure attrs
+  DealtEncounterCard ec -> pure $ attrs & encounterCardsL %~ (ec :)
+  RevealEncounterCards -> pure $ attrs & encounterCardsL .~ mempty
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

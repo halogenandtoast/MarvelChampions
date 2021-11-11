@@ -20,11 +20,15 @@ alterEgo cardCode name traits = CardDef
   , cdName = name
   , cdCost = Nothing
   , cdTraits = fromList traits
+  , cdKeywords = mempty
   , cdCardType = AlterEgoType
   , cdUnique = True
   , cdAspect = Nothing
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdBoostIcons = []
   }
 
 peterParker :: CardDef

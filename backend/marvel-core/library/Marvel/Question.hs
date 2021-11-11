@@ -4,7 +4,6 @@ import Marvel.Prelude
 
 import Data.List (partition)
 import qualified Data.List as L
-import Data.Traversable (for)
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Card.Code
 import Marvel.Card.PlayerCard
@@ -130,7 +129,8 @@ choiceMessages ident = \case
     VillainTarget vid -> [VillainMessage vid $ VillainDamaged source n]
     _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
-    MainSchemeTarget mid -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    MainSchemeTarget mid ->
+      [MainSchemeMessage mid $ MainSchemeThwarted source n]
     _ -> error "can not thwart target"
   Stun target source -> case target of
     VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
