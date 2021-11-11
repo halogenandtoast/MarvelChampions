@@ -96,7 +96,7 @@ runGameMessage :: MonadGame env m => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
-    pushAll $ map (`IdentityMessage` SideMessage SetupIdentity) gamePlayerOrder
+    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder
     case gamePlayerOrder of
       [] -> throwM NoPlayers
       [p] -> push (SetPlayerOrder [p])
@@ -369,5 +369,6 @@ gameSelectEnemy = \case
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectScheme = \case
   AnyScheme -> do
-    mainSchemeId <- SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
+    mainSchemeId <-
+      SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId

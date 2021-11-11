@@ -106,6 +106,8 @@ stunChoice attrs = \case
 instance RunMessage AllyAttrs where
   runMessage msg a = case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
+      ReadiedAlly -> do
+        pure $ a & exhaustedL .~ False
       ExhaustedAlly -> do
         pure $ a & exhaustedL .~ True
       AllyAttacked -> do

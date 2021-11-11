@@ -19,7 +19,7 @@ carolDanvers =
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode, Entity)
+  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, HasCardCode, Entity)
 
 instance HasAbilities CarolDanvers where
   getAbilities _ = []

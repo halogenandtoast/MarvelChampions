@@ -36,7 +36,7 @@ instance HasAbilities SpiderMan where
 
 newtype SpiderMan = SpiderMan HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, IsSource, IsTarget, HasCardCode, Entity)
+  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, IsSource, IsTarget, HasCardCode, Entity)
 
 instance RunMessage SpiderMan where
   runMessage msg (SpiderMan attrs) = SpiderMan <$> runMessage msg attrs

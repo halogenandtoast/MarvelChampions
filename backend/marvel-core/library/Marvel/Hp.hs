@@ -25,5 +25,5 @@ instance (HasStartingHP' l, HasStartingHP' r) => HasStartingHP' (l :+: r) where
 instance HasStartingHP c => HasStartingHP' (K1 i c) where
   startingHP' = startingHP . unK1
 
-defaultHasStartingHP :: (HasStartingHP' (Rep a), Generic a) => a -> HP
-defaultHasStartingHP = startingHP' . from
+genericHasStartingHP :: (HasStartingHP' (Rep a), Generic a) => a -> HP
+genericHasStartingHP = startingHP' . from

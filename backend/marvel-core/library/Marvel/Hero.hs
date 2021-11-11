@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Heroes
 import Marvel.Message
@@ -35,7 +36,10 @@ allHeroes =
   fromList $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Hero")
 
 instance HasStartingHP Hero where
-  startingHP = defaultHasStartingHP
+  startingHP = genericHasStartingHP
+
+instance HasHandSize Hero where
+  handSize = genericHasHandSize
 
 instance HasCardCode Hero where
   toCardCode = genericToCardCode

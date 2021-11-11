@@ -25,7 +25,7 @@ captainMarvel = hero
 
 newtype CaptainMarvel = CaptainMarvel HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, ToJSON, FromJSON, HasCardCode, Entity)
+  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, HasCardCode, Entity)
 
 instance HasAbilities CaptainMarvel where
   getAbilities _ = []
