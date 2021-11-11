@@ -98,7 +98,8 @@ data Choice
   | FinishPayment
   | Pay Payment
   | Run [Message]
-  | Damage Target Source Natural
+  | DamageEnemy Target Source Natural
+  | ThwartScheme Target Source Natural
   | Stun Target Source
   | Recover
   | Attack
@@ -125,9 +126,12 @@ choiceMessages ident = \case
   PayWithCard c -> [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> [FinishedPayment]
   Pay payment -> [Paid payment]
-  Damage target source n -> case target of
+  DamageEnemy target source n -> case target of
     VillainTarget vid -> [VillainMessage vid $ VillainDamaged source n]
     _ -> error "can not damage target"
+  ThwartScheme target source n -> case target of
+    MainSchemeTarget mid -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    _ -> error "can not thwart target"
   Stun target source -> case target of
     VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
     _ -> error "can not damage target"

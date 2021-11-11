@@ -1,8 +1,10 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Scenario where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Message
@@ -23,7 +25,7 @@ allScenarios :: HashMap CardCode Scenario
 allScenarios = fromList [("01097", TheBreakIn' rhinoScenario)]
 
 newtype TheBreakIn = TheBreakIn ScenarioAttrs
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance RunMessage TheBreakIn where
   runMessage msg (TheBreakIn attrs) = TheBreakIn <$> runMessage msg attrs
@@ -32,10 +34,22 @@ rhinoScenario :: TheBreakIn
 rhinoScenario = TheBreakIn $ ScenarioAttrs "01097" ["01094"] (Static 0) (PerPlayer 1) 0
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance RunMessage KlawScenario where
   runMessage msg (KlawScenario attrs) = KlawScenario <$> runMessage msg attrs
+
+instance Entity Scenario where
+  type EntityId Scenario = CardCode
+  type EntityAttrs Scenario = ScenarioAttrs
+  toId = toId . toAttrs
+  toAttrs = genericToAttrs
+
+instance Entity ScenarioAttrs where
+  type EntityId ScenarioAttrs = CardCode
+  type EntityAttrs ScenarioAttrs = ScenarioAttrs
+  toId = scenarioId
+  toAttrs = id
 
 data ScenarioAttrs = ScenarioAttrs
   { scenarioId :: CardCode
@@ -49,6 +63,10 @@ data ScenarioAttrs = ScenarioAttrs
 
 threatL :: Lens' ScenarioAttrs Natural
 threatL = lens scenarioThreat $ \m x -> m { scenarioThreat = x }
+
+runMainSchemeMessage :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
+runMainSchemeMessage msg attrs = case msg of
+  MainSchemeThwarted _ n -> pure $ attrs & threatL %~ max 0 . subtract n
 
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
@@ -71,4 +89,6 @@ instance RunMessage ScenarioAttrs where
     BeginRound -> do
       push (BeginPhase PlayerPhase)
       pure attrs
+    MainSchemeMessage ident msg' | ident == scenarioId ->
+      runMainSchemeMessage msg' attrs
     _ -> pure attrs

@@ -40,6 +40,7 @@ data Message
   | VillainMessage VillainId VillainMessage
   | EventMessage EventId EventMessage
   | AllyMessage AllyId AllyMessage
+  | MainSchemeMessage CardCode MainSchemeMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
@@ -55,6 +56,10 @@ data Message
   deriving anyclass (ToJSON, FromJSON)
 
 data VillainMessage = SetVillainHp | VillainDamaged Source Natural | VillainStunned Source
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data MainSchemeMessage = MainSchemeThwarted Source Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

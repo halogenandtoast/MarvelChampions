@@ -69,13 +69,23 @@ export interface Source {
   contents: string
 }
 
+export interface Target {
+  tag: string,
+  contents: string
+}
+
 export const sourceDecoder = JsonDecoder.object<Source>({ tag: JsonDecoder.string, contents: JsonDecoder.string }, 'Source')
+
+export const targetDecoder = JsonDecoder.object<Target>({ tag: JsonDecoder.string, contents: JsonDecoder.string }, 'Target')
 
 
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
 
 export const labelDecoder = JsonDecoder.object<Label>({ tag: JsonDecoder.isExactly('Label') }, 'Label')
-export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({ tag: JsonDecoder.isExactly('TargetLabel') }, 'Label')
+export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({
+  tag: JsonDecoder.isExactly('TargetLabel'),
+  target: JsonDecoder.tuple([targetDecoder, JsonDecoder.succeed], '[Target]').map(a => a[0])
+}, 'Label', { target: 'contents' })
 
 
 export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
@@ -163,6 +173,7 @@ export interface Label {
 
 export interface TargetLabel {
   tag: 'TargetLabel'
+  target: Target
 }
 
 export interface Pay {
