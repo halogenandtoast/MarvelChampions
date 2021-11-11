@@ -27,7 +27,7 @@ damageChoice :: EventId -> EnemyId -> Choice
 damageChoice eid = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [Damage (VillainTarget vid) (EventSource eid) 8]
+    [DamageEnemy (VillainTarget vid) (EventSource eid) 8]
 
 instance RunMessage SwingingWebKick where
   runMessage msg a = case msg of

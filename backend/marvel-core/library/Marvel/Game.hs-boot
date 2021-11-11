@@ -42,3 +42,5 @@ gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 instance HasAbilities Game
 
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
+
+gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)

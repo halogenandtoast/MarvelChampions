@@ -26,7 +26,7 @@ export default defineComponent({
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel')
+      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.villain.contents.villainId)
     })
 
     return { card, activeAbility }

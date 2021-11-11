@@ -81,10 +81,20 @@ damageChoice :: AllyAttrs -> EnemyId -> Choice
 damageChoice attrs = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [ Damage
+    [ DamageEnemy
         (VillainTarget vid)
         (AllySource $ allyId attrs)
         (unAtk $ allyAttack attrs)
+    ]
+
+thwartChoice :: AllyAttrs -> SchemeId -> Choice
+thwartChoice attrs = \case
+  SchemeMainSchemeId vid -> TargetLabel
+    (MainSchemeTarget vid)
+    [ ThwartScheme
+        (MainSchemeTarget vid)
+        (AllySource $ allyId attrs)
+        (unThw $ allyThwart attrs)
     ]
 
 stunChoice :: AllyAttrs -> EnemyId -> Choice
@@ -106,6 +116,16 @@ instance RunMessage AllyAttrs where
                 ident
                 (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
             | allyAttackConsequentialDamage a > 0
+            ]
+        pure a
+      AllyThwarted -> do
+        schemes <- selectList AnyScheme
+        pushAll
+          $ Ask (allyController a) (ChooseOne $ map (thwartChoice a) schemes)
+          : [ AllyMessage
+                ident
+                (AllyDamaged (toSource a) (allyThwartConsequentialDamage a))
+            | allyThwartConsequentialDamage a > 0
             ]
         pure a
       AllyDamaged _ n -> pure $ a & damageL +~ n

@@ -365,3 +365,9 @@ gameSelectEnemy = \case
   AnyEnemy -> do
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
+
+gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectScheme = \case
+  AnyScheme -> do
+    mainSchemeId <- SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
+    pure $ HashSet.singleton mainSchemeId

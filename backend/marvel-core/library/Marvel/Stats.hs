@@ -5,7 +5,7 @@ import Marvel.Prelude
 newtype Atk = Atk { unAtk :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
-newtype Thw = Thw Int
+newtype Thw = Thw { unThw :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 newtype Def = Def Int

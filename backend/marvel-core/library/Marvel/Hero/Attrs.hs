@@ -84,10 +84,20 @@ damageChoice :: HeroAttrs -> EnemyId -> Choice
 damageChoice attrs = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [ Damage
+    [ DamageEnemy
         (VillainTarget vid)
         (IdentitySource $ heroIdentityId attrs)
         (unAtk $ heroBaseAttack attrs)
+    ]
+
+thwartChoice :: HeroAttrs -> SchemeId -> Choice
+thwartChoice attrs = \case
+  SchemeMainSchemeId vid -> TargetLabel
+    (MainSchemeTarget vid)
+    [ ThwartScheme
+        (MainSchemeTarget vid)
+        (IdentitySource $ heroIdentityId attrs)
+        (unThw $ heroBaseThwart attrs)
     ]
 
 instance RunMessage HeroAttrs where
@@ -97,6 +107,10 @@ instance RunMessage HeroAttrs where
         Attacked -> do
           enemies <- selectList AnyEnemy
           push $ Ask ident $ ChooseOne $ map (damageChoice a) enemies
+          pure a
+        Thwarted -> do
+          schemes <- selectList AnyScheme
+          push $ Ask ident $ ChooseOne $ map (thwartChoice a) schemes
           pure a
         _ -> pure a
     _ -> pure a

@@ -117,10 +117,9 @@ lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
   HeroSide <$> (lookup (toCardCode cardDef) allHeroes <*> Just ident)
 
-takeTurn :: MonadGame env m => PlayerIdentity -> m PlayerIdentity
-takeTurn attrs = do
+takeTurn :: MonadGame env m => PlayerIdentity -> m ()
+takeTurn attrs =
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
-  pure attrs
 
 instance HasAbilities PlayerIdentity where
   getAbilities a =
@@ -177,8 +176,12 @@ runIdentityMessage
   -> PlayerIdentity
   -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
-  BeginTurn -> takeTurn attrs
-  CheckIfPassed -> if playerIdentityPassed then pure attrs else takeTurn attrs
+  BeginTurn -> do
+    takeTurn attrs
+    pure $ attrs & passedL .~ False
+  CheckIfPassed -> do
+    unless playerIdentityPassed (takeTurn attrs)
+    pure attrs
   PlayerTurnOption -> do
     choices <- getChoices attrs
     chooseOne (toId attrs) (EndTurn : choices)
