@@ -103,8 +103,10 @@ data Choice
   | Recover
   | Attack
   | Thwart
+  | Defend EnemyId
   | AllyAttack AllyId
   | AllyThwart AllyId
+  | AllyDefend AllyId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -138,8 +140,10 @@ choiceMessages ident = \case
   Recover -> [IdentityMessage ident $ SideMessage Recovered]
   Attack -> [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> [IdentityMessage ident $ SideMessage Thwarted]
+  Defend enemyId -> [IdentityMessage ident $ SideMessage $ Defended enemyId]
   AllyAttack allyId -> [AllyMessage allyId AllyAttacked]
   AllyThwart allyId -> [AllyMessage allyId AllyThwarted]
+  AllyDefend allyId enemyId -> [AllyMessage allyId $ AllyDefended enemyId]
 
 costMessages :: Ability -> [Message]
 costMessages a = case abilityCost a of

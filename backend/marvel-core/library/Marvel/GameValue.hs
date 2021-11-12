@@ -9,10 +9,9 @@ data GameValue = Static Int | PerPlayer Int | PerPlayerWithStatic Int Int
   deriving anyclass (ToJSON, FromJSON)
 
 fromGameValue :: MonadGame env m => GameValue -> m Int
-fromGameValue (Static n) = pure n
-fromGameValue (PerPlayer n) = do
-  playerCount <- getPlayerCount
-  pure $ n * playerCount
-fromGameValue (PerPlayerWithStatic n z) = do
-  playerCount <- getPlayerCount
-  pure $ n * playerCount + z
+fromGameValue gv = gameValue gv <$> getPlayerCount
+
+gameValue :: GameValue -> Int -> Int
+gameValue (Static n) _ = n
+gameValue (PerPlayer n) playerCount = n * playerCount
+gameValue (PerPlayerWithStatic n z) playerCount = n * playerCount + z

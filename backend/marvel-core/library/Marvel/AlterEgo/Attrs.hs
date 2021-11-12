@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Entity
+import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
@@ -20,7 +21,7 @@ import Marvel.Stats
 alterEgo
   :: (AlterEgoAttrs -> a)
   -> CardDef
-  -> HP
+  -> HP GameValue
   -> HandSize
   -> Rec
   -> CardBuilder IdentityId a
@@ -45,7 +46,7 @@ data AlterEgoAttrs = AlterEgoAttrs
   , alterEgoBaseHandSize :: HandSize
   , alterEgoBaseRecovery :: Rec
   , alterEgoHeroForms :: [Side]
-  , alterEgoStartingHP :: HP
+  , alterEgoStartingHP :: HP GameValue
   , alterEgoCardDef :: CardDef
   }
   deriving stock (Show, Eq, Generic)

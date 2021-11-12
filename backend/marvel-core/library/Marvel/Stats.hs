@@ -8,7 +8,7 @@ newtype Atk = Atk { unAtk :: Natural }
 newtype Thw = Thw { unThw :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
-newtype Def = Def Int
+newtype Def = Def { unDef :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 newtype Sch = Sch { unSch :: Natural }

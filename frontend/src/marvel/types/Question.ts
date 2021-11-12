@@ -7,6 +7,7 @@ export type Choice = EndTurn
   | PayWithCard
   | FinishPayment
   | Label
+  | Defend
   | TargetLabel
 
 export interface EndTurn {
@@ -20,6 +21,10 @@ export interface FinishPayment {
 export interface PlayCard {
   tag: 'PlayCard',
   contents: PlayerCard,
+}
+
+export interface Defend {
+  tag: 'Defend'
 }
 
 export interface Recover {
@@ -81,11 +86,16 @@ export const targetDecoder = JsonDecoder.object<Target>({ tag: JsonDecoder.strin
 
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
 
-export const labelDecoder = JsonDecoder.object<Label>({ tag: JsonDecoder.isExactly('Label') }, 'Label')
+export const labelDecoder = JsonDecoder.object<Label>({
+  tag: JsonDecoder.isExactly('Label'),
+  contents: JsonDecoder.tuple([JsonDecoder.string, JsonDecoder.succeed], '[string, any]').map(r => r[0])
+}, 'Label')
 export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({
   tag: JsonDecoder.isExactly('TargetLabel'),
   target: JsonDecoder.tuple([targetDecoder, JsonDecoder.succeed], '[Target]').map(a => a[0])
 }, 'Label', { target: 'contents' })
+
+export const defendDecoder = JsonDecoder.object<Defend>({ tag: JsonDecoder.isExactly('Defend') }, 'Defend')
 
 
 export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
@@ -169,6 +179,7 @@ export interface ChangeForm {
 
 export interface Label {
   tag: 'Label'
+  contents: string
 }
 
 export interface TargetLabel {
@@ -206,6 +217,7 @@ export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   , payWithCardDecoder
   , finishPaymentDecoder
   , labelDecoder
+  , defendDecoder
   , targetLabelDecoder
   ], 'Question'
 )

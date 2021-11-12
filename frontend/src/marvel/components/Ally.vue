@@ -28,7 +28,7 @@ export default defineComponent({
     ally: { type: Object as () => Ally, required: true },
   },
   setup(props) {
-    const card = computed(() => ({ pcCardId: props.ally.contents.allyId, pcCardDef: props.ally.contents.allyCardDef }))
+    const card = computed(() => ({ cardId: props.ally.contents.allyId, cardDef: props.ally.contents.allyCardDef }))
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const abilities = computed(() => {

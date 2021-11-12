@@ -21,6 +21,7 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
+import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
 
@@ -28,34 +29,42 @@ class IsVillain a
 
 type VillainCard a = CardBuilder VillainId a
 
-villain :: (VillainAttrs -> a) -> CardDef -> Sch -> Atk -> HP -> VillainCard a
+villain
+  :: (VillainAttrs -> a)
+  -> CardDef
+  -> Sch
+  -> Atk
+  -> HP GameValue
+  -> VillainCard a
 villain f cardDef sch atk startingHp = CardBuilder
   { cbCardCode = toCardCode cardDef
   , cbCardBuilder = \ident -> f $ VillainAttrs
     { villainId = ident
     , villainCardDef = cardDef
     , villainStartingHp = startingHp
-    , villainMaxHp = 1
-    , villainHp = 1
+    , villainMaxHp = HP 1
+    , villainHp = HP 1
     , villainScheme = sch
     , villainAttack = atk
     , villainStunned = False
     , villainBoostCards = mempty
     , villainBoost = 0
+    , villainAttacking = Nothing
     }
   }
 
 data VillainAttrs = VillainAttrs
   { villainId :: VillainId
   , villainCardDef :: CardDef
-  , villainHp :: Int
-  , villainStartingHp :: HP
-  , villainMaxHp :: Int
+  , villainHp :: HP Int
+  , villainStartingHp :: HP GameValue
+  , villainMaxHp :: HP Int
   , villainScheme :: Sch
   , villainAttack :: Atk
   , villainStunned :: Bool
   , villainBoostCards :: [EncounterCard]
   , villainBoost :: Natural
+  , villainAttacking :: Maybe CharacterId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -73,8 +82,9 @@ runVillainMessage
 runVillainMessage msg attrs = case msg of
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
-    pure $ attrs & hpL .~ hp & maxHpL .~ hp
-  VillainDamaged _ n -> pure $ attrs & hpL %~ max 0 . subtract (fromIntegral n)
+    pure $ attrs & hpL .~ HP hp & maxHpL .~ HP hp
+  VillainDamaged _ n ->
+    pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
   VillainSchemes -> do
     pushAll
@@ -83,6 +93,15 @@ runVillainMessage msg attrs = case msg of
       , VillainMessage (toId attrs) VillainSchemed
       ]
     pure attrs
+  VillainAttacks ident -> do
+    pushAll
+      [ DealBoost (toTarget attrs)
+      , DeclareDefense ident (EnemyVillainId (toId attrs))
+      , VillainMessage (toId attrs) VillainFlipBoostCards
+      , VillainMessage (toId attrs) VillainAttacked
+      ]
+    pure $ attrs & attackingL ?~ IdentityCharacter ident
+  VillainDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
   VillainSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
@@ -90,6 +109,15 @@ runVillainMessage msg attrs = case msg of
         let threat = unSch (villainScheme attrs) + villainBoost attrs
         push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
         pure $ attrs & boostL .~ 0
+  VillainAttacked -> do
+    let dmg = unAtk (villainAttack attrs) + villainBoost attrs
+    case villainAttacking attrs of
+      Just (IdentityCharacter ident) ->
+        push (IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg)
+      Just (AllyCharacter ident) ->
+        push (AllyMessage ident $ AllyDamaged (toSource attrs) dmg)
+      _ -> error "Invalid damage target"
+    pure $ attrs & boostL .~ 0
   DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   VillainFlipBoostCards -> do
     let
@@ -108,3 +136,6 @@ instance RunMessage VillainAttrs where
 
 instance IsTarget VillainAttrs where
   toTarget = VillainTarget . villainId
+
+instance IsSource VillainAttrs where
+  toSource = VillainSource . villainId

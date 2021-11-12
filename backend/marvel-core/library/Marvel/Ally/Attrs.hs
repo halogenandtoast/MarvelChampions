@@ -130,5 +130,13 @@ instance RunMessage AllyAttrs where
             | allyThwartConsequentialDamage a > 0
             ]
         pure a
+      AllyDefended enemyId -> do
+        pushAll
+          [ AllyMessage (toId a) ExhaustedAlly
+          , case enemyId of
+            EnemyVillainId vid ->
+              VillainMessage vid $ VillainDefendedBy (AllyCharacter $ toId a)
+          ]
+        pure a
       AllyDamaged _ n -> pure $ a & damageL +~ n
     _ -> pure a
