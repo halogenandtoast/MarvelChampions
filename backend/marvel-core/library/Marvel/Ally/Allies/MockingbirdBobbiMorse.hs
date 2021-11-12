@@ -9,6 +9,7 @@ import qualified Marvel.Ally.Cards as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
+import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
@@ -20,8 +21,12 @@ import Marvel.Target
 import Marvel.Window
 
 mockingbirdBobbiMorse :: AllyCard MockingbirdBobbiMorse
-mockingbirdBobbiMorse =
-  ally MockingbirdBobbiMorse Cards.mockingbirdBobbiMorse (Thw 1, 1) (Atk 1, 1)
+mockingbirdBobbiMorse = ally
+  MockingbirdBobbiMorse
+  Cards.mockingbirdBobbiMorse
+  (Thw 1, 1)
+  (Atk 1, 1)
+  (HP 3)
 
 instance HasAbilities MockingbirdBobbiMorse where
   getAbilities a =

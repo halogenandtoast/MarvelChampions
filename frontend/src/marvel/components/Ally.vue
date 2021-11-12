@@ -9,6 +9,10 @@
           :data-image="image"
           @click="$emit('choose', ability)"
           />
+    <button
+      v-if="defendAction !== -1"
+      @click="$emit('choose', defendAction)"
+    >Defend</button>
   </div>
 </template>
 
@@ -39,7 +43,14 @@ export default defineComponent({
         return acc
       }, [])
     })
-    return { card, abilities, choices }
+
+    const defendAction = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'AllyDefend' && c.contents == props.ally.contents.allyId)
+    })
+
+    return { card, abilities, choices, defendAction }
   }
 })
 </script>

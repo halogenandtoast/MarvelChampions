@@ -8,6 +8,7 @@ export type Choice = EndTurn
   | FinishPayment
   | Label
   | Defend
+  | AllyDefend
   | TargetLabel
 
 export interface EndTurn {
@@ -25,6 +26,11 @@ export interface PlayCard {
 
 export interface Defend {
   tag: 'Defend'
+}
+
+export interface AllyDefend {
+  tag: 'AllyDefend'
+  contents: string
 }
 
 export interface Recover {
@@ -96,6 +102,11 @@ export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({
 }, 'Label', { target: 'contents' })
 
 export const defendDecoder = JsonDecoder.object<Defend>({ tag: JsonDecoder.isExactly('Defend') }, 'Defend')
+
+export const allyDefendDecoder = JsonDecoder.object<AllyDefend>({
+  tag: JsonDecoder.isExactly('AllyDefend'),
+  contents: JsonDecoder.tuple([JsonDecoder.string, JsonDecoder.succeed], '[string, any]').map(r => r[0])
+}, 'AllyDefend')
 
 
 export const payDecoder = JsonDecoder.object<Pay>({ tag: JsonDecoder.isExactly('Pay') }, 'Pay')
@@ -218,6 +229,7 @@ export const choiceDecoder = JsonDecoder.oneOf<Choice>(
   , finishPaymentDecoder
   , labelDecoder
   , defendDecoder
+  , allyDefendDecoder
   , targetLabelDecoder
   ], 'Question'
 )
