@@ -6,7 +6,10 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.Id
+import Marvel.Card.PlayerCard
 import Marvel.Entity
+import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
@@ -25,6 +28,7 @@ data AllyAttrs = AllyAttrs
   { allyId :: AllyId
   , allyCardDef :: CardDef
   , allyDamage :: Natural
+  , allyHitPoints :: HP Natural
   , allyThwart :: Thw
   , allyThwartConsequentialDamage :: Natural
   , allyAttack :: Atk
@@ -45,8 +49,9 @@ ally
   -> CardDef
   -> (Thw, Natural)
   -> (Atk, Natural)
+  -> HP Natural
   -> CardBuilder (IdentityId, AllyId) a
-ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) =
+ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
   CardBuilder
     { cbCardCode = cdCardCode cardDef
     , cbCardBuilder = \(ident, aid) -> f $ AllyAttrs
@@ -58,6 +63,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) =
       , allyThwart = thw
       , allyThwartConsequentialDamage = thwConsequentialDamage
       , allyController = ident
+      , allyHitPoints = hp
       , allyExhausted = False
       }
     }
@@ -103,6 +109,14 @@ stunChoice attrs = \case
     (VillainTarget vid)
     [Stun (VillainTarget vid) (AllySource $ allyId attrs)]
 
+toCard :: AllyAttrs -> PlayerCard
+toCard a = PlayerCard
+  { pcCardId = CardId $ unAllyId (allyId a)
+  , pcCardDef = allyCardDef a
+  , pcOwner = Just (allyController a)
+  , pcController = Just (allyController a)
+  }
+
 instance RunMessage AllyAttrs where
   runMessage msg a = case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
@@ -138,5 +152,15 @@ instance RunMessage AllyAttrs where
               VillainMessage vid $ VillainDefendedBy (AllyCharacter $ toId a)
           ]
         pure a
-      AllyDamaged _ n -> pure $ a & damageL +~ n
+      AllyDamaged _ damage -> do
+        when
+          (damage + (allyDamage a) >= unHp (allyHitPoints a))
+          (push $ AllyMessage (toId a) AllyDefeated)
+        pure $ a & damageL +~ damage
+      AllyDefeated -> do
+        pushAll
+          [ RemoveFromPlay (toTarget a)
+          , IdentityMessage (allyController a) (DiscardCard $ toCard a)
+          ]
+        pure a
     _ -> pure a

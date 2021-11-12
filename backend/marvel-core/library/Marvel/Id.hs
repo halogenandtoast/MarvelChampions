@@ -27,7 +27,7 @@ newtype EnemyId = EnemyVillainId VillainId
 newtype SchemeId = SchemeMainSchemeId CardCode
   deriving newtype (Show, Eq, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
-newtype AllyId = AllyId UUID
+newtype AllyId = AllyId { unAllyId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
 newtype EventId = EventId { unEventId :: UUID }

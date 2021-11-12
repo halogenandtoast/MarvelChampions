@@ -245,6 +245,8 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
     pure $ attrs & alliesL %~ HashSet.insert allyId
+  AllyRemoved allyId -> do
+    pure $ attrs & alliesL %~ HashSet.delete allyId
   AddToHand card ->
     pure
       $ attrs

@@ -44,6 +44,9 @@ instance Exhaustable Ally where
 instance IsSource Ally where
   toSource = AllySource . toId
 
+getAllyController :: Ally -> IdentityId
+getAllyController = allyController . toAttrs
+
 instance HasAbilities Ally where
   getAbilities a = genericGetAbilities a <> basicAbilities
    where

@@ -30,6 +30,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Scenario.Attrs (scenarioId)
+import Marvel.Target
 import Marvel.Villain
 import Marvel.Window
 
@@ -105,6 +106,12 @@ runGameMessage msg g@Game {..} = case msg of
       players@(p : _) -> choosePlayerOrder p players
     pure $ g { gameState = InProgress }
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
+  RemoveFromPlay target -> case target of
+    AllyTarget aid -> do
+      for_ (lookup aid gameAllies) $ \ally ->
+        push $ IdentityMessage (getAllyController ally) $ AllyRemoved aid
+      pure $ g & alliesL %~ delete aid
+    _ -> error "Unhandled target"
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of

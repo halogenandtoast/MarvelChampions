@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Entity
+import Marvel.Hp
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
@@ -20,8 +21,12 @@ import Marvel.Target
 import Marvel.Window
 
 blackCatFeliciaHardy :: AllyCard BlackCatFeliciaHardy
-blackCatFeliciaHardy =
-  ally BlackCatFeliciaHardy Cards.blackCatFeliciaHardy (Thw 1, 1) (Atk 1, 0)
+blackCatFeliciaHardy = ally
+  BlackCatFeliciaHardy
+  Cards.blackCatFeliciaHardy
+  (Thw 1, 1)
+  (Atk 1, 0)
+  (HP 2)
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
   deriving anyclass IsAlly

@@ -54,6 +54,7 @@ data Message
   | DealEncounterCard IdentityId
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
+  | RemoveFromPlay Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -86,6 +87,7 @@ data AllyMessage
   | AllyThwarted
   | AllyDamaged Source Natural
   | AllyDefended EnemyId
+  | AllyDefeated
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -102,6 +104,7 @@ data IdentityMessage
   | PlayedCard PlayerCard
   | PaidWithCard PlayerCard
   | AllyCreated AllyId
+  | AllyRemoved AllyId
   | AddToHand PlayerCard
   | DiscardFrom FromZone Natural (Maybe Target)
   | DiscardCard PlayerCard

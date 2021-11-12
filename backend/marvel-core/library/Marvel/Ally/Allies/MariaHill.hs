@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source
+import Marvel.Hp
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
@@ -19,7 +20,7 @@ import Marvel.Target
 import Marvel.Window
 
 mariaHill :: AllyCard MariaHill
-mariaHill = ally MariaHill Cards.mariaHill (Thw 2, 1) (Atk 1, 1)
+mariaHill = ally MariaHill Cards.mariaHill (Thw 2, 1) (Atk 1, 1) (HP 2)
 
 instance HasAbilities MariaHill where
   getAbilities a =
