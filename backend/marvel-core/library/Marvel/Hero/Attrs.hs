@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Entity
+import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
@@ -25,7 +26,7 @@ import Marvel.Target
 hero
   :: (HeroAttrs -> a)
   -> CardDef
-  -> HP
+  -> HP GameValue
   -> HandSize
   -> Thw
   -> Atk
@@ -56,7 +57,7 @@ data HeroAttrs = HeroAttrs
   , heroBaseAttack :: Atk
   , heroBaseDefense :: Def
   , heroAlterEgoForms :: [Side]
-  , heroStartingHP :: HP
+  , heroStartingHP :: HP GameValue
   , heroCardDef :: CardDef
   }
   deriving stock (Show, Eq, Generic)
@@ -114,6 +115,16 @@ instance RunMessage HeroAttrs where
         Thwarted -> do
           schemes <- selectList AnyScheme
           push $ Ask ident $ ChooseOne $ map (thwartChoice a) schemes
+          pure a
+        Defended enemyId -> do
+          pushAll
+            [ IdentityMessage ident ExhaustedIdentity
+            , IdentityMessage ident
+              $ IdentityDefended (unDef $ heroBaseDefense a)
+            , case enemyId of
+              EnemyVillainId vid ->
+                VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
+            ]
           pure a
         _ -> pure a
     _ -> pure a

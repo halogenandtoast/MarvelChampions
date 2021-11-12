@@ -53,6 +53,7 @@ data Message
   | FlipBoostCards Target
   | DealEncounterCard IdentityId
   | DiscardedEncounterCard EncounterCard
+  | DeclareDefense IdentityId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -63,8 +64,10 @@ data VillainMessage
   | DealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainAttacks IdentityId
+  | VillainAttacked
   | VillainSchemes
   | VillainSchemed
+  | VillainDefendedBy CharacterId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -76,7 +79,13 @@ data EventMessage = PlayedEvent IdentityId Payment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data AllyMessage = ExhaustedAlly | ReadiedAlly | AllyAttacked | AllyThwarted | AllyDamaged Source Natural
+data AllyMessage
+  = ExhaustedAlly
+  | ReadiedAlly
+  | AllyAttacked
+  | AllyThwarted
+  | AllyDamaged Source Natural
+  | AllyDefended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -103,6 +112,8 @@ data IdentityMessage
   | VillainAndMinionsActivate
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards
+  | IdentityDamaged Source Natural
+  | IdentityDefended Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -110,6 +121,7 @@ data SideMessage
   =  Recovered
   | Attacked
   | Thwarted
+  | Defended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -16,6 +16,7 @@
         <div class="identityCard" :class="{ exhausted: player.exhausted }">
           <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
         </div>
+        <div>HP: {{player.currentHP}}</div>
         <AbilityButton
               v-for="ability in abilities"
               :key="ability"
@@ -23,6 +24,15 @@
               :data-image="image"
               @click="$emit('choose', ability)"
               />
+        <button
+          v-if="defendAction !== -1"
+          @click="$emit('choose', defendAction)"
+        >Defend</button>
+        <button
+          v-for="label in labels"
+          :key="label"
+          @click="$emit('choose', label)"
+          >{{choices[label].contents}}</button>
       </div>
       <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
       <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
@@ -80,6 +90,12 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'EndTurn')
     })
 
+    const defendAction = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'Defend')
+    })
+
     const finishPaymentAction = computed(() => {
       return choices
         .value
@@ -97,6 +113,15 @@ export default defineComponent({
       }, [])
     })
 
+    const labels = computed(() => {
+      return choices.value.reduce<number[]>((acc, v, i) => {
+        if (v.tag === 'Label') {
+          return [...acc, i]
+        }
+        return acc
+      }, [])
+    })
+
     return {
       playerImg,
       choices,
@@ -104,6 +129,8 @@ export default defineComponent({
       finishPaymentAction,
       allies,
       abilities,
+      labels,
+      defendAction,
       topOfDiscard
     }
   }

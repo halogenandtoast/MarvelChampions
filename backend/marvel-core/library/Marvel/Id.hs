@@ -4,10 +4,21 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 
+data CharacterId
+  = IdentityCharacter IdentityId
+  | AllyCharacter AllyId
+  | VillainCharacter VillainId
+  | MinionCharacterId MinionId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 newtype IdentityId = IdentityId UUID
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
 newtype VillainId = VillainId UUID
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
+newtype MinionId = MinionId UUID
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
 newtype EnemyId = EnemyVillainId VillainId

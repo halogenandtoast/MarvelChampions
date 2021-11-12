@@ -20,6 +20,7 @@ import Marvel.Deck
 import Marvel.Discard
 import Marvel.Entity
 import Marvel.Game.Source
+import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
 import Marvel.Matchers
@@ -40,9 +41,9 @@ data PlayerIdentity = PlayerIdentity
   { playerIdentityId :: IdentityId
   , playerIdentitySide :: Side
   , playerIdentitySides :: HashMap Side PlayerIdentitySide
-  , playerIdentityStartingHP :: HP
-  , playerIdentityMaxHP :: HP
-  , playerIdentityCurrentHP :: HP
+  , playerIdentityStartingHP :: HP GameValue
+  , playerIdentityMaxHP :: HP Int
+  , playerIdentityCurrentHP :: HP Int
   , playerIdentityDeck :: Deck
   , playerIdentityDiscard :: Discard
   , playerIdentityHand :: Hand
@@ -50,6 +51,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityAllies :: HashSet AllyId
   , playerIdentityExhausted :: Bool
   , playerIdentityEncounterCards :: [EncounterCard]
+  , playerIdentityDamageReduction :: Natural
   }
   deriving stock (Show, Eq, Generic)
 
@@ -89,8 +91,8 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
   , playerIdentityId = ident
   , playerIdentityStartingHP = hp
-  , playerIdentityCurrentHP = hp
-  , playerIdentityMaxHP = hp
+  , playerIdentityCurrentHP = HP $ gameValue (unHp hp) 0
+  , playerIdentityMaxHP = HP $ gameValue (unHp hp) 0
   , playerIdentityDeck = Deck []
   , playerIdentityDiscard = Discard []
   , playerIdentityHand = Hand []
@@ -98,6 +100,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityAllies = mempty
   , playerIdentityExhausted = False
   , playerIdentityEncounterCards = []
+  , playerIdentityDamageReduction = 0
   }
  where
   hp = case alterEgoSide of
@@ -201,11 +204,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & deckL .~ Deck deck
   DrawOrDiscardToHandLimit -> do
     let
-      diff = unHandSize (handSize attrs)
-        - fromIntegral (length $ unHand playerIdentityHand)
+      diff = fromIntegral (unHandSize $ handSize attrs)
+        - length (unHand playerIdentityHand)
     when
       (diff > 0)
-      (push $ IdentityMessage (toId attrs) $ DrawCards FromDeck diff)
+      (push $ IdentityMessage (toId attrs) $ DrawCards
+        FromDeck
+        (fromIntegral diff)
+      )
     pure attrs
   DrawCards fromZone n -> case fromZone of
     FromDeck -> do
@@ -263,6 +269,12 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure attrs
   DealtEncounterCard ec -> pure $ attrs & encounterCardsL %~ (ec :)
   RevealEncounterCards -> pure $ attrs & encounterCardsL .~ mempty
+  IdentityDamaged _ n -> do
+    let
+      damage =
+        max 0 (fromIntegral n - fromIntegral playerIdentityDamageReduction)
+    pure $ attrs & currentHPL %~ HP . max 0 . subtract damage . unHp
+  IdentityDefended n -> pure $ attrs & damageReductionL +~ n
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

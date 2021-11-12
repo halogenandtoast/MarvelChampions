@@ -37,6 +37,7 @@ export interface Identity {
   sides: Record<string, Side>
   allies: string[]
   exhausted: boolean
+  currentHP: number
 }
 
 export interface PlayerCard {
@@ -86,5 +87,6 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     sides: JsonDecoder.array(JsonDecoder.
       tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides)),
     allies: JsonDecoder.array<string>(JsonDecoder.string, 'AllyId[]'),
-    exhausted: JsonDecoder.boolean
+    exhausted: JsonDecoder.boolean,
+    currentHP: JsonDecoder.number
   }, 'Identity')

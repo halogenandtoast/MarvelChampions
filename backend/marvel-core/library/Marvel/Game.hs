@@ -24,6 +24,7 @@ import Marvel.Identity hiding (alliesL)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Phase
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
@@ -199,6 +200,16 @@ runGameMessage msg g@Game {..} = case msg of
         (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
         forced
     pure g
+  DeclareDefense ident enemyId -> do
+    identities <- select $ UnexhaustedIdentity <> HeroIdentity
+    allies <- selectList UnexhaustedAlly
+    push
+      $ Ask ident
+      . ChooseOne
+      $ Label "No defenders" []
+      : [ Defend enemyId | ident `member` identities ]
+      <> map (`AllyDefend` enemyId) allies
+    pure g
   _ -> pure g
 
 abilityInWindow :: Window -> Ability -> Bool
@@ -347,13 +358,15 @@ getResourceAbilities = do
 
 gameSelectIdentity
   :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
-gameSelectIdentity = \case
-  HeroIdentity -> do
-    identities <- toList <$> getsGame gamePlayers
-    pure $ HashSet.fromList $ map toId $ filter isHero identities
-  UnexhaustedIdentity -> do
-    identities <- toList <$> getsGame gamePlayers
-    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) identities
+gameSelectIdentity m = do
+  identities <- toList <$> getsGame gamePlayers
+  pure $ HashSet.fromList $ map toId $ filter (matchFilter m) identities
+ where
+  matchFilter x = case x of
+    AnyIdentity -> const True
+    HeroIdentity -> isHero
+    UnexhaustedIdentity -> not . isExhausted
+    IdentityMatchAll xs -> and . traverse matchFilter xs
 
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly = \case
