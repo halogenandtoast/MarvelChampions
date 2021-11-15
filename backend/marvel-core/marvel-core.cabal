@@ -67,7 +67,11 @@ library
       Marvel.Keyword
       Marvel.Matchers
       Marvel.Message
+      Marvel.Minion
+      Marvel.Minion.Attrs
       Marvel.Minion.Cards
+      Marvel.Minion.Minions
+      Marvel.Minion.Minions.HydraMercenary
       Marvel.Name
       Marvel.Phase
       Marvel.PlayerCard
@@ -82,7 +86,12 @@ library
       Marvel.SideScheme.Cards
       Marvel.Source
       Marvel.Stats
+      Marvel.Support
+      Marvel.Support.Attrs
       Marvel.Support.Cards
+      Marvel.Support.Supports
+      Marvel.Support.Supports.AuntMay
+      Marvel.Support.Supports.Helicarrier
       Marvel.Target
       Marvel.TH
       Marvel.Trait

@@ -30,5 +30,8 @@ newtype SchemeId = SchemeMainSchemeId CardCode
 newtype AllyId = AllyId { unAllyId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
+newtype SupportId = SupportId { unSupportId :: UUID }
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
 newtype EventId = EventId { unEventId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

@@ -11,6 +11,7 @@ type family QueryElement a where
   QueryElement IdentityMatcher = IdentityId
   QueryElement EnemyMatcher = EnemyId
   QueryElement VillainMatcher = VillainId
+  QueryElement MinionMatcher = MinionId
   QueryElement AllyMatcher = AllyId
   QueryElement SchemeMatcher = SchemeId
 
@@ -19,6 +20,9 @@ class Query a where
 
 selectList :: (MonadGame env m, Query a) => a -> m [QueryElement a]
 selectList = fmap HashSet.toList . select
+
+selectAny :: (MonadGame env m, Query a) => a -> m Bool
+selectAny = fmap (not . null) . select
 
 selectOne :: (MonadGame env m, Query a) => a -> m (Maybe (QueryElement a))
 selectOne matcher = do
@@ -48,3 +52,6 @@ instance Query SchemeMatcher where
 
 instance Query AllyMatcher where
   select = gameSelectAlly
+
+instance Query MinionMatcher where
+  select = gameSelectMinion

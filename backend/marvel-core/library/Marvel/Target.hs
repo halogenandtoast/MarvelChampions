@@ -8,7 +8,9 @@ import Marvel.Card.Code
 data Target
   = IdentityTarget IdentityId
   | VillainTarget VillainId
+  | MinionTarget MinionId
   | AllyTarget AllyId
+  | SupportTarget SupportId
   | EventTarget EventId
   | MainSchemeTarget CardCode
   deriving stock (Show, Eq, Generic)

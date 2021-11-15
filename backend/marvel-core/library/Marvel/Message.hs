@@ -37,6 +37,7 @@ data Message
   | VillainMessage VillainId VillainMessage
   | EventMessage EventId EventMessage
   | AllyMessage AllyId AllyMessage
+  | SupportMessage SupportId SupportMessage
   | MainSchemeMessage CardCode MainSchemeMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
@@ -91,6 +92,12 @@ data AllyMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data SupportMessage
+  = ExhaustedSupport
+  | ReadiedSupport
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data IdentityMessage
   = BeginTurn
   | PlayerTurnOption
@@ -105,6 +112,8 @@ data IdentityMessage
   | PaidWithCard PlayerCard
   | AllyCreated AllyId
   | AllyRemoved AllyId
+  | SupportCreated SupportId
+  | SupportRemoved SupportId
   | AddToHand PlayerCard
   | DiscardFrom FromZone Natural (Maybe Target)
   | DiscardCard PlayerCard
@@ -117,11 +126,12 @@ data IdentityMessage
   | RevealEncounterCards
   | IdentityDamaged Source Natural
   | IdentityDefended Natural
+  | IdentityHealed Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 data SideMessage
-  =  Recovered
+  = Recovered
   | Attacked
   | Thwarted
   | Defended EnemyId

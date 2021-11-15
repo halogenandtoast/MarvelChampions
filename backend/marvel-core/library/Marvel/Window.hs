@@ -20,7 +20,7 @@ data Window = Window
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-newtype WindowType = PlayedAlly AllyId
+data WindowType = PlayedAlly AllyId | PlayedSupport SupportId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -29,3 +29,5 @@ windowMatches matcher w source = case matcher of
   PlayThis timing -> case windowType w of
     PlayedAlly allyId ->
       timing == windowTiming w && source == AllySource allyId
+    PlayedSupport supportId ->
+      timing == windowTiming w && source == SupportSource supportId

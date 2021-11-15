@@ -9,6 +9,14 @@
         :identityId="identityId"
         @choose="$emit('choose', $event)"
       />
+      <Support
+        v-for="support in supports"
+        :key="support.contents.supportId"
+        :support="support"
+        :game="game"
+        :identityId="identityId"
+        @choose="$emit('choose', $event)"
+      />
     </div>
     <div class="identity">
       <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
@@ -56,10 +64,11 @@ import * as MarvelGame from '@/marvel/types/Game'
 import { Identity } from '@/marvel/types/Identity'
 import Card from '@/marvel/components/Card.vue'
 import Ally from '@/marvel/components/Ally.vue'
+import Support from '@/marvel/components/Support.vue'
 import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 export default defineComponent({
-  components: { Card, Ally, AbilityButton },
+  components: { Card, Ally, Support, AbilityButton },
   props: {
     game: { type: Object as () => Game, required: true },
     player: { type: Object as () => Identity, required: true },
@@ -104,6 +113,8 @@ export default defineComponent({
 
     const allies = computed(() => props.player.allies.map((allyId) => props.game.allies[allyId]))
 
+    const supports = computed(() => props.player.supports.map((supportId) => props.game.supports[supportId]))
+
     const abilities = computed(() => {
       return choices.value.reduce<number[]>((acc, v, i) => {
         if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.player.id) {
@@ -128,6 +139,7 @@ export default defineComponent({
       endTurnAction,
       finishPaymentAction,
       allies,
+      supports,
       abilities,
       labels,
       defendAction,

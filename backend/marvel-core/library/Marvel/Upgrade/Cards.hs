@@ -7,6 +7,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Name
+import Marvel.Matchers
 import Marvel.Resource
 import Marvel.Trait
 
@@ -42,7 +43,9 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   }
 
 spiderTracer :: CardDef
-spiderTracer = identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy]
+spiderTracer = (identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy])
+  { cdCriteria = MinionExists AnyMinion
+  }
 
 webShooter :: CardDef
 webShooter = identityUpgrade "01008" "Web-Shooter" 1 [Item, Tech] [Physical]

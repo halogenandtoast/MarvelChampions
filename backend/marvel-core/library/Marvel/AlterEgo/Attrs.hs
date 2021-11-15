@@ -15,6 +15,7 @@ import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 
@@ -74,6 +75,8 @@ instance RunMessage AlterEgoAttrs where
   runMessage msg a = case msg of
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of
-        Thwarted -> pure a
+        Recovered -> do
+          push (IdentityMessage ident $ IdentityHealed . unRec $ alterEgoBaseRecovery a)
+          pure a
         _ -> pure a
     _ -> pure a
