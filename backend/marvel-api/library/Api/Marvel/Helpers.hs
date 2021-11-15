@@ -22,6 +22,7 @@ import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
+import Marvel.Support
 import Marvel.Villain
 
 data ApiGame = ApiGame
@@ -32,6 +33,7 @@ data ApiGame = ApiGame
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
   , allies :: HashMap AllyId Ally
+  , supports :: HashMap SupportId Support
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
@@ -48,6 +50,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , scenario = gameScenario
         , question = gameQuestion
         , allies = gameAllies
+        , supports = gameSupports
         }
 
 data ApiResponse = GameUpdate ApiGame | GameMessage Text

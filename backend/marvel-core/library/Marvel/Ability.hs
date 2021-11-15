@@ -94,6 +94,7 @@ passesCriteria x a = go (abilityCriteria a)
     InHeroForm -> member x <$> select HeroIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
     Criteria xs -> allM go xs
+    MinionExists m -> selectAny m
   source = abilitySource a
 
 passesCanAffordCost :: MonadGame env m => IdentityId -> Ability -> m Bool

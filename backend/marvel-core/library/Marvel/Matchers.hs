@@ -23,3 +23,7 @@ data AllyMatcher = UnexhaustedAlly
 data EnemyMatcher = AnyEnemy
 data VillainMatcher = ActiveVillain
 data SchemeMatcher = AnyScheme | MainScheme
+
+data MinionMatcher = AnyMinion
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)

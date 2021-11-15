@@ -13,6 +13,7 @@ steps:
       list_padding: 2
       separate_lists: false
       space_surround: false
+      post_qualify: true
   - language_pragmas:
       style: vertical
       align: false
@@ -22,6 +23,9 @@ columns: 80
 newline: native
 language_extensions:
   - BangPatterns
+  - NamedFieldPuns
+  - TupleSections
+  - BlockArguments
   - DataKinds
   - DeriveAnyClass
   - DeriveFoldable
@@ -45,3 +49,5 @@ language_extensions:
   - StandaloneDeriving
   - TypeApplications
   - TypeFamilies
+  - ImportQualifiedPost
+  - PatternSynonyms

@@ -20,9 +20,10 @@ import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
-import Marvel.Identity hiding (alliesL)
+import Marvel.Identity hiding (alliesL, supportsL)
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Minion
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question
@@ -30,6 +31,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Scenario.Attrs (scenarioId)
+import Marvel.Support
 import Marvel.Target
 import Marvel.Villain
 import Marvel.Window
@@ -47,7 +49,9 @@ data Game = Game
     gamePlayerOrder :: [IdentityId]
   , gamePlayers :: EntityMap PlayerIdentity
   , gameVillains :: EntityMap Villain
+  , gameMinions :: EntityMap Minion
   , gameAllies :: EntityMap Ally
+  , gameSupports :: EntityMap Support
   , gameEvents :: EntityMap Event
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [Ability]
@@ -111,6 +115,10 @@ runGameMessage msg g@Game {..} = case msg of
       for_ (lookup aid gameAllies) $ \ally ->
         push $ IdentityMessage (getAllyController ally) $ AllyRemoved aid
       pure $ g & alliesL %~ delete aid
+    SupportTarget sid -> do
+      for_ (lookup sid gameSupports) $ \support ->
+        push $ IdentityMessage (getSupportController support) $ SupportRemoved sid
+      pure $ g & supportsL %~ delete sid
     _ -> error "Unhandled target"
   AddVillain cardCode -> do
     villainId <- getRandom
@@ -176,6 +184,13 @@ runGameMessage msg g@Game {..} = case msg of
           , CheckWindows [Window After $ PlayedAlly (toId ally)]
           ]
         pure $ g & alliesL %~ insert (toId ally) ally
+      SupportType -> do
+        let support = createSupport ident card
+        pushAll
+          [ IdentityMessage ident (SupportCreated $ toId support)
+          , CheckWindows [Window After $ PlayedSupport (toId support)]
+          ]
+        pure $ g & supportsL %~ insert (toId support) support
       EventType -> do
         let event = createEvent ident card
         push $ EventMessage (toId event) $ PlayedEvent ident payment
@@ -243,6 +258,10 @@ createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =
   lookupAlly (toCardCode card) ident (AllyId $ unCardId $ pcCardId card)
 
+createSupport :: IdentityId -> PlayerCard -> Support
+createSupport ident card =
+  lookupSupport (toCardCode card) ident (SupportId $ unCardId $ pcCardId card)
+
 createEvent :: IdentityId -> PlayerCard -> Event
 createEvent ident card =
   lookupEvent (toCardCode card) ident (EventId $ unCardId $ pcCardId card)
@@ -254,6 +273,7 @@ newGame player scenario = Game
   , gamePlayerOrder = [toId player]
   , gamePlayers = fromList [(toId player, player)]
   , gameVillains = mempty
+  , gameMinions = mempty
   , gameQuestion = mempty
   , gameActiveCost = Nothing
   , gameWindowDepth = 0
@@ -261,6 +281,7 @@ newGame player scenario = Game
   , gameActivePlayer = toId player
   , gameScenario = scenario
   , gameAllies = mempty
+  , gameSupports = mempty
   , gameEvents = mempty
   }
 
@@ -392,6 +413,12 @@ gameSelectVillain = \case
   ActiveVillain -> do
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map toId villains
+
+gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
+gameSelectMinion = \case
+  AnyMinion -> do
+    minions <- toList <$> getsGame gameMinions
+    pure $ HashSet.fromList $ map toId minions
 
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectScheme = \case

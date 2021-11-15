@@ -49,6 +49,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
+  , playerIdentitySupports :: HashSet SupportId
   , playerIdentityExhausted :: Bool
   , playerIdentityEncounterCards :: [EncounterCard]
   , playerIdentityDamageReduction :: Natural
@@ -98,6 +99,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
+  , playerIdentitySupports = mempty
   , playerIdentityExhausted = False
   , playerIdentityEncounterCards = []
   , playerIdentityDamageReduction = 0
@@ -153,6 +155,7 @@ isPlayable attrs c = do
     InHeroForm -> member ident <$> select HeroIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
+    MinionExists m -> selectAny m
 
 getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
@@ -220,7 +223,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   ReadyCards -> do
     pushAll $ map
       (($ ReadiedAlly) . AllyMessage)
-      (HashSet.toList playerIdentityAllies)
+      (HashSet.toList playerIdentityAllies) <>
+      map
+      (($ ReadiedSupport) . SupportMessage)
+      (HashSet.toList playerIdentitySupports)
     pure $ attrs & exhaustedL .~ False
   ChooseOtherForm -> do
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
@@ -247,6 +253,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & alliesL %~ HashSet.insert allyId
   AllyRemoved allyId -> do
     pure $ attrs & alliesL %~ HashSet.delete allyId
+  SupportCreated supportId -> do
+    pure $ attrs & supportsL %~ HashSet.insert supportId
+  SupportRemoved supportId -> do
+    pure $ attrs & supportsL %~ HashSet.delete supportId
   AddToHand card ->
     pure
       $ attrs
@@ -277,6 +287,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         max 0 (fromIntegral n - fromIntegral playerIdentityDamageReduction)
     pure $ attrs & currentHPL %~ HP . max 0 . subtract damage . unHp
   IdentityDefended n -> pure $ attrs & damageReductionL +~ n
+  IdentityHealed n -> pure $ attrs & currentHPL %~ HP . min (unHp playerIdentityMaxHP) . (+ fromIntegral n) . unHp
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

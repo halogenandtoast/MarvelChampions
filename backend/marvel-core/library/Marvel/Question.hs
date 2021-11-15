@@ -101,6 +101,7 @@ data Choice
   | ThwartScheme Target Source Natural
   | Stun Target Source
   | Recover
+  | Heal Natural
   | Attack
   | Thwart
   | Defend EnemyId
@@ -138,6 +139,7 @@ choiceMessages ident = \case
     VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
     _ -> error "can not damage target"
   Recover -> [IdentityMessage ident $ SideMessage Recovered]
+  Heal n -> [IdentityMessage ident $ IdentityHealed n]
   Attack -> [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId -> [IdentityMessage ident $ SideMessage $ Defended enemyId]

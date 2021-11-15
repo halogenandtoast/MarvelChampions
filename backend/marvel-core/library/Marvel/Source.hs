@@ -7,8 +7,10 @@ import Marvel.Id
 data Source
   = IdentitySource IdentityId
   | VillainSource VillainId
+  | MinionSource MinionId
   | AllySource AllyId
   | EventSource EventId
+  | SupportSource SupportId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -24,8 +26,14 @@ instance IsSource IdentityId where
 instance IsSource VillainId where
   toSource = VillainSource
 
+instance IsSource MinionId where
+  toSource = MinionSource
+
 instance IsSource AllyId where
   toSource = AllySource
 
 instance IsSource EventId where
   toSource = EventSource
+
+instance IsSource SupportId where
+  toSource = SupportSource
