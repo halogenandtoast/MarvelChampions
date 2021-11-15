@@ -64,6 +64,7 @@ data VillainMessage
   = SetVillainHp
   | VillainDamaged Source Natural
   | VillainStunned Source
+  | VillainConfused Source
   | DealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainAttacks IdentityId

@@ -22,6 +22,7 @@ hero cardCode name traits = CardDef
   , cdTraits = fromList traits
   , cdKeywords = mempty
   , cdCardType = HeroType
+  , cdAbilityType = Nothing
   , cdUnique = True
   , cdAspect = Nothing
   , cdEncounterSet = Nothing

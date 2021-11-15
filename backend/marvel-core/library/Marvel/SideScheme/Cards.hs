@@ -22,6 +22,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdTraits = mempty
   , cdKeywords = mempty
   , cdCardType = SideSchemeType
+  , cdAbilityType = Nothing
   , cdUnique = False
   , cdAspect = Nothing
   , cdEncounterSet = Just encounterSet
