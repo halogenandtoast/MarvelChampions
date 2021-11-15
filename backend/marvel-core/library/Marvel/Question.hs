@@ -153,6 +153,7 @@ costMessages a = case abilityCost a of
   ExhaustCost -> case abilitySource a of
     IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
     AllySource ident -> [AllyMessage ident ExhaustedAlly]
+    SupportSource ident -> [SupportMessage ident ExhaustedSupport]
     _ -> error "Unhandled"
   _ -> error "Unhandled"
 

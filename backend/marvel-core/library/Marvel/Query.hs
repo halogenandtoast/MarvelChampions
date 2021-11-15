@@ -13,6 +13,7 @@ type family QueryElement a where
   QueryElement VillainMatcher = VillainId
   QueryElement MinionMatcher = MinionId
   QueryElement AllyMatcher = AllyId
+  QueryElement SupportMatcher = SupportId
   QueryElement SchemeMatcher = SchemeId
 
 class Query a where
@@ -52,6 +53,9 @@ instance Query SchemeMatcher where
 
 instance Query AllyMatcher where
   select = gameSelectAlly
+
+instance Query SupportMatcher where
+  select = gameSelectSupport
 
 instance Query MinionMatcher where
   select = gameSelectMinion

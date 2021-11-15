@@ -63,6 +63,11 @@ isHero player = case currentIdentity player of
   HeroSide _ -> True
   AlterEgoSide _ -> False
 
+isAlterEgo :: PlayerIdentity -> Bool
+isAlterEgo player = case currentIdentity player of
+  HeroSide _ -> False
+  AlterEgoSide _ -> True
+
 instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted
 
@@ -173,7 +178,7 @@ getChoices attrs = do
       , passesCriteria ident
       , passesCanAffordCost ident
       , pure . passesTiming ident
-      , pure . passesTypeIsRelevant ident
+      , passesTypeIsRelevant ident
       ]
     )
     abilities
@@ -201,6 +206,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     chooseOne (toId attrs) (EndTurn : choices)
     pure attrs
   EndedTurn -> do
+    push (IdentityEndedTurn $ toId attrs)
     pure $ attrs & passedL .~ True
   ShuffleDeck -> do
     deck <- shuffleM (unDeck $ attrs ^. deckL)

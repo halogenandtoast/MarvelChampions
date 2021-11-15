@@ -41,6 +41,10 @@ export interface Attack {
   tag: 'Attack'
 }
 
+export interface Heal {
+  tag: 'Heal'
+}
+
 export interface AllyAttack {
   tag: 'AllyAttack'
 }
@@ -65,6 +69,7 @@ export const finishPaymentDecoder = JsonDecoder.object<FinishPayment>({ tag: Jso
 export const recoverDecoder = JsonDecoder.object<Recover>({ tag: JsonDecoder.isExactly('Recover') }, 'Recover')
 
 export const attackDecoder = JsonDecoder.object<Attack>({ tag: JsonDecoder.isExactly('Attack') }, 'Attack')
+export const healDecoder = JsonDecoder.object<Heal>({ tag: JsonDecoder.isExactly('Heal') }, 'Heal')
 export const allyAttackDecoder = JsonDecoder.object<AllyAttack>({ tag: JsonDecoder.isExactly('AllyAttack') }, 'AllyAttack')
 export const allyThwartDecoder = JsonDecoder.object<AllyThwart>({ tag: JsonDecoder.isExactly('AllyThwart') }, 'AllyThwart')
 
@@ -121,6 +126,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   runAbilityDecoder,
   recoverDecoder,
   attackDecoder,
+  healDecoder,
   allyAttackDecoder,
   allyThwartDecoder,
   thwartDecoder], 'AbilityChoice')
@@ -182,7 +188,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | AllyThwart | Thwart
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart
 
 export interface ChangeForm {
   tag: 'ChangeForm'

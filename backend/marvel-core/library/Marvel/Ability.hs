@@ -105,6 +105,7 @@ passesCanAffordCost _ a = go (abilityCost a)
     ExhaustCost -> case source of
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly
+      SupportSource ident -> member ident <$> select UnexhaustedSupport
       _ -> error "Unhandled"
     ResourceCost _ -> error "Unhandled"
     Costs xs -> allM go xs
@@ -116,20 +117,20 @@ passesTiming _ a = all passes (toList $ abilityTiming a)
   passes x = case x of
     DuringOwnTurn -> True
 
-passesTypeIsRelevant :: IdentityId -> Ability -> Bool
-passesTypeIsRelevant _ a = case abilityType a of
-  Interrupt -> False
-  HeroInterrupt -> False
-  ForcedInterrupt -> False
-  Resource -> False
-  HeroResource -> False
-  Response -> False
-  ForcedResponse -> False
-  Action -> True
-  Basic -> True
-  HeroAction -> False
-  AlterEgoAction -> False
-  Special -> False
+passesTypeIsRelevant :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesTypeIsRelevant ident a = case abilityType a of
+  Interrupt -> pure False
+  HeroInterrupt -> pure False
+  ForcedInterrupt -> pure False
+  Resource -> pure False
+  HeroResource -> pure False
+  Response -> pure False
+  ForcedResponse -> pure False
+  Action -> pure True
+  Basic -> pure True
+  HeroAction -> member ident <$> select HeroIdentity
+  AlterEgoAction -> member ident <$> select AlterEgoIdentity
+  Special -> pure False
 
 class PerformAbility a where
   performAbility :: MonadGame env m => a -> Natural -> m ()

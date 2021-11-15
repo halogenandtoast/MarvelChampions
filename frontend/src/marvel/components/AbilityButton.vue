@@ -40,6 +40,10 @@ export default defineComponent({
         }
       }
 
+      if (abilityType == "AlterEgoAction") {
+        return "Alter-Ego Action"
+      }
+
       return null
     })
     return { label }

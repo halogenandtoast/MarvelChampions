@@ -31,6 +31,7 @@ data Message
   | PassFirstPlayer
   | EndRound
   | BeginRound
+  | IdentityEndedTurn IdentityId
   | AddVillain CardCode
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
