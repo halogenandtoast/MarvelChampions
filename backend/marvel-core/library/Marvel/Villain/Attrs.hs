@@ -93,14 +93,16 @@ runVillainMessage msg attrs = case msg of
       , VillainMessage (toId attrs) VillainSchemed
       ]
     pure attrs
-  VillainAttacks ident -> do
-    pushAll
-      [ DealBoost (toTarget attrs)
-      , DeclareDefense ident (EnemyVillainId (toId attrs))
-      , VillainMessage (toId attrs) VillainFlipBoostCards
-      , VillainMessage (toId attrs) VillainAttacked
-      ]
-    pure $ attrs & attackingL ?~ IdentityCharacter ident
+  VillainAttacks ident -> if villainStunned attrs
+    then pure $ attrs & stunnedL .~ False
+    else do
+      pushAll
+        [ DealBoost (toTarget attrs)
+        , DeclareDefense ident (EnemyVillainId (toId attrs))
+        , VillainMessage (toId attrs) VillainFlipBoostCards
+        , VillainMessage (toId attrs) VillainAttacked
+        ]
+      pure $ attrs & attackingL ?~ IdentityCharacter ident
   VillainDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
   VillainSchemed -> do
     mainScheme <- selectJust MainScheme
