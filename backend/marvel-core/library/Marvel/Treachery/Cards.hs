@@ -22,6 +22,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdTraits = mempty
   , cdKeywords = mempty
   , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
   , cdUnique = False
   , cdAspect = Nothing
   , cdEncounterSet = Just encounterSet

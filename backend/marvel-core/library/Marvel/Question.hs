@@ -100,6 +100,7 @@ data Choice
   | DamageEnemy Target Source Natural
   | ThwartScheme Target Source Natural
   | Stun Target Source
+  | Confuse Target Source
   | Recover
   | Heal Natural
   | Attack
@@ -137,6 +138,9 @@ choiceMessages ident = \case
     _ -> error "can not thwart target"
   Stun target source -> case target of
     VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
+    _ -> error "can not damage target"
+  Confuse target source -> case target of
+    VillainTarget vid -> [VillainMessage vid $ VillainConfused source]
     _ -> error "can not damage target"
   Recover -> [IdentityMessage ident $ SideMessage Recovered]
   Heal n -> [IdentityMessage ident $ IdentityHealed n]

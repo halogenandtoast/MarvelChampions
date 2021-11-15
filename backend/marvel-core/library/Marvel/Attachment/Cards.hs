@@ -29,6 +29,7 @@ attachment code name traits boostIcons encounterSet quantity = CardDef
   , cdTraits = fromList traits
   , cdKeywords = mempty
   , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
   , cdUnique = False
   , cdAspect = Nothing
   , cdEncounterSet = Just encounterSet

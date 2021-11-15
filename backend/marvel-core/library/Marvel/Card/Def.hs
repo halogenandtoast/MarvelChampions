@@ -4,6 +4,7 @@ module Marvel.Card.Def where
 import Marvel.Prelude
 
 import GHC.Generics
+import Marvel.Ability.Type
 import Marvel.Aspect
 import Marvel.Boost
 import Marvel.Card.Code
@@ -59,6 +60,7 @@ data CardDef = CardDef
   , cdTraits :: HashSet Trait
   , cdKeywords :: HashSet Keyword
   , cdCardType :: CardType
+  , cdAbilityType :: Maybe AbilityType
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
   , cdCriteria :: Criteria

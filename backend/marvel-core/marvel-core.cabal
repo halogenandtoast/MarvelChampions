@@ -49,6 +49,7 @@ library
       Marvel.Event.Attrs
       Marvel.Event.Cards
       Marvel.Event.Events
+      Marvel.Event.Events.Haymaker
       Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
       Marvel.Game

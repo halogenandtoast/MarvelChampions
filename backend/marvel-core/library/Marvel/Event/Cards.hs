@@ -3,6 +3,7 @@ module Marvel.Event.Cards where
 import Marvel.Prelude
 
 import Marvel.Aspect
+import Marvel.Ability.Type (AbilityType(HeroAction))
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
@@ -44,6 +45,7 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdTraits = fromList traits
   , cdKeywords = mempty
   , cdCardType = EventType
+  , cdAbilityType = Nothing
   , cdUnique = False
   , cdAspect = mAspect
   , cdEncounterSet = Nothing
@@ -62,7 +64,6 @@ enhancedSpiderSense =
     { cdCriteria = InHeroForm
     }
 
-
 swingingWebKick :: CardDef
 swingingWebKick = (identityEvent
                     "01005"
@@ -72,6 +73,7 @@ swingingWebKick = (identityEvent
                     [Mental]
                   )
   { cdCriteria = InHeroForm
+  , cdAbilityType = Just HeroAction
   }
 
 getReady :: CardDef
@@ -88,4 +90,7 @@ firstAid :: CardDef
 firstAid = basicEvent "01086" "First Aid" 1 [] [Mental]
 
 haymaker :: CardDef
-haymaker = basicEvent "01087" "Haymaker" 2 [Attack] [Energy]
+haymaker = (basicEvent "01087" "Haymaker" 2 [Attack] [Energy])
+  { cdCriteria = InHeroForm
+  , cdAbilityType = Just HeroAction
+  }

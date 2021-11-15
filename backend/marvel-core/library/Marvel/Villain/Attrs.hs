@@ -47,6 +47,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainScheme = sch
     , villainAttack = atk
     , villainStunned = False
+    , villainConfused = False
     , villainBoostCards = mempty
     , villainBoost = 0
     , villainAttacking = Nothing
@@ -62,6 +63,7 @@ data VillainAttrs = VillainAttrs
   , villainScheme :: Sch
   , villainAttack :: Atk
   , villainStunned :: Bool
+  , villainConfused :: Bool
   , villainBoostCards :: [EncounterCard]
   , villainBoost :: Natural
   , villainAttacking :: Maybe CharacterId
@@ -86,13 +88,16 @@ runVillainMessage msg attrs = case msg of
   VillainDamaged _ n ->
     pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
-  VillainSchemes -> do
-    pushAll
-      [ DealBoost (toTarget attrs)
-      , VillainMessage (toId attrs) VillainFlipBoostCards
-      , VillainMessage (toId attrs) VillainSchemed
-      ]
-    pure attrs
+  VillainConfused _ -> pure $ attrs & confusedL .~ True
+  VillainSchemes -> if villainStunned attrs
+    then pure $ attrs & confusedL .~ False
+    else do
+      pushAll
+        [ DealBoost (toTarget attrs)
+        , VillainMessage (toId attrs) VillainFlipBoostCards
+        , VillainMessage (toId attrs) VillainSchemed
+        ]
+      pure attrs
   VillainAttacks ident -> if villainStunned attrs
     then pure $ attrs & stunnedL .~ False
     else do
