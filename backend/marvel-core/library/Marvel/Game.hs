@@ -197,6 +197,8 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & eventsL %~ insert (toId event) event
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
+  IdentityEndedTurn ident ->
+    pure $ g & usedAbilitiesL . ix ident %~ filter ((/= PerTurn 1) . abilityLimit)
   CheckWindows windows -> do
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities
@@ -247,6 +249,7 @@ instance RunMessage Game where
       >>= traverseOf scenarioL (runMessage msg)
       >>= traverseOf (playersL . each) (runMessage msg)
       >>= traverseOf (alliesL . each) (runMessage msg)
+      >>= traverseOf (supportsL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
       >>= traverseOf (eventsL . each) (runMessage msg)
       >>= runGameMessage msg
@@ -346,6 +349,7 @@ getGame = readIORef =<< asks game
 instance HasAbilities Game where
   getAbilities g = concatMap getAbilities (elems $ gamePlayers g)
     <> concatMap getAbilities (elems $ gameAllies g)
+    <> concatMap getAbilities (elems $ gameSupports g)
 
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
@@ -393,6 +397,7 @@ gameSelectIdentity m = do
   matchFilter x = case x of
     AnyIdentity -> const True
     HeroIdentity -> isHero
+    AlterEgoIdentity -> isAlterEgo
     UnexhaustedIdentity -> not . isExhausted
     IdentityMatchAll xs -> and . traverse matchFilter xs
 
@@ -401,6 +406,12 @@ gameSelectAlly = \case
   UnexhaustedAlly -> do
     allies <- toList <$> getsGame gameAllies
     pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) allies
+
+gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
+gameSelectSupport = \case
+  UnexhaustedSupport -> do
+    supports <- toList <$> getsGame gameSupports
+    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) supports
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case

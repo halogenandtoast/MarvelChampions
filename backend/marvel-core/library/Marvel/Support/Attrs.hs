@@ -20,6 +20,7 @@ data SupportAttrs = SupportAttrs
   { supportId :: SupportId
   , supportCardDef :: CardDef
   , supportController :: IdentityId
+  , supportExhausted :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -40,6 +41,7 @@ support f cardDef =
       { supportId = mid
       , supportCardDef = cardDef
       , supportController = ident
+      , supportExhausted = False
       }
     }
 
@@ -59,4 +61,10 @@ isTarget :: (Entity a, EntityAttrs a ~ SupportAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
 instance RunMessage SupportAttrs where
-  runMessage _ = pure
+  runMessage msg a = case msg of
+    SupportMessage ident msg' | ident == supportId a -> case msg' of
+      ReadiedSupport -> do
+        pure $ a & exhaustedL .~ False
+      ExhaustedSupport -> do
+        pure $ a & exhaustedL .~ True
+    _ -> pure a

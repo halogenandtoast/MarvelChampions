@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 data IdentityMatcher
   = HeroIdentity
+  | AlterEgoIdentity
   | UnexhaustedIdentity
   | AnyIdentity
   | IdentityMatchAll [IdentityMatcher]
@@ -20,6 +21,7 @@ instance Semigroup IdentityMatcher where
   x <> y = IdentityMatchAll [x, y]
 
 data AllyMatcher = UnexhaustedAlly
+data SupportMatcher = UnexhaustedSupport
 data EnemyMatcher = AnyEnemy
 data VillainMatcher = ActiveVillain
 data SchemeMatcher = AnyScheme | MainScheme

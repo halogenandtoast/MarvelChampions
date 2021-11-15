@@ -38,6 +38,7 @@ gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
+gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 
 instance HasAbilities Game

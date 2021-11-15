@@ -35,6 +35,9 @@ instance Entity Support where
 instance RunMessage Support where
   runMessage = genericRunMessage
 
+instance Exhaustable Support where
+  isExhausted = supportExhausted . toAttrs
+
 instance IsSource Support where
   toSource = SupportSource . toId
 
