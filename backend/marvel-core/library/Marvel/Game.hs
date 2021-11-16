@@ -14,6 +14,7 @@ import Marvel.Card.Id
 import Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Deck
+import Marvel.Effect
 import Marvel.Entity
 import Marvel.Event
 import Marvel.Exception
@@ -52,6 +53,7 @@ data Game = Game
   , gameMinions :: EntityMap Minion
   , gameAllies :: EntityMap Ally
   , gameSupports :: EntityMap Support
+  , gameEffects :: EntityMap Effect
   , gameEvents :: EntityMap Event
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [Ability]
@@ -286,6 +288,7 @@ newGame player scenario = Game
   , gameAllies = mempty
   , gameSupports = mempty
   , gameEvents = mempty
+  , gameEffects = mempty
   }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()

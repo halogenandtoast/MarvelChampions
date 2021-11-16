@@ -42,6 +42,8 @@ library
       Marvel.Debug
       Marvel.Deck
       Marvel.Discard
+      Marvel.Effect
+      Marvel.Effect.Attrs
       Marvel.EncounterCard
       Marvel.EncounterSet
       Marvel.Entity
@@ -73,6 +75,7 @@ library
       Marvel.Minion.Cards
       Marvel.Minion.Minions
       Marvel.Minion.Minions.HydraMercenary
+      Marvel.Modifier
       Marvel.Name
       Marvel.Phase
       Marvel.PlayerCard

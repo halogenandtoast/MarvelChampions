@@ -12,6 +12,7 @@ data Target
   | AllyTarget AllyId
   | SupportTarget SupportId
   | EventTarget EventId
+  | EffectTarget EffectId
   | MainSchemeTarget CardCode
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
