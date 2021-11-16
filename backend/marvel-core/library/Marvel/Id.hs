@@ -35,3 +35,6 @@ newtype SupportId = SupportId { unSupportId :: UUID }
 
 newtype EventId = EventId { unEventId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
+newtype EffectId = EffectId { unEffectId :: UUID }
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

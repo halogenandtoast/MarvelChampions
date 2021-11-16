@@ -37,6 +37,7 @@ data Message
   | IdentityMessage IdentityId IdentityMessage
   | VillainMessage VillainId VillainMessage
   | EventMessage EventId EventMessage
+  | EffectMessage EffectId EffectMessage
   | AllyMessage AllyId AllyMessage
   | SupportMessage SupportId SupportMessage
   | MainSchemeMessage CardCode MainSchemeMessage
@@ -80,6 +81,10 @@ data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThre
   deriving anyclass (ToJSON, FromJSON)
 
 data EventMessage = PlayedEvent IdentityId Payment
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data EffectMessage = DisableEffect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

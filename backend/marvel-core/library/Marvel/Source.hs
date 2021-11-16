@@ -10,6 +10,7 @@ data Source
   | MinionSource MinionId
   | AllySource AllyId
   | EventSource EventId
+  | EffectSource EffectId
   | SupportSource SupportId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
