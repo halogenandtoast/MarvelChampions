@@ -60,6 +60,7 @@ data Message
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
   | CreatedEffect CardDef Source Target
+  | DisabledEffect EffectId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

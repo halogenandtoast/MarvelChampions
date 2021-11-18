@@ -168,7 +168,7 @@ isPlayable attrs c = do
 
 getModifiedCost :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
-  modifiers <- traceShowId <$> getModifiers attrs
+  modifiers <- getModifiers attrs
   pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
  where
   modifiedCost ms cost' = foldr applyModifier cost' ms
