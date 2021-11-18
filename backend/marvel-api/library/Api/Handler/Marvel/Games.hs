@@ -17,9 +17,9 @@ import Api.Marvel.Types.MultiplayerVariant
 import Conduit
 import Control.Concurrent.STM.TChan
 import Control.Lens (view)
-import qualified Data.HashMap.Strict as HashMap
-import qualified Data.Map.Strict as Map
-import qualified Data.Text as T
+import Data.HashMap.Strict qualified as HashMap
+import Data.Map.Strict qualified as Map
+import Data.Text qualified as T
 import Data.Traversable (for)
 import Database.Esqueleto.Experimental hiding (update)
 import Database.Esqueleto.Internal.Internal (SqlSelect)
@@ -216,7 +216,7 @@ putApiV1MarvelGameR gameId = do
     identityId = fromMaybe
       (coerce $ marvelPlayerIdentityId marvelPlayer)
       (answerIdentity response)
-    messages = handleAnswer gameJson identityId response
+  messages <- handleAnswer gameJson identityId response
 
   let currentQueue = maybe [] stepMessages $ head <$> nonEmpty marvelGameSteps
 
@@ -302,10 +302,14 @@ deleteApiV1MarvelGameR gameId = void $ runDB $ do
 answerIdentity :: Answer -> Maybe IdentityId
 answerIdentity (Answer response) = qrIdentityId response
 
-handleAnswer :: Game -> IdentityId -> Answer -> [Message]
-handleAnswer Game {..} identityId = \case
+handleAnswer :: MonadIO m => Game -> IdentityId -> Answer -> m [Message]
+handleAnswer g@Game {..} identityId = \case
   Answer response -> case HashMap.lookup identityId gameQuestion of
     Just (ChooseOne qs) -> case qs !!? qrChoice response of
-      Nothing -> [Ask identityId $ ChooseOne qs]
-      Just choice -> choiceMessages identityId choice
+      Nothing -> pure [Ask identityId $ ChooseOne qs]
+      Just choice -> do
+        gameRef <- newIORef g
+        queueRef <- newIORef []
+        runGameApp (GameApp gameRef queueRef logger)
+          $ choiceMessages identityId choice
     _ -> error "Wrong question type"

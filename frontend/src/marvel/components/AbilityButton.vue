@@ -38,6 +38,8 @@ export default defineComponent({
         if (actionTag == "ChangeForm") {
           return "Change Form"
         }
+
+        return "Action"
       }
 
       if (abilityType == "AlterEgoAction") {

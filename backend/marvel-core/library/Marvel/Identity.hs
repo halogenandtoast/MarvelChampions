@@ -5,7 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -25,10 +25,12 @@ import Marvel.Hand
 import Marvel.Hero
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
+import Marvel.Target
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -83,6 +85,9 @@ instance FromJSON PlayerIdentity where
 
 instance IsSource PlayerIdentity where
   toSource = IdentitySource . playerIdentityId
+
+instance IsTarget PlayerIdentity where
+  toTarget = IdentityTarget . playerIdentityId
 
 currentIdentity :: PlayerIdentity -> PlayerIdentitySide
 currentIdentity a =
@@ -147,11 +152,10 @@ instance HasAbilities PlayerIdentity where
 isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
   resources <- getAvailableResourcesFor c
+  modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def)
-  pure $ canPayCost resources && passedCriteria
+  pure $ length resources >= modifiedCost && passedCriteria
  where
-  cost = cdCost def
-  canPayCost resources = maybe False (length resources >=) cost
   ident = toId attrs
   def = getCardDef c
   checkCriteria = \case
@@ -161,6 +165,14 @@ isPlayable attrs c = do
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+
+getModifiedCost :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Int
+getModifiedCost attrs c = do
+  modifiers <- traceShowId <$> getModifiers attrs
+  pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
+ where
+  modifiedCost ms cost' = foldr applyModifier cost' ms
+  applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
 
 getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
@@ -227,28 +239,28 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
       pure $ attrs & handL %~ Hand . (<> cards) . unHand & deckL .~ Deck deck
   ReadyCards -> do
-    pushAll $ map
-      (($ ReadiedAlly) . AllyMessage)
-      (HashSet.toList playerIdentityAllies) <>
-      map
-      (($ ReadiedSupport) . SupportMessage)
-      (HashSet.toList playerIdentitySupports)
+    pushAll
+      $ map
+          (($ ReadiedAlly) . AllyMessage)
+          (HashSet.toList playerIdentityAllies)
+      <> map
+           (($ ReadiedSupport) . SupportMessage)
+           (HashSet.toList playerIdentitySupports)
     pure $ attrs & exhaustedL .~ False
   ChooseOtherForm -> do
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
   ChangedToForm side -> pure $ attrs & sideL .~ side
-  PlayedCard card -> case cdCost (getCardDef card) of
-    Just cost -> do
-      let cost' = mconcat $ replicate cost (ResourceCost Nothing)
-      push $ SetActiveCost $ ActiveCost
-        (toId attrs)
-        (ForCard card)
-        cost'
-        NoPayment
-      pure $ attrs & handL %~ Hand . filter (/= card) . unHand
-    Nothing -> error "Invalid cost"
+  PlayedCard card -> do
+    modifiedCost <- getModifiedCost attrs card
+    let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)
+    push $ SetActiveCost $ ActiveCost
+      (toId attrs)
+      (ForCard card)
+      cost'
+      NoPayment
+    pure $ attrs & handL %~ Hand . filter (/= card) . unHand
   PaidWithCard card -> do
     push $ Spent card
     pure
@@ -293,7 +305,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         max 0 (fromIntegral n - fromIntegral playerIdentityDamageReduction)
     pure $ attrs & currentHPL %~ HP . max 0 . subtract damage . unHp
   IdentityDefended n -> pure $ attrs & damageReductionL +~ n
-  IdentityHealed n -> pure $ attrs & currentHPL %~ HP . min (unHp playerIdentityMaxHP) . (+ fromIntegral n) . unHp
+  IdentityHealed n ->
+    pure
+      $ attrs
+      & currentHPL
+      %~ HP
+      . min (unHp playerIdentityMaxHP)
+      . (+ fromIntegral n)
+      . unHp
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-
