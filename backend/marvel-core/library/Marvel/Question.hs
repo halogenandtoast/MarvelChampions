@@ -3,9 +3,10 @@ module Marvel.Question where
 import Marvel.Prelude
 
 import Data.List (partition)
-import qualified Data.List as L
+import Data.List qualified as L
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Cost
@@ -109,6 +110,7 @@ data Choice
   | AllyAttack AllyId
   | AllyThwart AllyId
   | AllyDefend AllyId EnemyId
+  | CreateEffect CardDef
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

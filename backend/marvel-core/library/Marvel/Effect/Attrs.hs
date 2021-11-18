@@ -26,6 +26,16 @@ instance IsTarget EffectAttrs where
 instance IsSource EffectAttrs where
   toSource = EffectSource . effectId
 
+effect :: (EffectAttrs -> a) -> CardDef -> CardBuilder EffectId a
+effect f cardDef = CardBuilder
+  { cbCardCode = cdCardCode cardDef
+  , cbCardBuilder = \eid -> f $ EffectAttrs
+    { eventId = eid
+    , eventCardDef = cardDef
+    , eventController = ident
+    }
+  }
+
 instance Entity EffectAttrs where
   type EntityId EffectAttrs = EffectId
   type EntityAttrs EffectAttrs = EffectAttrs

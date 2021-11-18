@@ -8,6 +8,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
@@ -58,6 +59,7 @@ data Message
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
+  | CreatedEffect CardDef
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
