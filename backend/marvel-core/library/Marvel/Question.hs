@@ -84,6 +84,10 @@ newtype Sorted a = Sorted { unSorted :: [a] }
 newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)
 
+data ChooseATarget = ChooseAPlayer
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Choice
   = CardLabel CardCode Choice
   | Label Text [Choice]
@@ -110,7 +114,7 @@ data Choice
   | AllyAttack AllyId
   | AllyThwart AllyId
   | AllyDefend AllyId EnemyId
-  | CreateEffect CardDef
+  | CreateEffect CardDef Source ChooseATarget
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
