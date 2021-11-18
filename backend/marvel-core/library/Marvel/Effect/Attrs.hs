@@ -8,6 +8,7 @@ import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -59,4 +60,7 @@ instance Entity EffectAttrs where
   toAttrs = id
 
 instance RunMessage EffectAttrs where
-  runMessage _ = pure
+  runMessage msg a = case msg of
+    EffectMessage ident msg' | ident == toId a -> case msg' of
+      DisableEffect -> a <$ push (DisabledEffect $ toId a)
+    _ -> pure a

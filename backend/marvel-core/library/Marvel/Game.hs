@@ -184,6 +184,7 @@ runGameMessage msg g@Game {..} = case msg of
     effectId <- getRandom
     let effect = createEffect effectId (toCardCode def) source target
     pure $ g & effectsL %~ insert effectId effect
+  DisabledEffect effectId -> pure $ g & effectsL %~ delete effectId
   PutCardIntoPlay ident card payment -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
@@ -261,6 +262,7 @@ instance RunMessage Game where
       >>= traverseOf (supportsL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
       >>= traverseOf (eventsL . each) (runMessage msg)
+      >>= traverseOf (effectsL . each) (runMessage msg)
       >>= runGameMessage msg
 
 class HasGame a where
