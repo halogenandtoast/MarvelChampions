@@ -22,7 +22,7 @@ helicarrier = support Helicarrier Cards.helicarrier
 
 instance HasAbilities Helicarrier where
   getAbilities a =
-    [ability a 1 Action NoCriteria ExhaustCost $ CreateEffect Cards.helicarrier]
+    [ability a 1 Action NoCriteria ExhaustCost $ CreateEffect Cards.helicarrier (toSource a) ChooseAPlayer]
 
 newtype Helicarrier = Helicarrier SupportAttrs
   deriving anyclass IsSupport

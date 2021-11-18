@@ -59,7 +59,7 @@ data Message
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
-  | CreatedEffect CardDef
+  | CreatedEffect CardDef Source Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

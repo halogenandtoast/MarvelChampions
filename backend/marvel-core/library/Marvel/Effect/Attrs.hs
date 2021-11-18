@@ -2,6 +2,8 @@ module Marvel.Effect.Attrs where
 
 import Marvel.Prelude
 
+import Marvel.Card.Builder
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -11,11 +13,12 @@ import Marvel.Target
 
 class IsEffect a
 
+type CardEffect a = CardBuilder (Source, Target, EffectId) a
+
 data EffectAttrs = EffectAttrs
   { effectId :: EffectId
   , effectSource :: Source
   , effectTarget :: Target
-  , effectModifiers :: [Modifier]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -26,13 +29,13 @@ instance IsTarget EffectAttrs where
 instance IsSource EffectAttrs where
   toSource = EffectSource . effectId
 
-effect :: (EffectAttrs -> a) -> CardDef -> CardBuilder EffectId a
+effect :: (EffectAttrs -> a) -> CardDef -> CardBuilder (Source, Target, EffectId) a
 effect f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \eid -> f $ EffectAttrs
-    { eventId = eid
-    , eventCardDef = cardDef
-    , eventController = ident
+  , cbCardBuilder = \(source, target, eid) -> f $ EffectAttrs
+    { effectId = eid
+    , effectSource = source
+    , effectTarget = target
     }
   }
 
