@@ -21,7 +21,8 @@ helicarrier :: SupportCard Helicarrier
 helicarrier = support Helicarrier Cards.helicarrier
 
 instance HasAbilities Helicarrier where
-  getAbilities a = [ability a 1 Action NoCriteria ExhaustCost $ Heal 4]
+  getAbilities a =
+    [ability a 1 Action NoCriteria ExhaustCost $ CreateEffect Cards.helicarrier]
 
 newtype Helicarrier = Helicarrier SupportAttrs
   deriving anyclass IsSupport
@@ -33,6 +34,9 @@ instance RunMessage Helicarrier where
 newtype HelicarrierEffect = HelicarrierEffect EffectAttrs
   deriving anyclass IsEffect
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+
+helicarrierEffect :: CardEffect HelicarrierEffect
+helicarrierEffect = effect HelicarrierEffect Cards.helicarrier
 
 instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of
