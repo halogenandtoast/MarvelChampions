@@ -3,8 +3,8 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import qualified Data.Aeson.Diff as Diff
-import qualified Data.HashSet as HashSet
+import Data.Aeson.Diff qualified as Diff
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -25,6 +25,7 @@ import Marvel.Identity hiding (alliesL, supportsL)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Minion
+import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question
@@ -32,6 +33,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Scenario.Attrs (scenarioId)
+import Marvel.Source
 import Marvel.Support
 import Marvel.Target
 import Marvel.Villain
@@ -119,7 +121,8 @@ runGameMessage msg g@Game {..} = case msg of
       pure $ g & alliesL %~ delete aid
     SupportTarget sid -> do
       for_ (lookup sid gameSupports) $ \support ->
-        push $ IdentityMessage (getSupportController support) $ SupportRemoved sid
+        push $ IdentityMessage (getSupportController support) $ SupportRemoved
+          sid
       pure $ g & supportsL %~ delete sid
     _ -> error "Unhandled target"
   AddVillain cardCode -> do
@@ -177,6 +180,10 @@ runGameMessage msg g@Game {..} = case msg of
             (activeCostPayment activeCost)
           pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
+  CreatedEffect def source target -> do
+    effectId <- getRandom
+    let effect = createEffect effectId (toCardCode def) source target
+    pure $ g & effectsL %~ insert effectId effect
   PutCardIntoPlay ident card payment -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
@@ -199,8 +206,8 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & eventsL %~ insert (toId event) event
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
-  IdentityEndedTurn ident ->
-    pure $ g & usedAbilitiesL . ix ident %~ filter ((/= PerTurn 1) . abilityLimit)
+  IdentityEndedTurn ident -> pure $ g & usedAbilitiesL . ix ident %~ filter
+    ((/= PerTurn 1) . abilityLimit)
   CheckWindows windows -> do
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities
@@ -270,6 +277,10 @@ createSupport ident card =
 createEvent :: IdentityId -> PlayerCard -> Event
 createEvent ident card =
   lookupEvent (toCardCode card) ident (EventId $ unCardId $ pcCardId card)
+
+createEffect :: EffectId -> CardCode -> Source -> Target -> Effect
+createEffect ident cardCode source target =
+  lookupEffect cardCode source target ident
 
 newGame :: PlayerIdentity -> Scenario -> Game
 newGame player scenario = Game
@@ -350,9 +361,10 @@ getGame :: MonadGame env m => m Game
 getGame = readIORef =<< asks game
 
 instance HasAbilities Game where
-  getAbilities g = concatMap getAbilities (elems $ gamePlayers g)
-    <> concatMap getAbilities (elems $ gameAllies g)
-    <> concatMap getAbilities (elems $ gameSupports g)
+  getAbilities g =
+    concatMap getAbilities (elems $ gamePlayers g)
+      <> concatMap getAbilities (elems $ gameAllies g)
+      <> concatMap getAbilities (elems $ gameSupports g)
 
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
@@ -444,3 +456,8 @@ gameSelectScheme = \case
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId
+
+getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
+getModifiers a = do
+  effects <- toList <$> getsGame gameEffects
+  concatMapM (getModifiersFor (toSource a) (toTarget a)) effects

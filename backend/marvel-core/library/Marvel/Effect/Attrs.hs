@@ -19,9 +19,13 @@ data EffectAttrs = EffectAttrs
   { effectId :: EffectId
   , effectSource :: Source
   , effectTarget :: Target
+  , effectModifiers :: [Modifier]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+modifiersL :: Lens' EffectAttrs [Modifier]
+modifiersL = lens effectModifiers $ \m x -> m { effectModifiers = x }
 
 instance IsTarget EffectAttrs where
   toTarget = EffectTarget . effectId
@@ -29,13 +33,22 @@ instance IsTarget EffectAttrs where
 instance IsSource EffectAttrs where
   toSource = EffectSource . effectId
 
-effect :: (EffectAttrs -> a) -> CardDef -> CardBuilder (Source, Target, EffectId) a
+effectWith
+  :: (EffectAttrs -> a)
+  -> CardDef
+  -> (EffectAttrs -> EffectAttrs)
+  -> CardBuilder (Source, Target, EffectId) a
+effectWith f cardDef g = effect (f . g) cardDef
+
+effect
+  :: (EffectAttrs -> a) -> CardDef -> CardBuilder (Source, Target, EffectId) a
 effect f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \(source, target, eid) -> f $ EffectAttrs
     { effectId = eid
     , effectSource = source
     , effectTarget = target
+    , effectModifiers = mempty
     }
   }
 

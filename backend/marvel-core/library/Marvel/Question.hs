@@ -118,44 +118,54 @@ data Choice
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-choiceMessages :: IdentityId -> Choice -> [Message]
+choiceMessages :: MonadGame env m => IdentityId -> Choice -> m [Message]
 choiceMessages ident = \case
-  Run msgs -> msgs
-  Label _ choices -> concatMap (choiceMessages ident) choices
-  TargetLabel _ choices -> concatMap (choiceMessages ident) choices
+  Run msgs -> pure msgs
+  Label _ choices -> concatMapM (choiceMessages ident) choices
+  TargetLabel _ choices -> concatMapM (choiceMessages ident) choices
   CardLabel _ choice -> choiceMessages ident choice
-  EndTurn -> [IdentityMessage ident EndedTurn]
-  UseAbility a -> UsedAbility ident a : costMessages a <> concatMap
-    (choiceMessages ident)
-    (abilityChoices a)
-  RunAbility target n -> [RanAbility target n]
-  ChangeForm -> [IdentityMessage ident ChooseOtherForm]
-  ChangeToForm x -> [IdentityMessage ident $ ChangedToForm x]
-  PlayCard x -> [IdentityMessage ident $ PlayedCard x]
-  PayWithCard c -> [IdentityMessage ident $ PaidWithCard c]
-  FinishPayment -> [FinishedPayment]
-  Pay payment -> [Paid payment]
+  EndTurn -> pure [IdentityMessage ident EndedTurn]
+  CreateEffect def source targetChoice -> case targetChoice of
+    ChooseAPlayer -> do
+      targets <- map IdentityTarget <$> getPlayers
+      let f = CreatedEffect def source
+      case targets of
+        [] -> throwM NoChoices
+        [x] -> pure [f x]
+        xs ->
+          pure [Ask ident $ ChooseOne [ TargetLabel x [Run [f x]] | x <- xs ]]
+  UseAbility a -> do
+    rest <- concatMapM (choiceMessages ident) (abilityChoices a)
+    pure $ UsedAbility ident a : costMessages a <> rest
+  RunAbility target n -> pure [RanAbility target n]
+  ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
+  ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
+  PlayCard x -> pure [IdentityMessage ident $ PlayedCard x]
+  PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
+  FinishPayment -> pure [FinishedPayment]
+  Pay payment -> pure [Paid payment]
   DamageEnemy target source n -> case target of
-    VillainTarget vid -> [VillainMessage vid $ VillainDamaged source n]
+    VillainTarget vid -> pure [VillainMessage vid $ VillainDamaged source n]
     _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
-      [MainSchemeMessage mid $ MainSchemeThwarted source n]
+      pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
     _ -> error "can not thwart target"
   Stun target source -> case target of
-    VillainTarget vid -> [VillainMessage vid $ VillainStunned source]
+    VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
     _ -> error "can not damage target"
   Confuse target source -> case target of
-    VillainTarget vid -> [VillainMessage vid $ VillainConfused source]
+    VillainTarget vid -> pure [VillainMessage vid $ VillainConfused source]
     _ -> error "can not damage target"
-  Recover -> [IdentityMessage ident $ SideMessage Recovered]
-  Heal n -> [IdentityMessage ident $ IdentityHealed n]
-  Attack -> [IdentityMessage ident $ SideMessage Attacked]
-  Thwart -> [IdentityMessage ident $ SideMessage Thwarted]
-  Defend enemyId -> [IdentityMessage ident $ SideMessage $ Defended enemyId]
-  AllyAttack allyId -> [AllyMessage allyId AllyAttacked]
-  AllyThwart allyId -> [AllyMessage allyId AllyThwarted]
-  AllyDefend allyId enemyId -> [AllyMessage allyId $ AllyDefended enemyId]
+  Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
+  Heal n -> pure [IdentityMessage ident $ IdentityHealed n]
+  Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
+  Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
+  Defend enemyId ->
+    pure [IdentityMessage ident $ SideMessage $ Defended enemyId]
+  AllyAttack allyId -> pure [AllyMessage allyId AllyAttacked]
+  AllyThwart allyId -> pure [AllyMessage allyId AllyThwarted]
+  AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
 
 costMessages :: Ability -> [Message]
 costMessages a = case abilityCost a of
@@ -173,7 +183,7 @@ chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 chooseOrRunOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices
-  [choice] -> pushAll $ choiceMessages ident choice
+  [choice] -> pushAll =<< choiceMessages ident choice
   choices -> push (Ask ident $ ChooseOne choices)
 
 choosePlayerOrder :: MonadGame env m => IdentityId -> [IdentityId] -> m ()

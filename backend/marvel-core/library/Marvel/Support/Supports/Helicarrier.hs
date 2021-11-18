@@ -10,6 +10,7 @@ import Marvel.Criteria
 import Marvel.Effect.Attrs
 import Marvel.Entity
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -22,7 +23,9 @@ helicarrier = support Helicarrier Cards.helicarrier
 
 instance HasAbilities Helicarrier where
   getAbilities a =
-    [ability a 1 Action NoCriteria ExhaustCost $ CreateEffect Cards.helicarrier (toSource a) ChooseAPlayer]
+    [ ability a 1 Action NoCriteria ExhaustCost
+        $ CreateEffect Cards.helicarrier (toSource a) ChooseAPlayer
+    ]
 
 newtype Helicarrier = Helicarrier SupportAttrs
   deriving anyclass IsSupport
@@ -36,7 +39,10 @@ newtype HelicarrierEffect = HelicarrierEffect EffectAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 helicarrierEffect :: CardEffect HelicarrierEffect
-helicarrierEffect = effect HelicarrierEffect Cards.helicarrier
+helicarrierEffect = effectWith
+  HelicarrierEffect
+  Cards.helicarrier
+  (modifiersL .~ [ResourceCostReduction 1])
 
 instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of

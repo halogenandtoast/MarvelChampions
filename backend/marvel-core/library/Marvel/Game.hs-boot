@@ -7,8 +7,11 @@ import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Id
 import Marvel.Matchers
+import {-# SOURCE #-} Marvel.Modifier
 import {-# SOURCE #-} Marvel.Queue
 import Marvel.Resource
+import Marvel.Source
+import Marvel.Target
 
 class HasGame a
 
@@ -45,3 +48,4 @@ instance HasAbilities Game
 
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
 
+getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
