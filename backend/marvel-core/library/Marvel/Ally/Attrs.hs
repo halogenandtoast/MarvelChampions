@@ -9,10 +9,12 @@ import Marvel.Card.Def
 import Marvel.Card.Id
 import Marvel.Card.PlayerCard
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -83,32 +85,36 @@ instance IsTarget AllyAttrs where
 isTarget :: (Entity a, EntityAttrs a ~ AllyAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
-damageChoice :: AllyAttrs -> EnemyId -> Choice
-damageChoice attrs = \case
+getModifiedAttack :: MonadGame env m => AllyAttrs -> m Natural
+getModifiedAttack attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unAtk $ allyAttack attrs) modifiers
+ where
+  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+getModifiedThwart :: MonadGame env m => AllyAttrs -> m Natural
+getModifiedThwart attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unThw $ allyThwart attrs) modifiers
+ where
+  applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+damageChoice :: AllyAttrs -> Natural -> EnemyId -> Choice
+damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [ DamageEnemy
-        (VillainTarget vid)
-        (AllySource $ allyId attrs)
-        (unAtk $ allyAttack attrs)
-    ]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [ DamageEnemy
-        (MinionTarget vid)
-        (AllySource $ allyId attrs)
-        (unAtk $ allyAttack attrs)
-    ]
+    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
-thwartChoice :: AllyAttrs -> SchemeId -> Choice
-thwartChoice attrs = \case
+thwartChoice :: AllyAttrs -> Natural -> SchemeId -> Choice
+thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
-    [ ThwartScheme
-        (MainSchemeTarget vid)
-        (AllySource $ allyId attrs)
-        (unThw $ allyThwart attrs)
-    ]
+    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
 
 stunChoice :: AllyAttrs -> EnemyId -> Choice
 stunChoice attrs = \case
@@ -136,8 +142,11 @@ instance RunMessage AllyAttrs where
         pure $ a & exhaustedL .~ True
       AllyAttacked -> do
         enemies <- selectList AnyEnemy
+        dmg <- getModifiedAttack a
         pushAll
-          $ Ask (allyController a) (ChooseOne $ map (damageChoice a) enemies)
+          $ Ask
+              (allyController a)
+              (ChooseOne $ map (damageChoice a dmg) enemies)
           : [ AllyMessage
                 ident
                 (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
@@ -146,8 +155,11 @@ instance RunMessage AllyAttrs where
         pure a
       AllyThwarted -> do
         schemes <- selectList AnyScheme
+        thw <- getModifiedThwart a
         pushAll
-          $ Ask (allyController a) (ChooseOne $ map (thwartChoice a) schemes)
+          $ Ask
+              (allyController a)
+              (ChooseOne $ map (thwartChoice a thw) schemes)
           : [ AllyMessage
                 ident
                 (AllyDamaged (toSource a) (allyThwartConsequentialDamage a))

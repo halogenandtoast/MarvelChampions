@@ -58,8 +58,10 @@ library
       Marvel.Event.Cards
       Marvel.Event.Events
       Marvel.Event.Events.Backflip
+      Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.GetReady
       Marvel.Event.Events.Haymaker
+      Marvel.Event.Events.LeadFromTheFront
       Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
       Marvel.Game

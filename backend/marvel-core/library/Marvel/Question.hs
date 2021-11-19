@@ -13,6 +13,7 @@ import Marvel.Cost
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Matchers hiding (ExhaustedAlly)
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Queue
 import Marvel.Resource
@@ -129,13 +130,15 @@ choiceMessages ident = \case
   EndTurn -> pure [IdentityMessage ident EndedTurn]
   CreateEffect def source targetChoice -> case targetChoice of
     ChooseAPlayer -> do
-      targets <- map IdentityTarget <$> getPlayers
-      let f = CreatedEffect def source
+      targets <- getPlayers
+      let f = CreatedEffect def source . IdentityEntity . IdentityWithId
       case targets of
         [] -> throwM NoChoices
         [x] -> pure [f x]
-        xs ->
-          pure [Ask ident $ ChooseOne [ TargetLabel x [Run [f x]] | x <- xs ]]
+        xs -> pure
+          [ Ask ident $ ChooseOne
+              [ TargetLabel (IdentityTarget x) [Run [f x]] | x <- xs ]
+          ]
   UseAbility a -> do
     rest <- concatMapM (choiceMessages ident) (abilityChoices a)
     pure $ UsedAbility ident a : costMessages a <> rest

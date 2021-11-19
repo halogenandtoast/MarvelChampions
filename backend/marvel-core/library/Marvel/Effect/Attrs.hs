@@ -5,21 +5,24 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
 class IsEffect a
 
-type CardEffect a = CardBuilder (Source, Target, EffectId) a
+type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
 data EffectAttrs = EffectAttrs
   { effectId :: EffectId
   , effectSource :: Source
-  , effectTarget :: Target
+  , effectMatcher :: EntityMatcher
   , effectModifiers :: [Modifier]
   }
   deriving stock (Show, Eq, Generic)
@@ -38,20 +41,29 @@ effectWith
   :: (EffectAttrs -> a)
   -> CardDef
   -> (EffectAttrs -> EffectAttrs)
-  -> CardBuilder (Source, Target, EffectId) a
+  -> CardBuilder (Source, EntityMatcher, EffectId) a
 effectWith f cardDef g = effect (f . g) cardDef
 
 effect
-  :: (EffectAttrs -> a) -> CardDef -> CardBuilder (Source, Target, EffectId) a
+  :: (EffectAttrs -> a)
+  -> CardDef
+  -> CardBuilder (Source, EntityMatcher, EffectId) a
 effect f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(source, target, eid) -> f $ EffectAttrs
+  , cbCardBuilder = \(source, matcher, eid) -> f $ EffectAttrs
     { effectId = eid
     , effectSource = source
-    , effectTarget = target
+    , effectMatcher = matcher
     , effectModifiers = mempty
     }
   }
+
+effectValidFor :: MonadGame env m => EffectAttrs -> Target -> m Bool
+effectValidFor e target = case (target, effectMatcher e) of
+  (IdentityTarget ident, IdentityEntity matcher) ->
+    member ident <$> select matcher
+  (AllyTarget ident, AllyEntity matcher) -> member ident <$> select matcher
+  _ -> pure False
 
 instance Entity EffectAttrs where
   type EntityId EffectAttrs = EffectId

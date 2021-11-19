@@ -13,6 +13,7 @@ import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
@@ -68,7 +69,7 @@ data Message
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
-  | CreatedEffect CardDef Source Target
+  | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
   | AdvanceScenario
@@ -118,7 +119,7 @@ data AttachmentMessage = RevealAttachment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EventMessage = PlayedEvent IdentityId Payment (Maybe Window)
+data EventMessage = PlayedEvent IdentityId Payment (Maybe Window) | ResolvedEvent
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

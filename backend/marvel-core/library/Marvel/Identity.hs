@@ -189,6 +189,7 @@ getModifiedCost attrs c = do
  where
   modifiedCost ms cost' = foldr applyModifier cost' ms
   applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
+  applyModifier _ = id
 
 getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
@@ -307,13 +308,20 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     unless (null $ unHand playerIdentityHand) $ do
       chooseOne (toId attrs)
         $ Label "Continue without discarding" []
-        : [TargetLabel (CardIdTarget $ pcCardId c)
-            [Run $ map (IdentityMessage (toId attrs))
-              [DiscardCard c, DiscardCards]]
-            | c <- unHand playerIdentityHand]
+        : [ TargetLabel
+              (CardIdTarget $ pcCardId c)
+              [ Run $ map
+                  (IdentityMessage (toId attrs))
+                  [DiscardCard c, DiscardCards]
+              ]
+          | c <- unHand playerIdentityHand
+          ]
     pure attrs
   DiscardCard card ->
-    pure $ attrs & (discardL %~ Discard . (card :) . unDiscard) & (handL %~ Hand . filter (/= card) . unHand)
+    pure
+      $ attrs
+      & (discardL %~ Discard . (card :) . unDiscard)
+      & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck

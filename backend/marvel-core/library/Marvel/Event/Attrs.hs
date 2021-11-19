@@ -9,6 +9,8 @@ import Marvel.Card.Id
 import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -59,3 +61,11 @@ toCard a = PlayerCard
   , pcOwner = Just $ eventController a
   , pcController = Just $ eventController a
   }
+
+instance RunMessage EventAttrs where
+  runMessage msg e = case msg of
+    EventMessage eid msg' | eid == toId e -> case msg' of
+      ResolvedEvent ->
+        e <$ push (IdentityMessage (eventController e) $ DiscardCard (toCard e))
+      _ -> pure e
+    _ -> pure e

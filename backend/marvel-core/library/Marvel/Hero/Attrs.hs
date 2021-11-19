@@ -10,12 +10,14 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -84,32 +86,36 @@ instance Entity HeroAttrs where
   toId = heroIdentityId
   toAttrs = id
 
-damageChoice :: HeroAttrs -> EnemyId -> Choice
-damageChoice attrs = \case
+getModifiedAttack :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedAttack attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
+ where
+  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+getModifiedThwart :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedThwart attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
+ where
+  applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+damageChoice :: HeroAttrs -> Natural -> EnemyId -> Choice
+damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [ DamageEnemy
-        (VillainTarget vid)
-        (IdentitySource $ heroIdentityId attrs)
-        (unAtk $ heroBaseAttack attrs)
-    ]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
   EnemyMinionId mid -> TargetLabel
     (MinionTarget mid)
-    [ DamageEnemy
-        (MinionTarget mid)
-        (IdentitySource $ heroIdentityId attrs)
-        (unAtk $ heroBaseAttack attrs)
-    ]
+    [DamageEnemy (MinionTarget mid) (toSource attrs) dmg]
 
-thwartChoice :: HeroAttrs -> SchemeId -> Choice
-thwartChoice attrs = \case
+thwartChoice :: HeroAttrs -> Natural -> SchemeId -> Choice
+thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
-    [ ThwartScheme
-        (MainSchemeTarget vid)
-        (IdentitySource $ heroIdentityId attrs)
-        (unThw $ heroBaseThwart attrs)
-    ]
+    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
 
 instance RunMessage HeroAttrs where
   runMessage msg a = case msg of
@@ -117,11 +123,13 @@ instance RunMessage HeroAttrs where
       case msg' of
         Attacked -> do
           enemies <- selectList AnyEnemy
-          push $ Ask ident $ ChooseOne $ map (damageChoice a) enemies
+          dmg <- getModifiedAttack a
+          push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
           pure a
         Thwarted -> do
           schemes <- selectList AnyScheme
-          push $ Ask ident $ ChooseOne $ map (thwartChoice a) schemes
+          thw <- getModifiedThwart a
+          push $ Ask ident $ ChooseOne $ map (thwartChoice a thw) schemes
           pure a
         Defended enemyId -> do
           pushAll

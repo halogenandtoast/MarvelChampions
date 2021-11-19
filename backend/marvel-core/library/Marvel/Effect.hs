@@ -7,13 +7,14 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Effect.Attrs
 import Marvel.Entity
+import Marvel.Event.Events
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
 import Marvel.Support.Supports
 import Marvel.TH
-import Marvel.Target
 
 $(buildEntity "Effect")
 
@@ -26,17 +27,18 @@ instance Entity Effect where
   toId = toId . toAttrs
   toAttrs = genericToAttrs
 
-allEffects :: HashMap CardCode (Source -> Target -> EffectId -> Effect)
+allEffects :: HashMap CardCode (Source -> EntityMatcher -> EffectId -> Effect)
 allEffects = fromList $ map
   (toCardCode &&& (curry3 . cbCardBuilder))
   $(buildEntityLookupList "Effect")
 
-lookupEffect :: CardCode -> (Source -> Target -> EffectId -> Effect)
+lookupEffect :: CardCode -> (Source -> EntityMatcher -> EffectId -> Effect)
 lookupEffect cardCode = case lookup cardCode allEffects of
   Just f -> f
   Nothing -> error $ "Invalid card code for effect " <> show cardCode
 
 instance HasModifiersFor Effect where
-  getModifiersFor _ target e = pure
-    $ if target == effectTarget attrs then effectModifiers attrs else []
+  getModifiersFor _ target e = do
+    valid <- effectValidFor attrs target
+    pure $ if valid then effectModifiers attrs else []
     where attrs = toAttrs e
