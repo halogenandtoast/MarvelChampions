@@ -1,15 +1,19 @@
+{-# LANGUAGE PatternSynonyms #-}
 module Marvel.Matchers where
 
 import Marvel.Prelude
 
 import Marvel.Game.Source
+import Marvel.GameValue
 import Marvel.Id
 
 data IdentityMatcher
   = HeroIdentity
   | AlterEgoIdentity
   | UnexhaustedIdentity
+  | IdentityWithId IdentityId
   | AnyIdentity
+  | IdentityWithDamage GameValueMatcher
   | You
   | IdentityMatchAll [IdentityMatcher]
   deriving stock (Show, Eq, Generic)
@@ -29,8 +33,13 @@ instance Semigroup IdentityMatcher where
 identityMatches :: MonadGame env m => IdentityMatcher -> IdentityId -> m Bool
 identityMatches matcher ident = member ident <$> gameSelectIdentity matcher
 
-data AllyMatcher = UnexhaustedAlly | ExhaustedAlly
-data SupportMatcher = UnexhaustedSupport
+pattern IdentityWithAnyDamage :: IdentityMatcher
+pattern IdentityWithAnyDamage <-
+  IdentityWithDamage (GreaterThan (Static 0)) where
+  IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
+
+data AllyMatcher = UnexhaustedAlly | ExhaustedAlly | AllyControlledBy IdentityMatcher
+data SupportMatcher = UnexhaustedSupport | SupportControlledBy IdentityMatcher
 data EnemyMatcher = AnyEnemy
 data VillainMatcher = ActiveVillain
 
@@ -48,10 +57,13 @@ data MinionMatcher = AnyMinion
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data GameValueMatcher = AnyValue
+data GameValueMatcher = AnyValue | GreaterThan GameValue
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 gameValueMatches :: MonadGame env m => GameValueMatcher -> Natural -> m Bool
-gameValueMatches matcher _ = case matcher of
+gameValueMatches matcher n = case matcher of
   AnyValue -> pure True
+  GreaterThan v -> do
+    value <- fromIntegral <$> fromGameValue v
+    pure $ n > value

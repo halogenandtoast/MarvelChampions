@@ -323,9 +323,13 @@ isWindowPlayable window attrs c = do
   def = getCardDef c
   checkCriteria = \case
     IsSelf -> error "Irrelevant"
+    OwnsThis -> error "Irrelevant"
     NoCriteria -> pure True
+    Never -> pure False
     InHeroForm -> member ident <$> select HeroIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
+    SelfMatches identityMatcher ->
+      member ident <$> select (IdentityWithId ident <> identityMatcher)
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
 
@@ -525,11 +529,13 @@ gameSelectIdentity m = do
     HeroIdentity -> pure . isHero
     AlterEgoIdentity -> pure . isAlterEgo
     UnexhaustedIdentity -> pure . not . isExhausted
+    IdentityWithId ident' -> pure . (== ident') . toId
+    IdentityWithDamage gameValueMatcher ->
+      gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs
     You -> \a -> do
       ap <- getActivePlayer
       pure $ a == ap
-
 
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly = \case
@@ -539,12 +545,24 @@ gameSelectAlly = \case
   ExhaustedAlly -> do
     allies <- toList <$> getsGame gameAllies
     pure $ HashSet.fromList $ map toId $ filter isExhausted allies
+  AllyControlledBy identityMatcher -> do
+    allies <- toList <$> getsGame gameAllies
+    identities <- select identityMatcher
+    pure $ HashSet.fromList $ map toId $ filter
+      ((`member` identities) . getAllyController)
+      allies
 
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case
   UnexhaustedSupport -> do
     supports <- toList <$> getsGame gameSupports
     pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) supports
+  SupportControlledBy identityMatcher -> do
+    supports <- toList <$> getsGame gameSupports
+    identities <- select identityMatcher
+    pure $ HashSet.fromList $ map toId $ filter
+      ((`member` identities) . getSupportController)
+      supports
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case

@@ -5,7 +5,7 @@ module Marvel.Ability
 
 import Marvel.Prelude
 
-import qualified Data.HashMap.Strict as HashMap
+import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Type as X
 import Marvel.Cost
 import Marvel.Criteria
@@ -90,9 +90,18 @@ passesCriteria x a = go (abilityCriteria a)
  where
   go = \case
     IsSelf -> pure $ toSource x == source
+    SelfMatches identityMatcher ->
+      member x <$> select (IdentityWithId x <> identityMatcher)
     NoCriteria -> pure True
+    Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
+    OwnsThis -> case abilitySource a of
+      AllySource aid ->
+        member aid <$> select (AllyControlledBy $ IdentityWithId x)
+      SupportSource aid ->
+        member aid <$> select (SupportControlledBy $ IdentityWithId x)
+      _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
     MinionExists m -> selectAny m
   source = abilitySource a
