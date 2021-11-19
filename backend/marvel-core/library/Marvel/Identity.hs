@@ -303,8 +303,17 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       $ attrs
       & (handL %~ Hand . (card :) . unHand)
       & (discardL %~ Discard . filter (/= card) . unDiscard)
+  DiscardCards -> do
+    unless (null $ unHand playerIdentityHand) $ do
+      chooseOne (toId attrs)
+        $ Label "Continue without discarding" []
+        : [TargetLabel (CardIdTarget $ pcCardId c)
+            [Run $ map (IdentityMessage (toId attrs))
+              [DiscardCard c, DiscardCards]]
+            | c <- unHand playerIdentityHand]
+    pure attrs
   DiscardCard card ->
-    pure $ attrs & (discardL %~ Discard . (card :) . unDiscard)
+    pure $ attrs & (discardL %~ Discard . (card :) . unDiscard) & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck

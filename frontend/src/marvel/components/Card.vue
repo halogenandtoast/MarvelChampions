@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <img :src="cardImage" alt="card" :class="{ active: playCardAction !== -1 }" @click="$emit('choose', playCardAction)" />
+    <img :src="cardImage" alt="card" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
     <button v-if="payWithCardAction !== -1" @click="$emit('choose', payWithCardAction)">Pay</button>
   </div>
 </template>
@@ -27,13 +27,27 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'PlayCard' && c.contents.cardId === props.card.cardId)
     })
 
+    const targetAbility = computed(() => {
+      return choices
+        .value
+        .findIndex((c) => c.tag === 'TargetLabel' && c.target.contents === props.card.cardId)
+    })
+
+    const activeAbility = computed(() => {
+      if (targetAbility.value !== -1) {
+        return targetAbility.value
+      }
+
+      return playCardAction.value
+    })
+
     const payWithCardAction = computed(() => {
       return choices
         .value
         .findIndex((c) => c.tag === 'PayWithCard' && c.contents.cardId === props.card.cardId)
     })
 
-    return { cardImage, playCardAction, payWithCardAction }
+    return { cardImage, payWithCardAction, activeAbility }
   }
 })
 </script>
