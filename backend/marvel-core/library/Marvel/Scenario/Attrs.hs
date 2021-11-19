@@ -22,6 +22,7 @@ data ScenarioAttrs = ScenarioAttrs
   , scenarioInitialThreat :: GameValue
   , scenarioAcceleration :: GameValue
   , scenarioThreat :: Natural
+  , scenarioThreshold :: GameValue
   , scenarioEncounterSets :: HashSet EncounterSet
   , scenarioEncounterDeck :: [EncounterCard]
   , scenarioDiscard :: [EncounterCard]
@@ -36,8 +37,9 @@ scenario
   -> [EncounterSet]
   -> GameValue
   -> GameValue
+  -> GameValue
   -> a
-scenario f cCode villains encounterSets iThreat acceleration =
+scenario f cCode villains encounterSets threshold iThreat acceleration =
   f $ ScenarioAttrs
     { scenarioId = cCode
     , scenarioVillains = villains
@@ -47,10 +49,14 @@ scenario f cCode villains encounterSets iThreat acceleration =
     , scenarioEncounterDeck = mempty
     , scenarioDiscard = mempty
     , scenarioEncounterSets = HashSet.fromList encounterSets
+    , scenarioThreshold = threshold
     }
 
 threatL :: Lens' ScenarioAttrs Natural
 threatL = lens scenarioThreat $ \m x -> m { scenarioThreat = x }
+
+thresholdL :: Lens' ScenarioAttrs GameValue
+thresholdL = lens scenarioThreshold $ \m x -> m { scenarioThreshold = x }
 
 encounterDeckL :: Lens' ScenarioAttrs [EncounterCard]
 encounterDeckL =
@@ -63,7 +69,10 @@ runMainSchemeMessage
   :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
 runMainSchemeMessage msg attrs = case msg of
   MainSchemeThwarted _ n -> pure $ attrs & threatL %~ max 0 . subtract n
-  MainSchemePlaceThreat n -> pure $ attrs & threatL +~ n
+  MainSchemePlaceThreat n -> do
+    threshold <- fromIntegral <$> fromGameValue (scenarioThreshold attrs)
+    when (scenarioThreat attrs + n >= threshold) (push AdvanceScenario)
+    pure $ attrs & threatL +~ n
 
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of

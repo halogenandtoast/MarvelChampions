@@ -46,7 +46,7 @@ import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
 import Marvel.Window qualified as W
 
-data GameState = Unstarted | InProgress | Finished
+data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -255,6 +255,9 @@ runGameMessage msg g@Game {..} = case msg of
   EndCheckWindows -> pure g
   IdentityEndedTurn ident -> pure $ g & usedAbilitiesL . ix ident %~ filter
     ((/= PerTurn 1) . abilityLimit)
+  GameOver status -> do
+    clearQueue
+    pure $ g & stateL .~ Finished status
   CheckWindows windows -> do
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities

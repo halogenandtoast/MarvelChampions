@@ -21,6 +21,9 @@ withQueue_
   :: (HasQueue env, MonadReader env m, MonadIO m) => (Queue -> Queue) -> m ()
 withQueue_ body = withQueue $ (, ()) . body
 
+clearQueue :: (HasQueue env, MonadReader env m, MonadIO m) => m ()
+clearQueue = withQueue_ (const mempty)
+
 push :: (HasQueue env, MonadReader env m, MonadIO m) => Message -> m ()
 push = withQueue_ . (:)
 

@@ -3,7 +3,7 @@
     <div v-if="socketError" class="socketWarning">
        <p>Your game is out of sync, trying to reconnect...</p>
     </div>
-    <div class="game">
+    <div class="game" v-if="game.state.tag === 'InProgress'">
       <Scenario
         :game="game"
         :identityId="identityId"
@@ -14,6 +14,10 @@
       <div v-if="game.gameOver">
         <p>Game over</p>
       </div>
+    </div>
+    <div class="game" v-else-if="game.state.tag === 'Finished'">
+      Game Over
+      <button @click="undo">Undo</button>
     </div>
   </div>
 </template>
