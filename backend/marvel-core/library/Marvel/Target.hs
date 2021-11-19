@@ -3,6 +3,7 @@ module Marvel.Target where
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Card.Id
 import Marvel.Id
 
 data Target
@@ -18,6 +19,7 @@ data Target
   | SideSchemeTarget SideSchemeId
   | AttachmentTarget AttachmentId
   | MainSchemeTarget CardCode
+  | CardIdTarget CardId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

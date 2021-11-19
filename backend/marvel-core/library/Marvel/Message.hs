@@ -157,6 +157,7 @@ data IdentityMessage
   | EndedTurn
   | ChangedToForm Side
   | DrawCards FromZone Natural
+  | DiscardCards
   | ShuffleDeck
   | SideMessage SideMessage
   | PlayedCard PlayerCard (Maybe Window)
