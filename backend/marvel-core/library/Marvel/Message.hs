@@ -23,6 +23,10 @@ data FromZone = FromDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data FinishedStatus = Won | Lost
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Message
   = StartGame
   | StartScenario
@@ -67,6 +71,8 @@ data Message
   | CreatedEffect CardDef Source Target
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
+  | AdvanceScenario
+  | GameOver FinishedStatus
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

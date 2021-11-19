@@ -23,6 +23,41 @@ export function choices(game: Game, identityId: string): Choice[] {
   }
 }
 
+export type State = Unstarted | InProgress | Finished
+
+export interface Unstarted {
+  tag: 'Unstarted'
+}
+
+export const unstartedDecoder = JsonDecoder.object<Unstarted>({ tag: JsonDecoder.isExactly('Unstarted') }, 'Unstarted')
+
+export interface InProgress {
+  tag: 'InProgress'
+}
+
+export const inProgressDecoder = JsonDecoder.object<InProgress>({ tag: JsonDecoder.isExactly('InProgress') }, 'InProgress')
+
+export interface Finished {
+  tag: 'Finished'
+  contents: FinishedContents
+}
+
+export const finishedContentsDecoder = JsonDecoder.oneOf<FinishedContents>(
+  [ JsonDecoder.isExactly('Won')
+  , JsonDecoder.isExactly('Lost')
+  ]
+, 'FinishedContents')
+
+
+export const finishedDecoder = JsonDecoder.object<Finished>({
+  tag: JsonDecoder.isExactly('Finished'),
+  contents: finishedContentsDecoder
+}, 'Finished')
+
+type FinishedContents = 'Won' | 'Lost'
+
+export const stateDecoder = JsonDecoder.oneOf<State>([ unstartedDecoder, inProgressDecoder, finishedDecoder ], 'State')
+
 export interface Game {
   id: string
   name: string
@@ -34,6 +69,7 @@ export interface Game {
   attachments: Record<string, Attachment>
   scenario: Scenario
   question: Record<string, Question>
+  state: State
 }
 
 export interface Scenario {
@@ -80,4 +116,5 @@ export const gameDecoder = JsonDecoder.object<Game>(
     attachments: JsonDecoder.dictionary<Attachment>(attachmentDecoder, 'Dict<UUID, Attachment>'),
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
+    state: stateDecoder
   }, 'Game')

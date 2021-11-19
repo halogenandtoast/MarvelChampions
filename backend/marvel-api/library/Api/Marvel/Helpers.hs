@@ -38,6 +38,7 @@ data ApiGame = ApiGame
   , minions :: HashMap MinionId Minion
   , attachments :: HashMap AttachmentId Attachment
   , supports :: HashMap SupportId Support
+  , state :: GameState
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
@@ -57,6 +58,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , minions = gameMinions
         , attachments = gameAttachments
         , supports = gameSupports
+        , state = gameState
         }
 
 data ApiResponse = GameUpdate ApiGame | GameMessage Text

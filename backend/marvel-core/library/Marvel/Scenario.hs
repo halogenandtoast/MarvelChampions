@@ -7,6 +7,7 @@ import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Scenario.Attrs
 
 data Scenario = TheBreakIn' TheBreakIn | KlawScenario' KlawScenario
@@ -26,7 +27,9 @@ newtype TheBreakIn = TheBreakIn ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance RunMessage TheBreakIn where
-  runMessage msg (TheBreakIn attrs) = TheBreakIn <$> runMessage msg attrs
+  runMessage msg s@(TheBreakIn attrs) = case msg of
+    AdvanceScenario -> s <$ push (GameOver Lost)
+    _ -> TheBreakIn <$> runMessage msg attrs
 
 rhinoScenario :: TheBreakIn
 rhinoScenario = scenario
@@ -34,6 +37,7 @@ rhinoScenario = scenario
   "01097"
   ["01094"]
   [EncounterSet.Rhino]
+  (PerPlayer 7)
   (Static 0)
   (PerPlayer 1)
 
