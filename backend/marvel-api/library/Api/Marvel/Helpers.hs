@@ -24,6 +24,7 @@ import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
+import Marvel.SideScheme
 import Marvel.Support
 import Marvel.Villain
 
@@ -38,6 +39,7 @@ data ApiGame = ApiGame
   , minions :: HashMap MinionId Minion
   , attachments :: HashMap AttachmentId Attachment
   , supports :: HashMap SupportId Support
+  , sideSchemes :: HashMap SideSchemeId SideScheme
   , state :: GameState
   }
   deriving stock (Show, Generic)
@@ -58,6 +60,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , minions = gameMinions
         , attachments = gameAttachments
         , supports = gameSupports
+        , sideSchemes = gameSideSchemes
         , state = gameState
         }
 

@@ -15,6 +15,15 @@
         <img :src="scenarioImg" alt="Scenario" height="200" class="scenario" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
         <div>{{game.scenario.contents.scenarioThreat}}</div>
       </div>
+
+      <SideScheme
+        v-for="sideScheme in game.sideSchemes"
+        :key="sideScheme.contents.sideSchemeId"
+        :sideScheme="sideScheme"
+        :identityId="identityId"
+        :game="game"
+        @choose="$emit('choose', $event)"
+      />
     </div>
     <div>
       <Player
@@ -36,11 +45,12 @@ import { Game } from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import Player from '@/marvel/components/Player.vue'
 import Villain from '@/marvel/components/Villain.vue'
+import SideScheme from '@/marvel/components/SideScheme.vue'
 import * as MarvelGame from '@/marvel/types/Game'
 
 export default defineComponent({
   props: { game: { type: Object as () => Game, required: true }, identityId: { type: String, required: true } },
-  components: { Player, Villain, Card },
+  components: { Player, Villain, SideScheme, Card },
   setup(props) {
     const scenarioImg = computed(() => `/img/marvel/cards/${props.game.scenario.contents.scenarioId}.jpg`)
 
