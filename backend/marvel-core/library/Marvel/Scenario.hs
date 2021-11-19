@@ -1,10 +1,9 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Scenario where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import qualified Marvel.EncounterSet as EncounterSet
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message

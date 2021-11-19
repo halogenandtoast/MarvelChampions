@@ -1,18 +1,17 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Support.Supports.AuntMay where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Support.Attrs
-import qualified Marvel.Support.Cards as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Message
-import Marvel.Source
 import Marvel.Question
+import Marvel.Source
+import Marvel.Support.Attrs
+import Marvel.Support.Cards qualified as Cards
 import Marvel.Target
 
 auntMay :: SupportCard AuntMay

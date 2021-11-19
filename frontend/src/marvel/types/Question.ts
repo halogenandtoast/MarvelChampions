@@ -165,7 +165,7 @@ export const useAbilityDecoder = JsonDecoder.object<UseAbility>({
 
 export const playCardDecoder = JsonDecoder.object<PlayCard>({
   tag: JsonDecoder.isExactly('PlayCard'),
-  contents: playerCardDecoder,
+  contents: JsonDecoder.tuple([playerCardDecoder, JsonDecoder.succeed], '[playerCard, window]').map(r => r[0]),
 }, 'PlayCard')
 
 export const payWithCardDecoder = JsonDecoder.object<PayWithCard>({

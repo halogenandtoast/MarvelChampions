@@ -1,12 +1,14 @@
-{-# LANGUAGE UndecidableInstances #-}
-module Marvel.Event.Events.SwingingWebKick where
+module Marvel.Event.Events.SwingingWebKick
+  ( SwingingWebKick
+  , swingingWebKick
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Attrs
-import qualified Marvel.Event.Cards as Cards
+import Marvel.Event.Cards qualified as Cards
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
@@ -28,11 +30,14 @@ damageChoice eid = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
     [DamageEnemy (VillainTarget vid) (EventSource eid) 8]
+  EnemyMinionId vid -> TargetLabel
+    (MinionTarget vid)
+    [DamageEnemy (MinionTarget vid) (EventSource eid) 8]
 
 instance RunMessage SwingingWebKick where
   runMessage msg a = case msg of
     EventMessage eid msg' | eid == toId a -> case msg' of
-      PlayedEvent identityId _ -> do
+      PlayedEvent identityId _ _ -> do
         enemies <- selectList AnyEnemy
         pushAll
           [ Ask identityId $ ChooseOne $ map (damageChoice eid) enemies

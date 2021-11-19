@@ -36,6 +36,7 @@ export interface Identity {
   side: string
   sides: Record<string, Side>
   allies: string[]
+  minions: string[]
   supports: string[]
   exhausted: boolean
   currentHP: number
@@ -88,6 +89,7 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     sides: JsonDecoder.array(JsonDecoder.
       tuple([JsonDecoder.string, sideDecoder], '[side,side]'), '[side,side][]').map(sides => Object.fromEntries(sides)),
     allies: JsonDecoder.array<string>(JsonDecoder.string, 'AllyId[]'),
+    minions: JsonDecoder.array<string>(JsonDecoder.string, 'MinionId[]'),
     supports: JsonDecoder.array<string>(JsonDecoder.string, 'SupportId[]'),
     exhausted: JsonDecoder.boolean,
     currentHP: JsonDecoder.number

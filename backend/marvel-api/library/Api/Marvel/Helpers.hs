@@ -7,9 +7,10 @@ import Import hiding (appLogger)
 import Control.Concurrent.STM.TChan
 import Control.Monad.Catch (MonadCatch, MonadThrow)
 import Control.Monad.Random (MonadRandom(..))
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Map.Strict as Map
+import Data.ByteString.Lazy qualified as BSL
+import Data.Map.Strict qualified as Map
 import Marvel.Ally
+import Marvel.Attachment
 import Marvel.Card.Code
 import Marvel.Debug
 import Marvel.Deck
@@ -18,6 +19,7 @@ import Marvel.Game
 import Marvel.Id
 import Marvel.Identity
 import Marvel.Message
+import Marvel.Minion
 import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
@@ -33,6 +35,8 @@ data ApiGame = ApiGame
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
   , allies :: HashMap AllyId Ally
+  , minions :: HashMap MinionId Minion
+  , attachments :: HashMap AttachmentId Attachment
   , supports :: HashMap SupportId Support
   }
   deriving stock (Show, Generic)
@@ -50,6 +54,8 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , scenario = gameScenario
         , question = gameQuestion
         , allies = gameAllies
+        , minions = gameMinions
+        , attachments = gameAttachments
         , supports = gameSupports
         }
 

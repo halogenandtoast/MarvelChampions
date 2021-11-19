@@ -1,0 +1,39 @@
+module Marvel.Event.Events.GetReady
+  ( getReady
+  , GetReady(..)
+  ) where
+
+import Marvel.Prelude
+
+import Marvel.Card.Code
+import Marvel.Entity
+import Marvel.Event.Attrs
+import Marvel.Event.Cards qualified as Cards
+import Marvel.Matchers
+import Marvel.Message hiding (ExhaustedAlly)
+import Marvel.Query
+import Marvel.Question
+import Marvel.Queue
+import Marvel.Source
+import Marvel.Target
+
+getReady :: EventCard GetReady
+getReady = event GetReady Cards.getReady
+
+newtype GetReady = GetReady EventAttrs
+  deriving anyclass IsEvent
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+
+instance RunMessage GetReady where
+  runMessage msg e = case msg of
+    EventMessage eid msg' | eid == toId e -> case msg' of
+      PlayedEvent identityId _ _ -> do
+        allies <- selectList ExhaustedAlly
+        push $ IdentityMessage identityId $ DiscardCard (toCard $ toAttrs e)
+        chooseOne identityId $ map
+          (\aid ->
+            TargetLabel (AllyTarget aid) [Run [AllyMessage aid ReadiedAlly]]
+          )
+          allies
+        pure e
+    _ -> pure e

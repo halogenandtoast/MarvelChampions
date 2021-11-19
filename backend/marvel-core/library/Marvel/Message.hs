@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuantifiedConstraints #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Message where
 
 import Marvel.Prelude
@@ -18,7 +17,7 @@ import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window
+import Marvel.Window (Window)
 
 data FromZone = FromDeck
   deriving stock (Show, Eq, Generic)
@@ -41,7 +40,12 @@ data Message
   | EffectMessage EffectId EffectMessage
   | AllyMessage AllyId AllyMessage
   | SupportMessage SupportId SupportMessage
+  | UpgradeMessage UpgradeId UpgradeMessage
   | MainSchemeMessage CardCode MainSchemeMessage
+  | SideSchemeMessage SideSchemeId SideSchemeMessage
+  | TreacheryMessage TreacheryId TreacheryMessage
+  | MinionMessage MinionId MinionMessage
+  | AttachmentMessage AttachmentId AttachmentMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural
@@ -50,17 +54,19 @@ data Message
   | Spent PlayerCard
   | Paid Payment
   | FinishedPayment
-  | PutCardIntoPlay IdentityId PlayerCard Payment
+  | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
   | DealBoost Target
   | FlipBoostCards Target
   | DealEncounterCard IdentityId
+  | Surge IdentityId
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
   | CreatedEffect CardDef Source Target
   | DisabledEffect EffectId
+  | RevealEncounterCard IdentityId EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -76,6 +82,7 @@ data VillainMessage
   | VillainSchemes
   | VillainSchemed
   | VillainDefendedBy CharacterId
+  | AttachedToVillain AttachmentId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -83,7 +90,29 @@ data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThre
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EventMessage = PlayedEvent IdentityId Payment
+data SideSchemeMessage = RevealSideScheme
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+newtype TreacheryMessage = RevealTreachery IdentityId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data MinionMessage
+  = RevealMinion
+  | MinionDefendedBy CharacterId
+  | MinionDamaged Source Natural
+  | MinionStunned Source
+  | MinionConfused Source
+  | MinionDefeated
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data AttachmentMessage = RevealAttachment
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data EventMessage = PlayedEvent IdentityId Payment (Maybe Window)
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -108,6 +137,12 @@ data SupportMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data UpgradeMessage
+  = ExhaustedUpgrade
+  | ReadiedUpgrade
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data IdentityMessage
   = BeginTurn
   | PlayerTurnOption
@@ -118,7 +153,7 @@ data IdentityMessage
   | DrawCards FromZone Natural
   | ShuffleDeck
   | SideMessage SideMessage
-  | PlayedCard PlayerCard
+  | PlayedCard PlayerCard (Maybe Window)
   | PaidWithCard PlayerCard
   | AllyCreated AllyId
   | AllyRemoved AllyId
@@ -137,6 +172,8 @@ data IdentityMessage
   | IdentityDamaged Source Natural
   | IdentityDefended Natural
   | IdentityHealed Natural
+  | MinionEngaged MinionId
+  | MinionDisengaged MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

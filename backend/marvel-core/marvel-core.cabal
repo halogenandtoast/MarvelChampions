@@ -28,6 +28,12 @@ library
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
       Marvel.Aspect
+      Marvel.Attachment
+      Marvel.Attachment.Attachments
+      Marvel.Attachment.Attachments.ArmoredRhinoSuit
+      Marvel.Attachment.Attachments.Charge
+      Marvel.Attachment.Attachments.EnhancedIvoryHorn
+      Marvel.Attachment.Attrs
       Marvel.Attachment.Cards
       Marvel.Boost
       Marvel.Card.Builder
@@ -51,6 +57,8 @@ library
       Marvel.Event.Attrs
       Marvel.Event.Cards
       Marvel.Event.Events
+      Marvel.Event.Events.Backflip
+      Marvel.Event.Events.GetReady
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
@@ -74,7 +82,10 @@ library
       Marvel.Minion.Attrs
       Marvel.Minion.Cards
       Marvel.Minion.Minions
+      Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
+      Marvel.Minion.Minions.Sandman
+      Marvel.Minion.Minions.Shocker
       Marvel.Modifier
       Marvel.Name
       Marvel.Phase
@@ -87,7 +98,13 @@ library
       Marvel.Resource.Cards
       Marvel.Scenario
       Marvel.Scenario.Attrs
+      Marvel.SideScheme
+      Marvel.SideScheme.Attrs
       Marvel.SideScheme.Cards
+      Marvel.SideScheme.SideSchemes
+      Marvel.SideScheme.SideSchemes.BombScare
+      Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.Source
       Marvel.Stats
       Marvel.Support
@@ -99,8 +116,21 @@ library
       Marvel.Target
       Marvel.TH
       Marvel.Trait
+      Marvel.Treachery
+      Marvel.Treachery.Attrs
       Marvel.Treachery.Cards
+      Marvel.Treachery.Treacheries
+      Marvel.Treachery.Treacheries.Explosion
+      Marvel.Treachery.Treacheries.FalseAlarm
+      Marvel.Treachery.Treacheries.HardToKeepDown
+      Marvel.Treachery.Treacheries.ImTough
+      Marvel.Treachery.Treacheries.Stampede
+      Marvel.Upgrade
+      Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
+      Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.SpiderTracer
+      Marvel.Upgrade.Upgrades.WebShooter
       Marvel.Villain
       Marvel.Villain.Attrs
       Marvel.Villain.Cards
@@ -134,6 +164,7 @@ library
       DeriveAnyClass
       StandaloneDeriving
       FlexibleInstances
+      UndecidableInstances
   build-depends:
       MonadRandom
     , aeson
@@ -183,6 +214,7 @@ test-suite MarvelChampions-test
       DeriveAnyClass
       StandaloneDeriving
       FlexibleInstances
+      UndecidableInstances
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom

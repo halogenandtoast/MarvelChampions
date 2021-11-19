@@ -5,9 +5,9 @@ module Marvel.Prelude
 
 import Control.Lens as X
   ( Lens'
-  , ix
   , at
   , each
+  , ix
   , lens
   , set
   , traverseOf
@@ -32,8 +32,8 @@ import Relude as X hiding (One)
 import Relude.Extra.Map as X
 
 import Data.Aeson.Casing (camelCase)
-import qualified Data.Char as C
-import qualified Data.Text as T
+import Data.Char qualified as C
+import Data.Text qualified as T
 import Language.Haskell.TH hiding (location)
 
 tshow :: Show a => a -> T.Text
@@ -63,3 +63,7 @@ suffixedFields = defaultFieldRules & lensField .~ suffixedNamer
 aesonOptions :: Maybe String -> Options
 aesonOptions ms = defaultOptions { fieldLabelModifier = camelCase . drop len }
   where len = maybe 0 length ms
+
+curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
+curry3 f a b c = f (a, b, c)
+

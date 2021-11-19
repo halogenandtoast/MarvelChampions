@@ -1,6 +1,6 @@
 <template>
   <div class="ally">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted }" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted, active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
     <div v-if="ally.contents.allyDamage > 0" class="damage">{{ally.contents.allyDamage}}</div>
     <AbilityButton
           v-for="ability in abilities"
@@ -50,7 +50,11 @@ export default defineComponent({
         .findIndex((c) => c.tag === 'AllyDefend' && c.contents == props.ally.contents.allyId)
     })
 
-    return { card, abilities, choices, defendAction }
+    const activeAbility = computed(() => {
+      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.ally.contents.allyId)
+    })
+
+    return { card, abilities, choices, defendAction, activeAbility }
   }
 })
 </script>

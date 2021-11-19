@@ -2,14 +2,16 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Aspect
 import Marvel.Ability.Type (AbilityType(HeroAction))
+import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+import Marvel.Window
 
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ map
@@ -52,16 +54,21 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
   , cdBoostIcons = []
   }
 
 backflip :: CardDef
-backflip = identityEvent "01003" "Backflip" 0 [Defense, Skill] [Physical]
+backflip = (identityEvent "01003" "Backflip" 0 [Defense, Skill] [Physical])
+  { cdResponseWindow = Just (WouldTakeDamage You FromAttack AnyValue)
+  }
 
 enhancedSpiderSense :: CardDef
 enhancedSpiderSense =
   (identityEvent "01004" "Enhanced Spider-Sense" 1 [Superpower] [Mental])
     { cdCriteria = InHeroForm
+    , cdResponseWindow = Just
+      (TreacheryRevealed When AnyTreachery FromEncounterDeck)
     }
 
 swingingWebKick :: CardDef

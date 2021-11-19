@@ -22,7 +22,7 @@ allEvents = fromList $ map
 lookupEvent :: CardCode -> (IdentityId -> EventId -> Event)
 lookupEvent cardCode = case lookup cardCode allEvents of
   Just f -> f
-  Nothing -> error "Invalid card code"
+  Nothing -> error $ "Invalid card code for event " <> show cardCode
 
 instance Entity Event where
   type EntityId Event = EventId

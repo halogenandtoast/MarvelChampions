@@ -42,6 +42,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
   , cdBoostIcons = []
   }
 

@@ -1,11 +1,10 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.AlterEgo.AlterEgos.CarolDanvers where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.AlterEgo.Attrs
-import qualified Marvel.AlterEgo.Cards as Cards
+import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue

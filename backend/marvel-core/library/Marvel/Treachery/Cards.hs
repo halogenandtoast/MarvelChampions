@@ -10,8 +10,9 @@ import Marvel.EncounterSet
 import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
-allTreacheries =
-  fromList $ map (toCardCode &&& id) [hardToKeepDown, imTough, stampede]
+allTreacheries = fromList $ map
+  (toCardCode &&& id)
+  [hardToKeepDown, imTough, stampede, explosion, falseAlarm]
 
 treachery
   :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
@@ -29,6 +30,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdEncounterSetQuantity = Just quantity
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdResponseWindow = Nothing
   , cdBoostIcons = boostIcons
   }
 
@@ -40,3 +42,9 @@ imTough = treachery "01105" "\"I'm Tough!\"" [] Rhino 2
 
 stampede :: CardDef
 stampede = treachery "01106" "Stampede" [Boost] Rhino 3
+
+explosion :: CardDef
+explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
+
+falseAlarm :: CardDef
+falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2

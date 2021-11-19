@@ -6,7 +6,7 @@ import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Id
-import Marvel.Matchers
+import {-# SOURCE #-} Marvel.Matchers
 import {-# SOURCE #-} Marvel.Modifier
 import {-# SOURCE #-} Marvel.Queue
 import Marvel.Resource
@@ -43,6 +43,8 @@ gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectTreachery
+  :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
 
 instance HasAbilities Game
 

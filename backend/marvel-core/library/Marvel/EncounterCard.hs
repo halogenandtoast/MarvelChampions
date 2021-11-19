@@ -5,7 +5,7 @@ module Marvel.EncounterCard
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Attachment.Cards
 import Marvel.Card.Code
 import Marvel.Card.Def

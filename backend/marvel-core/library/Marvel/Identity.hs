@@ -51,6 +51,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
+  , playerIdentityMinions :: HashSet MinionId
   , playerIdentitySupports :: HashSet SupportId
   , playerIdentityExhausted :: Bool
   , playerIdentityEncounterCards :: [EncounterCard]
@@ -109,6 +110,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
+  , playerIdentityMinions = mempty
   , playerIdentitySupports = mempty
   , playerIdentityExhausted = False
   , playerIdentityEncounterCards = []
@@ -154,7 +156,8 @@ isPlayable attrs c = do
   resources <- getAvailableResourcesFor c
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def)
-  pure $ length resources >= modifiedCost && passedCriteria
+  pure $ length resources >= modifiedCost && passedCriteria && isNothing
+    (cdResponseWindow def)
  where
   ident = toId attrs
   def = getCardDef c
@@ -194,7 +197,9 @@ getChoices attrs = do
       ]
     )
     abilities
-  pure $ map UseAbility validAbilities <> map PlayCard playableCards
+  pure
+    $ map UseAbility validAbilities
+    <> map (($ Nothing) . PlayCard) playableCards
 
 runIdentityMessage
   :: (MonadGame env m, CoerceRole m)
@@ -252,7 +257,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
   ChangedToForm side -> pure $ attrs & sideL .~ side
-  PlayedCard card -> do
+  PlayedCard card mWindow -> do
     modifiedCost <- getModifiedCost attrs card
     let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)
     push $ SetActiveCost $ ActiveCost
@@ -260,6 +265,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       (ForCard card)
       cost'
       NoPayment
+      mWindow
     pure $ attrs & handL %~ Hand . filter (/= card) . unHand
   PaidWithCard card -> do
     push $ Spent card
@@ -271,6 +277,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & alliesL %~ HashSet.insert allyId
   AllyRemoved allyId -> do
     pure $ attrs & alliesL %~ HashSet.delete allyId
+  MinionEngaged minionId -> do
+    pure $ attrs & minionsL %~ HashSet.insert minionId
+  MinionDisengaged minionId -> do
+    pure $ attrs & minionsL %~ HashSet.delete minionId
   SupportCreated supportId -> do
     pure $ attrs & supportsL %~ HashSet.insert supportId
   SupportRemoved supportId -> do
@@ -298,7 +308,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       AlterEgoSide _ -> push $ VillainMessage villain VillainSchemes
     pure attrs
   DealtEncounterCard ec -> pure $ attrs & encounterCardsL %~ (ec :)
-  RevealEncounterCards -> pure $ attrs & encounterCardsL .~ mempty
+  RevealEncounterCards -> do
+    pushAll
+      $ map (RevealEncounterCard (toId attrs)) playerIdentityEncounterCards
+    pure $ attrs & encounterCardsL .~ mempty
   IdentityDamaged _ n -> do
     let
       damage =

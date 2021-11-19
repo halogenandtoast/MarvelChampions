@@ -1,4 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Card.Def where
 
 import Marvel.Prelude
@@ -15,6 +14,7 @@ import Marvel.Keyword
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+import Marvel.Window
 
 class HasResources a where
   resourcesFor :: a -> PlayerCard -> [Resource]
@@ -68,6 +68,7 @@ data CardDef = CardDef
   , cdBoostIcons :: [BoostIcon]
   , cdEncounterSet :: Maybe EncounterSet
   , cdEncounterSetQuantity :: Maybe Natural
+  , cdResponseWindow :: Maybe WindowMatcher
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

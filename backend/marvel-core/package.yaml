@@ -33,6 +33,7 @@ default-extensions:
 - DeriveAnyClass
 - StandaloneDeriving
 - FlexibleInstances
+- UndecidableInstances
 
 library:
   source-dirs: library
