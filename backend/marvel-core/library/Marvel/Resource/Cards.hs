@@ -42,6 +42,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdEncounterSet = Nothing
   , cdEncounterSetQuantity = Nothing
   , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
   , cdBoostIcons = []
   }
 

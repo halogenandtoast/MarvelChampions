@@ -2,7 +2,7 @@ module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Card.EncounterCard
 import Marvel.EncounterCard
@@ -103,6 +103,10 @@ instance RunMessage ScenarioAttrs where
     DealEncounterCard ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
+      pure $ attrs & encounterDeckL .~ deck'
+    Surge ident -> do
+      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      pushAll $ map (RevealEncounterCard ident) ecs
       pure $ attrs & encounterDeckL .~ deck'
     DealBoost target -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck

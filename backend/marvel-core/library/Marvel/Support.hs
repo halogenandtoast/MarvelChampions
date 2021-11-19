@@ -24,7 +24,7 @@ allSupports = fromList $ map
 lookupSupport :: CardCode -> (IdentityId -> SupportId -> Support)
 lookupSupport cardCode = case lookup cardCode allSupports of
   Just f -> f
-  Nothing -> error "Invalid card code"
+  Nothing -> error $ "Invalid card code for support " <> show cardCode
 
 instance Entity Support where
   type EntityId Support = SupportId

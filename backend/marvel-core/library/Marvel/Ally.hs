@@ -27,7 +27,7 @@ allAllies = fromList $ map
 lookupAlly :: CardCode -> (IdentityId -> AllyId -> Ally)
 lookupAlly cardCode = case lookup cardCode allAllies of
   Just f -> f
-  Nothing -> error "Invalid card code"
+  Nothing -> error $ "Invalid card code for ally " <> show cardCode
 
 instance Entity Ally where
   type EntityId Ally = AllyId

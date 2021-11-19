@@ -4,10 +4,10 @@ import Marvel.Prelude
 
 import GHC.Generics
 import Marvel.Cost
-import Marvel.Criteria
+import {-# SOURCE #-} Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
-import Marvel.Window
+import {-# SOURCE #-} Marvel.Window
 
 data AbilityType
   = Interrupt

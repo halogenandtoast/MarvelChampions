@@ -12,6 +12,11 @@ data Source
   | EventSource EventId
   | EffectSource EffectId
   | SupportSource SupportId
+  | TreacherySource TreacheryId
+  | SideSchemeSource SideSchemeId
+  | AttachmentSource AttachmentId
+  | UpgradeSource UpgradeId
+  | GameSource
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

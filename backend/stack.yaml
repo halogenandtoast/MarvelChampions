@@ -31,3 +31,4 @@ ghc-options:
 packages:
   - marvel-core
   - marvel-api
+  - cards-discover

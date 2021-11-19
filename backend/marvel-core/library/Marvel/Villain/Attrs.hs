@@ -6,6 +6,7 @@ module Marvel.Villain.Attrs
 
 import Marvel.Prelude
 
+import Data.HashSet qualified as HashSet
 import Marvel.Boost
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -24,6 +25,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Window
 
 class IsVillain a
 
@@ -51,6 +53,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainBoostCards = mempty
     , villainBoost = 0
     , villainAttacking = Nothing
+    , villainAttachments = mempty
     }
   }
 
@@ -67,6 +70,7 @@ data VillainAttrs = VillainAttrs
   , villainBoostCards :: [EncounterCard]
   , villainBoost :: Natural
   , villainAttacking :: Maybe CharacterId
+  , villainAttachments :: HashSet AttachmentId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -119,13 +123,17 @@ runVillainMessage msg attrs = case msg of
   VillainAttacked -> do
     let dmg = unAtk (villainAttack attrs) + villainBoost attrs
     case villainAttacking attrs of
-      Just (IdentityCharacter ident) ->
-        push (IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg)
+      Just (IdentityCharacter ident) -> pushAll
+        [ CheckWindows [Window When $ IdentityTakeDamage ident FromAttack dmg]
+        , IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg
+        ]
       Just (AllyCharacter ident) ->
         push (AllyMessage ident $ AllyDamaged (toSource attrs) dmg)
       _ -> error "Invalid damage target"
     pure $ attrs & boostL .~ 0
   DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
+  AttachedToVillain attachmentId -> do
+    pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   VillainFlipBoostCards -> do
     let
       boost = foldr

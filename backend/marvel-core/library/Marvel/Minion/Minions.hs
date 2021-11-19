@@ -1,5 +1,1 @@
-module Marvel.Minion.Minions
-  ( module X
-  ) where
-
-import Marvel.Minion.Minions.HydraMercenary as X
+{-# OPTIONS_GHC -F -pgmF cards-discover -optF --dir=Minions #-}

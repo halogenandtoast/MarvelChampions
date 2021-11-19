@@ -1,6 +1,1 @@
-module Marvel.Hero.Heroes
-  ( module X
-  ) where
-
-import Marvel.Hero.Heroes.CaptainMarvel as X
-import Marvel.Hero.Heroes.SpiderMan as X
+{-# OPTIONS_GHC -F -pgmF cards-discover -optF --dir=Heroes #-}

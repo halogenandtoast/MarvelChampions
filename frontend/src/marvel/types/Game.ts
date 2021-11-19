@@ -2,7 +2,9 @@ import { JsonDecoder } from 'ts.data.json'
 import { Identity, identityDecoder } from '@/marvel/types/Identity'
 import { Villain, villainDecoder } from '@/marvel/types/Villain'
 import { Ally, allyDecoder } from '@/marvel/types/Ally'
+import { Minion, minionDecoder } from '@/marvel/types/Minion'
 import { Support, supportDecoder } from '@/marvel/types/Support'
+import { Attachment, attachmentDecoder } from '@/marvel/types/Attachment'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
@@ -27,7 +29,9 @@ export interface Game {
   players: Record<string, Identity>
   villains: Record<string, Villain>
   allies: Record<string, Ally>
+  minions: Record<string, Minion>
   supports: Record<string, Support>
+  attachments: Record<string, Attachment>
   scenario: Scenario
   question: Record<string, Question>
 }
@@ -71,7 +75,9 @@ export const gameDecoder = JsonDecoder.object<Game>(
     players: JsonDecoder.dictionary<Identity>(identityDecoder, 'Dict<UUID, Identity>'),
     villains: JsonDecoder.dictionary<Villain>(villainDecoder, 'Dict<UUID, Villain>'),
     allies: JsonDecoder.dictionary<Ally>(allyDecoder, 'Dict<UUID, Ally>'),
+    minions: JsonDecoder.dictionary<Minion>(minionDecoder, 'Dict<UUID, Minion>'),
     supports: JsonDecoder.dictionary<Support>(supportDecoder, 'Dict<UUID, Support>'),
+    attachments: JsonDecoder.dictionary<Attachment>(attachmentDecoder, 'Dict<UUID, Attachment>'),
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
   }, 'Game')

@@ -1,6 +1,1 @@
-module Marvel.AlterEgo.AlterEgos
-  ( module X
-  ) where
-
-import Marvel.AlterEgo.AlterEgos.CarolDanvers as X
-import Marvel.AlterEgo.AlterEgos.PeterParker as X
+{-# OPTIONS_GHC -F -pgmF cards-discover -optF --dir=AlterEgos #-}

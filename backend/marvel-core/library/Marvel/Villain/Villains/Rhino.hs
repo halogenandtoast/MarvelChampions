@@ -1,4 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Villain.Villains.Rhino where
 
 import Marvel.Prelude
@@ -8,7 +7,7 @@ import Marvel.Hp
 import Marvel.Message
 import Marvel.Stats
 import Marvel.Villain.Attrs
-import qualified Marvel.Villain.Cards as Cards
+import Marvel.Villain.Cards qualified as Cards
 
 newtype Rhino = Rhino VillainAttrs
   deriving anyclass IsVillain

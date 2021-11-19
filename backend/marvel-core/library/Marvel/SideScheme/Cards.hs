@@ -11,7 +11,7 @@ import Marvel.Name
 
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes =
-  fromList $ map (toCardCode &&& id) [breakinAndTakin, crowdControl]
+  fromList $ map (toCardCode &&& id) [breakinAndTakin, crowdControl, bombScare]
 
 sideScheme
   :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
@@ -29,6 +29,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdEncounterSetQuantity = Just quantity
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdResponseWindow = Nothing
   , cdBoostIcons = boostIcons
   }
 
@@ -37,3 +38,6 @@ breakinAndTakin = sideScheme "01107" "Breakin' & Takin'" [Boost, Boost] Rhino 1
 
 crowdControl :: CardDef
 crowdControl = sideScheme "01108" "Crowd Control" [Boost, Boost] Rhino 1
+
+bombScare :: CardDef
+bombScare = sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1

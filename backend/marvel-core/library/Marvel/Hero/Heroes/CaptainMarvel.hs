@@ -1,4 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Hero.Heroes.CaptainMarvel where
 
 import Marvel.Prelude
@@ -9,7 +8,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
-import qualified Marvel.Hero.Cards as Cards
+import Marvel.Hero.Cards qualified as Cards
 import Marvel.Message
 import Marvel.Stats
 

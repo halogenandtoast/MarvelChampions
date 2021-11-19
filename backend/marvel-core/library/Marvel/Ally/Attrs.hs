@@ -11,7 +11,7 @@ import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Id
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Message
 import Marvel.Query
 import Marvel.Question
@@ -92,6 +92,13 @@ damageChoice attrs = \case
         (AllySource $ allyId attrs)
         (unAtk $ allyAttack attrs)
     ]
+  EnemyMinionId vid -> TargetLabel
+    (MinionTarget vid)
+    [ DamageEnemy
+        (MinionTarget vid)
+        (AllySource $ allyId attrs)
+        (unAtk $ allyAttack attrs)
+    ]
 
 thwartChoice :: AllyAttrs -> SchemeId -> Choice
 thwartChoice attrs = \case
@@ -108,6 +115,9 @@ stunChoice attrs = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
     [Stun (VillainTarget vid) (AllySource $ allyId attrs)]
+  EnemyMinionId vid -> TargetLabel
+    (MinionTarget vid)
+    [Stun (MinionTarget vid) (AllySource $ allyId attrs)]
 
 toCard :: AllyAttrs -> PlayerCard
 toCard a = PlayerCard
@@ -150,6 +160,8 @@ instance RunMessage AllyAttrs where
           , case enemyId of
             EnemyVillainId vid ->
               VillainMessage vid $ VillainDefendedBy (AllyCharacter $ toId a)
+            EnemyMinionId vid ->
+              MinionMessage vid $ MinionDefendedBy (AllyCharacter $ toId a)
           ]
         pure a
       AllyDamaged _ damage -> do

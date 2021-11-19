@@ -1,11 +1,10 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Ally.Allies.MockingbirdBobbiMorse where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ally.Attrs
-import qualified Marvel.Ally.Cards as Cards
+import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity

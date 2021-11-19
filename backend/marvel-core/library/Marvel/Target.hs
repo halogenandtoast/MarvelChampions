@@ -2,8 +2,8 @@ module Marvel.Target where
 
 import Marvel.Prelude
 
-import Marvel.Id
 import Marvel.Card.Code
+import Marvel.Id
 
 data Target
   = IdentityTarget IdentityId
@@ -13,6 +13,10 @@ data Target
   | SupportTarget SupportId
   | EventTarget EventId
   | EffectTarget EffectId
+  | TreacheryTarget TreacheryId
+  | UpgradeTarget UpgradeId
+  | SideSchemeTarget SideSchemeId
+  | AttachmentTarget AttachmentId
   | MainSchemeTarget CardCode
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

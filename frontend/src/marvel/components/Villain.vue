@@ -3,6 +3,14 @@
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)"/>
     <div class="hp">{{villain.contents.villainHp}}</div>
     <div v-if="villain.contents.villainStunned">Stunned</div>
+    <Attachment
+      v-for="attachment in attachments"
+      :key="attachment.contents.attachmentId"
+      :attachment="attachment"
+      :game="game"
+      :identityId="identityId"
+      @choose="$emit('choose', $event)"
+    />
   </div>
 </template>
 
@@ -12,9 +20,10 @@ import { Game } from '@/marvel/types/Game'
 import { Villain } from '@/marvel/types/Villain'
 import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
+import Attachment from '@/marvel/components/Attachment.vue'
 
 export default defineComponent({
-  components: { Card },
+  components: { Card, Attachment },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -29,7 +38,9 @@ export default defineComponent({
       return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.villain.contents.villainId)
     })
 
-    return { card, activeAbility }
+    const attachments = computed(() => props.villain.contents.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
+
+    return { card, activeAbility, attachments }
   }
 })
 </script>

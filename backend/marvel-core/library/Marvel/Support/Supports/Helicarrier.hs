@@ -1,4 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
 module Marvel.Support.Supports.Helicarrier where
 
 import Marvel.Prelude
@@ -46,7 +45,7 @@ helicarrierEffect = effectWith
 
 instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of
-    IdentityMessage ident (PlayedCard _)
+    IdentityMessage ident (PlayedCard _ _)
       | IdentityTarget ident == effectTarget attrs -> e
       <$ push (EffectMessage (toId attrs) DisableEffect)
     EndPhase _ -> e <$ push (EffectMessage (toId attrs) DisableEffect)

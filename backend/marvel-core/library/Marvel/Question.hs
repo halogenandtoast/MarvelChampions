@@ -18,6 +18,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window
 
 data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
   deriving stock (Show, Eq, Generic)
@@ -44,6 +45,7 @@ data ActiveCost = ActiveCost
   , activeCostTarget :: ActiveCostTarget
   , activeCostCost :: Cost
   , activeCostPayment :: Payment
+  , activeCostWindow :: Maybe Window
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -97,7 +99,7 @@ data Choice
   | RunAbility Target Natural
   | ChangeForm
   | ChangeToForm Side
-  | PlayCard PlayerCard
+  | PlayCard PlayerCard (Maybe Window)
   | PayWithCard PlayerCard
   | FinishPayment
   | Pay Payment
@@ -140,12 +142,13 @@ choiceMessages ident = \case
   RunAbility target n -> pure [RanAbility target n]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
-  PlayCard x -> pure [IdentityMessage ident $ PlayedCard x]
+  PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> pure [FinishedPayment]
   Pay payment -> pure [Paid payment]
   DamageEnemy target source n -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainDamaged source n]
+    MinionTarget vid -> pure [MinionMessage vid $ MinionDamaged source n]
     _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
@@ -153,9 +156,11 @@ choiceMessages ident = \case
     _ -> error "can not thwart target"
   Stun target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
+    MinionTarget vid -> pure [MinionMessage vid $ MinionStunned source]
     _ -> error "can not damage target"
   Confuse target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainConfused source]
+    MinionTarget vid -> pure [MinionMessage vid $ MinionConfused source]
     _ -> error "can not damage target"
   Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
   Heal n -> pure [IdentityMessage ident $ IdentityHealed n]

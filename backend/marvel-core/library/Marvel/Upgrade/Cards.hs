@@ -6,8 +6,8 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
-import Marvel.Name
 import Marvel.Matchers
+import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
 
@@ -40,11 +40,13 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
   , cdBoostIcons = []
   }
 
 spiderTracer :: CardDef
-spiderTracer = (identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy])
+spiderTracer = (identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy]
+               )
   { cdCriteria = MinionExists AnyMinion
   }
 

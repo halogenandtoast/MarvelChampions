@@ -29,6 +29,7 @@ alterEgo cardCode name traits = CardDef
   , cdEncounterSetQuantity = Nothing
   , cdCriteria = NoCriteria
   , cdResources = []
+  , cdResponseWindow = Nothing
   , cdBoostIcons = []
   }
 

@@ -93,6 +93,13 @@ damageChoice attrs = \case
         (IdentitySource $ heroIdentityId attrs)
         (unAtk $ heroBaseAttack attrs)
     ]
+  EnemyMinionId mid -> TargetLabel
+    (MinionTarget mid)
+    [ DamageEnemy
+        (MinionTarget mid)
+        (IdentitySource $ heroIdentityId attrs)
+        (unAtk $ heroBaseAttack attrs)
+    ]
 
 thwartChoice :: HeroAttrs -> SchemeId -> Choice
 thwartChoice attrs = \case
@@ -124,6 +131,8 @@ instance RunMessage HeroAttrs where
             , case enemyId of
               EnemyVillainId vid ->
                 VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
+              EnemyMinionId vid ->
+                MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
             ]
           pure a
         _ -> pure a

@@ -37,6 +37,7 @@ attachment code name traits boostIcons encounterSet quantity = CardDef
   , cdCriteria = NoCriteria
   , cdResources = []
   , cdBoostIcons = boostIcons
+  , cdResponseWindow = Nothing
   }
 
 armoredRhinoSuit :: CardDef
