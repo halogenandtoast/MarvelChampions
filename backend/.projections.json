@@ -194,12 +194,12 @@
       "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
       "",
       "instance RunMessage {dot} where",
-      "  runMessage msg e = case msg of",
+      "  runMessage msg e@({dot} attrs) = case msg of",
       "    EventMessage eid msg' | eid == toId e -> case msg' of",
       "      PlayedEvent identityId _ _ -> do",
-      "        pushAll [IdentityMessage identityId $ DiscardCard (toCard $ toAttrs e)]",
       "        pure e",
-      "    _ -> pure e"
+      "      _ -> {dot} <$> runMessage msg attrs",
+      "    _ -> {dot} <$> runMessage msg attrs"
     ]
   }
 }

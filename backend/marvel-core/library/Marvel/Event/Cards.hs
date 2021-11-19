@@ -88,7 +88,10 @@ getReady = event "01069" "Get Ready" 0 [] [Physical] Leadership
 
 leadFromTheFront :: CardDef
 leadFromTheFront =
-  event "01070" "Lead from the Front" 2 [Tactic] [Energy] Leadership
+  (event "01070" "Lead from the Front" 2 [Tactic] [Energy] Leadership)
+    { cdCriteria = InHeroForm
+    , cdAbilityType = Just HeroAction
+    }
 
 makeTheCall :: CardDef
 makeTheCall = event "01071" "Make the Call" 0 [] [Mental] Leadership

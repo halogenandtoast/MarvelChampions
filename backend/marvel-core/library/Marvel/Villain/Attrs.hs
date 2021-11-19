@@ -93,7 +93,7 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
   VillainConfused _ -> pure $ attrs & confusedL .~ True
-  VillainSchemes -> if villainStunned attrs
+  VillainSchemes -> if villainConfused attrs
     then pure $ attrs & confusedL .~ False
     else do
       pushAll

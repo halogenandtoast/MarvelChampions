@@ -45,8 +45,9 @@ helicarrierEffect = effectWith
 
 instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of
-    IdentityMessage ident (PlayedCard _ _)
-      | IdentityTarget ident == effectTarget attrs -> e
-      <$ push (EffectMessage (toId attrs) DisableEffect)
+    IdentityMessage ident (PlayedCard _ _) -> do
+      whenM (effectValidFor attrs (IdentityTarget ident))
+        $ push (EffectMessage (toId attrs) DisableEffect)
+      pure e
     EndPhase _ -> e <$ push (EffectMessage (toId attrs) DisableEffect)
     _ -> HelicarrierEffect <$> runMessage msg attrs

@@ -29,7 +29,7 @@
     <div class="identity">
       <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
       <div>
-        <div class="identityCard" :class="{ exhausted: player.exhausted }">
+        <div class="identityCard" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)">
           <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
         </div>
         <div>HP: {{player.currentHP}}</div>
@@ -145,11 +145,16 @@ export default defineComponent({
       }, [])
     })
 
+    const activeAbility = computed(() => {
+      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.player.id)
+    })
+
     return {
       playerImg,
       choices,
       endTurnAction,
       finishPaymentAction,
+      activeAbility,
       allies,
       supports,
       minions,
@@ -182,6 +187,10 @@ export default defineComponent({
     transform: rotate(90deg);
     display: block;
   }
+}
+
+.active {
+  border: 2px solid #FF00FF;
 }
 
 </style>

@@ -6,7 +6,10 @@ import Marvel.Game.Source
 import Marvel.Source
 import Marvel.Target
 
-newtype Modifier = ResourceCostReduction Natural
+data Modifier
+  = ResourceCostReduction Natural
+  | ThwartModifier Natural
+  | AttackModifier Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

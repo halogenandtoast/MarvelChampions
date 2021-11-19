@@ -35,13 +35,14 @@ damageChoice eid = \case
     [DamageEnemy (MinionTarget vid) (EventSource eid) 8]
 
 instance RunMessage SwingingWebKick where
-  runMessage msg a = case msg of
-    EventMessage eid msg' | eid == toId a -> case msg' of
+  runMessage msg e@(SwingingWebKick attrs) = case msg of
+    EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AnyEnemy
         pushAll
           [ Ask identityId $ ChooseOne $ map (damageChoice eid) enemies
-          , IdentityMessage identityId $ DiscardCard (toCard $ toAttrs a)
+          , IdentityMessage identityId $ DiscardCard (toCard attrs)
           ]
-        pure a
-    _ -> pure a
+        pure e
+      _ -> SwingingWebKick <$> runMessage msg attrs
+    _ -> SwingingWebKick <$> runMessage msg attrs

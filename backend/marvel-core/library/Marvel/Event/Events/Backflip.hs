@@ -22,13 +22,13 @@ newtype Backflip = Backflip EventAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Backflip where
-  runMessage msg a = case msg of
-    EventMessage eid msg' | eid == toId a -> case msg' of
+  runMessage msg e@(Backflip attrs) = case msg of
+    EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         cancelMatchingMessage $ \case
           IdentityMessage identityId' (IdentityDamaged _ _) ->
             identityId' == identityId
           _ -> False
-        pushAll [IdentityMessage identityId $ DiscardCard (toCard $ toAttrs a)]
-        pure a
-    _ -> pure a
+        pure e
+      _ -> Backflip <$> runMessage msg attrs
+    _ -> Backflip <$> runMessage msg attrs

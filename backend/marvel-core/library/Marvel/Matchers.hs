@@ -7,6 +7,10 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 
+data EntityMatcher = IdentityEntity IdentityMatcher | AllyEntity AllyMatcher
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data IdentityMatcher
   = HeroIdentity
   | AlterEgoIdentity
@@ -39,6 +43,9 @@ pattern IdentityWithAnyDamage <-
   IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
 data AllyMatcher = UnexhaustedAlly | ExhaustedAlly | AllyControlledBy IdentityMatcher
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data SupportMatcher = UnexhaustedSupport | SupportControlledBy IdentityMatcher
 data EnemyMatcher = AnyEnemy
 data VillainMatcher = ActiveVillain

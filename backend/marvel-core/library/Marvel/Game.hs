@@ -204,9 +204,9 @@ runGameMessage msg g@Game {..} = case msg of
             (activeCostWindow activeCost)
           pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
-  CreatedEffect def source target -> do
+  CreatedEffect def source matcher -> do
     effectId <- getRandom
-    let effect = createEffect effectId (toCardCode def) source target
+    let effect = createEffect effectId (toCardCode def) source matcher
     pure $ g & effectsL %~ insert effectId effect
   DisabledEffect effectId -> pure $ g & effectsL %~ delete effectId
   PutCardIntoPlay ident card payment mWindow -> do
@@ -227,7 +227,9 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & supportsL %~ insert (toId support) support
       EventType -> do
         let event = createEvent ident card
-        push $ EventMessage (toId event) $ PlayedEvent ident payment mWindow
+        pushAll $ map
+          (EventMessage (toId event))
+          [PlayedEvent ident payment mWindow, ResolvedEvent]
         pure $ g & eventsL %~ insert (toId event) event
       _ -> error "Unhandled"
   RevealEncounterCard ident card -> do
@@ -245,7 +247,13 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & minionsL %~ insert (toId minion) minion
       TreacheryType -> do
         let treachery = createTreachery card
-        pushAll [TreacheryMessage (toId treachery) $ RevealTreachery ident]
+        pushAll
+          [ CheckWindows
+            [ W.Window When
+                $ W.RevealTreachery (toId treachery) W.FromEncounterDeck
+            ]
+          , TreacheryMessage (toId treachery) $ RevealTreachery ident
+          ]
         pure $ g & treacheriesL %~ insert (toId treachery) treachery
       SideSchemeType -> do
         let sideScheme = createSideScheme card
@@ -388,9 +396,9 @@ createAttachment :: EncounterCard -> Attachment
 createAttachment card =
   lookupAttachment (toCardCode card) (AttachmentId $ unCardId $ ecCardId card)
 
-createEffect :: EffectId -> CardCode -> Source -> Target -> Effect
-createEffect ident cardCode source target =
-  lookupEffect cardCode source target ident
+createEffect :: EffectId -> CardCode -> Source -> EntityMatcher -> Effect
+createEffect ident cardCode source matcher =
+  lookupEffect cardCode source matcher ident
 
 newGame :: PlayerIdentity -> Scenario -> Game
 newGame player scenario = Game
