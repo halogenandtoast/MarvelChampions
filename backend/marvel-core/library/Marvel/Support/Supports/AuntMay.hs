@@ -7,6 +7,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
@@ -18,7 +19,15 @@ auntMay :: SupportCard AuntMay
 auntMay = support AuntMay Cards.auntMay
 
 instance HasAbilities AuntMay where
-  getAbilities a = [ability a 1 AlterEgoAction NoCriteria ExhaustCost $ Heal 4]
+  getAbilities a =
+    [ ability
+          a
+          1
+          AlterEgoAction
+          (OwnsThis <> SelfMatches IdentityWithAnyDamage)
+          ExhaustCost
+        $ Heal 4
+    ]
 
 newtype AuntMay = AuntMay SupportAttrs
   deriving anyclass IsSupport

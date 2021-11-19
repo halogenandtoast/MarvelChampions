@@ -9,7 +9,10 @@ data Criteria
   | NoCriteria
   | InHeroForm
   | Unexhausted
+  | OwnsThis
   | MinionExists MinionMatcher
+  | SelfMatches IdentityMatcher
+  | Never
   | Criteria [Criteria]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

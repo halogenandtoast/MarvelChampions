@@ -71,6 +71,11 @@ isAlterEgo player = case currentIdentity player of
   HeroSide _ -> False
   AlterEgoSide _ -> True
 
+identityDamage :: PlayerIdentity -> Natural
+identityDamage attrs =
+  fromIntegral . max 0 $ unHp (playerIdentityMaxHP attrs) - unHp
+    (playerIdentityCurrentHP attrs)
+
 instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted
 
@@ -156,14 +161,22 @@ isPlayable attrs c = do
   resources <- getAvailableResourcesFor c
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def)
-  pure $ length resources >= modifiedCost && passedCriteria && isNothing
-    (cdResponseWindow def)
+  pure
+    $ length resources
+    >= modifiedCost
+    && passedCriteria
+    && isNothing (cdResponseWindow def)
+    && (cdCardType def /= ResourceType)
  where
   ident = toId attrs
   def = getCardDef c
   checkCriteria = \case
     IsSelf -> error "Irrelevant"
+    OwnsThis -> error "Irrelevant"
     NoCriteria -> pure True
+    Never -> pure False
+    SelfMatches identityMatcher ->
+      member ident <$> select (IdentityWithId ident <> identityMatcher)
     InHeroForm -> member ident <$> select HeroIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
