@@ -25,6 +25,7 @@ data WindowMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | MinionDefeated WindowTiming MinionMatcher
+  | MinionEntersPlay WindowTiming MinionMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -41,6 +42,7 @@ data WindowType
   | IdentityTakeDamage IdentityId DamageSource Natural
   | RevealTreachery TreacheryId RevealSource
   | DefeatedMinion MinionId
+  | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -77,5 +79,9 @@ windowMatches matcher w source = case matcher of
       _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
     DefeatedMinion minionId | windowTiming w == timing ->
+      minionMatches minionMatcher minionId
+    _ -> pure False
+  MinionEntersPlay timing minionMatcher -> case windowType w of
+    MinionEnteredPlay minionId | windowTiming w == timing ->
       minionMatches minionMatcher minionId
     _ -> pure False

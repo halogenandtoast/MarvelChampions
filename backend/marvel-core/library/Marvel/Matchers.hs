@@ -42,9 +42,19 @@ pattern IdentityWithAnyDamage <-
   IdentityWithDamage (GreaterThan (Static 0)) where
   IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
-data AllyMatcher = UnexhaustedAlly | ExhaustedAlly | AllyControlledBy IdentityMatcher
+data AllyMatcher
+  = UnexhaustedAlly
+  | ExhaustedAlly
+  | AllyWithUses GameValueMatcher
+  | AllyControlledBy IdentityMatcher
+  | AllyWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+pattern AllyWithAnyUses :: AllyMatcher
+pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0)) where
+  AllyWithAnyUses = AllyWithUses (GreaterThan (Static 0))
+
 
 data SupportMatcher = UnexhaustedSupport | SupportControlledBy IdentityMatcher
 
@@ -61,7 +71,10 @@ data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId
 enemyMatches :: MonadGame env m => EnemyMatcher -> EnemyId -> m Bool
 enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
 
-data VillainMatcher = ActiveVillain | VillainWithId VillainId
+data VillainMatcher
+  = ActiveVillain
+  | VillainWithId VillainId
+  | VillainWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -77,7 +90,10 @@ data SchemeMatcher = AnyScheme | MainScheme
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data MinionMatcher = AnyMinion | MinionWithId MinionId
+data MinionMatcher
+  = AnyMinion
+  | MinionWithId MinionId
+  | MinionWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -94,3 +110,12 @@ gameValueMatches matcher n = case matcher of
   GreaterThan v -> do
     value <- fromIntegral <$> fromGameValue v
     pure $ n > value
+
+pattern CharacterWithAnyDamage :: CharacterMatcher
+pattern CharacterWithAnyDamage <-
+  CharacterWithDamage (GreaterThan (Static 0)) where
+  CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
+
+newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)

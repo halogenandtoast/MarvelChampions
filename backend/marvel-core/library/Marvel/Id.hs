@@ -8,9 +8,9 @@ data CharacterId
   = IdentityCharacter IdentityId
   | AllyCharacter AllyId
   | VillainCharacter VillainId
-  | MinionCharacterId MinionId
+  | MinionCharacter MinionId
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 newtype IdentityId = IdentityId UUID
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

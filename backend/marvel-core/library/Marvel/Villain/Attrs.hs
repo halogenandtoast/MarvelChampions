@@ -6,7 +6,7 @@ module Marvel.Villain.Attrs
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Boost
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -91,6 +91,14 @@ runVillainMessage msg attrs = case msg of
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
     pure $ attrs & hpL .~ HP hp & maxHpL .~ HP hp
+  VillainHealed n -> do
+    pure
+      $ attrs
+      & hpL
+      %~ HP
+      . min (unHp $ villainMaxHp attrs)
+      . (+ fromIntegral n)
+      . unHp
   VillainDamaged _ n ->
     pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
@@ -110,12 +118,17 @@ runVillainMessage msg attrs = case msg of
       pushAll
         [ CheckWindows
           [Window When $ EnemyAttack (EnemyVillainId $ toId attrs) ident]
-        , DealBoost (toTarget attrs)
-        , DeclareDefense ident (EnemyVillainId (toId attrs))
-        , VillainMessage (toId attrs) VillainFlipBoostCards
-        , VillainMessage (toId attrs) VillainAttacked
+        , VillainMessage (toId attrs) (VillainBeginAttack ident)
         ]
-      pure $ attrs & attackingL ?~ IdentityCharacter ident
+      pure attrs
+  VillainBeginAttack ident -> do
+    pushAll
+      [ DealBoost (toTarget attrs)
+      , DeclareDefense ident (EnemyVillainId (toId attrs))
+      , VillainMessage (toId attrs) VillainFlipBoostCards
+      , VillainMessage (toId attrs) VillainAttacked
+      ]
+    pure $ attrs & attackingL ?~ IdentityCharacter ident
   VillainDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
   VillainSchemed -> do
     mainScheme <- selectJust MainScheme

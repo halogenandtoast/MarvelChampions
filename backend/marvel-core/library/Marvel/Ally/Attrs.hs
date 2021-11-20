@@ -37,6 +37,7 @@ data AllyAttrs = AllyAttrs
   , allyAttackConsequentialDamage :: Natural
   , allyController :: IdentityId
   , allyExhausted :: Bool
+  , allyCounters :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -45,6 +46,17 @@ makeLensesWith suffixedFields ''AllyAttrs
 
 instance HasCardCode AllyAttrs where
   toCardCode = toCardCode . allyCardDef
+
+allyWith
+  :: (AllyAttrs -> a)
+  -> CardDef
+  -> (Thw, Natural)
+  -> (Atk, Natural)
+  -> HP Natural
+  -> (AllyAttrs -> AllyAttrs)
+  -> CardBuilder (IdentityId, AllyId) a
+allyWith f cardDef thwPair atkPair hp g =
+  ally (f . g) cardDef thwPair atkPair hp
 
 ally
   :: (AllyAttrs -> a)
@@ -67,6 +79,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
       , allyController = ident
       , allyHitPoints = hp
       , allyExhausted = False
+      , allyCounters = 0
       }
     }
 
@@ -176,6 +189,8 @@ instance RunMessage AllyAttrs where
               MinionMessage vid $ MinionDefendedBy (AllyCharacter $ toId a)
           ]
         pure a
+      AllyHealed n ->
+        pure $ a & damageL %~ subtractNatural n
       AllyDamaged _ damage -> do
         when
           (damage + (allyDamage a) >= unHp (allyHitPoints a))

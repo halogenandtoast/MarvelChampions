@@ -568,20 +568,35 @@ gameSelectIdentity m = do
       ap <- getActivePlayer
       pure $ a == ap
 
+gameSelectCharacter
+  :: MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
+gameSelectCharacter = \case
+  CharacterWithDamage gameValueMatcher -> do
+    villains <- map VillainCharacter
+      <$> selectList (VillainWithDamage gameValueMatcher)
+    minions <- map MinionCharacter
+      <$> selectList (MinionWithDamage gameValueMatcher)
+    identities <- map IdentityCharacter
+      <$> selectList (IdentityWithDamage gameValueMatcher)
+    allies <- map AllyCharacter <$> selectList (AllyWithDamage gameValueMatcher)
+    pure . HashSet.fromList $ villains <> minions <> identities <> allies
+
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
-gameSelectAlly = \case
-  UnexhaustedAlly -> do
-    allies <- toList <$> getsGame gameAllies
-    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) allies
-  ExhaustedAlly -> do
-    allies <- toList <$> getsGame gameAllies
-    pure $ HashSet.fromList $ map toId $ filter isExhausted allies
-  AllyControlledBy identityMatcher -> do
-    allies <- toList <$> getsGame gameAllies
-    identities <- select identityMatcher
-    pure $ HashSet.fromList $ map toId $ filter
-      ((`member` identities) . getAllyController)
-      allies
+gameSelectAlly m = do
+  allies <- toList <$> getsGame gameAllies
+  result <- filterM (matchFilter m) allies
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter x = case x of
+    UnexhaustedAlly -> pure . not . isExhausted
+    ExhaustedAlly -> pure . isExhausted
+    AllyControlledBy identityMatcher -> \ally -> do
+      identities <- select identityMatcher
+      pure $ member (getAllyController ally) identities
+    AllyWithUses gameValueMatcher ->
+      gameValueMatches gameValueMatcher . getAllyUses
+    AllyWithDamage gameValueMatcher ->
+      gameValueMatches gameValueMatcher . getAllyDamage
 
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case
@@ -628,22 +643,28 @@ gameSelectEnemy = \case
       <> map (EnemyMinionId . toId) minions
 
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
-gameSelectVillain = \case
-  ActiveVillain -> do
-    villains <- toList <$> getsGame gameVillains
-    pure $ HashSet.fromList $ map toId villains
-  VillainWithId ident' -> do
-    villains <- toList <$> getsGame gameVillains
-    pure $ HashSet.fromList $ map toId $ filter ((== ident') . toId) villains
+gameSelectVillain m = do
+  villains <- toList <$> getsGame gameVillains
+  result <- filterM (matchFilter m) villains
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter x = case x of
+    ActiveVillain -> pure . const True
+    VillainWithId ident' -> pure . (== ident') . toId
+    VillainWithDamage gameValueMatcher ->
+      gameValueMatches gameValueMatcher . villainDamage
 
 gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
-gameSelectMinion = \case
-  AnyMinion -> do
-    minions <- toList <$> getsGame gameMinions
-    pure $ HashSet.fromList $ map toId minions
-  MinionWithId ident' -> do
-    minions <- toList <$> getsGame gameMinions
-    pure $ HashSet.fromList $ map toId $ filter ((== ident') . toId) minions
+gameSelectMinion m = do
+  minions <- toList <$> getsGame gameMinions
+  result <- filterM (matchFilter m) minions
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter x = case x of
+    AnyMinion -> pure . const True
+    MinionWithId ident' -> pure . (== ident') . toId
+    MinionWithDamage gameValueMatcher ->
+      gameValueMatches gameValueMatcher . getMinionDamage
 
 gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)

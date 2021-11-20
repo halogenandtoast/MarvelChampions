@@ -99,7 +99,19 @@ export interface Source {
 interface EnemyVillainId { tag: 'EnemyVillainId', contents: string }
 interface EnemyMinionId { tag: 'EnemyMinionId', contents: string }
 
-export type TargetContents =  EnemyVillainId | EnemyMinionId | string
+interface VillainCharacter { tag: 'VillainCharacter', contents: string }
+interface MinionCharacter { tag: 'MinionCharacter', contents: string }
+interface IdentityCharacter { tag: 'IdentityCharacter', contents: string }
+interface AllyCharacter { tag: 'AllyCharacter', contents: string }
+
+export type TargetContents
+  = EnemyVillainId
+  | EnemyMinionId
+  | VillainCharacter
+  | MinionCharacter
+  | IdentityCharacter
+  | AllyCharacter
+  | string
 
 export interface Target {
   tag: string,
@@ -113,6 +125,11 @@ export const targetDecoder = JsonDecoder.object<Target>(
     tag: JsonDecoder.string,
     contents: JsonDecoder.oneOf<TargetContents>([
       JsonDecoder.object<EnemyVillainId>({ tag: JsonDecoder.isExactly('EnemyVillainId'), contents: JsonDecoder.string }, 'EnemyVillainId'),
+      JsonDecoder.object<EnemyMinionId>({ tag: JsonDecoder.isExactly('EnemyMinionId'), contents: JsonDecoder.string }, 'EnemyMinionId'),
+      JsonDecoder.object<VillainCharacter>({ tag: JsonDecoder.isExactly('VillainCharacter'), contents: JsonDecoder.string }, 'VillainCharacter'),
+      JsonDecoder.object<MinionCharacter>({ tag: JsonDecoder.isExactly('MinionCharacter'), contents: JsonDecoder.string }, 'MinionCharacter'),
+      JsonDecoder.object<AllyCharacter>({ tag: JsonDecoder.isExactly('AllyCharacter'), contents: JsonDecoder.string }, 'AllyCharacter'),
+      JsonDecoder.object<IdentityCharacter>({ tag: JsonDecoder.isExactly('IdentityCharacter'), contents: JsonDecoder.string }, 'IdentityCharacter'),
       JsonDecoder.object<EnemyMinionId>({ tag: JsonDecoder.isExactly('EnemyMinionId'), contents: JsonDecoder.string }, 'EnemyMinionId'),
       JsonDecoder.string
     ], 'TargetContents')

@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Hp
 import Marvel.Message
 import Marvel.TH
 import Marvel.Villain.Attrs
@@ -27,6 +28,13 @@ lookupVillain cardCode villainId =
 allVillains :: HashMap CardCode (VillainId -> Villain)
 allVillains = fromList
   $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
+
+villainDamage :: Villain -> Natural
+villainDamage v =
+  fromIntegral . max 0 $ unHp (villainMaxHp attrs) - unHp
+    (villainHp attrs)
+ where
+   attrs = toAttrs v
 
 instance RunMessage Villain where
   runMessage = genericRunMessage

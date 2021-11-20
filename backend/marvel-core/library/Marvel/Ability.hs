@@ -50,6 +50,28 @@ windowAbility a idx window aType cost choice =
     & windowL
     ?~ window
 
+limitedWindowAbility
+  :: IsSource a
+  => a
+  -> Natural
+  -> WindowMatcher
+  -> AbilityType
+  -> Criteria
+  -> Cost
+  -> Choice
+  -> Ability
+limitedWindowAbility a idx window aType criteria cost choice =
+  limitedAbility
+      (toSource a)
+      idx
+      (defaultAbilityLimit aType)
+      aType
+      criteria
+      cost
+      choice
+    & windowL
+    ?~ window
+
 limitedAbility
   :: IsSource a
   => a
@@ -121,6 +143,7 @@ passesCanAffordCost _ a = go (abilityCost a)
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeSource ident -> member ident <$> select UpgradeWithAnyUses
+      AllySource ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost _ -> error "Unhandled"
     Costs xs -> allM go xs

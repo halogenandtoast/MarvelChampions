@@ -111,7 +111,7 @@ data Choice
   | Stun Target Source
   | Confuse Target Source
   | Recover
-  | Heal Natural
+  | Heal CharacterId Natural
   | Attack
   | Thwart
   | Defend EnemyId
@@ -187,7 +187,11 @@ choiceMessages ident = \case
     MinionTarget vid -> pure [MinionMessage vid $ MinionConfused source]
     _ -> error "can not damage target"
   Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
-  Heal n -> pure [IdentityMessage ident $ IdentityHealed n]
+  Heal characterId n -> case characterId of
+    IdentityCharacter ident' -> pure [IdentityMessage ident' $ IdentityHealed n]
+    AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
+    VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
+    MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->

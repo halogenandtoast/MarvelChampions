@@ -17,6 +17,7 @@ library
       Marvel.Ally
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy
+      Marvel.Ally.Allies.HawkeyeClintBarton
       Marvel.Ally.Allies.MariaHill
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Attrs
@@ -59,6 +60,7 @@ library
       Marvel.Event.Events
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.EnhancedSpiderSense
+      Marvel.Event.Events.FirstAid
       Marvel.Event.Events.GetReady
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront

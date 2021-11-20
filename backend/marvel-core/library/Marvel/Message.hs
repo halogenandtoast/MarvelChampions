@@ -86,9 +86,11 @@ data VillainMessage
   | DealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainAttacks IdentityId
+  | VillainBeginAttack IdentityId
   | VillainAttacked
   | VillainSchemes
   | VillainSchemed
+  | VillainHealed Natural
   | VillainDefendedBy CharacterId
   | AttachedToVillain AttachmentId
   | UpgradeAttachedToVillain UpgradeId
@@ -114,6 +116,7 @@ data MinionMessage
   | MinionStunned Source
   | MinionConfused Source
   | MinionDefeated
+  | MinionHealed Natural
   | UpgradeAttachedToMinion UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -138,6 +141,7 @@ data AllyMessage
   | AllyDamaged Source Natural
   | AllyDefended EnemyId
   | AllyDefeated
+  | AllyHealed Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

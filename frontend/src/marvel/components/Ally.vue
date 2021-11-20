@@ -1,7 +1,8 @@
 <template>
   <div class="ally">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted, active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
-    <div v-if="ally.contents.allyDamage > 0" class="damage">{{ally.contents.allyDamage}}</div>
+    <div v-if="ally.contents.allyDamage > 0" class="damage">damage: {{ally.contents.allyDamage}}</div>
+    <div v-if="ally.contents.allyCounters > 0" class="counter">counters: {{ally.contents.allyCounters}}</div>
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"

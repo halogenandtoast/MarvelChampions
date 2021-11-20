@@ -9,3 +9,4 @@ data SupportMatcher
 data SchemeMatcher
 data TreacheryMatcher
 data UpgradeMatcher
+data CharacterMatcher

@@ -47,6 +47,12 @@ instance IsSource Ally where
 getAllyController :: Ally -> IdentityId
 getAllyController = allyController . toAttrs
 
+getAllyUses :: Ally -> Natural
+getAllyUses = allyCounters . toAttrs
+
+getAllyDamage :: Ally -> Natural
+getAllyDamage = allyDamage . toAttrs
+
 instance HasAbilities Ally where
   getAbilities a = genericGetAbilities a <> basicAbilities
    where
