@@ -23,6 +23,7 @@ data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
+  | MinionDefeated WindowTiming MinionMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -38,6 +39,7 @@ data WindowType
   | PlayedSupport SupportId
   | IdentityTakeDamage IdentityId DamageSource Natural
   | RevealTreachery TreacheryId RevealSource
+  | DefeatedMinion MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -64,4 +66,10 @@ windowMatches matcher w source = case matcher of
           (&&)
           (treacheryMatches treacheryMatcher treacheryId)
           (pure $ timing == windowTiming w)
+      _ -> pure False
+  MinionDefeated timing minionMatcher ->
+    case windowType w of
+      DefeatedMinion minionId
+        | windowTiming w == timing ->
+          minionMatches minionMatcher minionId
       _ -> pure False

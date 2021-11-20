@@ -53,6 +53,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityAllies :: HashSet AllyId
   , playerIdentityMinions :: HashSet MinionId
   , playerIdentitySupports :: HashSet SupportId
+  , playerIdentityUpgrades :: HashSet UpgradeId
   , playerIdentityExhausted :: Bool
   , playerIdentityEncounterCards :: [EncounterCard]
   , playerIdentityDamageReduction :: Natural
@@ -117,6 +118,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityAllies = mempty
   , playerIdentityMinions = mempty
   , playerIdentitySupports = mempty
+  , playerIdentityUpgrades = mempty
   , playerIdentityExhausted = False
   , playerIdentityEncounterCards = []
   , playerIdentityDamageReduction = 0
@@ -289,6 +291,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
     pure $ attrs & alliesL %~ HashSet.insert allyId
+  UpgradeCreated upgradeId -> do
+    pure $ attrs & upgradesL %~ HashSet.insert upgradeId
+  UpgradeRemoved upgradeId -> do
+    pure $ attrs & upgradesL %~ HashSet.delete upgradeId
   AllyRemoved allyId -> do
     pure $ attrs & alliesL %~ HashSet.delete allyId
   MinionEngaged minionId -> do

@@ -2,6 +2,15 @@
   <div class="minion">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
     <div v-if="minion.contents.minionDamage > 0" class="damage">{{minion.contents.minionDamage}}</div>
+    <Upgrade
+      v-for="upgrade in upgrades"
+      :key="upgrade.contents.upgradeId"
+      :upgrade="upgrade"
+      :game="game"
+      :identityId="identityId"
+      class="attached"
+      @choose="$emit('choose', $event)"
+    />
   </div>
 </template>
 
@@ -11,9 +20,10 @@ import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import { Game } from '@/marvel/types/Game'
 import { Minion } from '@/marvel/types/Minion'
+import Upgrade from '@/marvel/components/Upgrade.vue'
 
 export default defineComponent({
-  components: { Card },
+  components: { Card, Upgrade },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -27,7 +37,9 @@ export default defineComponent({
       return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.minion.contents.minionId)
     })
 
-    return { card, activeAbility, choices }
+    const upgrades = computed(() => props.minion.contents.minionUpgrades.map((minionId) => props.game.upgrades[minionId]))
+
+    return { card, activeAbility, choices, upgrades }
   }
 })
 </script>
@@ -35,5 +47,13 @@ export default defineComponent({
 <style scoped lang="scss">
 .minion {
   display: inline-block;
+}
+
+.attached {
+  ::v-deep(img) {
+    object-fit: cover;
+    object-position: 0% bottom;
+    height: 90px;
+  }
 }
 </style>

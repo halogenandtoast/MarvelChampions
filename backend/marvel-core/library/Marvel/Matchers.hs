@@ -59,10 +59,16 @@ treacheryMatches
 treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
 data SchemeMatcher = AnyScheme | MainScheme
-
-data MinionMatcher = AnyMinion
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+data MinionMatcher = AnyMinion | MinionWithId MinionId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+minionMatches
+  :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
+minionMatches matcher ident = member ident <$> gameSelectMinion matcher
 
 data GameValueMatcher = AnyValue | GreaterThan GameValue
   deriving stock (Show, Eq, Generic)

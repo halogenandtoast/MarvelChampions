@@ -28,12 +28,9 @@ instance RunMessage Stampede where
     TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
       RevealTreachery ident -> do
         isHero <- identityMatches HeroIdentity ident
-        t <$ if isHero
-          then do
-            villainId <- selectJust ActiveVillain
-            pushAll
-              [ VillainMessage villainId $ VillainAttacks ident
-              , RemoveFromPlay (toTarget attrs)
-              ]
-          else pushAll [RemoveFromPlay (toTarget attrs), Surge ident]
+        when isHero $ do
+          villainId <- selectJust ActiveVillain
+          push $ VillainMessage villainId $ VillainAttacks ident
+        pure t
+      _ -> Stampede <$> runMessage msg attrs
     _ -> Stampede <$> runMessage msg attrs

@@ -9,6 +9,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -21,6 +22,7 @@ data UpgradeAttrs = UpgradeAttrs
   , upgradeCardDef :: CardDef
   , upgradeController :: IdentityId
   , upgradeExhausted :: Bool
+  , upgradeAttachedEnemy :: Maybe EnemyId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -39,6 +41,7 @@ upgrade f cardDef = CardBuilder
     , upgradeCardDef = cardDef
     , upgradeController = ident
     , upgradeExhausted = False
+    , upgradeAttachedEnemy = Nothing
     }
   }
 
@@ -54,14 +57,23 @@ instance IsSource UpgradeAttrs where
 instance IsTarget UpgradeAttrs where
   toTarget = UpgradeTarget . toId
 
+instance HasCardDef UpgradeAttrs where
+  getCardDef = upgradeCardDef
+
+
 isTarget :: (Entity a, EntityAttrs a ~ UpgradeAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
 instance RunMessage UpgradeAttrs where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
+      PlayedUpgrade ->
+        a <$ push (IdentityMessage (upgradeController a) $ UpgradeCreated (toId a))
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
+      AttachedToMinion minionId -> do
+        push (MinionMessage minionId $ UpgradeAttachedToMinion (toId a))
+        pure $ a & attachedEnemyL ?~ EnemyMinionId minionId
     _ -> pure a

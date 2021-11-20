@@ -4,6 +4,7 @@ import { Villain, villainDecoder } from '@/marvel/types/Villain'
 import { Ally, allyDecoder } from '@/marvel/types/Ally'
 import { Minion, minionDecoder } from '@/marvel/types/Minion'
 import { Support, supportDecoder } from '@/marvel/types/Support'
+import { Upgrade, upgradeDecoder } from '@/marvel/types/Upgrade'
 import { Attachment, attachmentDecoder } from '@/marvel/types/Attachment'
 import { SideScheme, sideSchemeDecoder } from '@/marvel/types/SideScheme'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
@@ -67,6 +68,7 @@ export interface Game {
   allies: Record<string, Ally>
   minions: Record<string, Minion>
   supports: Record<string, Support>
+  upgrades: Record<string, Upgrade>
   attachments: Record<string, Attachment>
   sideSchemes: Record<string, SideScheme>
   scenario: Scenario
@@ -115,6 +117,7 @@ export const gameDecoder = JsonDecoder.object<Game>(
     allies: JsonDecoder.dictionary<Ally>(allyDecoder, 'Dict<UUID, Ally>'),
     minions: JsonDecoder.dictionary<Minion>(minionDecoder, 'Dict<UUID, Minion>'),
     supports: JsonDecoder.dictionary<Support>(supportDecoder, 'Dict<UUID, Support>'),
+    upgrades: JsonDecoder.dictionary<Upgrade>(upgradeDecoder, 'Dict<UUID, Upgrade>'),
     attachments: JsonDecoder.dictionary<Attachment>(attachmentDecoder, 'Dict<UUID, Attachment>'),
     sideSchemes: JsonDecoder.dictionary<SideScheme>(sideSchemeDecoder, 'Dict<UUID, SideScheme>'),
     scenario: scenarioDecoder,

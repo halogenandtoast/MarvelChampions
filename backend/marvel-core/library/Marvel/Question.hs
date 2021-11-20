@@ -15,6 +15,7 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
 import {-# SOURCE #-} Marvel.Message
+import Marvel.Query
 import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
@@ -118,6 +119,7 @@ data Choice
   | AllyThwart AllyId
   | AllyDefend AllyId EnemyId
   | CreateEffect CardDef Source ChooseATarget
+  | RemoveThreat Source Natural SchemeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -156,7 +158,19 @@ choiceMessages ident = \case
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    SchemeTarget (SchemeMainSchemeId mid) ->
+      pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
     _ -> error "can not thwart target"
+  RemoveThreat source n schemeMatcher -> do
+    schemes <- selectList schemeMatcher
+    let f target = ThwartScheme target source n
+    case schemes of
+      [] -> pure []
+      [x] -> choiceMessages ident (f $ SchemeTarget x)
+      xs -> pure
+        [ Ask ident $ ChooseOne
+            [ TargetLabel target [f target] | x <- xs, let target = SchemeTarget x ]
+        ]
   Stun target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
     MinionTarget vid -> pure [MinionMessage vid $ MinionStunned source]
