@@ -3,8 +3,8 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Data.Aeson.Diff qualified as Diff
-import Data.HashSet qualified as HashSet
+import qualified Data.Aeson.Diff as Diff
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -44,7 +44,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -136,14 +136,16 @@ runGameMessage msg g@Game {..} = case msg of
           sid
       pure $ g & supportsL %~ delete sid
     UpgradeTarget uid -> do
-      for_ (lookup uid gameUpgrades) $ \upgrade -> pushAll $ map
-        (IdentityMessage (getUpgradeController upgrade))
+      for_ (lookup uid gameUpgrades) $ \upgrade -> pushAll
         [ UpgradeRemoved uid
-        , DiscardCard $ PlayerCard
-          (CardId . unUpgradeId $ toId upgrade)
-          (getCardDef upgrade)
-          (Just $ getUpgradeController upgrade)
-          (Just $ getUpgradeController upgrade)
+        , IdentityMessage
+          (getUpgradeController upgrade)
+          (DiscardCard $ PlayerCard
+            (CardId . unUpgradeId $ toId upgrade)
+            (getCardDef upgrade)
+            (Just $ getUpgradeController upgrade)
+            (Just $ getUpgradeController upgrade)
+          )
         ]
       pure $ g & upgradesL %~ delete uid
     MinionTarget mid -> do

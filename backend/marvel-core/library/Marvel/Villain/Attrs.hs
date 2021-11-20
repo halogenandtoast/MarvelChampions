@@ -151,6 +151,8 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of
+    UpgradeRemoved upgradeId -> do
+      pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     VillainMessage villainId msg' | villainId == toId attrs ->
       runVillainMessage msg' attrs
     _ -> pure attrs
