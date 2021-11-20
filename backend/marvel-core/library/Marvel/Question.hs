@@ -3,7 +3,7 @@ module Marvel.Question where
 import Marvel.Prelude
 
 import Data.List (partition)
-import Data.List qualified as L
+import qualified Data.List as L
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -169,7 +169,10 @@ choiceMessages ident = \case
       [x] -> choiceMessages ident (f $ SchemeTarget x)
       xs -> pure
         [ Ask ident $ ChooseOne
-            [ TargetLabel target [f target] | x <- xs, let target = SchemeTarget x ]
+            [ TargetLabel target [f target]
+            | x <- xs
+            , let target = SchemeTarget x
+            ]
         ]
   Stun target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
@@ -190,14 +193,21 @@ choiceMessages ident = \case
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
 
 costMessages :: Ability -> [Message]
-costMessages a = case abilityCost a of
-  NoCost -> []
-  ExhaustCost -> case abilitySource a of
-    IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
-    AllySource ident -> [AllyMessage ident ExhaustedAlly]
-    SupportSource ident -> [SupportMessage ident ExhaustedSupport]
-    _ -> error "Unhandled"
-  _ -> error "Unhandled"
+costMessages a = go (abilityCost a)
+ where
+  go = \case
+    NoCost -> []
+    ExhaustCost -> case abilitySource a of
+      IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
+      AllySource ident -> [AllyMessage ident ExhaustedAlly]
+      SupportSource ident -> [SupportMessage ident ExhaustedSupport]
+      UpgradeSource ident -> [UpgradeMessage ident ExhaustedUpgrade]
+      _ -> error "Unhandled"
+    UseCost -> case abilitySource a of
+      UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
+      _ -> error "Unhandled"
+    Costs xs -> concatMap go xs
+    _ -> error $ "Unhandled: " <> show (abilityCost a)
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

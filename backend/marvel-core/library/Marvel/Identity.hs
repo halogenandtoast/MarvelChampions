@@ -267,6 +267,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       <> map
            (($ ReadiedSupport) . SupportMessage)
            (HashSet.toList playerIdentitySupports)
+      <> map
+           (($ ReadiedUpgrade) . UpgradeMessage)
+           (HashSet.toList playerIdentityUpgrades)
     pure $ attrs & exhaustedL .~ False
   ChooseOtherForm -> do
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides

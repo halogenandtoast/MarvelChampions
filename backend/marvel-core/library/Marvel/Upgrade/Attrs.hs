@@ -23,6 +23,8 @@ data UpgradeAttrs = UpgradeAttrs
   , upgradeController :: IdentityId
   , upgradeExhausted :: Bool
   , upgradeAttachedEnemy :: Maybe EnemyId
+  , upgradeUses :: Natural
+  , upgradeDiscardIfNoUses :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -31,6 +33,13 @@ makeLensesWith suffixedFields ''UpgradeAttrs
 
 instance HasCardCode UpgradeAttrs where
   toCardCode = toCardCode . upgradeCardDef
+
+upgradeWith
+  :: (UpgradeAttrs -> a)
+  -> CardDef
+  -> (UpgradeAttrs -> UpgradeAttrs)
+  -> CardBuilder (IdentityId, UpgradeId) a
+upgradeWith f cardDef g = upgrade (f . g) cardDef
 
 upgrade
   :: (UpgradeAttrs -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
@@ -42,6 +51,8 @@ upgrade f cardDef = CardBuilder
     , upgradeController = ident
     , upgradeExhausted = False
     , upgradeAttachedEnemy = Nothing
+    , upgradeUses = 0
+    , upgradeDiscardIfNoUses = False
     }
   }
 
@@ -68,9 +79,15 @@ instance RunMessage UpgradeAttrs where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade ->
-        a <$ push (IdentityMessage (upgradeController a) $ UpgradeCreated (toId a))
+        a <$ push
+          (IdentityMessage (upgradeController a) $ UpgradeCreated (toId a))
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
+      SpendUpgradeUse -> do
+        when
+          (upgradeUses a == 1 && upgradeDiscardIfNoUses a)
+          (push $ RemoveFromPlay (toTarget a))
+        pure $ a & usesL -~ 1
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
       AttachedToMinion minionId -> do
