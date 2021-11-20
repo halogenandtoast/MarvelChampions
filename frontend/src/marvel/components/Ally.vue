@@ -52,7 +52,23 @@ export default defineComponent({
     })
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.ally.contents.allyId)
+      return choices.value.findIndex((choice) => {
+        if (choice.tag !== 'TargetLabel') {
+          return false
+        }
+
+        const { contents } = choice.target
+          if (typeof contents === "string") {
+            return contents == props.ally.contents.allyId
+          }
+
+          switch (contents.tag) {
+            case 'AllyCharacter':
+              return contents.contents === props.ally.contents.allyId
+            default:
+              return false
+          }
+      })
     })
 
     return { card, abilities, choices, defendAction, activeAbility }

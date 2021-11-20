@@ -157,7 +157,23 @@ export default defineComponent({
     })
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.player.id)
+      return choices.value.findIndex((choice) => {
+        if (choice.tag !== 'TargetLabel') {
+          return false
+        }
+
+        const { contents } = choice.target
+          if (typeof contents === "string") {
+            return contents == props.player.id
+          }
+
+          switch (contents.tag) {
+            case 'IdentityCharacter':
+              return contents.contents === props.player.id
+            default:
+              return false
+          }
+      })
     })
 
     return {
