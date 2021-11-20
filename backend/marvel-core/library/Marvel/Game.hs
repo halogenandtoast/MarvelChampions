@@ -73,6 +73,7 @@ data Game = Game
   , gameActivePlayer :: IdentityId
   , gameActiveCost :: Maybe ActiveCost
   , gameWindowDepth :: Int
+  , gameWindows :: [[Window]]
   , gameScenario :: Scenario
   }
   deriving stock (Show, Eq, Generic)
@@ -107,11 +108,11 @@ getActivePlayer = getsGame $ \g ->
 
 runPreGameMessage :: MonadGame env m => Message -> Game -> m Game
 runPreGameMessage msg g = case msg of
-  CheckWindows{} -> do
+  CheckWindows windows -> do
     push EndCheckWindows
-    pure $ g & windowDepthL +~ 1
+    pure $ g & windowDepthL +~ 1 & windowsL %~ (windows :)
   -- We want to empty the queue for triggering a resolution
-  EndCheckWindows -> pure $ g & windowDepthL -~ 1
+  EndCheckWindows -> pure $ g & windowDepthL -~ 1 & windowsL %~ drop 1
   _ -> pure g
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
@@ -434,6 +435,7 @@ newGame player scenario = Game
   , gameQuestion = mempty
   , gameActiveCost = Nothing
   , gameWindowDepth = 0
+  , gameWindows = []
   , gameUsedAbilities = mempty
   , gameActivePlayer = toId player
   , gameScenario = scenario
@@ -689,3 +691,10 @@ getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do
   effects <- toList <$> getsGame gameEffects
   concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+
+getCurrentWindows :: MonadGame env m => m [Window]
+getCurrentWindows = do
+  windows <- getsGame gameWindows
+  pure $ case windows of
+    [] -> []
+    x : _ -> x

@@ -12,12 +12,12 @@ import {-# SOURCE #-} Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
+import {-# SOURCE #-} Marvel.Window
 
 class HasGame a
 
 class
-  ( MonadCatch m
-  , MonadThrow m
+  ( MonadCatch m , MonadThrow m
   , MonadIO m
   , MonadReader env m
   , HasGame env
@@ -54,3 +54,4 @@ instance HasAbilities Game
 getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
+getCurrentWindows :: MonadGame env m => m [Window]
