@@ -296,8 +296,6 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & alliesL %~ HashSet.insert allyId
   UpgradeCreated upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
-  UpgradeRemoved upgradeId -> do
-    pure $ attrs & upgradesL %~ HashSet.delete upgradeId
   AllyRemoved allyId -> do
     pure $ attrs & alliesL %~ HashSet.delete allyId
   MinionEngaged minionId -> do
@@ -378,6 +376,8 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
 
 instance RunMessage PlayerIdentity where
   runMessage msg attrs = case msg of
+    UpgradeRemoved upgradeId -> do
+      pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     IdentityMessage ident msg' | ident == toId attrs ->
       runIdentityMessage msg' attrs
     _ -> pure attrs

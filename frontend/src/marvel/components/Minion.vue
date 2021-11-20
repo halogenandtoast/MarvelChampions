@@ -43,12 +43,12 @@ export default defineComponent({
 
           const { contents } = choice.target
             if (typeof contents === "string") {
-              return contents == props.villain.contents.villainId
+              return contents == props.minion.contents.minionId
             }
 
             switch (contents.tag) {
               case 'EnemyMinionId':
-                return contents.contents === props.villain.contents.villainId
+                return contents.contents === props.minion.contents.minionId
               default:
                 return false
             }

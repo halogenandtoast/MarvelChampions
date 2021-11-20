@@ -74,6 +74,7 @@ data Message
   | RevealEncounterCard IdentityId EncounterCard
   | AdvanceScenario
   | GameOver FinishedStatus
+  | UpgradeRemoved UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -171,7 +172,6 @@ data IdentityMessage
   | AllyCreated AllyId
   | AllyRemoved AllyId
   | UpgradeCreated UpgradeId
-  | UpgradeRemoved UpgradeId
   | SupportCreated SupportId
   | SupportRemoved SupportId
   | AddToHand PlayerCard
