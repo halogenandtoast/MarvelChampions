@@ -24,7 +24,7 @@ hawkeyeClintBarton = allyWith
   Cards.hawkeyeClintBarton
   (Thw 1, 1)
   (Atk 1, 1)
-  (HP 1)
+  (HP 3)
   (countersL .~ 4)
 
 newtype HawkeyeClintBarton = HawkeyeClintBarton AllyAttrs
@@ -44,4 +44,7 @@ instance HasAbilities HawkeyeClintBarton where
     ]
 
 instance RunMessage HawkeyeClintBarton where
-  runMessage msg a = HawkeyeClintBarton <$> runMessage msg (toAttrs a)
+  runMessage msg a = case msg of
+    RanAbility target 1 | isTarget a target ->
+      pure a
+    _ -> HawkeyeClintBarton <$> runMessage msg (toAttrs a)

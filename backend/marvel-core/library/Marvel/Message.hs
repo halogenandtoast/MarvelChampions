@@ -142,6 +142,7 @@ data AllyMessage
   | AllyDefended EnemyId
   | AllyDefeated
   | AllyHealed Natural
+  | SpendAllyUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
