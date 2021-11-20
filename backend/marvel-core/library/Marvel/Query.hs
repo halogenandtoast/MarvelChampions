@@ -16,6 +16,7 @@ type family QueryElement a where
   QueryElement SupportMatcher = SupportId
   QueryElement SchemeMatcher = SchemeId
   QueryElement UpgradeMatcher = UpgradeId
+  QueryElement CharacterMatcher = CharacterId
 
 class Query a where
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
@@ -63,3 +64,6 @@ instance Query MinionMatcher where
 
 instance Query UpgradeMatcher where
   select = gameSelectUpgrade
+
+instance Query CharacterMatcher where
+  select = gameSelectCharacter

@@ -201,5 +201,40 @@
       "      _ -> {dot} <$> runMessage msg attrs",
       "    _ -> {dot} <$> runMessage msg attrs"
     ]
+  },
+  "marvel-core/library/Marvel/Ally/Allies/*.hs": {
+    "type": "ally",
+    "alternate": "marvel-core/tests/Marvel/Ally/Allies/{}Spec.hs",
+    "template": [
+      "module Marvel.Ally.Allies.{dot}",
+      "  ( {dot|snakecase|camelcase}",
+      "  , {dot}(..)",
+      "  )",
+      "where",
+      "",
+      "import Marvel.Prelude",
+      "",
+      "import Marvel.Ability",
+      "import Marvel.Ally.Attrs",
+      "import Marvel.Ally.Cards qualified as Cards",
+      "import Marvel.Card.Code",
+      "import Marvel.Entity",
+      "import Marvel.Hp",
+      "import Marvel.Message",
+      "import Marvel.Source",
+      "import Marvel.Stats",
+      "import Marvel.Target",
+      "",
+      "{dot|snakecase|camelcase} :: AllyCard {dot}",
+      "{dot|snakecase|camelcase} = event {dot} Cards.{dot|snakecase|camelcase}",
+      "",
+      "newtype {dot} = {dot} AllyAttrs",
+      "  deriving anyclass IsAlly",
+      "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
+      "",
+      "instance RunMessage {dot} where",
+      "  runMessage msg e@({dot} attrs) =",
+      "    {dot} <$> runMessage msg attrs"
+    ]
   }
 }

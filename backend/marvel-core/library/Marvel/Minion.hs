@@ -26,6 +26,9 @@ lookupMinion cardCode = case lookup cardCode allMinions of
   Just f -> f
   Nothing -> error $ "Invalid card code for minion " <> show cardCode
 
+getMinionDamage :: Minion -> Natural
+getMinionDamage = minionDamage . toAttrs
+
 instance Entity Minion where
   type EntityId Minion = MinionId
   type EntityAttrs Minion = MinionAttrs

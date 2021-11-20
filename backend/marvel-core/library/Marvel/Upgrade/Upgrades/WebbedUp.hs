@@ -9,14 +9,16 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
+import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
+import Marvel.Queue
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
-import Marvel.Upgrade.Cards qualified as Cards
+import qualified Marvel.Upgrade.Cards as Cards
 import Marvel.Window
 
 webbedUp :: UpgradeCard WebbedUp
@@ -35,11 +37,7 @@ instance HasAbilities WebbedUp where
             (EnemyWouldAttack (EnemyWithId enemyId) AnyIdentity)
             ForcedInterrupt
             NoCost
-          $ TargetLabel
-              (toTarget attrs)
-              [ DiscardTarget (toTarget attrs)
-              , Stun (EnemyTarget enemyId) (toSource attrs)
-              ]
+          $ TargetLabel (toTarget attrs) [RunAbility (toTarget attrs) 1]
       ]
     _ -> []
 
@@ -56,4 +54,20 @@ instance RunMessage WebbedUp where
           enemies
         pure u
       _ -> WebbedUp <$> runMessage msg a
+    RanAbility target 1 | isTarget a target -> do
+      case upgradeAttachedEnemy a of
+        Just enemyId ->
+          replaceMatchingMessage
+              [ RemoveFromPlay (toTarget a)
+              , case enemyId of
+                  EnemyVillainId enemyId ->
+                    VillainMessage enemyId (VillainStunned $ toSource a)
+                  EnemyMinionId minionId ->
+                    MinionMessage minionId (MinionStunned $ toSource a)
+              ]
+            $ \case
+                VillainMessage _ (VillainBeginAttack _) -> True
+                _ -> False
+        Nothing -> error "Something terrible must have happened"
+      pure u
     _ -> WebbedUp <$> runMessage msg a

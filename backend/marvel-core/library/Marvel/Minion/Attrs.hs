@@ -94,6 +94,8 @@ instance RunMessage MinionAttrs where
 runMinionMessage
   :: MonadGame env m => MinionMessage -> MinionAttrs -> m MinionAttrs
 runMinionMessage msg attrs = case msg of
+  MinionHealed n -> do
+    pure $ attrs & damageL %~ subtractNatural n
   MinionDamaged _ damage -> do
     when
       (damage + minionDamage attrs >= unHp (minionHitPoints attrs))

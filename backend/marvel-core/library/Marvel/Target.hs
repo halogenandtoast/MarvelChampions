@@ -12,6 +12,7 @@ data Target
   | MinionTarget MinionId
   | EnemyTarget EnemyId
   | AllyTarget AllyId
+  | CharacterTarget CharacterId
   | SupportTarget SupportId
   | EventTarget EventId
   | EffectTarget EffectId

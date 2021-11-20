@@ -54,7 +54,9 @@ webShooter :: CardDef
 webShooter = identityUpgrade "01008" "Web-Shooter" 1 [Item, Tech] [Physical]
 
 webbedUp :: CardDef
-webbedUp = identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical]
+webbedUp = (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
+  { cdCriteria = InHeroForm
+  }
 
 inspired :: CardDef
 inspired = upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership
