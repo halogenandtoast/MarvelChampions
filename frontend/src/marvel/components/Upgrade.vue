@@ -8,6 +8,7 @@
           :data-image="image"
           @click="$emit('choose', ability)"
           />
+    <div v-if="upgrade.contents.upgradeUses > 0">{{upgrade.contents.upgradeUses}}</div>
   </div>
 </template>
 

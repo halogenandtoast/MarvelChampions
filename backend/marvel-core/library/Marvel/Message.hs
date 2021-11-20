@@ -150,6 +150,7 @@ data UpgradeMessage
   | ReadiedUpgrade
   | PlayedUpgrade
   | AttachedToMinion MinionId
+  | SpendUpgradeUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

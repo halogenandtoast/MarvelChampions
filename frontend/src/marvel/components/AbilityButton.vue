@@ -16,6 +16,10 @@ export default defineComponent({
         return abilityLabel
       }
 
+      if (abilityType == "Resource") {
+        return "Resource"
+      }
+
       if (abilityType == "ForcedResponse") {
         return "Forced Response"
       }

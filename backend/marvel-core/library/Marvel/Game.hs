@@ -592,6 +592,21 @@ gameSelectSupport = \case
       ((`member` identities) . getSupportController)
       supports
 
+gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
+gameSelectUpgrade = \case
+  UnexhaustedUpgrade -> do
+    upgrades <- toList <$> getsGame gameUpgrades
+    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) upgrades
+  UpgradeWithUses gameValueMatcher -> do
+    upgrades <- toList <$> getsGame gameUpgrades
+    HashSet.fromList . map toId <$> filterM (gameValueMatches gameValueMatcher . getUpgradeUses) upgrades
+  UpgradeControlledBy identityMatcher -> do
+    upgrades <- toList <$> getsGame gameUpgrades
+    identities <- select identityMatcher
+    pure $ HashSet.fromList $ map toId $ filter
+      ((`member` identities) . getUpgradeController)
+      upgrades
+
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case
   AnyEnemy -> do

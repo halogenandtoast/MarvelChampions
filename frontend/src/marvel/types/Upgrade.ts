@@ -9,12 +9,16 @@ export interface Upgrade {
 export interface UpgradeContents {
   upgradeId: string
   upgradeCardDef: CardDef
+  upgradeUses: number
+  upgradeExhausted: boolean
 }
 
 export const upgradeContentsDecoder = JsonDecoder.object<UpgradeContents>(
   {
     upgradeId: JsonDecoder.string,
     upgradeCardDef: cardDefDecoder,
+    upgradeUses: JsonDecoder.number,
+    upgradeExhausted: JsonDecoder.boolean,
   }, 'UpgradeContents')
 
 export const upgradeDecoder = JsonDecoder.object<Upgrade>(

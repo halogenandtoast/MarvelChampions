@@ -50,3 +50,6 @@ instance HasCardDef Upgrade where
 
 getUpgradeController :: Upgrade -> IdentityId
 getUpgradeController = upgradeController . toAttrs
+
+getUpgradeUses :: Upgrade -> Natural
+getUpgradeUses = upgradeUses . toAttrs

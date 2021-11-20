@@ -101,6 +101,8 @@ passesCriteria x a = go (abilityCriteria a)
         member aid <$> select (AllyControlledBy $ IdentityWithId x)
       SupportSource aid ->
         member aid <$> select (SupportControlledBy $ IdentityWithId x)
+      UpgradeSource aid ->
+        member aid <$> select (UpgradeControlledBy $ IdentityWithId x)
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
     MinionExists m -> selectAny m
@@ -115,6 +117,10 @@ passesCanAffordCost _ a = go (abilityCost a)
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly
       SupportSource ident -> member ident <$> select UnexhaustedSupport
+      UpgradeSource ident -> member ident <$> select UnexhaustedUpgrade
+      _ -> error "Unhandled"
+    UseCost -> case source of
+      UpgradeSource ident -> member ident <$> select UpgradeWithAnyUses
       _ -> error "Unhandled"
     ResourceCost _ -> error "Unhandled"
     Costs xs -> allM go xs

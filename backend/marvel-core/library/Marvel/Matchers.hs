@@ -47,6 +47,13 @@ data AllyMatcher = UnexhaustedAlly | ExhaustedAlly | AllyControlledBy IdentityMa
   deriving anyclass (ToJSON, FromJSON)
 
 data SupportMatcher = UnexhaustedSupport | SupportControlledBy IdentityMatcher
+
+pattern UpgradeWithAnyUses :: UpgradeMatcher
+pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
+  UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
+
+data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy IdentityMatcher | UnexhaustedUpgrade
+
 data EnemyMatcher = AnyEnemy
 data VillainMatcher = ActiveVillain
 
@@ -66,8 +73,7 @@ data MinionMatcher = AnyMinion | MinionWithId MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-minionMatches
-  :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
+minionMatches :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
 minionMatches matcher ident = member ident <$> gameSelectMinion matcher
 
 data GameValueMatcher = AnyValue | GreaterThan GameValue

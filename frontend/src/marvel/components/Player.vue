@@ -17,6 +17,14 @@
         :identityId="identityId"
         @choose="$emit('choose', $event)"
       />
+      <Upgrade
+        v-for="upgrade in upgrades"
+        :key="upgrade.contents.upgradeId"
+        :upgrade="upgrade"
+        :game="game"
+        :identityId="identityId"
+        @choose="$emit('choose', $event)"
+      />
       <Minion
         v-for="minion in minions"
         :key="minion.contents.minionId"
@@ -74,10 +82,11 @@ import Card from '@/marvel/components/Card.vue'
 import Ally from '@/marvel/components/Ally.vue'
 import Minion from '@/marvel/components/Minion.vue'
 import Support from '@/marvel/components/Support.vue'
+import Upgrade from '@/marvel/components/Upgrade.vue'
 import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 export default defineComponent({
-  components: { Card, Ally, Support, Minion, AbilityButton },
+  components: { Card, Ally, Support, Upgrade, Minion, AbilityButton },
   props: {
     game: { type: Object as () => Game, required: true },
     player: { type: Object as () => Identity, required: true },
@@ -125,6 +134,8 @@ export default defineComponent({
 
     const supports = computed(() => props.player.supports.map((supportId) => props.game.supports[supportId]))
 
+    const upgrades = computed(() => props.player.upgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
+
     const minions = computed(() => props.player.minions.map((minionId) => props.game.minions[minionId]))
 
     const abilities = computed(() => {
@@ -157,6 +168,7 @@ export default defineComponent({
       activeAbility,
       allies,
       supports,
+      upgrades,
       minions,
       abilities,
       labels,

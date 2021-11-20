@@ -38,6 +38,7 @@ export interface Identity {
   allies: string[]
   minions: string[]
   supports: string[]
+  upgrades: string[]
   exhausted: boolean
   currentHP: number
 }
@@ -91,6 +92,7 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     allies: JsonDecoder.array<string>(JsonDecoder.string, 'AllyId[]'),
     minions: JsonDecoder.array<string>(JsonDecoder.string, 'MinionId[]'),
     supports: JsonDecoder.array<string>(JsonDecoder.string, 'SupportId[]'),
+    upgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
     exhausted: JsonDecoder.boolean,
     currentHP: JsonDecoder.number
   }, 'Identity')

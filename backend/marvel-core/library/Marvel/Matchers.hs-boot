@@ -8,3 +8,4 @@ data AllyMatcher
 data SupportMatcher
 data SchemeMatcher
 data TreacheryMatcher
+data UpgradeMatcher
