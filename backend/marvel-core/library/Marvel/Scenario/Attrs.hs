@@ -68,7 +68,7 @@ discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
 runMainSchemeMessage
   :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
 runMainSchemeMessage msg attrs = case msg of
-  MainSchemeThwarted _ n -> pure $ attrs & threatL %~ max 0 . subtract n
+  MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
   MainSchemePlaceThreat n -> do
     threshold <- fromIntegral <$> fromGameValue (scenarioThreshold attrs)
     when (scenarioThreat attrs + n >= threshold) (push AdvanceScenario)

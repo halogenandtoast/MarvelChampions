@@ -101,7 +101,7 @@ data SideSchemeMessage = RevealSideScheme
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-newtype TreacheryMessage = RevealTreachery IdentityId
+data TreacheryMessage = RevealTreachery IdentityId | ResolvedTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -112,6 +112,7 @@ data MinionMessage
   | MinionStunned Source
   | MinionConfused Source
   | MinionDefeated
+  | UpgradeAttachedToMinion UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -147,6 +148,8 @@ data SupportMessage
 data UpgradeMessage
   = ExhaustedUpgrade
   | ReadiedUpgrade
+  | PlayedUpgrade
+  | AttachedToMinion MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -165,6 +168,8 @@ data IdentityMessage
   | PaidWithCard PlayerCard
   | AllyCreated AllyId
   | AllyRemoved AllyId
+  | UpgradeCreated UpgradeId
+  | UpgradeRemoved UpgradeId
   | SupportCreated SupportId
   | SupportRemoved SupportId
   | AddToHand PlayerCard

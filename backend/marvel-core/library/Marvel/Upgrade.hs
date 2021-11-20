@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -43,6 +44,9 @@ instance IsSource Upgrade where
 
 instance HasAbilities Upgrade where
   getAbilities = genericGetAbilities
+
+instance HasCardDef Upgrade where
+  getCardDef = getCardDef . toAttrs
 
 getUpgradeController :: Upgrade -> IdentityId
 getUpgradeController = upgradeController . toAttrs

@@ -19,6 +19,7 @@ data Target
   | SideSchemeTarget SideSchemeId
   | AttachmentTarget AttachmentId
   | MainSchemeTarget CardCode
+  | SchemeTarget SchemeId
   | CardIdTarget CardId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

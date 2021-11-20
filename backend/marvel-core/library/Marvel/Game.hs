@@ -24,7 +24,7 @@ import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
-import Marvel.Identity hiding (alliesL, minionsL, supportsL)
+import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
@@ -135,6 +135,13 @@ runGameMessage msg g@Game {..} = case msg of
         push $ IdentityMessage (getSupportController support) $ SupportRemoved
           sid
       pure $ g & supportsL %~ delete sid
+    UpgradeTarget uid -> do
+      for_ (lookup uid gameUpgrades) $ \upgrade ->
+        pushAll $ map (IdentityMessage (getUpgradeController upgrade))
+          [ UpgradeRemoved uid
+          , DiscardCard $ PlayerCard (CardId . unUpgradeId $ toId upgrade) (getCardDef upgrade) (Just $ getUpgradeController upgrade) (Just $ getUpgradeController upgrade)
+          ]
+      pure $ g & upgradesL %~ delete uid
     MinionTarget mid -> do
       for_ (lookup mid gameMinions) $ \minion ->
         push $ DiscardedEncounterCard $ EncounterCard
@@ -225,6 +232,13 @@ runGameMessage msg g@Game {..} = case msg of
           , CheckWindows [W.Window After $ W.PlayedSupport (toId support)]
           ]
         pure $ g & supportsL %~ insert (toId support) support
+      UpgradeType -> do
+        let upgrade = createUpgrade ident card
+        pushAll
+          [ IdentityMessage ident (UpgradeCreated $ toId upgrade)
+          , UpgradeMessage (toId upgrade) PlayedUpgrade
+          ]
+        pure $ g & upgradesL %~ insert (toId upgrade) upgrade
       EventType -> do
         let event = createEvent ident card
         pushAll $ map
@@ -253,6 +267,7 @@ runGameMessage msg g@Game {..} = case msg of
                 $ W.RevealTreachery (toId treachery) W.FromEncounterDeck
             ]
           , TreacheryMessage (toId treachery) $ RevealTreachery ident
+          , TreacheryMessage (toId treachery) ResolvedTreachery
           ]
         pure $ g & treacheriesL %~ insert (toId treachery) treachery
       SideSchemeType -> do
@@ -376,6 +391,10 @@ createSupport :: IdentityId -> PlayerCard -> Support
 createSupport ident card =
   lookupSupport (toCardCode card) ident (SupportId $ unCardId $ pcCardId card)
 
+createUpgrade :: IdentityId -> PlayerCard -> Upgrade
+createUpgrade ident card =
+  lookupUpgrade (toCardCode card) ident (UpgradeId $ unCardId $ pcCardId card)
+
 createEvent :: IdentityId -> PlayerCard -> Event
 createEvent ident card =
   lookupEvent (toCardCode card) ident (EventId $ unCardId $ pcCardId card)
@@ -487,6 +506,7 @@ instance HasAbilities Game where
     concatMap getAbilities (elems $ gamePlayers g)
       <> concatMap getAbilities (elems $ gameAllies g)
       <> concatMap getAbilities (elems $ gameSupports g)
+      <> concatMap getAbilities (elems $ gameUpgrades g)
 
 runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
 runGameMessages = do
@@ -593,6 +613,9 @@ gameSelectMinion = \case
   AnyMinion -> do
     minions <- toList <$> getsGame gameMinions
     pure $ HashSet.fromList $ map toId minions
+  MinionWithId ident' -> do
+    minions <- toList <$> getsGame gameMinions
+    pure $ HashSet.fromList $ map toId $ filter ((== ident') . toId) minions
 
 gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)

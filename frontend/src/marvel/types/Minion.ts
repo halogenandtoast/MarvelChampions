@@ -10,6 +10,7 @@ export interface MinionContents {
   minionId: string
   minionCardDef: CardDef
   minionDamage: number
+  minionUpgrades: string[]
 }
 
 export const minionContentsDecoder = JsonDecoder.object<MinionContents>(
@@ -17,6 +18,7 @@ export const minionContentsDecoder = JsonDecoder.object<MinionContents>(
     minionId: JsonDecoder.string,
     minionCardDef: cardDefDecoder,
     minionDamage: JsonDecoder.number,
+    minionUpgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
   }, 'MinionContents')
 
 export const minionDecoder = JsonDecoder.object<Minion>(

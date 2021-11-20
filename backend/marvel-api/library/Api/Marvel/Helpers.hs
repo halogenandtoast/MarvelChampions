@@ -26,6 +26,7 @@ import Marvel.Queue
 import Marvel.Scenario
 import Marvel.SideScheme
 import Marvel.Support
+import Marvel.Upgrade
 import Marvel.Villain
 
 data ApiGame = ApiGame
@@ -39,6 +40,7 @@ data ApiGame = ApiGame
   , minions :: HashMap MinionId Minion
   , attachments :: HashMap AttachmentId Attachment
   , supports :: HashMap SupportId Support
+  , upgrades :: HashMap UpgradeId Upgrade
   , sideSchemes :: HashMap SideSchemeId SideScheme
   , state :: GameState
   }
@@ -60,6 +62,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , minions = gameMinions
         , attachments = gameAttachments
         , supports = gameSupports
+        , upgrades = gameUpgrades
         , sideSchemes = gameSideSchemes
         , state = gameState
         }

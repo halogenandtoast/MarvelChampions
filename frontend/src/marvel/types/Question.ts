@@ -61,6 +61,10 @@ export interface Thwart {
   tag: 'Thwart'
 }
 
+export interface RemoveThreat {
+  tag: 'RemoveThreat'
+}
+
 export interface PayWithCard {
   tag: 'PayWithCard',
   contents: PlayerCard,
@@ -79,6 +83,8 @@ export const allyAttackDecoder = JsonDecoder.object<AllyAttack>({ tag: JsonDecod
 export const allyThwartDecoder = JsonDecoder.object<AllyThwart>({ tag: JsonDecoder.isExactly('AllyThwart') }, 'AllyThwart')
 
 export const thwartDecoder = JsonDecoder.object<Thwart>({ tag: JsonDecoder.isExactly('Thwart') }, 'Thwart')
+
+export const removeThreatDecoder = JsonDecoder.object<RemoveThreat>({ tag: JsonDecoder.isExactly('RemoveThreat') }, 'RemoveThreat')
 
 export interface UseAbility {
   tag: 'UseAbility'
@@ -135,6 +141,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   createEffectDecoder,
   allyAttackDecoder,
   allyThwartDecoder,
+  removeThreatDecoder,
   thwartDecoder], 'AbilityChoice')
 
 export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
@@ -194,7 +201,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat
 
 export interface ChangeForm {
   tag: 'ChangeForm'

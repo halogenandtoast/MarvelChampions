@@ -30,11 +30,15 @@ import Data.UUID as X (UUID)
 import Data.Vector as X (Vector)
 import Relude as X hiding (One)
 import Relude.Extra.Map as X
+import GHC.Natural as X (minusNaturalMaybe)
 
 import Data.Aeson.Casing (camelCase)
 import Data.Char qualified as C
 import Data.Text qualified as T
 import Language.Haskell.TH hiding (location)
+
+subtractNatural :: Natural -> Natural -> Natural
+subtractNatural a b = fromMaybe 0 (minusNaturalMaybe b a)
 
 tshow :: Show a => a -> T.Text
 tshow = T.pack . show

@@ -3,6 +3,7 @@ module Marvel.Minion.Attrs where
 
 import Marvel.Prelude
 
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -15,6 +16,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Window qualified as W
 
 class IsMinion a
 
@@ -31,6 +33,7 @@ data MinionAttrs = MinionAttrs
   , minionStunned :: Bool
   , minionConfused :: Bool
   , minionAttacking :: Maybe CharacterId
+  , minionUpgrades :: HashSet UpgradeId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -60,6 +63,7 @@ minion f cardDef sch atk hp = CardBuilder
     , minionStunned = False
     , minionConfused = False
     , minionAttacking = Nothing
+    , minionUpgrades = mempty
     }
   }
 
@@ -93,15 +97,21 @@ runMinionMessage msg attrs = case msg of
   MinionDamaged _ damage -> do
     when
       (damage + minionDamage attrs >= unHp (minionHitPoints attrs))
-      (push $ MinionMessage (toId attrs) MinionDefeated)
+      (pushAll
+         [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
+         , MinionMessage (toId attrs) MinionDefeated
+         ])
     pure $ attrs & damageL +~ damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
+  UpgradeAttachedToMinion upgradeId ->
+    pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   RevealMinion -> pure attrs
   MinionDefeated -> do
-    pushAll
-      [ RemoveFromPlay (toTarget attrs)
+    pushAll $
+      map (RemoveFromPlay . UpgradeTarget) (toList $ minionUpgrades attrs)
+      <> [ RemoveFromPlay (toTarget attrs)
       , IdentityMessage
         (minionEngagedIdentity attrs)
         (MinionDisengaged $ toId attrs)

@@ -9,6 +9,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -54,4 +55,9 @@ isTarget :: (Entity a, EntityAttrs a ~ TreacheryAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
 instance RunMessage TreacheryAttrs where
-  runMessage _ = pure
+  runMessage msg attrs = case msg of
+    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
+      ResolvedTreachery ->
+        attrs <$ push (RemoveFromPlay (toTarget attrs))
+      _ -> pure attrs
+    _ -> pure attrs
