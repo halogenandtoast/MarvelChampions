@@ -258,7 +258,8 @@ runGameMessage msg g@Game {..} = case msg of
       MinionType -> do
         let minion = createMinion ident card
         pushAll
-          [ IdentityMessage ident (MinionEngaged $ toId minion)
+          [ CheckWindows [ W.Window When $ W.MinionEnteredPlay $ toId minion ]
+          , IdentityMessage ident (MinionEngaged $ toId minion)
           , MinionMessage (toId minion) RevealMinion
           ]
         pure $ g & minionsL %~ insert (toId minion) minion

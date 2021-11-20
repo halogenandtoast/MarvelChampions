@@ -60,8 +60,8 @@ instance RunMessage WebbedUp where
           replaceMatchingMessage
               [ RemoveFromPlay (toTarget a)
               , case enemyId of
-                  EnemyVillainId enemyId ->
-                    VillainMessage enemyId (VillainStunned $ toSource a)
+                  EnemyVillainId villainId ->
+                    VillainMessage villainId (VillainStunned $ toSource a)
                   EnemyMinionId minionId ->
                     MinionMessage minionId (MinionStunned $ toSource a)
               ]

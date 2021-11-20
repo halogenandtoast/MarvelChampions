@@ -202,4 +202,5 @@ instance RunMessage AllyAttrs where
           , IdentityMessage (allyController a) (DiscardCard $ toCard a)
           ]
         pure a
+      SpendAllyUse -> pure $ a & countersL -~ 1
     _ -> pure a

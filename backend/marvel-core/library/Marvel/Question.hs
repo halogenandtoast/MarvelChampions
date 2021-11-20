@@ -214,6 +214,7 @@ costMessages a = go (abilityCost a)
       _ -> error "Unhandled"
     UseCost -> case abilitySource a of
       UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
+      AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
     Costs xs -> concatMap go xs
     _ -> error $ "Unhandled: " <> show (abilityCost a)
