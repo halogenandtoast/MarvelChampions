@@ -96,14 +96,27 @@ export interface Source {
   contents: string
 }
 
+interface EnemyVillainId { tag: 'EnemyVillainId', contents: string }
+interface EnemyMinionId { tag: 'EnemyMinionId', contents: string }
+
+export type TargetContents =  EnemyVillainId | EnemyMinionId | string
+
 export interface Target {
   tag: string,
-  contents: string
+  contents: TargetContents
 }
 
 export const sourceDecoder = JsonDecoder.object<Source>({ tag: JsonDecoder.string, contents: JsonDecoder.string }, 'Source')
 
-export const targetDecoder = JsonDecoder.object<Target>({ tag: JsonDecoder.string, contents: JsonDecoder.string }, 'Target')
+export const targetDecoder = JsonDecoder.object<Target>(
+  {
+    tag: JsonDecoder.string,
+    contents: JsonDecoder.oneOf<TargetContents>([
+      JsonDecoder.object<EnemyVillainId>({ tag: JsonDecoder.isExactly('EnemyVillainId'), contents: JsonDecoder.string }, 'EnemyVillainId'),
+      JsonDecoder.object<EnemyMinionId>({ tag: JsonDecoder.isExactly('EnemyMinionId'), contents: JsonDecoder.string }, 'EnemyMinionId'),
+      JsonDecoder.string
+    ], 'TargetContents')
+  }, 'Target')
 
 
 export const changeFormDecoder = JsonDecoder.object<ChangeForm>({ tag: JsonDecoder.isExactly('ChangeForm') }, 'ChangeForm')
@@ -142,6 +155,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   allyAttackDecoder,
   allyThwartDecoder,
   removeThreatDecoder,
+  targetLabelDecoder,
   thwartDecoder], 'AbilityChoice')
 
 export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
@@ -201,7 +215,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel
 
 export interface ChangeForm {
   tag: 'ChangeForm'

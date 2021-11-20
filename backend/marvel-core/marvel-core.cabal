@@ -132,6 +132,7 @@ library
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
       Marvel.Upgrade.Upgrades.SpiderTracer
+      Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter
       Marvel.Villain
       Marvel.Villain.Attrs

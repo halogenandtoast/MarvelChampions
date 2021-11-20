@@ -11,6 +11,15 @@
       :identityId="identityId"
       @choose="$emit('choose', $event)"
     />
+    <Upgrade
+      v-for="upgrade in upgrades"
+      :key="upgrade.contents.upgradeId"
+      :upgrade="upgrade"
+      :game="game"
+      :identityId="identityId"
+      class="attached"
+      @choose="$emit('choose', $event)"
+    />
   </div>
 </template>
 
@@ -21,9 +30,10 @@ import { Villain } from '@/marvel/types/Villain'
 import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import Attachment from '@/marvel/components/Attachment.vue'
+import Upgrade from '@/marvel/components/Upgrade.vue'
 
 export default defineComponent({
-  components: { Card, Attachment },
+  components: { Card, Attachment, Upgrade },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -35,12 +45,33 @@ export default defineComponent({
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.villain.contents.villainId)
+      return choices.
+        value.
+        findIndex((choice) => {
+          if (choice.tag !== 'TargetLabel') {
+            return false
+          }
+
+          const { contents } = choice.target
+            if (typeof contents === "string") {
+              return contents == props.villain.contents.villainId
+            }
+
+            switch (contents.tag) {
+              case 'EnemyVillainId':
+                return contents.contents === props.villain.contents.villainId
+              default:
+                return false
+            }
+
+        })
     })
 
     const attachments = computed(() => props.villain.contents.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
 
-    return { card, activeAbility, attachments }
+    const upgrades = computed(() => props.villain.contents.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
+
+    return { card, activeAbility, attachments, upgrades }
   }
 })
 </script>

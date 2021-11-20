@@ -10,6 +10,7 @@ data Target
   = IdentityTarget IdentityId
   | VillainTarget VillainId
   | MinionTarget MinionId
+  | EnemyTarget EnemyId
   | AllyTarget AllyId
   | SupportTarget SupportId
   | EventTarget EventId

@@ -26,7 +26,15 @@ newtype SpiderTracer = SpiderTracer UpgradeAttrs
 
 instance HasAbilities SpiderTracer where
   getAbilities (SpiderTracer attrs) = case upgradeAttachedEnemy attrs of
-    Just (EnemyMinionId minionId) -> [windowAbility attrs 1 (MinionDefeated When $ MinionWithId minionId) ForcedInterrupt NoCost $ RemoveThreat (toSource attrs) 3 AnyScheme]
+    Just (EnemyMinionId minionId) ->
+      [ windowAbility
+            attrs
+            1
+            (MinionDefeated When $ MinionWithId minionId)
+            ForcedInterrupt
+            NoCost
+          $ RemoveThreat (toSource attrs) 3 AnyScheme
+      ]
     _ -> []
 
 instance RunMessage SpiderTracer where
@@ -34,7 +42,16 @@ instance RunMessage SpiderTracer where
     UpgradeMessage upgradeId msg' | upgradeId == toId a -> case msg' of
       PlayedUpgrade -> do
         minions <- selectList AnyMinion
-        chooseOne (upgradeController a) $ map (\minionId -> TargetLabel (MinionTarget minionId) [Run [UpgradeMessage (toId a) $ AttachedToMinion minionId]]) minions
+        chooseOne (upgradeController a) $ map
+          (\minionId -> TargetLabel
+            (MinionTarget minionId)
+            [ Run
+                [ UpgradeMessage (toId a) $ AttachedToEnemy $ EnemyMinionId
+                    minionId
+                ]
+            ]
+          )
+          minions
         pure u
       _ -> SpiderTracer <$> runMessage msg a
     _ -> SpiderTracer <$> runMessage msg a

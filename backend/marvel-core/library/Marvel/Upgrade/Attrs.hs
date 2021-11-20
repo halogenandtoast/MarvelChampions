@@ -90,7 +90,11 @@ instance RunMessage UpgradeAttrs where
         pure $ a & usesL -~ 1
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
-      AttachedToMinion minionId -> do
-        push (MinionMessage minionId $ UpgradeAttachedToMinion (toId a))
-        pure $ a & attachedEnemyL ?~ EnemyMinionId minionId
+      AttachedToEnemy enemyId -> do
+        case enemyId of
+          EnemyMinionId minionId ->
+            push (MinionMessage minionId $ UpgradeAttachedToMinion (toId a))
+          EnemyVillainId villainId ->
+            push (VillainMessage villainId $ UpgradeAttachedToVillain (toId a))
+        pure $ a & attachedEnemyL ?~ enemyId
     _ -> pure a
