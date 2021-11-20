@@ -90,6 +90,7 @@ data VillainMessage
   | VillainSchemed
   | VillainDefendedBy CharacterId
   | AttachedToVillain AttachmentId
+  | UpgradeAttachedToVillain UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -149,7 +150,7 @@ data UpgradeMessage
   = ExhaustedUpgrade
   | ReadiedUpgrade
   | PlayedUpgrade
-  | AttachedToMinion MinionId
+  | AttachedToEnemy EnemyId
   | SpendUpgradeUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

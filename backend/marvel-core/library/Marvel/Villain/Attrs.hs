@@ -54,6 +54,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainBoost = 0
     , villainAttacking = Nothing
     , villainAttachments = mempty
+    , villainUpgrades = mempty
     }
   }
 
@@ -71,6 +72,7 @@ data VillainAttrs = VillainAttrs
   , villainBoost :: Natural
   , villainAttacking :: Maybe CharacterId
   , villainAttachments :: HashSet AttachmentId
+  , villainUpgrades :: HashSet UpgradeId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -106,7 +108,9 @@ runVillainMessage msg attrs = case msg of
     then pure $ attrs & stunnedL .~ False
     else do
       pushAll
-        [ DealBoost (toTarget attrs)
+        [ CheckWindows
+          [Window When $ EnemyAttack (EnemyVillainId $ toId attrs) ident]
+        , DealBoost (toTarget attrs)
         , DeclareDefense ident (EnemyVillainId (toId attrs))
         , VillainMessage (toId attrs) VillainFlipBoostCards
         , VillainMessage (toId attrs) VillainAttacked
@@ -134,6 +138,8 @@ runVillainMessage msg attrs = case msg of
   DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
+  UpgradeAttachedToVillain upgradeId -> do
+    pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   VillainFlipBoostCards -> do
     let
       boost = foldr

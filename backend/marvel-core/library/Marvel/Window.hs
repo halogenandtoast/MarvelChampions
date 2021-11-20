@@ -22,6 +22,7 @@ data RevealSource = FromEncounterDeck
 data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
+  | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | MinionDefeated WindowTiming MinionMatcher
   deriving stock (Show, Eq, Generic)
@@ -40,6 +41,7 @@ data WindowType
   | IdentityTakeDamage IdentityId DamageSource Natural
   | RevealTreachery TreacheryId RevealSource
   | DefeatedMinion MinionId
+  | EnemyAttack EnemyId IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -59,6 +61,12 @@ windowMatches matcher w source = case matcher of
           (identityMatches identityMatcher ident)
           (gameValueMatches gameValueMatcher n)
       _ -> pure False
+  EnemyWouldAttack enemyMatcher identityMatcher -> case windowType w of
+    EnemyAttack enemyId ident | windowTiming w == When -> liftA2
+      (&&)
+      (identityMatches identityMatcher ident)
+      (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
   TreacheryRevealed timing treacheryMatcher revealSource ->
     case windowType w of
       RevealTreachery treacheryId revealSource'
@@ -67,9 +75,7 @@ windowMatches matcher w source = case matcher of
           (treacheryMatches treacheryMatcher treacheryId)
           (pure $ timing == windowTiming w)
       _ -> pure False
-  MinionDefeated timing minionMatcher ->
-    case windowType w of
-      DefeatedMinion minionId
-        | windowTiming w == timing ->
-          minionMatches minionMatcher minionId
-      _ -> pure False
+  MinionDefeated timing minionMatcher -> case windowType w of
+    DefeatedMinion minionId | windowTiming w == timing ->
+      minionMatches minionMatcher minionId
+    _ -> pure False

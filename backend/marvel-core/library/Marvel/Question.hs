@@ -3,7 +3,7 @@ module Marvel.Question where
 import Marvel.Prelude
 
 import Data.List (partition)
-import qualified Data.List as L
+import Data.List qualified as L
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -120,6 +120,7 @@ data Choice
   | AllyDefend AllyId EnemyId
   | CreateEffect CardDef Source ChooseATarget
   | RemoveThreat Source Natural SchemeMatcher
+  | DiscardTarget Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -176,8 +177,11 @@ choiceMessages ident = \case
         ]
   Stun target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
-    MinionTarget vid -> pure [MinionMessage vid $ MinionStunned source]
-    _ -> error "can not damage target"
+    MinionTarget mid -> pure [MinionMessage mid $ MinionStunned source]
+    EnemyTarget eid -> case eid of
+      EnemyVillainId vid -> pure [VillainMessage vid $ VillainStunned source]
+      EnemyMinionId mid -> pure [MinionMessage mid $ MinionStunned source]
+    _ -> error "can not stun target"
   Confuse target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainConfused source]
     MinionTarget vid -> pure [MinionMessage vid $ MinionConfused source]
@@ -191,6 +195,7 @@ choiceMessages ident = \case
   AllyAttack allyId -> pure [AllyMessage allyId AllyAttacked]
   AllyThwart allyId -> pure [AllyMessage allyId AllyThwarted]
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
+  DiscardTarget target -> pure [RemoveFromPlay target]
 
 costMessages :: Ability -> [Message]
 costMessages a = go (abilityCost a)

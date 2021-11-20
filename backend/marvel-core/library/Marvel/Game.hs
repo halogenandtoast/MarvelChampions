@@ -136,11 +136,15 @@ runGameMessage msg g@Game {..} = case msg of
           sid
       pure $ g & supportsL %~ delete sid
     UpgradeTarget uid -> do
-      for_ (lookup uid gameUpgrades) $ \upgrade ->
-        pushAll $ map (IdentityMessage (getUpgradeController upgrade))
-          [ UpgradeRemoved uid
-          , DiscardCard $ PlayerCard (CardId . unUpgradeId $ toId upgrade) (getCardDef upgrade) (Just $ getUpgradeController upgrade) (Just $ getUpgradeController upgrade)
-          ]
+      for_ (lookup uid gameUpgrades) $ \upgrade -> pushAll $ map
+        (IdentityMessage (getUpgradeController upgrade))
+        [ UpgradeRemoved uid
+        , DiscardCard $ PlayerCard
+          (CardId . unUpgradeId $ toId upgrade)
+          (getCardDef upgrade)
+          (Just $ getUpgradeController upgrade)
+          (Just $ getUpgradeController upgrade)
+        ]
       pure $ g & upgradesL %~ delete uid
     MinionTarget mid -> do
       for_ (lookup mid gameMinions) $ \minion ->
@@ -234,10 +238,7 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & supportsL %~ insert (toId support) support
       UpgradeType -> do
         let upgrade = createUpgrade ident card
-        pushAll
-          [ IdentityMessage ident (UpgradeCreated $ toId upgrade)
-          , UpgradeMessage (toId upgrade) PlayedUpgrade
-          ]
+        push $ UpgradeMessage (toId upgrade) PlayedUpgrade
         pure $ g & upgradesL %~ insert (toId upgrade) upgrade
       EventType -> do
         let event = createEvent ident card
@@ -599,7 +600,9 @@ gameSelectUpgrade = \case
     pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) upgrades
   UpgradeWithUses gameValueMatcher -> do
     upgrades <- toList <$> getsGame gameUpgrades
-    HashSet.fromList . map toId <$> filterM (gameValueMatches gameValueMatcher . getUpgradeUses) upgrades
+    HashSet.fromList
+      . map toId
+      <$> filterM (gameValueMatches gameValueMatcher . getUpgradeUses) upgrades
   UpgradeControlledBy identityMatcher -> do
     upgrades <- toList <$> getsGame gameUpgrades
     identities <- select identityMatcher
@@ -609,6 +612,11 @@ gameSelectUpgrade = \case
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case
+  EnemyWithId enemyId -> case enemyId of
+    EnemyVillainId villainId ->
+      HashSet.map EnemyVillainId <$> gameSelectVillain (VillainWithId villainId)
+    EnemyMinionId minionId ->
+      HashSet.map EnemyMinionId <$> gameSelectMinion (MinionWithId minionId)
   AnyEnemy -> do
     villains <- toList <$> getsGame gameVillains
     minions <- toList <$> getsGame gameMinions
@@ -622,6 +630,9 @@ gameSelectVillain = \case
   ActiveVillain -> do
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map toId villains
+  VillainWithId ident' -> do
+    villains <- toList <$> getsGame gameVillains
+    pure $ HashSet.fromList $ map toId $ filter ((== ident') . toId) villains
 
 gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion = \case

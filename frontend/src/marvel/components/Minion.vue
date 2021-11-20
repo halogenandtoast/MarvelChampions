@@ -34,7 +34,26 @@ export default defineComponent({
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.minion.contents.minionId)
+      return choices.
+        value.
+        findIndex((choice) => {
+          if (choice.tag !== 'TargetLabel') {
+            return false
+          }
+
+          const { contents } = choice.target
+            if (typeof contents === "string") {
+              return contents == props.villain.contents.villainId
+            }
+
+            switch (contents.tag) {
+              case 'EnemyMinionId':
+                return contents.contents === props.villain.contents.villainId
+              default:
+                return false
+            }
+
+        })
     })
 
     const upgrades = computed(() => props.minion.contents.minionUpgrades.map((minionId) => props.game.upgrades[minionId]))

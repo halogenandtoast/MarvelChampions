@@ -54,8 +54,16 @@ pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
 
 data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy IdentityMatcher | UnexhaustedUpgrade
 
-data EnemyMatcher = AnyEnemy
-data VillainMatcher = ActiveVillain
+data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+enemyMatches :: MonadGame env m => EnemyMatcher -> EnemyId -> m Bool
+enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
+
+data VillainMatcher = ActiveVillain | VillainWithId VillainId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)

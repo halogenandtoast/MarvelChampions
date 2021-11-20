@@ -8,6 +8,7 @@ export interface VillainContents {
   villainMaxHp: number
   villainStunned: boolean
   villainAttachments: string[]
+  villainUpgrades: string[]
 }
 
 export interface Villain {
@@ -22,6 +23,7 @@ export const villainContentsDecoder = JsonDecoder.object<VillainContents>({
   villainMaxHp: JsonDecoder.number,
   villainStunned: JsonDecoder.boolean,
   villainAttachments: JsonDecoder.array<string>(JsonDecoder.string, 'AttachmentId[]'),
+  villainUpgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
 }, 'VillainContents')
 
 export const villainDecoder = JsonDecoder.object<Villain>({
