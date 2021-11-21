@@ -81,8 +81,10 @@ instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted
 
 instance HasResources PlayerIdentity where
-  resourcesFor player card =
-    concatMap (`resourcesFor` card) (unHand $ playerIdentityHand player)
+  resourcesFor player card = handResources
+   where
+    handResources =
+      concatMap (`resourcesFor` card) (unHand $ playerIdentityHand player)
 
 instance ToJSON PlayerIdentity where
   toJSON = genericToJSON $ aesonOptions $ Just "playerIdentity"
@@ -183,6 +185,8 @@ isPlayable attrs c = do
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+    AllyExists m -> selectAny m
+    ExtendedCardExists m -> selectAny m
 
 getModifiedCost :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do

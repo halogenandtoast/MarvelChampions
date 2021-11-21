@@ -381,6 +381,8 @@ isWindowPlayable window attrs c = do
       member ident <$> select (IdentityWithId ident <> identityMatcher)
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+    AllyExists m -> selectAny m
+    ExtendedCardExists m -> selectAny m
 
 abilityInWindow :: MonadGame env m => Window -> Ability -> m Bool
 abilityInWindow window a = maybe
@@ -641,6 +643,7 @@ gameSelectAlly m = do
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
+    AnyAlly -> pure . const True
     UnexhaustedAlly -> pure . not . isExhausted
     ExhaustedAlly -> pure . isExhausted
     AllyControlledBy identityMatcher -> \ally -> do
@@ -741,7 +744,12 @@ gameSelectScheme = \case
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do
   effects <- toList <$> getsGame gameEffects
-  concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+  upgrades <- toList <$> getsGame gameUpgrades
+  liftA2
+    (<>)
+    (concatMapM (getModifiersFor (toSource a) (toTarget a)) effects)
+    (concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades)
+
 
 getCurrentWindows :: MonadGame env m => m [Window]
 getCurrentWindows = do

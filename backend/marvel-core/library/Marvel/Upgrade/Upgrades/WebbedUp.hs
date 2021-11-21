@@ -12,20 +12,21 @@ import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Question
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
-import qualified Marvel.Upgrade.Cards as Cards
+import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Window
 
 webbedUp :: UpgradeCard WebbedUp
 webbedUp = upgrade WebbedUp Cards.webbedUp
 
 newtype WebbedUp = WebbedUp UpgradeAttrs
-  deriving anyclass IsUpgrade
+  deriving anyclass (IsUpgrade, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities WebbedUp where
@@ -60,10 +61,10 @@ instance RunMessage WebbedUp where
           replaceMatchingMessage
               [ RemoveFromPlay (toTarget a)
               , case enemyId of
-                  EnemyVillainId villainId ->
-                    VillainMessage villainId (VillainStunned $ toSource a)
-                  EnemyMinionId minionId ->
-                    MinionMessage minionId (MinionStunned $ toSource a)
+                EnemyVillainId villainId ->
+                  VillainMessage villainId (VillainStunned $ toSource a)
+                EnemyMinionId minionId ->
+                  MinionMessage minionId (MinionStunned $ toSource a)
               ]
             $ \case
                 VillainMessage _ (VillainBeginAttack _) -> True

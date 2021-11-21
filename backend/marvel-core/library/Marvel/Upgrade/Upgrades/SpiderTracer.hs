@@ -9,6 +9,7 @@ import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message hiding (MinionDefeated)
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Source
@@ -21,7 +22,7 @@ spiderTracer :: UpgradeCard SpiderTracer
 spiderTracer = upgrade SpiderTracer Cards.spiderTracer
 
 newtype SpiderTracer = SpiderTracer UpgradeAttrs
-  deriving anyclass IsUpgrade
+  deriving anyclass (IsUpgrade, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities SpiderTracer where

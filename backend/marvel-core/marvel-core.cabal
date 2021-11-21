@@ -136,6 +136,7 @@ library
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.Inspired
       Marvel.Upgrade.Upgrades.SpiderTracer
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter

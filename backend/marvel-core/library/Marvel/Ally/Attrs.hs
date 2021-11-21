@@ -3,6 +3,7 @@ module Marvel.Ally.Attrs where
 
 import Marvel.Prelude
 
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -38,6 +39,7 @@ data AllyAttrs = AllyAttrs
   , allyController :: IdentityId
   , allyExhausted :: Bool
   , allyCounters :: Natural
+  , allyUpgrades :: HashSet UpgradeId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -83,6 +85,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
       , allyHitPoints = hp
       , allyExhausted = False
       , allyCounters = 0
+      , allyUpgrades = mempty
       }
     }
 
@@ -192,8 +195,7 @@ instance RunMessage AllyAttrs where
               MinionMessage vid $ MinionDefendedBy (AllyCharacter $ toId a)
           ]
         pure a
-      AllyHealed n ->
-        pure $ a & damageL %~ subtractNatural n
+      AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyDamaged _ damage -> do
         when
           (damage + (allyDamage a) >= unHp (allyHitPoints a))
@@ -206,4 +208,6 @@ instance RunMessage AllyAttrs where
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
+      UpgradeAttachedToAlly upgradeId ->
+        pure $ a & upgradesL %~ HashSet.insert upgradeId
     _ -> pure a

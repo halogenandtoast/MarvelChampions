@@ -1,3 +1,4 @@
+{-# LANGUAGE QuantifiedConstraints #-}
 module Marvel.Prelude
   ( module Marvel.Prelude
   , module X
@@ -28,9 +29,9 @@ import Data.Aeson as X
 import Data.Traversable as X (for)
 import Data.UUID as X (UUID)
 import Data.Vector as X (Vector)
+import GHC.Natural as X (minusNaturalMaybe)
 import Relude as X hiding (One)
 import Relude.Extra.Map as X
-import GHC.Natural as X (minusNaturalMaybe)
 
 import Data.Aeson.Casing (camelCase)
 import Data.Char qualified as C
@@ -70,4 +71,7 @@ aesonOptions ms = defaultOptions { fieldLabelModifier = camelCase . drop len }
 
 curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
 curry3 f a b c = f (a, b, c)
+
+class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
+instance (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
 
