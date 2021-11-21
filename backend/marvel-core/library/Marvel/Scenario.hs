@@ -3,6 +3,7 @@ module Marvel.Scenario where
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.GameValue
@@ -52,3 +53,6 @@ instance Entity Scenario where
   type EntityAttrs Scenario = ScenarioAttrs
   toId = toId . toAttrs
   toAttrs = genericToAttrs
+
+getScenarioDifficulty :: Scenario -> Difficulty
+getScenarioDifficulty = scenarioDifficulty . toAttrs

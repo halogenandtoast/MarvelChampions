@@ -2,9 +2,10 @@ module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Card.EncounterCard
+import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Entity
@@ -14,8 +15,9 @@ import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue
 import Marvel.Target
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 import System.Random.Shuffle
+
 
 data ScenarioAttrs = ScenarioAttrs
   { scenarioId :: CardCode
@@ -27,6 +29,7 @@ data ScenarioAttrs = ScenarioAttrs
   , scenarioEncounterSets :: HashSet EncounterSet
   , scenarioEncounterDeck :: [EncounterCard]
   , scenarioDiscard :: [EncounterCard]
+  , scenarioDifficulty :: Difficulty
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -49,6 +52,7 @@ scenario f cCode villains encounterSets threshold iThreat acceleration =
     , scenarioThreat = 0
     , scenarioEncounterDeck = mempty
     , scenarioDiscard = mempty
+    , scenarioDifficulty = Normal
     , scenarioEncounterSets = HashSet.fromList encounterSets
     , scenarioThreshold = threshold
     }

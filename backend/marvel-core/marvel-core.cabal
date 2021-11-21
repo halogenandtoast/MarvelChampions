@@ -50,6 +50,7 @@ library
       Marvel.Criteria
       Marvel.Debug
       Marvel.Deck
+      Marvel.Difficulty
       Marvel.Discard
       Marvel.Effect
       Marvel.Effect.Attrs
