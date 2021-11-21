@@ -8,6 +8,7 @@ import Marvel.Ally.Allies
 import Marvel.Ally.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -52,6 +53,9 @@ getAllyUses = allyCounters . toAttrs
 
 getAllyDamage :: Ally -> Natural
 getAllyDamage = allyDamage . toAttrs
+
+instance HasCardDef Ally where
+  getCardDef = getCardDef . toAttrs
 
 instance HasAbilities Ally where
   getAbilities a = genericGetAbilities a <> basicAbilities

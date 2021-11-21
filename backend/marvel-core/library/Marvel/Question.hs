@@ -120,7 +120,9 @@ data Choice
   | AllyDefend AllyId EnemyId
   | CreateEffect CardDef Source ChooseATarget
   | RemoveThreat Source Natural SchemeMatcher
+  | ChooseDamage Source Natural EnemyMatcher
   | DiscardTarget Target
+  | YouDrawCards Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -156,7 +158,10 @@ choiceMessages ident = \case
   Pay payment -> pure [Paid payment]
   DamageEnemy target source n -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainDamaged source n]
-    MinionTarget vid -> pure [MinionMessage vid $ MinionDamaged source n]
+    MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
+    EnemyTarget enemy -> case enemy of
+      EnemyVillainId vid -> pure [VillainMessage vid $ VillainDamaged source n]
+      EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
     _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
@@ -175,6 +180,19 @@ choiceMessages ident = \case
             [ TargetLabel target [f target]
             | x <- xs
             , let target = SchemeTarget x
+            ]
+        ]
+  ChooseDamage source n enemyMatcher -> do
+    enemies <- selectList enemyMatcher
+    let f target = DamageEnemy target source n
+    case enemies of
+      [] -> pure []
+      [x] -> choiceMessages ident (f $ EnemyTarget x)
+      xs -> pure
+        [ Ask ident $ ChooseOne
+            [ TargetLabel target [f target]
+            | x <- xs
+            , let target = EnemyTarget x
             ]
         ]
   Stun target source -> case target of
@@ -202,6 +220,7 @@ choiceMessages ident = \case
   AllyThwart allyId -> pure [AllyMessage allyId AllyThwarted]
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
   DiscardTarget target -> pure [RemoveFromPlay target]
+  YouDrawCards n -> pure [IdentityMessage ident $ DrawCards FromDeck n]
 
 costMessages :: Ability -> [Message]
 costMessages a = go (abilityCost a)

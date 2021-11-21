@@ -47,6 +47,9 @@ makeLensesWith suffixedFields ''AllyAttrs
 instance HasCardCode AllyAttrs where
   toCardCode = toCardCode . allyCardDef
 
+instance HasCardDef AllyAttrs where
+  getCardDef = allyCardDef
+
 allyWith
   :: (AllyAttrs -> a)
   -> CardDef

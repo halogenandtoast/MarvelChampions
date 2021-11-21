@@ -128,8 +128,17 @@ runGameMessage msg g@Game {..} = case msg of
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   RemoveFromPlay target -> case target of
     AllyTarget aid -> do
-      for_ (lookup aid gameAllies) $ \ally ->
-        push $ IdentityMessage (getAllyController ally) $ AllyRemoved aid
+      for_ (lookup aid gameAllies) $ \ally -> do
+        let ident = getAllyController ally
+        pushAll $ map
+          (IdentityMessage ident)
+          [ AllyRemoved aid
+          , DiscardCard $ PlayerCard
+            (CardId . unAllyId $ toId ally)
+            (getCardDef ally)
+            (Just ident)
+            (Just ident)
+          ]
       pure $ g & alliesL %~ delete aid
     SupportTarget sid -> do
       for_ (lookup sid gameSupports) $ \support ->
@@ -259,7 +268,7 @@ runGameMessage msg g@Game {..} = case msg of
       MinionType -> do
         let minion = createMinion ident card
         pushAll
-          [ CheckWindows [ W.Window When $ W.MinionEnteredPlay $ toId minion ]
+          [ CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
           , IdentityMessage ident (MinionEngaged $ toId minion)
           , MinionMessage (toId minion) RevealMinion
           ]

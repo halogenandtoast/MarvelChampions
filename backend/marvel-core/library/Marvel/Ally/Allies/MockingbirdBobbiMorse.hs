@@ -7,6 +7,7 @@ import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
@@ -29,11 +30,12 @@ mockingbirdBobbiMorse = ally
 
 instance HasAbilities MockingbirdBobbiMorse where
   getAbilities a =
-    [ windowAbility
+    [ limitedWindowAbility
         a
         1
         (PlayThis After)
         Response
+        OwnsThis
         NoCost
         (RunAbility (toTarget a) 1)
     ]
