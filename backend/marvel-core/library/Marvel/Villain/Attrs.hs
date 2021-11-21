@@ -6,7 +6,7 @@ module Marvel.Villain.Attrs
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Boost
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -30,6 +30,17 @@ import Marvel.Window
 class IsVillain a
 
 type VillainCard a = CardBuilder VillainId a
+
+villainWith
+  :: (VillainAttrs -> a)
+  -> CardDef
+  -> Sch
+  -> Atk
+  -> HP GameValue
+  -> (VillainAttrs -> VillainAttrs)
+  -> VillainCard a
+villainWith f cardDef sch atk startingHp g =
+  villain (f . g) cardDef sch atk startingHp
 
 villain
   :: (VillainAttrs -> a)
@@ -55,6 +66,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainAttacking = Nothing
     , villainAttachments = mempty
     , villainUpgrades = mempty
+    , villainStage = 1
     }
   }
 
@@ -73,6 +85,7 @@ data VillainAttrs = VillainAttrs
   , villainAttacking :: Maybe CharacterId
   , villainAttachments :: HashSet AttachmentId
   , villainUpgrades :: HashSet UpgradeId
+  , villainStage :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -88,6 +101,9 @@ instance Entity VillainAttrs where
 runVillainMessage
   :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
 runVillainMessage msg attrs = case msg of
+  VillainAdvanced -> do
+    push (VillainMessage (toId attrs) SetVillainHp)
+    pure attrs
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
     pure $ attrs & hpL .~ HP hp & maxHpL .~ HP hp
@@ -99,8 +115,14 @@ runVillainMessage msg attrs = case msg of
       . min (unHp $ villainMaxHp attrs)
       . (+ fromIntegral n)
       . unHp
-  VillainDamaged _ n ->
+  VillainDamaged _ n -> do
+    when
+      (subtractNatural n (fromIntegral . unHp $ villainHp attrs) == 0)
+      (push $ VillainMessage (toId attrs) VillainDefeated)
     pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
+  VillainDefeated -> do
+    push (GameOver Won)
+    pure attrs
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
   VillainConfused _ -> pure $ attrs & confusedL .~ True
   VillainSchemes -> if villainConfused attrs
@@ -175,3 +197,21 @@ instance IsTarget VillainAttrs where
 
 instance IsSource VillainAttrs where
   toSource = VillainSource . villainId
+
+advanceVillainTo
+  :: (Entity a, EntityAttrs a ~ VillainAttrs, Coercible a VillainAttrs)
+  => VillainCard a
+  -> VillainAttrs
+  -> a
+advanceVillainTo newVillain VillainAttrs {..} = cbCardBuilder
+  (update <$> newVillain)
+  villainId
+ where
+  update =
+    coerce
+      . ((confusedL .~ villainConfused)
+        . (stunnedL .~ villainStunned)
+        . (attachmentsL .~ villainAttachments)
+        . toAttrs
+        )
+

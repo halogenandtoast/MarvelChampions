@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Debug
+import Marvel.Difficulty
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Matchers
 import {-# SOURCE #-} Marvel.Modifier
@@ -57,3 +58,4 @@ getAvailableResourcesFor :: MonadGame env m => Maybe PlayerCard -> m [Resource]
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: MonadGame env m => m [Window]
+getDifficulty :: MonadGame env m => m Difficulty

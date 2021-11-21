@@ -92,9 +92,11 @@ data VillainMessage
   | VillainSchemes
   | VillainSchemed
   | VillainHealed Natural
+  | VillainDefeated
   | VillainDefendedBy CharacterId
   | AttachedToVillain AttachmentId
   | UpgradeAttachedToVillain UpgradeId
+  | VillainAdvanced
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

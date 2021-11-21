@@ -17,6 +17,7 @@ import Marvel.Card.PlayerCard
 import Marvel.Criteria
 import Marvel.Debug
 import Marvel.Deck
+import Marvel.Difficulty
 import Marvel.Discard
 import Marvel.Effect
 import Marvel.Entity
@@ -757,6 +758,9 @@ getCurrentWindows = do
   pure $ case windows of
     [] -> []
     x : _ -> x
+
+getDifficulty :: MonadGame env m => m Difficulty
+getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
 
 abilityResources :: MonadGame env m => Ability -> m [Resource]
 abilityResources a = go (abilityChoices a)
