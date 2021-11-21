@@ -196,14 +196,12 @@ runGameMessage msg g@Game {..} = case msg of
     Just activeCost -> do
       case activeCostTarget activeCost of
         ForCard card -> do
-          push $ Paid $ mconcat $ map
-            ResourcePayment
-            (resourcesFor discard $ Just card)
+          resources <- resourcesFor discard $ Just card
+          push $ Paid $ mconcat $ map ResourcePayment resources
           pure g
         ForAbility _ -> do
-          push $ Paid $ mconcat $ map
-            ResourcePayment
-            (resourcesFor discard Nothing)
+          resources <- resourcesFor discard Nothing
+          push $ Paid $ mconcat $ map ResourcePayment resources
           pure g
     Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
@@ -562,7 +560,9 @@ getAvailablePaymentSources = do
 getAvailableResourcesFor :: MonadGame env m => Maybe PlayerCard -> m [Resource]
 getAvailableResourcesFor mc = do
   players <- toList <$> getsGame gamePlayers
-  pure $ concatMap (`resourcesFor` mc) players
+  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
+  playerResources <- concatMapM (`resourcesFor` mc) players
+  pure $ playerResources <> abilitiesResources
 
 getResourceAbilities :: MonadGame env m => m [Ability]
 getResourceAbilities = do
@@ -757,3 +757,11 @@ getCurrentWindows = do
   pure $ case windows of
     [] -> []
     x : _ -> x
+
+abilityResources :: MonadGame env m => Ability -> m [Resource]
+abilityResources a = go (abilityChoices a)
+ where
+  go [] = pure []
+  go (Pay (ResourcePayment r) : xs) = (r :) <$> go xs
+  go (_ : xs) = go xs
+

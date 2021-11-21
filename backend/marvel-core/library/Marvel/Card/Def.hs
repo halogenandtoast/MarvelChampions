@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Criteria
 import Marvel.EncounterSet
+import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Name
 import Marvel.Resource
@@ -17,7 +18,7 @@ import Marvel.Trait
 import Marvel.Window
 
 class HasResources a where
-  resourcesFor :: a -> Maybe PlayerCard -> [Resource]
+  resourcesFor :: MonadGame env m => a -> Maybe PlayerCard -> m [Resource]
 
 data CardType
   = AlterEgoType

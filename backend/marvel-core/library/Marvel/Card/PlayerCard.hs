@@ -23,7 +23,7 @@ instance HasCardDef PlayerCard where
   getCardDef = pcCardDef
 
 instance HasResources PlayerCard where
-  resourcesFor x mc = do
+  resourcesFor x mc = pure $ do
     guard $ Just x /= mc
     map snd $ filter isValidResource $ cdResources $ getCardDef x
    where

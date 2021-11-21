@@ -81,10 +81,8 @@ instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted
 
 instance HasResources PlayerIdentity where
-  resourcesFor player card = handResources
-   where
-    handResources =
-      concatMap (`resourcesFor` card) (unHand $ playerIdentityHand player)
+  resourcesFor player card =
+    concatMapM (`resourcesFor` card) (unHand $ playerIdentityHand player)
 
 instance ToJSON PlayerIdentity where
   toJSON = genericToJSON $ aesonOptions $ Just "playerIdentity"
