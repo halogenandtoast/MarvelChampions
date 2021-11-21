@@ -59,4 +59,6 @@ webbedUp = (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
   }
 
 inspired :: CardDef
-inspired = upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership
+inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
+  { cdCriteria = AllyExists AnyAlly
+  }

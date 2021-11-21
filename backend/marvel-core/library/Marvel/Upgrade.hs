@@ -10,6 +10,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Source
 import Marvel.TH
 import Marvel.Upgrade.Attrs
@@ -53,3 +54,6 @@ getUpgradeController = upgradeController . toAttrs
 
 getUpgradeUses :: Upgrade -> Natural
 getUpgradeUses = upgradeUses . toAttrs
+
+instance HasModifiersFor Upgrade where
+  getModifiersFor = genericGetModifiersFor

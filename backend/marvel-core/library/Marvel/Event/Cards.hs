@@ -94,7 +94,13 @@ leadFromTheFront =
     }
 
 makeTheCall :: CardDef
-makeTheCall = event "01071" "Make the Call" 0 [] [Mental] Leadership
+makeTheCall = (event "01071" "Make the Call" 0 [] [Mental] Leadership)
+  { cdCriteria =
+    ExtendedCardExists
+    $ InDiscardOf AnyIdentity
+    $ AffordableCardBy You
+    <> BasicCardMatches (CardWithType AllyType)
+  }
 
 firstAid :: CardDef
 firstAid = basicEvent "01086" "First Aid" 1 [] [Mental]

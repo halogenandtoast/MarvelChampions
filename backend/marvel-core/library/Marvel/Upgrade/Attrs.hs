@@ -23,6 +23,7 @@ data UpgradeAttrs = UpgradeAttrs
   , upgradeController :: IdentityId
   , upgradeExhausted :: Bool
   , upgradeAttachedEnemy :: Maybe EnemyId
+  , upgradeAttachedAlly :: Maybe AllyId
   , upgradeUses :: Natural
   , upgradeDiscardIfNoUses :: Bool
   }
@@ -51,6 +52,7 @@ upgrade f cardDef = CardBuilder
     , upgradeController = ident
     , upgradeExhausted = False
     , upgradeAttachedEnemy = Nothing
+    , upgradeAttachedAlly = Nothing
     , upgradeUses = 0
     , upgradeDiscardIfNoUses = False
     }
@@ -97,4 +99,7 @@ instance RunMessage UpgradeAttrs where
           EnemyVillainId villainId ->
             push (VillainMessage villainId $ UpgradeAttachedToVillain (toId a))
         pure $ a & attachedEnemyL ?~ enemyId
+      AttachedToAlly allyId -> do
+        push (AllyMessage allyId $ UpgradeAttachedToAlly (toId a))
+        pure $ a & attachedAllyL ?~ allyId
     _ -> pure a

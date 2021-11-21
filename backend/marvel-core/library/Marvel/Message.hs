@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE QuantifiedConstraints #-}
 module Marvel.Message where
 
 import Marvel.Prelude
@@ -145,6 +144,7 @@ data AllyMessage
   | AllyDefeated
   | AllyHealed Natural
   | SpendAllyUse
+  | UpgradeAttachedToAlly UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -159,6 +159,7 @@ data UpgradeMessage
   | ReadiedUpgrade
   | PlayedUpgrade
   | AttachedToEnemy EnemyId
+  | AttachedToAlly AllyId
   | SpendUpgradeUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -206,9 +207,6 @@ data SideMessage
   | Defended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
-
-class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
-instance (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
 
 class RunMessage a where
   runMessage :: (MonadGame env m, CoerceRole m) => Message -> a -> m a

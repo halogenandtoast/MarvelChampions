@@ -11,7 +11,9 @@ data Criteria
   | Unexhausted
   | OwnsThis
   | MinionExists MinionMatcher
+  | AllyExists AllyMatcher
   | SelfMatches IdentityMatcher
+  | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
   deriving stock (Show, Eq, Generic)
