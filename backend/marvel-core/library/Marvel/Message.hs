@@ -129,7 +129,7 @@ data EventMessage = PlayedEvent IdentityId Payment (Maybe Window) | ResolvedEven
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EffectMessage = DisableEffect
+data EffectMessage = DisableEffect | UsedEffect IdentityId | EffectChoice Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

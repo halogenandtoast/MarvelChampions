@@ -17,7 +17,7 @@ import Marvel.Trait
 import Marvel.Window
 
 class HasResources a where
-  resourcesFor :: a -> PlayerCard -> [Resource]
+  resourcesFor :: a -> Maybe PlayerCard -> [Resource]
 
 data CardType
   = AlterEgoType

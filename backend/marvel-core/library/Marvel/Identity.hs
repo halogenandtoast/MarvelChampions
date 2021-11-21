@@ -160,7 +160,7 @@ instance HasAbilities PlayerIdentity where
 
 isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
-  resources <- getAvailableResourcesFor c
+  resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def)
   pure

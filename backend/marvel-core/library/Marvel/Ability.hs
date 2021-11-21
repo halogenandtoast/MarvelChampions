@@ -145,7 +145,11 @@ passesCanAffordCost _ a = go (abilityCost a)
       UpgradeSource ident -> member ident <$> select UpgradeWithAnyUses
       AllySource ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
-    ResourceCost _ -> error "Unhandled"
+    ResourceCost mr -> do
+      resources <- getAvailableResourcesFor Nothing
+      pure $ case mr of
+        Nothing -> not (null resources)
+        Just r -> r `elem` resources
     Costs xs -> allM go xs
   source = abilitySource a
 

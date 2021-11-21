@@ -19,17 +19,25 @@ class IsEffect a
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
+data EffectTiming = DisableAtEndOfPhase | DisableAtEndOfRound
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data EffectAttrs = EffectAttrs
   { effectId :: EffectId
   , effectSource :: Source
   , effectMatcher :: EntityMatcher
   , effectModifiers :: [Modifier]
+  , effectEnds :: Maybe EffectTiming
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 modifiersL :: Lens' EffectAttrs [Modifier]
 modifiersL = lens effectModifiers $ \m x -> m { effectModifiers = x }
+
+endsL :: Lens' EffectAttrs (Maybe EffectTiming)
+endsL = lens effectEnds $ \m x -> m { effectEnds = x }
 
 instance IsTarget EffectAttrs where
   toTarget = EffectTarget . effectId
@@ -55,6 +63,7 @@ effect f cardDef = CardBuilder
     , effectSource = source
     , effectMatcher = matcher
     , effectModifiers = mempty
+    , effectEnds = Nothing
     }
   }
 
@@ -75,4 +84,11 @@ instance RunMessage EffectAttrs where
   runMessage msg a = case msg of
     EffectMessage ident msg' | ident == toId a -> case msg' of
       DisableEffect -> a <$ push (DisabledEffect $ toId a)
+      _ -> pure a
+    EndPhase _ -> a <$ when
+      (effectEnds a == Just DisableAtEndOfPhase)
+      (push $ EffectMessage (toId a) DisableEffect)
+    EndRound -> a <$ when
+      (effectEnds a == Just DisableAtEndOfRound)
+      (push $ EffectMessage (toId a) DisableEffect)
     _ -> pure a

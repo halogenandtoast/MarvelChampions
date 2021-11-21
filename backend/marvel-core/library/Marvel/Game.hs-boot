@@ -51,7 +51,7 @@ gameSelectCharacter
 
 instance HasAbilities Game
 
-getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
+getAvailableResourcesFor :: MonadGame env m => Maybe PlayerCard -> m [Resource]
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: MonadGame env m => m [Window]

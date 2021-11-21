@@ -3,8 +3,8 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import qualified Data.Aeson.Diff as Diff
-import qualified Data.HashSet as HashSet
+import Data.Aeson.Diff qualified as Diff
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -44,7 +44,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -196,7 +196,12 @@ runGameMessage msg g@Game {..} = case msg of
         ForCard card -> do
           push $ Paid $ mconcat $ map
             ResourcePayment
-            (resourcesFor discard card)
+            (resourcesFor discard $ Just card)
+          pure g
+        ForAbility _ -> do
+          push $ Paid $ mconcat $ map
+            ResourcePayment
+            (resourcesFor discard Nothing)
           pure g
     Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
@@ -226,10 +231,13 @@ runGameMessage msg g@Game {..} = case msg of
             (activeCostPayment activeCost)
             (activeCostWindow activeCost)
           pure $ g & activeCostL .~ Nothing
+        ForAbility _ -> pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
   CreatedEffect def source matcher -> do
     effectId <- getRandom
+    ident <- toId <$> getActivePlayer
     let effect = createEffect effectId (toCardCode def) source matcher
+    push $ EffectMessage effectId (UsedEffect ident)
     pure $ g & effectsL %~ insert effectId effect
   DisabledEffect effectId -> pure $ g & effectsL %~ delete effectId
   PutCardIntoPlay ident card payment mWindow -> do
@@ -347,7 +355,7 @@ getWindowPlayableCards window player = filterM
 isWindowPlayable
   :: MonadGame env m => Window -> PlayerIdentity -> PlayerCard -> m Bool
 isWindowPlayable window attrs c = do
-  resources <- getAvailableResourcesFor c
+  resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def)
   passedWindow <- maybe
@@ -544,10 +552,10 @@ getAvailablePaymentSources = do
   players <- toList <$> getsGame gamePlayers
   pure $ concatMap (unHand . playerIdentityHand) players
 
-getAvailableResourcesFor :: MonadGame env m => PlayerCard -> m [Resource]
-getAvailableResourcesFor c = do
+getAvailableResourcesFor :: MonadGame env m => Maybe PlayerCard -> m [Resource]
+getAvailableResourcesFor mc = do
   players <- toList <$> getsGame gamePlayers
-  pure $ concatMap (`resourcesFor` c) players
+  pure $ concatMap (`resourcesFor` mc) players
 
 getResourceAbilities :: MonadGame env m => m [Ability]
 getResourceAbilities = do
@@ -609,6 +617,7 @@ gameSelectAlly m = do
       gameValueMatches gameValueMatcher . getAllyUses
     AllyWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . getAllyDamage
+    AllyWithId ident' -> pure . (== ident') . toId
 
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case

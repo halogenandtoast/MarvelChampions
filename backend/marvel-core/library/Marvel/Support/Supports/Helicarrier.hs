@@ -38,16 +38,14 @@ newtype HelicarrierEffect = HelicarrierEffect EffectAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 helicarrierEffect :: CardEffect HelicarrierEffect
-helicarrierEffect = effectWith
-  HelicarrierEffect
-  Cards.helicarrier
-  (modifiersL .~ [ResourceCostReduction 1])
+helicarrierEffect =
+  effectWith HelicarrierEffect Cards.helicarrier
+    $ (modifiersL .~ [ResourceCostReduction 1])
+    . (endsL ?~ DisableAtEndOfPhase)
 
 instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of
-    IdentityMessage ident (PlayedCard _ _) -> do
-      whenM (effectValidFor attrs (IdentityTarget ident))
-        $ push (EffectMessage (toId attrs) DisableEffect)
-      pure e
-    EndPhase _ -> e <$ push (EffectMessage (toId attrs) DisableEffect)
+    IdentityMessage ident (PlayedCard _ _) -> e <$ whenM
+      (effectValidFor attrs (IdentityTarget ident))
+      (push $ EffectMessage (toId attrs) DisableEffect)
     _ -> HelicarrierEffect <$> runMessage msg attrs
