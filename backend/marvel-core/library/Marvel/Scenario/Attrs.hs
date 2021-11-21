@@ -2,7 +2,7 @@ module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Card.Code
 import Marvel.Card.EncounterCard
 import Marvel.EncounterCard
@@ -14,6 +14,7 @@ import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue
 import Marvel.Target
+import qualified Marvel.Window as W
 import System.Random.Shuffle
 
 data ScenarioAttrs = ScenarioAttrs
@@ -79,8 +80,14 @@ instance RunMessage ScenarioAttrs where
     StartScenario -> do
       players <- getPlayers
       encounterCards <- shuffleM =<< gatherEncounterSets scenarioEncounterSets
-      pushAll $ map AddVillain scenarioVillains
-        <> concatMap (\ident -> map (IdentityMessage ident) [DiscardCards, DrawOrDiscardToHandLimit]) players
+      pushAll
+        $ map AddVillain scenarioVillains
+        <> concatMap
+             (\ident -> map
+               (IdentityMessage ident)
+               [DiscardCards, DrawOrDiscardToHandLimit]
+             )
+             players
         <> [BeginPhase PlayerPhase]
       pure $ attrs & encounterDeckL .~ encounterCards
     BeginPhase PlayerPhase -> do
@@ -92,7 +99,12 @@ instance RunMessage ScenarioAttrs where
     EndPhase PlayerPhase -> do
       players <- getPlayers
       pushAll
-        $ concatMap (\ident -> map (IdentityMessage ident) [DiscardCards, DrawOrDiscardToHandLimit]) players
+        $ concatMap
+            (\ident -> map
+              (IdentityMessage ident)
+              [DiscardCards, DrawOrDiscardToHandLimit]
+            )
+            players
         <> map (($ ReadyCards) . IdentityMessage) players
         <> [BeginPhase VillainPhase]
       pure attrs
@@ -107,7 +119,7 @@ instance RunMessage ScenarioAttrs where
         <> [PassFirstPlayer, EndRound]
       pure attrs
     EndRound -> do
-      push BeginRound
+      pushAll [CheckWindows [W.Window W.When W.RoundEnded], BeginRound]
       pure attrs
     BeginRound -> do
       push (BeginPhase PlayerPhase)

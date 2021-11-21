@@ -7,6 +7,7 @@ import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
@@ -23,11 +24,12 @@ mariaHill = ally MariaHill Cards.mariaHill (Thw 2, 1) (Atk 1, 1) (HP 2)
 
 instance HasAbilities MariaHill where
   getAbilities a =
-    [ windowAbility
+    [ limitedWindowAbility
         a
         1
         (PlayThis After)
         Response
+        OwnsThis
         NoCost
         (RunAbility (toTarget a) 1)
     ]

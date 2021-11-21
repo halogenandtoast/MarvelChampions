@@ -8,6 +8,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Message
@@ -33,11 +34,12 @@ newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
 
 instance HasAbilities BlackCatFeliciaHardy where
   getAbilities a =
-    [ windowAbility
+    [ limitedWindowAbility
         a
         1
         (PlayThis After)
         ForcedResponse
+        OwnsThis
         NoCost
         (RunAbility (toTarget a) 1)
     ]

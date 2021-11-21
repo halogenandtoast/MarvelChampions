@@ -226,14 +226,17 @@
       "import Marvel.Target",
       "",
       "{dot|snakecase|camelcase} :: AllyCard {dot}",
-      "{dot|snakecase|camelcase} = event {dot} Cards.{dot|snakecase|camelcase}",
+      "{dot|snakecase|camelcase} = ally {dot} Cards.{dot|snakecase|camelcase} (Thw 1, 1) (Atk 1, 1) (HP 1)",
       "",
       "newtype {dot} = {dot} AllyAttrs",
       "  deriving anyclass IsAlly",
       "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
       "",
+      "instance HasAbilities NickFury where",
+      "  getAbilities _ = []",
+      "",
       "instance RunMessage {dot} where",
-      "  runMessage msg e@({dot} attrs) =",
+      "  runMessage msg ({dot} attrs) =",
       "    {dot} <$> runMessage msg attrs"
     ]
   }
