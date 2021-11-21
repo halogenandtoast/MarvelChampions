@@ -38,7 +38,7 @@ newtype MariaHill = MariaHill AllyAttrs
 
 instance RunMessage MariaHill where
   runMessage msg a = case msg of
-    RanAbility target 1 | isTarget a target -> do
+    RanAbility target 1 _ | isTarget a target -> do
       players <- getPlayers
       pushAll $ map (\p -> IdentityMessage p $ DrawCards FromDeck 1) players
       pure a

@@ -44,7 +44,7 @@ instance HasAbilities BlackCatFeliciaHardy where
 
 instance RunMessage BlackCatFeliciaHardy where
   runMessage msg a = case msg of
-    RanAbility target 1 | isTarget a target -> do
+    RanAbility target 1 _ | isTarget a target -> do
       push $ IdentityMessage (allyController $ toAttrs a) $ DiscardFrom
         FromDeck
         2

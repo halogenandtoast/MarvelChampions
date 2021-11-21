@@ -6,13 +6,15 @@ import Marvel.Ability
 import Marvel.Ally.Attrs
 import qualified Marvel.Ally.Cards as Cards
 import Marvel.Card.Code
-import Marvel.Criteria
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Hp
+import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
@@ -43,8 +45,16 @@ instance HasAbilities HawkeyeClintBarton where
         $ RunAbility (toTarget a) 1
     ]
 
+findMinion :: [WindowType] -> MinionId
+findMinion = \case
+  [] -> error "Invalid Call"
+  MinionEnteredPlay minionId : _ -> minionId
+  (_ : xs) -> findMinion xs
+
 instance RunMessage HawkeyeClintBarton where
   runMessage msg a = case msg of
-    RanAbility target 1 | isTarget a target ->
+    RanAbility target 1 windows | isTarget a target -> do
+      let minionId = findMinion $ map windowType windows
+      push $ MinionMessage minionId (MinionDamaged (toSource a) 2)
       pure a
     _ -> HawkeyeClintBarton <$> runMessage msg (toAttrs a)

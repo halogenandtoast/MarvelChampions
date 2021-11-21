@@ -145,7 +145,9 @@ choiceMessages ident = \case
   UseAbility a -> do
     rest <- concatMapM (choiceMessages ident) (abilityChoices a)
     pure $ UsedAbility ident a : costMessages a <> rest
-  RunAbility target n -> pure [RanAbility target n]
+  RunAbility target n -> do
+    windows <- getCurrentWindows
+    pure [RanAbility target n windows]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]

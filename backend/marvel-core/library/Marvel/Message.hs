@@ -53,7 +53,7 @@ data Message
   | AttachmentMessage AttachmentId AttachmentMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
-  | RanAbility Target Natural
+  | RanAbility Target Natural [Window]
   | WithDiscarded Target FromZone [PlayerCard]
   | SetActiveCost ActiveCost
   | Spent PlayerCard

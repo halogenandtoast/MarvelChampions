@@ -44,7 +44,7 @@ newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse AllyAttrs
 
 instance RunMessage MockingbirdBobbiMorse where
   runMessage msg a = case msg of
-    RanAbility target 1 | isTarget a target -> do
+    RanAbility target 1 _ | isTarget a target -> do
       enemies <- selectList AnyEnemy
       push $ Ask (allyController $ toAttrs a) $ ChooseOne $ map
         (stunChoice (toAttrs a))
