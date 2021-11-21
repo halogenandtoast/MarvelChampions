@@ -232,7 +232,7 @@
       "  deriving anyclass IsAlly",
       "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
       "",
-      "instance HasAbilities NickFury where",
+      "instance HasAbilities {dot} where",
       "  getAbilities _ = []",
       "",
       "instance RunMessage {dot} where",

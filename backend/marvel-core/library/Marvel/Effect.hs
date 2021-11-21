@@ -3,6 +3,7 @@ module Marvel.Effect where
 
 import Marvel.Prelude
 
+import Marvel.Ally.Allies
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Effect.Attrs

@@ -72,7 +72,7 @@ resourceCostPaid ActiveCost {..} =
     prs' <- get
     pure $ l && length prs' >= length mrs
 
-newtype ActiveCostTarget = ForCard PlayerCard
+data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -88,7 +88,7 @@ newtype Sorted a = Sorted { unSorted :: [a] }
 newtype Unsorted a = Unsorted { unUnsorted :: [a] }
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)
 
-data ChooseATarget = ChooseAPlayer
+data ChooseATarget = ChooseAPlayer | TargetMatches EntityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -144,9 +144,30 @@ choiceMessages ident = \case
           [ Ask ident $ ChooseOne
               [ TargetLabel (IdentityTarget x) [Run [f x]] | x <- xs ]
           ]
+    TargetMatches entityMatcher -> case entityMatcher of
+      IdentityEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . IdentityEntity . IdentityWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure
+            [ Ask ident $ ChooseOne
+                [ TargetLabel (IdentityTarget x) [Run [f x]] | x <- xs ]
+            ]
+      AllyEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . AllyEntity . AllyWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure
+            [ Ask ident
+                $ ChooseOne [ TargetLabel (AllyTarget x) [Run [f x]] | x <- xs ]
+            ]
   UseAbility a -> do
     rest <- concatMapM (choiceMessages ident) (abilityChoices a)
-    pure $ UsedAbility ident a : costMessages a <> rest
+    pure $ UsedAbility ident a : costMessages ident a <> rest
   RunAbility target n -> do
     windows <- getCurrentWindows
     pure [RanAbility target n windows]
@@ -208,7 +229,8 @@ choiceMessages ident = \case
     _ -> error "can not damage target"
   Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
   Heal characterId n -> case characterId of
-    IdentityCharacter ident' -> pure [IdentityMessage ident' $ IdentityHealed n]
+    IdentityCharacter ident' ->
+      pure [IdentityMessage ident' $ IdentityHealed n]
     AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
     VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
     MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
@@ -222,8 +244,8 @@ choiceMessages ident = \case
   DiscardTarget target -> pure [RemoveFromPlay target]
   YouDrawCards n -> pure [IdentityMessage ident $ DrawCards FromDeck n]
 
-costMessages :: Ability -> [Message]
-costMessages a = go (abilityCost a)
+costMessages :: IdentityId -> Ability -> [Message]
+costMessages iid a = go (abilityCost a)
  where
   go = \case
     NoCost -> []
@@ -237,8 +259,9 @@ costMessages a = go (abilityCost a)
       UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
       AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
+    ResourceCost mr -> do
+      [SetActiveCost $ ActiveCost iid (ForAbility a) (ResourceCost mr) NoPayment Nothing]
     Costs xs -> concatMap go xs
-    _ -> error $ "Unhandled: " <> show (abilityCost a)
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

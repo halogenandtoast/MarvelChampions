@@ -23,10 +23,10 @@ instance HasCardDef PlayerCard where
   getCardDef = pcCardDef
 
 instance HasResources PlayerCard where
-  resourcesFor x c = do
-    guard $ x /= c
+  resourcesFor x mc = do
+    guard $ Just x /= mc
     map snd $ filter isValidResource $ cdResources $ getCardDef x
    where
     isValidResource (restriction, _) = case restriction of
       PrintedResource -> True
-      ResourceForCardsMatching matcher -> cardMatch matcher c
+      ResourceForCardsMatching matcher -> maybe False (cardMatch matcher) mc

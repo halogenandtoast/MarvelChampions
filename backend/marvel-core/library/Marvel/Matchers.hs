@@ -48,6 +48,7 @@ data AllyMatcher
   | AllyWithUses GameValueMatcher
   | AllyControlledBy IdentityMatcher
   | AllyWithDamage GameValueMatcher
+  | AllyWithId AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
