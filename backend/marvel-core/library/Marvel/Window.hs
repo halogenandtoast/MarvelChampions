@@ -9,15 +9,15 @@ import Marvel.Source
 
 data WindowTiming = After | When
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data DamageSource = FromAttack
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data RevealSource = FromEncounterDeck
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
   = PlayThis WindowTiming
@@ -28,7 +28,7 @@ data WindowMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | RoundEnds
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data Window = Window
   { windowTiming :: WindowTiming
@@ -47,7 +47,7 @@ data WindowType
   | EnemyAttack EnemyId IdentityId
   | RoundEnded
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 windowMatches :: MonadGame env m => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of

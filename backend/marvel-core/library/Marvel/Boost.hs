@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 data BoostIcon = Boost | Star
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 boostCount :: [BoostIcon] -> Natural
 boostCount = foldr ((+) . boostValue) 0

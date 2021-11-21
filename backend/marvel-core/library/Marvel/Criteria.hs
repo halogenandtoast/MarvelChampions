@@ -15,7 +15,7 @@ data Criteria
   | Never
   | Criteria [Criteria]
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 instance Monoid Criteria where
   mempty = NoCriteria

@@ -10,3 +10,4 @@ data SchemeMatcher
 data TreacheryMatcher
 data UpgradeMatcher
 data CharacterMatcher
+data ExtendedCardMatcher

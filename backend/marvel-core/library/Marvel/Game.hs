@@ -17,6 +17,7 @@ import Marvel.Card.PlayerCard
 import Marvel.Criteria
 import Marvel.Debug
 import Marvel.Deck
+import Marvel.Discard
 import Marvel.Effect
 import Marvel.Entity
 import Marvel.Event
@@ -75,6 +76,7 @@ data Game = Game
   , gameWindowDepth :: Int
   , gameWindows :: [[Window]]
   , gameScenario :: Scenario
+  , gameFocusedCards :: [PlayerCard]
   }
   deriving stock (Show, Eq, Generic)
 
@@ -303,6 +305,8 @@ runGameMessage msg g@Game {..} = case msg of
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
+  FocusCards cards -> pure $ g & focusedCardsL .~ cards
+  UnfocusCards -> pure $ g & focusedCardsL .~ []
   CheckWindows windows -> do
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities
@@ -464,6 +468,7 @@ newGame player scenario = Game
   , gameSideSchemes = mempty
   , gameEvents = mempty
   , gameEffects = mempty
+  , gameFocusedCards = []
   }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
@@ -600,6 +605,34 @@ gameSelectCharacter = \case
       <$> selectList (IdentityWithDamage gameValueMatcher)
     allies <- map AllyCharacter <$> selectList (AllyWithDamage gameValueMatcher)
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+
+gameSelectExtendedCard
+  :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
+gameSelectExtendedCard m = do
+  players <- toList <$> getsGame gamePlayers
+  let
+    allCards =
+      concatMap (unHand . playerIdentityHand) players
+        <> concatMap (unDiscard . playerIdentityDiscard) players
+        <> concatMap (unDeck . playerIdentityDeck) players
+  HashSet.fromList <$> go players allCards m
+ where
+  go players cards = \case
+    AffordableCardBy identityMatcher -> do
+      identities <- selectList identityMatcher
+      let players' = filter ((`elem` identities) . toId) players
+      concatMapM (\ident -> filterM (isPlayable ident) cards) players'
+    BasicCardMatches cardMatcher -> do
+      pure $ filter (cardMatch cardMatcher) cards
+    InDiscardOf identityMatcher extendedCardMatcher -> do
+      identities <- selectList identityMatcher
+      let
+        players' = filter ((`elem` identities) . toId) players
+        cards' = filter (`elem` cards)
+          $ concatMap (unDiscard . playerIdentityDiscard) players'
+      go players cards' extendedCardMatcher
+    ExtendedCardMatches matchers -> foldlM (go players) cards matchers
+
 
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do

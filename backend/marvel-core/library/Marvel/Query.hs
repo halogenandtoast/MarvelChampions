@@ -2,7 +2,8 @@ module Marvel.Query where
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
+import Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -17,6 +18,7 @@ type family QueryElement a where
   QueryElement SchemeMatcher = SchemeId
   QueryElement UpgradeMatcher = UpgradeId
   QueryElement CharacterMatcher = CharacterId
+  QueryElement ExtendedCardMatcher = PlayerCard
 
 class Query a where
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
@@ -67,3 +69,6 @@ instance Query UpgradeMatcher where
 
 instance Query CharacterMatcher where
   select = gameSelectCharacter
+
+instance Query ExtendedCardMatcher where
+  select = gameSelectExtendedCard

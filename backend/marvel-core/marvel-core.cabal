@@ -66,6 +66,7 @@ library
       Marvel.Event.Events.GetReady
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront
+      Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
       Marvel.Game

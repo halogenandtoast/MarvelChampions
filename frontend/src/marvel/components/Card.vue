@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import { PlayerCard } from '@/marvel/types/Identity'
+import { PlayerCard } from '@/marvel/types/PlayerCard'
 import { Game } from '@/marvel/types/Game'
 import * as MarvelGame from '@/marvel/types/Game'
 

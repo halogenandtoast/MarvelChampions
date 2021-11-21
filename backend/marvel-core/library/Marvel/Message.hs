@@ -75,6 +75,8 @@ data Message
   | AdvanceScenario
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
+  | FocusCards [PlayerCard]
+  | UnfocusCards
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

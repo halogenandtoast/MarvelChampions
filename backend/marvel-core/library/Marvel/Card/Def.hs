@@ -33,16 +33,21 @@ data CardType
   | TreacheryType
   | SideSchemeType
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data CardMatcher = AnyCard | CardWithAspect Aspect | CardWithResource Resource
+data CardMatcher
+  = AnyCard
+  | CardWithAspect Aspect
+  | CardWithResource Resource
+  | CardWithType CardType
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
 cardMatch matcher a = case matcher of
   AnyCard -> True
   CardWithAspect aspect -> cdAspect def == Just aspect
+  CardWithType cType -> cdCardType def == cType
   CardWithResource resource ->
     resource `elem` map snd (filter isPrintedResource $ cdResources def)
  where
@@ -51,7 +56,7 @@ cardMatch matcher a = case matcher of
 
 data ResourceRestriction = PrintedResource | ResourceForCardsMatching CardMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data CardDef = CardDef
   { cdCardCode :: CardCode
@@ -71,7 +76,7 @@ data CardDef = CardDef
   , cdResponseWindow :: Maybe WindowMatcher
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
 resourcesL = lens cdResources $ \m x -> m { cdResources = x }

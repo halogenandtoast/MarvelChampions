@@ -1,5 +1,5 @@
 import { JsonDecoder } from 'ts.data.json'
-import { PlayerCard, playerCardDecoder } from '@/marvel/types/Identity'
+import { PlayerCard, playerCardDecoder } from '@/marvel/types/PlayerCard'
 
 export type Choice = EndTurn
   | UseAbility
