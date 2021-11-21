@@ -6,6 +6,7 @@ import { Minion, minionDecoder } from '@/marvel/types/Minion'
 import { Support, supportDecoder } from '@/marvel/types/Support'
 import { Upgrade, upgradeDecoder } from '@/marvel/types/Upgrade'
 import { Attachment, attachmentDecoder } from '@/marvel/types/Attachment'
+import { PlayerCard, playerCardDecoder } from '@/marvel/types/PlayerCard'
 import { SideScheme, sideSchemeDecoder } from '@/marvel/types/SideScheme'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
@@ -74,6 +75,7 @@ export interface Game {
   scenario: Scenario
   question: Record<string, Question>
   state: State
+  focusedCards: PlayerCard[]
 }
 
 export interface Scenario {
@@ -122,5 +124,6 @@ export const gameDecoder = JsonDecoder.object<Game>(
     sideSchemes: JsonDecoder.dictionary<SideScheme>(sideSchemeDecoder, 'Dict<UUID, SideScheme>'),
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
-    state: stateDecoder
+    state: stateDecoder,
+    focusedCards: JsonDecoder.array<PlayerCard>(playerCardDecoder, 'PlayerCard[]')
   }, 'Game')

@@ -3,13 +3,14 @@ module Marvel.Matchers where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Card.Def
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 
 data EntityMatcher = IdentityEntity IdentityMatcher | AllyEntity AllyMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data IdentityMatcher
   = HeroIdentity
@@ -21,7 +22,7 @@ data IdentityMatcher
   | You
   | IdentityMatchAll [IdentityMatcher]
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 instance Monoid IdentityMatcher where
   mempty = AnyIdentity
@@ -50,7 +51,7 @@ data AllyMatcher
   | AllyWithDamage GameValueMatcher
   | AllyWithId AllyId
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 pattern AllyWithAnyUses :: AllyMatcher
 pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0)) where
@@ -67,7 +68,7 @@ data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy Ide
 
 data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 enemyMatches :: MonadGame env m => EnemyMatcher -> EnemyId -> m Bool
 enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
@@ -77,11 +78,11 @@ data VillainMatcher
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 treacheryMatches
   :: MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
@@ -89,21 +90,21 @@ treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
 data SchemeMatcher = AnyScheme | MainScheme
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data MinionMatcher
   = AnyMinion
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 minionMatches :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
 minionMatches matcher ident = member ident <$> gameSelectMinion matcher
 
 data GameValueMatcher = AnyValue | GreaterThan GameValue
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 gameValueMatches :: MonadGame env m => GameValueMatcher -> Natural -> m Bool
 gameValueMatches matcher n = case matcher of
@@ -119,4 +120,19 @@ pattern CharacterWithAnyDamage <-
 
 newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data ExtendedCardMatcher
+  = AffordableCardBy IdentityMatcher
+  | BasicCardMatches CardMatcher
+  | InDiscardOf IdentityMatcher ExtendedCardMatcher
+  | ExtendedCardMatches [ExtendedCardMatcher]
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup ExtendedCardMatcher where
+  ExtendedCardMatches xs <> ExtendedCardMatches ys =
+    ExtendedCardMatches $ xs <> ys
+  x <> ExtendedCardMatches ys = ExtendedCardMatches $ x : ys
+  ExtendedCardMatches xs <> y = ExtendedCardMatches $ xs <> [y]
+  x <> y = ExtendedCardMatches [x, y]

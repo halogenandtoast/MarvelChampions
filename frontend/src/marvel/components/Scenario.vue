@@ -25,6 +25,9 @@
         @choose="$emit('choose', $event)"
       />
     </div>
+    <div v-if="focusedCards.length > 0">
+      <Card v-for="card in focusedCards" :key="card.cardId" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
+    </div>
     <div>
       <Player
         v-for="player in game.players"
@@ -62,7 +65,9 @@ export default defineComponent({
 
     const topOfDiscard = computed(() => props.game.scenario.contents.scenarioDiscard[0])
 
-    return { scenarioImg, activeAbility, topOfDiscard }
+    const focusedCards = computed(() => props.game.focusedCards)
+
+    return { scenarioImg, activeAbility, topOfDiscard, focusedCards }
   }
 })
 </script>

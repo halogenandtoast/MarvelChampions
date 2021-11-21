@@ -48,6 +48,8 @@ gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectCharacter
   :: MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
+gameSelectExtendedCard
+  :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
 
 instance HasAbilities Game
 

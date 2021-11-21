@@ -1,5 +1,6 @@
 import { JsonDecoder } from 'ts.data.json'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
+import { PlayerCard, playerCardDecoder } from '@/marvel/types/PlayerCard'
 
 export interface HeroSideContentsContents {
   heroCardDef: CardDef
@@ -43,11 +44,6 @@ export interface Identity {
   currentHP: number
 }
 
-export interface PlayerCard {
-  cardId: string
-  cardDef: CardDef
-}
-
 export const heroSideContentsContentsDecoder = JsonDecoder.object<HeroSideContentsContents>({
   heroCardDef: cardDefDecoder
 }, 'HeroSideContentsContents')
@@ -75,11 +71,6 @@ export const alterEgoSideDecoder = JsonDecoder.object<AlterEgoSide>({
 }, 'AlterEgoSide')
 
 export const sideDecoder = JsonDecoder.oneOf<Side>([heroSideDecoder, alterEgoSideDecoder], 'Side')
-
-export const playerCardDecoder = JsonDecoder.object<PlayerCard>({
-  cardId: JsonDecoder.string,
-  cardDef: cardDefDecoder
-}, 'PlayerCard', { cardId: 'pcCardId', cardDef: 'pcCardDef' })
 
 export const identityDecoder = JsonDecoder.object<Identity>(
   {

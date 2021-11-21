@@ -43,6 +43,7 @@ data ApiGame = ApiGame
   , upgrades :: HashMap UpgradeId Upgrade
   , sideSchemes :: HashMap SideSchemeId SideScheme
   , state :: GameState
+  , focusedCards :: [PlayerCard]
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
@@ -65,6 +66,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
         , upgrades = gameUpgrades
         , sideSchemes = gameSideSchemes
         , state = gameState
+        , focusedCards = gameFocusedCards
         }
 
 data ApiResponse = GameUpdate ApiGame | GameMessage Text
