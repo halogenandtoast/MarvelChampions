@@ -20,7 +20,8 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window
+import Marvel.Window (Window(..), WindowTiming(..))
+import Marvel.Window qualified as W
 
 data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
   deriving stock (Show, Eq, Generic)
@@ -179,10 +180,16 @@ choiceMessages ident = \case
   FinishPayment -> pure [FinishedPayment]
   Pay payment -> pure [Paid payment]
   DamageEnemy target source n -> case target of
-    VillainTarget vid -> pure [VillainMessage vid $ VillainDamaged source n]
+    VillainTarget vid -> pure
+      [ CheckWindows [Window When $ W.DamagedVillain vid n]
+      , VillainMessage vid $ VillainDamaged source n
+      ]
     MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
     EnemyTarget enemy -> case enemy of
-      EnemyVillainId vid -> pure [VillainMessage vid $ VillainDamaged source n]
+      EnemyVillainId vid -> pure
+        [ CheckWindows [Window When $ W.DamagedVillain vid n]
+        , VillainMessage vid $ VillainDamaged source n
+        ]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
     _ -> error "can not damage target"
   ThwartScheme target source n -> case target of

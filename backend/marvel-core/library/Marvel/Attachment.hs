@@ -3,6 +3,7 @@ module Marvel.Attachment where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Attachment.Attachments
 import Marvel.Attachment.Attrs
 import Marvel.Card.Builder
@@ -36,3 +37,6 @@ instance RunMessage Attachment where
 
 instance IsSource Attachment where
   toSource = AttachmentSource . toId
+
+instance HasAbilities Attachment where
+  getAbilities = genericGetAbilities

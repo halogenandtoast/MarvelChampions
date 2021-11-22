@@ -131,7 +131,7 @@ data MinionMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data AttachmentMessage = RevealAttachment
+data AttachmentMessage = RevealAttachment | AttachmentDamaged Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
