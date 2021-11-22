@@ -689,6 +689,15 @@ gameSelectUpgrade = \case
       ((`member` identities) . getUpgradeController)
       upgrades
 
+gameSelectAttachment :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectAttachment m = do
+  attachments <- toList <$> getsGame gameAttachments
+  result <- filterM (matchFilter m) attachments
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter x = case x of
+    AttachmentWithId ident' -> pure . (== ident') . toId
+
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy = \case
   EnemyWithId enemyId -> case enemyId of
