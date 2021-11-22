@@ -74,6 +74,7 @@ data Message
   | AdvanceScenario
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
+  | AttachmentRemoved AttachmentId
   | FocusCards [PlayerCard]
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
@@ -88,8 +89,10 @@ data VillainMessage
   | VillainConfused Source
   | DealtBoost EncounterCard
   | VillainFlipBoostCards
+  | VillainAttackGainOverkill
   | VillainAttacks IdentityId
   | VillainBeginAttack IdentityId
+  | VillainEndAttack
   | VillainAttacked
   | VillainSchemes
   | VillainSchemed

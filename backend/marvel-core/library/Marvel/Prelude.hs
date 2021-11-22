@@ -6,6 +6,7 @@ module Marvel.Prelude
 
 import Control.Lens as X
   ( Lens'
+  , _Just
   , at
   , each
   , ix

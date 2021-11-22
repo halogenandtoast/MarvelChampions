@@ -7,6 +7,7 @@ module Marvel.Villain.Attrs
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Marvel.Attack
 import Marvel.Boost
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -84,7 +85,7 @@ data VillainAttrs = VillainAttrs
   , villainTough :: Bool
   , villainBoostCards :: [EncounterCard]
   , villainBoost :: Natural
-  , villainAttacking :: Maybe CharacterId
+  , villainAttacking :: Maybe Attack
   , villainAttachments :: HashSet AttachmentId
   , villainUpgrades :: HashSet UpgradeId
   , villainStage :: Natural
@@ -149,6 +150,7 @@ runVillainMessage msg attrs = case msg of
         [ CheckWindows
           [W.Window W.Would $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
         , VillainMessage (toId attrs) (VillainBeginAttack ident)
+        , VillainMessage (toId attrs) VillainEndAttack
         ]
       pure attrs
   VillainBeginAttack ident -> do
@@ -160,8 +162,14 @@ runVillainMessage msg attrs = case msg of
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
       ]
-    pure $ attrs & attackingL ?~ IdentityCharacter ident
-  VillainDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
+    pure $ attrs & attackingL ?~ attack
+      (IdentityCharacter ident)
+      (unAtk $ villainAttack attrs)
+  VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
+  VillainAttackGainOverkill ->
+    pure $ attrs & attackingL . _Just . attackOverkillL .~ True
+  VillainDefendedBy characterId ->
+    pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
   VillainSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
@@ -171,7 +179,7 @@ runVillainMessage msg attrs = case msg of
         pure $ attrs & boostL .~ 0
   VillainAttacked -> do
     let dmg = unAtk (villainAttack attrs) + villainBoost attrs
-    case villainAttacking attrs of
+    case attackCharacter <$> villainAttacking attrs of
       Just (IdentityCharacter ident) -> pushAll
         [ CheckWindows
           [W.Window W.When $ W.IdentityTakeDamage ident W.FromAttack dmg]
@@ -193,10 +201,16 @@ runVillainMessage msg attrs = case msg of
         0
         (villainBoostCards attrs)
     pushAll $ map DiscardedEncounterCard (villainBoostCards attrs)
-    pure $ attrs & boostCardsL .~ mempty & boostL .~ boost
+    pure
+      $ attrs
+      & (boostCardsL .~ mempty)
+      & (boostL .~ boost)
+      & (attackingL . _Just . attackDamageL +~ boost)
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of
+    AttachmentRemoved attachmentId -> do
+      pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
     UpgradeRemoved upgradeId -> do
       pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     VillainMessage villainId msg' | villainId == toId attrs ->
