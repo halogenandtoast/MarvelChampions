@@ -9,12 +9,14 @@ export interface Attachment {
 export interface AttachmentContents {
   attachmentId: string
   attachmentCardDef: CardDef
+  attachmentDamage: number
 }
 
 export const attachmentContentsDecoder = JsonDecoder.object<AttachmentContents>(
   {
     attachmentId: JsonDecoder.string,
     attachmentCardDef: cardDefDecoder,
+    attachmentDamage: JsonDecoder.number,
   }, 'AttachmentContents')
 
 export const attachmentDecoder = JsonDecoder.object<Attachment>(
