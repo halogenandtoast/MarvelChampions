@@ -7,7 +7,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Source
 
-data WindowTiming = After | When
+data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -23,8 +23,10 @@ data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
+  | EnemyAttacked EnemyMatcher IdentityMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
+  | VillainDamaged WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | RoundEnds
@@ -44,6 +46,7 @@ data WindowType
   | IdentityTakeDamage IdentityId DamageSource Natural
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
+  | DamagedVillain VillainId Natural
   | DefeatedMinion MinionId
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
@@ -68,6 +71,12 @@ windowMatches matcher w source = case matcher of
           (gameValueMatches gameValueMatcher n)
       _ -> pure False
   EnemyWouldAttack enemyMatcher identityMatcher -> case windowType w of
+    EnemyAttack enemyId ident | windowTiming w == Would -> liftA2
+      (&&)
+      (identityMatches identityMatcher ident)
+      (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
+  EnemyAttacked enemyMatcher identityMatcher -> case windowType w of
     EnemyAttack enemyId ident | windowTiming w == When -> liftA2
       (&&)
       (identityMatches identityMatcher ident)
@@ -87,6 +96,10 @@ windowMatches matcher w source = case matcher of
         (&&)
         (villainMatches villainMatcher villainId)
         (pure $ timing == windowTiming w)
+    _ -> pure False
+  VillainDamaged timing villainMatcher -> case windowType w of
+    DamagedVillain villainId _ | timing == windowTiming w ->
+      villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
     DefeatedMinion minionId | windowTiming w == timing ->

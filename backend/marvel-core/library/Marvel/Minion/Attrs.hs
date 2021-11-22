@@ -132,13 +132,15 @@ runMinionMessage msg attrs = case msg of
     else do
       pushAll
         [ CheckWindows
-          [W.Window W.When $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
+          [W.Window W.Would $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
         , MinionMessage (toId attrs) (MinionBeginAttack ident)
         ]
       pure attrs
   MinionBeginAttack ident -> do
     pushAll
-      [ DeclareDefense ident (EnemyMinionId (toId attrs))
+      [ CheckWindows
+        [W.Window W.When $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
+      , DeclareDefense ident (EnemyMinionId (toId attrs))
       , MinionMessage (toId attrs) MinionAttacked
       ]
     pure $ attrs & attackingL ?~ IdentityCharacter ident

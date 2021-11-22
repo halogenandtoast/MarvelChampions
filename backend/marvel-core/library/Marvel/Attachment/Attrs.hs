@@ -19,6 +19,8 @@ type AttachmentCard a = CardBuilder AttachmentId a
 data AttachmentAttrs = AttachmentAttrs
   { attachmentId :: AttachmentId
   , attachmentCardDef :: CardDef
+  , attachmentEnemy :: Maybe EnemyId
+  , attachmentDamage :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -31,8 +33,12 @@ instance HasCardCode AttachmentAttrs where
 attachment :: (AttachmentAttrs -> a) -> CardDef -> CardBuilder AttachmentId a
 attachment f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid ->
-    f $ AttachmentAttrs { attachmentId = mid, attachmentCardDef = cardDef }
+  , cbCardBuilder = \mid -> f $ AttachmentAttrs
+    { attachmentId = mid
+    , attachmentCardDef = cardDef
+    , attachmentEnemy = Nothing
+    , attachmentDamage = 0
+    }
   }
 
 instance Entity AttachmentAttrs where

@@ -25,7 +25,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Window
+import Marvel.Window qualified as W
 
 class IsVillain a
 
@@ -106,7 +106,8 @@ runVillainMessage msg attrs = case msg of
   VillainAdvanced -> do
     pushAll
       [ VillainMessage (toId attrs) SetVillainHp
-      , CheckWindows [Window When $ RevealVillain (toId attrs) FromVillain]
+      , CheckWindows
+        [W.Window W.When $ W.RevealVillain (toId attrs) W.FromVillain]
       ]
     pure attrs
   SetVillainHp -> do
@@ -146,13 +147,15 @@ runVillainMessage msg attrs = case msg of
     else do
       pushAll
         [ CheckWindows
-          [Window When $ EnemyAttack (EnemyVillainId $ toId attrs) ident]
+          [W.Window W.Would $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
         , VillainMessage (toId attrs) (VillainBeginAttack ident)
         ]
       pure attrs
   VillainBeginAttack ident -> do
     pushAll
-      [ DealBoost (toTarget attrs)
+      [ CheckWindows
+        [W.Window W.When $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
+      , DealBoost (toTarget attrs)
       , DeclareDefense ident (EnemyVillainId (toId attrs))
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
@@ -170,7 +173,8 @@ runVillainMessage msg attrs = case msg of
     let dmg = unAtk (villainAttack attrs) + villainBoost attrs
     case villainAttacking attrs of
       Just (IdentityCharacter ident) -> pushAll
-        [ CheckWindows [Window When $ IdentityTakeDamage ident FromAttack dmg]
+        [ CheckWindows
+          [W.Window W.When $ W.IdentityTakeDamage ident W.FromAttack dmg]
         , IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg
         ]
       Just (AllyCharacter ident) ->
