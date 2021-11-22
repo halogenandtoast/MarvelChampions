@@ -41,6 +41,7 @@ data AllyAttrs = AllyAttrs
   , allyExhausted :: Bool
   , allyCounters :: Natural
   , allyUpgrades :: HashSet UpgradeId
+  , allyStunned :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -85,6 +86,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
       , allyController = ident
       , allyHitPoints = hp
       , allyExhausted = False
+      , allyStunned = False
       , allyCounters = 0
       , allyUpgrades = mempty
       }
@@ -160,19 +162,23 @@ instance RunMessage AllyAttrs where
         pure $ a & exhaustedL .~ False
       ExhaustedAlly -> do
         pure $ a & exhaustedL .~ True
-      AllyAttacked -> do
-        enemies <- selectList AnyEnemy
-        dmg <- getModifiedAttack a
-        pushAll
-          $ Ask
-              (allyController a)
-              (ChooseOne $ map (damageChoice a dmg) enemies)
-          : [ AllyMessage
-                ident
-                (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
-            | allyAttackConsequentialDamage a > 0
-            ]
-        pure a
+      AllyStunned -> do
+        pure $ a & stunnedL .~ True
+      AllyAttacked -> if allyStunned a
+        then pure $ a & stunnedL .~ False
+        else do
+          enemies <- selectList AnyEnemy
+          dmg <- getModifiedAttack a
+          pushAll
+            $ Ask
+                (allyController a)
+                (ChooseOne $ map (damageChoice a dmg) enemies)
+            : [ AllyMessage
+                  ident
+                  (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
+              | allyAttackConsequentialDamage a > 0
+              ]
+          pure a
       AllyThwarted -> do
         schemes <- selectList AnyScheme
         thw <- getModifiedThwart a

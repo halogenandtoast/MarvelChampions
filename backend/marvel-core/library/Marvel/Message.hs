@@ -159,6 +159,7 @@ data AllyMessage
   | AllyHealed Natural
   | SpendAllyUse
   | UpgradeAttachedToAlly UpgradeId
+  | AllyStunned
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -35,4 +35,10 @@ instance RunMessage Stampede where
           else push $ Surge ident
         pure t
       _ -> Stampede <$> runMessage msg attrs
+    AllyMessage aid (AllyDamaged _ _) -> do
+      push $ AllyMessage aid AllyStunned
+      pure t
+    IdentityMessage aid (IdentityDamaged _ _) -> do
+      push $ IdentityMessage aid IdentityStunned
+      pure t
     _ -> Stampede <$> runMessage msg attrs
