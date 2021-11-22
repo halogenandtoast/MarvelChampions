@@ -20,6 +20,12 @@
       class="attached"
       @choose="$emit('choose', $event)"
     />
+    <AbilityButton
+          v-for="ability in abilities"
+          :key="ability"
+          :ability="choices[ability]"
+          @click="$emit('choose', ability)"
+          />
   </div>
 </template>
 
@@ -31,9 +37,10 @@ import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import Attachment from '@/marvel/components/Attachment.vue'
 import Upgrade from '@/marvel/components/Upgrade.vue'
+import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 export default defineComponent({
-  components: { Card, Attachment, Upgrade },
+  components: { Card, Attachment, Upgrade, AbilityButton },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -71,7 +78,16 @@ export default defineComponent({
 
     const upgrades = computed(() => props.villain.contents.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
 
-    return { card, activeAbility, attachments, upgrades }
+    const abilities = computed(() => {
+      return choices.value.reduce<number[]>((acc, v, i) => {
+        if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.villain.contents.villainId) {
+          return [...acc, i]
+        }
+        return acc
+      }, [])
+    })
+
+    return { card, activeAbility, attachments, upgrades, abilities, choices }
   }
 })
 </script>

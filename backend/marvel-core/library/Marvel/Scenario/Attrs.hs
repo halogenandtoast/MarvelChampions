@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Card.EncounterCard
 import Marvel.Difficulty
 import Marvel.EncounterCard
@@ -11,9 +12,11 @@ import Marvel.EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Queue
+import Marvel.Query
 import Marvel.Target
 import Marvel.Window qualified as W
 import System.Random.Shuffle
@@ -146,6 +149,13 @@ instance RunMessage ScenarioAttrs where
     DiscardedEncounterCard ec -> pure $ attrs & discardL %~ (ec :)
     MainSchemeMessage ident msg' | ident == scenarioId ->
       runMainSchemeMessage msg' attrs
+    SearchForAndRevealScheme cardDef -> do
+      ident <- selectJust You
+      case find ((== cardDef) . getCardDef) $ scenarioEncounterDeck <> scenarioDiscard of
+        Nothing -> pure attrs
+        Just card -> do
+          push $ RevealEncounterCard ident card
+          pure $ attrs & discardL %~ filter (/= card) & encounterDeckL %~ filter (/= card)
     _ -> pure attrs
 
 instance Entity ScenarioAttrs where
