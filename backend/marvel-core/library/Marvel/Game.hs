@@ -338,19 +338,11 @@ runGameMessage msg g@Game {..} = case msg of
       windows
     ident <- toId <$> getActivePlayer
     validAbilities <- filterM
-      (\a -> if abilityLabel a == Just "Spider-Sense"
-        then andM $ sequence
-          [ pure . traceShowId . passesUseLimit ident usedAbilities
-          , fmap traceShowId . passesCriteria ident
-          , fmap traceShowId . (\a -> anyM (`abilityInWindow` a) windows)
-          ]
-          a
-        else andM $ sequence
-          [ pure . passesUseLimit ident usedAbilities
-          , passesCriteria ident
-          , \a -> anyM (`abilityInWindow` a) windows
-          ]
-          a
+      (andM . sequence
+        [ pure . passesUseLimit ident usedAbilities
+        , passesCriteria ident
+        , \a -> anyM (`abilityInWindow` a) windows
+        ]
       )
       abilities
     let forcedAbiltiies = filter isForcedAbility validAbilities
