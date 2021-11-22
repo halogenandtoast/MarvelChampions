@@ -9,6 +9,7 @@ import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
+import Marvel.Attack
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.EncounterCard
@@ -31,6 +32,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window qualified as W
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -375,6 +377,17 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pushAll
       $ map (RevealEncounterCard (toId attrs)) playerIdentityEncounterCards
     pure $ attrs & encounterCardsL .~ mempty
+  IdentityWasAttacked attack' -> do
+    pushAll
+      [ CheckWindows
+        [ W.Window W.When
+          $ W.IdentityTakeDamage (toId attrs) W.FromAttack
+          $ attackDamage attack'
+        ]
+      , IdentityMessage (toId attrs)
+        $ IdentityDamaged (attackSource attack') (attackDamage attack')
+      ]
+    pure attrs
   IdentityDamaged _ n -> do
     let
       damage =

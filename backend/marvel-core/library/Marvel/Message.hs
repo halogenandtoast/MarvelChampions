@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import GHC.Generics
 import Marvel.Ability
+import Marvel.Attack
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.EncounterCard
@@ -151,6 +152,7 @@ data AllyMessage
   | ReadiedAlly
   | AllyAttacked
   | AllyThwarted
+  | AllyWasAttacked Attack
   | AllyDamaged Source Natural
   | AllyDefended EnemyId
   | AllyDefeated
@@ -204,6 +206,7 @@ data IdentityMessage
   | VillainAndMinionsActivate
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards
+  | IdentityWasAttacked Attack
   | IdentityDamaged Source Natural
   | IdentityDefended Natural
   | IdentityHealed Natural

@@ -4,6 +4,7 @@ module Marvel.Ally.Attrs where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Marvel.Attack
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -196,9 +197,34 @@ instance RunMessage AllyAttrs where
           ]
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
+      AllyWasAttacked attack' -> do
+        let
+          overkill = subtractNatural
+            (attackDamage attack')
+            (unHp (allyHitPoints a) - allyDamage a)
+        when
+          (attackOverkill attack' && overkill > 0)
+          (push $ IdentityMessage (allyController a) $ IdentityDamaged
+            (attackSource attack')
+            overkill
+          )
+
+        push $ AllyMessage ident $ AllyDamaged
+          (attackSource attack')
+          (attackDamage attack')
+        -- pushAll
+        --   [ CheckWindows
+        --     [ W.Window W.When
+        --       $ W.AllyTakeDamage ident W.FromAttack
+        --       $ attackDamage attack
+        --     ]
+        --   , AllyMessage ident
+        --     $ AllyDamaged (attackSource attack) (attackDamage attack)
+        --   ]
+        pure a
       AllyDamaged _ damage -> do
         when
-          (damage + (allyDamage a) >= unHp (allyHitPoints a))
+          (damage + allyDamage a >= unHp (allyHitPoints a))
           (push $ AllyMessage (toId a) AllyDefeated)
         pure $ a & damageL +~ damage
       AllyDefeated -> do
