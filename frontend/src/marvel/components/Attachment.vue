@@ -1,7 +1,14 @@
 <template>
   <div class="attachment">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" />
-    <div v-if="attachment.contents.attachmentDamage > 0" class="damage">{{attachment.contents.attachmentDamage}}</div>
+    <div v-if="attachment.contents.attachmentDamage > 0" class="damage">damage: {{attachment.contents.attachmentDamage}}</div>
+    <AbilityButton
+          v-for="ability in abilities"
+          :key="ability"
+          :ability="choices[ability]"
+          :data-image="image"
+          @click="$emit('choose', ability)"
+          />
   </div>
 </template>
 
@@ -11,9 +18,10 @@ import * as MarvelGame from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import { Game } from '@/marvel/types/Game'
 import { Attachment } from '@/marvel/types/Attachment'
+import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 export default defineComponent({
-  components: { Card },
+  components: { Card, AbilityButton },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -27,7 +35,16 @@ export default defineComponent({
       return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.attachment.contents.attachmentId)
     })
 
-    return { card, activeAbility, choices }
+    const abilities = computed(() => {
+      return choices.value.reduce<number[]>((acc, v, i) => {
+        if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.attachment.contents.attachmentId) {
+          return [...acc, i]
+        }
+        return acc
+      }, [])
+    })
+
+    return { card, abilities, activeAbility, choices }
   }
 })
 </script>
