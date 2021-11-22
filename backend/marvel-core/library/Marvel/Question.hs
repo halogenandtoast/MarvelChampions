@@ -78,6 +78,7 @@ data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability
 
 data Question
   = ChooseOne [Choice]
+  | ChooseOneAtATime [Choice]
   | ChoosePlayerOrder (Unsorted IdentityId) (Sorted IdentityId)
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

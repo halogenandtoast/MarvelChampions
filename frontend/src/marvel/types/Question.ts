@@ -260,10 +260,15 @@ export interface RunAbility {
   tag: 'RunAbility'
 }
 
-export type Question = ChooseOne | ChoosePayment
+export type Question = ChooseOne | ChooseOneAtATime | ChoosePayment
 
 export interface ChooseOne {
   tag: 'ChooseOne'
+  contents: Choice[]
+}
+
+export interface ChooseOneAtATime {
+  tag: 'ChooseOneAtATime'
   contents: Choice[]
 }
 
@@ -290,6 +295,12 @@ export const chooseOneDecoder = JsonDecoder.object<ChooseOne>(
     contents: JsonDecoder.array<Choice>(choiceDecoder, 'Choice[]')
   }, 'ChooseOne')
 
+export const chooseOneAtATimeDecoder = JsonDecoder.object<ChooseOneAtATime>(
+  {
+    tag: JsonDecoder.isExactly('ChooseOneAtATime'),
+    contents: JsonDecoder.array<Choice>(choiceDecoder, 'Choice[]')
+  }, 'ChooseOneAtATime')
+
 export const choosePaymentDecoder = JsonDecoder.object<ChoosePayment>(
   {
     tag: JsonDecoder.isExactly('ChoosePayment'),
@@ -297,6 +308,7 @@ export const choosePaymentDecoder = JsonDecoder.object<ChoosePayment>(
 
 export const questionDecoder = JsonDecoder.oneOf<Question>(
   [ chooseOneDecoder
+  , chooseOneAtATimeDecoder
   , choosePaymentDecoder
   ], 'Question'
 )

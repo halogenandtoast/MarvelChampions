@@ -343,8 +343,28 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   VillainAndMinionsActivate -> do
     villain <- selectJust ActiveVillain
     case currentIdentity attrs of
-      HeroSide _ -> push $ VillainMessage villain (VillainAttacks $ toId attrs)
-      AlterEgoSide _ -> push $ VillainMessage villain VillainSchemes
+      HeroSide _ -> do
+        pushAll
+          $ VillainMessage villain (VillainAttacks $ toId attrs)
+          : [ Ask (toId attrs) $ ChooseOneAtATime $ map
+                (\minionId -> TargetLabel
+                  (MinionTarget minionId)
+                  [Run [MinionMessage minionId (MinionAttacks $ toId attrs)]]
+                )
+                (toList playerIdentityMinions)
+            | not (null playerIdentityMinions)
+            ]
+      AlterEgoSide _ -> do
+        pushAll
+          $ VillainMessage villain VillainSchemes
+          : [ Ask (toId attrs) $ ChooseOneAtATime $ map
+                (\minionId -> TargetLabel
+                  (MinionTarget minionId)
+                  [Run [MinionMessage minionId MinionSchemes]]
+                )
+                (toList playerIdentityMinions)
+            | not (null playerIdentityMinions)
+            ]
     pure attrs
   DealtEncounterCard ec -> pure $ attrs & encounterCardsL %~ (ec :)
   RevealEncounterCards -> do

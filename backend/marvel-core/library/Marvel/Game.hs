@@ -301,6 +301,8 @@ runGameMessage msg g@Game {..} = case msg of
   EndCheckWindows -> pure g
   IdentityEndedTurn ident -> pure $ g & usedAbilitiesL . ix ident %~ filter
     ((/= PerTurn 1) . abilityLimit)
+  EndRound ->
+    pure $ g & usedAbilitiesL . each %~ filter ((/= PerRound 1) . abilityLimit)
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
