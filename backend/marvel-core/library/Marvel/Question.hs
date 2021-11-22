@@ -167,6 +167,16 @@ choiceMessages ident = \case
             [ Ask ident
                 $ ChooseOne [ TargetLabel (AllyTarget x) [Run [f x]] | x <- xs ]
             ]
+      AttachmentEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . AttachmentEntity . AttachmentWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure
+            [ Ask ident
+                $ ChooseOne [ TargetLabel (AttachmentTarget x) [Run [f x]] | x <- xs ]
+            ]
   UseAbility a -> do
     rest <- concatMapM (choiceMessages ident) (abilityChoices a)
     pure $ UsedAbility ident a : costMessages ident a <> rest

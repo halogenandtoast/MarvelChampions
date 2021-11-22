@@ -38,6 +38,7 @@ library
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attrs
       Marvel.Attachment.Cards
+      Marvel.Attack
       Marvel.Boost
       Marvel.Card.Builder
       Marvel.Card.Code

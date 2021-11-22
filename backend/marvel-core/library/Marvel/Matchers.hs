@@ -8,7 +8,10 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 
-data EntityMatcher = IdentityEntity IdentityMatcher | AllyEntity AllyMatcher
+data EntityMatcher
+  = IdentityEntity IdentityMatcher
+  | AllyEntity AllyMatcher
+  | AttachmentEntity AttachmentMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -140,3 +143,7 @@ instance Semigroup ExtendedCardMatcher where
   x <> ExtendedCardMatches ys = ExtendedCardMatches $ x : ys
   ExtendedCardMatches xs <> y = ExtendedCardMatches $ xs <> [y]
   x <> y = ExtendedCardMatches [x, y]
+
+newtype AttachmentMatcher = AttachmentWithId AttachmentId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)

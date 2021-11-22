@@ -19,6 +19,7 @@ type family QueryElement a where
   QueryElement UpgradeMatcher = UpgradeId
   QueryElement CharacterMatcher = CharacterId
   QueryElement ExtendedCardMatcher = PlayerCard
+  QueryElement AttachmentMatcher = AttachmentId
 
 class Query a where
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
@@ -72,3 +73,6 @@ instance Query CharacterMatcher where
 
 instance Query ExtendedCardMatcher where
   select = gameSelectExtendedCard
+
+instance Query AttachmentMatcher where
+  select = gameSelectAttachment
