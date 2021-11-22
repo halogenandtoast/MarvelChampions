@@ -61,6 +61,7 @@ villain f cardDef sch atk startingHp = CardBuilder
     , villainAttack = atk
     , villainStunned = False
     , villainConfused = False
+    , villainTough = False
     , villainBoostCards = mempty
     , villainBoost = 0
     , villainAttacking = Nothing
@@ -80,6 +81,7 @@ data VillainAttrs = VillainAttrs
   , villainAttack :: Atk
   , villainStunned :: Bool
   , villainConfused :: Bool
+  , villainTough :: Bool
   , villainBoostCards :: [EncounterCard]
   , villainBoost :: Natural
   , villainAttacking :: Maybe CharacterId
@@ -118,11 +120,13 @@ runVillainMessage msg attrs = case msg of
       . min (unHp $ villainMaxHp attrs)
       . (+ fromIntegral n)
       . unHp
-  VillainDamaged _ n -> do
-    when
-      (subtractNatural n (fromIntegral . unHp $ villainHp attrs) == 0)
-      (push $ VillainMessage (toId attrs) VillainDefeated)
-    pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
+  VillainDamaged _ n -> if villainTough attrs
+    then pure $ attrs & toughL .~ False
+    else do
+      when
+        (subtractNatural n (fromIntegral . unHp $ villainHp attrs) == 0)
+        (push $ VillainMessage (toId attrs) VillainDefeated)
+      pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
   VillainDefeated -> do
     push (GameOver Won)
     pure attrs
@@ -217,6 +221,7 @@ advanceVillainTo newVillain VillainAttrs {..} = cbCardBuilder
     coerce
       . ((confusedL .~ villainConfused)
         . (stunnedL .~ villainStunned)
+        . (toughL %~ (|| villainStunned))
         . (attachmentsL .~ villainAttachments)
         . toAttrs
         )
