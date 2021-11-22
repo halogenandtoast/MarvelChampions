@@ -115,7 +115,12 @@ runPreGameMessage msg g = case msg of
     push EndCheckWindows
     pure $ g & windowDepthL +~ 1 & windowsL %~ (windows :)
   -- We want to empty the queue for triggering a resolution
-  EndCheckWindows -> pure $ g & windowDepthL -~ 1 & windowsL %~ drop 1
+  EndCheckWindows ->
+    pure
+      $ g
+      & (windowDepthL -~ 1)
+      & (windowsL %~ drop 1)
+      & (usedAbilitiesL . each %~ filter ((/= PerWindow 1) . abilityLimit))
   _ -> pure g
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
@@ -161,6 +166,14 @@ runGameMessage msg g@Game {..} = case msg of
           )
         ]
       pure $ g & upgradesL %~ delete uid
+    AttachmentTarget aid -> do
+      for_ (lookup aid gameAttachments) $ \attachment -> pushAll
+        [ AttachmentRemoved aid
+        , DiscardedEncounterCard $ EncounterCard
+          (CardId . unAttachmentId $ toId attachment)
+          (getCardDef attachment)
+        ]
+      pure $ g & attachmentsL %~ delete aid
     MinionTarget mid -> do
       for_ (lookup mid gameMinions) $ \minion ->
         push $ DiscardedEncounterCard $ EncounterCard
@@ -689,7 +702,8 @@ gameSelectUpgrade = \case
       ((`member` identities) . getUpgradeController)
       upgrades
 
-gameSelectAttachment :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectAttachment
+  :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectAttachment m = do
   attachments <- toList <$> getsGame gameAttachments
   result <- filterM (matchFilter m) attachments

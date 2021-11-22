@@ -58,3 +58,6 @@ isTarget a = (== toTarget (toAttrs a))
 
 instance RunMessage AttachmentAttrs where
   runMessage _ = pure
+
+instance HasCardDef AttachmentAttrs where
+  getCardDef = attachmentCardDef
