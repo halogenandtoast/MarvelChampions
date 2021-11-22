@@ -30,9 +30,9 @@ instance RunMessage MakeTheCall where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         discards <- selectList
-          (InDiscardOf AnyIdentity
-          $ AffordableCardBy (IdentityWithId identityId)
-          <> BasicCardMatches (CardWithType AllyType)
+          (AffordableCardBy (IdentityWithId identityId)
+          $ InDiscardOf AnyIdentity
+          $ BasicCardMatches (CardWithType AllyType)
           )
         pushAll
           [ FocusCards discards

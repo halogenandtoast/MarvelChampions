@@ -44,7 +44,8 @@ gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
-gameSelectAttachment :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectAttachment
+  :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
@@ -55,7 +56,8 @@ gameSelectExtendedCard
 
 instance HasAbilities Game
 
-getAvailableResourcesFor :: MonadGame env m => Maybe PlayerCard -> m [Resource]
+getAvailableResourcesFor
+  :: (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: MonadGame env m => m [Window]

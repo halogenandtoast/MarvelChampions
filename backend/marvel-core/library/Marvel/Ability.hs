@@ -128,6 +128,7 @@ passesCriteria x a = go (abilityCriteria a)
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
     MinionExists m -> selectAny m
+    CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
   source = abilitySource a

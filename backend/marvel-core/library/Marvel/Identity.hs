@@ -185,8 +185,10 @@ isPlayable attrs c = do
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+    CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
-    ExtendedCardExists m -> selectAny m
+    ExtendedCardExists m -> selectAny (NotCard c <> m)
+    -- ^ this is critical and order matters to avoid infinite recursion
 
 getModifiedCost :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do

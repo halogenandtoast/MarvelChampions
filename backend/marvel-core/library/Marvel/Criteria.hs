@@ -12,6 +12,7 @@ data Criteria
   | OwnsThis
   | MinionExists MinionMatcher
   | AllyExists AllyMatcher
+  | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher
   | Never
