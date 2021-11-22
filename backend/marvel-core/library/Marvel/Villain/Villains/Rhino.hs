@@ -12,11 +12,11 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
+import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
 import Marvel.Target
 import Marvel.Villain.Attrs
 import Marvel.Villain.Cards qualified as Cards
-import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Window
 
 newtype Rhino = Rhino VillainAttrs
@@ -45,7 +45,7 @@ rhino3 = villainWith
   (Sch 1)
   (Atk 4)
   (HP $ PerPlayer 16)
-  (stageL .~ 3)
+  ((stageL .~ 3) . (toughL .~ True))
 
 instance HasAbilities Rhino where
   getAbilities (Rhino a) = case villainStage a of
@@ -88,7 +88,8 @@ instance RunMessage Rhino where
       _ -> Rhino <$> runMessage msg attrs
     RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
       2 -> do
-        pushAll [SearchForAndRevealScheme Cards.breakinAndTakin, ShuffleEncounterDeck]
+        pushAll
+          [SearchForAndRevealScheme Cards.breakinAndTakin, ShuffleEncounterDeck]
         pure e
       3 -> do
         players <- getPlayers
