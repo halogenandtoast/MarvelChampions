@@ -302,6 +302,10 @@ deleteApiV1MarvelGameR gameId = void $ runDB $ do
 answerIdentity :: Answer -> Maybe IdentityId
 answerIdentity (Answer response) = qrIdentityId response
 
+extract :: Int -> [a] -> (Maybe a, [a])
+extract n xs =
+  let a = xs !!? n in (a, [ x | (i, x) <- zip [0 ..] xs, i /= n ])
+
 handleAnswer :: MonadIO m => Game -> IdentityId -> Answer -> m [Message]
 handleAnswer g@Game {..} identityId = \case
   Answer response -> case HashMap.lookup identityId gameQuestion of
@@ -312,4 +316,14 @@ handleAnswer g@Game {..} identityId = \case
         queueRef <- newIORef []
         runGameApp (GameApp gameRef queueRef logger)
           $ choiceMessages identityId choice
+    Just (ChooseOneAtATime qs) -> case extract (qrChoice response) qs of
+      (Nothing, msgs') -> pure [Ask identityId $ ChooseOneAtATime msgs']
+      (Just choice, msgs') -> do
+        gameRef <- newIORef g
+        queueRef <- newIORef []
+        results <- runGameApp (GameApp gameRef queueRef logger)
+          $ choiceMessages identityId choice
+        pure
+          $ results
+          <> [ Ask identityId $ ChooseOneAtATime msgs' | not (null msgs') ]
     _ -> error "Wrong question type"

@@ -11,7 +11,9 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
@@ -100,9 +102,10 @@ runMinionMessage msg attrs = case msg of
     when
       (damage + minionDamage attrs >= unHp (minionHitPoints attrs))
       (pushAll
-         [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
-         , MinionMessage (toId attrs) MinionDefeated
-         ])
+        [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
+        , MinionMessage (toId attrs) MinionDefeated
+        ]
+      )
     pure $ attrs & damageL +~ damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
@@ -111,11 +114,50 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   RevealMinion -> pure attrs
   MinionDefeated -> do
-    pushAll $
-      map (RemoveFromPlay . UpgradeTarget) (toList $ minionUpgrades attrs)
+    pushAll
+      $ map (RemoveFromPlay . UpgradeTarget) (toList $ minionUpgrades attrs)
       <> [ RemoveFromPlay (toTarget attrs)
-      , IdentityMessage
-        (minionEngagedIdentity attrs)
-        (MinionDisengaged $ toId attrs)
+         , IdentityMessage
+           (minionEngagedIdentity attrs)
+           (MinionDisengaged $ toId attrs)
+         ]
+    pure attrs
+  MinionSchemes -> if minionConfused attrs
+    then pure $ attrs & confusedL .~ False
+    else do
+      push $ MinionMessage (toId attrs) MinionSchemed
+      pure attrs
+  MinionAttacks ident -> if minionStunned attrs
+    then pure $ attrs & stunnedL .~ False
+    else do
+      pushAll
+        [ CheckWindows
+          [W.Window W.When $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
+        , MinionMessage (toId attrs) (MinionBeginAttack ident)
+        ]
+      pure attrs
+  MinionBeginAttack ident -> do
+    pushAll
+      [ DeclareDefense ident (EnemyMinionId (toId attrs))
+      , MinionMessage (toId attrs) MinionAttacked
       ]
+    pure $ attrs & attackingL ?~ IdentityCharacter ident
+  MinionSchemed -> do
+    mainScheme <- selectJust MainScheme
+    case mainScheme of
+      SchemeMainSchemeId mainSchemeId -> do
+        let threat = unSch (minionScheme attrs)
+        push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
+        pure attrs
+  MinionAttacked -> do
+    let dmg = unAtk (minionAttack attrs)
+    case minionAttacking attrs of
+      Just (IdentityCharacter ident) -> pushAll
+        [ CheckWindows
+          [W.Window W.When $ W.IdentityTakeDamage ident W.FromAttack dmg]
+        , IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg
+        ]
+      Just (AllyCharacter ident) ->
+        push (AllyMessage ident $ AllyDamaged (toSource attrs) dmg)
+      _ -> error "Invalid damage target"
     pure attrs

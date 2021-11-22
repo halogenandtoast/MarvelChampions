@@ -120,6 +120,11 @@ data MinionMessage
   | MinionConfused Source
   | MinionDefeated
   | MinionHealed Natural
+  | MinionAttacks IdentityId
+  | MinionSchemes
+  | MinionSchemed
+  | MinionBeginAttack IdentityId
+  | MinionAttacked
   | UpgradeAttachedToMinion UpgradeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -21,6 +21,8 @@ export function choices(game: Game, identityId: string): Choice[] {
   switch (question.tag) {
     case 'ChooseOne':
       return question.contents
+    case 'ChooseOneAtATime':
+      return question.contents
     default:
       return []
   }
