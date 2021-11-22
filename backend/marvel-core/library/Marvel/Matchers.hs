@@ -81,6 +81,9 @@ data VillainMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+villainMatches :: MonadGame env m => VillainMatcher -> VillainId -> m Bool
+villainMatches matcher ident = member ident <$> gameSelectVillain matcher
+
 data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

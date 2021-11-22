@@ -2,15 +2,21 @@ module Marvel.Villain.Villains.Rhino where
 
 import Marvel.Prelude
 
+import Marvel.Ability
+import Marvel.Cost
 import Marvel.Difficulty
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Question
 import Marvel.Queue
 import Marvel.Stats
+import Marvel.Target
 import Marvel.Villain.Attrs
 import Marvel.Villain.Cards qualified as Cards
+import Marvel.Window
 
 newtype Rhino = Rhino VillainAttrs
   deriving anyclass IsVillain
@@ -40,8 +46,31 @@ rhino3 = villainWith
   (HP $ PerPlayer 16)
   (stageL .~ 3)
 
+instance HasAbilities Rhino where
+  getAbilities (Rhino a) = case villainStage a of
+    1 -> []
+    2 ->
+      [ windowAbility
+          a
+          1
+          (VillainRevealed When (VillainWithId $ toId a) FromVillain)
+          ForcedResponse
+          NoCost
+          (RunAbility (toTarget a) 1)
+      ]
+    3 ->
+      [ windowAbility
+          a
+          1
+          (VillainRevealed When (VillainWithId $ toId a) FromVillain)
+          ForcedResponse
+          NoCost
+          (RunAbility (toTarget a) 1)
+      ]
+    _ -> error "Invalid stage"
+
 instance RunMessage Rhino where
-  runMessage msg (Rhino attrs) = case msg of
+  runMessage msg e@(Rhino attrs) = case msg of
     VillainMessage villainId msg' | villainId == toId attrs -> case msg' of
       VillainDefeated -> do
         difficulty <- getDifficulty
@@ -56,4 +85,11 @@ instance RunMessage Rhino where
           (_, 3) -> Rhino <$> runMessage msg attrs
           (_, _) -> error "Invalid rhino progression"
       _ -> Rhino <$> runMessage msg attrs
+    RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
+      2 -> pure e
+      3 -> do
+        players <- getPlayers
+        pushAll $ map (`IdentityMessage` IdentityStunned) players
+        pure e
+      _ -> error "Invalid choice"
     _ -> Rhino <$> runMessage msg attrs

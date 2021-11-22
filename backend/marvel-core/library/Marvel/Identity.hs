@@ -57,6 +57,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityExhausted :: Bool
   , playerIdentityEncounterCards :: [EncounterCard]
   , playerIdentityDamageReduction :: Natural
+  , playerIdentityStunned :: Bool
   }
   deriving stock (Show, Eq, Generic)
 
@@ -122,6 +123,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityExhausted = False
   , playerIdentityEncounterCards = []
   , playerIdentityDamageReduction = 0
+  , playerIdentityStunned = False
   }
  where
   hp = case alterEgoSide of
@@ -385,6 +387,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       . min (unHp playerIdentityMaxHP)
       . (+ fromIntegral n)
       . unHp
+  IdentityStunned -> pure $ attrs & stunnedL .~ True
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

@@ -102,7 +102,10 @@ runVillainMessage
   :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
 runVillainMessage msg attrs = case msg of
   VillainAdvanced -> do
-    push (VillainMessage (toId attrs) SetVillainHp)
+    pushAll
+      [ VillainMessage (toId attrs) SetVillainHp
+      , CheckWindows [Window When $ RevealVillain (toId attrs) FromVillain]
+      ]
     pure attrs
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
@@ -194,6 +197,9 @@ instance RunMessage VillainAttrs where
 
 instance IsTarget VillainAttrs where
   toTarget = VillainTarget . villainId
+
+isTarget :: (Entity a, EntityAttrs a ~ VillainAttrs) => a -> Target -> Bool
+isTarget a = (== toTarget (toAttrs a))
 
 instance IsSource VillainAttrs where
   toSource = VillainSource . villainId
