@@ -37,12 +37,13 @@ pop = withQueue \case
 
 cancelMatchingMessage
   :: (HasQueue env, MonadReader env m, MonadIO m) => (Message -> Bool) -> m ()
-cancelMatchingMessage f = withQueue_ $ \q -> case break f q of
-  (pre, []) -> pre
-  (pre, _ : rest) -> pre <> rest
+cancelMatchingMessage = replaceMatchingMessage []
 
 replaceMatchingMessage
-  :: (HasQueue env, MonadReader env m, MonadIO m) => [Message] -> (Message -> Bool) -> m ()
+  :: (HasQueue env, MonadReader env m, MonadIO m)
+  => [Message]
+  -> (Message -> Bool)
+  -> m ()
 replaceMatchingMessage splice f = withQueue_ $ \q -> case break f q of
   (pre, []) -> pre
   (pre, _ : rest) -> pre <> splice <> rest

@@ -18,7 +18,7 @@ data Source
   | UpgradeSource UpgradeId
   | GameSource
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 class IsSource a where
   toSource :: a -> Source

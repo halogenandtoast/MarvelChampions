@@ -163,6 +163,7 @@ runVillainMessage msg attrs = case msg of
       , VillainMessage (toId attrs) VillainAttacked
       ]
     pure $ attrs & attackingL ?~ attack
+      attrs
       (IdentityCharacter ident)
       (unAtk $ villainAttack attrs)
   VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
@@ -178,16 +179,14 @@ runVillainMessage msg attrs = case msg of
         push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
         pure $ attrs & boostL .~ 0
   VillainAttacked -> do
-    let dmg = unAtk (villainAttack attrs) + villainBoost attrs
-    case attackCharacter <$> villainAttacking attrs of
-      Just (IdentityCharacter ident) -> pushAll
-        [ CheckWindows
-          [W.Window W.When $ W.IdentityTakeDamage ident W.FromAttack dmg]
-        , IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg
-        ]
-      Just (AllyCharacter ident) ->
-        push (AllyMessage ident $ AllyDamaged (toSource attrs) dmg)
-      _ -> error "Invalid damage target"
+    case villainAttacking attrs of
+      Nothing -> error "No current attack"
+      Just attack' -> case attackCharacter attack' of
+        IdentityCharacter ident ->
+          push $ IdentityMessage ident $ IdentityWasAttacked attack'
+        AllyCharacter ident ->
+          push $ AllyMessage ident $ AllyWasAttacked attack'
+        _ -> error "Invalid damage target"
     pure $ attrs & boostL .~ 0
   DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
