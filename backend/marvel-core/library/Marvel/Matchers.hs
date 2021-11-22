@@ -4,6 +4,7 @@ module Marvel.Matchers where
 import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def
+import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
@@ -70,7 +71,7 @@ pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
 
 data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy IdentityMatcher | UnexhaustedUpgrade
 
-data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId
+data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -130,10 +131,11 @@ newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data ExtendedCardMatcher
-  = AffordableCardBy IdentityMatcher
+  = AffordableCardBy IdentityMatcher ExtendedCardMatcher
   | BasicCardMatches CardMatcher
   | InDiscardOf IdentityMatcher ExtendedCardMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
+  | NotCard PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

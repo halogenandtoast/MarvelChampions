@@ -147,6 +147,10 @@ export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({
   target: JsonDecoder.tuple([targetDecoder, JsonDecoder.succeed], '[Target]').map(a => a[0])
 }, 'Label', { target: 'contents' })
 
+export const youDrawCardsDecoder = JsonDecoder.object<YouDrawCards>({
+  tag: JsonDecoder.isExactly('YouDrawCards'),
+}, 'YouDrawCards')
+
 export const defendDecoder = JsonDecoder.object<Defend>({ tag: JsonDecoder.isExactly('Defend') }, 'Defend')
 
 export const allyDefendDecoder = JsonDecoder.object<AllyDefend>({
@@ -173,6 +177,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   allyThwartDecoder,
   removeThreatDecoder,
   targetLabelDecoder,
+  youDrawCardsDecoder,
   thwartDecoder], 'AbilityChoice')
 
 export const abilityTypeDecoder = JsonDecoder.oneOf<AbilityType>([
@@ -232,10 +237,14 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | YouDrawCards
 
 export interface ChangeForm {
   tag: 'ChangeForm'
+}
+
+export interface YouDrawCards {
+  tag: 'YouDrawCards'
 }
 
 export interface Label {

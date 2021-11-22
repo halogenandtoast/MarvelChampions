@@ -11,11 +11,13 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Window qualified as W
 
 spiderMan :: HeroCard SpiderMan
 spiderMan = hero
@@ -29,8 +31,14 @@ spiderMan = hero
 
 instance HasAbilities SpiderMan where
   getAbilities a =
-    [ label "Spider-Sense"
-        $ ability a 1 Interrupt IsSelf NoCost (RunAbility (toTarget a) 1)
+    [ label "Spider-Sense" $ limitedWindowAbility
+        a
+        1
+        (W.EnemyWouldAttack VillainEnemy You)
+        Interrupt
+        IsSelf
+        NoCost
+        (YouDrawCards 1)
     ]
 
 newtype SpiderMan = SpiderMan HeroAttrs

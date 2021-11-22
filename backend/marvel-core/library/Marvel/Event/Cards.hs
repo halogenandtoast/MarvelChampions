@@ -2,7 +2,7 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type (AbilityType(HeroAction))
+import Marvel.Ability.Type (AbilityType(Action, HeroAction))
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -47,7 +47,7 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdTraits = fromList traits
   , cdKeywords = mempty
   , cdCardType = EventType
-  , cdAbilityType = Nothing
+  , cdAbilityType = Just Action
   , cdUnique = False
   , cdAspect = mAspect
   , cdEncounterSet = Nothing
@@ -84,7 +84,9 @@ swingingWebKick = (identityEvent
   }
 
 getReady :: CardDef
-getReady = event "01069" "Get Ready" 0 [] [Physical] Leadership
+getReady = (event "01069" "Get Ready" 0 [] [Physical] Leadership)
+  { cdCriteria = AllyExists ExhaustedAlly
+  }
 
 leadFromTheFront :: CardDef
 leadFromTheFront =
@@ -97,13 +99,16 @@ makeTheCall :: CardDef
 makeTheCall = (event "01071" "Make the Call" 0 [] [Mental] Leadership)
   { cdCriteria =
     ExtendedCardExists
-    $ InDiscardOf AnyIdentity
     $ AffordableCardBy You
-    <> BasicCardMatches (CardWithType AllyType)
+    $ InDiscardOf AnyIdentity
+    $ BasicCardMatches (CardWithType AllyType)
   }
 
 firstAid :: CardDef
-firstAid = basicEvent "01086" "First Aid" 1 [] [Mental]
+firstAid = (basicEvent "01086" "First Aid" 1 [] [Mental])
+  { cdCriteria = CharacterExists CharacterWithAnyDamage
+  }
+
 
 haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 [Attack] [Energy])

@@ -54,9 +54,14 @@ data Ability = Ability
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+-- Are two abilities equal?
+-- Hack for handling two sides of a card as long as abilities have
+-- different labels
 instance Eq Ability where
   a == b =
-    abilitySource a == abilitySource b && abilityIndex a == abilityIndex b
+    (abilitySource a == abilitySource b)
+      && (abilityIndex a == abilityIndex b)
+      && (abilityLabel a == abilityLabel b)
 
 windowL :: Lens' Ability (Maybe WindowMatcher)
 windowL = lens abilityWindow $ \m x -> m { abilityWindow = x }
@@ -65,7 +70,7 @@ choicesL :: Lens' Ability [Choice]
 choicesL = lens abilityChoices $ \m x -> m { abilityChoices = x }
 
 class HasAbilities a where
-  getAbilities :: a -> [Ability]
+  getAbilities :: HasCallStack => a -> [Ability]
 
 genericGetAbilities :: (Generic a, HasAbilities' (Rep a)) => a -> [Ability]
 genericGetAbilities = getAbilities' . from
