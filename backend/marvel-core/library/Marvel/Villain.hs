@@ -3,6 +3,7 @@ module Marvel.Villain where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Entity
@@ -35,6 +36,9 @@ villainDamage v =
     (villainHp attrs)
  where
    attrs = toAttrs v
+
+instance HasAbilities Villain where
+  getAbilities = genericGetAbilities
 
 instance RunMessage Villain where
   runMessage = genericRunMessage

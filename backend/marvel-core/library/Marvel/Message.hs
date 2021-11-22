@@ -76,6 +76,8 @@ data Message
   | UpgradeRemoved UpgradeId
   | FocusCards [PlayerCard]
   | UnfocusCards
+  | SearchForAndRevealScheme CardDef
+  | ShuffleEncounterDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

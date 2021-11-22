@@ -16,6 +16,7 @@ import Marvel.Stats
 import Marvel.Target
 import Marvel.Villain.Attrs
 import Marvel.Villain.Cards qualified as Cards
+import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Window
 
 newtype Rhino = Rhino VillainAttrs
@@ -86,7 +87,9 @@ instance RunMessage Rhino where
           (_, _) -> error "Invalid rhino progression"
       _ -> Rhino <$> runMessage msg attrs
     RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
-      2 -> pure e
+      2 -> do
+        pushAll [SearchForAndRevealScheme Cards.breakinAndTakin, ShuffleEncounterDeck]
+        pure e
       3 -> do
         players <- getPlayers
         pushAll $ map (`IdentityMessage` IdentityStunned) players
