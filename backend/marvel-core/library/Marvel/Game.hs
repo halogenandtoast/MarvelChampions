@@ -28,6 +28,7 @@ import Marvel.Hand
 import Marvel.Hero.Cards
 import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
+import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
@@ -410,6 +411,7 @@ isWindowPlayable window attrs c = do
       member ident <$> select (IdentityWithId ident <> identityMatcher)
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+    EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
@@ -748,6 +750,17 @@ gameSelectEnemy = \case
   VillainEnemy -> do
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
+  AttackableEnemy -> do
+    guardMinions <- selectList $ MinionWithKeyword Guard
+    if null guardMinions
+      then do
+        minions <- toList <$> getsGame gameMinions
+        villains <- toList <$> getsGame gameVillains
+        pure
+          $ HashSet.fromList
+          $ map (EnemyVillainId . toId) villains
+          <> map (EnemyMinionId . toId) minions
+      else pure $ HashSet.fromList $ map EnemyMinionId guardMinions
 
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
@@ -760,6 +773,8 @@ gameSelectVillain m = do
     VillainWithId ident' -> pure . (== ident') . toId
     VillainWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . villainDamage
+    VillainWithToughStatus -> pure . villainIsTough
+    VillainMatches xs -> andM . traverse matchFilter xs
 
 gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
@@ -772,6 +787,7 @@ gameSelectMinion m = do
     MinionWithId ident' -> pure . (== ident') . toId
     MinionWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . getMinionDamage
+    MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
 gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)

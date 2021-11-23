@@ -187,6 +187,7 @@ isPlayable attrs c = do
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
+    EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)

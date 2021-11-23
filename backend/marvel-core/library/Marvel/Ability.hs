@@ -129,6 +129,7 @@ passesCriteria x a = go (abilityCriteria a)
     Criteria xs -> allM go xs
     MinionExists m -> selectAny m
     CharacterExists m -> selectAny m
+    EnemyExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
   source = abilitySource a

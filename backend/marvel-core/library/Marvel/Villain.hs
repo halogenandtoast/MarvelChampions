@@ -31,11 +31,12 @@ allVillains = fromList
   $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
 
 villainDamage :: Villain -> Natural
-villainDamage v =
-  fromIntegral . max 0 $ unHp (villainMaxHp attrs) - unHp
-    (villainHp attrs)
- where
-   attrs = toAttrs v
+villainDamage v = fromIntegral . max 0 $ unHp (villainMaxHp attrs) - unHp
+  (villainHp attrs)
+  where attrs = toAttrs v
+
+villainIsTough :: Villain -> Bool
+villainIsTough = villainTough . toAttrs
 
 instance HasAbilities Villain where
   getAbilities = genericGetAbilities

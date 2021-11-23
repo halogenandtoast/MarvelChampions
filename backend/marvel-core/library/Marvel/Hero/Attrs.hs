@@ -122,7 +122,7 @@ instance RunMessage HeroAttrs where
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
         Attacked -> do
-          enemies <- selectList AnyEnemy
+          enemies <- selectList AttackableEnemy
           dmg <- getModifiedAttack a
           push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
           pure a

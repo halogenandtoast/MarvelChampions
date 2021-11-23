@@ -13,6 +13,7 @@ import Marvel.Entity
 import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Heroes
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
@@ -28,7 +29,7 @@ instance HasAbilities Hero where
    where
     basicAbilities =
       [ ability a 300 Basic NoCriteria ExhaustCost Thwart
-      , ability a 301 Basic NoCriteria ExhaustCost Attack
+      , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
 allHeroes :: HashMap CardCode (IdentityId -> Hero)

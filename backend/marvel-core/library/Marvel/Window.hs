@@ -11,7 +11,7 @@ data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data DamageSource = FromAttack
+data DamageSource = FromAttack | FromAbility
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

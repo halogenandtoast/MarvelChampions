@@ -88,6 +88,7 @@ data VillainMessage
   | VillainDamaged Source Natural
   | VillainStunned Source
   | VillainConfused Source
+  | VillainBecomeTough
   | DealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainAttackGainOverkill
