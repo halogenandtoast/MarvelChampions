@@ -31,6 +31,7 @@ villain cardCode name traits = CardDef
   , cdResources = []
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
+  , cdHazards = 0
   }
 
 rhino1 :: CardDef

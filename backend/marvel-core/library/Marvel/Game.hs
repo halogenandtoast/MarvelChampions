@@ -860,3 +860,7 @@ abilityResources a = go (abilityChoices a)
   go (Pay (ResourcePayment r) : xs) = (r :) <$> go xs
   go (_ : xs) = go xs
 
+getHazardCount :: MonadGame env m => m Natural
+getHazardCount = do
+  sideSchemes <- getsGame gameSideSchemes
+  pure $ foldr ((+) . cdHazards . getCardDef) 0 sideSchemes

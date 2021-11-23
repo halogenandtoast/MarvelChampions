@@ -73,6 +73,9 @@ instance IsSource SideSchemeAttrs where
 instance IsTarget SideSchemeAttrs where
   toTarget = SideSchemeTarget . toId
 
+instance HasCardDef SideSchemeAttrs where
+  getCardDef = sideSchemeCardDef
+
 isTarget :: (Entity a, EntityAttrs a ~ SideSchemeAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 

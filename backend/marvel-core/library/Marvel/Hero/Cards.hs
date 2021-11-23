@@ -31,6 +31,7 @@ hero cardCode name traits = CardDef
   , cdResources = []
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
+  , cdHazards = 0
   }
 
 spiderMan :: CardDef

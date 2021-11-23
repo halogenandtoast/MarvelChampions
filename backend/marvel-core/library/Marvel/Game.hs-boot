@@ -64,3 +64,4 @@ getAvailableResourcesFor
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: MonadGame env m => m [Window]
 getDifficulty :: MonadGame env m => m Difficulty
+getHazardCount :: MonadGame env m => m Natural

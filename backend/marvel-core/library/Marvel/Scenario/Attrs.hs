@@ -15,8 +15,8 @@ import Marvel.GameValue
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Phase
-import Marvel.Queue
 import Marvel.Query
+import Marvel.Queue
 import Marvel.Target
 import Marvel.Window qualified as W
 import System.Random.Shuffle
@@ -118,10 +118,12 @@ instance RunMessage ScenarioAttrs where
     BeginPhase VillainPhase -> do
       players <- getPlayers
       additionalThreat <- fromIntegral <$> fromGameValue scenarioAcceleration
+      hazards <- fromIntegral <$> getHazardCount
       pushAll
         $ MainSchemeMessage scenarioId (MainSchemePlaceThreat additionalThreat)
         : map (($ VillainAndMinionsActivate) . IdentityMessage) players
         <> map DealEncounterCard players
+        <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
         <> map (($ RevealEncounterCards) . IdentityMessage) players
         <> [PassFirstPlayer, EndRound]
       pure attrs
@@ -151,11 +153,20 @@ instance RunMessage ScenarioAttrs where
       runMainSchemeMessage msg' attrs
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      case find ((== cardDef) . getCardDef) $ scenarioEncounterDeck <> scenarioDiscard of
-        Nothing -> pure attrs
-        Just card -> do
-          push $ RevealEncounterCard ident card
-          pure $ attrs & discardL %~ filter (/= card) & encounterDeckL %~ filter (/= card)
+      case
+          find ((== cardDef) . getCardDef)
+          $ scenarioEncounterDeck
+          <> scenarioDiscard
+        of
+          Nothing -> pure attrs
+          Just card -> do
+            push $ RevealEncounterCard ident card
+            pure
+              $ attrs
+              & discardL
+              %~ filter (/= card)
+              & encounterDeckL
+              %~ filter (/= card)
     _ -> pure attrs
 
 instance Entity ScenarioAttrs where
