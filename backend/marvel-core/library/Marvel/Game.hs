@@ -306,12 +306,22 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & minionsL %~ insert (toId minion) minion
       TreacheryType -> do
         let treachery = createTreachery card
+        -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
-          [ CheckWindows
+          [ FocusCards
+            [ PlayerCard
+                { pcCardId = ecCardId card
+                , pcCardDef = ecCardDef card
+                , pcOwner = Nothing
+                , pcController = Nothing
+                }
+            ]
+          , CheckWindows
             [ W.Window When
                 $ W.RevealTreachery (toId treachery) W.FromEncounterDeck
             ]
           , TreacheryMessage (toId treachery) $ RevealTreachery ident
+          , UnfocusCards
           , TreacheryMessage (toId treachery) ResolvedTreachery
           ]
         pure $ g & treacheriesL %~ insert (toId treachery) treachery
