@@ -279,6 +279,8 @@ costMessages iid a = go (abilityCost a)
       _ -> error "Unhandled"
     ResourceCost mr -> do
       [SetActiveCost $ ActiveCost iid (ForAbility a) (ResourceCost mr) NoPayment Nothing]
+    MultiResourceCost rs -> do
+      [SetActiveCost $ ActiveCost iid (ForAbility a) (MultiResourceCost rs) NoPayment Nothing]
     Costs xs -> concatMap go xs
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()

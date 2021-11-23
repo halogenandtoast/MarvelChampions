@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.GameValue
 import Marvel.Message
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
@@ -14,7 +15,12 @@ import Marvel.Source
 import Marvel.Target
 
 crowdControl :: SideSchemeCard CrowdControl
-crowdControl = sideScheme CrowdControl Cards.crowdControl
+crowdControl = sideSchemeWith
+  CrowdControl
+  Cards.crowdControl
+  (PerPlayer 2)
+  (Static 0)
+  (crisisL .~ True)
 
 newtype CrowdControl = CrowdControl SideSchemeAttrs
   deriving anyclass IsSideScheme

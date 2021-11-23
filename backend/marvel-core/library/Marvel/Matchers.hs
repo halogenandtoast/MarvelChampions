@@ -110,7 +110,11 @@ treacheryMatches
   :: MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
 treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
-data SchemeMatcher = AnyScheme | MainScheme
+data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data SideSchemeMatcher = AnySideScheme | CrisisSideScheme
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

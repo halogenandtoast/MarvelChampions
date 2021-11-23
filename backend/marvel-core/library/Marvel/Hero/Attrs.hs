@@ -116,6 +116,9 @@ thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
     [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
+  SchemeSideSchemeId sid -> TargetLabel
+    (SideSchemeTarget sid)
+    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
 
 instance RunMessage HeroAttrs where
   runMessage msg a = case msg of
@@ -127,7 +130,7 @@ instance RunMessage HeroAttrs where
           push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
           pure a
         Thwarted -> do
-          schemes <- selectList AnyScheme
+          schemes <- selectList ThwartableScheme
           thw <- getModifiedThwart a
           push $ Ask ident $ ChooseOne $ map (thwartChoice a thw) schemes
           pure a

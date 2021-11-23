@@ -34,6 +34,7 @@ data MinionAttrs = MinionAttrs
   , minionEngagedIdentity :: IdentityId
   , minionStunned :: Bool
   , minionConfused :: Bool
+  , minionTough :: Bool
   , minionAttacking :: Maybe CharacterId
   , minionUpgrades :: HashSet UpgradeId
   }
@@ -44,6 +45,16 @@ makeLensesWith suffixedFields ''MinionAttrs
 
 instance HasCardCode MinionAttrs where
   toCardCode = toCardCode . minionCardDef
+
+minionWith
+  :: (MinionAttrs -> a)
+  -> CardDef
+  -> Sch
+  -> Atk
+  -> HP Natural
+  -> (MinionAttrs -> MinionAttrs)
+  -> CardBuilder (IdentityId, MinionId) a
+minionWith f cardDef sch atk hp g = minion (f . g) cardDef sch atk hp
 
 minion
   :: (MinionAttrs -> a)
@@ -64,6 +75,7 @@ minion f cardDef sch atk hp = CardBuilder
     , minionEngagedIdentity = ident
     , minionStunned = False
     , minionConfused = False
+    , minionTough = False
     , minionAttacking = Nothing
     , minionUpgrades = mempty
     }
@@ -98,15 +110,17 @@ runMinionMessage
 runMinionMessage msg attrs = case msg of
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n
-  MinionDamaged _ damage -> do
-    when
-      (damage + minionDamage attrs >= unHp (minionHitPoints attrs))
-      (pushAll
-        [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
-        , MinionMessage (toId attrs) MinionDefeated
-        ]
-      )
-    pure $ attrs & damageL +~ damage
+  MinionDamaged _ damage -> if minionTough attrs
+    then pure $ attrs & toughL .~ False
+    else do
+      when
+        (damage + minionDamage attrs >= unHp (minionHitPoints attrs))
+        (pushAll
+          [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
+          , MinionMessage (toId attrs) MinionDefeated
+          ]
+        )
+      pure $ attrs & damageL +~ damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
@@ -151,6 +165,7 @@ runMinionMessage msg attrs = case msg of
         let threat = unSch (minionScheme attrs)
         push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
         pure attrs
+      _ -> error "Not the main scheme"
   MinionAttacked -> do
     let dmg = unAtk (minionAttack attrs)
     case minionAttacking attrs of

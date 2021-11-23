@@ -25,8 +25,9 @@ data EnemyId = EnemyVillainId VillainId | EnemyMinionId MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
-newtype SchemeId = SchemeMainSchemeId CardCode
-  deriving newtype (Show, Eq, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+data SchemeId = SchemeMainSchemeId CardCode | SchemeSideSchemeId SideSchemeId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
 newtype AllyId = AllyId { unAllyId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

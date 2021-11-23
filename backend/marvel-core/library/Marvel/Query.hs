@@ -16,6 +16,7 @@ type family QueryElement a where
   QueryElement AllyMatcher = AllyId
   QueryElement SupportMatcher = SupportId
   QueryElement SchemeMatcher = SchemeId
+  QueryElement SideSchemeMatcher = SideSchemeId
   QueryElement UpgradeMatcher = UpgradeId
   QueryElement CharacterMatcher = CharacterId
   QueryElement ExtendedCardMatcher = PlayerCard
@@ -76,3 +77,6 @@ instance Query ExtendedCardMatcher where
 
 instance Query AttachmentMatcher where
   select = gameSelectAttachment
+
+instance Query SideSchemeMatcher where
+  select = gameSelectSideScheme

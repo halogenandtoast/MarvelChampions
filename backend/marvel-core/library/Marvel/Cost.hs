@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Resource
 
-data Cost = Costs [Cost] | ResourceCost (Maybe Resource) | ExhaustCost | UseCost | NoCost
+data Cost = Costs [Cost] | ResourceCost (Maybe Resource) | MultiResourceCost [Maybe Resource] | ExhaustCost | UseCost | NoCost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -24,4 +24,5 @@ costResources NoCost = []
 costResources ExhaustCost = []
 costResources UseCost = []
 costResources (ResourceCost r) = [r]
+costResources (MultiResourceCost rs) = rs
 costResources (Costs ps) = concatMap costResources ps

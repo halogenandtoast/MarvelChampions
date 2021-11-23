@@ -42,6 +42,8 @@ data AllyAttrs = AllyAttrs
   , allyCounters :: Natural
   , allyUpgrades :: HashSet UpgradeId
   , allyStunned :: Bool
+  , allyConfused :: Bool
+  , allyTough :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -87,6 +89,8 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
       , allyHitPoints = hp
       , allyExhausted = False
       , allyStunned = False
+      , allyConfused = False
+      , allyTough = False
       , allyCounters = 0
       , allyUpgrades = mempty
       }
@@ -137,6 +141,9 @@ thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
     [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
+  SchemeSideSchemeId sid -> TargetLabel
+    (SideSchemeTarget sid)
+    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
 
 stunChoice :: AllyAttrs -> EnemyId -> Choice
 stunChoice attrs = \case
@@ -167,7 +174,7 @@ instance RunMessage AllyAttrs where
       AllyAttacked -> if allyStunned a
         then pure $ a & stunnedL .~ False
         else do
-          enemies <- selectList AnyEnemy
+          enemies <- selectList AttackableEnemy
           dmg <- getModifiedAttack a
           pushAll
             $ Ask
@@ -179,19 +186,21 @@ instance RunMessage AllyAttrs where
               | allyAttackConsequentialDamage a > 0
               ]
           pure a
-      AllyThwarted -> do
-        schemes <- selectList AnyScheme
-        thw <- getModifiedThwart a
-        pushAll
-          $ Ask
-              (allyController a)
-              (ChooseOne $ map (thwartChoice a thw) schemes)
-          : [ AllyMessage
-                ident
-                (AllyDamaged (toSource a) (allyThwartConsequentialDamage a))
-            | allyThwartConsequentialDamage a > 0
-            ]
-        pure a
+      AllyThwarted -> if allyConfused a
+        then pure $ a & confusedL .~ False
+        else do
+          schemes <- selectList ThwartableScheme
+          thw <- getModifiedThwart a
+          pushAll
+            $ Ask
+                (allyController a)
+                (ChooseOne $ map (thwartChoice a thw) schemes)
+            : [ AllyMessage
+                  ident
+                  (AllyDamaged (toSource a) (allyThwartConsequentialDamage a))
+              | allyThwartConsequentialDamage a > 0
+              ]
+          pure a
       AllyDefended enemyId -> do
         pushAll
           [ AllyMessage (toId a) ExhaustedAlly
@@ -228,11 +237,13 @@ instance RunMessage AllyAttrs where
         --     $ AllyDamaged (attackSource attack) (attackDamage attack)
         --   ]
         pure a
-      AllyDamaged _ damage -> do
-        when
-          (damage + allyDamage a >= unHp (allyHitPoints a))
-          (push $ AllyMessage (toId a) AllyDefeated)
-        pure $ a & damageL +~ damage
+      AllyDamaged _ damage -> if allyTough a
+        then pure $ a & toughL .~ False
+        else do
+          when
+            (damage + allyDamage a >= unHp (allyHitPoints a))
+            (push $ AllyMessage (toId a) AllyDefeated)
+          pure $ a & damageL +~ damage
       AllyDefeated -> do
         pushAll
           [ RemoveFromPlay (toTarget a)
