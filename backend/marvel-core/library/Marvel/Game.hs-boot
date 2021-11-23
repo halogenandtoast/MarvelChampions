@@ -4,7 +4,6 @@ import Marvel.Prelude
 
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.PlayerCard
-import Marvel.Count
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
@@ -49,7 +48,7 @@ gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectCountScheme
-  :: MonadReader Game m
+  :: MonadGame env m
   => QueryCount SchemeMatcher
   -> SchemeMatcher
   -> m Natural
@@ -72,3 +71,7 @@ getCurrentWindows :: MonadGame env m => m [Window]
 getDifficulty :: MonadGame env m => m Difficulty
 getHazardCount :: MonadGame env m => m Natural
 getAccelerationCount :: MonadGame env m => m Natural
+
+class Count a where
+  data QueryCount a
+  selectCount :: MonadGame env m => QueryCount a -> a -> m Natural

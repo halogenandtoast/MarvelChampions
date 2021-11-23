@@ -43,3 +43,6 @@ instance HasCardDef SideScheme where
 
 isCrisis :: SideScheme -> Bool
 isCrisis = sideSchemeCrisis . toAttrs
+
+getSideSchemeThreat :: SideScheme -> Natural
+getSideSchemeThreat = sideSchemeThreat . toAttrs

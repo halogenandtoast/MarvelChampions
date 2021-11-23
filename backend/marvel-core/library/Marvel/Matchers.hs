@@ -1,4 +1,3 @@
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Marvel.Matchers where
 
@@ -6,7 +5,6 @@ import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def
 import {-# SOURCE #-} Marvel.Card.PlayerCard
-import Marvel.Count
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
@@ -123,7 +121,6 @@ data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId Sc
 
 instance Count SchemeMatcher where
   data QueryCount SchemeMatcher = SchemeThreat
-  type Backend SchemeMatcher = Game
   selectCount = gameSelectCountScheme
 
 data SideSchemeMatcher

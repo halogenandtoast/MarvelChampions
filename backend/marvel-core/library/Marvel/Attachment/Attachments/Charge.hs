@@ -53,7 +53,7 @@ instance RunMessage Charge where
       RevealAttachment -> do
         villainId <- selectJust ActiveVillain
         push $ VillainMessage villainId $ AttachedToVillain aid
-        pure a
+        pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> pure a
     RanAbility target 1 _ | isTarget attrs target ->
       case attachmentEnemy attrs of

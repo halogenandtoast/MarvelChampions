@@ -215,8 +215,8 @@ instance RunMessage AllyAttrs where
       AllyWasAttacked attack' -> do
         let
           overkill = subtractNatural
-            (attackDamage attack')
             (unHp (allyHitPoints a) - allyDamage a)
+            (attackDamage attack')
         when
           (attackOverkill attack' && overkill > 0)
           (push $ IdentityMessage (allyController a) $ IdentityDamaged

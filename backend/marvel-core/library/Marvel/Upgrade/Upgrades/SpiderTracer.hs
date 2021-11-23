@@ -34,7 +34,7 @@ instance HasAbilities SpiderTracer where
             (MinionDefeated When $ MinionWithId minionId)
             ForcedInterrupt
             NoCost
-          $ RemoveThreat (toSource attrs) 3 AnyScheme
+          $ RemoveThreat (toSource attrs) 3 ThwartableScheme
       ]
     _ -> []
 

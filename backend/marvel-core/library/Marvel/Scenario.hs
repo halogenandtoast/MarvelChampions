@@ -56,3 +56,6 @@ instance Entity Scenario where
 
 getScenarioDifficulty :: Scenario -> Difficulty
 getScenarioDifficulty = scenarioDifficulty . toAttrs
+
+getMainSchemeThreat :: Scenario -> Natural
+getMainSchemeThreat = scenarioThreat . toAttrs

@@ -6,7 +6,6 @@ module Marvel.Treachery.Treacheries.Explosion
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Count
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
@@ -15,11 +14,11 @@ import Marvel.Message
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.SideScheme.Cards qualified as Cards
+import qualified Marvel.SideScheme.Cards as Cards
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
-import Marvel.Treachery.Cards qualified as Cards
+import qualified Marvel.Treachery.Cards as Cards
 
 explosion :: TreacheryCard Explosion
 explosion = treachery Explosion Cards.explosion
@@ -36,15 +35,9 @@ instance RunMessage Explosion where
         case mBombScare of
           Nothing -> push $ Surge ident
           Just bombScare -> do
-            game <- getsGame id
-            threat <-
-              fromIntegral
-                <$> runReaderT
-                      (selectCount
-                        SchemeThreat
-                        (SchemeWithId $ SchemeSideSchemeId bombScare)
-                      )
-                      game
+            threat <- fromIntegral <$> selectCount
+              SchemeThreat
+              (SchemeWithId $ SchemeSideSchemeId bombScare)
             players <- getPlayers
             allies <- selectList AnyAlly
             pushAll $ replicate threat $ Ask

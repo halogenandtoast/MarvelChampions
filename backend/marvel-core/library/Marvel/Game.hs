@@ -827,7 +827,8 @@ gameSelectScheme = \case
   AnyScheme -> do
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
-    pure $ HashSet.singleton mainSchemeId
+    sideSchemes <- toList <$> getsGame gameSideSchemes
+    pure $ HashSet.fromList $ mainSchemeId : map (SchemeSideSchemeId . toId) sideSchemes
   MainScheme -> do
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
@@ -854,11 +855,23 @@ gameSelectScheme = \case
       else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
 
 gameSelectCountScheme
-  :: MonadReader Game m
+  :: MonadGame env m
   => QueryCount SchemeMatcher
   -> SchemeMatcher
   -> m Natural
-gameSelectCountScheme _ _ = pure 0
+gameSelectCountScheme aggregate matcher = do
+  schemes <- toList <$> gameSelectScheme matcher
+  case aggregate of
+    SchemeThreat -> do
+      let
+        toThreat = \case
+          SchemeMainSchemeId sid -> do
+            scenario <- getsGame gameScenario
+            pure $ if toId scenario == sid then getMainSchemeThreat scenario else 0
+          SchemeSideSchemeId sid -> do
+            mSideScheme <- getsGame (lookup sid . gameSideSchemes)
+            pure $ maybe 0 getSideSchemeThreat mSideScheme
+      sum <$> traverse toThreat schemes
 
 gameSelectSideScheme
   :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
@@ -909,3 +922,7 @@ getAccelerationCount :: MonadGame env m => m Natural
 getAccelerationCount = do
   sideSchemes <- getsGame gameSideSchemes
   pure $ foldr ((+) . cdAcceleration . getCardDef) 0 sideSchemes
+
+class Count a where
+  data QueryCount a
+  selectCount :: MonadGame env m => QueryCount a -> a -> m Natural

@@ -2,6 +2,9 @@
   <div class="minion">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
     <div v-if="minion.contents.minionDamage > 0" class="damage">{{minion.contents.minionDamage}}</div>
+    <div v-if="minion.contents.minionTough" class="tough">tough</div>
+    <div v-if="minion.contents.minionConfused" class="confused">confused</div>
+    <div v-if="minion.contents.minionStunned" class="stunned">stunned</div>
     <Upgrade
       v-for="upgrade in upgrades"
       :key="upgrade.contents.upgradeId"
