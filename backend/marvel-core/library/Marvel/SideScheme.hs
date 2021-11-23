@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -36,6 +37,9 @@ instance RunMessage SideScheme where
 
 instance IsSource SideScheme where
   toSource = SideSchemeSource . toId
+
+instance HasCardDef SideScheme where
+  getCardDef = getCardDef . toAttrs
 
 isCrisis :: SideScheme -> Bool
 isCrisis = sideSchemeCrisis . toAttrs

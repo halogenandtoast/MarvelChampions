@@ -56,6 +56,7 @@ baseEvent code name cost traits resources mAspect = CardDef
   , cdResources = map (PrintedResource, ) resources
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
+  , cdHazards = 0
   }
 
 backflip :: CardDef
