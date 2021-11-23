@@ -126,7 +126,7 @@ runMinionMessage msg attrs = case msg of
   MinionDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
   UpgradeAttachedToMinion upgradeId ->
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
-  RevealMinion -> pure attrs
+  RevealMinion _ -> pure attrs
   MinionDefeated -> do
     pushAll
       $ map (RemoveFromPlay . UpgradeTarget) (toList $ minionUpgrades attrs)

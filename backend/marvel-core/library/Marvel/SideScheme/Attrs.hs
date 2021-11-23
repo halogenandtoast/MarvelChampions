@@ -86,5 +86,6 @@ instance RunMessage SideSchemeAttrs where
         SideSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
+        SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         _ -> pure attrs
     _ -> pure attrs
