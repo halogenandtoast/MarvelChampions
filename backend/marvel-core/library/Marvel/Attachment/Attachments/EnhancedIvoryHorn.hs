@@ -52,6 +52,6 @@ instance RunMessage EnhancedIvoryHorn where
       RevealAttachment -> do
         villainId <- selectJust ActiveVillain
         push $ VillainMessage villainId $ AttachedToVillain aid
-        pure a
+        pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> pure a
     _ -> EnhancedIvoryHorn <$> runMessage msg attrs

@@ -42,6 +42,9 @@
           <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
         </div>
         <div>HP: {{player.currentHP}}</div>
+        <div v-if="player.stunned">stunned</div>
+        <div v-if="player.confused">confused</div>
+        <div v-if="player.tough">tough</div>
         <AbilityButton
               v-for="ability in abilities"
               :key="ability"
