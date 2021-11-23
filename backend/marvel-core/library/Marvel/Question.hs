@@ -207,9 +207,13 @@ choiceMessages ident = \case
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    SideSchemeTarget sid ->
+      pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
     SchemeTarget (SchemeMainSchemeId mid) ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-    _ -> error "can not thwart target"
+    SchemeTarget (SchemeSideSchemeId sid) ->
+      pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
+    _ -> error $ "can not thwart target: " <> show target
   RemoveThreat source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     let f target = ThwartScheme target source n

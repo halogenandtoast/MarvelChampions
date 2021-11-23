@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Marvel.Matchers where
 
@@ -5,6 +6,7 @@ import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def
 import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Count
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
@@ -72,7 +74,10 @@ pattern UpgradeWithAnyUses :: UpgradeMatcher
 pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
   UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
 
-data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy IdentityMatcher | UnexhaustedUpgrade
+data UpgradeMatcher
+  = UpgradeWithUses GameValueMatcher
+  | UpgradeControlledBy IdentityMatcher
+  | UnexhaustedUpgrade
 
 data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy | AttackableEnemy
   deriving stock (Show, Eq, Generic)
@@ -112,11 +117,20 @@ treacheryMatches
   :: MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
 treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
-data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme
+data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId SchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data SideSchemeMatcher = AnySideScheme | CrisisSideScheme
+instance Count SchemeMatcher where
+  data QueryCount SchemeMatcher = SchemeThreat
+  type Backend SchemeMatcher = Game
+  selectCount = gameSelectCountScheme
+
+data SideSchemeMatcher
+  = AnySideScheme
+  | CrisisSideScheme
+  | SideSchemeIs CardDef
+  | SideSchemeWithId SideSchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

@@ -264,6 +264,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   ShuffleDeck -> do
     deck <- shuffleM (unDeck $ attrs ^. deckL)
     pure $ attrs & deckL .~ Deck deck
+  ShuffleIdentityDiscardBackIntoDeck -> do
+    deck' <- shuffleM (unDeck (attrs ^. deckL) <> unDiscard (attrs ^. discardL))
+    pure $ attrs & deckL .~ Deck deck' & discardL .~ Discard []
   DrawOrDiscardToHandLimit -> do
     let
       diff = fromIntegral (unHandSize $ handSize attrs)
@@ -278,6 +281,12 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DrawCards fromZone n -> case fromZone of
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
+      when (length (unDeck playerIdentityDeck) < fromIntegral n) $
+        pushAll
+          [ IdentityMessage (toId attrs) ShuffleIdentityDiscardBackIntoDeck
+          , DealEncounterCard (toId attrs)
+          , IdentityMessage (toId attrs) $ DrawCards fromZone (subtractNatural (fromIntegral (length (unDeck playerIdentityDeck))) n)
+          ]
       pure $ attrs & handL %~ Hand . (<> cards) . unHand & deckL .~ Deck deck
   ReadyCards -> do
     pushAll

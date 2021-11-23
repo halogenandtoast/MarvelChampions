@@ -9,6 +9,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
+import Marvel.Queue
 import Marvel.Message
 import Marvel.Source
 import Marvel.Target
@@ -87,5 +88,8 @@ instance RunMessage SideSchemeAttrs where
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
+        SideSchemeThwarted _ n -> do
+          when (subtractNatural n (sideSchemeThreat attrs) == 0) (push $ RemoveFromPlay (toTarget attrs))
+          pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
     _ -> pure attrs

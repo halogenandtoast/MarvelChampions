@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Count
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
@@ -47,6 +48,11 @@ gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectCountScheme
+  :: MonadReader Game m
+  => QueryCount SchemeMatcher
+  -> SchemeMatcher
+  -> m Natural
 gameSelectSideScheme
   :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectTreachery

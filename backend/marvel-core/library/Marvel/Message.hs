@@ -111,7 +111,11 @@ data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThre
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SideSchemeMessage = RevealSideScheme | SideSchemePlaceInitialThreat | SideSchemePlaceThreat Natural
+data SideSchemeMessage
+  = RevealSideScheme
+  | SideSchemePlaceInitialThreat
+  | SideSchemePlaceThreat Natural
+  | SideSchemeThwarted Source Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -218,6 +222,7 @@ data IdentityMessage
   | IdentityRemoveConfused
   | MinionEngaged MinionId
   | MinionDisengaged MinionId
+  | ShuffleIdentityDiscardBackIntoDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
