@@ -3,6 +3,8 @@
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)"/>
     <div class="hp">{{villain.contents.villainHp}}</div>
     <div v-if="villain.contents.villainStunned">Stunned</div>
+    <div v-if="villain.contents.villainConfused">Confused</div>
+    <div v-if="villain.contents.villainTough">Tough</div>
     <Attachment
       v-for="attachment in attachments"
       :key="attachment.contents.attachmentId"

@@ -8,6 +8,7 @@ import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
+import Marvel.Keyword
 
 data EntityMatcher
   = IdentityEntity IdentityMatcher
@@ -71,19 +72,32 @@ pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
 
 data UpgradeMatcher = UpgradeWithUses GameValueMatcher | UpgradeControlledBy IdentityMatcher | UnexhaustedUpgrade
 
-data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy
+data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy | AttackableEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 enemyMatches :: MonadGame env m => EnemyMatcher -> EnemyId -> m Bool
 enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
 
+pattern VillainWithAnyDamage :: VillainMatcher
+pattern VillainWithAnyDamage <-
+  VillainWithDamage (GreaterThan (Static 0)) where
+  VillainWithAnyDamage = VillainWithDamage (GreaterThan (Static 0))
+
 data VillainMatcher
   = ActiveVillain
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
+  | VillainWithToughStatus
+  | VillainMatches [VillainMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup VillainMatcher where
+  VillainMatches xs <> VillainMatches ys = VillainMatches $ xs <> ys
+  x <> VillainMatches ys = VillainMatches $ x : ys
+  VillainMatches xs <> y = VillainMatches $ xs <> [y]
+  x <> y = VillainMatches [x, y]
 
 villainMatches :: MonadGame env m => VillainMatcher -> VillainId -> m Bool
 villainMatches matcher ident = member ident <$> gameSelectVillain matcher
@@ -104,6 +118,7 @@ data MinionMatcher
   = AnyMinion
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
+  | MinionWithKeyword Keyword
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

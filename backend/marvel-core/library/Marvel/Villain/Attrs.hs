@@ -132,6 +132,7 @@ runVillainMessage msg attrs = case msg of
   VillainDefeated -> do
     push (GameOver Won)
     pure attrs
+  VillainBecomeTough -> pure $ attrs & toughL .~ True
   VillainStunned _ -> pure $ attrs & stunnedL .~ True
   VillainConfused _ -> pure $ attrs & confusedL .~ True
   VillainSchemes -> if villainConfused attrs

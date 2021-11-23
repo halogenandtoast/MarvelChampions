@@ -4,7 +4,10 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
@@ -18,5 +21,15 @@ newtype HardToKeepDown = HardToKeepDown TreacheryAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage HardToKeepDown where
-  runMessage msg (HardToKeepDown attrs) =
-    HardToKeepDown <$> runMessage msg attrs
+  runMessage msg t@(HardToKeepDown attrs) = case msg of
+    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
+      RevealTreachery ident -> do
+        damaged <- selectAny $ ActiveVillain <> VillainWithAnyDamage
+        if damaged
+          then do
+            villainId <- selectJust ActiveVillain
+            push $ VillainMessage villainId (VillainHealed 4)
+          else push $ Surge ident
+        pure t
+      _ -> HardToKeepDown <$> runMessage msg attrs
+    _ -> HardToKeepDown <$> runMessage msg attrs

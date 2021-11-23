@@ -11,6 +11,7 @@ data Criteria
   | Unexhausted
   | OwnsThis
   | MinionExists MinionMatcher
+  | EnemyExists EnemyMatcher
   | AllyExists AllyMatcher
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
