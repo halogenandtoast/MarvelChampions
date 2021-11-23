@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.GameValue
 import Marvel.Message
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
@@ -14,7 +15,7 @@ import Marvel.Source
 import Marvel.Target
 
 bombScare :: SideSchemeCard BombScare
-bombScare = sideScheme BombScare Cards.bombScare
+bombScare = sideScheme BombScare Cards.bombScare (Static 2) (Static 0)
 
 newtype BombScare = BombScare SideSchemeAttrs
   deriving anyclass IsSideScheme

@@ -13,6 +13,7 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Source
@@ -61,6 +62,18 @@ instance HasAbilities Ally where
   getAbilities a = genericGetAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic NoCriteria ExhaustCost (AllyThwart $ toId a)
-      , ability a 301 Basic NoCriteria ExhaustCost (AllyAttack $ toId a)
+      [ ability
+        a
+        300
+        Basic
+        (SchemeExists ThwartableScheme)
+        ExhaustCost
+        (AllyThwart $ toId a)
+      , ability
+        a
+        301
+        Basic
+        (EnemyExists AttackableEnemy)
+        ExhaustCost
+        (AllyAttack $ toId a)
       ]

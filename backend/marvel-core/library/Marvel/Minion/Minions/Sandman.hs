@@ -16,7 +16,8 @@ import Marvel.Stats
 import Marvel.Target
 
 sandman :: MinionCard Sandman
-sandman = minion Sandman Cards.sandman (Sch 2) (Atk 3) (HP 4)
+sandman =
+  minionWith Sandman Cards.sandman (Sch 2) (Atk 3) (HP 4) (toughL .~ True)
 
 newtype Sandman = Sandman MinionAttrs
   deriving anyclass IsMinion

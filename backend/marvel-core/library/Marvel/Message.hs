@@ -111,7 +111,7 @@ data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThre
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SideSchemeMessage = RevealSideScheme
+data SideSchemeMessage = RevealSideScheme | SideSchemePlaceInitialThreat
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -179,6 +179,7 @@ runVillainMessage msg attrs = case msg of
         let threat = unSch (villainScheme attrs) + villainBoost attrs
         push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
         pure $ attrs & boostL .~ 0
+      _ -> error "not Main scheme"
   VillainAttacked -> do
     case villainAttacking attrs of
       Nothing -> error "No current attack"

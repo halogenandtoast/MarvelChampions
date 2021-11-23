@@ -6,6 +6,7 @@ module Marvel.Ability
 import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.List qualified as L
 import Marvel.Ability.Type as X
 import Marvel.Cost
 import Marvel.Criteria
@@ -14,6 +15,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
+import Marvel.Resource
 import Marvel.Source
 import Marvel.Window
 
@@ -130,6 +132,7 @@ passesCriteria x a = go (abilityCriteria a)
     MinionExists m -> selectAny m
     CharacterExists m -> selectAny m
     EnemyExists m -> selectAny m
+    SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
   source = abilitySource a
@@ -153,9 +156,27 @@ passesCanAffordCost _ a = go (abilityCost a)
       resources <- getAvailableResourcesFor Nothing
       pure $ case mr of
         Nothing -> not (null resources)
-        Just r -> r `elem` resources
+        Just r -> r `elem` resources || Wild `elem` resources
+    MultiResourceCost mr -> do
+      resources <- getAvailableResourcesFor Nothing
+      let
+        goPay [] bs = ([], bs)
+        goPay as [] = (as, [])
+        goPay (a' : as) bs = case (a' `elem` bs, Wild `elem` bs) of
+          (True, _) -> goPay as (L.delete a' bs)
+          (_, True) -> goPay as (L.delete Wild bs)
+          (False, False) -> (a' : as, bs)
+        (anyResources, specificResources) = partitionMaybes mr
+        (uncovered, remaining) = goPay specificResources resources
+      pure $ null uncovered && length remaining >= length anyResources
     Costs xs -> allM go xs
   source = abilitySource a
+
+partitionMaybes :: [Maybe a] -> ([()], [a])
+partitionMaybes = foldr (maybe nothing just) ([], [])
+ where
+  nothing ~(l, r) = (() : l, r)
+  just a ~(l, r) = (l, a : r)
 
 passesTiming :: IdentityId -> Ability -> Bool
 passesTiming _ a = all passes (toList $ abilityTiming a)

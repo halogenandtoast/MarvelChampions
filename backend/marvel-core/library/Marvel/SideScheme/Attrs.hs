@@ -7,6 +7,7 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
+import Marvel.GameValue
 import Marvel.Id
 import Marvel.Message
 import Marvel.Source
@@ -19,20 +20,45 @@ type SideSchemeCard a = CardBuilder SideSchemeId a
 data SideSchemeAttrs = SideSchemeAttrs
   { sideSchemeId :: SideSchemeId
   , sideSchemeCardDef :: CardDef
+  , sideSchemeThreat :: Natural
+  , sideSchemeInitialThreat :: GameValue
+  , sideSchemeAcceleration :: GameValue
+  , sideSchemeCrisis :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''SideSchemeAttrs
+makeLensesWith (suffixedWithFields "sideScheme") ''SideSchemeAttrs
 
 instance HasCardCode SideSchemeAttrs where
   toCardCode = toCardCode . sideSchemeCardDef
 
-sideScheme :: (SideSchemeAttrs -> a) -> CardDef -> CardBuilder SideSchemeId a
-sideScheme f cardDef = CardBuilder
+sideSchemeWith
+  :: (SideSchemeAttrs -> a)
+  -> CardDef
+  -> GameValue
+  -> GameValue
+  -> (SideSchemeAttrs -> SideSchemeAttrs)
+  -> CardBuilder SideSchemeId a
+sideSchemeWith f cardDef initialThreat acceleration g =
+  sideScheme (f . g) cardDef initialThreat acceleration
+
+sideScheme
+  :: (SideSchemeAttrs -> a)
+  -> CardDef
+  -> GameValue
+  -> GameValue
+  -> CardBuilder SideSchemeId a
+sideScheme f cardDef initialThreat acceleration = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid ->
-    f $ SideSchemeAttrs { sideSchemeId = mid, sideSchemeCardDef = cardDef }
+  , cbCardBuilder = \mid -> f $ SideSchemeAttrs
+    { sideSchemeId = mid
+    , sideSchemeCardDef = cardDef
+    , sideSchemeInitialThreat = initialThreat
+    , sideSchemeAcceleration = acceleration
+    , sideSchemeThreat = 0
+    , sideSchemeCrisis = False
+    }
   }
 
 instance Entity SideSchemeAttrs where
@@ -51,4 +77,11 @@ isTarget :: (Entity a, EntityAttrs a ~ SideSchemeAttrs) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
 
 instance RunMessage SideSchemeAttrs where
-  runMessage _ = pure
+  runMessage msg attrs = case msg of
+    SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
+      case msg' of
+        SideSchemePlaceInitialThreat -> do
+          n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
+          pure $ attrs & threatL .~ n
+        _ -> pure attrs
+    _ -> pure attrs

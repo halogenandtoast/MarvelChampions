@@ -47,6 +47,8 @@ gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectSideScheme
+  :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectTreachery
   :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectCharacter

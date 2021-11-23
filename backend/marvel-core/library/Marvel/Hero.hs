@@ -28,7 +28,7 @@ instance HasAbilities Hero where
   getAbilities a = genericGetAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic NoCriteria ExhaustCost Thwart
+      [ ability a 300 Basic (SchemeExists ThwartableScheme) ExhaustCost Thwart
       , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 

@@ -190,6 +190,7 @@ isPlayable attrs c = do
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
+    SchemeExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)
     -- ^ this is critical and order matters to avoid infinite recursion
 

@@ -58,13 +58,12 @@ instance RunMessage Charge where
     RanAbility target 1 _ | isTarget attrs target ->
       case attachmentEnemy attrs of
         Just (EnemyVillainId vid) -> do
-          pushAll
-            [ VillainMessage vid VillainAttackGainOverkill
-            , CreatedEffect
-              Cards.charge
-              (toSource attrs)
-              (AttachmentEntity $ AttachmentWithId (toId attrs))
-            ]
+          replaceMatchingMessage
+              [VillainMessage vid VillainEndAttack, RemoveFromPlay target]
+            $ \case
+                VillainMessage vid' VillainEndAttack -> vid == vid'
+                _ -> False
+          pushAll [VillainMessage vid VillainAttackGainOverkill]
           pure a
         _ -> error "Invalid call"
     _ -> Charge <$> runMessage msg attrs

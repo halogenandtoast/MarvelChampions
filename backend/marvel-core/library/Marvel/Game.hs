@@ -317,7 +317,10 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & treacheriesL %~ insert (toId treachery) treachery
       SideSchemeType -> do
         let sideScheme = createSideScheme card
-        pushAll [SideSchemeMessage (toId sideScheme) RevealSideScheme]
+        pushAll
+          [ SideSchemeMessage (toId sideScheme) SideSchemePlaceInitialThreat
+          , SideSchemeMessage (toId sideScheme) RevealSideScheme
+          ]
         pure $ g & sideSchemesL %~ insert (toId sideScheme) sideScheme
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
@@ -413,6 +416,7 @@ isWindowPlayable window attrs c = do
     MinionExists m -> selectAny m
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
+    SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
 
@@ -806,6 +810,28 @@ gameSelectScheme = \case
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId
+  ThwartableScheme -> do
+    crisisSideSchemes <- selectList CrisisSideScheme
+    if null crisisSideSchemes
+      then do
+        sideSchemes <- toList <$> getsGame gameSideSchemes
+        mainScheme <- toId <$> getsGame gameScenario
+        pure
+          $ HashSet.fromList
+          $ SchemeMainSchemeId mainScheme
+          : map (SchemeSideSchemeId . toId) sideSchemes
+      else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
+
+gameSelectSideScheme
+  :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
+gameSelectSideScheme m = do
+  sideSchemes <- toList <$> getsGame gameSideSchemes
+  result <- filterM (matchFilter m) sideSchemes
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter = \case
+    AnySideScheme -> pure . const True
+    CrisisSideScheme -> pure . isCrisis
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do

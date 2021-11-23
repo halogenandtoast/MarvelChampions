@@ -12,6 +12,7 @@ data Criteria
   | OwnsThis
   | MinionExists MinionMatcher
   | EnemyExists EnemyMatcher
+  | SchemeExists SchemeMatcher
   | AllyExists AllyMatcher
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher

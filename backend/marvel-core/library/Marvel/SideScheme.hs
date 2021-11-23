@@ -36,3 +36,6 @@ instance RunMessage SideScheme where
 
 instance IsSource SideScheme where
   toSource = SideSchemeSource . toId
+
+isCrisis :: SideScheme -> Bool
+isCrisis = sideSchemeCrisis . toAttrs
