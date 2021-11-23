@@ -1,19 +1,30 @@
 <template>
   <div class="ally">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted, active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
-    <div v-if="ally.contents.allyDamage > 0" class="damage">damage: {{ally.contents.allyDamage}}</div>
-    <div v-if="ally.contents.allyCounters > 0" class="counter">counters: {{ally.contents.allyCounters}}</div>
-    <AbilityButton
-          v-for="ability in abilities"
-          :key="ability"
-          :ability="choices[ability]"
-          :data-image="image"
-          @click="$emit('choose', ability)"
-          />
-    <button
-      v-if="defendAction !== -1"
-      @click="$emit('choose', defendAction)"
-    >Defend</button>
+    <div class="contents">
+      <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted, active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
+      <Upgrade
+        v-for="upgrade in upgrades"
+        :key="upgrade.contents.upgradeId"
+        :upgrade="upgrade"
+        :game="game"
+        :identityId="identityId"
+        class="attached"
+        @choose="$emit('choose', $event)"
+      />
+      <div v-if="ally.contents.allyDamage > 0" class="damage">damage: {{ally.contents.allyDamage}}</div>
+      <div v-if="ally.contents.allyCounters > 0" class="counter">counters: {{ally.contents.allyCounters}}</div>
+      <AbilityButton
+            v-for="ability in abilities"
+            :key="ability"
+            :ability="choices[ability]"
+            :data-image="image"
+            @click="$emit('choose', ability)"
+            />
+      <button
+        v-if="defendAction !== -1"
+        @click="$emit('choose', defendAction)"
+      >Defend</button>
+    </div>
   </div>
 </template>
 
@@ -24,9 +35,10 @@ import Card from '@/marvel/components/Card.vue'
 import { Game } from '@/marvel/types/Game'
 import { Ally } from '@/marvel/types/Ally'
 import AbilityButton from '@/marvel/components/AbilityButton.vue'
+import Upgrade from '@/marvel/components/Upgrade.vue'
 
 export default defineComponent({
-  components: { Card, AbilityButton },
+  components: { Card, AbilityButton, Upgrade },
   props: {
     game: { type: Object as () => Game, required: true },
     identityId: { type: String, required: true },
@@ -71,7 +83,9 @@ export default defineComponent({
       })
     })
 
-    return { card, abilities, choices, defendAction, activeAbility }
+    const upgrades = computed(() => props.ally.contents.allyUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
+
+    return { card, abilities, choices, defendAction, activeAbility, upgrades }
   }
 })
 </script>
@@ -79,9 +93,21 @@ export default defineComponent({
 <style scoped lang="scss">
 .ally {
   display: inline-block;
+  .contents {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .exhausted {
   transform: rotate(90deg);
+}
+
+.attached {
+  ::v-deep(img) {
+    object-fit: cover;
+    object-position: 0% bottom;
+    height: 90px;
+  }
 }
 </style>

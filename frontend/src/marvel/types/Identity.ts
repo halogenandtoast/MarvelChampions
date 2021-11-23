@@ -42,6 +42,9 @@ export interface Identity {
   supports: string[]
   upgrades: string[]
   exhausted: boolean
+  stunned: boolean
+  confused: boolean
+  tough: boolean
   currentHP: number
   encounterCards: EncounterCard[]
 }
@@ -87,6 +90,9 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     supports: JsonDecoder.array<string>(JsonDecoder.string, 'SupportId[]'),
     upgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
     exhausted: JsonDecoder.boolean,
+    stunned: JsonDecoder.boolean,
+    confused: JsonDecoder.boolean,
+    tough: JsonDecoder.boolean,
     currentHP: JsonDecoder.number,
     encounterCards: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
   }, 'Identity')

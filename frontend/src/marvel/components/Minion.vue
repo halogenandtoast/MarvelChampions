@@ -59,7 +59,7 @@ export default defineComponent({
         })
     })
 
-    const upgrades = computed(() => props.minion.contents.minionUpgrades.map((minionId) => props.game.upgrades[minionId]))
+    const upgrades = computed(() => props.minion.contents.minionUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
 
     return { card, activeAbility, choices, upgrades }
   }
