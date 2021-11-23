@@ -114,6 +114,7 @@ data Choice
   | Confuse Target Source
   | Recover
   | Heal CharacterId Natural
+  | DamageCharacter CharacterId Source Natural
   | Attack
   | Thwart
   | Defend EnemyId
@@ -122,6 +123,7 @@ data Choice
   | AllyDefend AllyId EnemyId
   | CreateEffect CardDef Source ChooseATarget
   | RemoveThreat Source Natural SchemeMatcher
+  | PlaceThreat Source Natural SchemeMatcher
   | ChooseDamage Source Natural EnemyMatcher
   | DiscardTarget Target
   | YouDrawCards Natural
@@ -221,6 +223,12 @@ choiceMessages ident = \case
             , let target = SchemeTarget x
             ]
         ]
+  PlaceThreat _source n schemeMatcher -> do
+    schemes <- selectList schemeMatcher
+    let
+      toMsg (SchemeMainSchemeId msid) = MainSchemeMessage msid (MainSchemePlaceThreat n)
+      toMsg (SchemeSideSchemeId ssid) = SideSchemeMessage ssid (SideSchemePlaceThreat n)
+    pure $ map toMsg schemes
   ChooseDamage source n enemyMatcher -> do
     enemies <- selectList enemyMatcher
     let f target = DamageEnemy target source n
@@ -252,6 +260,12 @@ choiceMessages ident = \case
     AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
     VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
     MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
+  DamageCharacter characterId source n -> case characterId of
+    IdentityCharacter ident' ->
+      pure [IdentityMessage ident' $ IdentityDamaged source n]
+    AllyCharacter ident' -> pure [AllyMessage ident' $ AllyDamaged source n]
+    VillainCharacter ident' -> pure [VillainMessage ident' $ VillainDamaged source n]
+    MinionCharacter ident' -> pure [MinionMessage ident' $ MinionDamaged source n]
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->

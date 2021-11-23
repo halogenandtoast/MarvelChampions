@@ -301,7 +301,7 @@ runGameMessage msg g@Game {..} = case msg of
         pushAll
           [ CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
           , IdentityMessage ident (MinionEngaged $ toId minion)
-          , MinionMessage (toId minion) RevealMinion
+          , MinionMessage (toId minion) (RevealMinion ident)
           ]
         pure $ g & minionsL %~ insert (toId minion) minion
       TreacheryType -> do

@@ -25,7 +25,7 @@ newtype Shocker = Shocker MinionAttrs
 instance RunMessage Shocker where
   runMessage msg e@(Shocker attrs) = case msg of
     MinionMessage minionId msg' | minionId == toId attrs -> case msg' of
-      RevealMinion -> do
+      RevealMinion _ -> do
         players <- getPlayers
         pushAll $ flip concatMap players $ \player ->
           [ CheckWindows
