@@ -330,7 +330,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & alliesL %~ HashSet.insert allyId
   CheckAllyLimit -> do
     limit <- fromIntegral <$> getModifiedAllyLimit attrs
-    when (size playerIdentityAllies >= limit)
+    when (size playerIdentityAllies > limit)
       $ chooseOne
           (toId attrs)
           [ TargetLabel (AllyTarget aid) [DiscardTarget $ AllyTarget aid]
