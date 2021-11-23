@@ -7,7 +7,9 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
@@ -21,4 +23,14 @@ newtype FalseAlarm = FalseAlarm TreacheryAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage FalseAlarm where
-  runMessage msg (FalseAlarm attrs) = FalseAlarm <$> runMessage msg attrs
+  runMessage msg t@(FalseAlarm attrs) = case msg of
+    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
+      RevealTreachery ident -> do
+        isConfused <- identityMatches ConfusedIdentity ident
+        if not isConfused
+          then do
+            push $ IdentityMessage ident IdentityConfused
+          else push $ Surge ident
+        pure t
+      _ -> FalseAlarm <$> runMessage msg attrs
+    _ -> FalseAlarm <$> runMessage msg attrs

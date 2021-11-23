@@ -45,6 +45,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 thePowerOfLeadership :: CardDef

@@ -76,6 +76,7 @@ data CardDef = CardDef
   , cdEncounterSetQuantity :: Maybe Natural
   , cdResponseWindow :: Maybe WindowMatcher
   , cdHazards :: Natural
+  , cdAcceleration :: Natural
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

@@ -60,10 +60,18 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityEncounterCards :: [EncounterCard]
   , playerIdentityDamageReduction :: Natural
   , playerIdentityStunned :: Bool
+  , playerIdentityConfused :: Bool
+  , playerIdentityTough :: Bool
   }
   deriving stock (Show, Eq, Generic)
 
 makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+
+identityIsStunned :: PlayerIdentity -> Bool
+identityIsStunned = playerIdentityStunned
+
+identityIsConfused :: PlayerIdentity -> Bool
+identityIsConfused = playerIdentityConfused
 
 isHero :: PlayerIdentity -> Bool
 isHero player = case currentIdentity player of
@@ -126,6 +134,8 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityEncounterCards = []
   , playerIdentityDamageReduction = 0
   , playerIdentityStunned = False
+  , playerIdentityConfused = False
+  , playerIdentityTough = False
   }
  where
   hp = case alterEgoSide of
@@ -405,6 +415,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       . (+ fromIntegral n)
       . unHp
   IdentityStunned -> pure $ attrs & stunnedL .~ True
+  IdentityConfused -> pure $ attrs & confusedL .~ True
+  IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False
+  IdentityRemoveConfused -> pure $ attrs & confusedL .~ False
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

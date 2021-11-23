@@ -43,6 +43,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 spiderTracer :: CardDef

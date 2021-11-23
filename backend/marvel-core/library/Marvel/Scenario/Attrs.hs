@@ -117,10 +117,13 @@ instance RunMessage ScenarioAttrs where
       pure attrs
     BeginPhase VillainPhase -> do
       players <- getPlayers
+      acceleration <- getAccelerationCount
       additionalThreat <- fromIntegral <$> fromGameValue scenarioAcceleration
       hazards <- fromIntegral <$> getHazardCount
       pushAll
-        $ MainSchemeMessage scenarioId (MainSchemePlaceThreat additionalThreat)
+        $ MainSchemeMessage
+            scenarioId
+            (MainSchemePlaceThreat $ additionalThreat + acceleration)
         : map (($ VillainAndMinionsActivate) . IdentityMessage) players
         <> map DealEncounterCard players
         <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)

@@ -125,15 +125,27 @@ instance RunMessage HeroAttrs where
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
         Attacked -> do
-          enemies <- selectList AttackableEnemy
-          dmg <- getModifiedAttack a
-          push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
-          pure a
+          stunned <- identityMatches StunnedIdentity (heroIdentityId a)
+          if not stunned
+            then do
+              enemies <- selectList AttackableEnemy
+              dmg <- getModifiedAttack a
+              push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
+              pure a
+            else do
+              push $ IdentityMessage (heroIdentityId a) IdentityRemoveStunned
+              pure a
         Thwarted -> do
-          schemes <- selectList ThwartableScheme
-          thw <- getModifiedThwart a
-          push $ Ask ident $ ChooseOne $ map (thwartChoice a thw) schemes
-          pure a
+          confused <- identityMatches ConfusedIdentity (heroIdentityId a)
+          if not confused
+            then do
+              schemes <- selectList ThwartableScheme
+              thw <- getModifiedThwart a
+              push $ Ask ident $ ChooseOne $ map (thwartChoice a thw) schemes
+              pure a
+            else do
+              push $ IdentityMessage (heroIdentityId a) IdentityRemoveConfused
+              pure a
         Defended enemyId -> do
           pushAll
             [ IdentityMessage ident ExhaustedIdentity

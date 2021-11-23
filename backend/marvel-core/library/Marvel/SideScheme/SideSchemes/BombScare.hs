@@ -22,4 +22,11 @@ newtype BombScare = BombScare SideSchemeAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage BombScare where
-  runMessage msg (BombScare attrs) = BombScare <$> runMessage msg attrs
+  runMessage msg (BombScare attrs) = case msg of
+    SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
+      case msg' of
+        RevealSideScheme -> do
+          n <- fromIntegral <$> fromGameValue (PerPlayer 1)
+          pure . BombScare $ attrs & threatL +~ n
+        _ -> BombScare <$> runMessage msg attrs
+    _ -> BombScare <$> runMessage msg attrs

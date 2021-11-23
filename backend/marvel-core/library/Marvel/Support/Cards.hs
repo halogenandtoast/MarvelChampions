@@ -45,6 +45,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 unique :: CardDef -> CardDef

@@ -213,6 +213,9 @@ data IdentityMessage
   | IdentityDefended Natural
   | IdentityHealed Natural
   | IdentityStunned
+  | IdentityConfused
+  | IdentityRemoveStunned
+  | IdentityRemoveConfused
   | MinionEngaged MinionId
   | MinionDisengaged MinionId
   deriving stock (Show, Eq, Generic)
