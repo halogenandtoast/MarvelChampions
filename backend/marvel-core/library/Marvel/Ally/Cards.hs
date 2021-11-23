@@ -52,6 +52,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdBoostIcons = []
   , cdResponseWindow = Nothing
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 blackCatFeliciaHardy :: CardDef

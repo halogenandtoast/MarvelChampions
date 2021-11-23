@@ -32,6 +32,7 @@ alterEgo cardCode name traits = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = []
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 peterParker :: CardDef

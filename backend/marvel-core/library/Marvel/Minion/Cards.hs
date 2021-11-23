@@ -41,6 +41,7 @@ minion code name traits boostIcons encounterSet quantity = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = boostIcons
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 hydraMercenary :: CardDef

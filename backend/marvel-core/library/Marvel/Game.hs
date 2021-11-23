@@ -628,6 +628,8 @@ gameSelectIdentity m = do
     HeroIdentity -> pure . isHero
     AlterEgoIdentity -> pure . isAlterEgo
     UnexhaustedIdentity -> pure . not . isExhausted
+    ConfusedIdentity -> pure . identityIsConfused
+    StunnedIdentity -> pure . identityIsStunned
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
@@ -864,3 +866,8 @@ getHazardCount :: MonadGame env m => m Natural
 getHazardCount = do
   sideSchemes <- getsGame gameSideSchemes
   pure $ foldr ((+) . cdHazards . getCardDef) 0 sideSchemes
+
+getAccelerationCount :: MonadGame env m => m Natural
+getAccelerationCount = do
+  sideSchemes <- getsGame gameSideSchemes
+  pure $ foldr ((+) . cdAcceleration . getCardDef) 0 sideSchemes

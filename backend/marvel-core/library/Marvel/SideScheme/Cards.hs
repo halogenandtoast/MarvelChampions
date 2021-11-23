@@ -32,13 +32,19 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdResponseWindow = Nothing
   , cdBoostIcons = boostIcons
   , cdHazards = 0
+  , cdAcceleration = 0
   }
 
 breakinAndTakin :: CardDef
-breakinAndTakin = sideScheme "01107" "Breakin' & Takin'" [Boost, Boost] Rhino 1
+breakinAndTakin =
+  (sideScheme "01107" "Breakin' & Takin'" [Boost, Boost] Rhino 1)
+    { cdHazards = 1
+    }
 
 crowdControl :: CardDef
 crowdControl = sideScheme "01108" "Crowd Control" [Boost, Boost] Rhino 1
 
 bombScare :: CardDef
-bombScare = sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1
+bombScare = (sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1)
+  { cdAcceleration = 1
+  }
