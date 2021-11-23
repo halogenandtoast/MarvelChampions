@@ -6,7 +6,7 @@ import Data.HashSet qualified as HashSet
 import Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers
+import {-# SOURCE #-} Marvel.Matchers
 
 type family QueryElement a where
   QueryElement IdentityMatcher = IdentityId

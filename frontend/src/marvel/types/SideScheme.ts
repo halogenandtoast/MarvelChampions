@@ -9,12 +9,14 @@ export interface SideScheme {
 export interface SideSchemeContents {
   sideSchemeId: string
   sideSchemeCardDef: CardDef
+  sideSchemeThreat: number
 }
 
 export const sideSchemeContentsDecoder = JsonDecoder.object<SideSchemeContents>(
   {
     sideSchemeId: JsonDecoder.string,
     sideSchemeCardDef: cardDefDecoder,
+    sideSchemeThreat: JsonDecoder.number,
   }, 'SideSchemeContents')
 
 export const sideSchemeDecoder = JsonDecoder.object<SideScheme>(

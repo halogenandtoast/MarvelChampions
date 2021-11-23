@@ -194,6 +194,12 @@ runGameMessage msg g@Game {..} = case msg of
           (CardId . unTreacheryId $ toId treachery)
           (getCardDef treachery)
       pure $ g & treacheriesL %~ delete tid
+    SideSchemeTarget sid -> do
+      for_ (lookup sid gameSideSchemes) $ \sideScheme ->
+        push $ DiscardedEncounterCard $ EncounterCard
+          (CardId . unSideSchemeId $ toId sideScheme)
+          (getCardDef sideScheme)
+      pure $ g & sideSchemesL %~ delete sid
     _ -> error "Unhandled target"
   AddVillain cardCode -> do
     villainId <- getRandom
@@ -620,9 +626,13 @@ getResourceAbilities = do
   player <- getActivePlayer
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
-  pure $ filter
-    (and . sequence
-      [passesUseLimit (toId player) usedAbilities, (== Resource) . abilityType]
+  filterM
+    (andM . sequence
+      [pure . passesUseLimit (toId player) usedAbilities
+      , pure . (== Resource) . abilityType
+      , passesCanAffordCost (toId player)
+      , passesCriteria (toId player)
+      ]
     )
     abilities
 
@@ -822,6 +832,15 @@ gameSelectScheme = \case
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId
+  SchemeWithId enemyId -> case enemyId of
+    SchemeMainSchemeId mainSchemeId ->
+      do
+        scenario <- getsGame gameScenario
+        pure . fromList $ map SchemeMainSchemeId $ do
+          guard (mainSchemeId == scenarioId (toAttrs scenario))
+          pure mainSchemeId
+    SchemeSideSchemeId minionId -> HashSet.map SchemeSideSchemeId
+      <$> gameSelectSideScheme (SideSchemeWithId minionId)
   ThwartableScheme -> do
     crisisSideSchemes <- selectList CrisisSideScheme
     if null crisisSideSchemes
@@ -834,6 +853,13 @@ gameSelectScheme = \case
           : map (SchemeSideSchemeId . toId) sideSchemes
       else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
 
+gameSelectCountScheme
+  :: MonadReader Game m
+  => QueryCount SchemeMatcher
+  -> SchemeMatcher
+  -> m Natural
+gameSelectCountScheme _ _ = pure 0
+
 gameSelectSideScheme
   :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
@@ -844,6 +870,8 @@ gameSelectSideScheme m = do
   matchFilter = \case
     AnySideScheme -> pure . const True
     CrisisSideScheme -> pure . isCrisis
+    SideSchemeIs def -> pure . (== def) . getCardDef
+    SideSchemeWithId ident -> pure . (== ident) . toId
 
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do

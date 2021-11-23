@@ -1,7 +1,7 @@
 <template>
   <div class="sideScheme">
     <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" />
-    <div v-if="sideScheme.contents.sideSchemeDamage > 0" class="damage">{{sideScheme.contents.sideSchemeDamage}}</div>
+    <div class="threat">threat: {{sideScheme.contents.sideSchemeThreat}}</div>
   </div>
 </template>
 
