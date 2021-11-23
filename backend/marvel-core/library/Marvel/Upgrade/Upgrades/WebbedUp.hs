@@ -57,7 +57,7 @@ instance RunMessage WebbedUp where
       _ -> WebbedUp <$> runMessage msg a
     RanAbility target 1 _ | isTarget a target -> do
       case upgradeAttachedEnemy a of
-        Just enemyId ->
+        Just enemyId -> do
           replaceMatchingMessage
               [ RemoveFromPlay (toTarget a)
               , case enemyId of
@@ -69,6 +69,9 @@ instance RunMessage WebbedUp where
             $ \case
                 VillainMessage _ (VillainBeginAttack _) -> True
                 _ -> False
+          cancelMatchingMessage $ \case
+            CheckWindows [Window Would (EnemyAttack enemyId' _)] -> enemyId == enemyId'
+            _ -> False
         Nothing -> error "Something terrible must have happened"
       pure u
     _ -> WebbedUp <$> runMessage msg a
