@@ -11,7 +11,7 @@ import Marvel.Resource
 import Marvel.Trait
 
 allSupports :: HashMap CardCode CardDef
-allSupports = fromList $ map (toCardCode &&& id) [auntMay, helicarrier]
+allSupports = fromList $ map (toCardCode &&& id) [auntMay, theTriskellion, helicarrier]
 
 support
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -54,6 +54,13 @@ unique def = def { cdUnique = True }
 auntMay :: CardDef
 auntMay = unique $ identitySupport "01006" "Aunt May" 1 [Persona] [Energy]
 
+theTriskellion :: CardDef
+theTriskellion =
+  (support "01073" "The Triskellion" 3 [Location, Shield] [Energy] Leadership)
+    { cdUnique = True
+    }
+
 helicarrier :: CardDef
 helicarrier =
   basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+

@@ -10,6 +10,7 @@ import Marvel.Cost
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
+import Marvel.Modifier
 import Marvel.Message
 import Marvel.Query
 import Marvel.Question
@@ -22,7 +23,7 @@ armoredRhinoSuit :: AttachmentCard ArmoredRhinoSuit
 armoredRhinoSuit = attachment ArmoredRhinoSuit Cards.armoredRhinoSuit
 
 newtype ArmoredRhinoSuit = ArmoredRhinoSuit AttachmentAttrs
-  deriving anyclass IsAttachment
+  deriving anyclass (IsAttachment, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities ArmoredRhinoSuit where

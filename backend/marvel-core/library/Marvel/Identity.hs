@@ -5,7 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -32,7 +32,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -53,6 +53,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityHand :: Hand
   , playerIdentityPassed :: Bool
   , playerIdentityAllies :: HashSet AllyId
+  , playerIdentityAllyLimit :: Natural
   , playerIdentityMinions :: HashSet MinionId
   , playerIdentitySupports :: HashSet SupportId
   , playerIdentityUpgrades :: HashSet UpgradeId
@@ -127,6 +128,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityHand = Hand []
   , playerIdentityPassed = False
   , playerIdentityAllies = mempty
+  , playerIdentityAllyLimit = 3
   , playerIdentityMinions = mempty
   , playerIdentitySupports = mempty
   , playerIdentityUpgrades = mempty
@@ -281,12 +283,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DrawCards fromZone n -> case fromZone of
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
-      when (length (unDeck playerIdentityDeck) < fromIntegral n) $
-        pushAll
-          [ IdentityMessage (toId attrs) ShuffleIdentityDiscardBackIntoDeck
-          , DealEncounterCard (toId attrs)
-          , IdentityMessage (toId attrs) $ DrawCards fromZone (subtractNatural (fromIntegral (length (unDeck playerIdentityDeck))) n)
-          ]
+      when (length (unDeck playerIdentityDeck) < fromIntegral n) $ pushAll
+        [ IdentityMessage (toId attrs) ShuffleIdentityDiscardBackIntoDeck
+        , DealEncounterCard (toId attrs)
+        , IdentityMessage (toId attrs) $ DrawCards
+          fromZone
+          (subtractNatural (fromIntegral (length (unDeck playerIdentityDeck))) n
+          )
+        ]
       pure $ attrs & handL %~ Hand . (<> cards) . unHand & deckL .~ Deck deck
   ReadyCards -> do
     pushAll
@@ -322,7 +326,17 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (handL %~ Hand . filter (/= card) . unHand)
       & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
+    push $ IdentityMessage (toId attrs) CheckAllyLimit
     pure $ attrs & alliesL %~ HashSet.insert allyId
+  CheckAllyLimit -> do
+    limit <- fromIntegral <$> getModifiedAllyLimit attrs
+    when (size playerIdentityAllies >= limit)
+      $ chooseOne
+          (toId attrs)
+          [ TargetLabel (AllyTarget aid) [DiscardTarget $ AllyTarget aid]
+          | aid <- toList playerIdentityAllies
+          ]
+    pure attrs
   UpgradeCreated upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   AllyRemoved allyId -> do
@@ -466,3 +480,11 @@ instance Entity PlayerIdentity where
   type EntityAttrs PlayerIdentity = PlayerIdentity
   toId = playerIdentityId
   toAttrs = id
+
+getModifiedAllyLimit :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedAllyLimit attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (playerIdentityAllyLimit attrs) modifiers
+ where
+  applyModifier (AllyLimitModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
