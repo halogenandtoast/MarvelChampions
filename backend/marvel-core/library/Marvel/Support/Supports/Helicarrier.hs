@@ -27,7 +27,7 @@ instance HasAbilities Helicarrier where
     ]
 
 newtype Helicarrier = Helicarrier SupportAttrs
-  deriving anyclass IsSupport
+  deriving anyclass (IsSupport, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Helicarrier where

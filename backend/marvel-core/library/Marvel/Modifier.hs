@@ -11,6 +11,8 @@ data Modifier
   = ResourceCostReduction Natural
   | ThwartModifier Natural
   | AttackModifier Natural
+  | SchemeModifier Natural
+  | AllyLimitModifier Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -12,6 +12,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Source
 import Marvel.TH
 
@@ -41,6 +42,9 @@ instance IsSource Attachment where
 
 instance HasAbilities Attachment where
   getAbilities = genericGetAbilities
+
+instance HasModifiersFor Attachment where
+  getModifiersFor = genericGetModifiersFor
 
 instance HasCardDef Attachment where
   getCardDef = getCardDef . toAttrs

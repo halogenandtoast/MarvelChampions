@@ -21,6 +21,7 @@ import Marvel.Id
 import Marvel.Id as X (VillainId)
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
@@ -155,6 +156,7 @@ runVillainMessage msg attrs = case msg of
         ]
       pure attrs
   VillainBeginAttack ident -> do
+    atk <- getModifiedAttack attrs
     pushAll
       [ CheckWindows
         [W.Window W.When $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
@@ -166,7 +168,7 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & attackingL ?~ attack
       attrs
       (IdentityCharacter ident)
-      (unAtk $ villainAttack attrs)
+      atk
   VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
@@ -176,7 +178,8 @@ runVillainMessage msg attrs = case msg of
     mainScheme <- selectJust MainScheme
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
-        let threat = unSch (villainScheme attrs) + villainBoost attrs
+        sch <- getModifiedScheme attrs
+        let threat = sch + villainBoost attrs
         push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
         pure $ attrs & boostL .~ 0
       _ -> error "not Main scheme"
@@ -245,3 +248,18 @@ advanceVillainTo newVillain VillainAttrs {..} = cbCardBuilder
         . toAttrs
         )
 
+getModifiedAttack :: MonadGame env m => VillainAttrs -> m Natural
+getModifiedAttack attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unAtk $ villainAttack attrs) modifiers
+ where
+  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+getModifiedScheme :: MonadGame env m => VillainAttrs -> m Natural
+getModifiedScheme attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unSch $ villainScheme attrs) modifiers
+ where
+  applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id

@@ -9,6 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Source
 import Marvel.Support.Attrs
 import Marvel.Support.Supports
@@ -43,6 +44,9 @@ instance IsSource Support where
 
 instance HasAbilities Support where
   getAbilities = genericGetAbilities
+
+instance HasModifiersFor Support where
+  getModifiersFor = genericGetModifiersFor
 
 getSupportController :: Support -> IdentityId
 getSupportController = supportController . toAttrs

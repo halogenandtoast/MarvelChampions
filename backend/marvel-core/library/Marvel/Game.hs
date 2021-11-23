@@ -890,11 +890,14 @@ getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do
   effects <- toList <$> getsGame gameEffects
   upgrades <- toList <$> getsGame gameUpgrades
-  liftA2
-    (<>)
-    (concatMapM (getModifiersFor (toSource a) (toTarget a)) effects)
-    (concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades)
-
+  supports <- toList <$> getsGame gameSupports
+  attachments <- toList <$> getsGame gameAttachments
+  mconcat <$> sequence
+    [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
+    ]
 
 getCurrentWindows :: MonadGame env m => m [Window]
 getCurrentWindows = do

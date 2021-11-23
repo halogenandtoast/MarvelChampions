@@ -194,6 +194,7 @@ data IdentityMessage
   | DrawCards FromZone Natural
   | DiscardCards
   | ShuffleDeck
+  | CheckAllyLimit
   | SideMessage SideMessage
   | PlayedCard PlayerCard (Maybe Window)
   | PaidWithCard PlayerCard

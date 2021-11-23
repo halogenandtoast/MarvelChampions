@@ -10,6 +10,7 @@ import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Support.Attrs
@@ -31,7 +32,7 @@ instance HasAbilities AuntMay where
     ]
 
 newtype AuntMay = AuntMay SupportAttrs
-  deriving anyclass IsSupport
+  deriving anyclass (IsSupport, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage AuntMay where
