@@ -43,7 +43,7 @@ instance HasAbilities EnhancedIvoryHorn where
         HeroAction
         NoCriteria
         (MultiResourceCost [Just Physical, Just Physical, Just Physical])
-        (DiscardTarget $ toTarget a)
+        (TargetLabel (toTarget a) [DiscardTarget $ toTarget a])
     ]
 
 instance RunMessage EnhancedIvoryHorn where
