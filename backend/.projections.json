@@ -239,5 +239,42 @@
       "  runMessage msg ({dot} attrs) =",
       "    {dot} <$> runMessage msg attrs"
     ]
+  },
+  "marvel-core/library/Marvel/Support/Supports/*.hs": {
+    "type": "support",
+    "alternate": "marvel-core/tests/Marvel/Support/Supports/{}Spec.hs",
+    "template": [
+      "module Marvel.Support.Supports.{dot}",
+      "  ( {dot|snakecase|camelcase}",
+      "  , {dot}(..)",
+      "  )",
+      "where",
+      "",
+      "import Marvel.Prelude",
+      "",
+      "import Marvel.Ability",
+      "import Marvel.Card.Code",
+      "import Marvel.Entity",
+      "import Marvel.Message",
+      "import Marvel.Modifier",
+      "import Marvel.Source",
+      "import Marvel.Support.Attrs",
+      "import Marvel.Support.Cards qualified as Cards",
+      "import Marvel.Target",
+      "",
+      "{dot|snakecase|camelcase} :: SupportCard {dot}",
+      "{dot|snakecase|camelcase} = support {dot} Cards.{dot|snakecase|camelcase}",
+      "",
+      "newtype {dot} = {dot} SupportAttrs",
+      "  deriving anyclass (IsSupport, HasModifiersFor)",
+      "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
+      "",
+      "instance HasAbilities {dot} where",
+      "  getAbilities _ = []",
+      "",
+      "instance RunMessage {dot} where",
+      "  runMessage msg ({dot} attrs) =",
+      "    {dot} <$> runMessage msg attrs"
+    ]
   }
 }
