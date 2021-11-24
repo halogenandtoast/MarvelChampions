@@ -293,6 +293,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       )
     pure attrs
   DrawCards fromZone n -> case fromZone of
+    FromHand -> error "Impossible"
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
       when (length (unDeck playerIdentityDeck) < fromIntegral n) $ pushAll
@@ -332,7 +333,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       cost'
       NoPayment
       mWindow
-    pure $ attrs & handL %~ Hand . filter (/= card) . unHand
+    pure
+      $ attrs
+      & (handL %~ Hand . filter (/= card) . unHand)
+      & (discardL %~ Discard . filter (/= card) . unDiscard)
   PaidWithCard card -> do
     push $ Spent card
     pure
@@ -367,6 +371,40 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       $ attrs
       & (handL %~ Hand . (card :) . unHand)
       & (discardL %~ Discard . filter (/= card) . unDiscard)
+  DiscardFor _ FromDeck _ _ -> error "Unhandled"
+  DiscardedFor _ FromDeck _ _ _ -> error "Unhandled"
+  DiscardFor target FromHand discardMin discardMax -> do
+    push
+      (IdentityMessage (toId attrs)
+      $ DiscardedFor target FromHand discardMin discardMax []
+      )
+    pure attrs
+  DiscardedFor target FromHand discardMin discardMax cards -> do
+    if length cards >= fromIntegral discardMax
+      then push (WithDiscarded target FromHand cards)
+      else
+        push
+        $ Ask (toId attrs)
+        $ ChooseOne
+        $ [ Label "Done" [Run [WithDiscarded target FromHand cards]]
+          | length cards >= fromIntegral discardMin
+          ]
+        <> [ TargetLabel
+               (CardIdTarget $ pcCardId c)
+               [ Run $ map
+                   (IdentityMessage (toId attrs))
+                   [ DiscardCard c
+                   , DiscardedFor
+                     target
+                     FromHand
+                     discardMin
+                     discardMax
+                     (c : cards)
+                   ]
+               ]
+           | c <- unHand playerIdentityHand
+           ]
+    pure attrs
   DiscardCards -> do
     unless (null $ unHand playerIdentityHand) $ do
       chooseOne (toId attrs)
@@ -386,6 +424,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (discardL %~ Discard . (card :) . unDiscard)
       & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
+    FromHand -> error "Unhandled"
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
       for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards
