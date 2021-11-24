@@ -57,7 +57,7 @@ instance RunMessage ArmoredRhinoSuit where
           (push $ RemoveFromPlay (toTarget attrs))
         pure . ArmoredRhinoSuit $ attrs & damageL +~ n
     RanAbility target 1 windows | isTarget attrs target -> do
-      let (vid, dmg) = getDetails $ map W.windowType windows
+      let (vid, dmg) = getDetails windows
       replaceMatchingMessage
           [AttachmentMessage (toId attrs) (AttachmentDamaged dmg)]
         $ \case

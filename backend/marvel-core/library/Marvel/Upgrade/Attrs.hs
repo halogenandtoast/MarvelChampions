@@ -74,9 +74,6 @@ instance HasCardDef UpgradeAttrs where
   getCardDef = upgradeCardDef
 
 
-isTarget :: (Entity a, EntityAttrs a ~ UpgradeAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage UpgradeAttrs where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of

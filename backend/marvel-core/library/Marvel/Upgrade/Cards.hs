@@ -12,8 +12,15 @@ import Marvel.Resource
 import Marvel.Trait
 
 allUpgrades :: HashMap CardCode CardDef
-allUpgrades = fromList
-  $ map (toCardCode &&& id) [spiderTracer, webShooter, webbedUp, inspired]
+allUpgrades = fromList $ map
+  (toCardCode &&& id)
+  [ spiderTracer
+  , webShooter
+  , webbedUp
+  , focusedRage
+  , superhumanStrength
+  , inspired
+  ]
 
 upgrade
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -59,6 +66,13 @@ webbedUp :: CardDef
 webbedUp = (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
   { cdCriteria = InHeroForm
   }
+
+focusedRage :: CardDef
+focusedRage = identityUpgrade "01027" "Focused Rage" 3 [Skill] [Energy]
+
+superhumanStrength :: CardDef
+superhumanStrength =
+  identityUpgrade "01028" "Superhuman Strength" 2 [Superpower] [Mental]
 
 inspired :: CardDef
 inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)

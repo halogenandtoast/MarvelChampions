@@ -57,9 +57,6 @@ instance IsSource SupportAttrs where
 instance IsTarget SupportAttrs where
   toTarget = SupportTarget . toId
 
-isTarget :: (Entity a, EntityAttrs a ~ SupportAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage SupportAttrs where
   runMessage msg a = case msg of
     SupportMessage ident msg' | ident == supportId a -> case msg' of

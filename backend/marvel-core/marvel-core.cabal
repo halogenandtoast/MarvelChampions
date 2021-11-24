@@ -18,6 +18,7 @@ library
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy
       Marvel.Ally.Allies.HawkeyeClintBarton
+      Marvel.Ally.Allies.HellcatPatsyWalker
       Marvel.Ally.Allies.MariaHill
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Allies.NickFury
@@ -27,6 +28,7 @@ library
       Marvel.AlterEgo
       Marvel.AlterEgo.AlterEgos
       Marvel.AlterEgo.AlterEgos.CarolDanvers
+      Marvel.AlterEgo.AlterEgos.JenniferWalters
       Marvel.AlterEgo.AlterEgos.PeterParker
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
@@ -80,6 +82,7 @@ library
       Marvel.Hero.Cards
       Marvel.Hero.Heroes
       Marvel.Hero.Heroes.CaptainMarvel
+      Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
       Marvel.Hp
       Marvel.Id

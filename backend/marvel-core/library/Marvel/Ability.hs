@@ -101,6 +101,9 @@ limitedAbility a idx limit aType criteria cost choice = Ability
 label :: Text -> Ability -> Ability
 label l a = a { abilityLabel = Just l }
 
+limited :: Limit -> Ability -> Ability
+limited l a = a { abilityLimit = l }
+
 passesUseLimit :: IdentityId -> HashMap IdentityId [Ability] -> Ability -> Bool
 passesUseLimit x aMap a = case abilityLimit a of
   NoLimit -> True
@@ -119,6 +122,7 @@ passesCriteria x a = go (abilityCriteria a)
     NoCriteria -> pure True
     Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
+    InAlterEgoForm -> member x <$> select AlterEgoIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
     OwnsThis -> case abilitySource a of
       AllySource aid ->

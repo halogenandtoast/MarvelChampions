@@ -18,6 +18,7 @@ import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
+import Marvel.Target
 
 alterEgo
   :: (AlterEgoAttrs -> a)
@@ -58,6 +59,9 @@ instance HasCardCode AlterEgoAttrs where
 
 instance IsSource AlterEgoAttrs where
   toSource = IdentitySource . alterEgoIdentityId
+
+instance IsTarget AlterEgoAttrs where
+  toTarget = IdentityTarget . alterEgoIdentityId
 
 instance HasHandSize AlterEgoAttrs where
   handSize = alterEgoBaseHandSize

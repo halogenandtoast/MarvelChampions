@@ -18,7 +18,7 @@ import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window (Window)
+import Marvel.Window (Window, WindowType)
 
 data FromZone = FromDeck
   deriving stock (Show, Eq, Generic)
@@ -53,7 +53,7 @@ data Message
   | AttachmentMessage AttachmentId AttachmentMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
-  | RanAbility Target Natural [Window]
+  | RanAbility Target Natural [WindowType]
   | WithDiscarded Target FromZone [PlayerCard]
   | SetActiveCost ActiveCost
   | Spent PlayerCard
@@ -80,6 +80,7 @@ data Message
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
   | ShuffleEncounterDeck
+  | ReturnToHand Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -107,7 +108,9 @@ data VillainMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data MainSchemeMessage = MainSchemeThwarted Source Natural | MainSchemePlaceThreat Natural
+data MainSchemeMessage
+  = MainSchemeThwarted Source Natural
+  | MainSchemePlaceThreat Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

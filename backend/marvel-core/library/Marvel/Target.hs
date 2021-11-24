@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Card.Id
 import Marvel.Id
+import Marvel.Entity
 
 data Target
   = IdentityTarget IdentityId
@@ -31,3 +32,6 @@ class IsTarget a where
 
 instance IsTarget Target where
   toTarget = id
+
+isTarget :: (Entity a, EntityAttrs a ~ b, IsTarget b) => a -> Target -> Bool
+isTarget a = (== toTarget (toAttrs a))

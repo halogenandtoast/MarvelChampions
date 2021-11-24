@@ -23,12 +23,15 @@ data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
+  | ThreatWouldBePlaced SchemeMatcher
   | EnemyAttacked EnemyMatcher IdentityMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
   | VillainDamaged WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
+  | IdentityChangedToForm WindowTiming IdentityMatcher
+  | MakesBasicAttack WindowTiming IdentityMatcher
   | RoundEnds
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -50,6 +53,9 @@ data WindowType
   | DefeatedMinion MinionId
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
+  | ThreatPlaced SchemeId Natural
+  | IdentityChangesForm IdentityId
+  | MadeBasicAttack IdentityId
   | RoundEnded
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -109,6 +115,15 @@ windowMatches matcher w source = case matcher of
     MinionEnteredPlay minionId | windowTiming w == timing ->
       minionMatches minionMatcher minionId
     _ -> pure False
+  ThreatWouldBePlaced schemeMatcher -> case windowType w of
+    ThreatPlaced schemeId _ | windowTiming w == Would -> schemeMatches schemeMatcher schemeId
+    _ -> pure False
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
+    _ -> pure False
+  IdentityChangedToForm timing identityMatcher -> case windowType w of
+    IdentityChangesForm identityId | windowTiming w == timing -> identityMatches identityMatcher identityId
+    _ -> pure False
+  MakesBasicAttack timing identityMatcher -> case windowType w of
+    MadeBasicAttack identityId | windowTiming w == timing -> identityMatches identityMatcher identityId
     _ -> pure False

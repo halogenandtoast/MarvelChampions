@@ -127,6 +127,7 @@ data Choice
   | ChooseDamage Source Natural EnemyMatcher
   | DiscardTarget Target
   | YouDrawCards Natural
+  | ReturnTargetToHand Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -184,7 +185,7 @@ choiceMessages ident = \case
     pure $ UsedAbility ident a : costMessages ident a <> rest
   RunAbility target n -> do
     windows <- getCurrentWindows
-    pure [RanAbility target n windows]
+    pure [RanAbility target n $ map windowType windows]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
@@ -279,6 +280,7 @@ choiceMessages ident = \case
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
   DiscardTarget target -> pure [RemoveFromPlay target]
   YouDrawCards n -> pure [IdentityMessage ident $ DrawCards FromDeck n]
+  ReturnTargetToHand target -> pure [ReturnToHand target]
 
 costMessages :: IdentityId -> Ability -> [Message]
 costMessages iid a = go (abilityCost a)

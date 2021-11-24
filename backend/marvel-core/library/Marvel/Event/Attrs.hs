@@ -51,9 +51,6 @@ instance IsSource EventAttrs where
 instance IsTarget EventAttrs where
   toTarget = EventTarget . toId
 
-isTarget :: (Entity a, EntityAttrs a ~ EventAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 toCard :: EventAttrs -> PlayerCard
 toCard a = PlayerCard
   { pcCardId = CardId . unEventId $ toId a

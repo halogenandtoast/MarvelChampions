@@ -196,6 +196,7 @@ isPlayable attrs c = do
     SelfMatches identityMatcher ->
       member ident <$> select (IdentityWithId ident <> identityMatcher)
     InHeroForm -> member ident <$> select HeroIdentity
+    InAlterEgoForm -> member ident <$> select AlterEgoIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
@@ -308,7 +309,13 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     let otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
-  ChangedToForm side -> pure $ attrs & sideL .~ side
+  ChangedToForm side -> do
+    push
+      $ CheckWindows
+        [ W.Window W.After
+          $ W.IdentityChangesForm (toId attrs)
+        ]
+    pure $ attrs & sideL .~ side
   PlayedCard card mWindow -> do
     modifiedCost <- getModifiedCost attrs card
     let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)

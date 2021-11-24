@@ -8,6 +8,7 @@ data Criteria
   = IsSelf
   | NoCriteria
   | InHeroForm
+  | InAlterEgoForm
   | Unexhausted
   | OwnsThis
   | MinionExists MinionMatcher

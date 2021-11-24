@@ -224,9 +224,6 @@ instance RunMessage VillainAttrs where
 instance IsTarget VillainAttrs where
   toTarget = VillainTarget . villainId
 
-isTarget :: (Entity a, EntityAttrs a ~ VillainAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance IsSource VillainAttrs where
   toSource = VillainSource . villainId
 

@@ -108,9 +108,6 @@ instance IsSource AllyAttrs where
 instance IsTarget AllyAttrs where
   toTarget = AllyTarget . toId
 
-isTarget :: (Entity a, EntityAttrs a ~ AllyAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 getModifiedAttack :: MonadGame env m => AllyAttrs -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs

@@ -2,7 +2,7 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type (AbilityType(Action, HeroAction))
+import Marvel.Ability.Type (AbilityType(Action, HeroAction, AlterEgoAction, Response))
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -19,6 +19,11 @@ allEvents = fromList $ map
   [ backflip
   , enhancedSpiderSense
   , swingingWebKick
+  , gammaSlam
+  , groundStomp
+  , legalPractice
+  , oneTwoPunch
+  , splitPersonality
   , getReady
   , leadFromTheFront
   , makeTheCall
@@ -83,6 +88,65 @@ swingingWebKick = (identityEvent
                   )
   { cdCriteria = InHeroForm
   , cdAbilityType = Just HeroAction
+  }
+
+gammaSlam :: CardDef
+gammaSlam = (identityEvent
+                    "01021"
+                    "Gamma Slam"
+                    4
+                    [Attack, Superpower]
+                    [Mental]
+                  )
+  { cdCriteria = InHeroForm
+  , cdAbilityType = Just HeroAction
+  }
+
+groundStomp :: CardDef
+groundStomp = (identityEvent
+                    "01022"
+                    "Ground Stomp"
+                    2
+                    [Superpower]
+                    [Mental]
+                  )
+  { cdCriteria = InHeroForm
+  , cdAbilityType = Just HeroAction
+  }
+
+legalPractice :: CardDef
+legalPractice = (identityEvent
+                    "01023"
+                    "Legal Practice"
+                    0
+                    [Skill, Thwart]
+                    [Physical]
+                  )
+  { cdCriteria = InAlterEgoForm
+  , cdAbilityType = Just AlterEgoAction
+  }
+
+oneTwoPunch :: CardDef
+oneTwoPunch = (identityEvent
+                    "01024"
+                    "One-Two Punch"
+                    1
+                    [Skill]
+                    [Physical]
+                  )
+  { cdAbilityType = Just Response
+  , cdResponseWindow = Just (MakesBasicAttack After You)
+  }
+
+splitPersonality :: CardDef
+splitPersonality = (identityEvent
+                    "01025"
+                    "Split Personality"
+                    3
+                    []
+                    [Energy]
+                  )
+  { cdAbilityType = Just Action
   }
 
 getReady :: CardDef
