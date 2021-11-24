@@ -38,7 +38,7 @@ instance HasAbilities SpiderMan where
         Interrupt
         IsSelf
         NoCost
-        (YouDrawCards 1)
+        (ChooseDrawCards 1 You)
     ]
 
 newtype SpiderMan = SpiderMan HeroAttrs

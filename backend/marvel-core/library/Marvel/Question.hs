@@ -126,7 +126,7 @@ data Choice
   | PlaceThreat Source Natural SchemeMatcher
   | ChooseDamage Source DamageSource Natural EnemyMatcher
   | DiscardTarget Target
-  | YouDrawCards Natural
+  | ChooseDrawCards Natural IdentityMatcher
   | ReturnTargetToHand Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -192,21 +192,25 @@ choiceMessages ident = \case
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> pure [FinishedPayment]
   Pay payment -> pure [Paid payment]
-  DamageEnemy target source damageSource n -> case target of
-    VillainTarget vid -> pure $
-      [ CheckWindows [Window When $ W.DamagedVillain vid n]
-      , VillainMessage vid $ VillainDamaged source n
-      ] <> [ CheckWindows [Window After $ W.IdentityAttack ident (EnemyVillainId vid)] | damageSource == FromAttack
-      ]
-    MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
-    EnemyTarget enemy -> case enemy of
-      EnemyVillainId vid -> pure $
+  DamageEnemy target source damageSource n -> do
+    let isIdentity = case source of
+                       IdentitySource _ -> True
+                       _ -> False
+    case target of
+      VillainTarget vid -> pure $
         [ CheckWindows [Window When $ W.DamagedVillain vid n]
         , VillainMessage vid $ VillainDamaged source n
-        ] <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy] | damageSource == FromAttack
+        ] <> [ CheckWindows [Window After $ W.IdentityAttack ident (EnemyVillainId vid)] | damageSource == FromAttack && isIdentity
         ]
-      EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
-    _ -> error "can not damage target"
+      MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
+      EnemyTarget enemy -> case enemy of
+        EnemyVillainId vid -> pure $
+          [ CheckWindows [Window When $ W.DamagedVillain vid n]
+          , VillainMessage vid $ VillainDamaged source n
+          ] <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy] | damageSource == FromAttack && isIdentity
+          ]
+        EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
+      _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
@@ -281,7 +285,19 @@ choiceMessages ident = \case
   AllyThwart allyId -> pure [AllyMessage allyId AllyThwarted]
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
   DiscardTarget target -> pure [RemoveFromPlay target]
-  YouDrawCards n -> pure [IdentityMessage ident $ DrawCards FromDeck n]
+  ChooseDrawCards n identityMatcher -> do
+    identities <- selectList identityMatcher
+    let f iid = Run [IdentityMessage iid (DrawCards FromDeck n)]
+    case identities of
+      [] -> pure []
+      [x] -> choiceMessages ident (f x)
+      xs -> pure
+        [ Ask ident $ ChooseOne
+            [ TargetLabel target [f x]
+            | x <- xs
+            , let target = IdentityTarget x
+            ]
+        ]
   ReturnTargetToHand target -> pure [ReturnToHand target]
 
 costMessages :: IdentityId -> Ability -> [Message]

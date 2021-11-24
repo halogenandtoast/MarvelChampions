@@ -99,6 +99,9 @@ export interface Source {
 interface EnemyVillainId { tag: 'EnemyVillainId', contents: string }
 interface EnemyMinionId { tag: 'EnemyMinionId', contents: string }
 
+interface SchemeMainSchemeId { tag: 'SchemeMainSchemeId', contents: string }
+interface SchemeSideSchemeId { tag: 'SchemeSideSchemeId', contents: string }
+
 interface VillainCharacter { tag: 'VillainCharacter', contents: string }
 interface MinionCharacter { tag: 'MinionCharacter', contents: string }
 interface IdentityCharacter { tag: 'IdentityCharacter', contents: string }
@@ -111,6 +114,8 @@ export type TargetContents
   | MinionCharacter
   | IdentityCharacter
   | AllyCharacter
+  | SchemeMainSchemeId
+  | SchemeSideSchemeId
   | string
 
 export interface Target {
@@ -131,6 +136,9 @@ export const targetDecoder = JsonDecoder.object<Target>(
       JsonDecoder.object<AllyCharacter>({ tag: JsonDecoder.isExactly('AllyCharacter'), contents: JsonDecoder.string }, 'AllyCharacter'),
       JsonDecoder.object<IdentityCharacter>({ tag: JsonDecoder.isExactly('IdentityCharacter'), contents: JsonDecoder.string }, 'IdentityCharacter'),
       JsonDecoder.object<EnemyMinionId>({ tag: JsonDecoder.isExactly('EnemyMinionId'), contents: JsonDecoder.string }, 'EnemyMinionId'),
+      JsonDecoder.object<SchemeMainSchemeId>({ tag: JsonDecoder.isExactly('SchemeMainSchemeId'), contents: JsonDecoder.string }, 'SchemeMainSchemeId'),
+      JsonDecoder.object<SchemeSideSchemeId>({ tag: JsonDecoder.isExactly('SchemeSideSchemeId'), contents: JsonDecoder.string }, 'SchemeSideSchemeId'),
+      JsonDecoder.object<EnemyMinionId>({ tag: JsonDecoder.isExactly('EnemyMinionId'), contents: JsonDecoder.string }, 'EnemyMinionId'),
       JsonDecoder.string
     ], 'TargetContents')
   }, 'Target')
@@ -147,9 +155,9 @@ export const targetLabelDecoder = JsonDecoder.object<TargetLabel>({
   target: JsonDecoder.tuple([targetDecoder, JsonDecoder.succeed], '[Target]').map(a => a[0])
 }, 'Label', { target: 'contents' })
 
-export const youDrawCardsDecoder = JsonDecoder.object<YouDrawCards>({
-  tag: JsonDecoder.isExactly('YouDrawCards'),
-}, 'YouDrawCards')
+export const chooseDrawCardsDecoder = JsonDecoder.object<ChooseDrawCards>({
+  tag: JsonDecoder.isExactly('ChooseDrawCards'),
+}, 'ChooseDrawCards')
 
 export const chooseDamageDecoder = JsonDecoder.object<ChooseDamage>({
   tag: JsonDecoder.isExactly('ChooseDamage'),
@@ -185,7 +193,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   allyThwartDecoder,
   removeThreatDecoder,
   targetLabelDecoder,
-  youDrawCardsDecoder,
+  chooseDrawCardsDecoder,
   chooseDamageDecoder,
   returnTargetToHandDecoder,
   thwartDecoder], 'AbilityChoice')
@@ -247,14 +255,14 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | YouDrawCards | ChooseDamage | ReturnTargetToHand
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | ChooseDrawCards | ChooseDamage | ReturnTargetToHand
 
 export interface ChangeForm {
   tag: 'ChangeForm'
 }
 
-export interface YouDrawCards {
-  tag: 'YouDrawCards'
+export interface ChooseDrawCards {
+  tag: 'ChooseDrawCards'
 }
 
 export interface ChooseDamage {
