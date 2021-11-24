@@ -210,7 +210,9 @@ data IdentityMessage
   | DiscardFrom FromZone Natural (Maybe Target)
   | DiscardCard PlayerCard
   | ExhaustedIdentity
+  | ReadyIdentity
   | DrawOrDiscardToHandLimit
+  | DrawToHandLimit
   | ReadyCards
   | SetupIdentity
   | VillainAndMinionsActivate
