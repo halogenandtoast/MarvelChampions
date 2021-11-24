@@ -38,7 +38,7 @@ instance HasAbilities SheHulk where
         Response
         IsSelf
         NoCost
-        (ChooseDamage (toSource a) 2 AnyEnemy)
+        (ChooseDamage (toSource a) W.FromAbility 2 AnyEnemy)
     ]
 
 newtype SheHulk = SheHulk HeroAttrs

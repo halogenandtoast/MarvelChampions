@@ -20,7 +20,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window (Window(..), WindowTiming(..))
+import Marvel.Window (DamageSource(..), Window(..), WindowTiming(..))
 import Marvel.Window qualified as W
 
 data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
@@ -108,7 +108,7 @@ data Choice
   | FinishPayment
   | Pay Payment
   | Run [Message]
-  | DamageEnemy Target Source Natural
+  | DamageEnemy Target Source DamageSource Natural
   | ThwartScheme Target Source Natural
   | Stun Target Source
   | Confuse Target Source
@@ -124,7 +124,7 @@ data Choice
   | CreateEffect CardDef Source ChooseATarget
   | RemoveThreat Source Natural SchemeMatcher
   | PlaceThreat Source Natural SchemeMatcher
-  | ChooseDamage Source Natural EnemyMatcher
+  | ChooseDamage Source DamageSource Natural EnemyMatcher
   | DiscardTarget Target
   | YouDrawCards Natural
   | ReturnTargetToHand Target
@@ -192,16 +192,18 @@ choiceMessages ident = \case
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> pure [FinishedPayment]
   Pay payment -> pure [Paid payment]
-  DamageEnemy target source n -> case target of
-    VillainTarget vid -> pure
+  DamageEnemy target source damageSource n -> case target of
+    VillainTarget vid -> pure $
       [ CheckWindows [Window When $ W.DamagedVillain vid n]
       , VillainMessage vid $ VillainDamaged source n
+      ] <> [ CheckWindows [Window After $ W.IdentityAttack ident (EnemyVillainId vid)] | damageSource == FromAttack
       ]
     MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
     EnemyTarget enemy -> case enemy of
-      EnemyVillainId vid -> pure
+      EnemyVillainId vid -> pure $
         [ CheckWindows [Window When $ W.DamagedVillain vid n]
         , VillainMessage vid $ VillainDamaged source n
+        ] <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy] | damageSource == FromAttack
         ]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
     _ -> error "can not damage target"
@@ -234,9 +236,9 @@ choiceMessages ident = \case
       toMsg (SchemeMainSchemeId msid) = MainSchemeMessage msid (MainSchemePlaceThreat n)
       toMsg (SchemeSideSchemeId ssid) = SideSchemeMessage ssid (SideSchemePlaceThreat n)
     pure $ map toMsg schemes
-  ChooseDamage source n enemyMatcher -> do
+  ChooseDamage source damageSource n enemyMatcher -> do
     enemies <- selectList enemyMatcher
-    let f target = DamageEnemy target source n
+    let f target = DamageEnemy target source damageSource n
     case enemies of
       [] -> pure []
       [x] -> choiceMessages ident (f $ EnemyTarget x)
