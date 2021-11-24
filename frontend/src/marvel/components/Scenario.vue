@@ -60,7 +60,25 @@ export default defineComponent({
     const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
     const activeAbility = computed(() => {
-      return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.game.scenario.contents.scenarioId)
+      return choices.
+        value.
+        findIndex((choice) => {
+          if (choice.tag !== 'TargetLabel') {
+            return false
+          }
+
+          const { contents } = choice.target
+          if (typeof contents === "string") {
+            return contents == props.game.scenario.contents.scenarioId
+          }
+
+          switch (contents.tag) {
+            case 'SchemeMainSchemeId':
+              return contents.contents === props.game.scenario.contents.scenarioId
+            default:
+              return false
+          }
+        })
     })
 
     const topOfDiscard = computed(() => props.game.scenario.contents.scenarioDiscard[0])

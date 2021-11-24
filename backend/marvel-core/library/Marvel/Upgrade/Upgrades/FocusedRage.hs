@@ -10,13 +10,14 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
-import qualified Marvel.Upgrade.Cards as Cards
+import Marvel.Upgrade.Cards qualified as Cards
 
 focusedRage :: UpgradeCard FocusedRage
 focusedRage = upgrade FocusedRage Cards.focusedRage
@@ -33,7 +34,7 @@ instance HasAbilities FocusedRage where
         HeroAction
         (OwnsThis <> InHeroForm)
         (ExhaustCost <> DamageCost 1)
-        (YouDrawCards 1)
+        (ChooseDrawCards 1 You)
     ]
 
 instance RunMessage FocusedRage where

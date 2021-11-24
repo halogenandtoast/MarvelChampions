@@ -20,10 +20,26 @@ const card = computed(() => ({
   cardDef: props.sideScheme.contents.sideSchemeCardDef
 }))
 
-const choices = MarvelGame.choices(props.game, props.identityId)
+const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
-const activeAbility =
-  choices.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.sideScheme.contents.sideSchemeId)
+const activeAbility = computed(() =>
+  choices.value.findIndex((choice) => {
+    if (choice.tag !== 'TargetLabel') {
+      return false
+    }
+
+    const { contents } = choice.target
+      if (typeof contents === "string") {
+        return contents == props.sideScheme.contents.sideSchemeId
+      }
+
+      switch (contents.tag) {
+        case 'SchemeSideSchemeId':
+          return contents.contents === props.sideScheme.contents.sideSchemeId
+        default:
+          return false
+      }
+  }))
 </script>
 
 <template>

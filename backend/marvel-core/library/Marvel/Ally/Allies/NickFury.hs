@@ -56,7 +56,7 @@ instance RunMessage NickFury where
         [ Label
           "Remove 2 threat from a scheme"
           [RemoveThreat (toSource a) 2 AnyScheme]
-        , Label "Draw 3 cards" [YouDrawCards 3]
+        , Label "Draw 3 cards" [ChooseDrawCards 3 You]
         , Label
           "Deal 4 damage to an enemy"
           [ChooseDamage (toSource a) FromAbility 4 AnyEnemy]
