@@ -287,6 +287,7 @@ costMessages iid a = go (abilityCost a)
  where
   go = \case
     NoCost -> []
+    DamageCost n -> [IdentityMessage iid $ IdentityDamaged (abilitySource a) n]
     ExhaustCost -> case abilitySource a of
       IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
       AllySource ident -> [AllyMessage ident ExhaustedAlly]
