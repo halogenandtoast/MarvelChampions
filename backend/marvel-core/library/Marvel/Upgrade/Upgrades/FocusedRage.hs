@@ -1,0 +1,40 @@
+module Marvel.Upgrade.Upgrades.FocusedRage
+  ( focusedRage
+  , FocusedRage(..)
+  ) where
+
+import Marvel.Prelude
+
+import Marvel.Ability
+import Marvel.Card.Code
+import Marvel.Cost
+import Marvel.Criteria
+import Marvel.Entity
+import Marvel.Message
+import Marvel.Modifier
+import Marvel.Question
+import Marvel.Source
+import Marvel.Target
+import Marvel.Upgrade.Attrs
+import qualified Marvel.Upgrade.Cards as Cards
+
+focusedRage :: UpgradeCard FocusedRage
+focusedRage = upgrade FocusedRage Cards.focusedRage
+
+newtype FocusedRage = FocusedRage UpgradeAttrs
+  deriving anyclass (IsUpgrade, HasModifiersFor)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+
+instance HasAbilities FocusedRage where
+  getAbilities (FocusedRage a) =
+    [ ability
+        a
+        1
+        HeroAction
+        (OwnsThis <> InHeroForm)
+        (ExhaustCost <> DamageCost 1)
+        (YouDrawCards 1)
+    ]
+
+instance RunMessage FocusedRage where
+  runMessage msg (FocusedRage attrs) = FocusedRage <$> runMessage msg attrs

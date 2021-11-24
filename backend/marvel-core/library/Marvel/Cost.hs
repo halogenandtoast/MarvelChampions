@@ -8,6 +8,7 @@ data Cost
   = Costs [Cost]
   | ResourceCost (Maybe Resource)
   | MultiResourceCost [Maybe Resource]
+  | DamageCost Natural
   | ExhaustCost
   | UseCost
   | NoCost
@@ -28,6 +29,7 @@ instance Semigroup Cost where
 costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources ExhaustCost = []
+costResources (DamageCost _) = []
 costResources UseCost = []
 costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs

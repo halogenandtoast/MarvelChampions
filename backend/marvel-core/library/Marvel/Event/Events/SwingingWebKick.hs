@@ -13,7 +13,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
