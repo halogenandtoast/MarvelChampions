@@ -10,6 +10,7 @@ import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
@@ -58,6 +59,15 @@ toCard a = PlayerCard
   , pcOwner = Just $ eventController a
   , pcController = Just $ eventController a
   }
+
+damageChoice :: Natural -> EventAttrs -> EnemyId -> Choice
+damageChoice dmg attrs = \case
+  EnemyVillainId vid -> TargetLabel
+    (VillainTarget vid)
+    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+  EnemyMinionId vid -> TargetLabel
+    (MinionTarget vid)
+    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 instance RunMessage EventAttrs where
   runMessage msg e = case msg of

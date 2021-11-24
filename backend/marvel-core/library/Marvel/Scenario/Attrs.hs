@@ -2,7 +2,7 @@ module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.EncounterCard
@@ -12,13 +12,14 @@ import Marvel.EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
+import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Target
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 import System.Random.Shuffle
 
 
@@ -121,7 +122,13 @@ instance RunMessage ScenarioAttrs where
       additionalThreat <- fromIntegral <$> fromGameValue scenarioAcceleration
       hazards <- fromIntegral <$> getHazardCount
       pushAll
-        $ MainSchemeMessage
+        $ CheckWindows
+            [ W.Window W.Would
+              $ W.ThreatPlaced (SchemeMainSchemeId scenarioId)
+              $ additionalThreat
+              + acceleration
+            ]
+        : MainSchemeMessage
             scenarioId
             (MainSchemePlaceThreat $ additionalThreat + acceleration)
         : map (($ VillainAndMinionsActivate) . IdentityMessage) players

@@ -37,7 +37,7 @@ rhinoScenario = scenario
   TheBreakIn
   "01097"
   ["01094"]
-  [EncounterSet.Rhino]
+  [EncounterSet.Rhino, EncounterSet.BombScare]
   (PerPlayer 7)
   (Static 0)
   (PerPlayer 1)

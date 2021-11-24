@@ -180,7 +180,10 @@ runVillainMessage msg attrs = case msg of
       SchemeMainSchemeId mainSchemeId -> do
         sch <- getModifiedScheme attrs
         let threat = sch + villainBoost attrs
-        push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
+        pushAll
+          [ CheckWindows [W.Window W.Would $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat]
+          , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
+          ]
         pure $ attrs & boostL .~ 0
       _ -> error "not Main scheme"
   VillainAttacked -> do

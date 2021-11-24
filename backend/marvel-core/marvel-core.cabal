@@ -67,7 +67,9 @@ library
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.FirstAid
+      Marvel.Event.Events.GammaSlam
       Marvel.Event.Events.GetReady
+      Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront
       Marvel.Event.Events.MakeTheCall

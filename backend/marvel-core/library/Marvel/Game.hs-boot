@@ -47,11 +47,6 @@ gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
-gameSelectCountScheme
-  :: MonadGame env m
-  => QueryCount SchemeMatcher
-  -> SchemeMatcher
-  -> m Natural
 gameSelectSideScheme
   :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectTreachery
@@ -75,3 +70,15 @@ getAccelerationCount :: MonadGame env m => m Natural
 class Count a where
   data QueryCount a
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
+
+gameSelectCountScheme
+  :: MonadGame env m
+  => QueryCount SchemeMatcher
+  -> SchemeMatcher
+  -> m Natural
+
+gameSelectCountIdentity
+  :: MonadGame env m
+  => QueryCount IdentityMatcher
+  -> IdentityMatcher
+  -> m Natural
