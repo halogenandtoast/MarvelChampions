@@ -20,7 +20,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window, WindowType)
 
-data FromZone = FromDeck
+data FromZone = FromDeck | FromHand
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -196,6 +196,8 @@ data IdentityMessage
   | ChangedToForm Side
   | DrawCards FromZone Natural
   | DiscardCards
+  | DiscardFor Target FromZone Natural Natural
+  | DiscardedFor Target FromZone Natural Natural [PlayerCard]
   | ShuffleDeck
   | CheckAllyLimit
   | SideMessage SideMessage

@@ -72,6 +72,7 @@ library
       Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront
+      Marvel.Event.Events.LegalPractice
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.OneTwoPunch
       Marvel.Event.Events.SplitPersonality
