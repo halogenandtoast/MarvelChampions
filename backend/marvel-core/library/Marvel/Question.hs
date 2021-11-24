@@ -306,6 +306,9 @@ costMessages iid a = go (abilityCost a)
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 
+chooseOneAtATime :: MonadGame env m => IdentityId -> [Choice] -> m ()
+chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
+
 chooseOrRunOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices

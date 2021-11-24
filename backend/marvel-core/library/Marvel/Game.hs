@@ -944,3 +944,12 @@ getAccelerationCount = do
 class Count a where
   data QueryCount a
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
+
+gameSelectCountIdentity
+  :: MonadGame env m => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
+gameSelectCountIdentity aggregate matcher = do
+  identities <- filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers
+  case aggregate of
+    SustainedDamage ->
+      pure . sum $ map identityDamage identities
+

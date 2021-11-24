@@ -50,6 +50,10 @@ pattern IdentityWithAnyDamage <-
   IdentityWithDamage (GreaterThan (Static 0)) where
   IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
+instance Count IdentityMatcher where
+  data QueryCount IdentityMatcher = SustainedDamage
+  selectCount = gameSelectCountIdentity
+
 data AllyMatcher
   = UnexhaustedAlly
   | ExhaustedAlly

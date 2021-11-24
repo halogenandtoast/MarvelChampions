@@ -3,7 +3,7 @@ module Marvel.Minion.Attrs where
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -18,7 +18,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 
 class IsMinion a
 
@@ -160,7 +160,13 @@ runMinionMessage msg attrs = case msg of
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         let threat = unSch (minionScheme attrs)
-        push (MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat)
+        pushAll
+          [ CheckWindows
+            [ W.Window W.Would
+                $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat
+            ]
+          , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
+          ]
         pure attrs
       _ -> error "Not the main scheme"
   MinionAttacked -> do

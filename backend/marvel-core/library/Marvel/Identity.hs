@@ -310,11 +310,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
     pure attrs
   ChangedToForm side -> do
-    push
-      $ CheckWindows
-        [ W.Window W.After
-          $ W.IdentityChangesForm (toId attrs)
-        ]
+    push $ CheckWindows [W.Window W.After $ W.IdentityChangesForm (toId attrs)]
     pure $ attrs & sideL .~ side
   PlayedCard card mWindow -> do
     modifiedCost <- getModifiedCost attrs card
@@ -337,12 +333,11 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & alliesL %~ HashSet.insert allyId
   CheckAllyLimit -> do
     limit <- fromIntegral <$> getModifiedAllyLimit attrs
-    when (size playerIdentityAllies > limit)
-      $ chooseOne
-          (toId attrs)
-          [ TargetLabel (AllyTarget aid) [DiscardTarget $ AllyTarget aid]
-          | aid <- toList playerIdentityAllies
-          ]
+    when (size playerIdentityAllies > limit) $ chooseOne
+      (toId attrs)
+      [ TargetLabel (AllyTarget aid) [DiscardTarget $ AllyTarget aid]
+      | aid <- toList playerIdentityAllies
+      ]
     pure attrs
   UpgradeCreated upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
@@ -465,7 +460,13 @@ instance RunMessage PlayerIdentity where
       pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     IdentityMessage ident msg' | ident == toId attrs ->
       runIdentityMessage msg' attrs
-    _ -> pure attrs
+    _ -> case currentIdentity attrs of
+      HeroSide x -> do
+        newSide <- HeroSide <$> runMessage msg x
+        pure $ attrs & sidesL . at (playerIdentitySide attrs) ?~ newSide
+      AlterEgoSide x -> do
+        newSide <- AlterEgoSide <$> runMessage msg x
+        pure $ attrs & sidesL . at (playerIdentitySide attrs) ?~ newSide
 
 instance HasStartingHP PlayerIdentity where
   startingHP a = case currentIdentity a of
