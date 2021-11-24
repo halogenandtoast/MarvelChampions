@@ -15,6 +15,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window
 
 haymaker :: EventCard Haymaker
 haymaker = event Haymaker Cards.haymaker
@@ -29,7 +30,7 @@ instance RunMessage Haymaker where
       PlayedEvent identityId _ _ -> do
         pushAll =<< choiceMessages
           identityId
-          (ChooseDamage (toSource attrs) 3 AnyEnemy)
+          (ChooseDamage (toSource attrs) FromAttack 3 AnyEnemy)
         pure e
       _ -> Haymaker <$> runMessage msg attrs
     _ -> Haymaker <$> runMessage msg attrs

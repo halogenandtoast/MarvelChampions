@@ -14,6 +14,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window qualified as W
 
 class IsEvent a
 
@@ -60,14 +61,14 @@ toCard a = PlayerCard
   , pcController = Just $ eventController a
   }
 
-damageChoice :: Natural -> EventAttrs -> EnemyId -> Choice
-damageChoice dmg attrs = \case
+damageChoice :: EventAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
+damageChoice attrs damageSource dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) damageSource dmg]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (MinionTarget vid) (toSource attrs) damageSource dmg]
 
 instance RunMessage EventAttrs where
   runMessage msg e = case msg of

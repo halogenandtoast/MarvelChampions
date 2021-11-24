@@ -24,6 +24,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Window
 
 hero
   :: (HeroAttrs -> a)
@@ -106,10 +107,10 @@ damageChoice :: HeroAttrs -> Natural -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) FromAttack dmg]
   EnemyMinionId mid -> TargetLabel
     (MinionTarget mid)
-    [DamageEnemy (MinionTarget mid) (toSource attrs) dmg]
+    [DamageEnemy (MinionTarget mid) (toSource attrs) FromAttack dmg]
 
 thwartChoice :: HeroAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
@@ -130,7 +131,7 @@ instance RunMessage HeroAttrs where
             then do
               enemies <- selectList AttackableEnemy
               dmg <- getModifiedAttack a
-              push $ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
+              pushAll [Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies]
               pure a
             else do
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveStunned

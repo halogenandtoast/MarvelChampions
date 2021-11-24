@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ally.Attrs
-import qualified Marvel.Ally.Cards as Cards
+import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
@@ -31,21 +31,21 @@ newtype NickFury = NickFury AllyAttrs
 instance HasAbilities NickFury where
   getAbilities (NickFury a) =
     [ limitedWindowAbility
-        a
-        1
-        (PlayThis After)
-        ForcedResponse
-        OwnsThis
-        NoCost
-        (RunAbility (toTarget a) 1)
+      a
+      1
+      (PlayThis After)
+      ForcedResponse
+      OwnsThis
+      NoCost
+      (RunAbility (toTarget a) 1)
     , limitedWindowAbility
-        a
-        2
-        RoundEnds
-        ForcedResponse
-        OwnsThis
-        NoCost
-        (TargetLabel (toTarget a) [DiscardTarget $ toTarget a])
+      a
+      2
+      RoundEnds
+      ForcedResponse
+      OwnsThis
+      NoCost
+      (TargetLabel (toTarget a) [DiscardTarget $ toTarget a])
     ]
 
 instance RunMessage NickFury where
@@ -59,7 +59,7 @@ instance RunMessage NickFury where
         , Label "Draw 3 cards" [YouDrawCards 3]
         , Label
           "Deal 4 damage to an enemy"
-          [ChooseDamage (toSource a) 4 AnyEnemy]
+          [ChooseDamage (toSource a) FromAbility 4 AnyEnemy]
         ]
       pure a
     _ -> NickFury <$> runMessage msg (toAttrs a)

@@ -23,6 +23,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Window qualified as W
 
 class IsAlly a
 
@@ -124,14 +125,14 @@ getModifiedThwart attrs = do
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-damageChoice :: AllyAttrs -> Natural -> EnemyId -> Choice
-damageChoice attrs dmg = \case
+damageChoice :: AllyAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
+damageChoice attrs damageSource dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) damageSource dmg]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (MinionTarget vid) (toSource attrs) damageSource dmg]
 
 thwartChoice :: AllyAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
@@ -176,7 +177,7 @@ instance RunMessage AllyAttrs where
           pushAll
             $ Ask
                 (allyController a)
-                (ChooseOne $ map (damageChoice a dmg) enemies)
+                (ChooseOne $ map (damageChoice a W.FromAttack dmg) enemies)
             : [ AllyMessage
                   ident
                   (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))

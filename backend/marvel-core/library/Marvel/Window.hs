@@ -25,6 +25,7 @@ data WindowMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced SchemeMatcher
   | EnemyAttacked EnemyMatcher IdentityMatcher
+  | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
   | VillainDamaged WindowTiming VillainMatcher
@@ -53,6 +54,7 @@ data WindowType
   | DefeatedMinion MinionId
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
+  | IdentityAttack IdentityId EnemyId
   | ThreatPlaced SchemeId Natural
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
@@ -88,6 +90,12 @@ windowMatches matcher w source = case matcher of
       (identityMatches identityMatcher ident)
       (enemyMatches enemyMatcher enemyId)
     _ -> pure False
+  IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
+    IdentityAttack ident enemyId | windowTiming w == timing -> liftA2
+      (&&)
+      (identityMatches identityMatcher ident)
+      (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
   TreacheryRevealed timing treacheryMatcher revealSource ->
     case windowType w of
       RevealTreachery treacheryId revealSource'
@@ -116,14 +124,17 @@ windowMatches matcher w source = case matcher of
       minionMatches minionMatcher minionId
     _ -> pure False
   ThreatWouldBePlaced schemeMatcher -> case windowType w of
-    ThreatPlaced schemeId _ | windowTiming w == Would -> schemeMatches schemeMatcher schemeId
+    ThreatPlaced schemeId _ | windowTiming w == Would ->
+      schemeMatches schemeMatcher schemeId
     _ -> pure False
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
     _ -> pure False
   IdentityChangedToForm timing identityMatcher -> case windowType w of
-    IdentityChangesForm identityId | windowTiming w == timing -> identityMatches identityMatcher identityId
+    IdentityChangesForm identityId | windowTiming w == timing ->
+      identityMatches identityMatcher identityId
     _ -> pure False
   MakesBasicAttack timing identityMatcher -> case windowType w of
-    MadeBasicAttack identityId | windowTiming w == timing -> identityMatches identityMatcher identityId
+    MadeBasicAttack identityId | windowTiming w == timing ->
+      identityMatches identityMatcher identityId
     _ -> pure False

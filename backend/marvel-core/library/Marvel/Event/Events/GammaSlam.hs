@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Attrs
-import qualified Marvel.Event.Cards as Cards
+import Marvel.Event.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
@@ -16,6 +16,7 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window
 
 gammaSlam :: EventCard GammaSlam
 gammaSlam = event GammaSlam Cards.gammaSlam
@@ -28,9 +29,10 @@ instance RunMessage GammaSlam where
   runMessage msg e@(GammaSlam attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
-        dmg <- min 15 <$> selectCount SustainedDamage (IdentityWithId identityId)
+        dmg <- min 15
+          <$> selectCount SustainedDamage (IdentityWithId identityId)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice dmg attrs) enemies
+        chooseOne identityId $ map (damageChoice attrs FromAttack dmg) enemies
         pure e
       _ -> GammaSlam <$> runMessage msg attrs
     _ -> GammaSlam <$> runMessage msg attrs
