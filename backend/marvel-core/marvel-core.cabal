@@ -73,6 +73,8 @@ library
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront
       Marvel.Event.Events.MakeTheCall
+      Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.SwingingWebKick
       Marvel.Exception
       Marvel.Game

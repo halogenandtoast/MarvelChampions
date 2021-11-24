@@ -5,7 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -32,7 +32,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -281,6 +281,17 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         (fromIntegral diff)
       )
     pure attrs
+  DrawToHandLimit -> do
+    let
+      diff = fromIntegral (unHandSize $ handSize attrs)
+        - length (unHand playerIdentityHand)
+    when
+      (diff > 0)
+      (push $ IdentityMessage (toId attrs) $ DrawCards
+        FromDeck
+        (fromIntegral diff)
+      )
+    pure attrs
   DrawCards fromZone n -> case fromZone of
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
@@ -382,6 +393,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         $ attrs
         & (discardL %~ Discard . (cards <>) . unDiscard)
         & (deckL .~ Deck deck')
+  ReadyIdentity -> pure $ attrs & exhaustedL .~ False
   ExhaustedIdentity -> pure $ attrs & exhaustedL .~ True
   VillainAndMinionsActivate -> do
     villain <- selectJust ActiveVillain
