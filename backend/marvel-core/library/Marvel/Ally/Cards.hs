@@ -14,6 +14,7 @@ allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ map
   (toCardCode &&& id)
   [ blackCatFeliciaHardy
+  , hellcatPatsyWalker
   , hawkeyeClintBarton
   , mariaHill
   , vision
@@ -62,6 +63,10 @@ blackCatFeliciaHardy = identityAlly
   2
   [HeroForHire]
   [Energy]
+
+hellcatPatsyWalker :: CardDef
+hellcatPatsyWalker =
+  identityAlly "01020" ("Hellcat" <:> "Patsy Walker") 3 [Avenger] [Wild]
 
 hawkeyeClintBarton :: CardDef
 hawkeyeClintBarton =

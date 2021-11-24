@@ -119,6 +119,9 @@ data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId Sc
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+schemeMatches :: MonadGame env m => SchemeMatcher -> SchemeId -> m Bool
+schemeMatches matcher ident = member ident <$> gameSelectScheme matcher
+
 instance Count SchemeMatcher where
   data QueryCount SchemeMatcher = SchemeThreat
   selectCount = gameSelectCountScheme

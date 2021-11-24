@@ -96,9 +96,6 @@ instance IsTarget MinionAttrs where
 instance HasCardDef MinionAttrs where
   getCardDef = minionCardDef
 
-isTarget :: (Entity a, EntityAttrs a ~ MinionAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage MinionAttrs where
   runMessage msg attrs = case msg of
     MinionMessage minionId msg' | minionId == toId attrs ->

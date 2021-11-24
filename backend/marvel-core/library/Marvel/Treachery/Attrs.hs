@@ -51,9 +51,6 @@ instance IsTarget TreacheryAttrs where
 instance HasCardDef TreacheryAttrs where
   getCardDef = treacheryCardDef
 
-isTarget :: (Entity a, EntityAttrs a ~ TreacheryAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage TreacheryAttrs where
   runMessage msg attrs = case msg of
     TreacheryMessage tid msg' | tid == toId attrs -> case msg' of

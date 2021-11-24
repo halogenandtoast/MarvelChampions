@@ -7,12 +7,14 @@ data Trait
   | Android
   | Armor
   | Attack
+  | Attorney
   | Avenger
   | Brute
   | Condition
   | Criminal
   | Defense
   | Elite
+  | Gamma
   | Genius
   | HeroForHire
   | Hydra
@@ -27,6 +29,7 @@ data Trait
   | Superpower
   | Tactic
   | Tech
+  | Thwart
   | Weapon
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

@@ -77,9 +77,6 @@ instance IsTarget SideSchemeAttrs where
 instance HasCardDef SideSchemeAttrs where
   getCardDef = sideSchemeCardDef
 
-isTarget :: (Entity a, EntityAttrs a ~ SideSchemeAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage SideSchemeAttrs where
   runMessage msg attrs = case msg of
     SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->

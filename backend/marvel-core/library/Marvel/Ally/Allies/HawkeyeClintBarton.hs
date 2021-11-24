@@ -54,7 +54,7 @@ findMinion = \case
 instance RunMessage HawkeyeClintBarton where
   runMessage msg a = case msg of
     RanAbility target 1 windows | isTarget a target -> do
-      let minionId = findMinion $ map windowType windows
+      let minionId = findMinion windows
       push $ MinionMessage minionId (MinionDamaged (toSource a) 2)
       pure a
     _ -> HawkeyeClintBarton <$> runMessage msg (toAttrs a)

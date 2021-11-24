@@ -3,9 +3,9 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Data.Aeson.Diff qualified as Diff
-import Data.HashMap.Strict qualified as HashMap
-import Data.HashSet qualified as HashSet
+import qualified Data.Aeson.Diff as Diff
+import qualified Data.HashMap.Strict as HashMap
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -48,7 +48,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -347,6 +347,19 @@ runGameMessage msg g@Game {..} = case msg of
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
+  ReturnToHand target -> case target of
+    AllyTarget aid -> do
+      for_ (lookup aid gameAllies) $ \ally -> pushAll $ map
+        (IdentityMessage (getAllyController ally))
+        [ AllyRemoved aid
+        , AddToHand $ PlayerCard
+          (CardId $ unAllyId aid)
+          (getCardDef ally)
+          (Just $ getAllyController ally)
+          (Just $ getAllyController ally)
+        ]
+      pure $ g & alliesL %~ delete aid
+    _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
   CheckWindows windows -> do
@@ -425,6 +438,7 @@ isWindowPlayable window attrs c = do
     NoCriteria -> pure True
     Never -> pure False
     InHeroForm -> member ident <$> select HeroIdentity
+    InAlterEgoForm -> member ident <$> select AlterEgoIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     SelfMatches identityMatcher ->
       member ident <$> select (IdentityWithId ident <> identityMatcher)
@@ -628,7 +642,7 @@ getResourceAbilities = do
   usedAbilities <- getUsedAbilities
   filterM
     (andM . sequence
-      [pure . passesUseLimit (toId player) usedAbilities
+      [ pure . passesUseLimit (toId player) usedAbilities
       , pure . (== Resource) . abilityType
       , passesCanAffordCost (toId player)
       , passesCriteria (toId player)
@@ -828,18 +842,20 @@ gameSelectScheme = \case
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     sideSchemes <- toList <$> getsGame gameSideSchemes
-    pure $ HashSet.fromList $ mainSchemeId : map (SchemeSideSchemeId . toId) sideSchemes
+    pure
+      $ HashSet.fromList
+      $ mainSchemeId
+      : map (SchemeSideSchemeId . toId) sideSchemes
   MainScheme -> do
     mainSchemeId <-
       SchemeMainSchemeId . scenarioId . toAttrs <$> getsGame gameScenario
     pure $ HashSet.singleton mainSchemeId
   SchemeWithId enemyId -> case enemyId of
-    SchemeMainSchemeId mainSchemeId ->
-      do
-        scenario <- getsGame gameScenario
-        pure . fromList $ map SchemeMainSchemeId $ do
-          guard (mainSchemeId == scenarioId (toAttrs scenario))
-          pure mainSchemeId
+    SchemeMainSchemeId mainSchemeId -> do
+      scenario <- getsGame gameScenario
+      pure . fromList $ map SchemeMainSchemeId $ do
+        guard (mainSchemeId == scenarioId (toAttrs scenario))
+        pure mainSchemeId
     SchemeSideSchemeId minionId -> HashSet.map SchemeSideSchemeId
       <$> gameSelectSideScheme (SideSchemeWithId minionId)
   ThwartableScheme -> do
@@ -855,10 +871,7 @@ gameSelectScheme = \case
       else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
 
 gameSelectCountScheme
-  :: MonadGame env m
-  => QueryCount SchemeMatcher
-  -> SchemeMatcher
-  -> m Natural
+  :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountScheme aggregate matcher = do
   schemes <- toList <$> gameSelectScheme matcher
   case aggregate of
@@ -867,7 +880,9 @@ gameSelectCountScheme aggregate matcher = do
         toThreat = \case
           SchemeMainSchemeId sid -> do
             scenario <- getsGame gameScenario
-            pure $ if toId scenario == sid then getMainSchemeThreat scenario else 0
+            pure $ if toId scenario == sid
+              then getMainSchemeThreat scenario
+              else 0
           SchemeSideSchemeId sid -> do
             mSideScheme <- getsGame (lookup sid . gameSideSchemes)
             pure $ maybe 0 getSideSchemeThreat mSideScheme

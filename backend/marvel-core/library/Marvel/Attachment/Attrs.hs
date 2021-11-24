@@ -53,9 +53,6 @@ instance IsSource AttachmentAttrs where
 instance IsTarget AttachmentAttrs where
   toTarget = AttachmentTarget . toId
 
-isTarget :: (Entity a, EntityAttrs a ~ AttachmentAttrs) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
-
 instance RunMessage AttachmentAttrs where
   runMessage _ = pure
 
