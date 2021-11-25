@@ -15,6 +15,7 @@ import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.TH
@@ -57,6 +58,9 @@ getAllyDamage = allyDamage . toAttrs
 
 instance HasCardDef Ally where
   getCardDef = getCardDef . toAttrs
+
+instance HasModifiersFor Ally where
+  getModifiersFor = genericGetModifiersFor
 
 instance HasAbilities Ally where
   getAbilities a = genericGetAbilities a <> basicAbilities

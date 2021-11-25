@@ -16,6 +16,7 @@ allAllies = fromList $ map
   [ blackCatFeliciaHardy
   , hellcatPatsyWalker
   , daredevilMattMurdock
+  , jessicaJones
   , hawkeyeClintBarton
   , mariaHill
   , vision

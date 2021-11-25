@@ -3,9 +3,9 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import qualified Data.Aeson.Diff as Diff
-import qualified Data.HashMap.Strict as HashMap
-import qualified Data.HashSet as HashSet
+import Data.Aeson.Diff qualified as Diff
+import Data.HashMap.Strict qualified as HashMap
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -48,7 +48,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -293,7 +293,7 @@ runGameMessage msg g@Game {..} = case msg of
         let event = createEvent ident card
         pushAll $ map
           (EventMessage (toId event))
-          [PlayedEvent ident payment mWindow, ResolvedEvent]
+          [PlayedEvent ident payment (W.windowType <$> mWindow), ResolvedEvent]
         pure $ g & eventsL %~ insert (toId event) event
       _ -> error "Unhandled"
   RevealEncounterCard ident card -> do
@@ -745,6 +745,11 @@ gameSelectSupport = \case
     pure $ HashSet.fromList $ map toId $ filter
       ((`member` identities) . getSupportController)
       supports
+  SupportWithUses gameValueMatcher -> do
+    upgrades <- toList <$> getsGame gameSupports
+    HashSet.fromList
+      . map toId
+      <$> filterM (gameValueMatches gameValueMatcher . getSupportUses) upgrades
 
 gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade = \case
@@ -863,11 +868,15 @@ gameSelectScheme = \case
     if null crisisSideSchemes
       then do
         sideSchemes <- toList <$> getsGame gameSideSchemes
-        mainScheme <- toId <$> getsGame gameScenario
+        mainScheme <- getsGame gameScenario
         pure
           $ HashSet.fromList
-          $ SchemeMainSchemeId mainScheme
-          : map (SchemeSideSchemeId . toId) sideSchemes
+          $ [ SchemeMainSchemeId (toId mainScheme)
+            | getMainSchemeThreat mainScheme > 0
+            ]
+          <> map
+               (SchemeSideSchemeId . toId)
+               (filter ((> 0) . getSideSchemeThreat) sideSchemes)
       else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
 
 gameSelectCountScheme
@@ -907,11 +916,13 @@ getModifiers a = do
   upgrades <- toList <$> getsGame gameUpgrades
   supports <- toList <$> getsGame gameSupports
   attachments <- toList <$> getsGame gameAttachments
+  allies <- toList <$> getsGame gameAllies
   mconcat <$> sequence
     [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
     ]
 
 getCurrentWindows :: MonadGame env m => m [Window]
@@ -946,10 +957,13 @@ class Count a where
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
 
 gameSelectCountIdentity
-  :: MonadGame env m => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
+  :: MonadGame env m
+  => QueryCount IdentityMatcher
+  -> IdentityMatcher
+  -> m Natural
 gameSelectCountIdentity aggregate matcher = do
-  identities <- filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers
+  identities <-
+    filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers
   case aggregate of
-    SustainedDamage ->
-      pure . sum $ map identityDamage identities
+    SustainedDamage -> pure . sum $ map identityDamage identities
 

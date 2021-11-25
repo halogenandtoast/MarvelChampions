@@ -13,7 +13,14 @@ import Marvel.Trait
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ map
   (toCardCode &&& id)
-  [auntMay, superhumanLawDivision, theTriskellion, avengersMansion, helicarrier]
+  [ auntMay
+  , superhumanLawDivision
+  , interrogationRoom
+  , surveillanceTeam
+  , theTriskellion
+  , avengersMansion
+  , helicarrier
+  ]
 
 support
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -59,6 +66,14 @@ auntMay = unique $ identitySupport "01006" "Aunt May" 1 [Persona] [Energy]
 superhumanLawDivision :: CardDef
 superhumanLawDivision =
   identitySupport "01026" "Superhuman Law Division" 1 [Location] [Physical]
+
+interrogationRoom :: CardDef
+interrogationRoom =
+  support "01063" "Interrogation Room" 1 [Location] [Energy] Justice
+
+surveillanceTeam :: CardDef
+surveillanceTeam =
+  support "01064" "Surveillance Team" 2 [Shield] [Mental] Justice
 
 theTriskellion :: CardDef
 theTriskellion =

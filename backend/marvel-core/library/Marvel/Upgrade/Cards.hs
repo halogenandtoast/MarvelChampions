@@ -19,6 +19,7 @@ allUpgrades = fromList $ map
   , webbedUp
   , focusedRage
   , superhumanStrength
+  , heroicIntuition
   , inspired
   ]
 
@@ -73,6 +74,9 @@ focusedRage = identityUpgrade "01027" "Focused Rage" 3 [Skill] [Energy]
 superhumanStrength :: CardDef
 superhumanStrength =
   identityUpgrade "01028" "Superhuman Strength" 2 [Superpower] [Mental]
+
+heroicIntuition :: CardDef
+heroicIntuition = upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
 inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)

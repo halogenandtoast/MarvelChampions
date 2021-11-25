@@ -15,6 +15,7 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Stats
@@ -25,7 +26,7 @@ nickFury :: AllyCard NickFury
 nickFury = ally NickFury Cards.nickFury (Thw 2, 1) (Atk 2, 1) (HP 3)
 
 newtype NickFury = NickFury AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities NickFury where
@@ -55,7 +56,7 @@ instance RunMessage NickFury where
         (allyController attrs)
         [ Label
           "Remove 2 threat from a scheme"
-          [RemoveThreat (toSource a) 2 AnyScheme]
+          [RemoveThreat (toSource a) 2 ThwartableScheme]
         , Label "Draw 3 cards" [ChooseDrawCards 3 You]
         , Label
           "Deal 4 damage to an enemy"
