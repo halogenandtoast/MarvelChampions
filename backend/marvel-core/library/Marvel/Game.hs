@@ -865,9 +865,9 @@ gameSelectScheme = \case
       <$> gameSelectSideScheme (SideSchemeWithId minionId)
   ThwartableScheme -> do
     crisisSideSchemes <- selectList CrisisSideScheme
+    sideSchemes <- toList <$> getsGame gameSideSchemes
     if null crisisSideSchemes
       then do
-        sideSchemes <- toList <$> getsGame gameSideSchemes
         mainScheme <- getsGame gameScenario
         pure
           $ HashSet.fromList
@@ -877,7 +877,11 @@ gameSelectScheme = \case
           <> map
                (SchemeSideSchemeId . toId)
                (filter ((> 0) . getSideSchemeThreat) sideSchemes)
-      else pure $ HashSet.fromList $ map SchemeSideSchemeId crisisSideSchemes
+      else
+        pure
+        $ HashSet.fromList
+        $ map (SchemeSideSchemeId . toId)
+        $ (filter ((> 0) . getSideSchemeThreat) sideSchemes)
 
 gameSelectCountScheme
   :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
