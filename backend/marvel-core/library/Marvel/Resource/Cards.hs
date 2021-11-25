@@ -48,11 +48,29 @@ baseResource code name traits resources mAspect = CardDef
   , cdAcceleration = 0
   }
 
+thePowerOfAggression :: CardDef
+thePowerOfAggression =
+  resource "01055" "The Power of Aggression" [] [Wild] Aggression
+    & resourcesL
+    <>~ [(ResourceForCardsMatching $ CardWithAspect Aggression, Wild)]
+
+thePowerOfJustice :: CardDef
+thePowerOfJustice =
+  resource "01062" "The Power of Justice" [] [Wild] Justice
+    & resourcesL
+    <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
+
 thePowerOfLeadership :: CardDef
 thePowerOfLeadership =
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]
+
+thePowerOfProtection :: CardDef
+thePowerOfProtection =
+  resource "01079" "The Power of Protection" [] [Wild] Protection
+    & resourcesL
+    <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
 energy = basicResource "01088" "Energy" [] [Energy, Energy]

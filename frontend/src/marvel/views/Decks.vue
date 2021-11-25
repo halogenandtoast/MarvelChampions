@@ -3,7 +3,7 @@
     <div>
       <h2>New Deck</h2>
       <div class="new-deck">
-        <img v-if="identity" class="portrait" :src="`${baseUrl}/img/marvel/portraits/${identity.replace('c', '')}.jpg`" />
+        <img v-if="identity" class="portrait" :src="`${baseUrl}/img/marvel/cards/${identity.replace('c', '')}.jpg`" />
         <div class="fields">
           <input
             type="url"
