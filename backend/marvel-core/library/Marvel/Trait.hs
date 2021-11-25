@@ -12,6 +12,7 @@ data Trait
   | Brute
   | Condition
   | Criminal
+  | Defender
   | Defense
   | Elite
   | Gamma
