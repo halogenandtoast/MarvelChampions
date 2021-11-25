@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ally.Attrs
-import qualified Marvel.Ally.Cards as Cards
+import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
@@ -13,6 +13,7 @@ import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -30,7 +31,7 @@ hawkeyeClintBarton = allyWith
   (countersL .~ 4)
 
 newtype HawkeyeClintBarton = HawkeyeClintBarton AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities HawkeyeClintBarton where

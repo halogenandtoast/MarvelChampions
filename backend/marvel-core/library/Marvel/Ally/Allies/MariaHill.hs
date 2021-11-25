@@ -12,6 +12,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -35,7 +36,7 @@ instance HasAbilities MariaHill where
     ]
 
 newtype MariaHill = MariaHill AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage MariaHill where

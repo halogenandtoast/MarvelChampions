@@ -29,7 +29,7 @@ vision :: AllyCard Vision
 vision = ally Vision Cards.vision (Thw 1, 1) (Atk 2, 1) (HP 3)
 
 newtype Vision = Vision AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities Vision where

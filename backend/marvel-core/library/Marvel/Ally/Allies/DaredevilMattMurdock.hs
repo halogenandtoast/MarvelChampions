@@ -15,6 +15,7 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Stats
@@ -30,7 +31,7 @@ daredevilMattMurdock = ally
   (HP 3)
 
 newtype DaredevilMattMurdock = DaredevilMattMurdock AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities DaredevilMattMurdock where

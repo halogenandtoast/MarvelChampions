@@ -50,3 +50,6 @@ instance HasModifiersFor Support where
 
 getSupportController :: Support -> IdentityId
 getSupportController = supportController . toAttrs
+
+getSupportUses :: Support -> Natural
+getSupportUses = supportUses . toAttrs

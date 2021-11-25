@@ -25,11 +25,10 @@ newtype EnhancedSpiderSense = EnhancedSpiderSense EventAttrs
 instance RunMessage EnhancedSpiderSense where
   runMessage msg e@(EnhancedSpiderSense attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent _ _ (Just (W.Window _ (W.RevealTreachery tid W.FromEncounterDeck)))
-        -> do
-          cancelMatchingMessage $ \case
-            TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
-            _ -> False
-          pure e
+      PlayedEvent _ _ (Just (W.RevealTreachery tid W.FromEncounterDeck)) -> do
+        cancelMatchingMessage $ \case
+          TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
+          _ -> False
+        pure e
       _ -> EnhancedSpiderSense <$> runMessage msg attrs
     _ -> EnhancedSpiderSense <$> runMessage msg attrs

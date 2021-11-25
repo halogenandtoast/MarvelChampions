@@ -138,10 +138,24 @@ thwartChoice :: AllyAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
-    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
+    [ ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw
+    , Run
+      [ CheckWindows
+          [ W.Window W.After
+              $ W.AllyThwart (toId attrs) (SchemeMainSchemeId vid)
+          ]
+      ]
+    ]
   SchemeSideSchemeId sid -> TargetLabel
     (SideSchemeTarget sid)
-    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
+    [ ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw
+    , Run
+      [ CheckWindows
+          [ W.Window W.After
+              $ W.AllyThwart (toId attrs) (SchemeSideSchemeId sid)
+          ]
+      ]
+    ]
 
 stunChoice :: AllyAttrs -> EnemyId -> Choice
 stunChoice attrs = \case

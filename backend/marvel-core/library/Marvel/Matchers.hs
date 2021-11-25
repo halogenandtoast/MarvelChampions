@@ -72,7 +72,14 @@ pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0)) where
 allyMatches :: MonadGame env m => AllyMatcher -> AllyId -> m Bool
 allyMatches matcher ident = member ident <$> gameSelectAlly matcher
 
-data SupportMatcher = UnexhaustedSupport | SupportControlledBy IdentityMatcher
+data SupportMatcher
+  = UnexhaustedSupport
+  | SupportControlledBy IdentityMatcher
+  | SupportWithUses GameValueMatcher
+
+pattern SupportWithAnyUses :: SupportMatcher
+pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0)) where
+  SupportWithAnyUses = SupportWithUses (GreaterThan (Static 0))
 
 pattern UpgradeWithAnyUses :: UpgradeMatcher
 pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where

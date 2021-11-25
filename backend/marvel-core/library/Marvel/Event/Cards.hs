@@ -2,7 +2,8 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type (AbilityType(Action, HeroAction, AlterEgoAction, Response))
+import Marvel.Ability.Type
+  (AbilityType(Action, AlterEgoAction, HeroAction, Interrupt, Response))
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -24,6 +25,8 @@ allEvents = fromList $ map
   , legalPractice
   , oneTwoPunch
   , splitPersonality
+  , forJustice
+  , greatResponsibility
   , getReady
   , leadFromTheFront
   , makeTheCall
@@ -91,63 +94,47 @@ swingingWebKick = (identityEvent
   }
 
 gammaSlam :: CardDef
-gammaSlam = (identityEvent
-                    "01021"
-                    "Gamma Slam"
-                    4
-                    [Attack, Superpower]
-                    [Mental]
-                  )
+gammaSlam = (identityEvent "01021" "Gamma Slam" 4 [Attack, Superpower] [Mental]
+            )
   { cdCriteria = InHeroForm
   , cdAbilityType = Just HeroAction
   }
 
 groundStomp :: CardDef
-groundStomp = (identityEvent
-                    "01022"
-                    "Ground Stomp"
-                    2
-                    [Superpower]
-                    [Mental]
-                  )
+groundStomp = (identityEvent "01022" "Ground Stomp" 2 [Superpower] [Mental])
   { cdCriteria = InHeroForm
   , cdAbilityType = Just HeroAction
   }
 
 legalPractice :: CardDef
-legalPractice = (identityEvent
-                    "01023"
-                    "Legal Practice"
-                    0
-                    [Skill, Thwart]
-                    [Physical]
-                  )
-  { cdCriteria = InAlterEgoForm
-  , cdAbilityType = Just AlterEgoAction
-  }
+legalPractice =
+  (identityEvent "01023" "Legal Practice" 0 [Skill, Thwart] [Physical])
+    { cdCriteria = InAlterEgoForm
+    , cdAbilityType = Just AlterEgoAction
+    }
 
 oneTwoPunch :: CardDef
-oneTwoPunch = (identityEvent
-                    "01024"
-                    "One-Two Punch"
-                    1
-                    [Skill]
-                    [Physical]
-                  )
+oneTwoPunch = (identityEvent "01024" "One-Two Punch" 1 [Skill] [Physical])
   { cdAbilityType = Just Response
   , cdResponseWindow = Just (MakesBasicAttack After You)
   }
 
 splitPersonality :: CardDef
-splitPersonality = (identityEvent
-                    "01025"
-                    "Split Personality"
-                    3
-                    []
-                    [Energy]
-                  )
+splitPersonality = (identityEvent "01025" "Split Personality" 3 [] [Energy])
   { cdAbilityType = Just Action
   }
+
+forJustice :: CardDef
+forJustice = (event "01060" "For Justice!" 2 [Thwart] [Energy] Justice)
+  { cdCriteria = SchemeExists ThwartableScheme <> InHeroForm
+  }
+
+greatResponsibility :: CardDef
+greatResponsibility =
+  (event "01061" "Great Responsibility" 0 [] [Mental] Justice)
+    { cdAbilityType = Just Interrupt
+    , cdResponseWindow = Just (ThreatWouldBePlaced AnyScheme)
+    }
 
 getReady :: CardDef
 getReady = (event "01069" "Get Ready" 0 [] [Physical] Leadership)

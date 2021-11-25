@@ -12,6 +12,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
@@ -29,7 +30,7 @@ blackCatFeliciaHardy = ally
   (HP 2)
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities BlackCatFeliciaHardy where

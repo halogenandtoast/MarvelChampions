@@ -49,6 +49,7 @@ const activeAbility = computed(() =>
       :game="game"
       :identityId="identityId"
       :class="{ active: activeAbility !== -1 }"
+      @click="emit('choose', activeAbility)"
       @choose="emit('choose', $event)"
     />
     <div class="threat">threat: {{sideScheme.contents.sideSchemeThreat}}</div>

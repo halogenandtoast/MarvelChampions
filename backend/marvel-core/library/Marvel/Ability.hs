@@ -155,6 +155,7 @@ passesCanAffordCost _ a = go (abilityCost a)
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeSource ident -> member ident <$> select UpgradeWithAnyUses
+      SupportSource ident -> member ident <$> select SupportWithAnyUses
       AllySource ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost mr -> do

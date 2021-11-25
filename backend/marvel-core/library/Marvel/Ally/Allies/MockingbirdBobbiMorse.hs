@@ -12,6 +12,7 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -41,7 +42,7 @@ instance HasAbilities MockingbirdBobbiMorse where
     ]
 
 newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse AllyAttrs
-  deriving anyclass IsAlly
+  deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage MockingbirdBobbiMorse where

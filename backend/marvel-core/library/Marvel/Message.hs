@@ -147,7 +147,7 @@ data AttachmentMessage = RevealAttachment | AttachmentDamaged Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EventMessage = PlayedEvent IdentityId Payment (Maybe Window) | ResolvedEvent
+data EventMessage = PlayedEvent IdentityId Payment (Maybe WindowType) | ResolvedEvent
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -174,6 +174,7 @@ data AllyMessage
 data SupportMessage
   = ExhaustedSupport
   | ReadiedSupport
+  | SpendSupportUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -11,8 +11,16 @@ import Marvel.Resource
 import Marvel.Trait
 
 allResources :: HashMap CardCode CardDef
-allResources = fromList
-  $ map (toCardCode &&& id) [thePowerOfLeadership, energy, genius, strength]
+allResources = fromList $ map
+  (toCardCode &&& id)
+  [ thePowerOfAggression
+  , thePowerOfJustice
+  , thePowerOfLeadership
+  , thePowerOfProtection
+  , energy
+  , genius
+  , strength
+  ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
 resource code name traits resources aspect =

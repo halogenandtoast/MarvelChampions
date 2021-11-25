@@ -314,6 +314,7 @@ costMessages iid a = go (abilityCost a)
       _ -> error "Unhandled"
     UseCost -> case abilitySource a of
       UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
+      SupportSource ident -> [SupportMessage ident SpendSupportUse]
       AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
     ResourceCost mr -> do

@@ -69,8 +69,10 @@ library
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.FirstAid
+      Marvel.Event.Events.ForJustice
       Marvel.Event.Events.GammaSlam
       Marvel.Event.Events.GetReady
+      Marvel.Event.Events.GreatResponsibility
       Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.Haymaker
       Marvel.Event.Events.LeadFromTheFront
@@ -133,7 +135,9 @@ library
       Marvel.Support.Supports.AuntMay
       Marvel.Support.Supports.AvengersMansion
       Marvel.Support.Supports.Helicarrier
+      Marvel.Support.Supports.InterrogationRoom
       Marvel.Support.Supports.SuperhumanLawDivision
+      Marvel.Support.Supports.SurveillanceTeam
       Marvel.Support.Supports.TheTriskellion
       Marvel.Target
       Marvel.TH
@@ -152,6 +156,7 @@ library
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
       Marvel.Upgrade.Upgrades.FocusedRage
+      Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.Inspired
       Marvel.Upgrade.Upgrades.SpiderTracer
       Marvel.Upgrade.Upgrades.SuperhumanStrength
