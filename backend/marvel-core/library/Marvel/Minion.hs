@@ -29,6 +29,9 @@ lookupMinion cardCode = case lookup cardCode allMinions of
 getMinionDamage :: Minion -> Natural
 getMinionDamage = minionDamage . toAttrs
 
+getMinionEngagedIdentity :: Minion -> IdentityId
+getMinionEngagedIdentity = minionEngagedIdentity . toAttrs
+
 instance Entity Minion where
   type EntityId Minion = MinionId
   type EntityAttrs Minion = MinionAttrs

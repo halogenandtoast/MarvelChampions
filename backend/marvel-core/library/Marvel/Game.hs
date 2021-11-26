@@ -832,6 +832,9 @@ gameSelectMinion m = do
     MinionWithId ident' -> pure . (== ident') . toId
     MinionWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . getMinionDamage
+    MinionEngagedWith identityMatcher -> \minion -> do
+      identities <- select identityMatcher
+      pure $ getMinionEngagedIdentity minion `member` identities
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
 gameSelectTreachery

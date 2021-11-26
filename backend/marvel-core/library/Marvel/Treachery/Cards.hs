@@ -12,7 +12,17 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toCardCode &&& id)
-  [hardToKeepDown, imTough, stampede, explosion, falseAlarm]
+  [ hardToKeepDown
+  , imTough
+  , stampede
+  , explosion
+  , falseAlarm
+  , advance
+  , assault
+  , caughtOffGuard
+  , gangUp
+  , shadowOfThePast
+  ]
 
 treachery
   :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
@@ -50,3 +60,19 @@ explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
 
 falseAlarm :: CardDef
 falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2
+
+advance :: CardDef
+advance = treachery "01186" "Advance" [] Standard 2
+
+assault :: CardDef
+assault = treachery "01187" "Assault" [] Standard 2
+
+caughtOffGuard :: CardDef
+caughtOffGuard = treachery "01188" "Caught Off Guard" [Boost] Standard 1
+
+gangUp :: CardDef
+gangUp = treachery "01189" "Gang-Up" [Boost] Standard 1
+
+shadowOfThePast :: CardDef
+shadowOfThePast =
+  treachery "01190" "Shadow of the Past" [Boost, Boost] Standard 1
