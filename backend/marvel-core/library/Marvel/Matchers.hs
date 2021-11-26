@@ -152,6 +152,7 @@ data MinionMatcher
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
   | MinionWithKeyword Keyword
+  | MinionEngagedWith IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

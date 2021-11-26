@@ -146,10 +146,15 @@ library
       Marvel.Treachery.Attrs
       Marvel.Treachery.Cards
       Marvel.Treachery.Treacheries
+      Marvel.Treachery.Treacheries.Advance
+      Marvel.Treachery.Treacheries.Assault
+      Marvel.Treachery.Treacheries.CaughtOffGuard
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
+      Marvel.Treachery.Treacheries.GangUp
       Marvel.Treachery.Treacheries.HardToKeepDown
       Marvel.Treachery.Treacheries.ImTough
+      Marvel.Treachery.Treacheries.ShadowOfThePast
       Marvel.Treachery.Treacheries.Stampede
       Marvel.Upgrade
       Marvel.Upgrade.Attrs

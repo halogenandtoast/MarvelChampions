@@ -28,6 +28,9 @@ class Query a where
 selectList :: (MonadGame env m, Query a) => a -> m [QueryElement a]
 selectList = fmap HashSet.toList . select
 
+selectMap :: (MonadGame env m, Query a) => (QueryElement a -> b) -> a -> m [b]
+selectMap f = fmap (map f . HashSet.toList) . select
+
 selectAny :: (MonadGame env m, Query a) => a -> m Bool
 selectAny = fmap (not . null) . select
 
