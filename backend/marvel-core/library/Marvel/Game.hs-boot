@@ -3,6 +3,7 @@ module Marvel.Game where
 import Marvel.Prelude
 
 import Marvel.Ability.Type
+import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Debug
 import Marvel.Difficulty
@@ -55,6 +56,8 @@ gameSelectCharacter
   :: MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectExtendedCard
   :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
+gameSelectEncounterCard
+  :: MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
 
 instance HasAbilities Game
 
@@ -72,10 +75,7 @@ class Count a where
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
 
 gameSelectCountScheme
-  :: MonadGame env m
-  => QueryCount SchemeMatcher
-  -> SchemeMatcher
-  -> m Natural
+  :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 
 gameSelectCountIdentity
   :: MonadGame env m

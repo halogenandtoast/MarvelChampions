@@ -107,6 +107,8 @@ library
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.Sandman
       Marvel.Minion.Minions.Shocker
+      Marvel.Minion.Minions.Titania
+      Marvel.Minion.Minions.Vulture
       Marvel.Modifier
       Marvel.Name
       Marvel.Phase
@@ -126,6 +128,7 @@ library
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
       Marvel.SideScheme.SideSchemes.CrowdControl
+      Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.Source
       Marvel.Stats
       Marvel.Support
@@ -156,6 +159,8 @@ library
       Marvel.Treachery.Treacheries.ImTough
       Marvel.Treachery.Treacheries.ShadowOfThePast
       Marvel.Treachery.Treacheries.Stampede
+      Marvel.Treachery.Treacheries.SweepingSwoop
+      Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Upgrade
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards

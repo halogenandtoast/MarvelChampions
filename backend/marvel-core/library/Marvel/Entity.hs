@@ -13,6 +13,12 @@ class Entity a where
   toId :: a -> EntityId a
   toAttrs :: a -> EntityAttrs a
 
+instance Entity a => Entity (With a b) where
+  type EntityId (With a b) = EntityId a
+  type EntityAttrs (With a b) = EntityAttrs a
+  toId (With a _) = toId a
+  toAttrs (With a _) = toAttrs a
+
 class HasAttrs' attrs f where
   toAttrs' :: f p -> attrs
 

@@ -20,7 +20,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window, WindowType)
 
-data FromZone = FromDeck | FromHand
+data FromZone = FromDeck | FromHand | RandomFromHand
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -72,6 +72,7 @@ data Message
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
+  | RevealBoostCard EncounterCard
   | AdvanceScenario
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
@@ -81,6 +82,10 @@ data Message
   | SearchForAndRevealScheme CardDef
   | ShuffleEncounterDeck
   | ReturnToHand Target
+  | SetAside [EncounterCard]
+  | ShuffleIntoEncounterDeck [EncounterCard]
+  | ClearBoosts
+  | Boost Message
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -90,7 +95,7 @@ data VillainMessage
   | VillainStunned Source
   | VillainConfused Source
   | VillainBecomeTough
-  | DealtBoost EncounterCard
+  | VillainDealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainAttackGainOverkill
   | VillainAttacks IdentityId
@@ -116,6 +121,7 @@ data MainSchemeMessage
 
 data SideSchemeMessage
   = RevealSideScheme
+  | DefeatSideScheme
   | SideSchemePlaceInitialThreat
   | SideSchemePlaceThreat Natural
   | SideSchemeThwarted Source Natural

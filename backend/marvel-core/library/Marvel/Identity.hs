@@ -19,6 +19,8 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Deck
 import Marvel.Discard
+import Marvel.EncounterCard
+import Marvel.EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -247,9 +249,13 @@ runIdentityMessage
   -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   SetupIdentity -> do
-    pushAll
-      $ IdentityMessage (toId attrs)
-      <$> [ShuffleDeck, DrawOrDiscardToHandLimit]
+    let
+      heroCardCode = toBaseCardCode $ toCardCode attrs
+      nemesisSet = getNemesisSet heroCardCode
+    nemesisSetCards <- gatherEncounterSet nemesisSet
+    pushAll $ SetAside nemesisSetCards : map
+      (IdentityMessage (toId attrs))
+      [ShuffleDeck, DrawOrDiscardToHandLimit]
     pure attrs
   BeginTurn -> do
     takeTurn attrs
@@ -294,6 +300,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure attrs
   DrawCards fromZone n -> case fromZone of
     FromHand -> error "Impossible"
+    RandomFromHand -> error "Impossible"
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
       when (length (unDeck playerIdentityDeck) < fromIntegral n) $ pushAll
@@ -405,6 +412,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
            | c <- unHand playerIdentityHand
            ]
     pure attrs
+  DiscardFor target RandomFromHand discardMin _ -> do
+    let handCards = unHand playerIdentityHand
+    discards <- take (fromIntegral discardMin) <$> shuffleM handCards
+    pushAll
+      $ map (IdentityMessage (toId attrs) . DiscardCard) discards
+      <> [WithDiscarded target RandomFromHand discards]
+    pure attrs
+  DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
   DiscardCards -> do
     unless (null $ unHand playerIdentityHand) $ do
       chooseOne (toId attrs)
@@ -425,6 +440,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromHand -> error "Unhandled"
+    RandomFromHand -> error "Unhandled"
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
       for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards

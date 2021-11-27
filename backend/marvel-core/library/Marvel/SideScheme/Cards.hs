@@ -48,3 +48,10 @@ bombScare :: CardDef
 bombScare = (sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1)
   { cdAcceleration = 1
   }
+
+highwayRobbery :: CardDef
+highwayRobbery =
+  (sideScheme "01166" "Highway Robbery" [Boost, Boost, Boost] SpiderManNemesis 1
+    )
+    { cdAcceleration = 1
+    }

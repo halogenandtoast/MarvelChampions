@@ -84,6 +84,12 @@ data CardDef = CardDef
 resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
 resourcesL = lens cdResources $ \m x -> m { cdResources = x }
 
+printedResources :: CardDef -> [Resource]
+printedResources = mapMaybe printedResource . cdResources
+ where
+  printedResource (PrintedResource, a) = Just a
+  printedResource _ = Nothing
+
 instance HasCardCode CardDef where
   toCardCode = cdCardCode
 

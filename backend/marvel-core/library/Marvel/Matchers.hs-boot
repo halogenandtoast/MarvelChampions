@@ -12,4 +12,5 @@ data TreacheryMatcher
 data UpgradeMatcher
 data CharacterMatcher
 data ExtendedCardMatcher
+data EncounterCardMatcher
 data AttachmentMatcher

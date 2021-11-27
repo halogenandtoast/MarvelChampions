@@ -143,6 +143,7 @@ runVillainMessage msg attrs = case msg of
         [ DealBoost (toTarget attrs)
         , VillainMessage (toId attrs) VillainFlipBoostCards
         , VillainMessage (toId attrs) VillainSchemed
+        , ClearBoosts
         ]
       pure attrs
   VillainAttacks ident -> if villainStunned attrs
@@ -153,6 +154,7 @@ runVillainMessage msg attrs = case msg of
           [W.Window W.Would $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
         , VillainMessage (toId attrs) (VillainBeginAttack ident)
         , VillainMessage (toId attrs) VillainEndAttack
+        , ClearBoosts
         ]
       pure attrs
   VillainBeginAttack ident -> do
@@ -165,10 +167,7 @@ runVillainMessage msg attrs = case msg of
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
       ]
-    pure $ attrs & attackingL ?~ attack
-      attrs
-      (IdentityCharacter ident)
-      atk
+    pure $ attrs & attackingL ?~ attack attrs (IdentityCharacter ident) atk
   VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
@@ -181,7 +180,10 @@ runVillainMessage msg attrs = case msg of
         sch <- getModifiedScheme attrs
         let threat = sch + villainBoost attrs
         pushAll
-          [ CheckWindows [W.Window W.Would $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat]
+          [ CheckWindows
+            [ W.Window W.Would
+                $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat
+            ]
           , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
           ]
         pure $ attrs & boostL .~ 0
@@ -196,7 +198,7 @@ runVillainMessage msg attrs = case msg of
           push $ AllyMessage ident $ AllyWasAttacked attack'
         _ -> error "Invalid damage target"
     pure $ attrs & boostL .~ 0
-  DealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
+  VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   UpgradeAttachedToVillain upgradeId -> do

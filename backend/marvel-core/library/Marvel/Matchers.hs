@@ -147,12 +147,17 @@ data SideSchemeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+sideSchemeMatches
+  :: MonadGame env m => SideSchemeMatcher -> SideSchemeId -> m Bool
+sideSchemeMatches matcher ident = member ident <$> gameSelectSideScheme matcher
+
 data MinionMatcher
   = AnyMinion
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
   | MinionWithKeyword Keyword
   | MinionEngagedWith IdentityMatcher
+  | MinionIs CardDef
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -178,6 +183,8 @@ pattern CharacterWithAnyDamage <-
 newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+newtype EncounterCardMatcher = NemesisSetFor IdentityId
 
 data ExtendedCardMatcher
   = AffordableCardBy IdentityMatcher ExtendedCardMatcher

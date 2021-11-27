@@ -43,3 +43,6 @@ instance IsSource EventId where
 
 instance IsSource SupportId where
   toSource = SupportSource
+
+instance IsSource a => IsSource (With a b) where
+  toSource (With a _) = toSource a

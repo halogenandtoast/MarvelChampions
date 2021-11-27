@@ -30,6 +30,9 @@ toHeroCardCode = flipToSide A
 class HasCardCode a where
   toCardCode :: a -> CardCode
 
+instance HasCardCode a => HasCardCode (With a b) where
+  toCardCode (With a _) = toCardCode a
+
 class HasCardCode' f where
   toCardCode' :: f p -> CardCode
 
