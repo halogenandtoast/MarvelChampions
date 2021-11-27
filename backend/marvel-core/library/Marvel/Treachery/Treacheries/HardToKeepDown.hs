@@ -29,7 +29,8 @@ instance RunMessage HardToKeepDown where
           then do
             villainId <- selectJust ActiveVillain
             push $ VillainMessage villainId (VillainHealed 4)
-          else push $ Surge ident
+            pure t
+          else pure . HardToKeepDown $ attrs & surgeL .~ True
         pure t
       _ -> HardToKeepDown <$> runMessage msg attrs
     _ -> HardToKeepDown <$> runMessage msg attrs

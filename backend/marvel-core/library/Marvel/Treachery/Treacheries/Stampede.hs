@@ -32,8 +32,8 @@ instance RunMessage Stampede where
           then do
             villainId <- selectJust ActiveVillain
             push $ VillainMessage villainId $ VillainAttacks ident
-          else push $ Surge ident
-        pure t
+            pure t
+          else pure . Stampede $ attrs & surgeL .~ True
       _ -> Stampede <$> runMessage msg attrs
     AllyMessage aid (AllyDamaged _ _) -> do
       push $ AllyMessage aid AllyStunned

@@ -10,8 +10,9 @@ import Marvel.EncounterSet
 import Marvel.Name
 
 allSideSchemes :: HashMap CardCode CardDef
-allSideSchemes =
-  fromList $ map (toCardCode &&& id) [breakinAndTakin, crowdControl, bombScare]
+allSideSchemes = fromList $ map
+  (toCardCode &&& id)
+  [breakinAndTakin, crowdControl, bombScare, highwayRobbery]
 
 sideScheme
   :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef

@@ -37,7 +37,7 @@ instance RunMessage GangUp where
               pushAll
                 $ VillainMessage villainId (VillainAttacks identityId)
                 : map (`MinionMessage` MinionAttacks identityId) minions
-            else push $ Surge identityId
-          pure t
+              pure t
+            else pure . GangUp $ attrs & surgeL .~ True
         _ -> GangUp <$> runMessage msg attrs
     _ -> GangUp <$> runMessage msg attrs

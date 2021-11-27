@@ -396,7 +396,7 @@ runGameMessage msg g@Game {..} = case msg of
             ]
           , TreacheryMessage (toId treachery) $ RevealTreachery ident
           , UnfocusCards
-          , TreacheryMessage (toId treachery) ResolvedTreachery
+          , TreacheryMessage (toId treachery) $ ResolvedTreachery ident
           ]
         pure
           $ g
