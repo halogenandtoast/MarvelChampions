@@ -13,7 +13,7 @@ import Marvel.Cost
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers hiding (ExhaustedAlly)
+import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Query
 import Marvel.Queue

@@ -10,6 +10,7 @@ data Criteria
   | InHeroForm
   | InAlterEgoForm
   | Unexhausted
+  | Exhausted
   | OwnsThis
   | MinionExists MinionMatcher
   | EnemyExists EnemyMatcher
