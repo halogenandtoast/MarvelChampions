@@ -35,6 +35,7 @@ import Marvel.Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Modifier
+import Marvel.Obligation
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question
@@ -67,6 +68,7 @@ data Entities = Entities
   , entitiesSupports :: EntityMap Support
   , entitiesUpgrades :: EntityMap Upgrade
   , entitiesTreacheries :: EntityMap Treachery
+  , entitiesObligations :: EntityMap Obligation
   , entitiesSideSchemes :: EntityMap SideScheme
   , entitiesEffects :: EntityMap Effect
   , entitiesEvents :: EntityMap Event
@@ -86,6 +88,7 @@ defaultEntities = Entities
   , entitiesSupports = mempty
   , entitiesUpgrades = mempty
   , entitiesTreacheries = mempty
+  , entitiesObligations = mempty
   , entitiesSideSchemes = mempty
   , entitiesEffects = mempty
   , entitiesEvents = mempty
@@ -137,6 +140,9 @@ gameSideSchemes = entitiesSideSchemes . gameEntities
 
 gameTreacheries :: Game -> EntityMap Treachery
 gameTreacheries = entitiesTreacheries . gameEntities
+
+gameObligations :: Game -> EntityMap Obligation
+gameObligations = entitiesObligations . gameEntities
 
 gameVillains :: Game -> EntityMap Villain
 gameVillains = entitiesVillains . gameEntities
@@ -198,6 +204,9 @@ runGameMessage msg g@Game {..} = case msg of
       players@(p : _) -> choosePlayerOrder p players
     pure $ g { gameState = InProgress }
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
+  RemoveFromGame target -> case target of
+    ObligationTarget oid -> pure $ g & (entitiesL . obligationsL %~ delete oid)
+    _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
     AllyTarget aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
@@ -536,6 +545,7 @@ instance RunMessage Entities where
       >>= traverseOf (supportsL . each) (runMessage msg)
       >>= traverseOf (upgradesL . each) (runMessage msg)
       >>= traverseOf (treacheriesL . each) (runMessage msg)
+      >>= traverseOf (obligationsL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
       >>= traverseOf (eventsL . each) (runMessage msg)
       >>= traverseOf (effectsL . each) (runMessage msg)

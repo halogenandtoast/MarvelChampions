@@ -26,8 +26,9 @@ alterEgo
   -> HP GameValue
   -> HandSize
   -> Rec
+  -> [CardDef]
   -> CardBuilder IdentityId a
-alterEgo f cardDef hp hSize recovery = CardBuilder
+alterEgo f cardDef hp hSize recovery obligations = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \ident -> f $ AlterEgoAttrs
     { alterEgoIdentityId = ident
@@ -36,6 +37,7 @@ alterEgo f cardDef hp hSize recovery = CardBuilder
     , alterEgoHeroForms = [A]
     , alterEgoStartingHP = hp
     , alterEgoCardDef = cardDef
+    , alterEgoObligations = obligations
     }
   }
 
@@ -50,6 +52,7 @@ data AlterEgoAttrs = AlterEgoAttrs
   , alterEgoHeroForms :: [Side]
   , alterEgoStartingHP :: HP GameValue
   , alterEgoCardDef :: CardDef
+  , alterEgoObligations :: [CardDef]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -80,7 +83,12 @@ instance RunMessage AlterEgoAttrs where
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of
         Recovered -> do
-          push (IdentityMessage ident $ IdentityHealed . unRec $ alterEgoBaseRecovery a)
+          push
+            (IdentityMessage ident
+            $ IdentityHealed
+            . unRec
+            $ alterEgoBaseRecovery a
+            )
           pure a
         _ -> pure a
     _ -> pure a

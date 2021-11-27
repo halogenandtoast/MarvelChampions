@@ -31,6 +31,7 @@ data CardType
   | UpgradeType
   | AttachmentType
   | MinionType
+  | ObligationType
   | TreacheryType
   | SideSchemeType
   deriving stock (Show, Eq, Generic)

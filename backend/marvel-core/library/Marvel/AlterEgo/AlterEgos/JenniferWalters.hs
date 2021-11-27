@@ -21,8 +21,13 @@ import Marvel.Target
 import Marvel.Window
 
 jenniferWalters :: AlterEgoCard JenniferWalters
-jenniferWalters =
-  alterEgo JenniferWalters Cards.jenniferWalters (HP $ Static 15) (HandSize 6) (Rec 5)
+jenniferWalters = alterEgo
+  JenniferWalters
+  Cards.jenniferWalters
+  (HP $ Static 15)
+  (HandSize 6)
+  (Rec 5)
+  []
 
 newtype JenniferWalters = JenniferWalters AlterEgoAttrs
   deriving anyclass IsAlterEgo
@@ -51,11 +56,15 @@ instance RunMessage JenniferWalters where
       let
         (schemeId, n) = getDetails windows
         newMsg = case schemeId of
-                   SchemeMainSchemeId sid -> MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
-                   SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
+          SchemeMainSchemeId sid ->
+            MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
+          SchemeSideSchemeId sid ->
+            SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
       replaceMatchingMessage [newMsg] $ \case
-        (MainSchemeMessage mid (MainSchemePlaceThreat _)) -> schemeId == SchemeMainSchemeId mid
-        (SideSchemeMessage mid (SideSchemePlaceThreat _)) -> schemeId == SchemeSideSchemeId mid
+        (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
+          schemeId == SchemeMainSchemeId mid
+        (SideSchemeMessage mid (SideSchemePlaceThreat _)) ->
+          schemeId == SchemeSideSchemeId mid
         _ -> False
 
       pure a

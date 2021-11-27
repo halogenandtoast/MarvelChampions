@@ -13,8 +13,13 @@ import Marvel.Message
 import Marvel.Stats
 
 carolDanvers :: AlterEgoCard CarolDanvers
-carolDanvers =
-  alterEgo CarolDanvers Cards.carolDanvers (HP $ Static 12) (HandSize 6) (Rec 4)
+carolDanvers = alterEgo
+  CarolDanvers
+  Cards.carolDanvers
+  (HP $ Static 12)
+  (HandSize 6)
+  (Rec 4)
+  []
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
   deriving anyclass IsAlterEgo

@@ -242,6 +242,12 @@ getChoices attrs = do
     $ map UseAbility validAbilities
     <> map (($ Nothing) . PlayCard) playableCards
 
+getObligations :: MonadRandom m => PlayerIdentity -> m [EncounterCard]
+getObligations attrs = case currentIdentity attrs of
+  HeroSide _ -> error "Can not call via hero side"
+  AlterEgoSide side ->
+    traverse genEncounterCard (alterEgoObligations $ toAttrs side)
+
 runIdentityMessage
   :: (MonadGame env m, CoerceRole m)
   => IdentityMessage
@@ -250,10 +256,14 @@ runIdentityMessage
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   SetupIdentity -> do
     let nemesisSet = getNemesisSet $ toCardCode attrs
+    obligations <- getObligations attrs
     nemesisSetCards <- gatherEncounterSet nemesisSet
-    pushAll $ SetAside nemesisSetCards : map
-      (IdentityMessage (toId attrs))
-      [ShuffleDeck, DrawOrDiscardToHandLimit]
+    pushAll
+      $ SetAside nemesisSetCards
+      : ShuffleIntoEncounterDeck obligations
+      : map
+          (IdentityMessage (toId attrs))
+          [ShuffleDeck, DrawOrDiscardToHandLimit]
     pure attrs
   BeginTurn -> do
     takeTurn attrs

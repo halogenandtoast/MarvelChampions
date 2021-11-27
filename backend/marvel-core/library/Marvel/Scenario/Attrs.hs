@@ -93,7 +93,10 @@ instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       players <- getPlayers
-      encounterCards <- shuffleM =<< gatherEncounterSets scenarioEncounterSets
+      encounterCards <-
+        shuffleM
+        . (<> scenarioEncounterDeck)
+        =<< gatherEncounterSets scenarioEncounterSets
       pushAll
         $ map AddVillain scenarioVillains
         <> concatMap
@@ -104,6 +107,12 @@ instance RunMessage ScenarioAttrs where
              players
         <> [BeginPhase PlayerPhase]
       pure $ attrs & encounterDeckL .~ encounterCards
+    ShuffleEncounterDeck -> do
+      deck' <- shuffleM scenarioEncounterDeck
+      pure $ attrs & encounterDeckL .~ deck'
+    ShuffleIntoEncounterDeck cards -> do
+      deck' <- shuffleM (scenarioEncounterDeck <> cards)
+      pure $ attrs & encounterDeckL .~ deck'
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       pushAll

@@ -26,7 +26,7 @@ newtype ImTough = ImTough TreacheryAttrs
 instance RunMessage ImTough where
   runMessage msg t@(ImTough attrs) = case msg of
     TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      RevealTreachery ident -> do
+      RevealTreachery _ -> do
         isTough <- selectAny $ ActiveVillain <> VillainWithToughStatus
         if not isTough
           then do

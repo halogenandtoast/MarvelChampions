@@ -49,6 +49,7 @@ data Message
   | MainSchemeMessage CardCode MainSchemeMessage
   | SideSchemeMessage SideSchemeId SideSchemeMessage
   | TreacheryMessage TreacheryId TreacheryMessage
+  | ObligationMessage ObligationId ObligationMessage
   | MinionMessage MinionId MinionMessage
   | AttachmentMessage AttachmentId AttachmentMessage
   | Ask IdentityId Question
@@ -65,10 +66,12 @@ data Message
   | DealBoost Target
   | FlipBoostCards Target
   | DealEncounterCard IdentityId
+  | GainSurge Target
   | Surge IdentityId
   | DiscardedEncounterCard EncounterCard
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
+  | RemoveFromGame Target
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
@@ -131,6 +134,13 @@ data SideSchemeMessage
 data TreacheryMessage
   = RevealTreachery IdentityId
   | ResolvedTreachery IdentityId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data ObligationMessage
+  = RevealObligation IdentityId
+  | ResolveObligation IdentityId
+  | ResolvedObligation IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
