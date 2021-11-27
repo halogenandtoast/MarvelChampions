@@ -23,7 +23,9 @@ titaniasFury =
   treachery (TitaniasFury . (`With` Meta False)) Cards.titaniasFury
 
 newtype Meta = Meta { titaniaAttacked :: Bool }
-  deriving newtype (Show, Eq, ToJSON, FromJSON)
+  deriving stock Generic
+  deriving anyclass (ToJSON, FromJSON)
+  deriving newtype (Show, Eq)
 
 newtype TitaniasFury = TitaniasFury (TreacheryAttrs `With` Meta)
   deriving anyclass IsTreachery
