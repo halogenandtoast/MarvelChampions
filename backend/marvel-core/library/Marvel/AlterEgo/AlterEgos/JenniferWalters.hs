@@ -13,6 +13,7 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -27,7 +28,7 @@ jenniferWalters = alterEgo
   (HP $ Static 15)
   (HandSize 6)
   (Rec 5)
-  []
+  [Cards.legalWork]
 
 newtype JenniferWalters = JenniferWalters AlterEgoAttrs
   deriving anyclass IsAlterEgo

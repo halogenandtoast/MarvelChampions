@@ -42,7 +42,7 @@ instance RunMessage Inspired where
         chooseOne (upgradeController a) $ map
           (\allyId -> TargetLabel
             (AllyTarget allyId)
-            [Run [UpgradeMessage (toId a) $ AttachedToAlly allyId]]
+            [Run [UpgradeMessage (toId a) $ UpgradeAttachedToAlly allyId]]
           )
           allies
         pure u

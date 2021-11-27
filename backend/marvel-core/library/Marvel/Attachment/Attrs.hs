@@ -9,6 +9,7 @@ import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -54,7 +55,18 @@ instance IsTarget AttachmentAttrs where
   toTarget = AttachmentTarget . toId
 
 instance RunMessage AttachmentAttrs where
-  runMessage _ = pure
+  runMessage msg attrs = case msg of
+    AttachmentMessage attachmentId msg' | attachmentId == toId attrs ->
+      case msg' of
+        AttachedToEnemy enemyId -> do
+          case enemyId of
+            EnemyMinionId minionId -> do
+              push (MinionMessage minionId $ AttachedToMinion $ toId attrs)
+            EnemyVillainId villainId -> do
+              push (VillainMessage villainId $ AttachedToVillain $ toId attrs)
+          pure $ attrs & enemyL ?~ enemyId
+        _ -> pure attrs
+    _ -> pure attrs
 
 instance HasCardDef AttachmentAttrs where
   getCardDef = attachmentCardDef

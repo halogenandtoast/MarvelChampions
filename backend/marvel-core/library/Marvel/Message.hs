@@ -36,6 +36,7 @@ data Message
   | PassFirstPlayer
   | EndRound
   | BeginRound
+  | AddAccelerationToken
   | IdentityEndedTurn IdentityId
   | AddVillain CardCode
   | SetPlayerOrder [IdentityId]
@@ -63,6 +64,7 @@ data Message
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
+  | EmptyScenarioDeck
   | DealBoost Target
   | FlipBoostCards Target
   | DealEncounterCard IdentityId
@@ -75,7 +77,7 @@ data Message
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
-  | RevealBoostCard EncounterCard
+  | RevealBoostCard EncounterCard EnemyId
   | AdvanceScenario
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
@@ -89,6 +91,7 @@ data Message
   | ShuffleIntoEncounterDeck [EncounterCard]
   | ClearBoosts
   | Boost Message
+  | RevealedAsBoost Target EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -100,6 +103,7 @@ data VillainMessage
   | VillainBecomeTough
   | VillainDealtBoost EncounterCard
   | VillainFlipBoostCards
+  | VillainCheckAdditionalBoosts
   | VillainAttackGainOverkill
   | VillainAttacks IdentityId
   | VillainBeginAttack IdentityId
@@ -111,7 +115,7 @@ data VillainMessage
   | VillainDefeated
   | VillainDefendedBy CharacterId
   | AttachedToVillain AttachmentId
-  | UpgradeAttachedToVillain UpgradeId
+  | AttachedUpgradeToVillain UpgradeId
   | VillainAdvanced
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -152,16 +156,21 @@ data MinionMessage
   | MinionConfused Source
   | MinionDefeated
   | MinionHealed Natural
+  | MinionHealAllDamage
   | MinionAttacks IdentityId
   | MinionSchemes
   | MinionSchemed
   | MinionBeginAttack IdentityId
   | MinionAttacked
-  | UpgradeAttachedToMinion UpgradeId
+  | AttachedUpgradeToMinion UpgradeId
+  | AttachedToMinion AttachmentId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data AttachmentMessage = RevealAttachment | AttachmentDamaged Natural
+data AttachmentMessage
+  = RevealAttachment IdentityId
+  | AttachmentDamaged Natural
+  | AttachedToEnemy EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -184,7 +193,7 @@ data AllyMessage
   | AllyDefeated
   | AllyHealed Natural
   | SpendAllyUse
-  | UpgradeAttachedToAlly UpgradeId
+  | AttachedUpgradeToAlly UpgradeId
   | AllyStunned
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -200,8 +209,8 @@ data UpgradeMessage
   = ExhaustedUpgrade
   | ReadiedUpgrade
   | PlayedUpgrade
-  | AttachedToEnemy EnemyId
-  | AttachedToAlly AllyId
+  | UpgradeAttachedToEnemy EnemyId
+  | UpgradeAttachedToAlly AllyId
   | SpendUpgradeUse
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

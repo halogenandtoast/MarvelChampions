@@ -14,6 +14,7 @@
       <div class="mainScheme">
         <img :src="scenarioImg" alt="Scenario" height="200" class="scenario" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
         <div>{{game.scenario.contents.scenarioThreat}}</div>
+        <div v-if="game.scenario.contents.scenarioAccelerationTokens > 0">Acceleration Tokens: {{game.scenario.contents.scenarioAccelerationTokens}}</div>
       </div>
 
       <SideScheme

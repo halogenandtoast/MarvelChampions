@@ -40,6 +40,7 @@ library
       Marvel.Attachment.Attachments.ArmoredRhinoSuit
       Marvel.Attachment.Attachments.Charge
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
+      Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attrs
       Marvel.Attachment.Cards
       Marvel.Attack
@@ -116,6 +117,7 @@ library
       Marvel.Obligation.Cards
       Marvel.Obligation.Obligations
       Marvel.Obligation.Obligations.EvictionNotice
+      Marvel.Obligation.Obligations.LegalWork
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
@@ -134,6 +136,7 @@ library
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.HighwayRobbery
+      Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.Source
       Marvel.Stats
       Marvel.Support
@@ -166,6 +169,7 @@ library
       Marvel.Treachery.Treacheries.Stampede
       Marvel.Treachery.Treacheries.SweepingSwoop
       Marvel.Treachery.Treacheries.TheVulturesPlans
+      Marvel.Treachery.Treacheries.TitaniasFury
       Marvel.Upgrade
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards

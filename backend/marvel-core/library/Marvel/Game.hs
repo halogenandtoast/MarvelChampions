@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Data.Aeson.Diff qualified as Diff
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
+import Data.List (maximum)
 import Marvel.Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
@@ -28,6 +29,7 @@ import Marvel.Event
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
+import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
@@ -368,10 +370,11 @@ runGameMessage msg g@Game {..} = case msg of
           [PlayedEvent ident payment (W.windowType <$> mWindow), ResolvedEvent]
         pure $ g & (entitiesL . eventsL %~ insert (toId event) event)
       _ -> error "Unhandled"
-  RevealBoostCard card -> do
+  RevealBoostCard card enemyId -> do
     case cdCardType (getCardDef card) of
       TreacheryType -> do
         let treachery = createTreachery card
+        push (RevealedAsBoost (toTarget treachery) enemyId)
         pure
           $ g
           & (boostEntitiesL . treacheriesL %~ insert (toId treachery) treachery)
@@ -381,7 +384,7 @@ runGameMessage msg g@Game {..} = case msg of
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
-        pushAll [AttachmentMessage (toId attachment) RevealAttachment]
+        pushAll [AttachmentMessage (toId attachment) $ RevealAttachment ident]
         pure
           $ g
           & (entitiesL . attachmentsL %~ insert (toId attachment) attachment)
@@ -957,6 +960,10 @@ gameSelectMinion m = do
       identities <- select identityMatcher
       pure $ getMinionEngagedIdentity minion `member` identities
     MinionIs cardDef -> pure . (== cardDef) . getCardDef
+    MinionWithHighestPrintedHitPoints -> \minion -> do
+      minions <- toList <$> getsGame gameMinions
+      let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
+      pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
 gameSelectTreachery

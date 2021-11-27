@@ -63,6 +63,10 @@ explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
 falseAlarm :: CardDef
 falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2
 
+titaniasFury :: CardDef
+titaniasFury =
+  treachery "01164" "Titania's Fury" [Star, Boost] SheHulkNemesis 2
+
 sweepingSwoop :: CardDef
 sweepingSwoop = treachery "01168" "Sweeping Shoop" [Star] SpiderManNemesis 2
 

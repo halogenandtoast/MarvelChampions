@@ -51,3 +51,7 @@ charge = attachment "01099" "Charge" [] [Boost, Boost] Rhino 2
 enhancedIvoryHorn :: CardDef
 enhancedIvoryHorn =
   attachment "01100" "Enhanced Ivory Horn" [Weapon] [Boost, Boost] Rhino 1
+
+geneticallyEnhanced :: CardDef
+geneticallyEnhanced =
+  attachment "01163" "Genetically Enhanced" [Condition] [Boost] SheHulkNemesis 1

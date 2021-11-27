@@ -13,6 +13,7 @@ data Modifier
   | AttackModifier Natural
   | SchemeModifier Natural
   | AllyLimitModifier Natural
+  | HitPointModifier Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

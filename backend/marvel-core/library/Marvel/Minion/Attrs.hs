@@ -20,6 +20,7 @@ import Marvel.Stats as X
 import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
+import Marvel.Attack
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Game.Source
@@ -45,8 +46,9 @@ data MinionAttrs = MinionAttrs
   , minionStunned :: Bool
   , minionConfused :: Bool
   , minionTough :: Bool
-  , minionAttacking :: Maybe CharacterId
+  , minionAttacking :: Maybe Attack
   , minionUpgrades :: HashSet UpgradeId
+  , minionAttachments :: HashSet AttachmentId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -88,6 +90,7 @@ minion f cardDef sch atk hp = CardBuilder
     , minionTough = False
     , minionAttacking = Nothing
     , minionUpgrades = mempty
+    , minionAttachments = mempty
     }
   }
 
@@ -106,6 +109,22 @@ instance IsTarget MinionAttrs where
 instance HasCardDef MinionAttrs where
   getCardDef = minionCardDef
 
+getModifiedHitPoints :: MonadGame env m => MinionAttrs -> m Natural
+getModifiedHitPoints attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unHp $ minionHitPoints attrs) modifiers
+ where
+  applyModifier (HitPointModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+getModifiedAttack :: MonadGame env m => MinionAttrs -> m Natural
+getModifiedAttack attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unAtk $ minionAttack attrs) modifiers
+ where
+  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
 instance RunMessage MinionAttrs where
   runMessage msg attrs = case msg of
     MinionMessage minionId msg' | minionId == toId attrs ->
@@ -117,21 +136,28 @@ runMinionMessage
 runMinionMessage msg attrs = case msg of
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n
+  MinionHealAllDamage -> do
+    pure $ attrs & damageL .~ 0
   MinionDamaged _ damage -> if minionTough attrs
     then pure $ attrs & toughL .~ False
     else do
+      hitPoints <- getModifiedHitPoints attrs
       when
-        (damage + minionDamage attrs >= unHp (minionHitPoints attrs))
+        (damage + minionDamage attrs >= hitPoints)
         (pushAll
           [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
           , MinionMessage (toId attrs) MinionDefeated
+          , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs)]
           ]
         )
       pure $ attrs & damageL +~ damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
-  MinionDefendedBy characterId -> pure $ attrs & attackingL ?~ characterId
-  UpgradeAttachedToMinion upgradeId ->
+  MinionDefendedBy characterId ->
+    pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
+  AttachedToMinion attachmentId -> do
+    pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
+  AttachedUpgradeToMinion upgradeId ->
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   RevealMinion _ -> pure attrs
   MinionDefeated -> do
@@ -158,13 +184,14 @@ runMinionMessage msg attrs = case msg of
         ]
       pure attrs
   MinionBeginAttack ident -> do
+    atk <- getModifiedAttack attrs
     pushAll
       [ CheckWindows
         [W.Window W.When $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
       , DeclareDefense ident (EnemyMinionId (toId attrs))
       , MinionMessage (toId attrs) MinionAttacked
       ]
-    pure $ attrs & attackingL ?~ IdentityCharacter ident
+    pure $ attrs & attackingL ?~ attack attrs (IdentityCharacter ident) atk
   MinionSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
@@ -180,14 +207,12 @@ runMinionMessage msg attrs = case msg of
         pure attrs
       _ -> error "Not the main scheme"
   MinionAttacked -> do
-    let dmg = unAtk (minionAttack attrs)
     case minionAttacking attrs of
-      Just (IdentityCharacter ident) -> pushAll
-        [ CheckWindows
-          [W.Window W.When $ W.IdentityTakeDamage ident W.FromAttack dmg]
-        , IdentityMessage ident $ IdentityDamaged (toSource attrs) dmg
-        ]
-      Just (AllyCharacter ident) ->
-        push (AllyMessage ident $ AllyDamaged (toSource attrs) dmg)
-      _ -> error "Invalid damage target"
+      Nothing -> error "No current attack"
+      Just attack' -> case attackCharacter attack' of
+        IdentityCharacter ident ->
+          push $ IdentityMessage ident $ IdentityWasAttacked attack'
+        AllyCharacter ident ->
+          push $ AllyMessage ident $ AllyWasAttacked attack'
+        _ -> error "Invalid damage target"
     pure attrs

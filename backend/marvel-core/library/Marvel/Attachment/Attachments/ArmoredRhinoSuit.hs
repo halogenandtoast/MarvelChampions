@@ -10,8 +10,8 @@ import Marvel.Cost
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Modifier
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -47,7 +47,7 @@ getDetails (_ : xs) = getDetails xs
 instance RunMessage ArmoredRhinoSuit where
   runMessage msg a@(ArmoredRhinoSuit attrs) = case msg of
     AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
-      RevealAttachment -> do
+      RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
         push $ VillainMessage villainId $ AttachedToVillain aid
         pure . ArmoredRhinoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
@@ -56,6 +56,7 @@ instance RunMessage ArmoredRhinoSuit where
           (attachmentDamage attrs + n >= 5)
           (push $ RemoveFromPlay (toTarget attrs))
         pure . ArmoredRhinoSuit $ attrs & damageL +~ n
+      _ -> ArmoredRhinoSuit <$> runMessage msg attrs
     RanAbility target 1 windows | isTarget attrs target -> do
       let (vid, dmg) = getDetails windows
       replaceMatchingMessage
