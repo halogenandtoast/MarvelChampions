@@ -46,6 +46,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdKeywords = mempty
   , cdCardType = AllyType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = True
   , cdAspect = mAspect
   , cdEncounterSet = Nothing

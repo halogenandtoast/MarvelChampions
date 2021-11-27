@@ -28,7 +28,7 @@ data AbilityType
 
 data AbilitySubType = Attack | Defense | Thwart
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data Limit = PerTurn Natural | PerRound Natural | PerWindow Natural | NoLimit
   deriving stock (Show, Eq, Generic)

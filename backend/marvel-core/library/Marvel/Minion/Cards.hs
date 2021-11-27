@@ -33,6 +33,7 @@ minion code name traits boostIcons encounterSet quantity = CardDef
   , cdKeywords = mempty
   , cdCardType = MinionType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = False
   , cdAspect = Nothing
   , cdEncounterSet = Just encounterSet

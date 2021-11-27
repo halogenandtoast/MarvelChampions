@@ -23,6 +23,7 @@ villain cardCode name traits = CardDef
   , cdKeywords = mempty
   , cdCardType = VillainType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = True
   , cdAspect = Nothing
   , cdEncounterSet = Nothing

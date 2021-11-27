@@ -180,7 +180,7 @@ isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
   resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
-  passedCriteria <- checkCriteria (cdCriteria def)
+  passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   pure
     $ length resources
     >= modifiedCost

@@ -44,6 +44,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdKeywords = mempty
   , cdCardType = ResourceType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = False
   , cdCriteria = NoCriteria
   , cdAspect = mAspect

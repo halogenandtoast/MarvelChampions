@@ -42,6 +42,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdKeywords = mempty
   , cdCardType = UpgradeType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = False
   , cdAspect = mAspect
   , cdEncounterSet = Nothing
