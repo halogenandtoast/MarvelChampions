@@ -8,6 +8,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.List (maximum)
 import Marvel.Ability
+import Marvel.Ability qualified as Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
@@ -364,10 +365,25 @@ runGameMessage msg g@Game {..} = case msg of
         push $ UpgradeMessage (toId upgrade) PlayedUpgrade
         pure $ g & (entitiesL . upgradesL %~ insert (toId upgrade) upgrade)
       EventType -> do
-        let event = createEvent ident card
-        pushAll $ map
-          (EventMessage (toId event))
-          [PlayedEvent ident payment (W.windowType <$> mWindow), ResolvedEvent]
+        let
+          event = createEvent ident card
+          mSubType = cdAbilitySubType $ getCardDef card
+          playEvent = EventMessage
+            (toId event)
+            (PlayedEvent ident payment (W.windowType <$> mWindow))
+        playedMessage <- case mSubType of
+          Just Ability.Attack -> do
+            stunned <- identityMatches StunnedIdentity ident
+            if stunned
+              then pure (IdentityMessage ident IdentityRemoveStunned)
+              else pure playEvent
+          Just Ability.Thwart -> do
+            confused <- identityMatches ConfusedIdentity ident
+            if confused
+              then pure (IdentityMessage ident IdentityRemoveConfused)
+              else pure playEvent
+          _ -> pure playEvent
+        pushAll [playedMessage, EventMessage (toId event) ResolvedEvent]
         pure $ g & (entitiesL . eventsL %~ insert (toId event) event)
       _ -> error "Unhandled"
   RevealBoostCard card enemyId -> do
@@ -533,7 +549,7 @@ isWindowPlayable
 isWindowPlayable window attrs c = do
   resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
-  passedCriteria <- checkCriteria (cdCriteria def)
+  passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   passedWindow <- maybe
     (pure False)
     (\matcher -> windowMatches matcher window GameSource)

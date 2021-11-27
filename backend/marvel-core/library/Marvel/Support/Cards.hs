@@ -45,6 +45,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdKeywords = mempty
   , cdCardType = SupportType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = False
   , cdAspect = mAspect
   , cdEncounterSet = Nothing

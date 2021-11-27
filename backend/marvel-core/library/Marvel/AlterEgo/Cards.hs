@@ -23,6 +23,7 @@ alterEgo cardCode name traits = CardDef
   , cdKeywords = mempty
   , cdCardType = AlterEgoType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = True
   , cdAspect = Nothing
   , cdEncounterSet = Nothing

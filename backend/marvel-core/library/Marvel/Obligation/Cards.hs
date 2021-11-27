@@ -21,6 +21,7 @@ obligation code name boostIcons = CardDef
   , cdKeywords = mempty
   , cdCardType = ObligationType
   , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
   , cdUnique = False
   , cdAspect = Nothing
   , cdEncounterSet = Nothing
