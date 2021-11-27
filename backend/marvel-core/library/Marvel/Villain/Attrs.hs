@@ -247,6 +247,7 @@ advanceVillainTo newVillain VillainAttrs {..} = cbCardBuilder
         . (stunnedL .~ villainStunned)
         . (toughL %~ (|| villainStunned))
         . (attachmentsL .~ villainAttachments)
+        . (upgradesL .~ villainUpgrades)
         . toAttrs
         )
 

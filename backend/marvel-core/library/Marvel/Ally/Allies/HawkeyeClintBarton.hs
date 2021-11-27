@@ -39,7 +39,7 @@ instance HasAbilities HawkeyeClintBarton where
     [ limitedWindowAbility
           a
           1
-          (MinionEntersPlay When AnyMinion)
+          (MinionEntersPlay After AnyMinion)
           Response
           OwnsThis
           UseCost

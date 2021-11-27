@@ -448,7 +448,13 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromHand -> error "Unhandled"
-    RandomFromHand -> error "Unhandled"
+    RandomFromHand -> do
+      discards <- take (fromIntegral n) <$> shuffleM (unHand playerIdentityHand)
+      for_ mTarget $ \target -> push $ WithDiscarded target fromZone discards
+      pure
+        $ attrs
+        & (discardL %~ Discard . (discards <>) . unDiscard)
+        & (handL %~ Hand . filter (`notElem` discards) . unHand)
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
       for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards
@@ -504,7 +510,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
           $ IdentityDamaged (attackSource attack') damage
         ]
       )
-    pure attrs
+    pure $ attrs & damageReductionL .~ 0
   IdentityDamaged _ damage -> do
     pure
       $ attrs
@@ -515,7 +521,6 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         . fromIntegral
         . unHp
         )
-      & (damageReductionL .~ 0)
   IdentityDefended n -> pure $ attrs & damageReductionL +~ n
   IdentityHealed n ->
     pure
