@@ -259,6 +259,12 @@ runGameMessage msg g@Game {..} = case msg of
           (CardId . unTreacheryId $ toId treachery)
           (getCardDef treachery)
       pure $ g & (entitiesL . treacheriesL %~ delete tid)
+    ObligationTarget oid -> do
+      for_ (lookup oid $ gameObligations g) $ \obligation ->
+        push $ DiscardedEncounterCard $ EncounterCard
+          (CardId . unObligationId $ toId obligation)
+          (getCardDef obligation)
+      pure $ g & (entitiesL . obligationsL %~ delete oid)
     SideSchemeTarget sid -> do
       for_ (lookup sid $ gameSideSchemes g) $ \sideScheme ->
         push $ DiscardedEncounterCard $ EncounterCard
@@ -385,6 +391,7 @@ runGameMessage msg g@Game {..} = case msg of
           [ CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
           , IdentityMessage ident (MinionEngaged $ toId minion)
           , MinionMessage (toId minion) (RevealMinion ident)
+          , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
           ]
         pure $ g & (entitiesL . minionsL %~ insert (toId minion) minion)
       TreacheryType -> do
@@ -410,6 +417,25 @@ runGameMessage msg g@Game {..} = case msg of
         pure
           $ g
           & (entitiesL . treacheriesL %~ insert (toId treachery) treachery)
+      ObligationType -> do
+        let obligation = createObligation card
+        -- TODO: FOCUS CARDS SHOULD BE CARDS...
+        pushAll
+          [ FocusCards
+            [ PlayerCard
+                { pcCardId = ecCardId card
+                , pcCardDef = ecCardDef card
+                , pcOwner = Nothing
+                , pcController = Nothing
+                }
+            ]
+          , ObligationMessage (toId obligation) $ RevealObligation ident
+          , UnfocusCards
+          , ObligationMessage (toId obligation) $ ResolvedObligation ident
+          ]
+        pure
+          $ g
+          & (entitiesL . obligationsL %~ insert (toId obligation) obligation)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         pushAll
@@ -587,6 +613,10 @@ createSideScheme card =
 createTreachery :: EncounterCard -> Treachery
 createTreachery card =
   lookupTreachery (toCardCode card) (TreacheryId $ unCardId $ ecCardId card)
+
+createObligation :: EncounterCard -> Obligation
+createObligation card =
+  lookupObligation (toCardCode card) (ObligationId $ unCardId $ ecCardId card)
 
 createMinion :: IdentityId -> EncounterCard -> Minion
 createMinion ident card =
