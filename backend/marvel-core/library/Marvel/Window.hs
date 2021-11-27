@@ -126,8 +126,11 @@ windowMatches matcher w source = case matcher of
       villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
-    DefeatedMinion minionId | windowTiming w == timing ->
-      minionMatches minionMatcher minionId
+    DefeatedMinion minionId | windowTiming w == timing -> if timing == After
+      then case minionMatcher of
+        AnyMinion -> pure True
+        _ -> error "Minion has been deleted so we do not have details"
+      else minionMatches minionMatcher minionId
     _ -> pure False
   MinionEntersPlay timing minionMatcher -> case windowType w of
     MinionEnteredPlay minionId | windowTiming w == timing ->

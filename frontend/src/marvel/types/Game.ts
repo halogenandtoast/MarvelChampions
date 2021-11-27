@@ -97,6 +97,7 @@ export const encounterCardDecoder = JsonDecoder.object<EncounterCard>({
 export interface ScenarioContents {
   scenarioId: string
   scenarioThreat: number
+  scenarioAccelerationTokens: number
   scenarioDiscard: EncounterCard[]
 }
 
@@ -104,6 +105,7 @@ export const scenarioContentsDecoder = JsonDecoder.object<ScenarioContents>(
   {
     scenarioId: JsonDecoder.string,
     scenarioThreat: JsonDecoder.number,
+    scenarioAccelerationTokens: JsonDecoder.number,
     scenarioDiscard: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
   }, 'ScenarioContents')
 

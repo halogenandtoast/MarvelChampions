@@ -50,7 +50,7 @@ instance RunMessage WebbedUp where
         chooseOne (upgradeController a) $ map
           (\enemyId -> TargetLabel
             (EnemyTarget enemyId)
-            [Run [UpgradeMessage (toId a) $ AttachedToEnemy enemyId]]
+            [Run [UpgradeMessage (toId a) $ UpgradeAttachedToEnemy enemyId]]
           )
           enemies
         pure u
@@ -70,7 +70,8 @@ instance RunMessage WebbedUp where
                 VillainMessage _ (VillainBeginAttack _) -> True
                 _ -> False
           cancelMatchingMessage $ \case
-            CheckWindows [Window Would (EnemyAttack enemyId' _)] -> enemyId == enemyId'
+            CheckWindows [Window Would (EnemyAttack enemyId' _)] ->
+              enemyId == enemyId'
             _ -> False
         Nothing -> error "Something terrible must have happened"
       pure u

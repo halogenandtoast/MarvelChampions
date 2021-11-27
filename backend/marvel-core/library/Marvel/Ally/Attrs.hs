@@ -263,6 +263,6 @@ instance RunMessage AllyAttrs where
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
-      UpgradeAttachedToAlly upgradeId ->
+      AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     _ -> pure a

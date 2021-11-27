@@ -201,7 +201,7 @@ runVillainMessage msg attrs = case msg of
   VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
-  UpgradeAttachedToVillain upgradeId -> do
+  AttachedUpgradeToVillain upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   VillainFlipBoostCards -> do
     let
@@ -209,12 +209,19 @@ runVillainMessage msg attrs = case msg of
         ((+) . boostCount . cdBoostIcons . ecCardDef)
         0
         (villainBoostCards attrs)
-    pushAll $ map DiscardedEncounterCard (villainBoostCards attrs)
+    pushAll
+      $ map DiscardedEncounterCard (villainBoostCards attrs)
+      <> [VillainMessage (toId attrs) VillainCheckAdditionalBoosts]
     pure
       $ attrs
       & (boostCardsL .~ mempty)
       & (boostL .~ boost)
       & (attackingL . _Just . attackDamageL +~ boost)
+  VillainCheckAdditionalBoosts -> do
+    unless
+      (null $ villainBoostCards attrs)
+      (push $ VillainMessage (toId attrs) VillainFlipBoostCards)
+    pure attrs
 
 instance RunMessage VillainAttrs where
   runMessage msg attrs = case msg of
@@ -245,7 +252,7 @@ advanceVillainTo newVillain VillainAttrs {..} = cbCardBuilder
     coerce
       . ((confusedL .~ villainConfused)
         . (stunnedL .~ villainStunned)
-        . (toughL %~ (|| villainStunned))
+        . (toughL %~ (|| villainTough))
         . (attachmentsL .~ villainAttachments)
         . (upgradesL .~ villainUpgrades)
         . toAttrs

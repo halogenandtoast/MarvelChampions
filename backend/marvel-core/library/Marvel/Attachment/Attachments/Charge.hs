@@ -50,11 +50,11 @@ instance HasModifiersFor Charge where
 instance RunMessage Charge where
   runMessage msg a@(Charge attrs) = case msg of
     AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
-      RevealAttachment -> do
+      RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
         push $ VillainMessage villainId $ AttachedToVillain aid
         pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
-      _ -> pure a
+      _ -> Charge <$> runMessage msg attrs
     RanAbility target 1 _ | isTarget attrs target ->
       case attachmentEnemy attrs of
         Just (EnemyVillainId vid) -> do

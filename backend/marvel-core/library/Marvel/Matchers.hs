@@ -158,6 +158,7 @@ data MinionMatcher
   | MinionWithKeyword Keyword
   | MinionEngagedWith IdentityMatcher
   | MinionIs CardDef
+  | MinionWithHighestPrintedHitPoints
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

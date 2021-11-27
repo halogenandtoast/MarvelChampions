@@ -35,7 +35,7 @@ instance HasAbilities InterrogationRoom where
           (W.MinionDefeated W.After AnyMinion)
           Response
           OwnsThis
-          NoCost
+          ExhaustCost
         $ RemoveThreat (toSource a) 1 ThwartableScheme
     ]
 

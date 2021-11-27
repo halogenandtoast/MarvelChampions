@@ -47,8 +47,9 @@ instance RunMessage SpiderTracer where
           (\minionId -> TargetLabel
             (MinionTarget minionId)
             [ Run
-                [ UpgradeMessage (toId a) $ AttachedToEnemy $ EnemyMinionId
-                    minionId
+                [ UpgradeMessage (toId a)
+                  $ UpgradeAttachedToEnemy
+                  $ EnemyMinionId minionId
                 ]
             ]
           )

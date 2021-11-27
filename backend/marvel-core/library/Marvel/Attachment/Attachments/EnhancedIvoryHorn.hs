@@ -47,11 +47,11 @@ instance HasAbilities EnhancedIvoryHorn where
     ]
 
 instance RunMessage EnhancedIvoryHorn where
-  runMessage msg a@(EnhancedIvoryHorn attrs) = case msg of
+  runMessage msg (EnhancedIvoryHorn attrs) = case msg of
     AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
-      RevealAttachment -> do
+      RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
         push $ VillainMessage villainId $ AttachedToVillain aid
         pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
-      _ -> pure a
+      _ -> EnhancedIvoryHorn <$> runMessage msg attrs
     _ -> EnhancedIvoryHorn <$> runMessage msg attrs

@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
@@ -28,6 +29,7 @@ data ScenarioAttrs = ScenarioAttrs
   , scenarioVillains :: [CardCode]
   , scenarioInitialThreat :: GameValue
   , scenarioAcceleration :: GameValue
+  , scenarioAccelerationTokens :: Natural
   , scenarioThreat :: Natural
   , scenarioThreshold :: GameValue
   , scenarioEncounterSets :: HashSet EncounterSet
@@ -54,6 +56,7 @@ scenario f cCode villains encounterSets threshold iThreat acceleration =
     , scenarioVillains = villains
     , scenarioInitialThreat = iThreat
     , scenarioAcceleration = acceleration
+    , scenarioAccelerationTokens = 0
     , scenarioThreat = 0
     , scenarioEncounterDeck = mempty
     , scenarioDiscard = mempty
@@ -63,22 +66,7 @@ scenario f cCode villains encounterSets threshold iThreat acceleration =
     , scenarioSetAsideCards = mempty
     }
 
-threatL :: Lens' ScenarioAttrs Natural
-threatL = lens scenarioThreat $ \m x -> m { scenarioThreat = x }
-
-thresholdL :: Lens' ScenarioAttrs GameValue
-thresholdL = lens scenarioThreshold $ \m x -> m { scenarioThreshold = x }
-
-encounterDeckL :: Lens' ScenarioAttrs [EncounterCard]
-encounterDeckL =
-  lens scenarioEncounterDeck $ \m x -> m { scenarioEncounterDeck = x }
-
-discardL :: Lens' ScenarioAttrs [EncounterCard]
-discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
-
-setAsideCardsL :: Lens' ScenarioAttrs [EncounterCard]
-setAsideCardsL =
-  lens scenarioSetAsideCards $ \m x -> m { scenarioSetAsideCards = x }
+makeLensesWith suffixedFields ''ScenarioAttrs
 
 runMainSchemeMessage
   :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
@@ -131,6 +119,8 @@ instance RunMessage ScenarioAttrs where
         <> map (($ ReadyCards) . IdentityMessage) players
         <> [BeginPhase VillainPhase]
       pure attrs
+    AddAccelerationToken -> do
+      pure $ attrs & accelerationTokensL +~ 1
     BeginPhase VillainPhase -> do
       players <- getPlayers
       acceleration <- getAccelerationCount
@@ -142,6 +132,7 @@ instance RunMessage ScenarioAttrs where
               $ W.ThreatPlaced (SchemeMainSchemeId scenarioId)
               $ additionalThreat
               + acceleration
+              + scenarioAccelerationTokens
             ]
         : MainSchemeMessage
             scenarioId
@@ -158,22 +149,32 @@ instance RunMessage ScenarioAttrs where
     BeginRound -> do
       push (BeginPhase PlayerPhase)
       pure attrs
+    EmptyScenarioDeck -> do
+      deck' <- shuffleM scenarioDiscard
+      pure
+        $ attrs
+        & (accelerationTokensL +~ 1)
+        & (encounterDeckL .~ deck')
+        & (discardL .~ mempty)
     DealEncounterCard ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
+      when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
     Surge ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (RevealEncounterCard ident) ecs
+      when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
     DealBoost target -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       case target of
         VillainTarget vid ->
           pushAll
-            $ map RevealBoostCard ecs
+            $ map (`RevealBoostCard` EnemyVillainId vid) ecs
             <> map (VillainMessage vid . VillainDealtBoost) ecs
         _ -> error "Can not deal boost to target"
+      when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     DiscardedEncounterCard ec -> pure $ attrs & discardL %~ (ec :)

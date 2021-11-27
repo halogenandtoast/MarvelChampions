@@ -11,6 +11,7 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Source
 import Marvel.TH
+import Marvel.Target
 import Marvel.Treachery.Attrs
 import Marvel.Treachery.Treacheries
 
@@ -37,6 +38,9 @@ instance RunMessage Treachery where
 
 instance IsSource Treachery where
   toSource = TreacherySource . toId
+
+instance IsTarget Treachery where
+  toTarget = TreacheryTarget . toId
 
 instance HasCardDef Treachery where
   getCardDef = getCardDef . toAttrs

@@ -28,6 +28,9 @@ getMinionDamage = minionDamage . toAttrs
 getMinionEngagedIdentity :: Minion -> IdentityId
 getMinionEngagedIdentity = minionEngagedIdentity . toAttrs
 
+getMinionPrintedHitPoints :: Minion -> HP Natural
+getMinionPrintedHitPoints = minionHitPoints . toAttrs
+
 instance Entity Minion where
   type EntityId Minion = MinionId
   type EntityAttrs Minion = MinionAttrs

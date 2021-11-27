@@ -12,7 +12,7 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toCardCode &&& id)
-  [breakinAndTakin, crowdControl, bombScare, highwayRobbery]
+  [breakinAndTakin, crowdControl, bombScare, personalChallenge, highwayRobbery]
 
 sideScheme
   :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
@@ -49,6 +49,10 @@ bombScare :: CardDef
 bombScare = (sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1)
   { cdAcceleration = 1
   }
+
+personalChallenge :: CardDef
+personalChallenge =
+  sideScheme "01161" "Personal Challenge" [Boost, Boost, Boost] SheHulkNemesis 1
 
 highwayRobbery :: CardDef
 highwayRobbery =
