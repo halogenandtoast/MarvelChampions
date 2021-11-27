@@ -39,7 +39,7 @@ instance HasAbilities JenniferWalters where
     [ label "\"I Object!\"" $ limited (PerRound 1) $ limitedWindowAbility
         a
         1
-        (ThreatWouldBePlaced AnyScheme)
+        (ThreatWouldBePlaced AnyThreatSource AnyScheme)
         Interrupt
         IsSelf
         NoCost
@@ -48,7 +48,7 @@ instance HasAbilities JenniferWalters where
 
 getDetails :: [WindowType] -> (SchemeId, Natural)
 getDetails [] = error "wrong window"
-getDetails (ThreatPlaced schemeId n : _) = (schemeId, n)
+getDetails (ThreatPlaced _ schemeId n : _) = (schemeId, n)
 getDetails (_ : xs) = getDetails xs
 
 instance RunMessage JenniferWalters where

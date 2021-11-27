@@ -129,7 +129,9 @@ instance RunMessage ScenarioAttrs where
       pushAll
         $ CheckWindows
             [ W.Window W.Would
-              $ W.ThreatPlaced (SchemeMainSchemeId scenarioId)
+              $ W.ThreatPlaced
+                  W.ThreatFromAcceleration
+                  (SchemeMainSchemeId scenarioId)
               $ additionalThreat
               + acceleration
               + scenarioAccelerationTokens

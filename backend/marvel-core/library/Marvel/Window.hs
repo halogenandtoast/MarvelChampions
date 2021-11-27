@@ -19,11 +19,20 @@ data RevealSource = FromEncounterDeck | FromVillain
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+data ThreatSource
+  = ThreatFromVillain
+  | ThreatFromMinion
+  | ThreatFromAbility
+  | ThreatFromAcceleration
+  | AnyThreatSource
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
 data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
-  | ThreatWouldBePlaced SchemeMatcher
+  | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked EnemyMatcher IdentityMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
@@ -58,7 +67,7 @@ data WindowType
   | EnemyAttack EnemyId IdentityId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId
-  | ThreatPlaced SchemeId Natural
+  | ThreatPlaced ThreatSource SchemeId Natural
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
   | DefeatedSideScheme SideSchemeId
@@ -136,9 +145,11 @@ windowMatches matcher w source = case matcher of
     MinionEnteredPlay minionId | windowTiming w == timing ->
       minionMatches minionMatcher minionId
     _ -> pure False
-  ThreatWouldBePlaced schemeMatcher -> case windowType w of
-    ThreatPlaced schemeId _ | windowTiming w == Would ->
-      schemeMatches schemeMatcher schemeId
+  ThreatWouldBePlaced threatSource schemeMatcher -> case windowType w of
+    ThreatPlaced threatSource' schemeId _
+      | (windowTiming w == Would)
+        && (threatSource == AnyThreatSource || threatSource == threatSource')
+      -> schemeMatches schemeMatcher schemeId
     _ -> pure False
   RoundEnds -> case windowType w of
     RoundEnded -> pure True

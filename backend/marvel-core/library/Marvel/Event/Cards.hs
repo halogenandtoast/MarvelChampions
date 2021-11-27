@@ -162,7 +162,7 @@ forJustice =
 greatResponsibility :: CardDef
 greatResponsibility =
   (event "01061" "Great Responsibility" 0 HeroInterrupt [] [Mental] Justice)
-    { cdResponseWindow = Just (ThreatWouldBePlaced AnyScheme)
+    { cdResponseWindow = Just (ThreatWouldBePlaced AnyThreatSource AnyScheme)
     }
 
 getReady :: CardDef
@@ -185,7 +185,7 @@ makeTheCall = (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
 
 emergency :: CardDef
 emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
-  { cdResponseWindow = Just (ThreatWouldBePlaced AnyScheme)
+  { cdResponseWindow = Just (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
   , cdAbilitySubType = Just Ability.Thwart
   }
 

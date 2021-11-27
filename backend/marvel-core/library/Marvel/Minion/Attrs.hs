@@ -199,8 +199,10 @@ runMinionMessage msg attrs = case msg of
         let threat = unSch (minionScheme attrs)
         pushAll
           [ CheckWindows
-            [ W.Window W.Would
-                $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat
+            [ W.Window W.Would $ W.ThreatPlaced
+                W.ThreatFromMinion
+                (SchemeMainSchemeId mainSchemeId)
+                threat
             ]
           , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
           ]

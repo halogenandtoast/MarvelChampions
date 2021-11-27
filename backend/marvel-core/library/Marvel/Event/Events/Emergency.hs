@@ -26,7 +26,7 @@ newtype Emergency = Emergency EventAttrs
 instance RunMessage Emergency where
   runMessage msg e@(Emergency attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent identityId _ (Just (ThreatPlaced schemeId n)) -> do
+      PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         let
           newMsg = case schemeId of
             SchemeMainSchemeId sid -> MainSchemeMessage

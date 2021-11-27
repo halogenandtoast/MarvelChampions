@@ -26,7 +26,7 @@ newtype GreatResponsibility = GreatResponsibility EventAttrs
 instance RunMessage GreatResponsibility where
   runMessage msg e@(GreatResponsibility attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent identityId _ (Just (ThreatPlaced schemeId n)) -> do
+      PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         replaceMatchingMessage
             [IdentityMessage identityId $ IdentityDamaged (toSource attrs) n]
           $ \msg'' -> case schemeId of

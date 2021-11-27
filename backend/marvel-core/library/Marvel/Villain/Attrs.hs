@@ -181,8 +181,10 @@ runVillainMessage msg attrs = case msg of
         let threat = sch + villainBoost attrs
         pushAll
           [ CheckWindows
-            [ W.Window W.Would
-                $ W.ThreatPlaced (SchemeMainSchemeId mainSchemeId) threat
+            [ W.Window W.Would $ W.ThreatPlaced
+                W.ThreatFromVillain
+                (SchemeMainSchemeId mainSchemeId)
+                threat
             ]
           , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
           ]
