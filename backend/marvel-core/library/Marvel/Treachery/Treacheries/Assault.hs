@@ -33,7 +33,7 @@ instance RunMessage Assault where
             then do
               villainId <- selectJust ActiveVillain
               push $ VillainMessage villainId $ VillainAttacks identityId
-            else push $ Surge identityId
-          pure t
+              pure t
+            else pure . Assault $ attrs & surgeL .~ True
         _ -> Assault <$> runMessage msg attrs
     _ -> Assault <$> runMessage msg attrs

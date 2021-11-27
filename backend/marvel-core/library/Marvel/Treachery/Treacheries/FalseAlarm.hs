@@ -30,7 +30,7 @@ instance RunMessage FalseAlarm where
         if not isConfused
           then do
             push $ IdentityMessage ident IdentityConfused
-          else push $ Surge ident
-        pure t
+            pure t
+          else pure . FalseAlarm $ attrs & surgeL .~ True
       _ -> FalseAlarm <$> runMessage msg attrs
     _ -> FalseAlarm <$> runMessage msg attrs

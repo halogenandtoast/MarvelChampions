@@ -20,6 +20,7 @@ type TreacheryCard a = CardBuilder TreacheryId a
 data TreacheryAttrs = TreacheryAttrs
   { treacheryId :: TreacheryId
   , treacheryCardDef :: CardDef
+  , treacherySurge :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -32,8 +33,11 @@ instance HasCardCode TreacheryAttrs where
 treachery :: (TreacheryAttrs -> a) -> CardDef -> CardBuilder TreacheryId a
 treachery f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid ->
-    f $ TreacheryAttrs { treacheryId = mid, treacheryCardDef = cardDef }
+  , cbCardBuilder = \mid -> f $ TreacheryAttrs
+    { treacheryId = mid
+    , treacheryCardDef = cardDef
+    , treacherySurge = False
+    }
   }
 
 instance Entity TreacheryAttrs where
@@ -54,7 +58,10 @@ instance HasCardDef TreacheryAttrs where
 instance RunMessage TreacheryAttrs where
   runMessage msg attrs = case msg of
     TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      ResolvedTreachery ->
-        attrs <$ push (RemoveFromPlay (toTarget attrs))
+      ResolvedTreachery identityId -> do
+        pushAll
+          $ RemoveFromPlay (toTarget attrs)
+          : [ Surge identityId | treacherySurge attrs ]
+        pure attrs
       _ -> pure attrs
     _ -> pure attrs

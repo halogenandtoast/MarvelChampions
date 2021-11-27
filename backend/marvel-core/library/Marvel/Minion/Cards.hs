@@ -13,8 +13,9 @@ import Marvel.Name
 import Marvel.Trait
 
 allMinions :: HashMap CardCode CardDef
-allMinions = fromList
-  $ map (toCardCode &&& id) [hydraMercenary, sandman, shocker, hydraBomber]
+allMinions = fromList $ map
+  (toCardCode &&& id)
+  [hydraMercenary, sandman, shocker, hydraBomber, titania, vulture]
 
 minion
   :: CardCode

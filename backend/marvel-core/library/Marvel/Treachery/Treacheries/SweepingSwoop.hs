@@ -30,10 +30,8 @@ instance RunMessage SweepingSwoop where
       case msg' of
         RevealTreachery identityId -> do
           vultureInPlay <- selectAny $ MinionIs Cards.vulture
-          pushAll
-            $ IdentityMessage identityId IdentityStunned
-            : [ Surge identityId | vultureInPlay ]
-          pure t
+          push $ IdentityMessage identityId IdentityStunned
+          pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
         _ -> SweepingSwoop <$> runMessage msg attrs
     Boost msg' -> case msg' of
       AllyMessage aid (AllyDamaged _ _) -> do

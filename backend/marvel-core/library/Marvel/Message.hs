@@ -128,7 +128,9 @@ data SideSchemeMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data TreacheryMessage = RevealTreachery IdentityId | ResolvedTreachery
+data TreacheryMessage
+  = RevealTreachery IdentityId
+  | ResolvedTreachery IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

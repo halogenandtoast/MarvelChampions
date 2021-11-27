@@ -32,7 +32,7 @@ instance RunMessage ImTough where
           then do
             villainId <- selectJust ActiveVillain
             push $ VillainMessage villainId VillainBecomeTough
-          else push $ Surge ident
-        pure t
+            pure t
+          else pure . ImTough $ attrs & surgeL .~ True
       _ -> ImTough <$> runMessage msg attrs
     _ -> ImTough <$> runMessage msg attrs

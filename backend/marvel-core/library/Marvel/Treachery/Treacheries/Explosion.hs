@@ -14,11 +14,11 @@ import Marvel.Message
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import qualified Marvel.SideScheme.Cards as Cards
+import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
-import qualified Marvel.Treachery.Cards as Cards
+import Marvel.Treachery.Cards qualified as Cards
 
 explosion :: TreacheryCard Explosion
 explosion = treachery Explosion Cards.explosion
@@ -33,7 +33,7 @@ instance RunMessage Explosion where
       RevealTreachery ident -> do
         mBombScare <- selectOne $ SideSchemeIs Cards.bombScare
         case mBombScare of
-          Nothing -> push $ Surge ident
+          Nothing -> pure . Explosion $ attrs & surgeL .~ True
           Just bombScare -> do
             threat <- fromIntegral <$> selectCount
               SchemeThreat
@@ -50,6 +50,6 @@ instance RunMessage Explosion where
                  | aid <- allies
                  ]
               )
-        pure t
+            pure t
       _ -> Explosion <$> runMessage msg attrs
     _ -> Explosion <$> runMessage msg attrs

@@ -249,9 +249,7 @@ runIdentityMessage
   -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   SetupIdentity -> do
-    let
-      heroCardCode = toBaseCardCode $ toCardCode attrs
-      nemesisSet = getNemesisSet heroCardCode
+    let nemesisSet = getNemesisSet $ toCardCode attrs
     nemesisSetCards <- gatherEncounterSet nemesisSet
     pushAll $ SetAside nemesisSetCards : map
       (IdentityMessage (toId attrs))
@@ -482,21 +480,32 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       $ map (RevealEncounterCard (toId attrs)) playerIdentityEncounterCards
     pure $ attrs & encounterCardsL .~ mempty
   IdentityWasAttacked attack' -> do
-    pushAll
-      [ CheckWindows
-        [ W.Window W.When
-          $ W.IdentityTakeDamage (toId attrs) W.FromAttack
-          $ attackDamage attack'
-        ]
-      , IdentityMessage (toId attrs)
-        $ IdentityDamaged (attackSource attack') (attackDamage attack')
-      ]
-    pure attrs
-  IdentityDamaged _ n -> do
     let
       damage =
-        max 0 (fromIntegral n - fromIntegral playerIdentityDamageReduction)
-    pure $ attrs & currentHPL %~ HP . max 0 . subtract damage . unHp
+        subtractNatural playerIdentityDamageReduction $ attackDamage attack'
+    when
+      (damage > 0)
+      (pushAll
+        [ CheckWindows
+          [ W.Window W.When
+              $ W.IdentityTakeDamage (toId attrs) W.FromAttack damage
+          ]
+        , IdentityMessage (toId attrs)
+          $ IdentityDamaged (attackSource attack') damage
+        ]
+      )
+    pure attrs
+  IdentityDamaged _ damage -> do
+    pure
+      $ attrs
+      & (currentHPL
+        %~ HP
+        . fromIntegral
+        . subtractNatural damage
+        . fromIntegral
+        . unHp
+        )
+      & (damageReductionL .~ 0)
   IdentityDefended n -> pure $ attrs & damageReductionL +~ n
   IdentityHealed n ->
     pure

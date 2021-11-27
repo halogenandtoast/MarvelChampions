@@ -11,7 +11,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
@@ -36,16 +35,17 @@ instance RunMessage CaughtOffGuard where
             selectMap UpgradeTarget $ UpgradeControlledBy $ IdentityWithId
               identityId
           if null supports && null upgrades
-            then push $ Surge identityId
-            else chooseOne
-              identityId
-              ([ TargetLabel support [DiscardTarget support]
-               | support <- supports
-               ]
-              <> [ TargetLabel upgrade [DiscardTarget upgrade]
-                 | upgrade <- upgrades
+            then pure . CaughtOffGuard $ attrs & surgeL .~ True
+            else do
+              chooseOne
+                identityId
+                ([ TargetLabel support [DiscardTarget support]
+                 | support <- supports
                  ]
-              )
-          pure t
+                <> [ TargetLabel upgrade [DiscardTarget upgrade]
+                   | upgrade <- upgrades
+                   ]
+                )
+              pure t
         _ -> CaughtOffGuard <$> runMessage msg attrs
     _ -> CaughtOffGuard <$> runMessage msg attrs
