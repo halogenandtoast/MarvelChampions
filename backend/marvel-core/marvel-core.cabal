@@ -111,6 +111,11 @@ library
       Marvel.Minion.Minions.Vulture
       Marvel.Modifier
       Marvel.Name
+      Marvel.Obligation
+      Marvel.Obligation.Attrs
+      Marvel.Obligation.Cards
+      Marvel.Obligation.Obligations
+      Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude

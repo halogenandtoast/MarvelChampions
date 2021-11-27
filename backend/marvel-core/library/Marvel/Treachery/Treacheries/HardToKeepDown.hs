@@ -23,7 +23,7 @@ newtype HardToKeepDown = HardToKeepDown TreacheryAttrs
 instance RunMessage HardToKeepDown where
   runMessage msg t@(HardToKeepDown attrs) = case msg of
     TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      RevealTreachery ident -> do
+      RevealTreachery _ -> do
         damaged <- selectAny $ ActiveVillain <> VillainWithAnyDamage
         if damaged
           then do
@@ -31,6 +31,5 @@ instance RunMessage HardToKeepDown where
             push $ VillainMessage villainId (VillainHealed 4)
             pure t
           else pure . HardToKeepDown $ attrs & surgeL .~ True
-        pure t
       _ -> HardToKeepDown <$> runMessage msg attrs
     _ -> HardToKeepDown <$> runMessage msg attrs

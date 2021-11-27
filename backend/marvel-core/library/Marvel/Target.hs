@@ -18,6 +18,7 @@ data Target
   | EventTarget EventId
   | EffectTarget EffectId
   | TreacheryTarget TreacheryId
+  | ObligationTarget ObligationId
   | UpgradeTarget UpgradeId
   | SideSchemeTarget SideSchemeId
   | AttachmentTarget AttachmentId

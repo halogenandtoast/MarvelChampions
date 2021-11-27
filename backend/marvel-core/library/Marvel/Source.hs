@@ -13,6 +13,7 @@ data Source
   | EffectSource EffectId
   | SupportSource SupportId
   | TreacherySource TreacheryId
+  | ObligationSource ObligationId
   | SideSchemeSource SideSchemeId
   | AttachmentSource AttachmentId
   | UpgradeSource UpgradeId

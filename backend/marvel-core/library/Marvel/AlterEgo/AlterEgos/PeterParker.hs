@@ -12,14 +12,20 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
+import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Stats
 
 peterParker :: AlterEgoCard PeterParker
-peterParker =
-  alterEgo PeterParker Cards.peterParker (HP $ Static 10) (HandSize 6) (Rec 3)
+peterParker = alterEgo
+  PeterParker
+  Cards.peterParker
+  (HP $ Static 10)
+  (HandSize 6)
+  (Rec 3)
+  [Cards.evictionNotice]
 
 newtype PeterParker = PeterParker AlterEgoAttrs
   deriving anyclass IsAlterEgo

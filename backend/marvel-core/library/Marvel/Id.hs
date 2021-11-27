@@ -41,6 +41,9 @@ newtype UpgradeId = UpgradeId { unUpgradeId :: UUID }
 newtype TreacheryId = TreacheryId { unTreacheryId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
+newtype ObligationId = ObligationId { unObligationId :: UUID }
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
 newtype SideSchemeId = SideSchemeId { unSideSchemeId :: UUID }
   deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
