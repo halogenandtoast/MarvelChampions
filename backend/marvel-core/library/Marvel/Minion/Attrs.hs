@@ -24,6 +24,7 @@ import Marvel.Attack
 import Marvel.Card.Builder
 import Marvel.Card.Def
 import Marvel.Game.Source
+import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Window qualified as W
 
@@ -160,6 +161,12 @@ runMinionMessage msg attrs = case msg of
   AttachedUpgradeToMinion upgradeId ->
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   RevealMinion _ -> pure attrs
+  MinionEngagedIdentity ident -> do
+    isHero <- identityMatches HeroIdentity ident
+    when
+      (isHero && Quickstrike `member` cdKeywords (getCardDef attrs))
+      (push $ MinionMessage (toId attrs) $ MinionAttacks ident)
+    pure attrs
   MinionDefeated -> do
     pushAll
       $ map (RemoveFromPlay . UpgradeTarget) (toList $ minionUpgrades attrs)

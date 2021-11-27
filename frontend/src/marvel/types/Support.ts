@@ -9,6 +9,7 @@ export interface Support {
 export interface SupportContents {
   supportId: string
   supportCardDef: CardDef
+  supportUses: number
   supportExhausted: boolean
 }
 
@@ -16,6 +17,7 @@ export const supportContentsDecoder = JsonDecoder.object<SupportContents>(
   {
     supportId: JsonDecoder.string,
     supportCardDef: cardDefDecoder,
+    supportUses: JsonDecoder.number,
     supportExhausted: JsonDecoder.boolean,
   }, 'SupportContents')
 

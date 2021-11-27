@@ -35,7 +35,7 @@ instance HasAbilities SurveillanceTeam where
         a
         1
         Action
-        OwnsThis
+        (OwnsThis <> SchemeExists ThwartableScheme)
         (ExhaustCost <> UseCost)
         (RemoveThreat (toSource a) 1 ThwartableScheme)
     ]

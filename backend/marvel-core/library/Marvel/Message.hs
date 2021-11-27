@@ -161,6 +161,7 @@ data MinionMessage
   | MinionSchemes
   | MinionSchemed
   | MinionBeginAttack IdentityId
+  | MinionEngagedIdentity IdentityId
   | MinionAttacked
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId

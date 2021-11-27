@@ -8,6 +8,7 @@
           :data-image="image"
           @click="$emit('choose', ability)"
           />
+    <div v-if="support.contents.supportUses > 0">Uses: {{support.contents.supportUses}}</div>
   </div>
 </template>
 
