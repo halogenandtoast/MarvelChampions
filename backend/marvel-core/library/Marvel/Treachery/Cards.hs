@@ -17,6 +17,8 @@ allTreacheries = fromList $ map
   , stampede
   , explosion
   , falseAlarm
+  , sweepingSwoop
+  , theVulturesPlans
   , advance
   , assault
   , caughtOffGuard
@@ -60,6 +62,13 @@ explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
 
 falseAlarm :: CardDef
 falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2
+
+sweepingSwoop :: CardDef
+sweepingSwoop = treachery "01168" "Sweeping Shoop" [Star] SpiderManNemesis 2
+
+theVulturesPlans :: CardDef
+theVulturesPlans =
+  treachery "01169" "The Vulture's Plans" [Boost, Boost] SpiderManNemesis 1
 
 advance :: CardDef
 advance = treachery "01186" "Advance" [] Standard 2

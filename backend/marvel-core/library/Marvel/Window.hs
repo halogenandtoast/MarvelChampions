@@ -34,6 +34,7 @@ data WindowMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
+  | SideSchemeDefeated WindowTiming SideSchemeMatcher
   | RoundEnds
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -60,6 +61,7 @@ data WindowType
   | ThreatPlaced SchemeId Natural
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
+  | DefeatedSideScheme SideSchemeId
   | RoundEnded
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -145,4 +147,8 @@ windowMatches matcher w source = case matcher of
   MakesBasicAttack timing identityMatcher -> case windowType w of
     MadeBasicAttack identityId | windowTiming w == timing ->
       identityMatches identityMatcher identityId
+    _ -> pure False
+  SideSchemeDefeated timing sideSchemeMatcher -> case windowType w of
+    DefeatedSideScheme sideSchemeId | windowTiming w == timing ->
+      sideSchemeMatches sideSchemeMatcher sideSchemeId
     _ -> pure False

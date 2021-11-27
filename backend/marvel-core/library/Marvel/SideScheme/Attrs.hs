@@ -6,13 +6,15 @@ import Marvel.Prelude
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.PlayerCard
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
-import Marvel.Queue
 import Marvel.Message
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Marvel.Window
 
 class IsSideScheme a
 
@@ -25,6 +27,7 @@ data SideSchemeAttrs = SideSchemeAttrs
   , sideSchemeInitialThreat :: GameValue
   , sideSchemeAcceleration :: GameValue
   , sideSchemeCrisis :: Bool
+  , sideSchemeHeldCards :: [PlayerCard]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -59,6 +62,7 @@ sideScheme f cardDef initialThreat acceleration = CardBuilder
     , sideSchemeAcceleration = acceleration
     , sideSchemeThreat = 0
     , sideSchemeCrisis = False
+    , sideSchemeHeldCards = []
     }
   }
 
@@ -86,7 +90,14 @@ instance RunMessage SideSchemeAttrs where
           pure $ attrs & threatL .~ n
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ n -> do
-          when (subtractNatural n (sideSchemeThreat attrs) == 0) (push $ RemoveFromPlay (toTarget attrs))
+          when
+            (subtractNatural n (sideSchemeThreat attrs) == 0)
+            (pushAll
+              [ CheckWindows [Window When $ DefeatedSideScheme (toId attrs)]
+              , SideSchemeMessage (toId attrs) DefeatSideScheme
+              , RemoveFromPlay (toTarget attrs)
+              ]
+            )
           pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
     _ -> pure attrs

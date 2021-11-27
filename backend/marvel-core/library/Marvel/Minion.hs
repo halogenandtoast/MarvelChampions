@@ -4,14 +4,10 @@ module Marvel.Minion where
 import Marvel.Prelude
 
 import Marvel.Card.Builder
-import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Entity
 import Marvel.Id
-import Marvel.Message
 import Marvel.Minion.Attrs
 import Marvel.Minion.Minions
-import Marvel.Source
 import Marvel.TH
 
 $(buildEntity "Minion")
@@ -40,6 +36,9 @@ instance Entity Minion where
 
 instance RunMessage Minion where
   runMessage = genericRunMessage
+
+instance HasModifiersFor Minion where
+  getModifiersFor = genericGetModifiersFor
 
 instance IsSource Minion where
   toSource = MinionSource . toId

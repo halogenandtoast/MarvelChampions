@@ -1,28 +1,38 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Marvel.Minion.Attrs where
+module Marvel.Minion.Attrs
+  ( module Marvel.Minion.Attrs
+  , module X
+  ) where
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Marvel.Card.Code as X
+import Marvel.Entity as X
+import Marvel.Hp as X
+import Marvel.Id as X
+import Marvel.Message as X
+import Marvel.Modifier as X
+import Marvel.Query as X
+import Marvel.Question as X
+import Marvel.Queue as X
+import Marvel.Source as X
+import Marvel.Stats as X
+import Marvel.Target as X
+
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Builder
-import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Hp
-import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Query
-import Marvel.Queue
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 
 class IsMinion a
 
 type MinionCard a = CardBuilder (IdentityId, MinionId) a
+
+minionRemainingHitPoints :: MinionAttrs -> Natural
+minionRemainingHitPoints attrs =
+  subtractNatural (minionDamage attrs) (unHp $ minionHitPoints attrs)
 
 data MinionAttrs = MinionAttrs
   { minionId :: MinionId

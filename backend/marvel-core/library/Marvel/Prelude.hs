@@ -35,9 +35,14 @@ import Relude as X hiding (One)
 import Relude.Extra.Map as X
 
 import Data.Aeson.Casing (camelCase)
+import Data.Aeson.Text
 import Data.Char qualified as C
+import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.Builder
 import Language.Haskell.TH hiding (location)
+import Text.Show qualified as S
 
 subtractNatural :: Natural -> Natural -> Natural
 subtractNatural a b = fromMaybe 0 (minusNaturalMaybe b a)
@@ -76,3 +81,30 @@ curry3 f a b c = f (a, b, c)
 class (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
 instance (forall a b. Coercible a b => Coercible (f a) (f b)) => CoerceRole f
 
+data With a b = With a b
+
+instance (Eq a, Eq b) => Eq (With a b) where
+  With a1 b1 == With a2 b2 = a1 == a2 && b1 == b2
+
+instance (ToJSON a, ToJSON b) => ToJSON (a `With` b) where
+  toJSON (a `With` b) = case (toJSON a, toJSON b) of
+    (Object o, Object m) -> Object $ HashMap.union m o
+    (a', b') -> metadataError a' b'
+   where
+    metadataError a' b' =
+      error
+        . show
+        . TL.unpack
+        . toLazyText
+        $ "With failed to serialize to object: "
+        <> "\nattrs: "
+        <> encodeToTextBuilder a'
+        <> "\nmetadata: "
+        <> encodeToTextBuilder b'
+
+instance (FromJSON a, FromJSON b) => FromJSON (a `With` b) where
+  parseJSON = withObject "With"
+    $ \o -> With <$> parseJSON (Object o) <*> parseJSON (Object o)
+
+instance (S.Show a, S.Show b) => S.Show (a `With` b) where
+  show (With a b) = show a <> " WITH " <> show b

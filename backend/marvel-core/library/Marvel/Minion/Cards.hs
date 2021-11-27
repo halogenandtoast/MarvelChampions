@@ -62,3 +62,18 @@ shocker = (minion "01103" "Shocker" [Criminal] [Boost, Boost] Rhino 1)
 
 hydraBomber :: CardDef
 hydraBomber = minion "01110" "Hydra Bomber" [Hydra] [Boost] BombScare 2
+
+titania :: CardDef
+titania =
+  (minion "01162" "Titania" [Brute, Elite] [Boost, Boost] SheHulkNemesis 1)
+    { cdUnique = True
+    , cdKeywords = singleton Quickstrike
+    }
+
+vulture :: CardDef
+vulture =
+  (minion "01167" "Vulture" [Criminal] [Boost, Boost] SpiderManNemesis 1)
+    { cdUnique = True
+    , cdKeywords = singleton Quickstrike
+    }
+

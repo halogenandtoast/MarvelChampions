@@ -2,7 +2,7 @@ module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.EncounterCard
@@ -19,7 +19,7 @@ import Marvel.Phase
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Target
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 import System.Random.Shuffle
 
 
@@ -34,6 +34,7 @@ data ScenarioAttrs = ScenarioAttrs
   , scenarioEncounterDeck :: [EncounterCard]
   , scenarioDiscard :: [EncounterCard]
   , scenarioDifficulty :: Difficulty
+  , scenarioSetAsideCards :: [EncounterCard]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -59,6 +60,7 @@ scenario f cCode villains encounterSets threshold iThreat acceleration =
     , scenarioDifficulty = Normal
     , scenarioEncounterSets = HashSet.fromList encounterSets
     , scenarioThreshold = threshold
+    , scenarioSetAsideCards = mempty
     }
 
 threatL :: Lens' ScenarioAttrs Natural
@@ -73,6 +75,10 @@ encounterDeckL =
 
 discardL :: Lens' ScenarioAttrs [EncounterCard]
 discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
+
+setAsideCardsL :: Lens' ScenarioAttrs [EncounterCard]
+setAsideCardsL =
+  lens scenarioSetAsideCards $ \m x -> m { scenarioSetAsideCards = x }
 
 runMainSchemeMessage
   :: MonadGame env m => MainSchemeMessage -> ScenarioAttrs -> m ScenarioAttrs
@@ -155,9 +161,12 @@ instance RunMessage ScenarioAttrs where
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       case target of
         VillainTarget vid ->
-          pushAll $ map (VillainMessage vid . DealtBoost) ecs
+          pushAll
+            $ map RevealBoostCard ecs
+            <> map (VillainMessage vid . VillainDealtBoost) ecs
         _ -> error "Can not deal boost to target"
       pure $ attrs & encounterDeckL .~ deck'
+    SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     DiscardedEncounterCard ec -> pure $ attrs & discardL %~ (ec :)
     MainSchemeMessage ident msg' | ident == scenarioId ->
       runMainSchemeMessage msg' attrs

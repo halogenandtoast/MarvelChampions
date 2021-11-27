@@ -50,21 +50,21 @@ data ApiGame = ApiGame
 
 toApiGame :: Entity MarvelGame -> ApiGame
 toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = let Game {..} = marvelGameCurrentData
+  = let g@Game {..} = marvelGameCurrentData
     in
       ApiGame
         { id = gameId
         , name = marvelGameName
-        , players = gamePlayers
-        , villains = gameVillains
-        , scenario = gameScenario
         , question = gameQuestion
-        , allies = gameAllies
-        , minions = gameMinions
-        , attachments = gameAttachments
-        , supports = gameSupports
-        , upgrades = gameUpgrades
-        , sideSchemes = gameSideSchemes
+        , scenario = gameScenario
+        , players = gamePlayers g
+        , villains = gameVillains g
+        , allies = gameAllies g
+        , minions = gameMinions g
+        , attachments = gameAttachments g
+        , supports = gameSupports g
+        , upgrades = gameUpgrades g
+        , sideSchemes = gameSideSchemes g
         , state = gameState
         , focusedCards = gameFocusedCards
         }

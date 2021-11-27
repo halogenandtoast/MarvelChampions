@@ -21,6 +21,8 @@ import Marvel.Deck
 import Marvel.Difficulty
 import Marvel.Discard
 import Marvel.Effect
+import Marvel.EncounterCard
+import Marvel.EncounterSet
 import Marvel.Entity
 import Marvel.Event
 import Marvel.Exception
@@ -56,22 +58,46 @@ data GameState = Unstarted | InProgress | Finished FinishedStatus
 
 type EntityMap a = HashMap (EntityId a) a
 
+data Entities = Entities
+  { entitiesPlayers :: EntityMap PlayerIdentity
+  , entitiesVillains :: EntityMap Villain
+  , entitiesMinions :: EntityMap Minion
+  , entitiesAllies :: EntityMap Ally
+  , entitiesAttachments :: EntityMap Attachment
+  , entitiesSupports :: EntityMap Support
+  , entitiesUpgrades :: EntityMap Upgrade
+  , entitiesTreacheries :: EntityMap Treachery
+  , entitiesSideSchemes :: EntityMap SideScheme
+  , entitiesEffects :: EntityMap Effect
+  , entitiesEvents :: EntityMap Event
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+makeLensesWith suffixedFields ''Entities
+
+defaultEntities :: Entities
+defaultEntities = Entities
+  { entitiesPlayers = mempty
+  , entitiesVillains = mempty
+  , entitiesMinions = mempty
+  , entitiesAllies = mempty
+  , entitiesAttachments = mempty
+  , entitiesSupports = mempty
+  , entitiesUpgrades = mempty
+  , entitiesTreacheries = mempty
+  , entitiesSideSchemes = mempty
+  , entitiesEffects = mempty
+  , entitiesEvents = mempty
+  }
+
 data Game = Game
   { gamePhase :: Phase
   , gameState :: GameState
   , -- players in player order
     gamePlayerOrder :: [IdentityId]
-  , gamePlayers :: EntityMap PlayerIdentity
-  , gameVillains :: EntityMap Villain
-  , gameMinions :: EntityMap Minion
-  , gameAllies :: EntityMap Ally
-  , gameAttachments :: EntityMap Attachment
-  , gameSupports :: EntityMap Support
-  , gameUpgrades :: EntityMap Upgrade
-  , gameTreacheries :: EntityMap Treachery
-  , gameSideSchemes :: EntityMap SideScheme
-  , gameEffects :: EntityMap Effect
-  , gameEvents :: EntityMap Event
+  , gameEntities :: Entities
+  , gameBoostEntities :: Entities
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
@@ -84,6 +110,36 @@ data Game = Game
   deriving stock (Show, Eq, Generic)
 
 makeLensesWith suffixedFields ''Game
+
+gameAllies :: Game -> EntityMap Ally
+gameAllies = entitiesAllies . gameEntities
+
+gameAttachments :: Game -> EntityMap Attachment
+gameAttachments = entitiesAttachments . gameEntities
+
+gameEffects :: Game -> EntityMap Effect
+gameEffects = entitiesEffects . gameEntities
+
+gameMinions :: Game -> EntityMap Minion
+gameMinions = entitiesMinions . gameEntities
+
+gamePlayers :: Game -> EntityMap PlayerIdentity
+gamePlayers = entitiesPlayers . gameEntities
+
+gameUpgrades :: Game -> EntityMap Upgrade
+gameUpgrades = entitiesUpgrades . gameEntities
+
+gameSupports :: Game -> EntityMap Support
+gameSupports = entitiesSupports . gameEntities
+
+gameSideSchemes :: Game -> EntityMap SideScheme
+gameSideSchemes = entitiesSideSchemes . gameEntities
+
+gameTreacheries :: Game -> EntityMap Treachery
+gameTreacheries = entitiesTreacheries . gameEntities
+
+gameVillains :: Game -> EntityMap Villain
+gameVillains = entitiesVillains . gameEntities
 
 instance ToJSON Game where
   toJSON = genericToJSON $ aesonOptions $ Just "game"
@@ -107,7 +163,7 @@ getPlayerCount = length <$> getsGame gamePlayerOrder
 
 getActivePlayer :: MonadGame env m => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
-  case lookup (g ^. activePlayerL) (g ^. playersL) of
+  case lookup (g ^. activePlayerL) (g ^. entitiesL . playersL) of
     Just p -> p
     Nothing -> error "Missing player"
 
@@ -144,7 +200,7 @@ runGameMessage msg g@Game {..} = case msg of
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   RemoveFromPlay target -> case target of
     AllyTarget aid -> do
-      for_ (lookup aid gameAllies) $ \ally -> do
+      for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
         pushAll $ map
           (IdentityMessage ident)
@@ -155,14 +211,14 @@ runGameMessage msg g@Game {..} = case msg of
             (Just ident)
             (Just ident)
           ]
-      pure $ g & alliesL %~ delete aid
+      pure $ g & (entitiesL . alliesL %~ delete aid)
     SupportTarget sid -> do
-      for_ (lookup sid gameSupports) $ \support ->
+      for_ (lookup sid $ gameSupports g) $ \support ->
         push $ IdentityMessage (getSupportController support) $ SupportRemoved
           sid
-      pure $ g & supportsL %~ delete sid
+      pure $ g & (entitiesL . supportsL %~ delete sid)
     UpgradeTarget uid -> do
-      for_ (lookup uid gameUpgrades) $ \upgrade -> pushAll
+      for_ (lookup uid $ gameUpgrades g) $ \upgrade -> pushAll
         [ UpgradeRemoved uid
         , IdentityMessage
           (getUpgradeController upgrade)
@@ -173,40 +229,40 @@ runGameMessage msg g@Game {..} = case msg of
             (Just $ getUpgradeController upgrade)
           )
         ]
-      pure $ g & upgradesL %~ delete uid
+      pure $ g & (entitiesL . upgradesL %~ delete uid)
     AttachmentTarget aid -> do
-      for_ (lookup aid gameAttachments) $ \attachment -> pushAll
+      for_ (lookup aid $ gameAttachments g) $ \attachment -> pushAll
         [ AttachmentRemoved aid
         , DiscardedEncounterCard $ EncounterCard
           (CardId . unAttachmentId $ toId attachment)
           (getCardDef attachment)
         ]
-      pure $ g & attachmentsL %~ delete aid
+      pure $ g & (entitiesL . attachmentsL %~ delete aid)
     MinionTarget mid -> do
-      for_ (lookup mid gameMinions) $ \minion ->
+      for_ (lookup mid $ gameMinions g) $ \minion ->
         push $ DiscardedEncounterCard $ EncounterCard
           (CardId . unMinionId $ toId minion)
           (getCardDef minion)
-      pure $ g & minionsL %~ delete mid
+      pure $ g & (entitiesL . minionsL %~ delete mid)
     TreacheryTarget tid -> do
-      for_ (lookup tid gameTreacheries) $ \treachery ->
+      for_ (lookup tid $ gameTreacheries g) $ \treachery ->
         push $ DiscardedEncounterCard $ EncounterCard
           (CardId . unTreacheryId $ toId treachery)
           (getCardDef treachery)
-      pure $ g & treacheriesL %~ delete tid
+      pure $ g & (entitiesL . treacheriesL %~ delete tid)
     SideSchemeTarget sid -> do
-      for_ (lookup sid gameSideSchemes) $ \sideScheme ->
+      for_ (lookup sid $ gameSideSchemes g) $ \sideScheme ->
         push $ DiscardedEncounterCard $ EncounterCard
           (CardId . unSideSchemeId $ toId sideScheme)
           (getCardDef sideScheme)
-      pure $ g & sideSchemesL %~ delete sid
+      pure $ g & (entitiesL . sideSchemesL %~ delete sid)
     _ -> error "Unhandled target"
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
       Just x -> do
         push $ VillainMessage villainId SetVillainHp
-        pure $ g & villainsL . at villainId ?~ x
+        pure $ g & (entitiesL . villainsL . at villainId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ insertWith (<>) ident [(a, gameWindowDepth)]
@@ -267,8 +323,9 @@ runGameMessage msg g@Game {..} = case msg of
     ident <- toId <$> getActivePlayer
     let effect = createEffect effectId (toCardCode def) source matcher
     push $ EffectMessage effectId (UsedEffect ident)
-    pure $ g & effectsL %~ insert effectId effect
-  DisabledEffect effectId -> pure $ g & effectsL %~ delete effectId
+    pure $ g & (entitiesL . effectsL %~ insert effectId effect)
+  DisabledEffect effectId ->
+    pure $ g & (entitiesL . effectsL %~ delete effectId)
   PutCardIntoPlay ident card payment mWindow -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
@@ -277,31 +334,42 @@ runGameMessage msg g@Game {..} = case msg of
           [ IdentityMessage ident (AllyCreated $ toId ally)
           , CheckWindows [W.Window After $ W.PlayedAlly (toId ally)]
           ]
-        pure $ g & alliesL %~ insert (toId ally) ally
+        pure $ g & (entitiesL . alliesL %~ insert (toId ally) ally)
       SupportType -> do
         let support = createSupport ident card
         pushAll
           [ IdentityMessage ident (SupportCreated $ toId support)
           , CheckWindows [W.Window After $ W.PlayedSupport (toId support)]
           ]
-        pure $ g & supportsL %~ insert (toId support) support
+        pure $ g & (entitiesL . supportsL %~ insert (toId support) support)
       UpgradeType -> do
         let upgrade = createUpgrade ident card
         push $ UpgradeMessage (toId upgrade) PlayedUpgrade
-        pure $ g & upgradesL %~ insert (toId upgrade) upgrade
+        pure $ g & (entitiesL . upgradesL %~ insert (toId upgrade) upgrade)
       EventType -> do
         let event = createEvent ident card
         pushAll $ map
           (EventMessage (toId event))
           [PlayedEvent ident payment (W.windowType <$> mWindow), ResolvedEvent]
-        pure $ g & eventsL %~ insert (toId event) event
+        pure $ g & (entitiesL . eventsL %~ insert (toId event) event)
       _ -> error "Unhandled"
+  RevealBoostCard card -> do
+    case cdCardType (getCardDef card) of
+      TreacheryType -> do
+        let treachery = createTreachery card
+        pure
+          $ g
+          & (boostEntitiesL . treacheriesL %~ insert (toId treachery) treachery)
+      _ -> pure g
+  ClearBoosts -> pure $ g & boostEntitiesL .~ defaultEntities
   RevealEncounterCard ident card -> do
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
         pushAll [AttachmentMessage (toId attachment) RevealAttachment]
-        pure $ g & attachmentsL %~ insert (toId attachment) attachment
+        pure
+          $ g
+          & (entitiesL . attachmentsL %~ insert (toId attachment) attachment)
       MinionType -> do
         let minion = createMinion ident card
         pushAll
@@ -309,7 +377,7 @@ runGameMessage msg g@Game {..} = case msg of
           , IdentityMessage ident (MinionEngaged $ toId minion)
           , MinionMessage (toId minion) (RevealMinion ident)
           ]
-        pure $ g & minionsL %~ insert (toId minion) minion
+        pure $ g & (entitiesL . minionsL %~ insert (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
@@ -330,14 +398,18 @@ runGameMessage msg g@Game {..} = case msg of
           , UnfocusCards
           , TreacheryMessage (toId treachery) ResolvedTreachery
           ]
-        pure $ g & treacheriesL %~ insert (toId treachery) treachery
+        pure
+          $ g
+          & (entitiesL . treacheriesL %~ insert (toId treachery) treachery)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         pushAll
           [ SideSchemeMessage (toId sideScheme) SideSchemePlaceInitialThreat
           , SideSchemeMessage (toId sideScheme) RevealSideScheme
           ]
-        pure $ g & sideSchemesL %~ insert (toId sideScheme) sideScheme
+        pure
+          $ g
+          & (entitiesL . sideSchemesL %~ insert (toId sideScheme) sideScheme)
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
   IdentityEndedTurn ident -> pure $ g & usedAbilitiesL . ix ident %~ filter
@@ -349,7 +421,7 @@ runGameMessage msg g@Game {..} = case msg of
     pure $ g & stateL .~ Finished status
   ReturnToHand target -> case target of
     AllyTarget aid -> do
-      for_ (lookup aid gameAllies) $ \ally -> pushAll $ map
+      for_ (lookup aid $ gameAllies g) $ \ally -> pushAll $ map
         (IdentityMessage (getAllyController ally))
         [ AllyRemoved aid
         , AddToHand $ PlayerCard
@@ -358,7 +430,7 @@ runGameMessage msg g@Game {..} = case msg of
           (Just $ getAllyController ally)
           (Just $ getAllyController ally)
         ]
-      pure $ g & alliesL %~ delete aid
+      pure $ g & entitiesL . alliesL %~ delete aid
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
@@ -457,11 +529,9 @@ abilityInWindow window a = maybe
   (abilityWindow a)
   where source = abilitySource a
 
-instance RunMessage Game where
-  runMessage msg g =
-    runPreGameMessage msg g
-      >>= traverseOf scenarioL (runMessage msg)
-      >>= traverseOf (playersL . each) (runMessage msg)
+instance RunMessage Entities where
+  runMessage msg entities =
+    traverseOf (playersL . each) (runMessage msg) entities
       >>= traverseOf (alliesL . each) (runMessage msg)
       >>= traverseOf (supportsL . each) (runMessage msg)
       >>= traverseOf (upgradesL . each) (runMessage msg)
@@ -472,6 +542,13 @@ instance RunMessage Game where
       >>= traverseOf (attachmentsL . each) (runMessage msg)
       >>= traverseOf (minionsL . each) (runMessage msg)
       >>= traverseOf (sideSchemesL . each) (runMessage msg)
+
+instance RunMessage Game where
+  runMessage msg g =
+    runPreGameMessage msg g
+      >>= traverseOf scenarioL (runMessage msg)
+      >>= traverseOf entitiesL (runMessage msg)
+      >>= traverseOf boostEntitiesL (runMessage (Boost msg))
       >>= runGameMessage msg
 
 class HasGame a where
@@ -518,31 +595,24 @@ newGame player scenario = Game
   { gamePhase = PlayerPhase
   , gameState = Unstarted
   , gamePlayerOrder = [toId player]
-  , gamePlayers = fromList [(toId player, player)]
-  , gameVillains = mempty
-  , gameMinions = mempty
-  , gameQuestion = mempty
+  , gameBoostEntities = defaultEntities
+  , gameEntities = defaultEntities
+    { entitiesPlayers = fromList [(toId player, player)]
+    }
   , gameActiveCost = Nothing
   , gameWindowDepth = 0
   , gameWindows = []
+  , gameQuestion = mempty
   , gameUsedAbilities = mempty
   , gameActivePlayer = toId player
   , gameScenario = scenario
-  , gameAllies = mempty
-  , gameSupports = mempty
-  , gameUpgrades = mempty
-  , gameTreacheries = mempty
-  , gameAttachments = mempty
-  , gameSideSchemes = mempty
-  , gameEvents = mempty
-  , gameEffects = mempty
   , gameFocusedCards = []
   }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
 addPlayer player =
   withGame_
-    $ (playersL %~ insert (toId player) player)
+    $ (entitiesL . playersL %~ insert (toId player) player)
     . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
@@ -714,6 +784,17 @@ gameSelectExtendedCard m = do
       go players cards' extendedCardMatcher
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
 
+gameSelectEncounterCard
+  :: MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
+gameSelectEncounterCard m = case m of
+  NemesisSetFor identityId -> do
+    mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
+    case mIdentity of
+      Nothing -> pure mempty
+      Just iid -> do
+        cards <- gatherEncounterSet $ getNemesisSet $ toCardCode iid
+        pure $ HashSet.fromList cards
+
 
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
@@ -835,6 +916,7 @@ gameSelectMinion m = do
     MinionEngagedWith identityMatcher -> \minion -> do
       identities <- select identityMatcher
       pure $ getMinionEngagedIdentity minion `member` identities
+    MinionIs cardDef -> pure . (== cardDef) . getCardDef
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
 gameSelectTreachery
@@ -924,12 +1006,14 @@ getModifiers a = do
   supports <- toList <$> getsGame gameSupports
   attachments <- toList <$> getsGame gameAttachments
   allies <- toList <$> getsGame gameAllies
+  minions <- toList <$> getsGame gameMinions
   mconcat <$> sequence
     [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
     ]
 
 getCurrentWindows :: MonadGame env m => m [Window]

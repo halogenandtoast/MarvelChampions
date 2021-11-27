@@ -4,8 +4,8 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Card.Id
-import Marvel.Id
 import Marvel.Entity
+import Marvel.Id
 
 data Target
   = IdentityTarget IdentityId
@@ -35,3 +35,6 @@ instance IsTarget Target where
 
 isTarget :: (Entity a, EntityAttrs a ~ b, IsTarget b) => a -> Target -> Bool
 isTarget a = (== toTarget (toAttrs a))
+
+instance IsTarget a => IsTarget (With a b) where
+  toTarget (With a _) = toTarget a

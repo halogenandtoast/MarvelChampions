@@ -27,8 +27,12 @@
       "  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)",
       "",
       "instance RunMessage {dot} where",
-      "  runMessage msg ({dot} attrs) =",
-      "    {dot} <$> runMessage msg attrs"
+      "  runMessage msg t@({dot} attrs) = case msg of",
+      "    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->",
+      "      case msg' of",
+      "        RevealTreachery _ -> pure t",
+      "        _ -> {dot} <$> runMessage msg attrs",
+      "    _ -> {dot} <$> runMessage msg attrs"
     ]
   },
   "marvel-core/library/Marvel/Attachment/Attachments/*.hs": {
