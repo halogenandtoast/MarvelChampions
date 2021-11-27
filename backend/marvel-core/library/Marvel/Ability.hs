@@ -123,6 +123,7 @@ passesCriteria x a = go (abilityCriteria a)
     Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
     InAlterEgoForm -> member x <$> select AlterEgoIdentity
+    Exhausted -> member x <$> select ExhaustedIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
     OwnsThis -> case abilitySource a of
       AllySource aid ->

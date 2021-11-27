@@ -68,6 +68,7 @@ library
       Marvel.Event.Cards
       Marvel.Event.Events
       Marvel.Event.Events.Backflip
+      Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.FirstAid
       Marvel.Event.Events.ForJustice
@@ -179,6 +180,7 @@ library
       Marvel.Upgrade.Upgrades.Inspired
       Marvel.Upgrade.Upgrades.SpiderTracer
       Marvel.Upgrade.Upgrades.SuperhumanStrength
+      Marvel.Upgrade.Upgrades.Tenacity
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter
       Marvel.Villain

@@ -26,7 +26,9 @@ theVulturesPlans =
   treachery (TheVulturesPlans . (`With` mempty)) Cards.theVulturesPlans
 
 newtype Meta = Meta { unMeta :: HashSet Resource }
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Semigroup, Monoid)
+  deriving stock (Generic)
+  deriving anyclass (ToJSON, FromJSON)
+  deriving newtype (Show, Eq, Semigroup, Monoid)
 
 newtype TheVulturesPlans = TheVulturesPlans (TreacheryAttrs `With` Meta)
   deriving anyclass IsTreachery

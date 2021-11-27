@@ -26,7 +26,8 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
@@ -200,6 +201,7 @@ isPlayable attrs c = do
     InHeroForm -> member ident <$> select HeroIdentity
     InAlterEgoForm -> member ident <$> select AlterEgoIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
+    Exhausted -> member ident <$> select Matchers.ExhaustedIdentity
     Criteria xs -> allM checkCriteria xs
     MinionExists m -> selectAny m
     EnemyExists m -> selectAny m

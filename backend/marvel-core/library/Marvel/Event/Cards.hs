@@ -30,6 +30,7 @@ allEvents = fromList $ map
   , getReady
   , leadFromTheFront
   , makeTheCall
+  , emergency
   , firstAid
   , haymaker
   ]

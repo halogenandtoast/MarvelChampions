@@ -15,7 +15,7 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query

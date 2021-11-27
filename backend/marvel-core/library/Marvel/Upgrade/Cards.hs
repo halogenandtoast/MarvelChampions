@@ -21,6 +21,7 @@ allUpgrades = fromList $ map
   , superhumanStrength
   , heroicIntuition
   , inspired
+  , tenacity
   ]
 
 upgrade
@@ -30,6 +31,10 @@ upgrade code name cost traits resources aspect =
 
 identityUpgrade :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 identityUpgrade code name cost traits resources =
+  baseUpgrade code name cost traits resources Nothing
+
+basicUpgrade :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
+basicUpgrade code name cost traits resources =
   baseUpgrade code name cost traits resources Nothing
 
 baseUpgrade
@@ -83,3 +88,6 @@ inspired :: CardDef
 inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
   { cdCriteria = AllyExists AnyAlly
   }
+
+tenacity :: CardDef
+tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]

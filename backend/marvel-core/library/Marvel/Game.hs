@@ -34,7 +34,8 @@ import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Modifier
@@ -566,6 +567,7 @@ isWindowPlayable window attrs c = do
     InHeroForm -> member ident <$> select HeroIdentity
     InAlterEgoForm -> member ident <$> select AlterEgoIdentity
     Unexhausted -> member ident <$> select UnexhaustedIdentity
+    Exhausted -> member ident <$> select Matchers.ExhaustedIdentity
     SelfMatches identityMatcher ->
       member ident <$> select (IdentityWithId ident <> identityMatcher)
     Criteria xs -> allM checkCriteria xs
@@ -791,6 +793,7 @@ gameSelectIdentity m = do
     HeroIdentity -> pure . isHero
     AlterEgoIdentity -> pure . isAlterEgo
     UnexhaustedIdentity -> pure . not . isExhausted
+    Matchers.ExhaustedIdentity -> pure . isExhausted
     ConfusedIdentity -> pure . identityIsConfused
     StunnedIdentity -> pure . identityIsStunned
     IdentityWithId ident' -> pure . (== ident') . toId
@@ -936,16 +939,16 @@ gameSelectEnemy = \case
     villains <- toList <$> getsGame gameVillains
     pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
   AttackableEnemy -> do
-    guardMinions <- selectList $ MinionWithKeyword Guard
-    if null guardMinions
-      then do
-        minions <- toList <$> getsGame gameMinions
+    guardMinions <- selectAny $ MinionWithKeyword Guard
+    minions <- toList <$> getsGame gameMinions
+    if guardMinions
+      then pure $ HashSet.fromList $ map (EnemyMinionId . toId) minions
+      else do
         villains <- toList <$> getsGame gameVillains
         pure
           $ HashSet.fromList
           $ map (EnemyVillainId . toId) villains
           <> map (EnemyMinionId . toId) minions
-      else pure $ HashSet.fromList $ map EnemyMinionId guardMinions
 
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
@@ -1012,10 +1015,13 @@ gameSelectScheme = \case
     SchemeSideSchemeId minionId -> HashSet.map SchemeSideSchemeId
       <$> gameSelectSideScheme (SideSchemeWithId minionId)
   ThwartableScheme -> do
-    crisisSideSchemes <- selectList CrisisSideScheme
+    crisisSideSchemes <- selectAny CrisisSideScheme
     sideSchemes <- toList <$> getsGame gameSideSchemes
-    if null crisisSideSchemes
-      then do
+    if crisisSideSchemes
+      then pure $ HashSet.fromList $ map
+        (SchemeSideSchemeId . toId)
+        (filter ((> 0) . getSideSchemeThreat) sideSchemes)
+      else do
         mainScheme <- getsGame gameScenario
         pure
           $ HashSet.fromList
@@ -1025,11 +1031,6 @@ gameSelectScheme = \case
           <> map
                (SchemeSideSchemeId . toId)
                (filter ((> 0) . getSideSchemeThreat) sideSchemes)
-      else
-        pure
-        $ HashSet.fromList
-        $ map (SchemeSideSchemeId . toId)
-        $ (filter ((> 0) . getSideSchemeThreat) sideSchemes)
 
 gameSelectCountScheme
   :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural

@@ -21,6 +21,7 @@ data IdentityMatcher
   = HeroIdentity
   | AlterEgoIdentity
   | UnexhaustedIdentity
+  | ExhaustedIdentity
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityWithId IdentityId

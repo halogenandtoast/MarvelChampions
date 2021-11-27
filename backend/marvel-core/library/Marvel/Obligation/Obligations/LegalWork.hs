@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Obligation.Attrs
 import Marvel.Obligation.Cards qualified as Cards
@@ -39,7 +39,9 @@ instance RunMessage LegalWork where
             <> [ObligationMessage (toId attrs) $ ResolveObligation identityId]
           pure o
         ResolveObligation identityId -> do
-          isAlterEgo <- identityMatches AlterEgoIdentity identityId
+          isUnexhaustedAlterEgo <- identityMatches
+            (AlterEgoIdentity <> UnexhaustedIdentity)
+            identityId
           chooseOrRunOne identityId
             $ [ Label
                   "Exhaust Jennifer Walters-> remove Legal Work from the game."
@@ -48,7 +50,7 @@ instance RunMessage LegalWork where
                       , RemoveFromGame (toTarget attrs)
                       ]
                   ]
-              | isAlterEgo
+              | isUnexhaustedAlterEgo
               ]
             <> [ Label
                    "Give the main scheme 1 acceleration token. Discard this obligation"
