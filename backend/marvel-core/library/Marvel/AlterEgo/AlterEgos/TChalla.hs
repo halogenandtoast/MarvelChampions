@@ -6,7 +6,6 @@ import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.Card.Def
-import Marvel.Card.PlayerCard
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -45,17 +44,8 @@ instance RunMessage TChalla where
         (IdentityMessage (toId attrs))
         [ SearchIdentityDeck
           (CardWithTrait BlackPanther <> CardWithType UpgradeType)
-          (toTarget attrs)
+          SearchDrawOne
         , ShuffleDeck
-        ]
-      pure a
-    SearchFoundCards target cards | isTarget attrs target -> do
-      chooseOne
-        (toId attrs)
-        [ TargetLabel
-            (CardIdTarget $ pcCardId c)
-            [Run [IdentityMessage (toId attrs) $ AddToHand c]]
-        | c <- cards
         ]
       pure a
     _ -> TChalla <$> runMessage msg attrs

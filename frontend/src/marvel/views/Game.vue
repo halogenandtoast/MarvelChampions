@@ -11,6 +11,7 @@
         @update="update"
       />
       <button @click="undo">Undo</button>
+      <button @click="toggleDebug">Toggle Debug</button>
       <div v-if="game.gameOver">
         <p>Game over</p>
       </div>
@@ -23,15 +24,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, provide } from 'vue'
 import * as Marvel from '@/marvel/types/Game'
-import { fetchGame, updateGame, undoStep } from '@/marvel/api'
+import { fetchGame, updateGame, updateGameRaw, undoStep } from '@/marvel/api'
 import Scenario from '@/marvel/components/Scenario.vue'
 
 export default defineComponent({
   components: { Scenario },
   props: { gameId: { type: String, required: true } },
   setup(props) {
+    const debug = ref(false)
+    provide('debug', debug)
     const ready = ref(false)
     const game = ref<Marvel.Game | null>(null)
     const identityId = ref<string | null>(null)
@@ -102,7 +105,12 @@ export default defineComponent({
       undoStep(props.gameId);
     }
 
-    return { ready, game, identityId, choose, update, undo }
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const debugChoose = async (message: any) => updateGameRaw(props.gameId, message)
+    provide('debugChoose', debugChoose)
+    const toggleDebug = () => debug.value = !debug.value
+
+    return { ready, game, debug, toggleDebug, identityId, choose, update, undo }
   }
 })
 </script>
