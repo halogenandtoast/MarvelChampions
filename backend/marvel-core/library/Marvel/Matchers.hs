@@ -93,8 +93,15 @@ data UpgradeMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait
   | UnexhaustedUpgrade
+  | UpgradeMatches [UpgradeMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup UpgradeMatcher where
+  UpgradeMatches xs <> UpgradeMatches ys = UpgradeMatches $ xs <> ys
+  x <> UpgradeMatches ys = UpgradeMatches $ x : ys
+  UpgradeMatches xs <> y = UpgradeMatches $ xs <> [y]
+  x <> y = UpgradeMatches [x, y]
 
 data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy | AttackableEnemy
   deriving stock (Show, Eq, Generic)

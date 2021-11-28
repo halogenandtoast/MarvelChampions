@@ -125,6 +125,7 @@ library
       Marvel.Obligation.Attrs
       Marvel.Obligation.Cards
       Marvel.Obligation.Obligations
+      Marvel.Obligation.Obligations.AffairsOfState
       Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Phase

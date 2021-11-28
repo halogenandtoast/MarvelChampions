@@ -918,6 +918,7 @@ gameSelectUpgrade m = do
     UpgradeControlledBy identityMatcher -> \upgrade -> do
       identities <- select identityMatcher
       pure $ getUpgradeController upgrade `member` identities
+    UpgradeMatches xs -> andM . traverse matchFilter xs
 
 gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
