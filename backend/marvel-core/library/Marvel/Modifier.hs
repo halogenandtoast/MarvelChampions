@@ -12,6 +12,7 @@ data Modifier
   | ThwartModifier Natural
   | AttackModifier Natural
   | SchemeModifier Natural
+  | DefenseModifier Natural
   | AllyLimitModifier Natural
   | HitPointModifier Natural
   | LastSpecial
