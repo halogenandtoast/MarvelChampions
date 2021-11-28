@@ -11,7 +11,7 @@ import Data.ByteString.Lazy qualified as BSL
 import Data.Map.Strict qualified as Map
 import Marvel.Ally
 import Marvel.Attachment
-import Marvel.Card.Code
+import Marvel.Card hiding (toCard)
 import Marvel.Debug
 import Marvel.Deck
 import Marvel.Entity (EntityId)
@@ -43,7 +43,7 @@ data ApiGame = ApiGame
   , upgrades :: HashMap UpgradeId Upgrade
   , sideSchemes :: HashMap SideSchemeId SideScheme
   , state :: GameState
-  , focusedCards :: [PlayerCard]
+  , focusedCards :: [Card]
   }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON

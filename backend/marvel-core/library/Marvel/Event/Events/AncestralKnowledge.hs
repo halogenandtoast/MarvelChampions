@@ -5,7 +5,7 @@ module Marvel.Event.Events.AncestralKnowledge
 
 import Marvel.Prelude
 
-import Marvel.Card.Code
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -32,7 +32,7 @@ instance RunMessage AncestralKnowledge where
           )
         pure e
       _ -> AncestralKnowledge <$> runMessage msg attrs
-    WithChosen target _ cards | isTarget attrs target -> do
+    WithChosen target _ (onlyPlayerCards -> cards) | isTarget attrs target -> do
       push $ IdentityMessage
         (eventController attrs)
         (ShuffleIntoIdentityDeck cards)

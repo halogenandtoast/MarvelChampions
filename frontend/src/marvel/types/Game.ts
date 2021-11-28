@@ -77,12 +77,24 @@ export interface Game {
   scenario: Scenario
   question: Record<string, Question>
   state: State
-  focusedCards: PlayerCard[]
+  focusedCards: Card[]
 }
 
 export interface Scenario {
   contents: ScenarioContents
 }
+
+export interface CardPlayerCard {
+  tag: 'PlayerCard'
+  contents: PlayerCard
+}
+
+export interface CardEncounterCard {
+  tag: 'EncounterCard'
+  contents: EncounterCard
+}
+
+export type Card = CardPlayerCard | CardEncounterCard
 
 export interface EncounterCard {
   cardId: string
@@ -93,6 +105,19 @@ export const encounterCardDecoder = JsonDecoder.object<EncounterCard>({
   cardId: JsonDecoder.string,
   cardDef: cardDefDecoder
 }, 'EncounterCard', { cardId: 'ecCardId', cardDef: 'ecCardDef' })
+
+export const cardDecoder = JsonDecoder.oneOf<Card>([
+  JsonDecoder.object<CardPlayerCard>(
+    {
+      tag: JsonDecoder.isExactly('PlayerCard'),
+      contents: playerCardDecoder
+    }, 'CardPlayerCard'),
+  JsonDecoder.object<CardEncounterCard>(
+    {
+      tag: JsonDecoder.isExactly('EncounterCard'),
+      contents: encounterCardDecoder
+    }, 'CardEncounterCard')
+  ], 'Card')
 
 export interface ScenarioContents {
   scenarioId: string
@@ -129,5 +154,5 @@ export const gameDecoder = JsonDecoder.object<Game>(
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
     state: stateDecoder,
-    focusedCards: JsonDecoder.array<PlayerCard>(playerCardDecoder, 'PlayerCard[]')
+    focusedCards: JsonDecoder.array<Card>(cardDecoder, 'Card[]')
   }, 'Game')

@@ -27,3 +27,17 @@ instance HasResources Card where
 
 class IsCard a where
   toCard :: a -> Card
+
+_PlayerCard :: Traversal' Card PlayerCard
+_PlayerCard f (PlayerCard pc) = PlayerCard <$> f pc
+_PlayerCard _ other = pure other
+
+_EncounterCard :: Traversal' Card EncounterCard
+_EncounterCard f (EncounterCard pc) = EncounterCard <$> f pc
+_EncounterCard _ other = pure other
+
+onlyPlayerCards :: [Card] -> [PlayerCard]
+onlyPlayerCards = mapMaybe (preview _PlayerCard)
+
+onlyEncounterCards :: [Card] -> [EncounterCard]
+onlyEncounterCards = mapMaybe (preview _EncounterCard)

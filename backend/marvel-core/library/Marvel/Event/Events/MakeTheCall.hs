@@ -5,8 +5,7 @@ module Marvel.Event.Events.MakeTheCall
 
 import Marvel.Prelude
 
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -36,7 +35,7 @@ instance RunMessage MakeTheCall where
           $ BasicCardMatches (CardWithType AllyType)
           )
         pushAll
-          [ FocusCards discards
+          [ FocusCards $ PlayerCard <$> discards
           , Ask identityId
             $ ChooseOne [ PlayCard card Nothing | card <- discards ]
           , UnfocusCards

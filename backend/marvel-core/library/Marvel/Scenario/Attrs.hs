@@ -33,7 +33,7 @@ data ScenarioAttrs = ScenarioAttrs
   , scenarioEncounterDeck :: [EncounterCard]
   , scenarioDiscard :: [EncounterCard]
   , scenarioDifficulty :: Difficulty
-  , scenarioSetAsideCards :: [EncounterCard]
+  , scenarioSetAsideCards :: [Card]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

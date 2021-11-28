@@ -255,10 +255,7 @@ toRetaliate (Retaliate n : _) = n
 toRetaliate (_ : xs) = toRetaliate xs
 
 runIdentityMessage
-  :: MonadGame env m
-  => IdentityMessage
-  -> PlayerIdentity
-  -> m PlayerIdentity
+  :: MonadGame env m => IdentityMessage -> PlayerIdentity -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   SetupIdentity -> do
     let
@@ -267,7 +264,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     obligations <- getObligations attrs
     nemesisSetCards <- gatherEncounterSet nemesisSet
     pushAll
-      $ SetAside nemesisSetCards
+      $ SetAside (EncounterCard <$> nemesisSetCards)
       : ShuffleIntoEncounterDeck obligations
       : map
           (IdentityMessage (toId attrs))
@@ -408,7 +405,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (discardL %~ Discard . filter (/= card) . unDiscard)
   ChooseFromDiscard target choiceRules chooseMin chooseMax -> do
     pushAll
-      [ FocusCards $ unDiscard playerIdentityDiscard
+      [ FocusCards $ PlayerCard <$> unDiscard playerIdentityDiscard
       , IdentityMessage (toId attrs)
         $ ChosenFromDiscard target choiceRules chooseMin chooseMax []
       , UnfocusCards
@@ -424,12 +421,12 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
           filter ((`notElem` chosenNames) . cdName . pcCardDef) discards
 
     if length cards >= fromIntegral chooseMax
-      then push (WithChosen target FromDiscard cards)
+      then push (WithChosen target FromDiscard $ PlayerCard <$> cards)
       else pushAll
-        [ FocusCards focusedCards
+        [ FocusCards $ PlayerCard <$> focusedCards
         , Ask (toId attrs)
         $ ChooseOne
-        $ [ Label "Done" [Run [WithChosen target FromDiscard cards]]
+        $ [ Label "Done" [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
           | length cards >= fromIntegral chooseMin
           ]
         <> [ TargetLabel
@@ -477,7 +474,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
                      FromHand
                      discardMin
                      discardMax
-                     (c : cards)
+                     (PlayerCard c : cards)
                    ]
                ]
            | c <- unHand playerIdentityHand
@@ -488,7 +485,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     discards <- take (fromIntegral discardMin) <$> shuffleM handCards
     pushAll
       $ map (DiscardedCard . PlayerCard) discards
-      <> [WithDiscarded target RandomFromHand discards]
+      <> [WithDiscarded target RandomFromHand $ PlayerCard <$> discards]
     pure attrs
   DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
   DiscardCards -> do
@@ -497,7 +494,11 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         $ Label "Continue without discarding" []
         : [ TargetLabel
               (CardIdTarget $ pcCardId c)
-              [Run [DiscardedCard $ PlayerCard c, IdentityMessage (toId attrs) DiscardCards]]
+              [ Run
+                  [ DiscardedCard $ PlayerCard c
+                  , IdentityMessage (toId attrs) DiscardCards
+                  ]
+              ]
           | c <- unHand playerIdentityHand
           ]
     pure attrs
@@ -506,14 +507,16 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     FromDiscard -> error "Unhandled"
     RandomFromHand -> do
       discards <- take (fromIntegral n) <$> shuffleM (unHand playerIdentityHand)
-      for_ mTarget $ \target -> push $ WithDiscarded target fromZone discards
+      for_ mTarget $ \target ->
+        push $ WithDiscarded target fromZone $ PlayerCard <$> discards
       pure
         $ attrs
         & (discardL %~ Discard . (discards <>) . unDiscard)
         & (handL %~ Hand . filter (`notElem` discards) . unHand)
     FromDeck -> do
       let (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
-      for_ mTarget $ \target -> push $ WithDiscarded target fromZone cards
+      for_ mTarget $ \target ->
+        push $ WithDiscarded target fromZone $ PlayerCard <$> cards
       pure
         $ attrs
         & (discardL %~ Discard . (cards <>) . unDiscard)
@@ -618,14 +621,15 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       handleFoundCards = if null foundCards
         then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
         else case searchOption of
-          SearchTarget target -> SearchFoundCards target foundCards
+          SearchTarget target ->
+            SearchFoundCards target $ PlayerCard <$> foundCards
           SearchDrawOne -> Ask (toId attrs) $ ChooseOne
             [ TargetLabel
                 (CardIdTarget $ pcCardId c)
                 [Run [IdentityMessage (toId attrs) $ AddToHand c]]
             | c <- foundCards
             ]
-    pushAll [FocusCards deck, handleFoundCards, UnfocusCards]
+    pushAll [FocusCards $ PlayerCard <$> deck, handleFoundCards, UnfocusCards]
     pure attrs
   IdentityRetaliate n enemyId -> do
     let

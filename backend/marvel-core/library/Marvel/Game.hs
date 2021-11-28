@@ -108,7 +108,7 @@ data Game = Game
   , gameWindowDepth :: Int
   , gameWindows :: [[Window]]
   , gameScenario :: Scenario
-  , gameFocusedCards :: [PlayerCard]
+  , gameFocusedCards :: [Card]
   }
   deriving stock (Show, Eq, Generic)
 
@@ -230,10 +230,8 @@ runGameMessage msg g@Game {..} = case msg of
           sid
       pure $ g & (entitiesL . supportsL %~ delete sid)
     UpgradeTarget uid -> do
-      for_ (lookup uid $ gameUpgrades g) $ \upgrade -> pushAll
-        [ UpgradeRemoved uid
-        , DiscardedCard $ toCard upgrade
-        ]
+      for_ (lookup uid $ gameUpgrades g) $ \upgrade ->
+        pushAll [UpgradeRemoved uid, DiscardedCard $ toCard upgrade]
       pure $ g & (entitiesL . upgradesL %~ delete uid)
     AttachmentTarget aid -> do
       for_ (lookup aid $ gameAttachments g) $ \attachment ->
@@ -399,14 +397,7 @@ runGameMessage msg g@Game {..} = case msg of
         let treachery = createTreachery card
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
-          [ FocusCards
-            [ MkPlayerCard
-                { pcCardId = ecCardId card
-                , pcCardDef = ecCardDef card
-                , pcOwner = Nothing
-                , pcController = Nothing
-                }
-            ]
+          [ FocusCards [toCard treachery]
           , CheckWindows
             [ W.Window When
                 $ W.RevealTreachery (toId treachery) W.FromEncounterDeck
@@ -422,14 +413,7 @@ runGameMessage msg g@Game {..} = case msg of
         let obligation = createObligation card
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
-          [ FocusCards
-            [ MkPlayerCard
-                { pcCardId = ecCardId card
-                , pcCardDef = ecCardDef card
-                , pcOwner = Nothing
-                , pcController = Nothing
-                }
-            ]
+          [ FocusCards [toCard obligation]
           , ObligationMessage (toId obligation) $ RevealObligation ident
           , UnfocusCards
           , ObligationMessage (toId obligation) $ ResolvedObligation ident
@@ -805,7 +789,10 @@ gameSelectExtendedCard m = do
   let excludedCards = getExcludedCards m
   players <- toList <$> getsGame gamePlayers
   oldVal <- getsGame id
-  withGameM $ \g -> foldlM (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId) g excludedCards
+  withGameM $ \g -> foldlM
+    (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId)
+    g
+    excludedCards
   let
     allCards =
       concatMap (unHand . playerIdentityHand) players

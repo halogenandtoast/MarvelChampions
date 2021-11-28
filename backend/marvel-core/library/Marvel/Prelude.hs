@@ -6,6 +6,7 @@ module Marvel.Prelude
 
 import Control.Lens as X
   ( Lens'
+  , Traversal'
   , _Just
   , at
   , each
@@ -14,6 +15,7 @@ import Control.Lens as X
   , set
   , traverseOf
   , view
+  , preview
   , (%~)
   , (+~)
   , (-~)

@@ -19,6 +19,8 @@ data TreacheryAttrs = TreacheryAttrs
   { treacheryId :: TreacheryId
   , treacheryCardDef :: CardDef
   , treacherySurge :: Bool
+  , treacheryResolver :: Maybe IdentityId
+  -- used when we need to remember for other messages
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -38,6 +40,7 @@ treachery f cardDef = CardBuilder
     { treacheryId = mid
     , treacheryCardDef = cardDef
     , treacherySurge = False
+    , treacheryResolver = Nothing
     }
   }
 
