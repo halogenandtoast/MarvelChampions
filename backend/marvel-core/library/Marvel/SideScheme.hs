@@ -3,9 +3,7 @@ module Marvel.SideScheme where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -37,6 +35,9 @@ instance RunMessage SideScheme where
 
 instance IsSource SideScheme where
   toSource = SideSchemeSource . toId
+
+instance IsCard SideScheme where
+  toCard = toCard. toAttrs
 
 instance HasCardDef SideScheme where
   getCardDef = getCardDef . toAttrs

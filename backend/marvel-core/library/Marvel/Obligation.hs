@@ -3,9 +3,7 @@ module Marvel.Obligation where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -37,6 +35,9 @@ instance RunMessage Obligation where
 
 instance IsSource Obligation where
   toSource = ObligationSource . toId
+
+instance IsCard Obligation where
+  toCard = toCard . toAttrs
 
 instance HasCardDef Obligation where
   getCardDef = getCardDef . toAttrs

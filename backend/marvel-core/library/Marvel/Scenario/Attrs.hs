@@ -4,9 +4,7 @@ module Marvel.Scenario.Attrs where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.EncounterCard
+import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
@@ -22,7 +20,6 @@ import Marvel.Queue
 import Marvel.Target
 import Marvel.Window qualified as W
 import System.Random.Shuffle
-
 
 data ScenarioAttrs = ScenarioAttrs
   { scenarioId :: CardCode
@@ -170,7 +167,7 @@ instance RunMessage ScenarioAttrs where
       when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
-    DiscardedEncounterCard ec -> pure $ attrs & discardL %~ (ec :)
+    DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :)
     MainSchemeMessage ident msg' | ident == scenarioId ->
       runMainSchemeMessage msg' attrs
     SearchForAndRevealScheme cardDef -> do

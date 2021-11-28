@@ -3,10 +3,7 @@ module Marvel.SideScheme.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.PlayerCard
+import Marvel.Card
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
@@ -80,6 +77,12 @@ instance IsTarget SideSchemeAttrs where
 
 instance HasCardDef SideSchemeAttrs where
   getCardDef = sideSchemeCardDef
+
+instance IsCard SideSchemeAttrs where
+  toCard a = EncounterCard $ MkEncounterCard
+    { ecCardId = CardId $ unSideSchemeId $ sideSchemeId a
+    , ecCardDef = getCardDef a
+    }
 
 instance RunMessage SideSchemeAttrs where
   runMessage msg attrs = case msg of

@@ -3,9 +3,7 @@ module Marvel.Treachery.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -30,6 +28,9 @@ makeLensesWith suffixedFields ''TreacheryAttrs
 instance HasCardCode TreacheryAttrs where
   toCardCode = toCardCode . treacheryCardDef
 
+treacheryWith :: (TreacheryAttrs -> a) -> CardDef -> (TreacheryAttrs -> TreacheryAttrs) -> CardBuilder TreacheryId a
+treacheryWith f cardDef g = treachery (f . g) cardDef
+
 treachery :: (TreacheryAttrs -> a) -> CardDef -> CardBuilder TreacheryId a
 treachery f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
@@ -51,6 +52,12 @@ instance IsSource TreacheryAttrs where
 
 instance IsTarget TreacheryAttrs where
   toTarget = TreacheryTarget . toId
+
+instance IsCard TreacheryAttrs where
+  toCard a = EncounterCard $ MkEncounterCard
+    { ecCardId = CardId $ unTreacheryId $ toId a
+    , ecCardDef = getCardDef a
+    }
 
 instance HasCardDef TreacheryAttrs where
   getCardDef = treacheryCardDef

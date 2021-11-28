@@ -2,11 +2,7 @@ module Marvel.Event.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.Id
-import Marvel.Card.PlayerCard
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -53,13 +49,13 @@ instance IsSource EventAttrs where
 instance IsTarget EventAttrs where
   toTarget = EventTarget . toId
 
-toCard :: EventAttrs -> PlayerCard
-toCard a = PlayerCard
-  { pcCardId = CardId . unEventId $ toId a
-  , pcCardDef = eventCardDef a
-  , pcOwner = Just $ eventController a
-  , pcController = Just $ eventController a
-  }
+instance IsCard EventAttrs where
+  toCard a = PlayerCard $ MkPlayerCard
+    { pcCardId = CardId . unEventId $ toId a
+    , pcCardDef = eventCardDef a
+    , pcOwner = Just $ eventController a
+    , pcController = Just $ eventController a
+    }
 
 damageChoice :: EventAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
 damageChoice attrs damageSource dmg = \case
@@ -74,6 +70,6 @@ instance RunMessage EventAttrs where
   runMessage msg e = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
       ResolvedEvent ->
-        e <$ push (IdentityMessage (eventController e) $ DiscardCard (toCard e))
+        e <$ push (DiscardedCard $ toCard e)
       _ -> pure e
     _ -> pure e

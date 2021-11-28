@@ -3,9 +3,7 @@ module Marvel.Obligation.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -51,6 +49,12 @@ instance IsSource ObligationAttrs where
 
 instance IsTarget ObligationAttrs where
   toTarget = ObligationTarget . toId
+
+instance IsCard ObligationAttrs where
+  toCard a = EncounterCard $ MkEncounterCard
+    { ecCardId = CardId $ unObligationId $ toId a
+    , ecCardDef = getCardDef a
+    }
 
 instance HasCardDef ObligationAttrs where
   getCardDef = obligationCardDef

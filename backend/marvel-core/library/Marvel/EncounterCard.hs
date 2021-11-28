@@ -35,4 +35,4 @@ gatherEncounterSet encounterSet = concat <$> for
 genEncounterCard :: MonadRandom m => CardDef -> m EncounterCard
 genEncounterCard cardDef = do
   cardId <- getRandom
-  pure $ EncounterCard cardId cardDef
+  pure $ MkEncounterCard cardId cardDef

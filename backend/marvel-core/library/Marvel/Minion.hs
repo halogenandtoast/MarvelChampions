@@ -3,8 +3,7 @@ module Marvel.Minion where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Id
 import Marvel.Minion.Attrs
 import Marvel.Minion.Minions
@@ -45,6 +44,9 @@ instance HasModifiersFor Minion where
 
 instance IsSource Minion where
   toSource = MinionSource . toId
+
+instance IsCard Minion where
+  toCard = toCard . toAttrs
 
 instance HasCardDef Minion where
   getCardDef = getCardDef . toAttrs

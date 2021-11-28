@@ -6,9 +6,7 @@ import Marvel.Prelude
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Ally.Allies
 import Marvel.Ally.Attrs
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -43,6 +41,9 @@ instance RunMessage Ally where
 
 instance Exhaustable Ally where
   isExhausted = allyExhausted . toAttrs
+
+instance IsCard Ally where
+  toCard = toCard . toAttrs
 
 instance IsSource Ally where
   toSource = AllySource . toId

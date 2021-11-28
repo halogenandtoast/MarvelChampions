@@ -9,10 +9,7 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
 import Marvel.Boost
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.EncounterCard
+import Marvel.Card
 import Marvel.Entity as X
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -217,7 +214,7 @@ runVillainMessage msg attrs = case msg of
         0
         (villainBoostCards attrs)
     pushAll
-      $ map DiscardedEncounterCard (villainBoostCards attrs)
+      $ map (DiscardedCard . EncounterCard) (villainBoostCards attrs)
       <> [VillainMessage (toId attrs) VillainCheckAdditionalBoosts]
     pure
       $ attrs

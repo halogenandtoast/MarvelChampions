@@ -6,7 +6,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Id
 
-data EncounterCard = EncounterCard
+data EncounterCard = MkEncounterCard
   { ecCardId :: CardId
   , ecCardDef :: CardDef
   }

@@ -3,9 +3,7 @@ module Marvel.Upgrade.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -73,6 +71,13 @@ instance IsTarget UpgradeAttrs where
 instance HasCardDef UpgradeAttrs where
   getCardDef = upgradeCardDef
 
+instance IsCard UpgradeAttrs where
+  toCard a = PlayerCard $ MkPlayerCard
+    { pcCardId = CardId $ unUpgradeId $ toId a
+    , pcCardDef = getCardDef a
+    , pcOwner = Just (upgradeController a)
+    , pcController = Just (upgradeController a)
+    }
 
 instance RunMessage UpgradeAttrs where
   runMessage msg a = case msg of

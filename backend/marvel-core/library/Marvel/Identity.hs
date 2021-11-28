@@ -5,16 +5,12 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import qualified Data.HashSet as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
 import Marvel.Attack
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.EncounterCard
-import Marvel.Card.PlayerCard
-import Marvel.Card.Side
+import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Deck
@@ -28,7 +24,7 @@ import Marvel.Hand
 import Marvel.Hero
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Matchers qualified as Matchers
+import qualified Marvel.Matchers as Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
@@ -36,7 +32,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -259,7 +255,7 @@ toRetaliate (Retaliate n : _) = n
 toRetaliate (_ : xs) = toRetaliate xs
 
 runIdentityMessage
-  :: (MonadGame env m, CoerceRole m)
+  :: MonadGame env m
   => IdentityMessage
   -> PlayerIdentity
   -> m PlayerIdentity
@@ -474,10 +470,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
           ]
         <> [ TargetLabel
                (CardIdTarget $ pcCardId c)
-               [ Run $ map
-                   (IdentityMessage (toId attrs))
-                   [ DiscardCard c
-                   , DiscardedFor
+               [ Run
+                   [ DiscardedCard $ PlayerCard c
+                   , IdentityMessage (toId attrs) $ DiscardedFor
                      target
                      FromHand
                      discardMin
@@ -492,7 +487,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     let handCards = unHand playerIdentityHand
     discards <- take (fromIntegral discardMin) <$> shuffleM handCards
     pushAll
-      $ map (IdentityMessage (toId attrs) . DiscardCard) discards
+      $ map (DiscardedCard . PlayerCard) discards
       <> [WithDiscarded target RandomFromHand discards]
     pure attrs
   DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
@@ -502,18 +497,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         $ Label "Continue without discarding" []
         : [ TargetLabel
               (CardIdTarget $ pcCardId c)
-              [ Run $ map
-                  (IdentityMessage (toId attrs))
-                  [DiscardCard c, DiscardCards]
-              ]
+              [Run [DiscardedCard $ PlayerCard c, IdentityMessage (toId attrs) DiscardCards]]
           | c <- unHand playerIdentityHand
           ]
     pure attrs
-  DiscardCard card ->
-    pure
-      $ attrs
-      & (discardL %~ Discard . (card :) . unDiscard)
-      & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromHand -> error "Unhandled"
     FromDiscard -> error "Unhandled"
@@ -662,6 +649,17 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
 
 instance RunMessage PlayerIdentity where
   runMessage msg attrs = case msg of
+    DiscardedCard (PlayerCard card) | pcOwner card == Just (toId attrs) ->
+      pure
+        $ attrs
+        & (discardL %~ Discard . (card :) . unDiscard)
+        & (handL %~ Hand . filter (/= card) . unHand)
+    RemoveFromGame (CardIdTarget cid) ->
+      pure
+        $ attrs
+        & (discardL %~ Discard . filter ((/= cid) . pcCardId) . unDiscard)
+        & (handL %~ Hand . filter ((/= cid) . pcCardId) . unHand)
+        & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     IdentityMessage ident msg' | ident == toId attrs ->
