@@ -802,10 +802,9 @@ gameSelectCharacter = \case
 gameSelectExtendedCard
   :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
-  players <- toList <$> getsGame gamePlayers
-  ref <- asks game
-  oldVal <- readIORef ref
   let excludedCards = getExcludedCards m
+  players <- toList <$> getsGame gamePlayers
+  oldVal <- getsGame id
   withGameM $ \g -> foldlM (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId) g excludedCards
   let
     allCards =
