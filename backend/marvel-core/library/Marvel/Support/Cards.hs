@@ -19,6 +19,7 @@ allSupports = fromList $ map
   , interrogationRoom
   , surveillanceTeam
   , theTriskellion
+  , medTeam
   , avengersMansion
   , helicarrier
   ]
@@ -88,6 +89,10 @@ theTriskellion =
   (support "01073" "The Triskellion" 3 [Location, Shield] [Energy] Leadership)
     { cdUnique = True
     }
+
+medTeam :: CardDef
+medTeam =
+  support "01080" "Med Team" 3 [Shield] [Energy] Protection
 
 avengersMansion :: CardDef
 avengersMansion =
