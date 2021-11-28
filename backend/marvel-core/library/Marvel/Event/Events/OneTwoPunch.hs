@@ -10,6 +10,7 @@ import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
@@ -18,7 +19,7 @@ oneTwoPunch :: EventCard OneTwoPunch
 oneTwoPunch = event OneTwoPunch Cards.oneTwoPunch
 
 newtype OneTwoPunch = OneTwoPunch EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage OneTwoPunch where

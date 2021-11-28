@@ -10,6 +10,7 @@ import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
@@ -19,7 +20,7 @@ enhancedSpiderSense :: EventCard EnhancedSpiderSense
 enhancedSpiderSense = event EnhancedSpiderSense Cards.enhancedSpiderSense
 
 newtype EnhancedSpiderSense = EnhancedSpiderSense EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage EnhancedSpiderSense where

@@ -14,6 +14,7 @@ data Modifier
   | SchemeModifier Natural
   | AllyLimitModifier Natural
   | HitPointModifier Natural
+  | LastSpecial
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

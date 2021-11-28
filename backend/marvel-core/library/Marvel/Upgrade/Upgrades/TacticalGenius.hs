@@ -8,8 +8,12 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Game.Source
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Question
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
@@ -26,5 +30,12 @@ instance HasAbilities TacticalGenius where
   getAbilities _ = []
 
 instance RunMessage TacticalGenius where
-  runMessage msg (TacticalGenius attrs) =
-    TacticalGenius <$> runMessage msg attrs
+  runMessage msg u@(TacticalGenius attrs) = case msg of
+    RanAbility target 1 _ | isTarget attrs target -> do
+      modifiers <- getModifiers attrs
+      let dmg = if LastSpecial `elem` modifiers then 2 else 1
+      msgs <- choiceMessages (upgradeController attrs)
+        $ RemoveThreat (toSource attrs) dmg ThwartableScheme
+      pushAll msgs
+      pure u
+    _ -> TacticalGenius <$> runMessage msg attrs

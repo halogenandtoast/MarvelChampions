@@ -11,6 +11,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
@@ -20,7 +21,7 @@ emergency :: EventCard Emergency
 emergency = event Emergency Cards.emergency
 
 newtype Emergency = Emergency EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Emergency where

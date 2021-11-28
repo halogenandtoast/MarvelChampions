@@ -11,6 +11,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -20,7 +21,7 @@ legalPractice :: EventCard LegalPractice
 legalPractice = event LegalPractice Cards.legalPractice
 
 newtype LegalPractice = LegalPractice EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage LegalPractice where

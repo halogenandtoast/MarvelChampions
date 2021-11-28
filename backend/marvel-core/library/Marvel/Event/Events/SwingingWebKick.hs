@@ -11,6 +11,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Source
@@ -21,7 +22,7 @@ swingingWebKick :: EventCard SwingingWebKick
 swingingWebKick = event SwingingWebKick Cards.swingingWebKick
 
 newtype SwingingWebKick = SwingingWebKick EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage SwingingWebKick where

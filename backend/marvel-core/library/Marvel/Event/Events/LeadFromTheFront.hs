@@ -25,7 +25,7 @@ leadFromTheFront :: EventCard LeadFromTheFront
 leadFromTheFront = event LeadFromTheFront Cards.leadFromTheFront
 
 newtype LeadFromTheFront = LeadFromTheFront EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage LeadFromTheFront where
