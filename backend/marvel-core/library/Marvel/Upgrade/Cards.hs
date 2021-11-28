@@ -26,6 +26,7 @@ allUpgrades = fromList $ map
   , heroicIntuition
   , inspired
   , armoredVest
+  , indomitable
   , tenacity
   ]
 
@@ -112,6 +113,9 @@ inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
 
 armoredVest :: CardDef
 armoredVest = upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
+
+indomitable :: CardDef
+indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]

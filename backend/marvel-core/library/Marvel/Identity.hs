@@ -5,7 +5,7 @@ module Marvel.Identity
 
 import Marvel.Prelude
 
-import qualified Data.HashSet as HashSet
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -22,9 +22,10 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
+import Marvel.Hero.Attrs
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import qualified Marvel.Matchers as Matchers
+import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
@@ -32,7 +33,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 import System.Random.Shuffle
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
@@ -64,6 +65,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityConfused :: Bool
   , playerIdentityTough :: Bool
   , playerIdentityDefeated :: Bool
+  , playerIdentityDefended :: Bool
   }
   deriving stock (Show, Eq, Generic)
 
@@ -89,6 +91,11 @@ identityDamage :: PlayerIdentity -> Natural
 identityDamage attrs =
   fromIntegral . max 0 $ unHp (playerIdentityMaxHP attrs) - unHp
     (playerIdentityCurrentHP attrs)
+
+getIdentityHeroAttackDamage :: MonadGame env m => PlayerIdentity -> m Natural
+getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
+  AlterEgoSide _ -> pure 0
+  HeroSide x -> getModifiedAttack $ toAttrs x
 
 instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted
@@ -140,6 +147,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityConfused = False
   , playerIdentityTough = False
   , playerIdentityDefeated = False
+  , playerIdentityDefended = False
   }
  where
   hp = case alterEgoSide of
@@ -426,7 +434,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         [ FocusCards $ PlayerCard <$> focusedCards
         , Ask (toId attrs)
         $ ChooseOne
-        $ [ Label "Done" [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
+        $ [ Label
+              "Done"
+              [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
           | length cards >= fromIntegral chooseMin
           ]
         <> [ TargetLabel
@@ -567,6 +577,10 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         (toId attrs)
         (IdentityRetaliate retaliate $ attackEnemy attack')
       )
+    when playerIdentityDefended $ push
+      (CheckWindows
+        [W.Window W.After $ W.HeroDefends (toId attrs) (attackEnemy attack')]
+      )
     when
       (damage > 0)
       (pushAll
@@ -578,7 +592,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
           $ IdentityDamaged (attackSource attack') damage
         ]
       )
-    pure $ attrs & damageReductionL .~ 0
+    pure $ attrs & damageReductionL .~ 0 & defendedL .~ False
   IdentityDamaged _ damage -> do
     let
       remainingHP = fromIntegral . subtractNatural damage . fromIntegral $ unHp
@@ -601,7 +615,8 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         (toList playerIdentityMinions)
       _ -> pure ()
     pure $ attrs & defeatedL .~ True
-  IdentityDefended n -> pure $ attrs & damageReductionL +~ n
+  IdentityDefended n ->
+    pure $ attrs & damageReductionL +~ n & defendedL .~ True
   IdentityHealed n ->
     pure
       $ attrs

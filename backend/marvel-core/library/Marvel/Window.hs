@@ -2,6 +2,7 @@ module Marvel.Window where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -44,6 +45,8 @@ data WindowMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
+  | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
+  | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -71,6 +74,8 @@ data WindowType
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
   | DefeatedSideScheme SideSchemeId
+  | HeroDefends IdentityId EnemyId
+  | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -165,4 +170,14 @@ windowMatches matcher w source = case matcher of
   SideSchemeDefeated timing sideSchemeMatcher -> case windowType w of
     DefeatedSideScheme sideSchemeId | windowTiming w == timing ->
       sideSchemeMatches sideSchemeMatcher sideSchemeId
+    _ -> pure False
+  HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
+    HeroDefends identityId enemyId | windowTiming w == timing -> liftA2
+      (&&)
+      (identityMatches identityMatcher identityId)
+      (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
+  EncounterCardReveal timing encounterCardMatcher -> case windowType w of
+    EncounterCardRevealed _ encounterCard | windowTiming w == timing ->
+      pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False

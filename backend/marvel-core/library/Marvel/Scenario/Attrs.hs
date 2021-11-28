@@ -156,6 +156,11 @@ instance RunMessage ScenarioAttrs where
       pushAll $ map (RevealEncounterCard ident) ecs
       when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
+    DrawAndRevealEncounterCard ident -> do
+      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      pushAll $ map (RevealEncounterCard ident) ecs
+      when (null deck') (push EmptyScenarioDeck)
+      pure $ attrs & encounterDeckL .~ deck'
     DealBoost target -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       case target of
