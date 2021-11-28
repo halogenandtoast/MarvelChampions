@@ -25,6 +25,7 @@ allUpgrades = fromList $ map
   , vibraniumSuit
   , heroicIntuition
   , inspired
+  , armoredVest
   , tenacity
   ]
 

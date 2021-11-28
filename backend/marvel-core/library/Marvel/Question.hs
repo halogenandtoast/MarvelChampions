@@ -125,6 +125,7 @@ data Choice
   | RemoveThreat Source Natural SchemeMatcher
   | PlaceThreat Source Natural SchemeMatcher
   | ChooseDamage Source DamageSource Natural EnemyMatcher
+  | ChooseHeal Natural CharacterMatcher
   | DiscardTarget Target
   | ChooseDrawCards Natural IdentityMatcher
   | ReturnTargetToHand Target
@@ -240,6 +241,18 @@ choiceMessages ident = \case
       toMsg (SchemeMainSchemeId msid) = MainSchemeMessage msid (MainSchemePlaceThreat n)
       toMsg (SchemeSideSchemeId ssid) = SideSchemeMessage ssid (SideSchemePlaceThreat n)
     pure $ map toMsg schemes
+  ChooseHeal n characterMatcher -> do
+    characters <- selectList characterMatcher
+    let f character = Heal character n
+    case characters of
+      [] -> pure []
+      [x] -> choiceMessages ident (f x)
+      xs -> pure
+        [ Ask ident $ ChooseOne
+            [ TargetLabel (CharacterTarget x) [f x]
+            | x <- xs
+            ]
+        ]
   ChooseDamage source damageSource n enemyMatcher -> do
     enemies <- selectList enemyMatcher
     let f target = DamageEnemy target source damageSource n
