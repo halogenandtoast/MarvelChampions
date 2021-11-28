@@ -6,9 +6,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Attachment.Attachments
 import Marvel.Attachment.Attrs
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -45,6 +43,9 @@ instance HasAbilities Attachment where
 
 instance HasModifiersFor Attachment where
   getModifiersFor = genericGetModifiersFor
+
+instance IsCard Attachment where
+  toCard = toCard . toAttrs
 
 instance HasCardDef Attachment where
   getCardDef = getCardDef . toAttrs

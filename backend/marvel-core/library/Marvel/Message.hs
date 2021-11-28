@@ -6,11 +6,7 @@ import Marvel.Prelude
 import GHC.Generics
 import Marvel.Ability
 import Marvel.Attack
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.EncounterCard
-import Marvel.Card.PlayerCard
-import Marvel.Card.Side
+import Marvel.Card
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -72,7 +68,7 @@ data Message
   | DealEncounterCard IdentityId
   | GainSurge Target
   | Surge IdentityId
-  | DiscardedEncounterCard EncounterCard
+  | DiscardedCard Card
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
   | RemoveFromGame Target
@@ -156,6 +152,7 @@ data MinionMessage
   | MinionDamaged Source Natural
   | MinionStunned Source
   | MinionConfused Source
+  | MinionBecomeTough
   | MinionDefeated
   | MinionHealed Natural
   | MinionHealAllDamage
@@ -252,7 +249,6 @@ data IdentityMessage
   | ChooseFromDiscard Target ChoiceRules Natural Natural
   | ChosenFromDiscard Target ChoiceRules Natural Natural [PlayerCard]
   | DiscardFrom FromZone Natural (Maybe Target)
-  | DiscardCard PlayerCard
   | ExhaustedIdentity
   | ReadyIdentity
   | DrawOrDiscardToHandLimit
@@ -288,13 +284,13 @@ data SideMessage
   deriving anyclass (ToJSON, FromJSON)
 
 class RunMessage a where
-  runMessage :: (MonadGame env m, CoerceRole m) => Message -> a -> m a
+  runMessage :: MonadGame env m => Message -> a -> m a
 
 class RunMessage' f where
-  runMessage' :: (MonadGame env m, CoerceRole m) => Message -> f p -> m (f p)
+  runMessage' :: MonadGame env m => Message -> f p -> m (f p)
 
 genericRunMessage
-  :: (MonadGame env m, RunMessage' (Rep a), Generic a, CoerceRole m)
+  :: (MonadGame env m, RunMessage' (Rep a), Generic a)
   => Message
   -> a
   -> m a

@@ -3,20 +3,16 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Data.Aeson.Diff qualified as Diff
-import Data.HashMap.Strict qualified as HashMap
-import Data.HashSet qualified as HashSet
+import qualified Data.Aeson.Diff as Diff
+import qualified Data.HashMap.Strict as HashMap
+import qualified Data.HashSet as HashSet
 import Data.List (maximum)
 import Marvel.Ability
-import Marvel.Ability qualified as Ability
+import qualified Marvel.Ability as Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.EncounterCard
-import Marvel.Card.Id
-import Marvel.Card.PlayerCard
+import Marvel.Card
 import Marvel.Criteria
 import Marvel.Debug
 import Marvel.Deck
@@ -35,7 +31,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Matchers qualified as Matchers
+import qualified Marvel.Matchers as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Modifier
@@ -55,7 +51,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import Marvel.Window qualified as W
+import qualified Marvel.Window as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -213,6 +209,7 @@ runGameMessage msg g@Game {..} = case msg of
   SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   RemoveFromGame target -> case target of
     ObligationTarget oid -> pure $ g & (entitiesL . obligationsL %~ delete oid)
+    CardIdTarget _ -> pure g -- Should be handled by Identity
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
     IdentityTarget iid -> do
@@ -224,15 +221,8 @@ runGameMessage msg g@Game {..} = case msg of
     AllyTarget aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
-        pushAll $ map
-          (IdentityMessage ident)
-          [ AllyRemoved aid
-          , DiscardCard $ PlayerCard
-            (CardId . unAllyId $ toId ally)
-            (getCardDef ally)
-            (Just ident)
-            (Just ident)
-          ]
+        pushAll
+          [IdentityMessage ident $ AllyRemoved aid, DiscardedCard $ toCard ally]
       pure $ g & (entitiesL . alliesL %~ delete aid)
     SupportTarget sid -> do
       for_ (lookup sid $ gameSupports g) $ \support ->
@@ -242,47 +232,28 @@ runGameMessage msg g@Game {..} = case msg of
     UpgradeTarget uid -> do
       for_ (lookup uid $ gameUpgrades g) $ \upgrade -> pushAll
         [ UpgradeRemoved uid
-        , IdentityMessage
-          (getUpgradeController upgrade)
-          (DiscardCard $ PlayerCard
-            (CardId . unUpgradeId $ toId upgrade)
-            (getCardDef upgrade)
-            (Just $ getUpgradeController upgrade)
-            (Just $ getUpgradeController upgrade)
-          )
+        , DiscardedCard $ toCard upgrade
         ]
       pure $ g & (entitiesL . upgradesL %~ delete uid)
     AttachmentTarget aid -> do
-      for_ (lookup aid $ gameAttachments g) $ \attachment -> pushAll
-        [ AttachmentRemoved aid
-        , DiscardedEncounterCard $ EncounterCard
-          (CardId . unAttachmentId $ toId attachment)
-          (getCardDef attachment)
-        ]
+      for_ (lookup aid $ gameAttachments g) $ \attachment ->
+        pushAll [AttachmentRemoved aid, DiscardedCard $ toCard attachment]
       pure $ g & (entitiesL . attachmentsL %~ delete aid)
     MinionTarget mid -> do
-      for_ (lookup mid $ gameMinions g) $ \minion ->
-        push $ DiscardedEncounterCard $ EncounterCard
-          (CardId . unMinionId $ toId minion)
-          (getCardDef minion)
+      for_ (lookup mid $ gameMinions g)
+        $ \minion -> push $ DiscardedCard $ toCard minion
       pure $ g & (entitiesL . minionsL %~ delete mid)
     TreacheryTarget tid -> do
-      for_ (lookup tid $ gameTreacheries g) $ \treachery ->
-        push $ DiscardedEncounterCard $ EncounterCard
-          (CardId . unTreacheryId $ toId treachery)
-          (getCardDef treachery)
+      for_ (lookup tid $ gameTreacheries g)
+        $ \treachery -> push $ DiscardedCard $ toCard treachery
       pure $ g & (entitiesL . treacheriesL %~ delete tid)
     ObligationTarget oid -> do
-      for_ (lookup oid $ gameObligations g) $ \obligation ->
-        push $ DiscardedEncounterCard $ EncounterCard
-          (CardId . unObligationId $ toId obligation)
-          (getCardDef obligation)
+      for_ (lookup oid $ gameObligations g)
+        $ \obligation -> push $ DiscardedCard $ toCard obligation
       pure $ g & (entitiesL . obligationsL %~ delete oid)
     SideSchemeTarget sid -> do
-      for_ (lookup sid $ gameSideSchemes g) $ \sideScheme ->
-        push $ DiscardedEncounterCard $ EncounterCard
-          (CardId . unSideSchemeId $ toId sideScheme)
-          (getCardDef sideScheme)
+      for_ (lookup sid $ gameSideSchemes g)
+        $ \sideScheme -> push $ DiscardedCard $ toCard sideScheme
       pure $ g & (entitiesL . sideSchemesL %~ delete sid)
     _ -> error "Unhandled target"
   AddVillain cardCode -> do
@@ -429,7 +400,7 @@ runGameMessage msg g@Game {..} = case msg of
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
           [ FocusCards
-            [ PlayerCard
+            [ MkPlayerCard
                 { pcCardId = ecCardId card
                 , pcCardDef = ecCardDef card
                 , pcOwner = Nothing
@@ -452,7 +423,7 @@ runGameMessage msg g@Game {..} = case msg of
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
           [ FocusCards
-            [ PlayerCard
+            [ MkPlayerCard
                 { pcCardId = ecCardId card
                 , pcCardDef = ecCardDef card
                 , pcOwner = Nothing
@@ -489,7 +460,7 @@ runGameMessage msg g@Game {..} = case msg of
       for_ (lookup aid $ gameAllies g) $ \ally -> pushAll $ map
         (IdentityMessage (getAllyController ally))
         [ AllyRemoved aid
-        , AddToHand $ PlayerCard
+        , AddToHand $ MkPlayerCard
           (CardId $ unAllyId aid)
           (getCardDef ally)
           (Just $ getAllyController ally)
@@ -712,6 +683,7 @@ class
   , HasQueue env
   , HasDebugLogger env
   , MonadRandom m
+  , CoerceRole m
   )
   => MonadGame env m | env -> m, m -> env
 
@@ -747,7 +719,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (elems $ gameVillains g)
       <> concatMap getAbilities (elems $ gameAttachments g)
 
-runGameMessages :: (MonadGame env m, CoerceRole m) => m ()
+runGameMessages :: MonadGame env m => m ()
 runGameMessages = do
   mMsg <- pop
   for_ mMsg debug
@@ -831,13 +803,23 @@ gameSelectExtendedCard
   :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
   players <- toList <$> getsGame gamePlayers
+  ref <- asks game
+  oldVal <- readIORef ref
+  let excludedCards = getExcludedCards m
+  withGameM $ \g -> foldlM (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId) g excludedCards
   let
     allCards =
       concatMap (unHand . playerIdentityHand) players
         <> concatMap (unDiscard . playerIdentityDiscard) players
         <> concatMap (unDeck . playerIdentityDeck) players
-  HashSet.fromList <$> go players allCards m
+  result <- go players allCards m
+  withGame_ (const oldVal)
+  pure $ HashSet.fromList result
  where
+  getExcludedCards = \case
+    NotCard c -> [c]
+    ExtendedCardMatches ms -> concatMap getExcludedCards ms
+    _ -> []
   go players cards = \case
     NotCard c -> pure $ filter (/= c) cards
     AffordableCardBy identityMatcher extendedCardMatcher -> do

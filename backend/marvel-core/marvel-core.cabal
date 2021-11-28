@@ -47,6 +47,7 @@ library
       Marvel.Attachment.Cards
       Marvel.Attack
       Marvel.Boost
+      Marvel.Card
       Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
@@ -115,6 +116,7 @@ library
       Marvel.Minion.Minions
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
+      Marvel.Minion.Minions.Killmonger
       Marvel.Minion.Minions.Sandman
       Marvel.Minion.Minions.Shocker
       Marvel.Minion.Minions.Titania

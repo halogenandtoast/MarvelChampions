@@ -4,9 +4,7 @@ module Marvel.Upgrade where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -48,6 +46,9 @@ instance HasAbilities Upgrade where
 
 instance HasCardDef Upgrade where
   getCardDef = getCardDef . toAttrs
+
+instance IsCard Upgrade where
+  toCard = toCard . toAttrs
 
 getUpgradeController :: Upgrade -> IdentityId
 getUpgradeController = upgradeController . toAttrs

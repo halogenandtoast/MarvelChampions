@@ -7,7 +7,7 @@ import Marvel.Card.Def
 import Marvel.Card.Id
 import Marvel.Id
 
-data PlayerCard = PlayerCard
+data PlayerCard = MkPlayerCard
   { pcCardId :: CardId
   , pcCardDef :: CardDef
   , pcOwner :: Maybe IdentityId

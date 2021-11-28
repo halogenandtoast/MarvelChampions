@@ -5,11 +5,7 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.Id
-import Marvel.Card.PlayerCard
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
@@ -166,13 +162,13 @@ stunChoice attrs = \case
     (MinionTarget vid)
     [Stun (MinionTarget vid) (AllySource $ allyId attrs)]
 
-toCard :: AllyAttrs -> PlayerCard
-toCard a = PlayerCard
-  { pcCardId = CardId $ unAllyId (allyId a)
-  , pcCardDef = allyCardDef a
-  , pcOwner = Just (allyController a)
-  , pcController = Just (allyController a)
-  }
+instance IsCard AllyAttrs where
+  toCard a = PlayerCard $ MkPlayerCard
+    { pcCardId = CardId $ unAllyId (allyId a)
+    , pcCardDef = allyCardDef a
+    , pcOwner = Just (allyController a)
+    , pcController = Just (allyController a)
+    }
 
 instance RunMessage AllyAttrs where
   runMessage msg a = case msg of
@@ -259,7 +255,7 @@ instance RunMessage AllyAttrs where
       AllyDefeated -> do
         pushAll
           [ RemoveFromPlay (toTarget a)
-          , IdentityMessage (allyController a) (DiscardCard $ toCard a)
+          , DiscardedCard (toCard a)
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1

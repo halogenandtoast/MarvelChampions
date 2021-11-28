@@ -17,6 +17,8 @@ allTreacheries = fromList $ map
   , stampede
   , explosion
   , falseAlarm
+  , heartShapedHerb
+  , ritualCombat
   , sweepingSwoop
   , theVulturesPlans
   , advance

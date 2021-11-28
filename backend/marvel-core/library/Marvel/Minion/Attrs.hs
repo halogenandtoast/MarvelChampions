@@ -21,8 +21,7 @@ import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
-import Marvel.Card.Builder
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Matchers
@@ -107,6 +106,12 @@ instance IsSource MinionAttrs where
 instance IsTarget MinionAttrs where
   toTarget = MinionTarget . toId
 
+instance IsCard MinionAttrs where
+  toCard a = EncounterCard $ MkEncounterCard
+    { ecCardId = CardId $ unMinionId $ toId a
+    , ecCardDef = getCardDef a
+    }
+
 instance HasCardDef MinionAttrs where
   getCardDef = minionCardDef
 
@@ -157,6 +162,7 @@ runMinionMessage msg attrs = case msg of
       pure $ attrs & damageL +~ damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
+  MinionBecomeTough-> pure $ attrs & toughL .~ True
   MinionDefendedBy characterId ->
     pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
   AttachedToMinion attachmentId -> do

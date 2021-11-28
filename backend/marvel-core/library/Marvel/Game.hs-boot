@@ -26,6 +26,7 @@ class
   , HasQueue env
   , HasDebugLogger env
   , MonadRandom m
+  , CoerceRole m
   )
   => MonadGame env m | env -> m, m -> env
 

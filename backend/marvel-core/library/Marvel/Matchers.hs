@@ -103,6 +103,9 @@ instance Semigroup UpgradeMatcher where
   UpgradeMatches xs <> y = UpgradeMatches $ xs <> [y]
   x <> y = UpgradeMatches [x, y]
 
+upgradeMatches :: MonadGame env m => UpgradeMatcher -> UpgradeId -> m Bool
+upgradeMatches matcher ident = member ident <$> gameSelectUpgrade matcher
+
 data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy | AttackableEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

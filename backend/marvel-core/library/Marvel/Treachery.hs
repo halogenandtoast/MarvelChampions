@@ -3,9 +3,7 @@ module Marvel.Treachery where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -41,6 +39,9 @@ instance IsSource Treachery where
 
 instance IsTarget Treachery where
   toTarget = TreacheryTarget . toId
+
+instance IsCard Treachery where
+  toCard = toCard . toAttrs
 
 instance HasCardDef Treachery where
   getCardDef = getCardDef . toAttrs

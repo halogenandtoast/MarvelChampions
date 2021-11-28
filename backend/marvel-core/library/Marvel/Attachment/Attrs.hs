@@ -3,9 +3,7 @@ module Marvel.Attachment.Attrs where
 
 import Marvel.Prelude
 
-import Marvel.Card.Builder
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -67,6 +65,12 @@ instance RunMessage AttachmentAttrs where
           pure $ attrs & enemyL ?~ enemyId
         _ -> pure attrs
     _ -> pure attrs
+
+instance IsCard AttachmentAttrs where
+  toCard a = EncounterCard $ MkEncounterCard
+    { ecCardId = CardId $ unAttachmentId $ toId a
+    , ecCardDef = getCardDef a
+    }
 
 instance HasCardDef AttachmentAttrs where
   getCardDef = attachmentCardDef
