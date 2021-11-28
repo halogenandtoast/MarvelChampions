@@ -20,7 +20,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window, WindowType)
 
-data FromZone = FromDeck | FromHand | RandomFromHand
+data FromZone = FromDeck | FromHand | FromDiscard | RandomFromHand
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -58,6 +58,7 @@ data Message
   | RanAbility Target Natural [WindowType]
   | SearchFoundCards Target [PlayerCard]
   | WithDiscarded Target FromZone [PlayerCard]
+  | WithChosen Target FromZone [PlayerCard]
   | SetActiveCost ActiveCost
   | Spent PlayerCard
   | Paid Payment
@@ -221,6 +222,10 @@ data SearchOption = SearchTarget Target | SearchDrawOne
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data ChoiceRules = DifferentCards
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data IdentityMessage
   = BeginTurn
   | PlayerTurnOption
@@ -243,6 +248,9 @@ data IdentityMessage
   | SupportCreated SupportId
   | SupportRemoved SupportId
   | AddToHand PlayerCard
+  | ShuffleIntoIdentityDeck [PlayerCard]
+  | ChooseFromDiscard Target ChoiceRules Natural Natural
+  | ChosenFromDiscard Target ChoiceRules Natural Natural [PlayerCard]
   | DiscardFrom FromZone Natural (Maybe Target)
   | DiscardCard PlayerCard
   | ExhaustedIdentity

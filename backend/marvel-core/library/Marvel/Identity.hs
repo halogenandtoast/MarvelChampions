@@ -303,6 +303,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   ShuffleIdentityDiscardBackIntoDeck -> do
     deck' <- shuffleM (unDeck (attrs ^. deckL) <> unDiscard (attrs ^. discardL))
     pure $ attrs & deckL .~ Deck deck' & discardL .~ Discard []
+  ShuffleIntoIdentityDeck cards -> do
+    deck <- shuffleM (unDeck (attrs ^. deckL) <> cards)
+    pure $ attrs & deckL .~ Deck deck
   DrawOrDiscardToHandLimit -> do
     let
       diff = fromIntegral (unHandSize $ handSize attrs)
@@ -327,6 +330,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure attrs
   DrawCards fromZone n -> case fromZone of
     FromHand -> error "Impossible"
+    FromDiscard -> error "Impossible"
     RandomFromHand -> error "Impossible"
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
@@ -406,8 +410,52 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (handL %~ Hand . (card :) . unHand)
       & (deckL %~ Deck . filter (/= card) . unDeck)
       & (discardL %~ Discard . filter (/= card) . unDiscard)
+  ChooseFromDiscard target choiceRules chooseMin chooseMax -> do
+    pushAll
+      [ FocusCards $ unDiscard playerIdentityDiscard
+      , IdentityMessage (toId attrs)
+        $ ChosenFromDiscard target choiceRules chooseMin chooseMax []
+      , UnfocusCards
+      ]
+    pure attrs
+  ChosenFromDiscard target choiceRules chooseMin chooseMax cards -> do
+    let
+      discards = unDiscard playerIdentityDiscard
+      focusedCards = filter (`notElem` cards) discards
+      chosenNames = map (cdName . pcCardDef) cards
+      choices = case choiceRules of
+        DifferentCards ->
+          filter ((`notElem` chosenNames) . cdName . pcCardDef) discards
+
+    if length cards >= fromIntegral chooseMax
+      then push (WithChosen target FromDiscard cards)
+      else pushAll
+        [ FocusCards focusedCards
+        , Ask (toId attrs)
+        $ ChooseOne
+        $ [ Label "Done" [Run [WithChosen target FromDiscard cards]]
+          | length cards >= fromIntegral chooseMin
+          ]
+        <> [ TargetLabel
+               (CardIdTarget $ pcCardId c)
+               [ Run
+                   [ IdentityMessage (toId attrs) $ ChosenFromDiscard
+                       target
+                       choiceRules
+                       chooseMin
+                       chooseMax
+                       (c : cards)
+                   ]
+               ]
+           | c <- choices
+           ]
+        ]
+
+    pure attrs
   DiscardFor _ FromDeck _ _ -> error "Unhandled"
   DiscardedFor _ FromDeck _ _ _ -> error "Unhandled"
+  DiscardFor _ FromDiscard _ _ -> error "Unhandled"
+  DiscardedFor _ FromDiscard _ _ _ -> error "Unhandled"
   DiscardFor target FromHand discardMin discardMax -> do
     push
       (IdentityMessage (toId attrs)
@@ -468,6 +516,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (handL %~ Hand . filter (/= card) . unHand)
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromHand -> error "Unhandled"
+    FromDiscard -> error "Unhandled"
     RandomFromHand -> do
       discards <- take (fromIntegral n) <$> shuffleM (unHand playerIdentityHand)
       for_ mTarget $ \target -> push $ WithDiscarded target fromZone discards
