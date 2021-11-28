@@ -217,6 +217,10 @@ data UpgradeMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data SearchOption = SearchTarget Target | SearchDrawOne
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data IdentityMessage
   = BeginTurn
   | PlayerTurnOption
@@ -261,7 +265,7 @@ data IdentityMessage
   | MinionEngaged MinionId
   | MinionDisengaged MinionId
   | ShuffleIdentityDiscardBackIntoDeck
-  | SearchIdentityDeck CardMatcher Target
+  | SearchIdentityDeck CardMatcher SearchOption
   | IdentityRetaliate Natural EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

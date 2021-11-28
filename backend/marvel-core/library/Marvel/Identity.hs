@@ -561,11 +561,21 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False
   IdentityRemoveConfused -> pure $ attrs & confusedL .~ False
-  SearchIdentityDeck cardMatcher target -> do
+  SearchIdentityDeck cardMatcher searchOption -> do
     let
       deck = unDeck playerIdentityDeck
       foundCards = filter (cardMatch cardMatcher) deck
-    pushAll [FocusCards deck, SearchFoundCards target foundCards, UnfocusCards]
+      handleFoundCards = if null foundCards
+        then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
+        else case searchOption of
+          SearchTarget target -> SearchFoundCards target foundCards
+          SearchDrawOne -> Ask (toId attrs) $ ChooseOne
+            [ TargetLabel
+                (CardIdTarget $ pcCardId c)
+                [Run [IdentityMessage (toId attrs) $ AddToHand c]]
+            | c <- foundCards
+            ]
+    pushAll [FocusCards deck, handleFoundCards, UnfocusCards]
     pure attrs
   IdentityRetaliate n enemyId -> do
     let

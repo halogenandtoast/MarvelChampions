@@ -7,9 +7,13 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Question
 import Marvel.Source
 import Marvel.Support.Attrs
 import Marvel.Support.Cards qualified as Cards
@@ -23,7 +27,11 @@ newtype TheGoldenCity = TheGoldenCity SupportAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities TheGoldenCity where
-  getAbilities _ = []
+  getAbilities (TheGoldenCity a) =
+    [ ability a 1 AlterEgoAction OwnsThis ExhaustCost
+        $ ChooseDrawCards 2
+        $ IdentityWithId (supportController a)
+    ]
 
 instance RunMessage TheGoldenCity where
   runMessage msg (TheGoldenCity attrs) = TheGoldenCity <$> runMessage msg attrs

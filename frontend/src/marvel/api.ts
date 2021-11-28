@@ -61,6 +61,11 @@ export const fetchGames = (): Promise<Game[]> => api
 export const updateGame = (gameId: string, choice: number, investigatorId: string | null): Promise<void> => api
   .put(`marvel/games/${gameId}`, {tag: 'Answer', contents: { choice, investigatorId }})
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/explicit-module-boundary-types */
+export const updateGameRaw = (gameId: string, gameMessage: any): Promise<void> => api
+  .put(`marvel/games/${gameId}/raw`, { gameMessage });
+
 export const deleteGame = (gameId: string): Promise<void> => api
   .delete(`marvel/games/${gameId}`);
 

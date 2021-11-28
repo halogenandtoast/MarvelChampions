@@ -62,7 +62,12 @@
           @click="emit('choose', label)"
           >{{choices[label].contents}}</button>
       </div>
-      <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
+      <div>
+        <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
+        <template v-if="debug">
+          <button @click="debugChoose({tag: 'IdentityMessage', contents: [identityId, {tag: 'SearchIdentityDeck', contents: [{tag: 'AnyCard', contents: []}, {tag: 'SearchDrawOne', contents: []}]}]})">Select Draw</button>
+        </template>
+      </div>
       <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
     </div>
     <button
@@ -78,7 +83,7 @@
 
 <script lang="ts" setup>
 
-import { defineProps, defineEmits, computed } from 'vue'
+import { defineProps, defineEmits, computed, inject } from 'vue'
 import { Game } from '@/marvel/types/Game'
 import * as MarvelGame from '@/marvel/types/Game'
 import { Identity } from '@/marvel/types/Identity'
@@ -136,12 +141,8 @@ const finishPaymentAction = computed(() => {
 })
 
 const allies = computed(() => props.player.allies.map((allyId) => props.game.allies[allyId]))
-
-
 const supports = computed(() => props.player.supports.map((supportId) => props.game.supports[supportId]))
-
 const upgrades = computed(() => props.player.upgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
-
 const minions = computed(() => props.player.minions.map((minionId) => props.game.minions[minionId]))
 
 const abilities = computed(() => {
@@ -181,6 +182,9 @@ const activeAbility = computed(() => {
       }
   })
 })
+
+const debug = inject('debug')
+const debugChoose = inject('debugChoose')
 </script>
 
 <style scoped lang="scss">
