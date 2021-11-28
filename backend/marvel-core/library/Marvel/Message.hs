@@ -257,6 +257,7 @@ data IdentityMessage
   | IdentityWasAttacked Attack
   | IdentityDamaged Source Natural
   | IdentityDefended Natural
+  | IdentityDefeated
   | IdentityHealed Natural
   | IdentityStunned
   | IdentityConfused
