@@ -12,6 +12,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -22,7 +23,7 @@ makeTheCall :: EventCard MakeTheCall
 makeTheCall = event MakeTheCall Cards.makeTheCall
 
 newtype MakeTheCall = MakeTheCall EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage MakeTheCall where

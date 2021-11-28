@@ -12,6 +12,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
@@ -20,7 +21,7 @@ splitPersonality :: EventCard SplitPersonality
 splitPersonality = event SplitPersonality Cards.splitPersonality
 
 newtype SplitPersonality = SplitPersonality EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage SplitPersonality where

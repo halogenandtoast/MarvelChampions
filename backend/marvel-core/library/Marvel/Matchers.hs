@@ -3,12 +3,14 @@ module Marvel.Matchers where
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.Def
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Keyword
+import Marvel.Trait
 
 data EntityMatcher
   = IdentityEntity IdentityMatcher
@@ -89,7 +91,10 @@ pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
 data UpgradeMatcher
   = UpgradeWithUses GameValueMatcher
   | UpgradeControlledBy IdentityMatcher
+  | UpgradeWithTrait Trait
   | UnexhaustedUpgrade
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data EnemyMatcher = AnyEnemy | EnemyWithId EnemyId | VillainEnemy | AttackableEnemy
   deriving stock (Show, Eq, Generic)
@@ -205,5 +210,9 @@ instance Semigroup ExtendedCardMatcher where
   x <> y = ExtendedCardMatches [x, y]
 
 newtype AttachmentMatcher = AttachmentWithId AttachmentId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

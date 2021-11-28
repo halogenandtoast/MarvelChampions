@@ -10,6 +10,7 @@ import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Source
 import Marvel.Target
 
@@ -17,7 +18,7 @@ ancestralKnowledge :: EventCard AncestralKnowledge
 ancestralKnowledge = event AncestralKnowledge Cards.ancestralKnowledge
 
 newtype AncestralKnowledge = AncestralKnowledge EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage AncestralKnowledge where

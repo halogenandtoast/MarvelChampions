@@ -11,6 +11,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
@@ -21,7 +22,7 @@ forJustice :: EventCard ForJustice
 forJustice = event ForJustice Cards.forJustice
 
 newtype ForJustice = ForJustice EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage ForJustice where

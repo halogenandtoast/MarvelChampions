@@ -12,6 +12,7 @@ import Marvel.Event.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Source
@@ -22,7 +23,7 @@ gammaSlam :: EventCard GammaSlam
 gammaSlam = event GammaSlam Cards.gammaSlam
 
 newtype GammaSlam = GammaSlam EventAttrs
-  deriving anyclass IsEvent
+  deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage GammaSlam where

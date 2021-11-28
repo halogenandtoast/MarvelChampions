@@ -127,6 +127,9 @@ gameAttachments = entitiesAttachments . gameEntities
 gameEffects :: Game -> EntityMap Effect
 gameEffects = entitiesEffects . gameEntities
 
+gameEvents :: Game -> EntityMap Event
+gameEvents = entitiesEvents . gameEntities
+
 gameMinions :: Game -> EntityMap Minion
 gameMinions = entitiesMinions . gameEntities
 
@@ -902,21 +905,19 @@ gameSelectSupport = \case
       <$> filterM (gameValueMatches gameValueMatcher . getSupportUses) upgrades
 
 gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
-gameSelectUpgrade = \case
-  UnexhaustedUpgrade -> do
-    upgrades <- toList <$> getsGame gameUpgrades
-    pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) upgrades
-  UpgradeWithUses gameValueMatcher -> do
-    upgrades <- toList <$> getsGame gameUpgrades
-    HashSet.fromList
-      . map toId
-      <$> filterM (gameValueMatches gameValueMatcher . getUpgradeUses) upgrades
-  UpgradeControlledBy identityMatcher -> do
-    upgrades <- toList <$> getsGame gameUpgrades
-    identities <- select identityMatcher
-    pure $ HashSet.fromList $ map toId $ filter
-      ((`member` identities) . getUpgradeController)
-      upgrades
+gameSelectUpgrade m = do
+  upgrades <- toList <$> getsGame gameUpgrades
+  result <- filterM (matchFilter m) upgrades
+  pure $ HashSet.fromList $ map toId result
+ where
+  matchFilter x = case x of
+    UnexhaustedUpgrade -> pure . not . isExhausted
+    UpgradeWithUses gameValueMatcher ->
+      gameValueMatches gameValueMatcher . getUpgradeUses
+    UpgradeWithTrait t -> pure . member t . cdTraits . getCardDef
+    UpgradeControlledBy identityMatcher -> \upgrade -> do
+      identities <- select identityMatcher
+      pure $ getUpgradeController upgrade `member` identities
 
 gameSelectAttachment
   :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
@@ -1078,6 +1079,7 @@ getModifiers a = do
   attachments <- toList <$> getsGame gameAttachments
   allies <- toList <$> getsGame gameAllies
   minions <- toList <$> getsGame gameMinions
+  events <- toList <$> getsGame gameEvents
   mconcat <$> sequence
     [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
@@ -1085,6 +1087,7 @@ getModifiers a = do
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
     ]
 
 getCurrentWindows :: MonadGame env m => m [Window]
@@ -1128,4 +1131,3 @@ gameSelectCountIdentity aggregate matcher = do
     filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers
   case aggregate of
     SustainedDamage -> pure . sum $ map identityDamage identities
-

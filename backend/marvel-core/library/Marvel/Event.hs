@@ -10,6 +10,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Events
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.TH
 
 $(buildEntity "Event")
@@ -23,6 +24,9 @@ lookupEvent :: CardCode -> (IdentityId -> EventId -> Event)
 lookupEvent cardCode = case lookup cardCode allEvents of
   Just f -> f
   Nothing -> error $ "Invalid card code for event " <> show cardCode
+
+instance HasModifiersFor Event where
+  getModifiersFor = genericGetModifiersFor
 
 instance Entity Event where
   type EntityId Event = EventId
