@@ -12,6 +12,7 @@ import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -33,10 +34,15 @@ instance HasAbilities PantherClaws where
 instance RunMessage PantherClaws where
   runMessage msg u@(PantherClaws attrs) = case msg of
     RanAbility target 1 _ | isTarget attrs target -> do
-      modifiers <- getModifiers attrs
-      let dmg = if LastSpecial `elem` modifiers then 4 else 2
-      msgs <- choiceMessages (upgradeController attrs)
-        $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
-      pushAll msgs
+      let ident = upgradeController attrs
+      stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
+      if stunned
+        then push (IdentityMessage ident IdentityRemoveStunned)
+        else do
+          modifiers <- getModifiers attrs
+          let dmg = if LastSpecial `elem` modifiers then 4 else 2
+          msgs <- choiceMessages (upgradeController attrs)
+            $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
+          pushAll msgs
       pure u
     _ -> PantherClaws <$> runMessage msg attrs

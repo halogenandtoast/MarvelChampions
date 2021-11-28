@@ -13,6 +13,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -34,17 +35,22 @@ instance HasAbilities VibraniumSuit where
 instance RunMessage VibraniumSuit where
   runMessage msg u@(VibraniumSuit attrs) = case msg of
     RanAbility target 1 _ | isTarget attrs target -> do
-      modifiers <- getModifiers attrs
-      sustainedDamage <- selectCount
-        SustainedDamage
-        (IdentityWithId $ upgradeController attrs)
-      let
-        dmg =
-          min sustainedDamage $ if LastSpecial `elem` modifiers then 2 else 1
-      damageMsgs <- choiceMessages (upgradeController attrs)
-        $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
-      healMsgs <- choiceMessages (upgradeController attrs)
-        $ Heal (IdentityCharacter $ upgradeController attrs) dmg
-      pushAll $ damageMsgs <> healMsgs
+      let ident = upgradeController attrs
+      stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
+      if stunned
+        then push (IdentityMessage ident IdentityRemoveStunned)
+        else do
+          modifiers <- getModifiers attrs
+          sustainedDamage <- selectCount
+            SustainedDamage
+            (IdentityWithId $ upgradeController attrs)
+          let
+            dmg = min sustainedDamage
+              $ if LastSpecial `elem` modifiers then 2 else 1
+          damageMsgs <- choiceMessages (upgradeController attrs)
+            $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
+          healMsgs <- choiceMessages (upgradeController attrs)
+            $ Heal (IdentityCharacter $ upgradeController attrs) dmg
+          pushAll $ damageMsgs <> healMsgs
       pure u
     _ -> VibraniumSuit <$> runMessage msg attrs
