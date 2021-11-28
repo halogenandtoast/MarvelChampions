@@ -67,6 +67,7 @@ data PlayerIdentity = PlayerIdentity
   , playerIdentityStunned :: Bool
   , playerIdentityConfused :: Bool
   , playerIdentityTough :: Bool
+  , playerIdentityDefeated :: Bool
   }
   deriving stock (Show, Eq, Generic)
 
@@ -142,6 +143,7 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   , playerIdentityStunned = False
   , playerIdentityConfused = False
   , playerIdentityTough = False
+  , playerIdentityDefeated = False
   }
  where
   hp = case alterEgoSide of
@@ -539,15 +541,27 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       )
     pure $ attrs & damageReductionL .~ 0
   IdentityDamaged _ damage -> do
-    pure
-      $ attrs
-      & (currentHPL
-        %~ HP
-        . fromIntegral
-        . subtractNatural damage
-        . fromIntegral
-        . unHp
+    let
+      remainingHP = fromIntegral . subtractNatural damage . fromIntegral $ unHp
+        playerIdentityCurrentHP
+    when
+      (remainingHP == 0)
+      (push $ IdentityMessage (toId attrs) IdentityDefeated)
+    pure $ attrs & currentHPL .~ HP remainingHP
+  IdentityDefeated -> do
+    players <- getPlayers
+    let ps = take 1 . drop 1 $ dropWhile (/= toId attrs) (cycle players)
+    push (RemoveFromPlay $ IdentityTarget $ toId attrs)
+    case ps of
+      [x] | x /= toId attrs -> pushAll $ concatMap
+        (\minionId ->
+          [ IdentityMessage x (MinionEngaged minionId)
+          , MinionMessage minionId (MinionEngagedIdentity x)
+          ]
         )
+        (toList playerIdentityMinions)
+      _ -> pure ()
+    pure $ attrs & defeatedL .~ True
   IdentityDefended n -> pure $ attrs & damageReductionL +~ n
   IdentityHealed n ->
     pure

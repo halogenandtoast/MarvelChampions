@@ -212,6 +212,12 @@ runGameMessage msg g@Game {..} = case msg of
     ObligationTarget oid -> pure $ g & (entitiesL . obligationsL %~ delete oid)
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
+    IdentityTarget iid -> do
+      when (length (g ^. entitiesL . playersL) <= 1) (push $ GameOver Lost)
+      pure
+        $ g
+        & (entitiesL . playersL %~ delete iid)
+        & (playerOrderL %~ filter (/= iid))
     AllyTarget aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
