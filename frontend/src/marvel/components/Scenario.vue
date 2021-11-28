@@ -27,7 +27,7 @@
       />
     </div>
     <div v-if="focusedCards.length > 0" class="focused">
-      <Card v-for="card in focusedCards" :key="card.cardId" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
+      <Card v-for="card in focusedCards" :key="card.contents.cardId" :card="card.contents" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
     </div>
     <div>
       <Player

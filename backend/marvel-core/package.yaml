@@ -34,6 +34,7 @@ default-extensions:
 - StandaloneDeriving
 - FlexibleInstances
 - UndecidableInstances
+- ViewPatterns
 
 library:
   source-dirs: library

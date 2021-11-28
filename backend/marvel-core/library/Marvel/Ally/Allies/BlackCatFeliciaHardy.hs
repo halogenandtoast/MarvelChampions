@@ -5,8 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -53,7 +52,7 @@ instance RunMessage BlackCatFeliciaHardy where
         2
         (Just target)
       pure a
-    WithDiscarded target _ cards | isTarget a target -> do
+    WithDiscarded target _ (onlyPlayerCards -> cards) | isTarget a target -> do
       pushAll
         $ map (IdentityMessage (allyController $ toAttrs a) . AddToHand)
         $ filter (cardMatch $ CardWithResource Mental) cards

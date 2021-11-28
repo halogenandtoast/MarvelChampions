@@ -236,6 +236,7 @@ library
       StandaloneDeriving
       FlexibleInstances
       UndecidableInstances
+      ViewPatterns
   build-depends:
       MonadRandom
     , aeson
@@ -286,6 +287,7 @@ test-suite MarvelChampions-test
       StandaloneDeriving
       FlexibleInstances
       UndecidableInstances
+      ViewPatterns
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom

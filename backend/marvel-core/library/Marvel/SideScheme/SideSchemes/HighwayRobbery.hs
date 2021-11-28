@@ -5,8 +5,7 @@ module Marvel.SideScheme.SideSchemes.HighwayRobbery
 
 import Marvel.Prelude
 
-import Marvel.Card.Code
-import Marvel.Card.PlayerCard
+import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -50,5 +49,5 @@ instance RunMessage HighwayRobbery where
           pure s
         _ -> HighwayRobbery <$> runMessage msg attrs
     WithDiscarded target _ cards | isTarget attrs target -> do
-      pure . HighwayRobbery $ attrs & heldCardsL <>~ cards
+      pure . HighwayRobbery $ attrs & heldCardsL <>~ onlyPlayerCards cards
     _ -> HighwayRobbery <$> runMessage msg attrs

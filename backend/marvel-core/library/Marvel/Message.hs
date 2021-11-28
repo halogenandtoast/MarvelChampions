@@ -52,9 +52,10 @@ data Message
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural [WindowType]
-  | SearchFoundCards Target [PlayerCard]
-  | WithDiscarded Target FromZone [PlayerCard]
-  | WithChosen Target FromZone [PlayerCard]
+  | SearchFoundCards Target [Card]
+  | DiscardTopOfEncounterDeck Natural (Maybe Target)
+  | WithDiscarded Target FromZone [Card]
+  | WithChosen Target FromZone [Card]
   | SetActiveCost ActiveCost
   | Spent PlayerCard
   | Paid Payment
@@ -80,12 +81,12 @@ data Message
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
   | AttachmentRemoved AttachmentId
-  | FocusCards [PlayerCard]
+  | FocusCards [Card]
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
   | ShuffleEncounterDeck
   | ReturnToHand Target
-  | SetAside [EncounterCard]
+  | SetAside [Card]
   | ShuffleIntoEncounterDeck [EncounterCard]
   | ClearBoosts
   | Boost Message
@@ -233,7 +234,7 @@ data IdentityMessage
   | DrawCards FromZone Natural
   | DiscardCards
   | DiscardFor Target FromZone Natural Natural
-  | DiscardedFor Target FromZone Natural Natural [PlayerCard]
+  | DiscardedFor Target FromZone Natural Natural [Card]
   | ShuffleDeck
   | CheckAllyLimit
   | SideMessage SideMessage
