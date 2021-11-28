@@ -60,6 +60,9 @@ data AlterEgoAttrs = AlterEgoAttrs
 instance HasCardCode AlterEgoAttrs where
   toCardCode = toCardCode . alterEgoCardDef
 
+instance HasCardDef AlterEgoAttrs where
+  getCardDef = alterEgoCardDef
+
 instance IsSource AlterEgoAttrs where
   toSource = IdentitySource . alterEgoIdentityId
 
@@ -75,7 +78,7 @@ instance HasStartingHP AlterEgoAttrs where
 instance Entity AlterEgoAttrs where
   type EntityId AlterEgoAttrs = IdentityId
   type EntityAttrs AlterEgoAttrs = AlterEgoAttrs
-  toId = toId . toAttrs
+  toId = alterEgoIdentityId
   toAttrs = id
 
 instance RunMessage AlterEgoAttrs where

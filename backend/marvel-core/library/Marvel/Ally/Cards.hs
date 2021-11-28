@@ -15,6 +15,7 @@ allAllies = fromList $ map
   (toCardCode &&& id)
   [ blackCatFeliciaHardy
   , hellcatPatsyWalker
+  , shuri
   , daredevilMattMurdock
   , jessicaJones
   , hawkeyeClintBarton
@@ -70,6 +71,9 @@ blackCatFeliciaHardy = identityAlly
 hellcatPatsyWalker :: CardDef
 hellcatPatsyWalker =
   identityAlly "01020" ("Hellcat" <:> "Patsy Walker") 3 [Avenger] [Wild]
+
+shuri :: CardDef
+shuri = identityAlly "01041" "Shuri" 2 [Genius, Wakanda] [Physical]
 
 daredevilMattMurdock :: CardDef
 daredevilMattMurdock =

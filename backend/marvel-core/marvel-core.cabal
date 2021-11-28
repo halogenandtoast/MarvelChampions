@@ -24,6 +24,7 @@ library
       Marvel.Ally.Allies.MariaHill
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Allies.NickFury
+      Marvel.Ally.Allies.Shuri
       Marvel.Ally.Allies.Vision
       Marvel.Ally.Attrs
       Marvel.Ally.Cards
@@ -32,6 +33,7 @@ library
       Marvel.AlterEgo.AlterEgos.CarolDanvers
       Marvel.AlterEgo.AlterEgos.JenniferWalters
       Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.AlterEgos.TChalla
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
       Marvel.Aspect
@@ -67,6 +69,7 @@ library
       Marvel.Event.Attrs
       Marvel.Event.Cards
       Marvel.Event.Events
+      Marvel.Event.Events.AncestralKnowledge
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
@@ -83,6 +86,10 @@ library
       Marvel.Event.Events.OneTwoPunch
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.SwingingWebKick
+      Marvel.Event.Events.WakandaForeverA
+      Marvel.Event.Events.WakandaForeverB
+      Marvel.Event.Events.WakandaForeverC
+      Marvel.Event.Events.WakandaForeverD
       Marvel.Exception
       Marvel.Game
       Marvel.Game.Source
@@ -92,6 +99,7 @@ library
       Marvel.Hero.Attrs
       Marvel.Hero.Cards
       Marvel.Hero.Heroes
+      Marvel.Hero.Heroes.BlackPanther
       Marvel.Hero.Heroes.CaptainMarvel
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
@@ -138,6 +146,7 @@ library
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.PersonalChallenge
+      Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.Source
       Marvel.Stats
       Marvel.Support
@@ -150,6 +159,7 @@ library
       Marvel.Support.Supports.InterrogationRoom
       Marvel.Support.Supports.SuperhumanLawDivision
       Marvel.Support.Supports.SurveillanceTeam
+      Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheTriskellion
       Marvel.Target
       Marvel.TH
@@ -165,7 +175,9 @@ library
       Marvel.Treachery.Treacheries.FalseAlarm
       Marvel.Treachery.Treacheries.GangUp
       Marvel.Treachery.Treacheries.HardToKeepDown
+      Marvel.Treachery.Treacheries.HeartShapedHerb
       Marvel.Treachery.Treacheries.ImTough
+      Marvel.Treachery.Treacheries.RitualCombat
       Marvel.Treachery.Treacheries.ShadowOfThePast
       Marvel.Treachery.Treacheries.Stampede
       Marvel.Treachery.Treacheries.SweepingSwoop
@@ -175,12 +187,16 @@ library
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.Inspired
+      Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.SpiderTracer
       Marvel.Upgrade.Upgrades.SuperhumanStrength
+      Marvel.Upgrade.Upgrades.TacticalGenius
       Marvel.Upgrade.Upgrades.Tenacity
+      Marvel.Upgrade.Upgrades.VibraniumSuit
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter
       Marvel.Villain

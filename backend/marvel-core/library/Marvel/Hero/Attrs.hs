@@ -75,6 +75,9 @@ instance HasHandSize HeroAttrs where
 instance HasCardCode HeroAttrs where
   toCardCode = toCardCode . heroCardDef
 
+instance HasCardDef HeroAttrs where
+  getCardDef = heroCardDef
+
 instance IsSource HeroAttrs where
   toSource = IdentitySource . heroIdentityId
 

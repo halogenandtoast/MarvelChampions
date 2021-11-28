@@ -3,7 +3,6 @@ module Marvel.Hero.Heroes.CaptainMarvel where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
@@ -24,7 +23,7 @@ captainMarvel = hero
 
 newtype CaptainMarvel = CaptainMarvel HeroAttrs
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, HasCardCode, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance HasAbilities CaptainMarvel where
   getAbilities _ = []

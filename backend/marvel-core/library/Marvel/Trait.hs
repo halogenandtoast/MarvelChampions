@@ -6,9 +6,11 @@ data Trait
   = Aerial
   | Android
   | Armor
+  | Assassin
   | Attack
   | Attorney
   | Avenger
+  | BlackPanther
   | Brute
   | Condition
   | Criminal
@@ -20,8 +22,10 @@ data Trait
   | HeroForHire
   | Hydra
   | Item
+  | King
   | Location
   | MastersOfEvil
+  | Mercenary
   | Persona
   | Shield
   | Skill
@@ -31,6 +35,7 @@ data Trait
   | Tactic
   | Tech
   | Thwart
+  | Wakanda
   | Weapon
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

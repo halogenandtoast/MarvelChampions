@@ -19,6 +19,10 @@ allUpgrades = fromList $ map
   , webbedUp
   , focusedRage
   , superhumanStrength
+  , energyDaggers
+  , pantherClaws
+  , tacticalGenius
+  , vibraniumSuit
   , heroicIntuition
   , inspired
   , tenacity
@@ -80,6 +84,22 @@ focusedRage = identityUpgrade "01027" "Focused Rage" 3 [Skill] [Energy]
 superhumanStrength :: CardDef
 superhumanStrength =
   identityUpgrade "01028" "Superhuman Strength" 2 [Superpower] [Mental]
+
+energyDaggers :: CardDef
+energyDaggers =
+  identityUpgrade "01046" "Energy Daggers" 2 [BlackPanther, Weapon] [Mental]
+
+pantherClaws :: CardDef
+pantherClaws =
+  identityUpgrade "01047" "Panther Claws" 2 [BlackPanther, Weapon] [Energy]
+
+tacticalGenius :: CardDef
+tacticalGenius =
+  identityUpgrade "01048" "Tactical Genius" 2 [BlackPanther, Skill] [Physical]
+
+vibraniumSuit :: CardDef
+vibraniumSuit =
+  identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 heroicIntuition :: CardDef
 heroicIntuition = upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice

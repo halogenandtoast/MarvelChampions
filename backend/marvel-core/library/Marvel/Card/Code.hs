@@ -3,7 +3,6 @@ module Marvel.Card.Code where
 import Marvel.Prelude
 
 import Data.Text qualified as T
-import GHC.Generics
 import Marvel.Card.Side
 
 newtype CardCode = CardCode { unCardCode :: Text }
@@ -32,20 +31,3 @@ class HasCardCode a where
 
 instance HasCardCode a => HasCardCode (With a b) where
   toCardCode (With a _) = toCardCode a
-
-class HasCardCode' f where
-  toCardCode' :: f p -> CardCode
-
-genericToCardCode :: (Generic a, HasCardCode' (Rep a)) => a -> CardCode
-genericToCardCode = toCardCode' . from
-
-instance HasCardCode' f => HasCardCode' (M1 i c f) where
-  toCardCode' = toCardCode' . unM1
-
-instance (HasCardCode' l, HasCardCode' r) => HasCardCode' (l :+: r) where
-  toCardCode' = \case
-    L1 l -> toCardCode' l
-    R1 r -> toCardCode' r
-
-instance HasCardCode c => HasCardCode' (K1 i c) where
-  toCardCode' = toCardCode . unK1

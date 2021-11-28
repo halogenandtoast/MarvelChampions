@@ -2,14 +2,16 @@ module Marvel.Hero.Cards where
 
 import Marvel.Prelude
 
+import Data.HashSet (singleton)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Keyword
 import Marvel.Name
 import Marvel.Trait
 
 allHeroCards :: [CardDef]
-allHeroCards = [spiderMan, captainMarvel, sheHulk]
+allHeroCards = [spiderMan, captainMarvel, sheHulk, blackPanther]
 
 allHeroesMap :: HashMap CardCode CardDef
 allHeroesMap = fromList $ map (toCardCode &&& id) allHeroCards
@@ -44,3 +46,8 @@ captainMarvel = hero "01010a" "Captain Marvel" [Avenger, Soldier]
 
 sheHulk :: CardDef
 sheHulk = hero "01019a" "She-Hulk" [Avenger, Gamma]
+
+blackPanther :: CardDef
+blackPanther = (hero "01040a" "Black Panther" [Avenger, Wakanda])
+  { cdKeywords = singleton (Retaliate 1)
+  }

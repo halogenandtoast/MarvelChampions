@@ -132,6 +132,9 @@ instance RunMessage MinionAttrs where
       runMinionMessage msg' attrs
     _ -> pure attrs
 
+toEnemyId :: MinionAttrs -> EnemyId
+toEnemyId = EnemyMinionId . toId
+
 runMinionMessage
   :: MonadGame env m => MinionMessage -> MinionAttrs -> m MinionAttrs
 runMinionMessage msg attrs = case msg of
@@ -186,19 +189,21 @@ runMinionMessage msg attrs = case msg of
     else do
       pushAll
         [ CheckWindows
-          [W.Window W.Would $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
+          [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         , MinionMessage (toId attrs) (MinionBeginAttack ident)
         ]
       pure attrs
   MinionBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
-      [ CheckWindows
-        [W.Window W.When $ W.EnemyAttack (EnemyMinionId $ toId attrs) ident]
-      , DeclareDefense ident (EnemyMinionId (toId attrs))
+      [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+      , DeclareDefense ident (toEnemyId attrs)
       , MinionMessage (toId attrs) MinionAttacked
       ]
-    pure $ attrs & attackingL ?~ attack attrs (IdentityCharacter ident) atk
+    pure
+      $ attrs
+      & attackingL
+      ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
   MinionSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of

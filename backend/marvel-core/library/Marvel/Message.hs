@@ -56,6 +56,7 @@ data Message
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
   | RanAbility Target Natural [WindowType]
+  | SearchFoundCards Target [PlayerCard]
   | WithDiscarded Target FromZone [PlayerCard]
   | SetActiveCost ActiveCost
   | Spent PlayerCard
@@ -260,6 +261,8 @@ data IdentityMessage
   | MinionEngaged MinionId
   | MinionDisengaged MinionId
   | ShuffleIdentityDiscardBackIntoDeck
+  | SearchIdentityDeck CardMatcher Target
+  | IdentityRetaliate Natural EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

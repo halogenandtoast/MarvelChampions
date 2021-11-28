@@ -26,6 +26,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
+import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message
@@ -250,6 +251,11 @@ getObligations attrs = case currentIdentity attrs of
   AlterEgoSide side ->
     traverse genEncounterCard (alterEgoObligations $ toAttrs side)
 
+toRetaliate :: [Keyword] -> Natural
+toRetaliate [] = 0
+toRetaliate (Retaliate n : _) = n
+toRetaliate (_ : xs) = toRetaliate xs
+
 runIdentityMessage
   :: (MonadGame env m, CoerceRole m)
   => IdentityMessage
@@ -257,7 +263,9 @@ runIdentityMessage
   -> m PlayerIdentity
 runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   SetupIdentity -> do
-    let nemesisSet = getNemesisSet $ toCardCode attrs
+    let
+      nemesisSet = getNemesisSet $ toCardCode attrs
+      setupAbilities = filter ((== Setup) . abilityType) $ getAbilities attrs
     obligations <- getObligations attrs
     nemesisSetCards <- gatherEncounterSet nemesisSet
     pushAll
@@ -265,7 +273,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       : ShuffleIntoEncounterDeck obligations
       : map
           (IdentityMessage (toId attrs))
-          [ShuffleDeck, DrawOrDiscardToHandLimit]
+          [ ShuffleDeck
+          , DrawOrDiscardToHandLimit
+          , DiscardCards
+          , DrawOrDiscardToHandLimit
+          ]
+      <> map
+           (\a -> RanAbility (toTarget attrs) (abilityIndex a) [])
+           setupAbilities
     pure attrs
   BeginTurn -> do
     takeTurn attrs
@@ -387,6 +402,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure
       $ attrs
       & (handL %~ Hand . (card :) . unHand)
+      & (deckL %~ Deck . filter (/= card) . unDeck)
       & (discardL %~ Discard . filter (/= card) . unDiscard)
   DiscardFor _ FromDeck _ _ -> error "Unhandled"
   DiscardedFor _ FromDeck _ _ _ -> error "Unhandled"
@@ -501,6 +517,15 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     let
       damage =
         subtractNatural playerIdentityDamageReduction $ attackDamage attack'
+      retaliate = case currentIdentity attrs of
+        HeroSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
+        AlterEgoSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
+    when
+      (retaliate > 0)
+      (push $ IdentityMessage
+        (toId attrs)
+        (IdentityRetaliate retaliate $ attackEnemy attack')
+      )
     when
       (damage > 0)
       (pushAll
@@ -536,6 +561,21 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False
   IdentityRemoveConfused -> pure $ attrs & confusedL .~ False
+  SearchIdentityDeck cardMatcher target -> do
+    let
+      deck = unDeck playerIdentityDeck
+      foundCards = filter (cardMatch cardMatcher) deck
+    pushAll [FocusCards deck, SearchFoundCards target foundCards, UnfocusCards]
+    pure attrs
+  IdentityRetaliate n enemyId -> do
+    let
+      target = case enemyId of
+        EnemyMinionId mid -> MinionTarget mid
+        EnemyVillainId vid -> VillainTarget vid
+    msgs <- choiceMessages (toId attrs)
+      $ DamageEnemy target (toSource attrs) W.FromRetaliate n
+    pushAll msgs
+    pure attrs
   SideMessage _ -> case currentIdentity attrs of
     HeroSide x -> do
       newSide <-

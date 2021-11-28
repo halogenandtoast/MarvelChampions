@@ -25,6 +25,11 @@ allEvents = fromList $ map
   , legalPractice
   , oneTwoPunch
   , splitPersonality
+  , ancestralKnowledge
+  , wakandaForeverA
+  , wakandaForeverB
+  , wakandaForeverC
+  , wakandaForeverD
   , forJustice
   , greatResponsibility
   , getReady
@@ -151,6 +156,26 @@ oneTwoPunch =
 splitPersonality :: CardDef
 splitPersonality =
   identityEvent "01025" "Split Personality" 3 Action [] [Energy]
+
+ancestralKnowledge :: CardDef
+ancestralKnowledge =
+  identityEvent "01042" "Ancestral Knowledge" 1 AlterEgoAction [] [Mental]
+
+wakandaForeverA :: CardDef
+wakandaForeverA =
+  identityEvent "01043a" "Wakanda Forever!" 1 HeroAction [Tactic] [Energy]
+
+wakandaForeverB :: CardDef
+wakandaForeverB =
+  identityEvent "01043b" "Wakanda Forever!" 1 HeroAction [Tactic] [Mental]
+
+wakandaForeverC :: CardDef
+wakandaForeverC =
+  identityEvent "01043c" "Wakanda Forever!" 1 HeroAction [Tactic] [Physical]
+
+wakandaForeverD :: CardDef
+wakandaForeverD =
+  identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
 forJustice :: CardDef
 forJustice =
