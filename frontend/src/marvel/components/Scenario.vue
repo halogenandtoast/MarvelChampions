@@ -26,7 +26,7 @@
         @choose="$emit('choose', $event)"
       />
     </div>
-    <div v-if="focusedCards.length > 0">
+    <div v-if="focusedCards.length > 0" class="focused">
       <Card v-for="card in focusedCards" :key="card.cardId" :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
     </div>
     <div>
@@ -106,5 +106,10 @@ export default defineComponent({
 
 .discard {
   filter: grayscale(1);
+}
+
+.focused {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>

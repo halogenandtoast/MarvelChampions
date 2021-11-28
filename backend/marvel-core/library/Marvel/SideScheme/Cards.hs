@@ -51,6 +51,14 @@ bombScare = (sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1)
   { cdAcceleration = 1
   }
 
+usurpTheThrone :: CardDef
+usurpTheThrone = sideScheme
+  "01156"
+  "Usurp the Throne"
+  [Boost, Boost, Boost]
+  BlackPantherNemesis
+  1
+
 personalChallenge :: CardDef
 personalChallenge =
   sideScheme "01161" "Personal Challenge" [Boost, Boost, Boost] SheHulkNemesis 1

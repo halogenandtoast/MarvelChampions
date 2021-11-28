@@ -80,20 +80,11 @@ runMainSchemeMessage msg attrs = case msg of
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
-      players <- getPlayers
       encounterCards <-
         shuffleM
         . (<> scenarioEncounterDeck)
         =<< gatherEncounterSets scenarioEncounterSets
-      pushAll
-        $ map AddVillain scenarioVillains
-        <> concatMap
-             (\ident -> map
-               (IdentityMessage ident)
-               [DiscardCards, DrawOrDiscardToHandLimit]
-             )
-             players
-        <> [BeginPhase PlayerPhase]
+      pushAll $ map AddVillain scenarioVillains <> [BeginPhase PlayerPhase]
       pure $ attrs & encounterDeckL .~ encounterCards
     ShuffleEncounterDeck -> do
       deck' <- shuffleM scenarioEncounterDeck

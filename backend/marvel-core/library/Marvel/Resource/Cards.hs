@@ -13,7 +13,8 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ map
   (toCardCode &&& id)
-  [ thePowerOfAggression
+  [ vibranium
+  , thePowerOfAggression
   , thePowerOfJustice
   , thePowerOfLeadership
   , thePowerOfProtection
@@ -56,6 +57,9 @@ baseResource code name traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   }
+
+vibranium :: CardDef
+vibranium = identityResource "01044" "Vibranium" [] [Wild, Wild]
 
 thePowerOfAggression :: CardDef
 thePowerOfAggression =

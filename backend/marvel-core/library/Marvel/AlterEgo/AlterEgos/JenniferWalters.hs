@@ -5,7 +5,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -32,7 +31,7 @@ jenniferWalters = alterEgo
 
 newtype JenniferWalters = JenniferWalters AlterEgoAttrs
   deriving anyclass IsAlterEgo
-  deriving newtype (Show, Eq, HasStartingHP, HasHandSize, ToJSON, FromJSON, IsSource, HasCardCode, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, Entity)
 
 instance HasAbilities JenniferWalters where
   getAbilities (JenniferWalters a) =

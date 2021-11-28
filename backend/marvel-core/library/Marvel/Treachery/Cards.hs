@@ -64,6 +64,14 @@ explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
 falseAlarm :: CardDef
 falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2
 
+heartShapedHerb :: CardDef
+heartShapedHerb =
+  treachery "01158" "Heart-Shaped Herb" [Star] BlackPantherNemesis 1
+
+ritualCombat :: CardDef
+ritualCombat =
+  treachery "01159" "Ritual Combat" [Boost, Boost] BlackPantherNemesis 2
+
 titaniasFury :: CardDef
 titaniasFury =
   treachery "01164" "Titania's Fury" [Star, Boost] SheHulkNemesis 2

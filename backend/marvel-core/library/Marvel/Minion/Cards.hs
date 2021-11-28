@@ -15,7 +15,7 @@ import Marvel.Trait
 allMinions :: HashMap CardCode CardDef
 allMinions = fromList $ map
   (toCardCode &&& id)
-  [hydraMercenary, sandman, shocker, hydraBomber, titania, vulture]
+  [hydraMercenary, sandman, shocker, hydraBomber, killmonger, titania, vulture]
 
 minion
   :: CardCode
@@ -64,6 +64,18 @@ shocker = (minion "01103" "Shocker" [Criminal] [Boost, Boost] Rhino 1)
 
 hydraBomber :: CardDef
 hydraBomber = minion "01110" "Hydra Bomber" [Hydra] [Boost] BombScare 2
+
+killmonger :: CardDef
+killmonger = (minion
+               "01157"
+               "Killmonger"
+               [Assassin, Elite, Mercenary]
+               [Boost, Boost]
+               BlackPantherNemesis
+               1
+             )
+  { cdUnique = True
+  }
 
 titania :: CardDef
 titania =

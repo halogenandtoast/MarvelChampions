@@ -10,7 +10,8 @@ import Marvel.Criteria
 import Marvel.Name
 
 allObligations :: HashMap CardCode CardDef
-allObligations = fromList $ map (toCardCode &&& id) [legalWork, evictionNotice]
+allObligations =
+  fromList $ map (toCardCode &&& id) [affairsOfState, legalWork, evictionNotice]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
 obligation code name boostIcons = CardDef
@@ -33,6 +34,9 @@ obligation code name boostIcons = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   }
+
+affairsOfState :: CardDef
+affairsOfState = obligation "01155" "Affairs of State" [Boost, Boost]
 
 legalWork :: CardDef
 legalWork = obligation "01160" "Legal Work" [Boost, Boost]

@@ -102,6 +102,9 @@ instance Entity VillainAttrs where
   toId = villainId
   toAttrs = id
 
+toEnemyId :: VillainAttrs -> EnemyId
+toEnemyId = EnemyVillainId . toId
+
 runVillainMessage
   :: MonadGame env m => VillainMessage -> VillainAttrs -> m VillainAttrs
 runVillainMessage msg attrs = case msg of
@@ -151,7 +154,7 @@ runVillainMessage msg attrs = case msg of
     else do
       pushAll
         [ CheckWindows
-          [W.Window W.Would $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
+          [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         , VillainMessage (toId attrs) (VillainBeginAttack ident)
         , VillainMessage (toId attrs) VillainEndAttack
         , ClearBoosts
@@ -160,14 +163,16 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
-      [ CheckWindows
-        [W.Window W.When $ W.EnemyAttack (EnemyVillainId $ toId attrs) ident]
+      [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
       , DealBoost (toTarget attrs)
-      , DeclareDefense ident (EnemyVillainId (toId attrs))
+      , DeclareDefense ident (toEnemyId attrs)
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
       ]
-    pure $ attrs & attackingL ?~ attack attrs (IdentityCharacter ident) atk
+    pure
+      $ attrs
+      & attackingL
+      ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
   VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True

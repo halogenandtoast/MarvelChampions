@@ -42,16 +42,31 @@ data CardMatcher
   | CardWithAspect Aspect
   | CardWithResource Resource
   | CardWithType CardType
+  | CardWithTrait Trait
+  | CardMatchesAll [CardMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup CardMatcher where
+  AnyCard <> x = x
+  x <> AnyCard = x
+  CardMatchesAll xs <> CardMatchesAll ys = CardMatchesAll $ xs <> ys
+  x <> CardMatchesAll ys = CardMatchesAll $ x : ys
+  CardMatchesAll xs <> y = CardMatchesAll $ xs <> [y]
+  x <> y = CardMatchesAll [x, y]
+
+instance Monoid CardMatcher where
+  mempty = AnyCard
 
 cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
 cardMatch matcher a = case matcher of
   AnyCard -> True
   CardWithAspect aspect -> cdAspect def == Just aspect
   CardWithType cType -> cdCardType def == cType
+  CardWithTrait trait -> trait `member` cdTraits def
   CardWithResource resource ->
     resource `elem` map snd (filter isPrintedResource $ cdResources def)
+  CardMatchesAll xs -> all (`cardMatch` a) xs
  where
   def = getCardDef a
   isPrintedResource (restriction, _) = restriction == PrintedResource

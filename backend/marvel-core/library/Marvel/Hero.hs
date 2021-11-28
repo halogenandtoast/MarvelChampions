@@ -7,6 +7,7 @@ import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.AlterEgo.Attrs
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -37,13 +38,16 @@ allHeroes =
   fromList $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Hero")
 
 instance HasStartingHP Hero where
-  startingHP = genericHasStartingHP
+  startingHP = startingHP . toAttrs
 
 instance HasHandSize Hero where
-  handSize = genericHasHandSize
+  handSize = handSize . toAttrs
 
 instance HasCardCode Hero where
-  toCardCode = genericToCardCode
+  toCardCode = toCardCode . toAttrs
+
+instance HasCardDef Hero where
+  getCardDef = getCardDef . toAttrs
 
 instance IsSource Hero where
   toSource = toSource . toAttrs

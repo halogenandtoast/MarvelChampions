@@ -205,6 +205,7 @@ passesTypeIsRelevant ident a = case abilityType a of
   HeroAction -> member ident <$> select HeroIdentity
   AlterEgoAction -> member ident <$> select AlterEgoIdentity
   Special -> pure False
+  Setup -> pure False
 
 class PerformAbility a where
   performAbility :: MonadGame env m => a -> Natural -> m ()
@@ -223,6 +224,7 @@ isForcedAbility a = case abilityType a of
   AlterEgoAction -> False
   Special -> False
   Basic -> False
+  Setup -> False
 
 defaultAbilityLimit :: AbilityType -> Limit
 defaultAbilityLimit = \case
@@ -238,3 +240,4 @@ defaultAbilityLimit = \case
   AlterEgoAction -> NoLimit
   Special -> NoLimit
   Basic -> NoLimit
+  Setup -> NoLimit

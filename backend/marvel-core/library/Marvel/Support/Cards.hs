@@ -15,6 +15,7 @@ allSupports = fromList $ map
   (toCardCode &&& id)
   [ auntMay
   , superhumanLawDivision
+  , theGoldenCity
   , interrogationRoom
   , surveillanceTeam
   , theTriskellion
@@ -67,6 +68,12 @@ auntMay = unique $ identitySupport "01006" "Aunt May" 1 [Persona] [Energy]
 superhumanLawDivision :: CardDef
 superhumanLawDivision =
   identitySupport "01026" "Superhuman Law Division" 1 [Location] [Physical]
+
+theGoldenCity :: CardDef
+theGoldenCity =
+  (identitySupport "01045" "The Golden City" 2 [Location, Wakanda] [Energy])
+    { cdUnique = True
+    }
 
 interrogationRoom :: CardDef
 interrogationRoom =

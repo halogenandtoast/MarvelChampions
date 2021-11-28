@@ -9,10 +9,15 @@ data Attack = Attack
   { attackCharacter :: CharacterId
   , attackOverkill :: Bool
   , attackDamage :: Natural
-  , attackSource :: Source
+  , attackEnemy :: EnemyId
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+attackSource :: Attack -> Source
+attackSource a = case attackEnemy a of
+  EnemyMinionId mid -> MinionSource mid
+  EnemyVillainId vid -> VillainSource vid
 
 attackCharacterL :: Lens' Attack CharacterId
 attackCharacterL = lens attackCharacter $ \m x -> m { attackCharacter = x }
@@ -23,10 +28,10 @@ attackOverkillL = lens attackOverkill $ \m x -> m { attackOverkill = x }
 attackDamageL :: Lens' Attack Natural
 attackDamageL = lens attackDamage $ \m x -> m { attackDamage = x }
 
-attack :: IsSource a => a -> CharacterId -> Natural -> Attack
-attack a characterId dmg = Attack
+attack :: EnemyId -> CharacterId -> Natural -> Attack
+attack enemyId characterId dmg = Attack
   { attackCharacter = characterId
   , attackOverkill = False
   , attackDamage = dmg
-  , attackSource = toSource a
+  , attackEnemy = enemyId
   }
