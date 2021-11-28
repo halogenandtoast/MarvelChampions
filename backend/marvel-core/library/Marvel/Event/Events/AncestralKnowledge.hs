@@ -11,6 +11,7 @@ import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
@@ -24,7 +25,16 @@ newtype AncestralKnowledge = AncestralKnowledge EventAttrs
 instance RunMessage AncestralKnowledge where
   runMessage msg e@(AncestralKnowledge attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent _ _ _ -> do
+      PlayedEvent identityId _ _ -> do
+        push
+          (IdentityMessage identityId
+          $ ChooseFromDiscard (toTarget attrs) DifferentCards 0 3
+          )
         pure e
       _ -> AncestralKnowledge <$> runMessage msg attrs
+    WithChosen target _ cards | isTarget attrs target -> do
+      push $ IdentityMessage
+        (eventController attrs)
+        (ShuffleIntoIdentityDeck cards)
+      pure e
     _ -> AncestralKnowledge <$> runMessage msg attrs
