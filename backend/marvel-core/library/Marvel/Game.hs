@@ -3,12 +3,12 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import qualified Data.Aeson.Diff as Diff
-import qualified Data.HashMap.Strict as HashMap
-import qualified Data.HashSet as HashSet
+import Data.Aeson.Diff qualified as Diff
+import Data.HashMap.Strict qualified as HashMap
+import Data.HashSet qualified as HashSet
 import Data.List (maximum)
 import Marvel.Ability
-import qualified Marvel.Ability as Ability
+import Marvel.Ability qualified as Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
@@ -31,7 +31,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import qualified Marvel.Matchers as Matchers
+import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Modifier
@@ -51,7 +51,7 @@ import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
-import qualified Marvel.Window as W
+import Marvel.Window qualified as W
 
 data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
@@ -376,6 +376,12 @@ runGameMessage msg g@Game {..} = case msg of
       _ -> pure g
   ClearBoosts -> pure $ g & boostEntitiesL .~ defaultEntities
   RevealEncounterCard ident card -> do
+    pushAll
+      [ CheckWindows [W.Window When $ W.EncounterCardRevealed ident card]
+      , RevealedEncounterCard ident card
+      ]
+    pure g
+  RevealedEncounterCard ident card -> do
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
@@ -835,7 +841,6 @@ gameSelectEncounterCard m = case m of
         cards <- gatherEncounterSet $ getNemesisSet $ toCardCode iid
         pure $ HashSet.fromList cards
 
-
 gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
   allies <- toList <$> getsGame gameAllies
@@ -1100,3 +1105,4 @@ gameSelectCountIdentity aggregate matcher = do
     filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers
   case aggregate of
     SustainedDamage -> pure . sum $ map identityDamage identities
+    HeroAttackDamage -> sum <$> traverse getIdentityHeroAttackDamage identities

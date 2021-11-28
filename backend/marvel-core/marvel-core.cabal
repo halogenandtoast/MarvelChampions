@@ -17,6 +17,7 @@ library
       Marvel.Ally
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy
+      Marvel.Ally.Allies.BlackWidowNatashaRomanoff
       Marvel.Ally.Allies.DaredevilMattMurdock
       Marvel.Ally.Allies.HawkeyeClintBarton
       Marvel.Ally.Allies.HellcatPatsyWalker
@@ -73,11 +74,13 @@ library
       Marvel.Event.Events
       Marvel.Event.Events.AncestralKnowledge
       Marvel.Event.Events.Backflip
+      Marvel.Event.Events.CounterPunch
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.FirstAid
       Marvel.Event.Events.ForJustice
       Marvel.Event.Events.GammaSlam
+      Marvel.Event.Events.GetBehindMe
       Marvel.Event.Events.GetReady
       Marvel.Event.Events.GreatResponsibility
       Marvel.Event.Events.GroundStomp
@@ -196,6 +199,7 @@ library
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition
+      Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
       Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.SpiderTracer

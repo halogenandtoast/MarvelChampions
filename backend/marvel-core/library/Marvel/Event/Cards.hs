@@ -35,6 +35,8 @@ allEvents = fromList $ map
   , getReady
   , leadFromTheFront
   , makeTheCall
+  , counterPunch
+  , getBehindMe
   , emergency
   , firstAid
   , haymaker
@@ -208,9 +210,24 @@ makeTheCall = (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
     $ BasicCardMatches (CardWithType AllyType)
   }
 
+counterPunch :: CardDef
+counterPunch =
+  (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
+    { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+getBehindMe :: CardDef
+getBehindMe =
+  (event "01078" "Get Behind Me!" 1 HeroInterrupt [] [Mental] Protection)
+    { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
 emergency :: CardDef
 emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
-  { cdResponseWindow = Just (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
+  { cdResponseWindow = Just
+    (TreacheryRevealed When AnyTreachery FromEncounterDeck)
   , cdAbilitySubType = Just Ability.Thwart
   }
 
@@ -218,7 +235,6 @@ firstAid :: CardDef
 firstAid = (basicEvent "01086" "First Aid" 1 Action [] [Mental])
   { cdCriteria = CharacterExists CharacterWithAnyDamage
   }
-
 
 haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])

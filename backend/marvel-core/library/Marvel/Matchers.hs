@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.Def
+import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -54,7 +55,7 @@ pattern IdentityWithAnyDamage <-
   IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
 instance Count IdentityMatcher where
-  data QueryCount IdentityMatcher = SustainedDamage
+  data QueryCount IdentityMatcher = SustainedDamage | HeroAttackDamage
   selectCount = gameSelectCountIdentity
 
 data AllyMatcher
@@ -202,6 +203,16 @@ newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 newtype EncounterCardMatcher = NemesisSetFor IdentityId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data BasicEncounterCardMatcher = AnyEncounterCard
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+encounterCardMatches :: BasicEncounterCardMatcher -> EncounterCard -> Bool
+encounterCardMatches matcher _ = case matcher of
+  AnyEncounterCard -> True
 
 data ExtendedCardMatcher
   = AffordableCardBy IdentityMatcher ExtendedCardMatcher

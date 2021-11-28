@@ -69,6 +69,7 @@ data Message
   | DealEncounterCard IdentityId
   | GainSurge Target
   | Surge IdentityId
+  | DrawAndRevealEncounterCard IdentityId
   | DiscardedCard Card
   | DeclareDefense IdentityId EnemyId
   | RemoveFromPlay Target
@@ -76,6 +77,7 @@ data Message
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
+  | RevealedEncounterCard IdentityId EncounterCard
   | RevealBoostCard EncounterCard EnemyId
   | AdvanceScenario
   | GameOver FinishedStatus
@@ -291,10 +293,7 @@ class RunMessage' f where
   runMessage' :: MonadGame env m => Message -> f p -> m (f p)
 
 genericRunMessage
-  :: (MonadGame env m, RunMessage' (Rep a), Generic a)
-  => Message
-  -> a
-  -> m a
+  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
 genericRunMessage msg = fmap to . runMessage' msg . from
 
 instance RunMessage' f => RunMessage' (M1 i c f) where

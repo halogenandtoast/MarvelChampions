@@ -21,6 +21,7 @@ allAllies = fromList $ map
   , hawkeyeClintBarton
   , mariaHill
   , vision
+  , blackWidowNatashaRomanoff
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
@@ -92,6 +93,15 @@ mariaHill = ally "01067" "Maria Hill" 2 [Shield] [Mental] Leadership
 
 vision :: CardDef
 vision = ally "01068" "Vision" 4 [Android, Avenger] [Physical] Leadership
+
+blackWidowNatashaRomanoff :: CardDef
+blackWidowNatashaRomanoff = ally
+  "01075"
+  ("Black Widow" <:> "Natasha Romanoff")
+  3
+  [Shield, Spy]
+  [Physical]
+  Protection
 
 lukeCage :: CardDef
 lukeCage = ally "01076" "Luke Cage" 4 [Defender] [Energy] Protection
