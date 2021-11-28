@@ -109,5 +109,8 @@ inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
   { cdCriteria = AllyExists AnyAlly
   }
 
+armoredVest :: CardDef
+armoredVest = upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
+
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]

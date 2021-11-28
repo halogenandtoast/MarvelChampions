@@ -190,6 +190,7 @@ library
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.ArmoredVest
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition

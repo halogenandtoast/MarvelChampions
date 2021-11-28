@@ -106,6 +106,14 @@ getModifiedThwart attrs = do
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
+getModifiedDefense :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedDefense attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
+ where
+  applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
 damageChoice :: HeroAttrs -> Natural -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
@@ -154,10 +162,11 @@ instance RunMessage HeroAttrs where
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveConfused
               pure a
         Defended enemyId -> do
+          def <- getModifiedDefense a
           pushAll
             [ IdentityMessage ident ExhaustedIdentity
             , IdentityMessage ident
-              $ IdentityDefended (unDef $ heroBaseDefense a)
+              $ IdentityDefended def
             , case enemyId of
               EnemyVillainId vid ->
                 VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
