@@ -12,6 +12,9 @@ export interface AllyContents {
   allyDamage: number
   allyCounters: number
   allyExhausted: boolean
+  allyTough: boolean
+  allyConfused: boolean
+  allyStunned: boolean
   allyUpgrades: string[]
 }
 
@@ -22,6 +25,9 @@ export const allyContentsDecoder = JsonDecoder.object<AllyContents>(
     allyDamage: JsonDecoder.number,
     allyCounters: JsonDecoder.number,
     allyExhausted: JsonDecoder.boolean,
+    allyTough: JsonDecoder.boolean,
+    allyConfused: JsonDecoder.boolean,
+    allyStunned: JsonDecoder.boolean,
     allyUpgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
   }, 'AllyContents')
 
