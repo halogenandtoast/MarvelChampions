@@ -13,6 +13,9 @@
       />
       <div v-if="ally.contents.allyDamage > 0" class="damage">damage: {{ally.contents.allyDamage}}</div>
       <div v-if="ally.contents.allyCounters > 0" class="counter">counters: {{ally.contents.allyCounters}}</div>
+      <div v-if="ally.contents.allyStunned">Stunned</div>
+      <div v-if="ally.contents.allyConfused">Confused</div>
+      <div v-if="ally.contents.allyTough">Tough</div>
       <AbilityButton
             v-for="ability in abilities"
             :key="ability"
