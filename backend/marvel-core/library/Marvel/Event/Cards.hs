@@ -227,7 +227,7 @@ getBehindMe =
 emergency :: CardDef
 emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
   { cdResponseWindow = Just
-    (TreacheryRevealed When AnyTreachery FromEncounterDeck)
+    (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
   , cdAbilitySubType = Just Ability.Thwart
   }
 
