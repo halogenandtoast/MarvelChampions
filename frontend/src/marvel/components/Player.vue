@@ -36,8 +36,8 @@
   <div class="identity">
     <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
     <div>
-      <div class="identityCard" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)">
-        <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
+      <div class="identityCard">
+        <img :src="playerImg" alt="player" width="150" class="identityCardImg" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
         <div class="info">
           <div>HP: {{player.currentHP}}</div>
           <div v-if="player.stunned">stunned</div>
@@ -194,6 +194,7 @@ const toggleDebug = inject('toggleDebug')
 <style scoped lang="scss">
 .identity {
   display: flex;
+  padding: 10px;
 }
 
 .discard {
@@ -206,12 +207,9 @@ const toggleDebug = inject('toggleDebug')
 }
 
 .exhausted {
-  margin: auto 30px;
-  .identityCardImg {
-    transform: rotate(90deg);
-    display: block;
-    margin: 0 30px 0 0px;
-  }
+  transform: rotate(90deg);
+  display: block;
+  margin: 0 30px;
 }
 
 .active {
@@ -226,6 +224,10 @@ const toggleDebug = inject('toggleDebug')
     flex-flow: column;
     margin: 0 10px;
   }
+}
+
+.table {
+  padding: 10px;
 }
 
 </style>
