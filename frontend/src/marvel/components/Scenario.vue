@@ -104,6 +104,7 @@ export default defineComponent({
 .encounter {
   display: flex;
   align-self: center;
+  margin-bottom: auto;
 }
 
 .discard {
