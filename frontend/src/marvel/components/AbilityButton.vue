@@ -28,6 +28,10 @@ export default defineComponent({
         return "Forced Interrupt"
       }
 
+      if (abilityType == "Interrupt") {
+        return "Interrupt"
+      }
+
       if (abilityType == "Response") {
         return "Response"
       }
