@@ -10,8 +10,6 @@
         @choose="choose"
         @update="update"
       />
-      <button @click="undo">Undo</button>
-      <button @click="toggleDebug">Toggle Debug</button>
       <div v-if="game.gameOver">
         <p>Game over</p>
       </div>
@@ -110,7 +108,17 @@ export default defineComponent({
     provide('debugChoose', debugChoose)
     const toggleDebug = () => debug.value = !debug.value
 
+    provide('undo', undo)
+    provide('toggleDebug', toggleDebug)
+
     return { ready, game, debug, toggleDebug, identityId, choose, update, undo }
   }
 })
 </script>
+
+<style lang="scss" scoped>
+.game {
+  width: 100%;
+  height: 100%;
+}
+</style>

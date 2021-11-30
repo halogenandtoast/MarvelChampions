@@ -1,83 +1,85 @@
 <template>
-  <div class="player">
-    <div class="table">
-      <Ally
-        v-for="ally in allies"
-        :key="ally.contents.allyId"
-        :ally="ally"
-        :game="game"
-        :identityId="identityId"
-        @choose="emit('choose', $event)"
-      />
-      <Support
-        v-for="support in supports"
-        :key="support.contents.supportId"
-        :support="support"
-        :game="game"
-        :identityId="identityId"
-        @choose="emit('choose', $event)"
-      />
-      <Upgrade
-        v-for="upgrade in upgrades"
-        :key="upgrade.contents.upgradeId"
-        :upgrade="upgrade"
-        :game="game"
-        :identityId="identityId"
-        @choose="emit('choose', $event)"
-      />
-      <Minion
-        v-for="minion in minions"
-        :key="minion.contents.minionId"
-        :minion="minion"
-        :game="game"
-        :identityId="identityId"
-        @choose="emit('choose', $event)"
-      />
-    </div>
-    <div class="identity">
-      <div v-if="player.encounterCards.length > 0">Encounter cards: {{player.encounterCards.length}}</div>
-      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
-      <div>
-        <div class="identityCard" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)">
-          <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
+  <div class="table">
+    <Ally
+      v-for="ally in allies"
+      :key="ally.contents.allyId"
+      :ally="ally"
+      :game="game"
+      :identityId="identityId"
+      @choose="emit('choose', $event)"
+    />
+    <Support
+      v-for="support in supports"
+      :key="support.contents.supportId"
+      :support="support"
+      :game="game"
+      :identityId="identityId"
+      @choose="emit('choose', $event)"
+    />
+    <Upgrade
+      v-for="upgrade in upgrades"
+      :key="upgrade.contents.upgradeId"
+      :upgrade="upgrade"
+      :game="game"
+      :identityId="identityId"
+      @choose="emit('choose', $event)"
+    />
+    <Minion
+      v-for="minion in minions"
+      :key="minion.contents.minionId"
+      :minion="minion"
+      :game="game"
+      :identityId="identityId"
+      @choose="emit('choose', $event)"
+    />
+  </div>
+  <div class="identity">
+    <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
+    <div>
+      <div class="identityCard" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)">
+        <img :src="playerImg" alt="player" width="150" class="identityCardImg" />
+        <div class="info">
+          <div>HP: {{player.currentHP}}</div>
+          <div v-if="player.stunned">stunned</div>
+          <div v-if="player.confused">confused</div>
+          <div v-if="player.tough">tough</div>
+          <div v-if="player.encounterCards.length > 0">Encounter cards: {{player.encounterCards.length}}</div>
+          <AbilityButton
+                v-for="ability in abilities"
+                :key="ability"
+                :ability="choices[ability]"
+                :data-image="image"
+                @click="emit('choose', ability)"
+                />
+          <button
+            v-if="defendAction !== -1"
+            @click="emit('choose', defendAction)"
+          >Defend</button>
+          <button
+            v-for="label in labels"
+            :key="label"
+            @click="emit('choose', label)"
+            >{{choices[label].contents}}</button>
+          <button
+            v-if="finishPaymentAction !== -1"
+            @click="emit('choose', finishPaymentAction)"
+          >Finish Payment</button>
+          <button
+            :disabled="endTurnAction === -1"
+            @click="emit('choose', endTurnAction)"
+          >End turn</button>
+          <button @click="undo">Undo</button>
+          <button @click="toggleDebug">Toggle Debug</button>
         </div>
-        <div>HP: {{player.currentHP}}</div>
-        <div v-if="player.stunned">stunned</div>
-        <div v-if="player.confused">confused</div>
-        <div v-if="player.tough">tough</div>
-        <AbilityButton
-              v-for="ability in abilities"
-              :key="ability"
-              :ability="choices[ability]"
-              :data-image="image"
-              @click="emit('choose', ability)"
-              />
-        <button
-          v-if="defendAction !== -1"
-          @click="emit('choose', defendAction)"
-        >Defend</button>
-        <button
-          v-for="label in labels"
-          :key="label"
-          @click="emit('choose', label)"
-          >{{choices[label].contents}}</button>
       </div>
-      <div>
-        <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
-        <template v-if="debug">
-          <button @click="debugChoose({tag: 'IdentityMessage', contents: [identityId, {tag: 'SearchIdentityDeck', contents: [{tag: 'AnyCard', contents: []}, {tag: 'SearchDrawOne', contents: []}]}]})">Select Draw</button>
-        </template>
-      </div>
-      <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
     </div>
-    <button
-      v-if="finishPaymentAction !== -1"
-      @click="emit('choose', finishPaymentAction)"
-    >Finish Payment</button>
-    <button
-      :disabled="endTurnAction === -1"
-      @click="emit('choose', endTurnAction)"
-    >End turn</button>
+    <div>
+      <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
+      <template v-if="debug">
+        <button @click="debugChoose({tag: 'IdentityMessage', contents: [identityId, {tag: 'SearchIdentityDeck', contents: [{tag: 'AnyCard', contents: []}, {tag: 'SearchDrawOne', contents: []}]}]})">Select Draw</button>
+      </template>
+    </div>
+    <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
   </div>
 </template>
 
@@ -185,6 +187,8 @@ const activeAbility = computed(() => {
 
 const debug = inject('debug')
 const debugChoose = inject('debugChoose')
+const undo = inject('undo')
+const toggleDebug = inject('toggleDebug')
 </script>
 
 <style scoped lang="scss">
@@ -206,11 +210,22 @@ const debugChoose = inject('debugChoose')
   .identityCardImg {
     transform: rotate(90deg);
     display: block;
+    margin: 0 30px 0 0px;
   }
 }
 
 .active {
   border: 2px solid #FF00FF;
+}
+
+.identityCard {
+  display: flex;
+  flex-flow: row;
+  .info {
+    display: flex;
+    flex-flow: column;
+    margin: 0 10px;
+  }
 }
 
 </style>

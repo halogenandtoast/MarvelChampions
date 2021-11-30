@@ -12,7 +12,7 @@
       <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
       <img src="/img/marvel/encounter-back.png" alt="deck" width="150" height="209" class="deck" />
       <div class="mainScheme">
-        <img :src="scenarioImg" alt="Scenario" height="200" class="scenario" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
+        <img :src="scenarioImg" alt="Scenario" height="200" class="scenario-card card" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)" />
         <div>{{game.scenario.contents.scenarioThreat}}</div>
         <div v-if="game.scenario.contents.scenarioAccelerationTokens > 0">Acceleration Tokens: {{game.scenario.contents.scenarioAccelerationTokens}}</div>
       </div>
@@ -29,16 +29,14 @@
     <div v-if="focusedCards.length > 0" class="focused">
       <Card v-for="card in focusedCards" :key="card.contents.cardId" :card="card.contents" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" />
     </div>
-    <div>
-      <Player
-        v-for="player in game.players"
-        :key="player.id"
-        :player="player"
-        :identityId="identityId"
-        :game="game"
-        @choose="$emit('choose', $event)"
-      />
-    </div>
+    <Player
+      v-for="player in game.players"
+      :key="player.id"
+      :player="player"
+      :identityId="identityId"
+      :game="game"
+      @choose="$emit('choose', $event)"
+    />
   </div>
 </template>
 
@@ -93,6 +91,9 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .scenario {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
   border-radius: 10px;
 }
 
@@ -102,6 +103,7 @@ export default defineComponent({
 
 .encounter {
   display: flex;
+  align-self: center;
 }
 
 .discard {
