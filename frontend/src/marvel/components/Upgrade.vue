@@ -60,5 +60,6 @@ export default defineComponent({
 
 .exhausted {
   transform: rotate(90deg);
+  margin: 0 30px;
 }
 </style>

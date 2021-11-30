@@ -52,3 +52,67 @@ export default defineComponent({
   }
 })
 </script>
+
+<style lang="scss" scoped>
+#nav {
+  height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  a {
+    font-weight: bold;
+    text-decoration: none;
+    &:hover {
+      color: #6E8640;
+    }
+  }
+}
+.main-links {
+  flex-grow: 1;
+  a {
+    margin-left: 10px;
+  }
+}
+.gravatar {
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+input[type=checkbox] {
+  display: none;
+}
+input[type=checkbox]:checked ~ .user-links .user-links--dropdown {
+  display: block;
+}
+input[type=checkbox]:checked ~ .user-links {
+  border-radius: 5px 5px 0 0;
+}
+.user-links {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-right: 10px;
+  border-radius: 5px;
+  label {
+    user-select: none;
+  }
+}
+.user-links--dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  text-align: right;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 0 0 5px 5px;
+}
+.user-links--dropdown-icon {
+  margin-left: 10px;
+  cursor: pointer;
+}
+label {
+  display: flex;
+  align-items: center;
+}
+</style>

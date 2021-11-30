@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
-    <Nav/>
-    <router-view/>
+  <div class="app">
+    <Nav class="nav" />
+    <router-view class="main-view" />
   </div>
 </template>
 
@@ -25,16 +25,20 @@ export default defineComponent({
 }
 
 #app {
+  height: 100%;
+}
+
+.app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
+  height: 100%;
+  display: flex;
+  flex-flow: column;
 }
 
-#nav {
-  padding: 30px;
-
+.nav {
   a {
     font-weight: bold;
     color: #2c3e50;
@@ -43,5 +47,21 @@ export default defineComponent({
       color: #42b983;
     }
   }
+
+  flex: 0 1 auto;
+}
+
+.main-view {
+  flex: 1 1 auto;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+html {
+  height: 100%;
 }
 </style>
