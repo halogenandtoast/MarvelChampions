@@ -53,7 +53,7 @@ instance RunMessage BlackWidowNatashaRomanoff where
     RanAbility target 1 [EncounterCardRevealed ident _]
       | isTarget attrs target -> do
         replaceMatchingMessage [DrawAndRevealEncounterCard ident] $ \case
-          RevealEncounterCard _ _ -> True
+          RevealedEncounterCard _ _ -> True
           _ -> False
         pure a
     _ -> BlackWidowNatashaRomanoff <$> runMessage msg attrs

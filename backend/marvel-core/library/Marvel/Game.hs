@@ -377,7 +377,9 @@ runGameMessage msg g@Game {..} = case msg of
   ClearBoosts -> pure $ g & boostEntitiesL .~ defaultEntities
   RevealEncounterCard ident card -> do
     pushAll
-      [ CheckWindows [W.Window When $ W.EncounterCardRevealed ident card]
+      [ FocusCards [EncounterCard card]
+      , CheckWindows [W.Window When $ W.EncounterCardRevealed ident card]
+      , UnfocusCards
       , RevealedEncounterCard ident card
       ]
     pure g
@@ -392,8 +394,10 @@ runGameMessage msg g@Game {..} = case msg of
       MinionType -> do
         let minion = createMinion ident card
         pushAll
-          [ CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
+          [ FocusCards [toCard minion]
+          , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
           , MinionMessage (toId minion) (RevealMinion ident)
+          , UnfocusCards
           , IdentityMessage ident (MinionEngaged $ toId minion)
           , MinionMessage (toId minion) (MinionEngagedIdentity ident)
           , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
@@ -472,6 +476,7 @@ runGameMessage msg g@Game {..} = case msg of
       (andM . sequence
         [ pure . passesUseLimit ident usedAbilities
         , passesCriteria ident
+        , passesCanAffordCost ident
         , \a -> anyM (`abilityInWindow` a) windows
         ]
       )
@@ -485,7 +490,7 @@ runGameMessage msg g@Game {..} = case msg of
           . ChooseOne
           $ Label "Use no responses/interrupts" []
           : map (UseAbility . (choicesL <>~ [Run [CheckWindows windows]])) as
-          <> map (uncurry PlayCard) cs
+          <> map (\(c, mwindow) -> TargetLabel (CardIdTarget $ pcCardId c) [PlayCard c mwindow, Run [CheckWindows windows]]) cs
       (forced, _, _) -> push $ Ask ident . ChooseOne $ map
         (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
         forced
