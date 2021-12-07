@@ -273,8 +273,20 @@ data IdentityMessage
   | MinionEngaged MinionId
   | MinionDisengaged MinionId
   | ShuffleIdentityDiscardBackIntoDeck
-  | SearchIdentityDeck CardMatcher SearchOption
+  | Search SearchSignifier CardMatcher SearchOption ReturnOption
   | IdentityRetaliate Natural EnemyId
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data SearchSignifier = SearchIdentityDeck IdentityId DeckProjection
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data DeckProjection = AllOfDeck
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data ReturnOption = ShuffleBackIn
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

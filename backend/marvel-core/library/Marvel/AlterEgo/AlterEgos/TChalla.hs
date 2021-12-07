@@ -42,10 +42,11 @@ instance RunMessage TChalla where
     RanAbility target 1 _ | isTarget attrs target -> do
       pushAll $ map
         (IdentityMessage (toId attrs))
-        [ SearchIdentityDeck
+        [ Search
+          (SearchIdentityDeck (toId attrs) AllOfDeck)
           (CardWithTrait BlackPanther <> CardWithType UpgradeType)
           SearchDrawOne
-        , ShuffleDeck
+          ShuffleBackIn
         ]
       pure a
     _ -> TChalla <$> runMessage msg attrs

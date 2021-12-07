@@ -35,6 +35,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window qualified as W
 import System.Random.Shuffle
+import Data.List (partition)
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
@@ -629,10 +630,14 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False
   IdentityRemoveConfused -> pure $ attrs & confusedL .~ False
-  SearchIdentityDeck cardMatcher searchOption -> do
+  Search (SearchIdentityDeck iid projection) cardMatcher searchOption returnOption | iid == toId attrs -> do
     let
       deck = unDeck playerIdentityDeck
-      foundCards = filter (cardMatch cardMatcher) deck
+      (focusedCards, deck') = case projection of
+                       AllOfDeck -> (deck, [])
+      (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
+      handleReturnCards = case returnOption of
+        ShuffleBackIn -> IdentityMessage (toId attrs) . ShuffleIntoIdentityDeck
       handleFoundCards = if null foundCards
         then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
         else case searchOption of
@@ -641,11 +646,16 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
           SearchDrawOne -> Ask (toId attrs) $ ChooseOne
             [ TargetLabel
                 (CardIdTarget $ pcCardId c)
-                [Run [IdentityMessage (toId attrs) $ AddToHand c]]
-            | c <- foundCards
+                [Run
+                  [ IdentityMessage (toId attrs) $ AddToHand c
+                  , handleReturnCards $ rest <> cs'
+                  ]
+                ]
+            | (c, cs') <- removeEach foundCards
             ]
     pushAll [FocusCards $ PlayerCard <$> deck, handleFoundCards, UnfocusCards]
-    pure attrs
+    pure $ attrs & deckL .~ Deck deck'
+  Search _ _ _ _ -> error "Unhandled"
   IdentityRetaliate n enemyId -> do
     let
       target = case enemyId of

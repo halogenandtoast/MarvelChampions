@@ -909,33 +909,33 @@ gameSelectAttachment m = do
     AttachmentWithId ident' -> pure . (== ident') . toId
 
 gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
-gameSelectEnemy = \case
-  EnemyWithId enemyId -> case enemyId of
-    EnemyVillainId villainId ->
-      HashSet.map EnemyVillainId <$> gameSelectVillain (VillainWithId villainId)
-    EnemyMinionId minionId ->
-      HashSet.map EnemyMinionId <$> gameSelectMinion (MinionWithId minionId)
-  AnyEnemy -> do
-    villains <- toList <$> getsGame gameVillains
-    minions <- toList <$> getsGame gameMinions
-    pure
-      $ HashSet.fromList
-      $ map (EnemyVillainId . toId) villains
-      <> map (EnemyMinionId . toId) minions
-  VillainEnemy -> do
-    villains <- toList <$> getsGame gameVillains
-    pure $ HashSet.fromList $ map (EnemyVillainId . toId) villains
-  AttackableEnemy -> do
-    guardMinions <- selectAny $ MinionWithKeyword Guard
-    minions <- toList <$> getsGame gameMinions
-    if guardMinions
-      then pure $ HashSet.fromList $ map (EnemyMinionId . toId) minions
-      else do
-        villains <- toList <$> getsGame gameVillains
-        pure
-          $ HashSet.fromList
-          $ map (EnemyVillainId . toId) villains
-          <> map (EnemyMinionId . toId) minions
+gameSelectEnemy m = do
+  villains <- toList <$> getsGame gameVillains
+  minions <- toList <$> getsGame gameMinions
+  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) villains
+  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) minions
+  pure $ HashSet.fromList (villains' <> minions')
+ where
+   goVillain e = \case
+    EnemyWithId enemyId -> pure $ case enemyId of
+      EnemyVillainId villainId -> toId e == villainId
+      EnemyMinionId _ -> False
+    AnyEnemy -> pure True
+    VillainEnemy -> pure True
+    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
+    NotEnemy m' -> not <$> goVillain e m'
+    EnemyIs def -> pure $ def == getCardDef e
+    EnemyMatchesAll xs -> allM (goVillain e) xs
+   goMinion e = \case
+    EnemyWithId enemyId -> pure $ case enemyId of
+      EnemyVillainId _ -> False
+      EnemyMinionId minionId -> toId e == minionId
+    AnyEnemy -> pure True
+    VillainEnemy -> pure False
+    AttackableEnemy -> pure True
+    NotEnemy m' -> not <$> goMinion e m'
+    EnemyIs def -> pure $ def == getCardDef e
+    EnemyMatchesAll xs -> allM (goMinion e) xs
 
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do

@@ -45,6 +45,7 @@ import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder
 import Language.Haskell.TH hiding (location)
 import Text.Show qualified as S
+import Data.List qualified as List
 
 subtractNatural :: Natural -> Natural -> Natural
 subtractNatural a b = fromMaybe 0 (minusNaturalMaybe b a)
@@ -110,3 +111,6 @@ instance (FromJSON a, FromJSON b) => FromJSON (a `With` b) where
 
 instance (S.Show a, S.Show b) => S.Show (a `With` b) where
   show (With a b) = show a <> " WITH " <> show b
+
+removeEach :: Eq a => [a] -> [(a, [a])]
+removeEach xs = zip xs (map (flip List.delete xs) xs)

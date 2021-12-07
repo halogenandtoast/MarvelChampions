@@ -99,6 +99,9 @@ instance Entity VillainAttrs where
   toId = villainId
   toAttrs = id
 
+instance HasCardDef VillainAttrs where
+  getCardDef = villainCardDef
+
 toEnemyId :: VillainAttrs -> EnemyId
 toEnemyId = EnemyVillainId . toId
 

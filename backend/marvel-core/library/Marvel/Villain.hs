@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Message
@@ -43,3 +44,6 @@ instance HasAbilities Villain where
 
 instance RunMessage Villain where
   runMessage = genericRunMessage
+
+instance HasCardDef Villain where
+  getCardDef = getCardDef . toAttrs
