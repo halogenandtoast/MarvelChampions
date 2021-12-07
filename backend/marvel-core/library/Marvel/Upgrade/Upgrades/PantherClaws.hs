@@ -11,6 +11,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Minion.Cards qualified as Cards
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
@@ -42,7 +43,7 @@ instance RunMessage PantherClaws where
           modifiers <- getModifiers attrs
           let dmg = if LastSpecial `elem` modifiers then 4 else 2
           msgs <- choiceMessages (upgradeController attrs)
-            $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
+            $ ChooseDamage (toSource attrs) FromAbility dmg (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
           pushAll msgs
       pure u
     _ -> PantherClaws <$> runMessage msg attrs

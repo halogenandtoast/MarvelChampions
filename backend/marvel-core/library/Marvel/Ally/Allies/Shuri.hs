@@ -47,8 +47,7 @@ instance RunMessage Shuri where
     RanAbility target 1 _ | isTarget attrs target -> do
       pushAll $ map
         (IdentityMessage (allyController attrs))
-        [ SearchIdentityDeck (CardWithType UpgradeType) SearchDrawOne
-        , ShuffleDeck
+        [ Search (SearchIdentityDeck (allyController attrs) AllOfDeck) (CardWithType UpgradeType) SearchDrawOne ShuffleBackIn
         ]
       pure a
     _ -> Shuri <$> runMessage msg attrs
