@@ -6,7 +6,7 @@ api.watch:
 	  --interleaved-output \
 	  --file-watch \
 		$(EXTRA_STACK_FLAGS) \
-	  --exec "bash -c \"pkill marvel-api; DEVELOPMENT=true stack exec marvel-api &\"" \
+	  --exec "bash -c \"pkill marvel-api; DEVELOPMENT=true stack exec marvel-api $(EXTRA_STACK_FLAGS) &\"" \
 
 ## Generate a tags file for source-code navigation
 .PHONY: tags
