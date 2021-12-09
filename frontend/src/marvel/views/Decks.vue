@@ -3,7 +3,7 @@
     <div>
       <h2>New Deck</h2>
       <div class="new-deck">
-        <img v-if="identity" class="portrait" :src="`${baseUrl}/img/marvel/cards/${identity.replace('c', '')}.jpg`" />
+        <img v-if="identity" class="portrait" :src="`/img/marvel/cards/${identity.replace('c', '')}.jpg`" />
         <div class="fields">
           <input
             type="url"
@@ -44,7 +44,6 @@ export default defineComponent({
   setup() {
     const ready = ref(false)
     const decks = ref<Marvel.Deck[]>([])
-    const baseUrl = process.env.NODE_ENV == 'production' ? "https://assets.marvelhorror.app" : '';
     const deck = ref<string | null>(null)
     const identity = ref<string | null>(null)
     const deckId = ref<string | null>(null)
@@ -107,7 +106,7 @@ export default defineComponent({
         deck.value = null;
       }
     }
-    return { baseUrl, pasteDeck, createDeck, deleteDeckEvent, deleteId, deck, decks, loadDeck, identity, deckName }
+    return { pasteDeck, createDeck, deleteDeckEvent, deleteId, deck, decks, loadDeck, identity, deckName }
   }
 })
 </script>

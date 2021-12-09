@@ -56,7 +56,6 @@ library:
   - uri-bytestring
   - file-embed
   - string-conversions
-  - yesod-static
   - monad-logger
   - wai
   - wai-logger
@@ -79,7 +78,6 @@ library:
   - bcrypt
   - wai-extra
   - regex-posix
-  - wai-app-static
   - case-insensitive
   - template-haskell
   - http-client-tls
