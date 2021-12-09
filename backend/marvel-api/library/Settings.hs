@@ -3,22 +3,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
--- | Settings are centralized, as much as possible, into this file. This
--- includes database connection settings, static file locations, etc.
--- In addition, you can configure a number of different aspects of Yesod
--- by overriding methods in the Yesod typeclass. That instance is
--- declared in the Foundation.hs file.
 module Settings where
 
 import Relude
 
-import qualified Control.Exception as Exception
+import Control.Exception qualified as Exception
 import Data.Aeson
   (FromJSON(..), Result(..), Value, fromJSON, withObject, (.!=), (.:), (.:?))
-import qualified Data.ByteString.Char8 as BS8
+import Data.ByteString.Char8 qualified as BS8
 import Data.FileEmbed (embedFile)
 import Data.String.Conversions.Monomorphic (toStrictByteString)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Yaml (decodeEither')
 import Data.Yaml.Config (applyEnvValue)
 import Database.Persist.Postgresql (PostgresConf(..))
@@ -62,9 +57,7 @@ fromDatabaseUrl size url = do
 -- loaded from various sources: defaults, environment variables, config files,
 -- theoretically even a database.
 data AppSettings = AppSettings
-    { appStaticDir              :: String
-    -- ^ Directory from which to serve static files.
-    , appDatabaseConf           :: PostgresConf
+    { appDatabaseConf           :: PostgresConf
     -- ^ Configuration settings for accessing the database.
     , appRoot                   :: Maybe Text
     -- ^ Base for all generated URLs. If @Nothing@, determined
@@ -83,8 +76,6 @@ data AppSettings = AppSettings
     -- ^ Should all log messages be displayed?
     , appReloadTemplates        :: Bool
     -- ^ Use the reload version of templates
-    , appMutableStatic          :: Bool
-    -- ^ Assume that files in the static dir may change after compilation
     , appSkipCombining          :: Bool
     -- ^ Perform no stylesheet/script combining
     , appJwtSecret :: Text
@@ -98,7 +89,6 @@ instance FromJSON AppSettings where
 #else
                 False
 #endif
-        appStaticDir              <- o .: "static-dir"
         poolSize                  <- o .: "database-pool-size"
         appDatabaseConf           <- fromDatabaseUrl poolSize =<< (o .: "database-url")
         appRoot                   <- o .:? "approot"
@@ -111,7 +101,6 @@ instance FromJSON AppSettings where
         appDetailedRequestLogging <- o .:? "detailed-logging" .!= dev
         appShouldLogAll           <- o .:? "should-log-all"   .!= dev
         appReloadTemplates        <- o .:? "reload-templates" .!= dev
-        appMutableStatic          <- o .:? "mutable-static"   .!= dev
         appSkipCombining          <- o .:? "skip-combining"   .!= dev
         appJwtSecret <- o .: "jwt-secret"
 

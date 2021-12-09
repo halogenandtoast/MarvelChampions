@@ -20,5 +20,3 @@
           /replay/#Int ApiV1MarvelGameReplayR GET
           /undo ApiV1MarvelGameUndoR PUT
           /spectate ApiV1MarvelGameSpectateR GET
-
-!/ StaticR Static appStatic
