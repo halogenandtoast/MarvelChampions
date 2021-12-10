@@ -1,3 +1,81 @@
+<script lang="ts" setup>
+import { ref } from 'vue';
+import * as Marvel from '@/marvel/types/Deck';
+import Prompt from '@/components/Prompt.vue';
+import { fetchDecks, newDeck, deleteDeck } from '@/marvel/api';
+
+const ready = ref(false)
+const decks = ref<Marvel.Deck[]>([])
+const deck = ref<string | null>(null)
+const identity = ref<string | null>(null)
+const deckId = ref<string | null>(null)
+const deckName = ref<string | null>(null)
+const deckUrl = ref<string | null>(null)
+const deleteId = ref<string | null>(null)
+
+async function deleteDeckEvent() {
+  const { value } = deleteId
+  if (value) {
+    deleteDeck(value).then(() => {
+      decks.value = decks.value.filter((deck) => deck.id !== value);
+      deleteId.value = null;
+    });
+  }
+}
+
+fetchDecks().then((response) => {
+  decks.value = response
+  ready.value = true
+})
+
+function loadDeck() {
+  if (!deck.value) {
+    return;
+  }
+
+  const matches = deck.value.match(/\/(deck(list)?)(\/view)?\/([^/]+)/);
+
+  if (matches) {
+    deckUrl.value = `https://marvelcdb.com/api/public/${matches[1]}/${matches[4]}.json`
+    fetch(deckUrl.value)
+      .then((response) => response.json(), () => {
+        identity.value = null;
+        deckId.value = null
+        deckName.value = null
+        deckUrl.value = null;
+      })
+      .then((data) => {
+        identity.value = data.investigator_code
+        deckId.value = matches[4]
+        deckName.value = data.name
+      })
+  } else {
+    identity.value = null;
+    deckId.value = null
+    deckName.value = null
+    deckUrl.value = null;
+  }
+}
+
+function pasteDeck(evt: ClipboardEvent) {
+  if (evt.clipboardData) {
+    deck.value = evt.clipboardData.getData('text');
+    loadDeck();
+  }
+}
+
+async function createDeck() {
+  if (deckId.value && deckName.value && deckUrl.value) {
+    newDeck(deckId.value, deckName.value, deckUrl.value).then((deck) => decks.value.push(deck));
+    deckId.value = null;
+    deckName.value = null;
+    deckUrl.value = null;
+    identity.value = null;
+    deck.value = null;
+  }
+}
+</script>
+
 <template>
   <div id="decks">
     <div>
@@ -33,80 +111,3 @@
     />
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import * as Marvel from '@/marvel/types/Deck';
-import Prompt from '@/components/Prompt.vue';
-import { fetchDecks, newDeck, deleteDeck } from '@/marvel/api';
-export default defineComponent({
-  components: { Prompt },
-  setup() {
-    const ready = ref(false)
-    const decks = ref<Marvel.Deck[]>([])
-    const deck = ref<string | null>(null)
-    const identity = ref<string | null>(null)
-    const deckId = ref<string | null>(null)
-    const deckName = ref<string | null>(null)
-    const deckUrl = ref<string | null>(null)
-    const deleteId = ref<string | null>(null)
-    async function deleteDeckEvent() {
-      const { value } = deleteId
-      if (value) {
-        deleteDeck(value).then(() => {
-          decks.value = decks.value.filter((deck) => deck.id !== value);
-          deleteId.value = null;
-        });
-      }
-    }
-    fetchDecks().then((response) => {
-      decks.value = response
-      ready.value = true
-    })
-    function loadDeck() {
-      if (!deck.value) {
-        return;
-      }
-      const matches = deck.value.match(/\/(deck(list)?)(\/view)?\/([^/]+)/);
-      if (matches) {
-        deckUrl.value = `https://marvelcdb.com/api/public/${matches[1]}/${matches[4]}.json`
-        fetch(deckUrl.value)
-          .then((response) => response.json(), () => {
-            identity.value = null;
-            deckId.value = null
-            deckName.value = null
-            deckUrl.value = null;
-          })
-          .then((data) => {
-            console.log(data)
-            identity.value = data.investigator_code
-            deckId.value = matches[4]
-            deckName.value = data.name
-          })
-      } else {
-        identity.value = null;
-        deckId.value = null
-        deckName.value = null
-        deckUrl.value = null;
-      }
-    }
-    function pasteDeck(evt: ClipboardEvent) {
-      if (evt.clipboardData) {
-        deck.value = evt.clipboardData.getData('text');
-        loadDeck();
-      }
-    }
-    async function createDeck() {
-      if (deckId.value && deckName.value && deckUrl.value) {
-        newDeck(deckId.value, deckName.value, deckUrl.value).then((deck) => decks.value.push(deck));
-        deckId.value = null;
-        deckName.value = null;
-        deckUrl.value = null;
-        identity.value = null;
-        deck.value = null;
-      }
-    }
-    return { pasteDeck, createDeck, deleteDeckEvent, deleteId, deck, decks, loadDeck, identity, deckName }
-  }
-})
-</script>

@@ -1,3 +1,62 @@
+<script lang="ts" setup>
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import * as Marvel from '@/marvel/types/Deck';
+import { fetchDecks, newGame } from '@/marvel/api';
+
+const scenarios = [
+  {
+    id: '01097',
+    name: 'Rhino - The Break-In!',
+  },
+]
+
+const router = useRouter()
+const decks = ref<Marvel.Deck[]>([])
+const ready = ref(false)
+const playerCount = ref(1)
+const deckIds = ref<(string | null)[]>([null, null, null, null])
+const selectedScenario = ref('01097')
+const gameName = ref<string | null>(null)
+const multiplayerVariant = ref('Solo')
+fetchDecks().then((result) => {
+  decks.value = result;
+  ready.value = true;
+})
+
+const disabled = computed(() => {
+  return !deckIds.value[0]
+})
+
+const defaultGameName = computed(() => {
+  const scenario = scenarios.find((c) => c.id === selectedScenario.value);
+  if (scenario) {
+    return `${scenario.name}`;
+  }
+  return '';
+})
+
+const currentGameName = computed(() => {
+  if (gameName.value !== '' && gameName.value !== null) {
+    return gameName.value;
+  }
+  return defaultGameName.value;
+})
+
+async function start() {
+  const mscenario = scenarios.find((scenario) => scenario.id === selectedScenario.value);
+  if (mscenario && currentGameName.value) {
+    newGame(
+      deckIds.value,
+      playerCount.value,
+      mscenario.id,
+      currentGameName.value,
+      multiplayerVariant.value,
+    ).then((game) => router.push(`/games/${game.id}`));
+  }
+}
+</script>
+
 <template>
   <div v-if="ready" class="container">
     <div v-if="decks.length == 0">
@@ -25,75 +84,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import * as Marvel from '@/marvel/types/Deck';
-import { fetchDecks, newGame } from '@/marvel/api';
-const scenarios = [
-  {
-    id: '01097',
-    name: 'Rhino - The Break-In!',
-  },
-]
-
-export default defineComponent({
-  setup() {
-    const router = useRouter()
-    const decks = ref<Marvel.Deck[]>([])
-    const ready = ref(false)
-    const playerCount = ref(1)
-    const deckIds = ref<(string | null)[]>([null, null, null, null])
-    const selectedScenario = ref('01097')
-    const gameName = ref<string | null>(null)
-    const multiplayerVariant = ref('Solo')
-    fetchDecks().then((result) => {
-      decks.value = result;
-      ready.value = true;
-    })
-    const disabled = computed(() => {
-      return !deckIds.value[0]
-    })
-    const defaultGameName = computed(() => {
-      const scenario = scenarios.find((c) => c.id === selectedScenario.value);
-      if (scenario) {
-        return `${scenario.name}`;
-      }
-      return '';
-    })
-    const currentGameName = computed(() => {
-      if (gameName.value !== '' && gameName.value !== null) {
-        return gameName.value;
-      }
-      return defaultGameName.value;
-    })
-    async function start() {
-        const mscenario = scenarios.find((scenario) => scenario.id === selectedScenario.value);
-        if (mscenario && currentGameName.value) {
-          newGame(
-            deckIds.value,
-            playerCount.value,
-            mscenario.id,
-            currentGameName.value,
-            multiplayerVariant.value,
-          ).then((game) => router.push(`/games/${game.id}`));
-        }
-      }
-
-    return {
-      ready,
-      start,
-      multiplayerVariant,
-      disabled,
-      gameName,
-      currentGameName,
-      scenarios,
-      decks,
-      deckIds,
-      playerCount,
-      selectedScenario,
-    }
-  }
-})
-</script>
