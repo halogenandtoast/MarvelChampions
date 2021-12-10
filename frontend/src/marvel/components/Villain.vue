@@ -1,6 +1,67 @@
+<script lang="ts" setup>
+import { defineProps, defineEmits, computed } from 'vue'
+import { Game } from '@/marvel/types/Game'
+import { Villain } from '@/marvel/types/Villain'
+import * as MarvelGame from '@/marvel/types/Game'
+import Card from '@/marvel/components/Card.vue'
+import Attachment from '@/marvel/components/Attachment.vue'
+import Upgrade from '@/marvel/components/Upgrade.vue'
+import AbilityButton from '@/marvel/components/AbilityButton.vue'
+
+const props = defineProps<{
+  game: Game
+  identityId: string
+  villain: Villain
+}>()
+
+const emit = defineEmits<{
+  (e: 'choose', value: number): void
+}>()
+
+const card = computed(() => ({ cardId: props.villain.contents.villainId, cardDef: props.villain.contents.villainCardDef }))
+
+const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
+
+const activeAbility = computed(() => {
+  return choices.
+    value.
+    findIndex((choice) => {
+      if (choice.tag !== 'TargetLabel') {
+        return false
+      }
+
+      const { contents } = choice.target
+        if (typeof contents === "string") {
+          return contents == props.villain.contents.villainId
+        }
+
+        switch (contents.tag) {
+          case 'EnemyVillainId':
+            return contents.contents === props.villain.contents.villainId
+          default:
+            return false
+        }
+
+    })
+})
+
+const attachments = computed(() => props.villain.contents.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
+
+const upgrades = computed(() => props.villain.contents.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
+
+const abilities = computed(() => {
+  return choices.value.reduce<number[]>((acc, v, i) => {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.villain.contents.villainId) {
+      return [...acc, i]
+    }
+    return acc
+  }, [])
+})
+</script>
+
 <template>
   <div class="villain">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="$emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="$emit('choose', activeAbility)"/>
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)"/>
     <div class="hp">{{villain.contents.villainHp}}</div>
     <div v-if="villain.contents.villainStunned">Stunned</div>
     <div v-if="villain.contents.villainConfused">Confused</div>
@@ -11,7 +72,7 @@
       :attachment="attachment"
       :game="game"
       :identityId="identityId"
-      @choose="$emit('choose', $event)"
+      @choose="emit('choose', $event)"
     />
     <Upgrade
       v-for="upgrade in upgrades"
@@ -20,79 +81,16 @@
       :game="game"
       :identityId="identityId"
       class="attached"
-      @choose="$emit('choose', $event)"
+      @choose="emit('choose', $event)"
     />
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"
           :ability="choices[ability]"
-          @click="$emit('choose', ability)"
+          @click="emit('choose', ability)"
           />
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, computed } from 'vue'
-import { Game } from '@/marvel/types/Game'
-import { Villain } from '@/marvel/types/Villain'
-import * as MarvelGame from '@/marvel/types/Game'
-import Card from '@/marvel/components/Card.vue'
-import Attachment from '@/marvel/components/Attachment.vue'
-import Upgrade from '@/marvel/components/Upgrade.vue'
-import AbilityButton from '@/marvel/components/AbilityButton.vue'
-
-export default defineComponent({
-  components: { Card, Attachment, Upgrade, AbilityButton },
-  props: {
-    game: { type: Object as () => Game, required: true },
-    identityId: { type: String, required: true },
-    villain: { type: Object as () => Villain, required: true }
-  },
-  setup(props) {
-    const card = computed(() => ({ cardId: props.villain.contents.villainId, cardDef: props.villain.contents.villainCardDef }))
-
-    const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
-
-    const activeAbility = computed(() => {
-      return choices.
-        value.
-        findIndex((choice) => {
-          if (choice.tag !== 'TargetLabel') {
-            return false
-          }
-
-          const { contents } = choice.target
-            if (typeof contents === "string") {
-              return contents == props.villain.contents.villainId
-            }
-
-            switch (contents.tag) {
-              case 'EnemyVillainId':
-                return contents.contents === props.villain.contents.villainId
-              default:
-                return false
-            }
-
-        })
-    })
-
-    const attachments = computed(() => props.villain.contents.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
-
-    const upgrades = computed(() => props.villain.contents.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
-
-    const abilities = computed(() => {
-      return choices.value.reduce<number[]>((acc, v, i) => {
-        if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.villain.contents.villainId) {
-          return [...acc, i]
-        }
-        return acc
-      }, [])
-    })
-
-    return { card, activeAbility, attachments, upgrades, abilities, choices }
-  }
-})
-</script>
 
 <style scoped lang="scss">
 .villain {
