@@ -38,7 +38,7 @@ COPY ./backend/marvel-core/package.yaml /opt/marvel/src/backend/marvel-core/pack
 COPY ./backend/cards-discover/package.yaml /opt/marvel/src/backend/cards-discover/package.yaml
 RUN stack build --system-ghc --dependencies-only --no-terminal --ghc-options '-j4 +RTS -A128m -n2m -RTS'
 
-FROM fpco/stack-build:lts-18.8 as api
+FROM fpco/stack-build:lts-18.18 as api
 
 ENV LC_ALL=en_US.UTF-8
 

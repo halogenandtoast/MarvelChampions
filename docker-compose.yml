@@ -12,7 +12,10 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./setup.sql:/docker-entrypoint-initdb.d/create_tables.sql
   web:
-    build: .
+    build:
+      context: .
+      args:
+        - GHC_VERSION=8.10.7
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/marvel-champions-backend
     ports:
