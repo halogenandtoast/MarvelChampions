@@ -10,46 +10,49 @@ import Marvel.EncounterSet
 import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
-allTreacheries = fromList $ map
-  (toCardCode &&& id)
-  [ hardToKeepDown
-  , imTough
-  , stampede
-  , explosion
-  , falseAlarm
-  , heartShapedHerb
-  , ritualCombat
-  , sweepingSwoop
-  , theVulturesPlans
-  , advance
-  , assault
-  , caughtOffGuard
-  , gangUp
-  , shadowOfThePast
-  ]
+allTreacheries =
+  fromList $
+    map
+      (toCardCode &&& id)
+      [ hardToKeepDown
+      , imTough
+      , stampede
+      , explosion
+      , falseAlarm
+      , heartShapedHerb
+      , ritualCombat
+      , sweepingSwoop
+      , theVulturesPlans
+      , advance
+      , assault
+      , caughtOffGuard
+      , gangUp
+      , shadowOfThePast
+      ]
 
-treachery
-  :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
-treachery code name boostIcons encounterSet quantity = CardDef
-  { cdCardCode = code
-  , cdName = name
-  , cdCost = Nothing
-  , cdTraits = mempty
-  , cdKeywords = mempty
-  , cdCardType = TreacheryType
-  , cdAbilityType = Nothing
-  , cdAbilitySubType = Nothing
-  , cdUnique = False
-  , cdAspect = Nothing
-  , cdEncounterSet = Just encounterSet
-  , cdEncounterSetQuantity = Just quantity
-  , cdCriteria = NoCriteria
-  , cdResources = []
-  , cdResponseWindow = Nothing
-  , cdBoostIcons = boostIcons
-  , cdHazards = 0
-  , cdAcceleration = 0
-  }
+treachery ::
+  CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
+treachery code name boostIcons encounterSet quantity =
+  CardDef
+    { cdCardCode = code
+    , cdName = name
+    , cdCost = Nothing
+    , cdTraits = mempty
+    , cdKeywords = mempty
+    , cdCardType = TreacheryType
+    , cdAbilityType = Nothing
+    , cdAbilitySubType = Nothing
+    , cdUnique = False
+    , cdAspect = Nothing
+    , cdEncounterSet = Just encounterSet
+    , cdEncounterSetQuantity = Just quantity
+    , cdCriteria = NoCriteria
+    , cdResources = []
+    , cdResponseWindow = Nothing
+    , cdBoostIcons = boostIcons
+    , cdHazards = 0
+    , cdAcceleration = 0
+    }
 
 hardToKeepDown :: CardDef
 hardToKeepDown = treachery "01104" "Hard to Keep Down" [] Rhino 2
@@ -84,6 +87,14 @@ sweepingSwoop = treachery "01168" "Sweeping Shoop" [Star] SpiderManNemesis 2
 theVulturesPlans :: CardDef
 theVulturesPlans =
   treachery "01169" "The Vulture's Plans" [Boost, Boost] SpiderManNemesis 1
+
+electricWhipAttack :: CardDef
+electricWhipAttack =
+  treachery "01173" "Electric Whip Attack" [Star] IronManNemesis 2
+
+electromagneticBacklash :: CardDef
+electromagneticBacklash =
+  treachery "01174" "Electromagnetic Backlash" [Boost, Boost] IronManNemesis 1
 
 advance :: CardDef
 advance = treachery "01186" "Advance" [] Standard 2

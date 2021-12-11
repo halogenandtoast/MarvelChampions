@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+
 module Marvel.Message where
 
 import Marvel.Prelude
@@ -282,11 +283,11 @@ data SearchSignifier = SearchIdentityDeck IdentityId DeckProjection
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data DeckProjection = AllOfDeck
+data DeckProjection = AllOfDeck | TopOfDeck Int
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data ReturnOption = ShuffleBackIn
+data ReturnOption = ShuffleBackIn | DiscardRest
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -304,8 +305,8 @@ class RunMessage a where
 class RunMessage' f where
   runMessage' :: MonadGame env m => Message -> f p -> m (f p)
 
-genericRunMessage
-  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
+genericRunMessage ::
+  (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
 genericRunMessage msg = fmap to . runMessage' msg . from
 
 instance RunMessage' f => RunMessage' (M1 i c f) where
