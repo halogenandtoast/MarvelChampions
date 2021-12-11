@@ -6,6 +6,7 @@ module Marvel.Identity
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Data.List (partition)
 import Marvel.Ability
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Attrs
@@ -35,7 +36,6 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window qualified as W
 import System.Random.Shuffle
-import Data.List (partition)
 
 data PlayerIdentitySide = HeroSide Hero | AlterEgoSide AlterEgo
   deriving stock (Show, Eq, Generic)
@@ -635,9 +635,11 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       deck = unDeck playerIdentityDeck
       (focusedCards, deck') = case projection of
                        AllOfDeck -> (deck, [])
+                       TopOfDeck n -> splitAt n deck
       (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
       handleReturnCards = case returnOption of
-        ShuffleBackIn -> IdentityMessage (toId attrs) . ShuffleIntoIdentityDeck
+        ShuffleBackIn -> (: []) . IdentityMessage (toId attrs) . ShuffleIntoIdentityDeck
+        DiscardRest -> map (DiscardedCard . PlayerCard)
       handleFoundCards = if null foundCards
         then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
         else case searchOption of
@@ -647,13 +649,12 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
             [ TargetLabel
                 (CardIdTarget $ pcCardId c)
                 [Run
-                  [ IdentityMessage (toId attrs) $ AddToHand c
-                  , handleReturnCards $ rest <> cs'
-                  ]
+                  $ IdentityMessage (toId attrs) (AddToHand c)
+                  : handleReturnCards (rest <> cs')
                 ]
             | (c, cs') <- removeEach foundCards
             ]
-    pushAll [FocusCards $ PlayerCard <$> deck, handleFoundCards, UnfocusCards]
+    pushAll [FocusCards $ PlayerCard <$> focusedCards, handleFoundCards, UnfocusCards]
     pure $ attrs & deckL .~ Deck deck'
   Search _ _ _ _ -> error "Unhandled"
   IdentityRetaliate n enemyId -> do

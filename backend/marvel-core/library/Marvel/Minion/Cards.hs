@@ -13,81 +13,92 @@ import Marvel.Name
 import Marvel.Trait
 
 allMinions :: HashMap CardCode CardDef
-allMinions = fromList $ map
-  (toCardCode &&& id)
-  [hydraMercenary, sandman, shocker, hydraBomber, killmonger, titania, vulture]
+allMinions =
+  fromList $
+    map
+      (toCardCode &&& id)
+      [hydraMercenary, sandman, shocker, hydraBomber, killmonger, titania, vulture, whiplash]
 
-minion
-  :: CardCode
-  -> Name
-  -> [Trait]
-  -> [BoostIcon]
-  -> EncounterSet
-  -> Natural
-  -> CardDef
-minion code name traits boostIcons encounterSet quantity = CardDef
-  { cdCardCode = code
-  , cdName = name
-  , cdCost = Nothing
-  , cdTraits = fromList traits
-  , cdKeywords = mempty
-  , cdCardType = MinionType
-  , cdAbilityType = Nothing
-  , cdAbilitySubType = Nothing
-  , cdUnique = False
-  , cdAspect = Nothing
-  , cdEncounterSet = Just encounterSet
-  , cdEncounterSetQuantity = Just quantity
-  , cdCriteria = NoCriteria
-  , cdResources = []
-  , cdResponseWindow = Nothing
-  , cdBoostIcons = boostIcons
-  , cdHazards = 0
-  , cdAcceleration = 0
-  }
+minion ::
+  CardCode ->
+  Name ->
+  [Trait] ->
+  [BoostIcon] ->
+  EncounterSet ->
+  Natural ->
+  CardDef
+minion code name traits boostIcons encounterSet quantity =
+  CardDef
+    { cdCardCode = code
+    , cdName = name
+    , cdCost = Nothing
+    , cdTraits = fromList traits
+    , cdKeywords = mempty
+    , cdCardType = MinionType
+    , cdAbilityType = Nothing
+    , cdAbilitySubType = Nothing
+    , cdUnique = False
+    , cdAspect = Nothing
+    , cdEncounterSet = Just encounterSet
+    , cdEncounterSetQuantity = Just quantity
+    , cdCriteria = NoCriteria
+    , cdResources = []
+    , cdResponseWindow = Nothing
+    , cdBoostIcons = boostIcons
+    , cdHazards = 0
+    , cdAcceleration = 0
+    }
+
+unique :: CardDef -> CardDef
+unique def = def {cdUnique = True}
 
 hydraMercenary :: CardDef
-hydraMercenary = (minion "01101" "Hydra Mercenary" [Hydra] [Boost] Rhino 2)
-  { cdKeywords = singleton Guard
-  }
+hydraMercenary =
+  (minion "01101" "Hydra Mercenary" [Hydra] [Boost] Rhino 2)
+    { cdKeywords = singleton Guard
+    }
 
 sandman :: CardDef
-sandman = (minion "01102" "Sandman" [Criminal, Elite] [Boost, Boost] Rhino 1)
-  { cdKeywords = singleton Toughness
-  , cdUnique = True
-  }
+sandman =
+  unique $
+    (minion "01102" "Sandman" [Criminal, Elite] [Boost, Boost] Rhino 1)
+      { cdKeywords = singleton Toughness
+      }
 
 shocker :: CardDef
-shocker = (minion "01103" "Shocker" [Criminal] [Boost, Boost] Rhino 1)
-  { cdUnique = True
-  }
+shocker = unique $ minion "01103" "Shocker" [Criminal] [Boost, Boost] Rhino 1
 
 hydraBomber :: CardDef
 hydraBomber = minion "01110" "Hydra Bomber" [Hydra] [Boost] BombScare 2
 
 killmonger :: CardDef
-killmonger = (minion
-               "01157"
-               "Killmonger"
-               [Assassin, Elite, Mercenary]
-               [Boost, Boost]
-               BlackPantherNemesis
-               1
-             )
-  { cdUnique = True
-  }
+killmonger =
+  unique $
+    minion
+      "01157"
+      "Killmonger"
+      [Assassin, Elite, Mercenary]
+      [Boost, Boost]
+      BlackPantherNemesis
+      1
 
 titania :: CardDef
 titania =
-  (minion "01162" "Titania" [Brute, Elite] [Boost, Boost] SheHulkNemesis 1)
-    { cdUnique = True
-    , cdKeywords = singleton Quickstrike
-    }
+  unique $
+    (minion "01162" "Titania" [Brute, Elite] [Boost, Boost] SheHulkNemesis 1)
+      { cdKeywords = singleton Quickstrike
+      }
 
 vulture :: CardDef
 vulture =
-  (minion "01167" "Vulture" [Criminal] [Boost, Boost] SpiderManNemesis 1)
-    { cdUnique = True
-    , cdKeywords = singleton Quickstrike
-    }
+  unique $
+    (minion "01167" "Vulture" [Criminal] [Boost, Boost] SpiderManNemesis 1)
+      { cdKeywords = singleton Quickstrike
+      }
 
+whiplash :: CardDef
+whiplash =
+  unique $
+    (minion "01172" "Whiplash" [Criminal] [Boost, Boost] IronManNemesis 1)
+      { cdKeywords = singleton (Retaliate 1)
+      }

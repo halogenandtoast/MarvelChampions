@@ -25,6 +25,8 @@ allEvents = fromList $ map
   , legalPractice
   , oneTwoPunch
   , splitPersonality
+  , repulsorBlast
+  , supersonicPunch
   , ancestralKnowledge
   , wakandaForeverA
   , wakandaForeverB
@@ -158,6 +160,20 @@ oneTwoPunch =
 splitPersonality :: CardDef
 splitPersonality =
   identityEvent "01025" "Split Personality" 3 Action [] [Energy]
+
+repulsorBlast :: CardDef
+repulsorBlast =
+  (identityEvent "01031" "Repulsor Blast" 1 HeroAction [Attack, Superpower] [Physical])
+    { cdCriteria = EnemyExists AttackableEnemy
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+supersonicPunch :: CardDef
+supersonicPunch =
+  (identityEvent "01032" "Supersonic Punch" 2 HeroAction [Attack] [Energy])
+    { cdCriteria = EnemyExists AttackableEnemy
+    , cdAbilitySubType = Just Ability.Attack
+    }
 
 ancestralKnowledge :: CardDef
 ancestralKnowledge =

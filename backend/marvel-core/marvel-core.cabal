@@ -36,6 +36,7 @@ library
       Marvel.AlterEgo.AlterEgos.JenniferWalters
       Marvel.AlterEgo.AlterEgos.PeterParker
       Marvel.AlterEgo.AlterEgos.TChalla
+      Marvel.AlterEgo.AlterEgos.TonyStark
       Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
       Marvel.Aspect
@@ -106,6 +107,7 @@ library
       Marvel.Hero.Heroes
       Marvel.Hero.Heroes.BlackPanther
       Marvel.Hero.Heroes.CaptainMarvel
+      Marvel.Hero.Heroes.IronMan
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
       Marvel.Hp
