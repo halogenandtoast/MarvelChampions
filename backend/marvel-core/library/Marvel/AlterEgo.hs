@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.AlterEgo where
 
 import Marvel.Prelude
@@ -14,6 +15,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Hand
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.TH
@@ -25,11 +27,13 @@ instance RunMessage AlterEgo where
 
 instance HasAbilities AlterEgo where
   getAbilities a = genericGetAbilities a <> basicAbilities
-    where basicAbilities = [ability a 200 Basic NoCriteria ExhaustCost Recover]
+   where
+    basicAbilities = [ability a 200 Basic NoCriteria ExhaustCost Recover]
 
 allAlterEgos :: HashMap CardCode (IdentityId -> AlterEgo)
-allAlterEgos = fromList
-  $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "AlterEgo")
+allAlterEgos =
+  fromList $
+    map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "AlterEgo")
 
 instance HasStartingHP AlterEgo where
   startingHP = startingHP . toAttrs
@@ -51,3 +55,6 @@ instance Entity AlterEgo where
   type EntityAttrs AlterEgo = AlterEgoAttrs
   toId = toId . toAttrs
   toAttrs = genericToAttrs
+
+instance HasModifiersFor AlterEgo where
+  getModifiersFor = genericGetModifiersFor

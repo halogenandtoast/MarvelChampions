@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Hero where
 
 import Marvel.Prelude
@@ -16,6 +17,7 @@ import Marvel.Hero.Attrs
 import Marvel.Hero.Heroes
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.TH
@@ -57,3 +59,6 @@ instance Entity Hero where
   type EntityAttrs Hero = HeroAttrs
   toId = toId . toAttrs
   toAttrs = genericToAttrs
+
+instance HasModifiersFor Hero where
+  getModifiersFor = genericGetModifiersFor

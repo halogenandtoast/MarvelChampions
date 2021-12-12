@@ -9,6 +9,7 @@ import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Stats
 
 captainMarvel :: HeroCard CaptainMarvel
@@ -22,7 +23,7 @@ captainMarvel = hero
   (Def 1)
 
 newtype CaptainMarvel = CaptainMarvel HeroAttrs
-  deriving anyclass IsHero
+  deriving anyclass (IsHero, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance HasAbilities CaptainMarvel where

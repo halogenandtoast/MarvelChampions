@@ -1059,6 +1059,7 @@ getModifiers a = do
   allies <- toList <$> getsGame gameAllies
   minions <- toList <$> getsGame gameMinions
   events <- toList <$> getsGame gameEvents
+  players <- toList <$> getsGame gamePlayers
   mconcat <$> sequence
     [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
@@ -1067,6 +1068,7 @@ getModifiers a = do
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
     ]
 
 getCurrentWindows :: MonadGame env m => m [Window]

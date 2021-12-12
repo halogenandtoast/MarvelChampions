@@ -738,6 +738,11 @@ instance HasCardCode PlayerIdentity where
     HeroSide x -> toCardCode x
     AlterEgoSide x -> toCardCode x
 
+instance HasModifiersFor PlayerIdentity where
+  getModifiersFor source target a = case currentIdentity a of
+    HeroSide x -> getModifiersFor source target x
+    AlterEgoSide x -> getModifiersFor source target x
+
 instance Entity PlayerIdentity where
   type EntityId PlayerIdentity = IdentityId
   type EntityAttrs PlayerIdentity = PlayerIdentity
