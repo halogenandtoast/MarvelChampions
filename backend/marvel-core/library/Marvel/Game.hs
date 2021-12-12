@@ -278,15 +278,19 @@ runGameMessage msg g@Game {..} = case msg of
     pure $ g & activeCostL ?~ activeCost
   Spent discard -> case g ^. activeCostL of
     Just activeCost -> do
+      let
+        activeCost' = activeCost
+          { activeCostSpentCards = discard : activeCostSpentCards activeCost
+          }
       case activeCostTarget activeCost of
         ForCard card -> do
           resources <- resourcesFor discard $ Just card
           push $ Paid $ mconcat $ map ResourcePayment resources
-          pure g
+          pure $ g & activeCostL ?~ activeCost'
         ForAbility _ -> do
           resources <- resourcesFor discard Nothing
           push $ Paid $ mconcat $ map ResourcePayment resources
-          pure g
+          pure $ g & activeCostL ?~ activeCost'
     Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
@@ -315,8 +319,9 @@ runGameMessage msg g@Game {..} = case msg of
             card
             (activeCostPayment activeCost)
             (activeCostWindow activeCost)
-          pure $ g & activeCostL .~ Nothing
-        ForAbility _ -> pure $ g & activeCostL .~ Nothing
+        ForAbility _ -> pure ()
+      pushAll $ map (DiscardedCard . PlayerCard) (reverse $ activeCostSpentCards activeCost)
+      pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
   CreatedEffect def source matcher -> do
     effectId <- getRandom

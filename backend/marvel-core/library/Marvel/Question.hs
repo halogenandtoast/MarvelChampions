@@ -55,6 +55,7 @@ data ActiveCost = ActiveCost
   , activeCostCost :: Cost
   , activeCostPayment :: Payment
   , activeCostWindow :: Maybe Window
+  , activeCostSpentCards :: [PlayerCard]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -348,9 +349,9 @@ costMessages iid a = go (abilityCost a)
       AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
     ResourceCost mr -> do
-      [SetActiveCost $ ActiveCost iid (ForAbility a) (ResourceCost mr) NoPayment Nothing]
+      [SetActiveCost $ ActiveCost iid (ForAbility a) (ResourceCost mr) NoPayment Nothing mempty]
     MultiResourceCost rs -> do
-      [SetActiveCost $ ActiveCost iid (ForAbility a) (MultiResourceCost rs) NoPayment Nothing]
+      [SetActiveCost $ ActiveCost iid (ForAbility a) (MultiResourceCost rs) NoPayment Nothing mempty]
     Costs xs -> concatMap go xs
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()

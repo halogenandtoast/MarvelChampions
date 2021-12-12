@@ -403,6 +403,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       cost'
       NoPayment
       mWindow
+      mempty
     pure
       $ attrs
       & (handL %~ Hand . filter (/= card) . unHand)
@@ -412,7 +413,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure
       $ attrs
       & (handL %~ Hand . filter (/= card) . unHand)
-      & (discardL %~ Discard . (card :) . unDiscard)
+      -- & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
     push $ IdentityMessage (toId attrs) CheckAllyLimit
     pure $ attrs & alliesL %~ HashSet.insert allyId
