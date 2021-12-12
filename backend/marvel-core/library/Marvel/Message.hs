@@ -94,6 +94,7 @@ data Message
   | ClearBoosts
   | Boost Message
   | RevealedAsBoost Target EnemyId
+  | ChoseEnemy EnemyId Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
