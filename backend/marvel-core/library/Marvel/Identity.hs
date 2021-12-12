@@ -34,6 +34,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Marvel.Trait
 import Marvel.Window qualified as W
 import System.Random.Shuffle
 
@@ -100,6 +101,11 @@ getModifiedHandSize attrs = do
  where
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
+
+instance HasTraits PlayerIdentity where
+  getTraits attrs = case currentIdentity attrs of
+    HeroSide x -> getTraits x
+    AlterEgoSide x -> getTraits x
 
 getIdentityHeroAttackDamage :: MonadGame env m => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of

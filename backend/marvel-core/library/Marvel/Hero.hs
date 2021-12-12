@@ -21,11 +21,15 @@ import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.TH
+import Marvel.Trait (HasTraits(..))
 
 $(buildEntity "Hero")
 
 instance RunMessage Hero where
   runMessage = genericRunMessage
+
+instance HasTraits Hero where
+  getTraits = pure . cdTraits . getCardDef
 
 instance HasAbilities Hero where
   getAbilities a = genericGetAbilities a <> basicAbilities

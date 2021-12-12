@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+
 module Marvel.Matchers where
 
 import Marvel.Prelude
@@ -28,6 +29,7 @@ data IdentityMatcher
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityWithId IdentityId
+  | IdentityWithTrait Trait
   | AnyIdentity
   | IdentityWithDamage GameValueMatcher
   | You
@@ -51,8 +53,9 @@ identityMatches matcher ident = member ident <$> gameSelectIdentity matcher
 
 pattern IdentityWithAnyDamage :: IdentityMatcher
 pattern IdentityWithAnyDamage <-
-  IdentityWithDamage (GreaterThan (Static 0)) where
-  IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
+  IdentityWithDamage (GreaterThan (Static 0))
+  where
+    IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
 instance Count IdentityMatcher where
   data QueryCount IdentityMatcher = SustainedDamage | HeroAttackDamage
@@ -70,8 +73,10 @@ data AllyMatcher
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 pattern AllyWithAnyUses :: AllyMatcher
-pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0)) where
-  AllyWithAnyUses = AllyWithUses (GreaterThan (Static 0))
+pattern AllyWithAnyUses <-
+  AllyWithUses (GreaterThan (Static 0))
+  where
+    AllyWithAnyUses = AllyWithUses (GreaterThan (Static 0))
 
 allyMatches :: MonadGame env m => AllyMatcher -> AllyId -> m Bool
 allyMatches matcher ident = member ident <$> gameSelectAlly matcher
@@ -82,12 +87,16 @@ data SupportMatcher
   | SupportWithUses GameValueMatcher
 
 pattern SupportWithAnyUses :: SupportMatcher
-pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0)) where
-  SupportWithAnyUses = SupportWithUses (GreaterThan (Static 0))
+pattern SupportWithAnyUses <-
+  SupportWithUses (GreaterThan (Static 0))
+  where
+    SupportWithAnyUses = SupportWithUses (GreaterThan (Static 0))
 
 pattern UpgradeWithAnyUses :: UpgradeMatcher
-pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
-  UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
+pattern UpgradeWithAnyUses <-
+  UpgradeWithUses (GreaterThan (Static 0))
+  where
+    UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
 
 data UpgradeMatcher
   = UpgradeWithUses GameValueMatcher
@@ -132,8 +141,9 @@ enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
 
 pattern VillainWithAnyDamage :: VillainMatcher
 pattern VillainWithAnyDamage <-
-  VillainWithDamage (GreaterThan (Static 0)) where
-  VillainWithAnyDamage = VillainWithDamage (GreaterThan (Static 0))
+  VillainWithDamage (GreaterThan (Static 0))
+  where
+    VillainWithAnyDamage = VillainWithDamage (GreaterThan (Static 0))
 
 data VillainMatcher
   = ActiveVillain
@@ -157,8 +167,8 @@ data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-treacheryMatches
-  :: MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
+treacheryMatches ::
+  MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
 treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
 data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId SchemeId
@@ -180,8 +190,8 @@ data SideSchemeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-sideSchemeMatches
-  :: MonadGame env m => SideSchemeMatcher -> SideSchemeId -> m Bool
+sideSchemeMatches ::
+  MonadGame env m => SideSchemeMatcher -> SideSchemeId -> m Bool
 sideSchemeMatches matcher ident = member ident <$> gameSelectSideScheme matcher
 
 data MinionMatcher
@@ -211,8 +221,9 @@ gameValueMatches matcher n = case matcher of
 
 pattern CharacterWithAnyDamage :: CharacterMatcher
 pattern CharacterWithAnyDamage <-
-  CharacterWithDamage (GreaterThan (Static 0)) where
-  CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
+  CharacterWithDamage (GreaterThan (Static 0))
+  where
+    CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
 
 newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
   deriving stock (Show, Eq, Generic)
