@@ -93,6 +93,14 @@ identityDamage attrs =
   fromIntegral . max 0 $ unHp (playerIdentityMaxHP attrs) - unHp
     (playerIdentityCurrentHP attrs)
 
+getModifiedHandSize :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedHandSize attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unHandSize $ handSize attrs) modifiers
+ where
+  applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
 getIdentityHeroAttackDamage :: MonadGame env m => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
   AlterEgoSide _ -> pure 0
@@ -309,8 +317,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     deck <- shuffleM (unDeck (attrs ^. deckL) <> cards)
     pure $ attrs & deckL .~ Deck deck
   DrawOrDiscardToHandLimit -> do
+    modifiedHandSize <- getModifiedHandSize attrs
     let
-      diff = fromIntegral (unHandSize $ handSize attrs)
+      diff = fromIntegral modifiedHandSize
         - length (unHand playerIdentityHand)
     when
       (diff > 0)
@@ -334,8 +343,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       )
     pure attrs
   DrawToHandLimit -> do
+    modifiedHandSize <- getModifiedHandSize attrs
     let
-      diff = fromIntegral (unHandSize $ handSize attrs)
+      diff = fromIntegral modifiedHandSize
         - length (unHand playerIdentityHand)
     when
       (diff > 0)

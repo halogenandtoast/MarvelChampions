@@ -148,6 +148,7 @@ passesCanAffordCost _ a = go (abilityCost a)
   go = \case
     NoCost -> pure True
     DamageCost _ -> pure True
+    DamageThisCost _ -> pure True
     ExhaustCost -> case source of
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly

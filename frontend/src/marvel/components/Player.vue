@@ -184,7 +184,7 @@ const toggleDebug = inject('toggleDebug')
     <div>
       <img src="/img/marvel/player-back.png" alt="deck" width="150" height="209" class="deck" />
       <template v-if="debug">
-        <button @click="debugChoose({tag: 'IdentityMessage', contents: [identityId, {tag: 'SearchIdentityDeck', contents: [{tag: 'AnyCard', contents: []}, {tag: 'SearchDrawOne', contents: []}]}]})">Select Draw</button>
+        <button @click="debugChoose({tag: 'IdentityMessage', contents: [identityId, {tag: 'Search', contents: [[identityId, {tag: 'AllOfDeck', contents: []}], {tag: 'AnyCard', contents: []}, {tag: 'SearchDrawOne', contents: []}, 'ShuffleBackIn']}]})">Select Draw</button>
       </template>
     </div>
     <Card v-for="(card, idx) in player.hand" :key="idx" :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />

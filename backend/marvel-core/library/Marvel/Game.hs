@@ -922,6 +922,7 @@ gameSelectEnemy m = do
       EnemyMinionId _ -> False
     AnyEnemy -> pure True
     VillainEnemy -> pure True
+    DamageableEnemy -> pure True
     AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
     NotEnemy m' -> not <$> goVillain e m'
     EnemyIs def -> pure $ def == getCardDef e
@@ -932,6 +933,7 @@ gameSelectEnemy m = do
       EnemyMinionId minionId -> toId e == minionId
     AnyEnemy -> pure True
     VillainEnemy -> pure False
+    DamageableEnemy -> pure True
     AttackableEnemy -> pure True
     NotEnemy m' -> not <$> goMinion e m'
     EnemyIs def -> pure $ def == getCardDef e

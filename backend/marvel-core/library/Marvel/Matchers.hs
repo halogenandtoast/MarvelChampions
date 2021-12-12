@@ -112,6 +112,7 @@ data EnemyMatcher
   | EnemyWithId EnemyId
   | VillainEnemy
   | AttackableEnemy
+  | DamageableEnemy
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher
   | EnemyMatchesAll [EnemyMatcher]
