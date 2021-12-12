@@ -36,6 +36,9 @@ selectMap f = fmap (map f . HashSet.toList) . select
 selectAny :: (MonadGame env m, Query a) => a -> m Bool
 selectAny = fmap (not . null) . select
 
+selectListCount :: (MonadGame env m, Query a) => a -> m Natural
+selectListCount = fmap (fromIntegral . length) . selectList
+
 selectOne :: (MonadGame env m, Query a) => a -> m (Maybe (QueryElement a))
 selectOne matcher = do
   result <- selectList matcher

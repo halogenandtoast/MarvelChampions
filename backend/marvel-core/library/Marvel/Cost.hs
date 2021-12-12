@@ -9,6 +9,7 @@ data Cost
   | ResourceCost (Maybe Resource)
   | MultiResourceCost [Maybe Resource]
   | DamageCost Natural
+  | DamageThisCost Natural
   | ExhaustCost
   | UseCost
   | NoCost
@@ -30,6 +31,7 @@ costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources ExhaustCost = []
 costResources (DamageCost _) = []
+costResources (DamageThisCost _) = []
 costResources UseCost = []
 costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs

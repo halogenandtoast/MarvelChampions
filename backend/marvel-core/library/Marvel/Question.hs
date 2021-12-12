@@ -319,6 +319,9 @@ costMessages iid a = go (abilityCost a)
   go = \case
     NoCost -> []
     DamageCost n -> [IdentityMessage iid $ IdentityDamaged (abilitySource a) n]
+    DamageThisCost n -> case abilitySource a of
+      AllySource ident -> [AllyMessage ident $ AllyDamaged (abilitySource a) n]
+      _ -> error "Unhandled"
     ExhaustCost -> case abilitySource a of
       IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
       AllySource ident -> [AllyMessage ident ExhaustedAlly]
