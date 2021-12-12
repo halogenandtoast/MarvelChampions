@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -34,14 +35,12 @@ instance HasAbilities PepperPotts where
         Resource
         ( OwnsThis
             <> ExtendedCardExists
-              (TopOfDiscardOf $ IdentityWithId (supportController a))
+              (TopmostCardInDiscardOf (IdentityWithId $ supportController a) AnyCard)
         )
         ExhaustCost
         ( Pay $
             ResourcePaymentFromCard $
-              TopOfDiscardOf $
-                IdentityWithId
-                  (supportController a)
+              TopmostCardInDiscardOf (IdentityWithId $ supportController a) AnyCard
         )
     ]
 
