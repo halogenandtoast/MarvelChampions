@@ -91,6 +91,7 @@ library
       Marvel.Event.Events.LegalPractice
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.RepulsorBlast
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.SwingingWebKick
       Marvel.Event.Events.WakandaForeverA

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import { defineProps, defineEmits, computed, inject } from 'vue'
+import { defineProps, defineEmits, computed, inject, ref } from 'vue'
 import { Game } from '@/marvel/types/Game'
 import * as MarvelGame from '@/marvel/types/Game'
 import { Identity } from '@/marvel/types/Identity'
@@ -100,6 +100,12 @@ const activeAbility = computed(() => {
   })
 })
 
+const showDiscard = ref(false)
+
+const toggleDiscard = () => {
+  showDiscard.value = !showDiscard.value
+}
+
 const debug = inject('debug')
 const debugChoose = inject('debugChoose')
 const undo = inject('undo')
@@ -142,7 +148,14 @@ const toggleDebug = inject('toggleDebug')
     />
   </div>
   <div class="identity">
-    <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
+    <div class="discardPile" v-if="showDiscard">
+      <Card v-for="card in player.discard" :card="card" :key="card.id" :game="game" :identityId="identityId" class="discard" />
+      <button @click="toggleDiscard">Close discard</button>
+    </div>
+    <div class="discardPile" v-else>
+      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
+      <button @click="toggleDiscard">View All</button>
+    </div>
     <div>
       <div class="identityCard">
         <img :src="playerImg" alt="player" width="150" class="identityCardImg" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />

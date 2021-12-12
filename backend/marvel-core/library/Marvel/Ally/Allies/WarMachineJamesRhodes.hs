@@ -16,9 +16,7 @@ import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
@@ -44,5 +42,5 @@ instance HasAbilities WarMachineJamesRhodes where
     ]
 
 instance RunMessage WarMachineJamesRhodes where
-  runMessage msg a@(WarMachineJamesRhodes attrs) =
+  runMessage msg (WarMachineJamesRhodes attrs) =
     WarMachineJamesRhodes <$> runMessage msg attrs
