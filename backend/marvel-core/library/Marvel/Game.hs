@@ -12,6 +12,7 @@ import Marvel.Ability qualified as Ability
 import Marvel.Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
+import Marvel.Attack
 import Marvel.Card
 import Marvel.Criteria
 import Marvel.Debug
@@ -167,6 +168,9 @@ patch g p = case Diff.patch p (toJSON g) of
 
 getPlayers :: MonadGame env m => m [IdentityId]
 getPlayers = getsGame gamePlayerOrder
+
+getActivePlayerId :: MonadGame env m => m IdentityId
+getActivePlayerId = toId <$> getActivePlayer
 
 getPlayerCount :: MonadGame env m => m Int
 getPlayerCount = length <$> getsGame gamePlayerOrder
@@ -938,6 +942,7 @@ gameSelectEnemy m = do
     VillainEnemy -> pure True
     DamageableEnemy -> pure True
     AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
+    UndefendedEnemy -> pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
     EnemyIs def -> pure $ def == getCardDef e
     EnemyMatchesAll xs -> allM (goVillain e) xs
@@ -949,6 +954,7 @@ gameSelectEnemy m = do
     VillainEnemy -> pure False
     DamageableEnemy -> pure True
     AttackableEnemy -> pure True
+    UndefendedEnemy -> pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
     EnemyIs def -> pure $ def == getCardDef e
     EnemyMatchesAll xs -> allM (goMinion e) xs

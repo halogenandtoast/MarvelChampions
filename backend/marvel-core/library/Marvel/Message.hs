@@ -96,6 +96,7 @@ data Message
   | RevealedAsBoost Target EnemyId
   | ChoseEnemy EnemyId Target
   | ChosePlayer IdentityId Target
+  | ChoseUpgrade UpgradeId Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

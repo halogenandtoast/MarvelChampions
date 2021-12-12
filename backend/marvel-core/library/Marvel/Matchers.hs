@@ -124,6 +124,7 @@ data EnemyMatcher
   | DamageableEnemy
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher
+  | UndefendedEnemy
   | EnemyMatchesAll [EnemyMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
