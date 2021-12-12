@@ -9,6 +9,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Stats
 
 carolDanvers :: AlterEgoCard CarolDanvers
@@ -21,7 +22,7 @@ carolDanvers = alterEgo
   []
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
-  deriving anyclass IsAlterEgo
+  deriving anyclass (IsAlterEgo, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance HasAbilities CarolDanvers where

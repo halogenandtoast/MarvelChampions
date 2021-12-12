@@ -11,6 +11,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Resource
@@ -27,7 +28,7 @@ peterParker = alterEgo
   [Cards.evictionNotice]
 
 newtype PeterParker = PeterParker AlterEgoAttrs
-  deriving anyclass IsAlterEgo
+  deriving anyclass (IsAlterEgo, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, Entity)
 
 instance HasAbilities PeterParker where

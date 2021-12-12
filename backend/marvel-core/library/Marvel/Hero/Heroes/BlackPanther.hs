@@ -9,6 +9,7 @@ import Marvel.Hand
 import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
@@ -27,7 +28,7 @@ instance HasAbilities BlackPanther where
   getAbilities _ = []
 
 newtype BlackPanther = BlackPanther HeroAttrs
-  deriving anyclass IsHero
+  deriving anyclass (IsHero, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
 
 instance RunMessage BlackPanther where

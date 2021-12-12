@@ -12,6 +12,7 @@ import Marvel.Hero.Attrs
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Stats
@@ -41,7 +42,7 @@ instance HasAbilities SpiderMan where
     ]
 
 newtype SpiderMan = SpiderMan HeroAttrs
-  deriving anyclass IsHero
+  deriving anyclass (IsHero, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
 
 instance RunMessage SpiderMan where

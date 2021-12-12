@@ -12,6 +12,7 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Queue
@@ -30,7 +31,7 @@ jenniferWalters = alterEgo
   [Cards.legalWork]
 
 newtype JenniferWalters = JenniferWalters AlterEgoAttrs
-  deriving anyclass IsAlterEgo
+  deriving anyclass (IsAlterEgo, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, Entity)
 
 instance HasAbilities JenniferWalters where
