@@ -109,6 +109,7 @@ data Choice
   | Pay Payment
   | Run [Message]
   | DamageEnemy Target Source DamageSource Natural
+  | DamageAllEnemies EnemyMatcher Source DamageSource Natural
   | ThwartScheme Target Source Natural
   | Stun Target Source
   | Confuse Target Source
@@ -193,6 +194,9 @@ choiceMessages ident = \case
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> pure [FinishedPayment]
   Pay payment -> pure [Paid payment]
+  DamageAllEnemies matcher source damageSource n -> do
+    enemies <- selectList $ DamageableEnemy <> matcher
+    concatMapM (\e -> choiceMessages ident (DamageEnemy (EnemyTarget e) source damageSource n)) enemies
   DamageEnemy target source damageSource n -> do
     let isIdentity = case source of
                        IdentitySource _ -> True

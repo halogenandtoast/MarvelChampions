@@ -37,6 +37,10 @@ export interface Recover {
   tag: 'Recover'
 }
 
+export interface DamageAllEnemies {
+  tag: 'DamageAllEnemies'
+}
+
 export interface Attack {
   tag: 'Attack'
 }
@@ -76,6 +80,7 @@ export const finishPaymentDecoder = JsonDecoder.object<FinishPayment>({ tag: Jso
 
 export const recoverDecoder = JsonDecoder.object<Recover>({ tag: JsonDecoder.isExactly('Recover') }, 'Recover')
 
+export const damageAllEnemiesDecoder = JsonDecoder.object<DamageAllEnemies>({ tag: JsonDecoder.isExactly('DamageAllEnemies') }, 'DamageAllEnemies')
 export const attackDecoder = JsonDecoder.object<Attack>({ tag: JsonDecoder.isExactly('Attack') }, 'Attack')
 export const healDecoder = JsonDecoder.object<Heal>({ tag: JsonDecoder.isExactly('Heal') }, 'Heal')
 export const createEffectDecoder = JsonDecoder.object<CreateEffect>({ tag: JsonDecoder.isExactly('CreateEffect') }, 'CreateEffect')
@@ -191,6 +196,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   runAbilityDecoder,
   recoverDecoder,
   attackDecoder,
+  damageAllEnemiesDecoder,
   healDecoder,
   createEffectDecoder,
   allyAttackDecoder,
@@ -260,7 +266,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | ChooseDrawCards | ChooseDamage | ChooseHeal | ReturnTargetToHand
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | ChooseDrawCards | ChooseDamage | ChooseHeal | ReturnTargetToHand | DamageAllEnemies
 
 export interface ChangeForm {
   tag: 'ChangeForm'
