@@ -103,9 +103,15 @@ getModifiedHandSize attrs = do
   applyModifier _ = id
 
 instance HasTraits PlayerIdentity where
-  getTraits attrs = case currentIdentity attrs of
-    HeroSide x -> getTraits x
-    AlterEgoSide x -> getTraits x
+  getTraits attrs = do
+    modifiers <- getModifiers attrs
+    traits <- case currentIdentity attrs of
+      HeroSide x -> getTraits x
+      AlterEgoSide x -> getTraits x
+    pure $ foldr applyModifier traits modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
 
 getIdentityHeroAttackDamage :: MonadGame env m => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
@@ -563,7 +569,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         $ attrs
         & (discardL %~ Discard . (cards <>) . unDiscard)
         & (deckL .~ Deck deck')
-  ReadyIdentity -> pure $ attrs & exhaustedL .~ False
+  ReadiedIdentity -> pure $ attrs & exhaustedL .~ False
   ExhaustedIdentity -> pure $ attrs & exhaustedL .~ True
   VillainAndMinionsActivate -> do
     villain <- selectJust ActiveVillain

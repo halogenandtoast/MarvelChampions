@@ -113,6 +113,7 @@ data Choice
   | PlayCard PlayerCard (Maybe Window)
   | PayWithCard PlayerCard
   | FinishPayment
+  | ReadyIdentity
   | Pay Payment
   | Run [Message]
   | DamageEnemy Target Source DamageSource Natural
@@ -207,6 +208,7 @@ choiceMessages ident = \case
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> pure [FinishedPayment]
+  ReadyIdentity -> pure [IdentityMessage ident ReadiedIdentity]
   Pay payment -> pure [Paid payment]
   DamageAllEnemies matcher source damageSource n -> do
     enemies <- selectList $ DamageableEnemy <> matcher
