@@ -318,6 +318,20 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         FromDeck
         (fromIntegral diff)
       )
+    when
+      (diff < 0)
+      (chooseOne
+        (toId attrs)
+        [ TargetLabel
+            (CardIdTarget $ pcCardId c)
+            [ Run
+              [ DiscardedCard $ PlayerCard c
+              , IdentityMessage (toId attrs) DrawOrDiscardToHandLimit
+              ]
+            ]
+        | c <- unHand playerIdentityHand
+        ]
+      )
     pure attrs
   DrawToHandLimit -> do
     let
@@ -630,32 +644,39 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False
   IdentityRemoveConfused -> pure $ attrs & confusedL .~ False
-  Search (SearchIdentityDeck iid projection) cardMatcher searchOption returnOption | iid == toId attrs -> do
-    let
-      deck = unDeck playerIdentityDeck
-      (focusedCards, deck') = case projection of
-                       AllOfDeck -> (deck, [])
-                       TopOfDeck n -> splitAt n deck
-      (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
-      handleReturnCards = case returnOption of
-        ShuffleBackIn -> (: []) . IdentityMessage (toId attrs) . ShuffleIntoIdentityDeck
-        DiscardRest -> map (DiscardedCard . PlayerCard)
-      handleFoundCards = if null foundCards
-        then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
-        else case searchOption of
-          SearchTarget target ->
-            SearchFoundCards target $ PlayerCard <$> foundCards
-          SearchDrawOne -> Ask (toId attrs) $ ChooseOne
-            [ TargetLabel
-                (CardIdTarget $ pcCardId c)
-                [Run
-                  $ IdentityMessage (toId attrs) (AddToHand c)
-                  : handleReturnCards (rest <> cs')
-                ]
-            | (c, cs') <- removeEach foundCards
-            ]
-    pushAll [FocusCards $ PlayerCard <$> focusedCards, handleFoundCards, UnfocusCards]
-    pure $ attrs & deckL .~ Deck deck'
+  Search (SearchIdentityDeck iid projection) cardMatcher searchOption returnOption
+    | iid == toId attrs
+    -> do
+      let
+        deck = unDeck playerIdentityDeck
+        (focusedCards, deck') = case projection of
+          AllOfDeck -> (deck, [])
+          TopOfDeck n -> splitAt n deck
+        (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
+        handleReturnCards = case returnOption of
+          ShuffleBackIn ->
+            (: []) . IdentityMessage (toId attrs) . ShuffleIntoIdentityDeck
+          DiscardRest -> map (DiscardedCard . PlayerCard)
+        handleFoundCards = if null foundCards
+          then Ask (toId attrs) (ChooseOne [Label "No matching cards found" []])
+          else case searchOption of
+            SearchTarget target ->
+              SearchFoundCards target $ PlayerCard <$> foundCards
+            SearchDrawOne -> Ask (toId attrs) $ ChooseOne
+              [ TargetLabel
+                  (CardIdTarget $ pcCardId c)
+                  [ Run
+                    $ IdentityMessage (toId attrs) (AddToHand c)
+                    : handleReturnCards (rest <> cs')
+                  ]
+              | (c, cs') <- removeEach foundCards
+              ]
+      pushAll
+        [ FocusCards $ PlayerCard <$> focusedCards
+        , handleFoundCards
+        , UnfocusCards
+        ]
+      pure $ attrs & deckL .~ Deck deck'
   Search _ _ _ _ -> error "Unhandled"
   IdentityRetaliate n enemyId -> do
     let
