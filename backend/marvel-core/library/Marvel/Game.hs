@@ -842,11 +842,11 @@ gameSelectExtendedCard m = do
         cards' = filter (`elem` cards)
           $ concatMap (unDiscard . playerIdentityDiscard) players'
       go players cards' extendedCardMatcher
-    TopOfDiscardOf identityMatcher -> do
+    TopmostCardInDiscardOf identityMatcher cardMatcher -> do
       identities <- selectList identityMatcher
       let
         players' = filter ((`elem` identities) . toId) players
-      pure $ filter (`elem` cards) $ concatMap (take 1 . unDiscard . playerIdentityDiscard) players'
+      pure $ mapMaybe (find (and . sequence [(`elem` cards), cardMatch cardMatcher]) . unDiscard . playerIdentityDiscard) players'
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
 
 gameSelectEncounterCard

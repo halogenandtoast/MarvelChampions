@@ -137,6 +137,7 @@ data Choice
   | DiscardTarget Target
   | ChooseDrawCards Natural IdentityMatcher
   | ChooseEnemy EnemyMatcher Target
+  | ChoosePlayer IdentityMatcher Target
   | ReturnTargetToHand Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -313,6 +314,9 @@ choiceMessages ident = \case
   ChooseEnemy matcher target -> do
     enemies <- selectList matcher
     pure [Ask ident $ ChooseOne [TargetLabel (EnemyTarget e) [Run [ChoseEnemy e target]] | e <- enemies]]
+  ChoosePlayer matcher target -> do
+    players <- selectList matcher
+    pure [Ask ident $ ChooseOne [TargetLabel (IdentityTarget p) [Run [ChosePlayer p target]] | p <- players]]
   ChooseDrawCards n identityMatcher -> do
     identities <- selectList identityMatcher
     let f iid = Run [IdentityMessage iid (DrawCards FromDeck n)]
