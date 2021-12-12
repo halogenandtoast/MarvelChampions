@@ -47,6 +47,7 @@ import Marvel.SideScheme
 import Marvel.Source
 import Marvel.Support
 import Marvel.Target
+import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Upgrade
 import Marvel.Villain
@@ -774,6 +775,7 @@ gameSelectIdentity m = do
     ConfusedIdentity -> pure . identityIsConfused
     StunnedIdentity -> pure . identityIsStunned
     IdentityWithId ident' -> pure . (== ident') . toId
+    IdentityWithTrait trait -> fmap (member trait) . getTraits
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs

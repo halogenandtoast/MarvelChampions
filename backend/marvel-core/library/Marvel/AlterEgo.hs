@@ -19,11 +19,15 @@ import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.TH
+import Marvel.Trait
 
 $(buildEntity "AlterEgo")
 
 instance RunMessage AlterEgo where
   runMessage = genericRunMessage
+
+instance HasTraits AlterEgo where
+  getTraits = pure . cdTraits . getCardDef
 
 instance HasAbilities AlterEgo where
   getAbilities a = genericGetAbilities a <> basicAbilities

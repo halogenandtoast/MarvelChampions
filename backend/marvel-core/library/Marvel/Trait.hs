@@ -2,6 +2,11 @@ module Marvel.Trait where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Game
+
+class HasTraits a where
+  getTraits :: MonadGame env m => a -> m (HashSet Trait)
+
 data Trait
   = Aerial
   | Android
