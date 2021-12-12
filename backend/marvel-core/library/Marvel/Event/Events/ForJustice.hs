@@ -29,8 +29,8 @@ instance RunMessage ForJustice where
   runMessage msg e@(ForJustice attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId payments _ -> do
+        resources <- paymentResources payments
         let
-          resources = paymentResources payments
           usedEnergy = Energy `elem` resources || Wild `elem` resources
           thwart = if usedEnergy then 4 else 3
         pushAll =<< choiceMessages

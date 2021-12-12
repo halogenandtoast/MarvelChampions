@@ -245,6 +245,7 @@ data ExtendedCardMatcher
   = AffordableCardBy IdentityMatcher ExtendedCardMatcher
   | BasicCardMatches CardMatcher
   | InDiscardOf IdentityMatcher ExtendedCardMatcher
+  | TopOfDiscardOf IdentityMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
   | NotCard PlayerCard
   deriving stock (Show, Eq, Generic)
