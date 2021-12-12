@@ -157,6 +157,7 @@ library
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.HighwayRobbery
+      Marvel.SideScheme.SideSchemes.ImminentOverload
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.Source
@@ -202,13 +203,18 @@ library
       Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
+      Marvel.Upgrade.Upgrades.MarkVArmor
+      Marvel.Upgrade.Upgrades.MarkVHelmet
       Marvel.Upgrade.Upgrades.PantherClaws
+      Marvel.Upgrade.Upgrades.PoweredGauntlets
+      Marvel.Upgrade.Upgrades.RocketBoots
       Marvel.Upgrade.Upgrades.SpiderTracer
       Marvel.Upgrade.Upgrades.SuperhumanStrength
       Marvel.Upgrade.Upgrades.TacticalGenius

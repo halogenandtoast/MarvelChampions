@@ -26,7 +26,7 @@ instance RunMessage OneTwoPunch where
   runMessage msg e@(OneTwoPunch attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
-        push $ IdentityMessage identityId ReadyIdentity
+        push $ IdentityMessage identityId ReadiedIdentity
         pure e
       _ -> OneTwoPunch <$> runMessage msg attrs
     _ -> OneTwoPunch <$> runMessage msg attrs

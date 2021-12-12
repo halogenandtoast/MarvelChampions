@@ -6,6 +6,7 @@ import GHC.Generics
 import Marvel.Game.Source
 import Marvel.Source
 import Marvel.Target
+import Marvel.Trait
 
 data Modifier
   = ResourceCostReduction Natural
@@ -16,6 +17,7 @@ data Modifier
   | AllyLimitModifier Natural
   | HitPointModifier Natural
   | HandSizeModifier Natural
+  | TraitModifier Trait
   | LastSpecial
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

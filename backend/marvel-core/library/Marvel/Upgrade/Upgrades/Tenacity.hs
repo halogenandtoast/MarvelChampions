@@ -36,7 +36,7 @@ instance HasAbilities Tenacity where
         (ResourceCost (Just Physical))
         (Run
           [ RemoveFromPlay (toTarget a)
-          , IdentityMessage (upgradeController a) ReadyIdentity
+          , IdentityMessage (upgradeController a) ReadiedIdentity
           ]
         )
     ]

@@ -45,7 +45,7 @@ instance RunMessage Indomitable where
     RanAbility target 1 _ | isTarget attrs target -> do
       pushAll
         [ RemoveFromPlay target
-        , IdentityMessage (upgradeController attrs) ReadyIdentity
+        , IdentityMessage (upgradeController attrs) ReadiedIdentity
         ]
       pure u
     _ -> Indomitable <$> runMessage msg attrs

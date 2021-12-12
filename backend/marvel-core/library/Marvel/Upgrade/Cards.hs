@@ -24,7 +24,7 @@ allUpgrades =
       , arcReactor
       , markVArmor
       , markVHelmet
-      , powerGauntlets
+      , poweredGauntlets
       , rocketBoots
       , energyDaggers
       , pantherClaws
@@ -112,8 +112,8 @@ markVHelmet :: CardDef
 markVHelmet =
   unique $ identityUpgrade "01037" "Mark V Helmet" 1 [Armor, Tech] [Physical]
 
-powerGauntlets :: CardDef
-powerGauntlets =
+poweredGauntlets :: CardDef
+poweredGauntlets =
   identityUpgrade "01038" "Power Gauntlets" 2 [Armor, Tech] [Energy]
 
 rocketBoots :: CardDef

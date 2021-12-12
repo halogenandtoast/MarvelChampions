@@ -256,7 +256,7 @@ data IdentityMessage
   | ChosenFromDiscard Target ChoiceRules Natural Natural [PlayerCard]
   | DiscardFrom FromZone Natural (Maybe Target)
   | ExhaustedIdentity
-  | ReadyIdentity
+  | ReadiedIdentity
   | DrawOrDiscardToHandLimit
   | DrawToHandLimit
   | ReadyCards
