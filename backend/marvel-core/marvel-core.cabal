@@ -177,6 +177,7 @@ library
       Marvel.Support.Supports.StarkTower
       Marvel.Support.Supports.SuperhumanLawDivision
       Marvel.Support.Supports.SurveillanceTeam
+      Marvel.Support.Supports.TacTeam
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheTriskellion
       Marvel.Target
@@ -209,6 +210,7 @@ library
       Marvel.Upgrade.Upgrades
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
+      Marvel.Upgrade.Upgrades.CombatTraining
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition

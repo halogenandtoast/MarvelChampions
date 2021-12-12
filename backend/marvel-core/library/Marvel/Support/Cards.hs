@@ -20,6 +20,7 @@ allSupports =
       , pepperPotts
       , starkTower
       , theGoldenCity
+      , tacTeam
       , interrogationRoom
       , surveillanceTeam
       , theTriskellion
@@ -86,6 +87,10 @@ starkTower =
 theGoldenCity :: CardDef
 theGoldenCity =
   unique $ identitySupport "01045" "The Golden City" 2 [Location, Wakanda] [Energy]
+
+tacTeam :: CardDef
+tacTeam =
+  support "01056" "Tac Team" 3 [Shield] [Energy] Aggression
 
 interrogationRoom :: CardDef
 interrogationRoom =

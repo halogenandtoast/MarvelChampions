@@ -30,6 +30,7 @@ allUpgrades =
       , pantherClaws
       , tacticalGenius
       , vibraniumSuit
+      , combatTraining
       , heroicIntuition
       , inspired
       , armoredVest
@@ -135,6 +136,9 @@ tacticalGenius =
 vibraniumSuit :: CardDef
 vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
+
+combatTraining :: CardDef
+combatTraining = upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
 heroicIntuition = upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
