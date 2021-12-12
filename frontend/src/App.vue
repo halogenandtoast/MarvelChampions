@@ -21,7 +21,7 @@ export default defineComponent({
 <style lang="scss">
 @font-face {
   font-family: "Exo2";
-  src: url("/fonts/eco2.ttf");
+  src: url("/fonts/exo2.ttf");
 }
 
 #app {
