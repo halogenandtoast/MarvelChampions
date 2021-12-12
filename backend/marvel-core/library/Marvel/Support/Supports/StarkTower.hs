@@ -38,12 +38,18 @@ instance HasAbilities StarkTower where
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
-      msgs <- choiceMessages (supportController attrs) (ChoosePlayer AnyIdentity target)
-      pushAll msgs
-      pure s
+    RanAbility target 1 _
+      | isTarget attrs target ->
+        s
+          <$ pushChoice
+            (supportController attrs)
+            (ChoosePlayer AnyIdentity target)
     ChosePlayer identityId target | isTarget attrs target -> do
-      mTechCard <- selectOne $ TopmostCardInDiscardOf (IdentityWithId identityId) (CardWithTrait Tech)
+      mTechCard <-
+        selectOne $
+          TopmostCardInDiscardOf
+            (IdentityWithId identityId)
+            (CardWithTrait Tech)
       case mTechCard of
         Nothing -> error "should have targetted a card"
         Just x -> push $ IdentityMessage identityId (AddToHand x)
