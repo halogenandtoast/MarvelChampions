@@ -267,12 +267,13 @@ runGameMessage msg g@Game {..} = case msg of
   SetActiveCost activeCost -> do
     cards <- getAvailablePaymentSources
     abilities <- getResourceAbilities
+    paid <- resourceCostPaid activeCost
     push $ Ask
       (activeCostIdentityId activeCost)
       (ChooseOne
       $ map PayWithCard cards
       <> map UseAbility abilities
-      <> [ FinishPayment | resourceCostPaid activeCost ]
+      <> [ FinishPayment | paid ]
       )
     pure $ g & activeCostL ?~ activeCost
   Spent discard -> case g ^. activeCostL of
@@ -295,12 +296,13 @@ runGameMessage msg g@Game {..} = case msg of
           }
       cards <- getAvailablePaymentSources
       abilities <- getResourceAbilities
+      paid <- resourceCostPaid activeCost'
       push $ Ask
         (activeCostIdentityId activeCost)
         (ChooseOne
         $ map PayWithCard cards
         <> map UseAbility abilities
-        <> [ FinishPayment | resourceCostPaid activeCost' ]
+        <> [ FinishPayment | paid ]
         )
       pure $ g & activeCostL ?~ activeCost'
     Nothing -> error "No cost"
@@ -835,6 +837,11 @@ gameSelectExtendedCard m = do
         cards' = filter (`elem` cards)
           $ concatMap (unDiscard . playerIdentityDiscard) players'
       go players cards' extendedCardMatcher
+    TopOfDiscardOf identityMatcher -> do
+      identities <- selectList identityMatcher
+      let
+        players' = filter ((`elem` identities) . toId) players
+      pure $ filter (`elem` cards) $ concatMap (take 1 . unDiscard . playerIdentityDiscard) players'
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
 
 gameSelectEncounterCard
@@ -1090,6 +1097,12 @@ abilityResources a = go (abilityChoices a)
  where
   go [] = pure []
   go (Pay (ResourcePayment r) : xs) = (r :) <$> go xs
+  go (Pay (ResourcePaymentFromCard matcher) : xs) = do
+    cards <- selectList matcher
+    case cards of
+      [] -> go xs
+      [c] -> (<>) (printedResources $ getCardDef c) <$> go xs
+      _ -> error "invalid matcher"
   go (_ : xs) = go xs
 
 getHazardCount :: MonadGame env m => m Natural

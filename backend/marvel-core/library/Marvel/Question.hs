@@ -23,14 +23,20 @@ import Marvel.Target
 import Marvel.Window (DamageSource(..), Window(..), WindowTiming(..))
 import Marvel.Window qualified as W
 
-data Payment = Payments [Payment] | ResourcePayment Resource | NoPayment
+data Payment = Payments [Payment] | ResourcePayment Resource | ResourcePaymentFromCard ExtendedCardMatcher | NoPayment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-paymentResources :: Payment -> [Resource]
-paymentResources NoPayment = []
-paymentResources (ResourcePayment r) = [r]
-paymentResources (Payments ps) = concatMap paymentResources ps
+paymentResources :: MonadGame env m => Payment -> m [Resource]
+paymentResources NoPayment = pure []
+paymentResources (ResourcePayment r) = pure [r]
+paymentResources (ResourcePaymentFromCard matcher) = do
+  cards <- selectList matcher
+  case cards of
+    [] -> pure []
+    [x] -> pure $ printedResources $ getCardDef x
+    _ -> error "target matches too many cards"
+paymentResources (Payments ps) = concatMapM paymentResources ps
 
 instance Semigroup Payment where
   NoPayment <> x = x
@@ -53,13 +59,13 @@ data ActiveCost = ActiveCost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-resourceCostPaid :: ActiveCost -> Bool
-resourceCostPaid ActiveCost {..} =
+resourceCostPaid :: MonadGame env m => ActiveCost -> m Bool
+resourceCostPaid ActiveCost {..} = do
   let
     (rs, mrs) =
       first catMaybes $ partition isJust (costResources activeCostCost)
-    prs = paymentResources activeCostPayment
-  in flip evalState prs $ do
+  prs <- paymentResources activeCostPayment
+  flip evalStateT prs $ do
     l <- fmap and $ for rs $ \r -> do
       prs' <- get
       case (r `elem` prs', Wild `elem` prs') of
