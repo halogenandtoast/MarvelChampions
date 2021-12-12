@@ -1,8 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Minion where
 
 import Marvel.Prelude
 
+import Marvel.Attack
 import Marvel.Card
 import Marvel.Id
 import Marvel.Minion.Attrs
@@ -12,9 +14,11 @@ import Marvel.TH
 $(buildEntity "Minion")
 
 allMinions :: HashMap CardCode (IdentityId -> MinionId -> Minion)
-allMinions = fromList $ map
-  (toCardCode &&& (curry . cbCardBuilder))
-  $(buildEntityLookupList "Minion")
+allMinions =
+  fromList $
+    map
+      (toCardCode &&& (curry . cbCardBuilder))
+      $(buildEntityLookupList "Minion")
 
 lookupMinion :: CardCode -> (IdentityId -> MinionId -> Minion)
 lookupMinion cardCode = case lookup cardCode allMinions of
@@ -29,6 +33,9 @@ getMinionEngagedIdentity = minionEngagedIdentity . toAttrs
 
 getMinionPrintedHitPoints :: Minion -> HP Natural
 getMinionPrintedHitPoints = minionHitPoints . toAttrs
+
+minionAttackDetails :: Minion -> Maybe Attack
+minionAttackDetails = minionAttacking . toAttrs
 
 instance Entity Minion where
   type EntityId Minion = MinionId

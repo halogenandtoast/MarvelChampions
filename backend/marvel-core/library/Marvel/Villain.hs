@@ -1,9 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Villain where
 
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Attack
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -28,16 +30,24 @@ lookupVillain cardCode villainId =
   lookup cardCode allVillains <*> pure villainId
 
 allVillains :: HashMap CardCode (VillainId -> Villain)
-allVillains = fromList
-  $ map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
+allVillains =
+  fromList $
+    map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "Villain")
 
 villainDamage :: Villain -> Natural
-villainDamage v = fromIntegral . max 0 $ unHp (villainMaxHp attrs) - unHp
-  (villainHp attrs)
-  where attrs = toAttrs v
+villainDamage v =
+  fromIntegral . max 0 $
+    unHp (villainMaxHp attrs)
+      - unHp
+        (villainHp attrs)
+ where
+  attrs = toAttrs v
 
 villainIsTough :: Villain -> Bool
 villainIsTough = villainTough . toAttrs
+
+villainAttackDetails :: Villain -> Maybe Attack
+villainAttackDetails = villainAttacking . toAttrs
 
 instance HasAbilities Villain where
   getAbilities = genericGetAbilities

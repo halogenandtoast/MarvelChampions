@@ -188,6 +188,8 @@ library
       Marvel.Treachery.Treacheries.Advance
       Marvel.Treachery.Treacheries.Assault
       Marvel.Treachery.Treacheries.CaughtOffGuard
+      Marvel.Treachery.Treacheries.ElectricWhipAttack
+      Marvel.Treachery.Treacheries.ElectromagneticBacklash
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
       Marvel.Treachery.Treacheries.GangUp
