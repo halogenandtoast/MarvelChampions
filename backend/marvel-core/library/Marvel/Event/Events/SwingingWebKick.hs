@@ -30,7 +30,7 @@ instance RunMessage SwingingWebKick where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage 8 FromAttack)) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage 8 $ FromPlayerAttack identityId)) enemies
         pure e
       _ -> SwingingWebKick <$> runMessage msg attrs
     _ -> SwingingWebKick <$> runMessage msg attrs

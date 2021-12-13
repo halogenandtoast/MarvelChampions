@@ -30,7 +30,7 @@ instance RunMessage Uppercut where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage 5 FromAttack)) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId)) enemies
         pure e
       _ -> Uppercut <$> runMessage msg attrs
     _ -> Uppercut <$> runMessage msg attrs

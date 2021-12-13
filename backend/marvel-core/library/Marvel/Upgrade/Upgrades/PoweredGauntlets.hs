@@ -38,7 +38,8 @@ instance RunMessage PoweredGauntlets where
     RanAbility target 1 _ | isTarget attrs target -> do
       aerial <- selectAny (IdentityWithId (upgradeController attrs) <> IdentityWithTrait Aerial)
       let dmg = if aerial then 2 else 1
+          ident = upgradeController attrs
       enemies <- selectList AttackableEnemy
-      chooseOne (upgradeController attrs) $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
+      chooseOne ident $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack ident)) enemies
       pure u
     _ -> PoweredGauntlets <$> runMessage msg attrs

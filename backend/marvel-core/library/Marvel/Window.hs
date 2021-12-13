@@ -39,6 +39,7 @@ data WindowMatcher
   | VillainDamaged WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
+  | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
@@ -62,7 +63,8 @@ data WindowType
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
-  | DefeatedMinion MinionId
+  | DefeatedVillain VillainId Damage
+  | DefeatedMinion MinionId Damage
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
   | IdentityAttack IdentityId EnemyId
@@ -149,13 +151,29 @@ windowMatches matcher w source = case matcher of
         villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
-    DefeatedMinion minionId
+    DefeatedMinion minionId _
       | windowTiming w == timing ->
         if timing == After
           then case minionMatcher of
             AnyMinion -> pure True
             _ -> error "Minion has been deleted so we do not have details"
           else minionMatches minionMatcher minionId
+    _ -> pure False
+  EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
+    DefeatedMinion minionId damage
+      | windowTiming w == timing ->
+        if timing == After
+          then case enemyMatcher of
+            AnyEnemy -> damageMatches damageMatcher damage
+            _ -> error "Minion has been deleted so we do not have details"
+          else liftA2 (&&) (enemyMatches enemyMatcher (EnemyMinionId minionId)) (damageMatches damageMatcher damage)
+    DefeatedVillain villainId damage
+      | windowTiming w == timing ->
+        if timing == After
+          then case enemyMatcher of
+            AnyEnemy -> damageMatches damageMatcher damage
+            _ -> error "Minion has been deleted so we do not have details"
+          else liftA2 (&&) (enemyMatches enemyMatcher (EnemyVillainId villainId)) (damageMatches damageMatcher damage)
     _ -> pure False
   MinionEntersPlay timing minionMatcher -> case windowType w of
     MinionEnteredPlay minionId

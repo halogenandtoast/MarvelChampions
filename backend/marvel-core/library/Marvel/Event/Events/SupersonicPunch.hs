@@ -34,7 +34,7 @@ instance RunMessage SupersonicPunch where
         aerial <- selectAny (IdentityWithId identityId <> IdentityWithTrait Aerial)
         let dmg = if aerial then 8 else 4
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId)) enemies
         pure e
       _ -> SupersonicPunch <$> runMessage msg attrs
     _ -> SupersonicPunch <$> runMessage msg attrs

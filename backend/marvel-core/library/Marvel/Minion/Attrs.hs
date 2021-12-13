@@ -158,9 +158,9 @@ runMinionMessage msg attrs = case msg of
           villain <- selectJust ActiveVillain
           push $ VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))
         pushAll
-          [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
+          [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs) damage]
           , MinionMessage (toId attrs) MinionDefeated
-          , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs)]
+          , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs) damage]
           ]
       pure $ attrs & damageL +~ (damageAmount damage)
   MinionStunned _ -> pure $ attrs & stunnedL .~ True

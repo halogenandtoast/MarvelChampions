@@ -34,7 +34,7 @@ instance RunMessage CounterPunch where
         dmg <- selectCount HeroAttackDamage (IdentityWithId identityId)
         msgs <- choiceMessages
           identityId
-          (DamageEnemy (EnemyTarget enemyId) (toSource attrs) (toDamage dmg FromAttack))
+          (DamageEnemy (EnemyTarget enemyId) (toSource attrs) (toDamage dmg $ FromPlayerAttack identityId))
         pushAll msgs
         pure e
       _ -> CounterPunch <$> runMessage msg attrs

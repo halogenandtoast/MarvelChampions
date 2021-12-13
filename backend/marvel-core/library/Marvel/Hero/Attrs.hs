@@ -151,7 +151,7 @@ instance RunMessage HeroAttrs where
               enemies <- selectList AttackableEnemy
               dmg <- getModifiedAttack a
               pushAll
-                [ Ask ident $ ChooseOne $ map (damageChoice a (toDamage dmg FromAttack)) enemies
+                [ Ask ident $ ChooseOne $ map (damageChoice a (toDamage dmg $ FromPlayerAttack ident)) enemies
                 , CheckWindows [Window After $ MadeBasicAttack ident]
                 ]
               pure a
