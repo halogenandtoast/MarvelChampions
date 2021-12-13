@@ -33,7 +33,7 @@ instance RunMessage GammaSlam where
         dmg <- min 15
           <$> selectCount SustainedDamage (IdentityWithId identityId)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId)) enemies
         pure e
       _ -> GammaSlam <$> runMessage msg attrs
     _ -> GammaSlam <$> runMessage msg attrs

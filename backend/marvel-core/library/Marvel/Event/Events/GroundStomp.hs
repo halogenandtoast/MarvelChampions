@@ -31,7 +31,7 @@ instance RunMessage GroundStomp where
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AnyEnemy
         chooseOneAtATime identityId
-          $ map (damageChoice attrs (toDamage 1 FromAttack)) enemies
+          $ map (damageChoice attrs (toDamage 1 $ FromPlayerAttack identityId)) enemies
         pure e
       _ -> GroundStomp <$> runMessage msg attrs
     _ -> GroundStomp <$> runMessage msg attrs

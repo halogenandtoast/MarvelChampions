@@ -31,7 +31,7 @@ instance RunMessage Haymaker where
       PlayedEvent identityId _ _ -> do
         pushAll =<< choiceMessages
           identityId
-          (ChooseDamage (toSource attrs) (toDamage 3 FromAttack) AnyEnemy)
+          (ChooseDamage (toSource attrs) (toDamage 3 $ FromPlayerAttack identityId) AnyEnemy)
         pure e
       _ -> Haymaker <$> runMessage msg attrs
     _ -> Haymaker <$> runMessage msg attrs

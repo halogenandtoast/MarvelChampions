@@ -2,6 +2,8 @@ module Marvel.Damage where
 
 import Marvel.Prelude
 
+import Marvel.Id
+
 data Damage = Damage
   { damageAmount :: Natural
   , damageOverkill :: Bool
@@ -10,7 +12,14 @@ data Damage = Damage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data DamageSource = FromAttack | FromAbility | FromRetaliate | FromTreachery | FromConsequential | FromOverkill
+data DamageSource
+  = FromPlayerAttack IdentityId
+  | FromAttack
+  | FromAbility
+  | FromRetaliate
+  | FromTreachery
+  | FromConsequential
+  | FromOverkill
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

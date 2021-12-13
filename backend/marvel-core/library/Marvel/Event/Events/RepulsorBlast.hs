@@ -53,9 +53,10 @@ instance RunMessage RepulsorBlast where
         Nothing -> error "invalid meta"
         Just enemy -> do
           let x = count (== Energy) $ concatMap (printedResources . getCardDef) cs
+              ident = eventController attrs
           msgs <-
             choiceMessages
-              (eventController attrs)
-              (DamageEnemy enemy (toSource attrs) (toDamage (1 + (x * 2)) FromAttack))
+              ident
+              (DamageEnemy enemy (toSource attrs) (toDamage (1 + (x * 2)) $ FromPlayerAttack ident))
           e <$ pushAll msgs
     _ -> RepulsorBlast . (`With` meta) <$> runMessage msg attrs

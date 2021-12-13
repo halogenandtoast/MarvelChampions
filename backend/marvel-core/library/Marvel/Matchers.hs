@@ -8,6 +8,7 @@ import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.Def
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
@@ -267,3 +268,14 @@ newtype AttachmentMatcher = AttachmentWithId AttachmentId
 data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data DamageMatcher = AttackFromPlayer IdentityMatcher | AnyDamage
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+damageMatches :: MonadGame env m => DamageMatcher -> Damage -> m Bool
+damageMatches matcher damage = case matcher of
+  AttackFromPlayer identityMatcher -> case damageSource damage of
+    FromPlayerAttack ident -> identityMatches identityMatcher ident
+    _ -> pure False
+  AnyDamage -> pure True

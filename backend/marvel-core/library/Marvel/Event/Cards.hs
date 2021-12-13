@@ -198,6 +198,13 @@ wakandaForeverD :: CardDef
 wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
+chaseThemDown :: CardDef
+chaseThemDown = (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
+  { cdAbilitySubType = Just Ability.Thwart
+  , cdCriteria = SchemeExists AnyScheme
+  , cdResponseWindow = Just $ EnemyDefeated After AnyEnemy $ AttackFromPlayer You
+  }
+
 relentlessAssault :: CardDef
 relentlessAssault = (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
   { cdAbilitySubType = Just Ability.Attack
