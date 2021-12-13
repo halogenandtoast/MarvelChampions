@@ -32,24 +32,29 @@ newtype StarkTower = StarkTower SupportAttrs
 
 instance HasAbilities StarkTower where
   getAbilities (StarkTower a) =
-    [ ability a 1 AlterEgoAction OwnsThis ExhaustCost $
-        RunAbility (toTarget a) 1
+    [ ability
+        a
+        1
+        AlterEgoAction
+        ( OwnsThis
+            <> ExtendedCardExists
+              (TopmostCardInDiscardOf AnyIdentity (CardWithTrait Tech))
+        )
+        ExhaustCost
+        $ RunAbility (toTarget a) 1
     ]
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
-    RanAbility target 1 _
-      | isTarget attrs target ->
-        s
-          <$ pushChoice
-            (supportController attrs)
-            (ChoosePlayer AnyIdentity target)
+    RanAbility target 1 _ | isTarget attrs target -> s
+      <$ pushChoice
+        (supportController attrs)
+        (ChoosePlayer AnyIdentity target)
     ChosePlayer identityId target | isTarget attrs target -> do
-      mTechCard <-
-        selectOne $
-          TopmostCardInDiscardOf
-            (IdentityWithId identityId)
-            (CardWithTrait Tech)
+      mTechCard <- selectOne $
+        TopmostCardInDiscardOf
+          (IdentityWithId identityId)
+          (CardWithTrait Tech)
       case mTechCard of
         Nothing -> error "should have targetted a card"
         Just x -> push $ IdentityMessage identityId (AddToHand x)
