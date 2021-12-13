@@ -164,6 +164,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
         if timing == After
           then case enemyMatcher of
+            MinionEnemy -> damageMatches damageMatcher damage
             AnyEnemy -> damageMatches damageMatcher damage
             _ -> error "Minion has been deleted so we do not have details"
           else liftA2 (&&) (enemyMatches enemyMatcher (EnemyMinionId minionId)) (damageMatches damageMatcher damage)
@@ -171,6 +172,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
         if timing == After
           then case enemyMatcher of
+            VillainEnemy -> damageMatches damageMatcher damage
             AnyEnemy -> damageMatches damageMatcher damage
             _ -> error "Minion has been deleted so we do not have details"
           else liftA2 (&&) (enemyMatches enemyMatcher (EnemyVillainId villainId)) (damageMatches damageMatcher damage)

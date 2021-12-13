@@ -14,6 +14,7 @@ data Damage = Damage
 
 data DamageSource
   = FromPlayerAttack IdentityId
+  | FromAllyAttack AllyId
   | FromAttack
   | FromAbility
   | FromRetaliate

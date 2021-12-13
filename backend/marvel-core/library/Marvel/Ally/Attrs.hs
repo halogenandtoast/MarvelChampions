@@ -188,7 +188,7 @@ instance RunMessage AllyAttrs where
           pushAll
             $ Ask
                 (allyController a)
-                (ChooseOne $ map (damageChoice a (toDamage dmg FromAttack)) enemies)
+                (ChooseOne $ map (damageChoice a (toDamage dmg $ FromAllyAttack (toId a))) enemies)
             : [ AllyMessage
                   ident
                   (AllyDamaged (toSource a) (toDamage (allyAttackConsequentialDamage a) FromConsequential))

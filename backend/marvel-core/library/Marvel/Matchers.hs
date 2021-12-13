@@ -70,6 +70,7 @@ data AllyMatcher
   | AllyWithDamage GameValueMatcher
   | AllyWithId AllyId
   | AnyAlly
+  | AllyMatches [AllyMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -81,6 +82,14 @@ pattern AllyWithAnyUses <-
 
 allyMatches :: MonadGame env m => AllyMatcher -> AllyId -> m Bool
 allyMatches matcher ident = member ident <$> gameSelectAlly matcher
+
+instance Semigroup AllyMatcher where
+  AnyAlly <> x = x
+  x <> AnyAlly = x
+  AllyMatches xs <> AllyMatches ys = AllyMatches $ xs <> ys
+  x <> AllyMatches ys = AllyMatches $ x : ys
+  AllyMatches xs <> y = AllyMatches $ xs <> [y]
+  x <> y = AllyMatches [x, y]
 
 data SupportMatcher
   = UnexhaustedSupport
@@ -269,7 +278,7 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data DamageMatcher = AttackFromPlayer IdentityMatcher | AnyDamage
+data DamageMatcher = AttackFromPlayer IdentityMatcher | AttackFromAlly AllyMatcher | AnyDamage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -277,5 +286,8 @@ damageMatches :: MonadGame env m => DamageMatcher -> Damage -> m Bool
 damageMatches matcher damage = case matcher of
   AttackFromPlayer identityMatcher -> case damageSource damage of
     FromPlayerAttack ident -> identityMatches identityMatcher ident
+    _ -> pure False
+  AttackFromAlly allyMatcher -> case damageSource damage of
+    FromAllyAttack ident -> allyMatches allyMatcher ident
     _ -> pure False
   AnyDamage -> pure True
