@@ -159,6 +159,7 @@ pattern VillainWithAnyDamage <-
 
 data VillainMatcher
   = ActiveVillain
+  | AnyVillain
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
   | VillainWithToughStatus
@@ -237,9 +238,21 @@ pattern CharacterWithAnyDamage <-
   where
     CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
 
-newtype CharacterMatcher = CharacterWithDamage GameValueMatcher
+data CharacterMatcher
+  = CharacterWithDamage GameValueMatcher
+  | DamageableCharacter
+  | AnyCharacter
+  | CharacterMatches [CharacterMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup CharacterMatcher where
+  AnyCharacter <> x = x
+  x <> AnyCharacter = x
+  CharacterMatches xs <> CharacterMatches ys = CharacterMatches $ xs <> ys
+  x <> CharacterMatches ys = CharacterMatches $ x : ys
+  CharacterMatches xs <> y = CharacterMatches $ xs <> [y]
+  x <> y = CharacterMatches [x, y]
 
 newtype EncounterCardMatcher = NemesisSetFor IdentityId
   deriving stock (Show, Eq, Generic)

@@ -126,10 +126,24 @@ damageChoice :: AllyAttrs -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg
+    , Run
+      [ CheckWindows
+          [ W.Window W.After
+              $ W.AllyAttack (toId attrs) (EnemyVillainId vid)
+          ]
+      ]
+    ]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg
+    , Run
+      [ CheckWindows
+          [ W.Window W.After
+              $ W.AllyAttack (toId attrs) (EnemyMinionId vid)
+          ]
+      ]
+    ]
 
 thwartChoice :: AllyAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
