@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -18,7 +19,6 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window
 
 repulsorBlast :: EventCard RepulsorBlast
 repulsorBlast =
@@ -56,6 +56,6 @@ instance RunMessage RepulsorBlast where
           msgs <-
             choiceMessages
               (eventController attrs)
-              (DamageEnemy enemy (toSource attrs) FromAttack (1 + (x * 2)))
+              (DamageEnemy enemy (toSource attrs) (toDamage (1 + (x * 2)) FromAttack))
           e <$ pushAll msgs
     _ -> RepulsorBlast . (`With` meta) <$> runMessage msg attrs

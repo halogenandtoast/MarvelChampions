@@ -10,6 +10,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
@@ -21,7 +22,6 @@ import Marvel.Target
 import Marvel.Trait
 import Marvel.Upgrade.Attrs
 import Marvel.Upgrade.Cards qualified as Cards
-import Marvel.Window
 
 poweredGauntlets :: UpgradeCard PoweredGauntlets
 poweredGauntlets = upgrade PoweredGauntlets Cards.poweredGauntlets
@@ -39,6 +39,6 @@ instance RunMessage PoweredGauntlets where
       aerial <- selectAny (IdentityWithId (upgradeController attrs) <> IdentityWithTrait Aerial)
       let dmg = if aerial then 2 else 1
       enemies <- selectList AttackableEnemy
-      chooseOne (upgradeController attrs) $ map (damageChoice attrs FromAttack dmg) enemies
+      chooseOne (upgradeController attrs) $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
       pure u
     _ -> PoweredGauntlets <$> runMessage msg attrs

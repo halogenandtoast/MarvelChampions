@@ -940,6 +940,7 @@ gameSelectEnemy m = do
       EnemyMinionId _ -> False
     AnyEnemy -> pure True
     VillainEnemy -> pure True
+    MinionEnemy -> pure False
     DamageableEnemy -> pure True
     AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
     UndefendedEnemy -> pure $ maybe False (not . attackDefended) (villainAttackDetails e)
@@ -952,6 +953,7 @@ gameSelectEnemy m = do
       EnemyMinionId minionId -> toId e == minionId
     AnyEnemy -> pure True
     VillainEnemy -> pure False
+    MinionEnemy -> pure True
     DamageableEnemy -> pure True
     AttackableEnemy -> pure True
     UndefendedEnemy -> pure $ maybe False (not . attackDefended) (minionAttackDetails e)

@@ -6,6 +6,7 @@ module Marvel.Event.Events.GammaSlam
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -17,7 +18,6 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window
 
 gammaSlam :: EventCard GammaSlam
 gammaSlam = event GammaSlam Cards.gammaSlam
@@ -33,7 +33,7 @@ instance RunMessage GammaSlam where
         dmg <- min 15
           <$> selectCount SustainedDamage (IdentityWithId identityId)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs FromAttack dmg) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
         pure e
       _ -> GammaSlam <$> runMessage msg attrs
     _ -> GammaSlam <$> runMessage msg attrs

@@ -1,7 +1,7 @@
-module Marvel.Hero.Attrs
-  ( module Marvel.Hero.Attrs
-  , module X
-  ) where
+module Marvel.Hero.Attrs (
+  module Marvel.Hero.Attrs,
+  module X,
+) where
 
 import Marvel.Prelude
 
@@ -9,6 +9,7 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -26,28 +27,31 @@ import Marvel.Stats
 import Marvel.Target
 import Marvel.Window
 
-hero
-  :: (HeroAttrs -> a)
-  -> CardDef
-  -> HP GameValue
-  -> HandSize
-  -> Thw
-  -> Atk
-  -> Def
-  -> CardBuilder IdentityId a
-hero f cardDef hp hSize thw atk def = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \ident -> f $ HeroAttrs
-    { heroIdentityId = ident
-    , heroBaseHandSize = hSize
-    , heroBaseThwart = thw
-    , heroBaseAttack = atk
-    , heroBaseDefense = def
-    , heroAlterEgoForms = [A]
-    , heroStartingHP = hp
-    , heroCardDef = cardDef
+hero ::
+  (HeroAttrs -> a) ->
+  CardDef ->
+  HP GameValue ->
+  HandSize ->
+  Thw ->
+  Atk ->
+  Def ->
+  CardBuilder IdentityId a
+hero f cardDef hp hSize thw atk def =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \ident ->
+        f $
+          HeroAttrs
+            { heroIdentityId = ident
+            , heroBaseHandSize = hSize
+            , heroBaseThwart = thw
+            , heroBaseAttack = atk
+            , heroBaseDefense = def
+            , heroAlterEgoForms = [A]
+            , heroStartingHP = hp
+            , heroCardDef = cardDef
+            }
     }
-  }
 
 class IsHero a
 
@@ -114,23 +118,27 @@ getModifiedDefense attrs = do
   applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-damageChoice :: HeroAttrs -> Natural -> EnemyId -> Choice
+damageChoice :: HeroAttrs -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) FromAttack dmg]
-  EnemyMinionId mid -> TargetLabel
-    (MinionTarget mid)
-    [DamageEnemy (MinionTarget mid) (toSource attrs) FromAttack dmg]
+  EnemyVillainId vid ->
+    TargetLabel
+      (VillainTarget vid)
+      [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+  EnemyMinionId mid ->
+    TargetLabel
+      (MinionTarget mid)
+      [DamageEnemy (MinionTarget mid) (toSource attrs) dmg]
 
 thwartChoice :: HeroAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid -> TargetLabel
-    (MainSchemeTarget vid)
-    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid -> TargetLabel
-    (SideSchemeTarget sid)
-    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
+  SchemeMainSchemeId vid ->
+    TargetLabel
+      (MainSchemeTarget vid)
+      [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
+  SchemeSideSchemeId sid ->
+    TargetLabel
+      (SideSchemeTarget sid)
+      [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
 
 instance RunMessage HeroAttrs where
   runMessage msg a = case msg of
@@ -143,7 +151,7 @@ instance RunMessage HeroAttrs where
               enemies <- selectList AttackableEnemy
               dmg <- getModifiedAttack a
               pushAll
-                [ Ask ident $ ChooseOne $ map (damageChoice a dmg) enemies
+                [ Ask ident $ ChooseOne $ map (damageChoice a (toDamage dmg FromAttack)) enemies
                 , CheckWindows [Window After $ MadeBasicAttack ident]
                 ]
               pure a
@@ -165,13 +173,13 @@ instance RunMessage HeroAttrs where
           def <- getModifiedDefense a
           pushAll
             [ IdentityMessage ident ExhaustedIdentity
-            , IdentityMessage ident
-              $ IdentityDefended def
+            , IdentityMessage ident $
+                IdentityDefended def
             , case enemyId of
-              EnemyVillainId vid ->
-                VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
-              EnemyMinionId vid ->
-                MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
+                EnemyVillainId vid ->
+                  VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
+                EnemyMinionId vid ->
+                  MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
             ]
           pure a
         _ -> pure a

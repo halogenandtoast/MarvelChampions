@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.ElectricWhipAttack (
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
@@ -40,7 +41,7 @@ instance RunMessage ElectricWhipAttack where
                     [ DamageCharacter
                         (IdentityCharacter ident)
                         (toSource attrs)
-                        (fromIntegral $ length upgrades)
+                        (toDamage (fromIntegral $ length upgrades) FromTreachery)
                     ]
                 , Label
                     "Discard an upgrade you control"

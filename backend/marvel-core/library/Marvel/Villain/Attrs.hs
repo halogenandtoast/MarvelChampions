@@ -10,6 +10,7 @@ import Data.HashSet qualified as HashSet
 import Marvel.Attack
 import Marvel.Boost
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity as X
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -126,13 +127,13 @@ runVillainMessage msg attrs = case msg of
       . min (unHp $ villainMaxHp attrs)
       . (+ fromIntegral n)
       . unHp
-  VillainDamaged _ n -> if villainTough attrs
+  VillainDamaged _ damage -> if villainTough attrs
     then pure $ attrs & toughL .~ False
     else do
       when
-        (subtractNatural n (fromIntegral . unHp $ villainHp attrs) == 0)
+        (subtractNatural (damageAmount damage) (fromIntegral . unHp $ villainHp attrs) == 0)
         (push $ VillainMessage (toId attrs) VillainDefeated)
-      pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral n) . unHp
+      pure $ attrs & hpL %~ HP . max 0 . subtract (fromIntegral $ damageAmount damage) . unHp
   VillainDefeated -> do
     push (GameOver Won)
     pure attrs

@@ -120,6 +120,7 @@ data EnemyMatcher
   = AnyEnemy
   | EnemyWithId EnemyId
   | VillainEnemy
+  | MinionEnemy
   | AttackableEnemy
   | DamageableEnemy
   | EnemyIs CardDef

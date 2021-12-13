@@ -2,6 +2,7 @@ module Marvel.Minion.Minions.Shocker where
 
 import Marvel.Prelude
 
+import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
@@ -21,8 +22,8 @@ instance RunMessage Shocker where
         players <- getPlayers
         pushAll $ flip concatMap players $ \player ->
           [ CheckWindows
-            [W.Window W.When $ W.IdentityTakeDamage player W.FromAbility 1]
-          , IdentityMessage player $ IdentityDamaged (toSource attrs) 1
+            [W.Window W.When $ W.IdentityTakeDamage player (toDamage 1 FromAbility)]
+          , IdentityMessage player $ IdentityDamaged (toSource attrs) (toDamage 1 FromAbility)
           ]
         pure e
       _ -> Shocker <$> runMessage msg attrs

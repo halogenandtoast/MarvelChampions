@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -20,7 +21,6 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
 import Marvel.Upgrade.Cards qualified as Cards
-import Marvel.Window
 
 pantherClaws :: UpgradeCard PantherClaws
 pantherClaws = upgrade PantherClaws Cards.pantherClaws
@@ -43,7 +43,7 @@ instance RunMessage PantherClaws where
           modifiers <- getModifiers attrs
           let dmg = if LastSpecial `elem` modifiers then 4 else 2
           msgs <- choiceMessages (upgradeController attrs)
-            $ ChooseDamage (toSource attrs) FromAbility dmg (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
+            $ ChooseDamage (toSource attrs) (toDamage dmg FromAbility) (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
           pushAll msgs
       pure u
     _ -> PantherClaws <$> runMessage msg attrs

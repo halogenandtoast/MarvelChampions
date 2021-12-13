@@ -7,6 +7,7 @@ import Marvel.Attachment.Attrs
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
@@ -41,7 +42,7 @@ instance HasAbilities ArmoredRhinoSuit where
 
 getDetails :: [W.WindowType] -> (VillainId, Natural)
 getDetails [] = error "Invalid call"
-getDetails (W.DamagedVillain vid n : _) = (vid, n)
+getDetails (W.DamagedVillain vid n : _) = (vid, damageAmount n)
 getDetails (_ : xs) = getDetails xs
 
 instance RunMessage ArmoredRhinoSuit where

@@ -8,6 +8,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Id
@@ -56,6 +57,6 @@ instance RunMessage HawkeyeClintBarton where
   runMessage msg a = case msg of
     RanAbility target 1 windows | isTarget a target -> do
       let minionId = findMinion windows
-      push $ MinionMessage minionId (MinionDamaged (toSource a) 2)
+      push $ MinionMessage minionId (MinionDamaged (toSource a) (toDamage 2 FromAbility))
       pure a
     _ -> HawkeyeClintBarton <$> runMessage msg (toAttrs a)

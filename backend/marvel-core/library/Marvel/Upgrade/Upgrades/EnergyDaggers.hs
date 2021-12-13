@@ -10,6 +10,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -46,7 +47,7 @@ instance RunMessage EnergyDaggers where
                 )
                 players
       modifiers <- getModifiers attrs
-      let dmg = if LastSpecial `elem` modifiers then 2 else 1
+      let dmg = toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
       u <$ chooseOne
         (upgradeController attrs)
         [ TargetLabel

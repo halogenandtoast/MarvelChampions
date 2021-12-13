@@ -22,6 +22,7 @@ import Marvel.Target as X
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Matchers
@@ -147,19 +148,21 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL %~ subtractNatural n
   MinionHealAllDamage -> do
     pure $ attrs & damageL .~ 0
-  MinionDamaged _ damage -> if minionTough attrs
+  MinionDamaged source damage -> if minionTough attrs
     then pure $ attrs & toughL .~ False
     else do
       hitPoints <- getModifiedHitPoints attrs
-      when
-        (damage + minionDamage attrs >= hitPoints)
-        (pushAll
+      when (damageAmount damage + minionDamage attrs >= hitPoints) $ do
+        let overkill = damageAmount damage - (hitPoints - minionDamage attrs)
+        when (overkill > 0 && damageOverkill damage) $ do
+          villain <- selectJust ActiveVillain
+          push $ VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))
+        pushAll
           [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs)]
           , MinionMessage (toId attrs) MinionDefeated
           , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs)]
           ]
-        )
-      pure $ attrs & damageL +~ damage
+      pure $ attrs & damageL +~ (damageAmount damage)
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionBecomeTough-> pure $ attrs & toughL .~ True

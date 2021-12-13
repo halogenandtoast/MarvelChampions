@@ -6,6 +6,7 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
@@ -121,14 +122,14 @@ getModifiedThwart attrs = do
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-damageChoice :: AllyAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
-damageChoice attrs damageSource dmg = \case
+damageChoice :: AllyAttrs -> Damage -> EnemyId -> Choice
+damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) damageSource dmg]
+    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) damageSource dmg]
+    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 thwartChoice :: AllyAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
@@ -187,10 +188,10 @@ instance RunMessage AllyAttrs where
           pushAll
             $ Ask
                 (allyController a)
-                (ChooseOne $ map (damageChoice a W.FromAttack dmg) enemies)
+                (ChooseOne $ map (damageChoice a (toDamage dmg FromAttack)) enemies)
             : [ AllyMessage
                   ident
-                  (AllyDamaged (toSource a) (allyAttackConsequentialDamage a))
+                  (AllyDamaged (toSource a) (toDamage (allyAttackConsequentialDamage a) FromConsequential))
               | allyAttackConsequentialDamage a > 0
               ]
           pure a
@@ -205,7 +206,7 @@ instance RunMessage AllyAttrs where
                 (ChooseOne $ map (thwartChoice a thw) schemes)
             : [ AllyMessage
                   ident
-                  (AllyDamaged (toSource a) (allyThwartConsequentialDamage a))
+                  (AllyDamaged (toSource a) (toDamage (allyThwartConsequentialDamage a) FromConsequential))
               | allyThwartConsequentialDamage a > 0
               ]
           pure a
@@ -229,12 +230,12 @@ instance RunMessage AllyAttrs where
           (attackOverkill attack' && overkill > 0)
           (push $ IdentityMessage (allyController a) $ IdentityDamaged
             (attackSource attack')
-            overkill
+            (toDamage overkill FromAttack)
           )
 
         push $ AllyMessage ident $ AllyDamaged
           (attackSource attack')
-          (attackDamage attack')
+          (toDamage (attackDamage attack') FromAttack)
         -- pushAll
         --   [ CheckWindows
         --     [ W.Window W.When
@@ -249,9 +250,9 @@ instance RunMessage AllyAttrs where
         then pure $ a & toughL .~ False
         else do
           when
-            (damage + allyDamage a >= unHp (allyHitPoints a))
+            (damageAmount damage + allyDamage a >= unHp (allyHitPoints a))
             (push $ AllyMessage (toId a) AllyDefeated)
-          pure $ a & damageL +~ damage
+          pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
         pushAll
           [ RemoveFromPlay (toTarget a)

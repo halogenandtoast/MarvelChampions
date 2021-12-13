@@ -6,6 +6,7 @@ module Marvel.Event.Events.CounterPunch
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -33,7 +34,7 @@ instance RunMessage CounterPunch where
         dmg <- selectCount HeroAttackDamage (IdentityWithId identityId)
         msgs <- choiceMessages
           identityId
-          (DamageEnemy (EnemyTarget enemyId) (toSource attrs) FromAbility dmg)
+          (DamageEnemy (EnemyTarget enemyId) (toSource attrs) (toDamage dmg FromAttack))
         pushAll msgs
         pure e
       _ -> CounterPunch <$> runMessage msg attrs

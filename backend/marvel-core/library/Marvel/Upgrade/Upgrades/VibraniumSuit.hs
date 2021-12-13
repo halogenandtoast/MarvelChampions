@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
@@ -20,7 +21,6 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Upgrade.Attrs
 import Marvel.Upgrade.Cards qualified as Cards
-import Marvel.Window
 
 vibraniumSuit :: UpgradeCard VibraniumSuit
 vibraniumSuit = upgrade VibraniumSuit Cards.vibraniumSuit
@@ -48,7 +48,7 @@ instance RunMessage VibraniumSuit where
             dmg = min sustainedDamage
               $ if LastSpecial `elem` modifiers then 2 else 1
           damageMsgs <- choiceMessages (upgradeController attrs)
-            $ ChooseDamage (toSource attrs) FromAbility dmg AttackableEnemy
+            $ ChooseDamage (toSource attrs) (toDamage dmg FromAbility) AttackableEnemy
           healMsgs <- choiceMessages (upgradeController attrs)
             $ Heal (IdentityCharacter $ upgradeController attrs) dmg
           pushAll $ damageMsgs <> healMsgs

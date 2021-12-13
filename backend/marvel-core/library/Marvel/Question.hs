@@ -10,6 +10,7 @@ import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
@@ -20,7 +21,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window (DamageSource(..), Window(..), WindowTiming(..))
+import Marvel.Window (Window(..), WindowTiming(..))
 import Marvel.Window qualified as W
 
 data Payment = Payments [Payment] | ResourcePayment Resource | ResourcePaymentFromCard ExtendedCardMatcher | NoPayment
@@ -116,14 +117,14 @@ data Choice
   | ReadyIdentity
   | Pay Payment
   | Run [Message]
-  | DamageEnemy Target Source DamageSource Natural
-  | DamageAllEnemies EnemyMatcher Source DamageSource Natural
+  | DamageEnemy Target Source Damage
+  | DamageAllEnemies EnemyMatcher Source Damage
   | ThwartScheme Target Source Natural
   | Stun Target Source
   | Confuse Target Source
   | Recover
   | Heal CharacterId Natural
-  | DamageCharacter CharacterId Source Natural
+  | DamageCharacter CharacterId Source Damage
   | Attack
   | Thwart
   | Defend EnemyId
@@ -133,7 +134,7 @@ data Choice
   | CreateEffect CardDef Source ChooseATarget
   | RemoveThreat Source Natural SchemeMatcher
   | PlaceThreat Source Natural SchemeMatcher
-  | ChooseDamage Source DamageSource Natural EnemyMatcher
+  | ChooseDamage Source Damage EnemyMatcher
   | ChooseHeal Natural CharacterMatcher
   | DiscardTarget Target
   | ChooseDrawCards Natural IdentityMatcher
@@ -211,27 +212,27 @@ choiceMessages ident = \case
   FinishPayment -> pure [FinishedPayment]
   ReadyIdentity -> pure [IdentityMessage ident ReadiedIdentity]
   Pay payment -> pure [Paid payment]
-  DamageAllEnemies matcher source damageSource n -> do
+  DamageAllEnemies matcher source damage -> do
     enemies <- selectList $ DamageableEnemy <> matcher
-    concatMapM (\e -> choiceMessages ident (DamageEnemy (EnemyTarget e) source damageSource n)) enemies
-  DamageEnemy target source damageSource n -> do
+    concatMapM (\e -> choiceMessages ident (DamageEnemy (EnemyTarget e) source damage)) enemies
+  DamageEnemy target source damage -> do
     let isIdentity = case source of
                        IdentitySource _ -> True
                        _ -> False
     case target of
       VillainTarget vid -> pure $
-        [ CheckWindows [Window When $ W.DamagedVillain vid n]
-        , VillainMessage vid $ VillainDamaged source n
-        ] <> [ CheckWindows [Window After $ W.IdentityAttack ident (EnemyVillainId vid)] | damageSource == FromAttack && isIdentity
+        [ CheckWindows [Window When $ W.DamagedVillain vid damage]
+        , VillainMessage vid $ VillainDamaged source damage
+        ] <> [ CheckWindows [Window After $ W.IdentityAttack ident (EnemyVillainId vid)] | damageSource damage == FromAttack && isIdentity
         ]
-      MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source n]
+      MinionTarget mid -> pure [MinionMessage mid $ MinionDamaged source damage]
       EnemyTarget enemy -> case enemy of
         EnemyVillainId vid -> pure $
-          [ CheckWindows [Window When $ W.DamagedVillain vid n]
-          , VillainMessage vid $ VillainDamaged source n
-          ] <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy] | damageSource == FromAttack && isIdentity
+          [ CheckWindows [Window When $ W.DamagedVillain vid damage]
+          , VillainMessage vid $ VillainDamaged source damage
+          ] <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy] | damageSource damage == FromAttack && isIdentity
           ]
-        EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source n]
+        EnemyMinionId mid -> pure [MinionMessage mid $ MinionDamaged source damage]
       _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
     MainSchemeTarget mid ->
@@ -274,9 +275,9 @@ choiceMessages ident = \case
             | x <- xs
             ]
         ]
-  ChooseDamage source damageSource n enemyMatcher -> do
+  ChooseDamage source damage enemyMatcher -> do
     enemies <- selectList enemyMatcher
-    let f target = DamageEnemy target source damageSource n
+    let f target = DamageEnemy target source damage
     case enemies of
       [] -> pure []
       [x] -> choiceMessages ident (f $ EnemyTarget x)
@@ -305,12 +306,12 @@ choiceMessages ident = \case
     AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
     VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
     MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
-  DamageCharacter characterId source n -> case characterId of
+  DamageCharacter characterId source damage -> case characterId of
     IdentityCharacter ident' ->
-      pure [IdentityMessage ident' $ IdentityDamaged source n]
-    AllyCharacter ident' -> pure [AllyMessage ident' $ AllyDamaged source n]
-    VillainCharacter ident' -> pure [VillainMessage ident' $ VillainDamaged source n]
-    MinionCharacter ident' -> pure [MinionMessage ident' $ MinionDamaged source n]
+      pure [IdentityMessage ident' $ IdentityDamaged source damage]
+    AllyCharacter ident' -> pure [AllyMessage ident' $ AllyDamaged source damage]
+    VillainCharacter ident' -> pure [VillainMessage ident' $ VillainDamaged source damage]
+    MinionCharacter ident' -> pure [MinionMessage ident' $ MinionDamaged source damage]
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->
@@ -348,9 +349,9 @@ costMessages iid a = go (abilityCost a)
  where
   go = \case
     NoCost -> []
-    DamageCost n -> [IdentityMessage iid $ IdentityDamaged (abilitySource a) n]
+    DamageCost n -> [IdentityMessage iid $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)]
     DamageThisCost n -> case abilitySource a of
-      AllySource ident -> [AllyMessage ident $ AllyDamaged (abilitySource a) n]
+      AllySource ident -> [AllyMessage ident $ AllyDamaged (abilitySource a) (toDamage n FromAbility)]
       _ -> error "Unhandled"
     ExhaustCost -> case abilitySource a of
       IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
