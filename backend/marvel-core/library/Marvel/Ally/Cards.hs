@@ -86,6 +86,10 @@ warMachineJamesRhodes =
 shuri :: CardDef
 shuri = identityAlly "01041" "Shuri" 2 [Genius, Wakanda] [Physical]
 
+tigraGreerGrantNelson :: CardDef
+tigraGreerGrantNelson =
+  ally "01051" ("Tigra" <:> "Greer Grant Nelson") 3 [Avenger] [Mental] Aggression
+
 daredevilMattMurdock :: CardDef
 daredevilMattMurdock =
   ally "01058" ("Daredevil" <:> "Matt Murdock") 4 [Defender] [Physical] Justice

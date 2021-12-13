@@ -882,6 +882,7 @@ gameSelectAlly m = do
     AllyWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . getAllyDamage
     AllyWithId ident' -> pure . (== ident') . toId
+    AllyMatches xs -> andM . traverse matchFilter xs
 
 gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case
