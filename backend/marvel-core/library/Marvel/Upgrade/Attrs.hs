@@ -5,6 +5,7 @@ module Marvel.Upgrade.Attrs where
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -12,7 +13,6 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window qualified as W
 
 class IsUpgrade a
 
@@ -62,16 +62,16 @@ upgrade f cardDef =
             }
     }
 
-damageChoice :: UpgradeAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
-damageChoice attrs damageSource dmg = \case
+damageChoice :: UpgradeAttrs -> Damage -> EnemyId -> Choice
+damageChoice attrs dmg = \case
   EnemyVillainId vid ->
     TargetLabel
       (VillainTarget vid)
-      [DamageEnemy (VillainTarget vid) (toSource attrs) damageSource dmg]
+      [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
   EnemyMinionId vid ->
     TargetLabel
       (MinionTarget vid)
-      [DamageEnemy (MinionTarget vid) (toSource attrs) damageSource dmg]
+      [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 thwartChoice :: UpgradeAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case

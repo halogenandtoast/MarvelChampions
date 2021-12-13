@@ -61,6 +61,7 @@ library
       Marvel.Card.Side
       Marvel.Cost
       Marvel.Criteria
+      Marvel.Damage
       Marvel.Debug
       Marvel.Deck
       Marvel.Difficulty
@@ -91,10 +92,12 @@ library
       Marvel.Event.Events.LegalPractice
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.RelentlessAssault
       Marvel.Event.Events.RepulsorBlast
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.SupersonicPunch
       Marvel.Event.Events.SwingingWebKick
+      Marvel.Event.Events.Uppercut
       Marvel.Event.Events.WakandaForeverA
       Marvel.Event.Events.WakandaForeverB
       Marvel.Event.Events.WakandaForeverC

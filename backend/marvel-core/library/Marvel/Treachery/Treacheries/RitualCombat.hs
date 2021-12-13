@@ -1,11 +1,12 @@
-module Marvel.Treachery.Treacheries.RitualCombat
-  ( ritualCombat
-  , RitualCombat(..)
-  ) where
+module Marvel.Treachery.Treacheries.RitualCombat (
+  ritualCombat,
+  RitualCombat (..),
+) where
 
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
@@ -15,13 +16,13 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Attrs
-import qualified Marvel.Treachery.Cards as Cards
+import Marvel.Treachery.Cards qualified as Cards
 
 ritualCombat :: TreacheryCard RitualCombat
 ritualCombat = treachery RitualCombat Cards.ritualCombat
 
 newtype RitualCombat = RitualCombat TreacheryAttrs
-  deriving anyclass IsTreachery
+  deriving anyclass (IsTreachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage RitualCombat where
@@ -36,18 +37,19 @@ instance RunMessage RitualCombat where
       | isTarget attrs target -> do
         case treacheryResolver attrs of
           Just ident -> do
-            let
-              x = (+ 1) . fromIntegral . sum $ map
-                (length . cdBoostIcons . getCardDef)
-                cards
+            let x =
+                  (+ 1) . fromIntegral . sum $
+                    map
+                      (length . cdBoostIcons . getCardDef)
+                      cards
             chooseOne
               ident
               [ Label
-                ("Deal " <> tshow x <> " damage to your hero")
-                [DamageCharacter (IdentityCharacter ident) (toSource attrs) x]
+                  ("Deal " <> tshow x <> " damage to your hero")
+                  [DamageCharacter (IdentityCharacter ident) (toSource attrs) (toDamage x FromTreachery)]
               , Label
-                ("Place " <> tshow x <> " threat on the main scheme")
-                [PlaceThreat (toSource attrs) x MainScheme]
+                  ("Place " <> tshow x <> " threat on the main scheme")
+                  [PlaceThreat (toSource attrs) x MainScheme]
               ]
             pure t
           Nothing -> error "no ident set"

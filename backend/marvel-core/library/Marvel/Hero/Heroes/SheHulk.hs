@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
@@ -38,7 +39,7 @@ instance HasAbilities SheHulk where
         Response
         IsSelf
         NoCost
-        (ChooseDamage (toSource a) W.FromAbility 2 AnyEnemy)
+        (ChooseDamage (toSource a) (toDamage 2 FromAbility) AnyEnemy)
     ]
 
 newtype SheHulk = SheHulk HeroAttrs

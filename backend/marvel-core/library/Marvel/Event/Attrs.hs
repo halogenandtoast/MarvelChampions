@@ -3,6 +3,7 @@ module Marvel.Event.Attrs where
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -10,7 +11,6 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window qualified as W
 
 class IsEvent a
 
@@ -28,14 +28,17 @@ instance HasCardCode EventAttrs where
   toCardCode = toCardCode . eventCardDef
 
 event :: (EventAttrs -> a) -> CardDef -> CardBuilder (IdentityId, EventId) a
-event f cardDef = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(ident, aid) -> f $ EventAttrs
-    { eventId = aid
-    , eventCardDef = cardDef
-    , eventController = ident
+event f cardDef =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \(ident, aid) ->
+        f $
+          EventAttrs
+            { eventId = aid
+            , eventCardDef = cardDef
+            , eventController = ident
+            }
     }
-  }
 
 instance Entity EventAttrs where
   type EntityId EventAttrs = EventId
@@ -50,21 +53,25 @@ instance IsTarget EventAttrs where
   toTarget = EventTarget . toId
 
 instance IsCard EventAttrs where
-  toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId . unEventId $ toId a
-    , pcCardDef = eventCardDef a
-    , pcOwner = Just $ eventController a
-    , pcController = Just $ eventController a
-    }
+  toCard a =
+    PlayerCard $
+      MkPlayerCard
+        { pcCardId = CardId . unEventId $ toId a
+        , pcCardDef = eventCardDef a
+        , pcOwner = Just $ eventController a
+        , pcController = Just $ eventController a
+        }
 
-damageChoice :: EventAttrs -> W.DamageSource -> Natural -> EnemyId -> Choice
-damageChoice attrs damageSource dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) damageSource dmg]
-  EnemyMinionId vid -> TargetLabel
-    (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) damageSource dmg]
+damageChoice :: EventAttrs -> Damage -> EnemyId -> Choice
+damageChoice attrs dmg = \case
+  EnemyVillainId vid ->
+    TargetLabel
+      (VillainTarget vid)
+      [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+  EnemyMinionId vid ->
+    TargetLabel
+      (MinionTarget vid)
+      [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 instance RunMessage EventAttrs where
   runMessage msg e = case msg of

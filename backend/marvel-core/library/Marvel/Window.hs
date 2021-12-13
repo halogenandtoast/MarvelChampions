@@ -3,16 +3,13 @@ module Marvel.Window where
 import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.EncounterCard
+import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Source
 
 data WindowTiming = After | When | Would
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
-
-data DamageSource = FromAttack | FromAbility | FromRetaliate
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -61,10 +58,10 @@ data Window = Window
 data WindowType
   = PlayedAlly AllyId
   | PlayedSupport SupportId
-  | IdentityTakeDamage IdentityId DamageSource Natural
+  | IdentityTakeDamage IdentityId Damage
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
-  | DamagedVillain VillainId Natural
+  | DamagedVillain VillainId Damage
   | DefeatedMinion MinionId
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
@@ -88,96 +85,117 @@ windowMatches matcher w source = case matcher of
     PlayedSupport supportId ->
       pure $ timing == windowTiming w && source == SupportSource supportId
     _ -> pure False
-  WouldTakeDamage identityMatcher damageSource gameValueMatcher ->
+  WouldTakeDamage identityMatcher damageSource' gameValueMatcher ->
     case windowType w of
-      IdentityTakeDamage ident damageSource' n
-        | damageSource == damageSource' -> liftA2
-          (&&)
-          (identityMatches identityMatcher ident)
-          (gameValueMatches gameValueMatcher n)
+      IdentityTakeDamage ident damage
+        | damageSource damage == damageSource' ->
+          liftA2
+            (&&)
+            (identityMatches identityMatcher ident)
+            (gameValueMatches gameValueMatcher (damageAmount damage))
       _ -> pure False
   EnemyWouldAttack enemyMatcher identityMatcher -> case windowType w of
-    EnemyAttack enemyId ident | windowTiming w == Would -> liftA2
-      (&&)
-      (identityMatches identityMatcher ident)
-      (enemyMatches enemyMatcher enemyId)
+    EnemyAttack enemyId ident
+      | windowTiming w == Would ->
+        liftA2
+          (&&)
+          (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   EnemyAttacked enemyMatcher identityMatcher -> case windowType w of
-    EnemyAttack enemyId ident | windowTiming w == When -> liftA2
-      (&&)
-      (identityMatches identityMatcher ident)
-      (enemyMatches enemyMatcher enemyId)
+    EnemyAttack enemyId ident
+      | windowTiming w == When ->
+        liftA2
+          (&&)
+          (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
-    IdentityAttack ident enemyId | windowTiming w == timing -> liftA2
-      (&&)
-      (identityMatches identityMatcher ident)
-      (enemyMatches enemyMatcher enemyId)
+    IdentityAttack ident enemyId
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyThwarted timing allyMatcher schemeMatcher -> case windowType w of
-    AllyThwart allyId schemeId | windowTiming w == timing -> liftA2
-      (&&)
-      (allyMatches allyMatcher allyId)
-      (schemeMatches schemeMatcher schemeId)
+    AllyThwart allyId schemeId
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (allyMatches allyMatcher allyId)
+          (schemeMatches schemeMatcher schemeId)
     _ -> pure False
   TreacheryRevealed timing treacheryMatcher revealSource ->
     case windowType w of
       RevealTreachery treacheryId revealSource'
-        | revealSource == revealSource' -> liftA2
-          (&&)
-          (treacheryMatches treacheryMatcher treacheryId)
-          (pure $ timing == windowTiming w)
+        | revealSource == revealSource' ->
+          liftA2
+            (&&)
+            (treacheryMatches treacheryMatcher treacheryId)
+            (pure $ timing == windowTiming w)
       _ -> pure False
   VillainRevealed timing villainMatcher revealSource -> case windowType w of
-    RevealVillain villainId revealSource' | revealSource == revealSource' ->
-      liftA2
-        (&&)
-        (villainMatches villainMatcher villainId)
-        (pure $ timing == windowTiming w)
+    RevealVillain villainId revealSource'
+      | revealSource == revealSource' ->
+        liftA2
+          (&&)
+          (villainMatches villainMatcher villainId)
+          (pure $ timing == windowTiming w)
     _ -> pure False
   VillainDamaged timing villainMatcher -> case windowType w of
-    DamagedVillain villainId _ | timing == windowTiming w ->
-      villainMatches villainMatcher villainId
+    DamagedVillain villainId _
+      | timing == windowTiming w ->
+        villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
-    DefeatedMinion minionId | windowTiming w == timing -> if timing == After
-      then case minionMatcher of
-        AnyMinion -> pure True
-        _ -> error "Minion has been deleted so we do not have details"
-      else minionMatches minionMatcher minionId
+    DefeatedMinion minionId
+      | windowTiming w == timing ->
+        if timing == After
+          then case minionMatcher of
+            AnyMinion -> pure True
+            _ -> error "Minion has been deleted so we do not have details"
+          else minionMatches minionMatcher minionId
     _ -> pure False
   MinionEntersPlay timing minionMatcher -> case windowType w of
-    MinionEnteredPlay minionId | windowTiming w == timing ->
-      minionMatches minionMatcher minionId
+    MinionEnteredPlay minionId
+      | windowTiming w == timing ->
+        minionMatches minionMatcher minionId
     _ -> pure False
   ThreatWouldBePlaced threatSource schemeMatcher -> case windowType w of
     ThreatPlaced threatSource' schemeId _
       | (windowTiming w == Would)
-        && (threatSource == AnyThreatSource || threatSource == threatSource')
-      -> schemeMatches schemeMatcher schemeId
+          && (threatSource == AnyThreatSource || threatSource == threatSource') ->
+        schemeMatches schemeMatcher schemeId
     _ -> pure False
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
     _ -> pure False
   IdentityChangedToForm timing identityMatcher -> case windowType w of
-    IdentityChangesForm identityId | windowTiming w == timing ->
-      identityMatches identityMatcher identityId
+    IdentityChangesForm identityId
+      | windowTiming w == timing ->
+        identityMatches identityMatcher identityId
     _ -> pure False
   MakesBasicAttack timing identityMatcher -> case windowType w of
-    MadeBasicAttack identityId | windowTiming w == timing ->
-      identityMatches identityMatcher identityId
+    MadeBasicAttack identityId
+      | windowTiming w == timing ->
+        identityMatches identityMatcher identityId
     _ -> pure False
   SideSchemeDefeated timing sideSchemeMatcher -> case windowType w of
-    DefeatedSideScheme sideSchemeId | windowTiming w == timing ->
-      sideSchemeMatches sideSchemeMatcher sideSchemeId
+    DefeatedSideScheme sideSchemeId
+      | windowTiming w == timing ->
+        sideSchemeMatches sideSchemeMatcher sideSchemeId
     _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
-    HeroDefends identityId enemyId | windowTiming w == timing -> liftA2
-      (&&)
-      (identityMatches identityMatcher identityId)
-      (enemyMatches enemyMatcher enemyId)
+    HeroDefends identityId enemyId
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (identityMatches identityMatcher identityId)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   EncounterCardReveal timing encounterCardMatcher -> case windowType w of
-    EncounterCardRevealed _ encounterCard | windowTiming w == timing ->
-      pure $ encounterCardMatches encounterCardMatcher encounterCard
+    EncounterCardRevealed _ encounterCard
+      | windowTiming w == timing ->
+        pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False

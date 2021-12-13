@@ -14,6 +14,7 @@ import Marvel.Attack
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Deck
 import Marvel.Discard
 import Marvel.EncounterCard
@@ -624,16 +625,16 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       (pushAll
         [ CheckWindows
           [ W.Window W.When
-              $ W.IdentityTakeDamage (toId attrs) W.FromAttack damage
+              $ W.IdentityTakeDamage (toId attrs) (toDamage damage FromAttack)
           ]
         , IdentityMessage (toId attrs)
-          $ IdentityDamaged (attackSource attack') damage
+          $ IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
         ]
       )
     pure $ attrs & damageReductionL .~ 0 & defendedL .~ False
   IdentityDamaged _ damage -> do
     let
-      remainingHP = fromIntegral . subtractNatural damage . fromIntegral $ unHp
+      remainingHP = fromIntegral . subtractNatural (damageAmount damage) . fromIntegral $ unHp
         playerIdentityCurrentHP
     when
       (remainingHP == 0)
@@ -707,7 +708,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         EnemyMinionId mid -> MinionTarget mid
         EnemyVillainId vid -> VillainTarget vid
     msgs <- choiceMessages (toId attrs)
-      $ DamageEnemy target (toSource attrs) W.FromRetaliate n
+      $ DamageEnemy target (toSource attrs) (toDamage n FromRetaliate)
     pushAll msgs
     pure attrs
   SideMessage _ -> case currentIdentity attrs of

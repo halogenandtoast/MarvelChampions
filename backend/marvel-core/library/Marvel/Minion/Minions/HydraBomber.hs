@@ -5,6 +5,7 @@ module Marvel.Minion.Minions.HydraBomber
 
 import Marvel.Prelude
 
+import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
@@ -24,7 +25,7 @@ instance RunMessage HydraBomber where
           ident
           [ Label
             "Take 2 damage"
-            [DamageCharacter (IdentityCharacter ident) (toSource attrs) 2]
+            [DamageCharacter (IdentityCharacter ident) (toSource attrs) (toDamage 2 FromAbility)]
           , Label
             "Place 1 threat on the main scheme"
             [PlaceThreat (toSource attrs) 1 MainScheme]

@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.ElectromagneticBacklash (
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message
@@ -45,11 +46,11 @@ instance RunMessage ElectromagneticBacklash where
         (x : _) -> case pcOwner x of
           Nothing -> error "Unexpected"
           Just ident -> do
-            let x =
+            let energyCount =
                   count (== Energy) $ concatMap (printedResources . getCardDef) cs
             when
-              (x > 0)
-              ( push $ IdentityMessage ident (IdentityDamaged (toSource attrs) x)
+              (energyCount > 0)
+              ( push $ IdentityMessage ident (IdentityDamaged (toSource attrs) (toDamage energyCount FromTreachery))
               )
             pure t
     _ -> ElectromagneticBacklash <$> runMessage msg attrs

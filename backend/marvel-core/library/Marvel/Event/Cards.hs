@@ -8,6 +8,7 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
@@ -32,6 +33,8 @@ allEvents = fromList $ map
   , wakandaForeverB
   , wakandaForeverC
   , wakandaForeverD
+  , relentlessAssault
+  , uppercut
   , forJustice
   , greatResponsibility
   , getReady
@@ -194,6 +197,17 @@ wakandaForeverC =
 wakandaForeverD :: CardDef
 wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
+
+relentlessAssault :: CardDef
+relentlessAssault = (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
+  { cdAbilitySubType = Just Ability.Attack
+  , cdCriteria = MinionExists AnyMinion
+  }
+
+uppercut :: CardDef
+uppercut = (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
+  { cdAbilitySubType = Just Ability.Attack
+  }
 
 forJustice :: CardDef
 forJustice =

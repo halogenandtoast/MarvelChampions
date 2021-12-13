@@ -9,6 +9,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
@@ -18,7 +19,6 @@ import Marvel.Source
 import Marvel.Support.Attrs
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Target
-import Marvel.Window
 
 tacTeam :: SupportCard TacTeam
 tacTeam =
@@ -36,7 +36,7 @@ instance HasAbilities TacTeam where
         Action
         (OwnsThis <> EnemyExists DamageableEnemy)
         (ExhaustCost <> UseCost)
-        (ChooseDamage (toSource a) FromAbility 2 DamageableEnemy)
+        (ChooseDamage (toSource a) (toDamage 2 FromAbility) DamageableEnemy)
     ]
 
 instance RunMessage TacTeam where

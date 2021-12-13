@@ -8,6 +8,7 @@ import GHC.Generics
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -102,7 +103,7 @@ data Message
 
 data VillainMessage
   = SetVillainHp
-  | VillainDamaged Source Natural
+  | VillainDamaged Source Damage
   | VillainStunned Source
   | VillainConfused Source
   | VillainBecomeTough
@@ -156,7 +157,7 @@ data ObligationMessage
 data MinionMessage
   = RevealMinion IdentityId
   | MinionDefendedBy CharacterId
-  | MinionDamaged Source Natural
+  | MinionDamaged Source Damage
   | MinionStunned Source
   | MinionConfused Source
   | MinionBecomeTough
@@ -195,7 +196,7 @@ data AllyMessage
   | AllyAttacked
   | AllyThwarted
   | AllyWasAttacked Attack
-  | AllyDamaged Source Natural
+  | AllyDamaged Source Damage
   | AllyDefended EnemyId
   | AllyDefeated
   | AllyHealed Natural
@@ -266,7 +267,7 @@ data IdentityMessage
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards
   | IdentityWasAttacked Attack
-  | IdentityDamaged Source Natural
+  | IdentityDamaged Source Damage
   | IdentityDefended Natural
   | IdentityDefeated
   | IdentityHealed Natural

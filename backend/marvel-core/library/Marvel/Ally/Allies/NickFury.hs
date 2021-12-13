@@ -11,6 +11,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
@@ -60,7 +61,7 @@ instance RunMessage NickFury where
         , Label "Draw 3 cards" [ChooseDrawCards 3 You]
         , Label
           "Deal 4 damage to an enemy"
-          [ChooseDamage (toSource a) FromAbility 4 AnyEnemy]
+          [ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy]
         ]
       pure a
     _ -> NickFury <$> runMessage msg (toAttrs a)

@@ -6,6 +6,7 @@ module Marvel.Event.Events.Haymaker
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -16,7 +17,6 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window
 
 haymaker :: EventCard Haymaker
 haymaker = event Haymaker Cards.haymaker
@@ -31,7 +31,7 @@ instance RunMessage Haymaker where
       PlayedEvent identityId _ _ -> do
         pushAll =<< choiceMessages
           identityId
-          (ChooseDamage (toSource attrs) FromAttack 3 AnyEnemy)
+          (ChooseDamage (toSource attrs) (toDamage 3 FromAttack) AnyEnemy)
         pure e
       _ -> Haymaker <$> runMessage msg attrs
     _ -> Haymaker <$> runMessage msg attrs

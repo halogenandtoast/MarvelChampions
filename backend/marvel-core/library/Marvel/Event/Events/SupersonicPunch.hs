@@ -7,6 +7,7 @@ where
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -18,7 +19,6 @@ import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
-import Marvel.Window
 
 supersonicPunch :: EventCard SupersonicPunch
 supersonicPunch = event SupersonicPunch Cards.supersonicPunch
@@ -34,7 +34,7 @@ instance RunMessage SupersonicPunch where
         aerial <- selectAny (IdentityWithId identityId <> IdentityWithTrait Aerial)
         let dmg = if aerial then 8 else 4
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs FromAttack dmg) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
         pure e
       _ -> SupersonicPunch <$> runMessage msg attrs
     _ -> SupersonicPunch <$> runMessage msg attrs

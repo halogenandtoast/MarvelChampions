@@ -1,6 +1,6 @@
-module Marvel.Event.Events.GammaSlam
-  ( gammaSlam
-  , GammaSlam(..)
+module Marvel.Event.Events.Uppercut
+  ( Uppercut
+  , uppercut
   ) where
 
 import Marvel.Prelude
@@ -10,7 +10,6 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
-import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -19,21 +18,19 @@ import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 
-gammaSlam :: EventCard GammaSlam
-gammaSlam = event GammaSlam Cards.gammaSlam
+uppercut :: EventCard Uppercut
+uppercut = event Uppercut Cards.uppercut
 
-newtype GammaSlam = GammaSlam EventAttrs
+newtype Uppercut = Uppercut EventAttrs
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
-instance RunMessage GammaSlam where
-  runMessage msg e@(GammaSlam attrs) = case msg of
+instance RunMessage Uppercut where
+  runMessage msg e@(Uppercut attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
-        dmg <- min 15
-          <$> selectCount SustainedDamage (IdentityWithId identityId)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage dmg FromAttack)) enemies
+        chooseOne identityId $ map (damageChoice attrs (toDamage 5 FromAttack)) enemies
         pure e
-      _ -> GammaSlam <$> runMessage msg attrs
-    _ -> GammaSlam <$> runMessage msg attrs
+      _ -> Uppercut <$> runMessage msg attrs
+    _ -> Uppercut <$> runMessage msg attrs

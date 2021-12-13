@@ -11,6 +11,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
@@ -20,7 +21,6 @@ import Marvel.Question
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Window
 
 warMachineJamesRhodes :: AllyCard WarMachineJamesRhodes
 warMachineJamesRhodes =
@@ -38,7 +38,7 @@ newtype WarMachineJamesRhodes = WarMachineJamesRhodes AllyAttrs
 instance HasAbilities WarMachineJamesRhodes where
   getAbilities (WarMachineJamesRhodes a) =
     [ ability a 1 Action OwnsThis (DamageThisCost 2 <> ExhaustCost) $
-        DamageAllEnemies AnyEnemy (toSource a) FromAbility 1
+        DamageAllEnemies AnyEnemy (toSource a) (toDamage 1 FromAbility)
     ]
 
 instance RunMessage WarMachineJamesRhodes where

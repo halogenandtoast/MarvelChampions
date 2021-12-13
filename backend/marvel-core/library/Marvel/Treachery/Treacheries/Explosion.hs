@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.Explosion
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
@@ -43,10 +44,10 @@ instance RunMessage Explosion where
             pushAll $ replicate threat $ Ask
               ident
               (ChooseOne
-              $ [ DamageCharacter (IdentityCharacter iid) (toSource attrs) 1
+              $ [ DamageCharacter (IdentityCharacter iid) (toSource attrs) (toDamage 1 FromTreachery)
                 | iid <- players
                 ]
-              <> [ DamageCharacter (AllyCharacter aid) (toSource attrs) 1
+              <> [ DamageCharacter (AllyCharacter aid) (toSource attrs) (toDamage 1 FromTreachery)
                  | aid <- allies
                  ]
               )

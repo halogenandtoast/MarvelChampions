@@ -6,6 +6,7 @@ module Marvel.Event.Events.GreatResponsibility
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Cards qualified as Cards
@@ -29,7 +30,7 @@ instance RunMessage GreatResponsibility where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         replaceMatchingMessage
-            [IdentityMessage identityId $ IdentityDamaged (toSource attrs) n]
+            [IdentityMessage identityId $ IdentityDamaged (toSource attrs) (toDamage n FromAbility)]
           $ \msg'' -> case schemeId of
               SchemeMainSchemeId mid -> case msg'' of
                 MainSchemeMessage mid' (MainSchemePlaceThreat _) -> mid == mid'
