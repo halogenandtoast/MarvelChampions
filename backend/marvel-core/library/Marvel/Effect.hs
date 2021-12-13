@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Effect where
 
 import Marvel.Prelude
@@ -16,6 +17,7 @@ import Marvel.Modifier
 import Marvel.Source
 import Marvel.Support.Supports
 import Marvel.TH
+import Marvel.Upgrade.Upgrades
 
 $(buildEntity "Effect")
 
@@ -29,9 +31,11 @@ instance Entity Effect where
   toAttrs = genericToAttrs
 
 allEffects :: HashMap CardCode (Source -> EntityMatcher -> EffectId -> Effect)
-allEffects = fromList $ map
-  (toCardCode &&& (curry3 . cbCardBuilder))
-  $(buildEntityLookupList "Effect")
+allEffects =
+  fromList $
+    map
+      (toCardCode &&& (curry3 . cbCardBuilder))
+      $(buildEntityLookupList "Effect")
 
 lookupEffect :: CardCode -> (Source -> EntityMatcher -> EffectId -> Effect)
 lookupEffect cardCode = case lookup cardCode allEffects of
@@ -42,4 +46,5 @@ instance HasModifiersFor Effect where
   getModifiersFor _ target e = do
     valid <- effectValidFor attrs target
     pure $ if valid then effectModifiers attrs else []
-    where attrs = toAttrs e
+   where
+    attrs = toAttrs e
