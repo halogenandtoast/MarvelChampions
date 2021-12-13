@@ -119,6 +119,7 @@ data Choice
   | Run [Message]
   | DamageEnemy Target Source Damage
   | DamageAllEnemies EnemyMatcher Source Damage
+  | DamageAllCharacters CharacterMatcher Source Damage
   | ThwartScheme Target Source Natural
   | Stun Target Source
   | Confuse Target Source
@@ -215,6 +216,9 @@ choiceMessages ident = \case
   DamageAllEnemies matcher source damage -> do
     enemies <- selectList $ DamageableEnemy <> matcher
     concatMapM (\e -> choiceMessages ident (DamageEnemy (EnemyTarget e) source damage)) enemies
+  DamageAllCharacters matcher source damage -> do
+    characters <- selectList $ DamageableCharacter <> matcher
+    concatMapM (\c -> choiceMessages ident (DamageCharacter c source damage)) characters
   DamageEnemy target source damage -> do
     let isIdentity = case source of
                        IdentitySource _ -> True

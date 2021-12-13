@@ -633,6 +633,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       )
     pure $ attrs & damageReductionL .~ 0 & defendedL .~ False
   IdentityDamaged _ damage -> do
+
     let
       remainingHP = fromIntegral . subtractNatural (damageAmount damage) . fromIntegral $ unHp
         playerIdentityCurrentHP

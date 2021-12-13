@@ -19,6 +19,8 @@ allAllies =
       , hellcatPatsyWalker
       , warMachineJamesRhodes
       , shuri
+      , hulkBruceBanner
+      , tigraGreerGrantNelson
       , daredevilMattMurdock
       , jessicaJones
       , hawkeyeClintBarton
@@ -85,6 +87,10 @@ warMachineJamesRhodes =
 
 shuri :: CardDef
 shuri = identityAlly "01041" "Shuri" 2 [Genius, Wakanda] [Physical]
+
+hulkBruceBanner :: CardDef
+hulkBruceBanner =
+  ally "01050" ("Hulk" <:> "Bruce Banner") 2 [Avenger, Gamma] [Energy] Aggression
 
 tigraGreerGrantNelson :: CardDef
 tigraGreerGrantNelson =

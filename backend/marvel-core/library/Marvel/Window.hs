@@ -34,6 +34,7 @@ data WindowMatcher
   | EnemyAttacked EnemyMatcher IdentityMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
+  | AllyAttacked WindowTiming AllyMatcher EnemyMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
   | VillainDamaged WindowTiming VillainMatcher
@@ -69,6 +70,7 @@ data WindowType
   | EnemyAttack EnemyId IdentityId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId
+  | AllyAttack AllyId EnemyId
   | ThreatPlaced ThreatSource SchemeId Natural
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
@@ -118,6 +120,14 @@ windowMatches matcher w source = case matcher of
         liftA2
           (&&)
           (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
+  AllyAttacked timing allyMatcher enemyMatcher -> case windowType w of
+    AllyAttack allyId enemyId
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (allyMatches allyMatcher allyId)
           (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyThwarted timing allyMatcher schemeMatcher -> case windowType w of

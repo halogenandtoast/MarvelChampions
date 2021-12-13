@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Ally where
 
 import Marvel.Prelude
@@ -16,14 +17,17 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
+import Marvel.Stats
 import Marvel.TH
 
 $(buildEntity "Ally")
 
 allAllies :: HashMap CardCode (IdentityId -> AllyId -> Ally)
-allAllies = fromList $ map
-  (toCardCode &&& (curry . cbCardBuilder))
-  $(buildEntityLookupList "Ally")
+allAllies =
+  fromList $
+    map
+      (toCardCode &&& (curry . cbCardBuilder))
+      $(buildEntityLookupList "Ally")
 
 lookupAlly :: CardCode -> (IdentityId -> AllyId -> Ally)
 lookupAlly cardCode = case lookup cardCode allAllies of
@@ -74,11 +78,13 @@ instance HasAbilities Ally where
         (SchemeExists ThwartableScheme)
         ExhaustCost
         (AllyThwart $ toId a)
-      , ability
-        a
-        301
-        Basic
-        (EnemyExists AttackableEnemy)
-        ExhaustCost
-        (AllyAttack $ toId a)
+      | unThw (allyThwart $ toAttrs a) > 0
       ]
+        <> [ ability
+              a
+              301
+              Basic
+              (EnemyExists AttackableEnemy)
+              ExhaustCost
+              (AllyAttack $ toId a)
+           ]

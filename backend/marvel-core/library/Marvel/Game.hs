@@ -806,6 +806,25 @@ gameSelectCharacter = \case
       <$> selectList (IdentityWithDamage gameValueMatcher)
     allies <- map AllyCharacter <$> selectList (AllyWithDamage gameValueMatcher)
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  DamageableCharacter -> do
+    let
+      enemyToCharacter = \case
+        EnemyMinionId mid -> MinionCharacter mid
+        EnemyVillainId vid -> VillainCharacter vid
+    enemies <- selectMap enemyToCharacter DamageableEnemy
+    identities <- selectMap IdentityCharacter AnyIdentity
+    allies <- selectMap AllyCharacter AnyAlly
+    pure . HashSet.fromList $ enemies <> identities <> allies
+  AnyCharacter -> do
+    villains <- selectMap VillainCharacter AnyVillain
+    minions <- selectMap MinionCharacter AnyMinion
+    identities <- selectMap IdentityCharacter AnyIdentity
+    allies <- selectMap AllyCharacter AnyAlly
+    pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  CharacterMatches [] -> pure mempty
+  CharacterMatches (x : xs) -> foldl' HashSet.intersection
+    <$> gameSelectCharacter x
+    <*> traverse gameSelectCharacter xs
 
 gameSelectExtendedCard
   :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
@@ -970,6 +989,7 @@ gameSelectVillain m = do
  where
   matchFilter x = case x of
     ActiveVillain -> pure . const True
+    AnyVillain -> pure . const True
     VillainWithId ident' -> pure . (== ident') . toId
     VillainWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . villainDamage
