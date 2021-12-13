@@ -160,7 +160,7 @@ const toggleDebug = inject('toggleDebug')
       <div class="identityCard">
         <img :src="playerImg" alt="player" width="150" class="identityCardImg" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
         <div class="info">
-          <div>HP: {{player.currentHP}}</div>
+          <div>HP: {{player.hp - player.damage}}</div>
           <div v-if="player.stunned">stunned</div>
           <div v-if="player.confused">confused</div>
           <div v-if="player.tough">tough</div>

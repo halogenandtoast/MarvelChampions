@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TupleSections #-}
 module Api.Marvel.Helpers where
@@ -8,14 +9,18 @@ import Control.Concurrent.STM.TChan
 import Control.Monad.Catch (MonadCatch, MonadThrow)
 import Control.Monad.Random (MonadRandom(..))
 import Data.ByteString.Lazy qualified as BSL
+import Data.HashMap.Strict qualified as HashMap
 import Data.Map.Strict qualified as Map
 import Marvel.Ally
 import Marvel.Attachment
 import Marvel.Card hiding (toCard)
 import Marvel.Debug
 import Marvel.Deck
+import Marvel.Discard
 import Marvel.Entity (EntityId)
 import Marvel.Game
+import Marvel.Hand
+import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
 import Marvel.Message
@@ -32,7 +37,7 @@ import Marvel.Villain
 data ApiGame = ApiGame
   { id :: Key MarvelGame
   , name :: Text
-  , players :: HashMap (EntityId PlayerIdentity) PlayerIdentity
+  , players :: HashMap (EntityId PlayerIdentity) ApiPlayerIdentity
   , villains :: HashMap (EntityId Villain) Villain
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
@@ -48,16 +53,101 @@ data ApiGame = ApiGame
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
 
-toApiGame :: Entity MarvelGame -> ApiGame
+data ApiPlayerIdentity = ApiPlayerIdentity
+  { id :: IdentityId
+  , hand :: [PlayerCard]
+  , discard :: [PlayerCard]
+  , side :: Side
+  , sides :: HashMap Side PlayerIdentitySide
+  , allies :: HashSet AllyId
+  , minions :: HashSet MinionId
+  , supports :: HashSet SupportId
+  , upgrades :: HashSet UpgradeId
+  , exhausted :: Bool
+  , stunned :: Bool
+  , confused :: Bool
+  , tough :: Bool
+  , hp :: Natural
+  , damage :: Natural
+  , encounterCards :: [EncounterCard]
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+toApiPlayer :: MonadGame env m => PlayerIdentity -> m ApiPlayerIdentity
+toApiPlayer i@PlayerIdentity {..} = do
+  modifiedHp <- getModifiedHp i
+  pure $ ApiPlayerIdentity
+    { id = playerIdentityId
+    , hand = unHand playerIdentityHand
+    , discard = unDiscard playerIdentityDiscard
+    , side = playerIdentitySide
+    , sides = playerIdentitySides
+    , allies = playerIdentityAllies
+    , minions = playerIdentityMinions
+    , supports = playerIdentitySupports
+    , upgrades = playerIdentityUpgrades
+    , exhausted = playerIdentityExhausted
+    , stunned = playerIdentityStunned
+    , confused = playerIdentityConfused
+    , tough = playerIdentityTough
+    , hp = modifiedHp
+    , damage = playerIdentityDamage
+    , encounterCards = playerIdentityEncounterCards
+    }
+
+toInactiveApiPlayer :: PlayerIdentity -> ApiPlayerIdentity
+toInactiveApiPlayer i@PlayerIdentity {..} =
+  ApiPlayerIdentity
+    { id = playerIdentityId
+    , hand = unHand playerIdentityHand
+    , discard = unDiscard playerIdentityDiscard
+    , side = playerIdentitySide
+    , sides = playerIdentitySides
+    , allies = playerIdentityAllies
+    , minions = playerIdentityMinions
+    , supports = playerIdentitySupports
+    , upgrades = playerIdentityUpgrades
+    , exhausted = playerIdentityExhausted
+    , stunned = playerIdentityStunned
+    , confused = playerIdentityConfused
+    , tough = playerIdentityTough
+    , hp = unHp playerIdentityHP
+    , damage = playerIdentityDamage
+    , encounterCards = playerIdentityEncounterCards
+    }
+
+toApiGame :: MonadGame env m => Entity MarvelGame -> m ApiGame
 toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
+  = do
+    let g@Game {..} = marvelGameCurrentData
+    modifiedPlayers <- HashMap.fromList <$> traverse (\(i, p) -> (i,) <$> toApiPlayer p) (HashMap.toList $ gamePlayers g)
+    pure $ ApiGame
+      { id = gameId
+      , name = marvelGameName
+      , question = gameQuestion
+      , scenario = gameScenario
+      , players = modifiedPlayers
+      , villains = gameVillains g
+      , allies = gameAllies g
+      , minions = gameMinions g
+      , attachments = gameAttachments g
+      , supports = gameSupports g
+      , upgrades = gameUpgrades g
+      , sideSchemes = gameSideSchemes g
+      , state = gameState
+      , focusedCards = gameFocusedCards
+      }
+
+toInactiveApiGame :: Entity MarvelGame -> ApiGame
+toInactiveApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
   = let g@Game {..} = marvelGameCurrentData
-    in
-      ApiGame
+      in ApiGame
         { id = gameId
         , name = marvelGameName
         , question = gameQuestion
         , scenario = gameScenario
-        , players = gamePlayers g
+        , players = HashMap.map toInactiveApiPlayer $ gamePlayers g
         , villains = gameVillains g
         , allies = gameAllies g
         , minions = gameMinions g

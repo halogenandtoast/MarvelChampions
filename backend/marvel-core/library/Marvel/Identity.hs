@@ -49,9 +49,8 @@ data PlayerIdentity = PlayerIdentity
   { playerIdentityId :: IdentityId
   , playerIdentitySide :: Side
   , playerIdentitySides :: HashMap Side PlayerIdentitySide
-  , playerIdentityStartingHP :: HP GameValue
-  , playerIdentityMaxHP :: HP Int
-  , playerIdentityCurrentHP :: HP Int
+  , playerIdentityHP :: HP Natural
+  , playerIdentityDamage :: Natural
   , playerIdentityDeck :: Deck
   , playerIdentityDiscard :: Discard
   , playerIdentityHand :: Hand
@@ -91,9 +90,7 @@ isAlterEgo player = case currentIdentity player of
   AlterEgoSide _ -> True
 
 identityDamage :: PlayerIdentity -> Natural
-identityDamage attrs =
-  fromIntegral . max 0 $ unHp (playerIdentityMaxHP attrs) - unHp
-    (playerIdentityCurrentHP attrs)
+identityDamage = playerIdentityDamage
 
 getModifiedHandSize :: MonadGame env m => PlayerIdentity -> m Natural
 getModifiedHandSize attrs = do
@@ -101,6 +98,14 @@ getModifiedHandSize attrs = do
   pure $ foldr applyModifier (unHandSize $ handSize attrs) modifiers
  where
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+getModifiedHp :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedHp attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unHp $ playerIdentityHP attrs) modifiers
+ where
+  applyModifier (HitPointModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
 instance HasTraits PlayerIdentity where
@@ -150,9 +155,8 @@ createIdentity ident alterEgoSide heroSide = PlayerIdentity
   { playerIdentitySide = B
   , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
   , playerIdentityId = ident
-  , playerIdentityStartingHP = hp
-  , playerIdentityCurrentHP = HP $ gameValue (unHp hp) 0
-  , playerIdentityMaxHP = HP $ gameValue (unHp hp) 0
+  , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
+  , playerIdentityDamage = 0
   , playerIdentityDeck = Deck []
   , playerIdentityDiscard = Discard []
   , playerIdentityHand = Hand []
@@ -633,14 +637,11 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       )
     pure $ attrs & damageReductionL .~ 0 & defendedL .~ False
   IdentityDamaged _ damage -> do
-
-    let
-      remainingHP = fromIntegral . subtractNatural (damageAmount damage) . fromIntegral $ unHp
-        playerIdentityCurrentHP
+    modifiedHp <- getModifiedHp attrs
     when
-      (remainingHP == 0)
+      (playerIdentityDamage + damageAmount damage >= modifiedHp)
       (push $ IdentityMessage (toId attrs) IdentityDefeated)
-    pure $ attrs & currentHPL .~ HP remainingHP
+    pure $ attrs & damageL +~ damageAmount damage
   IdentityDefeated -> do
     players <- getPlayers
     let ps = take 1 . drop 1 $ dropWhile (/= toId attrs) (cycle players)
@@ -660,11 +661,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   IdentityHealed n ->
     pure
       $ attrs
-      & currentHPL
-      %~ HP
-      . min (unHp playerIdentityMaxHP)
-      . (+ fromIntegral n)
-      . unHp
+      & damageL %~ subtractNatural n
   IdentityStunned -> pure $ attrs & stunnedL .~ True
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False

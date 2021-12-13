@@ -83,31 +83,40 @@ getApiV1MarvelGameR gameId = do
   MarvelPlayer {..} <- runDB $ entityVal <$> getBy404
     (UniquePlayer userId gameId)
   let
-    Game {..} = marvelGameCurrentData ge
+    gameJson@Game {..} = marvelGameCurrentData ge
     investigatorId = case marvelGameMultiplayerVariant ge of
       Solo -> coerce gameActivePlayer
       WithFriends -> coerce marvelPlayerIdentityId
+
+  gameRef <- newIORef gameJson
+  queueRef <- newIORef []
+  response <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId ge)
+
   pure $ GetGameJson
     (Just investigatorId)
     (marvelGameMultiplayerVariant ge)
-    (toApiGame $ Entity gameId ge)
+    response
 
 getApiV1MarvelGameSpectateR :: MarvelGameId -> Handler GetGameJson
 getApiV1MarvelGameSpectateR gameId = do
   webSockets (gameStream gameId)
   ge <- runDB $ get404 gameId
   let
-    Game {..} = marvelGameCurrentData ge
+    gameJson@Game {..} = marvelGameCurrentData ge
     identityId = coerce gameActivePlayer
+
+  gameRef <- newIORef gameJson
+  queueRef <- newIORef []
+  response <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId ge)
   pure $ GetGameJson
     (Just identityId)
     (marvelGameMultiplayerVariant ge)
-    (toApiGame $ Entity gameId ge)
+    response
 
 getApiV1MarvelGamesR :: Handler [ApiGame]
 getApiV1MarvelGamesR = do
   userId <- requireUserId
-  runDB $ selectMap toApiGame $ do
+  runDB $ selectMap toInactiveApiGame $ do
     (players :& games) <-
       from
       $ table @MarvelPlayer
@@ -168,7 +177,7 @@ postApiV1MarvelGamesR = do
         gameId <- insert createdGame
         insert_ $ MarvelPlayer userId gameId (coerce $ toId player)
         pure gameId
-      pure $ toApiGame $ Entity gameId createdGame
+      runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId createdGame)
 
 newtype Answer
   = Answer QuestionResponse
@@ -248,9 +257,10 @@ putApiV1MarvelGameR gameId = do
         }
       WithFriends -> pure ()
 
+  apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId updatedGame)
   liftIO $ atomically $ writeTChan
     writeChannel
-    (encode $ GameUpdate $ toApiGame $ Entity gameId updatedGame)
+    (encode $ GameUpdate apiResponse)
 
 newtype RawGameJsonPut = RawGameJsonPut
   { gameMessage :: Message
@@ -285,9 +295,10 @@ putApiV1MarvelGameRawR gameId = do
       (Step diffUp diffDown updatedQueue : marvelGameSteps)
       updatedLog
       marvelGameMultiplayerVariant
+  apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId updatedGame)
   liftIO $ atomically $ writeTChan
     writeChannel
-    (encode $ GameUpdate $ toApiGame $ Entity gameId updatedGame)
+    (encode $ GameUpdate apiResponse)
   void $ runDB $ replace gameId updatedGame
 
 deleteApiV1MarvelGameR :: MarvelGameId -> Handler ()

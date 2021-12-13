@@ -1,17 +1,22 @@
-module Api.Handler.Marvel.PendingGames
-  ( putApiV1MarvelPendingGameR
-  ) where
+module Api.Handler.Marvel.PendingGames (
+  putApiV1MarvelPendingGameR,
+) where
 
 import Import hiding (on, (==.))
 
 import Api.Marvel.Helpers
 import Control.Concurrent.STM.TChan
 import Data.Aeson
+import Marvel.Debug
 import Marvel.Entity
 import Marvel.Game
 import Marvel.Id
+import Text.Pretty.Simple
 
-newtype JoinGameJson = JoinGameJson { deckId :: MarvelDeckId }
+logger :: Maybe DebugLogger
+logger = Just $ DebugLogger pPrint
+
+newtype JoinGameJson = JoinGameJson {deckId :: MarvelDeckId}
   deriving stock (Show, Generic)
   deriving anyclass (FromJSON)
 
@@ -38,30 +43,31 @@ putApiV1MarvelPendingGameR gameId = do
   updatedQueue <- readIORef queueRef
   let updatedMessages = []
 
-  let
-    diffUp = diff marvelGameCurrentData updatedGame
-    diffDown = diff updatedGame marvelGameCurrentData
-    game' = MarvelGame
+  let diffUp = diff marvelGameCurrentData updatedGame
+      diffDown = diff updatedGame marvelGameCurrentData
+      game' =
+        MarvelGame
+          marvelGameName
+          updatedGame
+          (Step diffUp diffDown updatedQueue : marvelGameSteps)
+          updatedMessages
+          marvelGameMultiplayerVariant
+
+  apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId game')
+
+  writeChannel <- getChannel gameId
+  liftIO $
+    atomically $
+      writeTChan writeChannel $
+        encode $
+          GameUpdate apiResponse
+
+  runDB $ replace gameId game'
+
+  pure $
+    MarvelGame
       marvelGameName
       updatedGame
       (Step diffUp diffDown updatedQueue : marvelGameSteps)
       updatedMessages
       marvelGameMultiplayerVariant
-
-  writeChannel <- getChannel gameId
-  liftIO
-    $ atomically
-    $ writeTChan writeChannel
-    $ encode
-    $ GameUpdate
-    $ toApiGame
-    $ Entity gameId game'
-
-  runDB $ replace gameId game'
-
-  pure $ MarvelGame
-    marvelGameName
-    updatedGame
-    (Step diffUp diffDown updatedQueue : marvelGameSteps)
-    updatedMessages
-    marvelGameMultiplayerVariant
