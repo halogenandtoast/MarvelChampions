@@ -45,7 +45,8 @@ export interface Identity {
   stunned: boolean
   confused: boolean
   tough: boolean
-  currentHP: number
+  hp: number
+  damage: number
   encounterCards: EncounterCard[]
 }
 
@@ -93,6 +94,7 @@ export const identityDecoder = JsonDecoder.object<Identity>(
     stunned: JsonDecoder.boolean,
     confused: JsonDecoder.boolean,
     tough: JsonDecoder.boolean,
-    currentHP: JsonDecoder.number,
+    hp: JsonDecoder.number,
+    damage: JsonDecoder.number,
     encounterCards: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
   }, 'Identity')
