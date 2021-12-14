@@ -26,7 +26,7 @@ instance RunMessage SecretRendezvous where
   runMessage msg ms@(SecretRendezvous attrs) = case msg of
     MainSchemeMessage mainSchemeId msg' | mainSchemeId == toId attrs ->
       case msg' of
-        RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (Just $ toTarget attrs))
+        RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs))
         _ -> SecretRendezvous <$> runMessage msg attrs
     AdvanceMainScheme -> ms <$ push (GameOver Lost)
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do

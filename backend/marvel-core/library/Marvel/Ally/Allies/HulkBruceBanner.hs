@@ -48,13 +48,12 @@ instance HasAbilities HulkBruceBanner where
 
 instance RunMessage HulkBruceBanner where
   runMessage msg a@(HulkBruceBanner attrs) = case msg of
-    RanAbility target 1 _
-      | isTarget attrs target ->
-        a
-          <$ push
-            ( IdentityMessage (allyController attrs) $
-                DiscardFrom FromDeck 1 (Just $ toTarget attrs)
-            )
+    RanAbility target 1 _ | isTarget attrs target -> do
+      push
+        ( IdentityMessage (allyController attrs) $
+            DiscardFrom FromDeck 1 (Just $ toTarget attrs)
+        )
+      pure a
     WithDiscarded target _ (onlyPlayerCards -> cards) | isTarget attrs target ->
       do
         case cards of

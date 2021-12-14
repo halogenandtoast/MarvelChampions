@@ -153,6 +153,18 @@ instance RunMessage ScenarioAttrs where
       pure $ attrs & encounterDeckL .~ deck'
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :)
+    DiscardUntil FromEncounterDeck cardMatcher target -> do
+      let (discarded, remaining) = break (cardMatch cardMatcher) scenarioEncounterDeck
+      case remaining of
+        [] -> do
+          push EmptyScenarioDeck
+          pure $ attrs & encounterDeckL .~ [] & discardL .~ discarded
+        [x] -> do
+          pushAll [EmptyScenarioDeck, WithDiscardedMatch target FromEncounterDeck (EncounterCard x)]
+          pure $ attrs & encounterDeckL .~ [] & discardL .~ discarded
+        x:xs -> do
+          push $ WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
+          pure $ attrs & encounterDeckL .~ xs & discardL .~ discarded
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
       case find ((== cardDef) . getCardDef) $

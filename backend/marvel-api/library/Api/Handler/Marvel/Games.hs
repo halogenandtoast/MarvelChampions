@@ -90,7 +90,7 @@ getApiV1MarvelGameR gameId = do
 
   gameRef <- newIORef gameJson
   queueRef <- newIORef []
-  response <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId ge)
+  response <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId ge)
 
   pure $ GetGameJson
     (Just investigatorId)
@@ -107,7 +107,7 @@ getApiV1MarvelGameSpectateR gameId = do
 
   gameRef <- newIORef gameJson
   queueRef <- newIORef []
-  response <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId ge)
+  response <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId ge)
   pure $ GetGameJson
     (Just identityId)
     (marvelGameMultiplayerVariant ge)
@@ -160,7 +160,7 @@ postApiV1MarvelGamesR = do
       let g = newGame player scenario
       gameRef <- newIORef g
       queueRef <- newIORef [StartGame]
-      runGameApp (GameApp gameRef queueRef logger) runGameMessages
+      runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
       ge <- readIORef gameRef
       let
         diffUp = diff g ge
@@ -177,7 +177,7 @@ postApiV1MarvelGamesR = do
         gameId <- insert createdGame
         insert_ $ MarvelPlayer userId gameId (coerce $ toId player)
         pure gameId
-      runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId createdGame)
+      runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId createdGame)
 
 newtype Answer
   = Answer QuestionResponse
@@ -257,7 +257,7 @@ putApiV1MarvelGameR gameId = do
         }
       WithFriends -> pure ()
 
-  apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId updatedGame)
+  apiResponse <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId updatedGame)
   liftIO $ atomically $ writeTChan
     writeChannel
     (encode $ GameUpdate apiResponse)
@@ -281,7 +281,7 @@ putApiV1MarvelGameRawR gameId = do
   queueRef <- newIORef (message : currentQueue)
   logRef <- newIORef []
   writeChannel <- getChannel gameId
-  runGameApp (GameApp gameRef queueRef logger) runGameMessages
+  runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
   ge <- readIORef gameRef
   updatedQueue <- readIORef queueRef
   let
@@ -295,7 +295,7 @@ putApiV1MarvelGameRawR gameId = do
       (Step diffUp diffDown updatedQueue : marvelGameSteps)
       updatedLog
       marvelGameMultiplayerVariant
-  apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId updatedGame)
+  apiResponse <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId updatedGame)
   liftIO $ atomically $ writeTChan
     writeChannel
     (encode $ GameUpdate apiResponse)
@@ -325,14 +325,14 @@ handleAnswer g@Game {..} identityId = \case
       Just choice -> do
         gameRef <- newIORef g
         queueRef <- newIORef []
-        runGameApp (GameApp gameRef queueRef logger)
+        runGameApp (GameApp gameRef queueRef Nothing)
           $ choiceMessages identityId choice
     Just (ChooseOneAtATime qs) -> case extract (qrChoice response) qs of
       (Nothing, msgs') -> pure [Ask identityId $ ChooseOneAtATime msgs']
       (Just choice, msgs') -> do
         gameRef <- newIORef g
         queueRef <- newIORef []
-        results <- runGameApp (GameApp gameRef queueRef logger)
+        results <- runGameApp (GameApp gameRef queueRef Nothing)
           $ choiceMessages identityId choice
         pure
           $ results

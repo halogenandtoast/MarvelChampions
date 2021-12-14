@@ -116,6 +116,14 @@ instance IsCard MinionAttrs where
 instance HasCardDef MinionAttrs where
   getCardDef = minionCardDef
 
+getModifiedKeywords :: MonadGame env m => MinionAttrs -> m [Keyword]
+getModifiedKeywords attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (toList . cdKeywords $ getCardDef attrs) modifiers
+ where
+  applyModifier (KeywordModifier k) = (k :)
+  applyModifier _ = id
+
 getModifiedHitPoints :: MonadGame env m => MinionAttrs -> m Natural
 getModifiedHitPoints attrs = do
   modifiers <- getModifiers attrs
@@ -151,18 +159,34 @@ runMinionMessage msg attrs = case msg of
   MinionDamaged source damage -> if minionTough attrs
     then pure $ attrs & toughL .~ False
     else do
+      keywords <- getModifiedKeywords attrs
       hitPoints <- getModifiedHitPoints attrs
-      when (damageAmount damage + minionDamage attrs >= hitPoints) $ do
-        let overkill = damageAmount damage - (hitPoints - minionDamage attrs)
-        when (overkill > 0 && damageOverkill damage) $ do
-          villain <- selectJust ActiveVillain
-          push $ VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))
-        pushAll
-          [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs) damage]
-          , MinionMessage (toId attrs) MinionDefeated
-          , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs) damage]
-          ]
-      pure $ attrs & damageL +~ (damageAmount damage)
+      if (damageAmount damage + minionDamage attrs >= hitPoints)
+        then do
+          let overkill = damageAmount damage - (hitPoints - minionDamage attrs)
+          when (overkill > 0 && damageOverkill damage) $ do
+            villain <- selectJust ActiveVillain
+            push $ VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))
+
+          pushAll
+            [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs) damage]
+            , MinionMessage (toId attrs) MinionDefeated
+            , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs) damage]
+            ]
+        else for_ keywords $ \case
+          Retaliate n -> case damageSource damage of
+            FromPlayerAttack ident ->
+              push $ IdentityMessage
+                  ident
+                  (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
+            FromAllyAttack ident ->
+              push $
+                AllyMessage
+                  ident
+                  (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
+            _ -> pure ()
+          _ -> pure ()
+      pure $ attrs & damageL +~ damageAmount damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionBecomeTough-> pure $ attrs & toughL .~ True
