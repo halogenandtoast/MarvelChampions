@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.SideScheme where
 
 import Marvel.Prelude
@@ -11,13 +12,16 @@ import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.SideSchemes
 import Marvel.Source
 import Marvel.TH
+import Marvel.Target
 
 $(buildEntity "SideScheme")
 
 allSideSchemes :: HashMap CardCode (SideSchemeId -> SideScheme)
-allSideSchemes = fromList $ map
-  (toCardCode &&& cbCardBuilder)
-  $(buildEntityLookupList "SideScheme")
+allSideSchemes =
+  fromList $
+    map
+      (toCardCode &&& cbCardBuilder)
+      $(buildEntityLookupList "SideScheme")
 
 lookupSideScheme :: CardCode -> (SideSchemeId -> SideScheme)
 lookupSideScheme cardCode = case lookup cardCode allSideSchemes of
@@ -36,8 +40,11 @@ instance RunMessage SideScheme where
 instance IsSource SideScheme where
   toSource = SideSchemeSource . toId
 
+instance IsTarget SideScheme where
+  toTarget = SideSchemeTarget . toId
+
 instance IsCard SideScheme where
-  toCard = toCard. toAttrs
+  toCard = toCard . toAttrs
 
 instance HasCardDef SideScheme where
   getCardDef = getCardDef . toAttrs

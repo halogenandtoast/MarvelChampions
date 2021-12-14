@@ -6,8 +6,8 @@ import { fetchDecks, newGame } from '@/marvel/api';
 
 const scenarios = [
   {
-    id: '01097',
-    name: 'Rhino - The Break-In!',
+    id: '01094',
+    name: 'Rhino',
   },
 ]
 
@@ -16,7 +16,7 @@ const decks = ref<Marvel.Deck[]>([])
 const ready = ref(false)
 const playerCount = ref(1)
 const deckIds = ref<(string | null)[]>([null, null, null, null])
-const selectedScenario = ref('01097')
+const selectedScenario = ref('01094')
 const gameName = ref<string | null>(null)
 const multiplayerVariant = ref('Solo')
 fetchDecks().then((result) => {

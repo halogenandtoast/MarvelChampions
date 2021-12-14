@@ -19,7 +19,7 @@ import Marvel.Target
 
 highwayRobbery :: SideSchemeCard HighwayRobbery
 highwayRobbery =
-  sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3) (Static 0)
+  sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
 
 newtype HighwayRobbery = HighwayRobbery SideSchemeAttrs
   deriving anyclass IsSideScheme

@@ -18,7 +18,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window, WindowType)
 
-data FromZone = FromDeck | FromHand | FromDiscard | RandomFromHand
+data FromZone = FromDeck | FromHand | FromDiscard | RandomFromHand | FromEncounterDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -34,9 +34,13 @@ data Message
   | PassFirstPlayer
   | EndRound
   | BeginRound
+  | AccelerateMainScheme
   | AddAccelerationToken
   | IdentityEndedTurn IdentityId
   | AddVillain CardCode
+  | AddMainScheme CardCode
+  | ReplaceMainScheme CardCode
+  | SetupMainScheme
   | SetPlayerOrder [IdentityId]
   | IdentityMessage IdentityId IdentityMessage
   | VillainMessage VillainId VillainMessage
@@ -45,7 +49,7 @@ data Message
   | AllyMessage AllyId AllyMessage
   | SupportMessage SupportId SupportMessage
   | UpgradeMessage UpgradeId UpgradeMessage
-  | MainSchemeMessage CardCode MainSchemeMessage
+  | MainSchemeMessage MainSchemeId MainSchemeMessage
   | SideSchemeMessage SideSchemeId SideSchemeMessage
   | TreacheryMessage TreacheryId TreacheryMessage
   | ObligationMessage ObligationId ObligationMessage
@@ -68,6 +72,7 @@ data Message
   | EmptyScenarioDeck
   | DealBoost Target
   | FlipBoostCards Target
+  | PutBoostIntoPlay Target IdentityId
   | DealEncounterCard IdentityId
   | GainSurge Target
   | Surge IdentityId
@@ -81,7 +86,8 @@ data Message
   | RevealEncounterCard IdentityId EncounterCard
   | RevealedEncounterCard IdentityId EncounterCard
   | RevealBoostCard EncounterCard EnemyId
-  | AdvanceScenario
+  | AdvanceMainScheme
+  | NextMainScheme
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
   | AttachmentRemoved AttachmentId
@@ -98,6 +104,8 @@ data Message
   | ChoseEnemy EnemyId Target
   | ChosePlayer IdentityId Target
   | ChoseUpgrade UpgradeId Target
+  | DiscardUntil FromZone CardMatcher (Maybe Target)
+  | WithDiscardedMatch Target FromZone Card
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -129,6 +137,8 @@ data VillainMessage
 data MainSchemeMessage
   = MainSchemeThwarted Source Natural
   | MainSchemePlaceThreat Natural
+  | MainSchemePlaceInitialThreat
+  | RevealMainScheme
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

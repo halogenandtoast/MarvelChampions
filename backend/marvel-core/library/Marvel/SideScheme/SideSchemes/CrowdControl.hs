@@ -19,7 +19,6 @@ crowdControl = sideSchemeWith
   CrowdControl
   Cards.crowdControl
   (PerPlayer 2)
-  (Static 0)
   (crisisL .~ True)
 
 newtype CrowdControl = CrowdControl SideSchemeAttrs

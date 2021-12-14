@@ -375,6 +375,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     FromHand -> error "Impossible"
     FromDiscard -> error "Impossible"
     RandomFromHand -> error "Impossible"
+    FromEncounterDeck -> error "Impossible"
     FromDeck -> do
       let (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
       when (length (unDeck playerIdentityDeck) < fromIntegral n) $ pushAll
@@ -500,6 +501,8 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure attrs
   DiscardFor _ FromDeck _ _ -> error "Unhandled"
   DiscardedFor _ FromDeck _ _ _ -> error "Unhandled"
+  DiscardFor _ FromEncounterDeck _ _ -> error "Unhandled"
+  DiscardedFor _ FromEncounterDeck _ _ _ -> error "Unhandled"
   DiscardFor _ FromDiscard _ _ -> error "Unhandled"
   DiscardedFor _ FromDiscard _ _ _ -> error "Unhandled"
   DiscardFor target FromHand discardMin discardMax -> do
@@ -558,6 +561,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DiscardFrom fromZone n mTarget -> case fromZone of
     FromHand -> error "Unhandled"
     FromDiscard -> error "Unhandled"
+    FromEncounterDeck -> error "Unhandled"
     RandomFromHand -> do
       discards <- take (fromIntegral n) <$> shuffleM (unHand playerIdentityHand)
       for_ mTarget $ \target ->

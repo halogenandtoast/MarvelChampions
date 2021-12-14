@@ -52,6 +52,9 @@ instance HasModifiersFor Minion where
 instance IsSource Minion where
   toSource = MinionSource . toId
 
+instance IsTarget Minion where
+  toTarget = MinionTarget . toId
+
 instance IsCard Minion where
   toCard = toCard . toAttrs
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Attachment where
 
 import Marvel.Prelude
@@ -13,13 +14,16 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
 import Marvel.TH
+import Marvel.Target
 
 $(buildEntity "Attachment")
 
 allAttachments :: HashMap CardCode (AttachmentId -> Attachment)
-allAttachments = fromList $ map
-  (toCardCode &&& cbCardBuilder)
-  $(buildEntityLookupList "Attachment")
+allAttachments =
+  fromList $
+    map
+      (toCardCode &&& cbCardBuilder)
+      $(buildEntityLookupList "Attachment")
 
 lookupAttachment :: CardCode -> (AttachmentId -> Attachment)
 lookupAttachment cardCode = case lookup cardCode allAttachments of
@@ -37,6 +41,9 @@ instance RunMessage Attachment where
 
 instance IsSource Attachment where
   toSource = AttachmentSource . toId
+
+instance IsTarget Attachment where
+  toTarget = AttachmentTarget . toId
 
 instance HasAbilities Attachment where
   getAbilities = genericGetAbilities

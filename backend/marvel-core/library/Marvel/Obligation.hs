@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.Obligation where
 
 import Marvel.Prelude
@@ -11,13 +12,16 @@ import Marvel.Obligation.Attrs
 import Marvel.Obligation.Obligations
 import Marvel.Source
 import Marvel.TH
+import Marvel.Target
 
 $(buildEntity "Obligation")
 
 allObligations :: HashMap CardCode (ObligationId -> Obligation)
-allObligations = fromList $ map
-  (toCardCode &&& cbCardBuilder)
-  $(buildEntityLookupList "Obligation")
+allObligations =
+  fromList $
+    map
+      (toCardCode &&& cbCardBuilder)
+      $(buildEntityLookupList "Obligation")
 
 lookupObligation :: CardCode -> (ObligationId -> Obligation)
 lookupObligation cardCode = case lookup cardCode allObligations of
@@ -35,6 +39,9 @@ instance RunMessage Obligation where
 
 instance IsSource Obligation where
   toSource = ObligationSource . toId
+
+instance IsTarget Obligation where
+  toTarget = ObligationTarget . toId
 
 instance IsCard Obligation where
   toCard = toCard . toAttrs

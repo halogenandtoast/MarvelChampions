@@ -8,6 +8,7 @@ import { Upgrade, upgradeDecoder } from '@/marvel/types/Upgrade'
 import { Attachment, attachmentDecoder } from '@/marvel/types/Attachment'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/PlayerCard'
 import { SideScheme, sideSchemeDecoder } from '@/marvel/types/SideScheme'
+import { MainScheme, mainSchemeDecoder } from '@/marvel/types/MainScheme'
 import { Choice, Question, questionDecoder } from '@/marvel/types/Question'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
@@ -74,6 +75,7 @@ export interface Game {
   upgrades: Record<string, Upgrade>
   attachments: Record<string, Attachment>
   sideSchemes: Record<string, SideScheme>
+  mainSchemes: Record<string, MainScheme>
   scenario: Scenario
   question: Record<string, Question>
   state: State
@@ -121,7 +123,6 @@ export const cardDecoder = JsonDecoder.oneOf<Card>([
 
 export interface ScenarioContents {
   scenarioId: string
-  scenarioThreat: number
   scenarioAccelerationTokens: number
   scenarioDiscard: EncounterCard[]
 }
@@ -129,7 +130,6 @@ export interface ScenarioContents {
 export const scenarioContentsDecoder = JsonDecoder.object<ScenarioContents>(
   {
     scenarioId: JsonDecoder.string,
-    scenarioThreat: JsonDecoder.number,
     scenarioAccelerationTokens: JsonDecoder.number,
     scenarioDiscard: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
   }, 'ScenarioContents')
@@ -151,6 +151,7 @@ export const gameDecoder = JsonDecoder.object<Game>(
     upgrades: JsonDecoder.dictionary<Upgrade>(upgradeDecoder, 'Dict<UUID, Upgrade>'),
     attachments: JsonDecoder.dictionary<Attachment>(attachmentDecoder, 'Dict<UUID, Attachment>'),
     sideSchemes: JsonDecoder.dictionary<SideScheme>(sideSchemeDecoder, 'Dict<UUID, SideScheme>'),
+    mainSchemes: JsonDecoder.dictionary<MainScheme>(mainSchemeDecoder, 'Dict<UUID, MainScheme>'),
     scenario: scenarioDecoder,
     question: JsonDecoder.dictionary<Question>(questionDecoder, 'Dict<UUID, Question'),
     state: stateDecoder,

@@ -12,7 +12,6 @@ import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -32,16 +31,11 @@ instance HasAbilities TacticalGenius where
 
 instance RunMessage TacticalGenius where
   runMessage msg u@(TacticalGenius attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
-      let ident = upgradeController attrs
-      confused <- selectAny (IdentityWithId ident <> ConfusedIdentity)
-      if confused
-        then push (IdentityMessage ident IdentityRemoveConfused)
-        else do
-          modifiers <- getModifiers attrs
-          let dmg = if LastSpecial `elem` modifiers then 2 else 1
-          msgs <- choiceMessages (upgradeController attrs)
-            $ RemoveThreat (toSource attrs) dmg ThwartableScheme
-          pushAll msgs
+    RanAbility target 1 _ | isTarget attrs target -> thwartGuard u $ do
+      modifiers <- getModifiers attrs
+      let dmg = if LastSpecial `elem` modifiers then 2 else 1
+      msgs <- choiceMessages (upgradeController attrs)
+        $ RemoveThreat (toSource attrs) dmg ThwartableScheme
+      pushAll msgs
       pure u
     _ -> TacticalGenius <$> runMessage msg attrs

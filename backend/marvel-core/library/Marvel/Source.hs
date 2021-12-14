@@ -15,6 +15,7 @@ data Source
   | TreacherySource TreacheryId
   | ObligationSource ObligationId
   | SideSchemeSource SideSchemeId
+  | MainSchemeSource MainSchemeId
   | AttachmentSource AttachmentId
   | UpgradeSource UpgradeId
   | GameSource

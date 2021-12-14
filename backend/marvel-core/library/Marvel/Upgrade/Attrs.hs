@@ -7,8 +7,11 @@ import Marvel.Prelude
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
@@ -72,6 +75,16 @@ damageChoice attrs dmg = \case
     TargetLabel
       (MinionTarget vid)
       [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+
+thwartGuard :: (MonadGame env m, Entity u, EntityAttrs u ~ UpgradeAttrs) => u -> m u -> m u
+thwartGuard u f = do
+  let ident = upgradeController (toAttrs u)
+  confused <- selectAny (IdentityWithId ident <> ConfusedIdentity)
+  if confused
+    then do
+      push (IdentityMessage ident IdentityRemoveConfused)
+      pure u
+    else f
 
 thwartChoice :: UpgradeAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case

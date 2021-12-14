@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import GHC.Generics
 import Marvel.Game.Source
+import Marvel.Keyword
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
@@ -18,6 +19,7 @@ data Modifier
   | HitPointModifier Natural
   | HandSizeModifier Natural
   | TraitModifier Trait
+  | KeywordModifier Keyword
   | LastSpecial
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

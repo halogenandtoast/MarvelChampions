@@ -49,6 +49,8 @@ library
       Marvel.Attachment.Attachments.Charge
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.GeneticallyEnhanced
+      Marvel.Attachment.Attachments.SolidSoundBody
+      Marvel.Attachment.Attachments.SonicConverter
       Marvel.Attachment.Attrs
       Marvel.Attachment.Cards
       Marvel.Attack
@@ -123,12 +125,20 @@ library
       Marvel.Id
       Marvel.Identity
       Marvel.Keyword
+      Marvel.MainScheme
+      Marvel.MainScheme.Attrs
+      Marvel.MainScheme.Cards
+      Marvel.MainScheme.MainSchemes
+      Marvel.MainScheme.MainSchemes.SecretRendezvous
+      Marvel.MainScheme.MainSchemes.TheBreakIn
+      Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.Matchers
       Marvel.Message
       Marvel.Minion
       Marvel.Minion.Attrs
       Marvel.Minion.Cards
       Marvel.Minion.Minions
+      Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.Killmonger
@@ -136,6 +146,7 @@ library
       Marvel.Minion.Minions.Shocker
       Marvel.Minion.Minions.Titania
       Marvel.Minion.Minions.Vulture
+      Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Modifier
       Marvel.Name

@@ -15,7 +15,7 @@ import Marvel.Source
 import Marvel.Target
 
 bombScare :: SideSchemeCard BombScare
-bombScare = sideScheme BombScare Cards.bombScare (Static 2) (Static 0)
+bombScare = sideScheme BombScare Cards.bombScare (Static 2)
 
 newtype BombScare = BombScare SideSchemeAttrs
   deriving anyclass IsSideScheme

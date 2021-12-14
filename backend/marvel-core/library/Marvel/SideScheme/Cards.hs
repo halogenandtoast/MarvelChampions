@@ -17,6 +17,9 @@ allSideSchemes =
       [ breakinAndTakin
       , crowdControl
       , bombScare
+      , defenseNetwork
+      , illegalArmsFactory
+      , theImmortalKlaw
       , usurpTheThrone
       , personalChallenge
       , highwayRobbery
@@ -59,6 +62,21 @@ crowdControl = sideScheme "01108" "Crowd Control" [Boost, Boost] Rhino 1
 bombScare :: CardDef
 bombScare =
   (sideScheme "01109" "Bomb Scare" [Boost, Boost] BombScare 1)
+    { cdAcceleration = 1
+    }
+
+defenseNetwork :: CardDef
+defenseNetwork = sideScheme "01125" "Defense Network" [Boost, Boost] Klaw 1
+
+illegalArmsFactory :: CardDef
+illegalArmsFactory =
+  (sideScheme "01126" "Illegal Arms Factory" [Boost, Boost] Klaw 1)
+    { cdHazards = 1
+    }
+
+theImmortalKlaw :: CardDef
+theImmortalKlaw =
+  (sideScheme "01127" "The \"Immortal\" Klaw" [] Klaw 1)
     { cdAcceleration = 1
     }
 
