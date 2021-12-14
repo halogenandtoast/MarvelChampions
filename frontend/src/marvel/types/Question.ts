@@ -176,6 +176,10 @@ export const returnTargetToHandDecoder = JsonDecoder.object<ReturnTargetToHand>(
   tag: JsonDecoder.isExactly('ReturnTargetToHand'),
 }, 'ReturnTargetToHand')
 
+export const discardTargetDecoder = JsonDecoder.object<DiscardTarget>({
+  tag: JsonDecoder.isExactly('DiscardTarget'),
+}, 'DiscardTarget')
+
 export const defendDecoder = JsonDecoder.object<Defend>({ tag: JsonDecoder.isExactly('Defend') }, 'Defend')
 
 export const allyDefendDecoder = JsonDecoder.object<AllyDefend>({
@@ -208,6 +212,7 @@ export const abilityChoiceDecoder = JsonDecoder.oneOf<AbilityChoice>([
   chooseDrawCardsDecoder,
   chooseDamageDecoder,
   chooseHealDecoder,
+  discardTargetDecoder,
   returnTargetToHandDecoder,
   thwartDecoder], 'AbilityChoice')
 
@@ -268,7 +273,7 @@ export interface UseAbilityContents {
   abilityType: AbilityType
 }
 
-type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | ChooseDrawCards | ChooseDamage | ChooseHeal | ReturnTargetToHand | DamageAllEnemies | ReadyIdentity
+type AbilityChoice = ChangeForm | Pay | Run | RunAbility | Recover | AllyAttack | Attack | Heal | AllyThwart | Thwart | CreateEffect | RemoveThreat | TargetLabel | ChooseDrawCards | ChooseDamage | ChooseHeal | ReturnTargetToHand | DamageAllEnemies | ReadyIdentity | DiscardTarget
 
 export interface ReadyIdentity {
   tag: 'ReadyIdentity'
@@ -292,6 +297,10 @@ export interface ChooseHeal {
 
 export interface ReturnTargetToHand {
   tag: 'ReturnTargetToHand'
+}
+
+export interface DiscardTarget {
+  tag: 'DiscardTarget'
 }
 
 export interface Label {

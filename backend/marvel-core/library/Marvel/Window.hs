@@ -126,19 +126,27 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
     IdentityAttack ident enemyId
-      | windowTiming w == timing ->
-        liftA2
-          (&&)
-          (identityMatches identityMatcher ident)
-          (enemyMatches enemyMatcher enemyId)
+      | windowTiming w == timing -> case timing of
+        After -> case enemyMatcher of
+          AnyEnemy -> identityMatches identityMatcher ident
+          _ -> error "enemy already removed"
+        _ ->
+          liftA2
+            (&&)
+            (identityMatches identityMatcher ident)
+            (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyAttacked timing allyMatcher enemyMatcher -> case windowType w of
     AllyAttack allyId enemyId
-      | windowTiming w == timing ->
-        liftA2
-          (&&)
-          (allyMatches allyMatcher allyId)
-          (enemyMatches enemyMatcher enemyId)
+      | windowTiming w == timing -> case timing of
+        After -> case enemyMatcher of
+          AnyEnemy -> allyMatches allyMatcher allyId
+          _ -> error "enemy removed already"
+        _ ->
+          liftA2
+            (&&)
+            (allyMatches allyMatcher allyId)
+            (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyThwarted timing allyMatcher schemeMatcher -> case windowType w of
     AllyThwart allyId schemeId

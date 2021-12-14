@@ -104,7 +104,7 @@ data Message
   | ChoseEnemy EnemyId Target
   | ChosePlayer IdentityId Target
   | ChoseUpgrade UpgradeId Target
-  | DiscardUntil FromZone CardMatcher (Maybe Target)
+  | DiscardUntil FromZone CardMatcher Target
   | WithDiscardedMatch Target FromZone Card
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

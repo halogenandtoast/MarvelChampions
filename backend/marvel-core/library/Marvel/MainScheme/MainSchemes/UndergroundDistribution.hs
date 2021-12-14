@@ -27,7 +27,7 @@ instance RunMessage UndergroundDistribution where
   runMessage msg ms@(UndergroundDistribution attrs) = case msg of
     MainSchemeMessage mainSchemeId msg' | mainSchemeId == toId attrs ->
       case msg' of
-        RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (Just $ toTarget attrs))
+        RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs))
         _ -> UndergroundDistribution <$> runMessage msg attrs
     SetupMainScheme -> ms <$ push (SearchForAndRevealScheme Cards.defenseNetwork)
     AdvanceMainScheme -> ms <$ push NextMainScheme
