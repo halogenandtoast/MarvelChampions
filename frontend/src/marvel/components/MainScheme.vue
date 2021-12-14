@@ -20,10 +20,7 @@ const card = computed(() => ({
   cardDef: props.mainScheme.contents.mainSchemeCardDef
 }))
 
-const scenarioImg = computed(() => `/img/marvel/cards/${props.game.scenario.contents.scenarioId}.jpg`)
-
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
-
 
 const activeAbility = computed(() => {
   return choices.

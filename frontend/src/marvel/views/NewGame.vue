@@ -9,6 +9,10 @@ const scenarios = [
     id: '01094',
     name: 'Rhino',
   },
+  {
+    id: '01113',
+    name: 'Klaw',
+  },
 ]
 
 const router = useRouter()
@@ -72,6 +76,15 @@ async function start() {
         <select v-model="deckIds[0]">
           <option disabled :value="null">-- Select a Deck--</option>
           <option v-for="deck in decks" :key="deck.id" :value="deck.id">{{deck.name}}</option>
+        </select>
+
+        <select v-model="selectedScenario">
+          <option
+            v-for="scenario in scenarios"
+            :key="scenario.id"
+            :value="scenario.id"
+            :selected="scenario.id == selectedScenario"
+            >{{scenario.name}}</option>
         </select>
 
         <div>
