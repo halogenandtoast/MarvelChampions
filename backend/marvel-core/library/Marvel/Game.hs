@@ -316,6 +316,10 @@ runGameMessage msg g@Game {..} = case msg of
           resources <- resourcesFor discard Nothing
           push $ Paid $ mconcat $ map ResourcePayment resources
           pure $ g & activeCostL ?~ activeCost'
+        ForTreachery -> do
+          resources <- resourcesFor discard Nothing
+          push $ Paid $ mconcat $ map ResourcePayment resources
+          pure $ g & activeCostL ?~ activeCost'
     Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
@@ -347,6 +351,7 @@ runGameMessage msg g@Game {..} = case msg of
               (activeCostPayment activeCost)
               (activeCostWindow activeCost)
         ForAbility _ -> pure ()
+        ForTreachery -> pure ()
       pushAll $
         map
           (DiscardedCard . PlayerCard)

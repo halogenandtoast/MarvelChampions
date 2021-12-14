@@ -81,7 +81,7 @@ resourceCostPaid ActiveCost {..} = do
     prs' <- get
     pure $ l && length prs' >= length mrs
 
-data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability
+data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability | ForTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -280,7 +280,7 @@ choiceMessages ident = \case
             ]
         ]
   ChooseDamage source damage enemyMatcher -> do
-    enemies <- selectList enemyMatcher
+    enemies <- selectList (enemyMatcher <> DamageableEnemy)
     let f target = DamageEnemy target source damage
     case enemies of
       [] -> pure []
