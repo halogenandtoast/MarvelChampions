@@ -126,7 +126,7 @@
       "import Marvel.Target",
       "",
       "{dot|snakecase|camelcase} :: SideSchemeCard {dot}",
-      "{dot|snakecase|camelcase} = sideScheme {dot} Cards.{dot|snakecase|camelcase} (PerPlayer 1) (Static 0)",
+      "{dot|snakecase|camelcase} = sideScheme {dot} Cards.{dot|snakecase|camelcase} (PerPlayer 1)",
       "",
       "newtype {dot} = {dot} SideSchemeAttrs",
       "  deriving anyclass IsSideScheme",

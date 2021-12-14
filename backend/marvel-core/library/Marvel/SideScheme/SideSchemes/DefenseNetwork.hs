@@ -1,4 +1,8 @@
-module Marvel.SideScheme.SideSchemes.BreakinAndTakin where
+module Marvel.SideScheme.SideSchemes.DefenseNetwork
+  ( defenseNetwork
+  , DefenseNetwork(..)
+  )
+where
 
 import Marvel.Prelude
 
@@ -12,20 +16,19 @@ import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
 import Marvel.Target
 
-breakinAndTakin :: SideSchemeCard BreakinAndTakin
-breakinAndTakin =
-  sideScheme BreakinAndTakin Cards.breakinAndTakin (Static 2)
+defenseNetwork :: SideSchemeCard DefenseNetwork
+defenseNetwork = sideSchemeWith DefenseNetwork Cards.defenseNetwork (Static 2) (crisisL .~ True)
 
-newtype BreakinAndTakin = BreakinAndTakin SideSchemeAttrs
+newtype DefenseNetwork = DefenseNetwork SideSchemeAttrs
   deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
-instance RunMessage BreakinAndTakin where
-  runMessage msg (BreakinAndTakin attrs) = case msg of
+instance RunMessage DefenseNetwork where
+  runMessage msg (DefenseNetwork attrs) = case msg of
     SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
       case msg' of
         RevealSideScheme -> do
           n <- fromIntegral <$> fromGameValue (PerPlayer 1)
-          pure . BreakinAndTakin $ attrs & threatL +~ n
-        _ -> BreakinAndTakin <$> runMessage msg attrs
-    _ -> BreakinAndTakin <$> runMessage msg attrs
+          pure . DefenseNetwork $ attrs & threatL +~ n
+        _ -> DefenseNetwork <$> runMessage msg attrs
+    _ -> DefenseNetwork <$> runMessage msg attrs

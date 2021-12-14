@@ -9,6 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
@@ -19,7 +20,7 @@ usurpTheThrone =
   sideScheme UsurpTheThrone Cards.usurpTheThrone (PerPlayer 3)
 
 newtype UsurpTheThrone = UsurpTheThrone SideSchemeAttrs
-  deriving anyclass IsSideScheme
+  deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage UsurpTheThrone where

@@ -8,6 +8,7 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.SideSchemes
 import Marvel.Source
@@ -36,6 +37,9 @@ instance Entity SideScheme where
 
 instance RunMessage SideScheme where
   runMessage = genericRunMessage
+
+instance HasModifiersFor SideScheme where
+  getModifiersFor = genericGetModifiersFor
 
 instance IsSource SideScheme where
   toSource = SideSchemeSource . toId
