@@ -9,6 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
@@ -18,7 +19,7 @@ bombScare :: SideSchemeCard BombScare
 bombScare = sideScheme BombScare Cards.bombScare (Static 2)
 
 newtype BombScare = BombScare SideSchemeAttrs
-  deriving anyclass IsSideScheme
+  deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage BombScare where

@@ -6,6 +6,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
@@ -16,7 +17,7 @@ breakinAndTakin =
   sideScheme BreakinAndTakin Cards.breakinAndTakin (Static 2)
 
 newtype BreakinAndTakin = BreakinAndTakin SideSchemeAttrs
-  deriving anyclass IsSideScheme
+  deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage BreakinAndTakin where

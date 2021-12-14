@@ -11,6 +11,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.SideScheme.Attrs
 import Marvel.SideScheme.Cards qualified as Cards
@@ -22,7 +23,7 @@ highwayRobbery =
   sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
 
 newtype HighwayRobbery = HighwayRobbery SideSchemeAttrs
-  deriving anyclass IsSideScheme
+  deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 getCardOwner :: PlayerCard -> IdentityId
