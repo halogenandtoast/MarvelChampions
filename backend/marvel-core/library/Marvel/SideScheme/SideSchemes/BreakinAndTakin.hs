@@ -13,7 +13,7 @@ import Marvel.Target
 
 breakinAndTakin :: SideSchemeCard BreakinAndTakin
 breakinAndTakin =
-  sideScheme BreakinAndTakin Cards.breakinAndTakin (Static 2) (Static 0)
+  sideScheme BreakinAndTakin Cards.breakinAndTakin (Static 2)
 
 newtype BreakinAndTakin = BreakinAndTakin SideSchemeAttrs
   deriving anyclass IsSideScheme

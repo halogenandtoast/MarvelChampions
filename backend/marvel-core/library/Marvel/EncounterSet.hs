@@ -7,6 +7,8 @@ import Marvel.Card.Code
 data EncounterSet
   = Rhino
   | BombScare
+  | Klaw
+  | MastersOfEvil
   | Standard
   | SpiderManNemesis
   | SheHulkNemesis

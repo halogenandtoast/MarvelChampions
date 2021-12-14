@@ -13,7 +13,7 @@ data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data RevealSource = FromEncounterDeck | FromVillain
+data RevealSource = RevealedFromEncounterDeck | RevealedFromVillain
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -32,6 +32,7 @@ data WindowMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked EnemyMatcher IdentityMatcher
+  | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
   | AllyAttacked WindowTiming AllyMatcher EnemyMatcher
@@ -68,6 +69,7 @@ data WindowType
   | DefeatedMinion MinionId Damage
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
+  | EnemyAttacksAndDamages EnemyId CharacterId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId
   | AllyAttack AllyId EnemyId
@@ -112,6 +114,14 @@ windowMatches matcher w source = case matcher of
         liftA2
           (&&)
           (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
+  EnemyAttackedAndDamaged enemyMatcher characterMatcher -> case windowType w of
+    EnemyAttacksAndDamages enemyId ident
+      | windowTiming w == When ->
+        liftA2
+          (&&)
+          (characterMatches characterMatcher ident)
           (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of

@@ -16,7 +16,7 @@ import Marvel.Target
 
 usurpTheThrone :: SideSchemeCard UsurpTheThrone
 usurpTheThrone =
-  sideScheme UsurpTheThrone Cards.usurpTheThrone (PerPlayer 3) (Static 0)
+  sideScheme UsurpTheThrone Cards.usurpTheThrone (PerPlayer 3)
 
 newtype UsurpTheThrone = UsurpTheThrone SideSchemeAttrs
   deriving anyclass IsSideScheme

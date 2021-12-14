@@ -28,7 +28,7 @@ newtype GetBehindMe = GetBehindMe EventAttrs
 instance RunMessage GetBehindMe where
   runMessage msg e@(GetBehindMe attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent identityId _ (Just (W.RevealTreachery tid W.FromEncounterDeck))
+      PlayedEvent identityId _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck))
         -> do
           villainId <- selectJust ActiveVillain
           replaceMatchingMessage

@@ -34,6 +34,7 @@ data CardType
   | ObligationType
   | TreacheryType
   | SideSchemeType
+  | MainSchemeType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -99,7 +100,7 @@ data CardDef = CardDef
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
-resourcesL = lens cdResources $ \m x -> m { cdResources = x }
+resourcesL = lens cdResources $ \m x -> m {cdResources = x}
 
 printedResources :: CardDef -> [Resource]
 printedResources = mapMaybe printedResource . cdResources
@@ -128,4 +129,3 @@ toAdditionalCriteria def = case cdAbilityType def of
     AlterEgoAction -> InAlterEgoForm
     _ -> NoCriteria
   Nothing -> NoCriteria
-

@@ -17,7 +17,16 @@ allMinions =
   fromList $
     map
       (toCardCode &&& id)
-      [hydraMercenary, sandman, shocker, hydraBomber, killmonger, titania, vulture, whiplash]
+      [ hydraMercenary
+      , sandman
+      , shocker
+      , hydraBomber
+      , armoredGuard
+      , killmonger
+      , titania
+      , vulture
+      , whiplash
+      ]
 
 minion ::
   CardCode ->
@@ -71,6 +80,18 @@ shocker = unique $ minion "01103" "Shocker" [Criminal] [Boost, Boost] Rhino 1
 hydraBomber :: CardDef
 hydraBomber = minion "01110" "Hydra Bomber" [Hydra] [Boost] BombScare 2
 
+armoredGuard :: CardDef
+armoredGuard =
+  (minion "01120" "Armored Guard" [Mercenary] [Boost] Klaw 3)
+    { cdKeywords = fromList [Guard, Toughness]
+    }
+
+weaponsRunner :: CardDef
+weaponsRunner =
+  (minion "01121" "Weapons Runner" [Mercenary] [Star] Klaw 2)
+    { cdKeywords = singleton Surge
+    }
+
 killmonger :: CardDef
 killmonger =
   unique $
@@ -99,6 +120,7 @@ vulture =
 whiplash :: CardDef
 whiplash =
   unique $
-    (minion "01172" "Whiplash" [Criminal] [Boost, Boost] IronManNemesis 1)
+    ( minion "01172" "Whiplash" [Criminal] [Boost, Boost] IronManNemesis 1
+    )
       { cdKeywords = singleton (Retaliate 1)
       }

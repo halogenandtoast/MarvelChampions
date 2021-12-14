@@ -19,7 +19,6 @@ personalChallenge = sideSchemeWith
   PersonalChallenge
   Cards.personalChallenge
   (Static 3)
-  (Static 0)
   (crisisL .~ True)
 
 newtype PersonalChallenge = PersonalChallenge SideSchemeAttrs

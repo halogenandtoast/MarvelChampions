@@ -6,12 +6,11 @@ import Marvel.Card.Code
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
-import Marvel.GameValue
 import Marvel.Message
-import Marvel.Queue
-import Marvel.Scenario.Attrs
+import Marvel.Scenario.Attrs hiding (scenarioAccelerationTokens)
+import Marvel.Scenario.Attrs qualified as Attrs
 
-data Scenario = TheBreakIn' TheBreakIn | KlawScenario' KlawScenario
+data Scenario = RhinoScenario' RhinoScenario | KlawScenario' KlawScenario
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -22,31 +21,35 @@ lookupScenario :: CardCode -> Maybe Scenario
 lookupScenario = flip lookup allScenarios
 
 allScenarios :: HashMap CardCode Scenario
-allScenarios = fromList [("01097", TheBreakIn' rhinoScenario)]
+allScenarios = fromList [("01094", RhinoScenario' rhinoScenario), ("01113", KlawScenario' klawScenario)]
 
-newtype TheBreakIn = TheBreakIn ScenarioAttrs
+newtype RhinoScenario = RhinoScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
-instance RunMessage TheBreakIn where
-  runMessage msg s@(TheBreakIn attrs) = case msg of
-    AdvanceScenario -> s <$ push (GameOver Lost)
-    _ -> TheBreakIn <$> runMessage msg attrs
-
-rhinoScenario :: TheBreakIn
-rhinoScenario = scenario
-  TheBreakIn
-  "01097"
-  ["01094"]
-  [EncounterSet.Rhino, EncounterSet.BombScare, EncounterSet.Standard]
-  (PerPlayer 7)
-  (Static 0)
-  (PerPlayer 1)
+instance RunMessage RhinoScenario where
+  runMessage msg (RhinoScenario a) = RhinoScenario <$> runMessage msg a
 
 newtype KlawScenario = KlawScenario ScenarioAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance RunMessage KlawScenario where
-  runMessage msg (KlawScenario attrs) = KlawScenario <$> runMessage msg attrs
+  runMessage msg (KlawScenario a) = KlawScenario <$> runMessage msg a
+
+rhinoScenario :: RhinoScenario
+rhinoScenario = scenario
+  RhinoScenario
+  "01094"
+  ["01094"]
+  ["01097"]
+  [EncounterSet.Rhino, EncounterSet.BombScare, EncounterSet.Standard]
+
+klawScenario :: KlawScenario
+klawScenario = scenario
+  KlawScenario
+  "01113"
+  ["01113"]
+  ["01116", "01117"]
+  [EncounterSet.Klaw, EncounterSet.MastersOfEvil, EncounterSet.Standard]
 
 instance Entity Scenario where
   type EntityId Scenario = CardCode
@@ -57,5 +60,5 @@ instance Entity Scenario where
 getScenarioDifficulty :: Scenario -> Difficulty
 getScenarioDifficulty = scenarioDifficulty . toAttrs
 
-getMainSchemeThreat :: Scenario -> Natural
-getMainSchemeThreat = scenarioThreat . toAttrs
+scenarioAccelerationTokens :: Scenario -> Natural
+scenarioAccelerationTokens = Attrs.scenarioAccelerationTokens . toAttrs

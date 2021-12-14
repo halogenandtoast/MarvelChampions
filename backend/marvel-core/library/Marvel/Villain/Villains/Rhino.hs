@@ -54,7 +54,7 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed When (VillainWithId $ toId a) FromVillain)
+          (VillainRevealed When (VillainWithId $ toId a) RevealedFromVillain)
           ForcedResponse
           NoCost
           (RunAbility (toTarget a) 1)
@@ -63,7 +63,7 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed When (VillainWithId $ toId a) FromVillain)
+          (VillainRevealed When (VillainWithId $ toId a) RevealedFromVillain)
           ForcedResponse
           NoCost
           (RunAbility (toTarget a) 1)
@@ -87,10 +87,7 @@ instance RunMessage Rhino where
           (_, _) -> error "Invalid rhino progression"
       _ -> Rhino <$> runMessage msg attrs
     RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
-      2 -> do
-        pushAll
-          [SearchForAndRevealScheme Cards.breakinAndTakin, ShuffleEncounterDeck]
-        pure e
+      2 -> e <$ push (SearchForAndRevealScheme Cards.breakinAndTakin)
       3 -> do
         players <- getPlayers
         pushAll $ map (`IdentityMessage` IdentityStunned) players

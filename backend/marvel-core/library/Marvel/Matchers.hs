@@ -34,6 +34,7 @@ data IdentityMatcher
   | AnyIdentity
   | IdentityWithDamage GameValueMatcher
   | You
+  | FirstPlayer
   | IdentityMatchAll [IdentityMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -253,6 +254,9 @@ instance Semigroup CharacterMatcher where
   x <> CharacterMatches ys = CharacterMatches $ x : ys
   CharacterMatches xs <> y = CharacterMatches $ xs <> [y]
   x <> y = CharacterMatches [x, y]
+
+characterMatches :: MonadGame env m => CharacterMatcher -> CharacterId -> m Bool
+characterMatches matcher ident = member ident <$> gameSelectCharacter matcher
 
 newtype EncounterCardMatcher = NemesisSetFor IdentityId
   deriving stock (Show, Eq, Generic)

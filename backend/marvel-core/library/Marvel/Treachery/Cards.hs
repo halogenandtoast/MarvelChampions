@@ -19,6 +19,9 @@ allTreacheries =
       , stampede
       , explosion
       , falseAlarm
+      , klawsVengeance
+      , sonicBoom
+      , soundManipulation
       , heartShapedHerb
       , ritualCombat
       , sweepingSwoop
@@ -68,6 +71,15 @@ explosion = treachery "01111" "Explosion" [Boost, Boost] BombScare 1
 
 falseAlarm :: CardDef
 falseAlarm = treachery "01112" "False Alarm" [Boost] BombScare 2
+
+klawsVengeance :: CardDef
+klawsVengeance = treachery "01122" "Klaw's Vengeance" [Boost] Klaw 2
+
+sonicBoom :: CardDef
+sonicBoom = treachery "01123" "Sonic Boom" [Star] Klaw 2
+
+soundManipulation :: CardDef
+soundManipulation = treachery "01124" "Sound Manipulation" [Boost, Boost] Klaw 2
 
 heartShapedHerb :: CardDef
 heartShapedHerb =

@@ -23,6 +23,7 @@ import Marvel.Hand
 import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
+import Marvel.MainScheme
 import Marvel.Message
 import Marvel.Minion
 import Marvel.PlayerCard
@@ -47,6 +48,7 @@ data ApiGame = ApiGame
   , supports :: HashMap SupportId Support
   , upgrades :: HashMap UpgradeId Upgrade
   , sideSchemes :: HashMap SideSchemeId SideScheme
+  , mainSchemes :: HashMap MainSchemeId MainScheme
   , state :: GameState
   , focusedCards :: [Card]
   }
@@ -97,7 +99,7 @@ toApiPlayer i@PlayerIdentity {..} = do
     }
 
 toInactiveApiPlayer :: PlayerIdentity -> ApiPlayerIdentity
-toInactiveApiPlayer i@PlayerIdentity {..} =
+toInactiveApiPlayer PlayerIdentity {..} =
   ApiPlayerIdentity
     { id = playerIdentityId
     , hand = unHand playerIdentityHand
@@ -135,6 +137,7 @@ toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
       , supports = gameSupports g
       , upgrades = gameUpgrades g
       , sideSchemes = gameSideSchemes g
+      , mainSchemes = gameMainSchemes g
       , state = gameState
       , focusedCards = gameFocusedCards
       }
@@ -155,6 +158,7 @@ toInactiveApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameN
         , supports = gameSupports g
         , upgrades = gameUpgrades g
         , sideSchemes = gameSideSchemes g
+        , mainSchemes = gameMainSchemes g
         , state = gameState
         , focusedCards = gameFocusedCards
         }

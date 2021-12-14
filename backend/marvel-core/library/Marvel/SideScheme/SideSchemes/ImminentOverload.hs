@@ -16,7 +16,7 @@ import Marvel.Source
 import Marvel.Target
 
 imminentOverload :: SideSchemeCard ImminentOverload
-imminentOverload = sideScheme ImminentOverload Cards.imminentOverload (Static 3) (Static 0)
+imminentOverload = sideScheme ImminentOverload Cards.imminentOverload (Static 3)
 
 newtype ImminentOverload = ImminentOverload SideSchemeAttrs
   deriving anyclass IsSideScheme

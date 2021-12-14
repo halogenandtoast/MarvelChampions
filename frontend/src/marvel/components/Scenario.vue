@@ -5,8 +5,8 @@ import { Game } from '@/marvel/types/Game'
 import Card from '@/marvel/components/Card.vue'
 import Player from '@/marvel/components/Player.vue'
 import Villain from '@/marvel/components/Villain.vue'
+import MainScheme from '@/marvel/components/MainScheme.vue'
 import SideScheme from '@/marvel/components/SideScheme.vue'
-import * as MarvelGame from '@/marvel/types/Game'
 
 const props = defineProps<{
   game: Game
@@ -16,32 +16,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
-
-const scenarioImg = computed(() => `/img/marvel/cards/${props.game.scenario.contents.scenarioId}.jpg`)
-
-const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
-
-const activeAbility = computed(() => {
-  return choices.
-    value.
-    findIndex((choice) => {
-      if (choice.tag !== 'TargetLabel') {
-        return false
-      }
-
-      const { contents } = choice.target
-      if (typeof contents === "string") {
-        return contents == props.game.scenario.contents.scenarioId
-      }
-
-      switch (contents.tag) {
-        case 'SchemeMainSchemeId':
-          return contents.contents === props.game.scenario.contents.scenarioId
-        default:
-          return false
-      }
-    })
-})
 
 const topOfDiscard = computed(() => props.game.scenario.contents.scenarioDiscard[0])
 
@@ -61,11 +35,15 @@ const focusedCards = computed(() => props.game.focusedCards)
       />
       <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
       <img src="/img/marvel/encounter-back.png" alt="deck" width="150" height="209" class="deck" />
-      <div class="mainScheme">
-        <img :src="scenarioImg" alt="Scenario" height="200" class="scenario-card card" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
-        <div>{{game.scenario.contents.scenarioThreat}}</div>
-        <div v-if="game.scenario.contents.scenarioAccelerationTokens > 0">Acceleration Tokens: {{game.scenario.contents.scenarioAccelerationTokens}}</div>
-      </div>
+
+      <MainScheme
+        v-for="mainScheme in game.mainSchemes"
+        :key="mainScheme.contents.mainSchemeId"
+        :mainScheme="mainScheme"
+        :identityId="identityId"
+        :game="game"
+        @choose="emit('choose', $event)"
+      />
 
       <SideScheme
         v-for="sideScheme in game.sideSchemes"

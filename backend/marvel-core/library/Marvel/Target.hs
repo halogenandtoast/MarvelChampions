@@ -2,7 +2,6 @@ module Marvel.Target where
 
 import Marvel.Prelude
 
-import Marvel.Card.Code
 import Marvel.Card.Id
 import Marvel.Entity
 import Marvel.Id
@@ -22,11 +21,11 @@ data Target
   | UpgradeTarget UpgradeId
   | SideSchemeTarget SideSchemeId
   | AttachmentTarget AttachmentId
-  | MainSchemeTarget CardCode
+  | MainSchemeTarget MainSchemeId
   | SchemeTarget SchemeId
   | CardIdTarget CardId
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable, ToJSONKey, FromJSONKey)
 
 class IsTarget a where
   toTarget :: a -> Target

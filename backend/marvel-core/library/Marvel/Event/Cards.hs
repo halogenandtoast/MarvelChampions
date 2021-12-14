@@ -116,7 +116,7 @@ enhancedSpiderSense = (identityEvent
                         [Mental]
                       )
   { cdResponseWindow = Just
-    (TreacheryRevealed When AnyTreachery FromEncounterDeck)
+    (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
   }
 
 swingingWebKick :: CardDef

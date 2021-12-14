@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Marvel.SideScheme.Attrs where
 
 import Marvel.Prelude
@@ -22,7 +23,6 @@ data SideSchemeAttrs = SideSchemeAttrs
   , sideSchemeCardDef :: CardDef
   , sideSchemeThreat :: Natural
   , sideSchemeInitialThreat :: GameValue
-  , sideSchemeAcceleration :: GameValue
   , sideSchemeCrisis :: Bool
   , sideSchemeHeldCards :: [PlayerCard]
   }
@@ -34,34 +34,34 @@ makeLensesWith (suffixedWithFields "sideScheme") ''SideSchemeAttrs
 instance HasCardCode SideSchemeAttrs where
   toCardCode = toCardCode . sideSchemeCardDef
 
-sideSchemeWith
-  :: (SideSchemeAttrs -> a)
-  -> CardDef
-  -> GameValue
-  -> GameValue
-  -> (SideSchemeAttrs -> SideSchemeAttrs)
-  -> CardBuilder SideSchemeId a
-sideSchemeWith f cardDef initialThreat acceleration g =
-  sideScheme (f . g) cardDef initialThreat acceleration
+sideSchemeWith ::
+  (SideSchemeAttrs -> a) ->
+  CardDef ->
+  GameValue ->
+  (SideSchemeAttrs -> SideSchemeAttrs) ->
+  CardBuilder SideSchemeId a
+sideSchemeWith f cardDef initialThreat g =
+  sideScheme (f . g) cardDef initialThreat
 
-sideScheme
-  :: (SideSchemeAttrs -> a)
-  -> CardDef
-  -> GameValue
-  -> GameValue
-  -> CardBuilder SideSchemeId a
-sideScheme f cardDef initialThreat acceleration = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid -> f $ SideSchemeAttrs
-    { sideSchemeId = mid
-    , sideSchemeCardDef = cardDef
-    , sideSchemeInitialThreat = initialThreat
-    , sideSchemeAcceleration = acceleration
-    , sideSchemeThreat = 0
-    , sideSchemeCrisis = False
-    , sideSchemeHeldCards = []
+sideScheme ::
+  (SideSchemeAttrs -> a) ->
+  CardDef ->
+  GameValue ->
+  CardBuilder SideSchemeId a
+sideScheme f cardDef initialThreat =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \mid ->
+        f $
+          SideSchemeAttrs
+            { sideSchemeId = mid
+            , sideSchemeCardDef = cardDef
+            , sideSchemeInitialThreat = initialThreat
+            , sideSchemeThreat = 0
+            , sideSchemeCrisis = False
+            , sideSchemeHeldCards = []
+            }
     }
-  }
 
 instance Entity SideSchemeAttrs where
   type EntityId SideSchemeAttrs = SideSchemeId
@@ -79,10 +79,12 @@ instance HasCardDef SideSchemeAttrs where
   getCardDef = sideSchemeCardDef
 
 instance IsCard SideSchemeAttrs where
-  toCard a = EncounterCard $ MkEncounterCard
-    { ecCardId = CardId $ unSideSchemeId $ sideSchemeId a
-    , ecCardDef = getCardDef a
-    }
+  toCard a =
+    EncounterCard $
+      MkEncounterCard
+        { ecCardId = CardId $ unSideSchemeId $ sideSchemeId a
+        , ecCardDef = getCardDef a
+        }
 
 instance RunMessage SideSchemeAttrs where
   runMessage msg attrs = case msg of
@@ -95,11 +97,11 @@ instance RunMessage SideSchemeAttrs where
         SideSchemeThwarted _ n -> do
           when
             (subtractNatural n (sideSchemeThreat attrs) == 0)
-            (pushAll
-              [ CheckWindows [Window When $ DefeatedSideScheme (toId attrs)]
-              , SideSchemeMessage (toId attrs) DefeatSideScheme
-              , RemoveFromPlay (toTarget attrs)
-              ]
+            ( pushAll
+                [ CheckWindows [Window When $ DefeatedSideScheme (toId attrs)]
+                , SideSchemeMessage (toId attrs) DefeatSideScheme
+                , RemoveFromPlay (toTarget attrs)
+                ]
             )
           pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
