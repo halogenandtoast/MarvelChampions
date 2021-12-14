@@ -15,6 +15,7 @@ import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Question
 import Marvel.Query
+import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
@@ -45,4 +46,11 @@ instance RunMessage SonicBoom where
             (uncovered, _) = goPay [Energy, Mental, Physical] resources
           t <$ chooseOrRunOne ident (Label "Exhaust each character you control" [Run $ IdentityMessage ident ExhaustedIdentity : map (\a -> AllyMessage a ExhaustedAlly) allies] : [Label "Spend {energy}{mental}{physical} resources" [Run [SetActiveCost $ ActiveCost ident ForTreachery (MultiResourceCost [Just Energy, Just Mental, Just Physical]) NoPayment Nothing mempty]] | null uncovered])
         _ -> SonicBoom <$> runMessage msg attrs
+    Boost msg' -> case msg' of
+      RevealedAsBoost target _ | isTarget attrs target ->
+        pure t
+      IdentityMessage ident (IdentityDamaged _ _) -> do
+        push $ IdentityMessage ident IdentityStunned
+        pure t
+      _ -> SonicBoom <$> runMessage msg attrs
     _ -> SonicBoom <$> runMessage msg attrs
