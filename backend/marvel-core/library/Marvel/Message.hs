@@ -158,6 +158,7 @@ data SideSchemeMessage
 
 data TreacheryMessage
   = RevealTreachery IdentityId
+  | CheckTreacheryCondition IdentityId
   | ResolvedTreachery IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -298,7 +299,7 @@ data IdentityMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SearchSignifier = SearchIdentityDeck IdentityId DeckProjection
+data SearchSignifier = SearchIdentityDeck IdentityId DeckProjection | SearchEncounterDeckAndDiscardPile
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

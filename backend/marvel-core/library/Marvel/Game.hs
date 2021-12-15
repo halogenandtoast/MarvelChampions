@@ -518,6 +518,7 @@ runGameMessage msg g@Game {..} = case msg of
                   W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck
               ]
           , TreacheryMessage (toId treachery) $ RevealTreachery ident
+          , TreacheryMessage (toId treachery) $ CheckTreacheryCondition ident
           , UnfocusCards
           , TreacheryMessage (toId treachery) $ ResolvedTreachery ident
           ]
@@ -914,6 +915,9 @@ gameSelectIdentity m = do
     Matchers.ExhaustedIdentity -> pure . isExhausted
     ConfusedIdentity -> pure . identityIsConfused
     StunnedIdentity -> pure . identityIsStunned
+    IdentityEngagedWith minionMatcher -> \ident -> do
+      minions <- select minionMatcher
+      pure . not . null $ playerIdentityMinions ident `HashSet.intersection` minions
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
     IdentityWithDamage gameValueMatcher ->
@@ -1156,6 +1160,7 @@ gameSelectMinion m = do
   matchFilter x = case x of
     AnyMinion -> pure . const True
     MinionWithId ident' -> pure . (== ident') . toId
+    MinionWithTrait trait -> fmap (member trait) . getTraits
     MinionWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . getMinionDamage
     MinionEngagedWith identityMatcher -> \minion -> do
