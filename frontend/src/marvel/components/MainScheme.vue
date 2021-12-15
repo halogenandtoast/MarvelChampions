@@ -37,7 +37,7 @@ const activeAbility = computed(() => {
 
       switch (contents.tag) {
         case 'SchemeMainSchemeId':
-          return contents.contents === props.game.scenario.contents.scenarioId
+          return contents.contents === props.mainScheme.contents.mainSchemeId
         default:
           return false
       }

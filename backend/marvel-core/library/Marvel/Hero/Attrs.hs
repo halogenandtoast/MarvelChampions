@@ -25,7 +25,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Window
+import Marvel.Window qualified as W
 
 hero ::
   (HeroAttrs -> a) ->
@@ -123,11 +123,27 @@ damageChoice attrs dmg = \case
   EnemyVillainId vid ->
     TargetLabel
       (VillainTarget vid)
-      [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
+      [ DamageEnemy (VillainTarget vid) (toSource attrs) dmg
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.IdentityAttack (toId attrs) (EnemyVillainId vid)
+              ]
+          , ClearRemoved
+          ]
+      ]
   EnemyMinionId mid ->
     TargetLabel
       (MinionTarget mid)
-      [DamageEnemy (MinionTarget mid) (toSource attrs) dmg]
+      [ DamageEnemy (MinionTarget mid) (toSource attrs) dmg
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.IdentityAttack (toId attrs) (EnemyMinionId mid)
+              ]
+          , ClearRemoved
+          ]
+      ]
 
 thwartChoice :: HeroAttrs -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
@@ -152,7 +168,7 @@ instance RunMessage HeroAttrs where
               dmg <- getModifiedAttack a
               pushAll
                 [ Ask ident $ ChooseOne $ map (damageChoice a (toDamage dmg $ FromPlayerAttack ident)) enemies
-                , CheckWindows [Window After $ MadeBasicAttack ident]
+                , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
                 ]
               pure a
             else do
