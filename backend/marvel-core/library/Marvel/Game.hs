@@ -496,15 +496,17 @@ runGameMessage msg g@Game {..} = case msg of
             & (entitiesL . attachmentsL %~ insert (toId attachment) attachment)
       MinionType -> do
         let minion = createMinion ident card
-        pushAll
-          [ FocusCards [toCard minion]
-          , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
-          , MinionMessage (toId minion) (RevealMinion ident)
-          , UnfocusCards
-          , IdentityMessage ident (MinionEngaged $ toId minion)
-          , MinionMessage (toId minion) (MinionEngagedIdentity ident)
-          , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
-          ]
+            isTough = Toughness `member` cdKeywords (getCardDef card)
+        pushAll $
+          [MinionMessage (toId minion) MinionBecomeTough | isTough]
+          <> [ FocusCards [toCard minion]
+             , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
+             , MinionMessage (toId minion) (RevealMinion ident)
+             , UnfocusCards
+             , IdentityMessage ident (MinionEngaged $ toId minion)
+             , MinionMessage (toId minion) (MinionEngagedIdentity ident)
+             , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+             ]
         pure $ g & (entitiesL . minionsL %~ insert (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
@@ -1128,7 +1130,8 @@ gameSelectEnemy m = do
 gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
   villains <- toList <$> getsGame gameVillains
-  result <- filterM (matchFilter m) villains
+  removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
+  result <- filterM (matchFilter m) (villains <> removedVillains)
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
@@ -1143,7 +1146,8 @@ gameSelectVillain m = do
 gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
   minions <- toList <$> getsGame gameMinions
-  result <- filterM (matchFilter m) minions
+  removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
+  result <- filterM (matchFilter m) (minions <> removedMinions)
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of

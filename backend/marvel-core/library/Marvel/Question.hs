@@ -284,13 +284,16 @@ choiceMessages ident = \case
     let f target = DamageEnemy target source damage
     case enemies of
       [] -> pure []
-      [x] -> choiceMessages ident (f $ EnemyTarget x)
+      [x] -> do
+        msgs <- choiceMessages ident (f $ EnemyTarget x)
+        pure $ msgs <> [ClearRemoved]
       xs -> pure
         [ Ask ident $ ChooseOne
             [ TargetLabel target [f target]
             | x <- xs
             , let target = EnemyTarget x
             ]
+        , ClearRemoved
         ]
   Stun target source -> case target of
     VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]

@@ -20,6 +20,7 @@ allSideSchemes =
       , defenseNetwork
       , illegalArmsFactory
       , theImmortalKlaw
+      , theMastersOfEvil
       , usurpTheThrone
       , personalChallenge
       , highwayRobbery
@@ -77,6 +78,12 @@ illegalArmsFactory =
 theImmortalKlaw :: CardDef
 theImmortalKlaw =
   (sideScheme "01127" "The \"Immortal\" Klaw" [] Klaw 1)
+    { cdAcceleration = 1
+    }
+
+theMastersOfEvil :: CardDef
+theMastersOfEvil =
+  (sideScheme "01128" "The Masters of Evil" [Boost, Boost] MastersOfEvil 1)
     { cdAcceleration = 1
     }
 
