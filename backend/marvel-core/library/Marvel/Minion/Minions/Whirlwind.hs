@@ -44,7 +44,7 @@ instance RunMessage Whirlwind where
       otherPlayers <- L.delete ident <$> getPlayers
       for_ otherPlayers $ \other ->
         pushAll
-          [ DeclareDefense other (toEnemyId attrs)
+          [ DeclareDefense other (toEnemyId attrs) AnyDefense
           , MinionMessage (toId attrs) MinionAttacked
           ]
       pure e

@@ -50,6 +50,7 @@ data MinionAttrs = MinionAttrs
   , minionAttacking :: Maybe Attack
   , minionUpgrades :: HashSet UpgradeId
   , minionAttachments :: HashSet AttachmentId
+  , minionDefensePriority :: DefensePriority
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -92,6 +93,7 @@ minion f cardDef sch atk hp = CardBuilder
     , minionAttacking = Nothing
     , minionUpgrades = mempty
     , minionAttachments = mempty
+    , minionDefensePriority = AnyDefense
     }
   }
 
@@ -230,7 +232,7 @@ runMinionMessage msg attrs = case msg of
     atk <- getModifiedAttack attrs
     pushAll
       [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-      , DeclareDefense ident (toEnemyId attrs)
+      , DeclareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
       , MinionMessage (toId attrs) MinionAttacked
       , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
       ]

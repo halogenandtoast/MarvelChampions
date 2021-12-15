@@ -621,9 +621,11 @@ runGameMessage msg g@Game {..} = case msg of
               (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
               forced
     pure g
-  DeclareDefense ident enemyId -> do
-    identities <- select $ UnexhaustedIdentity <> HeroIdentity
+  DeclareDefense ident enemyId defensePriority -> do
     allies <- selectList UnexhaustedAlly
+    identities <- if defensePriority == AllyIfAble && not (null allies)
+      then pure mempty
+      else select $ UnexhaustedIdentity <> HeroIdentity
     push $
       Ask ident
         . ChooseOne
