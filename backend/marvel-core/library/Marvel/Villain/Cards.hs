@@ -9,7 +9,7 @@ import Marvel.Name
 import Marvel.Trait
 
 allVillainCards :: [CardDef]
-allVillainCards = [rhino1, rhino2, rhino3, klaw]
+allVillainCards = [rhino1, rhino2, rhino3, klaw1, klaw2, klaw3]
 
 allVillainsMap :: HashMap CardCode CardDef
 allVillainsMap = fromList $ map (toCardCode &&& id) allVillainCards
@@ -45,5 +45,11 @@ rhino2 = villain "01095" "Rhino" [Brute, Criminal]
 rhino3 :: CardDef
 rhino3 = villain "01096" "Rhino" [Brute, Criminal]
 
-klaw :: CardDef
-klaw = villain "01113" "Klaw" [MastersOfEvil]
+klaw1 :: CardDef
+klaw1 = villain "01113" "Klaw" [MastersOfEvil]
+
+klaw2 :: CardDef
+klaw2 = villain "01114" "Klaw" [MastersOfEvil]
+
+klaw3 :: CardDef
+klaw3 = villain "01115" "Klaw" [MastersOfEvil]

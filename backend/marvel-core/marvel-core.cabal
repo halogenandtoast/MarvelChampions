@@ -142,6 +142,7 @@ library
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.Killmonger
+      Marvel.Minion.Minions.RadioactiveMan
       Marvel.Minion.Minions.Sandman
       Marvel.Minion.Minions.Shocker
       Marvel.Minion.Minions.Titania
@@ -181,6 +182,7 @@ library
       Marvel.SideScheme.SideSchemes.ImminentOverload
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
+      Marvel.SideScheme.SideSchemes.TheMastersOfEvil
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.Source
       Marvel.Stats

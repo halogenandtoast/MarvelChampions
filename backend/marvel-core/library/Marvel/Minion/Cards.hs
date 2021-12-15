@@ -10,7 +10,8 @@ import Marvel.Criteria
 import Marvel.EncounterSet
 import Marvel.Keyword
 import Marvel.Name
-import Marvel.Trait
+import Marvel.Trait hiding (MastersOfEvil)
+import Marvel.Trait qualified as Trait
 
 allMinions :: HashMap CardCode CardDef
 allMinions =
@@ -22,6 +23,8 @@ allMinions =
       , shocker
       , hydraBomber
       , armoredGuard
+      , weaponsRunner
+      , radioactiveMan
       , killmonger
       , titania
       , vulture
@@ -91,6 +94,10 @@ weaponsRunner =
   (minion "01121" "Weapons Runner" [Mercenary] [Star] Klaw 2)
     { cdKeywords = singleton Surge
     }
+
+radioactiveMan :: CardDef
+radioactiveMan =
+  minion "01129" "Radioactive Man" [Elite, Trait.MastersOfEvil] [Star] MastersOfEvil 1
 
 killmonger :: CardDef
 killmonger =
