@@ -99,6 +99,7 @@ data Message
   | SetAside [Card]
   | ShuffleIntoEncounterDeck [EncounterCard]
   | ClearBoosts
+  | ClearRemoved
   | Boost Message
   | RevealedAsBoost Target EnemyId
   | ChoseEnemy EnemyId Target

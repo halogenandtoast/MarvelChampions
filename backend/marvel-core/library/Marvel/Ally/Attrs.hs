@@ -132,6 +132,7 @@ damageChoice attrs dmg = \case
           [ W.Window W.After
               $ W.AllyAttack (toId attrs) (EnemyVillainId vid)
           ]
+      , ClearRemoved
       ]
     ]
   EnemyMinionId vid -> TargetLabel
@@ -142,6 +143,7 @@ damageChoice attrs dmg = \case
           [ W.Window W.After
               $ W.AllyAttack (toId attrs) (EnemyMinionId vid)
           ]
+      , ClearRemoved
       ]
     ]
 
