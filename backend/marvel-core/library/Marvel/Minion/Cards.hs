@@ -26,6 +26,7 @@ allMinions =
       , weaponsRunner
       , radioactiveMan
       , whirlwind
+      , tigerShark
       , killmonger
       , titania
       , vulture
@@ -103,6 +104,10 @@ radioactiveMan =
 whirlwind :: CardDef
 whirlwind =
   unique $ minion "01130" "Whirlwind" [Trait.MastersOfEvil] [Star] MastersOfEvil 1
+
+tigerShark :: CardDef
+tigerShark =
+  unique $ minion "01131" "Tiger Shark" [Trait.MastersOfEvil] [Star] MastersOfEvil 1
 
 killmonger :: CardDef
 killmonger =
