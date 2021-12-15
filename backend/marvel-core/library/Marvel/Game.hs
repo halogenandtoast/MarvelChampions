@@ -107,6 +107,7 @@ data Game = Game
     gamePlayerOrder :: [IdentityId]
   , gameEntities :: Entities
   , gameBoostEntities :: Entities
+  , gameRemovedEntities :: Entities
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
@@ -252,10 +253,11 @@ runGameMessage msg g@Game {..} = case msg of
       for_ (lookup aid $ gameAttachments g) $ \attachment ->
         pushAll [AttachmentRemoved aid, DiscardedCard $ toCard attachment]
       pure $ g & (entitiesL . attachmentsL %~ delete aid)
-    MinionTarget mid -> do
-      for_ (lookup mid $ gameMinions g) $
-        \minion -> push $ DiscardedCard $ toCard minion
-      pure $ g & (entitiesL . minionsL %~ delete mid)
+    MinionTarget mid -> case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        push $ DiscardedCard $ toCard minion
+        pure $ g & (entitiesL . minionsL %~ delete mid) & (removedEntitiesL . minionsL %~ insert mid minion)
     TreacheryTarget tid -> do
       for_ (lookup tid $ gameTreacheries g) $
         \treachery -> push $ DiscardedCard $ toCard treachery
@@ -474,6 +476,8 @@ runGameMessage msg g@Game {..} = case msg of
   ClearBoosts -> do
     pushAll $ map (DiscardedCard . EncounterCard) (elems gameBoostCards)
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
+  ClearRemoved ->
+    pure $ g & removedEntitiesL .~ defaultEntities
   RevealEncounterCard ident card -> do
     pushAll
       [ FocusCards [EncounterCard card]
@@ -760,6 +764,7 @@ newGame player scenario =
     , gameState = Unstarted
     , gamePlayerOrder = [toId player]
     , gameBoostEntities = defaultEntities
+    , gameRemovedEntities = defaultEntities
     , gameEntities =
         defaultEntities
           { entitiesPlayers = fromList [(toId player, player)]
@@ -1085,8 +1090,10 @@ gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
   villains <- toList <$> getsGame gameVillains
   minions <- toList <$> getsGame gameMinions
-  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) villains
-  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) minions
+  removedVillains <- traceShowId . toList <$> getsGame (view (removedEntitiesL . villainsL))
+  removedMinions <- traceShowId . toList <$> getsGame (view (removedEntitiesL . minionsL))
+  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) (villains <> removedVillains)
+  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) (minions <> removedMinions)
   pure $ HashSet.fromList (villains' <> minions')
  where
   goVillain e = \case

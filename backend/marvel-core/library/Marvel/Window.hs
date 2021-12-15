@@ -126,27 +126,19 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
     IdentityAttack ident enemyId
-      | windowTiming w == timing -> case timing of
-        After -> case enemyMatcher of
-          AnyEnemy -> identityMatches identityMatcher ident
-          _ -> error "enemy already removed"
-        _ ->
-          liftA2
-            (&&)
-            (identityMatches identityMatcher ident)
-            (enemyMatches enemyMatcher enemyId)
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (identityMatches identityMatcher ident)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyAttacked timing allyMatcher enemyMatcher -> case windowType w of
     AllyAttack allyId enemyId
-      | windowTiming w == timing -> case timing of
-        After -> case enemyMatcher of
-          AnyEnemy -> allyMatches allyMatcher allyId
-          _ -> error "enemy removed already"
-        _ ->
-          liftA2
-            (&&)
-            (allyMatches allyMatcher allyId)
-            (enemyMatches enemyMatcher enemyId)
+      | windowTiming w == timing ->
+        liftA2
+          (&&)
+          (allyMatches allyMatcher allyId)
+          (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyThwarted timing allyMatcher schemeMatcher -> case windowType w of
     AllyThwart allyId schemeId
@@ -180,30 +172,15 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
     DefeatedMinion minionId _
-      | windowTiming w == timing ->
-        if timing == After
-          then case minionMatcher of
-            AnyMinion -> pure True
-            _ -> error "Minion has been deleted so we do not have details"
-          else minionMatches minionMatcher minionId
+      | windowTiming w == timing -> minionMatches minionMatcher minionId
     _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
     DefeatedMinion minionId damage
       | windowTiming w == timing ->
-        if timing == After
-          then case enemyMatcher of
-            MinionEnemy -> damageMatches damageMatcher damage
-            AnyEnemy -> damageMatches damageMatcher damage
-            _ -> error "Minion has been deleted so we do not have details"
-          else liftA2 (&&) (enemyMatches enemyMatcher (EnemyMinionId minionId)) (damageMatches damageMatcher damage)
+        liftA2 (&&) (enemyMatches enemyMatcher (EnemyMinionId minionId)) (damageMatches damageMatcher damage)
     DefeatedVillain villainId damage
       | windowTiming w == timing ->
-        if timing == After
-          then case enemyMatcher of
-            VillainEnemy -> damageMatches damageMatcher damage
-            AnyEnemy -> damageMatches damageMatcher damage
-            _ -> error "Minion has been deleted so we do not have details"
-          else liftA2 (&&) (enemyMatches enemyMatcher (EnemyVillainId villainId)) (damageMatches damageMatcher damage)
+        liftA2 (&&) (enemyMatches enemyMatcher (EnemyVillainId villainId)) (damageMatches damageMatcher damage)
     _ -> pure False
   MinionEntersPlay timing minionMatcher -> case windowType w of
     MinionEnteredPlay minionId
