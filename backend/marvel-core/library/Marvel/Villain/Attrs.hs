@@ -208,7 +208,7 @@ runVillainMessage msg attrs = case msg of
     pushAll
       [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
       , DealBoost (toTarget attrs)
-      , DeclareDefense ident (toEnemyId attrs)
+      , DeclareDefense ident (toEnemyId attrs) AnyDefense
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
       , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]

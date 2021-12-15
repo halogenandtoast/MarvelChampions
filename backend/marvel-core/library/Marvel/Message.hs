@@ -26,6 +26,10 @@ data FinishedStatus = Won | Lost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data DefensePriority = AnyDefense | AllyIfAble
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Message
   = StartGame
   | StartScenario
@@ -78,7 +82,7 @@ data Message
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId
   | DiscardedCard Card
-  | DeclareDefense IdentityId EnemyId
+  | DeclareDefense IdentityId EnemyId DefensePriority
   | RemoveFromPlay Target
   | RemoveFromGame Target
   | CreatedEffect CardDef Source EntityMatcher
