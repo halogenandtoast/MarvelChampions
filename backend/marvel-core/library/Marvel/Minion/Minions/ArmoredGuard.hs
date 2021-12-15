@@ -6,6 +6,7 @@ where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
@@ -17,7 +18,7 @@ armoredGuard :: MinionCard ArmoredGuard
 armoredGuard = minion ArmoredGuard Cards.armoredGuard (Sch 0) (Atk 1) (HP 3)
 
 newtype ArmoredGuard = ArmoredGuard MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage ArmoredGuard where

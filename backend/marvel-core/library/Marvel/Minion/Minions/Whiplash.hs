@@ -6,6 +6,7 @@ where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
@@ -17,7 +18,7 @@ whiplash :: MinionCard Whiplash
 whiplash = minion Whiplash Cards.whiplash (Sch 2) (Atk 3) (HP 4)
 
 newtype Whiplash = Whiplash MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Whiplash where

@@ -35,7 +35,7 @@ instance HasAbilities Charge where
       [ windowAbility
             a
             1
-            (EnemyAttacked (EnemyWithId enemyId) AnyIdentity)
+            (EnemyAttacked When (EnemyWithId enemyId) AnyIdentity)
             ForcedInterrupt
             NoCost
           $ RunAbility (toTarget a) 1

@@ -6,6 +6,7 @@ where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
@@ -18,7 +19,7 @@ weaponsRunner :: MinionCard WeaponsRunner
 weaponsRunner = minion WeaponsRunner Cards.weaponsRunner (Sch 1) (Atk 1) (HP 2)
 
 newtype WeaponsRunner = WeaponsRunner MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage WeaponsRunner where

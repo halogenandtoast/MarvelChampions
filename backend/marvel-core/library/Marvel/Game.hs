@@ -850,6 +850,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (elems $ gameUpgrades g)
       <> concatMap getAbilities (elems $ gameVillains g)
       <> concatMap getAbilities (elems $ gameAttachments g)
+      <> concatMap getAbilities (elems $ gameMinions g)
 
 runGameMessages :: MonadGame env m => m ()
 runGameMessages = do

@@ -72,6 +72,7 @@ choicesL = lens abilityChoices $ \m x -> m { abilityChoices = x }
 
 class HasAbilities a where
   getAbilities :: HasCallStack => a -> [Ability]
+  getAbilities _ = []
 
 genericGetAbilities :: (Generic a, HasAbilities' (Rep a)) => a -> [Ability]
 genericGetAbilities = getAbilities' . from

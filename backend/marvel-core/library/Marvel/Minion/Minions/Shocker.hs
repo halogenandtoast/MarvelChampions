@@ -2,6 +2,7 @@ module Marvel.Minion.Minions.Shocker where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Minion.Attrs
@@ -12,7 +13,7 @@ shocker :: MinionCard Shocker
 shocker = minion Shocker Cards.shocker (Sch 1) (Atk 2) (HP 3)
 
 newtype Shocker = Shocker MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Shocker where

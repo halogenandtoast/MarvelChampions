@@ -5,6 +5,7 @@ module Marvel.Minion.Minions.Killmonger
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
@@ -18,7 +19,7 @@ killmonger :: MinionCard Killmonger
 killmonger = minion Killmonger Cards.killmonger (Sch 2) (Atk 2) (HP 5)
 
 newtype Killmonger = Killmonger MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage Killmonger where
