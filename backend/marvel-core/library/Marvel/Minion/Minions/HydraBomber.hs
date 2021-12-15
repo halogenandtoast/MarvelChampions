@@ -5,6 +5,7 @@ module Marvel.Minion.Minions.HydraBomber
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Attrs
@@ -14,7 +15,7 @@ hydraBomber :: MinionCard HydraBomber
 hydraBomber = minion HydraBomber Cards.hydraBomber (Sch 1) (Atk 1) (HP 2)
 
 newtype HydraBomber = HydraBomber MinionAttrs
-  deriving anyclass (IsMinion, HasModifiersFor)
+  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance RunMessage HydraBomber where

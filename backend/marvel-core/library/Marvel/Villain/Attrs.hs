@@ -211,6 +211,7 @@ runVillainMessage msg attrs = case msg of
       , DeclareDefense ident (toEnemyId attrs)
       , VillainMessage (toId attrs) VillainFlipBoostCards
       , VillainMessage (toId attrs) VillainAttacked
+      , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
       ]
     pure $
       attrs

@@ -4,6 +4,7 @@ module Marvel.Minion where
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Id
@@ -45,6 +46,9 @@ instance Entity Minion where
 
 instance RunMessage Minion where
   runMessage = genericRunMessage
+
+instance HasAbilities Minion where
+  getAbilities = genericGetAbilities
 
 instance HasModifiersFor Minion where
   getModifiersFor = genericGetModifiersFor

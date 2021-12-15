@@ -31,7 +31,7 @@ data WindowMatcher
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
-  | EnemyAttacked EnemyMatcher IdentityMatcher
+  | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
   | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
@@ -108,9 +108,9 @@ windowMatches matcher w source = case matcher of
           (identityMatches identityMatcher ident)
           (enemyMatches enemyMatcher enemyId)
     _ -> pure False
-  EnemyAttacked enemyMatcher identityMatcher -> case windowType w of
+  EnemyAttacked timing enemyMatcher identityMatcher -> case windowType w of
     EnemyAttack enemyId ident
-      | windowTiming w == When ->
+      | windowTiming w == timing ->
         liftA2
           (&&)
           (identityMatches identityMatcher ident)

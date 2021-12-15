@@ -25,6 +25,7 @@ allMinions =
       , armoredGuard
       , weaponsRunner
       , radioactiveMan
+      , whirlwind
       , killmonger
       , titania
       , vulture
@@ -97,7 +98,11 @@ weaponsRunner =
 
 radioactiveMan :: CardDef
 radioactiveMan =
-  minion "01129" "Radioactive Man" [Elite, Trait.MastersOfEvil] [Star] MastersOfEvil 1
+  unique $ minion "01129" "Radioactive Man" [Elite, Trait.MastersOfEvil] [Star] MastersOfEvil 1
+
+whirlwind :: CardDef
+whirlwind =
+  unique $ minion "01130" "Whirlwind" [Trait.MastersOfEvil] [Star] MastersOfEvil 1
 
 killmonger :: CardDef
 killmonger =

@@ -232,6 +232,7 @@ runMinionMessage msg attrs = case msg of
       [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
       , DeclareDefense ident (toEnemyId attrs)
       , MinionMessage (toId attrs) MinionAttacked
+      , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
       ]
     pure
       $ attrs

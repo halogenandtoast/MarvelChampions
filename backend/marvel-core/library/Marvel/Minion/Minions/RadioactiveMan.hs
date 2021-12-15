@@ -30,7 +30,7 @@ instance HasAbilities RadioactiveMan where
     [ windowAbility
           a
           1
-          (EnemyAttacked (EnemyWithId $ EnemyMinionId $ toId a) You)
+          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ toId a) You)
           ForcedResponse
           NoCost
         $ RunAbility (toTarget a) 1
