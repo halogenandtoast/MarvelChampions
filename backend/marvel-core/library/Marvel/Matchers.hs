@@ -33,6 +33,7 @@ data IdentityMatcher
   | IdentityWithTrait Trait
   | AnyIdentity
   | IdentityWithDamage GameValueMatcher
+  | IdentityEngagedWith MinionMatcher
   | You
   | FirstPlayer
   | IdentityMatchAll [IdentityMatcher]
@@ -212,6 +213,7 @@ data MinionMatcher
   = AnyMinion
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
+  | MinionWithTrait Trait
   | MinionWithKeyword Keyword
   | MinionEngagedWith IdentityMatcher
   | MinionIs CardDef

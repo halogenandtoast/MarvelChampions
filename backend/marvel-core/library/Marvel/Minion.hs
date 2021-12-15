@@ -4,13 +4,16 @@ module Marvel.Minion where
 
 import Marvel.Prelude
 
+import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Minion.Attrs
 import Marvel.Minion.Minions
 import Marvel.TH
+import Marvel.Trait
 
 $(buildEntity "Minion")
 
@@ -52,6 +55,15 @@ instance HasAbilities Minion where
 
 instance HasModifiersFor Minion where
   getModifiersFor = genericGetModifiersFor
+
+instance HasTraits Minion where
+  getTraits m = do
+    modifiers <- getModifiers m
+    let traits = cdTraits $ getCardDef m
+    pure $ foldr applyModifier traits modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
 
 instance IsSource Minion where
   toSource = MinionSource . toId

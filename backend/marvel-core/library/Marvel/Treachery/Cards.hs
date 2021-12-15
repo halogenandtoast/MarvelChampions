@@ -22,6 +22,7 @@ allTreacheries =
       , klawsVengeance
       , sonicBoom
       , soundManipulation
+      , mastersOfMayhem
       , heartShapedHerb
       , ritualCombat
       , sweepingSwoop
@@ -80,6 +81,9 @@ sonicBoom = treachery "01123" "Sonic Boom" [Star] Klaw 2
 
 soundManipulation :: CardDef
 soundManipulation = treachery "01124" "Sound Manipulation" [Boost, Boost] Klaw 2
+
+mastersOfMayhem :: CardDef
+mastersOfMayhem = treachery "01133" "Masters of Mayhem" [Boost, Boost] MastersOfEvil 2
 
 heartShapedHerb :: CardDef
 heartShapedHerb =
