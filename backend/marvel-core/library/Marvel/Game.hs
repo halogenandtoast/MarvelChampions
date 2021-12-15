@@ -1090,8 +1090,8 @@ gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
   villains <- toList <$> getsGame gameVillains
   minions <- toList <$> getsGame gameMinions
-  removedVillains <- traceShowId . toList <$> getsGame (view (removedEntitiesL . villainsL))
-  removedMinions <- traceShowId . toList <$> getsGame (view (removedEntitiesL . minionsL))
+  removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
+  removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
   villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) (villains <> removedVillains)
   minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) (minions <> removedMinions)
   pure $ HashSet.fromList (villains' <> minions')
