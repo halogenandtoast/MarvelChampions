@@ -132,7 +132,6 @@ damageChoice attrs dmg = \case
           [ W.Window W.After
               $ W.AllyAttack (toId attrs) (EnemyVillainId vid)
           ]
-      , ClearRemoved
       ]
     ]
   EnemyMinionId vid -> TargetLabel
@@ -143,7 +142,6 @@ damageChoice attrs dmg = \case
           [ W.Window W.After
               $ W.AllyAttack (toId attrs) (EnemyMinionId vid)
           ]
-      , ClearRemoved
       ]
     ]
 
@@ -252,15 +250,6 @@ instance RunMessage AllyAttrs where
         push $ AllyMessage ident $ AllyDamaged
           (attackSource attack')
           (toDamage (attackDamage attack') FromAttack)
-        -- pushAll
-        --   [ CheckWindows
-        --     [ W.Window W.When
-        --       $ W.AllyTakeDamage ident W.FromAttack
-        --       $ attackDamage attack
-        --     ]
-        --   , AllyMessage ident
-        --     $ AllyDamaged (attackSource attack) (attackDamage attack)
-        --   ]
         pure a
       AllyDamaged _ damage -> if allyTough a
         then pure $ a & toughL .~ False

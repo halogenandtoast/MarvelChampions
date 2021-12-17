@@ -39,7 +39,12 @@ instance HasAbilities NickFury where
       ForcedResponse
       OwnsThis
       NoCost
-      (RunAbility (toTarget a) 1)
+      (ChooseOneLabelChoice
+        [ ("Remove 2 threat from a scheme", RemoveThreat (toSource a) 2 ThwartableScheme)
+        , ("Draw 3 cards", ChooseDrawCards 3 You)
+        , ("Deal 4 damage to an enemy", ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy)
+        ]
+      )
     , limitedWindowAbility
       a
       2
@@ -51,17 +56,4 @@ instance HasAbilities NickFury where
     ]
 
 instance RunMessage NickFury where
-  runMessage msg a@(NickFury attrs) = case msg of
-    RanAbility target 1 _ | isTarget a target -> do
-      chooseOne
-        (allyController attrs)
-        [ Label
-          "Remove 2 threat from a scheme"
-          [RemoveThreat (toSource a) 2 ThwartableScheme]
-        , Label "Draw 3 cards" [ChooseDrawCards 3 You]
-        , Label
-          "Deal 4 damage to an enemy"
-          [ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy]
-        ]
-      pure a
-    _ -> NickFury <$> runMessage msg (toAttrs a)
+  runMessage msg (NickFury attrs) = NickFury <$> runMessage msg attrs
