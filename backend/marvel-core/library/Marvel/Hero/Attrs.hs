@@ -129,7 +129,6 @@ damageChoice attrs dmg = \case
               [ W.Window W.After $
                   W.IdentityAttack (toId attrs) (EnemyVillainId vid)
               ]
-          , ClearRemoved
           ]
       ]
   EnemyMinionId mid ->
@@ -141,7 +140,6 @@ damageChoice attrs dmg = \case
               [ W.Window W.After $
                   W.IdentityAttack (toId attrs) (EnemyMinionId mid)
               ]
-          , ClearRemoved
           ]
       ]
 

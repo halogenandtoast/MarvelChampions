@@ -143,6 +143,7 @@ data Choice
   | ChoosePlayer IdentityMatcher Target
   | ChooseUpgrade UpgradeMatcher Target
   | ReturnTargetToHand Target
+  | ChooseOneLabelChoice [(Text, Choice)]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -205,7 +206,7 @@ choiceMessages ident = \case
     pure $ UsedAbility ident a : costMessages ident a <> rest
   RunAbility target n -> do
     windows <- getCurrentWindows
-    pure [RanAbility target n $ map windowType windows]
+    pure [RanAbility target n $ map windowType windows, ClearRemoved]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
@@ -350,6 +351,9 @@ choiceMessages ident = \case
             ]
         ]
   ReturnTargetToHand target -> pure [ReturnToHand target]
+  ChooseOneLabelChoice choicePairs ->
+    pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
+
 
 costMessages :: IdentityId -> Ability -> [Message]
 costMessages iid a = go (abilityCost a)

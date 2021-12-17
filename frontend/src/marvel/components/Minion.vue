@@ -5,6 +5,7 @@ import Card from '@/marvel/components/Card.vue'
 import { Game } from '@/marvel/types/Game'
 import { Minion } from '@/marvel/types/Minion'
 import Upgrade from '@/marvel/components/Upgrade.vue'
+import AbilityButton from '@/marvel/components/AbilityButton.vue'
 
 const props = defineProps<{
   game: Game
@@ -43,6 +44,15 @@ const activeAbility = computed(() => {
 })
 
 const upgrades = computed(() => props.minion.contents.minionUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
+
+const abilities = computed(() => {
+  return choices.value.reduce<number[]>((acc, v, i) => {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.minion.contents.minionId) {
+      return [...acc, i]
+    }
+    return acc
+  }, [])
+})
 </script>
 
 <template>
@@ -61,6 +71,12 @@ const upgrades = computed(() => props.minion.contents.minionUpgrades.map((upgrad
       class="attached"
       @choose="emit('choose', $event)"
     />
+    <AbilityButton
+          v-for="ability in abilities"
+          :key="ability"
+          :ability="choices[ability]"
+          @click="emit('choose', ability)"
+          />
   </div>
 </template>
 
