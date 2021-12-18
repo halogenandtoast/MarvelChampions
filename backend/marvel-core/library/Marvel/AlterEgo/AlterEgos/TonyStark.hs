@@ -21,32 +21,34 @@ import Marvel.Stats
 import Marvel.Target
 
 tonyStark :: AlterEgoCard TonyStark
-tonyStark = alterEgo
-  TonyStark
-  Cards.tonyStark
-  (HP $ Static 9)
-  (HandSize 6)
-  (Rec 3)
-  [Cards.businessProblems]
+tonyStark =
+  alterEgo
+    TonyStark
+    Cards.tonyStark
+    (HP $ Static 9)
+    (HandSize 6)
+    (Rec 3)
+    [Cards.businessProblems]
 
 newtype TonyStark = TonyStark AlterEgoAttrs
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
 
 instance HasAbilities TonyStark where
-  getAbilities (TonyStark a) =
-    [label "Futurist" $ limitedAbility a 1 (PerRound 1) Action IsSelf NoCost (RunAbility (toTarget a) 1)]
+  getAbilities a =
+    [ label "Futurist" $
+        limitedAbility a 1 (PerRound 1) Action IsSelf NoCost $
+          runAbility a 1
+    ]
 
 instance RunMessage TonyStark where
-  runMessage msg a@(TonyStark attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
-      pushAll $ map
-        (IdentityMessage (toId attrs))
-        [ Search
-          (SearchIdentityDeck (toId attrs) $ TopOfDeck 3)
+  runMessage msg a = case msg of
+    RanAbility (isTarget a -> True) 1 _ -> do
+      push . IdentityMessage (toId a) $
+        Search
+          (SearchIdentityDeck (toId a) $ TopOfDeck 3)
           AnyCard
           SearchDrawOne
           DiscardRest
-        ]
       pure a
-    _ -> TonyStark <$> runMessage msg attrs
+    _ -> TonyStark <$> runMessage msg (toAttrs a)

@@ -10,20 +10,11 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Attrs
-import Marvel.Entity
-import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 
 vision :: AllyCard Vision
 vision = ally Vision Cards.vision (Thw 1, 1) (Atk 2, 1) (HP 3)
@@ -33,7 +24,7 @@ newtype Vision = Vision AllyAttrs
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasAbilities Vision where
-  getAbilities (Vision a) =
+  getAbilities a =
     [ limitedAbility
           a
           1
@@ -48,7 +39,7 @@ instance HasAbilities Vision where
     ]
 
 instance RunMessage Vision where
-  runMessage msg (Vision attrs) = Vision <$> runMessage msg attrs
+  runMessage msg a = Vision <$> runMessage msg (toAttrs a)
 
 newtype VisionEffect = VisionEffect EffectAttrs
   deriving anyclass IsEffect

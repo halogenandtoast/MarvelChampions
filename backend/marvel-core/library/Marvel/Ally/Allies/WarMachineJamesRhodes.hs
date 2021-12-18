@@ -8,19 +8,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Entity
-import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 
 warMachineJamesRhodes :: AllyCard WarMachineJamesRhodes
 warMachineJamesRhodes =
@@ -33,14 +24,13 @@ warMachineJamesRhodes =
 
 newtype WarMachineJamesRhodes = WarMachineJamesRhodes AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 instance HasAbilities WarMachineJamesRhodes where
-  getAbilities (WarMachineJamesRhodes a) =
+  getAbilities a =
     [ ability a 1 Action OwnsThis (DamageThisCost 2 <> ExhaustCost) $
         DamageAllEnemies AnyEnemy (toSource a) (toDamage 1 FromAbility)
     ]
 
 instance RunMessage WarMachineJamesRhodes where
-  runMessage msg (WarMachineJamesRhodes attrs) =
-    WarMachineJamesRhodes <$> runMessage msg attrs
+  runMessage msg a = WarMachineJamesRhodes <$> runMessage msg (toAttrs a)

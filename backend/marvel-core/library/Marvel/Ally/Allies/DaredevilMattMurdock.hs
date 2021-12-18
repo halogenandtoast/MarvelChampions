@@ -8,19 +8,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Entity
-import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 import Marvel.Window qualified as W
 
 daredevilMattMurdock :: AllyCard DaredevilMattMurdock
@@ -34,10 +25,10 @@ daredevilMattMurdock =
 
 newtype DaredevilMattMurdock = DaredevilMattMurdock AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 instance HasAbilities DaredevilMattMurdock where
-  getAbilities (DaredevilMattMurdock a) =
+  getAbilities a =
     [ limitedWindowAbility
         a
         1
@@ -49,5 +40,4 @@ instance HasAbilities DaredevilMattMurdock where
     ]
 
 instance RunMessage DaredevilMattMurdock where
-  runMessage msg (DaredevilMattMurdock attrs) =
-    DaredevilMattMurdock <$> runMessage msg attrs
+  runMessage msg a = DaredevilMattMurdock <$> runMessage msg (toAttrs a)

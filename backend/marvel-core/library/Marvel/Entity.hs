@@ -1,11 +1,15 @@
 module Marvel.Entity where
 
+import Marvel.Id
 import Marvel.Prelude
 
 import GHC.Generics
 
 class Exhaustable a where
   isExhausted :: a -> Bool
+
+class HasController a where
+  controller :: a -> IdentityId
 
 class Entity a where
   type EntityId a

@@ -1,25 +1,26 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Marvel.Ally.Attrs where
+module Marvel.Ally.Attrs (module Marvel.Ally.Attrs, module X) where
 
 import Marvel.Prelude
 
+import Marvel.Card as X
+import Marvel.Entity as X
+import Marvel.Hp as X
+import Marvel.Message as X
+import Marvel.Modifier as X
+import Marvel.Question as X
+import Marvel.Queue as X
+import Marvel.Source as X
+import Marvel.Stats as X
+import Marvel.Target as X
+
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
-import Marvel.Card
 import Marvel.Damage
-import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
-import Marvel.Message
-import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 import Marvel.Window qualified as W
 
 class IsAlly a
@@ -47,6 +48,12 @@ data AllyAttrs = AllyAttrs
   deriving anyclass (ToJSON, FromJSON)
 
 makeLensesWith suffixedFields ''AllyAttrs
+
+instance HasController AllyAttrs where
+  controller = allyController
+
+controllerMessage :: (EntityAttrs a ~ AllyAttrs, Entity a) => a -> IdentityMessage -> Message
+controllerMessage a = IdentityMessage (allyController $ toAttrs a)
 
 instance HasCardCode AllyAttrs where
   toCardCode = toCardCode . allyCardDef
@@ -168,14 +175,14 @@ thwartChoice attrs thw = \case
       ]
     ]
 
-stunChoice :: AllyAttrs -> EnemyId -> Choice
-stunChoice attrs = \case
+stunChoice :: (Entity a, EntityId a ~ AllyId) => a -> EnemyId -> Choice
+stunChoice a = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [Stun (VillainTarget vid) (AllySource $ allyId attrs)]
+    [Stun (VillainTarget vid) (AllySource $ toId a)]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [Stun (MinionTarget vid) (AllySource $ allyId attrs)]
+    [Stun (MinionTarget vid) (AllySource $ toId a)]
 
 instance IsCard AllyAttrs where
   toCard a = PlayerCard $ MkPlayerCard

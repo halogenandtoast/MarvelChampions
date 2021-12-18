@@ -44,4 +44,4 @@ instance HasAbilities PeterParker where
     ]
 
 instance RunMessage PeterParker where
-  runMessage msg (PeterParker attrs) = PeterParker <$> runMessage msg attrs
+  runMessage msg a = PeterParker <$> runMessage msg (toAttrs a)

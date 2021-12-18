@@ -147,6 +147,9 @@ data Choice
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+runAbility :: IsTarget a => a -> Natural -> Choice
+runAbility a = RunAbility (toTarget a)
+
 pushChoice :: MonadGame env m => IdentityId -> Choice -> m ()
 pushChoice ident choice = do
   msgs <- choiceMessages ident choice

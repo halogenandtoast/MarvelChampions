@@ -1,60 +1,46 @@
-module Marvel.Ally.Allies.BlackCatFeliciaHardy where
+module Marvel.Ally.Allies.BlackCatFeliciaHardy (
+  BlackCatFeliciaHardy,
+  blackCatFeliciaHardy,
+) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
-import Marvel.Hp
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 import Marvel.Window
 
 blackCatFeliciaHardy :: AllyCard BlackCatFeliciaHardy
-blackCatFeliciaHardy = ally
-  BlackCatFeliciaHardy
-  Cards.blackCatFeliciaHardy
-  (Thw 1, 1)
-  (Atk 1, 0)
-  (HP 2)
+blackCatFeliciaHardy =
+  ally
+    BlackCatFeliciaHardy
+    Cards.blackCatFeliciaHardy
+    (Thw 1, 1)
+    (Atk 1, 0)
+    (HP 2)
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, FromJSON, ToJSON, Entity, IsTarget, IsSource, HasController)
 
 instance HasAbilities BlackCatFeliciaHardy where
   getAbilities a =
-    [ limitedWindowAbility
-        a
-        1
-        (PlayThis After)
-        ForcedResponse
-        OwnsThis
-        NoCost
-        (RunAbility (toTarget a) 1)
+    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
+        runAbility a 1
     ]
+
+relevantCards :: [Card] -> [PlayerCard]
+relevantCards = filter (cardMatch (CardWithResource Mental)) . onlyPlayerCards
 
 instance RunMessage BlackCatFeliciaHardy where
   runMessage msg a = case msg of
-    RanAbility target 1 _ | isTarget a target -> do
-      push $ IdentityMessage (allyController $ toAttrs a) $ DiscardFrom
-        FromDeck
-        2
-        (Just target)
+    RanAbility (isTarget a -> True) 1 _ -> do
+      push $ controllerMessage a $ DiscardFrom FromDeck 2 (Just $ toTarget a)
       pure a
-    WithDiscarded target _ (onlyPlayerCards -> cards) | isTarget a target -> do
-      pushAll
-        $ map (IdentityMessage (allyController $ toAttrs a) . AddToHand)
-        $ filter (cardMatch $ CardWithResource Mental) cards
+    WithDiscarded (isTarget a -> True) _ (relevantCards -> cards) -> do
+      pushAll $ map (controllerMessage a . AddToHand) cards
       pure a
     _ -> BlackCatFeliciaHardy <$> runMessage msg (toAttrs a)
