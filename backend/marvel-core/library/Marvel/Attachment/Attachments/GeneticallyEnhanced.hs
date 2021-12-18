@@ -23,16 +23,13 @@ geneticallyEnhanced :: AttachmentCard GeneticallyEnhanced
 geneticallyEnhanced = attachment GeneticallyEnhanced Cards.geneticallyEnhanced
 
 newtype GeneticallyEnhanced = GeneticallyEnhanced AttachmentAttrs
-  deriving anyclass IsAttachment
+  deriving anyclass (IsAttachment, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
 
 instance HasModifiersFor GeneticallyEnhanced where
   getModifiersFor _ (MinionTarget mid) (GeneticallyEnhanced a)
     | Just (EnemyMinionId mid) == attachmentEnemy a = pure [HitPointModifier 3]
   getModifiersFor _ _ _ = pure []
-
-instance HasAbilities GeneticallyEnhanced where
-  getAbilities _ = []
 
 instance RunMessage GeneticallyEnhanced where
   runMessage msg a@(GeneticallyEnhanced attrs) = case msg of

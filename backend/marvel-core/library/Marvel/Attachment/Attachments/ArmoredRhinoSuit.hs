@@ -36,7 +36,7 @@ instance HasAbilities ArmoredRhinoSuit where
           (W.VillainDamaged W.When $ VillainWithId vid)
           ForcedInterrupt
           NoCost
-          (RunAbility (toTarget a) 1)
+          $ runAbility a 1
       ]
     _ -> []
 
@@ -55,15 +55,14 @@ instance RunMessage ArmoredRhinoSuit where
       AttachmentDamaged n -> do
         when
           (attachmentDamage attrs + n >= 5)
-          (push $ RemoveFromPlay (toTarget attrs))
+          (push $ RemoveFromPlay (toTarget a))
         pure . ArmoredRhinoSuit $ attrs & damageL +~ n
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
-    RanAbility target 1 windows | isTarget attrs target -> do
-      let (vid, dmg) = getDetails windows
+    RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) -> do
       replaceMatchingMessage
-          [AttachmentMessage (toId attrs) (AttachmentDamaged dmg)]
+        [AttachmentMessage (toId a) (AttachmentDamaged dmg)]
         $ \case
-            VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
-            _ -> False
+          VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
+          _ -> False
       pure a
     _ -> ArmoredRhinoSuit <$> runMessage msg attrs

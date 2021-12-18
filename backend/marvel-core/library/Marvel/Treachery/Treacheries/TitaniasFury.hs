@@ -52,6 +52,7 @@ instance RunMessage TitaniasFury where
             TitaniasFury . (`With` meta) <$> runMessage
               msg
               (attrs & surgeL .~ True)
+        _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs
     MinionMessage minionId MinionAttacked -> do
       isTitania <- minionMatches (MinionIs Cards.titania) minionId
       let meta' = if isTitania then Meta True else meta

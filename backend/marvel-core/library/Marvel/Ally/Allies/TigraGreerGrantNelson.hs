@@ -8,20 +8,11 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 import Marvel.Window
 
 tigraGreerGrantNelson :: AllyCard TigraGreerGrantNelson
@@ -35,17 +26,16 @@ tigraGreerGrantNelson =
 
 newtype TigraGreerGrantNelson = TigraGreerGrantNelson AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 instance HasAbilities TigraGreerGrantNelson where
-  getAbilities (TigraGreerGrantNelson a) =
+  getAbilities a =
     [ limitedWindowAbility
         a
         1
-        ( EnemyDefeated After MinionEnemy $
-            AttackFromAlly $
-              AllyWithId
-                (toId a)
+        ( EnemyDefeated After MinionEnemy . AttackFromAlly $
+            AllyWithId
+              (toId a)
         )
         Response
         ( AllyExists $
@@ -58,5 +48,4 @@ instance HasAbilities TigraGreerGrantNelson where
     ]
 
 instance RunMessage TigraGreerGrantNelson where
-  runMessage msg (TigraGreerGrantNelson attrs) =
-    TigraGreerGrantNelson <$> runMessage msg attrs
+  runMessage msg a = TigraGreerGrantNelson <$> runMessage msg (toAttrs a)

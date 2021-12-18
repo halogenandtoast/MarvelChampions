@@ -45,7 +45,7 @@ instance HasAbilities SonicConverter where
             (EnemyAttackedAndDamaged (EnemyWithId enemyId) AnyCharacter)
             ForcedResponse
             NoCost
-          $ RunAbility (toTarget a) 1
+          $ runAbility a 1
       , ability
           a
           2
@@ -64,8 +64,7 @@ instance RunMessage SonicConverter where
         push $ VillainMessage villainId $ AttachedToVillain aid
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
-    RanAbility target 1 [EnemyAttacksAndDamages _ cid]
-      | isTarget attrs target -> do
+    RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] -> do
         case cid of
           IdentityCharacter ident ->
             push $ IdentityMessage ident IdentityStunned

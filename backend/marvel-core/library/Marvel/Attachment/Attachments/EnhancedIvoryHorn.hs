@@ -36,7 +36,7 @@ instance HasModifiersFor EnhancedIvoryHorn where
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities EnhancedIvoryHorn where
-  getAbilities (EnhancedIvoryHorn a) =
+  getAbilities a =
     [ ability
         a
         1

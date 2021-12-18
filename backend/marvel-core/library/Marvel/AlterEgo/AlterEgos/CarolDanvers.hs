@@ -22,7 +22,7 @@ carolDanvers = alterEgo
   []
 
 newtype CarolDanvers = CarolDanvers AlterEgoAttrs
-  deriving anyclass (IsAlterEgo, HasModifiersFor)
+  deriving anyclass (IsAlterEgo, HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
 
 instance HasAbilities CarolDanvers where

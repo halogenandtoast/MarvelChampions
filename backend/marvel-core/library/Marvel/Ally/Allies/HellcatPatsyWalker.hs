@@ -1,24 +1,15 @@
-module Marvel.Ally.Allies.HellcatPatsyWalker
-  ( hellcatPatsyWalker
-  , HellcatPatsyWalker(..)
-  ) where
+module Marvel.Ally.Allies.HellcatPatsyWalker (
+  hellcatPatsyWalker,
+  HellcatPatsyWalker (..),
+) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
-import Marvel.Hp
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Source
-import Marvel.Stats
-import Marvel.Target
 
 hellcatPatsyWalker :: AllyCard HellcatPatsyWalker
 hellcatPatsyWalker =
@@ -26,12 +17,11 @@ hellcatPatsyWalker =
 
 newtype HellcatPatsyWalker = HellcatPatsyWalker AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 instance HasAbilities HellcatPatsyWalker where
-  getAbilities (HellcatPatsyWalker a) =
+  getAbilities a =
     [ability a 1 Action OwnsThis NoCost $ ReturnTargetToHand $ toTarget a]
 
 instance RunMessage HellcatPatsyWalker where
-  runMessage msg (HellcatPatsyWalker attrs) =
-    HellcatPatsyWalker <$> runMessage msg attrs
+  runMessage msg a = HellcatPatsyWalker <$> runMessage msg (toAttrs a)

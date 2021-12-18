@@ -7,17 +7,10 @@ import Marvel.Prelude
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Ally.Allies
 import Marvel.Ally.Attrs
-import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
-import Marvel.Source
-import Marvel.Stats
 import Marvel.TH
 
 $(buildEntity "Ally")
