@@ -36,7 +36,7 @@ instance RunMessage Emergency where
             SchemeSideSchemeId sid -> SideSchemeMessage
               sid
               (SideSchemePlaceThreat (subtractNatural 1 n))
-        replaceMatchingMessage [newMsg] $ \case
+        replaceMatchingMessage (const [newMsg]) $ \case
           (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
             schemeId == SchemeMainSchemeId mid
           (SideSchemeMessage mid (SideSchemePlaceThreat _)) ->

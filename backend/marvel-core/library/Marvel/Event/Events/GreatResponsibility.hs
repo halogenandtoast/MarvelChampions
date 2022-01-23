@@ -30,7 +30,7 @@ instance RunMessage GreatResponsibility where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         replaceMatchingMessage
-            [IdentityMessage identityId $ IdentityDamaged (toSource attrs) (toDamage n FromAbility)]
+            (const [IdentityMessage identityId $ IdentityDamaged (toSource attrs) (toDamage n FromAbility)])
           $ \msg'' -> case schemeId of
               SchemeMainSchemeId mid -> case msg'' of
                 MainSchemeMessage mid' (MainSchemePlaceThreat _) -> mid == mid'

@@ -59,13 +59,13 @@ instance RunMessage WebbedUp where
       case upgradeAttachedEnemy a of
         Just enemyId -> do
           replaceMatchingMessage
-              [ RemoveFromPlay (toTarget a)
+              (const [ RemoveFromPlay (toTarget a)
               , case enemyId of
                 EnemyVillainId villainId ->
                   VillainMessage villainId (VillainStunned $ toSource a)
                 EnemyMinionId minionId ->
                   MinionMessage minionId (MinionStunned $ toSource a)
-              ]
+              ])
             $ \case
                 VillainMessage _ (VillainBeginAttack _) -> True
                 _ -> False

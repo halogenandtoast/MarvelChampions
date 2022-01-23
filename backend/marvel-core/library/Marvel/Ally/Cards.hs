@@ -16,6 +16,7 @@ allAllies =
     map
       (toCardCode &&& id)
       [ blackCatFeliciaHardy
+      , spiderWomanJessicaDrew
       , hellcatPatsyWalker
       , warMachineJamesRhodes
       , shuri
@@ -76,6 +77,10 @@ blackCatFeliciaHardy =
     2
     [HeroForHire]
     [Energy]
+
+spiderWomanJessicaDrew :: CardDef
+spiderWomanJessicaDrew =
+  identityAlly "01011" ("Spider-Woman" <:> "Jessica Drew") 3 [Avenger, Spy] [Wild]
 
 hellcatPatsyWalker :: CardDef
 hellcatPatsyWalker =

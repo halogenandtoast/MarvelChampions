@@ -32,7 +32,7 @@ instance RunMessage GetBehindMe where
         -> do
           villainId <- selectJust ActiveVillain
           replaceMatchingMessage
-              [VillainMessage villainId $ VillainAttacks identityId]
+              (const [VillainMessage villainId $ VillainAttacks identityId])
             $ \case
                 TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
                 _ -> False

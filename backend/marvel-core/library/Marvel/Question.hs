@@ -364,6 +364,7 @@ costMessages iid a = go (abilityCost a)
   go = \case
     NoCost -> []
     DamageCost n -> [IdentityMessage iid $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)]
+    HealCost n -> [IdentityMessage iid $ IdentityHealed n]
     DamageThisCost n -> case abilitySource a of
       AllySource ident -> [AllyMessage ident $ AllyDamaged (abilitySource a) (toDamage n FromAbility)]
       _ -> error "Unhandled"

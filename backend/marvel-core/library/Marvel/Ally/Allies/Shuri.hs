@@ -10,7 +10,6 @@ import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Message
 import Marvel.Window
 
 shuri :: AllyCard Shuri

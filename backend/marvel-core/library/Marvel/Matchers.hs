@@ -224,7 +224,7 @@ data MinionMatcher
 minionMatches :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
 minionMatches matcher ident = member ident <$> gameSelectMinion matcher
 
-data GameValueMatcher = AnyValue | GreaterThan GameValue
+data GameValueMatcher = AnyValue | GreaterThan GameValue | AtLeast GameValue
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -234,6 +234,9 @@ gameValueMatches matcher n = case matcher of
   GreaterThan v -> do
     value <- fromIntegral <$> fromGameValue v
     pure $ n > value
+  AtLeast v -> do
+    value <- fromIntegral <$> fromGameValue v
+    pure $ n >= value
 
 pattern CharacterWithAnyDamage :: CharacterMatcher
 pattern CharacterWithAnyDamage <-
