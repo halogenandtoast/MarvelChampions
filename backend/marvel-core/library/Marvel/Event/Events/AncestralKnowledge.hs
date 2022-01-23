@@ -20,7 +20,7 @@ ancestralKnowledge = event AncestralKnowledge Cards.ancestralKnowledge
 
 newtype AncestralKnowledge = AncestralKnowledge EventAttrs
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
 
 instance RunMessage AncestralKnowledge where
   runMessage msg e@(AncestralKnowledge attrs) = case msg of
@@ -32,7 +32,7 @@ instance RunMessage AncestralKnowledge where
           )
         pure e
       _ -> AncestralKnowledge <$> runMessage msg attrs
-    WithChosen target _ (onlyPlayerCards -> cards) | isTarget attrs target -> do
+    WithChosen (isTarget e -> True) _ (onlyPlayerCards -> cards) -> do
       push $ IdentityMessage
         (eventController attrs)
         (ShuffleIntoIdentityDeck cards)
