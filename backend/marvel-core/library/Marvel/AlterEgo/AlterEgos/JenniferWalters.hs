@@ -62,7 +62,7 @@ instance RunMessage JenniferWalters where
               MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
             SchemeSideSchemeId sid ->
               SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
-      replaceMatchingMessage [newMsg] $ \case
+      replaceMatchingMessage (const [newMsg]) $ \case
         (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
           schemeId == SchemeMainSchemeId mid
         (SideSchemeMessage mid (SideSchemePlaceThreat _)) ->

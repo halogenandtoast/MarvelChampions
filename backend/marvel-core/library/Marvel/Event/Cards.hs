@@ -21,6 +21,7 @@ allEvents = fromList $ map
   [ backflip
   , enhancedSpiderSense
   , swingingWebKick
+  , photonicBlast
   , gammaSlam
   , groundStomp
   , legalPractice
@@ -127,6 +128,18 @@ swingingWebKick = (identityEvent
                     HeroAction
                     [Aerial, Attack, Superpower]
                     [Mental]
+                  )
+  { cdAbilitySubType = Just Ability.Attack
+  }
+
+photonicBlast :: CardDef
+photonicBlast = (identityEvent
+                    "01013"
+                    "Photonic Blast"
+                    3
+                    HeroAction
+                    [Attack, Superpower]
+                    [Physical]
                   )
   { cdAbilitySubType = Just Ability.Attack
   }

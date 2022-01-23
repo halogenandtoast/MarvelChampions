@@ -60,7 +60,7 @@ instance RunMessage ArmoredRhinoSuit where
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
     RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) -> do
       replaceMatchingMessage
-        [AttachmentMessage (toId a) (AttachmentDamaged dmg)]
+        (const [AttachmentMessage (toId a) (AttachmentDamaged dmg)])
         $ \case
           VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
           _ -> False

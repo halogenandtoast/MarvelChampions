@@ -59,7 +59,7 @@ instance RunMessage Charge where
       case attachmentEnemy attrs of
         Just (EnemyVillainId vid) -> do
           replaceMatchingMessage
-            [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a]
+            (const [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a])
             $ \case
               VillainMessage vid' VillainEndAttack -> vid == vid'
               _ -> False

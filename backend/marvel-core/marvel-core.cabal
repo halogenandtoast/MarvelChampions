@@ -28,6 +28,7 @@ library
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Allies.NickFury
       Marvel.Ally.Allies.Shuri
+      Marvel.Ally.Allies.SpiderWomanJessicaDrew
       Marvel.Ally.Allies.TigraGreerGrantNelson
       Marvel.Ally.Allies.Vision
       Marvel.Ally.Allies.WarMachineJamesRhodes
@@ -97,6 +98,7 @@ library
       Marvel.Event.Events.LegalPractice
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.PhotonicBlast
       Marvel.Event.Events.RelentlessAssault
       Marvel.Event.Events.RepulsorBlast
       Marvel.Event.Events.SplitPersonality
@@ -239,7 +241,9 @@ library
       Marvel.Upgrade.Upgrades
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
+      Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
       Marvel.Upgrade.Upgrades.CombatTraining
+      Marvel.Upgrade.Upgrades.CosmicFlight
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition

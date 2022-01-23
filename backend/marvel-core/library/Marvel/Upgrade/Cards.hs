@@ -19,6 +19,8 @@ allUpgrades =
       [ spiderTracer
       , webShooter
       , webbedUp
+      , captainMarvelsHelmet
+      , cosmicFlight
       , focusedRage
       , superhumanStrength
       , arcReactor
@@ -93,6 +95,14 @@ webbedUp =
   (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
     { cdCriteria = InHeroForm
     }
+
+captainMarvelsHelmet :: CardDef
+captainMarvelsHelmet =
+  unique $ identityUpgrade "01016" "Captain Marvel's Helmet" 2 [Armor, Tech] [Physical]
+
+cosmicFlight :: CardDef
+cosmicFlight =
+  identityUpgrade "01017" "Cosmic Flight" 2 [Superpower] [Energy]
 
 focusedRage :: CardDef
 focusedRage = identityUpgrade "01027" "Focused Rage" 3 [Skill] [Energy]
