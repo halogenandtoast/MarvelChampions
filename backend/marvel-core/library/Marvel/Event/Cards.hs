@@ -134,10 +134,16 @@ swingingWebKick = (identityEvent
   }
 
 crisisInterdiction :: CardDef
-crisisInterdiction =
-  (identityEvent "01012" "Crisis Interdiction" 2 HeroAction [Thwart] [Energy])
-    { cdAbilitySubType = Just Ability.Thwart
-    }
+crisisInterdiction = (identityEvent
+                    "01012"
+                    "Crisis Interdiction"
+                    2
+                    HeroAction
+                    [Thwart]
+                    [Energy]
+                  )
+  { cdAbilitySubType = Just Ability.Thwart
+  }
 
 photonicBlast :: CardDef
 photonicBlast = (identityEvent

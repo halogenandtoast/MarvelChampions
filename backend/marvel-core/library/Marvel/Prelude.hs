@@ -113,7 +113,7 @@ instance (S.Show a, S.Show b) => S.Show (a `With` b) where
   show (With a b) = show a <> " WITH " <> show b
 
 removeEach :: Eq a => [a] -> [(a, [a])]
-removeEach xs = zip xs (map (flip List.delete xs) xs)
+removeEach xs = zip xs (map (`List.delete` xs) xs)
 
 toFst :: (a -> b) -> a -> (b, a)
 toFst f a = (f a, a)
