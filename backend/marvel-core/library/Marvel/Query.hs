@@ -9,22 +9,8 @@ import Marvel.Game.Source
 import Marvel.Id
 import {-# SOURCE #-} Marvel.Matchers
 
-type family QueryElement a where
-  QueryElement IdentityMatcher = IdentityId
-  QueryElement EnemyMatcher = EnemyId
-  QueryElement VillainMatcher = VillainId
-  QueryElement MinionMatcher = MinionId
-  QueryElement AllyMatcher = AllyId
-  QueryElement SupportMatcher = SupportId
-  QueryElement SchemeMatcher = SchemeId
-  QueryElement SideSchemeMatcher = SideSchemeId
-  QueryElement UpgradeMatcher = UpgradeId
-  QueryElement CharacterMatcher = CharacterId
-  QueryElement ExtendedCardMatcher = PlayerCard
-  QueryElement AttachmentMatcher = AttachmentId
-  QueryElement EncounterCardMatcher = EncounterCard
-
 class Query a where
+  type QueryElement a
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
 
 selectList :: (MonadGame env m, Query a) => a -> m [QueryElement a]
@@ -54,40 +40,53 @@ selectJust matcher = do
     Just x -> pure x
 
 instance Query IdentityMatcher where
+  type QueryElement IdentityMatcher = IdentityId
   select = gameSelectIdentity
 
 instance Query EnemyMatcher where
+  type QueryElement EnemyMatcher = EnemyId
   select = gameSelectEnemy
 
 instance Query VillainMatcher where
+  type QueryElement VillainMatcher = VillainId
   select = gameSelectVillain
 
 instance Query SchemeMatcher where
+  type QueryElement SchemeMatcher = SchemeId
   select = gameSelectScheme
 
 instance Query AllyMatcher where
+  type QueryElement AllyMatcher = AllyId
   select = gameSelectAlly
 
 instance Query SupportMatcher where
+  type QueryElement SupportMatcher = SupportId
   select = gameSelectSupport
 
 instance Query MinionMatcher where
+  type QueryElement MinionMatcher = MinionId
   select = gameSelectMinion
 
 instance Query UpgradeMatcher where
+  type QueryElement UpgradeMatcher = UpgradeId
   select = gameSelectUpgrade
 
 instance Query CharacterMatcher where
+  type QueryElement CharacterMatcher = CharacterId
   select = gameSelectCharacter
 
 instance Query ExtendedCardMatcher where
+  type QueryElement ExtendedCardMatcher = PlayerCard
   select = gameSelectExtendedCard
 
 instance Query AttachmentMatcher where
+  type QueryElement AttachmentMatcher = AttachmentId
   select = gameSelectAttachment
 
 instance Query SideSchemeMatcher where
+  type QueryElement SideSchemeMatcher = SideSchemeId
   select = gameSelectSideScheme
 
 instance Query EncounterCardMatcher where
+  type QueryElement EncounterCardMatcher = EncounterCard
   select = gameSelectEncounterCard

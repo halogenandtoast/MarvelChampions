@@ -132,7 +132,7 @@ selectMap
   => (a -> b)
   -> SqlQuery (SqlExpr a)
   -> SqlPersistT m [b]
-selectMap f = fmap (map f) . select
+selectMap f q = map f <$> select q
 
 data CreateGamePost = CreateGamePost
   { deckIds :: [Maybe MarvelDeckId]

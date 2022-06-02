@@ -84,6 +84,7 @@ library
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.ChaseThemDown
       Marvel.Event.Events.CounterPunch
+      Marvel.Event.Events.CrisisInterdiction
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.FirstAid
