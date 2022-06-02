@@ -28,7 +28,7 @@ import Control.Lens.TH as X
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
 import Control.Monad.Extra as X (concatMapM)
 import Control.Monad.Random as X (MonadRandom, Random, getRandom)
-import Data.Aeson as X
+import Data.Aeson as X hiding (Key)
 import Data.Traversable as X (for)
 import Data.UUID as X (UUID)
 import Data.Vector as X (Vector)
@@ -39,7 +39,7 @@ import Relude.Extra.Map as X
 import Data.Aeson.Casing (camelCase)
 import Data.Aeson.Text
 import Data.Char qualified as C
-import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder
@@ -91,7 +91,7 @@ instance (Eq a, Eq b) => Eq (With a b) where
 
 instance (ToJSON a, ToJSON b) => ToJSON (a `With` b) where
   toJSON (a `With` b) = case (toJSON a, toJSON b) of
-    (Object o, Object m) -> Object $ HashMap.union m o
+    (Object o, Object m) -> Object $ KeyMap.union m o
     (a', b') -> metadataError a' b'
    where
     metadataError a' b' =

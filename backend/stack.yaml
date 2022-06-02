@@ -3,7 +3,7 @@ require-stack-version: ">= 2.3.1"
 concurrent-tests: false
 
 # latest fpco/stack-build images use GHC 8.10.6 so we need to pin
-resolver: lts-18.18
+resolver: lts-19.9
 
 ghc-options:
   "$locals":

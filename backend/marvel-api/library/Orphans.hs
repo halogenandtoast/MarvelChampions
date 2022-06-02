@@ -5,8 +5,8 @@
 module Orphans where
 
 import Control.Error.Util (hush)
-import Data.Aeson
-import Data.Aeson.Types
+import Data.Aeson hiding (Key)
+import Data.Aeson.Types hiding (Key)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Hashable (Hashable(hash))
 import qualified Data.Text as T
