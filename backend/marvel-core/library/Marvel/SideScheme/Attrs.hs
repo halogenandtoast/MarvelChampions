@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.SideScheme.Attrs where
 
 import Marvel.Prelude
@@ -9,12 +7,13 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Window
 
-class IsSideScheme a
+class (HasModifiersFor a, Show a, Eq a, ToJSON a, FromJSON a, Typeable a, RunMessage a, Entity a, EntityAttrs a ~ SideSchemeAttrs, EntityId a ~ SideSchemeId) => IsSideScheme a
 
 type SideSchemeCard a = CardBuilder SideSchemeId a
 
@@ -29,7 +28,14 @@ data SideSchemeAttrs = SideSchemeAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith (suffixedWithFields "sideScheme") ''SideSchemeAttrs
+threatL :: Lens' SideSchemeAttrs Natural
+threatL = lens sideSchemeThreat $ \m x -> m { sideSchemeThreat = x }
+
+crisisL :: Lens' SideSchemeAttrs Bool
+crisisL = lens sideSchemeCrisis $ \m x -> m { sideSchemeCrisis = x }
+
+heldCardsL :: Lens' SideSchemeAttrs [PlayerCard]
+heldCardsL = lens sideSchemeHeldCards $ \m x -> m { sideSchemeHeldCards = x }
 
 instance HasCardCode SideSchemeAttrs where
   toCardCode = toCardCode . sideSchemeCardDef

@@ -7,12 +7,13 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsEvent a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ EventAttrs, EntityId a ~ EventId, HasModifiersFor a, RunMessage a) => IsEvent a
 
 type EventCard a = CardBuilder (IdentityId, EventId) a
 

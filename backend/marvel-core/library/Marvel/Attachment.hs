@@ -1,9 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.Attachment where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Ability
 import Marvel.Attachment.Attachments
 import Marvel.Attachment.Attrs
@@ -13,31 +12,75 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
-import Marvel.TH
 import Marvel.Target
+import Text.Show qualified
 
-$(buildEntity "Attachment")
+data Attachment = forall a. IsAttachment a => Attachment a
 
-allAttachments :: HashMap CardCode (AttachmentId -> Attachment)
+instance Show Attachment where
+  show (Attachment a) = show a
+
+instance ToJSON Attachment where
+  toJSON (Attachment a) = toJSON a
+
+instance Eq Attachment where
+  (Attachment (a :: a)) == (Attachment (b :: b)) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+instance FromJSON Attachment where
+  parseJSON v = flip (withObject "Attachment") v $ \o -> do
+    cCode :: CardCode <- o .: "cardCode"
+    withAttachmentCardCode cCode $ \(_ :: AttachmentCard a) -> Attachment <$> parseJSON @a v
+
+withAttachmentCardCode
+  :: CardCode
+  -> (forall a. IsAttachment a => AttachmentCard a -> r)
+  -> r
+withAttachmentCardCode cCode f =
+  case lookup cCode allAttachments of
+    Nothing -> error "invalid attachment"
+    Just (SomeAttachmentCard a) -> f a
+
+data SomeAttachmentCard = forall a. IsAttachment a => SomeAttachmentCard (AttachmentCard a)
+
+liftAttachmentCard :: (forall a . AttachmentCard a -> b) -> SomeAttachmentCard -> b
+liftAttachmentCard f (SomeAttachmentCard a) = f a
+
+someAttachmentCardCode :: SomeAttachmentCard -> CardCode
+someAttachmentCardCode = liftAttachmentCard cbCardCode
+
+allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
   fromList $
     map
-      (toCardCode &&& cbCardBuilder)
-      $(buildEntityLookupList "Attachment")
+      (toFst someAttachmentCardCode)
+      [ SomeAttachmentCard armoredRhinoSuit
+      , SomeAttachmentCard charge
+      , SomeAttachmentCard enhancedIvoryHorn
+      , SomeAttachmentCard sonicConverter
+      , SomeAttachmentCard solidSoundBody
+      -- , SomeAttachmentCard programTransmitter
+      -- , SomeAttachmentCard upgradedDrones
+      -- , SomeAttachmentCard vibraniumArmor
+      -- , SomeAttachmentCard concussionBlasters
+      , SomeAttachmentCard geneticallyEnhanced
+      -- , SomeAttachmentCard biomechanicalUpgrades
+      ]
 
-lookupAttachment :: CardCode -> (AttachmentId -> Attachment)
+lookupAttachment :: CardCode -> AttachmentId -> Attachment
 lookupAttachment cardCode = case lookup cardCode allAttachments of
-  Just f -> f
+  Just (SomeAttachmentCard a) -> Attachment <$> cbCardBuilder a
   Nothing -> error $ "Invalid card code for attachment " <> show cardCode
 
 instance Entity Attachment where
   type EntityId Attachment = AttachmentId
   type EntityAttrs Attachment = AttachmentAttrs
   toId = toId . toAttrs
-  toAttrs = genericToAttrs
+  toAttrs (Attachment a) = toAttrs a
 
 instance RunMessage Attachment where
-  runMessage = genericRunMessage
+  runMessage msg (Attachment a) = Attachment <$> runMessage msg a
 
 instance IsSource Attachment where
   toSource = AttachmentSource . toId
@@ -46,10 +89,10 @@ instance IsTarget Attachment where
   toTarget = AttachmentTarget . toId
 
 instance HasAbilities Attachment where
-  getAbilities = genericGetAbilities
+  getAbilities (Attachment a) = getAbilities a
 
 instance HasModifiersFor Attachment where
-  getModifiersFor = genericGetModifiersFor
+  getModifiersFor source target (Attachment a) = getModifiersFor source target a
 
 instance IsCard Attachment where
   toCard = toCard . toAttrs

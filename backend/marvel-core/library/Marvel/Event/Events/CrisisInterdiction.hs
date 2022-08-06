@@ -10,7 +10,6 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Event.Attrs
@@ -26,7 +25,7 @@ newtype CrisisInterdiction = CrisisInterdiction EventAttrs
 instance RunMessage CrisisInterdiction where
   runMessage msg e@(CrisisInterdiction attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent identityId _ _ -> do
+      PlayedEvent _identityId _ _ -> do
         pure e
       _ -> CrisisInterdiction <$> runMessage msg attrs
     _ -> CrisisInterdiction <$> runMessage msg attrs

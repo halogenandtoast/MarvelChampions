@@ -3,6 +3,7 @@ module Marvel.Effect.Attrs where
 import Marvel.Prelude
 
 import Marvel.Card.Builder
+import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Game.Source
@@ -15,7 +16,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsEffect a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ EffectAttrs, EntityId a ~ EffectId, RunMessage a) => IsEffect a
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
@@ -25,6 +26,7 @@ data EffectTiming = DisableAtEndOfPhase | DisableAtEndOfRound
 
 data EffectAttrs = EffectAttrs
   { effectId :: EffectId
+  , effectCardCode :: CardCode
   , effectSource :: Source
   , effectMatcher :: EntityMatcher
   , effectModifiers :: [Modifier]
@@ -60,6 +62,7 @@ effect f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \(source, matcher, eid) -> f $ EffectAttrs
     { effectId = eid
+    , effectCardCode = cdCardCode cardDef
     , effectSource = source
     , effectMatcher = matcher
     , effectModifiers = mempty

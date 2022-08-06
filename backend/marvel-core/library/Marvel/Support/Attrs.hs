@@ -1,19 +1,20 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Support.Attrs where
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsSupport a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ SupportAttrs, EntityId a ~ SupportId, HasModifiersFor a, HasAbilities a, RunMessage a) => IsSupport a
 
 type SupportCard a = CardBuilder (IdentityId, SupportId) a
 
@@ -28,7 +29,14 @@ data SupportAttrs = SupportAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''SupportAttrs
+exhaustedL :: Lens' SupportAttrs Bool
+exhaustedL = lens supportExhausted $ \m x -> m { supportExhausted = x }
+
+usesL :: Lens' SupportAttrs Natural
+usesL = lens supportUses $ \m x -> m { supportUses = x }
+
+discardIfNoUsesL :: Lens' SupportAttrs Bool
+discardIfNoUsesL = lens supportDiscardIfNoUses $ \m x -> m { supportDiscardIfNoUses = x }
 
 instance HasCardCode SupportAttrs where
   toCardCode = toCardCode . supportCardDef

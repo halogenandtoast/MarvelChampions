@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Ally.Attrs (module Marvel.Ally.Attrs, module X) where
 
 import Marvel.Prelude
@@ -15,6 +14,7 @@ import Marvel.Stats as X
 import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
+import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Damage
 import Marvel.Game.Source
@@ -23,7 +23,7 @@ import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Query
 import Marvel.Window qualified as W
 
-class IsAlly a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AllyAttrs, EntityId a ~ AllyId, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlly a
 
 type AllyCard a = CardBuilder (IdentityId, AllyId) a
 
@@ -47,7 +47,26 @@ data AllyAttrs = AllyAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''AllyAttrs
+upgradesL :: Lens' AllyAttrs (HashSet UpgradeId)
+upgradesL = lens allyUpgrades $ \m x -> m { allyUpgrades = x }
+
+countersL :: Lens' AllyAttrs Natural
+countersL = lens allyCounters $ \m x -> m { allyCounters = x }
+
+damageL :: Lens' AllyAttrs Natural
+damageL = lens allyDamage $ \m x -> m { allyDamage = x }
+
+toughL :: Lens' AllyAttrs Bool
+toughL = lens allyTough $ \m x -> m { allyTough = x }
+
+confusedL :: Lens' AllyAttrs Bool
+confusedL = lens allyConfused $ \m x -> m { allyConfused = x }
+
+stunnedL :: Lens' AllyAttrs Bool
+stunnedL = lens allyStunned $ \m x -> m { allyStunned = x }
+
+exhaustedL :: Lens' AllyAttrs Bool
+exhaustedL = lens allyExhausted $ \m x -> m { allyExhausted = x }
 
 instance HasController AllyAttrs where
   controller = allyController

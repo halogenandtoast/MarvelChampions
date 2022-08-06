@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.MainScheme.Attrs where
 
 import Marvel.Prelude
@@ -15,7 +13,7 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window qualified as W
 
-class IsMainScheme a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ MainSchemeAttrs, EntityId a ~ MainSchemeId, RunMessage a) => IsMainScheme a
 
 type MainSchemeCard a = CardBuilder MainSchemeId a
 
@@ -32,7 +30,8 @@ data MainSchemeAttrs = MainSchemeAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith (suffixedWithFields "mainScheme") ''MainSchemeAttrs
+threatL :: Lens' MainSchemeAttrs Natural
+threatL = lens mainSchemeThreat $ \m x -> m { mainSchemeThreat = x }
 
 instance HasCardCode MainSchemeAttrs where
   toCardCode = toCardCode . mainSchemeCardDef

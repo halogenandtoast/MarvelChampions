@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.Villain.Attrs (
   module Marvel.Villain.Attrs,
   module X,
@@ -8,6 +6,7 @@ module Marvel.Villain.Attrs (
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Boost
 import Marvel.Card
@@ -29,7 +28,7 @@ import Marvel.Stats
 import Marvel.Target
 import Marvel.Window qualified as W
 
-class IsVillain a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ VillainAttrs, EntityId a ~ VillainId, RunMessage a, HasAbilities a) => IsVillain a
 
 type VillainCard a = CardBuilder VillainId a
 
@@ -97,7 +96,40 @@ data VillainAttrs = VillainAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''VillainAttrs
+-- makeLensesWith suffixedFields ''VillainAttrs
+
+stageL :: Lens' VillainAttrs Natural
+stageL = lens villainStage $ \m x -> m { villainStage = x }
+
+hpL :: Lens' VillainAttrs (HP Int)
+hpL = lens villainHp $ \m x -> m { villainHp = x }
+
+maxHpL :: Lens' VillainAttrs (HP Int)
+maxHpL = lens villainMaxHp $ \m x -> m { villainMaxHp = x }
+
+upgradesL :: Lens' VillainAttrs (HashSet UpgradeId)
+upgradesL = lens villainUpgrades $ \m x -> m { villainUpgrades = x }
+
+attachmentsL :: Lens' VillainAttrs (HashSet AttachmentId)
+attachmentsL = lens villainAttachments $ \m x -> m { villainAttachments = x }
+
+toughL :: Lens' VillainAttrs Bool
+toughL = lens villainTough $ \m x -> m { villainTough = x }
+
+stunnedL :: Lens' VillainAttrs Bool
+stunnedL = lens villainStunned $ \m x -> m { villainStunned = x }
+
+confusedL :: Lens' VillainAttrs Bool
+confusedL = lens villainConfused $ \m x -> m { villainConfused = x }
+
+attackingL :: Lens' VillainAttrs (Maybe Attack)
+attackingL = lens villainAttacking $ \m x -> m { villainAttacking = x }
+
+boostL :: Lens' VillainAttrs Natural
+boostL = lens villainBoost $ \m x -> m { villainBoost = x }
+
+boostCardsL :: Lens' VillainAttrs [EncounterCard]
+boostCardsL = lens villainBoostCards $ \m x -> m { villainBoostCards = x }
 
 instance Entity VillainAttrs where
   type EntityId VillainAttrs = VillainId

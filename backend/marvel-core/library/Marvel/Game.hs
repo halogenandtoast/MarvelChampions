@@ -33,7 +33,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
@@ -1189,7 +1189,7 @@ gameSelectScheme = \case
       HashSet.fromList $
         map (SchemeMainSchemeId . toId) mainSchemes
           <> map (SchemeSideSchemeId . toId) sideSchemes
-  MainScheme -> do
+  Matchers.MainScheme -> do
     mainSchemeIds <-
       map (SchemeMainSchemeId . toId) . toList <$> getsGame gameMainSchemes
     pure $ HashSet.fromList mainSchemeIds

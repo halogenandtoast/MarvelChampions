@@ -114,3 +114,6 @@ instance (S.Show a, S.Show b) => S.Show (a `With` b) where
 
 removeEach :: Eq a => [a] -> [(a, [a])]
 removeEach xs = zip xs (map (flip List.delete xs) xs)
+
+toFst :: (a -> b) -> a -> (b, a)
+toFst f a = (f a, a)

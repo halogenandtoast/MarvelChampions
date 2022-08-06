@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Identity
   ( module Marvel.Identity
   ) where
@@ -71,7 +70,62 @@ data PlayerIdentity = PlayerIdentity
   }
   deriving stock (Show, Eq, Generic)
 
-makeLensesWith (suffixedWithFields "playerIdentity") ''PlayerIdentity
+passedL :: Lens' PlayerIdentity Bool
+passedL = lens playerIdentityPassed $ \m x -> m { playerIdentityPassed = x }
+
+exhaustedL :: Lens' PlayerIdentity Bool
+exhaustedL = lens playerIdentityExhausted $ \m x -> m { playerIdentityExhausted = x }
+
+encounterCardsL :: Lens' PlayerIdentity [EncounterCard]
+encounterCardsL = lens playerIdentityEncounterCards $ \m x -> m { playerIdentityEncounterCards = x }
+
+damageL :: Lens' PlayerIdentity Natural
+damageL = lens playerIdentityDamage $ \m x -> m { playerIdentityDamage = x }
+
+sideL :: Lens' PlayerIdentity Side
+sideL = lens playerIdentitySide $ \m x -> m { playerIdentitySide = x }
+
+sidesL :: Lens' PlayerIdentity (HashMap Side PlayerIdentitySide)
+sidesL = lens playerIdentitySides $ \m x -> m { playerIdentitySides = x }
+
+alliesL :: Lens' PlayerIdentity (HashSet AllyId)
+alliesL = lens playerIdentityAllies $ \m x -> m { playerIdentityAllies = x }
+
+minionsL :: Lens' PlayerIdentity (HashSet MinionId)
+minionsL = lens playerIdentityMinions $ \m x -> m { playerIdentityMinions = x }
+
+upgradesL :: Lens' PlayerIdentity (HashSet UpgradeId)
+upgradesL = lens playerIdentityUpgrades $ \m x -> m { playerIdentityUpgrades = x }
+
+supportsL :: Lens' PlayerIdentity (HashSet SupportId)
+supportsL = lens playerIdentitySupports $ \m x -> m { playerIdentitySupports = x }
+
+deckL :: Lens' PlayerIdentity Deck
+deckL = lens playerIdentityDeck $ \m x -> m { playerIdentityDeck = x }
+
+handL :: Lens' PlayerIdentity Hand
+handL = lens playerIdentityHand $ \m x -> m { playerIdentityHand = x }
+
+discardL :: Lens' PlayerIdentity Discard
+discardL = lens playerIdentityDiscard $ \m x -> m { playerIdentityDiscard = x }
+
+stunnedL :: Lens' PlayerIdentity Bool
+stunnedL = lens playerIdentityStunned $ \m x -> m { playerIdentityStunned = x }
+
+confusedL :: Lens' PlayerIdentity Bool
+confusedL = lens playerIdentityConfused $ \m x -> m { playerIdentityConfused = x }
+
+toughL :: Lens' PlayerIdentity Bool
+toughL = lens playerIdentityTough $ \m x -> m { playerIdentityTough = x }
+
+defeatedL :: Lens' PlayerIdentity Bool
+defeatedL = lens playerIdentityDefeated $ \m x -> m { playerIdentityDefeated = x }
+
+defendedL :: Lens' PlayerIdentity Bool
+defendedL = lens playerIdentityDefended $ \m x -> m { playerIdentityDefended = x }
+
+damageReductionL :: Lens' PlayerIdentity Natural
+damageReductionL = lens playerIdentityDamageReduction $ \m x -> m { playerIdentityDamageReduction = x }
 
 identityIsStunned :: PlayerIdentity -> Bool
 identityIsStunned = playerIdentityStunned
@@ -190,11 +244,11 @@ setDeck deck player = player & deckL .~ deck'
 
 lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupAlterEgo cardDef ident =
-  AlterEgoSide <$> (lookup (toCardCode cardDef) allAlterEgos <*> Just ident)
+  Just . AlterEgoSide $ lookupAlterEgoByCardCode (toCardCode cardDef) ident
 
 lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
-  HeroSide <$> (lookup (toCardCode cardDef) allHeroes <*> Just ident)
+  Just . HeroSide $ lookupHeroByCardCode (toCardCode cardDef) ident
 
 takeTurn :: MonadGame env m => PlayerIdentity -> m ()
 takeTurn attrs =

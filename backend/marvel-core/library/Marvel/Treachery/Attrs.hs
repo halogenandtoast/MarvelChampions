@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Treachery.Attrs where
 
 import Marvel.Prelude
@@ -11,7 +10,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsTreachery a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ TreacheryAttrs, EntityId a ~ TreacheryId, RunMessage a) => IsTreachery a
 
 type TreacheryCard a = CardBuilder TreacheryId a
 
@@ -25,7 +24,11 @@ data TreacheryAttrs = TreacheryAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''TreacheryAttrs
+surgeL :: Lens' TreacheryAttrs Bool
+surgeL = lens treacherySurge $ \m x -> m { treacherySurge = x }
+
+resolverL :: Lens' TreacheryAttrs (Maybe IdentityId)
+resolverL = lens treacheryResolver $ \m x -> m { treacheryResolver = x }
 
 instance HasCardCode TreacheryAttrs where
   toCardCode = toCardCode . treacheryCardDef
