@@ -31,9 +31,9 @@ instance ToJSON Hero where
   toJSON (Hero a) = toJSON a
 
 instance FromJSON Hero where
-  parseJSON v = flip (withObject "Hero") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withHeroCardCode cCode $ \(_ :: HeroCard a) -> Hero <$> parseJSON @a v
+  parseJSON = withObject "Hero" $ \o -> do
+    cardDef <- o .: "heroCardDef"
+    withHeroCardCode (cdCardCode cardDef) $ \(_ :: HeroCard a) -> Hero <$> parseJSON @a (Object o)
 
 withHeroCardCode
   :: CardCode

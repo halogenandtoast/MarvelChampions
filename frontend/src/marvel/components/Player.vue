@@ -25,9 +25,9 @@ const playerCardCode = computed(() => {
   const side = props.player.sides[props.player.side]
   switch(side.tag) {
     case 'AlterEgoSide':
-      return side.contents.contents.alterEgoCardDef.cdCardCode
+      return side.contents.alterEgoCardDef.cdCardCode
     case 'HeroSide':
-      return side.contents.contents.heroCardDef.cdCardCode
+      return side.contents.heroCardDef.cdCardCode
     default:
       return null
   }
@@ -116,7 +116,7 @@ const toggleDebug = inject('toggleDebug')
   <div class="table">
     <Ally
       v-for="ally in allies"
-      :key="ally.contents.allyId"
+      :key="ally.allyId"
       :ally="ally"
       :game="game"
       :identityId="identityId"
@@ -124,7 +124,7 @@ const toggleDebug = inject('toggleDebug')
     />
     <Support
       v-for="support in supports"
-      :key="support.contents.supportId"
+      :key="support.supportId"
       :support="support"
       :game="game"
       :identityId="identityId"
@@ -132,7 +132,7 @@ const toggleDebug = inject('toggleDebug')
     />
     <Upgrade
       v-for="upgrade in upgrades"
-      :key="upgrade.contents.upgradeId"
+      :key="upgrade.upgradeId"
       :upgrade="upgrade"
       :game="game"
       :identityId="identityId"
@@ -140,7 +140,7 @@ const toggleDebug = inject('toggleDebug')
     />
     <Minion
       v-for="minion in minions"
-      :key="minion.contents.minionId"
+      :key="minion.minionId"
       :minion="minion"
       :game="game"
       :identityId="identityId"

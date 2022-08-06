@@ -82,10 +82,6 @@ export interface Game {
   focusedCards: Card[]
 }
 
-export interface Scenario {
-  contents: ScenarioContents
-}
-
 export interface CardPlayerCard {
   tag: 'PlayerCard'
   contents: PlayerCard
@@ -121,22 +117,17 @@ export const cardDecoder = JsonDecoder.oneOf<Card>([
     }, 'CardEncounterCard')
   ], 'Card')
 
-export interface ScenarioContents {
+export interface Scenario {
   scenarioId: string
   scenarioAccelerationTokens: number
   scenarioDiscard: EncounterCard[]
 }
 
-export const scenarioContentsDecoder = JsonDecoder.object<ScenarioContents>(
+export const scenarioDecoder = JsonDecoder.object<Scenario>(
   {
     scenarioId: JsonDecoder.string,
     scenarioAccelerationTokens: JsonDecoder.number,
     scenarioDiscard: JsonDecoder.array(encounterCardDecoder, 'EncounterCard[]'),
-  }, 'ScenarioContents')
-
-export const scenarioDecoder = JsonDecoder.object<Scenario>(
-  {
-    contents: scenarioContentsDecoder
   }, 'Scenario')
 
 export const gameDecoder = JsonDecoder.object<Game>(

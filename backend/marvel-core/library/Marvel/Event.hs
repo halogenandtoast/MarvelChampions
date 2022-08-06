@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Event.Attrs
 import Marvel.Event.Events
@@ -28,8 +29,8 @@ instance Eq Event where
 
 instance FromJSON Event where
   parseJSON v = flip (withObject "Event") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withEventCardCode cCode $ \(_ :: EventCard a) -> Event <$> parseJSON @a v
+    cardDef <- o .: "eventCardDef"
+    withEventCardCode (cdCardCode cardDef) $ \(_ :: EventCard a) -> Event <$> parseJSON @a v
 
 withEventCardCode
   :: CardCode

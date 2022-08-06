@@ -29,8 +29,8 @@ instance Eq Minion where
 
 instance FromJSON Minion where
   parseJSON v = flip (withObject "Minion") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withMinionCardCode cCode $ \(_ :: MinionCard a) -> Minion <$> parseJSON @a v
+    cardDef <- o .: "minionCardDef"
+    withMinionCardCode (cdCardCode cardDef) $ \(_ :: MinionCard a) -> Minion <$> parseJSON @a v
 
 withMinionCardCode
   :: CardCode

@@ -30,8 +30,8 @@ instance Eq SideScheme where
 
 instance FromJSON SideScheme where
   parseJSON v = flip (withObject "SideScheme") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withSideSchemeCardCode cCode $ \(_ :: SideSchemeCard a) -> SideScheme <$> parseJSON @a v
+    cardDef <- o .: "sideSchemeCardDef"
+    withSideSchemeCardCode (cdCardCode cardDef) $ \(_ :: SideSchemeCard a) -> SideScheme <$> parseJSON @a v
 
 withSideSchemeCardCode
   :: CardCode

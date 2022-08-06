@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const card = computed(() => ({ cardId: props.minion.contents.minionId, cardDef: props.minion.contents.minionCardDef }))
+const card = computed(() => ({ cardId: props.minion.minionId, cardDef: props.minion.minionCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
 const activeAbility = computed(() => {
@@ -30,12 +30,12 @@ const activeAbility = computed(() => {
 
       const { contents } = choice.target
         if (typeof contents === "string") {
-          return contents == props.minion.contents.minionId
+          return contents == props.minion.minionId
         }
 
         switch (contents.tag) {
           case 'EnemyMinionId':
-            return contents.contents === props.minion.contents.minionId
+            return contents.contents === props.minion.minionId
           default:
             return false
         }
@@ -43,11 +43,11 @@ const activeAbility = computed(() => {
     })
 })
 
-const upgrades = computed(() => props.minion.contents.minionUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
+const upgrades = computed(() => props.minion.minionUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
 
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
-    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.minion.contents.minionId) {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.minion.minionId) {
       return [...acc, i]
     }
     return acc
@@ -58,13 +58,13 @@ const abilities = computed(() => {
 <template>
   <div class="minion">
     <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
-    <div v-if="minion.contents.minionDamage > 0" class="damage">{{minion.contents.minionDamage}}</div>
-    <div v-if="minion.contents.minionTough" class="tough">tough</div>
-    <div v-if="minion.contents.minionConfused" class="confused">confused</div>
-    <div v-if="minion.contents.minionStunned" class="stunned">stunned</div>
+    <div v-if="minion.minionDamage > 0" class="damage">{{minion.minionDamage}}</div>
+    <div v-if="minion.minionTough" class="tough">tough</div>
+    <div v-if="minion.minionConfused" class="confused">confused</div>
+    <div v-if="minion.minionStunned" class="stunned">stunned</div>
     <Upgrade
       v-for="upgrade in upgrades"
-      :key="upgrade.contents.upgradeId"
+      :key="upgrade.upgradeId"
       :upgrade="upgrade"
       :game="game"
       :identityId="identityId"

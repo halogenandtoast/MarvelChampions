@@ -3,20 +3,12 @@ import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 import { PlayerCard, playerCardDecoder } from '@/marvel/types/PlayerCard'
 import { EncounterCard, encounterCardDecoder } from '@/marvel/types/EncounterCard'
 
-export interface HeroSideContentsContents {
+export interface HeroSideContents {
   heroCardDef: CardDef
 }
 
-export interface AlterEgoSideContentsContents {
-  alterEgoCardDef: CardDef
-}
-
-export interface HeroSideContents {
-  contents: HeroSideContentsContents
-}
-
 export interface AlterEgoSideContents {
-  contents: AlterEgoSideContentsContents
+  alterEgoCardDef: CardDef
 }
 
 export interface HeroSide {
@@ -50,21 +42,13 @@ export interface Identity {
   encounterCards: EncounterCard[]
 }
 
-export const heroSideContentsContentsDecoder = JsonDecoder.object<HeroSideContentsContents>({
+export const heroSideContentsDecoder = JsonDecoder.object<HeroSideContents>({
   heroCardDef: cardDefDecoder
 }, 'HeroSideContentsContents')
 
-export const alterEgoSideContentsContentsDecoder = JsonDecoder.object<AlterEgoSideContentsContents>({
+export const alterEgoSideContentsDecoder = JsonDecoder.object<AlterEgoSideContents>({
   alterEgoCardDef: cardDefDecoder
 }, 'AlterEgoSideContentsContents')
-
-export const heroSideContentsDecoder = JsonDecoder.object<HeroSideContents>({
-  contents: heroSideContentsContentsDecoder
-}, 'HeroSideContents')
-
-export const alterEgoSideContentsDecoder = JsonDecoder.object<AlterEgoSideContents>({
-  contents: alterEgoSideContentsContentsDecoder
-}, 'AlterEgoSideContents')
 
 export const heroSideDecoder = JsonDecoder.object<HeroSide>({
   tag: JsonDecoder.isExactly('HeroSide'),

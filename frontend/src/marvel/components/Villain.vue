@@ -18,7 +18,7 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const card = computed(() => ({ cardId: props.villain.contents.villainId, cardDef: props.villain.contents.villainCardDef }))
+const card = computed(() => ({ cardId: props.villain.villainId, cardDef: props.villain.villainCardDef }))
 
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
@@ -32,12 +32,12 @@ const activeAbility = computed(() => {
 
       const { contents } = choice.target
         if (typeof contents === "string") {
-          return contents == props.villain.contents.villainId
+          return contents == props.villain.villainId
         }
 
         switch (contents.tag) {
           case 'EnemyVillainId':
-            return contents.contents === props.villain.contents.villainId
+            return contents.contents === props.villain.villainId
           default:
             return false
         }
@@ -45,13 +45,13 @@ const activeAbility = computed(() => {
     })
 })
 
-const attachments = computed(() => props.villain.contents.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
+const attachments = computed(() => props.villain.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
 
-const upgrades = computed(() => props.villain.contents.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
+const upgrades = computed(() => props.villain.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
 
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
-    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.villain.contents.villainId) {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.villain.villainId) {
       return [...acc, i]
     }
     return acc
@@ -62,13 +62,13 @@ const abilities = computed(() => {
 <template>
   <div class="villain">
     <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)"/>
-    <div class="hp">{{villain.contents.villainHp}}</div>
-    <div v-if="villain.contents.villainStunned">Stunned</div>
-    <div v-if="villain.contents.villainConfused">Confused</div>
-    <div v-if="villain.contents.villainTough">Tough</div>
+    <div class="hp">{{villain.villainHp}}</div>
+    <div v-if="villain.villainStunned">Stunned</div>
+    <div v-if="villain.villainConfused">Confused</div>
+    <div v-if="villain.villainTough">Tough</div>
     <Attachment
       v-for="attachment in attachments"
-      :key="attachment.contents.attachmentId"
+      :key="attachment.attachmentId"
       :attachment="attachment"
       :game="game"
       :identityId="identityId"
@@ -76,7 +76,7 @@ const abilities = computed(() => {
     />
     <Upgrade
       v-for="upgrade in upgrades"
-      :key="upgrade.contents.upgradeId"
+      :key="upgrade.upgradeId"
       :upgrade="upgrade"
       :game="game"
       :identityId="identityId"

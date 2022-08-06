@@ -17,12 +17,12 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const card = computed(() => ({ cardId: props.ally.contents.allyId, cardDef: props.ally.contents.allyCardDef }))
+const card = computed(() => ({ cardId: props.ally.allyId, cardDef: props.ally.allyCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
-    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.ally.contents.allyId) {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.ally.allyId) {
       return [...acc, i]
     }
     return acc
@@ -32,7 +32,7 @@ const abilities = computed(() => {
 const defendAction = computed(() => {
   return choices
     .value
-    .findIndex((c) => c.tag === 'AllyDefend' && c.contents == props.ally.contents.allyId)
+    .findIndex((c) => c.tag === 'AllyDefend' && c.contents == props.ally.allyId)
 })
 
 const activeAbility = computed(() => {
@@ -43,39 +43,39 @@ const activeAbility = computed(() => {
 
     const { contents } = choice.target
       if (typeof contents === "string") {
-        return contents == props.ally.contents.allyId
+        return contents == props.ally.allyId
       }
 
       switch (contents.tag) {
         case 'AllyCharacter':
-          return contents.contents === props.ally.contents.allyId
+          return contents.contents === props.ally.allyId
         default:
           return false
       }
   })
 })
 
-const upgrades = computed(() => props.ally.contents.allyUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
+const upgrades = computed(() => props.ally.allyUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
 </script>
 
 <template>
   <div class="ally">
     <div class="contents">
-      <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: ally.contents.allyExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+      <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: ally.allyExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
       <Upgrade
         v-for="upgrade in upgrades"
-        :key="upgrade.contents.upgradeId"
+        :key="upgrade.upgradeId"
         :upgrade="upgrade"
         :game="game"
         :identityId="identityId"
         class="attached"
         @choose="emit('choose', $event)"
       />
-      <div v-if="ally.contents.allyDamage > 0" class="damage">damage: {{ally.contents.allyDamage}}</div>
-      <div v-if="ally.contents.allyCounters > 0" class="counter">counters: {{ally.contents.allyCounters}}</div>
-      <div v-if="ally.contents.allyStunned">Stunned</div>
-      <div v-if="ally.contents.allyConfused">Confused</div>
-      <div v-if="ally.contents.allyTough">Tough</div>
+      <div v-if="ally.allyDamage > 0" class="damage">damage: {{ally.allyDamage}}</div>
+      <div v-if="ally.allyCounters > 0" class="counter">counters: {{ally.allyCounters}}</div>
+      <div v-if="ally.allyStunned">Stunned</div>
+      <div v-if="ally.allyConfused">Confused</div>
+      <div v-if="ally.allyTough">Tough</div>
       <AbilityButton
             v-for="ability in abilities"
             :key="ability"

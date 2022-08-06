@@ -30,8 +30,8 @@ instance Eq Attachment where
 
 instance FromJSON Attachment where
   parseJSON v = flip (withObject "Attachment") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withAttachmentCardCode cCode $ \(_ :: AttachmentCard a) -> Attachment <$> parseJSON @a v
+    cardDef <- o .: "attachmentCardDef"
+    withAttachmentCardCode (cdCardCode cardDef) $ \(_ :: AttachmentCard a) -> Attachment <$> parseJSON @a v
 
 withAttachmentCardCode
   :: CardCode

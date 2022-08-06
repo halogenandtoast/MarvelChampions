@@ -53,20 +53,21 @@ scenario ::
   [CardCode] ->
   [CardCode] ->
   [EncounterSet] ->
-  a
-scenario f cCode villains mainSchemes encounterSets =
-  f $
-    ScenarioAttrs
-      { scenarioId = cCode
-      , scenarioVillains = villains
-      , scenarioMainSchemes = mainSchemes
-      , scenarioEncounterDeck = mempty
-      , scenarioDiscard = mempty
-      , scenarioDifficulty = Normal
-      , scenarioEncounterSets = HashSet.fromList encounterSets
-      , scenarioSetAsideCards = mempty
-      , scenarioAccelerationTokens = 0
-      }
+  CardBuilder () a
+scenario f cCode villains mainSchemes encounterSets = CardBuilder
+  { cbCardCode = cCode
+  , cbCardBuilder = \() -> f $ ScenarioAttrs
+    { scenarioId = cCode
+    , scenarioVillains = villains
+    , scenarioMainSchemes = mainSchemes
+    , scenarioEncounterDeck = mempty
+    , scenarioDiscard = mempty
+    , scenarioDifficulty = Normal
+    , scenarioEncounterSets = HashSet.fromList encounterSets
+    , scenarioSetAsideCards = mempty
+    , scenarioAccelerationTokens = 0
+    }
+  }
 
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of

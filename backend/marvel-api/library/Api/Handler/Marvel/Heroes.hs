@@ -7,6 +7,8 @@ import Import
 import Data.UUID (nil)
 import Marvel.Hero
 import Marvel.Id
+import Marvel.Card.Builder
 
 getApiV1MarvelHeroesR :: Handler [Hero]
-getApiV1MarvelHeroesR = pure $ map ($ coerce nil) $ toList allHeroes
+getApiV1MarvelHeroesR = pure $ flip map (toList allHeroes) $ \case
+  SomeHeroCard a -> Hero $ cbCardBuilder a (coerce nil)

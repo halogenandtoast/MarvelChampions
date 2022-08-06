@@ -31,8 +31,8 @@ instance Eq Villain where
 
 instance FromJSON Villain where
   parseJSON v = flip (withObject "Villain") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withVillainCardCode cCode $ \(_ :: VillainCard a) -> Villain <$> parseJSON @a v
+    cardDef <- o .: "villainCardDef"
+    withVillainCardCode (cdCardCode cardDef) $ \(_ :: VillainCard a) -> Villain <$> parseJSON @a v
 
 withVillainCardCode
   :: CardCode

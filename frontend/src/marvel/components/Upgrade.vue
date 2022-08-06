@@ -16,12 +16,12 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const card = computed(() => ({ cardId: props.upgrade.contents.upgradeId, cardDef: props.upgrade.contents.upgradeCardDef }))
+const card = computed(() => ({ cardId: props.upgrade.upgradeId, cardDef: props.upgrade.upgradeCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
-    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.upgrade.contents.upgradeId) {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.upgrade.upgradeId) {
       return [...acc, i]
     }
     return acc
@@ -29,13 +29,13 @@ const abilities = computed(() => {
 })
 
 const activeAbility = computed(() => {
-  return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.upgrade.contents.upgradeId)
+  return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.upgrade.upgradeId)
 })
 </script>
 
 <template>
   <div class="upgrade">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: upgrade.contents.upgradeExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: upgrade.upgradeExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"
@@ -43,7 +43,7 @@ const activeAbility = computed(() => {
           :data-image="image"
           @click="emit('choose', ability)"
           />
-    <div v-if="upgrade.contents.upgradeUses > 0">{{upgrade.contents.upgradeUses}}</div>
+    <div v-if="upgrade.upgradeUses > 0">{{upgrade.upgradeUses}}</div>
   </div>
 </template>
 
