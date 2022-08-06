@@ -67,7 +67,13 @@ allVillains =
   fromList $
     map (toFst someVillainCardCode)
     [ SomeVillainCard rhino
+    , SomeVillainCard rhino1
+    , SomeVillainCard rhino2
+    , SomeVillainCard rhino3
     , SomeVillainCard klaw
+    , SomeVillainCard klaw1
+    , SomeVillainCard klaw2
+    , SomeVillainCard klaw3
     ]
 
 villainDamage :: Villain -> Natural
