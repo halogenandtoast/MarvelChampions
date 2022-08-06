@@ -30,8 +30,8 @@ instance ToJSON Upgrade where
 
 instance FromJSON Upgrade where
   parseJSON v = flip (withObject "Upgrade") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withUpgradeCardCode cCode $ \(_ :: UpgradeCard a) -> Upgrade <$> parseJSON @a v
+    cardDef <- o .: "upgradeCardDef"
+    withUpgradeCardCode (cdCardCode cardDef) $ \(_ :: UpgradeCard a) -> Upgrade <$> parseJSON @a v
 
 withUpgradeCardCode
   :: CardCode

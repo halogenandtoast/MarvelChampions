@@ -35,8 +35,8 @@ instance Eq AlterEgo where
 
 instance FromJSON AlterEgo where
   parseJSON v = flip (withObject "AlterEgo") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withAlterEgoCardCode cCode $ \(_ :: AlterEgoCard a) -> AlterEgo <$> parseJSON @a v
+    cardDef <- o .: "alterEgoCardDef"
+    withAlterEgoCardCode (cdCardCode cardDef) $ \(_ :: AlterEgoCard a) -> AlterEgo <$> parseJSON @a v
 
 withAlterEgoCardCode
   :: CardCode

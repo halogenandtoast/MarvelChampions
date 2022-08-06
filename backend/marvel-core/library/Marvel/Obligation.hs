@@ -30,8 +30,8 @@ instance ToJSON Obligation where
 
 instance FromJSON Obligation where
   parseJSON v = flip (withObject "Obligation") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withObligationCardCode cCode $ \(_ :: ObligationCard a) -> Obligation <$> parseJSON @a v
+    cardDef <- o .: "obligationCardDef"
+    withObligationCardCode (cdCardCode cardDef) $ \(_ :: ObligationCard a) -> Obligation <$> parseJSON @a v
 
 withObligationCardCode
   :: CardCode

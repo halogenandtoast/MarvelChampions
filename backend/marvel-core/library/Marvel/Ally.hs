@@ -27,8 +27,8 @@ instance Eq Ally where
 
 instance FromJSON Ally where
   parseJSON v = flip (withObject "Ally") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withAllyCardCode cCode $ \(_ :: AllyCard a) -> Ally <$> parseJSON @a v
+    cardDef <- o .: "allyCardDef"
+    withAllyCardCode (cdCardCode cardDef) $ \(_ :: AllyCard a) -> Ally <$> parseJSON @a v
 
 withAllyCardCode
   :: CardCode

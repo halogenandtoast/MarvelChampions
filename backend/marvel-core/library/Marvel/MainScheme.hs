@@ -27,8 +27,8 @@ instance Eq MainScheme where
 
 instance FromJSON MainScheme where
   parseJSON v = flip (withObject "MainScheme") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withMainSchemeCardCode cCode $ \(_ :: MainSchemeCard a) -> MainScheme <$> parseJSON @a v
+    cardDef <- o .: "mainSchemeCardDef"
+    withMainSchemeCardCode (cdCardCode cardDef) $ \(_ :: MainSchemeCard a) -> MainScheme <$> parseJSON @a v
 
 withMainSchemeCardCode
   :: CardCode

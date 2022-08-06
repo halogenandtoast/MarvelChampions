@@ -1,7 +1,7 @@
 import { JsonDecoder } from 'ts.data.json'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
-export interface VillainContents {
+export interface Villain {
   villainId: string
   villainCardDef: CardDef
   villainHp: number
@@ -13,12 +13,7 @@ export interface VillainContents {
   villainUpgrades: string[]
 }
 
-export interface Villain {
-  tag: string
-  contents: VillainContents
-}
-
-export const villainContentsDecoder = JsonDecoder.object<VillainContents>({
+export const villainDecoder = JsonDecoder.object<Villain>({
   villainId: JsonDecoder.string,
   villainCardDef: cardDefDecoder,
   villainHp: JsonDecoder.number,
@@ -28,9 +23,4 @@ export const villainContentsDecoder = JsonDecoder.object<VillainContents>({
   villainTough: JsonDecoder.boolean,
   villainAttachments: JsonDecoder.array<string>(JsonDecoder.string, 'AttachmentId[]'),
   villainUpgrades: JsonDecoder.array<string>(JsonDecoder.string, 'UpgradeId[]'),
-}, 'VillainContents')
-
-export const villainDecoder = JsonDecoder.object<Villain>({
-  tag: JsonDecoder.string,
-  contents: villainContentsDecoder
 }, 'Villain')

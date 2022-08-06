@@ -2,11 +2,6 @@ import { JsonDecoder } from 'ts.data.json'
 import { CardDef, cardDefDecoder } from '@/marvel/types/CardDef'
 
 export interface Minion {
-  tag: string;
-  contents: MinionContents
-}
-
-export interface MinionContents {
   minionId: string
   minionCardDef: CardDef
   minionDamage: number
@@ -16,7 +11,7 @@ export interface MinionContents {
   minionStunned: boolean
 }
 
-export const minionContentsDecoder = JsonDecoder.object<MinionContents>(
+export const minionDecoder = JsonDecoder.object<Minion>(
   {
     minionId: JsonDecoder.string,
     minionCardDef: cardDefDecoder,
@@ -25,10 +20,4 @@ export const minionContentsDecoder = JsonDecoder.object<MinionContents>(
     minionTough: JsonDecoder.boolean,
     minionStunned: JsonDecoder.boolean,
     minionConfused: JsonDecoder.boolean,
-  }, 'MinionContents')
-
-export const minionDecoder = JsonDecoder.object<Minion>(
-  {
-    tag: JsonDecoder.string,
-    contents: minionContentsDecoder,
   }, 'Minion')

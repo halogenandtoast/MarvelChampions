@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const topOfDiscard = computed(() => props.game.scenario.contents.scenarioDiscard[0])
+const topOfDiscard = computed(() => props.game.scenario.scenarioDiscard[0])
 
 const focusedCards = computed(() => props.game.focusedCards)
 </script>
@@ -27,7 +27,7 @@ const focusedCards = computed(() => props.game.focusedCards)
     <div class="encounter">
       <Villain
         v-for="villain in game.villains"
-        :key="villain.contents.villainId"
+        :key="villain.villainId"
         :villain="villain"
         :identityId="identityId"
         :game="game"
@@ -38,7 +38,7 @@ const focusedCards = computed(() => props.game.focusedCards)
 
       <MainScheme
         v-for="mainScheme in game.mainSchemes"
-        :key="mainScheme.contents.mainSchemeId"
+        :key="mainScheme.mainSchemeId"
         :mainScheme="mainScheme"
         :identityId="identityId"
         :game="game"
@@ -47,7 +47,7 @@ const focusedCards = computed(() => props.game.focusedCards)
 
       <SideScheme
         v-for="sideScheme in game.sideSchemes"
-        :key="sideScheme.contents.sideSchemeId"
+        :key="sideScheme.sideSchemeId"
         :sideScheme="sideScheme"
         :identityId="identityId"
         :game="game"

@@ -28,8 +28,8 @@ instance ToJSON Treachery where
 
 instance FromJSON Treachery where
   parseJSON v = flip (withObject "Treachery") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withTreacheryCardCode cCode $ \(_ :: TreacheryCard a) -> Treachery <$> parseJSON @a v
+    cardDef <- o .: "treacheryCardDef"
+    withTreacheryCardCode (cdCardCode cardDef) $ \(_ :: TreacheryCard a) -> Treachery <$> parseJSON @a v
 
 withTreacheryCardCode
   :: CardCode

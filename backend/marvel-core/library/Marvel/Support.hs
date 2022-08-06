@@ -6,6 +6,7 @@ import Data.Typeable
 import Marvel.Ability
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
@@ -30,8 +31,8 @@ instance Eq Support where
 
 instance FromJSON Support where
   parseJSON v = flip (withObject "Support") v $ \o -> do
-    cCode :: CardCode <- o .: "cardCode"
-    withSupportCardCode cCode $ \(_ :: SupportCard a) -> Support <$> parseJSON @a v
+    cardDef <- o .: "supportCardDef"
+    withSupportCardCode (cdCardCode cardDef) $ \(_ :: SupportCard a) -> Support <$> parseJSON @a v
 
 withSupportCardCode
   :: CardCode
