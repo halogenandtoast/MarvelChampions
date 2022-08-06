@@ -5,6 +5,7 @@ module Marvel.Hero.Attrs (
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -53,7 +54,7 @@ hero f cardDef hp hSize thw atk def =
             }
     }
 
-class IsHero a
+class (Entity a, ToJSON a, FromJSON a, Show a, Eq a, Typeable a, HasAbilities a, RunMessage a, IsSource a, EntityAttrs a ~ HeroAttrs, EntityId a ~ IdentityId, HasModifiersFor a) => IsHero a
 
 type HeroCard a = CardBuilder IdentityId a
 

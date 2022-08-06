@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.Scenario.Attrs where
 
 import Marvel.Prelude
@@ -34,6 +32,21 @@ data ScenarioAttrs = ScenarioAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+discardL :: Lens' ScenarioAttrs [EncounterCard]
+discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
+
+encounterDeckL :: Lens' ScenarioAttrs [EncounterCard]
+encounterDeckL = lens scenarioEncounterDeck $ \m x -> m { scenarioEncounterDeck = x }
+
+setAsideCardsL :: Lens' ScenarioAttrs [Card]
+setAsideCardsL = lens scenarioSetAsideCards $ \m x -> m { scenarioSetAsideCards = x }
+
+accelerationTokensL :: Lens' ScenarioAttrs Natural
+accelerationTokensL = lens scenarioAccelerationTokens $ \m x -> m { scenarioAccelerationTokens = x }
+
+mainSchemesL :: Lens' ScenarioAttrs [CardCode]
+mainSchemesL = lens scenarioMainSchemes $ \m x -> m { scenarioMainSchemes = x }
+
 scenario ::
   (ScenarioAttrs -> a) ->
   CardCode ->
@@ -54,8 +67,6 @@ scenario f cCode villains mainSchemes encounterSets =
       , scenarioSetAsideCards = mempty
       , scenarioAccelerationTokens = 0
       }
-
-makeLensesWith suffixedFields ''ScenarioAttrs
 
 instance RunMessage ScenarioAttrs where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of

@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Minion.Attrs
   ( module Marvel.Minion.Attrs
   , module X
@@ -20,6 +19,7 @@ import Marvel.Stats as X
 import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
+import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Damage
@@ -28,7 +28,7 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Window qualified as W
 
-class IsMinion a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ MinionAttrs, EntityId a ~ MinionId, HasModifiersFor a, RunMessage a, HasAbilities a) => IsMinion a
 
 type MinionCard a = CardBuilder (IdentityId, MinionId) a
 
@@ -55,7 +55,29 @@ data MinionAttrs = MinionAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''MinionAttrs
+defensePriorityL :: Lens' MinionAttrs DefensePriority
+defensePriorityL = lens minionDefensePriority $ \m x -> m { minionDefensePriority = x }
+
+damageL :: Lens' MinionAttrs Natural
+damageL = lens minionDamage $ \m x -> m { minionDamage = x }
+
+attackingL :: Lens' MinionAttrs (Maybe Attack)
+attackingL = lens minionAttacking $ \m x -> m { minionAttacking = x }
+
+stunnedL :: Lens' MinionAttrs Bool
+stunnedL = lens minionStunned $ \m x -> m { minionStunned = x }
+
+confusedL :: Lens' MinionAttrs Bool
+confusedL = lens minionConfused $ \m x -> m { minionConfused = x }
+
+toughL :: Lens' MinionAttrs Bool
+toughL = lens minionTough $ \m x -> m { minionTough = x }
+
+upgradesL :: Lens' MinionAttrs (HashSet UpgradeId)
+upgradesL = lens minionUpgrades $ \m x -> m { minionUpgrades = x }
+
+attachmentsL :: Lens' MinionAttrs (HashSet AttachmentId)
+attachmentsL = lens minionAttachments $ \m x -> m { minionAttachments = x }
 
 instance HasCardCode MinionAttrs where
   toCardCode = toCardCode . minionCardDef

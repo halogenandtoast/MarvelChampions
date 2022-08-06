@@ -5,6 +5,7 @@ module Marvel.AlterEgo.Attrs
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -15,6 +16,7 @@ import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
@@ -41,7 +43,7 @@ alterEgo f cardDef hp hSize recovery obligations = CardBuilder
     }
   }
 
-class IsAlterEgo a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AlterEgoAttrs, EntityId a ~ IdentityId, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlterEgo a
 
 type AlterEgoCard a = CardBuilder IdentityId a
 

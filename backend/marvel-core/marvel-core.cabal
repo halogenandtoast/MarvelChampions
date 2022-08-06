@@ -209,7 +209,6 @@ library
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheTriskellion
       Marvel.Target
-      Marvel.TH
       Marvel.Trait
       Marvel.Treachery
       Marvel.Treachery.Attrs
@@ -273,6 +272,7 @@ library
   hs-source-dirs:
       library
   default-extensions:
+      ExistentialQuantification
       NoImplicitPrelude
       LambdaCase
       DerivingStrategies
@@ -324,6 +324,7 @@ test-suite MarvelChampions-test
   hs-source-dirs:
       test
   default-extensions:
+      ExistentialQuantification
       NoImplicitPrelude
       LambdaCase
       DerivingStrategies

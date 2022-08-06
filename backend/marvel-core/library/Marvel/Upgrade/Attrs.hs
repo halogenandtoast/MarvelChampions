@@ -1,9 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.Upgrade.Attrs where
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
@@ -11,13 +10,14 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsUpgrade a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ UpgradeAttrs, EntityId a ~ UpgradeId, HasAbilities a, HasModifiersFor a) => IsUpgrade a
 
 type UpgradeCard a = CardBuilder (IdentityId, UpgradeId) a
 
@@ -34,7 +34,20 @@ data UpgradeAttrs = UpgradeAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''UpgradeAttrs
+attachedAllyL :: Lens' UpgradeAttrs (Maybe AllyId)
+attachedAllyL = lens upgradeAttachedAlly $ \m x -> m { upgradeAttachedAlly = x }
+
+attachedEnemyL :: Lens' UpgradeAttrs (Maybe EnemyId)
+attachedEnemyL = lens upgradeAttachedEnemy $ \m x -> m { upgradeAttachedEnemy = x }
+
+exhaustedL :: Lens' UpgradeAttrs Bool
+exhaustedL = lens upgradeExhausted $ \m x -> m { upgradeExhausted = x }
+
+usesL :: Lens' UpgradeAttrs Natural
+usesL = lens upgradeUses $ \m x -> m { upgradeUses = x }
+
+discardIfNoUsesL :: Lens' UpgradeAttrs Bool
+discardIfNoUsesL = lens upgradeDiscardIfNoUses $ \m x -> m { upgradeDiscardIfNoUses = x }
 
 instance HasCardCode UpgradeAttrs where
   toCardCode = toCardCode . upgradeCardDef

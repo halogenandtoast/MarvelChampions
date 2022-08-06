@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Obligation.Attrs where
 
 import Marvel.Prelude
@@ -11,7 +10,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsObligation a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ ObligationAttrs, EntityId a ~ ObligationId) => IsObligation a
 
 type ObligationCard a = CardBuilder ObligationId a
 
@@ -23,7 +22,8 @@ data ObligationAttrs = ObligationAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''ObligationAttrs
+surgeL :: Lens' ObligationAttrs Bool
+surgeL = lens obligationSurge $ \m x -> m { obligationSurge = x }
 
 instance HasCardCode ObligationAttrs where
   toCardCode = toCardCode . obligationCardDef

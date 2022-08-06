@@ -1,17 +1,18 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Attachment.Attrs where
 
 import Marvel.Prelude
 
+import Marvel.Ability.Type
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 
-class IsAttachment a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AttachmentAttrs, EntityId a ~ AttachmentId, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a
 
 type AttachmentCard a = CardBuilder AttachmentId a
 
@@ -24,7 +25,11 @@ data AttachmentAttrs = AttachmentAttrs
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-makeLensesWith suffixedFields ''AttachmentAttrs
+enemyL :: Lens' AttachmentAttrs (Maybe EnemyId)
+enemyL = lens attachmentEnemy $ \m x -> m { attachmentEnemy = x }
+
+damageL :: Lens' AttachmentAttrs Natural
+damageL = lens attachmentDamage $ \m x -> m { attachmentDamage = x }
 
 instance HasCardCode AttachmentAttrs where
   toCardCode = toCardCode . attachmentCardDef

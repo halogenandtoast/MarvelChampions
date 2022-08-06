@@ -1,9 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.AlterEgo where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Ability
 import Marvel.AlterEgo.AlterEgos
 import Marvel.AlterEgo.Attrs
@@ -18,26 +17,71 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
-import Marvel.TH
 import Marvel.Trait
+import Text.Show qualified
 
-$(buildEntity "AlterEgo")
+data AlterEgo = forall a. IsAlterEgo a => AlterEgo a
+
+instance Show AlterEgo where
+  show (AlterEgo a) = show a
+
+instance ToJSON AlterEgo where
+  toJSON (AlterEgo a) = toJSON a
+
+instance Eq AlterEgo where
+  (AlterEgo (a :: a)) == (AlterEgo (b :: b)) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+instance FromJSON AlterEgo where
+  parseJSON v = flip (withObject "AlterEgo") v $ \o -> do
+    cCode :: CardCode <- o .: "cardCode"
+    withAlterEgoCardCode cCode $ \(_ :: AlterEgoCard a) -> AlterEgo <$> parseJSON @a v
+
+withAlterEgoCardCode
+  :: CardCode
+  -> (forall a. IsAlterEgo a => AlterEgoCard a -> r)
+  -> r
+withAlterEgoCardCode cCode f =
+  case lookup cCode allAlterEgos of
+    Nothing -> error "invalid alter ego"
+    Just (SomeAlterEgoCard a) -> f a
+
+data SomeAlterEgoCard = forall a. IsAlterEgo a => SomeAlterEgoCard (AlterEgoCard a)
+
+liftAlterEgoCard :: (forall a . AlterEgoCard a -> b) -> SomeAlterEgoCard -> b
+liftAlterEgoCard f (SomeAlterEgoCard a) = f a
+
+someAlterEgoCardCode :: SomeAlterEgoCard -> CardCode
+someAlterEgoCardCode = liftAlterEgoCard cbCardCode
+
+allAlterEgos :: HashMap CardCode SomeAlterEgoCard
+allAlterEgos =
+  fromList $
+    map
+      (toFst someAlterEgoCardCode)
+      [ SomeAlterEgoCard peterParker
+      , SomeAlterEgoCard carolDanvers
+      , SomeAlterEgoCard jenniferWalters
+      , SomeAlterEgoCard tonyStark
+      , SomeAlterEgoCard tChalla
+      ]
+
+lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo
+lookupAlterEgoByCardCode cardCode = case lookup cardCode allAlterEgos of
+  Nothing -> error $ "Unknown alter ego: " <> show cardCode
+  Just (SomeAlterEgoCard a) -> AlterEgo <$> cbCardBuilder a
 
 instance RunMessage AlterEgo where
-  runMessage = genericRunMessage
+  runMessage msg (AlterEgo a) = AlterEgo <$> runMessage msg a
 
 instance HasTraits AlterEgo where
   getTraits = pure . cdTraits . getCardDef
 
 instance HasAbilities AlterEgo where
-  getAbilities a = genericGetAbilities a <> basicAbilities
+  getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
    where
     basicAbilities = [ability a 200 Basic NoCriteria ExhaustCost Recover]
-
-allAlterEgos :: HashMap CardCode (IdentityId -> AlterEgo)
-allAlterEgos =
-  fromList $
-    map (toCardCode &&& cbCardBuilder) $(buildEntityLookupList "AlterEgo")
 
 instance HasStartingHP AlterEgo where
   startingHP = startingHP . toAttrs
@@ -58,7 +102,7 @@ instance Entity AlterEgo where
   type EntityId AlterEgo = IdentityId
   type EntityAttrs AlterEgo = AlterEgoAttrs
   toId = toId . toAttrs
-  toAttrs = genericToAttrs
+  toAttrs (AlterEgo a) = toAttrs a
 
 instance HasModifiersFor AlterEgo where
-  getModifiersFor = genericGetModifiersFor
+  getModifiersFor source target (AlterEgo a) = getModifiersFor source target a
