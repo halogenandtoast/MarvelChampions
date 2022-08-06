@@ -16,8 +16,8 @@ const emit = defineEmits<{
 }>()
 
 const card = computed(() => ({
-  cardId: props.sideScheme.contents.sideSchemeId,
-  cardDef: props.sideScheme.contents.sideSchemeCardDef
+  cardId: props.sideScheme.sideSchemeId,
+  cardDef: props.sideScheme.sideSchemeCardDef
 }))
 
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
@@ -30,12 +30,12 @@ const activeAbility = computed(() =>
 
     const { contents } = choice.target
       if (typeof contents === "string") {
-        return contents == props.sideScheme.contents.sideSchemeId
+        return contents == props.sideScheme.sideSchemeId
       }
 
       switch (contents.tag) {
         case 'SchemeSideSchemeId':
-          return contents.contents === props.sideScheme.contents.sideSchemeId
+          return contents.contents === props.sideScheme.sideSchemeId
         default:
           return false
       }
@@ -52,7 +52,7 @@ const activeAbility = computed(() =>
       @click="emit('choose', activeAbility)"
       @choose="emit('choose', $event)"
     />
-    <div class="threat">threat: {{sideScheme.contents.sideSchemeThreat}}</div>
+    <div class="threat">threat: {{sideScheme.sideSchemeThreat}}</div>
   </div>
 </template>
 

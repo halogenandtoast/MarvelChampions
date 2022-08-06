@@ -33,7 +33,7 @@ instance ToJSON Effect where
 
 instance FromJSON Effect where
   parseJSON = withObject "Effect" $ \o -> do
-    cCode <- o .: "cardCode"
+    cCode <- o .: "effectCardCode"
     case lookup cCode allEffects of
       Nothing -> error $ "Invalid effect: " <> show cCode
       Just (SomeCardEffect (_ :: CardEffect a)) -> Effect <$> parseJSON @a (Object o)
