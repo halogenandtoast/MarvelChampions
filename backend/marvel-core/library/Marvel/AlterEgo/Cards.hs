@@ -9,33 +9,33 @@ import Marvel.Name
 import Marvel.Trait
 
 allAlterEgoCards :: [CardDef]
-allAlterEgoCards = [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla]
+allAlterEgoCards =
+  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla]
 
 allAlterEgosMap :: HashMap CardCode CardDef
 allAlterEgosMap = fromList $ map (toCardCode &&& id) allAlterEgoCards
 
 alterEgo :: CardCode -> Name -> [Trait] -> CardDef
-alterEgo cardCode name traits =
-    CardDef
-        { cdCardCode = cardCode
-        , cdName = name
-        , cdCost = Nothing
-        , cdTraits = fromList traits
-        , cdKeywords = mempty
-        , cdCardType = AlterEgoType
-        , cdAbilityType = Nothing
-        , cdAbilitySubType = Nothing
-        , cdUnique = True
-        , cdAspect = Nothing
-        , cdEncounterSet = Nothing
-        , cdEncounterSetQuantity = Nothing
-        , cdCriteria = NoCriteria
-        , cdResources = []
-        , cdResponseWindow = Nothing
-        , cdBoostIcons = []
-        , cdHazards = 0
-        , cdAcceleration = 0
-        }
+alterEgo cardCode name traits = CardDef
+  { cdCardCode = cardCode
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = fromList traits
+  , cdKeywords = mempty
+  , cdCardType = AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 peterParker :: CardDef
 peterParker = alterEgo "01001b" "Peter Parker" [Genius]

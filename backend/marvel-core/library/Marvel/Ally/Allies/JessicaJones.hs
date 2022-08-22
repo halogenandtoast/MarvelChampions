@@ -6,8 +6,8 @@ module Marvel.Ally.Allies.JessicaJones
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Matchers
 import Marvel.Query
 

@@ -3,8 +3,8 @@ module Marvel.AlterEgo.AlterEgos.TChalla where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
+import Marvel.AlterEgo.Runner
 import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Criteria
@@ -22,14 +22,13 @@ import Marvel.Target
 import Marvel.Trait
 
 tChalla :: AlterEgoCard TChalla
-tChalla =
-  alterEgo
-    TChalla
-    Cards.tChalla
-    (HP $ Static 11)
-    (HandSize 6)
-    (Rec 4)
-    [Cards.affairsOfState]
+tChalla = alterEgo
+  TChalla
+  Cards.tChalla
+  (HP $ Static 11)
+  (HandSize 6)
+  (Rec 4)
+  [Cards.affairsOfState]
 
 newtype TChalla = TChalla AlterEgoAttrs
   deriving anyclass (IsAlterEgo, HasModifiersFor)
@@ -41,11 +40,10 @@ instance HasAbilities TChalla where
 instance RunMessage TChalla where
   runMessage msg a = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
-      push . IdentityMessage (toId a) $
-        Search
-          (SearchIdentityDeck (toId a) AllOfDeck)
-          (CardWithTrait BlackPanther <> CardWithType UpgradeType)
-          SearchDrawOne
-          ShuffleBackIn
+      push . IdentityMessage (toId a) $ Search
+        (SearchIdentityDeck (toId a) AllOfDeck)
+        (CardWithTrait BlackPanther <> CardWithType UpgradeType)
+        SearchDrawOne
+        ShuffleBackIn
       pure a
     _ -> TChalla <$> runMessage msg (toAttrs a)

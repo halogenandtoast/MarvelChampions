@@ -100,7 +100,7 @@ data CardDef = CardDef
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
-resourcesL = lens cdResources $ \m x -> m {cdResources = x}
+resourcesL = lens cdResources $ \m x -> m { cdResources = x }
 
 printedResources :: CardDef -> [Resource]
 printedResources = mapMaybe printedResource . cdResources

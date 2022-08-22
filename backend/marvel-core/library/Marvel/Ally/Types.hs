@@ -1,4 +1,7 @@
-module Marvel.Ally.Attrs (module Marvel.Ally.Attrs, module X) where
+module Marvel.Ally.Types
+  ( module Marvel.Ally.Types
+  , module X
+  ) where
 
 import Marvel.Prelude
 
@@ -13,19 +16,38 @@ import Marvel.Source as X
 import Marvel.Stats as X
 import Marvel.Target as X
 
-import Data.HashSet qualified as HashSet
+import Data.Typeable
 import Marvel.Ability.Type
-import Marvel.Attack
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers hiding (ExhaustedAlly)
-import Marvel.Query
 import Marvel.Window qualified as W
+import Text.Show qualified
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AllyAttrs, EntityId a ~ AllyId, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlly a
 
 type AllyCard a = CardBuilder (IdentityId, AllyId) a
+
+data Ally = forall a . IsAlly a => Ally a
+
+instance Show Ally where
+  show (Ally a) = show a
+
+instance ToJSON Ally where
+  toJSON (Ally a) = toJSON a
+
+instance Eq Ally where
+  (Ally (a :: a)) == (Ally (b :: b)) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+data SomeAllyCard = forall a . IsAlly a => SomeAllyCard (AllyCard a)
+
+liftAllyCard :: (forall a . AllyCard a -> b) -> SomeAllyCard -> b
+liftAllyCard f (SomeAllyCard a) = f a
+
+someAllyCardCode :: SomeAllyCard -> CardCode
+someAllyCardCode = liftAllyCard cbCardCode
 
 data AllyAttrs = AllyAttrs
   { allyId :: AllyId
@@ -71,7 +93,8 @@ exhaustedL = lens allyExhausted $ \m x -> m { allyExhausted = x }
 instance HasController AllyAttrs where
   controller = allyController
 
-controllerMessage :: (EntityAttrs a ~ AllyAttrs, Entity a) => a -> IdentityMessage -> Message
+controllerMessage
+  :: (EntityAttrs a ~ AllyAttrs, Entity a) => a -> IdentityMessage -> Message
 controllerMessage a = IdentityMessage (allyController $ toAttrs a)
 
 instance HasCardCode AllyAttrs where
@@ -152,22 +175,18 @@ damageChoice :: AllyAttrs -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg
+    [ DamageEnemy (VillainTarget vid) (toSource attrs) dmg
     , Run
       [ CheckWindows
-          [ W.Window W.After
-              $ W.AllyAttack (toId attrs) (EnemyVillainId vid)
-          ]
+          [W.Window W.After $ W.AllyAttack (toId attrs) (EnemyVillainId vid)]
       ]
     ]
   EnemyMinionId vid -> TargetLabel
     (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg
+    [ DamageEnemy (MinionTarget vid) (toSource attrs) dmg
     , Run
       [ CheckWindows
-          [ W.Window W.After
-              $ W.AllyAttack (toId attrs) (EnemyMinionId vid)
-          ]
+          [W.Window W.After $ W.AllyAttack (toId attrs) (EnemyMinionId vid)]
       ]
     ]
 
@@ -211,86 +230,35 @@ instance IsCard AllyAttrs where
     , pcController = Just (allyController a)
     }
 
-instance RunMessage AllyAttrs where
-  runMessage msg a = case msg of
-    AllyMessage ident msg' | ident == allyId a -> case msg' of
-      ReadiedAlly -> do
-        pure $ a & exhaustedL .~ False
-      ExhaustedAlly -> do
-        pure $ a & exhaustedL .~ True
-      AllyStunned -> do
-        pure $ a & stunnedL .~ True
-      AllyAttacked -> if allyStunned a
-        then pure $ a & stunnedL .~ False
-        else do
-          enemies <- selectList AttackableEnemy
-          dmg <- getModifiedAttack a
-          pushAll
-            $ Ask
-                (allyController a)
-                (ChooseOne $ map (damageChoice a (toDamage dmg $ FromAllyAttack (toId a))) enemies)
-            : [ AllyMessage
-                  ident
-                  (AllyDamaged (toSource a) (toDamage (allyAttackConsequentialDamage a) FromConsequential))
-              | allyAttackConsequentialDamage a > 0
-              ]
-          pure a
-      AllyThwarted -> if allyConfused a
-        then pure $ a & confusedL .~ False
-        else do
-          schemes <- selectList ThwartableScheme
-          thw <- getModifiedThwart a
-          pushAll
-            $ Ask
-                (allyController a)
-                (ChooseOne $ map (thwartChoice a thw) schemes)
-            : [ AllyMessage
-                  ident
-                  (AllyDamaged (toSource a) (toDamage (allyThwartConsequentialDamage a) FromConsequential))
-              | allyThwartConsequentialDamage a > 0
-              ]
-          pure a
-      AllyDefended enemyId -> do
-        pushAll
-          [ AllyMessage (toId a) ExhaustedAlly
-          , case enemyId of
-            EnemyVillainId vid ->
-              VillainMessage vid $ VillainDefendedBy (AllyCharacter $ toId a)
-            EnemyMinionId vid ->
-              MinionMessage vid $ MinionDefendedBy (AllyCharacter $ toId a)
-          ]
-        pure a
-      AllyHealed n -> pure $ a & damageL %~ subtractNatural n
-      AllyWasAttacked attack' -> do
-        let
-          overkill = subtractNatural
-            (unHp (allyHitPoints a) - allyDamage a)
-            (attackDamage attack')
-        when
-          (attackOverkill attack' && overkill > 0)
-          (push $ IdentityMessage (allyController a) $ IdentityDamaged
-            (attackSource attack')
-            (toDamage overkill FromAttack)
-          )
+instance Entity Ally where
+  type EntityId Ally = AllyId
+  type EntityAttrs Ally = AllyAttrs
+  toId = toId . toAttrs
+  toAttrs (Ally a) = toAttrs a
 
-        push $ AllyMessage ident $ AllyDamaged
-          (attackSource attack')
-          (toDamage (attackDamage attack') FromAttack)
-        pure a
-      AllyDamaged _ damage -> if allyTough a
-        then pure $ a & toughL .~ False
-        else do
-          when
-            (damageAmount damage + allyDamage a >= unHp (allyHitPoints a))
-            (push $ AllyMessage (toId a) AllyDefeated)
-          pure $ a & damageL +~ damageAmount damage
-      AllyDefeated -> do
-        pushAll
-          [ RemoveFromPlay (toTarget a)
-          , DiscardedCard (toCard a)
-          ]
-        pure a
-      SpendAllyUse -> pure $ a & countersL -~ 1
-      AttachedUpgradeToAlly upgradeId ->
-        pure $ a & upgradesL %~ HashSet.insert upgradeId
-    _ -> pure a
+instance RunMessage Ally where
+  runMessage msg (Ally a) = Ally <$> runMessage msg a
+
+instance Exhaustable Ally where
+  isExhausted = allyExhausted . toAttrs
+
+instance IsCard Ally where
+  toCard = toCard . toAttrs
+
+instance IsSource Ally where
+  toSource = AllySource . toId
+
+getAllyController :: Ally -> IdentityId
+getAllyController = allyController . toAttrs
+
+getAllyUses :: Ally -> Natural
+getAllyUses = allyCounters . toAttrs
+
+getAllyDamage :: Ally -> Natural
+getAllyDamage = allyDamage . toAttrs
+
+instance HasCardDef Ally where
+  getCardDef = getCardDef . toAttrs
+
+instance HasModifiersFor Ally where
+  getModifiersFor source target (Ally a) = getModifiersFor source target a

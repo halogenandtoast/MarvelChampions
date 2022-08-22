@@ -1,7 +1,8 @@
-module Marvel.Effect.Attrs where
+module Marvel.Effect.Types where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -15,6 +16,43 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Text.Show qualified
+
+data Effect = forall a . IsEffect a => Effect a
+
+instance Show Effect where
+  show (Effect a) = show a
+
+instance Eq Effect where
+  (Effect (a :: a)) == (Effect (b :: b)) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+instance ToJSON Effect where
+  toJSON (Effect a) = toJSON a
+
+instance RunMessage Effect where
+  runMessage msg (Effect a) = Effect <$> runMessage msg a
+
+instance Entity Effect where
+  type EntityId Effect = EffectId
+  type EntityAttrs Effect = EffectAttrs
+  toId = toId . toAttrs
+  toAttrs (Effect a) = toAttrs a
+
+data SomeCardEffect = forall a . IsEffect a => SomeCardEffect (CardEffect a)
+
+liftCardEffect :: (forall a . CardEffect a -> b) -> SomeCardEffect -> b
+liftCardEffect f (SomeCardEffect a) = f a
+
+someCardEffectCardCode :: SomeCardEffect -> CardCode
+someCardEffectCardCode = liftCardEffect cbCardCode
+
+instance HasModifiersFor Effect where
+  getModifiersFor _ target e = do
+    valid <- effectValidFor attrs target
+    pure $ if valid then effectModifiers attrs else []
+    where attrs = toAttrs e
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ EffectAttrs, EntityId a ~ EffectId, RunMessage a) => IsEffect a
 

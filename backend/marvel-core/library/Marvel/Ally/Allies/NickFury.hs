@@ -1,13 +1,13 @@
-module Marvel.Ally.Allies.NickFury (
-  nickFury,
-  NickFury (..),
-) where
+module Marvel.Ally.Allies.NickFury
+  ( nickFury
+  , NickFury(..)
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -23,20 +23,18 @@ newtype NickFury = NickFury AllyAttrs
 
 instance HasAbilities NickFury where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
-        ChooseOneLabelChoice
-          [
-            ( "Remove 2 threat from a scheme"
+    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost
+      $ ChooseOneLabelChoice
+          [ ( "Remove 2 threat from a scheme"
             , RemoveThreat (toSource a) 2 ThwartableScheme
             )
           , ("Draw 3 cards", ChooseDrawCards 3 You)
-          ,
-            ( "Deal 4 damage to an enemy"
+          , ( "Deal 4 damage to an enemy"
             , ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy
             )
           ]
-    , limitedWindowAbility a 2 RoundEnds ForcedResponse OwnsThis NoCost $
-        TargetLabel (toTarget a) [DiscardTarget $ toTarget a]
+    , limitedWindowAbility a 2 RoundEnds ForcedResponse OwnsThis NoCost
+      $ TargetLabel (toTarget a) [DiscardTarget $ toTarget a]
     ]
 
 instance RunMessage NickFury where

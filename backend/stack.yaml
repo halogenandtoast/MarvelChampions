@@ -2,8 +2,7 @@
 require-stack-version: ">= 2.3.1"
 concurrent-tests: false
 
-# latest fpco/stack-build images use GHC 8.10.6 so we need to pin
-resolver: lts-19.9
+resolver: nightly-2022-08-15
 
 ghc-options:
   "$locals":
@@ -22,7 +21,7 @@ ghc-options:
     -Wno-partial-fields
     -Wno-implicit-prelude
     -Wno-deriving-typeable
-    -Wno-missing-monadfail-instances
+    -Wno-missing-kind-signatures
     -fignore-optim-changes
     -Wno-missing-safe-haskell-mode
     -Wno-prepositive-qualified-module

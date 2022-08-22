@@ -6,8 +6,8 @@ module Marvel.Attachment.Attachments.EnhancedIvoryHorn
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attachment.Attrs
 import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria

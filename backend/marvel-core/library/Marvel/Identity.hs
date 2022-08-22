@@ -8,7 +8,7 @@ import Data.HashSet qualified as HashSet
 import Data.List (partition)
 import Marvel.Ability
 import Marvel.AlterEgo
-import Marvel.AlterEgo.Attrs
+import Marvel.AlterEgo.Types
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Cost
