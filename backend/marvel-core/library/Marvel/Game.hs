@@ -27,6 +27,7 @@ import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Entity
 import Marvel.Event
+import Marvel.Event.Types (Event)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards

@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
@@ -31,7 +31,11 @@ instance RunMessage Haymaker where
       PlayedEvent identityId _ _ -> do
         pushAll =<< choiceMessages
           identityId
-          (ChooseDamage (toSource attrs) (toDamage 3 $ FromPlayerAttack identityId) AttackableEnemy)
+          (ChooseDamage
+            (toSource attrs)
+            (toDamage 3 $ FromPlayerAttack identityId)
+            AttackableEnemy
+          )
         pure e
       _ -> Haymaker <$> runMessage msg attrs
     _ -> Haymaker <$> runMessage msg attrs

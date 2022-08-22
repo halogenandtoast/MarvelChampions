@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
@@ -30,8 +30,9 @@ instance RunMessage GroundStomp where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AnyEnemy
-        chooseOneAtATime identityId
-          $ map (damageChoice attrs (toDamage 1 $ FromPlayerAttack identityId)) enemies
+        chooseOneAtATime identityId $ map
+          (damageChoice attrs (toDamage 1 $ FromPlayerAttack identityId))
+          enemies
         pure e
       _ -> GroundStomp <$> runMessage msg attrs
     _ -> GroundStomp <$> runMessage msg attrs

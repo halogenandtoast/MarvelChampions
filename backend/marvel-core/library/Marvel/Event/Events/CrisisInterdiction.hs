@@ -1,19 +1,18 @@
 module Marvel.Event.Events.CrisisInterdiction
   ( crisisInterdiction
   , CrisisInterdiction(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
+import Marvel.Event.Types
+import Marvel.Event.Cards qualified as Cards
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
 import Marvel.Target
-import Marvel.Event.Attrs
-import Marvel.Event.Cards qualified as Cards
 
 crisisInterdiction :: EventCard CrisisInterdiction
 crisisInterdiction = event CrisisInterdiction Cards.crisisInterdiction

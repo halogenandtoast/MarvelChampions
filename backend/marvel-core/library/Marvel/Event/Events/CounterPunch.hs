@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -34,7 +34,11 @@ instance RunMessage CounterPunch where
         dmg <- selectCount HeroAttackDamage (IdentityWithId identityId)
         msgs <- choiceMessages
           identityId
-          (DamageEnemy (EnemyTarget enemyId) (toSource attrs) (toDamage dmg $ FromPlayerAttack identityId))
+          (DamageEnemy
+            (EnemyTarget enemyId)
+            (toSource attrs)
+            (toDamage dmg $ FromPlayerAttack identityId)
+          )
         pushAll msgs
         pure e
       _ -> CounterPunch <$> runMessage msg attrs

@@ -79,7 +79,6 @@ library
       Marvel.EncounterSet
       Marvel.Entity
       Marvel.Event
-      Marvel.Event.Attrs
       Marvel.Event.Cards
       Marvel.Event.Events
       Marvel.Event.Events.AncestralKnowledge
@@ -112,13 +111,13 @@ library
       Marvel.Event.Events.WakandaForeverB
       Marvel.Event.Events.WakandaForeverC
       Marvel.Event.Events.WakandaForeverD
+      Marvel.Event.Types
       Marvel.Exception
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
       Marvel.Hand
       Marvel.Hero
-      Marvel.Hero.Attrs
       Marvel.Hero.Cards
       Marvel.Hero.Heroes
       Marvel.Hero.Heroes.BlackPanther
@@ -126,6 +125,8 @@ library
       Marvel.Hero.Heroes.IronMan
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
+      Marvel.Hero.Runner
+      Marvel.Hero.Types
       Marvel.Hp
       Marvel.Id
       Marvel.Identity

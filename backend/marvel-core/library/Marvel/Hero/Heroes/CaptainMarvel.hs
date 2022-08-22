@@ -8,7 +8,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Hero.Attrs
+import Marvel.Hero.Types
 import qualified Marvel.Hero.Cards as Cards
 import Marvel.Message
 import Marvel.Modifier

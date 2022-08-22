@@ -1,15 +1,15 @@
-module Marvel.Event.Events.PhotonicBlast (
-  photonicBlast,
-  PhotonicBlast (..),
-) where
+module Marvel.Event.Events.PhotonicBlast
+  ( photonicBlast
+  , PhotonicBlast(..)
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
-import qualified Marvel.Event.Cards as Cards
+import Marvel.Event.Types
+import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -37,10 +37,9 @@ instance RunMessage PhotonicBlast where
           usedEnergy
           (push $ IdentityMessage identityId $ DrawCards FromDeck 1)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $
-          map
-            (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId))
-            enemies
+        chooseOne identityId $ map
+          (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId))
+          enemies
         pure e
       _ -> PhotonicBlast <$> runMessage msg attrs
     _ -> PhotonicBlast <$> runMessage msg attrs
