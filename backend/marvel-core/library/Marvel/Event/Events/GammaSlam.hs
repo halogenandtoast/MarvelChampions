@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -33,7 +33,9 @@ instance RunMessage GammaSlam where
         dmg <- min 15
           <$> selectCount SustainedDamage (IdentityWithId identityId)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId)) enemies
+        chooseOne identityId $ map
+          (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId))
+          enemies
         pure e
       _ -> GammaSlam <$> runMessage msg attrs
     _ -> GammaSlam <$> runMessage msg attrs

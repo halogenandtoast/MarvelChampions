@@ -1,15 +1,14 @@
 module Marvel.Event.Events.RelentlessAssault
   ( relentlessAssault
   , RelentlessAssault(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
@@ -34,7 +33,13 @@ instance RunMessage RelentlessAssault where
         let
           usedPhysical = Physical `elem` resources || Wild `elem` resources
           modifyDamage = if usedPhysical then withOverkill else id
-        pushChoice identityId (ChooseDamage (toSource attrs) (modifyDamage $ toDamage 5 $ FromPlayerAttack identityId) MinionEnemy)
+        pushChoice
+          identityId
+          (ChooseDamage
+            (toSource attrs)
+            (modifyDamage $ toDamage 5 $ FromPlayerAttack identityId)
+            MinionEnemy
+          )
         pure e
       _ -> RelentlessAssault <$> runMessage msg attrs
     _ -> RelentlessAssault <$> runMessage msg attrs

@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
@@ -30,7 +30,9 @@ instance RunMessage Uppercut where
     EventMessage eid msg' | eid == toId e -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId)) enemies
+        chooseOne identityId $ map
+          (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId))
+          enemies
         pure e
       _ -> Uppercut <$> runMessage msg attrs
     _ -> Uppercut <$> runMessage msg attrs

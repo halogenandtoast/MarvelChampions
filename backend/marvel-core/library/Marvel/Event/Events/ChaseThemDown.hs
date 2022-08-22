@@ -1,14 +1,13 @@
 module Marvel.Event.Events.ChaseThemDown
   ( chaseThemDown
   , ChaseThemDown(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Message
@@ -27,7 +26,8 @@ newtype ChaseThemDown = ChaseThemDown EventAttrs
 instance RunMessage ChaseThemDown where
   runMessage msg e@(ChaseThemDown attrs) = case msg of
     EventMessage eid msg' | eid == toId e -> case msg' of
-      PlayedEvent identityId _ _ ->
-        e <$ pushChoice identityId (RemoveThreat (toSource attrs) 2 ThwartableScheme)
+      PlayedEvent identityId _ _ -> e <$ pushChoice
+        identityId
+        (RemoveThreat (toSource attrs) 2 ThwartableScheme)
       _ -> ChaseThemDown <$> runMessage msg attrs
     _ -> ChaseThemDown <$> runMessage msg attrs

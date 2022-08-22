@@ -134,26 +134,20 @@ swingingWebKick = (identityEvent
   }
 
 crisisInterdiction :: CardDef
-crisisInterdiction = (identityEvent
-                    "01012"
-                    "Crisis Interdiction"
-                    2
-                    HeroAction
-                    [Thwart]
-                    [Energy]
-                  )
-  { cdAbilitySubType = Just Ability.Thwart
-  }
+crisisInterdiction =
+  (identityEvent "01012" "Crisis Interdiction" 2 HeroAction [Thwart] [Energy])
+    { cdAbilitySubType = Just Ability.Thwart
+    }
 
 photonicBlast :: CardDef
 photonicBlast = (identityEvent
-                    "01013"
-                    "Photonic Blast"
-                    3
-                    HeroAction
-                    [Attack, Superpower]
-                    [Physical]
-                  )
+                  "01013"
+                  "Photonic Blast"
+                  3
+                  HeroAction
+                  [Attack, Superpower]
+                  [Physical]
+                )
   { cdAbilitySubType = Just Ability.Attack
   }
 
@@ -191,11 +185,17 @@ splitPersonality =
   identityEvent "01025" "Split Personality" 3 Action [] [Energy]
 
 repulsorBlast :: CardDef
-repulsorBlast =
-  (identityEvent "01031" "Repulsor Blast" 1 HeroAction [Attack, Superpower] [Physical])
-    { cdCriteria = EnemyExists AttackableEnemy
-    , cdAbilitySubType = Just Ability.Attack
-    }
+repulsorBlast = (identityEvent
+                  "01031"
+                  "Repulsor Blast"
+                  1
+                  HeroAction
+                  [Attack, Superpower]
+                  [Physical]
+                )
+  { cdCriteria = EnemyExists AttackableEnemy
+  , cdAbilitySubType = Just Ability.Attack
+  }
 
 supersonicPunch :: CardDef
 supersonicPunch =
@@ -225,22 +225,26 @@ wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
 chaseThemDown :: CardDef
-chaseThemDown = (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
-  { cdAbilitySubType = Just Ability.Thwart
-  , cdCriteria = SchemeExists AnyScheme
-  , cdResponseWindow = Just $ EnemyDefeated After AnyEnemy $ AttackFromPlayer You
-  }
+chaseThemDown =
+  (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists AnyScheme
+    , cdResponseWindow = Just $ EnemyDefeated After AnyEnemy $ AttackFromPlayer
+      You
+    }
 
 relentlessAssault :: CardDef
-relentlessAssault = (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
-  { cdAbilitySubType = Just Ability.Attack
-  , cdCriteria = MinionExists AnyMinion
-  }
+relentlessAssault =
+  (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = MinionExists AnyMinion
+    }
 
 uppercut :: CardDef
-uppercut = (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
-  { cdAbilitySubType = Just Ability.Attack
-  }
+uppercut =
+  (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    }
 
 forJustice :: CardDef
 forJustice =
@@ -289,8 +293,7 @@ getBehindMe =
 
 emergency :: CardDef
 emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
-  { cdResponseWindow = Just
-    (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
+  { cdResponseWindow = Just (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
   , cdAbilitySubType = Just Ability.Thwart
   }
 

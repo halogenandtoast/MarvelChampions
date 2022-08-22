@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Attrs
+import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Id
 import Marvel.Message
