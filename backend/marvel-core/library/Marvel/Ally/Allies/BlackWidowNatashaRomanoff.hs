@@ -1,13 +1,13 @@
-module Marvel.Ally.Allies.BlackWidowNatashaRomanoff (
-  blackWidowNatashaRomanoff,
-  BlackWidowNatashaRomanoff (..),
-) where
+module Marvel.Ally.Allies.BlackWidowNatashaRomanoff
+  ( blackWidowNatashaRomanoff
+  , BlackWidowNatashaRomanoff(..)
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
@@ -15,13 +15,12 @@ import Marvel.Resource
 import Marvel.Window
 
 blackWidowNatashaRomanoff :: AllyCard BlackWidowNatashaRomanoff
-blackWidowNatashaRomanoff =
-  ally
-    BlackWidowNatashaRomanoff
-    Cards.blackWidowNatashaRomanoff
-    (Thw 2, 1)
-    (Atk 1, 1)
-    (HP 2)
+blackWidowNatashaRomanoff = ally
+  BlackWidowNatashaRomanoff
+  Cards.blackWidowNatashaRomanoff
+  (Thw 2, 1)
+  (Atk 1, 1)
+  (HP 2)
 
 newtype BlackWidowNatashaRomanoff = BlackWidowNatashaRomanoff AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
@@ -30,12 +29,12 @@ newtype BlackWidowNatashaRomanoff = BlackWidowNatashaRomanoff AllyAttrs
 instance HasAbilities BlackWidowNatashaRomanoff where
   getAbilities a =
     [ limitedWindowAbility
-        a
-        1
-        (EncounterCardReveal When AnyEncounterCard)
-        Interrupt
-        NoCriteria
-        (ExhaustCost <> ResourceCost (Just Mental))
+          a
+          1
+          (EncounterCardReveal When AnyEncounterCard)
+          Interrupt
+          NoCriteria
+          (ExhaustCost <> ResourceCost (Just Mental))
         $ runAbility a 1
     ]
 

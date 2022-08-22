@@ -1,4 +1,7 @@
-module Marvel.Card (module Marvel.Card, module X) where
+module Marvel.Card
+  ( module Marvel.Card
+  , module X
+  ) where
 
 import Marvel.Prelude
 

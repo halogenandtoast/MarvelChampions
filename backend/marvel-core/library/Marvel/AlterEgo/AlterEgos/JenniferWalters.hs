@@ -3,8 +3,8 @@ module Marvel.AlterEgo.AlterEgos.JenniferWalters where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
+import Marvel.AlterEgo.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
@@ -22,14 +22,13 @@ import Marvel.Target
 import Marvel.Window
 
 jenniferWalters :: AlterEgoCard JenniferWalters
-jenniferWalters =
-  alterEgo
-    JenniferWalters
-    Cards.jenniferWalters
-    (HP $ Static 15)
-    (HandSize 6)
-    (Rec 5)
-    [Cards.legalWork]
+jenniferWalters = alterEgo
+  JenniferWalters
+  Cards.jenniferWalters
+  (HP $ Static 15)
+  (HandSize 6)
+  (Rec 5)
+  [Cards.legalWork]
 
 newtype JenniferWalters = JenniferWalters AlterEgoAttrs
   deriving anyclass (IsAlterEgo, HasModifiersFor)
@@ -37,16 +36,16 @@ newtype JenniferWalters = JenniferWalters AlterEgoAttrs
 
 instance HasAbilities JenniferWalters where
   getAbilities a =
-    [ label "\"I Object!\"" $
-        limited (PerRound 1) $
-          limitedWindowAbility
+    [ label "\"I Object!\""
+        $ limited (PerRound 1)
+        $ limitedWindowAbility
             a
             1
             (ThreatWouldBePlaced AnyThreatSource AnyScheme)
             Interrupt
             IsSelf
             NoCost
-            $ runAbility a 1
+        $ runAbility a 1
     ]
 
 getDetails :: [WindowType] -> (SchemeId, Natural)
@@ -57,11 +56,12 @@ getDetails (_ : xs) = getDetails xs
 instance RunMessage JenniferWalters where
   runMessage msg a@(JenniferWalters attrs) = case msg of
     RanAbility (isTarget attrs -> True) 1 (getDetails -> (schemeId, n)) -> do
-      let newMsg = case schemeId of
-            SchemeMainSchemeId sid ->
-              MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
-            SchemeSideSchemeId sid ->
-              SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
+      let
+        newMsg = case schemeId of
+          SchemeMainSchemeId sid ->
+            MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
+          SchemeSideSchemeId sid ->
+            SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
       replaceMatchingMessage (const [newMsg]) $ \case
         (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
           schemeId == SchemeMainSchemeId mid

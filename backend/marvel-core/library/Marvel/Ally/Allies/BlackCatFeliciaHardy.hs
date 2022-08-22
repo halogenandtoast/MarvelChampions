@@ -1,26 +1,25 @@
-module Marvel.Ally.Allies.BlackCatFeliciaHardy (
-  BlackCatFeliciaHardy,
-  blackCatFeliciaHardy,
-) where
+module Marvel.Ally.Allies.BlackCatFeliciaHardy
+  ( BlackCatFeliciaHardy
+  , blackCatFeliciaHardy
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Resource
 import Marvel.Window
 
 blackCatFeliciaHardy :: AllyCard BlackCatFeliciaHardy
-blackCatFeliciaHardy =
-  ally
-    BlackCatFeliciaHardy
-    Cards.blackCatFeliciaHardy
-    (Thw 1, 1)
-    (Atk 1, 0)
-    (HP 2)
+blackCatFeliciaHardy = ally
+  BlackCatFeliciaHardy
+  Cards.blackCatFeliciaHardy
+  (Thw 1, 1)
+  (Atk 1, 0)
+  (HP 2)
 
 newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
   deriving anyclass (IsAlly, HasModifiersFor)
@@ -28,8 +27,8 @@ newtype BlackCatFeliciaHardy = BlackCatFeliciaHardy AllyAttrs
 
 instance HasAbilities BlackCatFeliciaHardy where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
-        runAbility a 1
+    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost
+        $ runAbility a 1
     ]
 
 relevantCards :: [Card] -> [PlayerCard]

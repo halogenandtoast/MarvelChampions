@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell #-}
-
 module Marvel.Game where
 
 import Marvel.Prelude
@@ -11,8 +10,10 @@ import Data.List (maximum)
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.Ally
+import Marvel.Ally.Types (getAllyController, getAllyDamage, getAllyUses)
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
+import Marvel.Attachment.Types (Attachment)
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Criteria
@@ -21,6 +22,7 @@ import Marvel.Deck
 import Marvel.Difficulty
 import Marvel.Discard
 import Marvel.Effect
+import Marvel.Effect.Types (Effect)
 import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Entity
@@ -83,22 +85,21 @@ data Entities = Entities
 makeLensesWith suffixedFields ''Entities
 
 defaultEntities :: Entities
-defaultEntities =
-  Entities
-    { entitiesPlayers = mempty
-    , entitiesVillains = mempty
-    , entitiesMinions = mempty
-    , entitiesAllies = mempty
-    , entitiesAttachments = mempty
-    , entitiesSupports = mempty
-    , entitiesUpgrades = mempty
-    , entitiesTreacheries = mempty
-    , entitiesObligations = mempty
-    , entitiesSideSchemes = mempty
-    , entitiesMainSchemes = mempty
-    , entitiesEffects = mempty
-    , entitiesEvents = mempty
-    }
+defaultEntities = Entities
+  { entitiesPlayers = mempty
+  , entitiesVillains = mempty
+  , entitiesMinions = mempty
+  , entitiesAllies = mempty
+  , entitiesAttachments = mempty
+  , entitiesSupports = mempty
+  , entitiesUpgrades = mempty
+  , entitiesTreacheries = mempty
+  , entitiesObligations = mempty
+  , entitiesSideSchemes = mempty
+  , entitiesMainSchemes = mempty
+  , entitiesEffects = mempty
+  , entitiesEvents = mempty
+  }
 
 data Game = Game
   { gamePhase :: Phase
@@ -197,17 +198,17 @@ runPreGameMessage msg g = case msg of
     pure $ g & windowDepthL +~ 1 & windowsL %~ (windows :)
   -- We want to empty the queue for triggering a resolution
   EndCheckWindows ->
-    pure $
-      g
-        & (windowDepthL -~ 1)
-        & (windowsL %~ drop 1)
-        & ( usedAbilitiesL
-              . each
-              %~ filter
-                ( \(a, d) ->
-                    (abilityLimit a /= PerWindow 1) || d < gameWindowDepth g
-                )
-          )
+    pure
+      $ g
+      & (windowDepthL -~ 1)
+      & (windowsL %~ drop 1)
+      & (usedAbilitiesL
+        . each
+        %~ filter
+             (\(a, d) ->
+               (abilityLimit a /= PerWindow 1) || d < gameWindowDepth g
+             )
+        )
   _ -> pure g
 
 runGameMessage :: MonadGame env m => Message -> Game -> m Game
@@ -219,8 +220,8 @@ runGameMessage msg g@Game {..} = case msg of
       [] -> throwM NoPlayers
       [p] -> push (SetPlayerOrder [p])
       players@(p : _) -> choosePlayerOrder p players
-    pure $ g {gameState = InProgress}
-  SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs}
+    pure $ g { gameState = InProgress }
+  SetPlayerOrder xs -> pure $ g { gamePlayerOrder = xs }
   RemoveFromGame target -> case target of
     ObligationTarget oid -> pure $ g & (entitiesL . obligationsL %~ delete oid)
     CardIdTarget _ -> pure g -- Should be handled by Identity
@@ -228,10 +229,10 @@ runGameMessage msg g@Game {..} = case msg of
   RemoveFromPlay target -> case target of
     IdentityTarget iid -> do
       when (length (g ^. entitiesL . playersL) <= 1) (push $ GameOver Lost)
-      pure $
-        g
-          & (entitiesL . playersL %~ delete iid)
-          & (playerOrderL %~ filter (/= iid))
+      pure
+        $ g
+        & (entitiesL . playersL %~ delete iid)
+        & (playerOrderL %~ filter (/= iid))
     AllyTarget aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
@@ -240,10 +241,8 @@ runGameMessage msg g@Game {..} = case msg of
       pure $ g & (entitiesL . alliesL %~ delete aid)
     SupportTarget sid -> do
       for_ (lookup sid $ gameSupports g) $ \support ->
-        push $
-          IdentityMessage (getSupportController support) $
-            SupportRemoved
-              sid
+        push $ IdentityMessage (getSupportController support) $ SupportRemoved
+          sid
       pure $ g & (entitiesL . supportsL %~ delete sid)
     UpgradeTarget uid -> do
       for_ (lookup uid $ gameUpgrades g) $ \upgrade ->
@@ -257,18 +256,21 @@ runGameMessage msg g@Game {..} = case msg of
       Nothing -> pure g
       Just minion -> do
         push $ DiscardedCard $ toCard minion
-        pure $ g & (entitiesL . minionsL %~ delete mid) & (removedEntitiesL . minionsL %~ insert mid minion)
+        pure
+          $ g
+          & (entitiesL . minionsL %~ delete mid)
+          & (removedEntitiesL . minionsL %~ insert mid minion)
     TreacheryTarget tid -> do
-      for_ (lookup tid $ gameTreacheries g) $
-        \treachery -> push $ DiscardedCard $ toCard treachery
+      for_ (lookup tid $ gameTreacheries g)
+        $ \treachery -> push $ DiscardedCard $ toCard treachery
       pure $ g & (entitiesL . treacheriesL %~ delete tid)
     ObligationTarget oid -> do
-      for_ (lookup oid $ gameObligations g) $
-        \obligation -> push $ DiscardedCard $ toCard obligation
+      for_ (lookup oid $ gameObligations g)
+        $ \obligation -> push $ DiscardedCard $ toCard obligation
       pure $ g & (entitiesL . obligationsL %~ delete oid)
     SideSchemeTarget sid -> do
-      for_ (lookup sid $ gameSideSchemes g) $
-        \sideScheme -> push $ DiscardedCard $ toCard sideScheme
+      for_ (lookup sid $ gameSideSchemes g)
+        $ \sideScheme -> push $ DiscardedCard $ toCard sideScheme
       pure $ g & (entitiesL . sideSchemesL %~ delete sid)
     _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
@@ -294,21 +296,20 @@ runGameMessage msg g@Game {..} = case msg of
     cards <- getAvailablePaymentSources
     abilities <- getResourceAbilities
     paid <- resourceCostPaid activeCost
-    push $
-      Ask
-        (activeCostIdentityId activeCost)
-        ( ChooseOne $
-            map PayWithCard cards
-              <> map UseAbility abilities
-              <> [FinishPayment | paid]
-        )
+    push $ Ask
+      (activeCostIdentityId activeCost)
+      (ChooseOne
+      $ map PayWithCard cards
+      <> map UseAbility abilities
+      <> [ FinishPayment | paid ]
+      )
     pure $ g & activeCostL ?~ activeCost
   Spent discard -> case g ^. activeCostL of
     Just activeCost -> do
-      let activeCost' =
-            activeCost
-              { activeCostSpentCards = discard : activeCostSpentCards activeCost
-              }
+      let
+        activeCost' = activeCost
+          { activeCostSpentCards = discard : activeCostSpentCards activeCost
+          }
       case activeCostTarget activeCost of
         ForCard card -> do
           resources <- resourcesFor discard $ Just card
@@ -325,39 +326,35 @@ runGameMessage msg g@Game {..} = case msg of
     Nothing -> error "No active cost"
   Paid payment -> case g ^. activeCostL of
     Just activeCost -> do
-      let activeCost' =
-            activeCost
-              { activeCostPayment = activeCostPayment activeCost <> payment
-              }
+      let
+        activeCost' = activeCost
+          { activeCostPayment = activeCostPayment activeCost <> payment
+          }
       cards <- getAvailablePaymentSources
       abilities <- getResourceAbilities
       paid <- resourceCostPaid activeCost'
-      push $
-        Ask
-          (activeCostIdentityId activeCost)
-          ( ChooseOne $
-              map PayWithCard cards
-                <> map UseAbility abilities
-                <> [FinishPayment | paid]
-          )
+      push
+        $ Ask (activeCostIdentityId activeCost)
+        $ ChooseOne
+        $ map PayWithCard cards
+        <> map UseAbility abilities
+        <> [ FinishPayment | paid ]
       pure $ g & activeCostL ?~ activeCost'
     Nothing -> error "No cost"
   FinishedPayment -> case g ^. activeCostL of
     Just activeCost -> do
       case activeCostTarget activeCost of
         ForCard card -> do
-          push $
-            PutCardIntoPlay
-              (activeCostIdentityId activeCost)
-              card
-              (activeCostPayment activeCost)
-              (activeCostWindow activeCost)
+          push $ PutCardIntoPlay
+            (activeCostIdentityId activeCost)
+            card
+            (activeCostPayment activeCost)
+            (activeCostWindow activeCost)
         ForAbility _ -> pure ()
         ForTreachery -> pure ()
-      pushAll $
-        map
-          (DiscardedCard . PlayerCard)
-          (reverse $ activeCostSpentCards activeCost)
+      pushAll $ map
+        (DiscardedCard . PlayerCard)
+        (reverse $ activeCostSpentCards activeCost)
       pure $ g & activeCostL .~ Nothing
     Nothing -> error "no active cost"
   CreatedEffect def source matcher -> do
@@ -389,12 +386,12 @@ runGameMessage msg g@Game {..} = case msg of
         push $ UpgradeMessage (toId upgrade) PlayedUpgrade
         pure $ g & (entitiesL . upgradesL %~ insert (toId upgrade) upgrade)
       EventType -> do
-        let event = createEvent ident card
-            mSubType = cdAbilitySubType $ getCardDef card
-            playEvent =
-              EventMessage
-                (toId event)
-                (PlayedEvent ident payment (W.windowType <$> mWindow))
+        let
+          event = createEvent ident card
+          mSubType = cdAbilitySubType $ getCardDef card
+          playEvent = EventMessage
+            (toId event)
+            (PlayedEvent ident payment (W.windowType <$> mWindow))
         playedMessage <- case mSubType of
           Just Ability.Attack -> do
             stunned <- identityMatches StunnedIdentity ident
@@ -418,11 +415,11 @@ runGameMessage msg g@Game {..} = case msg of
             [ IdentityMessage ident $ MinionEngaged minionId
             , MinionMessage minionId $ MinionEngagedIdentity ident
             ]
-          pure $
-            g
-              & (boostEntitiesL . minionsL %~ delete (toId minion))
-              & (entitiesL . minionsL %~ insert (toId minion) minion)
-              & (boostCardsL %~ delete target)
+          pure
+            $ g
+            & (boostEntitiesL . minionsL %~ delete (toId minion))
+            & (entitiesL . minionsL %~ insert (toId minion) minion)
+            & (boostCardsL %~ delete target)
         _ -> error "messed up somewhere"
     _ -> error "Unhandled"
   RevealBoostCard card enemyId -> do
@@ -431,53 +428,52 @@ runGameMessage msg g@Game {..} = case msg of
       TreacheryType -> do
         let treachery = createTreachery card
         push (RevealedAsBoost (toTarget treachery) enemyId)
-        pure $
-          g
-            & (boostEntitiesL . treacheriesL %~ insert (toId treachery) treachery)
-            & (boostCardsL . at (toTarget treachery) ?~ card)
+        pure
+          $ g
+          & (boostEntitiesL . treacheriesL %~ insert (toId treachery) treachery)
+          & (boostCardsL . at (toTarget treachery) ?~ card)
       MinionType -> do
         let minion = createMinion player card
         push (RevealedAsBoost (toTarget minion) enemyId)
-        pure $
-          g
-            & (boostEntitiesL . minionsL %~ insert (toId minion) minion)
-            & (boostCardsL . at (toTarget minion) ?~ card)
+        pure
+          $ g
+          & (boostEntitiesL . minionsL %~ insert (toId minion) minion)
+          & (boostCardsL . at (toTarget minion) ?~ card)
       AttachmentType -> do
         let attachment = createAttachment card
         push (RevealedAsBoost (toTarget attachment) enemyId)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . attachmentsL
-                  %~ insert (toId attachment) attachment
-              )
-            & (boostCardsL . at (toTarget attachment) ?~ card)
+        pure
+          $ g
+          & (boostEntitiesL
+            . attachmentsL
+            %~ insert (toId attachment) attachment
+            )
+          & (boostCardsL . at (toTarget attachment) ?~ card)
       ObligationType -> do
         let obligation = createObligation card
         push (RevealedAsBoost (toTarget obligation) enemyId)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . obligationsL
-                  %~ insert (toId obligation) obligation
-              )
-            & (boostCardsL . at (toTarget obligation) ?~ card)
+        pure
+          $ g
+          & (boostEntitiesL
+            . obligationsL
+            %~ insert (toId obligation) obligation
+            )
+          & (boostCardsL . at (toTarget obligation) ?~ card)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         push (RevealedAsBoost (toTarget sideScheme) enemyId)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . sideSchemesL
-                  %~ insert (toId sideScheme) sideScheme
-              )
-            & (boostCardsL . at (toTarget sideScheme) ?~ card)
+        pure
+          $ g
+          & (boostEntitiesL
+            . sideSchemesL
+            %~ insert (toId sideScheme) sideScheme
+            )
+          & (boostCardsL . at (toTarget sideScheme) ?~ card)
       _ -> pure g
   ClearBoosts -> do
     pushAll $ map (DiscardedCard . EncounterCard) (elems gameBoostCards)
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
-  ClearRemoved ->
-    pure $ g & removedEntitiesL .~ defaultEntities
+  ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
   RevealEncounterCard ident card -> do
     pushAll
       [ FocusCards [EncounterCard card]
@@ -491,14 +487,15 @@ runGameMessage msg g@Game {..} = case msg of
       AttachmentType -> do
         let attachment = createAttachment card
         pushAll [AttachmentMessage (toId attachment) $ RevealAttachment ident]
-        pure $
-          g
-            & (entitiesL . attachmentsL %~ insert (toId attachment) attachment)
+        pure
+          $ g
+          & (entitiesL . attachmentsL %~ insert (toId attachment) attachment)
       MinionType -> do
-        let minion = createMinion ident card
-            isTough = Toughness `member` cdKeywords (getCardDef card)
-        pushAll $
-          [MinionMessage (toId minion) MinionBecomeTough | isTough]
+        let
+          minion = createMinion ident card
+          isTough = Toughness `member` cdKeywords (getCardDef card)
+        pushAll
+          $ [ MinionMessage (toId minion) MinionBecomeTough | isTough ]
           <> [ FocusCards [toCard minion]
              , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
              , MinionMessage (toId minion) (RevealMinion ident)
@@ -514,17 +511,17 @@ runGameMessage msg g@Game {..} = case msg of
         pushAll
           [ FocusCards [toCard treachery]
           , CheckWindows
-              [ W.Window When $
-                  W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck
-              ]
+            [ W.Window When
+                $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck
+            ]
           , TreacheryMessage (toId treachery) $ RevealTreachery ident
           , TreacheryMessage (toId treachery) $ CheckTreacheryCondition ident
           , UnfocusCards
           , TreacheryMessage (toId treachery) $ ResolvedTreachery ident
           ]
-        pure $
-          g
-            & (entitiesL . treacheriesL %~ insert (toId treachery) treachery)
+        pure
+          $ g
+          & (entitiesL . treacheriesL %~ insert (toId treachery) treachery)
       ObligationType -> do
         let obligation = createObligation card
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
@@ -534,47 +531,38 @@ runGameMessage msg g@Game {..} = case msg of
           , UnfocusCards
           , ObligationMessage (toId obligation) $ ResolvedObligation ident
           ]
-        pure $
-          g
-            & (entitiesL . obligationsL %~ insert (toId obligation) obligation)
+        pure
+          $ g
+          & (entitiesL . obligationsL %~ insert (toId obligation) obligation)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         pushAll
           [ SideSchemeMessage (toId sideScheme) SideSchemePlaceInitialThreat
           , SideSchemeMessage (toId sideScheme) RevealSideScheme
           ]
-        pure $
-          g
-            & (entitiesL . sideSchemesL %~ insert (toId sideScheme) sideScheme)
+        pure
+          $ g
+          & (entitiesL . sideSchemesL %~ insert (toId sideScheme) sideScheme)
       _ -> error "Unhandled"
   EndCheckWindows -> pure g
-  IdentityEndedTurn ident ->
-    pure $
-      g & usedAbilitiesL . ix ident
-        %~ filter
-          ((/= PerTurn 1) . abilityLimit . fst)
-  EndRound ->
-    pure $
-      g & usedAbilitiesL . each
-        %~ filter
-          ((/= PerRound 1) . abilityLimit . fst)
+  IdentityEndedTurn ident -> pure $ g & usedAbilitiesL . ix ident %~ filter
+    ((/= PerTurn 1) . abilityLimit . fst)
+  EndRound -> pure $ g & usedAbilitiesL . each %~ filter
+    ((/= PerRound 1) . abilityLimit . fst)
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
   ReturnToHand target -> case target of
     AllyTarget aid -> do
-      for_ (lookup aid $ gameAllies g) $ \ally ->
-        pushAll $
-          map
-            (IdentityMessage (getAllyController ally))
-            [ AllyRemoved aid
-            , AddToHand $
-                MkPlayerCard
-                  (CardId $ unAllyId aid)
-                  (getCardDef ally)
-                  (Just $ getAllyController ally)
-                  (Just $ getAllyController ally)
-            ]
+      for_ (lookup aid $ gameAllies g) $ \ally -> pushAll $ map
+        (IdentityMessage (getAllyController ally))
+        [ AllyRemoved aid
+        , AddToHand $ MkPlayerCard
+          (CardId $ unAllyId aid)
+          (getCardDef ally)
+          (Just $ getAllyController ally)
+          (Just $ getAllyController ally)
+        ]
       pure $ g & entitiesL . alliesL %~ delete aid
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
@@ -583,86 +571,76 @@ runGameMessage msg g@Game {..} = case msg of
     abilities <- getsGame getAbilities
     usedAbilities <- getUsedAbilities
     attrs <- getActivePlayer
-    playableCards <-
-      concatMapM
-        (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
-        windows
+    playableCards <- concatMapM
+      (\w -> map (, Just w) <$> getWindowPlayableCards w attrs)
+      windows
     ident <- toId <$> getActivePlayer
-    validAbilities <-
-      filterM
-        ( andM
-            . sequence
-              [ pure . passesUseLimit ident usedAbilities
-              , passesCriteria ident
-              , passesCanAffordCost ident
-              , \a -> anyM (`abilityInWindow` a) windows
-              ]
-        )
-        abilities
+    validAbilities <- filterM
+      (andM . sequence
+        [ pure . passesUseLimit ident usedAbilities
+        , passesCriteria ident
+        , passesCanAffordCost ident
+        , \a -> anyM (`abilityInWindow` a) windows
+        ]
+      )
+      abilities
     let forcedAbiltiies = filter isForcedAbility validAbilities
     case (forcedAbiltiies, validAbilities, playableCards) of
       ([], [], []) -> pure ()
       ([], as, cs) ->
-        push $
-          Ask ident
-            . ChooseOne
-            $ Label "Use no responses/interrupts" [] :
-            map (UseAbility . (choicesL <>~ [Run [CheckWindows windows]])) as
-              <> map
-                ( \(c, mwindow) ->
-                    TargetLabel
-                      (CardIdTarget $ pcCardId c)
-                      [PlayCard c mwindow, Run [CheckWindows windows]]
-                )
-                cs
-      (forced, _, _) ->
-        push $
-          Ask ident . ChooseOne $
-            map
-              (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
-              forced
+        push
+          $ Ask ident
+          . ChooseOne
+          $ Label "Use no responses/interrupts" []
+          : map (UseAbility . (choicesL <>~ [Run [CheckWindows windows]])) as
+          <> map
+               (\(c, mwindow) -> TargetLabel
+                 (CardIdTarget $ pcCardId c)
+                 [PlayCard c mwindow, Run [CheckWindows windows]]
+               )
+               cs
+      (forced, _, _) -> push $ Ask ident . ChooseOne $ map
+        (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
+        forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
     allies <- selectList UnexhaustedAlly
     identities <- if defensePriority == AllyIfAble && not (null allies)
       then pure mempty
       else select $ UnexhaustedIdentity <> HeroIdentity
-    push $
-      Ask ident
-        . ChooseOne
-        $ Label "No defenders" [] :
-        [Defend enemyId | ident `member` identities]
-        <> map (`AllyDefend` enemyId) allies
+    push
+      $ Ask ident
+      . ChooseOne
+      $ Label "No defenders" []
+      : [ Defend enemyId | ident `member` identities ]
+      <> map (`AllyDefend` enemyId) allies
     pure g
   _ -> pure g
 
-getWindowPlayableCards ::
-  (HasCallStack, MonadGame env m) =>
-  Window ->
-  PlayerIdentity ->
-  m [PlayerCard]
-getWindowPlayableCards window player =
-  filterM
-    (isWindowPlayable window player)
-    cards
- where
-  cards = unHand $ playerIdentityHand player
+getWindowPlayableCards
+  :: (HasCallStack, MonadGame env m)
+  => Window
+  -> PlayerIdentity
+  -> m [PlayerCard]
+getWindowPlayableCards window player = filterM
+  (isWindowPlayable window player)
+  cards
+  where cards = unHand $ playerIdentityHand player
 
-isWindowPlayable ::
-  (HasCallStack, MonadGame env m) =>
-  Window ->
-  PlayerIdentity ->
-  PlayerCard ->
-  m Bool
+isWindowPlayable
+  :: (HasCallStack, MonadGame env m)
+  => Window
+  -> PlayerIdentity
+  -> PlayerCard
+  -> m Bool
 isWindowPlayable window attrs c = do
   resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
-  passedWindow <-
-    maybe
-      (pure False)
-      (\matcher -> windowMatches matcher window GameSource)
-      (cdResponseWindow def)
+  passedWindow <- maybe
+    (pure False)
+    (\matcher -> windowMatches matcher window GameSource)
+    (cdResponseWindow def)
   pure $ length resources >= modifiedCost && passedCriteria && passedWindow
  where
   ident = toId attrs
@@ -687,13 +665,11 @@ isWindowPlayable window attrs c = do
     ExtendedCardExists m -> selectAny m
 
 abilityInWindow :: MonadGame env m => Window -> Ability -> m Bool
-abilityInWindow window a =
-  maybe
-    (pure False)
-    (\matcher -> windowMatches matcher window source)
-    (abilityWindow a)
- where
-  source = abilitySource a
+abilityInWindow window a = maybe
+  (pure False)
+  (\matcher -> windowMatches matcher window source)
+  (abilityWindow a)
+  where source = abilitySource a
 
 instance RunMessage Entities where
   runMessage msg entities =
@@ -763,33 +739,31 @@ createEffect ident cardCode source matcher =
   lookupEffect cardCode source matcher ident
 
 newGame :: PlayerIdentity -> Scenario -> Game
-newGame player scenario =
-  Game
-    { gamePhase = PlayerPhase
-    , gameState = Unstarted
-    , gamePlayerOrder = [toId player]
-    , gameBoostEntities = defaultEntities
-    , gameRemovedEntities = defaultEntities
-    , gameEntities =
-        defaultEntities
-          { entitiesPlayers = fromList [(toId player, player)]
-          }
-    , gameActiveCost = Nothing
-    , gameWindowDepth = 0
-    , gameWindows = []
-    , gameQuestion = mempty
-    , gameUsedAbilities = mempty
-    , gameActivePlayer = toId player
-    , gameScenario = scenario
-    , gameFocusedCards = []
-    , gameBoostCards = mempty
+newGame player scenario = Game
+  { gamePhase = PlayerPhase
+  , gameState = Unstarted
+  , gamePlayerOrder = [toId player]
+  , gameBoostEntities = defaultEntities
+  , gameRemovedEntities = defaultEntities
+  , gameEntities = defaultEntities
+    { entitiesPlayers = fromList [(toId player, player)]
     }
+  , gameActiveCost = Nothing
+  , gameWindowDepth = 0
+  , gameWindows = []
+  , gameQuestion = mempty
+  , gameUsedAbilities = mempty
+  , gameActivePlayer = toId player
+  , gameScenario = scenario
+  , gameFocusedCards = []
+  , gameBoostCards = mempty
+  }
 
 addPlayer :: MonadGame env m => PlayerIdentity -> m ()
 addPlayer player =
-  withGame_ $
-    (entitiesL . playersL %~ insert (toId player) player)
-      . (playerOrderL <>~ [toId player])
+  withGame_
+    $ (entitiesL . playersL %~ insert (toId player) player)
+    . (playerOrderL <>~ [toId player])
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -797,7 +771,7 @@ withGame f = do
   atomicModifyIORef' gameRef f
 
 withGame_ :: MonadGame env m => (Game -> Game) -> m ()
-withGame_ f = withGame ((,()) . f)
+withGame_ f = withGame ((, ()) . f)
 
 withGameM :: MonadGame env m => (Game -> m Game) -> m ()
 withGameM f = getGame >>= f >>= withGame_ . const
@@ -826,12 +800,13 @@ class
 initPlayer :: MonadRandom m => CardCode -> Deck -> m PlayerIdentity
 initPlayer cardCode deck = do
   ident <- getRandom
-  let mAlterEgo = do
-        def <- lookup (toAlterEgoCardCode cardCode) allAlterEgosMap
-        lookupAlterEgo def ident
-      mHero = do
-        def <- lookup (toHeroCardCode cardCode) allHeroesMap
-        lookupHero def ident
+  let
+    mAlterEgo = do
+      def <- lookup (toAlterEgoCardCode cardCode) allAlterEgosMap
+      lookupAlterEgo def ident
+    mHero = do
+      def <- lookup (toHeroCardCode cardCode) allHeroesMap
+      lookupHero def ident
   case (mAlterEgo, mHero) of
     (Just alterEgoSide, Just heroSide) ->
       pure . setDeck deck $ createIdentity ident alterEgoSide heroSide
@@ -876,8 +851,8 @@ getAvailablePaymentSources = do
   players <- toList <$> getsGame gamePlayers
   pure $ concatMap (unHand . playerIdentityHand) players
 
-getAvailableResourcesFor ::
-  (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
+getAvailableResourcesFor
+  :: (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
 getAvailableResourcesFor mc = do
   players <- toList <$> getsGame gamePlayers
   abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
@@ -890,18 +865,17 @@ getResourceAbilities = do
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
   filterM
-    ( andM
-        . sequence
-          [ pure . passesUseLimit (toId player) usedAbilities
-          , pure . (== Resource) . abilityType
-          , passesCanAffordCost (toId player)
-          , passesCriteria (toId player)
-          ]
+    (andM . sequence
+      [ pure . passesUseLimit (toId player) usedAbilities
+      , pure . (== Resource) . abilityType
+      , passesCanAffordCost (toId player)
+      , passesCriteria (toId player)
+      ]
     )
     abilities
 
-gameSelectIdentity ::
-  MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
+gameSelectIdentity
+  :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
   identities <- toList <$> getsGame gamePlayers
   result <- filterM (matchFilter m) identities
@@ -917,7 +891,11 @@ gameSelectIdentity m = do
     StunnedIdentity -> pure . identityIsStunned
     IdentityEngagedWith minionMatcher -> \ident -> do
       minions <- select minionMatcher
-      pure . not . null $ playerIdentityMinions ident `HashSet.intersection` minions
+      pure
+        . not
+        . null
+        $ playerIdentityMinions ident
+        `HashSet.intersection` minions
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
     IdentityWithDamage gameValueMatcher ->
@@ -932,25 +910,23 @@ gameSelectIdentity m = do
       ap <- getActivePlayer
       pure $ a == ap
 
-gameSelectCharacter ::
-  MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
+gameSelectCharacter
+  :: MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
   CharacterWithDamage gameValueMatcher -> do
-    villains <-
-      map VillainCharacter
-        <$> selectList (VillainWithDamage gameValueMatcher)
-    minions <-
-      map MinionCharacter
-        <$> selectList (MinionWithDamage gameValueMatcher)
-    identities <-
-      map IdentityCharacter
-        <$> selectList (IdentityWithDamage gameValueMatcher)
+    villains <- map VillainCharacter
+      <$> selectList (VillainWithDamage gameValueMatcher)
+    minions <- map MinionCharacter
+      <$> selectList (MinionWithDamage gameValueMatcher)
+    identities <- map IdentityCharacter
+      <$> selectList (IdentityWithDamage gameValueMatcher)
     allies <- map AllyCharacter <$> selectList (AllyWithDamage gameValueMatcher)
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
   DamageableCharacter -> do
-    let enemyToCharacter = \case
-          EnemyMinionId mid -> MinionCharacter mid
-          EnemyVillainId vid -> VillainCharacter vid
+    let
+      enemyToCharacter = \case
+        EnemyMinionId mid -> MinionCharacter mid
+        EnemyVillainId vid -> VillainCharacter vid
     enemies <- selectMap enemyToCharacter DamageableEnemy
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
@@ -967,21 +943,21 @@ gameSelectCharacter = \case
       <$> gameSelectCharacter x
       <*> traverse gameSelectCharacter xs
 
-gameSelectExtendedCard ::
-  MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
+gameSelectExtendedCard
+  :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
   let excludedCards = getExcludedCards m
   players <- toList <$> getsGame gamePlayers
   oldVal <- getsGame id
-  withGameM $ \g ->
-    foldlM
-      (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId)
-      g
-      excludedCards
-  let allCards =
-        concatMap (unHand . playerIdentityHand) players
-          <> concatMap (unDiscard . playerIdentityDiscard) players
-          <> concatMap (unDeck . playerIdentityDeck) players
+  withGameM $ \g -> foldlM
+    (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId)
+    g
+    excludedCards
+  let
+    allCards =
+      concatMap (unHand . playerIdentityHand) players
+        <> concatMap (unDiscard . playerIdentityDiscard) players
+        <> concatMap (unDeck . playerIdentityDeck) players
   result <- go players allCards m
   withGame_ (const oldVal)
   pure $ HashSet.fromList result
@@ -1001,25 +977,24 @@ gameSelectExtendedCard m = do
       pure $ filter (cardMatch cardMatcher) cards
     InDiscardOf identityMatcher extendedCardMatcher -> do
       identities <- selectList identityMatcher
-      let players' = filter ((`elem` identities) . toId) players
-          cards' =
-            filter (`elem` cards) $
-              concatMap (unDiscard . playerIdentityDiscard) players'
+      let
+        players' = filter ((`elem` identities) . toId) players
+        cards' = filter (`elem` cards)
+          $ concatMap (unDiscard . playerIdentityDiscard) players'
       go players cards' extendedCardMatcher
     TopmostCardInDiscardOf identityMatcher cardMatcher -> do
       identities <- selectList identityMatcher
       let players' = filter ((`elem` identities) . toId) players
-      pure $
-        mapMaybe
-          ( find (and . sequence [(`elem` cards), cardMatch cardMatcher])
-              . unDiscard
-              . playerIdentityDiscard
-          )
-          players'
+      pure $ mapMaybe
+        (find (and . sequence [(`elem` cards), cardMatch cardMatcher])
+        . unDiscard
+        . playerIdentityDiscard
+        )
+        players'
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
 
-gameSelectEncounterCard ::
-  MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
+gameSelectEncounterCard
+  :: MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
 gameSelectEncounterCard m = case m of
   NemesisSetFor identityId -> do
     mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
@@ -1057,12 +1032,9 @@ gameSelectSupport = \case
   SupportControlledBy identityMatcher -> do
     supports <- toList <$> getsGame gameSupports
     identities <- select identityMatcher
-    pure $
-      HashSet.fromList $
-        map toId $
-          filter
-            ((`member` identities) . getSupportController)
-            supports
+    pure $ HashSet.fromList $ map toId $ filter
+      ((`member` identities) . getSupportController)
+      supports
   SupportWithUses gameValueMatcher -> do
     upgrades <- toList <$> getsGame gameSupports
     HashSet.fromList
@@ -1085,8 +1057,8 @@ gameSelectUpgrade m = do
       pure $ getUpgradeController upgrade `member` identities
     UpgradeMatches xs -> andM . traverse matchFilter xs
 
-gameSelectAttachment ::
-  MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectAttachment
+  :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectAttachment m = do
   attachments <- toList <$> getsGame gameAttachments
   result <- filterM (matchFilter m) attachments
@@ -1101,8 +1073,10 @@ gameSelectEnemy m = do
   minions <- toList <$> getsGame gameMinions
   removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
   removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
-  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) (villains <> removedVillains)
-  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) (minions <> removedMinions)
+  villains' <- map (EnemyVillainId . toId)
+    <$> filterM (`goVillain` m) (villains <> removedVillains)
+  minions' <- map (EnemyMinionId . toId)
+    <$> filterM (`goMinion` m) (minions <> removedMinions)
   pure $ HashSet.fromList (villains' <> minions')
  where
   goVillain e = \case
@@ -1173,8 +1147,8 @@ gameSelectMinion m = do
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
-gameSelectTreachery ::
-  MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
+gameSelectTreachery
+  :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case
   AnyTreachery -> do
     treacheries <- toList <$> getsGame gameTreacheries
@@ -1185,10 +1159,10 @@ gameSelectScheme = \case
   AnyScheme -> do
     mainSchemes <- toList <$> getsGame gameMainSchemes
     sideSchemes <- toList <$> getsGame gameSideSchemes
-    pure $
-      HashSet.fromList $
-        map (SchemeMainSchemeId . toId) mainSchemes
-          <> map (SchemeSideSchemeId . toId) sideSchemes
+    pure
+      $ HashSet.fromList
+      $ map (SchemeMainSchemeId . toId) mainSchemes
+      <> map (SchemeSideSchemeId . toId) sideSchemes
   Matchers.MainScheme -> do
     mainSchemeIds <-
       map (SchemeMainSchemeId . toId) . toList <$> getsGame gameMainSchemes
@@ -1196,52 +1170,47 @@ gameSelectScheme = \case
   SchemeWithId enemyId -> case enemyId of
     SchemeMainSchemeId mainSchemeId -> do
       mainSchemes <- toList <$> getsGame gameMainSchemes
-      pure . fromList $
-        map (SchemeMainSchemeId . toId) $
-          filter
-            ((== mainSchemeId) . toId)
-            mainSchemes
-    SchemeSideSchemeId sideSchemeId ->
-      HashSet.map SchemeSideSchemeId
-        <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
+      pure . fromList $ map (SchemeMainSchemeId . toId) $ filter
+        ((== mainSchemeId) . toId)
+        mainSchemes
+    SchemeSideSchemeId sideSchemeId -> HashSet.map SchemeSideSchemeId
+      <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
   ThwartableScheme -> do
     crisisSideSchemes <- selectAny CrisisSideScheme
     sideSchemes <- toList <$> getsGame gameSideSchemes
     if crisisSideSchemes
-      then
-        pure $
-          HashSet.fromList $
-            map
-              (SchemeSideSchemeId . toId)
-              (filter ((> 0) . getSideSchemeThreat) sideSchemes)
+      then pure $ HashSet.fromList $ map
+        (SchemeSideSchemeId . toId)
+        (filter ((> 0) . getSideSchemeThreat) sideSchemes)
       else do
         mainSchemes <- toList <$> getsGame gameMainSchemes
-        pure $
-          HashSet.fromList $
-            map
+        pure
+          $ HashSet.fromList
+          $ map
               (SchemeMainSchemeId . toId)
               (filter ((> 0) . getMainSchemeThreat) mainSchemes)
-              <> map
-                (SchemeSideSchemeId . toId)
-                (filter ((> 0) . getSideSchemeThreat) sideSchemes)
+          <> map
+               (SchemeSideSchemeId . toId)
+               (filter ((> 0) . getSideSchemeThreat) sideSchemes)
 
-gameSelectCountScheme ::
-  MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
+gameSelectCountScheme
+  :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountScheme aggregate matcher = do
   schemes <- toList <$> gameSelectScheme matcher
   case aggregate of
     SchemeThreat -> do
-      let toThreat = \case
-            SchemeMainSchemeId sid -> do
-              mMainScheme <- getsGame (lookup sid . gameMainSchemes)
-              pure $ maybe 0 getMainSchemeThreat mMainScheme
-            SchemeSideSchemeId sid -> do
-              mSideScheme <- getsGame (lookup sid . gameSideSchemes)
-              pure $ maybe 0 getSideSchemeThreat mSideScheme
+      let
+        toThreat = \case
+          SchemeMainSchemeId sid -> do
+            mMainScheme <- getsGame (lookup sid . gameMainSchemes)
+            pure $ maybe 0 getMainSchemeThreat mMainScheme
+          SchemeSideSchemeId sid -> do
+            mSideScheme <- getsGame (lookup sid . gameSideSchemes)
+            pure $ maybe 0 getSideSchemeThreat mSideScheme
       sum <$> traverse toThreat schemes
 
-gameSelectSideScheme ::
-  MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
+gameSelectSideScheme
+  :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
   sideSchemes <- toList <$> getsGame gameSideSchemes
   result <- filterM (matchFilter m) sideSchemes
@@ -1264,18 +1233,17 @@ getModifiers a = do
   events <- toList <$> getsGame gameEvents
   players <- toList <$> getsGame gamePlayers
   sideSchemes <- toList <$> getsGame gameSideSchemes
-  mconcat
-    <$> sequence
-      [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
-      ]
+  mconcat <$> sequence
+    [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
+    ]
 
 getCurrentWindows :: MonadGame env m => m [Window]
 getCurrentWindows = do
@@ -1315,11 +1283,11 @@ class Count a where
   data QueryCount a
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
 
-gameSelectCountIdentity ::
-  MonadGame env m =>
-  QueryCount IdentityMatcher ->
-  IdentityMatcher ->
-  m Natural
+gameSelectCountIdentity
+  :: MonadGame env m
+  => QueryCount IdentityMatcher
+  -> IdentityMatcher
+  -> m Natural
 gameSelectCountIdentity aggregate matcher = do
   identities <-
     filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers

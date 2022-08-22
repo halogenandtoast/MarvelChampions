@@ -3,8 +3,8 @@ module Marvel.AlterEgo.AlterEgos.PeterParker where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.AlterEgo.Attrs
 import Marvel.AlterEgo.Cards qualified as Cards
+import Marvel.AlterEgo.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity

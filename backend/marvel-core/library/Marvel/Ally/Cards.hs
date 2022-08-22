@@ -11,27 +11,25 @@ import Marvel.Resource
 import Marvel.Trait
 
 allAllies :: HashMap CardCode CardDef
-allAllies =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [ blackCatFeliciaHardy
-      , spiderWomanJessicaDrew
-      , hellcatPatsyWalker
-      , warMachineJamesRhodes
-      , shuri
-      , hulkBruceBanner
-      , tigraGreerGrantNelson
-      , daredevilMattMurdock
-      , jessicaJones
-      , hawkeyeClintBarton
-      , mariaHill
-      , vision
-      , blackWidowNatashaRomanoff
-      , lukeCage
-      , mockingbirdBobbiMorse
-      , nickFury
-      ]
+allAllies = fromList $ map
+  (toCardCode &&& id)
+  [ blackCatFeliciaHardy
+  , spiderWomanJessicaDrew
+  , hellcatPatsyWalker
+  , warMachineJamesRhodes
+  , shuri
+  , hulkBruceBanner
+  , tigraGreerGrantNelson
+  , daredevilMattMurdock
+  , jessicaJones
+  , hawkeyeClintBarton
+  , mariaHill
+  , vision
+  , blackWidowNatashaRomanoff
+  , lukeCage
+  , mockingbirdBobbiMorse
+  , nickFury
+  ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
 ally code name cost traits resources aspect =
@@ -45,61 +43,77 @@ basicAlly :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 basicAlly code name cost traits resources =
   baseAlly code name cost traits resources Nothing
 
-baseAlly ::
-  CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
-baseAlly code name cost traits resources mAspect =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Just cost
-    , cdTraits = fromList traits
-    , cdKeywords = mempty
-    , cdCardType = AllyType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = True
-    , cdAspect = mAspect
-    , cdEncounterSet = Nothing
-    , cdEncounterSetQuantity = Nothing
-    , cdCriteria = NoCriteria
-    , cdResources = map (PrintedResource,) resources
-    , cdBoostIcons = []
-    , cdResponseWindow = Nothing
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+baseAlly
+  :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
+baseAlly code name cost traits resources mAspect = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Just cost
+  , cdTraits = fromList traits
+  , cdKeywords = mempty
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = True
+  , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = map (PrintedResource, ) resources
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 blackCatFeliciaHardy :: CardDef
-blackCatFeliciaHardy =
-  identityAlly
-    "01002"
-    ("Black Cat" <:> "Felicia Hardy")
-    2
-    [HeroForHire]
-    [Energy]
+blackCatFeliciaHardy = identityAlly
+  "01002"
+  ("Black Cat" <:> "Felicia Hardy")
+  2
+  [HeroForHire]
+  [Energy]
 
 spiderWomanJessicaDrew :: CardDef
-spiderWomanJessicaDrew =
-  identityAlly "01011" ("Spider-Woman" <:> "Jessica Drew") 3 [Avenger, Spy] [Wild]
+spiderWomanJessicaDrew = identityAlly
+  "01011"
+  ("Spider-Woman" <:> "Jessica Drew")
+  3
+  [Avenger, Spy]
+  [Wild]
 
 hellcatPatsyWalker :: CardDef
 hellcatPatsyWalker =
   identityAlly "01020" ("Hellcat" <:> "Patsy Walker") 3 [Avenger] [Wild]
 
 warMachineJamesRhodes :: CardDef
-warMachineJamesRhodes =
-  identityAlly "01030" ("War Machine" <:> "James Rhodes") 4 [Shield, Soldier] [Wild]
+warMachineJamesRhodes = identityAlly
+  "01030"
+  ("War Machine" <:> "James Rhodes")
+  4
+  [Shield, Soldier]
+  [Wild]
 
 shuri :: CardDef
 shuri = identityAlly "01041" "Shuri" 2 [Genius, Wakanda] [Physical]
 
 hulkBruceBanner :: CardDef
-hulkBruceBanner =
-  ally "01050" ("Hulk" <:> "Bruce Banner") 2 [Avenger, Gamma] [Energy] Aggression
+hulkBruceBanner = ally
+  "01050"
+  ("Hulk" <:> "Bruce Banner")
+  2
+  [Avenger, Gamma]
+  [Energy]
+  Aggression
 
 tigraGreerGrantNelson :: CardDef
-tigraGreerGrantNelson =
-  ally "01051" ("Tigra" <:> "Greer Grant Nelson") 3 [Avenger] [Mental] Aggression
+tigraGreerGrantNelson = ally
+  "01051"
+  ("Tigra" <:> "Greer Grant Nelson")
+  3
+  [Avenger]
+  [Mental]
+  Aggression
 
 daredevilMattMurdock :: CardDef
 daredevilMattMurdock =
@@ -119,14 +133,13 @@ vision :: CardDef
 vision = ally "01068" "Vision" 4 [Android, Avenger] [Physical] Leadership
 
 blackWidowNatashaRomanoff :: CardDef
-blackWidowNatashaRomanoff =
-  ally
-    "01075"
-    ("Black Widow" <:> "Natasha Romanoff")
-    3
-    [Shield, Spy]
-    [Physical]
-    Protection
+blackWidowNatashaRomanoff = ally
+  "01075"
+  ("Black Widow" <:> "Natasha Romanoff")
+  3
+  [Shield, Spy]
+  [Physical]
+  Protection
 
 lukeCage :: CardDef
 lukeCage = ally "01076" "Luke Cage" 4 [Defender] [Energy] Protection

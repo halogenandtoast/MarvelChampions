@@ -11,7 +11,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Effect.Attrs
+import Marvel.Effect.Types
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message

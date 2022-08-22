@@ -1,7 +1,8 @@
-module Marvel.Attachment.Attrs where
+module Marvel.Attachment.Types where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Card
 import Marvel.Entity
@@ -11,6 +12,58 @@ import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Text.Show qualified
+
+data Attachment = forall a . IsAttachment a => Attachment a
+
+instance Show Attachment where
+  show (Attachment a) = show a
+
+instance ToJSON Attachment where
+  toJSON (Attachment a) = toJSON a
+
+instance Eq Attachment where
+  (Attachment (a :: a)) == (Attachment (b :: b)) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+data SomeAttachmentCard = forall a . IsAttachment a => SomeAttachmentCard
+  (AttachmentCard a)
+
+liftAttachmentCard
+  :: (forall a . AttachmentCard a -> b) -> SomeAttachmentCard -> b
+liftAttachmentCard f (SomeAttachmentCard a) = f a
+
+someAttachmentCardCode :: SomeAttachmentCard -> CardCode
+someAttachmentCardCode = liftAttachmentCard cbCardCode
+
+instance Entity Attachment where
+  type EntityId Attachment = AttachmentId
+  type EntityAttrs Attachment = AttachmentAttrs
+  toId = toId . toAttrs
+  toAttrs (Attachment a) = toAttrs a
+
+instance RunMessage Attachment where
+  runMessage msg (Attachment a) = Attachment <$> runMessage msg a
+
+instance IsSource Attachment where
+  toSource = AttachmentSource . toId
+
+instance IsTarget Attachment where
+  toTarget = AttachmentTarget . toId
+
+instance HasAbilities Attachment where
+  getAbilities (Attachment a) = getAbilities a
+
+instance HasModifiersFor Attachment where
+  getModifiersFor source target (Attachment a) =
+    getModifiersFor source target a
+
+instance IsCard Attachment where
+  toCard = toCard . toAttrs
+
+instance HasCardDef Attachment where
+  getCardDef = getCardDef . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AttachmentAttrs, EntityId a ~ AttachmentId, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a
 

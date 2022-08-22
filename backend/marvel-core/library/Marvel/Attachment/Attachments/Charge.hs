@@ -1,13 +1,13 @@
-module Marvel.Attachment.Attachments.Charge (
-  charge,
-  Charge (..),
-) where
+module Marvel.Attachment.Attachments.Charge
+  ( charge
+  , Charge(..)
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attachment.Attrs
 import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
@@ -33,11 +33,11 @@ instance HasAbilities Charge where
   getAbilities (Charge a) = case attachmentEnemy a of
     Just enemyId ->
       [ windowAbility
-          a
-          1
-          (EnemyAttacked When (EnemyWithId enemyId) AnyIdentity)
-          ForcedInterrupt
-          NoCost
+            a
+            1
+            (EnemyAttacked When (EnemyWithId enemyId) AnyIdentity)
+            ForcedInterrupt
+            NoCost
           $ runAbility a 1
       ]
     _ -> []
@@ -55,15 +55,16 @@ instance RunMessage Charge where
         push $ VillainMessage villainId $ AttachedToVillain aid
         pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> Charge <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 _ ->
-      case attachmentEnemy attrs of
-        Just (EnemyVillainId vid) -> do
-          replaceMatchingMessage
-            (const [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a])
-            $ \case
+    RanAbility (isTarget a -> True) 1 _ -> case attachmentEnemy attrs of
+      Just (EnemyVillainId vid) -> do
+        replaceMatchingMessage
+            (const
+              [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a]
+            )
+          $ \case
               VillainMessage vid' VillainEndAttack -> vid == vid'
               _ -> False
-          pushAll [VillainMessage vid VillainAttackGainOverkill]
-          pure a
-        _ -> error "Invalid call"
+        pushAll [VillainMessage vid VillainAttackGainOverkill]
+        pure a
+      _ -> error "Invalid call"
     _ -> Charge <$> runMessage msg attrs

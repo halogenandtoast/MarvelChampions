@@ -1,10 +1,11 @@
-module Marvel.AlterEgo.Attrs
-  ( module Marvel.AlterEgo.Attrs
+module Marvel.AlterEgo.Types
+  ( module Marvel.AlterEgo.Types
   , module X
   ) where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -21,6 +22,57 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
+import Marvel.Trait
+import Text.Show qualified
+
+data AlterEgo = forall a . IsAlterEgo a => AlterEgo a
+
+instance Show AlterEgo where
+  show (AlterEgo a) = show a
+
+instance ToJSON AlterEgo where
+  toJSON (AlterEgo a) = toJSON a
+
+instance Eq AlterEgo where
+  AlterEgo (a :: a) == AlterEgo (b :: b) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+data SomeAlterEgoCard = forall a . IsAlterEgo a => SomeAlterEgoCard
+  (AlterEgoCard a)
+
+liftAlterEgoCard :: (forall a . AlterEgoCard a -> b) -> SomeAlterEgoCard -> b
+liftAlterEgoCard f (SomeAlterEgoCard a) = f a
+
+someAlterEgoCardCode :: SomeAlterEgoCard -> CardCode
+someAlterEgoCardCode = liftAlterEgoCard cbCardCode
+
+instance HasTraits AlterEgo where
+  getTraits = pure . cdTraits . getCardDef
+
+instance HasStartingHP AlterEgo where
+  startingHP = startingHP . toAttrs
+
+instance HasHandSize AlterEgo where
+  handSize = handSize . toAttrs
+
+instance HasCardCode AlterEgo where
+  toCardCode = toCardCode . toAttrs
+
+instance HasCardDef AlterEgo where
+  getCardDef = getCardDef . toAttrs
+
+instance IsSource AlterEgo where
+  toSource = toSource . toAttrs
+
+instance Entity AlterEgo where
+  type EntityId AlterEgo = IdentityId
+  type EntityAttrs AlterEgo = AlterEgoAttrs
+  toId = toId . toAttrs
+  toAttrs (AlterEgo a) = toAttrs a
+
+instance HasModifiersFor AlterEgo where
+  getModifiersFor source target (AlterEgo a) = getModifiersFor source target a
 
 alterEgo
   :: (AlterEgoAttrs -> a)

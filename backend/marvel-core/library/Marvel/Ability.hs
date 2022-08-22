@@ -10,8 +10,8 @@ import Data.List qualified as L
 import Marvel.Ability.Type as X
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.GameValue
 import Marvel.Game.Source
+import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query
@@ -150,7 +150,8 @@ passesCanAffordCost _ a = go (abilityCost a)
     NoCost -> pure True
     DamageCost _ -> pure True
     HealCost n -> case source of
-      IdentitySource ident -> member ident <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
+      IdentitySource ident -> member ident
+        <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
     ExhaustCost -> case source of

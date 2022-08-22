@@ -29,4 +29,4 @@ toDamage :: Natural -> DamageSource -> Damage
 toDamage n = Damage n False
 
 withOverkill :: Damage -> Damage
-withOverkill d = d {damageOverkill = True}
+withOverkill d = d { damageOverkill = True }

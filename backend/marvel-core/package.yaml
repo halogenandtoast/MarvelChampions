@@ -11,29 +11,30 @@ dependencies:
 - extra
 
 default-extensions:
-- ExistentialQuantification
-- NoImplicitPrelude
-- LambdaCase
-- DerivingStrategies
-- GeneralizedNewtypeDeriving
-- FlexibleContexts
-- DeriveGeneric
-- TypeOperators
-- OverloadedStrings
-- ImportQualifiedPost
 - BlockArguments
-- MultiParamTypeClasses
+- DeriveAnyClass
+- DeriveGeneric
+- DerivingStrategies
+- ExistentialQuantification
+- FlexibleContexts
+- FlexibleInstances
 - FunctionalDependencies
-- TupleSections
+- GADTs
+- GeneralizedNewtypeDeriving
+- ImportQualifiedPost
 - KindSignatures
-- TypeFamilies
-- TypeApplications
-- ScopedTypeVariables
+- LambdaCase
+- MultiParamTypeClasses
+- NoImplicitPrelude
+- OverloadedStrings
 - RankNTypes
 - RecordWildCards
-- DeriveAnyClass
+- ScopedTypeVariables
 - StandaloneDeriving
-- FlexibleInstances
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeOperators
 - UndecidableInstances
 - ViewPatterns
 

@@ -3,8 +3,8 @@ module Marvel.Attachment.Attachments.ArmoredRhinoSuit where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attachment.Attrs
 import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Damage
@@ -31,11 +31,11 @@ instance HasAbilities ArmoredRhinoSuit where
   getAbilities (ArmoredRhinoSuit a) = case attachmentEnemy a of
     Just (EnemyVillainId vid) ->
       [ windowAbility
-          a
-          1
-          (W.VillainDamaged W.When $ VillainWithId vid)
-          ForcedInterrupt
-          NoCost
+            a
+            1
+            (W.VillainDamaged W.When $ VillainWithId vid)
+            ForcedInterrupt
+            NoCost
           $ runAbility a 1
       ]
     _ -> []
@@ -60,9 +60,9 @@ instance RunMessage ArmoredRhinoSuit where
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
     RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) -> do
       replaceMatchingMessage
-        (const [AttachmentMessage (toId a) (AttachmentDamaged dmg)])
+          (const [AttachmentMessage (toId a) (AttachmentDamaged dmg)])
         $ \case
-          VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
-          _ -> False
+            VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
+            _ -> False
       pure a
     _ -> ArmoredRhinoSuit <$> runMessage msg attrs

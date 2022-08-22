@@ -3,8 +3,8 @@ module Marvel.Ally.Allies.MockingbirdBobbiMorse where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
@@ -12,18 +12,17 @@ import Marvel.Query
 import Marvel.Window
 
 mockingbirdBobbiMorse :: AllyCard MockingbirdBobbiMorse
-mockingbirdBobbiMorse =
-  ally
-    MockingbirdBobbiMorse
-    Cards.mockingbirdBobbiMorse
-    (Thw 1, 1)
-    (Atk 1, 1)
-    (HP 3)
+mockingbirdBobbiMorse = ally
+  MockingbirdBobbiMorse
+  Cards.mockingbirdBobbiMorse
+  (Thw 1, 1)
+  (Atk 1, 1)
+  (HP 3)
 
 instance HasAbilities MockingbirdBobbiMorse where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $
-        runAbility a 1
+    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost
+        $ runAbility a 1
     ]
 
 newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse AllyAttrs

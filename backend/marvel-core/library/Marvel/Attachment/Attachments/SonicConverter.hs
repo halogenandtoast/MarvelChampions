@@ -1,13 +1,13 @@
-module Marvel.Attachment.Attachments.SonicConverter (
-  sonicConverter,
-  SonicConverter (..),
-) where
+module Marvel.Attachment.Attachments.SonicConverter
+  ( sonicConverter
+  , SonicConverter(..)
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attachment.Attrs
 import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
@@ -40,19 +40,19 @@ instance HasAbilities SonicConverter where
   getAbilities (SonicConverter a) = case attachmentEnemy a of
     Just enemyId ->
       [ windowAbility
-            a
-            1
-            (EnemyAttackedAndDamaged (EnemyWithId enemyId) AnyCharacter)
-            ForcedResponse
-            NoCost
-          $ runAbility a 1
+          a
+          1
+          (EnemyAttackedAndDamaged (EnemyWithId enemyId) AnyCharacter)
+          ForcedResponse
+          NoCost
+        $ runAbility a 1
       , ability
           a
           2
           HeroAction
           NoCriteria
           (MultiResourceCost [Just Energy, Just Mental, Just Physical])
-          $ DiscardTarget (toTarget a)
+        $ DiscardTarget (toTarget a)
       ]
     _ -> []
 
@@ -65,10 +65,9 @@ instance RunMessage SonicConverter where
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
     RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] -> do
-        case cid of
-          IdentityCharacter ident ->
-            push $ IdentityMessage ident IdentityStunned
-          AllyCharacter ident -> push $ AllyMessage ident AllyStunned
-          _ -> error "impossible"
-        pure a
+      case cid of
+        IdentityCharacter ident -> push $ IdentityMessage ident IdentityStunned
+        AllyCharacter ident -> push $ AllyMessage ident AllyStunned
+        _ -> error "impossible"
+      pure a
     _ -> SonicConverter <$> runMessage msg attrs

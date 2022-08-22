@@ -32,8 +32,9 @@ library
       Marvel.Ally.Allies.TigraGreerGrantNelson
       Marvel.Ally.Allies.Vision
       Marvel.Ally.Allies.WarMachineJamesRhodes
-      Marvel.Ally.Attrs
       Marvel.Ally.Cards
+      Marvel.Ally.Runner
+      Marvel.Ally.Types
       Marvel.AlterEgo
       Marvel.AlterEgo.AlterEgos
       Marvel.AlterEgo.AlterEgos.CarolDanvers
@@ -41,8 +42,9 @@ library
       Marvel.AlterEgo.AlterEgos.PeterParker
       Marvel.AlterEgo.AlterEgos.TChalla
       Marvel.AlterEgo.AlterEgos.TonyStark
-      Marvel.AlterEgo.Attrs
       Marvel.AlterEgo.Cards
+      Marvel.AlterEgo.Runner
+      Marvel.AlterEgo.Types
       Marvel.Aspect
       Marvel.Attachment
       Marvel.Attachment.Attachments
@@ -52,8 +54,8 @@ library
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.SolidSoundBody
       Marvel.Attachment.Attachments.SonicConverter
-      Marvel.Attachment.Attrs
       Marvel.Attachment.Cards
+      Marvel.Attachment.Types
       Marvel.Attack
       Marvel.Boost
       Marvel.Card
@@ -72,7 +74,7 @@ library
       Marvel.Difficulty
       Marvel.Discard
       Marvel.Effect
-      Marvel.Effect.Attrs
+      Marvel.Effect.Types
       Marvel.EncounterCard
       Marvel.EncounterSet
       Marvel.Entity
@@ -272,29 +274,30 @@ library
   hs-source-dirs:
       library
   default-extensions:
-      ExistentialQuantification
-      NoImplicitPrelude
-      LambdaCase
-      DerivingStrategies
-      GeneralizedNewtypeDeriving
-      FlexibleContexts
-      DeriveGeneric
-      TypeOperators
-      OverloadedStrings
-      ImportQualifiedPost
       BlockArguments
-      MultiParamTypeClasses
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
       FunctionalDependencies
-      TupleSections
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
       KindSignatures
-      TypeFamilies
-      TypeApplications
-      ScopedTypeVariables
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
       RankNTypes
       RecordWildCards
-      DeriveAnyClass
+      ScopedTypeVariables
       StandaloneDeriving
-      FlexibleInstances
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
       UndecidableInstances
       ViewPatterns
   build-depends:
@@ -324,29 +327,30 @@ test-suite MarvelChampions-test
   hs-source-dirs:
       test
   default-extensions:
-      ExistentialQuantification
-      NoImplicitPrelude
-      LambdaCase
-      DerivingStrategies
-      GeneralizedNewtypeDeriving
-      FlexibleContexts
-      DeriveGeneric
-      TypeOperators
-      OverloadedStrings
-      ImportQualifiedPost
       BlockArguments
-      MultiParamTypeClasses
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
       FunctionalDependencies
-      TupleSections
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
       KindSignatures
-      TypeFamilies
-      TypeApplications
-      ScopedTypeVariables
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
       RankNTypes
       RecordWildCards
-      DeriveAnyClass
+      ScopedTypeVariables
       StandaloneDeriving
-      FlexibleInstances
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
       UndecidableInstances
       ViewPatterns
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

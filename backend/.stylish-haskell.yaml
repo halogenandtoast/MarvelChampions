@@ -40,8 +40,6 @@ language_extensions:
   - GeneralizedNewtypeDeriving
   - LambdaCase
   - MultiParamTypeClasses
-  - NoImplicitPrelude
-  - NoMonomorphismRestriction
   - OverloadedStrings
   - RankNTypes
   - RecordWildCards

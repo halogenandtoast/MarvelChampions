@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Data.Typeable
 import Marvel.Ability hiding (Attack, Thwart)
-import Marvel.AlterEgo.Attrs
+import Marvel.AlterEgo.Types
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def

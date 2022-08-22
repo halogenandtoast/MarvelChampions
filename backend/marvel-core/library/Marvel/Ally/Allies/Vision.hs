@@ -8,11 +8,11 @@ module Marvel.Ally.Allies.Vision
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Ally.Attrs
 import Marvel.Ally.Cards qualified as Cards
+import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Effect.Attrs
+import Marvel.Effect.Types
 import Marvel.Matchers
 import Marvel.Resource
 
