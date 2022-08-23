@@ -19,7 +19,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
-import Marvel.Upgrade.Attrs
+import Marvel.Upgrade.Types
 import qualified Marvel.Upgrade.Cards as Cards
 import Marvel.Window
 

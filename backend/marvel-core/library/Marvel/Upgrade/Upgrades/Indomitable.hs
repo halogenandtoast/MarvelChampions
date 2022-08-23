@@ -17,7 +17,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Attrs
+import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Window
 
