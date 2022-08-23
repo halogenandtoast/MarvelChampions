@@ -59,6 +59,7 @@ import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Scenario.Types (Scenario, getScenarioDifficulty)
 import Marvel.SideScheme
+import Marvel.SideScheme.Types (SideScheme, isCrisis, getSideSchemeThreat)
 import Marvel.Source
 import Marvel.Support
 import Marvel.Target
