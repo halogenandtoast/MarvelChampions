@@ -66,6 +66,7 @@ import Marvel.Support.Types (Support, getSupportController, getSupportUses)
 import Marvel.Target
 import Marvel.Trait
 import Marvel.Treachery
+import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)

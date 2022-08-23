@@ -10,53 +10,50 @@ import Marvel.EncounterSet
 import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
-allTreacheries =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [ hardToKeepDown
-      , imTough
-      , stampede
-      , explosion
-      , falseAlarm
-      , klawsVengeance
-      , sonicBoom
-      , soundManipulation
-      , mastersOfMayhem
-      , heartShapedHerb
-      , ritualCombat
-      , sweepingSwoop
-      , theVulturesPlans
-      , advance
-      , assault
-      , caughtOffGuard
-      , gangUp
-      , shadowOfThePast
-      ]
+allTreacheries = fromList $ map
+  (toCardCode &&& id)
+  [ hardToKeepDown
+  , imTough
+  , stampede
+  , explosion
+  , falseAlarm
+  , klawsVengeance
+  , sonicBoom
+  , soundManipulation
+  , mastersOfMayhem
+  , heartShapedHerb
+  , ritualCombat
+  , sweepingSwoop
+  , theVulturesPlans
+  , advance
+  , assault
+  , caughtOffGuard
+  , gangUp
+  , shadowOfThePast
+  ]
 
-treachery ::
-  CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
-treachery code name boostIcons encounterSet quantity =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Nothing
-    , cdTraits = mempty
-    , cdKeywords = mempty
-    , cdCardType = TreacheryType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = False
-    , cdAspect = Nothing
-    , cdEncounterSet = Just encounterSet
-    , cdEncounterSetQuantity = Just quantity
-    , cdCriteria = NoCriteria
-    , cdResources = []
-    , cdResponseWindow = Nothing
-    , cdBoostIcons = boostIcons
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+treachery
+  :: CardCode -> Name -> [BoostIcon] -> EncounterSet -> Natural -> CardDef
+treachery code name boostIcons encounterSet quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just encounterSet
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = boostIcons
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 hardToKeepDown :: CardDef
 hardToKeepDown = treachery "01104" "Hard to Keep Down" [] Rhino 2
@@ -80,10 +77,12 @@ sonicBoom :: CardDef
 sonicBoom = treachery "01123" "Sonic Boom" [Star] Klaw 2
 
 soundManipulation :: CardDef
-soundManipulation = treachery "01124" "Sound Manipulation" [Boost, Boost] Klaw 2
+soundManipulation =
+  treachery "01124" "Sound Manipulation" [Boost, Boost] Klaw 2
 
 mastersOfMayhem :: CardDef
-mastersOfMayhem = treachery "01133" "Masters of Mayhem" [Boost, Boost] MastersOfEvil 2
+mastersOfMayhem =
+  treachery "01133" "Masters of Mayhem" [Boost, Boost] MastersOfEvil 2
 
 heartShapedHerb :: CardDef
 heartShapedHerb =

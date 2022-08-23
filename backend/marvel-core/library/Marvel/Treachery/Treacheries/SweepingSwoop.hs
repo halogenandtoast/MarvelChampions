@@ -14,7 +14,7 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Attrs
+import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
 
 sweepingSwoop :: TreacheryCard SweepingSwoop
