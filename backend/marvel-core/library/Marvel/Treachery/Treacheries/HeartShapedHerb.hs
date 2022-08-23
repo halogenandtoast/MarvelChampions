@@ -13,7 +13,7 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Attrs
+import Marvel.Treachery.Types
 import qualified Marvel.Treachery.Cards as Cards
 
 heartShapedHerb :: TreacheryCard HeartShapedHerb

@@ -18,7 +18,7 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Attrs
+import Marvel.Treachery.Types
 import qualified Marvel.Treachery.Cards as Cards
 
 sonicBoom :: TreacheryCard SonicBoom

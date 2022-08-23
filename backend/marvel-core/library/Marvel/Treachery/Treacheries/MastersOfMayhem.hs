@@ -15,7 +15,7 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
-import Marvel.Treachery.Attrs
+import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
 
 mastersOfMayhem :: TreacheryCard MastersOfMayhem

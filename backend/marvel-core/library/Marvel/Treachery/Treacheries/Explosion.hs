@@ -18,7 +18,7 @@ import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Attrs
+import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
 
 explosion :: TreacheryCard Explosion

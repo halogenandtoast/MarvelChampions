@@ -1,7 +1,8 @@
-module Marvel.Treachery.Attrs where
+module Marvel.Treachery.Types where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
@@ -9,6 +10,49 @@ import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Text.Show qualified
+
+data Treachery = forall a. IsTreachery a => Treachery a
+
+instance Show Treachery where
+  show (Treachery a) = show a
+
+instance Eq Treachery where
+  Treachery (a :: a) == Treachery (b :: b) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+instance ToJSON Treachery where
+  toJSON (Treachery a) = toJSON a
+
+data SomeTreacheryCard = forall a. IsTreachery a => SomeTreacheryCard (TreacheryCard a)
+
+liftTreacheryCard :: (forall a . TreacheryCard a -> b) -> SomeTreacheryCard -> b
+liftTreacheryCard f (SomeTreacheryCard a) = f a
+
+someTreacheryCardCode :: SomeTreacheryCard -> CardCode
+someTreacheryCardCode = liftTreacheryCard cbCardCode
+
+instance Entity Treachery where
+  type EntityId Treachery = TreacheryId
+  type EntityAttrs Treachery = TreacheryAttrs
+  toId = toId . toAttrs
+  toAttrs (Treachery a) = toAttrs a
+
+instance RunMessage Treachery where
+  runMessage msg (Treachery a) = Treachery <$> runMessage msg a
+
+instance IsSource Treachery where
+  toSource = TreacherySource . toId
+
+instance IsTarget Treachery where
+  toTarget = TreacheryTarget . toId
+
+instance IsCard Treachery where
+  toCard = toCard . toAttrs
+
+instance HasCardDef Treachery where
+  getCardDef = getCardDef . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ TreacheryAttrs, EntityId a ~ TreacheryId, RunMessage a) => IsTreachery a
 
