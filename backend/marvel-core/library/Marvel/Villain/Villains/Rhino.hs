@@ -15,7 +15,7 @@ import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Villain.Attrs
+import Marvel.Villain.Types
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Window
 
