@@ -1,8 +1,7 @@
 module Marvel.Minion.Minions.TigerShark
   ( tigerShark
   , TigerShark(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
@@ -13,8 +12,8 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 import Marvel.Window
 
 tigerShark :: MinionCard TigerShark

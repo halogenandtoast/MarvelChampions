@@ -1,8 +1,7 @@
 module Marvel.Minion.Minions.WeaponsRunner
   ( weaponsRunner
   , WeaponsRunner(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
@@ -12,8 +11,8 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Message
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 weaponsRunner :: MinionCard WeaponsRunner
 weaponsRunner = minion WeaponsRunner Cards.weaponsRunner (Sch 1) (Atk 1) (HP 2)

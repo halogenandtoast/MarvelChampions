@@ -9,8 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
-import Marvel.Obligation.Attrs
 import Marvel.Obligation.Cards qualified as Cards
+import Marvel.Obligation.Types
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue

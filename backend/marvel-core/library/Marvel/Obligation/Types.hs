@@ -1,7 +1,8 @@
-module Marvel.Obligation.Attrs where
+module Marvel.Obligation.Types where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id
@@ -9,6 +10,51 @@ import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Text.Show qualified
+
+data Obligation = forall a . IsObligation a => Obligation a
+
+instance Show Obligation where
+  show (Obligation a) = show a
+
+instance Eq Obligation where
+  Obligation (a :: a) == Obligation (b :: b) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+instance ToJSON Obligation where
+  toJSON (Obligation a) = toJSON a
+
+data SomeObligationCard = forall a . IsObligation a => SomeObligationCard
+  (ObligationCard a)
+
+liftObligationCard
+  :: (forall a . ObligationCard a -> b) -> SomeObligationCard -> b
+liftObligationCard f (SomeObligationCard a) = f a
+
+someObligationCardCode :: SomeObligationCard -> CardCode
+someObligationCardCode = liftObligationCard cbCardCode
+
+instance Entity Obligation where
+  type EntityId Obligation = ObligationId
+  type EntityAttrs Obligation = ObligationAttrs
+  toId = toId . toAttrs
+  toAttrs (Obligation a) = toAttrs a
+
+instance RunMessage Obligation where
+  runMessage msg (Obligation a) = Obligation <$> runMessage msg a
+
+instance IsSource Obligation where
+  toSource = ObligationSource . toId
+
+instance IsTarget Obligation where
+  toTarget = ObligationTarget . toId
+
+instance IsCard Obligation where
+  toCard = toCard . toAttrs
+
+instance HasCardDef Obligation where
+  getCardDef = getCardDef . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ ObligationAttrs, EntityId a ~ ObligationId) => IsObligation a
 

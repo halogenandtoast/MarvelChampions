@@ -6,8 +6,8 @@ module Marvel.Minion.Minions.Titania
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 titania :: MinionCard Titania
 titania = minion Titania Cards.titania (Sch 1) (Atk 0) (HP 6)

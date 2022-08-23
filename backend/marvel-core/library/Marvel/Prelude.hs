@@ -12,10 +12,10 @@ import Control.Lens as X
   , each
   , ix
   , lens
+  , preview
   , set
   , traverseOf
   , view
-  , preview
   , (%~)
   , (+~)
   , (-~)
@@ -37,15 +37,15 @@ import Relude as X hiding (One)
 import Relude.Extra.Map as X
 
 import Data.Aeson.Casing (camelCase)
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Text
 import Data.Char qualified as C
-import Data.Aeson.KeyMap qualified as KeyMap
+import Data.List qualified as List
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Builder
 import Language.Haskell.TH hiding (location)
 import Text.Show qualified as S
-import Data.List qualified as List
 
 subtractNatural :: Natural -> Natural -> Natural
 subtractNatural a b = fromMaybe 0 (minusNaturalMaybe b a)

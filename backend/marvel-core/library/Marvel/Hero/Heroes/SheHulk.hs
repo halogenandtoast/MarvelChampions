@@ -9,8 +9,8 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Hero.Types
 import Marvel.Hero.Cards qualified as Cards
+import Marvel.Hero.Runner
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier

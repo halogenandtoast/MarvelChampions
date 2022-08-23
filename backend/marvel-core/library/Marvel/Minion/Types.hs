@@ -1,5 +1,5 @@
-module Marvel.Minion.Attrs
-  ( module Marvel.Minion.Attrs
+module Marvel.Minion.Types
+  ( module Marvel.Minion.Types
   , module X
   ) where
 
@@ -19,6 +19,7 @@ import Marvel.Stats as X
 import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
+import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Card
@@ -26,12 +27,82 @@ import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Matchers
+import Marvel.Trait
 import Marvel.Window qualified as W
+import Text.Show qualified
+
+data Minion = forall a . IsMinion a => Minion a
+
+instance Show Minion where
+  show (Minion a) = show a
+
+instance ToJSON Minion where
+  toJSON (Minion a) = toJSON a
+
+instance Eq Minion where
+  Minion (a :: a) == Minion (b :: b) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+data SomeMinionCard = forall a . IsMinion a => SomeMinionCard (MinionCard a)
+
+liftMinionCard :: (forall a . MinionCard a -> b) -> SomeMinionCard -> b
+liftMinionCard f (SomeMinionCard a) = f a
+
+someMinionCardCode :: SomeMinionCard -> CardCode
+someMinionCardCode = liftMinionCard cbCardCode
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ MinionAttrs, EntityId a ~ MinionId, HasModifiersFor a, RunMessage a, HasAbilities a) => IsMinion a
 
 type MinionCard a = CardBuilder (IdentityId, MinionId) a
 
+getMinionDamage :: Minion -> Natural
+getMinionDamage = minionDamage . toAttrs
+
+getMinionEngagedIdentity :: Minion -> IdentityId
+getMinionEngagedIdentity = minionEngagedIdentity . toAttrs
+
+getMinionPrintedHitPoints :: Minion -> HP Natural
+getMinionPrintedHitPoints = minionHitPoints . toAttrs
+
+minionAttackDetails :: Minion -> Maybe Attack
+minionAttackDetails = minionAttacking . toAttrs
+
+instance Entity Minion where
+  type EntityId Minion = MinionId
+  type EntityAttrs Minion = MinionAttrs
+  toId = toId . toAttrs
+  toAttrs (Minion a) = toAttrs a
+
+instance RunMessage Minion where
+  runMessage msg (Minion a) = Minion <$> runMessage msg a
+
+instance HasAbilities Minion where
+  getAbilities (Minion a) = getAbilities a
+
+instance HasModifiersFor Minion where
+  getModifiersFor source target (Minion a) = getModifiersFor source target a
+
+instance HasTraits Minion where
+  getTraits m = do
+    modifiers <- getModifiers m
+    let traits = cdTraits $ getCardDef m
+    pure $ foldr applyModifier traits modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
+
+instance IsSource Minion where
+  toSource = MinionSource . toId
+
+instance IsTarget Minion where
+  toTarget = MinionTarget . toId
+
+instance IsCard Minion where
+  toCard = toCard . toAttrs
+
+instance HasCardDef Minion where
+  getCardDef = getCardDef . toAttrs
 minionRemainingHitPoints :: MinionAttrs -> Natural
 minionRemainingHitPoints attrs =
   subtractNatural (minionDamage attrs) (unHp $ minionHitPoints attrs)
@@ -56,7 +127,8 @@ data MinionAttrs = MinionAttrs
   deriving anyclass (ToJSON, FromJSON)
 
 defensePriorityL :: Lens' MinionAttrs DefensePriority
-defensePriorityL = lens minionDefensePriority $ \m x -> m { minionDefensePriority = x }
+defensePriorityL =
+  lens minionDefensePriority $ \m x -> m { minionDefensePriority = x }
 
 damageL :: Lens' MinionAttrs Natural
 damageL = lens minionDamage $ \m x -> m { minionDamage = x }
@@ -190,30 +262,31 @@ runMinionMessage msg attrs = case msg of
           let overkill = damageAmount damage - (hitPoints - minionDamage attrs)
           when (overkill > 0 && damageOverkill damage) $ do
             villain <- selectJust ActiveVillain
-            push $ VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))
+            push $ VillainMessage
+              villain
+              (VillainDamaged source (toDamage overkill FromOverkill))
 
           pushAll
-            [ CheckWindows [W.Window W.When $ W.DefeatedMinion (toId attrs) damage]
+            [ CheckWindows
+              [W.Window W.When $ W.DefeatedMinion (toId attrs) damage]
             , MinionMessage (toId attrs) MinionDefeated
-            , CheckWindows [W.Window W.After $ W.DefeatedMinion (toId attrs) damage]
+            , CheckWindows
+              [W.Window W.After $ W.DefeatedMinion (toId attrs) damage]
             ]
         else for_ keywords $ \case
           Retaliate n -> case damageSource damage of
-            FromPlayerAttack ident ->
-              push $ IdentityMessage
-                  ident
-                  (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
-            FromAllyAttack ident ->
-              push $
-                AllyMessage
-                  ident
-                  (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
+            FromPlayerAttack ident -> push $ IdentityMessage
+              ident
+              (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
+            FromAllyAttack ident -> push $ AllyMessage
+              ident
+              (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
             _ -> pure ()
           _ -> pure ()
       pure $ attrs & damageL +~ damageAmount damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
-  MinionBecomeTough-> pure $ attrs & toughL .~ True
+  MinionBecomeTough -> pure $ attrs & toughL .~ True
   MinionDefendedBy characterId ->
     pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
   AttachedToMinion attachmentId -> do

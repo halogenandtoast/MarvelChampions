@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Damage
 import Marvel.Matchers
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 hydraBomber :: MinionCard HydraBomber
 hydraBomber = minion HydraBomber Cards.hydraBomber (Sch 1) (Atk 1) (HP 2)
@@ -26,7 +26,11 @@ instance RunMessage HydraBomber where
           ident
           [ Label
             "Take 2 damage"
-            [DamageCharacter (IdentityCharacter ident) (toSource attrs) (toDamage 2 FromAbility)]
+            [ DamageCharacter
+                (IdentityCharacter ident)
+                (toSource attrs)
+                (toDamage 2 FromAbility)
+            ]
           , Label
             "Place 1 threat on the main scheme"
             [PlaceThreat (toSource attrs) 1 MainScheme]

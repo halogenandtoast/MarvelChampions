@@ -11,8 +11,8 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Message
-import Marvel.Minion.Attrs
-import qualified Marvel.Minion.Cards as Cards
+import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 melter :: MinionCard Melter
 melter = minionWith

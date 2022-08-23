@@ -1,8 +1,7 @@
 module Marvel.Minion.Minions.Whirlwind
   ( whirlwind
   , Whirlwind(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
@@ -11,13 +10,13 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Damage
-import Marvel.Game.Source
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 import Marvel.Window
 
 whirlwind :: MinionCard Whirlwind
@@ -42,15 +41,21 @@ instance RunMessage Whirlwind where
   runMessage msg e@(Whirlwind attrs) = case msg of
     RanAbility target 1 [EnemyAttack _ ident] | isTarget attrs target -> do
       otherPlayers <- L.delete ident <$> getPlayers
-      for_ otherPlayers $ \other ->
-        pushAll
-          [ DeclareDefense other (toEnemyId attrs) AnyDefense
-          , MinionMessage (toId attrs) MinionAttacked
-          ]
+      for_ otherPlayers $ \other -> pushAll
+        [ DeclareDefense other (toEnemyId attrs) AnyDefense
+        , MinionMessage (toId attrs) MinionAttacked
+        ]
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         players <- getPlayers
-        e <$ pushAll (map (\ident -> IdentityMessage ident (IdentityDamaged (toSource attrs) (toDamage 1 FromAbility))) players)
+        e <$ pushAll
+          (map
+            (\ident -> IdentityMessage
+              ident
+              (IdentityDamaged (toSource attrs) (toDamage 1 FromAbility))
+            )
+            players
+          )
       _ -> Whirlwind <$> runMessage msg attrs
     _ -> Whirlwind <$> runMessage msg attrs

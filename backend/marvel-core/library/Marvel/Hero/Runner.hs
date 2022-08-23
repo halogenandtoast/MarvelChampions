@@ -1,28 +1,28 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Hero.Runner
-  ( module Marvel.Hero.Runner
-  , module X
+  ( module X
   ) where
 
+import Marvel.Prelude
+
+import Marvel.Ability hiding (Attack, Thwart)
+import Marvel.Cost
+import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Hero.Types as X
+import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Message
+import Marvel.Query
+import Marvel.Question
+import Marvel.Queue
+import Marvel.Window qualified as W
 
 instance HasAbilities Hero where
   getAbilities (Hero a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability
-        a
-        300
-        Basic
-        (SchemeExists ThwartableScheme)
-        ExhaustCost
-        Ability.Thwart
-      , ability
-        a
-        301
-        Basic
-        (EnemyExists AttackableEnemy)
-        ExhaustCost
-        Ability.Attack
+      [ ability a 300 Basic (SchemeExists ThwartableScheme) ExhaustCost Thwart
+      , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
 instance RunMessage HeroAttrs where

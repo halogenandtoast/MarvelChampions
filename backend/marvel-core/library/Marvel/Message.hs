@@ -325,8 +325,8 @@ class RunMessage a where
 class RunMessage' f where
   runMessage' :: MonadGame env m => Message -> f p -> m (f p)
 
-genericRunMessage ::
-  (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
+genericRunMessage
+  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
 genericRunMessage msg = fmap to . runMessage' msg . from
 
 instance RunMessage' f => RunMessage' (M1 i c f) where

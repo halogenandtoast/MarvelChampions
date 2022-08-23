@@ -11,8 +11,8 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
-import Marvel.Minion.Attrs
-import qualified Marvel.Minion.Cards as Cards
+import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 import Marvel.Trait
 
 killmonger :: MinionCard Killmonger
@@ -27,8 +27,6 @@ instance RunMessage Killmonger where
     MinionMessage minionId msg' | minionId == toId attrs -> case msg' of
       MinionDamaged (UpgradeSource uid) _ -> do
         isBlackPanther <- upgradeMatches (UpgradeWithTrait BlackPanther) uid
-        if isBlackPanther
-          then pure m
-          else Killmonger <$> runMessage msg attrs
+        if isBlackPanther then pure m else Killmonger <$> runMessage msg attrs
       _ -> Killmonger <$> runMessage msg attrs
     _ -> Killmonger <$> runMessage msg attrs

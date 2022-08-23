@@ -36,18 +36,28 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
+import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
+import Marvel.Minion.Types
+  ( Minion
+  , getMinionDamage
+  , getMinionEngagedIdentity
+  , getMinionPrintedHitPoints
+  , minionAttackDetails
+  )
 import Marvel.Modifier
 import Marvel.Obligation
+import Marvel.Obligation.Types (Obligation)
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
 import Marvel.Scenario
+import Marvel.Scenario.Types (Scenario, getScenarioDifficulty)
 import Marvel.SideScheme
 import Marvel.Source
 import Marvel.Support

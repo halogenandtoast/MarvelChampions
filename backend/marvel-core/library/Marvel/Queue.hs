@@ -9,17 +9,17 @@ type Queue = [Message]
 class HasQueue a where
   queue :: a -> IORef Queue
 
-withQueue ::
-  (HasQueue env, MonadReader env m, MonadIO m) =>
-  (Queue -> (Queue, a)) ->
-  m a
+withQueue
+  :: (HasQueue env, MonadReader env m, MonadIO m)
+  => (Queue -> (Queue, a))
+  -> m a
 withQueue body = do
   ref <- asks queue
   atomicModifyIORef' ref body
 
-withQueue_ ::
-  (HasQueue env, MonadReader env m, MonadIO m) => (Queue -> Queue) -> m ()
-withQueue_ body = withQueue $ (,()) . body
+withQueue_
+  :: (HasQueue env, MonadReader env m, MonadIO m) => (Queue -> Queue) -> m ()
+withQueue_ body = withQueue $ (, ()) . body
 
 clearQueue :: (HasQueue env, MonadReader env m, MonadIO m) => m ()
 clearQueue = withQueue_ (const mempty)
@@ -35,15 +35,15 @@ pop = withQueue \case
   [] -> ([], Nothing)
   (x : xs) -> (xs, Just x)
 
-cancelMatchingMessage ::
-  (HasQueue env, MonadReader env m, MonadIO m) => (Message -> Bool) -> m ()
+cancelMatchingMessage
+  :: (HasQueue env, MonadReader env m, MonadIO m) => (Message -> Bool) -> m ()
 cancelMatchingMessage = replaceMatchingMessage (const [])
 
-replaceMatchingMessage ::
-  (HasQueue env, MonadReader env m, MonadIO m) =>
-  (Message -> [Message]) ->
-  (Message -> Bool) ->
-  m ()
+replaceMatchingMessage
+  :: (HasQueue env, MonadReader env m, MonadIO m)
+  => (Message -> [Message])
+  -> (Message -> Bool)
+  -> m ()
 replaceMatchingMessage spliceF f = withQueue_ $ \q -> case break f q of
   (pre, []) -> pre
   (pre, msg : rest) -> pre <> spliceF msg <> rest

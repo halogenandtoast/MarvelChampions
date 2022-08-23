@@ -23,7 +23,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
-import Marvel.Hero.Attrs
+import Marvel.Hero.Types
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
@@ -74,10 +74,12 @@ passedL :: Lens' PlayerIdentity Bool
 passedL = lens playerIdentityPassed $ \m x -> m { playerIdentityPassed = x }
 
 exhaustedL :: Lens' PlayerIdentity Bool
-exhaustedL = lens playerIdentityExhausted $ \m x -> m { playerIdentityExhausted = x }
+exhaustedL =
+  lens playerIdentityExhausted $ \m x -> m { playerIdentityExhausted = x }
 
 encounterCardsL :: Lens' PlayerIdentity [EncounterCard]
-encounterCardsL = lens playerIdentityEncounterCards $ \m x -> m { playerIdentityEncounterCards = x }
+encounterCardsL = lens playerIdentityEncounterCards
+  $ \m x -> m { playerIdentityEncounterCards = x }
 
 damageL :: Lens' PlayerIdentity Natural
 damageL = lens playerIdentityDamage $ \m x -> m { playerIdentityDamage = x }
@@ -95,10 +97,12 @@ minionsL :: Lens' PlayerIdentity (HashSet MinionId)
 minionsL = lens playerIdentityMinions $ \m x -> m { playerIdentityMinions = x }
 
 upgradesL :: Lens' PlayerIdentity (HashSet UpgradeId)
-upgradesL = lens playerIdentityUpgrades $ \m x -> m { playerIdentityUpgrades = x }
+upgradesL =
+  lens playerIdentityUpgrades $ \m x -> m { playerIdentityUpgrades = x }
 
 supportsL :: Lens' PlayerIdentity (HashSet SupportId)
-supportsL = lens playerIdentitySupports $ \m x -> m { playerIdentitySupports = x }
+supportsL =
+  lens playerIdentitySupports $ \m x -> m { playerIdentitySupports = x }
 
 deckL :: Lens' PlayerIdentity Deck
 deckL = lens playerIdentityDeck $ \m x -> m { playerIdentityDeck = x }
@@ -113,19 +117,23 @@ stunnedL :: Lens' PlayerIdentity Bool
 stunnedL = lens playerIdentityStunned $ \m x -> m { playerIdentityStunned = x }
 
 confusedL :: Lens' PlayerIdentity Bool
-confusedL = lens playerIdentityConfused $ \m x -> m { playerIdentityConfused = x }
+confusedL =
+  lens playerIdentityConfused $ \m x -> m { playerIdentityConfused = x }
 
 toughL :: Lens' PlayerIdentity Bool
 toughL = lens playerIdentityTough $ \m x -> m { playerIdentityTough = x }
 
 defeatedL :: Lens' PlayerIdentity Bool
-defeatedL = lens playerIdentityDefeated $ \m x -> m { playerIdentityDefeated = x }
+defeatedL =
+  lens playerIdentityDefeated $ \m x -> m { playerIdentityDefeated = x }
 
 defendedL :: Lens' PlayerIdentity Bool
-defendedL = lens playerIdentityDefended $ \m x -> m { playerIdentityDefended = x }
+defendedL =
+  lens playerIdentityDefended $ \m x -> m { playerIdentityDefended = x }
 
 damageReductionL :: Lens' PlayerIdentity Natural
-damageReductionL = lens playerIdentityDamageReduction $ \m x -> m { playerIdentityDamageReduction = x }
+damageReductionL = lens playerIdentityDamageReduction
+  $ \m x -> m { playerIdentityDamageReduction = x }
 
 identityIsStunned :: PlayerIdentity -> Bool
 identityIsStunned = playerIdentityStunned
@@ -390,8 +398,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DrawOrDiscardToHandLimit -> do
     modifiedHandSize <- getModifiedHandSize attrs
     let
-      diff = fromIntegral modifiedHandSize
-        - length (unHand playerIdentityHand)
+      diff = fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
     when
       (diff > 0)
       (push $ IdentityMessage (toId attrs) $ DrawCards
@@ -405,9 +412,9 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         [ TargetLabel
             (CardIdTarget $ pcCardId c)
             [ Run
-              [ DiscardedCard $ PlayerCard c
-              , IdentityMessage (toId attrs) DrawOrDiscardToHandLimit
-              ]
+                [ DiscardedCard $ PlayerCard c
+                , IdentityMessage (toId attrs) DrawOrDiscardToHandLimit
+                ]
             ]
         | c <- unHand playerIdentityHand
         ]
@@ -416,8 +423,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
   DrawToHandLimit -> do
     modifiedHandSize <- getModifiedHandSize attrs
     let
-      diff = fromIntegral modifiedHandSize
-        - length (unHand playerIdentityHand)
+      diff = fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
     when
       (diff > 0)
       (push $ IdentityMessage (toId attrs) $ DrawCards
@@ -476,9 +482,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
       & (discardL %~ Discard . filter (/= card) . unDiscard)
   PaidWithCard card -> do
     push $ Spent card
-    pure
-      $ attrs
-      & (handL %~ Hand . filter (/= card) . unHand)
+    pure $ attrs & (handL %~ Hand . filter (/= card) . unHand)
       -- & (discardL %~ Discard . (card :) . unDiscard)
   AllyCreated allyId -> do
     push $ IdentityMessage (toId attrs) CheckAllyLimit
@@ -716,10 +720,7 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
     pure $ attrs & defeatedL .~ True
   IdentityDefended n ->
     pure $ attrs & damageReductionL +~ n & defendedL .~ True
-  IdentityHealed n ->
-    pure
-      $ attrs
-      & damageL %~ subtractNatural n
+  IdentityHealed n -> pure $ attrs & damageL %~ subtractNatural n
   IdentityStunned -> pure $ attrs & stunnedL .~ True
   IdentityConfused -> pure $ attrs & confusedL .~ True
   IdentityRemoveStunned -> pure $ attrs & stunnedL .~ False

@@ -10,36 +10,29 @@ import Marvel.Name
 
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [ theBreakIn
-      , undergroundDistribution
-      ]
+  fromList $ map (toCardCode &&& id) [theBreakIn, undergroundDistribution]
 
-mainScheme ::
-  CardCode -> Name -> EncounterSet -> CardDef
-mainScheme code name encounterSet =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Nothing
-    , cdTraits = mempty
-    , cdKeywords = mempty
-    , cdCardType = MainSchemeType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = False
-    , cdAspect = Nothing
-    , cdEncounterSet = Just encounterSet
-    , cdEncounterSetQuantity = Just 1
-    , cdCriteria = NoCriteria
-    , cdResources = []
-    , cdResponseWindow = Nothing
-    , cdBoostIcons = []
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
+mainScheme code name encounterSet = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just encounterSet
+  , cdEncounterSetQuantity = Just 1
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 theBreakIn :: CardDef
 theBreakIn = mainScheme "01097" "Breakin' & Takin'" Rhino
