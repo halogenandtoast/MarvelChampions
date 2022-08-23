@@ -6,8 +6,8 @@ module Marvel.Minion.Minions.Vulture
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 vulture :: MinionCard Vulture
 vulture = minion Vulture Cards.vulture (Sch 1) (Atk 3) (HP 4)

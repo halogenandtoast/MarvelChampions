@@ -9,34 +9,31 @@ import Marvel.Criteria
 import Marvel.Name
 
 allObligations :: HashMap CardCode CardDef
-allObligations =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [affairsOfState, legalWork, evictionNotice, businessProblems, familyEmergency]
+allObligations = fromList $ map
+  (toCardCode &&& id)
+  [affairsOfState, legalWork, evictionNotice, businessProblems, familyEmergency]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
-obligation code name boostIcons =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Nothing
-    , cdTraits = mempty
-    , cdKeywords = mempty
-    , cdCardType = ObligationType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = False
-    , cdAspect = Nothing
-    , cdEncounterSet = Nothing
-    , cdEncounterSetQuantity = Nothing
-    , cdCriteria = NoCriteria
-    , cdResources = []
-    , cdResponseWindow = Nothing
-    , cdBoostIcons = boostIcons
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+obligation code name boostIcons = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = boostIcons
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 affairsOfState :: CardDef
 affairsOfState = obligation "01155" "Affairs of State" [Boost, Boost]

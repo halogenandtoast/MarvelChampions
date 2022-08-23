@@ -13,8 +13,8 @@ import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
-import Marvel.Minion.Attrs
-import qualified Marvel.Minion.Cards as Cards
+import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 import Marvel.Window
 
 radioactiveMan :: MinionCard RadioactiveMan

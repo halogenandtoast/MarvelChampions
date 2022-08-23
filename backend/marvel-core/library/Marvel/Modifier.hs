@@ -31,12 +31,12 @@ class HasModifiersFor a where
 class HasModifiersFor' f where
   getModifiersFor' :: MonadGame env m => Source -> Target -> f p -> m [Modifier]
 
-genericGetModifiersFor ::
-  (MonadGame env m, HasModifiersFor' (Rep a), Generic a) =>
-  Source ->
-  Target ->
-  a ->
-  m [Modifier]
+genericGetModifiersFor
+  :: (MonadGame env m, HasModifiersFor' (Rep a), Generic a)
+  => Source
+  -> Target
+  -> a
+  -> m [Modifier]
 genericGetModifiersFor source target = getModifiersFor' source target . from
 
 instance HasModifiersFor' f => HasModifiersFor' (M1 i c f) where

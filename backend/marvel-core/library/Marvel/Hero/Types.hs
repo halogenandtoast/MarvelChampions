@@ -7,7 +7,6 @@ import Marvel.Prelude
 
 import Data.Typeable
 import Marvel.Ability
-import Marvel.Ability qualified as Ability
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -19,12 +18,9 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target

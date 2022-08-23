@@ -132,16 +132,15 @@ library
       Marvel.Identity
       Marvel.Keyword
       Marvel.MainScheme
-      Marvel.MainScheme.Attrs
       Marvel.MainScheme.Cards
       Marvel.MainScheme.MainSchemes
       Marvel.MainScheme.MainSchemes.SecretRendezvous
       Marvel.MainScheme.MainSchemes.TheBreakIn
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
+      Marvel.MainScheme.Types
       Marvel.Matchers
       Marvel.Message
       Marvel.Minion
-      Marvel.Minion.Attrs
       Marvel.Minion.Cards
       Marvel.Minion.Minions
       Marvel.Minion.Minions.ArmoredGuard
@@ -158,16 +157,17 @@ library
       Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Minion.Minions.Whirlwind
+      Marvel.Minion.Types
       Marvel.Modifier
       Marvel.Name
       Marvel.Obligation
-      Marvel.Obligation.Attrs
       Marvel.Obligation.Cards
       Marvel.Obligation.Obligations
       Marvel.Obligation.Obligations.AffairsOfState
       Marvel.Obligation.Obligations.BusinessProblems
       Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Obligation.Obligations.LegalWork
+      Marvel.Obligation.Types
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
@@ -177,7 +177,7 @@ library
       Marvel.Resource
       Marvel.Resource.Cards
       Marvel.Scenario
-      Marvel.Scenario.Attrs
+      Marvel.Scenario.Types
       Marvel.SideScheme
       Marvel.SideScheme.Attrs
       Marvel.SideScheme.Cards

@@ -11,20 +11,18 @@ import Marvel.Resource
 import Marvel.Trait
 
 allResources :: HashMap CardCode CardDef
-allResources =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [ energyAbsorption
-      , vibranium
-      , thePowerOfAggression
-      , thePowerOfJustice
-      , thePowerOfLeadership
-      , thePowerOfProtection
-      , energy
-      , genius
-      , strength
-      ]
+allResources = fromList $ map
+  (toCardCode &&& id)
+  [ energyAbsorption
+  , vibranium
+  , thePowerOfAggression
+  , thePowerOfJustice
+  , thePowerOfLeadership
+  , thePowerOfProtection
+  , energy
+  , genius
+  , strength
+  ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
 resource code name traits resources aspect =
@@ -38,32 +36,32 @@ basicResource :: CardCode -> Name -> [Trait] -> [Resource] -> CardDef
 basicResource code name traits resources =
   baseResource code name traits resources Nothing
 
-baseResource ::
-  CardCode -> Name -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
-baseResource code name traits resources mAspect =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Nothing
-    , cdTraits = fromList traits
-    , cdKeywords = mempty
-    , cdCardType = ResourceType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = False
-    , cdCriteria = NoCriteria
-    , cdAspect = mAspect
-    , cdEncounterSet = Nothing
-    , cdEncounterSetQuantity = Nothing
-    , cdResources = map (PrintedResource,) resources
-    , cdResponseWindow = Nothing
-    , cdBoostIcons = []
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+baseResource
+  :: CardCode -> Name -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
+baseResource code name traits resources mAspect = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = fromList traits
+  , cdKeywords = mempty
+  , cdCardType = ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = False
+  , cdCriteria = NoCriteria
+  , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  }
 
 energyAbsorption :: CardDef
-energyAbsorption = identityResource "01014" "Energy Absorption" [] [Energy, Energy, Energy]
+energyAbsorption =
+  identityResource "01014" "Energy Absorption" [] [Energy, Energy, Energy]
 
 vibranium :: CardDef
 vibranium = identityResource "01044" "Vibranium" [] [Wild, Wild]

@@ -6,8 +6,8 @@ module Marvel.Minion.Minions.Sandman
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 sandman :: MinionCard Sandman
 sandman =

@@ -3,8 +3,8 @@ module Marvel.Minion.Minions.HydraMercenary where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Minion.Attrs
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types
 
 hydraMercenary :: MinionCard HydraMercenary
 hydraMercenary =

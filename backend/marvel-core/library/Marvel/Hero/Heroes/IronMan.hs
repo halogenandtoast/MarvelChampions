@@ -6,8 +6,8 @@ import Marvel.Ability
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Hero.Types
 import Marvel.Hero.Cards qualified as Cards
+import Marvel.Hero.Runner
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -36,7 +36,10 @@ newtype IronMan = IronMan HeroAttrs
 
 instance HasModifiersFor IronMan where
   getModifiersFor _ target a | isTarget a target = do
-    x <- selectListCount $ UpgradeControlledBy (IdentityWithId $ toId a) <> UpgradeWithTrait Tech
+    x <-
+      selectListCount
+      $ UpgradeControlledBy (IdentityWithId $ toId a)
+      <> UpgradeWithTrait Tech
     pure [HandSizeModifier x]
   getModifiersFor _ _ _ = pure []
 

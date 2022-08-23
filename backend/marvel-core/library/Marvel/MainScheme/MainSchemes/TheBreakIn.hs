@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.MainScheme.Attrs
+import Marvel.MainScheme.Types
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.Message
 import Marvel.Queue
