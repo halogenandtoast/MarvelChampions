@@ -17,7 +17,7 @@ import Marvel.Modifier
 import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
-import Marvel.Support.Attrs
+import Marvel.Support.Types
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Target
 

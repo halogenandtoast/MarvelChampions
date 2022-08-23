@@ -62,6 +62,7 @@ import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, isCrisis, getSideSchemeThreat)
 import Marvel.Source
 import Marvel.Support
+import Marvel.Support.Types (Support, getSupportController, getSupportUses)
 import Marvel.Target
 import Marvel.Trait
 import Marvel.Treachery

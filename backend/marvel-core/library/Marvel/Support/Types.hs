@@ -1,7 +1,8 @@
-module Marvel.Support.Attrs where
+module Marvel.Support.Types where
 
 import Marvel.Prelude
 
+import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Card.Builder
 import Marvel.Card.Code
@@ -13,6 +14,56 @@ import Marvel.Modifier
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
+import Text.Show qualified
+
+data Support = forall a . IsSupport a => Support a
+
+instance Show Support where
+  show (Support a) = show a
+
+instance ToJSON Support where
+  toJSON (Support a) = toJSON a
+
+instance Eq Support where
+  Support (a :: a) == Support (b :: b) = case eqT @a @b of
+    Just Refl -> a == b
+    Nothing -> False
+
+data SomeSupportCard = forall a . IsSupport a => SomeSupportCard
+  (SupportCard a)
+
+liftSupportCard :: (forall a . SupportCard a -> b) -> SomeSupportCard -> b
+liftSupportCard f (SomeSupportCard a) = f a
+
+someSupportCardCode :: SomeSupportCard -> CardCode
+someSupportCardCode = liftSupportCard cbCardCode
+
+instance Entity Support where
+  type EntityId Support = SupportId
+  type EntityAttrs Support = SupportAttrs
+  toId = toId . toAttrs
+  toAttrs (Support a) = toAttrs a
+
+instance RunMessage Support where
+  runMessage msg (Support a) = Support <$> runMessage msg a
+
+instance Exhaustable Support where
+  isExhausted = supportExhausted . toAttrs
+
+instance IsSource Support where
+  toSource = SupportSource . toId
+
+instance HasAbilities Support where
+  getAbilities (Support a) = getAbilities a
+
+instance HasModifiersFor Support where
+  getModifiersFor source target (Support a) = getModifiersFor source target a
+
+getSupportController :: Support -> IdentityId
+getSupportController = supportController . toAttrs
+
+getSupportUses :: Support -> Natural
+getSupportUses = supportUses . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ SupportAttrs, EntityId a ~ SupportId, HasModifiersFor a, HasAbilities a, RunMessage a) => IsSupport a
 
@@ -36,7 +87,8 @@ usesL :: Lens' SupportAttrs Natural
 usesL = lens supportUses $ \m x -> m { supportUses = x }
 
 discardIfNoUsesL :: Lens' SupportAttrs Bool
-discardIfNoUsesL = lens supportDiscardIfNoUses $ \m x -> m { supportDiscardIfNoUses = x }
+discardIfNoUsesL =
+  lens supportDiscardIfNoUses $ \m x -> m { supportDiscardIfNoUses = x }
 
 instance HasCardCode SupportAttrs where
   toCardCode = toCardCode . supportCardDef
