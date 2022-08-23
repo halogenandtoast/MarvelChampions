@@ -179,7 +179,6 @@ library
       Marvel.Scenario
       Marvel.Scenario.Types
       Marvel.SideScheme
-      Marvel.SideScheme.Attrs
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes
       Marvel.SideScheme.SideSchemes.BombScare
@@ -193,6 +192,7 @@ library
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
       Marvel.SideScheme.SideSchemes.TheMastersOfEvil
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
+      Marvel.SideScheme.Types
       Marvel.Source
       Marvel.Stats
       Marvel.Support

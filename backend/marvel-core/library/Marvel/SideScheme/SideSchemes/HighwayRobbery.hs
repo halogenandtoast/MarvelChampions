@@ -13,7 +13,7 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.SideScheme.Attrs
+import Marvel.SideScheme.Types
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
 import Marvel.Target
