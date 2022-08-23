@@ -13,7 +13,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Attrs
+import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
 
 markVArmor :: UpgradeCard MarkVArmor

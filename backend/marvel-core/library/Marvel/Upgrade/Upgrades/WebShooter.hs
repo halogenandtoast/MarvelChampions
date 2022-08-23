@@ -16,7 +16,7 @@ import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Attrs
+import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
 
 webShooter :: UpgradeCard WebShooter

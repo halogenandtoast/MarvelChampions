@@ -239,8 +239,8 @@ library
       Marvel.Treachery.Treacheries.TitaniasFury
       Marvel.Treachery.Types
       Marvel.Upgrade
-      Marvel.Upgrade.Attrs
       Marvel.Upgrade.Cards
+      Marvel.Upgrade.Types
       Marvel.Upgrade.Upgrades
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest

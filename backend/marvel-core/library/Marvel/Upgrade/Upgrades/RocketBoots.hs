@@ -21,7 +21,7 @@ import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
-import Marvel.Upgrade.Attrs
+import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
 
 rocketBoots :: UpgradeCard RocketBoots

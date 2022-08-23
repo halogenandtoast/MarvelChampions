@@ -68,6 +68,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
+import Marvel.Upgrade.Types (Upgrade, getUpgradeUses, getUpgradeController)
 import Marvel.Villain
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
 import Marvel.Window qualified as W
