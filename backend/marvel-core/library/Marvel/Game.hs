@@ -70,6 +70,7 @@ import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
 import Marvel.Upgrade.Types (Upgrade, getUpgradeUses, getUpgradeController)
 import Marvel.Villain
+import Marvel.Villain.Types (Villain, villainDamage, villainIsTough, villainAttackDetails)
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
 import Marvel.Window qualified as W
 

@@ -265,8 +265,8 @@ library
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter
       Marvel.Villain
-      Marvel.Villain.Attrs
       Marvel.Villain.Cards
+      Marvel.Villain.Types
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Rhino
       Marvel.Window
