@@ -15,7 +15,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
-import Marvel.Support.Attrs
+import Marvel.Support.Types
 import qualified Marvel.Support.Cards as Cards
 import Marvel.Target
 

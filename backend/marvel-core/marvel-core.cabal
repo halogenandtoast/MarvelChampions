@@ -196,7 +196,6 @@ library
       Marvel.Source
       Marvel.Stats
       Marvel.Support
-      Marvel.Support.Attrs
       Marvel.Support.Cards
       Marvel.Support.Supports
       Marvel.Support.Supports.AuntMay
@@ -211,6 +210,7 @@ library
       Marvel.Support.Supports.TacTeam
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheTriskellion
+      Marvel.Support.Types
       Marvel.Target
       Marvel.Trait
       Marvel.Treachery
