@@ -9,10 +9,10 @@ import Marvel.Card
 import Marvel.Id
 
 instance FromJSON Attachment where
-  parseJSON v = flip (withObject "Attachment") v $ \o -> do
+  parseJSON = withObject "Attachment" $ \o -> do
     cardDef <- o .: "attachmentCardDef"
     withAttachmentCardCode (cdCardCode cardDef)
-      $ \(_ :: AttachmentCard a) -> Attachment <$> parseJSON @a v
+      $ \(_ :: AttachmentCard a) -> Attachment <$> parseJSON @a (Object o)
 
 withAttachmentCardCode
   :: CardCode -> (forall a . IsAttachment a => AttachmentCard a -> r) -> r

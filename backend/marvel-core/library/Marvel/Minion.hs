@@ -5,14 +5,14 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Id
-import Marvel.Minion.Types
 import Marvel.Minion.Minions
+import Marvel.Minion.Types
 
 instance FromJSON Minion where
-  parseJSON v = flip (withObject "Minion") v $ \o -> do
+  parseJSON = withObject "Minion" $ \o -> do
     cardDef <- o .: "minionCardDef"
     withMinionCardCode (cdCardCode cardDef)
-      $ \(_ :: MinionCard a) -> Minion <$> parseJSON @a v
+      $ \(_ :: MinionCard a) -> Minion <$> parseJSON @a (Object o)
 
 withMinionCardCode
   :: CardCode -> (forall a . IsMinion a => MinionCard a -> r) -> r

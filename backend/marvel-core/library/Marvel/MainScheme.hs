@@ -5,14 +5,14 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Id
-import Marvel.MainScheme.Types
 import Marvel.MainScheme.MainSchemes
+import Marvel.MainScheme.Types
 
 instance FromJSON MainScheme where
-  parseJSON v = flip (withObject "MainScheme") v $ \o -> do
+  parseJSON = withObject "MainScheme" $ \o -> do
     cardDef <- o .: "mainSchemeCardDef"
     withMainSchemeCardCode (cdCardCode cardDef)
-      $ \(_ :: MainSchemeCard a) -> MainScheme <$> parseJSON @a v
+      $ \(_ :: MainSchemeCard a) -> MainScheme <$> parseJSON @a (Object o)
 
 withMainSchemeCardCode
   :: CardCode -> (forall a . IsMainScheme a => MainSchemeCard a -> r) -> r

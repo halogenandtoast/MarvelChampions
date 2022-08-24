@@ -11,10 +11,10 @@ import Marvel.Event.Types
 import Marvel.Id
 
 instance FromJSON Event where
-  parseJSON v = flip (withObject "Event") v $ \o -> do
+  parseJSON = withObject "Event" $ \o -> do
     cardDef <- o .: "eventCardDef"
     withEventCardCode (cdCardCode cardDef)
-      $ \(_ :: EventCard a) -> Event <$> parseJSON @a v
+      $ \(_ :: EventCard a) -> Event <$> parseJSON @a (Object o)
 
 withEventCardCode
   :: CardCode -> (forall a . IsEvent a => EventCard a -> r) -> r
