@@ -11,10 +11,10 @@ import Marvel.Villain.Villains.Klaw
 import Marvel.Villain.Villains.Rhino
 
 instance FromJSON Villain where
-  parseJSON v = flip (withObject "Villain") v $ \o -> do
+  parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
     withVillainCardCode (cdCardCode cardDef)
-      $ \(_ :: VillainCard a) -> Villain <$> parseJSON @a v
+      $ \(_ :: VillainCard a) -> Villain <$> parseJSON @a (Object o)
 
 withVillainCardCode
   :: CardCode -> (forall a . IsVillain a => VillainCard a -> r) -> r

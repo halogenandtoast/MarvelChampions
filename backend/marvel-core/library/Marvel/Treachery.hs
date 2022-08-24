@@ -9,10 +9,10 @@ import Marvel.Treachery.Types
 import Marvel.Treachery.Treacheries
 
 instance FromJSON Treachery where
-  parseJSON v = flip (withObject "Treachery") v $ \o -> do
+  parseJSON = withObject "Treachery" $ \o -> do
     cardDef <- o .: "treacheryCardDef"
     withTreacheryCardCode (cdCardCode cardDef)
-      $ \(_ :: TreacheryCard a) -> Treachery <$> parseJSON @a v
+      $ \(_ :: TreacheryCard a) -> Treachery <$> parseJSON @a (Object o)
 
 withTreacheryCardCode
   :: CardCode -> (forall a . IsTreachery a => TreacheryCard a -> r) -> r

@@ -7,14 +7,14 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Id
-import Marvel.Support.Types
 import Marvel.Support.Supports
+import Marvel.Support.Types
 
 instance FromJSON Support where
-  parseJSON v = flip (withObject "Support") v $ \o -> do
+  parseJSON = withObject "Support" $ \o -> do
     cardDef <- o .: "supportCardDef"
     withSupportCardCode (cdCardCode cardDef)
-      $ \(_ :: SupportCard a) -> Support <$> parseJSON @a v
+      $ \(_ :: SupportCard a) -> Support <$> parseJSON @a (Object o)
 
 withSupportCardCode
   :: CardCode -> (forall a . IsSupport a => SupportCard a -> r) -> r
