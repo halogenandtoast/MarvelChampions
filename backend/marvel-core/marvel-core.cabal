@@ -67,6 +67,7 @@ library
       Marvel.Card.PlayerCard
       Marvel.Card.Side
       Marvel.Cost
+      Marvel.Cost.Types
       Marvel.Criteria
       Marvel.Damage
       Marvel.Debug
@@ -113,7 +114,6 @@ library
       Marvel.Event.Events.WakandaForeverD
       Marvel.Event.Types
       Marvel.Exception
-      Marvel.Field
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
@@ -293,6 +293,7 @@ library
       library
   default-extensions:
       BlockArguments
+      DefaultSignatures
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies
@@ -346,6 +347,7 @@ test-suite MarvelChampions-test
       test
   default-extensions:
       BlockArguments
+      DefaultSignatures
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies

@@ -38,10 +38,22 @@ someAttachmentCardCode :: SomeAttachmentCard -> CardCode
 someAttachmentCardCode = liftAttachmentCard cbCardCode
 
 instance Entity Attachment where
-  type EntityId Attachment = AttachmentId
-  type EntityAttrs Attachment = AttachmentAttrs
-  toId = toId . toAttrs
-  toAttrs (Attachment a) = toAttrs a
+  type Id Attachment = AttachmentId
+  data Attrs Attachment = AttachmentAttrs
+    { attachmentId :: AttachmentId
+    , attachmentCardDef :: CardDef
+    , attachmentEnemy :: Maybe EnemyId
+    , attachmentDamage :: Natural
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Attachment :: Type -> Type where
+    AttachmentId :: Field Attachment AttachmentId
+    AttachmentCardDef :: Field Attachment CardDef
+    AttachmentEnemy :: Field Attachment (Maybe EnemyId)
+    AttachmentDamage :: Field Attachment Natural
+  toId = attachmentId . toAttrs
+  toAttrs (Attachment a) = toAttachmentAttrs a
 
 instance RunMessage Attachment where
   runMessage msg (Attachment a) = Attachment <$> runMessage msg a
@@ -65,29 +77,23 @@ instance IsCard Attachment where
 instance HasCardDef Attachment where
   getCardDef = getCardDef . toAttrs
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AttachmentAttrs, EntityId a ~ AttachmentId, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, Id a ~ AttachmentId, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a where
+  toAttachmentAttrs :: a -> Attrs Attachment
+  default toAttachmentAttrs :: Coercible a (Attrs Attachment) => a -> Attrs Attachment
+  toAttachmentAttrs = coerce
 
 type AttachmentCard a = CardBuilder AttachmentId a
 
-data AttachmentAttrs = AttachmentAttrs
-  { attachmentId :: AttachmentId
-  , attachmentCardDef :: CardDef
-  , attachmentEnemy :: Maybe EnemyId
-  , attachmentDamage :: Natural
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-enemyL :: Lens' AttachmentAttrs (Maybe EnemyId)
+enemyL :: Lens' (Attrs Attachment) (Maybe EnemyId)
 enemyL = lens attachmentEnemy $ \m x -> m { attachmentEnemy = x }
 
-damageL :: Lens' AttachmentAttrs Natural
+damageL :: Lens' (Attrs Attachment) Natural
 damageL = lens attachmentDamage $ \m x -> m { attachmentDamage = x }
 
-instance HasCardCode AttachmentAttrs where
+instance HasCardCode (Attrs Attachment) where
   toCardCode = toCardCode . attachmentCardDef
 
-attachment :: (AttachmentAttrs -> a) -> CardDef -> CardBuilder AttachmentId a
+attachment :: (Attrs Attachment -> a) -> CardDef -> CardBuilder AttachmentId a
 attachment f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \mid -> f $ AttachmentAttrs
@@ -98,37 +104,31 @@ attachment f cardDef = CardBuilder
     }
   }
 
-instance Entity AttachmentAttrs where
-  type EntityId AttachmentAttrs = AttachmentId
-  type EntityAttrs AttachmentAttrs = AttachmentAttrs
-  toId = attachmentId
-  toAttrs = id
+instance IsSource (Attrs Attachment) where
+  toSource = AttachmentSource . attachmentId
 
-instance IsSource AttachmentAttrs where
-  toSource = AttachmentSource . toId
+instance IsTarget (Attrs Attachment) where
+  toTarget = AttachmentTarget . attachmentId
 
-instance IsTarget AttachmentAttrs where
-  toTarget = AttachmentTarget . toId
-
-instance RunMessage AttachmentAttrs where
+instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = case msg of
-    AttachmentMessage attachmentId msg' | attachmentId == toId attrs ->
+    AttachmentMessage attachmentId' msg' | attachmentId' == attachmentId attrs ->
       case msg' of
         AttachedToEnemy enemyId -> do
           case enemyId of
             EnemyMinionId minionId -> do
-              push (MinionMessage minionId $ AttachedToMinion $ toId attrs)
+              push (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
             EnemyVillainId villainId -> do
-              push (VillainMessage villainId $ AttachedToVillain $ toId attrs)
+              push (VillainMessage villainId $ AttachedToVillain $ attachmentId attrs)
           pure $ attrs & enemyL ?~ enemyId
         _ -> pure attrs
     _ -> pure attrs
 
-instance IsCard AttachmentAttrs where
+instance IsCard (Attrs Attachment) where
   toCard a = EncounterCard $ MkEncounterCard
-    { ecCardId = CardId $ unAttachmentId $ toId a
+    { ecCardId = CardId $ unAttachmentId $ attachmentId a
     , ecCardDef = getCardDef a
     }
 
-instance HasCardDef AttachmentAttrs where
+instance HasCardDef (Attrs Attachment) where
   getCardDef = attachmentCardDef

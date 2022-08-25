@@ -12,6 +12,7 @@ dependencies:
 
 default-extensions:
 - BlockArguments
+- DefaultSignatures
 - DeriveAnyClass
 - DeriveGeneric
 - DerivingStrategies

@@ -1,7 +1,10 @@
 module Marvel.Entity where
 
-import Marvel.Id
 import Marvel.Prelude
+
+import Marvel.Id
+import {-# SOURCE #-} Marvel.Game
+import Marvel.Target
 
 class Exhaustable a where
   isExhausted :: a -> Bool
@@ -10,7 +13,17 @@ class HasController a where
   controller :: a -> IdentityId
 
 class Entity a where
-  type EntityId a
-  data EntityAttrs a
-  toId :: a -> EntityId a
-  toAttrs :: a -> EntityAttrs a
+  type Id a
+  data Attrs a
+  data family Field a :: Type -> Type
+  toId :: a -> Id a
+  toAttrs :: a -> Attrs a
+
+field :: MonadGame env m => Field a typ -> Id a -> m typ
+field = undefined
+
+fieldP :: MonadGame env m => Field a typ -> (typ -> Bool) -> Id a -> m Bool
+fieldP = undefined
+
+isTarget :: (Entity a, Attrs a ~ b, IsTarget b) => a -> Target -> Bool
+isTarget a = (== toTarget (toAttrs a))
