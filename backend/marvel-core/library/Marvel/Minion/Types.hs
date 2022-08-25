@@ -9,10 +9,8 @@ import Marvel.Card.Code as X
 import Marvel.Entity as X
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Message as X
 import Marvel.Modifier as X
 import Marvel.Query as X
-import Marvel.Question as X
 import Marvel.Queue as X
 import Marvel.Source as X
 import Marvel.Stats as X
@@ -69,10 +67,42 @@ minionAttackDetails :: Minion -> Maybe Attack
 minionAttackDetails = minionAttacking . toAttrs
 
 instance Entity Minion where
-  type EntityId Minion = MinionId
-  type EntityAttrs Minion = MinionAttrs
-  toId = toId . toAttrs
-  toAttrs (Minion a) = toAttrs a
+  type Id Minion = MinionId
+  data Attrs Minion = MinionAttrs
+    { minionId :: MinionId
+    , minionCardDef :: CardDef
+    , minionDamage :: Natural
+    , minionHitPoints :: HP Natural
+    , minionScheme :: Sch
+    , minionAttack :: Atk
+    , minionEngagedIdentity :: IdentityId
+    , minionStunned :: Bool
+    , minionConfused :: Bool
+    , minionTough :: Bool
+    , minionAttacking :: Maybe Attack
+    , minionUpgrades :: HashSet UpgradeId
+    , minionAttachments :: HashSet AttachmentId
+    , minionDefensePriority :: DefensePriority
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Minion :: Type -> Type where
+    MinionId :: Field Minion MinionId
+    MinionCardDef :: Field Minion CardDef
+    MinionDamage :: Field Minion Natural
+    MinionHitPoints :: Field Minion (HP Natural)
+    MinionScheme :: Field Minion Sch
+    MinionAttack :: Field Minion Atk
+    MinionEngagedIdentity :: Field Minion IdentityId
+    MinionStunned :: Field Minion Bool
+    MinionConfused :: Field Minion Bool
+    MinionTough :: Field Minion Bool
+    MinionAttacking :: Field Minion (Maybe Attack)
+    MinionUpgrades :: Field Minion (HashSet UpgradeId)
+    MinionAttachments :: Field Minion (HashSet AttachmentId)
+    MinionDefensePriority :: Field Minion DefensePriority
+  toId = minionId . toAttrs
+  toAttrs (Minion a) = toMinionAttrs a
 
 instance RunMessage Minion where
   runMessage msg (Minion a) = Minion <$> runMessage msg a
@@ -106,25 +136,6 @@ instance HasCardDef Minion where
 minionRemainingHitPoints :: MinionAttrs -> Natural
 minionRemainingHitPoints attrs =
   subtractNatural (minionDamage attrs) (unHp $ minionHitPoints attrs)
-
-data MinionAttrs = MinionAttrs
-  { minionId :: MinionId
-  , minionCardDef :: CardDef
-  , minionDamage :: Natural
-  , minionHitPoints :: HP Natural
-  , minionScheme :: Sch
-  , minionAttack :: Atk
-  , minionEngagedIdentity :: IdentityId
-  , minionStunned :: Bool
-  , minionConfused :: Bool
-  , minionTough :: Bool
-  , minionAttacking :: Maybe Attack
-  , minionUpgrades :: HashSet UpgradeId
-  , minionAttachments :: HashSet AttachmentId
-  , minionDefensePriority :: DefensePriority
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 defensePriorityL :: Lens' MinionAttrs DefensePriority
 defensePriorityL =
