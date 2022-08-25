@@ -1299,6 +1299,9 @@ class Count a where
   data QueryCount a
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
 
+class Entity a => GameEntity a where
+  getAttrs :: MonadGame env m => EntityId a -> m (EntityAttrs a)
+
 gameSelectCountIdentity
   :: MonadGame env m
   => QueryCount IdentityMatcher

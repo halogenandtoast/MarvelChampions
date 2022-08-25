@@ -12,6 +12,7 @@ data Cost
   | HealCost Natural
   | DamageThisCost Natural
   | ExhaustCost
+  | DiscardHandCardCost Natural
   | UseCost
   | NoCost
   deriving stock (Show, Eq, Generic)
@@ -31,6 +32,7 @@ instance Semigroup Cost where
 costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources ExhaustCost = []
+costResources (DiscardHandCardCost _) = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

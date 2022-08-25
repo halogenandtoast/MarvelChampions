@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Entity
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
@@ -72,6 +73,9 @@ getCurrentWindows :: MonadGame env m => m [Window]
 getDifficulty :: MonadGame env m => m Difficulty
 getHazardCount :: MonadGame env m => m Natural
 getAccelerationCount :: MonadGame env m => m Natural
+
+class Entity a => GameEntity a where
+  getAttrs :: MonadGame env m => EntityId a -> m (EntityAttrs a)
 
 class Count a where
   data QueryCount a

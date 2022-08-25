@@ -15,7 +15,8 @@ allSupports =
   fromList $
     map
       (toCardCode &&& id)
-      [ auntMay
+      [ alphaFlightStation
+      , auntMay
       , superhumanLawDivision
       , pepperPotts
       , starkTower
@@ -71,6 +72,9 @@ unique def = def {cdUnique = True}
 
 auntMay :: CardDef
 auntMay = unique $ identitySupport "01006" "Aunt May" 1 [Persona] [Energy]
+
+alphaFlightStation :: CardDef
+alphaFlightStation = unique $ identitySupport "01015" "Alpha Flight Station" 1 [Location, Shield] [Mental]
 
 superhumanLawDivision :: CardDef
 superhumanLawDivision =

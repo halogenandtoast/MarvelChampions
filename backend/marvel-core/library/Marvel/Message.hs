@@ -1,14 +1,30 @@
-module Marvel.Message where
+module Marvel.Message
+  ( module Marvel.Message
+  , module X
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attack
 import Marvel.Card
-import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
+import Marvel.Message.Ally as X
+import Marvel.Message.Attachment as X
+import Marvel.Message.Deck as X
+import Marvel.Message.Effect as X
+import Marvel.Message.Event as X
+import Marvel.Message.Identity as X
+import Marvel.Message.MainScheme as X
+import Marvel.Message.Minion as X
+import Marvel.Message.Obligation as X
+import Marvel.Message.SideScheme as X
+import Marvel.Message.Support as X
+import Marvel.Message.Treachery as X
+import Marvel.Message.Upgrade as X
+import Marvel.Message.Villain as X
+import Marvel.Payment
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
@@ -17,6 +33,7 @@ import Marvel.Window (Window, WindowType)
 
 class RunMessage a where
   runMessage :: MonadGame env m => Message -> a -> m a
+<<<<<<< HEAD
 
 data FromZone
   = FromDeck
@@ -26,6 +43,8 @@ data FromZone
   | FromEncounterDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+=======
+>>>>>>> f6c4ec2 (WIP)
 
 data FinishedStatus
   = Won
@@ -122,6 +141,7 @@ data Message
   | WithDiscardedMatch Target FromZone Card
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+<<<<<<< HEAD
 
 data VillainMessage
   = SetVillainHp
@@ -340,3 +360,5 @@ data SideMessage
   | Defended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+=======
+>>>>>>> f6c4ec2 (WIP)
