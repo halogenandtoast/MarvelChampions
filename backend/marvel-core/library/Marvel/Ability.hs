@@ -10,6 +10,7 @@ import Data.List qualified as L
 import Marvel.Ability.Type as X
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Field
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
@@ -144,7 +145,7 @@ passesCriteria x a = go (abilityCriteria a)
   source = abilitySource a
 
 passesCanAffordCost :: MonadGame env m => IdentityId -> Ability -> m Bool
-passesCanAffordCost _ a = go (abilityCost a)
+passesCanAffordCost identityId a = go (abilityCost a)
  where
   go = \case
     NoCost -> pure True
@@ -154,6 +155,7 @@ passesCanAffordCost _ a = go (abilityCost a)
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
+    DiscardHandCardCost n -> fieldP PlayerIdentityHand notNull identityId
     ExhaustCost -> case source of
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly

@@ -11,12 +11,6 @@ class HasController a where
 
 class Entity a where
   type EntityId a
-  type EntityAttrs a
+  data EntityAttrs a
   toId :: a -> EntityId a
   toAttrs :: a -> EntityAttrs a
-
-instance Entity a => Entity (With a b) where
-  type EntityId (With a b) = EntityId a
-  type EntityAttrs (With a b) = EntityAttrs a
-  toId (With a _) = toId a
-  toAttrs (With a _) = toAttrs a

@@ -113,6 +113,7 @@ library
       Marvel.Event.Events.WakandaForeverD
       Marvel.Event.Types
       Marvel.Exception
+      Marvel.Field
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
@@ -140,6 +141,20 @@ library
       Marvel.MainScheme.Types
       Marvel.Matchers
       Marvel.Message
+      Marvel.Message.Ally
+      Marvel.Message.Attachment
+      Marvel.Message.Deck
+      Marvel.Message.Effect
+      Marvel.Message.Event
+      Marvel.Message.Identity
+      Marvel.Message.MainScheme
+      Marvel.Message.Minion
+      Marvel.Message.Obligation
+      Marvel.Message.SideScheme
+      Marvel.Message.Support
+      Marvel.Message.Treachery
+      Marvel.Message.Upgrade
+      Marvel.Message.Villain
       Marvel.Minion
       Marvel.Minion.Cards
       Marvel.Minion.Minions
@@ -168,6 +183,7 @@ library
       Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Types
+      Marvel.Payment
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
@@ -198,6 +214,7 @@ library
       Marvel.Support
       Marvel.Support.Cards
       Marvel.Support.Supports
+      Marvel.Support.Supports.AlphaFlightStation
       Marvel.Support.Supports.AuntMay
       Marvel.Support.Supports.AvengersMansion
       Marvel.Support.Supports.Helicarrier

@@ -1,4 +1,7 @@
-module Marvel.Question where
+module Marvel.Question
+  ( module Marvel.Question
+  , module Marvel.Payment
+  ) where
 
 import Marvel.Prelude
 
@@ -16,6 +19,7 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import {-# SOURCE #-} Marvel.Message
+import Marvel.Payment
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Resource
@@ -23,10 +27,6 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window(..), WindowTiming(..))
 import Marvel.Window qualified as W
-
-data Payment = Payments [Payment] | ResourcePayment Resource | ResourcePaymentFromCard ExtendedCardMatcher | NoPayment
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 paymentResources :: MonadGame env m => Payment -> m [Resource]
 paymentResources NoPayment = pure []
@@ -38,17 +38,6 @@ paymentResources (ResourcePaymentFromCard matcher) = do
     [x] -> pure $ printedResources $ getCardDef x
     _ -> error "target matches too many cards"
 paymentResources (Payments ps) = concatMapM paymentResources ps
-
-instance Semigroup Payment where
-  NoPayment <> x = x
-  x <> NoPayment = x
-  Payments xs <> Payments ys = Payments $ xs <> ys
-  x <> Payments ys = Payments $ x : ys
-  Payments xs <> y = Payments $ xs <> [y]
-  x <> y = Payments [x, y]
-
-instance Monoid Payment where
-  mempty = NoPayment
 
 data ActiveCost = ActiveCost
   { activeCostIdentityId :: IdentityId
