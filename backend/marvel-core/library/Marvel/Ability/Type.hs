@@ -2,7 +2,6 @@ module Marvel.Ability.Type where
 
 import Marvel.Prelude
 
-import GHC.Generics
 import Marvel.Cost
 import {-# SOURCE #-} Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
@@ -27,11 +26,18 @@ data AbilityType
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data AbilitySubType = Attack | Defense | Thwart
+data AbilitySubType
+  = Attack
+  | Defense
+  | Thwart
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data Limit = PerTurn Natural | PerRound Natural | PerWindow Natural | NoLimit
+data Limit
+  = PerTurn Natural
+  | PerRound Natural
+  | PerWindow Natural
+  | NoLimit
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -73,20 +79,3 @@ choicesL = lens abilityChoices $ \m x -> m { abilityChoices = x }
 class HasAbilities a where
   getAbilities :: HasCallStack => a -> [Ability]
   getAbilities _ = []
-
-genericGetAbilities :: (Generic a, HasAbilities' (Rep a)) => a -> [Ability]
-genericGetAbilities = getAbilities' . from
-
-class HasAbilities' f where
-  getAbilities' :: f p -> [Ability]
-
-instance HasAbilities' f => HasAbilities' (M1 i c f) where
-  getAbilities' = getAbilities' . unM1
-
-instance (HasAbilities' l, HasAbilities' r) => HasAbilities' (l :+: r) where
-  getAbilities' = \case
-    L1 l -> getAbilities' l
-    R1 r -> getAbilities' r
-
-instance HasAbilities c => HasAbilities' (K1 i c) where
-  getAbilities' = getAbilities . unK1

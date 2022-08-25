@@ -2,7 +2,6 @@
 module Types where
 
 import Data.Text
-import GHC.Generics
 import Json
 import Prelude (Maybe(Just), ($))
 
@@ -19,7 +18,7 @@ data Registration = Registration
   deriving stock Generic
 
 instance ToJSON Registration where
-  toJSON     = genericToJSON $ aesonOptions $ Just "registration"
+  toJSON = genericToJSON $ aesonOptions $ Just "registration"
   toEncoding = genericToEncoding $ aesonOptions $ Just "registration"
 
 instance FromJSON Registration where

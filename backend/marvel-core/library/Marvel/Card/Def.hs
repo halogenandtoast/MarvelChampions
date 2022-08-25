@@ -2,7 +2,6 @@ module Marvel.Card.Def where
 
 import Marvel.Prelude
 
-import GHC.Generics
 import Marvel.Ability.Type
 import Marvel.Aspect
 import Marvel.Boost
@@ -72,7 +71,9 @@ cardMatch matcher a = case matcher of
   def = getCardDef a
   isPrintedResource (restriction, _) = restriction == PrintedResource
 
-data ResourceRestriction = PrintedResource | ResourceForCardsMatching CardMatcher
+data ResourceRestriction
+  = PrintedResource
+  | ResourceForCardsMatching CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -113,12 +114,6 @@ instance HasCardCode CardDef where
 
 class HasCardDef a where
   getCardDef :: a -> CardDef
-
-class HasCardDef' f where
-  getCardDef' :: f p -> CardDef
-
-genericGetCardDef :: (Generic a, HasCardDef' (Rep a)) => a -> CardDef
-genericGetCardDef = getCardDef' . from
 
 toAdditionalCriteria :: CardDef -> Criteria
 toAdditionalCriteria def = case cdAbilityType def of
