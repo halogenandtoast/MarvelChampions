@@ -19,6 +19,7 @@ import Marvel.Discard
 import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Entity
+import Marvel.Field
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
