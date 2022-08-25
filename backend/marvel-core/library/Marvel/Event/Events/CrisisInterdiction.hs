@@ -21,14 +21,13 @@ import Marvel.Target
 crisisInterdiction :: EventCard CrisisInterdiction
 crisisInterdiction = event CrisisInterdiction Cards.crisisInterdiction
 
-newtype CrisisInterdiction = CrisisInterdiction EventAttrs
+newtype CrisisInterdiction = CrisisInterdiction (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
-
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage CrisisInterdiction where
   runMessage msg e@(CrisisInterdiction attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         let
           handleRest [] = []
