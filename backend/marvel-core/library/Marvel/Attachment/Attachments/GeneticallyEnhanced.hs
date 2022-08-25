@@ -9,7 +9,6 @@ import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
@@ -22,9 +21,9 @@ import Marvel.Target
 geneticallyEnhanced :: AttachmentCard GeneticallyEnhanced
 geneticallyEnhanced = attachment GeneticallyEnhanced Cards.geneticallyEnhanced
 
-newtype GeneticallyEnhanced = GeneticallyEnhanced AttachmentAttrs
+newtype GeneticallyEnhanced = GeneticallyEnhanced (Attrs Attachment)
   deriving anyclass (IsAttachment, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor GeneticallyEnhanced where
   getModifiersFor _ (MinionTarget mid) (GeneticallyEnhanced a)
@@ -33,7 +32,7 @@ instance HasModifiersFor GeneticallyEnhanced where
 
 instance RunMessage GeneticallyEnhanced where
   runMessage msg a@(GeneticallyEnhanced attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment identityId -> do
         minions <- selectList MinionWithHighestPrintedHitPoints
         chooseOne
@@ -41,7 +40,7 @@ instance RunMessage GeneticallyEnhanced where
           [ TargetLabel
               (MinionTarget minionId)
               [ Run
-                  [ AttachmentMessage (toId attrs)
+                  [ AttachmentMessage (attachmentId attrs)
                     $ AttachedToEnemy
                     $ EnemyMinionId minionId
                   ]

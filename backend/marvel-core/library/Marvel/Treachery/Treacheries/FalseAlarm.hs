@@ -12,24 +12,24 @@ import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 falseAlarm :: TreacheryCard FalseAlarm
 falseAlarm = treachery FalseAlarm Cards.falseAlarm
 
-newtype FalseAlarm = FalseAlarm TreacheryAttrs
+newtype FalseAlarm = FalseAlarm (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage FalseAlarm where
   runMessage msg t@(FalseAlarm attrs) = case msg of
-    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      RevealTreachery ident -> do
-        isConfused <- identityMatches ConfusedIdentity ident
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      RevealTreachery identityId -> do
+        isConfused <- identityMatches ConfusedIdentity identityId
         if not isConfused
           then do
-            push $ IdentityMessage ident IdentityConfused
+            push $ IdentityMessage identityId IdentityConfused
             pure t
           else pure . FalseAlarm $ attrs & surgeL .~ True
       _ -> FalseAlarm <$> runMessage msg attrs

@@ -13,39 +13,36 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 caughtOffGuard :: TreacheryCard CaughtOffGuard
 caughtOffGuard = treachery CaughtOffGuard Cards.caughtOffGuard
 
-newtype CaughtOffGuard = CaughtOffGuard TreacheryAttrs
+newtype CaughtOffGuard = CaughtOffGuard (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage CaughtOffGuard where
   runMessage msg t@(CaughtOffGuard attrs) = case msg of
-    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->
-      case msg' of
-        RevealTreachery identityId -> do
-          supports <-
-            selectMap SupportTarget $ SupportControlledBy $ IdentityWithId
-              identityId
-          upgrades <-
-            selectMap UpgradeTarget $ UpgradeControlledBy $ IdentityWithId
-              identityId
-          if null supports && null upgrades
-            then pure . CaughtOffGuard $ attrs & surgeL .~ True
-            else do
-              chooseOne
-                identityId
-                ([ TargetLabel support [DiscardTarget support]
-                 | support <- supports
+    TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
+      RevealTreachery identityId -> do
+        supports <-
+          selectMap SupportTarget $ SupportControlledBy $ IdentityWithId
+            identityId
+        upgrades <-
+          selectMap UpgradeTarget $ UpgradeControlledBy $ IdentityWithId
+            identityId
+        if null supports && null upgrades
+          then pure . CaughtOffGuard $ attrs & surgeL .~ True
+          else do
+            chooseOne identityId
+              $ [ TargetLabel support [DiscardTarget support]
+                | support <- supports
+                ]
+              <> [ TargetLabel upgrade [DiscardTarget upgrade]
+                 | upgrade <- upgrades
                  ]
-                <> [ TargetLabel upgrade [DiscardTarget upgrade]
-                   | upgrade <- upgrades
-                   ]
-                )
-              pure t
-        _ -> CaughtOffGuard <$> runMessage msg attrs
+            pure t
+      _ -> CaughtOffGuard <$> runMessage msg attrs
     _ -> CaughtOffGuard <$> runMessage msg attrs

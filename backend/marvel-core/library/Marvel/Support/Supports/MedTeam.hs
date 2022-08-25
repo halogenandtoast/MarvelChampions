@@ -23,9 +23,9 @@ medTeam :: SupportCard MedTeam
 medTeam =
   supportWith MedTeam Cards.medTeam $ (usesL .~ 3) . (discardIfNoUsesL .~ True)
 
-newtype MedTeam = MedTeam SupportAttrs
+newtype MedTeam = MedTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities MedTeam where
   getAbilities (MedTeam a) =

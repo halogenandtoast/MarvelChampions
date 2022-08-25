@@ -6,7 +6,7 @@ import Marvel.Ability
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.AlterEgo.Runner
 import Marvel.Card.Def
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
@@ -30,20 +30,20 @@ tChalla = alterEgo
   (Rec 4)
   [Cards.affairsOfState]
 
-newtype TChalla = TChalla AlterEgoAttrs
+newtype TChalla = TChalla (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities TChalla where
   getAbilities a = [ability a 1 Setup NoCriteria NoCost $ runAbility a 1]
 
 instance RunMessage TChalla where
-  runMessage msg a = case msg of
+  runMessage msg ae@(TChalla a) = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
-      push . IdentityMessage (toId a) $ Search
-        (SearchIdentityDeck (toId a) AllOfDeck)
+      push . IdentityMessage (alterEgoIdentityId a) $ Search
+        (SearchIdentityDeck (alterEgoIdentityId a) AllOfDeck)
         (CardWithTrait BlackPanther <> CardWithType UpgradeType)
         SearchDrawOne
         ShuffleBackIn
-      pure a
-    _ -> TChalla <$> runMessage msg (toAttrs a)
+      pure ae
+    _ -> TChalla <$> runMessage msg a

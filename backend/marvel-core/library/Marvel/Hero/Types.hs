@@ -57,10 +57,30 @@ instance IsSource Hero where
   toSource = toSource . toAttrs
 
 instance Entity Hero where
-  type EntityId Hero = IdentityId
-  type EntityAttrs Hero = HeroAttrs
-  toId = toId . toAttrs
-  toAttrs (Hero a) = toAttrs a
+  type Id Hero = IdentityId
+  data Attrs Hero = HeroAttrs
+    { heroIdentityId :: IdentityId
+    , heroBaseHandSize :: HandSize
+    , heroBaseThwart :: Thw
+    , heroBaseAttack :: Atk
+    , heroBaseDefense :: Def
+    , heroAlterEgoForms :: [Side]
+    , heroStartingHP :: HP GameValue
+    , heroCardDef :: CardDef
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Hero :: Type -> Type where
+    HeroIdentityId :: Field Hero IdentityId
+    HeroBaseHandSize :: Field Hero HandSize
+    HeroBaseThwart :: Field Hero Thw
+    HeroBaseAttack :: Field Hero Atk
+    HeroBaseDefense :: Field Hero Def
+    HeroAlterEgoForms :: Field Hero [Side]
+    HeroStartingHP :: Field Hero (HP GameValue)
+    HeroCardDef :: Field Hero CardDef
+  toId = heroIdentityId . toAttrs
+  toAttrs (Hero a) = toHeroAttrs a
 
 instance HasModifiersFor Hero where
   getModifiersFor source target (Hero a) = getModifiersFor source target a
@@ -81,7 +101,7 @@ someHeroCardCode = liftHeroCard cbCardCode
 
 
 hero
-  :: (HeroAttrs -> a)
+  :: (Attrs Hero -> a)
   -> CardDef
   -> HP GameValue
   -> HandSize
@@ -103,48 +123,32 @@ hero f cardDef hp hSize thw atk def = CardBuilder
     }
   }
 
-class (Entity a, ToJSON a, FromJSON a, Show a, Eq a, Typeable a, HasAbilities a, RunMessage a, IsSource a, EntityAttrs a ~ HeroAttrs, EntityId a ~ IdentityId, HasModifiersFor a) => IsHero a
+class (ToJSON a, FromJSON a, Show a, Eq a, Typeable a, HasAbilities a, RunMessage a, IsSource a, HasModifiersFor a) => IsHero a where
+  toHeroAttrs :: a -> Attrs Hero
+  default toHeroAttrs :: Coercible a (Attrs Hero) => a -> Attrs Hero
+  toHeroAttrs = coerce
 
 type HeroCard a = CardBuilder IdentityId a
 
-data HeroAttrs = HeroAttrs
-  { heroIdentityId :: IdentityId
-  , heroBaseHandSize :: HandSize
-  , heroBaseThwart :: Thw
-  , heroBaseAttack :: Atk
-  , heroBaseDefense :: Def
-  , heroAlterEgoForms :: [Side]
-  , heroStartingHP :: HP GameValue
-  , heroCardDef :: CardDef
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-instance HasStartingHP HeroAttrs where
+instance HasStartingHP (Attrs Hero) where
   startingHP = heroStartingHP
 
-instance HasHandSize HeroAttrs where
+instance HasHandSize (Attrs Hero) where
   handSize = heroBaseHandSize
 
-instance HasCardCode HeroAttrs where
+instance HasCardCode (Attrs Hero) where
   toCardCode = toCardCode . heroCardDef
 
-instance HasCardDef HeroAttrs where
+instance HasCardDef (Attrs Hero) where
   getCardDef = heroCardDef
 
-instance IsSource HeroAttrs where
+instance IsSource (Attrs Hero) where
   toSource = IdentitySource . heroIdentityId
 
-instance IsTarget HeroAttrs where
+instance IsTarget (Attrs Hero) where
   toTarget = IdentityTarget . heroIdentityId
 
-instance Entity HeroAttrs where
-  type EntityId HeroAttrs = IdentityId
-  type EntityAttrs HeroAttrs = HeroAttrs
-  toId = heroIdentityId
-  toAttrs = id
-
-getModifiedAttack :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedAttack :: MonadGame env m => Attrs Hero -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
@@ -152,7 +156,7 @@ getModifiedAttack attrs = do
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedThwart :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedThwart :: MonadGame env m => Attrs Hero -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
@@ -160,7 +164,7 @@ getModifiedThwart attrs = do
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedDefense :: MonadGame env m => HeroAttrs -> m Natural
+getModifiedDefense :: MonadGame env m => Attrs Hero -> m Natural
 getModifiedDefense attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
@@ -168,7 +172,7 @@ getModifiedDefense attrs = do
   applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-damageChoice :: HeroAttrs -> Damage -> EnemyId -> Choice
+damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
@@ -176,7 +180,7 @@ damageChoice attrs dmg = \case
     , Run
       [ CheckWindows
           [ W.Window W.After
-              $ W.IdentityAttack (toId attrs) (EnemyVillainId vid)
+              $ W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
           ]
       ]
     ]
@@ -185,11 +189,11 @@ damageChoice attrs dmg = \case
     [ DamageEnemy (MinionTarget mid) (toSource attrs) dmg
     , Run
       [ CheckWindows
-          [W.Window W.After $ W.IdentityAttack (toId attrs) (EnemyMinionId mid)]
+          [W.Window W.After $ W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)]
       ]
     ]
 
-thwartChoice :: HeroAttrs -> Natural -> SchemeId -> Choice
+thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)

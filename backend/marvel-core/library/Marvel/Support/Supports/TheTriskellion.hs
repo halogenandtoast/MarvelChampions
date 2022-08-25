@@ -23,9 +23,9 @@ instance HasModifiersFor TheTriskellion where
     pure [AllyLimitModifier 1]
   getModifiersFor _ _ _ = pure []
 
-newtype TheTriskellion = TheTriskellion SupportAttrs
+newtype TheTriskellion = TheTriskellion (Attrs Support)
   deriving anyclass IsSupport
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage TheTriskellion where
   runMessage msg (TheTriskellion a) = TheTriskellion <$> runMessage msg a

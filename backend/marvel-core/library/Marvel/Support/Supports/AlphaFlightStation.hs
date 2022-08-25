@@ -1,30 +1,33 @@
 module Marvel.Support.Supports.AlphaFlightStation
   ( alphaFlightStation
   , AlphaFlightStation(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Cost
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
-import Marvel.Support.Types
 import Marvel.Support.Cards qualified as Cards
+import Marvel.Support.Types
 import Marvel.Target
 
 alphaFlightStation :: SupportCard AlphaFlightStation
 alphaFlightStation = support AlphaFlightStation Cards.alphaFlightStation
 
-newtype AlphaFlightStation = AlphaFlightStation SupportAttrs
+newtype AlphaFlightStation = AlphaFlightStation (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities AlphaFlightStation where
-  getAbilities (AlphaFlightStation a) = [ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardCost 1) $ undefined ]
+  getAbilities (AlphaFlightStation a) =
+    [ ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardCost 1)
+        $ undefined
+    ]
 
 instance RunMessage AlphaFlightStation where
   runMessage msg (AlphaFlightStation attrs) =

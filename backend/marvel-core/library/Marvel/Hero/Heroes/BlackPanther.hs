@@ -27,9 +27,9 @@ blackPanther = hero
 instance HasAbilities BlackPanther where
   getAbilities _ = []
 
-newtype BlackPanther = BlackPanther HeroAttrs
+newtype BlackPanther = BlackPanther (Attrs Hero)
   deriving anyclass (IsHero, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance RunMessage BlackPanther where
   runMessage msg (BlackPanther attrs) = BlackPanther <$> runMessage msg attrs

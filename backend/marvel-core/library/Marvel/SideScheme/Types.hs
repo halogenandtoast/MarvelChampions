@@ -39,10 +39,19 @@ someSideSchemeCardCode :: SomeSideSchemeCard -> CardCode
 someSideSchemeCardCode = liftSideSchemeCard cbCardCode
 
 instance Entity SideScheme where
-  type EntityId SideScheme = SideSchemeId
-  type EntityAttrs SideScheme = SideSchemeAttrs
-  toId = toId . toAttrs
-  toAttrs (SideScheme a) = toAttrs a
+  type Id SideScheme = SideSchemeId
+  data Attrs SideScheme = SideSchemeAttrs
+    { sideSchemeId :: SideSchemeId
+    , sideSchemeCardDef :: CardDef
+    , sideSchemeThreat :: Natural
+    , sideSchemeInitialThreat :: GameValue
+    , sideSchemeCrisis :: Bool
+    , sideSchemeHeldCards :: [PlayerCard]
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  toId = sideSchemeId . toAttrs
+  toAttrs (SideScheme a) = toSideSchemeAttrs a
 
 instance RunMessage SideScheme where
   runMessage msg (SideScheme a) = SideScheme <$> runMessage msg a
@@ -69,44 +78,36 @@ isCrisis = sideSchemeCrisis . toAttrs
 getSideSchemeThreat :: SideScheme -> Natural
 getSideSchemeThreat = sideSchemeThreat . toAttrs
 
-class (HasModifiersFor a, Show a, Eq a, ToJSON a, FromJSON a, Typeable a, RunMessage a, Entity a, EntityAttrs a ~ SideSchemeAttrs, EntityId a ~ SideSchemeId) => IsSideScheme a
+class (HasModifiersFor a, Show a, Eq a, ToJSON a, FromJSON a, Typeable a, RunMessage a) => IsSideScheme a where
+  toSideSchemeAttrs :: a -> Attrs SideScheme
+  default toSideSchemeAttrs :: Coercible a (Attrs SideScheme) => a -> Attrs SideScheme
+  toSideSchemeAttrs = coerce
 
 type SideSchemeCard a = CardBuilder SideSchemeId a
 
-data SideSchemeAttrs = SideSchemeAttrs
-  { sideSchemeId :: SideSchemeId
-  , sideSchemeCardDef :: CardDef
-  , sideSchemeThreat :: Natural
-  , sideSchemeInitialThreat :: GameValue
-  , sideSchemeCrisis :: Bool
-  , sideSchemeHeldCards :: [PlayerCard]
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-threatL :: Lens' SideSchemeAttrs Natural
+threatL :: Lens' (Attrs SideScheme) Natural
 threatL = lens sideSchemeThreat $ \m x -> m { sideSchemeThreat = x }
 
-crisisL :: Lens' SideSchemeAttrs Bool
+crisisL :: Lens' (Attrs SideScheme) Bool
 crisisL = lens sideSchemeCrisis $ \m x -> m { sideSchemeCrisis = x }
 
-heldCardsL :: Lens' SideSchemeAttrs [PlayerCard]
+heldCardsL :: Lens' (Attrs SideScheme) [PlayerCard]
 heldCardsL = lens sideSchemeHeldCards $ \m x -> m { sideSchemeHeldCards = x }
 
-instance HasCardCode SideSchemeAttrs where
+instance HasCardCode (Attrs SideScheme) where
   toCardCode = toCardCode . sideSchemeCardDef
 
 sideSchemeWith
-  :: (SideSchemeAttrs -> a)
+  :: (Attrs SideScheme -> a)
   -> CardDef
   -> GameValue
-  -> (SideSchemeAttrs -> SideSchemeAttrs)
+  -> (Attrs SideScheme -> Attrs SideScheme)
   -> CardBuilder SideSchemeId a
 sideSchemeWith f cardDef initialThreat g =
   sideScheme (f . g) cardDef initialThreat
 
 sideScheme
-  :: (SideSchemeAttrs -> a)
+  :: (Attrs SideScheme -> a)
   -> CardDef
   -> GameValue
   -> CardBuilder SideSchemeId a
@@ -122,30 +123,24 @@ sideScheme f cardDef initialThreat = CardBuilder
     }
   }
 
-instance Entity SideSchemeAttrs where
-  type EntityId SideSchemeAttrs = SideSchemeId
-  type EntityAttrs SideSchemeAttrs = SideSchemeAttrs
-  toId = sideSchemeId
-  toAttrs = id
+instance IsSource (Attrs SideScheme) where
+  toSource = SideSchemeSource . sideSchemeId
 
-instance IsSource SideSchemeAttrs where
-  toSource = SideSchemeSource . toId
+instance IsTarget (Attrs SideScheme) where
+  toTarget = SideSchemeTarget . sideSchemeId
 
-instance IsTarget SideSchemeAttrs where
-  toTarget = SideSchemeTarget . toId
-
-instance HasCardDef SideSchemeAttrs where
+instance HasCardDef (Attrs SideScheme) where
   getCardDef = sideSchemeCardDef
 
-instance IsCard SideSchemeAttrs where
+instance IsCard (Attrs SideScheme) where
   toCard a = EncounterCard $ MkEncounterCard
     { ecCardId = CardId $ unSideSchemeId $ sideSchemeId a
     , ecCardDef = getCardDef a
     }
 
-instance RunMessage SideSchemeAttrs where
+instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = case msg of
-    SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
+    SideSchemeMessage ident msg' | ident == sideSchemeId attrs ->
       case msg' of
         SideSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
@@ -155,8 +150,8 @@ instance RunMessage SideSchemeAttrs where
           when
             (subtractNatural n (sideSchemeThreat attrs) == 0)
             (pushAll
-              [ CheckWindows [Window When $ DefeatedSideScheme (toId attrs)]
-              , SideSchemeMessage (toId attrs) DefeatSideScheme
+              [ CheckWindows [Window When $ DefeatedSideScheme (sideSchemeId attrs)]
+              , SideSchemeMessage (sideSchemeId attrs) DefeatSideScheme
               , RemoveFromPlay (toTarget attrs)
               ]
             )

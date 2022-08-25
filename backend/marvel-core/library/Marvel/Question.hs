@@ -12,7 +12,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source

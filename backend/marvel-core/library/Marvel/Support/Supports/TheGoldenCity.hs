@@ -22,9 +22,9 @@ import Marvel.Target
 theGoldenCity :: SupportCard TheGoldenCity
 theGoldenCity = support TheGoldenCity Cards.theGoldenCity
 
-newtype TheGoldenCity = TheGoldenCity SupportAttrs
+newtype TheGoldenCity = TheGoldenCity (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities TheGoldenCity where
   getAbilities (TheGoldenCity a) =
