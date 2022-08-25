@@ -1,10 +1,7 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 module Marvel.Message where
 
 import Marvel.Prelude
 
-import GHC.Generics
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Card
@@ -18,15 +15,27 @@ import Marvel.Source
 import Marvel.Target
 import Marvel.Window (Window, WindowType)
 
-data FromZone = FromDeck | FromHand | FromDiscard | RandomFromHand | FromEncounterDeck
+class RunMessage a where
+  runMessage :: MonadGame env m => Message -> a -> m a
+
+data FromZone
+  = FromDeck
+  | FromHand
+  | FromDiscard
+  | RandomFromHand
+  | FromEncounterDeck
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data FinishedStatus = Won | Lost
+data FinishedStatus
+  = Won
+  | Lost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data DefensePriority = AnyDefense | AllyIfAble
+data DefensePriority
+  = AnyDefense
+  | AllyIfAble
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -198,11 +207,16 @@ data AttachmentMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EventMessage = PlayedEvent IdentityId Payment (Maybe WindowType) | ResolvedEvent
+data EventMessage
+  = PlayedEvent IdentityId Payment (Maybe WindowType)
+  | ResolvedEvent
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EffectMessage = DisableEffect | UsedEffect IdentityId | EffectChoice Natural
+data EffectMessage
+  = DisableEffect
+  | UsedEffect IdentityId
+  | EffectChoice Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -239,7 +253,9 @@ data UpgradeMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SearchOption = SearchTarget Target | SearchDrawOne
+data SearchOption
+  = SearchTarget Target
+  | SearchDrawOne
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -299,15 +315,21 @@ data IdentityMessage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data SearchSignifier = SearchIdentityDeck IdentityId DeckProjection | SearchEncounterDeckAndDiscardPile
+data SearchSignifier
+  = SearchIdentityDeck IdentityId DeckProjection
+  | SearchEncounterDeckAndDiscardPile
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data DeckProjection = AllOfDeck | TopOfDeck Int
+data DeckProjection
+  = AllOfDeck
+  | TopOfDeck Int
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data ReturnOption = ShuffleBackIn | DiscardRest
+data ReturnOption
+  = ShuffleBackIn
+  | DiscardRest
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -318,24 +340,3 @@ data SideMessage
   | Defended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
-
-class RunMessage a where
-  runMessage :: MonadGame env m => Message -> a -> m a
-
-class RunMessage' f where
-  runMessage' :: MonadGame env m => Message -> f p -> m (f p)
-
-genericRunMessage
-  :: (MonadGame env m, RunMessage' (Rep a), Generic a) => Message -> a -> m a
-genericRunMessage msg = fmap to . runMessage' msg . from
-
-instance RunMessage' f => RunMessage' (M1 i c f) where
-  runMessage' msg = fmap M1 . runMessage' msg . unM1
-
-instance (RunMessage' l, RunMessage' r) => RunMessage' (l :+: r) where
-  runMessage' msg = \case
-    L1 x -> L1 <$> runMessage' msg x
-    R1 x -> R1 <$> runMessage' msg x
-
-instance RunMessage c => RunMessage' (K1 i c) where
-  runMessage' msg = fmap K1 . runMessage msg . unK1
