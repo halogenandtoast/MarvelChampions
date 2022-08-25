@@ -131,6 +131,7 @@ library
       Marvel.Hp
       Marvel.Id
       Marvel.Identity
+      Marvel.Identity.Types
       Marvel.Keyword
       Marvel.MainScheme
       Marvel.MainScheme.Cards

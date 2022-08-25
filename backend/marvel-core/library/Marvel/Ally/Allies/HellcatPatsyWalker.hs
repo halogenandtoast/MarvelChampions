@@ -15,13 +15,14 @@ hellcatPatsyWalker :: AllyCard HellcatPatsyWalker
 hellcatPatsyWalker =
   ally HellcatPatsyWalker Cards.hellcatPatsyWalker (Thw 2, 1) (Atk 1, 1) (HP 3)
 
-newtype HellcatPatsyWalker = HellcatPatsyWalker AllyAttrs
+newtype HellcatPatsyWalker = HellcatPatsyWalker (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities HellcatPatsyWalker where
   getAbilities a =
     [ability a 1 Action OwnsThis NoCost $ ReturnTargetToHand $ toTarget a]
 
 instance RunMessage HellcatPatsyWalker where
-  runMessage msg a = HellcatPatsyWalker <$> runMessage msg (toAttrs a)
+  runMessage msg (HellcatPatsyWalker a) =
+    HellcatPatsyWalker <$> runMessage msg a

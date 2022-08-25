@@ -22,9 +22,9 @@ blackWidowNatashaRomanoff = ally
   (Atk 1, 1)
   (HP 2)
 
-newtype BlackWidowNatashaRomanoff = BlackWidowNatashaRomanoff AllyAttrs
+newtype BlackWidowNatashaRomanoff = BlackWidowNatashaRomanoff (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities BlackWidowNatashaRomanoff where
   getAbilities a =

@@ -6,18 +6,14 @@ module Marvel.Ability
 import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.List qualified as L
 import Marvel.Ability.Type as X
 import Marvel.Cost.Types
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
-import Marvel.Resource
 import Marvel.Source
 import Marvel.Window
 

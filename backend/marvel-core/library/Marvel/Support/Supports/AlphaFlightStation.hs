@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier

@@ -23,9 +23,9 @@ import Marvel.Window qualified as W
 armoredRhinoSuit :: AttachmentCard ArmoredRhinoSuit
 armoredRhinoSuit = attachment ArmoredRhinoSuit Cards.armoredRhinoSuit
 
-newtype ArmoredRhinoSuit = ArmoredRhinoSuit AttachmentAttrs
+newtype ArmoredRhinoSuit = ArmoredRhinoSuit (Attrs Attachment)
   deriving anyclass (IsAttachment, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities ArmoredRhinoSuit where
   getAbilities (ArmoredRhinoSuit a) = case attachmentEnemy a of
@@ -47,10 +47,10 @@ getDetails (_ : xs) = getDetails xs
 
 instance RunMessage ArmoredRhinoSuit where
   runMessage msg a@(ArmoredRhinoSuit attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain aid
+        push $ VillainMessage villainId $ AttachedToVillain ident
         pure . ArmoredRhinoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
       AttachmentDamaged n -> do
         when
@@ -60,7 +60,7 @@ instance RunMessage ArmoredRhinoSuit where
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
     RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) -> do
       replaceMatchingMessage
-          (const [AttachmentMessage (toId a) (AttachmentDamaged dmg)])
+          (const [AttachmentMessage (attachmentId attrs) (AttachmentDamaged dmg)])
         $ \case
             VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
             _ -> False

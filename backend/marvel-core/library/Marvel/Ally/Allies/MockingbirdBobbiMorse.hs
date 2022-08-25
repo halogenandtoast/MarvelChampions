@@ -25,14 +25,14 @@ instance HasAbilities MockingbirdBobbiMorse where
         $ runAbility a 1
     ]
 
-newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse AllyAttrs
+newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget, HasController)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, HasController)
 
 instance RunMessage MockingbirdBobbiMorse where
-  runMessage msg a = case msg of
+  runMessage msg a@(MockingbirdBobbiMorse attrs) = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
       enemies <- selectList AnyEnemy
       push $ Ask (controller a) $ ChooseOne $ stunChoice a <$> enemies
       pure a
-    _ -> MockingbirdBobbiMorse <$> runMessage msg (toAttrs a)
+    _ -> MockingbirdBobbiMorse <$> runMessage msg attrs

@@ -21,9 +21,9 @@ warMachineJamesRhodes = ally
   (Atk 2, 1)
   (HP 4)
 
-newtype WarMachineJamesRhodes = WarMachineJamesRhodes AllyAttrs
+newtype WarMachineJamesRhodes = WarMachineJamesRhodes (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities WarMachineJamesRhodes where
   getAbilities a =
@@ -32,4 +32,5 @@ instance HasAbilities WarMachineJamesRhodes where
     ]
 
 instance RunMessage WarMachineJamesRhodes where
-  runMessage msg a = WarMachineJamesRhodes <$> runMessage msg (toAttrs a)
+  runMessage msg (WarMachineJamesRhodes attrs) =
+    WarMachineJamesRhodes <$> runMessage msg attrs

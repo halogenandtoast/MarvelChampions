@@ -22,16 +22,16 @@ daredevilMattMurdock = ally
   (Atk 2, 1)
   (HP 3)
 
-newtype DaredevilMattMurdock = DaredevilMattMurdock AllyAttrs
+newtype DaredevilMattMurdock = DaredevilMattMurdock (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities DaredevilMattMurdock where
-  getAbilities a =
+  getAbilities (DaredevilMattMurdock a) =
     [ limitedWindowAbility
           a
           1
-          (W.AllyThwarted W.After (AllyWithId $ toId a) AnyScheme)
+          (W.AllyThwarted W.After (AllyWithId $ allyId a) AnyScheme)
           Response
           OwnsThis
           NoCost
@@ -39,4 +39,5 @@ instance HasAbilities DaredevilMattMurdock where
     ]
 
 instance RunMessage DaredevilMattMurdock where
-  runMessage msg a = DaredevilMattMurdock <$> runMessage msg (toAttrs a)
+  runMessage msg (DaredevilMattMurdock a) =
+    DaredevilMattMurdock <$> runMessage msg a
