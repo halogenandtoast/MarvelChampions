@@ -7,8 +7,8 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -21,19 +21,19 @@ import Marvel.Target
 makeTheCall :: EventCard MakeTheCall
 makeTheCall = event MakeTheCall Cards.makeTheCall
 
-newtype MakeTheCall = MakeTheCall EventAttrs
+newtype MakeTheCall = MakeTheCall (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage MakeTheCall where
   runMessage msg e@(MakeTheCall attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        discards <- selectList
-          (AffordableCardBy (IdentityWithId identityId)
+        discards <-
+          selectList
+          $ AffordableCardBy (IdentityWithId identityId)
           $ InDiscardOf AnyIdentity
           $ BasicCardMatches (CardWithType AllyType)
-          )
         pushAll
           [ FocusCards $ PlayerCard <$> discards
           , Ask identityId

@@ -7,8 +7,8 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Modifier
@@ -20,13 +20,13 @@ import Marvel.Target
 getReady :: EventCard GetReady
 getReady = event GetReady Cards.getReady
 
-newtype GetReady = GetReady EventAttrs
+newtype GetReady = GetReady (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage GetReady where
   runMessage msg e@(GetReady attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         allies <- selectList ExhaustedAlly
         chooseOne identityId $ map

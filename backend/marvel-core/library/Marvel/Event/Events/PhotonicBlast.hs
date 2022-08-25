@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -23,13 +23,13 @@ import Marvel.Target
 photonicBlast :: EventCard PhotonicBlast
 photonicBlast = event PhotonicBlast Cards.photonicBlast
 
-newtype PhotonicBlast = PhotonicBlast EventAttrs
+newtype PhotonicBlast = PhotonicBlast (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage PhotonicBlast where
   runMessage msg e@(PhotonicBlast attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let usedEnergy = Energy `elem` resources || Wild `elem` resources
