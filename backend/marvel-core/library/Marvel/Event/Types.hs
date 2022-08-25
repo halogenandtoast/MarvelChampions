@@ -24,7 +24,7 @@ instance ToJSON Event where
   toJSON (Event a) = toJSON a
 
 instance Eq Event where
-  (Event (a :: a)) == (Event (b :: b)) = case eqT @a @b of
+  Event (a :: a) == Event (b :: b) = case eqT @a @b of
     Just Refl -> a == b
     Nothing -> False
 
@@ -40,30 +40,35 @@ instance HasModifiersFor Event where
   getModifiersFor source target (Event a) = getModifiersFor source target a
 
 instance Entity Event where
-  type EntityId Event = EventId
-  type EntityAttrs Event = EventAttrs
-  toId = toId . toAttrs
-  toAttrs (Event a) = toAttrs a
+  type Id Event = EventId
+  data Attrs Event = EventAttrs
+    { eventId :: EventId
+    , eventCardDef :: CardDef
+    , eventController :: IdentityId
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Event :: Type -> Type where
+    EventId :: Field Event EventId
+    EventCardDef :: Field Event CardDef
+    EventController :: Field Event IdentityId
+  toId = eventId . toAttrs
+  toAttrs (Event a) = toEventAttrs a
 
 instance RunMessage Event where
   runMessage msg (Event a) = Event <$> runMessage msg a
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ EventAttrs, EntityId a ~ EventId, HasModifiersFor a, RunMessage a) => IsEvent a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMessage a) => IsEvent a where
+  toEventAttrs :: a -> Attrs Event
+  default toEventAttrs :: Coercible a (Attrs Event) => a -> Attrs Event
+  toEventAttrs = coerce
 
 type EventCard a = CardBuilder (IdentityId, EventId) a
 
-data EventAttrs = EventAttrs
-  { eventId :: EventId
-  , eventCardDef :: CardDef
-  , eventController :: IdentityId
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-instance HasCardCode EventAttrs where
+instance HasCardCode (Attrs Event) where
   toCardCode = toCardCode . eventCardDef
 
-event :: (EventAttrs -> a) -> CardDef -> CardBuilder (IdentityId, EventId) a
+event :: (Attrs Event -> a) -> CardDef -> CardBuilder (IdentityId, EventId) a
 event f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \(ident, aid) -> f $ EventAttrs
@@ -73,27 +78,21 @@ event f cardDef = CardBuilder
     }
   }
 
-instance Entity EventAttrs where
-  type EntityId EventAttrs = EventId
-  type EntityAttrs EventAttrs = EventAttrs
-  toId = eventId
-  toAttrs = id
+instance IsSource (Attrs Event) where
+  toSource = EventSource . eventId
 
-instance IsSource EventAttrs where
-  toSource = EventSource . toId
+instance IsTarget (Attrs Event) where
+  toTarget = EventTarget . eventId
 
-instance IsTarget EventAttrs where
-  toTarget = EventTarget . toId
-
-instance IsCard EventAttrs where
+instance IsCard (Attrs Event) where
   toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId . unEventId $ toId a
+    { pcCardId = CardId . unEventId $ eventId a
     , pcCardDef = eventCardDef a
     , pcOwner = Just $ eventController a
     , pcController = Just $ eventController a
     }
 
-damageChoice :: EventAttrs -> Damage -> EnemyId -> Choice
+damageChoice :: Attrs Event -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
@@ -102,9 +101,9 @@ damageChoice attrs dmg = \case
     (MinionTarget vid)
     [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
-instance RunMessage EventAttrs where
+instance RunMessage (Attrs Event) where
   runMessage msg e = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId e -> case msg' of
       ResolvedEvent -> e <$ push (DiscardedCard $ toCard e)
       _ -> pure e
     _ -> pure e

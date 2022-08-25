@@ -7,8 +7,8 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
@@ -18,13 +18,13 @@ import Marvel.Target
 backflip :: EventCard Backflip
 backflip = event Backflip Cards.backflip
 
-newtype Backflip = Backflip EventAttrs
+newtype Backflip = Backflip (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Backflip where
   runMessage msg e@(Backflip attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         cancelMatchingMessage $ \case
           IdentityMessage identityId' (IdentityDamaged _ _) ->

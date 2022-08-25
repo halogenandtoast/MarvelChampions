@@ -18,13 +18,13 @@ import Marvel.Target
 ancestralKnowledge :: EventCard AncestralKnowledge
 ancestralKnowledge = event AncestralKnowledge Cards.ancestralKnowledge
 
-newtype AncestralKnowledge = AncestralKnowledge EventAttrs
+newtype AncestralKnowledge = AncestralKnowledge (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance RunMessage AncestralKnowledge where
   runMessage msg e@(AncestralKnowledge attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         push
           (IdentityMessage identityId
