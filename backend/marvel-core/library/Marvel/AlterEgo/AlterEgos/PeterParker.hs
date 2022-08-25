@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.AlterEgo.Runner
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
@@ -27,9 +27,9 @@ peterParker = alterEgo
   (Rec 3)
   [Cards.evictionNotice]
 
-newtype PeterParker = PeterParker AlterEgoAttrs
+newtype PeterParker = PeterParker (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource)
 
 instance HasAbilities PeterParker where
   getAbilities a =
@@ -44,4 +44,4 @@ instance HasAbilities PeterParker where
     ]
 
 instance RunMessage PeterParker where
-  runMessage msg a = PeterParker <$> runMessage msg (toAttrs a)
+  runMessage msg (PeterParker a) = PeterParker <$> runMessage msg a

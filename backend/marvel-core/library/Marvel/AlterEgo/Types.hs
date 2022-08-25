@@ -113,7 +113,7 @@ alterEgo f cardDef hp hSize recovery obligations = CardBuilder
     }
   }
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, Id a ~ IdentityId, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlterEgo a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlterEgo a where
   toAlterEgoAttrs :: a -> Attrs AlterEgo
   default toAlterEgoAttrs :: Coercible a (Attrs AlterEgo) => a -> Attrs AlterEgo
   toAlterEgoAttrs = coerce

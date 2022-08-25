@@ -9,6 +9,7 @@ import Marvel.Ability
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
+import Marvel.Identity
 import Marvel.Resource
 import Marvel.Query
 import Marvel.Matchers

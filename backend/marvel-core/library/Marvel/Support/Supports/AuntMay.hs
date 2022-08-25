@@ -31,9 +31,9 @@ instance HasAbilities AuntMay where
         $ Heal (IdentityCharacter $ supportController a) 4
     ]
 
-newtype AuntMay = AuntMay SupportAttrs
+newtype AuntMay = AuntMay (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage AuntMay where
   runMessage msg (AuntMay a) = AuntMay <$> runMessage msg a

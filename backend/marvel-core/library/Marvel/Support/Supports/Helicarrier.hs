@@ -26,9 +26,9 @@ instance HasAbilities Helicarrier where
         $ CreateEffect Cards.helicarrier (toSource a) ChooseAPlayer
     ]
 
-newtype Helicarrier = Helicarrier SupportAttrs
+newtype Helicarrier = Helicarrier (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Helicarrier where
   runMessage msg (Helicarrier a) = Helicarrier <$> runMessage msg a

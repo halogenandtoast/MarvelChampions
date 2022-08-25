@@ -16,9 +16,9 @@ theBreakIn :: MainSchemeCard TheBreakIn
 theBreakIn =
   mainScheme TheBreakIn Cards.theBreakIn (PerPlayer 7) (Static 0) (PerPlayer 1)
 
-newtype TheBreakIn = TheBreakIn MainSchemeAttrs
+newtype TheBreakIn = TheBreakIn (Attrs MainScheme)
   deriving anyclass IsMainScheme
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage TheBreakIn where
   runMessage msg ms@(TheBreakIn attrs) = case msg of

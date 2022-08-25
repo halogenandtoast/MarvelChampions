@@ -6,7 +6,7 @@ import Marvel.Ability
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.AlterEgo.Runner
 import Marvel.Card.Def
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
@@ -29,9 +29,9 @@ tonyStark = alterEgo
   (Rec 3)
   [Cards.businessProblems]
 
-newtype TonyStark = TonyStark AlterEgoAttrs
+newtype TonyStark = TonyStark (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities TonyStark where
   getAbilities a =
@@ -41,12 +41,12 @@ instance HasAbilities TonyStark where
     ]
 
 instance RunMessage TonyStark where
-  runMessage msg a = case msg of
+  runMessage msg ae@(TonyStark a) = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
-      push . IdentityMessage (toId a) $ Search
-        (SearchIdentityDeck (toId a) $ TopOfDeck 3)
+      push . IdentityMessage (alterEgoIdentityId a) $ Search
+        (SearchIdentityDeck (alterEgoIdentityId a) $ TopOfDeck 3)
         AnyCard
         SearchDrawOne
         DiscardRest
-      pure a
-    _ -> TonyStark <$> runMessage msg (toAttrs a)
+      pure ae
+    _ -> TonyStark <$> runMessage msg a

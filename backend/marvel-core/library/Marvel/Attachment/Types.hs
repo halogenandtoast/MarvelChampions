@@ -77,7 +77,7 @@ instance IsCard Attachment where
 instance HasCardDef Attachment where
   getCardDef = getCardDef . toAttrs
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, Id a ~ AttachmentId, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a where
   toAttachmentAttrs :: a -> Attrs Attachment
   default toAttachmentAttrs :: Coercible a (Attrs Attachment) => a -> Attrs Attachment
   toAttachmentAttrs = coerce

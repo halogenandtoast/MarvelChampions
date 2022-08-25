@@ -22,7 +22,10 @@ import Text.Show qualified
 
 data Scenario = forall a . IsScenario a => Scenario a
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ ScenarioAttrs, EntityId a ~ CardCode) => IsScenario a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsScenario a where
+  toScenarioAttrs :: a -> Attrs Scenario
+  default toScenarioAttrs :: Coercible a (Attrs Scenario) => a -> Attrs Scenario
+  toScenarioAttrs = coerce
 
 instance Show Scenario where
   show (Scenario a) = show a
@@ -50,48 +53,56 @@ instance RunMessage Scenario where
 type ScenarioCard a = CardBuilder () a
 
 instance Entity Scenario where
-  type EntityId Scenario = CardCode
-  type EntityAttrs Scenario = ScenarioAttrs
-  toId = toId . toAttrs
-  toAttrs (Scenario a) = toAttrs a
+  type Id Scenario = CardCode
+  data Attrs Scenario = ScenarioAttrs
+    { scenarioId :: CardCode
+    , scenarioVillains :: [CardCode]
+    , scenarioMainSchemes :: [CardCode]
+    , scenarioEncounterSets :: HashSet EncounterSet
+    , scenarioEncounterDeck :: [EncounterCard]
+    , scenarioDiscard :: [EncounterCard]
+    , scenarioDifficulty :: Difficulty
+    , scenarioSetAsideCards :: [Card]
+    , scenarioAccelerationTokens :: Natural
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Scenario :: Type -> Type where
+    ScenarioId :: Field Scenario CardCode
+    ScenarioVillains :: Field Scenario [CardCode]
+    ScenarioMainSchemes :: Field Scenario [CardCode]
+    ScenarioEncounterSets :: Field Scenario (HashSet EncounterSet)
+    ScenarioEncounterDeck :: Field Scenario [EncounterCard]
+    ScenarioDiscard :: Field Scenario [EncounterCard]
+    ScenarioDifficulty :: Field Scenario Difficulty
+    ScenarioSetAsideCards :: Field Scenario [Card]
+    ScenarioAccelerationTokens :: Field Scenario Natural
+  toId = scenarioId . toAttrs
+  toAttrs (Scenario a) = toScenarioAttrs a
 
 getScenarioDifficulty :: Scenario -> Difficulty
 getScenarioDifficulty = scenarioDifficulty . toAttrs
 
-data ScenarioAttrs = ScenarioAttrs
-  { scenarioId :: CardCode
-  , scenarioVillains :: [CardCode]
-  , scenarioMainSchemes :: [CardCode]
-  , scenarioEncounterSets :: HashSet EncounterSet
-  , scenarioEncounterDeck :: [EncounterCard]
-  , scenarioDiscard :: [EncounterCard]
-  , scenarioDifficulty :: Difficulty
-  , scenarioSetAsideCards :: [Card]
-  , scenarioAccelerationTokens :: Natural
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-discardL :: Lens' ScenarioAttrs [EncounterCard]
+discardL :: Lens' (Attrs Scenario) [EncounterCard]
 discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
 
-encounterDeckL :: Lens' ScenarioAttrs [EncounterCard]
+encounterDeckL :: Lens' (Attrs Scenario) [EncounterCard]
 encounterDeckL =
   lens scenarioEncounterDeck $ \m x -> m { scenarioEncounterDeck = x }
 
-setAsideCardsL :: Lens' ScenarioAttrs [Card]
+setAsideCardsL :: Lens' (Attrs Scenario) [Card]
 setAsideCardsL =
   lens scenarioSetAsideCards $ \m x -> m { scenarioSetAsideCards = x }
 
-accelerationTokensL :: Lens' ScenarioAttrs Natural
+accelerationTokensL :: Lens' (Attrs Scenario) Natural
 accelerationTokensL =
   lens scenarioAccelerationTokens $ \m x -> m { scenarioAccelerationTokens = x }
 
-mainSchemesL :: Lens' ScenarioAttrs [CardCode]
+mainSchemesL :: Lens' (Attrs Scenario) [CardCode]
 mainSchemesL = lens scenarioMainSchemes $ \m x -> m { scenarioMainSchemes = x }
 
 scenario
-  :: (ScenarioAttrs -> a)
+  :: (Attrs Scenario -> a)
   -> CardCode
   -> [CardCode]
   -> [CardCode]
@@ -112,7 +123,7 @@ scenario f cCode villains mainSchemes encounterSets = CardBuilder
     }
   }
 
-instance RunMessage ScenarioAttrs where
+instance RunMessage (Attrs Scenario) where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
@@ -248,9 +259,3 @@ instance RunMessage ScenarioAttrs where
               & (discardL %~ filter (/= card))
               & (encounterDeckL %~ filter (/= card))
     _ -> pure attrs
-
-instance Entity ScenarioAttrs where
-  type EntityId ScenarioAttrs = CardCode
-  type EntityAttrs ScenarioAttrs = ScenarioAttrs
-  toId = scenarioId
-  toAttrs = id

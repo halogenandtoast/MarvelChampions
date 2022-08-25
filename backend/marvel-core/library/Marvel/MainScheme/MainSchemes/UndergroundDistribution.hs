@@ -19,13 +19,13 @@ undergroundDistribution :: MainSchemeCard UndergroundDistribution
 undergroundDistribution =
   mainScheme UndergroundDistribution Cards.undergroundDistribution (PerPlayer 6) (Static 0) (PerPlayer 1)
 
-newtype UndergroundDistribution = UndergroundDistribution MainSchemeAttrs
+newtype UndergroundDistribution = UndergroundDistribution (Attrs MainScheme)
   deriving anyclass IsMainScheme
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage UndergroundDistribution where
   runMessage msg ms@(UndergroundDistribution attrs) = case msg of
-    MainSchemeMessage mainSchemeId msg' | mainSchemeId == toId attrs ->
+    MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
         RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs))
         _ -> UndergroundDistribution <$> runMessage msg attrs

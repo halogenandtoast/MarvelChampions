@@ -25,5 +25,5 @@ field = undefined
 fieldP :: MonadGame env m => Field a typ -> (typ -> Bool) -> Id a -> m Bool
 fieldP = undefined
 
-isTarget :: (Entity a, Attrs a ~ b, IsTarget b) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
+isTarget :: IsTarget a => a -> Target -> Bool
+isTarget a = (== toTarget a)

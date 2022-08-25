@@ -39,10 +39,30 @@ someMainSchemeCardCode :: SomeMainSchemeCard -> CardCode
 someMainSchemeCardCode = liftMainSchemeCard cbCardCode
 
 instance Entity MainScheme where
-  type EntityId MainScheme = MainSchemeId
-  type EntityAttrs MainScheme = MainSchemeAttrs
-  toId = toId . toAttrs
-  toAttrs (MainScheme a) = toAttrs a
+  type Id MainScheme = MainSchemeId
+  data Attrs MainScheme = MainSchemeAttrs
+    { mainSchemeId :: MainSchemeId
+    , mainSchemeCardDef :: CardDef
+    , mainSchemeThreat :: Natural
+    , mainSchemeInitialThreat :: GameValue
+    , mainSchemeAcceleration :: GameValue
+    , mainSchemeThreshold :: GameValue
+    , mainSchemeCrisis :: Bool
+    , mainSchemeHeldCards :: [PlayerCard]
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field MainScheme :: Type -> Type where
+    MainSchemeId :: Field MainScheme MainSchemeId
+    MainSchemeCardDef :: Field MainScheme CardDef
+    MainSchemeThreat :: Field MainScheme Natural
+    MainSchemeInitialThreat :: Field MainScheme GameValue
+    MainSchemeAcceleration :: Field MainScheme GameValue
+    MainSchemeThreshold :: Field MainScheme GameValue
+    MainSchemeCrisis :: Field MainScheme Bool
+    MainSchemeHeldCards :: Field MainScheme [PlayerCard]
+  toId = mainSchemeId . toAttrs
+  toAttrs (MainScheme a) = toMainSchemeAttrs a
 
 instance RunMessage MainScheme where
   runMessage msg (MainScheme a) = MainScheme <$> runMessage msg a
@@ -59,42 +79,32 @@ instance HasCardDef MainScheme where
 getMainSchemeThreat :: MainScheme -> Natural
 getMainSchemeThreat = mainSchemeThreat . toAttrs
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ MainSchemeAttrs, EntityId a ~ MainSchemeId, RunMessage a) => IsMainScheme a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsMainScheme a where
+  toMainSchemeAttrs :: a -> Attrs MainScheme
+  default toMainSchemeAttrs :: Coercible a (Attrs MainScheme) => a -> Attrs MainScheme
+  toMainSchemeAttrs = coerce
 
 type MainSchemeCard a = CardBuilder MainSchemeId a
 
-data MainSchemeAttrs = MainSchemeAttrs
-  { mainSchemeId :: MainSchemeId
-  , mainSchemeCardDef :: CardDef
-  , mainSchemeThreat :: Natural
-  , mainSchemeInitialThreat :: GameValue
-  , mainSchemeAcceleration :: GameValue
-  , mainSchemeThreshold :: GameValue
-  , mainSchemeCrisis :: Bool
-  , mainSchemeHeldCards :: [PlayerCard]
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-threatL :: Lens' MainSchemeAttrs Natural
+threatL :: Lens' (Attrs MainScheme) Natural
 threatL = lens mainSchemeThreat $ \m x -> m { mainSchemeThreat = x }
 
-instance HasCardCode MainSchemeAttrs where
+instance HasCardCode (Attrs MainScheme) where
   toCardCode = toCardCode . mainSchemeCardDef
 
 mainSchemeWith
-  :: (MainSchemeAttrs -> a)
+  :: (Attrs MainScheme -> a)
   -> CardDef
   -> GameValue
   -> GameValue
   -> GameValue
-  -> (MainSchemeAttrs -> MainSchemeAttrs)
+  -> (Attrs MainScheme -> Attrs MainScheme)
   -> CardBuilder MainSchemeId a
 mainSchemeWith f cardDef threshold initialThreat acceleration g =
   mainScheme (f . g) cardDef threshold initialThreat acceleration
 
 mainScheme
-  :: (MainSchemeAttrs -> a)
+  :: (Attrs MainScheme -> a)
   -> CardDef
   -> GameValue
   -> GameValue
@@ -114,30 +124,24 @@ mainScheme f cardDef threshold initialThreat acceleration = CardBuilder
     }
   }
 
-instance Entity MainSchemeAttrs where
-  type EntityId MainSchemeAttrs = MainSchemeId
-  type EntityAttrs MainSchemeAttrs = MainSchemeAttrs
-  toId = mainSchemeId
-  toAttrs = id
+instance IsSource (Attrs MainScheme) where
+  toSource = MainSchemeSource . mainSchemeId
 
-instance IsSource MainSchemeAttrs where
-  toSource = MainSchemeSource . toId
+instance IsTarget (Attrs MainScheme) where
+  toTarget = MainSchemeTarget . mainSchemeId
 
-instance IsTarget MainSchemeAttrs where
-  toTarget = MainSchemeTarget . toId
-
-instance HasCardDef MainSchemeAttrs where
+instance HasCardDef (Attrs MainScheme) where
   getCardDef = mainSchemeCardDef
 
-instance IsCard MainSchemeAttrs where
+instance IsCard (Attrs MainScheme) where
   toCard a = EncounterCard $ MkEncounterCard
     { ecCardId = CardId $ unMainSchemeId $ mainSchemeId a
     , ecCardDef = getCardDef a
     }
 
-instance RunMessage MainSchemeAttrs where
+instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = case msg of
-    MainSchemeMessage mainSchemeId msg' | mainSchemeId == toId attrs ->
+    MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
         MainSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)

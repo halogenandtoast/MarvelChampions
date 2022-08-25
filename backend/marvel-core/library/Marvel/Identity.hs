@@ -11,7 +11,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Types
 import Marvel.Attack
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Deck
@@ -19,7 +19,6 @@ import Marvel.Discard
 import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Entity
-import Marvel.Field
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
@@ -779,7 +778,6 @@ runIdentityMessage msg attrs@PlayerIdentity {..} = case msg of
         AlterEgoSide <$> runMessage (IdentityMessage playerIdentityId msg) x
       pure $ attrs & sidesL . at playerIdentitySide ?~ newSide
 
-
 instance RunMessage PlayerIdentity where
   runMessage msg attrs = case msg of
     DiscardedCard (PlayerCard card) | pcOwner card == Just (toId attrs) ->
@@ -824,12 +822,6 @@ instance HasModifiersFor PlayerIdentity where
   getModifiersFor source target a = case currentIdentity a of
     HeroSide x -> getModifiersFor source target x
     AlterEgoSide x -> getModifiersFor source target x
-
-instance Entity PlayerIdentity where
-  type EntityId PlayerIdentity = IdentityId
-  type EntityAttrs PlayerIdentity = PlayerIdentity
-  toId = playerIdentityId
-  toAttrs = id
 
 getModifiedAllyLimit :: MonadGame env m => PlayerIdentity -> m Natural
 getModifiedAllyLimit attrs = do
