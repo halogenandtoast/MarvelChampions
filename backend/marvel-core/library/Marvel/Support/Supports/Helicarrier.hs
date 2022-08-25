@@ -7,7 +7,6 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
-import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
@@ -33,9 +32,9 @@ newtype Helicarrier = Helicarrier (Attrs Support)
 instance RunMessage Helicarrier where
   runMessage msg (Helicarrier a) = Helicarrier <$> runMessage msg a
 
-newtype HelicarrierEffect = HelicarrierEffect EffectAttrs
+newtype HelicarrierEffect = HelicarrierEffect (Attrs Effect)
   deriving anyclass IsEffect
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 helicarrierEffect :: CardEffect HelicarrierEffect
 helicarrierEffect =
@@ -47,5 +46,5 @@ instance RunMessage HelicarrierEffect where
   runMessage msg e@(HelicarrierEffect attrs) = case msg of
     IdentityMessage ident (PlayedCard _ _) -> e <$ whenM
       (effectValidFor attrs (IdentityTarget ident))
-      (push $ EffectMessage (toId attrs) DisableEffect)
+      (push $ EffectMessage (effectId attrs) DisableEffect)
     _ -> HelicarrierEffect <$> runMessage msg attrs

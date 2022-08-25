@@ -19,16 +19,16 @@ hulkBruceBanner :: AllyCard HulkBruceBanner
 hulkBruceBanner =
   ally HulkBruceBanner Cards.hulkBruceBanner (Thw 0, 0) (Atk 3, 1) (HP 5)
 
-newtype HulkBruceBanner = HulkBruceBanner AllyAttrs
+newtype HulkBruceBanner = HulkBruceBanner (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget, HasController)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, HasController)
 
 instance HasAbilities HulkBruceBanner where
-  getAbilities a =
+  getAbilities (HulkBruceBanner a) =
     [ limitedWindowAbility
           a
           1
-          (AllyAttacked After (AllyWithId $ toId a) AnyEnemy)
+          (AllyAttacked After (AllyWithId $ allyId a) AnyEnemy)
           ForcedResponse
           OwnsThis
           NoCost
@@ -36,7 +36,7 @@ instance HasAbilities HulkBruceBanner where
     ]
 
 instance RunMessage HulkBruceBanner where
-  runMessage msg a = case msg of
+  runMessage msg a@(HulkBruceBanner attrs) = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
       push . controllerMessage a $ DiscardFrom FromDeck 1 (Just $ toTarget a)
       pure a
@@ -71,4 +71,4 @@ instance RunMessage HulkBruceBanner where
             choices = concatMap toChoice resources
           chooseOneAtATime (controller a) choices
       pure a
-    _ -> HulkBruceBanner <$> runMessage msg (toAttrs a)
+    _ -> HulkBruceBanner <$> runMessage msg attrs

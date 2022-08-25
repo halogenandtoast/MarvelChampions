@@ -71,7 +71,7 @@ instance HasModifiersFor Effect where
     pure $ if valid then effectModifiers attrs else []
     where attrs = toAttrs e
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, Id a ~ EffectId, RunMessage a) => IsEffect a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect a where
   toEffectAttrs :: a -> Attrs Effect
   default toEffectAttrs :: Coercible a (Attrs Effect) => a -> Attrs Effect
   toEffectAttrs = coerce

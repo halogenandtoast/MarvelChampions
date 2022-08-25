@@ -19,14 +19,14 @@ instance HasAbilities MariaHill where
         $ runAbility a 1
     ]
 
-newtype MariaHill = MariaHill AllyAttrs
+newtype MariaHill = MariaHill (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance RunMessage MariaHill where
-  runMessage msg a = case msg of
+  runMessage msg a@(MariaHill attrs) = case msg of
     RanAbility (isTarget a -> True) 1 _ -> do
       players <- getPlayers
       pushAll [ IdentityMessage p $ DrawCards FromDeck 1 | p <- players ]
       pure a
-    _ -> MariaHill <$> runMessage msg (toAttrs a)
+    _ -> MariaHill <$> runMessage msg attrs

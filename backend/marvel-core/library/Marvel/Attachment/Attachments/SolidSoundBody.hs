@@ -11,7 +11,6 @@ import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
@@ -27,9 +26,9 @@ import Marvel.Target
 solidSoundBody :: AttachmentCard SolidSoundBody
 solidSoundBody = attachment SolidSoundBody Cards.solidSoundBody
 
-newtype SolidSoundBody = SolidSoundBody AttachmentAttrs
+newtype SolidSoundBody = SolidSoundBody (Attrs Attachment)
   deriving anyclass (IsAttachment)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor SolidSoundBody where
   getModifiersFor _ (VillainTarget vid) (SolidSoundBody a)
@@ -52,10 +51,10 @@ instance HasAbilities SolidSoundBody where
 
 instance RunMessage SolidSoundBody where
   runMessage msg (SolidSoundBody attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain aid
+        push $ VillainMessage villainId $ AttachedToVillain ident
         pure . SolidSoundBody $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SolidSoundBody <$> runMessage msg attrs
     _ -> SolidSoundBody <$> runMessage msg attrs

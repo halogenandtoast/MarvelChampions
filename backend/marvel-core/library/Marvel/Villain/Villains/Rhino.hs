@@ -15,13 +15,13 @@ import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Villain.Types
 import Marvel.Villain.Cards qualified as Cards
+import Marvel.Villain.Types
 import Marvel.Window
 
-newtype Rhino = Rhino VillainAttrs
+newtype Rhino = Rhino (Attrs Villain)
   deriving anyclass IsVillain
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 rhino :: VillainCard Rhino
 rhino = rhino1
@@ -54,7 +54,11 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed When (VillainWithId $ toId a) RevealedFromVillain)
+          (VillainRevealed
+            When
+            (VillainWithId $ villainId a)
+            RevealedFromVillain
+          )
           ForcedResponse
           NoCost
           (RunAbility (toTarget a) 1)
@@ -63,7 +67,11 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed When (VillainWithId $ toId a) RevealedFromVillain)
+          (VillainRevealed
+            When
+            (VillainWithId $ villainId a)
+            RevealedFromVillain
+          )
           ForcedResponse
           NoCost
           (RunAbility (toTarget a) 1)
@@ -72,16 +80,16 @@ instance HasAbilities Rhino where
 
 instance RunMessage Rhino where
   runMessage msg e@(Rhino attrs) = case msg of
-    VillainMessage villainId msg' | villainId == toId attrs -> case msg' of
+    VillainMessage ident msg' | ident == villainId attrs -> case msg' of
       VillainDefeated -> do
         difficulty <- getDifficulty
         case (difficulty, villainStage attrs) of
           (_, 1) -> do
-            push (VillainMessage villainId VillainAdvanced)
+            push (VillainMessage ident VillainAdvanced)
             pure $ advanceVillainTo rhino2 attrs
           (Normal, 2) -> Rhino <$> runMessage msg attrs
           (Expert, 2) -> do
-            push (VillainMessage villainId VillainAdvanced)
+            push (VillainMessage ident VillainAdvanced)
             pure $ advanceVillainTo rhino3 attrs
           (_, 3) -> Rhino <$> runMessage msg attrs
           (_, _) -> error "Invalid rhino progression"

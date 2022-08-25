@@ -17,9 +17,9 @@ import Marvel.Window
 nickFury :: AllyCard NickFury
 nickFury = ally NickFury Cards.nickFury (Thw 2, 1) (Atk 2, 1) (HP 3)
 
-newtype NickFury = NickFury AllyAttrs
+newtype NickFury = NickFury (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities NickFury where
   getAbilities a =
@@ -38,4 +38,4 @@ instance HasAbilities NickFury where
     ]
 
 instance RunMessage NickFury where
-  runMessage msg a = NickFury <$> runMessage msg (toAttrs a)
+  runMessage msg (NickFury attrs) = NickFury <$> runMessage msg attrs

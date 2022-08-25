@@ -11,7 +11,6 @@ import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
@@ -26,9 +25,9 @@ import Marvel.Target
 enhancedIvoryHorn :: AttachmentCard EnhancedIvoryHorn
 enhancedIvoryHorn = attachment EnhancedIvoryHorn Cards.enhancedIvoryHorn
 
-newtype EnhancedIvoryHorn = EnhancedIvoryHorn AttachmentAttrs
+newtype EnhancedIvoryHorn = EnhancedIvoryHorn (Attrs Attachment)
   deriving anyclass IsAttachment
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor EnhancedIvoryHorn where
   getModifiersFor _ (VillainTarget vid) (EnhancedIvoryHorn a)
@@ -48,10 +47,10 @@ instance HasAbilities EnhancedIvoryHorn where
 
 instance RunMessage EnhancedIvoryHorn where
   runMessage msg (EnhancedIvoryHorn attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain aid
+        push $ VillainMessage villainId $ AttachedToVillain ident
         pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> EnhancedIvoryHorn <$> runMessage msg attrs
     _ -> EnhancedIvoryHorn <$> runMessage msg attrs
