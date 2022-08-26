@@ -9,6 +9,7 @@ import Data.HashSet qualified as HashSet
 import Data.List (maximum)
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
+import Marvel.ActiveCost
 import Marvel.Ally
 import Marvel.Ally.Types (getAllyController, getAllyDamage, getAllyUses)
 import Marvel.AlterEgo.Cards
@@ -51,6 +52,7 @@ import Marvel.Minion.Types
 import Marvel.Modifier
 import Marvel.Obligation
 import Marvel.Obligation.Types (Obligation)
+import Marvel.Payment
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question

@@ -15,17 +15,3 @@ instance Show Choice
 instance Eq Choice
 instance ToJSON Choice
 instance FromJSON Choice
-
-data ActiveCost
-
-instance Show ActiveCost
-instance Eq ActiveCost
-instance ToJSON ActiveCost
-instance FromJSON ActiveCost
-
-data Payment
-
-instance Show Payment
-instance Eq Payment
-instance ToJSON Payment
-instance FromJSON Payment

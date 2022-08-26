@@ -8,11 +8,12 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Payment
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
