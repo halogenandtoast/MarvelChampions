@@ -12,12 +12,13 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Payment
 import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 webShooter :: UpgradeCard WebShooter
 webShooter =

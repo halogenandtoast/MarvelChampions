@@ -14,6 +14,7 @@ library
   exposed-modules:
       Marvel.Ability
       Marvel.Ability.Type
+      Marvel.ActiveCost
       Marvel.Ally
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy
@@ -168,6 +169,7 @@ library
       Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Types
+      Marvel.Payment
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
@@ -310,7 +312,6 @@ library
     , exceptions
     , extra
     , lens
-    , mtl
     , random-shuffle
     , relude
     , template-haskell
@@ -362,7 +363,6 @@ test-suite MarvelChampions-test
     , extra
     , lens
     , marvel-core
-    , mtl
     , relude
     , text
   default-language: Haskell2010

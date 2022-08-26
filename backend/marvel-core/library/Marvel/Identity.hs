@@ -7,6 +7,7 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Data.List (partition)
 import Marvel.Ability
+import Marvel.ActiveCost
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Types
 import Marvel.Attack
@@ -29,6 +30,7 @@ import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Payment
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue

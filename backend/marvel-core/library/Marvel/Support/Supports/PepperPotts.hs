@@ -14,6 +14,7 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Payment
 import Marvel.Question
 import Marvel.Source
 import Marvel.Support.Types
