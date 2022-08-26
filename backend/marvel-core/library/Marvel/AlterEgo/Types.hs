@@ -88,6 +88,17 @@ instance Entity AlterEgo where
     AlterEgoObligations :: Field AlterEgo [CardDef]
   toId = alterEgoIdentityId . toAttrs
   toAttrs (AlterEgo a) = toAlterEgoAttrs a
+  field fld a =
+    let AlterEgoAttrs {..} = toAttrs a
+    in
+      case fld of
+        AlterEgoIdentityId -> alterEgoIdentityId
+        AlterEgoBaseHandSize -> alterEgoBaseHandSize
+        AlterEgoBaseRecovery -> alterEgoBaseRecovery
+        AlterEgoHeroForms -> alterEgoHeroForms
+        AlterEgoStartingHP -> alterEgoStartingHP
+        AlterEgoCardDef -> alterEgoCardDef
+        AlterEgoObligations -> alterEgoObligations
 
 instance HasModifiersFor AlterEgo where
   getModifiersFor source target (AlterEgo a) = getModifiersFor source target a

@@ -16,15 +16,15 @@ import Marvel.Modifier
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 focusedRage :: UpgradeCard FocusedRage
 focusedRage = upgrade FocusedRage Cards.focusedRage
 
-newtype FocusedRage = FocusedRage UpgradeAttrs
+newtype FocusedRage = FocusedRage (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities FocusedRage where
   getAbilities (FocusedRage a) =

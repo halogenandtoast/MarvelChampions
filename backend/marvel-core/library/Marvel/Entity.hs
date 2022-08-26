@@ -3,7 +3,6 @@ module Marvel.Entity where
 import Marvel.Prelude
 
 import Marvel.Id
-import {-# SOURCE #-} Marvel.Game
 import Marvel.Target
 
 class Exhaustable a where
@@ -18,11 +17,12 @@ class Entity a where
   data family Field a :: Type -> Type
   toId :: a -> Id a
   toAttrs :: a -> Attrs a
+  field :: Field a typ -> a -> typ
 
-field :: MonadGame env m => Field a typ -> Id a -> m typ
-field = undefined
+-- field :: MonadGame env m => Field a typ -> Id a -> m typ
+-- field = undefined
 
-fieldP :: MonadGame env m => Field a typ -> (typ -> Bool) -> Id a -> m Bool
+fieldP :: Field a typ -> (typ -> Bool) -> a -> Bool
 fieldP = undefined
 
 isTarget :: IsTarget a => a -> Target -> Bool

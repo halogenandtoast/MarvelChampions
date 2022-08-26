@@ -16,15 +16,15 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 tacticalGenius :: UpgradeCard TacticalGenius
 tacticalGenius = upgrade TacticalGenius Cards.tacticalGenius
 
-newtype TacticalGenius = TacticalGenius UpgradeAttrs
+newtype TacticalGenius = TacticalGenius (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities TacticalGenius where
   getAbilities _ = []

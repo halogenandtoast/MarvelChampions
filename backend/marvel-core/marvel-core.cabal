@@ -117,6 +117,7 @@ library
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
+      Marvel.GameValue.Types
       Marvel.Hand
       Marvel.Hero
       Marvel.Hero.Cards
@@ -173,6 +174,7 @@ library
       Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Minion.Minions.Whirlwind
+      Marvel.Minion.Runner
       Marvel.Minion.Types
       Marvel.Modifier
       Marvel.Name
@@ -188,6 +190,7 @@ library
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
+      Marvel.Projection
       Marvel.Query
       Marvel.Question
       Marvel.Queue

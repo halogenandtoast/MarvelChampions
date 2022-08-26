@@ -16,8 +16,8 @@ import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 webShooter :: UpgradeCard WebShooter
 webShooter =
@@ -25,9 +25,9 @@ webShooter =
     $ (usesL .~ 3)
     . (discardIfNoUsesL .~ True)
 
-newtype WebShooter = WebShooter UpgradeAttrs
+newtype WebShooter = WebShooter (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities WebShooter where
   getAbilities (WebShooter a) =
