@@ -16,11 +16,11 @@ import Marvel.Entity as X
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
-import Marvel.Id
+import Marvel.Id hiding (VillainId)
 import Marvel.Id as X (VillainId)
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message hiding (VillainConfused, VillainStunned)
 import Marvel.Message qualified as Msg
 import Marvel.Modifier
 import Marvel.Query
@@ -112,6 +112,23 @@ instance Entity Villain where
     VillainAttachments :: Field Villain (HashSet AttachmentId)
     VillainUpgrades :: Field Villain (HashSet UpgradeId)
     VillainStage :: Field Villain Natural
+  field fld v = let VillainAttrs {..} = toAttrs v in case fld of
+    VillainId -> villainId
+    VillainCardDef -> villainCardDef
+    VillainHp -> villainHp
+    VillainStartingHp -> villainStartingHp
+    VillainMaxHp -> villainMaxHp
+    VillainScheme -> villainScheme
+    VillainAttack -> villainAttack
+    VillainStunned -> villainStunned
+    VillainConfused -> villainConfused
+    VillainTough -> villainTough
+    VillainBoostCards -> villainBoostCards
+    VillainBoost -> villainBoost
+    VillainAttacking -> villainAttacking
+    VillainAttachments -> villainAttachments
+    VillainUpgrades -> villainUpgrades
+    VillainStage -> villainStage
   toId = villainId . toAttrs
   toAttrs (Villain a) = toVillainAttrs a
 

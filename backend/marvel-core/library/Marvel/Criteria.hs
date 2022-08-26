@@ -2,7 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
-import Marvel.Matchers
+import Marvel.Matchers.Types
 
 data Criteria
   = IsSelf

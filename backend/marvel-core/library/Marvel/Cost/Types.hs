@@ -2,7 +2,7 @@ module Marvel.Cost.Types where
 
 import Marvel.Prelude
 
-import Marvel.Resource
+import Marvel.Resource.Types
 
 data Cost
   = Costs [Cost]

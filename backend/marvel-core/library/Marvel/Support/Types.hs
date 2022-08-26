@@ -8,7 +8,8 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (SupportId)
+import Marvel.Id as X (SupportId)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
@@ -57,6 +58,13 @@ instance Entity Support where
     SupportExhausted :: Field Support Bool
     SupportUses :: Field Support Natural
     SupportDiscardIfNoUses :: Field Support Bool
+  field fld s = let SupportAttrs {..} = toAttrs s in case fld of
+    SupportId -> supportId
+    SupportCardDef -> supportCardDef
+    SupportController -> supportController
+    SupportExhausted -> supportExhausted
+    SupportUses -> supportUses
+    SupportDiscardIfNoUses -> supportDiscardIfNoUses
   toId = supportId . toAttrs
   toAttrs (Support a) = toSupportAttrs a
 

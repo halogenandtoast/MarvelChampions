@@ -6,18 +6,13 @@ import Marvel.Ability.Type
 import Marvel.Aspect
 import Marvel.Boost
 import Marvel.Card.Code
-import {-# SOURCE #-} Marvel.Card.PlayerCard
 import Marvel.Criteria
 import Marvel.EncounterSet
-import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Name
-import Marvel.Resource
-import Marvel.Trait
-import Marvel.Window
-
-class HasResources a where
-  resourcesFor :: MonadGame env m => a -> Maybe PlayerCard -> m [Resource]
+import Marvel.Resource.Types
+import Marvel.Trait.Types
+import Marvel.Window.Types
 
 data CardType
   = AlterEgoType
