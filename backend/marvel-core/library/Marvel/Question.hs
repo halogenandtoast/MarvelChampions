@@ -385,6 +385,15 @@ costMessages iid a = go (abilityCost a)
  where
   go = \case
     NoCost -> []
+    DiscardHandCardCost n ->
+      [ SetActiveCost $ ActiveCost
+          iid
+          (ForAbility a)
+          (DiscardHandCardCost n)
+          NoPayment
+          Nothing
+          mempty
+      ]
     DamageCost n ->
       [ IdentityMessage iid
           $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)

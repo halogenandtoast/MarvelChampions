@@ -5,7 +5,8 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (ObligationId)
+import Marvel.Id as X (ObligationId)
 import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
@@ -48,6 +49,10 @@ instance Entity Obligation where
     ObligationId :: Field Obligation ObligationId
     ObligationCardDef :: Field Obligation CardDef
     ObligationSurge :: Field Obligation Bool
+  field fld o = let ObligationAttrs {..} = toAttrs o in case fld of
+    ObligationId -> obligationId
+    ObligationCardDef -> obligationCardDef
+    ObligationSurge -> obligationSurge
   toId = obligationId . toAttrs
   toAttrs (Obligation a) = toObligationAttrs a
 

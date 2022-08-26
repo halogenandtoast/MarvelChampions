@@ -8,7 +8,8 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id hiding (UpgradeId)
+import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -64,6 +65,15 @@ instance Entity Upgrade where
     UpgradeAttachedAlly :: Field Upgrade (Maybe AllyId)
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
+  field fld u = let UpgradeAttrs {..} = toAttrs u in case fld of
+    UpgradeId -> upgradeId
+    UpgradeCardDef -> upgradeCardDef
+    UpgradeController -> upgradeController
+    UpgradeExhausted -> upgradeExhausted
+    UpgradeAttachedEnemy -> upgradeAttachedEnemy
+    UpgradeAttachedAlly -> upgradeAttachedAlly
+    UpgradeUses -> upgradeUses
+    UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
   toId = upgradeId . toAttrs
   toAttrs (Upgrade a) = toUpgradeAttrs a
 

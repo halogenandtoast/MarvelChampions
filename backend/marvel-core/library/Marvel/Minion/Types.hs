@@ -20,15 +20,11 @@ import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Card
-import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword
-import Marvel.Matchers
 import Marvel.Message
-import Marvel.Question
 import Marvel.Trait
-import Marvel.Window qualified as W
 import Text.Show qualified
 
 data Minion = forall a . IsMinion a => Minion a

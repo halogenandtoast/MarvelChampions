@@ -28,9 +28,9 @@ newtype RitualCombat = RitualCombat (Attrs Treachery)
 instance RunMessage RitualCombat where
   runMessage msg t@(RitualCombat attrs) = case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
-      RevealTreachery ident -> do
+      RevealTreachery identityId -> do
         push $ DiscardTopOfEncounterDeck 1 (Just $ toTarget attrs)
-        pure . RitualCombat $ attrs & resolverL ?~ ident
+        pure . RitualCombat $ attrs & resolverL ?~ identityId
       _ -> RitualCombat <$> runMessage msg attrs
     WithDiscarded target _ (onlyEncounterCards -> cards)
       | isTarget attrs target -> do
