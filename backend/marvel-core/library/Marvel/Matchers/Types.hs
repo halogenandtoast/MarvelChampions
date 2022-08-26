@@ -26,6 +26,7 @@ data IdentityMatcher
   | ExhaustedIdentity
   | ConfusedIdentity
   | StunnedIdentity
+  | IdentityWithTitle Text
   | IdentityWithId IdentityId
   | IdentityWithTrait Trait
   | AnyIdentity

@@ -10,6 +10,10 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Matchers
+import Marvel.Queue
+import Marvel.Query
+import Marvel.Question
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
@@ -27,9 +31,14 @@ newtype AlphaFlightStation = AlphaFlightStation (Attrs Support)
 instance HasAbilities AlphaFlightStation where
   getAbilities (AlphaFlightStation a) =
     [ ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardCost 1)
-        $ error "unhandled"
+        $ RunAbility (toTarget a) 1
     ]
 
 instance RunMessage AlphaFlightStation where
-  runMessage msg (AlphaFlightStation attrs) =
-    AlphaFlightStation <$> runMessage msg attrs
+  runMessage msg s@(AlphaFlightStation attrs) = case msg of
+    RanAbility target 1 _ | isTarget attrs target -> do
+      isCarolDanvers <- supportController attrs `match` IdentityWithTitle "Carol Danvers"
+      let drawCount = if isCarolDanvers then 2 else 1
+      push $ IdentityMessage (supportController attrs) $ DrawCards FromHand drawCount
+      pure s
+    _ -> AlphaFlightStation <$> runMessage msg attrs

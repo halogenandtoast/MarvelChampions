@@ -49,12 +49,9 @@ instance HasAbilities CosmicFlight where
 
 decreaseDamage :: Message -> [Message]
 decreaseDamage (IdentityMessage ident (IdentityDamaged source dmg)) =
-  [ IdentityMessage
-      ident
-      (IdentityDamaged
-        source
-        (dmg { damageAmount = max 0 $ damageAmount dmg - 3 })
-      )
+  [ IdentityMessage ident $ IdentityDamaged
+      source
+      (dmg { damageAmount = max 0 $ damageAmount dmg - 3 })
   | damageAmount dmg > 3
   ]
 decreaseDamage _ = error "Invalid message"

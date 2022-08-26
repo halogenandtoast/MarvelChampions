@@ -63,4 +63,3 @@ passesCanAffordCost identityId a = go (abilityCost a)
       pure $ null uncovered && length remaining >= length anyResources
     Costs xs -> allM go xs
   source = abilitySource a
-

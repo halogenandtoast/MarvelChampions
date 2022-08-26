@@ -22,8 +22,8 @@ class Entity a where
 -- field :: MonadGame env m => Field a typ -> Id a -> m typ
 -- field = undefined
 
-fieldP :: Field a typ -> (typ -> Bool) -> a -> Bool
-fieldP = error "not implemented"
+fieldP :: Entity a => Field a typ -> (typ -> Bool) -> a -> Bool
+fieldP fld f = f . field fld
 
 isTarget :: IsTarget a => a -> Target -> Bool
 isTarget a = (== toTarget a)

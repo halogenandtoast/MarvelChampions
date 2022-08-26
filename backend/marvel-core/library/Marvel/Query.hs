@@ -13,6 +13,9 @@ class Query a where
   type QueryElement a
   select :: MonadGame env m => a -> m (HashSet (QueryElement a))
 
+match :: (MonadGame env m, Query a, Hashable (QueryElement a)) => QueryElement a -> a -> m Bool
+match a matcher = member a <$> select matcher
+
 selectList :: (MonadGame env m, Query a) => a -> m [QueryElement a]
 selectList = fmap HashSet.toList . select
 
