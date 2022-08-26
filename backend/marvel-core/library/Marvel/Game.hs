@@ -795,7 +795,7 @@ withGameM :: MonadGame env m => (Game -> m Game) -> m ()
 withGameM f = getGame >>= f >>= withGame_ . const
 
 getsGame :: MonadGame env m => (Game -> a) -> m a
-getsGame f = withGame (id &&& f)
+getsGame f = withGame (toSnd f)
 
 getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)

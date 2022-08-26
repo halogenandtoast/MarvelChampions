@@ -404,11 +404,15 @@ costMessages iid a = go (abilityCost a)
       SupportSource ident -> [SupportMessage ident ExhaustedSupport]
       UpgradeSource ident -> [UpgradeMessage ident ExhaustedUpgrade]
       _ -> error "Unhandled"
+    DiscardCost target -> case target of
+      UpgradeTarget ident -> [UpgradeMessage ident $ DiscardUpgrade]
+      _ -> error "Unhandled"
     UseCost -> case abilitySource a of
       UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
       SupportSource ident -> [SupportMessage ident SpendSupportUse]
       AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
+    DynamicResourceCost _ -> error "unhandled"
     ResourceCost mr ->
       [ SetActiveCost $ ActiveCost
           iid

@@ -6,6 +6,7 @@ import Marvel.Id
 
 data UpgradeMessage
   = ExhaustedUpgrade
+  | DiscardUpgrade
   | ReadiedUpgrade
   | PlayedUpgrade
   | UpgradeAttachedToEnemy EnemyId

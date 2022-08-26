@@ -13,7 +13,7 @@ allAlterEgoCards =
   [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla]
 
 allAlterEgosMap :: HashMap CardCode CardDef
-allAlterEgosMap = fromList $ map (toCardCode &&& id) allAlterEgoCards
+allAlterEgosMap = fromList $ map (toFst toCardCode) allAlterEgoCards
 
 alterEgo :: CardCode -> Name -> [Trait] -> CardDef
 alterEgo cardCode name traits = CardDef
@@ -35,6 +35,7 @@ alterEgo cardCode name traits = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 peterParker :: CardDef

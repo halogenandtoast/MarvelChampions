@@ -118,5 +118,8 @@ removeEach xs = zip xs (map (`List.delete` xs) xs)
 toFst :: (a -> b) -> a -> (b, a)
 toFst f a = (f a, a)
 
+toSnd :: (a -> b) -> a -> (a, b)
+toSnd f a = (a, f a)
+
 notNull :: Foldable t => t a -> Bool
 notNull = not . null

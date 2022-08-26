@@ -72,6 +72,10 @@ data ResourceRestriction
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+data InPlayLimit = MaxPerPlayer Natural | MaxPerEnemy Natural | MaxPerAlly Natural
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
 data CardDef = CardDef
   { cdCardCode :: CardCode
   , cdName :: Name
@@ -91,6 +95,7 @@ data CardDef = CardDef
   , cdResponseWindow :: Maybe WindowMatcher
   , cdHazards :: Natural
   , cdAcceleration :: Natural
+  , cdLimit :: Maybe InPlayLimit
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

@@ -10,7 +10,7 @@ import Marvel.Name
 
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
-  fromList $ map (toCardCode &&& id) [theBreakIn, undergroundDistribution]
+  fromList $ map (toFst toCardCode) [theBreakIn, undergroundDistribution]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
 mainScheme code name encounterSet = CardDef
@@ -32,6 +32,7 @@ mainScheme code name encounterSet = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 theBreakIn :: CardDef
