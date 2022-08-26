@@ -34,7 +34,7 @@ instance HasAbilities PantherClaws where
 
 instance RunMessage PantherClaws where
   runMessage msg u@(PantherClaws attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       let ident = upgradeController attrs
       stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
       if stunned

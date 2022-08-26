@@ -45,7 +45,7 @@ findMinion = \case
 
 instance RunMessage HawkeyeClintBarton where
   runMessage msg x@(HawkeyeClintBarton a) = case msg of
-    RanAbility (isTarget x -> True) 1 (findMinion -> minionId) -> do
+    RanAbility (isTarget x -> True) 1 (findMinion -> minionId) _ -> do
       push . MinionMessage minionId $ MinionDamaged
         (toSource x)
         (toDamage 2 FromAbility)

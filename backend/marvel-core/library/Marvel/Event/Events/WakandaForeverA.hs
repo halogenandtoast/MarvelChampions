@@ -53,7 +53,7 @@ instance RunMessage WakandaForeverA where
           ]
         pure $ WakandaForeverA (attrs `With` Meta upgradeIds)
       _ -> WakandaForeverA . (`With` meta) <$> runMessage msg attrs
-    RanAbility (UpgradeTarget upgradeId) 1 _
+    RanAbility (UpgradeTarget upgradeId) 1 _ _
       | upgradeId `member` remaining meta -> pure $ WakandaForeverA
         (attrs `With` Meta (HashSet.delete upgradeId $ remaining meta))
     _ -> WakandaForeverA . (`With` meta) <$> runMessage msg attrs

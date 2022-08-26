@@ -38,7 +38,7 @@ instance HasAbilities RadioactiveMan where
 
 instance RunMessage RadioactiveMan where
   runMessage msg e@(RadioactiveMan attrs) = case msg of
-    RanAbility target 1 [EnemyAttack _ ident] | isTarget attrs target -> do
+    RanAbility target 1 [EnemyAttack _ ident] _ | isTarget attrs target -> do
       e <$ push (IdentityMessage ident $ DiscardFrom RandomFromHand 1 Nothing)
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do

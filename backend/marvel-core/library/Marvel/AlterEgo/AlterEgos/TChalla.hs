@@ -39,7 +39,7 @@ instance HasAbilities TChalla where
 
 instance RunMessage TChalla where
   runMessage msg ae@(TChalla a) = case msg of
-    RanAbility (isTarget a -> True) 1 _ -> do
+    RanAbility (isTarget a -> True) 1 _ _ -> do
       push . IdentityMessage (alterEgoIdentityId a) $ Search
         (SearchIdentityDeck (alterEgoIdentityId a) AllOfDeck)
         (CardWithTrait BlackPanther <> CardWithType UpgradeType)

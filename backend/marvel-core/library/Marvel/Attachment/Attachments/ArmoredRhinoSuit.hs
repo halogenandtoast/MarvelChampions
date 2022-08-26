@@ -58,7 +58,7 @@ instance RunMessage ArmoredRhinoSuit where
           (push $ RemoveFromPlay (toTarget a))
         pure . ArmoredRhinoSuit $ attrs & damageL +~ n
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) -> do
+    RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) _ -> do
       replaceMatchingMessage
           (const [AttachmentMessage (attachmentId attrs) (AttachmentDamaged dmg)])
         $ \case

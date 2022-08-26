@@ -46,7 +46,7 @@ instance HasAbilities StarkTower where
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> s
+    RanAbility target 1 _ _ | isTarget attrs target -> s
       <$ pushChoice
         (supportController attrs)
         (ChoosePlayer AnyIdentity target)

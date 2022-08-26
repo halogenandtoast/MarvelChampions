@@ -200,7 +200,8 @@ choiceMessages ident = \case
     pure $ UsedAbility ident a : costs <> rest
   RunAbility target n -> do
     windows <- getCurrentWindows
-    pure [RanAbility target n $ map windowType windows, ClearRemoved]
+    payment <- getCurrentPayment
+    pure [RanAbility target n (map windowType windows) payment, ClearRemoved]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]

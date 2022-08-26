@@ -36,7 +36,7 @@ instance HasAbilities AlphaFlightStation where
 
 instance RunMessage AlphaFlightStation where
   runMessage msg s@(AlphaFlightStation attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       isCarolDanvers <- supportController attrs `match` IdentityWithTitle "Carol Danvers"
       let drawCount = if isCarolDanvers then 2 else 1
       push $ IdentityMessage (supportController attrs) $ DrawCards FromHand drawCount

@@ -36,7 +36,7 @@ instance HasAbilities EnergyDaggers where
 
 instance RunMessage EnergyDaggers where
   runMessage msg u@(EnergyDaggers attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
       villain <- selectJust ActiveVillain
       minionMap <-
