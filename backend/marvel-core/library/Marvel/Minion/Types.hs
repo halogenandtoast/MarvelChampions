@@ -21,9 +21,10 @@ import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id hiding (MinionId)
+import Marvel.Id as X (MinionId)
 import Marvel.Keyword
-import Marvel.Message
+import Marvel.Message hiding (MinionConfused, MinionStunned, MinionEngagedIdentity)
 import Marvel.Trait
 import Text.Show qualified
 
@@ -102,6 +103,24 @@ instance Entity Minion where
     MinionUpgrades :: Field Minion (HashSet UpgradeId)
     MinionAttachments :: Field Minion (HashSet AttachmentId)
     MinionDefensePriority :: Field Minion DefensePriority
+  field fld m =
+    let MinionAttrs {..} = toAttrs m
+    in
+      case fld of
+        MinionId -> minionId
+        MinionCardDef -> minionCardDef
+        MinionDamage -> minionDamage
+        MinionHitPoints -> minionHitPoints
+        MinionScheme -> minionScheme
+        MinionAttack -> minionAttack
+        MinionEngagedIdentity -> minionEngagedIdentity
+        MinionStunned -> minionStunned
+        MinionConfused -> minionConfused
+        MinionTough -> minionTough
+        MinionAttacking -> minionAttacking
+        MinionUpgrades -> minionUpgrades
+        MinionAttachments -> minionAttachments
+        MinionDefensePriority -> minionDefensePriority
   toId = minionId . toAttrs
   toAttrs (Minion a) = toMinionAttrs a
 

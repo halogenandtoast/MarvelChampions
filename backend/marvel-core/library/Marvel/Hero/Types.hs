@@ -79,6 +79,15 @@ instance Entity Hero where
     HeroAlterEgoForms :: Field Hero [Side]
     HeroStartingHP :: Field Hero (HP GameValue)
     HeroCardDef :: Field Hero CardDef
+  field fld h = let HeroAttrs {..} = toAttrs h in case fld of
+    HeroIdentityId -> heroIdentityId
+    HeroBaseHandSize -> heroBaseHandSize
+    HeroBaseThwart -> heroBaseThwart
+    HeroBaseAttack -> heroBaseAttack
+    HeroBaseDefense -> heroBaseDefense
+    HeroAlterEgoForms -> heroAlterEgoForms
+    HeroStartingHP -> heroStartingHP
+    HeroCardDef -> heroCardDef
   toId = heroIdentityId . toAttrs
   toAttrs (Hero a) = toHeroAttrs a
 

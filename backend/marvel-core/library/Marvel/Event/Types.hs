@@ -6,7 +6,8 @@ import Data.Typeable
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (EventId)
+import Marvel.Id as X (EventId)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
@@ -52,6 +53,13 @@ instance Entity Event where
     EventId :: Field Event EventId
     EventCardDef :: Field Event CardDef
     EventController :: Field Event IdentityId
+  field fld e =
+    let EventAttrs {..} = toAttrs e
+    in
+      case fld of
+        EventId -> eventId
+        EventCardDef -> eventCardDef
+        EventController -> eventController
   toId = eventId . toAttrs
   toAttrs (Event a) = toEventAttrs a
 

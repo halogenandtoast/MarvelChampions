@@ -8,13 +8,13 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id as X (EffectId)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source (Source, IsSource(..))
+import Marvel.Source (IsSource(..), Source)
 import Marvel.Source qualified as Source
 import Marvel.Target
 import Text.Show qualified
@@ -54,6 +54,16 @@ instance Entity Effect where
     EffectMatcher :: Field Effect EntityMatcher
     EffectModifiers :: Field Effect [Modifier]
     EffectEnds :: Field Effect (Maybe EffectTiming)
+  field fld e =
+    let EffectAttrs {..} = toAttrs e
+    in
+      case fld of
+        EffectId -> effectId
+        EffectCardCode -> effectCardCode
+        EffectSource -> effectSource
+        EffectMatcher -> effectMatcher
+        EffectModifiers -> effectModifiers
+        EffectEnds -> effectEnds
   toId = effectId . toAttrs
   toAttrs (Effect a) = toEffectAttrs a
 

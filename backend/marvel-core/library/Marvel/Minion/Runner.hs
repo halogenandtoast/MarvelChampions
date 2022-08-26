@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Minion.Runner
   ( module Marvel.Minion.Runner
   , module X
@@ -11,26 +12,22 @@ import Marvel.Hp as X
 import Marvel.Id as X
 import Marvel.Message as X
 import Marvel.Minion.Types as X hiding (Field(..))
-import Marvel.Modifier as X
-import Marvel.Query as X
+-- import Marvel.Modifier as X
+-- import Marvel.Query as X
 import Marvel.Question as X
-import Marvel.Queue as X
-import Marvel.Source as X
-import Marvel.Stats as X
-import Marvel.Target as X
+-- import Marvel.Queue as X
+-- import Marvel.Source as X
+-- import Marvel.Stats as X
+-- import Marvel.Target as X
 
 import Data.HashSet qualified as HashSet
-import Data.Typeable
-import Marvel.Ability.Type
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Trait
 import Marvel.Window qualified as W
-import Text.Show qualified
 
 runMinionMessage
   :: MonadGame env m => MinionMessage -> Attrs Minion -> m (Attrs Minion)

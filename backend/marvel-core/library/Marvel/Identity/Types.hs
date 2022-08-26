@@ -67,5 +67,28 @@ instance Entity PlayerIdentity where
     PlayerIdentityTough :: Field PlayerIdentity Bool
     PlayerIdentityDefeated :: Field PlayerIdentity Bool
     PlayerIdentityDefended :: Field PlayerIdentity Bool
+  field fld p = let PlayerIdentityAttrs {..} = toAttrs p in case fld of
+    PlayerIdentityId -> playerIdentityId
+    PlayerIdentitySide -> playerIdentitySide
+    PlayerIdentitySides -> playerIdentitySides
+    PlayerIdentityHP -> playerIdentityHP
+    PlayerIdentityDamage -> playerIdentityDamage
+    PlayerIdentityDeck -> playerIdentityDeck
+    PlayerIdentityDiscard -> playerIdentityDiscard
+    PlayerIdentityHand -> playerIdentityHand
+    PlayerIdentityPassed -> playerIdentityPassed
+    PlayerIdentityAllies -> playerIdentityAllies
+    PlayerIdentityAllyLimit -> playerIdentityAllyLimit
+    PlayerIdentityMinions -> playerIdentityMinions
+    PlayerIdentitySupports -> playerIdentitySupports
+    PlayerIdentityUpgrades -> playerIdentityUpgrades
+    PlayerIdentityExhausted -> playerIdentityExhausted
+    PlayerIdentityEncounterCards -> playerIdentityEncounterCards
+    PlayerIdentityDamageReduction -> playerIdentityDamageReduction
+    PlayerIdentityStunned -> playerIdentityStunned
+    PlayerIdentityConfused -> playerIdentityConfused
+    PlayerIdentityTough -> playerIdentityTough
+    PlayerIdentityDefeated -> playerIdentityDefeated
+    PlayerIdentityDefended -> playerIdentityDefended
   toAttrs (PlayerIdentity attrs) = attrs
   toId = playerIdentityId . toAttrs

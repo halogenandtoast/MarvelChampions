@@ -27,7 +27,7 @@ newtype AlphaFlightStation = AlphaFlightStation (Attrs Support)
 instance HasAbilities AlphaFlightStation where
   getAbilities (AlphaFlightStation a) =
     [ ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardCost 1)
-        $ undefined
+        $ error "unhandled"
     ]
 
 instance RunMessage AlphaFlightStation where
