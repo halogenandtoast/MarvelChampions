@@ -76,6 +76,7 @@ data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability | ForTreachery
 
 data Question
   = ChooseOne [Choice]
+  | ChooseN Natural [Choice]
   | ChooseOneAtATime [Choice]
   | ChoosePlayerOrder (Unsorted IdentityId) (Sorted IdentityId)
   deriving stock (Show, Eq, Generic)
@@ -385,15 +386,7 @@ costMessages iid a = go (abilityCost a)
  where
   go = \case
     NoCost -> []
-    DiscardHandCardCost n ->
-      [ SetActiveCost $ ActiveCost
-          iid
-          (ForAbility a)
-          (DiscardHandCardCost n)
-          NoPayment
-          Nothing
-          mempty
-      ]
+    DiscardHandCardCost n -> [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
     DamageCost n ->
       [ IdentityMessage iid
           $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)

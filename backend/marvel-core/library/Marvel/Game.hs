@@ -50,6 +50,7 @@ import Marvel.Minion.Types
   , minionAttackDetails
   )
 import Marvel.Modifier
+import Marvel.Name
 import Marvel.Obligation
 import Marvel.Obligation.Types (Obligation)
 import Marvel.Phase
@@ -915,6 +916,7 @@ gameSelectIdentity m = do
         `HashSet.intersection` minions
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
+    IdentityWithTitle t -> pure . (== t) . title .cdName . getCardDef
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs
