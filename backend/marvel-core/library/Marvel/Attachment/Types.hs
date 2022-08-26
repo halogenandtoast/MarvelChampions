@@ -6,7 +6,8 @@ import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (AttachmentId)
+import Marvel.Id as X (AttachmentId)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
@@ -52,6 +53,14 @@ instance Entity Attachment where
     AttachmentCardDef :: Field Attachment CardDef
     AttachmentEnemy :: Field Attachment (Maybe EnemyId)
     AttachmentDamage :: Field Attachment Natural
+  field fld a =
+    let AttachmentAttrs {..} = toAttrs a
+    in
+      case fld of
+        AttachmentId -> attachmentId
+        AttachmentCardDef -> attachmentCardDef
+        AttachmentEnemy -> attachmentEnemy
+        AttachmentDamage -> attachmentDamage
   toId = attachmentId . toAttrs
   toAttrs (Attachment a) = toAttachmentAttrs a
 
@@ -112,14 +121,18 @@ instance IsTarget (Attrs Attachment) where
 
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = case msg of
-    AttachmentMessage attachmentId' msg' | attachmentId' == attachmentId attrs ->
-      case msg' of
+    AttachmentMessage attachmentId' msg'
+      | attachmentId' == attachmentId attrs -> case msg' of
         AttachedToEnemy enemyId -> do
           case enemyId of
             EnemyMinionId minionId -> do
-              push (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
+              push
+                (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
             EnemyVillainId villainId -> do
-              push (VillainMessage villainId $ AttachedToVillain $ attachmentId attrs)
+              push
+                (VillainMessage villainId $ AttachedToVillain $ attachmentId
+                  attrs
+                )
           pure $ attrs & enemyL ?~ enemyId
         _ -> pure attrs
     _ -> pure attrs

@@ -1,21 +1,23 @@
-module Marvel.Cost (module Marvel.Cost, module Marvel.Cost.Types) where
+module Marvel.Cost
+  ( module Marvel.Cost
+  , module Marvel.Cost.Types
+  ) where
 
 import Marvel.Prelude
 
 import Data.List qualified as L
-import Marvel.Cost.Types
-import Marvel.Source
 import Marvel.Ability
-import Marvel.Entity
+import Marvel.Cost.Types
+import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Id
 import Marvel.Identity.Types
-import Marvel.Resource
+import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Matchers
-import Marvel.Game.Source
+import Marvel.Resource
+import Marvel.Source
 
 passesCanAffordCost :: MonadGame env m => IdentityId -> Ability -> m Bool
 passesCanAffordCost identityId a = go (abilityCost a)
@@ -28,7 +30,9 @@ passesCanAffordCost identityId a = go (abilityCost a)
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
-    DiscardHandCardCost n -> projectP PlayerIdentityHand (notNull . unHand) identityId
+    DiscardHandCardCost n -> if n < 1
+      then pure True
+      else projectP PlayerIdentityHand (notNull . unHand) identityId
     ExhaustCost -> case source of
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly

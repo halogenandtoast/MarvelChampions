@@ -7,7 +7,8 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Id
+import Marvel.Id hiding (MainSchemeId)
+import Marvel.Id as X (MainSchemeId)
 import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
@@ -61,6 +62,15 @@ instance Entity MainScheme where
     MainSchemeThreshold :: Field MainScheme GameValue
     MainSchemeCrisis :: Field MainScheme Bool
     MainSchemeHeldCards :: Field MainScheme [PlayerCard]
+  field fld m = let MainSchemeAttrs {..} = toAttrs m in case fld of
+    MainSchemeId -> mainSchemeId
+    MainSchemeCardDef -> mainSchemeCardDef
+    MainSchemeThreat -> mainSchemeThreat
+    MainSchemeInitialThreat -> mainSchemeInitialThreat
+    MainSchemeAcceleration -> mainSchemeAcceleration
+    MainSchemeThreshold -> mainSchemeThreshold
+    MainSchemeCrisis -> mainSchemeCrisis
+    MainSchemeHeldCards -> mainSchemeHeldCards
   toId = mainSchemeId . toAttrs
   toAttrs (MainScheme a) = toMainSchemeAttrs a
 
