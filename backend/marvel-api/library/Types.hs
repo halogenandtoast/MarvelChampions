@@ -2,6 +2,7 @@
 module Types where
 
 import Data.Text
+import GHC.Generics
 import Json
 import Prelude (Maybe(Just), ($))
 
@@ -11,7 +12,7 @@ instance ToJSON Token where
   toJSON token = object ["token" .= getToken token]
 
 data Registration = Registration
-  { registrationEmail    :: Text
+  { registrationEmail :: Text
   , registrationUsername :: Text
   , registrationPassword :: Text
   }
@@ -25,7 +26,7 @@ instance FromJSON Registration where
   parseJSON = genericParseJSON $ aesonOptions $ Just "registration"
 
 data Authentication = Authentication
-  { authenticationEmail    :: Text
+  { authenticationEmail :: Text
   , authenticationPassword :: Text
   }
   deriving stock Generic

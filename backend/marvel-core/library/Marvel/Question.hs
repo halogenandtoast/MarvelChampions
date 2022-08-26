@@ -3,7 +3,7 @@ module Marvel.Question where
 import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
-import Marvel.ActiveCost
+import Marvel.ActiveCost.Types
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard

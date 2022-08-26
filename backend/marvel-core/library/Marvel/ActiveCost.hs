@@ -1,32 +1,83 @@
-module Marvel.ActiveCost where
+{-# OPTIONS_GHC -Wno-orphans #-}
+module Marvel.ActiveCost
+  ( module Marvel.ActiveCost
+  , module Marvel.ActiveCost.Types
+  ) where
 
 import Marvel.Prelude
 
 import Data.List (partition)
 import Data.List qualified as L
-import Marvel.Ability
-import Marvel.Card.PlayerCard
+import Marvel.ActiveCost.Types
+import Marvel.Card
 import Marvel.Cost
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Message
 import Marvel.Payment
+import Marvel.Question
+import Marvel.Queue
 import Marvel.Resource
-import Marvel.Window
 
-data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability | ForTreachery
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+instance RunMessage ActiveCost where
+  runMessage msg activeCost = case msg of
+    CreatedActiveCost -> do
+      cards <- getAvailablePaymentSources
+      abilities <- getResourceAbilities
+      paid <- resourceCostPaid activeCost
+      push
+        $ Ask (activeCostIdentityId activeCost)
+        $ ChooseOne
+        $ map PayWithCard cards
+        <> map UseAbility abilities
+        <> [ FinishPayment | paid ]
+      pure activeCost
+    Spent discard -> do
+      case activeCostTarget activeCost of
+        ForCard card -> do
+          resources <- resourcesFor discard $ Just card
+          push $ Paid $ mconcat $ map ResourcePayment resources
+        ForAbility _ -> do
+          resources <- resourcesFor discard Nothing
+          push $ Paid $ mconcat $ map ResourcePayment resources
+        ForTreachery -> do
+          resources <- resourcesFor discard Nothing
+          push $ Paid $ mconcat $ map ResourcePayment resources
 
-data ActiveCost = ActiveCost
-  { activeCostIdentityId :: IdentityId
-  , activeCostTarget :: ActiveCostTarget
-  , activeCostCost :: Cost
-  , activeCostPayment :: Payment
-  , activeCostWindow :: Maybe Window
-  , activeCostSpentCards :: [PlayerCard]
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+      pure $ activeCost
+        { activeCostSpentCards = discard : activeCostSpentCards activeCost
+        }
+    Paid payment -> do
+      let
+        activeCost' = activeCost
+          { activeCostPayment = activeCostPayment activeCost <> payment
+          }
+      cards <- getAvailablePaymentSources
+      abilities <- getResourceAbilities
+      paid <- resourceCostPaid activeCost'
+      push
+        $ Ask (activeCostIdentityId activeCost)
+        $ ChooseOne
+        $ map PayWithCard cards
+        <> map UseAbility abilities
+        <> [ FinishPayment | paid ]
+      pure activeCost'
+    FinishedPayment -> do
+      case activeCostTarget activeCost of
+        ForCard card -> do
+          push $ PutCardIntoPlay
+            (activeCostIdentityId activeCost)
+            card
+            (activeCostPayment activeCost)
+            (activeCostWindow activeCost)
+        ForAbility _ -> pure ()
+        ForTreachery -> pure ()
+      pushAll
+        $ map
+            (DiscardedCard . PlayerCard)
+            (reverse $ activeCostSpentCards activeCost)
+        <> [DisableActiveCost]
+      pure activeCost
+    _ -> pure activeCost
 
 resourceCostPaid :: MonadGame env m => ActiveCost -> m Bool
 resourceCostPaid ActiveCost {..} = do
@@ -47,4 +98,3 @@ resourceCostPaid ActiveCost {..} = do
           pure True
     prs' <- get
     pure $ l && length prs' >= length mrs
-
