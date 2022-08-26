@@ -64,7 +64,7 @@ instance RunMessage SonicConverter where
         push $ VillainMessage villainId $ AttachedToVillain ident
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] -> do
+    RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] _ -> do
       case cid of
         IdentityCharacter ident -> push $ IdentityMessage ident IdentityStunned
         AllyCharacter ident -> push $ AllyMessage ident AllyStunned

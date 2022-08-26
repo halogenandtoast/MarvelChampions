@@ -10,6 +10,7 @@ import Marvel.Difficulty
 import Marvel.Id
 import Marvel.Matchers.Types
 import {-# SOURCE #-} Marvel.Modifier
+import {-# SOURCE #-} Marvel.Payment
 import {-# SOURCE #-} Marvel.Queue
 import Marvel.Resource.Types
 import Marvel.Source
@@ -69,6 +70,7 @@ getAvailableResourcesFor ::
   (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
 getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: MonadGame env m => m [Window]
+getCurrentPayment :: MonadGame env m => m Payment
 getDifficulty :: MonadGame env m => m Difficulty
 getHazardCount :: MonadGame env m => m Natural
 getAccelerationCount :: MonadGame env m => m Natural

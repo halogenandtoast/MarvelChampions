@@ -1272,6 +1272,13 @@ getCurrentWindows = do
     [] -> []
     x : _ -> x
 
+getCurrentPayment :: MonadGame env m => m Payment
+getCurrentPayment = do
+  mCost <- getsGame gameActiveCost
+  pure $ case mCost of
+    Just cost -> activeCostPayment cost
+    Nothing -> NoPayment
+
 getDifficulty :: MonadGame env m => m Difficulty
 getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
 

@@ -40,7 +40,7 @@ instance HasAbilities BlackWidowNatashaRomanoff where
 
 instance RunMessage BlackWidowNatashaRomanoff where
   runMessage msg a@(BlackWidowNatashaRomanoff attrs) = case msg of
-    RanAbility (isTarget a -> True) 1 [EncounterCardRevealed ident _] -> do
+    RanAbility (isTarget a -> True) 1 [EncounterCardRevealed ident _] _ -> do
       replaceMatchingMessage (const [DrawAndRevealEncounterCard ident]) $ \case
         RevealedEncounterCard _ _ -> True
         _ -> False

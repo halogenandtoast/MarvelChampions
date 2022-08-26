@@ -42,7 +42,7 @@ instance HasAbilities PoweredGauntlets where
 
 instance RunMessage PoweredGauntlets where
   runMessage msg u@(PoweredGauntlets attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       aerial <- selectAny
         (IdentityWithId (upgradeController attrs) <> IdentityWithTrait Aerial)
       let

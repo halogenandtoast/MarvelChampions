@@ -94,7 +94,7 @@ instance RunMessage Rhino where
           (_, 3) -> Rhino <$> runMessage msg attrs
           (_, _) -> error "Invalid rhino progression"
       _ -> Rhino <$> runMessage msg attrs
-    RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
+    RanAbility target 1 _ _ | isTarget attrs target -> case villainStage attrs of
       2 -> e <$ push (SearchForAndRevealScheme Cards.breakinAndTakin)
       3 -> do
         players <- getPlayers

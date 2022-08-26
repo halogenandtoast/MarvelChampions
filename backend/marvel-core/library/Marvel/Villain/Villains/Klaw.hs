@@ -96,12 +96,12 @@ instance RunMessage Klaw where
           (_, 3) -> Klaw <$> runMessage msg attrs
           (_, _) -> error "Invalid rhino progression"
       _ -> Klaw <$> runMessage msg attrs
-    RanAbility target 1 _ | isTarget attrs target -> case villainStage attrs of
+    RanAbility target 1 _ _ | isTarget attrs target -> case villainStage attrs of
       1 -> e <$ push (DealBoost target)
       2 -> e <$ push (SearchForAndRevealScheme Cards.theImmortalKlaw)
       3 -> e <$ push (DealBoost target)
       _ -> error "Invalid stage"
-    RanAbility target 2 _ | isTarget attrs target -> case villainStage attrs of
+    RanAbility target 2 _ _ | isTarget attrs target -> case villainStage attrs of
       2 -> e <$ push (DealBoost target)
       _ -> error "Invalid stage"
     _ -> Klaw <$> runMessage msg attrs

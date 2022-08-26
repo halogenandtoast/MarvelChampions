@@ -10,7 +10,9 @@ import Marvel.Ability qualified as Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Damage
 import Marvel.Entity
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
@@ -38,5 +40,10 @@ instance HasAbilities EnergyChannel where
 
 instance RunMessage EnergyChannel where
   runMessage msg u@(EnergyChannel attrs) = case msg of
-    RanAbility (isTarget attrs -> True) 1 _ -> pure u
+    RanAbility (isTarget attrs -> True) 1 _ _ -> pure u
+    RanAbility (isTarget attrs -> True) 2 _ _ -> do
+      let amount = min 10 (2 * (upgradeUses attrs))
+      pushChoice (upgradeController attrs)
+        $ ChooseDamage (toSource attrs) (toDamage amount FromAbility) AnyEnemy
+      pure u
     _ -> EnergyChannel <$> runMessage msg attrs

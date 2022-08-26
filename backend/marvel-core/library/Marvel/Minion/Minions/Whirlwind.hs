@@ -39,7 +39,7 @@ instance HasAbilities Whirlwind where
 
 instance RunMessage Whirlwind where
   runMessage msg e@(Whirlwind attrs) = case msg of
-    RanAbility target 1 [EnemyAttack _ ident] | isTarget attrs target -> do
+    RanAbility target 1 [EnemyAttack _ ident] _ | isTarget attrs target -> do
       otherPlayers <- L.delete ident <$> getPlayers
       for_ otherPlayers $ \other -> pushAll
         [ DeclareDefense other (toEnemyId attrs) AnyDefense
