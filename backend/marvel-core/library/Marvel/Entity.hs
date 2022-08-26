@@ -23,7 +23,7 @@ class Entity a where
 -- field = undefined
 
 fieldP :: Field a typ -> (typ -> Bool) -> a -> Bool
-fieldP = undefined
+fieldP = error "not implemented"
 
 isTarget :: IsTarget a => a -> Target -> Bool
 isTarget a = (== toTarget a)

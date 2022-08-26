@@ -13,6 +13,8 @@ import Marvel.Card.Id as X
 import Marvel.Card.PlayerCard as X
 import Marvel.Card.Side as X
 
+import Marvel.Resource
+
 data Card = PlayerCard PlayerCard | EncounterCard EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

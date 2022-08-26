@@ -4,17 +4,17 @@ import Marvel.Prelude
 
 import Marvel.Ability.Type
 import {-# SOURCE #-} Marvel.Card.EncounterCard
-import {-# SOURCE #-} Marvel.Card.PlayerCard
+import Marvel.Card.PlayerCard.Types
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
-import {-# SOURCE #-} Marvel.Matchers
+import Marvel.Matchers.Types
 import {-# SOURCE #-} Marvel.Modifier
 import {-# SOURCE #-} Marvel.Queue
-import Marvel.Resource
+import Marvel.Resource.Types
 import Marvel.Source
 import Marvel.Target
-import {-# SOURCE #-} Marvel.Window
+import Marvel.Window.Types
 
 class HasGame a
 

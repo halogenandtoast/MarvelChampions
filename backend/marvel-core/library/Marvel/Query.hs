@@ -7,7 +7,7 @@ import Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.Id
-import {-# SOURCE #-} Marvel.Matchers
+import Marvel.Matchers.Types
 
 class Query a where
   type QueryElement a

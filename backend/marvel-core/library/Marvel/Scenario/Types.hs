@@ -77,6 +77,16 @@ instance Entity Scenario where
     ScenarioDifficulty :: Field Scenario Difficulty
     ScenarioSetAsideCards :: Field Scenario [Card]
     ScenarioAccelerationTokens :: Field Scenario Natural
+  field fld s = let ScenarioAttrs {..} = toAttrs s in case fld of
+    ScenarioId -> scenarioId
+    ScenarioVillains -> scenarioVillains
+    ScenarioMainSchemes -> scenarioMainSchemes
+    ScenarioEncounterSets -> scenarioEncounterSets
+    ScenarioEncounterDeck -> scenarioEncounterDeck
+    ScenarioDiscard -> scenarioDiscard
+    ScenarioDifficulty -> scenarioDifficulty
+    ScenarioSetAsideCards -> scenarioSetAsideCards
+    ScenarioAccelerationTokens -> scenarioAccelerationTokens
   toId = scenarioId . toAttrs
   toAttrs (Scenario a) = toScenarioAttrs a
 

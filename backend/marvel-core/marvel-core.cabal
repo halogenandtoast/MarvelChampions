@@ -65,6 +65,7 @@ library
       Marvel.Card.EncounterCard
       Marvel.Card.Id
       Marvel.Card.PlayerCard
+      Marvel.Card.PlayerCard.Types
       Marvel.Card.Side
       Marvel.Cost
       Marvel.Cost.Types
@@ -142,6 +143,7 @@ library
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.MainScheme.Types
       Marvel.Matchers
+      Marvel.Matchers.Types
       Marvel.Message
       Marvel.Message.Ally
       Marvel.Message.Attachment
@@ -196,6 +198,7 @@ library
       Marvel.Queue
       Marvel.Resource
       Marvel.Resource.Cards
+      Marvel.Resource.Types
       Marvel.Scenario
       Marvel.Scenario.Types
       Marvel.SideScheme
@@ -234,6 +237,7 @@ library
       Marvel.Support.Types
       Marvel.Target
       Marvel.Trait
+      Marvel.Trait.Types
       Marvel.Treachery
       Marvel.Treachery.Cards
       Marvel.Treachery.Treacheries
@@ -291,6 +295,7 @@ library
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Rhino
       Marvel.Window
+      Marvel.Window.Types
   other-modules:
       Paths_marvel_core
   hs-source-dirs:
@@ -332,7 +337,6 @@ library
     , exceptions
     , extra
     , lens
-    , mtl
     , random-shuffle
     , relude
     , template-haskell
@@ -385,7 +389,6 @@ test-suite MarvelChampions-test
     , extra
     , lens
     , marvel-core
-    , mtl
     , relude
     , text
   default-language: Haskell2010

@@ -6,7 +6,8 @@ import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Id
+import Marvel.Id hiding (SideSchemeId)
+import Marvel.Id as X (SideSchemeId)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
@@ -50,6 +51,20 @@ instance Entity SideScheme where
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
+  data Field SideScheme :: Type -> Type where
+    SideSchemeId :: Field SideScheme SideSchemeId
+    SideSchemeCardDef :: Field SideScheme CardDef
+    SideSchemeThreat :: Field SideScheme Natural
+    SideSchemeInitialThreat :: Field SideScheme GameValue
+    SideSchemeCrisis :: Field SideScheme Bool
+    SideSchemeHeldCards :: Field SideScheme [PlayerCard]
+  field fld s = let SideSchemeAttrs {..} = toAttrs s in case fld of
+    SideSchemeId -> sideSchemeId
+    SideSchemeCardDef -> sideSchemeCardDef
+    SideSchemeThreat -> sideSchemeThreat
+    SideSchemeInitialThreat -> sideSchemeInitialThreat
+    SideSchemeCrisis -> sideSchemeCrisis
+    SideSchemeHeldCards -> sideSchemeHeldCards
   toId = sideSchemeId . toAttrs
   toAttrs (SideScheme a) = toSideSchemeAttrs a
 

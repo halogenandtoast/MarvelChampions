@@ -5,14 +5,15 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (TreacheryId)
+import Marvel.Id as X (TreacheryId)
 import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Text.Show qualified
 
-data Treachery = forall a. IsTreachery a => Treachery a
+data Treachery = forall a . IsTreachery a => Treachery a
 
 instance Show Treachery where
   show (Treachery a) = show a
@@ -25,9 +26,11 @@ instance Eq Treachery where
 instance ToJSON Treachery where
   toJSON (Treachery a) = toJSON a
 
-data SomeTreacheryCard = forall a. IsTreachery a => SomeTreacheryCard (TreacheryCard a)
+data SomeTreacheryCard = forall a . IsTreachery a => SomeTreacheryCard
+  (TreacheryCard a)
 
-liftTreacheryCard :: (forall a . TreacheryCard a -> b) -> SomeTreacheryCard -> b
+liftTreacheryCard
+  :: (forall a . TreacheryCard a -> b) -> SomeTreacheryCard -> b
 liftTreacheryCard f (SomeTreacheryCard a) = f a
 
 someTreacheryCardCode :: SomeTreacheryCard -> CardCode
@@ -44,6 +47,19 @@ instance Entity Treachery where
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
+  data Field Treachery :: Type -> Type where
+    TreacheryId :: Field Treachery TreacheryId
+    TreacheryCardDef :: Field Treachery CardDef
+    TreacherySurge :: Field Treachery Bool
+    TreacheryResolver :: Field Treachery (Maybe IdentityId)
+  field fld t =
+    let TreacheryAttrs {..} = toAttrs t
+    in
+      case fld of
+        TreacheryId -> treacheryId
+        TreacheryCardDef -> treacheryCardDef
+        TreacherySurge -> treacherySurge
+        TreacheryResolver -> treacheryResolver
   toId = treacheryId . toAttrs
   toAttrs (Treachery a) = toTreacheryAttrs a
 
@@ -78,7 +94,11 @@ resolverL = lens treacheryResolver $ \m x -> m { treacheryResolver = x }
 instance HasCardCode (Attrs Treachery) where
   toCardCode = toCardCode . treacheryCardDef
 
-treacheryWith :: (Attrs Treachery -> a) -> CardDef -> (Attrs Treachery -> Attrs Treachery) -> CardBuilder TreacheryId a
+treacheryWith
+  :: (Attrs Treachery -> a)
+  -> CardDef
+  -> (Attrs Treachery -> Attrs Treachery)
+  -> CardBuilder TreacheryId a
 treacheryWith f cardDef g = treachery (f . g) cardDef
 
 treachery :: (Attrs Treachery -> a) -> CardDef -> CardBuilder TreacheryId a

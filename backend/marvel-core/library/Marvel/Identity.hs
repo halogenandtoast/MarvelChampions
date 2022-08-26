@@ -35,6 +35,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
