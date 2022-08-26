@@ -12,7 +12,7 @@ import Marvel.Trait
 
 allAttachments :: HashMap CardCode CardDef
 allAttachments = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ armoredRhinoSuit
   , charge
   , enhancedIvoryHorn
@@ -48,6 +48,7 @@ attachment code name traits boostIcons encounterSet quantity = CardDef
   , cdResponseWindow = Nothing
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 unique :: CardDef -> CardDef

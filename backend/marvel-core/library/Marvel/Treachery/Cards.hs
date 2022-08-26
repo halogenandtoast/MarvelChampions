@@ -11,7 +11,7 @@ import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ hardToKeepDown
   , imTough
   , stampede
@@ -53,6 +53,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdBoostIcons = boostIcons
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 hardToKeepDown :: CardDef

@@ -102,6 +102,9 @@ label l a = a { abilityLabel = Just l }
 limited :: Limit -> Ability -> Ability
 limited l a = a { abilityLimit = l }
 
+subtype :: AbilitySubType -> Ability -> Ability
+subtype s a = a { abilitySubType = Just s }
+
 passesUseLimit :: IdentityId -> HashMap IdentityId [Ability] -> Ability -> Bool
 passesUseLimit x aMap a = case abilityLimit a of
   NoLimit -> True

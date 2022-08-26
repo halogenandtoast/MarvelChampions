@@ -17,7 +17,7 @@ import Marvel.Window
 
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ backflip
   , enhancedSpiderSense
   , swingingWebKick
@@ -99,6 +99,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 backflip :: CardDef

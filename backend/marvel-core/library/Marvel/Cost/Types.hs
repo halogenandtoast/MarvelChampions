@@ -3,16 +3,19 @@ module Marvel.Cost.Types where
 import Marvel.Prelude
 
 import Marvel.Resource.Types
+import Marvel.Target
 
 data Cost
   = Costs [Cost]
   | ResourceCost (Maybe Resource)
+  | DynamicResourceCost (Maybe Resource)
   | MultiResourceCost [Maybe Resource]
   | DamageCost Natural
   | HealCost Natural
   | DamageThisCost Natural
   | ExhaustCost
   | DiscardHandCardCost Natural
+  | DiscardCost Target
   | UseCost
   | NoCost
   deriving stock (Show, Eq, Generic)
@@ -32,11 +35,13 @@ instance Semigroup Cost where
 costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources ExhaustCost = []
+costResources (DiscardCost _) = []
 costResources (DiscardHandCardCost _) = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
 costResources UseCost = []
+costResources (DynamicResourceCost _) = []
 costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs
 costResources (Costs ps) = concatMap costResources ps
