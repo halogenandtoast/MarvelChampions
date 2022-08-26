@@ -3,7 +3,7 @@ module Marvel.Message where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.ActiveCost
+import Marvel.ActiveCost.Types
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Damage
@@ -78,6 +78,8 @@ data Message
   | WithDiscarded Target FromZone [Card]
   | WithChosen Target FromZone [Card]
   | SetActiveCost ActiveCost
+  | CreatedActiveCost
+  | DisableActiveCost
   | Spent PlayerCard
   | Paid Payment
   | FinishedPayment

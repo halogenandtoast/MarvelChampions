@@ -12,7 +12,7 @@ import Data.ByteString.Lazy qualified as BSL
 import Data.HashMap.Strict qualified as HashMap
 import Data.Map.Strict qualified as Map
 import Marvel.Ally
-import Marvel.Attachment
+import Marvel.Attachment.Types
 import Marvel.Card hiding (toCard)
 import Marvel.Debug
 import Marvel.Deck
@@ -23,16 +23,16 @@ import Marvel.Hand
 import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
-import Marvel.MainScheme
+import Marvel.MainScheme.Types
 import Marvel.Message
-import Marvel.Minion
+import Marvel.Minion.Types
 import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Scenario
-import Marvel.SideScheme
-import Marvel.Support
-import Marvel.Upgrade
+import Marvel.SideScheme.Types
+import Marvel.Support.Types
+import Marvel.Upgrade.Types
 import Marvel.Villain
 
 data ApiGame = ApiGame

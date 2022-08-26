@@ -310,71 +310,10 @@ runGameMessage msg g@Game {..} = case msg of
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ insertWith (<>) ident [(a, gameWindowDepth)]
+  DisableActiveCost -> pure $ g & activeCostL .~ Nothing
   SetActiveCost activeCost -> do
-    cards <- getAvailablePaymentSources
-    abilities <- getResourceAbilities
-    paid <- resourceCostPaid activeCost
-    push $ Ask
-      (activeCostIdentityId activeCost)
-      (ChooseOne
-      $ map PayWithCard cards
-      <> map UseAbility abilities
-      <> [ FinishPayment | paid ]
-      )
+    push CreatedActiveCost
     pure $ g & activeCostL ?~ activeCost
-  Spent discard -> case g ^. activeCostL of
-    Just activeCost -> do
-      let
-        activeCost' = activeCost
-          { activeCostSpentCards = discard : activeCostSpentCards activeCost
-          }
-      case activeCostTarget activeCost of
-        ForCard card -> do
-          resources <- resourcesFor discard $ Just card
-          push $ Paid $ mconcat $ map ResourcePayment resources
-          pure $ g & activeCostL ?~ activeCost'
-        ForAbility _ -> do
-          resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map ResourcePayment resources
-          pure $ g & activeCostL ?~ activeCost'
-        ForTreachery -> do
-          resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map ResourcePayment resources
-          pure $ g & activeCostL ?~ activeCost'
-    Nothing -> error "No active cost"
-  Paid payment -> case g ^. activeCostL of
-    Just activeCost -> do
-      let
-        activeCost' = activeCost
-          { activeCostPayment = activeCostPayment activeCost <> payment
-          }
-      cards <- getAvailablePaymentSources
-      abilities <- getResourceAbilities
-      paid <- resourceCostPaid activeCost'
-      push
-        $ Ask (activeCostIdentityId activeCost)
-        $ ChooseOne
-        $ map PayWithCard cards
-        <> map UseAbility abilities
-        <> [ FinishPayment | paid ]
-      pure $ g & activeCostL ?~ activeCost'
-    Nothing -> error "No cost"
-  FinishedPayment -> case g ^. activeCostL of
-    Just activeCost -> do
-      case activeCostTarget activeCost of
-        ForCard card -> do
-          push $ PutCardIntoPlay
-            (activeCostIdentityId activeCost)
-            card
-            (activeCostPayment activeCost)
-            (activeCostWindow activeCost)
-        ForAbility _ -> pure ()
-        ForTreachery -> pure ()
-      pushAll $ map
-        (DiscardedCard . PlayerCard)
-        (reverse $ activeCostSpentCards activeCost)
-      pure $ g & activeCostL .~ Nothing
-    Nothing -> error "no active cost"
   CreatedEffect def source matcher -> do
     effectId <- getRandom
     ident <- toId <$> getActivePlayer
@@ -711,6 +650,7 @@ instance RunMessage Game where
       >>= traverseOf scenarioL (runMessage msg)
       >>= traverseOf entitiesL (runMessage msg)
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
+      >>= traverseOf (activeCostL . traverse) (runMessage msg)
       >>= runGameMessage msg
 
 class HasGame a where
@@ -864,11 +804,6 @@ runGameMessages = do
 replayChoices :: MonadGame env m => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
 
-getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
-getAvailablePaymentSources = do
-  players <- toList <$> getsGame gamePlayers
-  pure $ concatMap (unHand . playerIdentityHand) players
-
 getAvailableResourcesFor
   :: (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
 getAvailableResourcesFor mc = do
@@ -876,6 +811,11 @@ getAvailableResourcesFor mc = do
   abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
   playerResources <- concatMapM (`resourcesFor` mc) players
   pure $ playerResources <> abilitiesResources
+
+getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
+getAvailablePaymentSources = do
+  players <- toList <$> getsGame gamePlayers
+  pure $ concatMap (unHand . playerIdentityHand) players
 
 getResourceAbilities :: (HasCallStack, MonadGame env m) => m [Ability]
 getResourceAbilities = do

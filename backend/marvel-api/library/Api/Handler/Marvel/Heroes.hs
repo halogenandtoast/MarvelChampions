@@ -6,7 +6,7 @@ import Import
 
 import Data.UUID (nil)
 import Marvel.Hero
-import Marvel.Id
+import Marvel.Hero.Types
 import Marvel.Card.Builder
 
 getApiV1MarvelHeroesR :: Handler [Hero]

@@ -15,6 +15,7 @@ library
       Marvel.Ability
       Marvel.Ability.Type
       Marvel.ActiveCost
+      Marvel.ActiveCost.Types
       Marvel.Ally
       Marvel.Ally.Allies
       Marvel.Ally.Allies.BlackCatFeliciaHardy

@@ -72,6 +72,8 @@ getCurrentWindows :: MonadGame env m => m [Window]
 getDifficulty :: MonadGame env m => m Difficulty
 getHazardCount :: MonadGame env m => m Natural
 getAccelerationCount :: MonadGame env m => m Natural
+getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
+getResourceAbilities :: (HasCallStack, MonadGame env m) => m [Ability]
 
 class Count a where
   data QueryCount a
