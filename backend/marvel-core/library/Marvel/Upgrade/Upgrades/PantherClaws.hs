@@ -25,9 +25,9 @@ import Marvel.Upgrade.Cards qualified as Cards
 pantherClaws :: UpgradeCard PantherClaws
 pantherClaws = upgrade PantherClaws Cards.pantherClaws
 
-newtype PantherClaws = PantherClaws UpgradeAttrs
+newtype PantherClaws = PantherClaws (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities PantherClaws where
   getAbilities _ = []

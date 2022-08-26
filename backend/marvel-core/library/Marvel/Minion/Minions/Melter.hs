@@ -12,7 +12,7 @@ import Marvel.Hp
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 
 melter :: MinionCard Melter
 melter = minionWith
@@ -23,9 +23,9 @@ melter = minionWith
   (HP 5)
   (defensePriorityL .~ AllyIfAble)
 
-newtype Melter = Melter MinionAttrs
+newtype Melter = Melter (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Melter where
   runMessage msg e@(Melter attrs) = case msg of

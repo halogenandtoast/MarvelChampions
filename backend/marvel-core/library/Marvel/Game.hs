@@ -16,6 +16,7 @@ import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Debug
 import Marvel.Deck
@@ -78,7 +79,7 @@ data GameState = Unstarted | InProgress | Finished FinishedStatus
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-type EntityMap a = HashMap (EntityId a) a
+type EntityMap a = HashMap (Id a) a
 
 data Entities = Entities
   { entitiesPlayers :: EntityMap PlayerIdentity
@@ -641,7 +642,7 @@ getWindowPlayableCards
 getWindowPlayableCards window player = filterM
   (isWindowPlayable window player)
   cards
-  where cards = unHand $ playerIdentityHand player
+  where cards = unHand $ playerIdentityHand $ toAttrs player
 
 isWindowPlayable
   :: (HasCallStack, MonadGame env m)
@@ -865,7 +866,7 @@ replayChoices _ = pure ()
 getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
 getAvailablePaymentSources = do
   players <- toList <$> getsGame gamePlayers
-  pure $ concatMap (unHand . playerIdentityHand) players
+  pure $ concatMap (unHand . playerIdentityHand . toAttrs) players
 
 getAvailableResourcesFor
   :: (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
@@ -910,7 +911,7 @@ gameSelectIdentity m = do
       pure
         . not
         . null
-        $ playerIdentityMinions ident
+        $ playerIdentityMinions (toAttrs ident)
         `HashSet.intersection` minions
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
@@ -971,9 +972,9 @@ gameSelectExtendedCard m = do
     excludedCards
   let
     allCards =
-      concatMap (unHand . playerIdentityHand) players
-        <> concatMap (unDiscard . playerIdentityDiscard) players
-        <> concatMap (unDeck . playerIdentityDeck) players
+      concatMap (unHand . playerIdentityHand . toAttrs) players
+        <> concatMap (unDiscard . playerIdentityDiscard . toAttrs) players
+        <> concatMap (unDeck . playerIdentityDeck . toAttrs) players
   result <- go players allCards m
   withGame_ (const oldVal)
   pure $ HashSet.fromList result
@@ -996,7 +997,7 @@ gameSelectExtendedCard m = do
       let
         players' = filter ((`elem` identities) . toId) players
         cards' = filter (`elem` cards)
-          $ concatMap (unDiscard . playerIdentityDiscard) players'
+          $ concatMap (unDiscard . playerIdentityDiscard . toAttrs) players'
       go players cards' extendedCardMatcher
     TopmostCardInDiscardOf identityMatcher cardMatcher -> do
       identities <- selectList identityMatcher
@@ -1005,6 +1006,7 @@ gameSelectExtendedCard m = do
         (find (and . sequence [(`elem` cards), cardMatch cardMatcher])
         . unDiscard
         . playerIdentityDiscard
+        . toAttrs
         )
         players'
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
@@ -1298,9 +1300,6 @@ getAccelerationCount = do
 class Count a where
   data QueryCount a
   selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
-
-class Entity a => GameEntity a where
-  getAttrs :: MonadGame env m => EntityId a -> m (EntityAttrs a)
 
 gameSelectCountIdentity
   :: MonadGame env m

@@ -11,14 +11,14 @@ import Marvel.Entity
 import Marvel.Hp
 import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 
 whiplash :: MinionCard Whiplash
 whiplash = minion Whiplash Cards.whiplash (Sch 2) (Atk 3) (HP 4)
 
-newtype Whiplash = Whiplash MinionAttrs
+newtype Whiplash = Whiplash (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Whiplash where
   runMessage msg (Whiplash attrs) = Whiplash <$> runMessage msg attrs

@@ -16,15 +16,15 @@ import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 tenacity :: UpgradeCard Tenacity
 tenacity = upgrade Tenacity Cards.tenacity
 
-newtype Tenacity = Tenacity UpgradeAttrs
+newtype Tenacity = Tenacity (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities Tenacity where
   getAbilities (Tenacity a) =

@@ -12,6 +12,7 @@ import Marvel.Hand
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Resource
+import Marvel.Projection
 import Marvel.Query
 import Marvel.Matchers
 import Marvel.Game.Source
@@ -27,7 +28,7 @@ passesCanAffordCost identityId a = go (abilityCost a)
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
-    DiscardHandCardCost n -> fieldP PlayerIdentityHand (notNull . unHand) identityId
+    DiscardHandCardCost n -> projectP PlayerIdentityHand (notNull . unHand) identityId
     ExhaustCost -> case source of
       IdentitySource ident -> member ident <$> select UnexhaustedIdentity
       AllySource ident -> member ident <$> select UnexhaustedAlly

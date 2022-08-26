@@ -13,25 +13,25 @@ import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 import Marvel.Window
 
 tigerShark :: MinionCard TigerShark
 tigerShark = minion TigerShark Cards.tigerShark (Sch 1) (Atk 3) (HP 6)
 
-newtype TigerShark = TigerShark MinionAttrs
+newtype TigerShark = TigerShark (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities TigerShark where
   getAbilities (TigerShark a) =
     [ windowAbility
           a
           1
-          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ toId a) You)
+          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ minionId a) You)
           ForcedResponse
           NoCost
-        $ Run [MinionMessage (toId a) MinionBecomeTough]
+        $ Run [MinionMessage (minionId a) MinionBecomeTough]
     ]
 
 instance RunMessage TigerShark where

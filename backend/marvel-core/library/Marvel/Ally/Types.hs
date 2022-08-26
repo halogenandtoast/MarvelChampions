@@ -18,9 +18,10 @@ import Data.Typeable
 import Marvel.Ability.Type
 import Marvel.Damage
 import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Message
-import Marvel.Question
+import Marvel.Id hiding (AllyId)
+import Marvel.Id qualified as Id
+import Marvel.Message hiding (AllyStunned)
+import Marvel.Question hiding (AllyAttack, AllyThwart)
 import Marvel.Window qualified as W
 import Text.Show qualified
 
@@ -29,7 +30,7 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbi
   default toAllyAttrs :: Coercible a (Attrs Ally) => a -> Attrs Ally
   toAllyAttrs = coerce
 
-type AllyCard a = CardBuilder (IdentityId, AllyId) a
+type AllyCard a = CardBuilder (IdentityId, Id.AllyId) a
 
 data Ally = forall a . IsAlly a => Ally a
 
@@ -92,7 +93,7 @@ allyWith
   -> (Atk, Natural)
   -> HP Natural
   -> (Attrs Ally -> Attrs Ally)
-  -> CardBuilder (IdentityId, AllyId) a
+  -> CardBuilder (IdentityId, Id.AllyId) a
 allyWith f cardDef thwPair atkPair hp g =
   ally (f . g) cardDef thwPair atkPair hp
 
@@ -102,7 +103,7 @@ ally
   -> (Thw, Natural)
   -> (Atk, Natural)
   -> HP Natural
-  -> CardBuilder (IdentityId, AllyId) a
+  -> CardBuilder (IdentityId, Id.AllyId) a
 ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
   CardBuilder
     { cbCardCode = cdCardCode cardDef
@@ -207,9 +208,9 @@ instance IsCard (Attrs Ally) where
     }
 
 instance Entity Ally where
-  type Id Ally = AllyId
+  type Id Ally = Id.AllyId
   data Attrs Ally = AllyAttrs
-    { allyId :: AllyId
+    { allyId :: Id.AllyId
     , allyCardDef :: CardDef
     , allyDamage :: Natural
     , allyHitPoints :: HP Natural
@@ -228,7 +229,7 @@ instance Entity Ally where
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
   data Field Ally :: Type -> Type where
-    AllyId :: Field Ally AllyId
+    AllyId :: Field Ally Id.AllyId
     AllyCardDef :: Field Ally CardDef
     AllyDamage :: Field Ally Natural
     AllyHitPoints :: Field Ally (HP Natural)
@@ -245,6 +246,25 @@ instance Entity Ally where
     AllyTough :: Field Ally Bool
   toId = allyId . toAttrs
   toAttrs (Ally a) = toAllyAttrs a
+  field fld a =
+    let AllyAttrs {..} = toAttrs a
+    in
+      case fld of
+        AllyId -> allyId
+        AllyCardDef -> allyCardDef
+        AllyDamage -> allyDamage
+        AllyHitPoints -> allyHitPoints
+        AllyThwart -> allyThwart
+        AllyThwartConsequentialDamage -> allyThwartConsequentialDamage
+        AllyAttack -> allyAttack
+        AllyAttackConsequentialDamage -> allyAttackConsequentialDamage
+        AllyController -> allyController
+        AllyExhausted -> allyExhausted
+        AllyCounters -> allyCounters
+        AllyUpgrades -> allyUpgrades
+        AllyStunned -> allyStunned
+        AllyConfused -> allyConfused
+        AllyTough -> allyTough
 
 instance RunMessage Ally where
   runMessage msg (Ally a) = Ally <$> runMessage msg a

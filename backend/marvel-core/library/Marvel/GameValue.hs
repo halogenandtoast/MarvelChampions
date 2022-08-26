@@ -1,12 +1,12 @@
-module Marvel.GameValue where
+module Marvel.GameValue
+  ( module Marvel.GameValue
+  , module Marvel.GameValue.Types
+  ) where
 
 import Marvel.Prelude
 
 import Marvel.Game.Source
-
-data GameValue = Static Int | PerPlayer Int | PerPlayerWithStatic Int Int
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+import Marvel.GameValue.Types
 
 fromGameValue :: MonadGame env m => GameValue -> m Int
 fromGameValue gv = gameValue gv <$> getPlayerCount

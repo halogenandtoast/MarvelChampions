@@ -17,16 +17,16 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 import Marvel.Window
 
 indomitable :: UpgradeCard Indomitable
 indomitable = upgrade Indomitable Cards.indomitable
 
-newtype Indomitable = Indomitable UpgradeAttrs
+newtype Indomitable = Indomitable (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities Indomitable where
   getAbilities (Indomitable a) =
