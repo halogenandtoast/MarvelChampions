@@ -7,14 +7,14 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 
 titania :: MinionCard Titania
 titania = minion Titania Cards.titania (Sch 1) (Atk 0) (HP 6)
 
-newtype Titania = Titania MinionAttrs
+newtype Titania = Titania (Attrs Minion)
   deriving anyclass (IsMinion, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor Titania where
   getModifiersFor _ target (Titania attrs) | isTarget attrs target =

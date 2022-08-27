@@ -18,8 +18,8 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 theVulturesPlans :: TreacheryCard TheVulturesPlans
 theVulturesPlans =
@@ -30,23 +30,24 @@ newtype Meta = Meta { unMeta :: HashSet Resource }
   deriving anyclass (ToJSON, FromJSON)
   deriving newtype (Show, Eq, Semigroup, Monoid)
 
-newtype TheVulturesPlans = TheVulturesPlans (TreacheryAttrs `With` Meta)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+newtype TheVulturesPlans = TheVulturesPlans (Attrs Treachery `With` Meta)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+
+instance IsTreachery TheVulturesPlans where
+  toTreacheryAttrs (TheVulturesPlans (attrs `With` _)) = attrs
 
 instance RunMessage TheVulturesPlans where
   runMessage msg t@(TheVulturesPlans (attrs `With` meta)) = case msg of
-    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->
-      case msg' of
-        RevealTreachery _ -> do
-          players <- getPlayers
-          pushAll $ map
-            (\identityId -> IdentityMessage identityId
-              $ DiscardFor (toTarget attrs) RandomFromHand 1 1
-            )
-            players
-          pure t
-        _ -> TheVulturesPlans . (`With` meta) <$> runMessage msg attrs
+    TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
+      RevealTreachery _ -> do
+        players <- getPlayers
+        pushAll $ map
+          (\identityId -> IdentityMessage identityId
+            $ DiscardFor (toTarget attrs) RandomFromHand 1 1
+          )
+          players
+        pure t
+      _ -> TheVulturesPlans . (`With` meta) <$> runMessage msg attrs
     WithDiscarded target _ cards | isTarget attrs target -> do
       let
         resources =

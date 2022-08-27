@@ -18,13 +18,13 @@ secretRendezvous :: MainSchemeCard SecretRendezvous
 secretRendezvous =
   mainScheme SecretRendezvous Cards.secretRendezvous (PerPlayer 8) (Static 0) (PerPlayer 1)
 
-newtype SecretRendezvous = SecretRendezvous MainSchemeAttrs
+newtype SecretRendezvous = SecretRendezvous (Attrs MainScheme)
   deriving anyclass IsMainScheme
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage SecretRendezvous where
   runMessage msg ms@(SecretRendezvous attrs) = case msg of
-    MainSchemeMessage mainSchemeId msg' | mainSchemeId == toId attrs ->
+    MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
         RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs))
         _ -> SecretRendezvous <$> runMessage msg attrs

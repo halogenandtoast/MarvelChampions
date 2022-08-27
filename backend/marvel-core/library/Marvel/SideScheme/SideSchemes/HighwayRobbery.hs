@@ -13,18 +13,17 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.SideScheme.Types
 import Marvel.SideScheme.Cards qualified as Cards
+import Marvel.SideScheme.Types
 import Marvel.Source
 import Marvel.Target
 
 highwayRobbery :: SideSchemeCard HighwayRobbery
-highwayRobbery =
-  sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
+highwayRobbery = sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
 
-newtype HighwayRobbery = HighwayRobbery SideSchemeAttrs
+newtype HighwayRobbery = HighwayRobbery (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 getCardOwner :: PlayerCard -> IdentityId
 getCardOwner pc = case pcOwner pc of
@@ -33,22 +32,21 @@ getCardOwner pc = case pcOwner pc of
 
 instance RunMessage HighwayRobbery where
   runMessage msg s@(HighwayRobbery attrs) = case msg of
-    SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
-      case msg' of
-        RevealSideScheme -> do
-          players <- getPlayers
-          pushAll $ map
-            (\identityId -> IdentityMessage identityId
-              $ DiscardFor (toTarget attrs) RandomFromHand 1 1
-            )
-            players
-          pure s
-        DefeatSideScheme -> do
-          pushAll $ map
-            (\c -> IdentityMessage (getCardOwner c) (AddToHand c))
-            (sideSchemeHeldCards attrs)
-          pure s
-        _ -> HighwayRobbery <$> runMessage msg attrs
+    SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
+      RevealSideScheme -> do
+        players <- getPlayers
+        pushAll $ map
+          (\identityId -> IdentityMessage identityId
+            $ DiscardFor (toTarget attrs) RandomFromHand 1 1
+          )
+          players
+        pure s
+      DefeatSideScheme -> do
+        pushAll $ map
+          (\c -> IdentityMessage (getCardOwner c) (AddToHand c))
+          (sideSchemeHeldCards attrs)
+        pure s
+      _ -> HighwayRobbery <$> runMessage msg attrs
     WithDiscarded target _ cards | isTarget attrs target -> do
       pure . HighwayRobbery $ attrs & heldCardsL <>~ onlyPlayerCards cards
     _ -> HighwayRobbery <$> runMessage msg attrs

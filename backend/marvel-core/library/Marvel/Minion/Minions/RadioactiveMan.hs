@@ -14,23 +14,23 @@ import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 import Marvel.Window
 
 radioactiveMan :: MinionCard RadioactiveMan
 radioactiveMan =
   minion RadioactiveMan Cards.radioactiveMan (Sch 1) (Atk 1) (HP 7)
 
-newtype RadioactiveMan = RadioactiveMan MinionAttrs
+newtype RadioactiveMan = RadioactiveMan (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities RadioactiveMan where
   getAbilities (RadioactiveMan a) =
     [ windowAbility
           a
           1
-          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ toId a) You)
+          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ minionId a) You)
           ForcedResponse
           NoCost
         $ RunAbility (toTarget a) 1
@@ -38,7 +38,7 @@ instance HasAbilities RadioactiveMan where
 
 instance RunMessage RadioactiveMan where
   runMessage msg e@(RadioactiveMan attrs) = case msg of
-    RanAbility target 1 [EnemyAttack _ ident] | isTarget attrs target -> do
+    RanAbility target 1 [EnemyAttack _ ident] _ | isTarget attrs target -> do
       e <$ push (IdentityMessage ident $ DiscardFrom RandomFromHand 1 Nothing)
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do

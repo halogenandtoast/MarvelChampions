@@ -13,9 +13,9 @@ lukeCage :: AllyCard LukeCage
 lukeCage =
   allyWith LukeCage Cards.lukeCage (Thw 1, 1) (Atk 2, 1) (HP 5) (toughL .~ True)
 
-newtype LukeCage = LukeCage AllyAttrs
+newtype LukeCage = LukeCage (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage LukeCage where
-  runMessage msg a = LukeCage <$> runMessage msg (toAttrs a)
+  runMessage msg (LukeCage attrs) = LukeCage <$> runMessage msg attrs

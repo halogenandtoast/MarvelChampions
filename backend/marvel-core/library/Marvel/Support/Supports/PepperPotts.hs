@@ -24,9 +24,9 @@ import Marvel.Target
 pepperPotts :: SupportCard PepperPotts
 pepperPotts = support PepperPotts Cards.pepperPotts
 
-newtype PepperPotts = PepperPotts SupportAttrs
+newtype PepperPotts = PepperPotts (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities PepperPotts where
   getAbilities (PepperPotts a) =

@@ -15,9 +15,9 @@ jessicaJones :: AllyCard JessicaJones
 jessicaJones =
   ally JessicaJones Cards.jessicaJones (Thw 1, 1) (Atk 2, 1) (HP 3)
 
-newtype JessicaJones = JessicaJones AllyAttrs
+newtype JessicaJones = JessicaJones (Attrs Ally)
   deriving anyclass (IsAlly, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasModifiersFor JessicaJones where
   getModifiersFor _ target (JessicaJones attrs) | isTarget attrs target = do
@@ -26,4 +26,4 @@ instance HasModifiersFor JessicaJones where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage JessicaJones where
-  runMessage msg a = JessicaJones <$> runMessage msg (toAttrs a)
+  runMessage msg (JessicaJones attrs) = JessicaJones <$> runMessage msg attrs

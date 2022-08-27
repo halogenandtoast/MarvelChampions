@@ -23,9 +23,9 @@ import Marvel.Window qualified as W
 interrogationRoom :: SupportCard InterrogationRoom
 interrogationRoom = support InterrogationRoom Cards.interrogationRoom
 
-newtype InterrogationRoom = InterrogationRoom SupportAttrs
+newtype InterrogationRoom = InterrogationRoom (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities InterrogationRoom where
   getAbilities a =

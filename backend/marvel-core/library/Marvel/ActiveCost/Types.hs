@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.PlayerCard
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Id
 import Marvel.Payment
 import Marvel.Window

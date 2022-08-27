@@ -13,7 +13,7 @@ allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes =
   fromList $
     map
-      (toCardCode &&& id)
+      (toFst toCardCode)
       [ breakinAndTakin
       , crowdControl
       , bombScare
@@ -49,6 +49,7 @@ sideScheme code name boostIcons encounterSet quantity =
     , cdBoostIcons = boostIcons
     , cdHazards = 0
     , cdAcceleration = 0
+    , cdLimit = Nothing
     }
 
 breakinAndTakin :: CardDef

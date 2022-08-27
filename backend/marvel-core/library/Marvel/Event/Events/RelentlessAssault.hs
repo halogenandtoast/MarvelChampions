@@ -22,13 +22,13 @@ import Marvel.Target
 relentlessAssault :: EventCard RelentlessAssault
 relentlessAssault = event RelentlessAssault Cards.relentlessAssault
 
-newtype RelentlessAssault = RelentlessAssault EventAttrs
+newtype RelentlessAssault = RelentlessAssault (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage RelentlessAssault where
   runMessage msg e@(RelentlessAssault attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let

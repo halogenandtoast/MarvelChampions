@@ -12,7 +12,7 @@ import Marvel.Trait
 
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ energyAbsorption
   , vibranium
   , thePowerOfAggression
@@ -57,6 +57,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 energyAbsorption :: CardDef

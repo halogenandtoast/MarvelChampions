@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet (
-  captainMarvelsHelmet,
-  CaptainMarvelsHelmet (..),
-) where
+module Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
+  ( captainMarvelsHelmet
+  , CaptainMarvelsHelmet(..)
+  ) where
 
 import Marvel.Prelude
 
@@ -14,15 +14,15 @@ import Marvel.Modifier
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
+import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
-import qualified Marvel.Upgrade.Cards as Cards
 
 captainMarvelsHelmet :: UpgradeCard CaptainMarvelsHelmet
 captainMarvelsHelmet = upgrade CaptainMarvelsHelmet Cards.captainMarvelsHelmet
 
-newtype CaptainMarvelsHelmet = CaptainMarvelsHelmet UpgradeAttrs
-  deriving anyclass (IsUpgrade)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+newtype CaptainMarvelsHelmet = CaptainMarvelsHelmet (Attrs Upgrade)
+  deriving anyclass IsUpgrade
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor CaptainMarvelsHelmet where
   getModifiersFor _ (IdentityTarget ident) (CaptainMarvelsHelmet attrs)

@@ -30,15 +30,15 @@ ironMan = hero
 instance HasAbilities IronMan where
   getAbilities _ = []
 
-newtype IronMan = IronMan HeroAttrs
+newtype IronMan = IronMan (Attrs Hero)
   deriving anyclass IsHero
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasModifiersFor IronMan where
-  getModifiersFor _ target a | isTarget a target = do
+  getModifiersFor _ target (IronMan a) | isTarget a target = do
     x <-
       selectListCount
-      $ UpgradeControlledBy (IdentityWithId $ toId a)
+      $ UpgradeControlledBy (IdentityWithId $ heroIdentityId a)
       <> UpgradeWithTrait Tech
     pure [HandSizeModifier x]
   getModifiersFor _ _ _ = pure []

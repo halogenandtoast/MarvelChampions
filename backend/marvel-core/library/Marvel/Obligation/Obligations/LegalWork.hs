@@ -19,43 +19,44 @@ import Marvel.Target
 legalWork :: ObligationCard LegalWork
 legalWork = obligation LegalWork Cards.legalWork
 
-newtype LegalWork = LegalWork ObligationAttrs
+newtype LegalWork = LegalWork (Attrs Obligation)
   deriving anyclass IsObligation
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage LegalWork where
   runMessage msg o@(LegalWork attrs) = case msg of
-    ObligationMessage obligationId msg' | toId attrs == obligationId ->
-      case msg' of
-        RevealObligation identityId -> do
-          isHero <- identityMatches HeroIdentity identityId
-          pushAll
-            $ [ Ask identityId $ ChooseOne
-                  [ Label "Do not flip to alter-ego" []
-                  , Label "Flip to alter-ego" [ChangeForm]
-                  ]
-              | isHero
-              ]
-            <> [ObligationMessage (toId attrs) $ ResolveObligation identityId]
-          pure o
-        ResolveObligation identityId -> do
-          isUnexhaustedAlterEgo <- identityMatches
-            (AlterEgoIdentity <> UnexhaustedIdentity)
-            identityId
-          chooseOrRunOne identityId
-            $ [ Label
-                  "Exhaust Jennifer Walters-> remove Legal Work from the game."
-                  [ Run
-                      [ IdentityMessage identityId ExhaustedIdentity
-                      , RemoveFromGame (toTarget attrs)
-                      ]
-                  ]
-              | isUnexhaustedAlterEgo
-              ]
-            <> [ Label
-                   "Give the main scheme 1 acceleration token. Discard this obligation"
-                   [Run [AddAccelerationToken]]
-               ]
-          pure o
-        _ -> LegalWork <$> runMessage msg attrs
+    ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
+      RevealObligation identityId -> do
+        isHero <- identityMatches HeroIdentity identityId
+        pushAll
+          $ [ Ask identityId $ ChooseOne
+                [ Label "Do not flip to alter-ego" []
+                , Label "Flip to alter-ego" [ChangeForm]
+                ]
+            | isHero
+            ]
+          <> [ ObligationMessage (obligationId attrs)
+                 $ ResolveObligation identityId
+             ]
+        pure o
+      ResolveObligation identityId -> do
+        isUnexhaustedAlterEgo <- identityMatches
+          (AlterEgoIdentity <> UnexhaustedIdentity)
+          identityId
+        chooseOrRunOne identityId
+          $ [ Label
+                "Exhaust Jennifer Walters-> remove Legal Work from the game."
+                [ Run
+                    [ IdentityMessage identityId ExhaustedIdentity
+                    , RemoveFromGame (toTarget attrs)
+                    ]
+                ]
+            | isUnexhaustedAlterEgo
+            ]
+          <> [ Label
+                 "Give the main scheme 1 acceleration token. Discard this obligation"
+                 [Run [AddAccelerationToken]]
+             ]
+        pure o
+      _ -> LegalWork <$> runMessage msg attrs
     _ -> LegalWork <$> runMessage msg attrs

@@ -12,36 +12,35 @@ import Marvel.Resource
 import Marvel.Trait
 
 allUpgrades :: HashMap CardCode CardDef
-allUpgrades =
-  fromList $
-    map
-      (toCardCode &&& id)
-      [ spiderTracer
-      , webShooter
-      , webbedUp
-      , captainMarvelsHelmet
-      , cosmicFlight
-      , focusedRage
-      , superhumanStrength
-      , arcReactor
-      , markVArmor
-      , markVHelmet
-      , poweredGauntlets
-      , rocketBoots
-      , energyDaggers
-      , pantherClaws
-      , tacticalGenius
-      , vibraniumSuit
-      , combatTraining
-      , heroicIntuition
-      , inspired
-      , armoredVest
-      , indomitable
-      , tenacity
-      ]
+allUpgrades = fromList $ map
+  (toFst toCardCode)
+  [ spiderTracer
+  , webShooter
+  , webbedUp
+  , captainMarvelsHelmet
+  , cosmicFlight
+  , energyChannel
+  , focusedRage
+  , superhumanStrength
+  , arcReactor
+  , markVArmor
+  , markVHelmet
+  , poweredGauntlets
+  , rocketBoots
+  , energyDaggers
+  , pantherClaws
+  , tacticalGenius
+  , vibraniumSuit
+  , combatTraining
+  , heroicIntuition
+  , inspired
+  , armoredVest
+  , indomitable
+  , tenacity
+  ]
 
-upgrade ::
-  CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
+upgrade
+  :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
 upgrade code name cost traits resources aspect =
   baseUpgrade code name cost traits resources (Just aspect)
 
@@ -53,56 +52,65 @@ basicUpgrade :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 basicUpgrade code name cost traits resources =
   baseUpgrade code name cost traits resources Nothing
 
-baseUpgrade ::
-  CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
-baseUpgrade code name cost traits resources mAspect =
-  CardDef
-    { cdCardCode = code
-    , cdName = name
-    , cdCost = Just cost
-    , cdTraits = fromList traits
-    , cdKeywords = mempty
-    , cdCardType = UpgradeType
-    , cdAbilityType = Nothing
-    , cdAbilitySubType = Nothing
-    , cdUnique = False
-    , cdAspect = mAspect
-    , cdEncounterSet = Nothing
-    , cdEncounterSetQuantity = Nothing
-    , cdCriteria = NoCriteria
-    , cdResources = map (PrintedResource,) resources
-    , cdResponseWindow = Nothing
-    , cdBoostIcons = []
-    , cdHazards = 0
-    , cdAcceleration = 0
-    }
+baseUpgrade
+  :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef
+baseUpgrade code name cost traits resources mAspect = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Just cost
+  , cdTraits = fromList traits
+  , cdKeywords = mempty
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubType = Nothing
+  , cdUnique = False
+  , cdAspect = mAspect
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = map (PrintedResource, ) resources
+  , cdResponseWindow = Nothing
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdLimit = Nothing
+  }
 
 unique :: CardDef -> CardDef
-unique def = def {cdUnique = True}
+unique def = def { cdUnique = True }
+
+limited :: InPlayLimit -> CardDef -> CardDef
+limited limit def = def { cdLimit = Just limit }
 
 spiderTracer :: CardDef
-spiderTracer =
-  ( identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy]
-  )
-    { cdCriteria = MinionExists AnyMinion
-    }
+spiderTracer = (identityUpgrade "01007" "Spider-Tracer" 1 [Item, Tech] [Energy]
+               )
+  { cdCriteria = MinionExists AnyMinion
+  }
 
 webShooter :: CardDef
 webShooter = identityUpgrade "01008" "Web-Shooter" 1 [Item, Tech] [Physical]
 
 webbedUp :: CardDef
-webbedUp =
-  (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
-    { cdCriteria = InHeroForm
-    }
+webbedUp = (identityUpgrade "01009" "Webbed Up" 4 [Condition] [Physical])
+  { cdCriteria = InHeroForm
+  , cdLimit = Just (MaxPerEnemy 1)
+  }
 
 captainMarvelsHelmet :: CardDef
-captainMarvelsHelmet =
-  unique $ identityUpgrade "01016" "Captain Marvel's Helmet" 2 [Armor, Tech] [Physical]
+captainMarvelsHelmet = unique $ identityUpgrade
+  "01016"
+  "Captain Marvel's Helmet"
+  2
+  [Armor, Tech]
+  [Physical]
 
 cosmicFlight :: CardDef
-cosmicFlight =
-  identityUpgrade "01017" "Cosmic Flight" 2 [Superpower] [Energy]
+cosmicFlight = identityUpgrade "01017" "Cosmic Flight" 2 [Superpower] [Energy]
+
+energyChannel :: CardDef
+energyChannel = limited (MaxPerPlayer 1)
+  $ identityUpgrade "01018" "Energy Channel" 0 [Superpower] [Mental]
 
 focusedRage :: CardDef
 focusedRage = identityUpgrade "01027" "Focused Rage" 3 [Skill] [Energy]
@@ -128,8 +136,7 @@ poweredGauntlets =
   identityUpgrade "01038" "Power Gauntlets" 2 [Armor, Tech] [Energy]
 
 rocketBoots :: CardDef
-rocketBoots =
-  identityUpgrade "01039" "Rocket Boots" 1 [Armor, Tech] [Mental]
+rocketBoots = identityUpgrade "01039" "Rocket Boots" 1 [Armor, Tech] [Mental]
 
 energyDaggers :: CardDef
 energyDaggers =
@@ -148,19 +155,22 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
+combatTraining = limited (MaxPerPlayer 1)
+  $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
+heroicIntuition = limited (MaxPerPlayer 1)
+  $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
-inspired =
-  (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
-    { cdCriteria = AllyExists AnyAlly
-    }
+inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
+  { cdCriteria = AllyExists AnyAlly
+  , cdLimit = Just (MaxPerAlly 1)
+  }
 
 armoredVest :: CardDef
-armoredVest = upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
+armoredVest = limited (MaxPerPlayer 1)
+  $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
 indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection

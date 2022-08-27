@@ -2,11 +2,11 @@ module Marvel.Ability.Type where
 
 import Marvel.Prelude
 
-import Marvel.Cost
+import Marvel.Cost.Types
 import {-# SOURCE #-} Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
-import {-# SOURCE #-} Marvel.Window
+import {-# SOURCE #-} Marvel.Window.Types
 
 data AbilityType
   = Interrupt

@@ -66,16 +66,45 @@ instance IsSource AlterEgo where
   toSource = toSource . toAttrs
 
 instance Entity AlterEgo where
-  type EntityId AlterEgo = IdentityId
-  type EntityAttrs AlterEgo = AlterEgoAttrs
-  toId = toId . toAttrs
-  toAttrs (AlterEgo a) = toAttrs a
+  type Id AlterEgo = IdentityId
+  data Attrs AlterEgo = AlterEgoAttrs
+    { alterEgoIdentityId :: IdentityId
+    , alterEgoBaseHandSize :: HandSize
+    , alterEgoBaseRecovery :: Rec
+    , alterEgoHeroForms :: [Side]
+    , alterEgoStartingHP :: HP GameValue
+    , alterEgoCardDef :: CardDef
+    , alterEgoObligations :: [CardDef]
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field AlterEgo :: Type -> Type where
+    AlterEgoIdentityId :: Field AlterEgo IdentityId
+    AlterEgoBaseHandSize :: Field AlterEgo HandSize
+    AlterEgoBaseRecovery :: Field AlterEgo Rec
+    AlterEgoHeroForms :: Field AlterEgo [Side]
+    AlterEgoStartingHP :: Field AlterEgo (HP GameValue)
+    AlterEgoCardDef :: Field AlterEgo CardDef
+    AlterEgoObligations :: Field AlterEgo [CardDef]
+  toId = alterEgoIdentityId . toAttrs
+  toAttrs (AlterEgo a) = toAlterEgoAttrs a
+  field fld a =
+    let AlterEgoAttrs {..} = toAttrs a
+    in
+      case fld of
+        AlterEgoIdentityId -> alterEgoIdentityId
+        AlterEgoBaseHandSize -> alterEgoBaseHandSize
+        AlterEgoBaseRecovery -> alterEgoBaseRecovery
+        AlterEgoHeroForms -> alterEgoHeroForms
+        AlterEgoStartingHP -> alterEgoStartingHP
+        AlterEgoCardDef -> alterEgoCardDef
+        AlterEgoObligations -> alterEgoObligations
 
 instance HasModifiersFor AlterEgo where
   getModifiersFor source target (AlterEgo a) = getModifiersFor source target a
 
 alterEgo
-  :: (AlterEgoAttrs -> a)
+  :: (Attrs AlterEgo -> a)
   -> CardDef
   -> HP GameValue
   -> HandSize
@@ -95,47 +124,32 @@ alterEgo f cardDef hp hSize recovery obligations = CardBuilder
     }
   }
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ AlterEgoAttrs, EntityId a ~ IdentityId, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlterEgo a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlterEgo a where
+  toAlterEgoAttrs :: a -> Attrs AlterEgo
+  default toAlterEgoAttrs :: Coercible a (Attrs AlterEgo) => a -> Attrs AlterEgo
+  toAlterEgoAttrs = coerce
 
 type AlterEgoCard a = CardBuilder IdentityId a
 
-data AlterEgoAttrs = AlterEgoAttrs
-  { alterEgoIdentityId :: IdentityId
-  , alterEgoBaseHandSize :: HandSize
-  , alterEgoBaseRecovery :: Rec
-  , alterEgoHeroForms :: [Side]
-  , alterEgoStartingHP :: HP GameValue
-  , alterEgoCardDef :: CardDef
-  , alterEgoObligations :: [CardDef]
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-instance HasCardCode AlterEgoAttrs where
+instance HasCardCode (Attrs AlterEgo) where
   toCardCode = toCardCode . alterEgoCardDef
 
-instance HasCardDef AlterEgoAttrs where
+instance HasCardDef (Attrs AlterEgo) where
   getCardDef = alterEgoCardDef
 
-instance IsSource AlterEgoAttrs where
+instance IsSource (Attrs AlterEgo) where
   toSource = IdentitySource . alterEgoIdentityId
 
-instance IsTarget AlterEgoAttrs where
+instance IsTarget (Attrs AlterEgo) where
   toTarget = IdentityTarget . alterEgoIdentityId
 
-instance HasHandSize AlterEgoAttrs where
+instance HasHandSize (Attrs AlterEgo) where
   handSize = alterEgoBaseHandSize
 
-instance HasStartingHP AlterEgoAttrs where
+instance HasStartingHP (Attrs AlterEgo) where
   startingHP = alterEgoStartingHP
 
-instance Entity AlterEgoAttrs where
-  type EntityId AlterEgoAttrs = IdentityId
-  type EntityAttrs AlterEgoAttrs = AlterEgoAttrs
-  toId = alterEgoIdentityId
-  toAttrs = id
-
-instance RunMessage AlterEgoAttrs where
+instance RunMessage (Attrs AlterEgo) where
   runMessage msg a = case msg of
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of

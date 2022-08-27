@@ -15,7 +15,7 @@ import Marvel.Trait qualified as Trait
 
 allMinions :: HashMap CardCode CardDef
 allMinions = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ hydraMercenary
   , sandman
   , shocker
@@ -59,6 +59,7 @@ minion code name traits boostIcons encounterSet quantity = CardDef
   , cdBoostIcons = boostIcons
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 unique :: CardDef -> CardDef

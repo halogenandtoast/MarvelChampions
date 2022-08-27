@@ -1,8 +1,7 @@
 module Marvel.Upgrade.Upgrades.MarkVHelmet
   ( markVHelmet
   , MarkVHelmet(..)
-  )
-where
+  ) where
 
 import Marvel.Prelude
 
@@ -19,29 +18,40 @@ import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 markVHelmet :: UpgradeCard MarkVHelmet
 markVHelmet = upgrade MarkVHelmet Cards.markVHelmet
 
-newtype MarkVHelmet = MarkVHelmet UpgradeAttrs
+newtype MarkVHelmet = MarkVHelmet (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities MarkVHelmet where
-  getAbilities (MarkVHelmet a) = [ability a 1 HeroAction (OwnsThis <> SchemeExists ThwartableScheme) ExhaustCost $ RunAbility (toTarget a) 1]
+  getAbilities (MarkVHelmet a) =
+    [ ability
+          a
+          1
+          HeroAction
+          (OwnsThis <> SchemeExists ThwartableScheme)
+          ExhaustCost
+        $ RunAbility (toTarget a) 1
+    ]
 
 instance RunMessage MarkVHelmet where
   runMessage msg u@(MarkVHelmet attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> thwartGuard u $ do
+    RanAbility target 1 _ _ | isTarget attrs target -> thwartGuard u $ do
       let ident = upgradeController attrs
       aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
       schemes <- selectList ThwartableScheme
       if aerial
-         then
-            traverse_ (\sid -> pushChoice ident (ThwartScheme (SchemeTarget sid) (toSource attrs) 1)) schemes
-         else
-          chooseOne ident $ map (thwartChoice attrs 1) schemes
+        then traverse_
+          (\sid -> pushChoice
+            ident
+            (ThwartScheme (SchemeTarget sid) (toSource attrs) 1)
+          )
+          schemes
+        else chooseOne ident $ map (thwartChoice attrs 1) schemes
       pure u
     _ -> MarkVHelmet <$> runMessage msg attrs

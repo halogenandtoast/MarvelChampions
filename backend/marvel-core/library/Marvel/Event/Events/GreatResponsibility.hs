@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -21,13 +21,13 @@ import Marvel.Window
 greatResponsibility :: EventCard GreatResponsibility
 greatResponsibility = event GreatResponsibility Cards.greatResponsibility
 
-newtype GreatResponsibility = GreatResponsibility EventAttrs
+newtype GreatResponsibility = GreatResponsibility (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage GreatResponsibility where
   runMessage msg e@(GreatResponsibility attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         replaceMatchingMessage
             (const

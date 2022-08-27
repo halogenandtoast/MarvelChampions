@@ -33,5 +33,3 @@ instance Semigroup Payment where
 
 instance Monoid Payment where
   mempty = NoPayment
-
-

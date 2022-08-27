@@ -13,19 +13,19 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 imTough :: TreacheryCard ImTough
 imTough = treachery ImTough Cards.imTough
 
-newtype ImTough = ImTough TreacheryAttrs
+newtype ImTough = ImTough (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage ImTough where
   runMessage msg t@(ImTough attrs) = case msg of
-    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery _ -> do
         isTough <- selectAny $ ActiveVillain <> VillainWithToughStatus
         if not isTough

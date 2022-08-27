@@ -3,7 +3,7 @@ module Marvel.Hero.Heroes.CaptainMarvel where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
@@ -27,12 +27,12 @@ captainMarvel = hero
   (Atk 2)
   (Def 1)
 
-newtype CaptainMarvel = CaptainMarvel HeroAttrs
+newtype CaptainMarvel = CaptainMarvel (Attrs Hero)
   deriving anyclass (IsHero, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource)
 
 instance HasAbilities CaptainMarvel where
-  getAbilities a =
+  getAbilities (CaptainMarvel a) =
     [ label "Rechannel" $ limitedAbility
         a
         1
@@ -40,7 +40,7 @@ instance HasAbilities CaptainMarvel where
         Action
         IsSelf
         (ResourceCost (Just Energy) <> HealCost 1)
-        (Run [IdentityMessage (toId a) (DrawCards FromDeck 1)])
+        (Run [IdentityMessage (heroIdentityId a) (DrawCards FromDeck 1)])
     ]
 
 instance RunMessage CaptainMarvel where

@@ -18,20 +18,20 @@ import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 explosion :: TreacheryCard Explosion
 explosion = treachery Explosion Cards.explosion
 
-newtype Explosion = Explosion TreacheryAttrs
+newtype Explosion = Explosion (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Explosion where
   runMessage msg t@(Explosion attrs) = case msg of
-    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      RevealTreachery ident -> do
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      RevealTreachery identityId -> do
         mBombScare <- selectOne $ SideSchemeIs Cards.bombScare
         case mBombScare of
           Nothing -> pure . Explosion $ attrs & surgeL .~ True
@@ -41,16 +41,22 @@ instance RunMessage Explosion where
               (SchemeWithId $ SchemeSideSchemeId bombScare)
             players <- getPlayers
             allies <- selectList AnyAlly
-            pushAll $ replicate threat $ Ask
-              ident
-              (ChooseOne
-              $ [ DamageCharacter (IdentityCharacter iid) (toSource attrs) (toDamage 1 FromTreachery)
+            pushAll
+              $ replicate threat
+              $ Ask identityId
+              $ ChooseOne
+              $ [ DamageCharacter
+                    (IdentityCharacter iid)
+                    (toSource attrs)
+                    (toDamage 1 FromTreachery)
                 | iid <- players
                 ]
-              <> [ DamageCharacter (AllyCharacter aid) (toSource attrs) (toDamage 1 FromTreachery)
+              <> [ DamageCharacter
+                     (AllyCharacter aid)
+                     (toSource attrs)
+                     (toDamage 1 FromTreachery)
                  | aid <- allies
                  ]
-              )
             pure t
       _ -> Explosion <$> runMessage msg attrs
     _ -> Explosion <$> runMessage msg attrs

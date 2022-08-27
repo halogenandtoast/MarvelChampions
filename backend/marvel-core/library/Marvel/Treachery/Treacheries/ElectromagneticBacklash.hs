@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.ElectromagneticBacklash (
-  electromagneticBacklash,
-  ElectromagneticBacklash (..),
-) where
+module Marvel.Treachery.Treacheries.ElectromagneticBacklash
+  ( electromagneticBacklash
+  , ElectromagneticBacklash(..)
+  ) where
 
 import Marvel.Prelude
 
@@ -14,43 +14,43 @@ import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 electromagneticBacklash :: TreacheryCard ElectromagneticBacklash
 electromagneticBacklash =
   treachery ElectromagneticBacklash Cards.electromagneticBacklash
 
-newtype ElectromagneticBacklash = ElectromagneticBacklash TreacheryAttrs
+newtype ElectromagneticBacklash = ElectromagneticBacklash (Attrs Treachery)
   deriving anyclass (IsTreachery)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage ElectromagneticBacklash where
   runMessage msg t@(ElectromagneticBacklash attrs) = case msg of
-    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->
-      case msg' of
-        RevealTreachery _ -> do
-          players <- getPlayers
-          pushAll $
-            map
-              ( \i ->
-                  IdentityMessage i $
-                    DiscardFrom FromDeck 5 (Just $ toTarget attrs)
-              )
-              players
-          pure t
-        _ -> ElectromagneticBacklash <$> runMessage msg attrs
+    TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
+      RevealTreachery _ -> do
+        players <- getPlayers
+        pushAll $ map
+          (\i ->
+            IdentityMessage i $ DiscardFrom FromDeck 5 (Just $ toTarget attrs)
+          )
+          players
+        pure t
+      _ -> ElectromagneticBacklash <$> runMessage msg attrs
     WithDiscarded target _ (onlyPlayerCards -> cs) | isTarget attrs target ->
       case cs of
         [] -> pure t
         (x : _) -> case pcOwner x of
           Nothing -> error "Unexpected"
           Just ident -> do
-            let energyCount =
-                  count (== Energy) $ concatMap (printedResources . getCardDef) cs
-            when
-              (energyCount > 0)
-              ( push $ IdentityMessage ident (IdentityDamaged (toSource attrs) (toDamage energyCount FromTreachery))
-              )
+            let
+              energyCount =
+                count (== Energy) $ concatMap (printedResources . getCardDef) cs
+            when (energyCount > 0)
+              $ push
+              $ IdentityMessage ident
+              $ IdentityDamaged
+                  (toSource attrs)
+                  (toDamage energyCount FromTreachery)
             pure t
     _ -> ElectromagneticBacklash <$> runMessage msg attrs

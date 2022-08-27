@@ -10,8 +10,8 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.SideScheme.Types
 import Marvel.SideScheme.Cards qualified as Cards
+import Marvel.SideScheme.Types
 import Marvel.Source
 import Marvel.Target
 
@@ -22,16 +22,15 @@ personalChallenge = sideSchemeWith
   (Static 3)
   (crisisL .~ True)
 
-newtype PersonalChallenge = PersonalChallenge SideSchemeAttrs
+newtype PersonalChallenge = PersonalChallenge (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage PersonalChallenge where
   runMessage msg (PersonalChallenge attrs) = case msg of
-    SideSchemeMessage sideSchemeId msg' | sideSchemeId == toId attrs ->
-      case msg' of
-        RevealSideScheme -> do
-          n <- fromIntegral <$> fromGameValue (PerPlayer 1)
-          pure . PersonalChallenge $ attrs & threatL +~ n
-        _ -> PersonalChallenge <$> runMessage msg attrs
+    SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
+      RevealSideScheme -> do
+        n <- fromIntegral <$> fromGameValue (PerPlayer 1)
+        pure . PersonalChallenge $ attrs & threatL +~ n
+      _ -> PersonalChallenge <$> runMessage msg attrs
     _ -> PersonalChallenge <$> runMessage msg attrs

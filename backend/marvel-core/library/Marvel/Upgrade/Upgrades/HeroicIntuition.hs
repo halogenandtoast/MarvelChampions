@@ -12,15 +12,15 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 heroicIntuition :: UpgradeCard HeroicIntuition
 heroicIntuition = upgrade HeroicIntuition Cards.heroicIntuition
 
-newtype HeroicIntuition = HeroicIntuition UpgradeAttrs
+newtype HeroicIntuition = HeroicIntuition (Attrs Upgrade)
   deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor HeroicIntuition where
   getModifiersFor _ (IdentityTarget iid) (HeroicIntuition a)

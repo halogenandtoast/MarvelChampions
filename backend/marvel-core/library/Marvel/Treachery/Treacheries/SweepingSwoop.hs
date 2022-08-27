@@ -14,25 +14,24 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 sweepingSwoop :: TreacheryCard SweepingSwoop
 sweepingSwoop = treachery SweepingSwoop Cards.sweepingSwoop
 
-newtype SweepingSwoop = SweepingSwoop TreacheryAttrs
+newtype SweepingSwoop = SweepingSwoop (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage SweepingSwoop where
   runMessage msg t@(SweepingSwoop attrs) = case msg of
-    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->
-      case msg' of
-        RevealTreachery identityId -> do
-          vultureInPlay <- selectAny $ MinionIs Cards.vulture
-          push $ IdentityMessage identityId IdentityStunned
-          pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
-        _ -> SweepingSwoop <$> runMessage msg attrs
+    TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
+      RevealTreachery identityId -> do
+        vultureInPlay <- selectAny $ MinionIs Cards.vulture
+        push $ IdentityMessage identityId IdentityStunned
+        pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
+      _ -> SweepingSwoop <$> runMessage msg attrs
     Boost msg' -> case msg' of
       AllyMessage aid (AllyDamaged _ _) -> do
         push $ AllyMessage aid AllyStunned

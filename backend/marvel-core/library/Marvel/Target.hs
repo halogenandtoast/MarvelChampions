@@ -3,7 +3,6 @@ module Marvel.Target where
 import Marvel.Prelude
 
 import Marvel.Card.Id
-import Marvel.Entity
 import Marvel.Id
 
 data Target
@@ -32,9 +31,6 @@ class IsTarget a where
 
 instance IsTarget Target where
   toTarget = id
-
-isTarget :: (Entity a, EntityAttrs a ~ b, IsTarget b) => a -> Target -> Bool
-isTarget a = (== toTarget (toAttrs a))
 
 instance IsTarget a => IsTarget (With a b) where
   toTarget (With a _) = toTarget a

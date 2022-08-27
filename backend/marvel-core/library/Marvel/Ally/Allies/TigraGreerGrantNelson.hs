@@ -23,25 +23,26 @@ tigraGreerGrantNelson = ally
   (Atk 2, 1)
   (HP 3)
 
-newtype TigraGreerGrantNelson = TigraGreerGrantNelson AllyAttrs
+newtype TigraGreerGrantNelson = TigraGreerGrantNelson (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities TigraGreerGrantNelson where
-  getAbilities a =
+  getAbilities a@(TigraGreerGrantNelson attrs) =
     [ limitedWindowAbility
           a
           1
           (EnemyDefeated After MinionEnemy . AttackFromAlly $ AllyWithId
-            (toId a)
+            (allyId attrs)
           )
           Response
           (AllyExists $ AllyWithDamage (GreaterThan $ Static 0) <> AllyWithId
-            (toId a)
+            (allyId attrs)
           )
           NoCost
-        $ Heal (AllyCharacter $ toId a) 1
+        $ Heal (AllyCharacter $ allyId attrs) 1
     ]
 
 instance RunMessage TigraGreerGrantNelson where
-  runMessage msg a = TigraGreerGrantNelson <$> runMessage msg (toAttrs a)
+  runMessage msg (TigraGreerGrantNelson attrs) =
+    TigraGreerGrantNelson <$> runMessage msg attrs

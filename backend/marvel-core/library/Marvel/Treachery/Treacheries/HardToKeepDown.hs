@@ -10,19 +10,19 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 hardToKeepDown :: TreacheryCard HardToKeepDown
 hardToKeepDown = treachery HardToKeepDown Cards.hardToKeepDown
 
-newtype HardToKeepDown = HardToKeepDown TreacheryAttrs
+newtype HardToKeepDown = HardToKeepDown (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage HardToKeepDown where
   runMessage msg t@(HardToKeepDown attrs) = case msg of
-    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery _ -> do
         damaged <- selectAny $ ActiveVillain <> VillainWithAnyDamage
         if damaged

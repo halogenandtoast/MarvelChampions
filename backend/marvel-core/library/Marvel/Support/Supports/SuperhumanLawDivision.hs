@@ -24,9 +24,9 @@ import Marvel.Target
 superhumanLawDivision :: SupportCard SuperhumanLawDivision
 superhumanLawDivision = support SuperhumanLawDivision Cards.superhumanLawDivision
 
-newtype SuperhumanLawDivision = SuperhumanLawDivision SupportAttrs
+newtype SuperhumanLawDivision = SuperhumanLawDivision (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities SuperhumanLawDivision where
   getAbilities (SuperhumanLawDivision a) =

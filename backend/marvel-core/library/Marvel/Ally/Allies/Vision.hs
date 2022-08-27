@@ -19,12 +19,12 @@ import Marvel.Resource
 vision :: AllyCard Vision
 vision = ally Vision Cards.vision (Thw 1, 1) (Atk 2, 1) (HP 3)
 
-newtype Vision = Vision AllyAttrs
+newtype Vision = Vision (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities Vision where
-  getAbilities a =
+  getAbilities a@(Vision attrs) =
     [ limitedAbility
           a
           1
@@ -35,15 +35,15 @@ instance HasAbilities Vision where
         $ CreateEffect
             Cards.vision
             (toSource a)
-            (TargetMatches $ AllyEntity $ AllyWithId $ toId a)
+            (TargetMatches $ AllyEntity $ AllyWithId $ allyId attrs)
     ]
 
 instance RunMessage Vision where
-  runMessage msg a = Vision <$> runMessage msg (toAttrs a)
+  runMessage msg (Vision attrs) = Vision <$> runMessage msg attrs
 
-newtype VisionEffect = VisionEffect EffectAttrs
+newtype VisionEffect = VisionEffect (Attrs Effect)
   deriving anyclass IsEffect
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 visionEffect :: CardEffect VisionEffect
 visionEffect =
@@ -51,12 +51,12 @@ visionEffect =
 
 instance RunMessage VisionEffect where
   runMessage msg e@(VisionEffect attrs) = case msg of
-    EffectMessage effectId msg' | effectId == toId attrs -> case msg' of
-      UsedEffect ident -> do
+    EffectMessage ident msg' | ident == effectId attrs -> case msg' of
+      UsedEffect identityId -> do
         chooseOne
-          ident
-          [ Label "THW" [Run [EffectMessage effectId $ EffectChoice 1]]
-          , Label "ATK" [Run [EffectMessage effectId $ EffectChoice 2]]
+          identityId
+          [ Label "THW" [Run [EffectMessage ident $ EffectChoice 1]]
+          , Label "ATK" [Run [EffectMessage ident $ EffectChoice 2]]
           ]
         pure e
       EffectChoice n -> case n of

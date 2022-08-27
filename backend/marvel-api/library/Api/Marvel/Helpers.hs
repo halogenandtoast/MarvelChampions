@@ -17,7 +17,7 @@ import Marvel.Card hiding (toCard)
 import Marvel.Debug
 import Marvel.Deck
 import Marvel.Discard
-import Marvel.Entity (EntityId)
+import Marvel.Entity (Id)
 import Marvel.Game
 import Marvel.Hand
 import Marvel.Hp
@@ -29,17 +29,17 @@ import Marvel.Minion.Types
 import Marvel.PlayerCard
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Scenario
+import Marvel.Scenario.Types
 import Marvel.SideScheme.Types
 import Marvel.Support.Types
 import Marvel.Upgrade.Types
-import Marvel.Villain
+import Marvel.Villain.Types
 
 data ApiGame = ApiGame
   { id :: Key MarvelGame
   , name :: Text
-  , players :: HashMap (EntityId PlayerIdentity) ApiPlayerIdentity
-  , villains :: HashMap (EntityId Villain) Villain
+  , players :: HashMap (Id PlayerIdentity) ApiPlayerIdentity
+  , villains :: HashMap (Id Villain) Villain
   , scenario :: Scenario
   , question :: HashMap IdentityId Question
   , allies :: HashMap AllyId Ally
@@ -77,7 +77,7 @@ data ApiPlayerIdentity = ApiPlayerIdentity
   deriving anyclass ToJSON
 
 toApiPlayer :: MonadGame env m => PlayerIdentity -> m ApiPlayerIdentity
-toApiPlayer i@PlayerIdentity {..} = do
+toApiPlayer i@(PlayerIdentity (PlayerIdentityAttrs {..})) = do
   modifiedHp <- getModifiedHp i
   pure $ ApiPlayerIdentity
     { id = playerIdentityId
@@ -99,7 +99,7 @@ toApiPlayer i@PlayerIdentity {..} = do
     }
 
 toInactiveApiPlayer :: PlayerIdentity -> ApiPlayerIdentity
-toInactiveApiPlayer PlayerIdentity {..} =
+toInactiveApiPlayer (PlayerIdentity (PlayerIdentityAttrs {..})) =
   ApiPlayerIdentity
     { id = playerIdentityId
     , hand = unHand playerIdentityHand
