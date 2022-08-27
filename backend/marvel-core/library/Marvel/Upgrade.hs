@@ -28,7 +28,7 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard webbedUp
   , SomeUpgradeCard captainMarvelsHelmet
   , SomeUpgradeCard cosmicFlight
-  -- , SomeUpgradeCard energyChannel
+  , SomeUpgradeCard energyChannel
   , SomeUpgradeCard focusedRage
   , SomeUpgradeCard superhumanStrength
   , SomeUpgradeCard arcReactor

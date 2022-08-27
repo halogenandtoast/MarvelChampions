@@ -15,15 +15,15 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 shadowOfThePast :: TreacheryCard ShadowOfThePast
 shadowOfThePast = treachery ShadowOfThePast Cards.shadowOfThePast
 
-newtype ShadowOfThePast = ShadowOfThePast TreacheryAttrs
+newtype ShadowOfThePast = ShadowOfThePast (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 partitionNemesisSet
   :: [EncounterCard] -> ([EncounterCard], [EncounterCard], [EncounterCard])
@@ -41,15 +41,14 @@ partitionNemesisSet cards = (minions, sideSchemes, rest)
 
 instance RunMessage ShadowOfThePast where
   runMessage msg t@(ShadowOfThePast attrs) = case msg of
-    TreacheryMessage treacheryId msg' | treacheryId == toId attrs ->
-      case msg' of
-        RevealTreachery identityId -> do
-          cards <- selectList (NemesisSetFor identityId)
-          let (minions, sideSchemes, rest) = partitionNemesisSet cards
-          pushAll
-            $ map (RevealEncounterCard identityId) minions
-            <> map (RevealEncounterCard identityId) sideSchemes
-            <> [ShuffleIntoEncounterDeck rest]
-          pure t
-        _ -> ShadowOfThePast <$> runMessage msg attrs
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      RevealTreachery identityId -> do
+        cards <- selectList (NemesisSetFor identityId)
+        let (minions, sideSchemes, rest) = partitionNemesisSet cards
+        pushAll
+          $ map (RevealEncounterCard identityId) minions
+          <> map (RevealEncounterCard identityId) sideSchemes
+          <> [ShuffleIntoEncounterDeck rest]
+        pure t
+      _ -> ShadowOfThePast <$> runMessage msg attrs
     _ -> ShadowOfThePast <$> runMessage msg attrs

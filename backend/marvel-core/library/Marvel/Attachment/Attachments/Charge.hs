@@ -25,9 +25,9 @@ import Marvel.Window
 charge :: AttachmentCard Charge
 charge = attachment Charge Cards.charge
 
-newtype Charge = Charge AttachmentAttrs
+newtype Charge = Charge (Attrs Attachment)
   deriving anyclass (IsAttachment)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities Charge where
   getAbilities (Charge a) = case attachmentEnemy a of
@@ -49,13 +49,13 @@ instance HasModifiersFor Charge where
 
 instance RunMessage Charge where
   runMessage msg a@(Charge attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain aid
+        push $ VillainMessage villainId $ AttachedToVillain ident
         pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> Charge <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 _ -> case attachmentEnemy attrs of
+    RanAbility (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyVillainId vid) -> do
         replaceMatchingMessage
             (const

@@ -12,7 +12,7 @@ import Marvel.Trait
 
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ map
-  (toCardCode &&& id)
+  (toFst toCardCode)
   [ blackCatFeliciaHardy
   , spiderWomanJessicaDrew
   , hellcatPatsyWalker
@@ -64,6 +64,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdResponseWindow = Nothing
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 blackCatFeliciaHardy :: CardDef

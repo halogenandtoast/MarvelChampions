@@ -25,9 +25,9 @@ surveillanceTeam =
     $ (usesL .~ 3)
     . (discardIfNoUsesL .~ True)
 
-newtype SurveillanceTeam = SurveillanceTeam SupportAttrs
+newtype SurveillanceTeam = SurveillanceTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities SurveillanceTeam where
   getAbilities (SurveillanceTeam a) =

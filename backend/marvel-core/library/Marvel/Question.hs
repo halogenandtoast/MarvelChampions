@@ -1,4 +1,7 @@
-module Marvel.Question where
+module Marvel.Question
+  ( module Marvel.Question
+  , module Marvel.Payment
+  ) where
 
 import Marvel.Prelude
 
@@ -8,7 +11,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard
 import Marvel.Card.Side
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
@@ -25,6 +28,7 @@ import Marvel.Window qualified as W
 
 data Question
   = ChooseOne [Choice]
+  | ChooseN Natural [Choice]
   | ChooseOneAtATime [Choice]
   | ChoosePlayerOrder (Unsorted IdentityId) (Sorted IdentityId)
   deriving stock (Show, Eq, Generic)
@@ -144,10 +148,12 @@ choiceMessages ident = \case
             ]
   UseAbility a -> do
     rest <- concatMapM (choiceMessages ident) (abilityChoices a)
-    pure $ UsedAbility ident a : costMessages ident a <> rest
+    costs <- costMessages ident a
+    pure $ UsedAbility ident a : costs <> rest
   RunAbility target n -> do
     windows <- getCurrentWindows
-    pure [RanAbility target n $ map windowType windows, ClearRemoved]
+    payment <- getCurrentPayment
+    pure [RanAbility target n (map windowType windows) payment, ClearRemoved]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
@@ -329,34 +335,39 @@ choiceMessages ident = \case
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
-costMessages :: IdentityId -> Ability -> [Message]
+costMessages :: MonadGame env m => IdentityId -> Ability -> m [Message]
 costMessages iid a = go (abilityCost a)
  where
   go = \case
-    NoCost -> []
+    NoCost -> pure []
+    DiscardHandCardCost n -> pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
     DamageCost n ->
-      [ IdentityMessage iid
+      pure [ IdentityMessage iid
           $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)
       ]
-    HealCost n -> [IdentityMessage iid $ IdentityHealed n]
-    DamageThisCost n -> case abilitySource a of
+    HealCost n -> pure [IdentityMessage iid $ IdentityHealed n]
+    DamageThisCost n -> pure $ case abilitySource a of
       AllySource ident ->
         [ AllyMessage ident
             $ AllyDamaged (abilitySource a) (toDamage n FromAbility)
         ]
       _ -> error "Unhandled"
-    ExhaustCost -> case abilitySource a of
+    ExhaustCost -> pure $ case abilitySource a of
       IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
       AllySource ident -> [AllyMessage ident ExhaustedAlly]
       SupportSource ident -> [SupportMessage ident ExhaustedSupport]
       UpgradeSource ident -> [UpgradeMessage ident ExhaustedUpgrade]
       _ -> error "Unhandled"
-    UseCost -> case abilitySource a of
+    DiscardCost target -> pure $ case target of
+      UpgradeTarget ident -> [UpgradeMessage ident $ DiscardUpgrade]
+      _ -> error "Unhandled"
+    UseCost -> pure $ case abilitySource a of
       UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
       SupportSource ident -> [SupportMessage ident SpendSupportUse]
       AllySource ident -> [AllyMessage ident SpendAllyUse]
       _ -> error "Unhandled"
-    ResourceCost mr ->
+    DynamicResourceCost _ -> error "unhandled"
+    ResourceCost mr -> pure
       [ SetActiveCost $ ActiveCost
           iid
           (ForAbility a)
@@ -366,7 +377,7 @@ costMessages iid a = go (abilityCost a)
           mempty
       ]
     MultiResourceCost rs ->
-      [ SetActiveCost $ ActiveCost
+      pure [ SetActiveCost $ ActiveCost
           iid
           (ForAbility a)
           (MultiResourceCost rs)
@@ -374,7 +385,7 @@ costMessages iid a = go (abilityCost a)
           Nothing
           mempty
       ]
-    Costs xs -> concatMap go xs
+    Costs xs -> concatMapM go xs
 
 chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

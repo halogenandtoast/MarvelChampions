@@ -21,9 +21,9 @@ hawkeyeClintBarton = allyWith
   (HP 3)
   (countersL .~ 4)
 
-newtype HawkeyeClintBarton = HawkeyeClintBarton AllyAttrs
+newtype HawkeyeClintBarton = HawkeyeClintBarton (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance HasAbilities HawkeyeClintBarton where
   getAbilities a =
@@ -44,10 +44,10 @@ findMinion = \case
   (_ : xs) -> findMinion xs
 
 instance RunMessage HawkeyeClintBarton where
-  runMessage msg a = case msg of
-    RanAbility (isTarget a -> True) 1 (findMinion -> minionId) -> do
+  runMessage msg x@(HawkeyeClintBarton a) = case msg of
+    RanAbility (isTarget x -> True) 1 (findMinion -> minionId) _ -> do
       push . MinionMessage minionId $ MinionDamaged
-        (toSource a)
+        (toSource x)
         (toDamage 2 FromAbility)
-      pure a
-    _ -> HawkeyeClintBarton <$> runMessage msg (toAttrs a)
+      pure x
+    _ -> HawkeyeClintBarton <$> runMessage msg a

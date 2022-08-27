@@ -12,7 +12,7 @@ allVillainCards :: [CardDef]
 allVillainCards = [rhino1, rhino2, rhino3, klaw1, klaw2, klaw3]
 
 allVillainsMap :: HashMap CardCode CardDef
-allVillainsMap = fromList $ map (toCardCode &&& id) allVillainCards
+allVillainsMap = fromList $ map (toFst toCardCode) allVillainCards
 
 villain :: CardCode -> Name -> [Trait] -> CardDef
 villain cardCode name traits = CardDef
@@ -34,6 +34,7 @@ villain cardCode name traits = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 rhino1 :: CardDef

@@ -15,9 +15,9 @@ import Marvel.Window
 shuri :: AllyCard Shuri
 shuri = ally Shuri Cards.shuri (Thw 1, 1) (Atk 1, 1) (HP 3)
 
-newtype Shuri = Shuri AllyAttrs
+newtype Shuri = Shuri (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasController, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasController, IsSource, IsTarget)
 
 instance HasAbilities Shuri where
   getAbilities a =
@@ -26,12 +26,12 @@ instance HasAbilities Shuri where
     ]
 
 instance RunMessage Shuri where
-  runMessage msg a = case msg of
-    RanAbility (isTarget a -> True) 1 _ -> do
+  runMessage msg a@(Shuri attrs) = case msg of
+    RanAbility (isTarget a -> True) 1 _ _ -> do
       push . controllerMessage a $ Search
         (SearchIdentityDeck (controller a) AllOfDeck)
         (CardWithType UpgradeType)
         SearchDrawOne
         ShuffleBackIn
       pure a
-    _ -> Shuri <$> runMessage msg (toAttrs a)
+    _ -> Shuri <$> runMessage msg attrs

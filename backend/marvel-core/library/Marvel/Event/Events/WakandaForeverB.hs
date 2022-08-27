@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
@@ -28,9 +28,11 @@ newtype Meta = Meta { remaining :: HashSet UpgradeId }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-newtype WakandaForeverB = WakandaForeverB (EventAttrs `With` Meta)
-  deriving anyclass IsEvent
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+newtype WakandaForeverB = WakandaForeverB (Attrs Event `With` Meta)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+
+instance IsEvent WakandaForeverB where
+  toEventAttrs (WakandaForeverB (attrs `With` _)) = attrs
 
 instance HasModifiersFor WakandaForeverB where
   getModifiersFor _ (UpgradeTarget uid) (WakandaForeverB (_ `With` meta))
@@ -38,8 +40,8 @@ instance HasModifiersFor WakandaForeverB where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage WakandaForeverB where
-  runMessage msg e@(WakandaForeverB (attrs `With` meta)) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+  runMessage msg (WakandaForeverB (attrs `With` meta)) = case msg of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         upgradeIds <- select (UpgradeWithTrait BlackPanther)
         chooseOneAtATime
@@ -51,7 +53,7 @@ instance RunMessage WakandaForeverB where
           ]
         pure $ WakandaForeverB (attrs `With` Meta upgradeIds)
       _ -> WakandaForeverB . (`With` meta) <$> runMessage msg attrs
-    RanAbility (UpgradeTarget upgradeId) 1 _
+    RanAbility (UpgradeTarget upgradeId) 1 _ _
       | upgradeId `member` remaining meta -> pure $ WakandaForeverB
         (attrs `With` Meta (HashSet.delete upgradeId $ remaining meta))
     _ -> WakandaForeverB . (`With` meta) <$> runMessage msg attrs

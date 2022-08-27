@@ -14,7 +14,7 @@ allHeroCards :: [CardDef]
 allHeroCards = [spiderMan, captainMarvel, sheHulk, ironMan, blackPanther]
 
 allHeroesMap :: HashMap CardCode CardDef
-allHeroesMap = fromList $ map (toCardCode &&& id) allHeroCards
+allHeroesMap = fromList $ map (toFst toCardCode) allHeroCards
 
 hero :: CardCode -> Name -> [Trait] -> CardDef
 hero cardCode name traits = CardDef
@@ -36,6 +36,7 @@ hero cardCode name traits = CardDef
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdLimit = Nothing
   }
 
 spiderMan :: CardDef

@@ -16,12 +16,12 @@ const emit = defineEmits<{
   (e: 'choose', value: number): void
 }>()
 
-const card = computed(() => ({ cardId: props.support.contents.supportId, cardDef: props.support.contents.supportCardDef }))
+const card = computed(() => ({ cardId: props.support.supportId, cardDef: props.support.supportCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
-    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.support.contents.supportId) {
+    if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.support.supportId) {
       return [...acc, i]
     }
     return acc
@@ -31,7 +31,7 @@ const abilities = computed(() => {
 
 <template>
   <div class="support">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: support.contents.supportExhausted }" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: support.supportExhausted }" />
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"
@@ -39,7 +39,7 @@ const abilities = computed(() => {
           :data-image="image"
           @click="emit('choose', ability)"
           />
-    <div v-if="support.contents.supportUses > 0">Uses: {{support.contents.supportUses}}</div>
+    <div v-if="support.supportUses > 0">Uses: {{support.supportUses}}</div>
   </div>
 </template>
 

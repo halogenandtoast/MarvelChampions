@@ -1,7 +1,14 @@
-module Marvel.Resource where
+module Marvel.Resource
+  ( module Marvel.Resource
+  , module Marvel.Resource.Types
+  ) where
 
 import Marvel.Prelude
 
-data Resource = Physical | Mental | Energy | Wild
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+import Marvel.Card.PlayerCard.Types
+import Marvel.Game.Source
+import Marvel.Resource.Types
+
+class HasResources a where
+  resourcesFor :: MonadGame env m => a -> Maybe PlayerCard -> m [Resource]
+

@@ -24,9 +24,9 @@ tacTeam :: SupportCard TacTeam
 tacTeam =
   supportWith TacTeam Cards.tacTeam $ (usesL .~ 3) . (discardIfNoUsesL .~ True)
 
-newtype TacTeam = TacTeam SupportAttrs
+newtype TacTeam = TacTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities TacTeam where
   getAbilities (TacTeam a) =

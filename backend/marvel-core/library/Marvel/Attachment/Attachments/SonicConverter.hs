@@ -27,9 +27,9 @@ import Marvel.Window
 sonicConverter :: AttachmentCard SonicConverter
 sonicConverter = attachment SonicConverter Cards.sonicConverter
 
-newtype SonicConverter = SonicConverter AttachmentAttrs
+newtype SonicConverter = SonicConverter (Attrs Attachment)
   deriving anyclass (IsAttachment)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor SonicConverter where
   getModifiersFor _ (VillainTarget vid) (SonicConverter a)
@@ -58,13 +58,13 @@ instance HasAbilities SonicConverter where
 
 instance RunMessage SonicConverter where
   runMessage msg a@(SonicConverter attrs) = case msg of
-    AttachmentMessage aid msg' | aid == toId attrs -> case msg' of
+    AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain aid
+        push $ VillainMessage villainId $ AttachedToVillain ident
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] -> do
+    RanAbility (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] _ -> do
       case cid of
         IdentityCharacter ident -> push $ IdentityMessage ident IdentityStunned
         AllyCharacter ident -> push $ AllyMessage ident AllyStunned

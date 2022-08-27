@@ -22,13 +22,13 @@ import Marvel.Target
 forJustice :: EventCard ForJustice
 forJustice = event ForJustice Cards.forJustice
 
-newtype ForJustice = ForJustice EventAttrs
+newtype ForJustice = ForJustice (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage ForJustice where
   runMessage msg e@(ForJustice attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let

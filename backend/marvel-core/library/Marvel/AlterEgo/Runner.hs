@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.AlterEgo.Types as X
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Message
 import Marvel.Question

@@ -20,15 +20,15 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 energyDaggers :: UpgradeCard EnergyDaggers
 energyDaggers = upgrade EnergyDaggers Cards.energyDaggers
 
-newtype EnergyDaggers = EnergyDaggers UpgradeAttrs
+newtype EnergyDaggers = EnergyDaggers (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities EnergyDaggers where
   getAbilities (EnergyDaggers a) =
@@ -36,7 +36,7 @@ instance HasAbilities EnergyDaggers where
 
 instance RunMessage EnergyDaggers where
   runMessage msg u@(EnergyDaggers attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
       villain <- selectJust ActiveVillain
       minionMap <-
@@ -47,7 +47,9 @@ instance RunMessage EnergyDaggers where
                 )
                 players
       modifiers <- getModifiers attrs
-      let dmg = toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
+      let
+        dmg =
+          toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
       u <$ chooseOne
         (upgradeController attrs)
         [ TargetLabel

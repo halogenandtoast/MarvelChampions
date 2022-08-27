@@ -22,9 +22,9 @@ import Marvel.Target
 avengersMansion :: SupportCard AvengersMansion
 avengersMansion = support AvengersMansion Cards.avengersMansion
 
-newtype AvengersMansion = AvengersMansion SupportAttrs
+newtype AvengersMansion = AvengersMansion (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities AvengersMansion where
   getAbilities a =

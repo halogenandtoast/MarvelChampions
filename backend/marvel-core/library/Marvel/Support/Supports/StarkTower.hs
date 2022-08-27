@@ -26,9 +26,9 @@ import Marvel.Trait
 starkTower :: SupportCard StarkTower
 starkTower = support StarkTower Cards.starkTower
 
-newtype StarkTower = StarkTower SupportAttrs
+newtype StarkTower = StarkTower (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities StarkTower where
   getAbilities (StarkTower a) =
@@ -46,7 +46,7 @@ instance HasAbilities StarkTower where
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> s
+    RanAbility target 1 _ _ | isTarget attrs target -> s
       <$ pushChoice
         (supportController attrs)
         (ChoosePlayer AnyIdentity target)

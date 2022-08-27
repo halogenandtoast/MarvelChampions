@@ -17,16 +17,16 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 import Marvel.Window
 
 superhumanStrength :: UpgradeCard SuperhumanStrength
 superhumanStrength = upgrade SuperhumanStrength Cards.superhumanStrength
 
-newtype SuperhumanStrength = SuperhumanStrength UpgradeAttrs
+newtype SuperhumanStrength = SuperhumanStrength (Attrs Upgrade)
   deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor SuperhumanStrength where
   getModifiersFor _ (IdentityTarget ident) (SuperhumanStrength attrs)
@@ -52,7 +52,7 @@ getEnemyTarget (_ : xs) = getEnemyTarget xs
 
 instance RunMessage SuperhumanStrength where
   runMessage msg u@(SuperhumanStrength attrs) = case msg of
-    RanAbility target 1 windows | isTarget attrs target -> do
+    RanAbility target 1 windows _ | isTarget attrs target -> do
       let enemyTarget = getEnemyTarget windows
       stunMsgs <- choiceMessages (upgradeController attrs)
         $ Stun enemyTarget (toSource attrs)

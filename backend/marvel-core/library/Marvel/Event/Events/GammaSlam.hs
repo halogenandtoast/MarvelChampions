@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
@@ -22,13 +22,13 @@ import Marvel.Target
 gammaSlam :: EventCard GammaSlam
 gammaSlam = event GammaSlam Cards.gammaSlam
 
-newtype GammaSlam = GammaSlam EventAttrs
+newtype GammaSlam = GammaSlam (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage GammaSlam where
   runMessage msg e@(GammaSlam attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         dmg <- min 15
           <$> selectCount SustainedDamage (IdentityWithId identityId)

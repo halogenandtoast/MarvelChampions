@@ -25,16 +25,16 @@ import Marvel.Upgrade.Cards qualified as Cards
 pantherClaws :: UpgradeCard PantherClaws
 pantherClaws = upgrade PantherClaws Cards.pantherClaws
 
-newtype PantherClaws = PantherClaws UpgradeAttrs
+newtype PantherClaws = PantherClaws (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities PantherClaws where
   getAbilities _ = []
 
 instance RunMessage PantherClaws where
   runMessage msg u@(PantherClaws attrs) = case msg of
-    RanAbility target 1 _ | isTarget attrs target -> do
+    RanAbility target 1 _ _ | isTarget attrs target -> do
       let ident = upgradeController attrs
       stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
       if stunned

@@ -15,15 +15,15 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Source
 import Marvel.Target
-import Marvel.Upgrade.Types
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 inspired :: UpgradeCard Inspired
 inspired = upgrade Inspired Cards.inspired
 
-newtype Inspired = Inspired UpgradeAttrs
+newtype Inspired = Inspired (Attrs Upgrade)
   deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities Inspired where
   getAbilities _ = []
@@ -36,13 +36,13 @@ instance HasModifiersFor Inspired where
 
 instance RunMessage Inspired where
   runMessage msg u@(Inspired a) = case msg of
-    UpgradeMessage upgradeId msg' | upgradeId == toId a -> case msg' of
+    UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade -> do
         allies <- selectList AnyAlly
         chooseOne (upgradeController a) $ map
           (\allyId -> TargetLabel
             (AllyTarget allyId)
-            [Run [UpgradeMessage (toId a) $ UpgradeAttachedToAlly allyId]]
+            [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
           )
           allies
         pure u

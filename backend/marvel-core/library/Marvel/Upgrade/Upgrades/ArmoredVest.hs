@@ -18,9 +18,9 @@ import Marvel.Upgrade.Cards qualified as Cards
 armoredVest :: UpgradeCard ArmoredVest
 armoredVest = upgrade ArmoredVest Cards.armoredVest
 
-newtype ArmoredVest = ArmoredVest UpgradeAttrs
+newtype ArmoredVest = ArmoredVest (Attrs Upgrade)
   deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor ArmoredVest where
   getModifiersFor _ (IdentityTarget iid) (ArmoredVest a)

@@ -9,25 +9,25 @@ import Marvel.Ability
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 
 hydraBomber :: MinionCard HydraBomber
 hydraBomber = minion HydraBomber Cards.hydraBomber (Sch 1) (Atk 1) (HP 2)
 
-newtype HydraBomber = HydraBomber MinionAttrs
+newtype HydraBomber = HydraBomber (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage HydraBomber where
   runMessage msg e@(HydraBomber attrs) = case msg of
-    MinionMessage minionId msg' | minionId == toId attrs -> case msg' of
-      RevealMinion ident -> do
+    MinionMessage ident msg' | ident == minionId attrs -> case msg' of
+      RevealMinion identityId -> do
         chooseOne
-          ident
+          identityId
           [ Label
             "Take 2 damage"
             [ DamageCharacter
-                (IdentityCharacter ident)
+                (IdentityCharacter identityId)
                 (toSource attrs)
                 (toDamage 2 FromAbility)
             ]

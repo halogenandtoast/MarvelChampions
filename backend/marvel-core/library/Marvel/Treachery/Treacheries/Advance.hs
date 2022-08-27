@@ -13,19 +13,19 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 advance :: TreacheryCard Advance
 advance = treachery Advance Cards.advance
 
-newtype Advance = Advance TreacheryAttrs
+newtype Advance = Advance (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Advance where
   runMessage msg t@(Advance attrs) = case msg of
-    TreacheryMessage treacheryId msg' | toId attrs == treacheryId ->
+    TreacheryMessage ident msg' | treacheryId attrs == ident ->
       case msg' of
         RevealTreachery _ -> do
           villain <- selectJust ActiveVillain

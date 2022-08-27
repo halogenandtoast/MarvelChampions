@@ -6,8 +6,9 @@ module Marvel.Hero.Runner
 import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
+import Marvel.Entity
 import Marvel.Damage
 import Marvel.Hero.Types as X
 import Marvel.Matchers hiding (ExhaustedIdentity)
@@ -25,7 +26,7 @@ instance HasAbilities Hero where
       , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
-instance RunMessage HeroAttrs where
+instance RunMessage (Attrs Hero) where
   runMessage msg a = case msg of
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of

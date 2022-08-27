@@ -4,15 +4,15 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Runner
 
 hydraMercenary :: MinionCard HydraMercenary
 hydraMercenary =
   minion HydraMercenary Cards.hydraMercenary (Sch 0) (Atk 1) (HP 3)
 
-newtype HydraMercenary = HydraMercenary MinionAttrs
+newtype HydraMercenary = HydraMercenary (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage HydraMercenary where
   runMessage msg (HydraMercenary attrs) =

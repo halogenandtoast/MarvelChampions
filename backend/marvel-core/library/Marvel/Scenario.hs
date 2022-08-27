@@ -33,16 +33,16 @@ lookupScenario cCode = case lookup cCode allScenarios of
   Just (SomeScenarioCard a) -> Just $ Scenario $ cbCardBuilder a ()
   Nothing -> Nothing
 
-newtype RhinoScenario = RhinoScenario ScenarioAttrs
+newtype RhinoScenario = RhinoScenario (Attrs Scenario)
   deriving anyclass IsScenario
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 instance RunMessage RhinoScenario where
   runMessage msg (RhinoScenario a) = RhinoScenario <$> runMessage msg a
 
-newtype KlawScenario = KlawScenario ScenarioAttrs
+newtype KlawScenario = KlawScenario (Attrs Scenario)
   deriving anyclass IsScenario
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 instance RunMessage KlawScenario where
   runMessage msg (KlawScenario a) = KlawScenario <$> runMessage msg a

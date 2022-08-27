@@ -5,9 +5,12 @@ module Marvel.Ally.Runner
 
 import Marvel.Prelude
 
+import Marvel.Ally.Types as X hiding (Field(..))
+import Marvel.Message as X
+import Marvel.Question as X
+
 import Data.HashSet qualified as HashSet
 import Marvel.Ability
-import Marvel.Ally.Types as X
 import Marvel.Attack
 import Marvel.Cost
 import Marvel.Criteria
@@ -17,28 +20,28 @@ import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Query
 
 instance HasAbilities Ally where
-  getAbilities (Ally a) = getAbilities a <> basicAbilities
+  getAbilities x@(Ally a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
       [ ability
-          a
+          x
           300
           Basic
           (SchemeExists ThwartableScheme)
           ExhaustCost
-          (AllyThwart $ toId a)
-      | unThw (allyThwart $ toAttrs a) > 0
+          (AllyThwart $ toId x)
+      | unThw (allyThwart $ toAllyAttrs a) > 0
       ]
       <> [ ability
-             a
+             x
              301
              Basic
              (EnemyExists AttackableEnemy)
              ExhaustCost
-             (AllyAttack $ toId a)
+             (AllyAttack $ toId x)
          ]
 
-instance RunMessage AllyAttrs where
+instance RunMessage (Attrs Ally) where
   runMessage msg a = case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
       ReadiedAlly -> do
@@ -56,7 +59,7 @@ instance RunMessage AllyAttrs where
             $ Ask
                 (allyController a)
                 (ChooseOne $ map
-                  (damageChoice a (toDamage dmg $ FromAllyAttack (toId a)))
+                  (damageChoice a (toDamage dmg $ FromAllyAttack (allyId a)))
                   enemies
                 )
             : [ AllyMessage
@@ -94,12 +97,12 @@ instance RunMessage AllyAttrs where
           pure a
       AllyDefended enemyId -> do
         pushAll
-          [ AllyMessage (toId a) ExhaustedAlly
+          [ AllyMessage (allyId a) ExhaustedAlly
           , case enemyId of
             EnemyVillainId vid ->
-              VillainMessage vid $ VillainDefendedBy (AllyCharacter $ toId a)
+              VillainMessage vid $ VillainDefendedBy (AllyCharacter $ allyId a)
             EnemyMinionId vid ->
-              MinionMessage vid $ MinionDefendedBy (AllyCharacter $ toId a)
+              MinionMessage vid $ MinionDefendedBy (AllyCharacter $ allyId a)
           ]
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
@@ -124,7 +127,7 @@ instance RunMessage AllyAttrs where
         else do
           when
             (damageAmount damage + allyDamage a >= unHp (allyHitPoints a))
-            (push $ AllyMessage (toId a) AllyDefeated)
+            (push $ AllyMessage (allyId a) AllyDefeated)
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
         pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]

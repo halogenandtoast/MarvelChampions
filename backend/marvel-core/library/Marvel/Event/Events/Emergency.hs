@@ -7,8 +7,8 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -20,13 +20,13 @@ import Marvel.Window
 emergency :: EventCard Emergency
 emergency = event Emergency Cards.emergency
 
-newtype Emergency = Emergency EventAttrs
+newtype Emergency = Emergency (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Emergency where
   runMessage msg e@(Emergency attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (ThreatPlaced _ schemeId n)) -> do
         let
           newMsg = case schemeId of

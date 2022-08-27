@@ -9,9 +9,8 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Effect.Types
-import Marvel.Entity
-import Marvel.Event.Types
 import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
@@ -24,33 +23,33 @@ import Marvel.Target
 leadFromTheFront :: EventCard LeadFromTheFront
 leadFromTheFront = event LeadFromTheFront Cards.leadFromTheFront
 
-newtype LeadFromTheFront = LeadFromTheFront EventAttrs
+newtype LeadFromTheFront = LeadFromTheFront (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage LeadFromTheFront where
   runMessage msg e@(LeadFromTheFront attrs) = case msg of
-    EventMessage eid msg' | eid == toId e -> case msg' of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         players <- getPlayers
         e <$ chooseOne
           identityId
           [ TargetLabel
-              (IdentityTarget ident)
+              (IdentityTarget targetIdentityId)
               [ Run $ map
                   (CreatedEffect Cards.leadFromTheFront $ toSource e)
-                  [ IdentityEntity $ IdentityWithId ident
-                  , AllyEntity $ AllyControlledBy $ IdentityWithId ident
+                  [ IdentityEntity $ IdentityWithId targetIdentityId
+                  , AllyEntity $ AllyControlledBy $ IdentityWithId targetIdentityId
                   ]
               ]
-          | ident <- players
+          | targetIdentityId <- players
           ]
       _ -> LeadFromTheFront <$> runMessage msg attrs
     _ -> LeadFromTheFront <$> runMessage msg attrs
 
-newtype LeadFromTheFrontEffect = LeadFromTheFrontEffect EffectAttrs
+newtype LeadFromTheFrontEffect = LeadFromTheFrontEffect (Attrs Effect)
   deriving anyclass IsEffect
-  deriving newtype (Show, Eq, ToJSON, FromJSON, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 leadFromTheFrontEffect :: CardEffect LeadFromTheFrontEffect
 leadFromTheFrontEffect = effectWith
@@ -60,5 +59,5 @@ leadFromTheFrontEffect = effectWith
 
 instance RunMessage LeadFromTheFrontEffect where
   runMessage msg e@(LeadFromTheFrontEffect attrs) = case msg of
-    EndPhase _ -> e <$ push (EffectMessage (toId attrs) DisableEffect)
+    EndPhase _ -> e <$ push (EffectMessage (effectId attrs) DisableEffect)
     _ -> LeadFromTheFrontEffect <$> runMessage msg attrs

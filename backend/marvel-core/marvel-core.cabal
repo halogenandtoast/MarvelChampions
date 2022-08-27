@@ -67,8 +67,10 @@ library
       Marvel.Card.EncounterCard
       Marvel.Card.Id
       Marvel.Card.PlayerCard
+      Marvel.Card.PlayerCard.Types
       Marvel.Card.Side
       Marvel.Cost
+      Marvel.Cost.Types
       Marvel.Criteria
       Marvel.Damage
       Marvel.Debug
@@ -118,6 +120,7 @@ library
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
+      Marvel.GameValue.Types
       Marvel.Hand
       Marvel.Hero
       Marvel.Hero.Cards
@@ -132,6 +135,7 @@ library
       Marvel.Hp
       Marvel.Id
       Marvel.Identity
+      Marvel.Identity.Types
       Marvel.Keyword
       Marvel.MainScheme
       Marvel.MainScheme.Cards
@@ -141,7 +145,22 @@ library
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.MainScheme.Types
       Marvel.Matchers
+      Marvel.Matchers.Types
       Marvel.Message
+      Marvel.Message.Ally
+      Marvel.Message.Attachment
+      Marvel.Message.Deck
+      Marvel.Message.Effect
+      Marvel.Message.Event
+      Marvel.Message.Identity
+      Marvel.Message.MainScheme
+      Marvel.Message.Minion
+      Marvel.Message.Obligation
+      Marvel.Message.SideScheme
+      Marvel.Message.Support
+      Marvel.Message.Treachery
+      Marvel.Message.Upgrade
+      Marvel.Message.Villain
       Marvel.Minion
       Marvel.Minion.Cards
       Marvel.Minion.Minions
@@ -159,6 +178,7 @@ library
       Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Minion.Minions.Whirlwind
+      Marvel.Minion.Runner
       Marvel.Minion.Types
       Marvel.Modifier
       Marvel.Name
@@ -174,11 +194,13 @@ library
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
+      Marvel.Projection
       Marvel.Query
       Marvel.Question
       Marvel.Queue
       Marvel.Resource
       Marvel.Resource.Cards
+      Marvel.Resource.Types
       Marvel.Scenario
       Marvel.Scenario.Types
       Marvel.SideScheme
@@ -201,6 +223,7 @@ library
       Marvel.Support
       Marvel.Support.Cards
       Marvel.Support.Supports
+      Marvel.Support.Supports.AlphaFlightStation
       Marvel.Support.Supports.AuntMay
       Marvel.Support.Supports.AvengersMansion
       Marvel.Support.Supports.Helicarrier
@@ -216,6 +239,7 @@ library
       Marvel.Support.Types
       Marvel.Target
       Marvel.Trait
+      Marvel.Trait.Types
       Marvel.Treachery
       Marvel.Treachery.Cards
       Marvel.Treachery.Treacheries
@@ -250,6 +274,7 @@ library
       Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
       Marvel.Upgrade.Upgrades.CombatTraining
       Marvel.Upgrade.Upgrades.CosmicFlight
+      Marvel.Upgrade.Upgrades.EnergyChannel
       Marvel.Upgrade.Upgrades.EnergyDaggers
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.HeroicIntuition
@@ -273,12 +298,14 @@ library
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Rhino
       Marvel.Window
+      Marvel.Window.Types
   other-modules:
       Paths_marvel_core
   hs-source-dirs:
       library
   default-extensions:
       BlockArguments
+      DefaultSignatures
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies
@@ -331,6 +358,7 @@ test-suite MarvelChampions-test
       test
   default-extensions:
       BlockArguments
+      DefaultSignatures
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies

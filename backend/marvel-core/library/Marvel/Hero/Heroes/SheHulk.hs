@@ -3,7 +3,7 @@ module Marvel.Hero.Heroes.SheHulk where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
@@ -31,20 +31,20 @@ sheHulk = hero
   (Def 2)
 
 instance HasAbilities SheHulk where
-  getAbilities a =
+  getAbilities (SheHulk a) =
     [ label "Do You Even Lift?" $ limitedWindowAbility
         a
         1
-        (W.IdentityChangedToForm W.After $ IdentityWithId $ toId a)
+        (W.IdentityChangedToForm W.After $ IdentityWithId $ heroIdentityId a)
         Response
         IsSelf
         NoCost
         (ChooseDamage (toSource a) (toDamage 2 FromAbility) AnyEnemy)
     ]
 
-newtype SheHulk = SheHulk HeroAttrs
+newtype SheHulk = SheHulk (Attrs Hero)
   deriving anyclass (IsHero, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance RunMessage SheHulk where
   runMessage msg (SheHulk attrs) = SheHulk <$> runMessage msg attrs

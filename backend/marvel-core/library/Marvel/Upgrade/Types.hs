@@ -8,7 +8,8 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id hiding (UpgradeId)
+import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -42,10 +43,39 @@ someUpgradeCardCode :: SomeUpgradeCard -> CardCode
 someUpgradeCardCode = liftUpgradeCard cbCardCode
 
 instance Entity Upgrade where
-  type EntityId Upgrade = UpgradeId
-  type EntityAttrs Upgrade = UpgradeAttrs
-  toId = toId . toAttrs
-  toAttrs (Upgrade a) = toAttrs a
+  type Id Upgrade = UpgradeId
+  data Attrs Upgrade = UpgradeAttrs
+    { upgradeId :: UpgradeId
+    , upgradeCardDef :: CardDef
+    , upgradeController :: IdentityId
+    , upgradeExhausted :: Bool
+    , upgradeAttachedEnemy :: Maybe EnemyId
+    , upgradeAttachedAlly :: Maybe AllyId
+    , upgradeUses :: Natural
+    , upgradeDiscardIfNoUses :: Bool
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Upgrade :: Type -> Type where
+    UpgradeId :: Field Upgrade UpgradeId
+    UpgradeCardDef :: Field Upgrade CardDef
+    UpgradeController :: Field Upgrade IdentityId
+    UpgradeExhausted :: Field Upgrade Bool
+    UpgradeAttachedEnemy :: Field Upgrade (Maybe EnemyId)
+    UpgradeAttachedAlly :: Field Upgrade (Maybe AllyId)
+    UpgradeUses :: Field Upgrade Natural
+    UpgradeDiscardIfNoUses :: Field Upgrade Bool
+  field fld u = let UpgradeAttrs {..} = toAttrs u in case fld of
+    UpgradeId -> upgradeId
+    UpgradeCardDef -> upgradeCardDef
+    UpgradeController -> upgradeController
+    UpgradeExhausted -> upgradeExhausted
+    UpgradeAttachedEnemy -> upgradeAttachedEnemy
+    UpgradeAttachedAlly -> upgradeAttachedAlly
+    UpgradeUses -> upgradeUses
+    UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
+  toId = upgradeId . toAttrs
+  toAttrs (Upgrade a) = toUpgradeAttrs a
 
 instance RunMessage Upgrade where
   runMessage msg (Upgrade a) = Upgrade <$> runMessage msg a
@@ -74,53 +104,43 @@ getUpgradeUses = upgradeUses . toAttrs
 instance HasModifiersFor Upgrade where
   getModifiersFor source target (Upgrade a) = getModifiersFor source target a
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ UpgradeAttrs, EntityId a ~ UpgradeId, HasAbilities a, HasModifiersFor a) => IsUpgrade a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a, HasModifiersFor a) => IsUpgrade a where
+  toUpgradeAttrs :: a -> Attrs Upgrade
+  default toUpgradeAttrs :: Coercible a (Attrs Upgrade) => a -> Attrs Upgrade
+  toUpgradeAttrs = coerce
 
 type UpgradeCard a = CardBuilder (IdentityId, UpgradeId) a
 
-data UpgradeAttrs = UpgradeAttrs
-  { upgradeId :: UpgradeId
-  , upgradeCardDef :: CardDef
-  , upgradeController :: IdentityId
-  , upgradeExhausted :: Bool
-  , upgradeAttachedEnemy :: Maybe EnemyId
-  , upgradeAttachedAlly :: Maybe AllyId
-  , upgradeUses :: Natural
-  , upgradeDiscardIfNoUses :: Bool
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-attachedAllyL :: Lens' UpgradeAttrs (Maybe AllyId)
+attachedAllyL :: Lens' (Attrs Upgrade) (Maybe AllyId)
 attachedAllyL =
   lens upgradeAttachedAlly $ \m x -> m { upgradeAttachedAlly = x }
 
-attachedEnemyL :: Lens' UpgradeAttrs (Maybe EnemyId)
+attachedEnemyL :: Lens' (Attrs Upgrade) (Maybe EnemyId)
 attachedEnemyL =
   lens upgradeAttachedEnemy $ \m x -> m { upgradeAttachedEnemy = x }
 
-exhaustedL :: Lens' UpgradeAttrs Bool
+exhaustedL :: Lens' (Attrs Upgrade) Bool
 exhaustedL = lens upgradeExhausted $ \m x -> m { upgradeExhausted = x }
 
-usesL :: Lens' UpgradeAttrs Natural
+usesL :: Lens' (Attrs Upgrade) Natural
 usesL = lens upgradeUses $ \m x -> m { upgradeUses = x }
 
-discardIfNoUsesL :: Lens' UpgradeAttrs Bool
+discardIfNoUsesL :: Lens' (Attrs Upgrade) Bool
 discardIfNoUsesL =
   lens upgradeDiscardIfNoUses $ \m x -> m { upgradeDiscardIfNoUses = x }
 
-instance HasCardCode UpgradeAttrs where
+instance HasCardCode (Attrs Upgrade) where
   toCardCode = toCardCode . upgradeCardDef
 
 upgradeWith
-  :: (UpgradeAttrs -> a)
+  :: (Attrs Upgrade -> a)
   -> CardDef
-  -> (UpgradeAttrs -> UpgradeAttrs)
+  -> (Attrs Upgrade -> Attrs Upgrade)
   -> CardBuilder (IdentityId, UpgradeId) a
 upgradeWith f cardDef g = upgrade (f . g) cardDef
 
 upgrade
-  :: (UpgradeAttrs -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
+  :: (Attrs Upgrade -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
 upgrade f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \(ident, mid) -> f $ UpgradeAttrs
@@ -135,7 +155,7 @@ upgrade f cardDef = CardBuilder
     }
   }
 
-damageChoice :: UpgradeAttrs -> Damage -> EnemyId -> Choice
+damageChoice :: Attrs Upgrade -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
   EnemyVillainId vid -> TargetLabel
     (VillainTarget vid)
@@ -145,12 +165,12 @@ damageChoice attrs dmg = \case
     [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 thwartGuard
-  :: (MonadGame env m, Entity u, EntityAttrs u ~ UpgradeAttrs)
+  :: (MonadGame env m, IsUpgrade u)
   => u
   -> m u
   -> m u
 thwartGuard u f = do
-  let ident = upgradeController (toAttrs u)
+  let ident = upgradeController (toUpgradeAttrs u)
   confused <- selectAny (IdentityWithId ident <> ConfusedIdentity)
   if confused
     then do
@@ -158,7 +178,7 @@ thwartGuard u f = do
       pure u
     else f
 
-thwartChoice :: UpgradeAttrs -> Natural -> SchemeId -> Choice
+thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid -> TargetLabel
     (MainSchemeTarget vid)
@@ -167,35 +187,29 @@ thwartChoice attrs thw = \case
     (SideSchemeTarget sid)
     [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
 
-instance Entity UpgradeAttrs where
-  type EntityId UpgradeAttrs = UpgradeId
-  type EntityAttrs UpgradeAttrs = UpgradeAttrs
-  toId = upgradeId
-  toAttrs = id
+instance IsSource (Attrs Upgrade) where
+  toSource = UpgradeSource . upgradeId
 
-instance IsSource UpgradeAttrs where
-  toSource = UpgradeSource . toId
+instance IsTarget (Attrs Upgrade) where
+  toTarget = UpgradeTarget . upgradeId
 
-instance IsTarget UpgradeAttrs where
-  toTarget = UpgradeTarget . toId
-
-instance HasCardDef UpgradeAttrs where
+instance HasCardDef (Attrs Upgrade) where
   getCardDef = upgradeCardDef
 
-instance IsCard UpgradeAttrs where
+instance IsCard (Attrs Upgrade) where
   toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId $ unUpgradeId $ toId a
+    { pcCardId = CardId $ unUpgradeId $ upgradeId a
     , pcCardDef = getCardDef a
     , pcOwner = Just (upgradeController a)
     , pcController = Just (upgradeController a)
     }
 
-instance RunMessage UpgradeAttrs where
+instance RunMessage (Attrs Upgrade) where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade ->
         a <$ push
-          (IdentityMessage (upgradeController a) $ UpgradeCreated (toId a))
+          (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
       SpendUpgradeUse -> do
@@ -208,11 +222,14 @@ instance RunMessage UpgradeAttrs where
       UpgradeAttachedToEnemy enemyId -> do
         case enemyId of
           EnemyMinionId minionId ->
-            push (MinionMessage minionId $ AttachedUpgradeToMinion (toId a))
+            push (MinionMessage minionId $ AttachedUpgradeToMinion (upgradeId a))
           EnemyVillainId villainId ->
-            push (VillainMessage villainId $ AttachedUpgradeToVillain (toId a))
+            push (VillainMessage villainId $ AttachedUpgradeToVillain (upgradeId a))
         pure $ a & attachedEnemyL ?~ enemyId
       UpgradeAttachedToAlly allyId -> do
-        push (AllyMessage allyId $ AttachedUpgradeToAlly (toId a))
+        push (AllyMessage allyId $ AttachedUpgradeToAlly (upgradeId a))
         pure $ a & attachedAllyL ?~ allyId
+      DiscardUpgrade -> do
+        pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
+        pure a
     _ -> pure a

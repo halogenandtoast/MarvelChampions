@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.CosmicFlight (
-  cosmicFlight,
-  CosmicFlight (..),
-) where
+module Marvel.Upgrade.Upgrades.CosmicFlight
+  ( cosmicFlight
+  , CosmicFlight(..)
+  ) where
 
 import Marvel.Prelude
 
@@ -19,16 +19,16 @@ import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
 import Marvel.Trait
+import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
-import qualified Marvel.Upgrade.Cards as Cards
 import Marvel.Window
 
 cosmicFlight :: UpgradeCard CosmicFlight
 cosmicFlight = upgrade CosmicFlight Cards.cosmicFlight
 
-newtype CosmicFlight = CosmicFlight UpgradeAttrs
-  deriving anyclass (IsUpgrade)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+newtype CosmicFlight = CosmicFlight (Attrs Upgrade)
+  deriving anyclass IsUpgrade
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasModifiersFor CosmicFlight where
   getModifiersFor _ (IdentityTarget ident) (CosmicFlight attrs)
@@ -38,33 +38,30 @@ instance HasModifiersFor CosmicFlight where
 instance HasAbilities CosmicFlight where
   getAbilities a =
     [ limitedWindowAbility
-        a
-        1
-        (WouldTakeDamage You FromAnyDamageSource AnyValue)
-        Response
-        OwnsThis
-        NoCost
+          a
+          1
+          (WouldTakeDamage You FromAnyDamageSource AnyValue)
+          Response
+          OwnsThis
+          NoCost
         $ runAbility a 1
     ]
 
 decreaseDamage :: Message -> [Message]
 decreaseDamage (IdentityMessage ident (IdentityDamaged source dmg)) =
-  [ IdentityMessage
-    ident
-    ( IdentityDamaged
-        source
-        (dmg {damageAmount = max 0 $ damageAmount dmg - 3})
-    )
+  [ IdentityMessage ident $ IdentityDamaged
+      source
+      (dmg { damageAmount = max 0 $ damageAmount dmg - 3 })
   | damageAmount dmg > 3
   ]
 decreaseDamage _ = error "Invalid message"
 
 instance RunMessage CosmicFlight where
-  runMessage msg a = case msg of
-    RanAbility (isTarget a -> True) 1 [IdentityTakeDamage ident _] -> do
+  runMessage msg a@(CosmicFlight attrs) = case msg of
+    RanAbility (isTarget a -> True) 1 [IdentityTakeDamage ident _] _ -> do
       replaceMatchingMessage decreaseDamage $ \case
         IdentityMessage identityId' (IdentityDamaged _ _) ->
           identityId' == ident
         _ -> False
       pure a
-    _ -> CosmicFlight <$> runMessage msg (toAttrs a)
+    _ -> CosmicFlight <$> runMessage msg attrs

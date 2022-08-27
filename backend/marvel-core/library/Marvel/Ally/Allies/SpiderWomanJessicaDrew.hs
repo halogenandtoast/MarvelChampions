@@ -22,9 +22,9 @@ spiderWomanJessicaDrew = ally
   (Atk 2, 1)
   (HP 2)
 
-newtype SpiderWomanJessicaDrew = SpiderWomanJessicaDrew AllyAttrs
+newtype SpiderWomanJessicaDrew = SpiderWomanJessicaDrew (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance HasAbilities SpiderWomanJessicaDrew where
   getAbilities a =
@@ -33,9 +33,9 @@ instance HasAbilities SpiderWomanJessicaDrew where
     ]
 
 instance RunMessage SpiderWomanJessicaDrew where
-  runMessage msg a = case msg of
-    RanAbility (isTarget a -> True) 1 _ -> do
+  runMessage msg a@(SpiderWomanJessicaDrew attrs) = case msg of
+    RanAbility (isTarget a -> True) 1 _ _ -> do
       villain <- selectJust ActiveVillain
       push $ VillainMessage villain $ VillainConfused (toSource a)
       pure a
-    _ -> SpiderWomanJessicaDrew <$> runMessage msg (toAttrs a)
+    _ -> SpiderWomanJessicaDrew <$> runMessage msg attrs

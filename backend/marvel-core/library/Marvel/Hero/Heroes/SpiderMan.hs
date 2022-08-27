@@ -3,7 +3,7 @@ module Marvel.Hero.Heroes.SpiderMan where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Cost
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
@@ -41,9 +41,9 @@ instance HasAbilities SpiderMan where
         (ChooseDrawCards 1 You)
     ]
 
-newtype SpiderMan = SpiderMan HeroAttrs
+newtype SpiderMan = SpiderMan (Attrs Hero)
   deriving anyclass (IsHero, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, Entity)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
 
 instance RunMessage SpiderMan where
   runMessage msg (SpiderMan attrs) = SpiderMan <$> runMessage msg attrs

@@ -13,25 +13,25 @@ import Marvel.Query
 import Marvel.Queue
 import Marvel.Source
 import Marvel.Target
-import Marvel.Treachery.Types
 import Marvel.Treachery.Cards qualified as Cards
+import Marvel.Treachery.Types
 
 stampede :: TreacheryCard Stampede
 stampede = treachery Stampede Cards.stampede
 
-newtype Stampede = Stampede TreacheryAttrs
+newtype Stampede = Stampede (Attrs Treachery)
   deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, Entity, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
 instance RunMessage Stampede where
   runMessage msg t@(Stampede attrs) = case msg of
-    TreacheryMessage tid msg' | tid == toId attrs -> case msg' of
-      RevealTreachery ident -> do
-        isHero <- identityMatches HeroIdentity ident
+    TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      RevealTreachery identityId -> do
+        isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            push $ VillainMessage villainId $ VillainAttacks ident
+            push $ VillainMessage villainId $ VillainAttacks identityId
             pure t
           else pure . Stampede $ attrs & surgeL .~ True
       _ -> Stampede <$> runMessage msg attrs

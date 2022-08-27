@@ -8,13 +8,14 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id as X (EffectId)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
+import Marvel.Source (IsSource(..), Source)
+import Marvel.Source qualified as Source
 import Marvel.Target
 import Text.Show qualified
 
@@ -35,10 +36,36 @@ instance RunMessage Effect where
   runMessage msg (Effect a) = Effect <$> runMessage msg a
 
 instance Entity Effect where
-  type EntityId Effect = EffectId
-  type EntityAttrs Effect = EffectAttrs
-  toId = toId . toAttrs
-  toAttrs (Effect a) = toAttrs a
+  type Id Effect = EffectId
+  data Attrs Effect = EffectAttrs
+    { effectId :: EffectId
+    , effectCardCode :: CardCode
+    , effectSource :: Source
+    , effectMatcher :: EntityMatcher
+    , effectModifiers :: [Modifier]
+    , effectEnds :: Maybe EffectTiming
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Effect :: Type -> Type where
+    EffectId :: Field Effect EffectId
+    EffectCardCode :: Field Effect CardCode
+    EffectSource :: Field Effect Source
+    EffectMatcher :: Field Effect EntityMatcher
+    EffectModifiers :: Field Effect [Modifier]
+    EffectEnds :: Field Effect (Maybe EffectTiming)
+  field fld e =
+    let EffectAttrs {..} = toAttrs e
+    in
+      case fld of
+        EffectId -> effectId
+        EffectCardCode -> effectCardCode
+        EffectSource -> effectSource
+        EffectMatcher -> effectMatcher
+        EffectModifiers -> effectModifiers
+        EffectEnds -> effectEnds
+  toId = effectId . toAttrs
+  toAttrs (Effect a) = toEffectAttrs a
 
 data SomeCardEffect = forall a . IsEffect a => SomeCardEffect (CardEffect a)
 
@@ -54,7 +81,10 @@ instance HasModifiersFor Effect where
     pure $ if valid then effectModifiers attrs else []
     where attrs = toAttrs e
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, Entity a, EntityAttrs a ~ EffectAttrs, EntityId a ~ EffectId, RunMessage a) => IsEffect a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect a where
+  toEffectAttrs :: a -> Attrs Effect
+  default toEffectAttrs :: Coercible a (Attrs Effect) => a -> Attrs Effect
+  toEffectAttrs = coerce
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
@@ -62,38 +92,27 @@ data EffectTiming = DisableAtEndOfPhase | DisableAtEndOfRound
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data EffectAttrs = EffectAttrs
-  { effectId :: EffectId
-  , effectCardCode :: CardCode
-  , effectSource :: Source
-  , effectMatcher :: EntityMatcher
-  , effectModifiers :: [Modifier]
-  , effectEnds :: Maybe EffectTiming
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-modifiersL :: Lens' EffectAttrs [Modifier]
+modifiersL :: Lens' (Attrs Effect) [Modifier]
 modifiersL = lens effectModifiers $ \m x -> m { effectModifiers = x }
 
-endsL :: Lens' EffectAttrs (Maybe EffectTiming)
+endsL :: Lens' (Attrs Effect) (Maybe EffectTiming)
 endsL = lens effectEnds $ \m x -> m { effectEnds = x }
 
-instance IsTarget EffectAttrs where
+instance IsTarget (Attrs Effect) where
   toTarget = EffectTarget . effectId
 
-instance IsSource EffectAttrs where
-  toSource = EffectSource . effectId
+instance IsSource (Attrs Effect) where
+  toSource = Source.EffectSource . effectId
 
 effectWith
-  :: (EffectAttrs -> a)
+  :: (Attrs Effect -> a)
   -> CardDef
-  -> (EffectAttrs -> EffectAttrs)
+  -> (Attrs Effect -> Attrs Effect)
   -> CardBuilder (Source, EntityMatcher, EffectId) a
 effectWith f cardDef g = effect (f . g) cardDef
 
 effect
-  :: (EffectAttrs -> a)
+  :: (Attrs Effect -> a)
   -> CardDef
   -> CardBuilder (Source, EntityMatcher, EffectId) a
 effect f cardDef = CardBuilder
@@ -108,28 +127,22 @@ effect f cardDef = CardBuilder
     }
   }
 
-effectValidFor :: MonadGame env m => EffectAttrs -> Target -> m Bool
+effectValidFor :: MonadGame env m => Attrs Effect -> Target -> m Bool
 effectValidFor e target = case (target, effectMatcher e) of
   (IdentityTarget ident, IdentityEntity matcher) ->
     member ident <$> select matcher
   (AllyTarget ident, AllyEntity matcher) -> member ident <$> select matcher
   _ -> pure False
 
-instance Entity EffectAttrs where
-  type EntityId EffectAttrs = EffectId
-  type EntityAttrs EffectAttrs = EffectAttrs
-  toId = effectId
-  toAttrs = id
-
-instance RunMessage EffectAttrs where
+instance RunMessage (Attrs Effect) where
   runMessage msg a = case msg of
-    EffectMessage ident msg' | ident == toId a -> case msg' of
-      DisableEffect -> a <$ push (DisabledEffect $ toId a)
+    EffectMessage ident msg' | ident == effectId a -> case msg' of
+      DisableEffect -> a <$ push (DisabledEffect $ effectId a)
       _ -> pure a
     EndPhase _ -> a <$ when
       (effectEnds a == Just DisableAtEndOfPhase)
-      (push $ EffectMessage (toId a) DisableEffect)
+      (push $ EffectMessage (effectId a) DisableEffect)
     EndRound -> a <$ when
       (effectEnds a == Just DisableAtEndOfRound)
-      (push $ EffectMessage (toId a) DisableEffect)
+      (push $ EffectMessage (effectId a) DisableEffect)
     _ -> pure a

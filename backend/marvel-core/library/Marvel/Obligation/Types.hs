@@ -5,7 +5,8 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id hiding (ObligationId)
+import Marvel.Id as X (ObligationId)
 import Marvel.Message
 import Marvel.Queue
 import Marvel.Source
@@ -36,10 +37,24 @@ someObligationCardCode :: SomeObligationCard -> CardCode
 someObligationCardCode = liftObligationCard cbCardCode
 
 instance Entity Obligation where
-  type EntityId Obligation = ObligationId
-  type EntityAttrs Obligation = ObligationAttrs
-  toId = toId . toAttrs
-  toAttrs (Obligation a) = toAttrs a
+  type Id Obligation = ObligationId
+  data Attrs Obligation = ObligationAttrs
+    { obligationId :: ObligationId
+    , obligationCardDef :: CardDef
+    , obligationSurge :: Bool
+    }
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+  data Field Obligation :: Type -> Type where
+    ObligationId :: Field Obligation ObligationId
+    ObligationCardDef :: Field Obligation CardDef
+    ObligationSurge :: Field Obligation Bool
+  field fld o = let ObligationAttrs {..} = toAttrs o in case fld of
+    ObligationId -> obligationId
+    ObligationCardDef -> obligationCardDef
+    ObligationSurge -> obligationSurge
+  toId = obligationId . toAttrs
+  toAttrs (Obligation a) = toObligationAttrs a
 
 instance RunMessage Obligation where
   runMessage msg (Obligation a) = Obligation <$> runMessage msg a
@@ -56,25 +71,20 @@ instance IsCard Obligation where
 instance HasCardDef Obligation where
   getCardDef = getCardDef . toAttrs
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, Entity a, EntityAttrs a ~ ObligationAttrs, EntityId a ~ ObligationId) => IsObligation a
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a)  => IsObligation a where
+  toObligationAttrs :: a -> Attrs Obligation
+  default toObligationAttrs :: Coercible a (Attrs Obligation) => a -> Attrs Obligation
+  toObligationAttrs = coerce
 
 type ObligationCard a = CardBuilder ObligationId a
 
-data ObligationAttrs = ObligationAttrs
-  { obligationId :: ObligationId
-  , obligationCardDef :: CardDef
-  , obligationSurge :: Bool
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-surgeL :: Lens' ObligationAttrs Bool
+surgeL :: Lens' (Attrs Obligation) Bool
 surgeL = lens obligationSurge $ \m x -> m { obligationSurge = x }
 
-instance HasCardCode ObligationAttrs where
+instance HasCardCode (Attrs Obligation) where
   toCardCode = toCardCode . obligationCardDef
 
-obligation :: (ObligationAttrs -> a) -> CardDef -> CardBuilder ObligationId a
+obligation :: (Attrs Obligation -> a) -> CardDef -> CardBuilder ObligationId a
 obligation f cardDef = CardBuilder
   { cbCardCode = cdCardCode cardDef
   , cbCardBuilder = \mid -> f $ ObligationAttrs
@@ -84,30 +94,24 @@ obligation f cardDef = CardBuilder
     }
   }
 
-instance Entity ObligationAttrs where
-  type EntityId ObligationAttrs = ObligationId
-  type EntityAttrs ObligationAttrs = ObligationAttrs
-  toId = obligationId
-  toAttrs = id
+instance IsSource (Attrs Obligation) where
+  toSource = ObligationSource . obligationId
 
-instance IsSource ObligationAttrs where
-  toSource = ObligationSource . toId
+instance IsTarget (Attrs Obligation) where
+  toTarget = ObligationTarget . obligationId
 
-instance IsTarget ObligationAttrs where
-  toTarget = ObligationTarget . toId
-
-instance IsCard ObligationAttrs where
+instance IsCard (Attrs Obligation) where
   toCard a = EncounterCard $ MkEncounterCard
-    { ecCardId = CardId $ unObligationId $ toId a
+    { ecCardId = CardId $ unObligationId $ obligationId a
     , ecCardDef = getCardDef a
     }
 
-instance HasCardDef ObligationAttrs where
+instance HasCardDef (Attrs Obligation) where
   getCardDef = obligationCardDef
 
-instance RunMessage ObligationAttrs where
+instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = case msg of
-    ObligationMessage tid msg' | tid == toId attrs -> case msg' of
+    ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       ResolvedObligation identityId -> do
         pushAll
           $ RemoveFromPlay (toTarget attrs)
