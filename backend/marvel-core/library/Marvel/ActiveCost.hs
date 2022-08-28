@@ -201,7 +201,7 @@ instance RunMessage ActiveCost where
           rest <- concatMapM
             (choiceMessages $ activeCostIdentityId activeCost)
             (traceShowId $ abilityChoices ab)
-          pushAll $ UsedAbility (activeCostIdentityId activeCost) ab : traceShowId rest
+          pushAll $ UsedAbility (activeCostIdentityId activeCost) ab : rest
         ForTreachery -> pure ()
       pushAll
         $ map

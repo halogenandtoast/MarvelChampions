@@ -12,6 +12,7 @@ import Marvel.Identity.Types (Field(..))
 import Marvel.Message
 import Marvel.Projection
 import Marvel.Question
+import Marvel.Resource
 import Marvel.Source
 import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
@@ -24,11 +25,14 @@ newtype YonRoggsTreason = YonRoggsTreason (Attrs Treachery)
   deriving anyclass IsTreachery
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
 
+isEnergy :: HasCardDef a => a -> Bool
+isEnergy = any (== Energy) . printedResources . getCardDef
+
 instance RunMessage YonRoggsTreason where
   runMessage msg t@(YonRoggsTreason attrs) = case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery identityId -> do
-        energyResources <- projectMap PlayerIdentityHand unHand identityId
+        energyResources <- filter isEnergy <$> projectMap PlayerIdentityHand unHand identityId
         chooseOneAtATime identityId
           $ [ TargetLabel (CardIdTarget $ toCardId c) [DiscardCard $ PlayerCard c]
             | c <- energyResources
