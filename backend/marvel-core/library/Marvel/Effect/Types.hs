@@ -127,7 +127,7 @@ effect f cardDef = CardBuilder
     }
   }
 
-effectValidFor :: MonadGame env m => Attrs Effect -> Target -> m Bool
+effectValidFor :: HasGame m => Attrs Effect -> Target -> m Bool
 effectValidFor e target = case (target, effectMatcher e) of
   (IdentityTarget ident, IdentityEntity matcher) ->
     member ident <$> select matcher

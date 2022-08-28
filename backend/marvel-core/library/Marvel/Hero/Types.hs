@@ -1,3 +1,4 @@
+{-# LANGUAGE QuantifiedConstraints #-}
 module Marvel.Hero.Types
   ( module Marvel.Hero.Types
   , module X
@@ -6,26 +7,24 @@ module Marvel.Hero.Types
 import Marvel.Prelude
 
 import Data.Typeable
-import Marvel.Ability
+import Marvel.Ability.Types
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.GameValue
+import Marvel.GameValue.Types
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Question
+import {-# SOURCE #-} Marvel.Message
+import {-# SOURCE #-} Marvel.Modifier
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Trait
-import Marvel.Window qualified as W
+import Marvel.Trait.Types
+import Marvel.Window.Types qualified as W
 import Text.Show qualified
 
 data Hero = forall a . IsHero a => Hero a
@@ -79,26 +78,20 @@ instance Entity Hero where
     HeroAlterEgoForms :: Field Hero [Side]
     HeroStartingHP :: Field Hero (HP GameValue)
     HeroCardDef :: Field Hero CardDef
-  field fld h = let HeroAttrs {..} = toAttrs h in case fld of
-    HeroIdentityId -> heroIdentityId
-    HeroBaseHandSize -> heroBaseHandSize
-    HeroBaseThwart -> heroBaseThwart
-    HeroBaseAttack -> heroBaseAttack
-    HeroBaseDefense -> heroBaseDefense
-    HeroAlterEgoForms -> heroAlterEgoForms
-    HeroStartingHP -> heroStartingHP
-    HeroCardDef -> heroCardDef
+  field fld h =
+    let HeroAttrs {..} = toAttrs h
+    in
+      case fld of
+        HeroIdentityId -> heroIdentityId
+        HeroBaseHandSize -> heroBaseHandSize
+        HeroBaseThwart -> heroBaseThwart
+        HeroBaseAttack -> heroBaseAttack
+        HeroBaseDefense -> heroBaseDefense
+        HeroAlterEgoForms -> heroAlterEgoForms
+        HeroStartingHP -> heroStartingHP
+        HeroCardDef -> heroCardDef
   toId = heroIdentityId . toAttrs
   toAttrs (Hero a) = toHeroAttrs a
-
-instance HasModifiersFor Hero where
-  getModifiersFor source target (Hero a) = getModifiersFor source target a
-
-instance RunMessage Hero where
-  runMessage msg (Hero a) = Hero <$> runMessage msg a
-
-instance HasTraits Hero where
-  getTraits = pure . cdTraits . getCardDef
 
 data SomeHeroCard = forall a . IsHero a => SomeHeroCard (HeroCard a)
 
@@ -156,57 +149,3 @@ instance IsSource (Attrs Hero) where
 
 instance IsTarget (Attrs Hero) where
   toTarget = IdentityTarget . heroIdentityId
-
-getModifiedAttack :: MonadGame env m => Attrs Hero -> m Natural
-getModifiedAttack attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
- where
-  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
-
-getModifiedThwart :: MonadGame env m => Attrs Hero -> m Natural
-getModifiedThwart attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
- where
-  applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
-
-getModifiedDefense :: MonadGame env m => Attrs Hero -> m Natural
-getModifiedDefense attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
- where
-  applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
-
-damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [ DamageEnemy (VillainTarget vid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [ W.Window W.After
-              $ W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
-          ]
-      ]
-    ]
-  EnemyMinionId mid -> TargetLabel
-    (MinionTarget mid)
-    [ DamageEnemy (MinionTarget mid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [W.Window W.After $ W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)]
-      ]
-    ]
-
-thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
-thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid -> TargetLabel
-    (MainSchemeTarget vid)
-    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid -> TargetLabel
-    (SideSchemeTarget sid)
-    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]

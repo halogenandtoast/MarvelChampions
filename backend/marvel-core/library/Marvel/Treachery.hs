@@ -39,6 +39,8 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard theVulturesPlans
   , SomeTreacheryCard electricWhipAttack
   , SomeTreacheryCard electromagneticBacklash
+  , SomeTreacheryCard kreeManipulator
+  , SomeTreacheryCard yonRoggsTreason
   , SomeTreacheryCard advance
   , SomeTreacheryCard assault
   , SomeTreacheryCard caughtOffGuard

@@ -3,7 +3,7 @@ module Marvel.Upgrade.Types where
 import Marvel.Prelude
 
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
@@ -165,7 +165,7 @@ damageChoice attrs dmg = \case
     [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
 
 thwartGuard
-  :: (MonadGame env m, IsUpgrade u)
+  :: (HasGame m, HasQueue m, IsUpgrade u)
   => u
   -> m u
   -> m u
@@ -212,6 +212,8 @@ instance RunMessage (Attrs Upgrade) where
           (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
+      AddUpgradeUses n -> do
+        pure $ a & usesL +~ n
       SpendUpgradeUse -> do
         when
           (upgradeUses a == 1 && upgradeDiscardIfNoUses a)

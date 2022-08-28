@@ -20,21 +20,24 @@ import Marvel.Message.Treachery as X
 import Marvel.Message.Upgrade as X
 import Marvel.Message.Villain as X
 
-import Marvel.Ability
+import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
-import Marvel.Card
+import Marvel.Card.Types
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Matchers.Types
+import Marvel.Payment.Types
 import Marvel.Phase
 import {-# SOURCE #-} Marvel.Question
+import Marvel.Queue
+import Marvel.Projection
+import Marvel.Identity.Types
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window (Window, WindowType)
+import Marvel.Window.Types (Window, WindowType)
 
 class RunMessage a where
-  runMessage :: MonadGame env m => Message -> a -> m a
+  runMessage :: (MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
 
 data FinishedStatus
   = Won

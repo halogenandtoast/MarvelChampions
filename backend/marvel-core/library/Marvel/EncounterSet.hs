@@ -11,6 +11,7 @@ data EncounterSet
   | MastersOfEvil
   | Standard
   | SpiderManNemesis
+  | CaptainMarvelNemesis
   | SheHulkNemesis
   | IronManNemesis
   | BlackPantherNemesis
@@ -20,6 +21,7 @@ data EncounterSet
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
   "01001" -> SpiderManNemesis
+  "01010" -> CaptainMarvelNemesis
   "01019" -> SheHulkNemesis
   "01029" -> IronManNemesis
   "01040" -> BlackPantherNemesis

@@ -34,6 +34,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard personalChallenge
   , SomeSideSchemeCard highwayRobbery
   , SomeSideSchemeCard imminentOverload
+  , SomeSideSchemeCard thePsycheMagnitron
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

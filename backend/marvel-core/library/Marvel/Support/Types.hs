@@ -3,7 +3,7 @@ module Marvel.Support.Types where
 import Marvel.Prelude
 
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def

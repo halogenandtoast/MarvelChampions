@@ -30,6 +30,7 @@ allMinions = fromList $ map
   , titania
   , vulture
   , whiplash
+  , yonRogg
   ]
 
 minion
@@ -142,3 +143,12 @@ whiplash =
            )
     { cdKeywords = singleton (Retaliate 1)
     }
+
+yonRogg :: CardDef
+yonRogg = unique $ minion
+  "01177"
+  "Yon-Rogg"
+  [Elite, Kree]
+  [Boost, Boost]
+  CaptainMarvelNemesis
+  1

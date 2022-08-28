@@ -2,48 +2,40 @@ module Marvel.Queue where
 
 import Marvel.Prelude
 
-import Marvel.Message
+import {-# SOURCE #-} Marvel.Message
 
 type Queue = [Message]
 
-class HasQueue a where
-  queue :: a -> IORef Queue
+class MonadIO m => HasQueue m where
+  getQueue :: m (IORef Queue)
 
-withQueue
-  :: (HasQueue env, MonadReader env m, MonadIO m)
-  => (Queue -> (Queue, a))
-  -> m a
+withQueue :: HasQueue m => (Queue -> (Queue, a)) -> m a
 withQueue body = do
-  ref <- asks queue
+  ref <- getQueue
   atomicModifyIORef' ref body
 
-withQueue_
-  :: (HasQueue env, MonadReader env m, MonadIO m) => (Queue -> Queue) -> m ()
+withQueue_ :: HasQueue m => (Queue -> Queue) -> m ()
 withQueue_ body = withQueue $ (, ()) . body
 
-clearQueue :: (HasQueue env, MonadReader env m, MonadIO m) => m ()
+clearQueue :: HasQueue m => m ()
 clearQueue = withQueue_ (const mempty)
 
-push :: (HasQueue env, MonadReader env m, MonadIO m) => Message -> m ()
+push :: HasQueue m => Message -> m ()
 push = withQueue_ . (:)
 
-pushAll :: (HasQueue env, MonadReader env m, MonadIO m) => [Message] -> m ()
+pushAll :: HasQueue m => [Message] -> m ()
 pushAll = withQueue_ . (<>)
 
-pop :: (HasQueue env, MonadReader env m, MonadIO m) => m (Maybe Message)
+pop :: HasQueue m => m (Maybe Message)
 pop = withQueue \case
   [] -> ([], Nothing)
   (x : xs) -> (xs, Just x)
 
-cancelMatchingMessage
-  :: (HasQueue env, MonadReader env m, MonadIO m) => (Message -> Bool) -> m ()
+cancelMatchingMessage :: HasQueue m => (Message -> Bool) -> m ()
 cancelMatchingMessage = replaceMatchingMessage (const [])
 
 replaceMatchingMessage
-  :: (HasQueue env, MonadReader env m, MonadIO m)
-  => (Message -> [Message])
-  -> (Message -> Bool)
-  -> m ()
+  :: HasQueue m => (Message -> [Message]) -> (Message -> Bool) -> m ()
 replaceMatchingMessage spliceF f = withQueue_ $ \q -> case break f q of
   (pre, []) -> pre
   (pre, msg : rest) -> pre <> spliceF msg <> rest

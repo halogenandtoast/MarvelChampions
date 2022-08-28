@@ -12,6 +12,7 @@ data UpgradeMessage
   | UpgradeAttachedToEnemy EnemyId
   | UpgradeAttachedToAlly AllyId
   | SpendUpgradeUse
+  | AddUpgradeUses Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

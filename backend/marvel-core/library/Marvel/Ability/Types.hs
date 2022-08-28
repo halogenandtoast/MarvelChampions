@@ -1,4 +1,4 @@
-module Marvel.Ability.Type where
+module Marvel.Ability.Types where
 
 import Marvel.Prelude
 

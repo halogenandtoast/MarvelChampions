@@ -15,7 +15,7 @@ import Marvel.Stats as X
 import Marvel.Target as X
 
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id hiding (AllyId)
@@ -132,7 +132,7 @@ instance IsSource (Attrs Ally) where
 instance IsTarget (Attrs Ally) where
   toTarget = AllyTarget . allyId
 
-getModifiedAttack :: MonadGame env m => Attrs Ally -> m Natural
+getModifiedAttack :: HasGame m => Attrs Ally -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ allyAttack attrs) modifiers
@@ -140,7 +140,7 @@ getModifiedAttack attrs = do
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedThwart :: MonadGame env m => Attrs Ally -> m Natural
+getModifiedThwart :: HasGame m => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unThw $ allyThwart attrs) modifiers

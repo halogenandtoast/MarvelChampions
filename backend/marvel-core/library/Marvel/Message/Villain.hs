@@ -2,7 +2,7 @@ module Marvel.Message.Villain where
 
 import Marvel.Prelude
 
-import Marvel.Card
+import Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Source

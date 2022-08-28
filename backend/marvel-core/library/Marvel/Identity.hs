@@ -26,7 +26,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero
-import Marvel.Hero.Types
+import Marvel.Hero.Runner
 import Marvel.Identity.Types
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
@@ -34,6 +34,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Payment
+import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -128,7 +129,7 @@ isAlterEgo player = case currentIdentity player of
 identityDamage :: PlayerIdentity -> Natural
 identityDamage = playerIdentityDamage . toAttrs
 
-getModifiedHandSize :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedHandSize :: HasGame m => PlayerIdentity -> m Natural
 getModifiedHandSize pid = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (unHandSize $ handSize pid) modifiers
@@ -136,7 +137,7 @@ getModifiedHandSize pid = do
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedHp :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedHp :: HasGame m => PlayerIdentity -> m Natural
 getModifiedHp pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (unHp $ playerIdentityHP attrs) modifiers
@@ -155,7 +156,7 @@ instance HasTraits PlayerIdentity where
     applyModifier (TraitModifier t) = HashSet.insert t
     applyModifier _ = id
 
-getIdentityHeroAttackDamage :: MonadGame env m => PlayerIdentity -> m Natural
+getIdentityHeroAttackDamage :: HasGame m => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
   AlterEgoSide _ -> pure 0
   HeroSide x -> getModifiedAttack $ toAttrs x
@@ -164,8 +165,9 @@ instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted . toAttrs
 
 instance HasResources PlayerIdentity where
-  resourcesFor player card =
-    concatMapM (`resourcesFor` card) (unHand $ playerIdentityHand $ toAttrs player)
+  resourcesFor player card = concatMapM
+    (`resourcesFor` card)
+    (unHand $ playerIdentityHand $ toAttrs player)
 
 instance IsSource PlayerIdentity where
   toSource = IdentitySource . playerIdentityId . toAttrs
@@ -181,30 +183,31 @@ currentIdentity (PlayerIdentity a) =
 
 createIdentity
   :: IdentityId -> PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
-createIdentity ident alterEgoSide heroSide = PlayerIdentity $ PlayerIdentityAttrs
-  { playerIdentitySide = B
-  , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
-  , playerIdentityId = ident
-  , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
-  , playerIdentityDamage = 0
-  , playerIdentityDeck = Deck []
-  , playerIdentityDiscard = Discard []
-  , playerIdentityHand = Hand []
-  , playerIdentityPassed = False
-  , playerIdentityAllies = mempty
-  , playerIdentityAllyLimit = 3
-  , playerIdentityMinions = mempty
-  , playerIdentitySupports = mempty
-  , playerIdentityUpgrades = mempty
-  , playerIdentityExhausted = False
-  , playerIdentityEncounterCards = []
-  , playerIdentityDamageReduction = 0
-  , playerIdentityStunned = False
-  , playerIdentityConfused = False
-  , playerIdentityTough = False
-  , playerIdentityDefeated = False
-  , playerIdentityDefended = False
-  }
+createIdentity ident alterEgoSide heroSide =
+  PlayerIdentity $ PlayerIdentityAttrs
+    { playerIdentitySide = B
+    , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
+    , playerIdentityId = ident
+    , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
+    , playerIdentityDamage = 0
+    , playerIdentityDeck = Deck []
+    , playerIdentityDiscard = Discard []
+    , playerIdentityHand = Hand []
+    , playerIdentityPassed = False
+    , playerIdentityAllies = mempty
+    , playerIdentityAllyLimit = 3
+    , playerIdentityMinions = mempty
+    , playerIdentitySupports = mempty
+    , playerIdentityUpgrades = mempty
+    , playerIdentityExhausted = False
+    , playerIdentityEncounterCards = []
+    , playerIdentityDamageReduction = 0
+    , playerIdentityStunned = False
+    , playerIdentityConfused = False
+    , playerIdentityTough = False
+    , playerIdentityDefeated = False
+    , playerIdentityDefended = False
+    }
  where
   hp = case alterEgoSide of
     AlterEgoSide x -> startingHP x
@@ -226,7 +229,7 @@ lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
   Just . HeroSide $ lookupHeroByCardCode (toCardCode cardDef) ident
 
-takeTurn :: MonadGame env m => PlayerIdentity -> m ()
+takeTurn :: HasQueue m => PlayerIdentity -> m ()
 takeTurn attrs =
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
 
@@ -240,7 +243,7 @@ instance HasAbilities PlayerIdentity where
       [limitedAbility a 100 (PerTurn 1) Action IsSelf NoCost ChangeForm]
         <> sideAbilities
 
-isPlayable :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Bool
+isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
   resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
@@ -274,7 +277,7 @@ isPlayable attrs c = do
     ExtendedCardExists m -> selectAny (NotCard c <> m)
     -- ^ this is critical and order matters to avoid infinite recursion
 
-getModifiedCost :: MonadGame env m => PlayerIdentity -> PlayerCard -> m Int
+getModifiedCost :: HasGame m => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
   modifiers <- getModifiers attrs
   pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
@@ -283,11 +286,12 @@ getModifiedCost attrs c = do
   applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
   applyModifier _ = id
 
-getPlayableCards :: MonadGame env m => PlayerIdentity -> m [PlayerCard]
+getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
   where cards = unHand $ playerIdentityHand $ toAttrs player
 
-getChoices :: MonadGame env m => PlayerIdentity -> m [Choice]
+getChoices
+  :: (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
 getChoices attrs = do
   let ident = toId attrs
   abilities <- getsGame getAbilities
@@ -319,7 +323,10 @@ toRetaliate (Retaliate n : _) = n
 toRetaliate (_ : xs) = toRetaliate xs
 
 runIdentityMessage
-  :: MonadGame env m => IdentityMessage -> PlayerIdentity -> m PlayerIdentity
+  :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity)
+  => IdentityMessage
+  -> PlayerIdentity
+  -> m PlayerIdentity
 runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
   case msg of
     SetupIdentity -> do
@@ -661,7 +668,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               | not (null playerIdentityMinions)
               ]
       pure pid
-    DealtEncounterCard ec -> pure $ PlayerIdentity $ attrs & encounterCardsL %~ (ec :)
+    DealtEncounterCard ec ->
+      pure $ PlayerIdentity $ attrs & encounterCardsL %~ (ec :)
     RevealEncounterCards -> do
       pushAll $ map
         (RevealEncounterCard playerIdentityId)
@@ -853,7 +861,7 @@ instance HasModifiersFor PlayerIdentity where
     HeroSide x -> getModifiersFor source target x
     AlterEgoSide x -> getModifiersFor source target x
 
-getModifiedAllyLimit :: MonadGame env m => PlayerIdentity -> m Natural
+getModifiedAllyLimit :: HasGame m => PlayerIdentity -> m Natural
 getModifiedAllyLimit pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (playerIdentityAllyLimit attrs) modifiers

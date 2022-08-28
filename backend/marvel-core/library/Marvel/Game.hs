@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Game where
 
 import Marvel.Prelude
@@ -56,6 +57,7 @@ import Marvel.Obligation
 import Marvel.Obligation.Types (Obligation)
 import Marvel.Payment
 import Marvel.Phase
+import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -63,7 +65,7 @@ import Marvel.Resource
 import Marvel.Scenario
 import Marvel.Scenario.Types (Scenario, getScenarioDifficulty)
 import Marvel.SideScheme
-import Marvel.SideScheme.Types (SideScheme, isCrisis, getSideSchemeThreat)
+import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Source
 import Marvel.Support
 import Marvel.Support.Types (Support, getSupportController, getSupportUses)
@@ -72,9 +74,10 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Upgrade, getUpgradeUses, getUpgradeController)
+import Marvel.Upgrade.Types (Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
-import Marvel.Villain.Types (Villain, villainDamage, villainIsTough, villainAttackDetails)
+import Marvel.Villain.Types
+  (Villain, villainAttackDetails, villainDamage, villainIsTough)
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
 import Marvel.Window qualified as W
 
@@ -196,22 +199,54 @@ patch g p = case Diff.patch p (toJSON g) of
   Error e -> Error e
   Success a -> fromJSON a
 
-getPlayers :: MonadGame env m => m [IdentityId]
+newtype GameAppT a = GameAppT { unGameAppT :: ReaderT GameApp IO a }
+  deriving newtype (MonadReader GameApp, Functor, Applicative, Monad, MonadFail, MonadIO, MonadRandom, MonadCatch, MonadThrow)
+
+data GameApp = GameApp
+  { appGame :: IORef Game
+  , appQueue :: IORef [Message]
+  , appDebugLogger :: Maybe DebugLogger
+  }
+
+instance HasGame GameAppT where
+  getGame = getGameRef >>= readIORef
+
+instance HasQueue GameAppT where
+  getQueue = asks appQueue
+
+instance HasDebugLogger GameApp where
+  debugLogger = appDebugLogger
+
+instance HasGameRef GameAppT where
+  getGameRef = asks appGame
+
+instance MonadGame GameApp GameAppT
+
+newApp :: MonadIO m => Game -> [Message] -> m GameApp
+newApp g msgs = do
+  gameRef <- newIORef g
+  queueRef <- newIORef msgs
+  pure $ GameApp gameRef queueRef Nothing
+
+runGameApp :: MonadIO m => GameApp -> GameAppT a -> m a
+runGameApp gameApp = liftIO . flip runReaderT gameApp . unGameAppT
+
+getPlayers :: HasGame m => m [IdentityId]
 getPlayers = getsGame gamePlayerOrder
 
-getActivePlayerId :: MonadGame env m => m IdentityId
+getActivePlayerId :: HasGame m => m IdentityId
 getActivePlayerId = toId <$> getActivePlayer
 
-getPlayerCount :: MonadGame env m => m Int
+getPlayerCount :: HasGame m => m Int
 getPlayerCount = length <$> getsGame gamePlayerOrder
 
-getActivePlayer :: MonadGame env m => m PlayerIdentity
+getActivePlayer :: HasGame m => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
   case lookup (g ^. activePlayerL) (g ^. entitiesL . playersL) of
     Just p -> p
     Nothing -> error "Missing player"
 
-runPreGameMessage :: MonadGame env m => Message -> Game -> m Game
+runPreGameMessage :: (HasQueue m, HasGame m) => Message -> Game -> m Game
 runPreGameMessage msg g = case msg of
   CheckWindows windows -> do
     push EndCheckWindows
@@ -231,7 +266,7 @@ runPreGameMessage msg g = case msg of
         )
   _ -> pure g
 
-runGameMessage :: MonadGame env m => Message -> Game -> m Game
+runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
@@ -577,17 +612,14 @@ runGameMessage msg g@Game {..} = case msg of
   _ -> pure g
 
 getWindowPlayableCards
-  :: (HasCallStack, MonadGame env m)
-  => Window
-  -> PlayerIdentity
-  -> m [PlayerCard]
+  :: (HasCallStack, MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => Window -> PlayerIdentity -> m [PlayerCard]
 getWindowPlayableCards window player = filterM
   (isWindowPlayable window player)
   cards
   where cards = unHand $ playerIdentityHand $ toAttrs player
 
 isWindowPlayable
-  :: (HasCallStack, MonadGame env m)
+  :: (HasCallStack, MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity)
   => Window
   -> PlayerIdentity
   -> PlayerCard
@@ -623,7 +655,7 @@ isWindowPlayable window attrs c = do
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
 
-abilityInWindow :: MonadGame env m => Window -> Ability -> m Bool
+abilityInWindow :: HasGame m => Window -> Ability -> m Bool
 abilityInWindow window a = maybe
   (pure False)
   (\matcher -> windowMatches matcher window source)
@@ -655,8 +687,14 @@ instance RunMessage Game where
       >>= traverseOf (activeCostL . traverse) (runMessage msg)
       >>= runGameMessage msg
 
-class HasGame a where
-  game :: a -> IORef Game
+class Monad m => HasGame m where
+  getGame :: m Game
+
+instance HasGame m => Projection m PlayerIdentity where
+  project fld ident = do
+    pIdentity <- getIdentity ident
+    pure $ field fld pIdentity
+
 
 createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =
@@ -727,7 +765,7 @@ addPlayer player =
 
 withGame :: MonadGame env m => (Game -> (Game, a)) -> m a
 withGame f = do
-  gameRef <- asks game
+  gameRef <- getGameRef
   atomicModifyIORef' gameRef f
 
 withGame_ :: MonadGame env m => (Game -> Game) -> m ()
@@ -736,10 +774,10 @@ withGame_ f = withGame ((, ()) . f)
 withGameM :: MonadGame env m => (Game -> m Game) -> m ()
 withGameM f = getGame >>= f >>= withGame_ . const
 
-getsGame :: MonadGame env m => (Game -> a) -> m a
-getsGame f = withGame (toSnd f)
+getsGame :: HasGame m => (Game -> a) -> m a
+getsGame f = f <$> getGame
 
-getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
+getUsedAbilities :: HasGame m => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)
 
 class
@@ -747,8 +785,9 @@ class
   , MonadThrow m
   , MonadIO m
   , MonadReader env m
-  , HasGame env
-  , HasQueue env
+  , HasGame m
+  , HasGameRef m
+  , HasQueue m
   , HasDebugLogger env
   , MonadRandom m
   , CoerceRole m
@@ -756,6 +795,19 @@ class
   MonadGame env m
     | env -> m
     , m -> env
+
+class HasGameRef m where
+  getGameRef :: m (IORef Game)
+
+instance Monad m => HasGame (ReaderT Game m) where
+  getGame = ask
+
+getIdentity :: HasGame m => IdentityId -> m PlayerIdentity
+getIdentity ident = do
+  g <- getGame
+  case lookup ident (gamePlayers g) of
+    Just a -> pure a
+    Nothing -> error "missing identity"
 
 initPlayer :: MonadRandom m => CardCode -> Deck -> m PlayerIdentity
 initPlayer cardCode deck = do
@@ -777,9 +829,6 @@ createPlayer cardCode deck = do
   playerIdentity <- initPlayer cardCode deck
   addPlayer playerIdentity
 
-getGame :: MonadGame env m => m Game
-getGame = readIORef =<< asks game
-
 instance HasAbilities Game where
   getAbilities g =
     concatMap getAbilities (elems $ gamePlayers g)
@@ -790,7 +839,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (elems $ gameAttachments g)
       <> concatMap getAbilities (elems $ gameMinions g)
 
-runGameMessages :: MonadGame env m => m ()
+runGameMessages :: (MonadGame env m, Projection m PlayerIdentity) => m ()
 runGameMessages = do
   mMsg <- pop
   for_ mMsg debug
@@ -806,20 +855,20 @@ runGameMessages = do
 replayChoices :: MonadGame env m => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
 
-getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
+getAvailablePaymentSources :: HasGame m => m [PlayerCard]
 getAvailablePaymentSources = do
   players <- toList <$> getsGame gamePlayers
   pure $ concatMap (unHand . playerIdentityHand . toAttrs) players
 
 getAvailableResourcesFor
-  :: (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
+  :: (HasCallStack, HasQueue m, MonadRandom m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => Maybe PlayerCard -> m [Resource]
 getAvailableResourcesFor mc = do
   players <- toList <$> getsGame gamePlayers
   abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
   playerResources <- concatMapM (`resourcesFor` mc) players
   pure $ playerResources <> abilitiesResources
 
-getResourceAbilities :: (HasCallStack, MonadGame env m) => m [Ability]
+getResourceAbilities :: (MonadThrow m, MonadRandom m, HasQueue m, HasCallStack, HasGame m, Projection m PlayerIdentity) => m [Ability]
 getResourceAbilities = do
   player <- getActivePlayer
   abilities <- getsGame getAbilities
@@ -834,8 +883,7 @@ getResourceAbilities = do
     )
     abilities
 
-gameSelectIdentity
-  :: MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
+gameSelectIdentity :: HasGame m => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
   identities <- toList <$> getsGame gamePlayers
   result <- filterM (matchFilter m) identities
@@ -858,7 +906,7 @@ gameSelectIdentity m = do
         `HashSet.intersection` minions
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
-    IdentityWithTitle t -> pure . (== t) . title .cdName . getCardDef
+    IdentityWithTitle t -> pure . (== t) . title . cdName . getCardDef
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs
@@ -871,8 +919,7 @@ gameSelectIdentity m = do
       ap <- getActivePlayer
       pure $ a == ap
 
-gameSelectCharacter
-  :: MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
+gameSelectCharacter :: HasGame m => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
   CharacterWithDamage gameValueMatcher -> do
     villains <- map VillainCharacter
@@ -905,22 +952,27 @@ gameSelectCharacter = \case
       <*> traverse gameSelectCharacter xs
 
 gameSelectExtendedCard
-  :: MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
+  :: ( MonadThrow m
+     , HasGame m
+     , HasQueue m
+     , Projection m PlayerIdentity
+     )
+  => ExtendedCardMatcher
+  -> m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
   let excludedCards = getExcludedCards m
+      msgs = map (RemoveFromGame . CardIdTarget . pcCardId) excludedCards
   players <- toList <$> getsGame gamePlayers
-  oldVal <- getsGame id
-  withGameM $ \g -> foldlM
-    (\g' -> (`runMessage` g') . RemoveFromGame . CardIdTarget . pcCardId)
-    g
-    excludedCards
+  g <- getGame
+  tempApp <- newApp g msgs
   let
     allCards =
       concatMap (unHand . playerIdentityHand . toAttrs) players
         <> concatMap (unDiscard . playerIdentityDiscard . toAttrs) players
         <> concatMap (unDeck . playerIdentityDeck . toAttrs) players
-  result <- go players allCards m
-  withGame_ (const oldVal)
+  result <- runGameApp tempApp $ do
+    runGameMessages
+    go players allCards m
   pure $ HashSet.fromList result
  where
   getExcludedCards = \case
@@ -956,7 +1008,9 @@ gameSelectExtendedCard m = do
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
 
 gameSelectEncounterCard
-  :: MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
+  :: (MonadRandom m, HasGame m)
+  => EncounterCardMatcher
+  -> m (HashSet EncounterCard)
 gameSelectEncounterCard m = case m of
   NemesisSetFor identityId -> do
     mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
@@ -966,7 +1020,7 @@ gameSelectEncounterCard m = case m of
         cards <- gatherEncounterSet $ getNemesisSet $ toCardCode iid
         pure $ HashSet.fromList cards
 
-gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
+gameSelectAlly :: HasGame m => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
   allies <- toList <$> getsGame gameAllies
   result <- filterM (matchFilter m) allies
@@ -986,7 +1040,7 @@ gameSelectAlly m = do
     AllyWithId ident' -> pure . (== ident') . toId
     AllyMatches xs -> andM . traverse matchFilter xs
 
-gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
+gameSelectSupport :: HasGame m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case
   UnexhaustedSupport -> do
     supports <- toList <$> getsGame gameSupports
@@ -1003,7 +1057,7 @@ gameSelectSupport = \case
       . map toId
       <$> filterM (gameValueMatches gameValueMatcher . getSupportUses) upgrades
 
-gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
+gameSelectUpgrade :: HasGame m => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do
   upgrades <- toList <$> getsGame gameUpgrades
   result <- filterM (matchFilter m) upgrades
@@ -1020,7 +1074,7 @@ gameSelectUpgrade m = do
     UpgradeMatches xs -> andM . traverse matchFilter xs
 
 gameSelectAttachment
-  :: MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
+  :: HasGame m => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectAttachment m = do
   attachments <- toList <$> getsGame gameAttachments
   result <- filterM (matchFilter m) attachments
@@ -1030,20 +1084,18 @@ gameSelectAttachment m = do
     AttachmentWithId ident' -> pure . (== ident') . toId
 
 -- TODO: can not remember what specifically wanted removed villains/minions
-gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
+gameSelectEnemy :: HasGame m => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
-  villains <- traceShowId . toList <$> getsGame gameVillains
-  minions <- traceShowId . toList <$> getsGame gameMinions
+  villains <- toList <$> getsGame gameVillains
+  minions <- toList <$> getsGame gameMinions
   -- removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
   -- removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
   -- villains' <- map (EnemyVillainId . toId)
   --   <$> filterM (`goVillain` m) (villains <> removedVillains)
   -- minions' <- map (EnemyMinionId . toId)
   --   <$> filterM (`goMinion` m) (minions <> removedMinions)
-  villains' <- map (EnemyVillainId . toId)
-    <$> filterM (`goVillain` m) villains
-  minions' <- map (EnemyMinionId . toId)
-    <$> filterM (`goMinion` m) minions
+  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) villains
+  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) minions
   pure $ HashSet.fromList (villains' <> minions')
  where
   goVillain e = \case
@@ -1075,7 +1127,7 @@ gameSelectEnemy m = do
     EnemyIs def -> pure $ def == getCardDef e
     EnemyMatchesAll xs -> allM (goMinion e) xs
 
-gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
+gameSelectVillain :: HasGame m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
   villains <- toList <$> getsGame gameVillains
   -- removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
@@ -1092,7 +1144,7 @@ gameSelectVillain m = do
     VillainWithToughStatus -> pure . villainIsTough
     VillainMatches xs -> andM . traverse matchFilter xs
 
-gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
+gameSelectMinion :: HasGame m => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
   minions <- toList <$> getsGame gameMinions
   -- removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
@@ -1116,14 +1168,13 @@ gameSelectMinion m = do
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
 
-gameSelectTreachery
-  :: MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
+gameSelectTreachery :: HasGame m => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case
   AnyTreachery -> do
     treacheries <- toList <$> getsGame gameTreacheries
     pure $ HashSet.fromList $ map toId treacheries
 
-gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectScheme :: HasGame m => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectScheme = \case
   AnyScheme -> do
     mainSchemes <- toList <$> getsGame gameMainSchemes
@@ -1163,7 +1214,7 @@ gameSelectScheme = \case
                (filter ((> 0) . getSideSchemeThreat) sideSchemes)
 
 gameSelectCountScheme
-  :: MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
+  :: HasGame m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountScheme aggregate matcher = do
   schemes <- toList <$> gameSelectScheme matcher
   case aggregate of
@@ -1179,7 +1230,7 @@ gameSelectCountScheme aggregate matcher = do
       sum <$> traverse toThreat schemes
 
 gameSelectSideScheme
-  :: MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
+  :: HasGame m => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
   sideSchemes <- toList <$> getsGame gameSideSchemes
   result <- filterM (matchFilter m) sideSchemes
@@ -1191,7 +1242,7 @@ gameSelectSideScheme m = do
     SideSchemeIs def -> pure . (== def) . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId
 
-getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
+getModifiers :: (HasGame m, IsSource a, IsTarget a) => a -> m [Modifier]
 getModifiers a = do
   effects <- toList <$> getsGame gameEffects
   upgrades <- toList <$> getsGame gameUpgrades
@@ -1214,24 +1265,24 @@ getModifiers a = do
     , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
     ]
 
-getCurrentWindows :: MonadGame env m => m [Window]
+getCurrentWindows :: HasGame m => m [Window]
 getCurrentWindows = do
   windows <- getsGame gameWindows
   pure $ case windows of
     [] -> []
     x : _ -> x
 
-getCurrentPayment :: MonadGame env m => m Payment
+getCurrentPayment :: HasGame m => m Payment
 getCurrentPayment = do
   mCost <- getsGame gameActiveCost
   pure $ case mCost of
     Just cost -> activeCostPayment cost
     Nothing -> NoPayment
 
-getDifficulty :: MonadGame env m => m Difficulty
+getDifficulty :: HasGame m => m Difficulty
 getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
 
-abilityResources :: MonadGame env m => Ability -> m [Resource]
+abilityResources :: (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
 abilityResources a = go (abilityChoices a)
  where
   go [] = pure []
@@ -1244,12 +1295,12 @@ abilityResources a = go (abilityChoices a)
       _ -> error "invalid matcher"
   go (_ : xs) = go xs
 
-getHazardCount :: MonadGame env m => m Natural
+getHazardCount :: HasGame m => m Natural
 getHazardCount = do
   sideSchemes <- getsGame gameSideSchemes
   pure $ foldr ((+) . cdHazards . getCardDef) 0 sideSchemes
 
-getAccelerationCount :: MonadGame env m => m Natural
+getAccelerationCount :: HasGame m => m Natural
 getAccelerationCount = do
   tokens <- getsGame (scenarioAccelerationTokens . gameScenario)
   sideSchemes <- getsGame gameSideSchemes
@@ -1257,13 +1308,10 @@ getAccelerationCount = do
 
 class Count a where
   data QueryCount a
-  selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
+  selectCount :: HasGame m => QueryCount a -> a -> m Natural
 
 gameSelectCountIdentity
-  :: MonadGame env m
-  => QueryCount IdentityMatcher
-  -> IdentityMatcher
-  -> m Natural
+  :: HasGame m => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
 gameSelectCountIdentity aggregate matcher = do
   identities <-
     filterM (identityMatches matcher . toId) . toList =<< getsGame gamePlayers

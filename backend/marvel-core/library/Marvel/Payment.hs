@@ -1,18 +1,28 @@
-module Marvel.Payment where
+module Marvel.Payment
+  ( module Marvel.Payment
+  , module Marvel.Payment.Types
+  ) where
 
 import Marvel.Prelude
 
-import Marvel.Game.Source
 import Marvel.Card.Def
-import Marvel.Resource
+import Marvel.Game.Source
+import Marvel.Identity.Types
+import Marvel.Payment.Types
+import Marvel.Projection
 import Marvel.Query
-import Marvel.Matchers
+import Marvel.Queue
+import Marvel.Resource
 
-data Payment = Payments [Payment] | ResourcePayment Resource | ResourcePaymentFromCard ExtendedCardMatcher | NoPayment
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
-
-paymentResources :: MonadGame env m => Payment -> m [Resource]
+paymentResources
+  :: ( Projection m PlayerIdentity
+     , HasQueue m
+     , HasGame m
+     , MonadRandom m
+     , MonadThrow m
+     )
+  => Payment
+  -> m [Resource]
 paymentResources NoPayment = pure []
 paymentResources (ResourcePayment r) = pure [r]
 paymentResources (ResourcePaymentFromCard matcher) = do
@@ -22,14 +32,3 @@ paymentResources (ResourcePaymentFromCard matcher) = do
     [x] -> pure $ printedResources $ getCardDef x
     _ -> error "target matches too many cards"
 paymentResources (Payments ps) = concatMapM paymentResources ps
-
-instance Semigroup Payment where
-  NoPayment <> x = x
-  x <> NoPayment = x
-  Payments xs <> Payments ys = Payments $ xs <> ys
-  x <> Payments ys = Payments $ x : ys
-  Payments xs <> y = Payments $ xs <> [y]
-  x <> y = Payments [x, y]
-
-instance Monoid Payment where
-  mempty = NoPayment

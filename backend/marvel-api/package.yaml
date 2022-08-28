@@ -68,7 +68,6 @@ library:
   - MonadRandom
   - lens
   - unordered-containers
-  - exceptions
   - yesod-websockets
   - websockets
   - esqueleto

@@ -2,11 +2,13 @@ module Marvel.Treachery.Cards where
 
 import Marvel.Prelude
 
+import Data.HashSet (singleton)
 import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.EncounterSet
+import Marvel.Keyword qualified as Keyword
 import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
@@ -23,8 +25,13 @@ allTreacheries = fromList $ map
   , mastersOfMayhem
   , heartShapedHerb
   , ritualCombat
+  , titaniasFury
   , sweepingSwoop
   , theVulturesPlans
+  , electricWhipAttack
+  , electromagneticBacklash
+  , kreeManipulator
+  , yonRoggsTreason
   , advance
   , assault
   , caughtOffGuard
@@ -111,6 +118,16 @@ electricWhipAttack =
 electromagneticBacklash :: CardDef
 electromagneticBacklash =
   treachery "01174" "Electromagnetic Backlash" [Boost, Boost] IronManNemesis 1
+
+kreeManipulator :: CardDef
+kreeManipulator =
+  (treachery "01178" "Kree Manipulator" [Star] CaptainMarvelNemesis 1)
+    { cdKeywords = singleton Keyword.Surge
+    }
+
+yonRoggsTreason :: CardDef
+yonRoggsTreason =
+  treachery "01179" "Yon-Rogg's Treason" [Boost] CaptainMarvelNemesis 1
 
 advance :: CardDef
 advance = treachery "01186" "Advance" [] Standard 2

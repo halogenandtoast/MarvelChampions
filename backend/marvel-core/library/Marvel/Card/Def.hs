@@ -2,7 +2,7 @@ module Marvel.Card.Def where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Aspect
 import Marvel.Boost
 import Marvel.Card.Code

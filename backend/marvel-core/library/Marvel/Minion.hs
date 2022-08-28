@@ -38,7 +38,7 @@ allMinions = fromList $ map
   , SomeMinionCard titania
   , SomeMinionCard vulture
   , SomeMinionCard whiplash
-      -- , SomeMinionCard yonRogg
+  , SomeMinionCard yonRogg
       -- , SomeMinionCard madameHydra
       -- , SomeMinionCard hydraSoldier
       -- , SomeMinionCard modok

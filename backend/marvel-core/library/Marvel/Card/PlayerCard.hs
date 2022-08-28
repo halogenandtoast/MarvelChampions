@@ -5,16 +5,9 @@ module Marvel.Card.PlayerCard
 
 import Marvel.Prelude
 
-import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard.Types
 import Marvel.Resource
-
-instance HasCardCode PlayerCard where
-  toCardCode = toCardCode . getCardDef
-
-instance HasCardDef PlayerCard where
-  getCardDef = pcCardDef
 
 instance HasResources PlayerCard where
   resourcesFor x mc = pure $ do

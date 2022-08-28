@@ -37,6 +37,7 @@ default-extensions:
 - TypeOperators
 - UndecidableInstances
 - ViewPatterns
+- QuantifiedConstraints
 
 library:
   source-dirs: library

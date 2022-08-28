@@ -15,36 +15,36 @@ import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers.Types
 
-identityMatches :: MonadGame env m => IdentityMatcher -> IdentityId -> m Bool
+identityMatches :: HasGame m => IdentityMatcher -> IdentityId -> m Bool
 identityMatches matcher ident = member ident <$> gameSelectIdentity matcher
 
-allyMatches :: MonadGame env m => AllyMatcher -> AllyId -> m Bool
+allyMatches :: HasGame m => AllyMatcher -> AllyId -> m Bool
 allyMatches matcher ident = member ident <$> gameSelectAlly matcher
 
-upgradeMatches :: MonadGame env m => UpgradeMatcher -> UpgradeId -> m Bool
+upgradeMatches :: HasGame m => UpgradeMatcher -> UpgradeId -> m Bool
 upgradeMatches matcher ident = member ident <$> gameSelectUpgrade matcher
 
-enemyMatches :: MonadGame env m => EnemyMatcher -> EnemyId -> m Bool
+enemyMatches :: HasGame m => EnemyMatcher -> EnemyId -> m Bool
 enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
 
-villainMatches :: MonadGame env m => VillainMatcher -> VillainId -> m Bool
+villainMatches :: HasGame m => VillainMatcher -> VillainId -> m Bool
 villainMatches matcher ident = member ident <$> gameSelectVillain matcher
 
 treacheryMatches
-  :: MonadGame env m => TreacheryMatcher -> TreacheryId -> m Bool
+  :: HasGame m => TreacheryMatcher -> TreacheryId -> m Bool
 treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
 
-schemeMatches :: MonadGame env m => SchemeMatcher -> SchemeId -> m Bool
+schemeMatches :: HasGame m => SchemeMatcher -> SchemeId -> m Bool
 schemeMatches matcher ident = member ident <$> gameSelectScheme matcher
 
 sideSchemeMatches
-  :: MonadGame env m => SideSchemeMatcher -> SideSchemeId -> m Bool
+  :: HasGame m => SideSchemeMatcher -> SideSchemeId -> m Bool
 sideSchemeMatches matcher ident = member ident <$> gameSelectSideScheme matcher
 
-minionMatches :: MonadGame env m => MinionMatcher -> MinionId -> m Bool
+minionMatches :: HasGame m => MinionMatcher -> MinionId -> m Bool
 minionMatches matcher ident = member ident <$> gameSelectMinion matcher
 
-gameValueMatches :: MonadGame env m => GameValueMatcher -> Natural -> m Bool
+gameValueMatches :: HasGame m => GameValueMatcher -> Natural -> m Bool
 gameValueMatches matcher n = case matcher of
   AnyValue -> pure True
   GreaterThan v -> do
@@ -55,14 +55,14 @@ gameValueMatches matcher n = case matcher of
     pure $ n >= value
 
 characterMatches
-  :: MonadGame env m => CharacterMatcher -> CharacterId -> m Bool
+  :: HasGame m => CharacterMatcher -> CharacterId -> m Bool
 characterMatches matcher ident = member ident <$> gameSelectCharacter matcher
 
 encounterCardMatches :: BasicEncounterCardMatcher -> EncounterCard -> Bool
 encounterCardMatches matcher _ = case matcher of
   AnyEncounterCard -> True
 
-damageMatches :: MonadGame env m => DamageMatcher -> Damage -> m Bool
+damageMatches :: HasGame m => DamageMatcher -> Damage -> m Bool
 damageMatches matcher damage = case matcher of
   AttackFromPlayer identityMatcher -> case damageSource damage of
     FromPlayerAttack ident -> identityMatches identityMatcher ident

@@ -4,7 +4,7 @@ module Marvel.Matchers.Types where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.Def
 import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
 import Marvel.GameValue.Types

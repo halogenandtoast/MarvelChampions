@@ -4,3 +4,7 @@ import Marvel.Prelude
 
 newtype CardId = CardId { unCardId :: UUID }
   deriving newtype (Show, Eq, ToJSON, FromJSON, Random, Hashable)
+
+class HasCardId a where
+  toCardId :: a -> CardId
+

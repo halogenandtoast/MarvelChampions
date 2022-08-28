@@ -3,7 +3,7 @@ module Marvel.Identity.Types where
 import Marvel.Prelude
 
 import Marvel.AlterEgo.Types
-import Marvel.Card
+import Marvel.Card.Types
 import Marvel.Deck
 import Marvel.Discard
 import Marvel.Entity

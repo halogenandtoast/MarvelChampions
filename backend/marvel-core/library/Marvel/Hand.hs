@@ -2,7 +2,7 @@ module Marvel.Hand where
 
 import Marvel.Prelude
 
-import Marvel.Card.PlayerCard
+import Marvel.Card.PlayerCard.Types
 
 newtype HandSize = HandSize { unHandSize :: Natural }
   deriving newtype (Show, Eq, ToJSON, FromJSON)

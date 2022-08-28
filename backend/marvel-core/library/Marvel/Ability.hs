@@ -6,13 +6,16 @@ module Marvel.Ability
 import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability.Type as X
+import Marvel.Ability.Types as X
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query
+import Marvel.Queue
+import Marvel.Projection
+import Marvel.Identity.Types
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Source
 import Marvel.Window
@@ -113,7 +116,7 @@ passesUseLimit x aMap a = case abilityLimit a of
   PerWindow n -> count (== a) usedAbilities < n
   where usedAbilities = HashMap.findWithDefault [] x aMap
 
-passesCriteria :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool
 passesCriteria x a = go (abilityCriteria a)
  where
   go = \case
@@ -155,7 +158,7 @@ passesTiming _ a = all passes (toList $ abilityTiming a)
   passes x = case x of
     DuringOwnTurn -> True
 
-passesTypeIsRelevant :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesTypeIsRelevant :: HasGame m => IdentityId -> Ability -> m Bool
 passesTypeIsRelevant ident a = case abilityType a of
   Interrupt -> pure False
   HeroInterrupt -> pure False
@@ -172,7 +175,7 @@ passesTypeIsRelevant ident a = case abilityType a of
   Setup -> pure False
 
 class PerformAbility a where
-  performAbility :: MonadGame env m => a -> Natural -> m ()
+  performAbility :: HasGame m => a -> Natural -> m ()
 
 isForcedAbility :: Ability -> Bool
 isForcedAbility a = case abilityType a of
