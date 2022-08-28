@@ -23,7 +23,6 @@ paymentResources
      )
   => Payment
   -> m [Resource]
-paymentResources NoPayment = pure []
 paymentResources (ResourcePayment r) = pure [r]
 paymentResources (ResourcePaymentFromCard matcher) = do
   cards <- selectList matcher
@@ -32,3 +31,4 @@ paymentResources (ResourcePaymentFromCard matcher) = do
     [x] -> pure $ printedResources $ getCardDef x
     _ -> error "target matches too many cards"
 paymentResources (Payments ps) = concatMapM paymentResources ps
+paymentResources _ = pure []

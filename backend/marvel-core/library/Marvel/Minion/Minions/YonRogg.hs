@@ -40,7 +40,7 @@ instance RunMessage YonRogg where
     RanAbility target 1 _ _ | isTarget attrs target -> do
       mThePsycheMagnitron <- selectOne
         $ SideSchemeIs SideSchemes.thePsycheMagnitron
-      for_ mThePsycheMagnitron $ \thePsycheMagnitron ->
+      for_ (traceShowId mThePsycheMagnitron) $ \thePsycheMagnitron ->
         push $ SideSchemeMessage thePsycheMagnitron $ SideSchemePlaceThreat 1
       pure e
     _ -> YonRogg <$> runMessage msg attrs

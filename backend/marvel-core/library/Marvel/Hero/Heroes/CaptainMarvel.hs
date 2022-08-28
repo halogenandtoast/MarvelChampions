@@ -9,7 +9,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Cards qualified as Cards
-import Marvel.Hero.Types
+import Marvel.Hero.Runner
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
@@ -44,4 +44,4 @@ instance HasAbilities CaptainMarvel where
     ]
 
 instance RunMessage CaptainMarvel where
-  runMessage _ = pure
+  runMessage msg (CaptainMarvel attrs) = CaptainMarvel <$> runMessage msg attrs

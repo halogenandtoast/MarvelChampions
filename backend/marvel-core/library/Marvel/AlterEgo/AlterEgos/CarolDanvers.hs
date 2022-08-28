@@ -44,4 +44,4 @@ instance HasAbilities CarolDanvers where
     ]
 
 instance RunMessage CarolDanvers where
-  runMessage _ = pure
+  runMessage msg (CarolDanvers attrs) = CarolDanvers <$> runMessage msg attrs

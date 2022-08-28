@@ -9,7 +9,10 @@ import Marvel.Id
 import Marvel.Payment.Types
 import Marvel.Window.Types
 
-data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability | ForTreachery
+data ActiveCostTarget
+  = ForCard PlayerCard
+  | ForAbility Ability
+  | ForTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

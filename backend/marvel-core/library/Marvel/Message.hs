@@ -37,7 +37,7 @@ import Marvel.Target
 import Marvel.Window.Types (Window, WindowType)
 
 class RunMessage a where
-  runMessage :: (MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
+  runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
 
 data FinishedStatus
   = Won
@@ -127,6 +127,7 @@ data Message
   | ShuffleIntoEncounterDeck [EncounterCard]
   | ClearBoosts
   | ClearRemoved
+  | CheckPayment
   | Boost Message
   | RevealedAsBoost Target EnemyId
   | ChoseEnemy EnemyId Target

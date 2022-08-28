@@ -23,6 +23,7 @@ data Target
   | MainSchemeTarget MainSchemeId
   | SchemeTarget SchemeId
   | CardIdTarget CardId
+  | ActiveCostTarget
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable, ToJSONKey, FromJSONKey)
 
