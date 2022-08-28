@@ -17,6 +17,9 @@ withQueue body = do
 withQueue_ :: HasQueue m => (Queue -> Queue) -> m ()
 withQueue_ body = withQueue $ (, ()) . body
 
+withQueueM :: HasQueue m => (Queue -> m a) -> m a
+withQueueM body = withQueue (toSnd id) >>= body
+
 clearQueue :: HasQueue m => m ()
 clearQueue = withQueue_ (const mempty)
 

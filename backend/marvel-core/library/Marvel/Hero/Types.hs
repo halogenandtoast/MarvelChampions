@@ -12,7 +12,6 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
-import Marvel.Damage
 import Marvel.Entity
 import Marvel.GameValue.Types
 import Marvel.Hand
@@ -23,8 +22,6 @@ import {-# SOURCE #-} Marvel.Modifier
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Trait.Types
-import Marvel.Window.Types qualified as W
 import Text.Show qualified
 
 data Hero = forall a . IsHero a => Hero a

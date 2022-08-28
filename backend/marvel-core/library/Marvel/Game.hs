@@ -266,7 +266,16 @@ runPreGameMessage msg g = case msg of
         )
   _ -> pure g
 
-runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) => Message -> Game -> m Game
+runGameMessage
+  :: ( HasGame m
+     , HasQueue m
+     , MonadThrow m
+     , MonadRandom m
+     , Projection m PlayerIdentity
+     )
+  => Message
+  -> Game
+  -> m Game
 runGameMessage msg g@Game {..} = case msg of
   StartGame -> do
     push StartScenario
@@ -300,9 +309,14 @@ runGameMessage msg g@Game {..} = case msg of
           sid
       pure $ g & (entitiesL . supportsL %~ delete sid)
     UpgradeTarget uid -> do
-      for_ (lookup uid $ gameUpgrades g) $ \upgrade ->
-        pushAll [UpgradeRemoved uid, DiscardedCard $ toCard upgrade]
-      pure $ g & (entitiesL . upgradesL %~ delete uid)
+      case (lookup uid $ gameUpgrades g) of
+        Nothing -> pure g
+        Just upgrade -> do
+          pushAll [UpgradeRemoved uid, DiscardedCard $ toCard upgrade]
+          pure
+            $ g
+            & (entitiesL . upgradesL %~ delete uid)
+            & (removedEntitiesL . upgradesL %~ insert uid upgrade)
     AttachmentTarget aid -> do
       for_ (lookup aid $ gameAttachments g) $ \attachment ->
         pushAll [AttachmentRemoved aid, DiscardedCard $ toCard attachment]
@@ -612,14 +626,29 @@ runGameMessage msg g@Game {..} = case msg of
   _ -> pure g
 
 getWindowPlayableCards
-  :: (HasCallStack, MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => Window -> PlayerIdentity -> m [PlayerCard]
+  :: ( HasCallStack
+     , MonadThrow m
+     , MonadRandom m
+     , HasQueue m
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
+  => Window
+  -> PlayerIdentity
+  -> m [PlayerCard]
 getWindowPlayableCards window player = filterM
   (isWindowPlayable window player)
   cards
   where cards = unHand $ playerIdentityHand $ toAttrs player
 
 isWindowPlayable
-  :: (HasCallStack, MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity)
+  :: ( HasCallStack
+     , MonadThrow m
+     , MonadRandom m
+     , HasQueue m
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
   => Window
   -> PlayerIdentity
   -> PlayerCard
@@ -683,6 +712,7 @@ instance RunMessage Game where
     runPreGameMessage msg g
       >>= traverseOf scenarioL (runMessage msg)
       >>= traverseOf entitiesL (runMessage msg)
+      >>= traverseOf removedEntitiesL (runMessage msg)
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
       >>= traverseOf (activeCostL . traverse) (runMessage msg)
       >>= runGameMessage msg
@@ -694,7 +724,6 @@ instance HasGame m => Projection m PlayerIdentity where
   project fld ident = do
     pIdentity <- getIdentity ident
     pure $ field fld pIdentity
-
 
 createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =
@@ -861,14 +890,30 @@ getAvailablePaymentSources = do
   pure $ concatMap (unHand . playerIdentityHand . toAttrs) players
 
 getAvailableResourcesFor
-  :: (HasCallStack, HasQueue m, MonadRandom m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => Maybe PlayerCard -> m [Resource]
+  :: ( HasCallStack
+     , HasQueue m
+     , MonadRandom m
+     , MonadThrow m
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
+  => Maybe PlayerCard
+  -> m [Resource]
 getAvailableResourcesFor mc = do
   players <- toList <$> getsGame gamePlayers
   abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
   playerResources <- concatMapM (`resourcesFor` mc) players
   pure $ playerResources <> abilitiesResources
 
-getResourceAbilities :: (MonadThrow m, MonadRandom m, HasQueue m, HasCallStack, HasGame m, Projection m PlayerIdentity) => m [Ability]
+getResourceAbilities
+  :: ( MonadThrow m
+     , MonadRandom m
+     , HasQueue m
+     , HasCallStack
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
+  => m [Ability]
 getResourceAbilities = do
   player <- getActivePlayer
   abilities <- getsGame getAbilities
@@ -952,16 +997,13 @@ gameSelectCharacter = \case
       <*> traverse gameSelectCharacter xs
 
 gameSelectExtendedCard
-  :: ( MonadThrow m
-     , HasGame m
-     , HasQueue m
-     , Projection m PlayerIdentity
-     )
+  :: (MonadThrow m, HasGame m, HasQueue m, Projection m PlayerIdentity)
   => ExtendedCardMatcher
   -> m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
-  let excludedCards = getExcludedCards m
-      msgs = map (RemoveFromGame . CardIdTarget . pcCardId) excludedCards
+  let
+    excludedCards = getExcludedCards m
+    msgs = map (RemoveFromGame . CardIdTarget . pcCardId) excludedCards
   players <- toList <$> getsGame gamePlayers
   g <- getGame
   tempApp <- newApp g msgs
@@ -1282,7 +1324,8 @@ getCurrentPayment = do
 getDifficulty :: HasGame m => m Difficulty
 getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
 
-abilityResources :: (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
+abilityResources
+  :: (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
 abilityResources a = go (abilityChoices a)
  where
   go [] = pure []

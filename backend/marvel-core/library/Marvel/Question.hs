@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.ActiveCost.Types
 import Marvel.Card
-import Marvel.Cost.Types
 import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
@@ -90,12 +89,17 @@ data Choice
 runAbility :: IsTarget a => a -> Natural -> Choice
 runAbility a = RunAbility (toTarget a)
 
-pushChoice :: (HasGame m, HasQueue m, MonadThrow m) => IdentityId -> Choice -> m ()
+pushChoice
+  :: (HasGame m, HasQueue m, MonadThrow m) => IdentityId -> Choice -> m ()
 pushChoice ident choice = do
   msgs <- choiceMessages ident choice
   pushAll msgs
 
-choiceMessages :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> Choice -> m [Message]
+choiceMessages
+  :: (HasQueue m, HasGame m, MonadThrow m)
+  => IdentityId
+  -> Choice
+  -> m [Message]
 choiceMessages ident = \case
   Run msgs -> pure msgs
   Label _ choices -> concatMapM (choiceMessages ident) choices
@@ -144,14 +148,20 @@ choiceMessages ident = \case
             [ Ask ident $ ChooseOne
                 [ TargetLabel (AttachmentTarget x) [Run [f x]] | x <- xs ]
             ]
-  UseAbility a -> do
-    rest <- concatMapM (choiceMessages ident) (abilityChoices a)
-    costs <- costMessages ident a
-    pure $ UsedAbility ident a : costs <> rest
-  RunAbility target n -> do
-    windows <- getCurrentWindows
-    payment <- getCurrentPayment
-    pure [RanAbility target n (map windowType windows) payment, ClearRemoved]
+  UseAbility a -> pure
+    [ SetActiveCost $ ActiveCost
+        ident
+        (ForAbility a)
+        (abilityCost a)
+        NoPayment
+        Nothing
+        mempty
+    ]
+  -- UseAbility a -> do
+  --   rest <- concatMapM (choiceMessages ident) (abilityChoices a)
+  --   costs <- costMessages ident a
+  --   pure $ UsedAbility ident a : costs <> rest
+  RunAbility _ _ -> pure [] -- we handle this via the payment
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
@@ -334,65 +344,14 @@ choiceMessages ident = \case
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
-costMessages :: HasGame m => IdentityId -> Ability -> m [Message]
-costMessages iid a = go (abilityCost a)
- where
-  go = \case
-    NoCost -> pure []
-    DiscardHandCardCost n -> pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
-    DamageCost n ->
-      pure [ IdentityMessage iid
-          $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)
-      ]
-    HealCost n -> pure [IdentityMessage iid $ IdentityHealed n]
-    DamageThisCost n -> pure $ case abilitySource a of
-      AllySource ident ->
-        [ AllyMessage ident
-            $ AllyDamaged (abilitySource a) (toDamage n FromAbility)
-        ]
-      _ -> error "Unhandled"
-    ExhaustCost -> pure $ case abilitySource a of
-      IdentitySource ident -> [IdentityMessage ident ExhaustedIdentity]
-      AllySource ident -> [AllyMessage ident ExhaustedAlly]
-      SupportSource ident -> [SupportMessage ident ExhaustedSupport]
-      UpgradeSource ident -> [UpgradeMessage ident ExhaustedUpgrade]
-      _ -> error "Unhandled"
-    DiscardCost target -> pure $ case target of
-      UpgradeTarget ident -> [UpgradeMessage ident $ DiscardUpgrade]
-      _ -> error "Unhandled"
-    UseCost -> pure $ case abilitySource a of
-      UpgradeSource ident -> [UpgradeMessage ident SpendUpgradeUse]
-      SupportSource ident -> [SupportMessage ident SpendSupportUse]
-      AllySource ident -> [AllyMessage ident SpendAllyUse]
-      _ -> error "Unhandled"
-    DynamicResourceCost _ -> error "unhandled"
-    ResourceCost mr -> pure
-      [ SetActiveCost $ ActiveCost
-          iid
-          (ForAbility a)
-          (ResourceCost mr)
-          NoPayment
-          Nothing
-          mempty
-      ]
-    MultiResourceCost rs ->
-      pure [ SetActiveCost $ ActiveCost
-          iid
-          (ForAbility a)
-          (MultiResourceCost rs)
-          NoPayment
-          Nothing
-          mempty
-      ]
-    Costs xs -> concatMapM go xs
-
 chooseOne :: HasQueue m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 
 chooseOneAtATime :: HasQueue m => IdentityId -> [Choice] -> m ()
 chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
 
-chooseOrRunOne :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> [Choice] -> m ()
+chooseOrRunOne
+  :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices
   [choice] -> pushAll =<< choiceMessages ident choice

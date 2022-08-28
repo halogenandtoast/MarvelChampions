@@ -2,10 +2,23 @@ module Marvel.Payment.Types where
 
 import Marvel.Prelude
 
+import Marvel.Card.Types
 import Marvel.Resource.Types
 import Marvel.Matchers.Types
+import Marvel.Target
 
-data Payment = Payments [Payment] | ResourcePayment Resource | ResourcePaymentFromCard ExtendedCardMatcher | NoPayment
+data Payment
+  = Payments [Payment]
+  | ResourcePayment Resource
+  | ResourcePaymentFromCard ExtendedCardMatcher
+  | DiscardHandCardPayment Card
+  | DamagePayment Natural
+  | HealPayment Natural
+  | DamageThisPayment Natural
+  | ExhaustPayment
+  | DiscardPayment Target
+  | UsePayment
+  | NoPayment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
