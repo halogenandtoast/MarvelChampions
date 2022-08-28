@@ -26,7 +26,7 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   [ SomeSupportCard auntMay
-      -- , SomeSupportCard alphaFlightStation
+  , SomeSupportCard alphaFlightStation
   , SomeSupportCard superhumanLawDivision
   , SomeSupportCard pepperPotts
   , SomeSupportCard starkTower
