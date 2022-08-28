@@ -12,7 +12,7 @@ import Marvel.Matchers
 import Marvel.Source
 import Marvel.Window.Types
 
-windowMatches :: MonadGame env m => WindowMatcher -> Window -> Source -> m Bool
+windowMatches :: HasGame m => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
   PlayThis timing -> case windowType w of
     PlayedAlly allyId ->

@@ -2,7 +2,6 @@ module Api.Handler.Marvel.Replay
   ( getApiV1MarvelGameReplayR
   ) where
 
-import Api.Marvel.Helpers
 import Import hiding (delete, on, (==.))
 import Marvel.Game
 

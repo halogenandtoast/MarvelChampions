@@ -16,10 +16,20 @@ import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
+import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source
 
-passesCanAffordCost :: MonadGame env m => IdentityId -> Ability -> m Bool
+passesCanAffordCost
+  :: ( HasQueue m
+     , MonadRandom m
+     , MonadThrow m
+     , Projection m PlayerIdentity
+     , HasGame m
+     )
+  => IdentityId
+  -> Ability
+  -> m Bool
 passesCanAffordCost identityId a = go (abilityCost a)
  where
   go = \case
@@ -30,6 +40,7 @@ passesCanAffordCost identityId a = go (abilityCost a)
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
+    DiscardCost _ -> pure True -- TODO: we need to check if target exists
     DiscardHandCardCost n -> if n < 1
       then pure True
       else projectP PlayerIdentityHand (notNull . unHand) identityId
@@ -45,6 +56,11 @@ passesCanAffordCost identityId a = go (abilityCost a)
       AllySource ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost mr -> do
+      resources <- getAvailableResourcesFor Nothing
+      pure $ case mr of
+        Nothing -> not (null resources)
+        Just r -> r `elem` resources || Wild `elem` resources
+    DynamicResourceCost mr -> do
       resources <- getAvailableResourcesFor Nothing
       pure $ case mr of
         Nothing -> not (null resources)

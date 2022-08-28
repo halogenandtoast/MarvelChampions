@@ -10,5 +10,5 @@ import Marvel.Game.Source
 import Marvel.Resource.Types
 
 class HasResources a where
-  resourcesFor :: MonadGame env m => a -> Maybe PlayerCard -> m [Resource]
+  resourcesFor :: HasGame m => a -> Maybe PlayerCard -> m [Resource]
 

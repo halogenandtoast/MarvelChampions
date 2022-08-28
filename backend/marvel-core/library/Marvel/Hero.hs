@@ -9,6 +9,15 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Hero.Heroes
 import Marvel.Hero.Types
+import Marvel.Modifier
+import Marvel.Trait
+
+instance HasTraits Hero where
+  getTraits = pure . cdTraits . getCardDef
+
+
+instance HasModifiersFor Hero where
+  getModifiersFor source target (Hero a) = getModifiersFor source target a
 
 instance FromJSON Hero where
   parseJSON = withObject "Hero" $ \o -> do

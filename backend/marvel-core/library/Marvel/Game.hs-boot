@@ -2,30 +2,37 @@ module Marvel.Game where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard.Types
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
+import Marvel.Identity.Types
 import Marvel.Matchers.Types
-import {-# SOURCE #-} Marvel.Modifier
-import {-# SOURCE #-} Marvel.Payment
-import {-# SOURCE #-} Marvel.Queue
+import Marvel.Modifier.Types
+import Marvel.Payment.Types
+import Marvel.Projection
+import Marvel.Queue
 import Marvel.Resource.Types
 import Marvel.Source
 import Marvel.Target
 import Marvel.Window.Types
 
-class HasGame a
+class Monad m => HasGame m where
+  getGame :: m Game
+
+class HasGameRef m where
+  getGameRef :: m (IORef Game)
 
 class
   ( MonadCatch m
   , MonadThrow m
   , MonadIO m
   , MonadReader env m
-  , HasGame env
-  , HasQueue env
+  , HasGame m
+  , HasGameRef m
+  , HasQueue m
   , HasDebugLogger env
   , MonadRandom m
   , CoerceRole m
@@ -36,55 +43,73 @@ class
 
 data Game
 
-getPlayers :: MonadGame env m => m [IdentityId]
-getActivePlayerId :: MonadGame env m => m IdentityId
-getPlayerCount :: MonadGame env m => m Int
-getsGame :: MonadGame env m => (Game -> a) -> m a
-getUsedAbilities :: MonadGame env m => m (HashMap IdentityId [Ability])
+getPlayers :: HasGame m => m [IdentityId]
+getActivePlayerId :: HasGame m => m IdentityId
+getPlayerCount :: HasGame m => m Int
+getsGame :: HasGame m => (Game -> a) -> m a
+getUsedAbilities :: HasGame m => m (HashMap IdentityId [Ability])
 -- Matchers
-gameSelectIdentity ::
-  MonadGame env m => IdentityMatcher -> m (HashSet IdentityId)
-gameSelectEnemy :: MonadGame env m => EnemyMatcher -> m (HashSet EnemyId)
-gameSelectVillain :: MonadGame env m => VillainMatcher -> m (HashSet VillainId)
-gameSelectMinion :: MonadGame env m => MinionMatcher -> m (HashSet MinionId)
-gameSelectAlly :: MonadGame env m => AllyMatcher -> m (HashSet AllyId)
-gameSelectSupport :: MonadGame env m => SupportMatcher -> m (HashSet SupportId)
-gameSelectUpgrade :: MonadGame env m => UpgradeMatcher -> m (HashSet UpgradeId)
-gameSelectAttachment ::
-  MonadGame env m => AttachmentMatcher -> m (HashSet AttachmentId)
-gameSelectScheme :: MonadGame env m => SchemeMatcher -> m (HashSet SchemeId)
-gameSelectSideScheme ::
-  MonadGame env m => SideSchemeMatcher -> m (HashSet SideSchemeId)
-gameSelectTreachery ::
-  MonadGame env m => TreacheryMatcher -> m (HashSet TreacheryId)
-gameSelectCharacter ::
-  MonadGame env m => CharacterMatcher -> m (HashSet CharacterId)
-gameSelectExtendedCard ::
-  MonadGame env m => ExtendedCardMatcher -> m (HashSet PlayerCard)
-gameSelectEncounterCard ::
-  MonadGame env m => EncounterCardMatcher -> m (HashSet EncounterCard)
+gameSelectIdentity :: HasGame m => IdentityMatcher -> m (HashSet IdentityId)
+gameSelectEnemy :: HasGame m => EnemyMatcher -> m (HashSet EnemyId)
+gameSelectVillain :: HasGame m => VillainMatcher -> m (HashSet VillainId)
+gameSelectMinion :: HasGame m => MinionMatcher -> m (HashSet MinionId)
+gameSelectAlly :: HasGame m => AllyMatcher -> m (HashSet AllyId)
+gameSelectSupport :: HasGame m => SupportMatcher -> m (HashSet SupportId)
+gameSelectUpgrade :: HasGame m => UpgradeMatcher -> m (HashSet UpgradeId)
+gameSelectAttachment
+  :: HasGame m => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectScheme :: HasGame m => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectSideScheme
+  :: HasGame m => SideSchemeMatcher -> m (HashSet SideSchemeId)
+gameSelectTreachery :: HasGame m => TreacheryMatcher -> m (HashSet TreacheryId)
+gameSelectCharacter :: HasGame m => CharacterMatcher -> m (HashSet CharacterId)
+gameSelectExtendedCard
+  :: ( MonadThrow m
+     , HasGame m
+     , HasQueue m
+     , Projection m PlayerIdentity
+     )
+  => ExtendedCardMatcher
+  -> m (HashSet PlayerCard)
+gameSelectEncounterCard
+  :: (MonadRandom m, HasGame m)
+  => EncounterCardMatcher
+  -> m (HashSet EncounterCard)
 
 instance HasAbilities Game
 
-getAvailableResourcesFor ::
-  (HasCallStack, MonadGame env m) => Maybe PlayerCard -> m [Resource]
-getModifiers :: (MonadGame env m, IsSource a, IsTarget a) => a -> m [Modifier]
-getCurrentWindows :: MonadGame env m => m [Window]
-getCurrentPayment :: MonadGame env m => m Payment
-getDifficulty :: MonadGame env m => m Difficulty
-getHazardCount :: MonadGame env m => m Natural
-getAccelerationCount :: MonadGame env m => m Natural
-getAvailablePaymentSources :: MonadGame env m => m [PlayerCard]
-getResourceAbilities :: (HasCallStack, MonadGame env m) => m [Ability]
+getAvailableResourcesFor
+  :: ( HasCallStack
+     , HasQueue m
+     , MonadRandom m
+     , MonadThrow m
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
+  => Maybe PlayerCard
+  -> m [Resource]
+getModifiers :: (HasGame m, IsSource a, IsTarget a) => a -> m [Modifier]
+getCurrentWindows :: HasGame m => m [Window]
+getCurrentPayment :: HasGame m => m Payment
+getDifficulty :: HasGame m => m Difficulty
+getHazardCount :: HasGame m => m Natural
+getAccelerationCount :: HasGame m => m Natural
+getAvailablePaymentSources :: HasGame m => m [PlayerCard]
+getResourceAbilities
+  :: ( MonadThrow m
+     , MonadRandom m
+     , HasQueue m
+     , HasCallStack
+     , HasGame m
+     , Projection m PlayerIdentity
+     )
+  => m [Ability]
 
 class Count a where
   data QueryCount a
-  selectCount :: MonadGame env m => QueryCount a -> a -> m Natural
+  selectCount :: HasGame m => QueryCount a -> a -> m Natural
 
-gameSelectCountScheme ::
-  MonadGame env m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
-gameSelectCountIdentity ::
-  MonadGame env m =>
-  QueryCount IdentityMatcher ->
-  IdentityMatcher ->
-  m Natural
+gameSelectCountScheme
+  :: HasGame m => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
+gameSelectCountIdentity
+  :: HasGame m => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural

@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Attack
 import Marvel.Boost
 import Marvel.Card
@@ -223,7 +223,7 @@ instance HasCardDef (Attrs Villain) where
 toEnemyId :: Attrs Villain -> EnemyId
 toEnemyId = EnemyVillainId . villainId
 
-getModifiedKeywords :: MonadGame env m => Attrs Villain -> m [Keyword]
+getModifiedKeywords :: HasGame m => Attrs Villain -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (toList . cdKeywords $ getCardDef attrs) modifiers
@@ -232,7 +232,7 @@ getModifiedKeywords attrs = do
   applyModifier _ = id
 
 runVillainMessage
-  :: MonadGame env m => VillainMessage -> Attrs Villain -> m (Attrs Villain)
+  :: (HasQueue m, HasGame m) => VillainMessage -> Attrs Villain -> m (Attrs Villain)
 runVillainMessage msg attrs = case msg of
   VillainAdvanced -> do
     pushAll
@@ -407,7 +407,7 @@ advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ cbCard
         . (attachmentsL .~ villainAttachments)
         . (upgradesL .~ villainUpgrades)
 
-getModifiedAttack :: MonadGame env m => Attrs Villain -> m Natural
+getModifiedAttack :: HasGame m => Attrs Villain -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ villainAttack attrs) modifiers
@@ -415,7 +415,7 @@ getModifiedAttack attrs = do
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedScheme :: MonadGame env m => Attrs Villain -> m Natural
+getModifiedScheme :: HasGame m => Attrs Villain -> m Natural
 getModifiedScheme attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unSch $ villainScheme attrs) modifiers

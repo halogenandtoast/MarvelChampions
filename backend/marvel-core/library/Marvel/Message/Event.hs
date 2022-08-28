@@ -3,8 +3,8 @@ module Marvel.Message.Event where
 import Marvel.Prelude
 
 import Marvel.Id
-import Marvel.Payment
-import Marvel.Window (WindowType)
+import Marvel.Payment.Types
+import Marvel.Window.Types (WindowType)
 
 data EventMessage
   = PlayedEvent IdentityId Payment (Maybe WindowType)

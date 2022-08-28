@@ -7,10 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.ActiveCost.Types
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.PlayerCard
-import Marvel.Card.Side
+import Marvel.Card
 import Marvel.Cost.Types
 import Marvel.Damage
 import Marvel.Exception
@@ -80,6 +77,7 @@ data Choice
   | ChooseDamage Source Damage EnemyMatcher
   | ChooseHeal Natural CharacterMatcher
   | DiscardTarget Target
+  | DiscardCard Card
   | ChooseDrawCards Natural IdentityMatcher
   | ChooseEnemy EnemyMatcher Target
   | ChoosePlayer IdentityMatcher Target
@@ -92,12 +90,12 @@ data Choice
 runAbility :: IsTarget a => a -> Natural -> Choice
 runAbility a = RunAbility (toTarget a)
 
-pushChoice :: MonadGame env m => IdentityId -> Choice -> m ()
+pushChoice :: (HasGame m, HasQueue m, MonadThrow m) => IdentityId -> Choice -> m ()
 pushChoice ident choice = do
   msgs <- choiceMessages ident choice
   pushAll msgs
 
-choiceMessages :: MonadGame env m => IdentityId -> Choice -> m [Message]
+choiceMessages :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> Choice -> m [Message]
 choiceMessages ident = \case
   Run msgs -> pure msgs
   Label _ choices -> concatMapM (choiceMessages ident) choices
@@ -293,6 +291,7 @@ choiceMessages ident = \case
   AllyThwart allyId -> pure [AllyMessage allyId AllyThwarted]
   AllyDefend allyId enemyId -> pure [AllyMessage allyId $ AllyDefended enemyId]
   DiscardTarget target -> pure [RemoveFromPlay target]
+  DiscardCard card -> pure [DiscardedCard card]
   ChooseEnemy matcher target -> do
     enemies <- selectList matcher
     pure
@@ -335,7 +334,7 @@ choiceMessages ident = \case
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
-costMessages :: MonadGame env m => IdentityId -> Ability -> m [Message]
+costMessages :: HasGame m => IdentityId -> Ability -> m [Message]
 costMessages iid a = go (abilityCost a)
  where
   go = \case
@@ -387,19 +386,19 @@ costMessages iid a = go (abilityCost a)
       ]
     Costs xs -> concatMapM go xs
 
-chooseOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
+chooseOne :: HasQueue m => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 
-chooseOneAtATime :: MonadGame env m => IdentityId -> [Choice] -> m ()
+chooseOneAtATime :: HasQueue m => IdentityId -> [Choice] -> m ()
 chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
 
-chooseOrRunOne :: MonadGame env m => IdentityId -> [Choice] -> m ()
+chooseOrRunOne :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices
   [choice] -> pushAll =<< choiceMessages ident choice
   choices -> push (Ask ident $ ChooseOne choices)
 
-choosePlayerOrder :: MonadGame env m => IdentityId -> [IdentityId] -> m ()
+choosePlayerOrder :: HasQueue m => IdentityId -> [IdentityId] -> m ()
 choosePlayerOrder ident xs =
   push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
 

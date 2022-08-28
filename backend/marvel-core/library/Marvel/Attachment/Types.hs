@@ -3,7 +3,7 @@ module Marvel.Attachment.Types where
 import Marvel.Prelude
 
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (AttachmentId)
@@ -24,7 +24,7 @@ instance ToJSON Attachment where
   toJSON (Attachment a) = toJSON a
 
 instance Eq Attachment where
-  (Attachment (a :: a)) == (Attachment (b :: b)) = case eqT @a @b of
+  Attachment (a :: a) == Attachment (b :: b) = case eqT @a @b of
     Just Refl -> a == b
     Nothing -> False
 

@@ -27,7 +27,7 @@ allObligations = fromList $ map
   , SomeObligationCard legalWork
   , SomeObligationCard evictionNotice
   , SomeObligationCard businessProblems
-      -- , SomeObligationCard familyEmergency
+  , SomeObligationCard familyEmergency
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

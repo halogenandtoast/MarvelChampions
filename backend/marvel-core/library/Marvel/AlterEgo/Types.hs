@@ -1,3 +1,4 @@
+{-# LANGUAGE QuantifiedConstraints #-}
 module Marvel.AlterEgo.Types
   ( module Marvel.AlterEgo.Types
   , module X
@@ -6,23 +7,21 @@ module Marvel.AlterEgo.Types
 import Marvel.Prelude
 
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Side
 import Marvel.Entity
-import Marvel.GameValue
+import Marvel.GameValue.Types
 import Marvel.Hand
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Message
-import Marvel.Modifier
-import Marvel.Queue
+import {-# SOURCE #-} Marvel.Message
+import {-# SOURCE #-} Marvel.Modifier
 import Marvel.Source
 import Marvel.Stats
 import Marvel.Target
-import Marvel.Trait
 import Text.Show qualified
 
 data AlterEgo = forall a . IsAlterEgo a => AlterEgo a
@@ -46,9 +45,6 @@ liftAlterEgoCard f (SomeAlterEgoCard a) = f a
 
 someAlterEgoCardCode :: SomeAlterEgoCard -> CardCode
 someAlterEgoCardCode = liftAlterEgoCard cbCardCode
-
-instance HasTraits AlterEgo where
-  getTraits = pure . cdTraits . getCardDef
 
 instance HasStartingHP AlterEgo where
   startingHP = startingHP . toAttrs
@@ -100,9 +96,6 @@ instance Entity AlterEgo where
         AlterEgoCardDef -> alterEgoCardDef
         AlterEgoObligations -> alterEgoObligations
 
-instance HasModifiersFor AlterEgo where
-  getModifiersFor source target (AlterEgo a) = getModifiersFor source target a
-
 alterEgo
   :: (Attrs AlterEgo -> a)
   -> CardDef
@@ -148,18 +141,3 @@ instance HasHandSize (Attrs AlterEgo) where
 
 instance HasStartingHP (Attrs AlterEgo) where
   startingHP = alterEgoStartingHP
-
-instance RunMessage (Attrs AlterEgo) where
-  runMessage msg a = case msg of
-    IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
-      case msg' of
-        Recovered -> do
-          push
-            (IdentityMessage ident
-            $ IdentityHealed
-            . unRec
-            $ alterEgoBaseRecovery a
-            )
-          pure a
-        _ -> pure a
-    _ -> pure a

@@ -2,12 +2,12 @@ module Marvel.ActiveCost.Types where
 
 import Marvel.Prelude
 
-import Marvel.Ability
-import Marvel.Card.PlayerCard
+import Marvel.Ability.Types
+import Marvel.Card.PlayerCard.Types
 import Marvel.Cost.Types
 import Marvel.Id
-import Marvel.Payment
-import Marvel.Window
+import Marvel.Payment.Types
+import Marvel.Window.Types
 
 data ActiveCostTarget = ForCard PlayerCard | ForAbility Ability | ForTreachery
   deriving stock (Show, Eq, Generic)

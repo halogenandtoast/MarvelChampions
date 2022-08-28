@@ -23,6 +23,7 @@ data Trait
   | Hydra
   | Item
   | King
+  | Kree
   | Location
   | MastersOfEvil
   | Mercenary

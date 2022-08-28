@@ -2,8 +2,8 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Type (AbilityType(..))
-import Marvel.Ability.Type qualified as Ability
+import Marvel.Ability.Types (AbilityType(..))
+import Marvel.Ability.Types qualified as Ability
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def

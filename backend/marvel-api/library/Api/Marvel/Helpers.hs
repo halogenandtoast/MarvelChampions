@@ -6,7 +6,6 @@ module Api.Marvel.Helpers where
 import Import hiding (appLogger)
 
 import Control.Concurrent.STM.TChan
-import Control.Monad.Catch (MonadCatch, MonadThrow)
 import Control.Monad.Random (MonadRandom(..))
 import Data.ByteString.Lazy qualified as BSL
 import Data.HashMap.Strict qualified as HashMap
@@ -14,7 +13,6 @@ import Data.Map.Strict qualified as Map
 import Marvel.Ally
 import Marvel.Attachment.Types
 import Marvel.Card hiding (toCard)
-import Marvel.Debug
 import Marvel.Deck
 import Marvel.Discard
 import Marvel.Entity (Id)
@@ -24,11 +22,9 @@ import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
 import Marvel.MainScheme.Types
-import Marvel.Message
 import Marvel.Minion.Types
 import Marvel.PlayerCard
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Scenario.Types
 import Marvel.SideScheme.Types
 import Marvel.Support.Types
@@ -166,35 +162,6 @@ toInactiveApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameN
 data ApiResponse = GameUpdate ApiGame | GameMessage Text
   deriving stock Generic
   deriving anyclass ToJSON
-
-newtype GameAppT a = GameAppT { unGameAppT :: ReaderT GameApp IO a }
-  deriving newtype (MonadReader GameApp, Functor, Applicative, Monad, MonadFail, MonadIO, MonadRandom, MonadCatch, MonadThrow)
-
-data GameApp = GameApp
-  { appGame :: IORef Game
-  , appQueue :: IORef [Message]
-  , appDebugLogger :: Maybe DebugLogger
-  }
-
-newApp :: MonadIO m => Game -> [Message] -> m GameApp
-newApp g msgs = do
-  gameRef <- newIORef g
-  queueRef <- newIORef msgs
-  pure $ GameApp gameRef queueRef Nothing
-
-instance HasGame GameApp where
-  game = appGame
-
-instance HasQueue GameApp where
-  queue = appQueue
-
-instance HasDebugLogger GameApp where
-  debugLogger = appDebugLogger
-
-instance MonadGame GameApp GameAppT
-
-runGameApp :: MonadIO m => GameApp -> GameAppT a -> m a
-runGameApp gameApp = liftIO . flip runReaderT gameApp . unGameAppT
 
 noLogger :: Applicative m => Text -> m ()
 noLogger = const (pure ())

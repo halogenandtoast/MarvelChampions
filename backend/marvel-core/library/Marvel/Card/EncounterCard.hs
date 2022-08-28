@@ -13,6 +13,9 @@ data EncounterCard = MkEncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+instance HasCardId EncounterCard where
+  toCardId = ecCardId
+
 instance HasCardCode EncounterCard where
   toCardCode = toCardCode . getCardDef
 

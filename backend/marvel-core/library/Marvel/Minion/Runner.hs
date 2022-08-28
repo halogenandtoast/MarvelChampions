@@ -30,7 +30,7 @@ import Marvel.Matchers
 import Marvel.Window qualified as W
 
 runMinionMessage
-  :: MonadGame env m => MinionMessage -> Attrs Minion -> m (Attrs Minion)
+  :: (HasQueue m, HasGame m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n

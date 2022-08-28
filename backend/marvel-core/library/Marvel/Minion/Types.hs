@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Data.Typeable
-import Marvel.Ability.Type
+import Marvel.Ability.Types
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Entity
@@ -232,7 +232,7 @@ instance IsCard (Attrs Minion) where
 instance HasCardDef (Attrs Minion) where
   getCardDef = minionCardDef
 
-getModifiedKeywords :: MonadGame env m => Attrs Minion -> m [Keyword]
+getModifiedKeywords :: HasGame m => Attrs Minion -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (toList . cdKeywords $ getCardDef attrs) modifiers
@@ -240,7 +240,7 @@ getModifiedKeywords attrs = do
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
 
-getModifiedHitPoints :: MonadGame env m => Attrs Minion -> m Natural
+getModifiedHitPoints :: HasGame m => Attrs Minion -> m Natural
 getModifiedHitPoints attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unHp $ minionHitPoints attrs) modifiers
@@ -248,7 +248,7 @@ getModifiedHitPoints attrs = do
   applyModifier (HitPointModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedAttack :: MonadGame env m => Attrs Minion -> m Natural
+getModifiedAttack :: HasGame m => Attrs Minion -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ minionAttack attrs) modifiers

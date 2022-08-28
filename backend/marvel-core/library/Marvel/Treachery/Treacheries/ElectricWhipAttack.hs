@@ -53,7 +53,8 @@ instance RunMessage ElectricWhipAttack where
       t <$ push (RemoveFromPlay $ UpgradeTarget upgradeId)
     Boost msg' -> case msg' of
       RevealedAsBoost target enemyId | isTarget attrs target -> do
-        undefended <- member enemyId <$> select UndefendedEnemy
+        undefended <- member enemyId
+          <$> select (UndefendedEnemy <> VillainEnemy)
         when undefended $ do
           ident <- getActivePlayerId
           pushChoice ident $ ChooseUpgrade

@@ -15,6 +15,7 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Queue
 import Marvel.Question
 import Marvel.Resource
 import Marvel.Source
@@ -40,7 +41,10 @@ instance HasAbilities EnergyChannel where
 
 instance RunMessage EnergyChannel where
   runMessage msg u@(EnergyChannel attrs) = case msg of
-    RanAbility (isTarget attrs -> True) 1 _ _ -> pure u
+    RanAbility (isTarget attrs -> True) 1 _ payment -> do
+      energyResources <- count (`elem` [Energy, Wild]) <$> paymentResources payment
+      push $ UpgradeMessage (upgradeId attrs) $ AddUpgradeUses energyResources
+      pure u
     RanAbility (isTarget attrs -> True) 2 _ _ -> do
       let amount = min 10 (2 * (upgradeUses attrs))
       pushChoice (upgradeController attrs)

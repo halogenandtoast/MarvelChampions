@@ -14,6 +14,8 @@ import Marvel.Cost
 import Marvel.Game.Source
 import Marvel.Message
 import Marvel.Payment
+import Marvel.Projection
+import Marvel.Identity.Types
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
@@ -79,7 +81,7 @@ instance RunMessage ActiveCost where
       pure activeCost
     _ -> pure activeCost
 
-resourceCostPaid :: MonadGame env m => ActiveCost -> m Bool
+resourceCostPaid :: (Projection m PlayerIdentity, HasGame m, HasQueue m, MonadRandom m, MonadThrow m) => ActiveCost -> m Bool
 resourceCostPaid ActiveCost {..} = do
   let
     (rs, mrs) =

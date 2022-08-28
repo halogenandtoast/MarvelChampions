@@ -13,7 +13,7 @@ build-type:     Simple
 library
   exposed-modules:
       Marvel.Ability
-      Marvel.Ability.Type
+      Marvel.Ability.Types
       Marvel.ActiveCost
       Marvel.ActiveCost.Types
       Marvel.Ally
@@ -69,6 +69,7 @@ library
       Marvel.Card.PlayerCard
       Marvel.Card.PlayerCard.Types
       Marvel.Card.Side
+      Marvel.Card.Types
       Marvel.Cost
       Marvel.Cost.Types
       Marvel.Criteria
@@ -178,9 +179,11 @@ library
       Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Minion.Minions.Whirlwind
+      Marvel.Minion.Minions.YonRogg
       Marvel.Minion.Runner
       Marvel.Minion.Types
       Marvel.Modifier
+      Marvel.Modifier.Types
       Marvel.Name
       Marvel.Obligation
       Marvel.Obligation.Cards
@@ -188,9 +191,11 @@ library
       Marvel.Obligation.Obligations.AffairsOfState
       Marvel.Obligation.Obligations.BusinessProblems
       Marvel.Obligation.Obligations.EvictionNotice
+      Marvel.Obligation.Obligations.FamilyEmergency
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Types
       Marvel.Payment
+      Marvel.Payment.Types
       Marvel.Phase
       Marvel.PlayerCard
       Marvel.Prelude
@@ -216,6 +221,7 @@ library
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
       Marvel.SideScheme.SideSchemes.TheMastersOfEvil
+      Marvel.SideScheme.SideSchemes.ThePsycheMagnitron
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.SideScheme.Types
       Marvel.Source
@@ -255,6 +261,7 @@ library
       Marvel.Treachery.Treacheries.HeartShapedHerb
       Marvel.Treachery.Treacheries.ImTough
       Marvel.Treachery.Treacheries.KlawsVengeance
+      Marvel.Treachery.Treacheries.KreeManipulator
       Marvel.Treachery.Treacheries.MastersOfMayhem
       Marvel.Treachery.Treacheries.RitualCombat
       Marvel.Treachery.Treacheries.ShadowOfThePast
@@ -264,6 +271,7 @@ library
       Marvel.Treachery.Treacheries.SweepingSwoop
       Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Treachery.Treacheries.TitaniasFury
+      Marvel.Treachery.Treacheries.YonRoggsTreason
       Marvel.Treachery.Types
       Marvel.Upgrade
       Marvel.Upgrade.Cards
@@ -331,6 +339,7 @@ library
       TypeOperators
       UndecidableInstances
       ViewPatterns
+      QuantifiedConstraints
   build-depends:
       MonadRandom
     , aeson
@@ -384,6 +393,7 @@ test-suite MarvelChampions-test
       TypeOperators
       UndecidableInstances
       ViewPatterns
+      QuantifiedConstraints
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom

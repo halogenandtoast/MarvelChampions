@@ -1,14 +1,15 @@
 module Marvel.Message.Identity where
 
+import Marvel.Prelude
+
 import Marvel.Attack
-import Marvel.Card
+import Marvel.Card.Types
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Message.Deck
-import Marvel.Prelude
 import Marvel.Source
 import Marvel.Target
-import Marvel.Window (Window)
+import Marvel.Window.Types (Window)
 
 data IdentityMessage
   = BeginTurn
