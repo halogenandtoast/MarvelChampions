@@ -88,11 +88,11 @@ data Message
   | WithDiscarded Target FromZone [Card]
   | WithChosen Target FromZone [Card]
   | SetActiveCost ActiveCost
-  | CreatedActiveCost
-  | DisableActiveCost
-  | Spent PlayerCard
+  | CreatedActiveCost ActiveCostId
+  | DisableActiveCost ActiveCostId
+  | Spent ActiveCostId PlayerCard
   | Paid Payment
-  | FinishedPayment
+  | FinishedPayment ActiveCostId
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
@@ -127,7 +127,7 @@ data Message
   | ShuffleIntoEncounterDeck [EncounterCard]
   | ClearBoosts
   | ClearRemoved
-  | CheckPayment
+  | CheckPayment ActiveCostId
   | Boost Message
   | RevealedAsBoost Target EnemyId
   | ChoseEnemy EnemyId Target

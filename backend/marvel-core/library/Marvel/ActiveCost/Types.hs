@@ -17,7 +17,8 @@ data ActiveCostTarget
   deriving anyclass (ToJSON, FromJSON)
 
 data ActiveCost = ActiveCost
-  { activeCostIdentityId :: IdentityId
+  { activeCostId :: ActiveCostId
+  , activeCostIdentityId :: IdentityId
   , activeCostTarget :: ActiveCostTarget
   , activeCostCost :: Cost
   , activeCostPayment :: Payment

@@ -90,13 +90,13 @@ runAbility :: IsTarget a => a -> Natural -> Choice
 runAbility a = RunAbility (toTarget a)
 
 pushChoice
-  :: (HasGame m, HasQueue m, MonadThrow m) => IdentityId -> Choice -> m ()
+  :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> Choice -> m ()
 pushChoice ident choice = do
   msgs <- choiceMessages ident choice
   pushAll msgs
 
 choiceMessages
-  :: (HasQueue m, HasGame m, MonadThrow m)
+  :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m)
   => IdentityId
   -> Choice
   -> m [Message]
@@ -148,15 +148,18 @@ choiceMessages ident = \case
             [ Ask ident $ ChooseOne
                 [ TargetLabel (AttachmentTarget x) [Run [f x]] | x <- xs ]
             ]
-  UseAbility a -> pure
-    [ SetActiveCost $ ActiveCost
-        ident
-        (ForAbility a)
-        (abilityCost a)
-        NoPayment
-        Nothing
-        mempty
-    ]
+  UseAbility a -> do
+    activeCostId <- getRandom
+    pure
+      [ SetActiveCost $ ActiveCost
+          activeCostId
+          ident
+          (ForAbility a)
+          (abilityCost a)
+          NoPayment
+          Nothing
+          mempty
+      ]
   -- UseAbility a -> do
   --   rest <- concatMapM (choiceMessages ident) (abilityChoices a)
   --   costs <- costMessages ident a
@@ -169,7 +172,11 @@ choiceMessages ident = \case
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
-  FinishPayment -> pure [FinishedPayment]
+  FinishPayment -> do
+    mcost <- getActiveCost
+    case mcost of
+      Just activeCostId -> pure [FinishedPayment activeCostId]
+      Nothing -> error "no active cost"
   ReadyIdentity -> pure [IdentityMessage ident ReadiedIdentity]
   Pay payment -> pure [Paid payment]
   DamageAllEnemies matcher source damage -> do
@@ -354,7 +361,7 @@ chooseOneAtATime :: HasQueue m => IdentityId -> [Choice] -> m ()
 chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
 
 chooseOrRunOne
-  :: (HasQueue m, HasGame m, MonadThrow m) => IdentityId -> [Choice] -> m ()
+  :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices
   [choice] -> pushAll =<< choiceMessages ident choice

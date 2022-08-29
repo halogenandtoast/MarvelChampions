@@ -48,8 +48,10 @@ costMessages iid activeCost = go (activeCostCost activeCost)
         , Paid $ DamagePayment n
         ]
       _ -> error "Unhandled"
-    HealCost n ->
-      pure [IdentityMessage iid $ IdentityHealed n, Paid $ HealPayment n]
+    HealCost n -> pure
+      [ IdentityMessage iid $ IdentityHealed n
+      , Paid $ HealPayment n
+      ]
     DamageThisCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
         pure $ case abilitySource a of
@@ -64,27 +66,44 @@ costMessages iid activeCost = go (activeCostCost activeCost)
       ForAbility a -> do
         pure $ case abilitySource a of
           IdentitySource ident ->
-            [IdentityMessage ident ExhaustedIdentity, Paid ExhaustPayment]
+            [ IdentityMessage ident ExhaustedIdentity
+            , Paid ExhaustPayment
+            ]
           AllySource ident ->
-            [AllyMessage ident ExhaustedAlly, Paid ExhaustPayment]
+            [ AllyMessage ident ExhaustedAlly
+            , Paid ExhaustPayment
+            ]
           SupportSource ident ->
-            [SupportMessage ident ExhaustedSupport, Paid ExhaustPayment]
+            [ SupportMessage ident ExhaustedSupport
+            , Paid ExhaustPayment
+            ]
           UpgradeSource ident ->
-            [UpgradeMessage ident ExhaustedUpgrade, Paid ExhaustPayment]
+            [ UpgradeMessage ident ExhaustedUpgrade
+            , Paid ExhaustPayment
+            ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
     DiscardCost target -> pure $ case target of
       UpgradeTarget ident ->
-        [UpgradeMessage ident $ DiscardUpgrade, Paid $ DiscardPayment target]
+        [ UpgradeMessage ident $ DiscardUpgrade
+        , Paid $ DiscardPayment target
+        ]
       _ -> error "Unhandled"
     UseCost -> case activeCostTarget activeCost of
       ForAbility a -> do
         pure $ case abilitySource a of
           UpgradeSource ident ->
-            [UpgradeMessage ident SpendUpgradeUse, Paid UsePayment]
+            [ UpgradeMessage ident SpendUpgradeUse
+            , Paid UsePayment
+            ]
           SupportSource ident ->
-            [SupportMessage ident SpendSupportUse, Paid UsePayment]
-          AllySource ident -> [AllyMessage ident SpendAllyUse, Paid UsePayment]
+            [ SupportMessage ident SpendSupportUse
+            , Paid UsePayment
+            ]
+          AllySource ident ->
+            [ AllyMessage ident SpendAllyUse
+            , Paid UsePayment
+            ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
     DynamicResourceCost _ -> do
@@ -125,14 +144,14 @@ costMessages iid activeCost = go (activeCostCost activeCost)
 condenseResourceCosts :: [Cost] -> [Cost]
 condenseResourceCosts xs = go xs False
  where
-   go [] _ = []
-   go (c@ResourceCost {}: cs) False = c : go cs True
-   go (c@DynamicResourceCost {}: cs) False = c : go cs True
-   go (c@MultiResourceCost {}: cs) False = c : go cs True
-   go (ResourceCost {}: cs) True = go cs True
-   go (DynamicResourceCost {}: cs) True = go cs True
-   go (MultiResourceCost {}: cs) True = go cs True
-   go (c:cs) b = c : go cs b
+  go [] _ = []
+  go (c@ResourceCost{} : cs) False = c : go cs True
+  go (c@DynamicResourceCost{} : cs) False = c : go cs True
+  go (c@MultiResourceCost{} : cs) False = c : go cs True
+  go (ResourceCost{} : cs) True = go cs True
+  go (DynamicResourceCost{} : cs) True = go cs True
+  go (MultiResourceCost{} : cs) True = go cs True
+  go (c : cs) b = c : go cs b
 
 isResourceCost :: Cost -> Bool
 isResourceCost (ResourceCost _) = True
@@ -145,28 +164,37 @@ onlyResourceCosts :: Cost -> Cost
 onlyResourceCosts c@(ResourceCost _) = c
 onlyResourceCosts c@(MultiResourceCost _) = c
 onlyResourceCosts c@(DynamicResourceCost _) = c
-onlyResourceCosts (Costs cs) = case filter (/= NoCost) (map onlyResourceCosts cs) of
-  [] -> NoCost
-  xs -> Costs xs
+onlyResourceCosts (Costs cs) =
+  case filter (/= NoCost) (map onlyResourceCosts cs) of
+    [] -> NoCost
+    xs -> Costs xs
 onlyResourceCosts _ = NoCost
 
 instance RunMessage ActiveCost where
   runMessage msg activeCost = case msg of
-    CreatedActiveCost -> do
+    CreatedActiveCost ident | ident == activeCostId activeCost -> do
       msgs <- costMessages (activeCostIdentityId activeCost) activeCost
-      pushAll $ msgs <> [CheckPayment]
-      pure $ activeCost { activeCostCost = onlyResourceCosts (activeCostCost activeCost) }
-    Spent discard -> do
+      pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
+      pure $ activeCost
+        { activeCostCost = onlyResourceCosts (activeCostCost activeCost)
+        }
+    Spent ident discard | ident == activeCostId activeCost -> do
       case activeCostTarget activeCost of
         ForCard card -> do
           resources <- resourcesFor discard $ Just card
-          push $ Paid $ mconcat $ map ResourcePayment resources
+          push $ Paid $ mconcat $ map
+            ResourcePayment
+            resources
         ForAbility _ -> do
           resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map ResourcePayment resources
+          push $ Paid $ mconcat $ map
+            ResourcePayment
+            resources
         ForTreachery -> do
           resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map ResourcePayment resources
+          push $ Paid $ mconcat $ map
+            ResourcePayment
+            resources
 
       pure $ activeCost
         { activeCostSpentCards = discard : activeCostSpentCards activeCost
@@ -178,18 +206,21 @@ instance RunMessage ActiveCost where
       -- cards <- getAvailablePaymentSources
       -- abilities <- getResourceAbilities
       -- paid <- resourceCostPaid activeCost'
-    CheckPayment -> do
+    CheckPayment ident | ident == activeCostId activeCost -> do
       if isResourceCost (activeCostCost activeCost)
         then do
           msgs <- costMessages (activeCostIdentityId activeCost) activeCost
-          pushAll $ msgs <> [CheckPayment]
-        else push FinishedPayment
+          pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
+        else push $ FinishedPayment $ activeCostId activeCost
       pure activeCost
-    WithDiscarded ActiveCostTarget _ cards -> do
-      pushAll $ map (Paid . DiscardHandCardPayment) cards
-      pure activeCost
-    FinishedPayment -> do
-      cancelMatchingMessage (== CheckPayment)
+    WithDiscarded (ActiveCostTarget ident) _ cards
+      | ident == activeCostId activeCost -> do
+        pushAll $ map
+          (Paid . DiscardHandCardPayment)
+          cards
+        pure activeCost
+    FinishedPayment ident | ident == activeCostId activeCost -> do
+      cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
       case activeCostTarget activeCost of
         ForCard card -> do
           push $ PutCardIntoPlay
@@ -200,14 +231,14 @@ instance RunMessage ActiveCost where
         ForAbility ab -> do
           rest <- concatMapM
             (choiceMessages $ activeCostIdentityId activeCost)
-            (traceShowId $ abilityChoices ab)
+            (abilityChoices ab)
           pushAll $ UsedAbility (activeCostIdentityId activeCost) ab : rest
         ForTreachery -> pure ()
       pushAll
         $ map
             (DiscardedCard . PlayerCard)
             (reverse $ activeCostSpentCards activeCost)
-        <> [DisableActiveCost]
+        <> [DisableActiveCost $ activeCostId activeCost]
       pure activeCost
     _ -> pure activeCost
 

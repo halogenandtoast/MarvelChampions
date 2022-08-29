@@ -135,7 +135,7 @@ data Game = Game
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
-  , gameActiveCost :: Maybe ActiveCost
+  , gameActiveCost :: [ActiveCost]
   , gameWindowDepth :: Int
   , gameWindows :: [[Window]]
   , gameScenario :: Scenario
@@ -361,10 +361,10 @@ runGameMessage msg g@Game {..} = case msg of
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ insertWith (<>) ident [(a, gameWindowDepth)]
-  DisableActiveCost -> pure $ g & activeCostL .~ Nothing
+  DisableActiveCost ident -> pure $ g & activeCostL %~ filter ((/= ident) . activeCostId)
   SetActiveCost activeCost -> do
-    push CreatedActiveCost
-    pure $ g & activeCostL ?~ activeCost
+    push $ CreatedActiveCost (activeCostId activeCost)
+    pure $ g & activeCostL %~ (activeCost :)
   CreatedEffect def source matcher -> do
     effectId <- getRandom
     ident <- toId <$> getActivePlayer
@@ -714,7 +714,7 @@ instance RunMessage Game where
       >>= traverseOf entitiesL (runMessage msg)
       >>= traverseOf removedEntitiesL (runMessage msg)
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
-      >>= traverseOf (activeCostL . traverse) (runMessage msg)
+      >>= traverseOf (activeCostL . ix 0) (runMessage msg)
       >>= runGameMessage msg
 
 class Monad m => HasGame m where
@@ -775,7 +775,7 @@ newGame player scenario = Game
   , gameEntities = defaultEntities
     { entitiesPlayers = fromList [(toId player, player)]
     }
-  , gameActiveCost = Nothing
+  , gameActiveCost = []
   , gameWindowDepth = 0
   , gameWindows = []
   , gameQuestion = mempty
@@ -1314,12 +1314,19 @@ getCurrentWindows = do
     [] -> []
     x : _ -> x
 
+getActiveCost :: HasGame m => m (Maybe ActiveCostId)
+getActiveCost = do
+  costStack <- getsGame gameActiveCost
+  pure $ case costStack of
+    [] -> Nothing
+    cost : _ -> Just $ activeCostId cost
+
 getCurrentPayment :: HasGame m => m Payment
 getCurrentPayment = do
-  mCost <- getsGame gameActiveCost
-  pure $ case mCost of
-    Just cost -> activeCostPayment cost
-    Nothing -> NoPayment
+  costStack <- getsGame gameActiveCost
+  pure $ case costStack of
+    [] -> NoPayment
+    cost : _ -> activeCostPayment cost
 
 getDifficulty :: HasGame m => m Difficulty
 getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
