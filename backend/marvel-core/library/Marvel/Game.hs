@@ -1286,38 +1286,38 @@ gameSelectSideScheme m = do
     SideSchemeIs def -> pure . (== def) . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId
 
-withDepthGuard :: (MonadReader Game m, HasGame m, Monoid a) => Int -> m a -> m a
-withDepthGuard depthGuard body = do
+withDepthGuard :: (HasGame m, Monoid a) => Int -> ReaderT Game m  a -> m a
+withDepthGuard depthGuard body =  do
   depth <- getsGame gameDepth
-  if depth > depthGuard then pure mempty else local delve body
+  if depth > depthGuard
+     then pure mempty
+     else getGame >>= runReaderT (local delve body)
 
 delve :: Game -> Game
 delve g = g { gameDepth = gameDepth g + 1 }
 
 getModifiers :: (HasGame m, IsSource a, IsTarget a) => a -> m [Modifier]
-getModifiers a = do
-  g <- getGame
-  flip runReaderT g $ withDepthGuard 2 $ do
-    effects <- toList <$> getsGame gameEffects
-    upgrades <- toList <$> getsGame gameUpgrades
-    supports <- toList <$> getsGame gameSupports
-    attachments <- toList <$> getsGame gameAttachments
-    allies <- toList <$> getsGame gameAllies
-    minions <- toList <$> getsGame gameMinions
-    events <- toList <$> getsGame gameEvents
-    players <- toList <$> getsGame gamePlayers
-    sideSchemes <- toList <$> getsGame gameSideSchemes
-    mconcat <$> sequence
-      [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
-      ]
+getModifiers a = withDepthGuard 2 $ do
+  effects <- toList <$> getsGame gameEffects
+  upgrades <- toList <$> getsGame gameUpgrades
+  supports <- toList <$> getsGame gameSupports
+  attachments <- toList <$> getsGame gameAttachments
+  allies <- toList <$> getsGame gameAllies
+  minions <- toList <$> getsGame gameMinions
+  events <- toList <$> getsGame gameEvents
+  players <- toList <$> getsGame gamePlayers
+  sideSchemes <- toList <$> getsGame gameSideSchemes
+  mconcat <$> sequence
+    [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
+    , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
+    ]
 
 getCurrentWindows :: HasGame m => m [Window]
 getCurrentWindows = do
