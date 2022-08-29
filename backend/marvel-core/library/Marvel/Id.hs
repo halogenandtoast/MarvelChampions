@@ -2,6 +2,9 @@ module Marvel.Id where
 
 import Marvel.Prelude
 
+newtype ActiveCostId = ActiveCostId UUID
+  deriving newtype (Show, Eq, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
 data CharacterId
   = IdentityCharacter IdentityId
   | AllyCharacter AllyId

@@ -44,6 +44,7 @@ instance RunMessage SonicBoom where
             (_, True) -> goPay as (L.delete Wild bs)
             (False, False) -> (a' : as, bs)
           (uncovered, _) = goPay [Energy, Mental, Physical] resources
+        activeCostId <- getRandom
         chooseOrRunOne
           identityId
           (Label
@@ -56,6 +57,7 @@ instance RunMessage SonicBoom where
                 "Spend {energy}{mental}{physical} resources"
                 [ Run
                     [ SetActiveCost $ ActiveCost
+                        activeCostId
                         identityId
                         ForTreachery
                         (MultiResourceCost

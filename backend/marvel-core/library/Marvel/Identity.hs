@@ -456,8 +456,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & sideL .~ side
     PlayedCard card mWindow -> do
       modifiedCost <- getModifiedCost pid card
+      activeCostId <- getRandom
       let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)
       push $ SetActiveCost $ ActiveCost
+        activeCostId
         playerIdentityId
         (ForCard card)
         cost'
@@ -470,12 +472,16 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         & (handL %~ Hand . filter (/= card) . unHand)
         & (discardL %~ Discard . filter (/= card) . unDiscard)
     PaidWithCard card -> do
-      push $ Spent card
-      pure
-        $ PlayerIdentity
-        $ attrs
-        & (handL %~ Hand . filter (/= card) . unHand)
-        -- & (discardL %~ Discard . (card :) . unDiscard)
+      mActiveCost <- getActiveCost
+      case mActiveCost of
+        Nothing -> error "no cost"
+        Just activeCostId -> do
+          push $ Spent activeCostId card
+          pure
+            $ PlayerIdentity
+            $ attrs
+            & (handL %~ Hand . filter (/= card) . unHand)
+            -- & (discardL %~ Discard . (card :) . unDiscard)
     AllyCreated allyId -> do
       push $ IdentityMessage playerIdentityId CheckAllyLimit
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.insert allyId

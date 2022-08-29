@@ -91,6 +91,7 @@ getAvailableResourcesFor
 getModifiers :: (HasGame m, IsSource a, IsTarget a) => a -> m [Modifier]
 getCurrentWindows :: HasGame m => m [Window]
 getCurrentPayment :: HasGame m => m Payment
+getActiveCost :: HasGame m => m (Maybe ActiveCostId)
 getDifficulty :: HasGame m => m Difficulty
 getHazardCount :: HasGame m => m Natural
 getAccelerationCount :: HasGame m => m Natural
