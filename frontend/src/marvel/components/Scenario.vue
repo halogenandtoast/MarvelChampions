@@ -7,6 +7,7 @@ import Player from '@/marvel/components/Player.vue'
 import Villain from '@/marvel/components/Villain.vue'
 import MainScheme from '@/marvel/components/MainScheme.vue'
 import SideScheme from '@/marvel/components/SideScheme.vue'
+import CardOverlay from '@/marvel/components/CardOverlay.vue';
 
 const props = defineProps<{
   game: Game
@@ -25,6 +26,9 @@ const focusedCards = computed(() => props.game.focusedCards)
 <template>
   <div class="scenario">
     <div class="encounter">
+      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
+      <img src="/img/marvel/encounter-back.png" alt="deck" width="100" height="140" class="deck" />
+
       <Villain
         v-for="villain in game.villains"
         :key="villain.villainId"
@@ -33,8 +37,6 @@ const focusedCards = computed(() => props.game.focusedCards)
         :game="game"
         @choose="emit('choose', $event)"
       />
-      <Card v-if="topOfDiscard" :card="topOfDiscard" :game="game" :identityId="identityId" class="discard" />
-      <img src="/img/marvel/encounter-back.png" alt="deck" width="150" height="209" class="deck" />
 
       <MainScheme
         v-for="mainScheme in game.mainSchemes"
@@ -54,26 +56,38 @@ const focusedCards = computed(() => props.game.focusedCards)
         @choose="emit('choose', $event)"
       />
     </div>
-    <div v-if="focusedCards.length > 0" class="focused">
-      <Card v-for="card in focusedCards" :key="card.contents.cardId" :card="card.contents" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
+    <div class="player">
+      <div v-if="focusedCards.length > 0" class="focused">
+        <Card v-for="card in focusedCards" :key="card.contents.cardId" :card="card.contents" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
+      </div>
+      <Player
+        v-for="player in game.players"
+        :key="player.id"
+        :player="player"
+        :identityId="identityId"
+        :game="game"
+        @choose="emit('choose', $event)"
+      />
     </div>
-    <Player
-      v-for="player in game.players"
-      :key="player.id"
-      :player="player"
-      :identityId="identityId"
-      :game="game"
-      @choose="emit('choose', $event)"
-    />
+    <div class="details">
+      <CardOverlay />
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .scenario {
-  display: flex;
-  flex-flow: column;
+  display: grid;
+  grid-template-areas:
+    "encounter details"
+    "player    details";
+  grid-template-columns: 1fr min(300px, 25vw);
   height: 100%;
   border-radius: 10px;
+}
+
+.player {
+  grid-area: player;
 }
 
 .active {
@@ -84,6 +98,7 @@ const focusedCards = computed(() => props.game.focusedCards)
   display: flex;
   align-self: center;
   margin-bottom: auto;
+  grid-area: encounter;
 }
 
 .discard {
@@ -93,5 +108,11 @@ const focusedCards = computed(() => props.game.focusedCards)
 .focused {
   display: flex;
   flex-wrap: wrap;
+}
+
+.details {
+  position: relative;
+  width: 150px;
+  grid-area: details;
 }
 </style>

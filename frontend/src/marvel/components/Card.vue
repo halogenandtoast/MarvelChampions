@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { withDefaults, defineProps, defineEmits, computed } from 'vue'
 import { PlayerCard } from '@/marvel/types/PlayerCard'
 import { Game } from '@/marvel/types/Game'
 import * as MarvelGame from '@/marvel/types/Game'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   card: PlayerCard
   identityId: string
   game: Game
-}>()
+  sideways: boolean
+}>(), { sideways: false })
 
 const emit = defineEmits<{
   (e: 'choose', value: number): void
@@ -46,20 +47,25 @@ const payWithCardAction = computed(() => {
 
 <template>
   <div class="card">
-    <img :src="cardImage" alt="card" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+    <img :src="cardImage" alt="card" :class="{ sideways: sideways, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" data-role="card" />
     <button v-if="payWithCardAction !== -1" @click="emit('choose', payWithCardAction)">Pay</button>
   </div>
 </template>
 
 <style scoped lang="scss">
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   img {
-    width: 150px;
+    width: 100px;
     margin: 2px;
     border-radius: 10px;
+    &.sideways {
+      width: 140px;
+    }
   }
+
 }
 
 .active {
