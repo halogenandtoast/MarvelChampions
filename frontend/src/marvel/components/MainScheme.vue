@@ -52,6 +52,7 @@ const activeAbility = computed(() => {
       :card="card"
       :game="game"
       :identityId="identityId"
+      :sideways="true"
       :class="{ active: activeAbility !== -1 }"
       class="scenario-card"
       @click="emit('choose', activeAbility)"
