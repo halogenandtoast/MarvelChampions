@@ -6,6 +6,7 @@ module Marvel.Event.Events.RelentlessAssault
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

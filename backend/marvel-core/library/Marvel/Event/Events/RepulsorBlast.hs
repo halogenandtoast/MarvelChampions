@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

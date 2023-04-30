@@ -6,6 +6,7 @@ module Marvel.Event.Events.PhotonicBlast
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
@@ -15,7 +16,6 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Query
-import Marvel.Question
 import Marvel.Queue
 import Marvel.Resource
 import Marvel.Source

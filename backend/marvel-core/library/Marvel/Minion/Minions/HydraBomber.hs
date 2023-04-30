@@ -6,6 +6,7 @@ module Marvel.Minion.Minions.HydraBomber
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards

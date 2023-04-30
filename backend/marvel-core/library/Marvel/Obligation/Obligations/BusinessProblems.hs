@@ -6,6 +6,7 @@ module Marvel.Obligation.Obligations.BusinessProblems
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message

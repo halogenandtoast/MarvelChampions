@@ -10,6 +10,7 @@ import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
 import Marvel.GameValue.Types
 import Marvel.Id
 import Marvel.Keyword
+import Marvel.Name
 import Marvel.Trait.Types
 
 data EntityMatcher
@@ -61,7 +62,9 @@ data AllyMatcher
   | AllyControlledBy IdentityMatcher
   | AllyWithDamage GameValueMatcher
   | AllyWithId AllyId
+  | AllyWithUpgrade UpgradeMatcher
   | AnyAlly
+  | NotAlly AllyMatcher
   | AllyMatches [AllyMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -91,12 +94,19 @@ pattern UpgradeWithAnyUses :: UpgradeMatcher
 pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
   UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
 
+upgradeControlledBy :: IdentityId -> UpgradeMatcher
+upgradeControlledBy = UpgradeControlledBy . IdentityWithId
+
 data UpgradeMatcher
   = UpgradeWithUses GameValueMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait
+  | UpgradeIs CardDef
+  | UpgradeNamed Name
   | UnexhaustedUpgrade
+  | UpgradeWithId UpgradeId
   | UpgradeMatches [UpgradeMatcher]
+  | UpgradeOneOf [UpgradeMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -116,17 +126,18 @@ data EnemyMatcher
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher
   | UndefendedEnemy
-  | EnemyMatchesAll [EnemyMatcher]
+  | EnemyWithUpgrade UpgradeMatcher
+  | EnemyMatches [EnemyMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 instance Semigroup EnemyMatcher where
   AnyEnemy <> x = x
   x <> AnyEnemy = x
-  EnemyMatchesAll xs <> EnemyMatchesAll ys = EnemyMatchesAll (xs <> ys)
-  EnemyMatchesAll xs <> y = EnemyMatchesAll (xs <> [y])
-  x <> EnemyMatchesAll ys = EnemyMatchesAll (x : ys)
-  x <> y = EnemyMatchesAll [x, y]
+  EnemyMatches xs <> EnemyMatches ys = EnemyMatches (xs <> ys)
+  EnemyMatches xs <> y = EnemyMatches (xs <> [y])
+  x <> EnemyMatches ys = EnemyMatches (x : ys)
+  x <> y = EnemyMatches [x, y]
 
 pattern VillainWithAnyDamage :: VillainMatcher
 pattern VillainWithAnyDamage <-

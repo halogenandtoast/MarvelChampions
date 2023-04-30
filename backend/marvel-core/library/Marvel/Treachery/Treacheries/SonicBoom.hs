@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Data.List qualified as L
 import Marvel.ActiveCost
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source

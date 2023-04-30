@@ -29,6 +29,9 @@ selectMap f = fmap (map f . HashSet.toList) . select
 selectAny :: Query m a => a -> m Bool
 selectAny = fmap (not . null) . select
 
+selectNone :: Query m a => a -> m Bool
+selectNone = fmap null . select
+
 selectListCount :: Query m a => a -> m Natural
 selectListCount = fmap (fromIntegral . length) . selectList
 

@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Choice
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers

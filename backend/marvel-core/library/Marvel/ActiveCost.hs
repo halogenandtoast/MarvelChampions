@@ -11,6 +11,7 @@ import Data.List qualified as L
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Game.Source

@@ -10,6 +10,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
