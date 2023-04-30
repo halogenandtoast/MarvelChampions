@@ -148,6 +148,33 @@ const toggleDebug = inject('toggleDebug')
     />
   </div>
   <div class="identity">
+    <div class="player-buttons">
+      <AbilityButton
+            v-for="ability in abilities"
+            :key="ability"
+            :ability="choices[ability]"
+            @click="emit('choose', ability)"
+            />
+      <button
+        v-if="defendAction !== -1"
+        @click="emit('choose', defendAction)"
+      >Defend</button>
+      <button
+        v-for="label in labels"
+        :key="label"
+        @click="emit('choose', label)"
+        >{{choices[label].contents}}</button>
+      <button
+        v-if="finishPaymentAction !== -1"
+        @click="emit('choose', finishPaymentAction)"
+      >Finish Payment</button>
+      <button
+        :disabled="endTurnAction === -1"
+        @click="emit('choose', endTurnAction)"
+      >End turn</button>
+      <button @click="undo">Undo</button>
+      <button @click="toggleDebug">Toggle Debug</button>
+    </div>
     <div class="discardPile" v-if="showDiscard">
       <Card v-for="card in player.discard" :card="card" :key="card.id" :game="game" :identityId="identityId" class="discard" />
       <button @click="toggleDiscard">Close discard</button>
@@ -165,31 +192,6 @@ const toggleDebug = inject('toggleDebug')
           <div v-if="player.confused">confused</div>
           <div v-if="player.tough">tough</div>
           <div v-if="player.encounterCards.length > 0">Encounter cards: {{player.encounterCards.length}}</div>
-          <AbilityButton
-                v-for="ability in abilities"
-                :key="ability"
-                :ability="choices[ability]"
-                @click="emit('choose', ability)"
-                />
-          <button
-            v-if="defendAction !== -1"
-            @click="emit('choose', defendAction)"
-          >Defend</button>
-          <button
-            v-for="label in labels"
-            :key="label"
-            @click="emit('choose', label)"
-            >{{choices[label].contents}}</button>
-          <button
-            v-if="finishPaymentAction !== -1"
-            @click="emit('choose', finishPaymentAction)"
-          >Finish Payment</button>
-          <button
-            :disabled="endTurnAction === -1"
-            @click="emit('choose', endTurnAction)"
-          >End turn</button>
-          <button @click="undo">Undo</button>
-          <button @click="toggleDebug">Toggle Debug</button>
         </div>
       </div>
     </div>
@@ -242,4 +244,8 @@ const toggleDebug = inject('toggleDebug')
   padding: 10px;
 }
 
+.player-buttons {
+  display: flex;
+  flex-direction: column;
+}
 </style>
