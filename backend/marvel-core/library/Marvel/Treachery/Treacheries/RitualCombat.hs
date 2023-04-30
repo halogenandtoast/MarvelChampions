@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.RitualCombat
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id

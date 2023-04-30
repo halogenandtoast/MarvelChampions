@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.ElectricWhipAttack
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source

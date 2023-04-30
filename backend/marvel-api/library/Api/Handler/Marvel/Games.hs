@@ -25,6 +25,7 @@ import Database.Esqueleto.Experimental hiding (update)
 import Database.Esqueleto.Internal.Internal (SqlSelect)
 import Json
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Debug
 import Marvel.Entity (toId)
 import Marvel.Game

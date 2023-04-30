@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types

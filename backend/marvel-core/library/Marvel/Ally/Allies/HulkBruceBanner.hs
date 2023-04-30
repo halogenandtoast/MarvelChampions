@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner hiding (AllyAttacked)
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage

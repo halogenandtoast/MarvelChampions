@@ -12,12 +12,13 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
-import Marvel.Ally.Types (getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types (getAllyController, getAllyDamage, getAllyUses, allyUpgrades)
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Debug
@@ -50,6 +51,7 @@ import Marvel.Minion.Types
   , getMinionEngagedIdentity
   , getMinionPrintedHitPoints
   , minionAttackDetails
+  , minionUpgrades
   )
 import Marvel.Modifier
 import Marvel.Name
@@ -77,7 +79,7 @@ import Marvel.Upgrade
 import Marvel.Upgrade.Types (Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
 import Marvel.Villain.Types
-  (Villain, villainAttackDetails, villainDamage, villainIsTough)
+  (Villain, villainAttackDetails, villainDamage, villainIsTough, villainUpgrades)
 import Marvel.Window (Window, WindowTiming(..), windowMatches)
 import Marvel.Window qualified as W
 
@@ -1071,6 +1073,7 @@ gameSelectAlly m = do
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
+    NotAlly m' -> fmap not . matchFilter m'
     AnyAlly -> pure . const True
     UnexhaustedAlly -> pure . not . isExhausted
     ExhaustedAlly -> pure . isExhausted
@@ -1083,6 +1086,8 @@ gameSelectAlly m = do
       gameValueMatches gameValueMatcher . getAllyDamage
     AllyWithId ident' -> pure . (== ident') . toId
     AllyMatches xs -> andM . traverse matchFilter xs
+    AllyWithUpgrade u -> \ally ->
+      selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
 gameSelectSupport :: HasGame m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupport = \case
@@ -1116,6 +1121,10 @@ gameSelectUpgrade m = do
       identities <- select identityMatcher
       pure $ getUpgradeController upgrade `member` identities
     UpgradeMatches xs -> andM . traverse matchFilter xs
+    UpgradeIs def -> pure . (== def) . getCardDef
+    UpgradeNamed name -> pure . (== name) . cdName . getCardDef
+    UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
+    UpgradeOneOf xs -> orM . traverse matchFilter xs
 
 gameSelectAttachment
   :: HasGame m => AttachmentMatcher -> m (HashSet AttachmentId)
@@ -1155,7 +1164,9 @@ gameSelectEnemy m = do
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
     EnemyIs def -> pure $ def == getCardDef e
-    EnemyMatchesAll xs -> allM (goVillain e) xs
+    EnemyMatches xs -> allM (goVillain e) xs
+    EnemyWithUpgrade u ->
+      selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
   goMinion e = \case
     EnemyWithId enemyId -> pure $ case enemyId of
       EnemyVillainId _ -> False
@@ -1169,7 +1180,9 @@ gameSelectEnemy m = do
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
     EnemyIs def -> pure $ def == getCardDef e
-    EnemyMatchesAll xs -> allM (goMinion e) xs
+    EnemyMatches xs -> allM (goMinion e) xs
+    EnemyWithUpgrade u ->
+      selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
 
 gameSelectVillain :: HasGame m => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do

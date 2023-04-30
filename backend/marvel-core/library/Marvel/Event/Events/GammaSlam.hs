@@ -6,6 +6,7 @@ module Marvel.Event.Events.GammaSlam
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
@@ -15,7 +16,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
 import Marvel.Source
 import Marvel.Target
 

@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.KlawsVengeance
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers

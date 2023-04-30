@@ -8,6 +8,7 @@ module Marvel.Event.Events.LeadFromTheFront
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Effect.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types

@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.YonRoggsTreason
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Entity
 import Marvel.Hand
 import Marvel.Identity.Types (Field(..))

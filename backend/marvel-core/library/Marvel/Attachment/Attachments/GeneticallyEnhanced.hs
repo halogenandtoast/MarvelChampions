@@ -9,6 +9,7 @@ import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message

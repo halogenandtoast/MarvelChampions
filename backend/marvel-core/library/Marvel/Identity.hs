@@ -14,6 +14,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Types
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -248,10 +249,12 @@ isPlayable attrs c = do
   resources <- getAvailableResourcesFor (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
+  passedPlayLimits <- checkPlayLimits attrs c
   pure
     $ length resources
     >= modifiedCost
     && passedCriteria
+    && passedPlayLimits
     && isNothing (cdResponseWindow def)
     && (cdCardType def /= ResourceType)
  where
@@ -275,7 +278,28 @@ isPlayable attrs c = do
     AllyExists m -> selectAny m
     SchemeExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)
-    -- ^ this is critical and order matters to avoid infinite recursion
+    -- ^ this is critical and order matters to avoid infinite recursionl
+
+checkPlayLimits :: HasGame m => PlayerIdentity -> PlayerCard -> m Bool
+checkPlayLimits ident c = case cdLimit def of
+  Nothing -> pure True
+  Just limit -> case limit of
+    MaxPerPlayer 1 -> case cdCardType def of
+      UpgradeType -> selectNone $ UpgradeNamed name <> upgradeControlledBy (toId ident)
+      SupportType -> selectNone $ UpgradeNamed name <> upgradeControlledBy (toId ident)
+      _ -> error "Unhandled"
+    MaxPerPlayer _ -> error "Unhandled"
+    MaxPerAlly 1 -> case cdCardType def of
+      UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
+      _ -> error "Unhandled"
+    MaxPerAlly _ ->  error "Unhandled"
+    MaxPerEnemy 1 -> case cdCardType def of
+      UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
+      _ -> error "Unhandled"
+    MaxPerEnemy _ -> error "Unhandled"
+ where
+   def = getCardDef c
+   name = cdName def
 
 getModifiedCost :: HasGame m => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do

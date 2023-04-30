@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
