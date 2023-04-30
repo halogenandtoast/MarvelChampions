@@ -35,6 +35,7 @@ allEvents = fromList $ map
   , wakandaForeverB
   , wakandaForeverC
   , wakandaForeverD
+  , chaseThemDown
   , relentlessAssault
   , uppercut
   , forJustice
