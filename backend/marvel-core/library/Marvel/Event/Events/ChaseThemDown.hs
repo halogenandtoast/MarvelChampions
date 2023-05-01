@@ -26,10 +26,10 @@ newtype ChaseThemDown = ChaseThemDown (Attrs Event)
 instance RunMessage ChaseThemDown where
   runMessage msg e@(ChaseThemDown attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ ->
-        e
-          <$ pushChoice
-            identityId
-            (RemoveThreat (toSource attrs) 2 ThwartableScheme)
+      PlayedEvent identityId _ _ -> do
+        pushChoice
+          identityId
+          (RemoveThreat (toRef attrs) 2 ThwartableScheme)
+        pure e
       _ -> ChaseThemDown <$> runMessage msg attrs
     _ -> ChaseThemDown <$> runMessage msg attrs

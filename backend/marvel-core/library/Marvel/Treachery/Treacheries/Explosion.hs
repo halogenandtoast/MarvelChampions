@@ -6,6 +6,7 @@ module Marvel.Treachery.Treacheries.Explosion (
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Count
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source

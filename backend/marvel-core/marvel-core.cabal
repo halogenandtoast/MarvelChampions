@@ -74,6 +74,7 @@ library
       Marvel.Choice
       Marvel.Cost
       Marvel.Cost.Types
+      Marvel.Count
       Marvel.Criteria
       Marvel.Damage
       Marvel.Debug
