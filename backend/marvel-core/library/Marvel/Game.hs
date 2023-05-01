@@ -23,6 +23,7 @@ import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice
 import Marvel.Cost
+import Marvel.Count
 import Marvel.Criteria
 import Marvel.Debug
 import Marvel.Deck

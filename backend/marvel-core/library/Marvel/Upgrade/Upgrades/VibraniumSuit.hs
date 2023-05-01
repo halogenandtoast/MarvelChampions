@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Choice
+import Marvel.Count
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source

@@ -6,6 +6,7 @@ import Control.Monad.IO.Class
 import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard.Types
+import Marvel.Count
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
