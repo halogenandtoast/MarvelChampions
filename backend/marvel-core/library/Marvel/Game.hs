@@ -1435,10 +1435,6 @@ getAccelerationCount = do
   sideSchemes <- getsGame gameSideSchemes
   pure $ foldr ((+) . cdAcceleration . getCardDef) tokens sideSchemes
 
-class Count a where
-  data QueryCount a
-  selectCount :: (HasGame m) => QueryCount a -> a -> m Natural
-
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
 gameSelectCountIdentity aggregate matcher = do
