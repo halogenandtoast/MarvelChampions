@@ -57,8 +57,11 @@ logger = Just $ DebugLogger pPrint
 
 gameStream :: MarvelGameId -> WebSocketsT Handler ()
 gameStream gameId = catchingConnectionException $ do
-  writeChannel <- lift $ getChannel gameId
-  mRoom <- lift $ findRoom gameId
+  roomsRef <- appGameRooms <$> lift getYesod
+  (writeChannel, mRoom) <- liftIO $ atomically $ do
+    writeChannel <- getChannelSTM gameId roomsRef
+    rooms <- readTVar roomsRef
+    pure (writeChannel, Map.lookup gameId rooms)
   case mRoom of
     Nothing -> sendClose ("Game not found" :: Text)
     Just room -> do
