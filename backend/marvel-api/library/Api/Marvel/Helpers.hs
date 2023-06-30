@@ -6,7 +6,7 @@ module Api.Marvel.Helpers where
 
 import Import hiding (appLogger)
 
-import Control.Concurrent.STM (atomically)
+import Control.Concurrent.STM (STM, atomically)
 import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM.TVar
 import Control.Monad.Random (MonadRandom (..))
@@ -176,23 +176,26 @@ data ApiResponse = GameUpdate ApiGame | GameMessage Text
 noLogger :: (Applicative m) => Text -> m ()
 noLogger = const (pure ())
 
-findRoom :: MarvelGameId -> Handler (Maybe Room)
-findRoom gameId = do
-  roomsRef <- appGameRooms <$> getYesod
-  rooms <- liftIO $ readTVarIO roomsRef
+findRoom :: MarvelGameId -> TVar (Map.Map MarvelGameId Room) -> STM (Maybe Room)
+findRoom gameId roomsRef = do
+  rooms <- readTVar roomsRef
   pure $ Map.lookup gameId rooms
 
 getChannel :: MarvelGameId -> Handler (TChan BSL.ByteString)
 getChannel gameId = do
-  mRoom <- findRoom gameId
+  roomsRef <- appGameRooms <$> getYesod
+  liftIO $ atomically $ getChannelSTM gameId roomsRef
+
+getChannelSTM :: MarvelGameId -> TVar (Map.Map MarvelGameId Room) -> STM (TChan BSL.ByteString)
+getChannelSTM gameId roomsRef = do
+  mRoom <- findRoom gameId roomsRef
   case mRoom of
     Just room -> pure $ roomChan room
     Nothing -> do
-      roomsRef <- appGameRooms <$> getYesod
-      chan <- liftIO $ atomically newBroadcastTChan
-      clients <- liftIO $ newTVarIO 0
+      chan <- newBroadcastTChan
+      clients <- newTVar 0
       let room = Room gameId clients chan
-      liftIO $ atomically $ modifyTVar' roomsRef $ Map.insert gameId room
+      modifyTVar' roomsRef $ Map.insert gameId room
       pure chan
 
 toDeck :: MarvelDBDecklist -> IO Deck
