@@ -106,11 +106,6 @@ getResourceAbilities ::
   , Projection m PlayerIdentity
   ) =>
   m [Ability]
-
-class Count a where
-  data QueryCount a
-  selectCount :: (HasGame m) => QueryCount a -> a -> m Natural
-
 gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountIdentity ::
