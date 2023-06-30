@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.CombatTraining
-  ( combatTraining
-  , CombatTraining(..)
-  ) where
+module Marvel.Upgrade.Upgrades.CombatTraining (
+  combatTraining,
+  CombatTraining (..),
+) where
 
 import Marvel.Prelude
 
@@ -10,8 +10,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -19,11 +18,11 @@ combatTraining :: UpgradeCard CombatTraining
 combatTraining = upgrade CombatTraining Cards.combatTraining
 
 newtype CombatTraining = CombatTraining (Attrs Upgrade)
-  deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsUpgrade)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasModifiersFor CombatTraining where
-  getModifiersFor _ (IdentityTarget iid) (CombatTraining a)
+  getModifiersFor _ (IdentityRef iid) (CombatTraining a)
     | iid == upgradeController a = pure [AttackModifier 1]
   getModifiersFor _ _ _ = pure []
 

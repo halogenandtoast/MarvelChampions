@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.Killmonger
-  ( killmonger
-  , Killmonger(..)
-  ) where
+module Marvel.Minion.Minions.Killmonger (
+  killmonger,
+  Killmonger (..),
+) where
 
 import Marvel.Prelude
 
@@ -20,12 +20,12 @@ killmonger = minion Killmonger Cards.killmonger (Sch 2) (Atk 2) (HP 5)
 
 newtype Killmonger = Killmonger (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Killmonger where
   runMessage msg m@(Killmonger attrs) = case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
-      MinionDamaged (UpgradeSource uid) _ -> do
+      MinionDamaged (UpgradeRef uid) _ -> do
         isBlackPanther <- upgradeMatches (UpgradeWithTrait BlackPanther) uid
         if isBlackPanther then pure m else Killmonger <$> runMessage msg attrs
       _ -> Killmonger <$> runMessage msg attrs

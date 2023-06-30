@@ -12,10 +12,9 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Source
-import Marvel.Support.Types
+import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 
 auntMay :: SupportCard AuntMay
 auntMay = support AuntMay Cards.auntMay
@@ -23,17 +22,17 @@ auntMay = support AuntMay Cards.auntMay
 instance HasAbilities AuntMay where
   getAbilities (AuntMay a) =
     [ ability
-          a
-          1
-          AlterEgoAction
-          (OwnsThis <> SelfMatches IdentityWithAnyDamage)
-          ExhaustCost
+        a
+        1
+        AlterEgoAction
+        (OwnsThis <> SelfMatches IdentityWithAnyDamage)
+        ExhaustCost
         $ Heal (IdentityCharacter $ supportController a) 4
     ]
 
 newtype AuntMay = AuntMay (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage AuntMay where
   runMessage msg (AuntMay a) = AuntMay <$> runMessage msg a

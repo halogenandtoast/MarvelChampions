@@ -1,7 +1,7 @@
-module Marvel.Event.Events.SplitPersonality
-  ( splitPersonality
-  , SplitPersonality(..)
-  ) where
+module Marvel.Event.Events.SplitPersonality (
+  splitPersonality,
+  SplitPersonality (..),
+) where
 
 import Marvel.Prelude
 
@@ -14,15 +14,14 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 splitPersonality :: EventCard SplitPersonality
 splitPersonality = event SplitPersonality Cards.splitPersonality
 
 newtype SplitPersonality = SplitPersonality (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SplitPersonality where
   runMessage msg e@(SplitPersonality attrs) = case msg of
@@ -30,9 +29,10 @@ instance RunMessage SplitPersonality where
       PlayedEvent identityId _ _ -> do
         inHero <- identityMatches HeroIdentity identityId
         let newForm = if inHero then B else A
-        pushAll $ map
-          (IdentityMessage identityId)
-          [ChangedToForm newForm, DrawToHandLimit]
+        pushAll $
+          map
+            (IdentityMessage identityId)
+            [ChangedToForm newForm, DrawToHandLimit]
         pure e
       _ -> SplitPersonality <$> runMessage msg attrs
     _ -> SplitPersonality <$> runMessage msg attrs

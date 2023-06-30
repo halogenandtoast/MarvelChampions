@@ -7,10 +7,9 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Source
-import Marvel.Support.Types
+import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 
 theTriskellion :: SupportCard TheTriskellion
 theTriskellion = support TheTriskellion Cards.theTriskellion
@@ -19,13 +18,14 @@ instance HasAbilities TheTriskellion where
   getAbilities _ = []
 
 instance HasModifiersFor TheTriskellion where
-  getModifiersFor _ (IdentityTarget iid) (TheTriskellion a) | iid == supportController a =
-    pure [AllyLimitModifier 1]
+  getModifiersFor _ (IdentityRef iid) (TheTriskellion a)
+    | iid == supportController a =
+        pure [AllyLimitModifier 1]
   getModifiersFor _ _ _ = pure []
 
 newtype TheTriskellion = TheTriskellion (Attrs Support)
-  deriving anyclass IsSupport
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsSupport)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage TheTriskellion where
   runMessage msg (TheTriskellion a) = TheTriskellion <$> runMessage msg a

@@ -1,11 +1,13 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-module Marvel.Identity
-  ( module Marvel.Identity
-  , module Marvel.Identity.Types
-  ) where
+
+module Marvel.Identity (
+  module Marvel.Identity,
+  module Marvel.Identity.Types,
+) where
 
 import Marvel.Prelude
 
+import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.List (partition)
 import Marvel.Ability
@@ -39,77 +41,76 @@ import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 import Marvel.Trait
 import Marvel.Window qualified as W
 import System.Random.Shuffle
 
 passedL :: Lens' (Attrs PlayerIdentity) Bool
-passedL = lens playerIdentityPassed $ \m x -> m { playerIdentityPassed = x }
+passedL = lens playerIdentityPassed $ \m x -> m {playerIdentityPassed = x}
 
 exhaustedL :: Lens' (Attrs PlayerIdentity) Bool
 exhaustedL =
-  lens playerIdentityExhausted $ \m x -> m { playerIdentityExhausted = x }
+  lens playerIdentityExhausted $ \m x -> m {playerIdentityExhausted = x}
 
 encounterCardsL :: Lens' (Attrs PlayerIdentity) [EncounterCard]
-encounterCardsL = lens playerIdentityEncounterCards
-  $ \m x -> m { playerIdentityEncounterCards = x }
+encounterCardsL = lens playerIdentityEncounterCards $
+  \m x -> m {playerIdentityEncounterCards = x}
 
 damageL :: Lens' (Attrs PlayerIdentity) Natural
-damageL = lens playerIdentityDamage $ \m x -> m { playerIdentityDamage = x }
+damageL = lens playerIdentityDamage $ \m x -> m {playerIdentityDamage = x}
 
 sideL :: Lens' (Attrs PlayerIdentity) Side
-sideL = lens playerIdentitySide $ \m x -> m { playerIdentitySide = x }
+sideL = lens playerIdentitySide $ \m x -> m {playerIdentitySide = x}
 
 sidesL :: Lens' (Attrs PlayerIdentity) (HashMap Side PlayerIdentitySide)
-sidesL = lens playerIdentitySides $ \m x -> m { playerIdentitySides = x }
+sidesL = lens playerIdentitySides $ \m x -> m {playerIdentitySides = x}
 
 alliesL :: Lens' (Attrs PlayerIdentity) (HashSet AllyId)
-alliesL = lens playerIdentityAllies $ \m x -> m { playerIdentityAllies = x }
+alliesL = lens playerIdentityAllies $ \m x -> m {playerIdentityAllies = x}
 
 minionsL :: Lens' (Attrs PlayerIdentity) (HashSet MinionId)
-minionsL = lens playerIdentityMinions $ \m x -> m { playerIdentityMinions = x }
+minionsL = lens playerIdentityMinions $ \m x -> m {playerIdentityMinions = x}
 
 upgradesL :: Lens' (Attrs PlayerIdentity) (HashSet UpgradeId)
 upgradesL =
-  lens playerIdentityUpgrades $ \m x -> m { playerIdentityUpgrades = x }
+  lens playerIdentityUpgrades $ \m x -> m {playerIdentityUpgrades = x}
 
 supportsL :: Lens' (Attrs PlayerIdentity) (HashSet SupportId)
 supportsL =
-  lens playerIdentitySupports $ \m x -> m { playerIdentitySupports = x }
+  lens playerIdentitySupports $ \m x -> m {playerIdentitySupports = x}
 
 deckL :: Lens' (Attrs PlayerIdentity) Deck
-deckL = lens playerIdentityDeck $ \m x -> m { playerIdentityDeck = x }
+deckL = lens playerIdentityDeck $ \m x -> m {playerIdentityDeck = x}
 
 handL :: Lens' (Attrs PlayerIdentity) Hand
-handL = lens playerIdentityHand $ \m x -> m { playerIdentityHand = x }
+handL = lens playerIdentityHand $ \m x -> m {playerIdentityHand = x}
 
 discardL :: Lens' (Attrs PlayerIdentity) Discard
-discardL = lens playerIdentityDiscard $ \m x -> m { playerIdentityDiscard = x }
+discardL = lens playerIdentityDiscard $ \m x -> m {playerIdentityDiscard = x}
 
 stunnedL :: Lens' (Attrs PlayerIdentity) Bool
-stunnedL = lens playerIdentityStunned $ \m x -> m { playerIdentityStunned = x }
+stunnedL = lens playerIdentityStunned $ \m x -> m {playerIdentityStunned = x}
 
 confusedL :: Lens' (Attrs PlayerIdentity) Bool
 confusedL =
-  lens playerIdentityConfused $ \m x -> m { playerIdentityConfused = x }
+  lens playerIdentityConfused $ \m x -> m {playerIdentityConfused = x}
 
 toughL :: Lens' (Attrs PlayerIdentity) Bool
-toughL = lens playerIdentityTough $ \m x -> m { playerIdentityTough = x }
+toughL = lens playerIdentityTough $ \m x -> m {playerIdentityTough = x}
 
 defeatedL :: Lens' (Attrs PlayerIdentity) Bool
 defeatedL =
-  lens playerIdentityDefeated $ \m x -> m { playerIdentityDefeated = x }
+  lens playerIdentityDefeated $ \m x -> m {playerIdentityDefeated = x}
 
 defendedL :: Lens' (Attrs PlayerIdentity) Bool
 defendedL =
-  lens playerIdentityDefended $ \m x -> m { playerIdentityDefended = x }
+  lens playerIdentityDefended $ \m x -> m {playerIdentityDefended = x}
 
 damageReductionL :: Lens' (Attrs PlayerIdentity) Natural
-damageReductionL = lens playerIdentityDamageReduction
-  $ \m x -> m { playerIdentityDamageReduction = x }
+damageReductionL = lens playerIdentityDamageReduction $
+  \m x -> m {playerIdentityDamageReduction = x}
 
 identityIsStunned :: PlayerIdentity -> Bool
 identityIsStunned = playerIdentityStunned . toAttrs
@@ -130,7 +131,7 @@ isAlterEgo player = case currentIdentity player of
 identityDamage :: PlayerIdentity -> Natural
 identityDamage = playerIdentityDamage . toAttrs
 
-getModifiedHandSize :: HasGame m => PlayerIdentity -> m Natural
+getModifiedHandSize :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedHandSize pid = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (unHandSize $ handSize pid) modifiers
@@ -138,7 +139,7 @@ getModifiedHandSize pid = do
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedHp :: HasGame m => PlayerIdentity -> m Natural
+getModifiedHp :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedHp pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (unHp $ playerIdentityHP attrs) modifiers
@@ -157,7 +158,7 @@ instance HasTraits PlayerIdentity where
     applyModifier (TraitModifier t) = HashSet.insert t
     applyModifier _ = id
 
-getIdentityHeroAttackDamage :: HasGame m => PlayerIdentity -> m Natural
+getIdentityHeroAttackDamage :: (HasGame m) => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
   AlterEgoSide _ -> pure 0
   HeroSide x -> getModifiedAttack $ toAttrs x
@@ -166,15 +167,13 @@ instance Exhaustable PlayerIdentity where
   isExhausted = playerIdentityExhausted . toAttrs
 
 instance HasResources PlayerIdentity where
-  resourcesFor player card = concatMapM
-    (`resourcesFor` card)
-    (unHand $ playerIdentityHand $ toAttrs player)
+  resourcesFor player card =
+    concatMapM
+      (`resourcesFor` card)
+      (unHand $ playerIdentityHand $ toAttrs player)
 
-instance IsSource PlayerIdentity where
-  toSource = IdentitySource . playerIdentityId . toAttrs
-
-instance IsTarget PlayerIdentity where
-  toTarget = IdentityTarget . playerIdentityId . toAttrs
+instance IsRef PlayerIdentity where
+  toRef = IdentityRef . toId
 
 currentIdentity :: PlayerIdentity -> PlayerIdentitySide
 currentIdentity (PlayerIdentity a) =
@@ -182,33 +181,34 @@ currentIdentity (PlayerIdentity a) =
     Nothing -> error "Should not happen"
     Just s -> s
 
-createIdentity
-  :: IdentityId -> PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
+createIdentity ::
+  IdentityId -> PlayerIdentitySide -> PlayerIdentitySide -> PlayerIdentity
 createIdentity ident alterEgoSide heroSide =
-  PlayerIdentity $ PlayerIdentityAttrs
-    { playerIdentitySide = B
-    , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
-    , playerIdentityId = ident
-    , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
-    , playerIdentityDamage = 0
-    , playerIdentityDeck = Deck []
-    , playerIdentityDiscard = Discard []
-    , playerIdentityHand = Hand []
-    , playerIdentityPassed = False
-    , playerIdentityAllies = mempty
-    , playerIdentityAllyLimit = 3
-    , playerIdentityMinions = mempty
-    , playerIdentitySupports = mempty
-    , playerIdentityUpgrades = mempty
-    , playerIdentityExhausted = False
-    , playerIdentityEncounterCards = []
-    , playerIdentityDamageReduction = 0
-    , playerIdentityStunned = False
-    , playerIdentityConfused = False
-    , playerIdentityTough = False
-    , playerIdentityDefeated = False
-    , playerIdentityDefended = False
-    }
+  PlayerIdentity $
+    PlayerIdentityAttrs
+      { playerIdentitySide = B
+      , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
+      , playerIdentityId = ident
+      , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
+      , playerIdentityDamage = 0
+      , playerIdentityDeck = Deck []
+      , playerIdentityDiscard = Discard []
+      , playerIdentityHand = Hand []
+      , playerIdentityPassed = False
+      , playerIdentityAllies = mempty
+      , playerIdentityAllyLimit = 3
+      , playerIdentityMinions = mempty
+      , playerIdentitySupports = mempty
+      , playerIdentityUpgrades = mempty
+      , playerIdentityExhausted = False
+      , playerIdentityEncounterCards = []
+      , playerIdentityDamageReduction = 0
+      , playerIdentityStunned = False
+      , playerIdentityConfused = False
+      , playerIdentityTough = False
+      , playerIdentityDefeated = False
+      , playerIdentityDefended = False
+      }
  where
   hp = case alterEgoSide of
     AlterEgoSide x -> startingHP x
@@ -218,9 +218,11 @@ setDeck :: Deck -> PlayerIdentity -> PlayerIdentity
 setDeck deck (PlayerIdentity attrs) = PlayerIdentity $ attrs & deckL .~ deck'
  where
   ident = playerIdentityId attrs
-  deck' = Deck $ map
-    (\c -> c { pcOwner = Just ident, pcController = Just ident })
-    (unDeck deck)
+  deck' =
+    Deck $
+      map
+        (\c -> c {pcOwner = Just ident, pcController = Just ident})
+        (unDeck deck)
 
 lookupAlterEgo :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupAlterEgo cardDef ident =
@@ -230,7 +232,7 @@ lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
   Just . HeroSide $ lookupHeroByCardCode (toCardCode cardDef) ident
 
-takeTurn :: HasQueue m => PlayerIdentity -> m ()
+takeTurn :: (HasQueue m) => PlayerIdentity -> m ()
 takeTurn attrs =
   pushAll $ map (IdentityMessage $ toId attrs) [PlayerTurnOption, CheckIfPassed]
 
@@ -240,7 +242,7 @@ instance HasAbilities PlayerIdentity where
       sideAbilities = case currentIdentity a of
         HeroSide x -> getAbilities x
         AlterEgoSide x -> getAbilities x
-    in
+     in
       [limitedAbility a 100 (PerTurn 1) Action IsSelf NoCost ChangeForm]
         <> sideAbilities
 
@@ -250,13 +252,13 @@ isPlayable attrs c = do
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
-  pure
-    $ length resources
-    >= modifiedCost
-    && passedCriteria
-    && passedPlayLimits
-    && isNothing (cdResponseWindow def)
-    && (cdCardType def /= ResourceType)
+  pure $
+    length resources
+      >= modifiedCost
+      && passedCriteria
+      && passedPlayLimits
+      && isNothing (cdResponseWindow def)
+      && (cdCardType def /= ResourceType)
  where
   ident = toId attrs
   def = getCardDef c
@@ -278,9 +280,10 @@ isPlayable attrs c = do
     AllyExists m -> selectAny m
     SchemeExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)
-    -- ^ this is critical and order matters to avoid infinite recursionl
 
-checkPlayLimits :: HasGame m => PlayerIdentity -> PlayerCard -> m Bool
+-- \^ this is critical and order matters to avoid infinite recursionl
+
+checkPlayLimits :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 checkPlayLimits ident c = case cdLimit def of
   Nothing -> pure True
   Just limit -> case limit of
@@ -292,16 +295,16 @@ checkPlayLimits ident c = case cdLimit def of
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
-    MaxPerAlly _ ->  error "Unhandled"
+    MaxPerAlly _ -> error "Unhandled"
     MaxPerEnemy 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
     MaxPerEnemy _ -> error "Unhandled"
  where
-   def = getCardDef c
-   name = cdName def
+  def = getCardDef c
+  name = cdName def
 
-getModifiedCost :: HasGame m => PlayerIdentity -> PlayerCard -> m Int
+getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
   modifiers <- getModifiers attrs
   pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
@@ -312,30 +315,33 @@ getModifiedCost attrs c = do
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
-  where cards = unHand $ playerIdentityHand $ toAttrs player
+ where
+  cards = unHand $ playerIdentityHand $ toAttrs player
 
-getChoices
-  :: (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
+getChoices ::
+  (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
 getChoices attrs = do
   let ident = toId attrs
   abilities <- getsGame getAbilities
   usedAbilities <- getUsedAbilities
   playableCards <- getPlayableCards attrs
-  validAbilities <- filterM
-    (andM . sequence
-      [ pure . passesUseLimit ident usedAbilities
-      , passesCriteria ident
-      , passesCanAffordCost ident
-      , pure . passesTiming ident
-      , passesTypeIsRelevant ident
-      ]
-    )
-    abilities
-  pure
-    $ map UseAbility validAbilities
-    <> map (($ Nothing) . PlayCard) playableCards
+  validAbilities <-
+    filterM
+      ( andM
+          . sequence
+            [ pure . passesUseLimit ident usedAbilities
+            , passesCriteria ident
+            , passesCanAffordCost ident
+            , pure . passesTiming ident
+            , passesTypeIsRelevant ident
+            ]
+      )
+      abilities
+  pure $
+    map UseAbility validAbilities
+      <> map (($ Nothing) . PlayCard) playableCards
 
-getObligations :: MonadRandom m => PlayerIdentity -> m [EncounterCard]
+getObligations :: (MonadRandom m) => PlayerIdentity -> m [EncounterCard]
 getObligations attrs = case currentIdentity attrs of
   HeroSide _ -> error "Can not call via hero side"
   AlterEgoSide side ->
@@ -346,11 +352,11 @@ toRetaliate [] = 0
 toRetaliate (Retaliate n : _) = n
 toRetaliate (_ : xs) = toRetaliate xs
 
-runIdentityMessage
-  :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity)
-  => IdentityMessage
-  -> PlayerIdentity
-  -> m PlayerIdentity
+runIdentityMessage ::
+  (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) =>
+  IdentityMessage ->
+  PlayerIdentity ->
+  m PlayerIdentity
 runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
   case msg of
     SetupIdentity -> do
@@ -359,19 +365,19 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
       obligations <- getObligations pid
       nemesisSetCards <- gatherEncounterSet nemesisSet
-      pushAll
-        $ SetAside (EncounterCard <$> nemesisSetCards)
-        : ShuffleIntoEncounterDeck obligations
-        : map
+      pushAll $
+        SetAside (EncounterCard <$> nemesisSetCards)
+          : ShuffleIntoEncounterDeck obligations
+          : map
             (IdentityMessage playerIdentityId)
             [ ShuffleDeck
             , DrawOrDiscardToHandLimit
             , DiscardCards
             , DrawOrDiscardToHandLimit
             ]
-        <> map
-             (\a -> RanAbility (toTarget pid) (abilityIndex a) [] NoPayment)
-             setupAbilities
+            <> map
+              (\a -> RanAbility (toTarget pid) (abilityIndex a) [] NoPayment)
+              setupAbilities
       pure pid
     BeginTurn -> do
       takeTurn pid
@@ -390,13 +396,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       deck <- shuffleM (unDeck $ attrs ^. deckL)
       pure $ PlayerIdentity $ attrs & deckL .~ Deck deck
     ShuffleIdentityDiscardBackIntoDeck -> do
-      deck' <- shuffleM
-        (unDeck (attrs ^. deckL) <> unDiscard (attrs ^. discardL))
-      pure
-        $ PlayerIdentity
-        $ attrs
-        & (deckL .~ Deck deck')
-        & (discardL .~ Discard [])
+      deck' <-
+        shuffleM
+          (unDeck (attrs ^. deckL) <> unDiscard (attrs ^. discardL))
+      pure $
+        PlayerIdentity $
+          attrs
+            & (deckL .~ Deck deck')
+            & (discardL .~ Discard [])
     ShuffleIntoIdentityDeck cards -> do
       deck <- shuffleM (unDeck (attrs ^. deckL) <> cards)
       pure $ PlayerIdentity $ attrs & deckL .~ Deck deck
@@ -405,20 +412,24 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         diff =
           fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
-      when (diff > 0) $ push $ IdentityMessage playerIdentityId $ DrawCards
-        FromDeck
-        (fromIntegral diff)
-      when (diff < 0) $ chooseOne
-        playerIdentityId
-        [ TargetLabel
-            (CardIdTarget $ pcCardId c)
+      when (diff > 0) $
+        push $
+          IdentityMessage playerIdentityId $
+            DrawCards
+              FromDeck
+              (fromIntegral diff)
+      when (diff < 0) $
+        chooseOne
+          playerIdentityId
+          [ TargetLabel
+            (toRef c)
             [ Run
                 [ DiscardedCard $ PlayerCard c
                 , IdentityMessage playerIdentityId DrawOrDiscardToHandLimit
                 ]
             ]
-        | c <- unHand playerIdentityHand
-        ]
+          | c <- unHand playerIdentityHand
+          ]
 
       pure pid
     DrawToHandLimit -> do
@@ -426,9 +437,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         diff =
           fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
-      when (diff > 0) $ push $ IdentityMessage playerIdentityId $ DrawCards
-        FromDeck
-        (fromIntegral diff)
+      when (diff > 0) $
+        push $
+          IdentityMessage playerIdentityId $
+            DrawCards
+              FromDeck
+              (fromIntegral diff)
       pure pid
     DrawCards fromZone n -> case fromZone of
       FromHand -> error "Impossible"
@@ -438,84 +452,90 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       FromDeck -> do
         let
           (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
-        when (length (unDeck playerIdentityDeck) < fromIntegral n) $ pushAll
-          [ IdentityMessage playerIdentityId ShuffleIdentityDiscardBackIntoDeck
-          , DealEncounterCard playerIdentityId
-          , IdentityMessage playerIdentityId $ DrawCards
-            fromZone
-            (subtractNatural
-              (fromIntegral (length (unDeck playerIdentityDeck)))
-              n
-            )
-          ]
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & handL
-          %~ Hand
-          . (<> cards)
-          . unHand
-          & deckL
-          .~ Deck deck
+        when (length (unDeck playerIdentityDeck) < fromIntegral n) $
+          pushAll
+            [ IdentityMessage playerIdentityId ShuffleIdentityDiscardBackIntoDeck
+            , DealEncounterCard playerIdentityId
+            , IdentityMessage playerIdentityId $
+                DrawCards
+                  fromZone
+                  ( subtractNatural
+                      (fromIntegral (length (unDeck playerIdentityDeck)))
+                      n
+                  )
+            ]
+        pure $
+          PlayerIdentity $
+            attrs
+              & handL
+                %~ Hand
+                  . (<> cards)
+                  . unHand
+              & deckL
+                .~ Deck deck
     ReadyCards -> do
-      pushAll
-        $ map
-            (($ ReadiedAlly) . AllyMessage)
-            (HashSet.toList playerIdentityAllies)
-        <> map
-             (($ ReadiedSupport) . SupportMessage)
-             (HashSet.toList playerIdentitySupports)
-        <> map
-             (($ ReadiedUpgrade) . UpgradeMessage)
-             (HashSet.toList playerIdentityUpgrades)
+      pushAll $
+        map
+          (($ ReadiedAlly) . AllyMessage)
+          (HashSet.toList playerIdentityAllies)
+          <> map
+            (($ ReadiedSupport) . SupportMessage)
+            (HashSet.toList playerIdentitySupports)
+          <> map
+            (($ ReadiedUpgrade) . UpgradeMessage)
+            (HashSet.toList playerIdentityUpgrades)
       pure $ PlayerIdentity $ attrs & exhaustedL .~ False
     ChooseOtherForm -> do
       let
-        otherForms = filter (/= playerIdentitySide) $ keys playerIdentitySides
+        otherForms = filter (/= playerIdentitySide) $ HashMap.keys playerIdentitySides
       chooseOrRunOne playerIdentityId $ map ChangeToForm otherForms
       pure pid
     ChangedToForm side -> do
-      push $ CheckWindows
-        [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
+      push $
+        CheckWindows
+          [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
       pure $ PlayerIdentity $ attrs & sideL .~ side
     PlayedCard card mWindow -> do
       modifiedCost <- getModifiedCost pid card
       activeCostId <- getRandom
       let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)
-      push $ SetActiveCost $ ActiveCost
-        activeCostId
-        playerIdentityId
-        (ForCard card)
-        cost'
-        NoPayment
-        mWindow
-        mempty
-      pure
-        $ PlayerIdentity
-        $ attrs
-        & (handL %~ Hand . filter (/= card) . unHand)
-        & (discardL %~ Discard . filter (/= card) . unDiscard)
+      push $
+        SetActiveCost $
+          ActiveCost
+            activeCostId
+            playerIdentityId
+            (ForCard card)
+            cost'
+            NoPayment
+            mWindow
+            mempty
+      pure $
+        PlayerIdentity $
+          attrs
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
     PaidWithCard card -> do
       mActiveCost <- getActiveCost
       case mActiveCost of
         Nothing -> error "no cost"
         Just activeCostId -> do
           push $ Spent activeCostId card
-          pure
-            $ PlayerIdentity
-            $ attrs
-            & (handL %~ Hand . filter (/= card) . unHand)
-            -- & (discardL %~ Discard . (card :) . unDiscard)
+          pure $
+            PlayerIdentity $
+              attrs
+                & (handL %~ Hand . filter (/= card) . unHand)
+    -- & (discardL %~ Discard . (card :) . unDiscard)
     AllyCreated allyId -> do
       push $ IdentityMessage playerIdentityId CheckAllyLimit
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.insert allyId
     CheckAllyLimit -> do
       limit <- fromIntegral <$> getModifiedAllyLimit pid
-      when (size playerIdentityAllies > limit) $ chooseOne
-        playerIdentityId
-        [ TargetLabel (AllyTarget aid) [DiscardTarget $ AllyTarget aid]
-        | aid <- toList playerIdentityAllies
-        ]
+      when (HashSet.size playerIdentityAllies > limit) $
+        chooseOne
+          playerIdentityId
+          [ TargetLabel (toRef aid) [DiscardTarget $ toRef aid]
+          | aid <- toList playerIdentityAllies
+          ]
       pure pid
     UpgradeCreated upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.insert upgradeId
@@ -530,17 +550,17 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     SupportRemoved supportId -> do
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.delete supportId
     AddToHand card ->
-      pure
-        $ PlayerIdentity
-        $ attrs
-        & (handL %~ Hand . (card :) . unHand)
-        & (deckL %~ Deck . filter (/= card) . unDeck)
-        & (discardL %~ Discard . filter (/= card) . unDiscard)
+      pure $
+        PlayerIdentity $
+          attrs
+            & (handL %~ Hand . (card :) . unHand)
+            & (deckL %~ Deck . filter (/= card) . unDeck)
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
     ChooseFromDiscard target choiceRules chooseMin chooseMax -> do
       pushAll
         [ FocusCards $ PlayerCard <$> unDiscard playerIdentityDiscard
-        , IdentityMessage playerIdentityId
-          $ ChosenFromDiscard target choiceRules chooseMin chooseMax []
+        , IdentityMessage playerIdentityId $
+            ChosenFromDiscard target choiceRules chooseMin chooseMax []
         , UnfocusCards
         ]
       pure pid
@@ -555,29 +575,31 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
 
       if length cards >= fromIntegral chooseMax
         then push (WithChosen target FromDiscard $ PlayerCard <$> cards)
-        else pushAll
-          [ FocusCards $ PlayerCard <$> focusedCards
-          , Ask playerIdentityId
-          $ ChooseOne
-          $ [ Label
-                "Done"
-                [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
-            | length cards >= fromIntegral chooseMin
+        else
+          pushAll
+            [ FocusCards $ PlayerCard <$> focusedCards
+            , Ask playerIdentityId $
+                ChooseOne $
+                  [ Label
+                    "Done"
+                    [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
+                  | length cards >= fromIntegral chooseMin
+                  ]
+                    <> [ TargetLabel
+                        (toRef c)
+                        [ Run
+                            [ IdentityMessage playerIdentityId $
+                                ChosenFromDiscard
+                                  target
+                                  choiceRules
+                                  chooseMin
+                                  chooseMax
+                                  (c : cards)
+                            ]
+                        ]
+                       | c <- choices
+                       ]
             ]
-          <> [ TargetLabel
-                 (CardIdTarget $ pcCardId c)
-                 [ Run
-                     [ IdentityMessage playerIdentityId $ ChosenFromDiscard
-                         target
-                         choiceRules
-                         chooseMin
-                         chooseMax
-                         (c : cards)
-                     ]
-                 ]
-             | c <- choices
-             ]
-          ]
 
       pure pid
     DiscardFor _ FromDeck _ _ -> error "Unhandled"
@@ -587,123 +609,134 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     DiscardFor _ FromDiscard _ _ -> error "Unhandled"
     DiscardedFor _ FromDiscard _ _ _ -> error "Unhandled"
     DiscardFor target FromHand discardMin discardMax -> do
-      push $ IdentityMessage playerIdentityId $ DiscardedFor
-        target
-        FromHand
-        discardMin
-        discardMax
-        []
+      push $
+        IdentityMessage playerIdentityId $
+          DiscardedFor
+            target
+            FromHand
+            discardMin
+            discardMax
+            []
       pure pid
     DiscardedFor target FromHand discardMin discardMax cards -> do
       if length cards >= fromIntegral discardMax
         then push (WithDiscarded target FromHand cards)
         else
-          push
-          $ Ask playerIdentityId
-          $ ChooseOne
-          $ [ Label "Done" [Run [WithDiscarded target FromHand cards]]
-            | length cards >= fromIntegral discardMin
-            ]
-          <> [ TargetLabel
-                 (CardIdTarget $ pcCardId c)
-                 [ Run
-                     [ DiscardedCard $ PlayerCard c
-                     , IdentityMessage playerIdentityId $ DiscardedFor
-                       target
-                       FromHand
-                       discardMin
-                       discardMax
-                       (PlayerCard c : cards)
+          push $
+            Ask playerIdentityId $
+              ChooseOne $
+                [ Label "Done" [Run [WithDiscarded target FromHand cards]]
+                | length cards >= fromIntegral discardMin
+                ]
+                  <> [ TargetLabel
+                      (toRef c)
+                      [ Run
+                          [ DiscardedCard $ PlayerCard c
+                          , IdentityMessage playerIdentityId $
+                              DiscardedFor
+                                target
+                                FromHand
+                                discardMin
+                                discardMax
+                                (PlayerCard c : cards)
+                          ]
+                      ]
+                     | c <- unHand playerIdentityHand
                      ]
-                 ]
-             | c <- unHand playerIdentityHand
-             ]
       pure pid
     DiscardFor target RandomFromHand discardMin _ -> do
       let handCards = unHand playerIdentityHand
       discards <- take (fromIntegral discardMin) <$> shuffleM handCards
-      pushAll
-        $ map (DiscardedCard . PlayerCard) discards
-        <> [WithDiscarded target RandomFromHand $ PlayerCard <$> discards]
+      pushAll $
+        map (DiscardedCard . PlayerCard) discards
+          <> [WithDiscarded target RandomFromHand $ PlayerCard <$> discards]
       pure pid
     DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
     DiscardCards -> do
       unless (null $ unHand playerIdentityHand) $ do
-        chooseOne playerIdentityId
-          $ Label "Continue without discarding" []
-          : [ TargetLabel
-                (CardIdTarget $ pcCardId c)
+        chooseOne playerIdentityId $
+          Label "Continue without discarding" []
+            : [ TargetLabel
+                (toRef c)
                 [ Run
                     [ DiscardedCard $ PlayerCard c
                     , IdentityMessage playerIdentityId DiscardCards
                     ]
                 ]
-            | c <- unHand playerIdentityHand
-            ]
+              | c <- unHand playerIdentityHand
+              ]
       pure pid
     DiscardFrom fromZone n mTarget -> case fromZone of
       FromHand -> error "Unhandled"
       FromDiscard -> error "Unhandled"
       FromEncounterDeck -> error "Unhandled"
       RandomFromHand -> do
-        discards <- take (fromIntegral n)
-          <$> shuffleM (unHand playerIdentityHand)
+        discards <-
+          take (fromIntegral n)
+            <$> shuffleM (unHand playerIdentityHand)
         for_ mTarget $ \target ->
           push $ WithDiscarded target fromZone $ PlayerCard <$> discards
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & (discardL %~ Discard . (discards <>) . unDiscard)
-          & (handL %~ Hand . filter (`notElem` discards) . unHand)
+        pure $
+          PlayerIdentity $
+            attrs
+              & (discardL %~ Discard . (discards <>) . unDiscard)
+              & (handL %~ Hand . filter (`notElem` discards) . unHand)
       FromDeck -> do
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
         for_ mTarget $ \target ->
           push $ WithDiscarded target fromZone $ PlayerCard <$> cards
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & (discardL %~ Discard . (cards <>) . unDiscard)
-          & (deckL .~ Deck deck')
+        pure $
+          PlayerIdentity $
+            attrs
+              & (discardL %~ Discard . (cards <>) . unDiscard)
+              & (deckL .~ Deck deck')
     ReadiedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ False
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     VillainAndMinionsActivate -> do
       villain <- selectJust ActiveVillain
       case currentIdentity pid of
         HeroSide _ -> do
-          pushAll
-            $ VillainMessage villain (VillainAttacks playerIdentityId)
-            : [ Ask playerIdentityId $ ChooseOneAtATime $ map
-                  (\minionId -> TargetLabel
-                    (MinionTarget minionId)
-                    [ Run
-                        [ MinionMessage
-                            minionId
-                            (MinionAttacks playerIdentityId)
-                        ]
-                    ]
-                  )
-                  (toList playerIdentityMinions)
-              | not (null playerIdentityMinions)
-              ]
+          pushAll $
+            VillainMessage villain (VillainAttacks playerIdentityId)
+              : [ Ask playerIdentityId $
+                  ChooseOneAtATime $
+                    map
+                      ( \minionId ->
+                          TargetLabel
+                            (toRef minionId)
+                            [ Run
+                                [ MinionMessage
+                                    minionId
+                                    (MinionAttacks playerIdentityId)
+                                ]
+                            ]
+                      )
+                      (toList playerIdentityMinions)
+                | not (null playerIdentityMinions)
+                ]
         AlterEgoSide _ -> do
-          pushAll
-            $ VillainMessage villain VillainSchemes
-            : [ Ask playerIdentityId $ ChooseOneAtATime $ map
-                  (\minionId -> TargetLabel
-                    (MinionTarget minionId)
-                    [Run [MinionMessage minionId MinionSchemes]]
-                  )
-                  (toList playerIdentityMinions)
-              | not (null playerIdentityMinions)
-              ]
+          pushAll $
+            VillainMessage villain VillainSchemes
+              : [ Ask playerIdentityId $
+                  ChooseOneAtATime $
+                    map
+                      ( \minionId ->
+                          TargetLabel
+                            (toRef minionId)
+                            [Run [MinionMessage minionId MinionSchemes]]
+                      )
+                      (toList playerIdentityMinions)
+                | not (null playerIdentityMinions)
+                ]
       pure pid
     DealtEncounterCard ec ->
       pure $ PlayerIdentity $ attrs & encounterCardsL %~ (ec :)
     RevealEncounterCards -> do
-      pushAll $ map
-        (RevealEncounterCard playerIdentityId)
-        playerIdentityEncounterCards
+      pushAll $
+        map
+          (RevealEncounterCard playerIdentityId)
+          playerIdentityEncounterCards
       pure $ PlayerIdentity $ attrs & encounterCardsL .~ mempty
     IdentityWasAttacked attack' -> do
       let
@@ -712,24 +745,29 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         retaliate = case currentIdentity pid of
           HeroSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
           AlterEgoSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
-      when (retaliate > 0) $ push $ IdentityMessage
-        playerIdentityId
-        (IdentityRetaliate retaliate $ attackEnemy attack')
-      when playerIdentityDefended $ push
-        (CheckWindows
-          [ W.Window W.After
-              $ W.HeroDefends playerIdentityId (attackEnemy attack')
+      when (retaliate > 0) $
+        push $
+          IdentityMessage
+            playerIdentityId
+            (IdentityRetaliate retaliate $ attackEnemy attack')
+      when playerIdentityDefended $
+        push
+          ( CheckWindows
+              [ W.Window W.After $
+                  W.HeroDefends playerIdentityId (attackEnemy attack')
+              ]
+          )
+      when (damage > 0) $
+        pushAll
+          [ CheckWindows
+              [ W.Window W.When $
+                  W.IdentityTakeDamage
+                    playerIdentityId
+                    (toDamage damage FromAttack)
+              ]
+          , IdentityMessage playerIdentityId $
+              IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
-        )
-      when (damage > 0) $ pushAll
-        [ CheckWindows
-          [ W.Window W.When $ W.IdentityTakeDamage
-              playerIdentityId
-              (toDamage damage FromAttack)
-          ]
-        , IdentityMessage playerIdentityId
-          $ IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
-        ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
     IdentityDamaged _ damage -> do
       modifiedHp <- getModifiedHp pid
@@ -741,15 +779,18 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       players <- getPlayers
       let
         ps = take 1 . drop 1 $ dropWhile (/= playerIdentityId) (cycle players)
-      push (RemoveFromPlay $ IdentityTarget playerIdentityId)
+      push (RemoveFromPlay $ toRef playerIdentityId)
       case ps of
-        [x] | x /= playerIdentityId -> pushAll $ concatMap
-          (\minionId ->
-            [ IdentityMessage x (MinionEngaged minionId)
-            , MinionMessage minionId (MinionEngagedIdentity x)
-            ]
-          )
-          (toList playerIdentityMinions)
+        [x]
+          | x /= playerIdentityId ->
+              pushAll $
+                concatMap
+                  ( \minionId ->
+                      [ IdentityMessage x (MinionEngaged minionId)
+                      , MinionMessage minionId (MinionEngagedIdentity x)
+                      ]
+                  )
+                  (toList playerIdentityMinions)
         _ -> pure ()
       pure $ PlayerIdentity $ attrs & defeatedL .~ True
     IdentityDefended n ->
@@ -762,109 +803,115 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     IdentityRemoveConfused ->
       pure $ PlayerIdentity $ attrs & confusedL .~ False
     Search (SearchIdentityDeck iid projection) cardMatcher searchOption returnOption
-      | iid == playerIdentityId
-      -> do
-        let
-          deck = unDeck playerIdentityDeck
-          (focusedCards, deck') = case projection of
-            AllOfDeck -> (deck, [])
-            TopOfDeck n -> splitAt n deck
-          (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
-          handleReturnCards = case returnOption of
-            ShuffleBackIn ->
-              (: [])
-                . IdentityMessage playerIdentityId
-                . ShuffleIntoIdentityDeck
-            DiscardRest -> map (DiscardedCard . PlayerCard)
-          handleFoundCards = if null foundCards
-            then Ask
-              playerIdentityId
-              (ChooseOne [Label "No matching cards found" []])
-            else case searchOption of
-              SearchTarget target ->
-                SearchFoundCards target $ PlayerCard <$> foundCards
-              SearchDrawOne -> Ask playerIdentityId $ ChooseOne
-                [ TargetLabel
-                    (CardIdTarget $ pcCardId c)
-                    [ Run
-                      $ IdentityMessage playerIdentityId (AddToHand c)
-                      : handleReturnCards (rest <> cs')
-                    ]
-                | (c, cs') <- removeEach foundCards
-                ]
-        pushAll
-          [ FocusCards $ PlayerCard <$> focusedCards
-          , handleFoundCards
-          , UnfocusCards
-          ]
-        pure $ PlayerIdentity $ attrs & deckL .~ Deck deck'
+      | iid == playerIdentityId ->
+          do
+            let
+              deck = unDeck playerIdentityDeck
+              (focusedCards, deck') = case projection of
+                AllOfDeck -> (deck, [])
+                TopOfDeck n -> splitAt n deck
+              (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
+              handleReturnCards = case returnOption of
+                ShuffleBackIn ->
+                  (: [])
+                    . IdentityMessage playerIdentityId
+                    . ShuffleIntoIdentityDeck
+                DiscardRest -> map (DiscardedCard . PlayerCard)
+              handleFoundCards =
+                if null foundCards
+                  then
+                    Ask
+                      playerIdentityId
+                      (ChooseOne [Label "No matching cards found" []])
+                  else case searchOption of
+                    SearchTarget target ->
+                      SearchFoundCards target $ PlayerCard <$> foundCards
+                    SearchDrawOne ->
+                      Ask playerIdentityId $
+                        ChooseOne
+                          [ TargetLabel
+                            (toRef c)
+                            [ Run $
+                                IdentityMessage playerIdentityId (AddToHand c)
+                                  : handleReturnCards (rest <> cs')
+                            ]
+                          | (c, cs') <- removeEach foundCards
+                          ]
+            pushAll
+              [ FocusCards $ PlayerCard <$> focusedCards
+              , handleFoundCards
+              , UnfocusCards
+              ]
+            pure $ PlayerIdentity $ attrs & deckL .~ Deck deck'
     Search _ _ _ _ -> error "Unhandled"
     IdentityRetaliate n enemyId -> do
       let
         target = case enemyId of
-          EnemyMinionId mid -> MinionTarget mid
-          EnemyVillainId vid -> VillainTarget vid
-      msgs <- choiceMessages playerIdentityId
-        $ DamageEnemy target (toSource pid) (toDamage n FromRetaliate)
+          EnemyMinionId mid -> toRef mid
+          EnemyVillainId vid -> toRef vid
+      msgs <-
+        choiceMessages playerIdentityId $
+          DamageEnemy target (toSource pid) (toDamage n FromRetaliate)
       pushAll msgs
       pure pid
     SideMessage _ -> case currentIdentity pid of
       HeroSide x -> do
         newSide <-
           HeroSide <$> runMessage (IdentityMessage playerIdentityId msg) x
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & sidesL
-          . at playerIdentitySide
-          ?~ newSide
+        pure $
+          PlayerIdentity $
+            attrs
+              & sidesL
+                . at playerIdentitySide
+                ?~ newSide
       AlterEgoSide x -> do
         newSide <-
           AlterEgoSide <$> runMessage (IdentityMessage playerIdentityId msg) x
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & sidesL
-          . at playerIdentitySide
-          ?~ newSide
+        pure $
+          PlayerIdentity $
+            attrs
+              & sidesL
+                . at playerIdentitySide
+                ?~ newSide
 
 instance RunMessage PlayerIdentity where
   runMessage msg pid@(PlayerIdentity attrs) = case msg of
     DiscardedCard (PlayerCard card)
-      | pcOwner card == Just (playerIdentityId attrs)
-      -> pure
-        $ PlayerIdentity
-        $ attrs
-        & (discardL %~ Discard . (card :) . unDiscard)
-        & (handL %~ Hand . filter (/= card) . unHand)
-    RemoveFromGame (CardIdTarget cid) ->
-      pure
-        $ PlayerIdentity
-        $ attrs
-        & (discardL %~ Discard . filter ((/= cid) . pcCardId) . unDiscard)
-        & (handL %~ Hand . filter ((/= cid) . pcCardId) . unHand)
-        & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
+      | pcOwner card == Just (playerIdentityId attrs) ->
+          pure $
+            PlayerIdentity $
+              attrs
+                & (discardL %~ Discard . (card :) . unDiscard)
+                & (handL %~ Hand . filter (/= card) . unHand)
+    RemoveFromGame (CardIdRef cid) ->
+      pure $
+        PlayerIdentity $
+          attrs
+            & (discardL %~ Discard . filter ((/= cid) . pcCardId) . unDiscard)
+            & (handL %~ Hand . filter ((/= cid) . pcCardId) . unHand)
+            & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
-    IdentityMessage ident msg' | ident == playerIdentityId attrs ->
-      runIdentityMessage msg' pid
+    IdentityMessage ident msg'
+      | ident == playerIdentityId attrs ->
+          runIdentityMessage msg' pid
     _ -> case currentIdentity pid of
       HeroSide x -> do
         newSide <- HeroSide <$> runMessage msg x
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & sidesL
-          . at (playerIdentitySide attrs)
-          ?~ newSide
+        pure $
+          PlayerIdentity $
+            attrs
+              & sidesL
+                . at (playerIdentitySide attrs)
+                ?~ newSide
       AlterEgoSide x -> do
         newSide <- AlterEgoSide <$> runMessage msg x
-        pure
-          $ PlayerIdentity
-          $ attrs
-          & sidesL
-          . at (playerIdentitySide attrs)
-          ?~ newSide
+        pure $
+          PlayerIdentity $
+            attrs
+              & sidesL
+                . at (playerIdentitySide attrs)
+                ?~ newSide
 
 instance HasStartingHP PlayerIdentity where
   startingHP a = case currentIdentity a of
@@ -891,7 +938,7 @@ instance HasModifiersFor PlayerIdentity where
     HeroSide x -> getModifiersFor source target x
     AlterEgoSide x -> getModifiersFor source target x
 
-getModifiedAllyLimit :: HasGame m => PlayerIdentity -> m Natural
+getModifiedAllyLimit :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedAllyLimit pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (playerIdentityAllyLimit attrs) modifiers

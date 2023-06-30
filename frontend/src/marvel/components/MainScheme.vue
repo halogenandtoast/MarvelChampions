@@ -3,7 +3,6 @@ import { defineProps, defineEmits, computed } from 'vue'
 import { Game } from '@/marvel/types/Game'
 import { MainScheme } from '@/marvel/types/MainScheme'
 import Card from '@/marvel/components/Card.vue'
-import * as MarvelGame from '@/marvel/types/Game'
 
 const props = defineProps<{
   game: Game
@@ -19,31 +18,6 @@ const card = computed(() => ({
   cardId: props.mainScheme.mainSchemeId,
   cardDef: props.mainScheme.mainSchemeCardDef
 }))
-
-const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
-
-const activeAbility = computed(() => {
-  return choices.
-    value.
-    findIndex((choice) => {
-      if (choice.tag !== 'TargetLabel') {
-        return false
-      }
-
-      const { contents } = choice.target
-      if (typeof contents === "string") {
-        return contents == props.game.scenario.scenarioId
-      }
-
-      switch (contents.tag) {
-        case 'SchemeMainSchemeId':
-          return contents.contents === props.mainScheme.mainSchemeId
-        default:
-          return false
-      }
-    })
-})
-
 </script>
 
 <template>
@@ -53,9 +27,7 @@ const activeAbility = computed(() => {
       :game="game"
       :identityId="identityId"
       :sideways="true"
-      :class="{ active: activeAbility !== -1 }"
       class="scenario-card"
-      @click="emit('choose', activeAbility)"
       @choose="emit('choose', $event)"
     />
     <div class="threat">threat: {{mainScheme.mainSchemeThreat}}</div>

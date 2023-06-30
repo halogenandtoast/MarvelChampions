@@ -1,15 +1,23 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TupleSections #-}
+
 module Api.Marvel.Helpers where
 
 import Import hiding (appLogger)
 
+import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.TChan
-import Control.Monad.Random (MonadRandom(..))
+import Control.Concurrent.STM.TVar
+import Control.Monad.Random (MonadRandom (..))
 import Data.ByteString.Lazy qualified as BSL
+import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
+import Data.HashSet (HashSet)
 import Data.Map.Strict qualified as Map
+import Data.Text (Text)
+import GHC.Generics (Generic)
+import GHC.Num (Natural)
 import Marvel.Ally
 import Marvel.Attachment.Types
 import Marvel.Card hiding (toCard)
@@ -49,7 +57,7 @@ data ApiGame = ApiGame
   , focusedCards :: [Card]
   }
   deriving stock (Show, Generic)
-  deriving anyclass ToJSON
+  deriving anyclass (ToJSON)
 
 data ApiPlayerIdentity = ApiPlayerIdentity
   { id :: IdentityId
@@ -70,29 +78,30 @@ data ApiPlayerIdentity = ApiPlayerIdentity
   , encounterCards :: [EncounterCard]
   }
   deriving stock (Show, Generic)
-  deriving anyclass ToJSON
+  deriving anyclass (ToJSON)
 
-toApiPlayer :: MonadGame env m => PlayerIdentity -> m ApiPlayerIdentity
+toApiPlayer :: (MonadGame env m) => PlayerIdentity -> m ApiPlayerIdentity
 toApiPlayer i@(PlayerIdentity (PlayerIdentityAttrs {..})) = do
   modifiedHp <- getModifiedHp i
-  pure $ ApiPlayerIdentity
-    { id = playerIdentityId
-    , hand = unHand playerIdentityHand
-    , discard = unDiscard playerIdentityDiscard
-    , side = playerIdentitySide
-    , sides = playerIdentitySides
-    , allies = playerIdentityAllies
-    , minions = playerIdentityMinions
-    , supports = playerIdentitySupports
-    , upgrades = playerIdentityUpgrades
-    , exhausted = playerIdentityExhausted
-    , stunned = playerIdentityStunned
-    , confused = playerIdentityConfused
-    , tough = playerIdentityTough
-    , hp = modifiedHp
-    , damage = playerIdentityDamage
-    , encounterCards = playerIdentityEncounterCards
-    }
+  pure $
+    ApiPlayerIdentity
+      { id = playerIdentityId
+      , hand = unHand playerIdentityHand
+      , discard = unDiscard playerIdentityDiscard
+      , side = playerIdentitySide
+      , sides = playerIdentitySides
+      , allies = playerIdentityAllies
+      , minions = playerIdentityMinions
+      , supports = playerIdentitySupports
+      , upgrades = playerIdentityUpgrades
+      , exhausted = playerIdentityExhausted
+      , stunned = playerIdentityStunned
+      , confused = playerIdentityConfused
+      , tough = playerIdentityTough
+      , hp = modifiedHp
+      , damage = playerIdentityDamage
+      , encounterCards = playerIdentityEncounterCards
+      }
 
 toInactiveApiPlayer :: PlayerIdentity -> ApiPlayerIdentity
 toInactiveApiPlayer (PlayerIdentity (PlayerIdentityAttrs {..})) =
@@ -115,33 +124,34 @@ toInactiveApiPlayer (PlayerIdentity (PlayerIdentityAttrs {..})) =
     , encounterCards = playerIdentityEncounterCards
     }
 
-toApiGame :: MonadGame env m => Entity MarvelGame -> m ApiGame
-toApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = do
+toApiGame :: (MonadGame env m) => Entity MarvelGame -> m ApiGame
+toApiGame (Entity gameId MarvelGame {marvelGameCurrentData, marvelGameName}) =
+  do
     let g@Game {..} = marvelGameCurrentData
     modifiedPlayers <- HashMap.fromList <$> traverse (\(i, p) -> (i,) <$> toApiPlayer p) (HashMap.toList $ gamePlayers g)
-    pure $ ApiGame
-      { id = gameId
-      , name = marvelGameName
-      , question = gameQuestion
-      , scenario = gameScenario
-      , players = modifiedPlayers
-      , villains = gameVillains g
-      , allies = gameAllies g
-      , minions = gameMinions g
-      , attachments = gameAttachments g
-      , supports = gameSupports g
-      , upgrades = gameUpgrades g
-      , sideSchemes = gameSideSchemes g
-      , mainSchemes = gameMainSchemes g
-      , state = gameState
-      , focusedCards = gameFocusedCards
-      }
+    pure $
+      ApiGame
+        { id = gameId
+        , name = marvelGameName
+        , question = gameQuestion
+        , scenario = gameScenario
+        , players = modifiedPlayers
+        , villains = gameVillains g
+        , allies = gameAllies g
+        , minions = gameMinions g
+        , attachments = gameAttachments g
+        , supports = gameSupports g
+        , upgrades = gameUpgrades g
+        , sideSchemes = gameSideSchemes g
+        , mainSchemes = gameMainSchemes g
+        , state = gameState
+        , focusedCards = gameFocusedCards
+        }
 
 toInactiveApiGame :: Entity MarvelGame -> ApiGame
-toInactiveApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameName })
-  = let g@Game {..} = marvelGameCurrentData
-      in ApiGame
+toInactiveApiGame (Entity gameId MarvelGame {marvelGameCurrentData, marvelGameName}) =
+  let g@Game {..} = marvelGameCurrentData
+   in ApiGame
         { id = gameId
         , name = marvelGameName
         , question = gameQuestion
@@ -160,22 +170,29 @@ toInactiveApiGame (Entity gameId MarvelGame { marvelGameCurrentData, marvelGameN
         }
 
 data ApiResponse = GameUpdate ApiGame | GameMessage Text
-  deriving stock Generic
-  deriving anyclass ToJSON
+  deriving stock (Generic)
+  deriving anyclass (ToJSON)
 
-noLogger :: Applicative m => Text -> m ()
+noLogger :: (Applicative m) => Text -> m ()
 noLogger = const (pure ())
+
+findRoom :: MarvelGameId -> Handler (Maybe Room)
+findRoom gameId = do
+  roomsRef <- appGameRooms <$> getYesod
+  rooms <- liftIO $ readTVarIO roomsRef
+  pure $ Map.lookup gameId rooms
 
 getChannel :: MarvelGameId -> Handler (TChan BSL.ByteString)
 getChannel gameId = do
-  gameChannelsRef <- appGameChannels <$> getYesod
-  gameChannels <- readIORef gameChannelsRef
-  case Map.lookup gameId gameChannels of
-    Just chan -> pure chan
+  mRoom <- findRoom gameId
+  case mRoom of
+    Just room -> pure $ roomChan room
     Nothing -> do
-      chan <- atomically newBroadcastTChan
-      atomicModifyIORef' gameChannelsRef
-        $ \gameChannels' -> (Map.insert gameId chan gameChannels', ())
+      roomsRef <- appGameRooms <$> getYesod
+      chan <- liftIO $ atomically newBroadcastTChan
+      clients <- liftIO $ newTVarIO 0
+      let room = Room gameId clients chan
+      liftIO $ atomically $ modifyTVar' roomsRef $ Map.insert gameId room
       pure chan
 
 toDeck :: MarvelDBDecklist -> IO Deck
@@ -192,7 +209,7 @@ toCard code = do
   pure $ MkPlayerCard cardId (lookupPlayerCard code) Nothing Nothing
 
 loadDecklist :: MarvelDeck -> IO (CardCode, Deck)
-loadDecklist marvelDeck = (heroCardCode, ) <$> toDeck decklist
+loadDecklist marvelDeck = (heroCardCode,) <$> toDeck decklist
  where
   decklist = marvelDeckList marvelDeck
   heroCardCode = investigator_code decklist

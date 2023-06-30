@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.SonicBoom
-  ( sonicBoom
-  , SonicBoom(..)
-  ) where
+module Marvel.Treachery.Treacheries.SonicBoom (
+  sonicBoom,
+  SonicBoom (..),
+) where
 
 import Marvel.Prelude
 
@@ -18,9 +18,8 @@ import Marvel.Payment
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -29,7 +28,7 @@ sonicBoom = treachery SonicBoom Cards.sonicBoom
 
 newtype SonicBoom = SonicBoom (Attrs Treachery)
   deriving anyclass (IsTreachery)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SonicBoom where
   runMessage msg t@(SonicBoom attrs) = case msg of
@@ -48,29 +47,30 @@ instance RunMessage SonicBoom where
         activeCostId <- getRandom
         chooseOrRunOne
           identityId
-          (Label
+          ( Label
               "Exhaust each character you control"
-              [ Run
-                $ IdentityMessage identityId ExhaustedIdentity
-                : map (\a -> AllyMessage a ExhaustedAlly) allies
+              [ Run $
+                  IdentityMessage identityId ExhaustedIdentity
+                    : map (\a -> AllyMessage a ExhaustedAlly) allies
               ]
-          : [ Label
-                "Spend {energy}{mental}{physical} resources"
-                [ Run
-                    [ SetActiveCost $ ActiveCost
-                        activeCostId
-                        identityId
-                        ForTreachery
-                        (MultiResourceCost
-                          [Just Energy, Just Mental, Just Physical]
-                        )
-                        NoPayment
-                        Nothing
-                        mempty
-                    ]
+              : [ Label
+                  "Spend {energy}{mental}{physical} resources"
+                  [ Run
+                      [ SetActiveCost $
+                          ActiveCost
+                            activeCostId
+                            identityId
+                            ForTreachery
+                            ( MultiResourceCost
+                                [Just Energy, Just Mental, Just Physical]
+                            )
+                            NoPayment
+                            Nothing
+                            mempty
+                      ]
+                  ]
+                | null uncovered
                 ]
-            | null uncovered
-            ]
           )
         pure t
       _ -> SonicBoom <$> runMessage msg attrs

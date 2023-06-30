@@ -30,6 +30,7 @@ default-extensions:
   - StandaloneDeriving
   - TypeApplications
   - TypeFamilies
+  - TypeOperators
   - ImportQualifiedPost
 
 library:
@@ -83,7 +84,7 @@ library:
   - http-types
   - data-default
   - pretty-simple
-  - relude
+  - mtl
 
 executables:
   marvel-api:
@@ -95,6 +96,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - marvel-api
+    - marvel-core
 
 tests:
   marvel-api-test:

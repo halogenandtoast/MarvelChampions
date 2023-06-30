@@ -1,7 +1,7 @@
-module Marvel.Ability
-  ( module Marvel.Ability
-  , module X
-  ) where
+module Marvel.Ability (
+  module Marvel.Ability,
+  module X,
+) where
 
 import Marvel.Prelude
 
@@ -11,102 +11,103 @@ import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers
-import Marvel.Query
-import Marvel.Queue
-import Marvel.Projection
 import Marvel.Identity.Types
+import Marvel.Matchers
+import Marvel.Projection
+import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
-import Marvel.Source
+import Marvel.Queue
+import Marvel.Ref
 import Marvel.Window
 
-ability
-  :: IsSource a
-  => a
-  -> Natural
-  -> AbilityType
-  -> Criteria
-  -> Cost
-  -> Choice
-  -> Ability
+ability ::
+  (IsRef a) =>
+  a ->
+  Natural ->
+  AbilityType ->
+  Criteria ->
+  Cost ->
+  Choice ->
+  Ability
 ability a idx aType =
   limitedAbility (toSource a) idx (defaultAbilityLimit aType) aType
 
-windowAbility
-  :: IsSource a
-  => a
-  -> Natural
-  -> WindowMatcher
-  -> AbilityType
-  -> Cost
-  -> Choice
-  -> Ability
+windowAbility ::
+  (IsRef a) =>
+  a ->
+  Natural ->
+  WindowMatcher ->
+  AbilityType ->
+  Cost ->
+  Choice ->
+  Ability
 windowAbility a idx window aType cost choice =
   limitedAbility
-      (toSource a)
-      idx
-      (defaultAbilityLimit aType)
-      aType
-      NoCriteria
-      cost
-      choice
+    (toSource a)
+    idx
+    (defaultAbilityLimit aType)
+    aType
+    NoCriteria
+    cost
+    choice
     & windowL
-    ?~ window
+      ?~ window
 
-limitedWindowAbility
-  :: IsSource a
-  => a
-  -> Natural
-  -> WindowMatcher
-  -> AbilityType
-  -> Criteria
-  -> Cost
-  -> Choice
-  -> Ability
+limitedWindowAbility ::
+  (IsRef a) =>
+  a ->
+  Natural ->
+  WindowMatcher ->
+  AbilityType ->
+  Criteria ->
+  Cost ->
+  Choice ->
+  Ability
 limitedWindowAbility a idx window aType criteria cost choice =
   limitedAbility
-      (toSource a)
-      idx
-      (defaultAbilityLimit aType)
-      aType
-      criteria
-      cost
-      choice
+    (toSource a)
+    idx
+    (defaultAbilityLimit aType)
+    aType
+    criteria
+    cost
+    choice
     & windowL
-    ?~ window
+      ?~ window
 
-limitedAbility
-  :: IsSource a
-  => a
-  -> Natural
-  -> Limit
-  -> AbilityType
-  -> Criteria
-  -> Cost
-  -> Choice
-  -> Ability
-limitedAbility a idx limit aType criteria cost choice = Ability
-  { abilitySource = toSource a
-  , abilityIndex = idx
-  , abilityCriteria = criteria
-  , abilityLimit = limit
-  , abilityTiming = pure DuringOwnTurn
-  , abilityCost = cost
-  , abilityChoices = [choice]
-  , abilityType = aType
-  , abilitySubType = Nothing
-  , abilityLabel = Nothing
-  , abilityWindow = Nothing
-  }
+limitedAbility ::
+  (IsRef a) =>
+  a ->
+  Natural ->
+  Limit ->
+  AbilityType ->
+  Criteria ->
+  Cost ->
+  Choice ->
+  Ability
+limitedAbility a idx limit aType criteria cost choice =
+  Ability
+    { abilitySource = toSource a
+    , abilityIndex = idx
+    , abilityCriteria = criteria
+    , abilityLimit = limit
+    , abilityTiming = pure DuringOwnTurn
+    , abilityCost = cost
+    , abilityChoices = [choice]
+    , abilityType = aType
+    , abilitySubType = Nothing
+    , abilityLabel = Nothing
+    , abilityWindow = Nothing
+    }
 
 label :: Text -> Ability -> Ability
-label l a = a { abilityLabel = Just l }
+label l a = a {abilityLabel = Just l}
 
 limited :: Limit -> Ability -> Ability
-limited l a = a { abilityLimit = l }
+limited l a = a {abilityLimit = l}
 
 subtype :: AbilitySubType -> Ability -> Ability
-subtype s a = a { abilitySubType = Just s }
+subtype s a = a {abilitySubType = Just s}
 
 passesUseLimit :: IdentityId -> HashMap IdentityId [Ability] -> Ability -> Bool
 passesUseLimit x aMap a = case abilityLimit a of
@@ -114,7 +115,8 @@ passesUseLimit x aMap a = case abilityLimit a of
   PerTurn n -> count (== a) usedAbilities < n
   PerRound n -> count (== a) usedAbilities < n
   PerWindow n -> count (== a) usedAbilities < n
-  where usedAbilities = HashMap.findWithDefault [] x aMap
+ where
+  usedAbilities = HashMap.findWithDefault [] x aMap
 
 passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool
 passesCriteria x a = go (abilityCriteria a)
@@ -130,11 +132,11 @@ passesCriteria x a = go (abilityCriteria a)
     Exhausted -> member x <$> select ExhaustedIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
     OwnsThis -> case abilitySource a of
-      AllySource aid ->
+      AllyRef aid ->
         member aid <$> select (AllyControlledBy $ IdentityWithId x)
-      SupportSource aid ->
+      SupportRef aid ->
         member aid <$> select (SupportControlledBy $ IdentityWithId x)
-      UpgradeSource aid ->
+      UpgradeRef aid ->
         member aid <$> select (UpgradeControlledBy $ IdentityWithId x)
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
@@ -158,7 +160,7 @@ passesTiming _ a = all passes (toList $ abilityTiming a)
   passes x = case x of
     DuringOwnTurn -> True
 
-passesTypeIsRelevant :: HasGame m => IdentityId -> Ability -> m Bool
+passesTypeIsRelevant :: (HasGame m) => IdentityId -> Ability -> m Bool
 passesTypeIsRelevant ident a = case abilityType a of
   Interrupt -> pure False
   HeroInterrupt -> pure False
@@ -175,7 +177,7 @@ passesTypeIsRelevant ident a = case abilityType a of
   Setup -> pure False
 
 class PerformAbility a where
-  performAbility :: HasGame m => a -> Natural -> m ()
+  performAbility :: (HasGame m) => a -> Natural -> m ()
 
 isForcedAbility :: Ability -> Bool
 isForcedAbility a = case abilityType a of

@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.KlawsVengeance
-  ( klawsVengeance
-  , KlawsVengeance(..)
-  ) where
+module Marvel.Treachery.Treacheries.KlawsVengeance (
+  klawsVengeance,
+  KlawsVengeance (..),
+) where
 
 import Marvel.Prelude
 
@@ -14,8 +14,7 @@ import Marvel.Message
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -23,8 +22,8 @@ klawsVengeance :: TreacheryCard KlawsVengeance
 klawsVengeance = treachery KlawsVengeance Cards.klawsVengeance
 
 newtype KlawsVengeance = KlawsVengeance (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage KlawsVengeance where
   runMessage msg t@(KlawsVengeance attrs) = case msg of
@@ -35,15 +34,18 @@ instance RunMessage KlawsVengeance where
           then do
             villainId <- selectJust ActiveVillain
             push $ VillainMessage villainId $ VillainAttacks identityId
-          else push $ IdentityMessage identityId $ DiscardFrom
-            RandomFromHand
-            1
-            Nothing
+          else
+            push $
+              IdentityMessage identityId $
+                DiscardFrom
+                  RandomFromHand
+                  1
+                  Nothing
         pure t
       _ -> KlawsVengeance <$> runMessage msg attrs
     AllyMessage _ (AllyDamaged _ _) -> do
       player <- getActivePlayerId
-      t <$ pushChoice player (PlaceThreat (toSource attrs) 1 MainScheme)
+      t <$ pushChoice player (PlaceThreat (toRef attrs) 1 MainScheme)
     IdentityMessage identityId (IdentityDamaged _ _) -> do
-      t <$ pushChoice identityId (PlaceThreat (toSource attrs) 1 MainScheme)
+      t <$ pushChoice identityId (PlaceThreat (toRef attrs) 1 MainScheme)
     _ -> KlawsVengeance <$> runMessage msg attrs

@@ -1,7 +1,7 @@
-module Marvel.Attachment.Attachments.EnhancedIvoryHorn
-  ( enhancedIvoryHorn
-  , EnhancedIvoryHorn(..)
-  ) where
+module Marvel.Attachment.Attachments.EnhancedIvoryHorn (
+  enhancedIvoryHorn,
+  EnhancedIvoryHorn (..),
+) where
 
 import Marvel.Prelude
 
@@ -18,19 +18,18 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 
 enhancedIvoryHorn :: AttachmentCard EnhancedIvoryHorn
 enhancedIvoryHorn = attachment EnhancedIvoryHorn Cards.enhancedIvoryHorn
 
 newtype EnhancedIvoryHorn = EnhancedIvoryHorn (Attrs Attachment)
-  deriving anyclass IsAttachment
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsAttachment)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor EnhancedIvoryHorn where
-  getModifiersFor _ (VillainTarget vid) (EnhancedIvoryHorn a)
+  getModifiersFor _ (VillainRef vid) (EnhancedIvoryHorn a)
     | Just (EnemyVillainId vid) == attachmentEnemy a = pure [AttackModifier 1]
   getModifiersFor _ _ _ = pure []
 
@@ -42,7 +41,7 @@ instance HasAbilities EnhancedIvoryHorn where
         HeroAction
         NoCriteria
         (MultiResourceCost [Just Physical, Just Physical, Just Physical])
-        (TargetLabel (toTarget a) [DiscardTarget $ toTarget a])
+        (TargetLabel (toRef a) [DiscardTarget $ toRef a])
     ]
 
 instance RunMessage EnhancedIvoryHorn where

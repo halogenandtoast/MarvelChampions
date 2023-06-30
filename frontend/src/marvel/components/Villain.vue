@@ -22,29 +22,6 @@ const card = computed(() => ({ cardId: props.villain.villainId, cardDef: props.v
 
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
-const activeAbility = computed(() => {
-  return choices.
-    value.
-    findIndex((choice) => {
-      if (choice.tag !== 'TargetLabel') {
-        return false
-      }
-
-      const { contents } = choice.target
-        if (typeof contents === "string") {
-          return contents == props.villain.villainId
-        }
-
-        switch (contents.tag) {
-          case 'EnemyVillainId':
-            return contents.contents === props.villain.villainId
-          default:
-            return false
-        }
-
-    })
-})
-
 const attachments = computed(() => props.villain.villainAttachments.map((attachmentId) => props.game.attachments[attachmentId]))
 
 const upgrades = computed(() => props.villain.villainUpgrades.map((villainId) => props.game.upgrades[villainId]))
@@ -61,7 +38,7 @@ const abilities = computed(() => {
 
 <template>
   <div class="villain">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)"/>
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
     <div class="hp">{{villain.villainHp}}</div>
     <div v-if="villain.villainStunned">Stunned</div>
     <div v-if="villain.villainConfused">Confused</div>

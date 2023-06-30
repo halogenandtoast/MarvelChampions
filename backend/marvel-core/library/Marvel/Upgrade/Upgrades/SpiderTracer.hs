@@ -13,8 +13,7 @@ import Marvel.Message hiding (MinionDefeated)
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Window
@@ -24,17 +23,17 @@ spiderTracer = upgrade SpiderTracer Cards.spiderTracer
 
 newtype SpiderTracer = SpiderTracer (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities SpiderTracer where
   getAbilities (SpiderTracer attrs) = case upgradeAttachedEnemy attrs of
     Just (EnemyMinionId minionId) ->
       [ windowAbility
-            attrs
-            1
-            (MinionDefeated When $ MinionWithId minionId)
-            ForcedInterrupt
-            NoCost
+          attrs
+          1
+          (MinionDefeated When $ MinionWithId minionId)
+          ForcedInterrupt
+          NoCost
           $ RemoveThreat (toSource attrs) 3 ThwartableScheme
       ]
     _ -> []
@@ -44,17 +43,19 @@ instance RunMessage SpiderTracer where
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade -> do
         minions <- selectList AnyMinion
-        chooseOne (upgradeController a) $ map
-          (\minionId -> TargetLabel
-            (MinionTarget minionId)
-            [ Run
-                [ UpgradeMessage (upgradeId a)
-                  $ UpgradeAttachedToEnemy
-                  $ EnemyMinionId minionId
-                ]
-            ]
-          )
-          minions
+        chooseOne (upgradeController a) $
+          map
+            ( \minionId ->
+                TargetLabel
+                  (toRef minionId)
+                  [ Run
+                      [ UpgradeMessage (upgradeId a) $
+                          UpgradeAttachedToEnemy $
+                            EnemyMinionId minionId
+                      ]
+                  ]
+            )
+            minions
         pure u
       _ -> SpiderTracer <$> runMessage msg a
     _ -> SpiderTracer <$> runMessage msg a

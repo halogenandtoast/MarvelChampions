@@ -21,7 +21,7 @@ tigerShark = minion TigerShark Cards.tigerShark (Sch 1) (Atk 3) (HP 6)
 
 newtype TigerShark = TigerShark (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities TigerShark where
   getAbilities (TigerShark a) =

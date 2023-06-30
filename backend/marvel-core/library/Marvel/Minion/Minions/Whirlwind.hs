@@ -24,7 +24,7 @@ whirlwind = minion Whirlwind Cards.whirlwind (Sch 1) (Atk 2) (HP 6)
 
 newtype Whirlwind = Whirlwind (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Whirlwind where
   getAbilities (Whirlwind a) =

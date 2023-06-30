@@ -5,15 +5,17 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Settings where
 
-import Relude
+import Prelude
 
+import Data.String (fromString)
+import Control.Monad (unless)
+import Data.Text (Text)
 import Control.Exception qualified as Exception
 import Data.Aeson
   (FromJSON(..), Result(..), Value, fromJSON, withObject, (.!=), (.:), (.:?))
 import Data.ByteString.Char8 qualified as BS8
 import Data.FileEmbed (embedFile)
 import Data.String.Conversions.Monomorphic (toStrictByteString)
-import Data.Text qualified as T
 import Data.Yaml (decodeEither')
 import Data.Yaml.Config (applyEnvValue)
 import Database.Persist.Postgresql (PostgresConf(..))
@@ -107,7 +109,7 @@ instance FromJSON AppSettings where
         pure AppSettings {..}
 
 -- | Raw bytes at compile time of @config/settings.yml@
-configSettingsYmlBS :: ByteString
+configSettingsYmlBS :: BS8.ByteString
 configSettingsYmlBS = $(embedFile "config/settings.yml")
 
 -- | @config/settings.yml@, parsed to a @Value@.
@@ -119,5 +121,5 @@ configSettingsYmlValue = either Exception.throw id
 compileTimeAppSettings :: AppSettings
 compileTimeAppSettings =
     case fromJSON $ applyEnvValue False mempty configSettingsYmlValue of
-        Error e -> error $ T.pack e
+        Error e -> error e
         Success settings -> settings

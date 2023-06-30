@@ -23,7 +23,7 @@ warMachineJamesRhodes = ally
 
 newtype WarMachineJamesRhodes = WarMachineJamesRhodes (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities WarMachineJamesRhodes where
   getAbilities a =

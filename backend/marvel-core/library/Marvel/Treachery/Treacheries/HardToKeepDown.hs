@@ -8,8 +8,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -17,8 +15,8 @@ hardToKeepDown :: TreacheryCard HardToKeepDown
 hardToKeepDown = treachery HardToKeepDown Cards.hardToKeepDown
 
 newtype HardToKeepDown = HardToKeepDown (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage HardToKeepDown where
   runMessage msg t@(HardToKeepDown attrs) = case msg of

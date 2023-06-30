@@ -2,11 +2,14 @@ module Api.Handler.Marvel.Undo (
   putApiV1MarvelGameUndoR,
 ) where
 
-import Import hiding (delete, on, (==.))
+import Import hiding (delete, (==.))
 
 import Api.Marvel.Helpers
 import Control.Concurrent.STM.TChan
 import Control.Lens (view)
+import Data.Coerce (coerce)
+import Data.IORef
+import GHC.Conc (atomically)
 import Json
 import Marvel.Debug
 import Marvel.Game
@@ -39,8 +42,8 @@ putApiV1MarvelGameUndoR gameId = do
                   marvelGameLog
                   marvelGameMultiplayerVariant
 
-          gameRef <- newIORef ge
-          queueRef <- newIORef []
+          gameRef <- liftIO $ newIORef ge
+          queueRef <- liftIO $ newIORef []
           apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId game')
           liftIO $
             atomically $

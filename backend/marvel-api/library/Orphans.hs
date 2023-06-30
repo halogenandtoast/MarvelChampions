@@ -5,19 +5,21 @@
 
 module Orphans where
 
+import Prelude
+
 import Control.Error.Util (hush)
 import Data.Aeson hiding (Key)
 import Data.Aeson.Types hiding (Key)
-import qualified Data.ByteString.Char8 as BS8
-import Data.Hashable (Hashable(hash))
-import qualified Data.Text as T
+import Data.ByteString.Char8 qualified as BS8
+import Data.Hashable
+import Data.Text qualified as T
+import Data.Typeable (Typeable)
 import Data.UUID (UUID)
-import qualified Data.UUID as UUID
+import Data.UUID qualified as UUID
 import Database.Persist.Postgresql.JSON ()
 import Database.Persist.Sql
 import Marvel.Game
 import Marvel.Message
-import Relude
 import Web.HttpApiData
 import Web.PathPieces
 import Yesod.Core.Content
@@ -67,15 +69,16 @@ instance {-# OVERLAPPABLE #-} (ToJSON a, PersistEntity a) => ToJSON (Entity a) w
 instance {-# OVERLAPPABLE #-} (FromJSON a, PersistEntity a) => FromJSON (Entity a) where
   parseJSON = entityIdFromJSON
 
-instance {-# OVERLAPPABLE #-} ToJSON a => ToTypedContent a where
+instance {-# OVERLAPPABLE #-} (ToJSON a) => ToTypedContent a where
   toTypedContent = TypedContent typeJson . toContent
 
-instance {-# OVERLAPPABLE #-} ToJSON a => ToContent a where
+instance {-# OVERLAPPABLE #-} (ToJSON a) => ToContent a where
   toContent = toContent . encode
 
 instance (ToBackendKey SqlBackend a) => ToJSONKey (Key a) where
   toJSONKey = toJSONKeyText keyAsText
-    where keyAsText = T.pack . show . fromSqlKey
+   where
+    keyAsText = T.pack . show . fromSqlKey
 
 instance (ToBackendKey SqlBackend a) => FromJSONKey (Key a) where
   fromJSONKey = toSqlKey <$> fromJSONKey

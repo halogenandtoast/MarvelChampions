@@ -2,11 +2,18 @@ module Api.Handler.Marvel.PendingGames (
   putApiV1MarvelPendingGameR,
 ) where
 
-import Import hiding (on, (==.))
+import Import hiding ((==.))
 
 import Api.Marvel.Helpers
 import Control.Concurrent.STM.TChan
+import Control.Monad (when)
 import Data.Aeson
+import Data.Coerce (coerce)
+import Data.IORef
+import Data.List.NonEmpty (nonEmpty)
+import Data.List.NonEmpty qualified as NE
+import GHC.Conc (atomically)
+import GHC.Generics (Generic)
 import Marvel.Debug
 import Marvel.Entity
 import Marvel.Game
@@ -31,16 +38,16 @@ putApiV1MarvelPendingGameR gameId = do
   playerIdentity <- liftIO $ uncurry initPlayer =<< loadDecklist deck
   runDB $ insert_ $ MarvelPlayer userId gameId (coerce $ toId playerIdentity)
 
-  let currentQueue = maybe [] stepMessages $ head <$> nonEmpty marvelGameSteps
+  let currentQueue = maybe [] stepMessages $ NE.head <$> nonEmpty marvelGameSteps
 
-  gameRef <- newIORef marvelGameCurrentData
-  queueRef <- newIORef currentQueue
+  gameRef <- liftIO $ newIORef marvelGameCurrentData
+  queueRef <- liftIO $ newIORef currentQueue
   runGameApp (GameApp gameRef queueRef Nothing) $ do
     addPlayer playerIdentity
     runGameMessages
 
-  updatedGame <- readIORef gameRef
-  updatedQueue <- readIORef queueRef
+  updatedGame <- liftIO $ readIORef gameRef
+  updatedQueue <- liftIO $ readIORef queueRef
   let updatedMessages = []
 
   let diffUp = diff marvelGameCurrentData updatedGame

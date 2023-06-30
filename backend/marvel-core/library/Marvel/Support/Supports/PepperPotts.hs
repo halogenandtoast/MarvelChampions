@@ -16,17 +16,16 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Question
-import Marvel.Source
-import Marvel.Support.Types
+import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 
 pepperPotts :: SupportCard PepperPotts
 pepperPotts = support PepperPotts Cards.pepperPotts
 
 newtype PepperPotts = PepperPotts (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities PepperPotts where
   getAbilities (PepperPotts a) =

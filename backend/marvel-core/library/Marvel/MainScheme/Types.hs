@@ -11,12 +11,10 @@ import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
 import Marvel.Message
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window qualified as W
-import Text.Show qualified
 
-data MainScheme = forall a . IsMainScheme a => MainScheme a
+data MainScheme = forall a. (IsMainScheme a) => MainScheme a
 
 instance Show MainScheme where
   show (MainScheme a) = show a
@@ -29,11 +27,14 @@ instance Eq MainScheme where
     Just Refl -> a == b
     Nothing -> False
 
-data SomeMainSchemeCard = forall a . IsMainScheme a => SomeMainSchemeCard
-  (MainSchemeCard a)
+data SomeMainSchemeCard
+  = forall a.
+    (IsMainScheme a) =>
+    SomeMainSchemeCard
+      (MainSchemeCard a)
 
-liftMainSchemeCard
-  :: (forall a . MainSchemeCard a -> b) -> SomeMainSchemeCard -> b
+liftMainSchemeCard ::
+  (forall a. MainSchemeCard a -> b) -> SomeMainSchemeCard -> b
 liftMainSchemeCard f (SomeMainSchemeCard a) = f a
 
 someMainSchemeCardCode :: SomeMainSchemeCard -> CardCode
@@ -62,23 +63,25 @@ instance Entity MainScheme where
     MainSchemeThreshold :: Field MainScheme GameValue
     MainSchemeCrisis :: Field MainScheme Bool
     MainSchemeHeldCards :: Field MainScheme [PlayerCard]
-  field fld m = let MainSchemeAttrs {..} = toAttrs m in case fld of
-    MainSchemeId -> mainSchemeId
-    MainSchemeCardDef -> mainSchemeCardDef
-    MainSchemeThreat -> mainSchemeThreat
-    MainSchemeInitialThreat -> mainSchemeInitialThreat
-    MainSchemeAcceleration -> mainSchemeAcceleration
-    MainSchemeThreshold -> mainSchemeThreshold
-    MainSchemeCrisis -> mainSchemeCrisis
-    MainSchemeHeldCards -> mainSchemeHeldCards
+  field fld m =
+    let MainSchemeAttrs {..} = toAttrs m
+     in case fld of
+          MainSchemeId -> mainSchemeId
+          MainSchemeCardDef -> mainSchemeCardDef
+          MainSchemeThreat -> mainSchemeThreat
+          MainSchemeInitialThreat -> mainSchemeInitialThreat
+          MainSchemeAcceleration -> mainSchemeAcceleration
+          MainSchemeThreshold -> mainSchemeThreshold
+          MainSchemeCrisis -> mainSchemeCrisis
+          MainSchemeHeldCards -> mainSchemeHeldCards
   toId = mainSchemeId . toAttrs
   toAttrs (MainScheme a) = toMainSchemeAttrs a
 
 instance RunMessage MainScheme where
   runMessage msg (MainScheme a) = MainScheme <$> runMessage msg a
 
-instance IsSource MainScheme where
-  toSource = MainSchemeSource . toId
+instance IsRef MainScheme where
+  toRef = MainSchemeRef . toId
 
 instance IsCard MainScheme where
   toCard = toCard . toAttrs
@@ -91,63 +94,65 @@ getMainSchemeThreat = mainSchemeThreat . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsMainScheme a where
   toMainSchemeAttrs :: a -> Attrs MainScheme
-  default toMainSchemeAttrs :: Coercible a (Attrs MainScheme) => a -> Attrs MainScheme
+  default toMainSchemeAttrs :: (Coercible a (Attrs MainScheme)) => a -> Attrs MainScheme
   toMainSchemeAttrs = coerce
 
 type MainSchemeCard a = CardBuilder MainSchemeId a
 
 threatL :: Lens' (Attrs MainScheme) Natural
-threatL = lens mainSchemeThreat $ \m x -> m { mainSchemeThreat = x }
+threatL = lens mainSchemeThreat $ \m x -> m {mainSchemeThreat = x}
 
 instance HasCardCode (Attrs MainScheme) where
   toCardCode = toCardCode . mainSchemeCardDef
 
-mainSchemeWith
-  :: (Attrs MainScheme -> a)
-  -> CardDef
-  -> GameValue
-  -> GameValue
-  -> GameValue
-  -> (Attrs MainScheme -> Attrs MainScheme)
-  -> CardBuilder MainSchemeId a
+mainSchemeWith ::
+  (Attrs MainScheme -> a) ->
+  CardDef ->
+  GameValue ->
+  GameValue ->
+  GameValue ->
+  (Attrs MainScheme -> Attrs MainScheme) ->
+  CardBuilder MainSchemeId a
 mainSchemeWith f cardDef threshold initialThreat acceleration g =
   mainScheme (f . g) cardDef threshold initialThreat acceleration
 
-mainScheme
-  :: (Attrs MainScheme -> a)
-  -> CardDef
-  -> GameValue
-  -> GameValue
-  -> GameValue
-  -> CardBuilder MainSchemeId a
-mainScheme f cardDef threshold initialThreat acceleration = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid -> f $ MainSchemeAttrs
-    { mainSchemeId = mid
-    , mainSchemeCardDef = cardDef
-    , mainSchemeThreshold = threshold
-    , mainSchemeInitialThreat = initialThreat
-    , mainSchemeAcceleration = acceleration
-    , mainSchemeThreat = 0
-    , mainSchemeCrisis = False
-    , mainSchemeHeldCards = []
+mainScheme ::
+  (Attrs MainScheme -> a) ->
+  CardDef ->
+  GameValue ->
+  GameValue ->
+  GameValue ->
+  CardBuilder MainSchemeId a
+mainScheme f cardDef threshold initialThreat acceleration =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \mid ->
+        f $
+          MainSchemeAttrs
+            { mainSchemeId = mid
+            , mainSchemeCardDef = cardDef
+            , mainSchemeThreshold = threshold
+            , mainSchemeInitialThreat = initialThreat
+            , mainSchemeAcceleration = acceleration
+            , mainSchemeThreat = 0
+            , mainSchemeCrisis = False
+            , mainSchemeHeldCards = []
+            }
     }
-  }
 
-instance IsSource (Attrs MainScheme) where
-  toSource = MainSchemeSource . mainSchemeId
-
-instance IsTarget (Attrs MainScheme) where
-  toTarget = MainSchemeTarget . mainSchemeId
+instance IsRef (Attrs MainScheme) where
+  toRef = MainSchemeRef . mainSchemeId
 
 instance HasCardDef (Attrs MainScheme) where
   getCardDef = mainSchemeCardDef
 
 instance IsCard (Attrs MainScheme) where
-  toCard a = EncounterCard $ MkEncounterCard
-    { ecCardId = CardId $ unMainSchemeId $ mainSchemeId a
-    , ecCardDef = getCardDef a
-    }
+  toCard a =
+    EncounterCard $
+      MkEncounterCard
+        { ecCardId = CardId $ unMainSchemeId $ mainSchemeId a
+        , ecCardDef = getCardDef a
+        }
 
 instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = case msg of
@@ -157,8 +162,9 @@ instance RunMessage (Attrs MainScheme) where
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
         MainSchemePlaceThreat n -> do
-          threshold <- fromIntegral
-            <$> fromGameValue (mainSchemeThreshold attrs)
+          threshold <-
+            fromIntegral
+              <$> fromGameValue (mainSchemeThreshold attrs)
           when
             (mainSchemeThreat attrs + n >= threshold)
             (push AdvanceMainScheme)
@@ -167,20 +173,21 @@ instance RunMessage (Attrs MainScheme) where
         RevealMainScheme -> pure attrs
     AccelerateMainScheme -> do
       acceleration <- getAccelerationCount
-      additionalThreat <- fromIntegral
-        <$> fromGameValue (mainSchemeAcceleration attrs)
+      additionalThreat <-
+        fromIntegral
+          <$> fromGameValue (mainSchemeAcceleration attrs)
       pushAll
         [ CheckWindows
-          [ W.Window W.Would
-            $ W.ThreatPlaced
-                W.ThreatFromAcceleration
-                (SchemeMainSchemeId $ mainSchemeId attrs)
-            $ additionalThreat
-            + acceleration
-          ]
+            [ W.Window W.Would
+                $ W.ThreatPlaced
+                  W.ThreatFromAcceleration
+                  (SchemeMainSchemeId $ mainSchemeId attrs)
+                $ additionalThreat
+                  + acceleration
+            ]
         , MainSchemeMessage
-          (mainSchemeId attrs)
-          (MainSchemePlaceThreat $ additionalThreat + acceleration)
+            (mainSchemeId attrs)
+            (MainSchemePlaceThreat $ additionalThreat + acceleration)
         ]
       pure attrs
     _ -> pure attrs

@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.HellcatPatsyWalker
-  ( hellcatPatsyWalker
-  , HellcatPatsyWalker(..)
-  ) where
+module Marvel.Ally.Allies.HellcatPatsyWalker (
+  hellcatPatsyWalker,
+  HellcatPatsyWalker (..),
+) where
 
 import Marvel.Prelude
 
@@ -17,11 +17,11 @@ hellcatPatsyWalker =
 
 newtype HellcatPatsyWalker = HellcatPatsyWalker (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities HellcatPatsyWalker where
   getAbilities a =
-    [ability a 1 Action OwnsThis NoCost $ ReturnTargetToHand $ toTarget a]
+    [ability a 1 Action OwnsThis NoCost $ ReturnTargetToHand $ toRef a]
 
 instance RunMessage HellcatPatsyWalker where
   runMessage msg (HellcatPatsyWalker a) =

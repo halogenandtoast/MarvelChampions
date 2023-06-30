@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.HighwayRobbery
-  ( highwayRobbery
-  , HighwayRobbery(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.HighwayRobbery (
+  highwayRobbery,
+  HighwayRobbery (..),
+) where
 
 import Marvel.Prelude
 
@@ -13,17 +13,16 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 highwayRobbery :: SideSchemeCard HighwayRobbery
 highwayRobbery = sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
 
 newtype HighwayRobbery = HighwayRobbery (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 getCardOwner :: PlayerCard -> IdentityId
 getCardOwner pc = case pcOwner pc of
@@ -35,16 +34,19 @@ instance RunMessage HighwayRobbery where
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         players <- getPlayers
-        pushAll $ map
-          (\identityId -> IdentityMessage identityId
-            $ DiscardFor (toTarget attrs) RandomFromHand 1 1
-          )
-          players
+        pushAll $
+          map
+            ( \identityId ->
+                IdentityMessage identityId $
+                  DiscardFor (toRef attrs) RandomFromHand 1 1
+            )
+            players
         pure s
       DefeatSideScheme -> do
-        pushAll $ map
-          (\c -> IdentityMessage (getCardOwner c) (AddToHand c))
-          (sideSchemeHeldCards attrs)
+        pushAll $
+          map
+            (\c -> IdentityMessage (getCardOwner c) (AddToHand c))
+            (sideSchemeHeldCards attrs)
         pure s
       _ -> HighwayRobbery <$> runMessage msg attrs
     WithDiscarded target _ cards | isTarget attrs target -> do

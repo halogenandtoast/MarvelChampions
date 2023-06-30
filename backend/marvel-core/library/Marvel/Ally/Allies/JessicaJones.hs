@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.JessicaJones
-  ( jessicaJones
-  , JessicaJones(..)
-  ) where
+module Marvel.Ally.Allies.JessicaJones (
+  jessicaJones,
+  JessicaJones (..),
+) where
 
 import Marvel.Prelude
 
@@ -17,7 +17,7 @@ jessicaJones =
 
 newtype JessicaJones = JessicaJones (Attrs Ally)
   deriving anyclass (IsAlly, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasModifiersFor JessicaJones where
   getModifiersFor _ target (JessicaJones attrs) | isTarget attrs target = do

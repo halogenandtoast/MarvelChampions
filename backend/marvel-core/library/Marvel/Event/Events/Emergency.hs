@@ -1,7 +1,7 @@
-module Marvel.Event.Events.Emergency
-  ( emergency
-  , Emergency(..)
-  ) where
+module Marvel.Event.Events.Emergency (
+  emergency,
+  Emergency (..),
+) where
 
 import Marvel.Prelude
 
@@ -13,8 +13,7 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window
 
 emergency :: EventCard Emergency
@@ -22,7 +21,7 @@ emergency = event Emergency Cards.emergency
 
 newtype Emergency = Emergency (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage Emergency where
   runMessage msg e@(Emergency attrs) = case msg of
@@ -30,12 +29,14 @@ instance RunMessage Emergency where
       PlayedEvent _ _ (Just (ThreatPlaced _ schemeId n)) -> do
         let
           newMsg = case schemeId of
-            SchemeMainSchemeId sid -> MainSchemeMessage
-              sid
-              (MainSchemePlaceThreat (subtractNatural 1 n))
-            SchemeSideSchemeId sid -> SideSchemeMessage
-              sid
-              (SideSchemePlaceThreat (subtractNatural 1 n))
+            SchemeMainSchemeId sid ->
+              MainSchemeMessage
+                sid
+                (MainSchemePlaceThreat (subtractNatural 1 n))
+            SchemeSideSchemeId sid ->
+              SideSchemeMessage
+                sid
+                (SideSchemePlaceThreat (subtractNatural 1 n))
         replaceMatchingMessage (const [newMsg]) $ \case
           (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
             schemeId == SchemeMainSchemeId mid

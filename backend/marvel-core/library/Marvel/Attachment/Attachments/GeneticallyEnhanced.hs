@@ -1,7 +1,7 @@
-module Marvel.Attachment.Attachments.GeneticallyEnhanced
-  ( geneticallyEnhanced
-  , GeneticallyEnhanced(..)
-  ) where
+module Marvel.Attachment.Attachments.GeneticallyEnhanced (
+  geneticallyEnhanced,
+  GeneticallyEnhanced (..),
+) where
 
 import Marvel.Prelude
 
@@ -16,18 +16,17 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 geneticallyEnhanced :: AttachmentCard GeneticallyEnhanced
 geneticallyEnhanced = attachment GeneticallyEnhanced Cards.geneticallyEnhanced
 
 newtype GeneticallyEnhanced = GeneticallyEnhanced (Attrs Attachment)
   deriving anyclass (IsAttachment, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasModifiersFor GeneticallyEnhanced where
-  getModifiersFor _ (MinionTarget mid) (GeneticallyEnhanced a)
+  getModifiersFor _ (MinionRef mid) (GeneticallyEnhanced a)
     | Just (EnemyMinionId mid) == attachmentEnemy a = pure [HitPointModifier 3]
   getModifiersFor _ _ _ = pure []
 
@@ -39,13 +38,13 @@ instance RunMessage GeneticallyEnhanced where
         chooseOne
           identityId
           [ TargetLabel
-              (MinionTarget minionId)
-              [ Run
-                  [ AttachmentMessage (attachmentId attrs)
-                    $ AttachedToEnemy
-                    $ EnemyMinionId minionId
-                  ]
-              ]
+            (toRef minionId)
+            [ Run
+                [ AttachmentMessage (attachmentId attrs) $
+                    AttachedToEnemy $
+                      EnemyMinionId minionId
+                ]
+            ]
           | minionId <- minions
           ]
         pure a

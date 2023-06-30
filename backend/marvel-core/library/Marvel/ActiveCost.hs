@@ -1,11 +1,13 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-module Marvel.ActiveCost
-  ( module Marvel.ActiveCost
-  , module Marvel.ActiveCost.Types
-  ) where
+
+module Marvel.ActiveCost (
+  module Marvel.ActiveCost,
+  module Marvel.ActiveCost.Types,
+) where
 
 import Marvel.Prelude
 
+import Control.Monad.State
 import Data.List (partition)
 import Data.List qualified as L
 import Marvel.Ability.Types
@@ -22,20 +24,19 @@ import Marvel.Payment
 import Marvel.Projection
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 
-costMessages
-  :: ( MonadThrow m
-     , HasGame m
-     , MonadRandom m
-     , HasQueue m
-     , Projection m PlayerIdentity
-     )
-  => IdentityId
-  -> ActiveCost
-  -> m [Message]
+costMessages ::
+  ( MonadThrow m
+  , HasGame m
+  , MonadRandom m
+  , HasQueue m
+  , Projection m PlayerIdentity
+  ) =>
+  IdentityId ->
+  ActiveCost ->
+  m [Message]
 costMessages iid activeCost = go (activeCostCost activeCost)
  where
   go = \case
@@ -43,22 +44,24 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     DiscardHandCardCost n ->
       pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
     DamageCost n -> case activeCostTarget activeCost of
-      ForAbility a -> pure
-        [ IdentityMessage iid
-          $ IdentityDamaged (abilitySource a) (toDamage n FromAbility)
-        , Paid $ DamagePayment n
-        ]
+      ForAbility a ->
+        pure
+          [ IdentityMessage iid $
+              IdentityDamaged (abilitySource a) (toDamage n FromAbility)
+          , Paid $ DamagePayment n
+          ]
       _ -> error "Unhandled"
-    HealCost n -> pure
-      [ IdentityMessage iid $ IdentityHealed n
-      , Paid $ HealPayment n
-      ]
+    HealCost n ->
+      pure
+        [ IdentityMessage iid $ IdentityHealed n
+        , Paid $ HealPayment n
+        ]
     DamageThisCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
         pure $ case abilitySource a of
-          AllySource ident ->
-            [ AllyMessage ident
-              $ AllyDamaged (abilitySource a) (toDamage n FromAbility)
+          AllyRef ident ->
+            [ AllyMessage ident $
+                AllyDamaged (abilitySource a) (toDamage n FromAbility)
             , Paid $ DamageThisPayment n
             ]
           _ -> error "Unhandled"
@@ -66,26 +69,26 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     ExhaustCost -> case activeCostTarget activeCost of
       ForAbility a -> do
         pure $ case abilitySource a of
-          IdentitySource ident ->
+          IdentityRef ident ->
             [ IdentityMessage ident ExhaustedIdentity
             , Paid ExhaustPayment
             ]
-          AllySource ident ->
+          AllyRef ident ->
             [ AllyMessage ident ExhaustedAlly
             , Paid ExhaustPayment
             ]
-          SupportSource ident ->
+          SupportRef ident ->
             [ SupportMessage ident ExhaustedSupport
             , Paid ExhaustPayment
             ]
-          UpgradeSource ident ->
+          UpgradeRef ident ->
             [ UpgradeMessage ident ExhaustedUpgrade
             , Paid ExhaustPayment
             ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
     DiscardCost target -> pure $ case target of
-      UpgradeTarget ident ->
+      UpgradeRef ident ->
         [ UpgradeMessage ident $ DiscardUpgrade
         , Paid $ DiscardPayment target
         ]
@@ -93,15 +96,15 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     UseCost -> case activeCostTarget activeCost of
       ForAbility a -> do
         pure $ case abilitySource a of
-          UpgradeSource ident ->
+          UpgradeRef ident ->
             [ UpgradeMessage ident SpendUpgradeUse
             , Paid UsePayment
             ]
-          SupportSource ident ->
+          SupportRef ident ->
             [ SupportMessage ident SpendSupportUse
             , Paid UsePayment
             ]
-          AllySource ident ->
+          AllyRef ident ->
             [ AllyMessage ident SpendAllyUse
             , Paid UsePayment
             ]
@@ -112,33 +115,33 @@ costMessages iid activeCost = go (activeCostCost activeCost)
       abilities <- getResourceAbilities
       paid <- resourceCostPaid activeCost
       pure
-        [ Ask (activeCostIdentityId activeCost)
-          $ ChooseOne
-          $ map PayWithCard cards
-          <> map UseAbility abilities
-          <> [ FinishPayment | paid ]
+        [ Ask (activeCostIdentityId activeCost) $
+            ChooseOne $
+              map PayWithCard cards
+                <> map UseAbility abilities
+                <> [FinishPayment | paid]
         ]
     ResourceCost _ -> do
       cards <- getAvailablePaymentSources
       abilities <- getResourceAbilities
       paid <- resourceCostPaid activeCost
       pure
-        [ Ask (activeCostIdentityId activeCost)
-          $ ChooseOne
-          $ map PayWithCard cards
-          <> map UseAbility abilities
-          <> [ FinishPayment | paid ]
+        [ Ask (activeCostIdentityId activeCost) $
+            ChooseOne $
+              map PayWithCard cards
+                <> map UseAbility abilities
+                <> [FinishPayment | paid]
         ]
     MultiResourceCost _ -> do
       cards <- getAvailablePaymentSources
       abilities <- getResourceAbilities
       paid <- resourceCostPaid activeCost
       pure
-        [ Ask (activeCostIdentityId activeCost)
-          $ ChooseOne
-          $ map PayWithCard cards
-          <> map UseAbility abilities
-          <> [ FinishPayment | paid ]
+        [ Ask (activeCostIdentityId activeCost) $
+            ChooseOne $
+              map PayWithCard cards
+                <> map UseAbility abilities
+                <> [FinishPayment | paid]
         ]
     Costs xs -> concatMapM go (condenseResourceCosts xs)
 
@@ -146,12 +149,12 @@ condenseResourceCosts :: [Cost] -> [Cost]
 condenseResourceCosts xs = go xs False
  where
   go [] _ = []
-  go (c@ResourceCost{} : cs) False = c : go cs True
-  go (c@DynamicResourceCost{} : cs) False = c : go cs True
-  go (c@MultiResourceCost{} : cs) False = c : go cs True
-  go (ResourceCost{} : cs) True = go cs True
-  go (DynamicResourceCost{} : cs) True = go cs True
-  go (MultiResourceCost{} : cs) True = go cs True
+  go (c@ResourceCost {} : cs) False = c : go cs True
+  go (c@DynamicResourceCost {} : cs) False = c : go cs True
+  go (c@MultiResourceCost {} : cs) False = c : go cs True
+  go (ResourceCost {} : cs) True = go cs True
+  go (DynamicResourceCost {} : cs) True = go cs True
+  go (MultiResourceCost {} : cs) True = go cs True
   go (c : cs) b = c : go cs b
 
 isResourceCost :: Cost -> Bool
@@ -176,37 +179,49 @@ instance RunMessage ActiveCost where
     CreatedActiveCost ident | ident == activeCostId activeCost -> do
       msgs <- costMessages (activeCostIdentityId activeCost) activeCost
       pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
-      pure $ activeCost
-        { activeCostCost = onlyResourceCosts (activeCostCost activeCost)
-        }
+      pure $
+        activeCost
+          { activeCostCost = onlyResourceCosts (activeCostCost activeCost)
+          }
     Spent ident discard | ident == activeCostId activeCost -> do
       case activeCostTarget activeCost of
         ForCard card -> do
           resources <- resourcesFor discard $ Just card
-          push $ Paid $ mconcat $ map
-            ResourcePayment
-            resources
+          push $
+            Paid $
+              mconcat $
+                map
+                  ResourcePayment
+                  resources
         ForAbility _ -> do
           resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map
-            ResourcePayment
-            resources
+          push $
+            Paid $
+              mconcat $
+                map
+                  ResourcePayment
+                  resources
         ForTreachery -> do
           resources <- resourcesFor discard Nothing
-          push $ Paid $ mconcat $ map
-            ResourcePayment
-            resources
+          push $
+            Paid $
+              mconcat $
+                map
+                  ResourcePayment
+                  resources
 
-      pure $ activeCost
-        { activeCostSpentCards = discard : activeCostSpentCards activeCost
-        }
+      pure $
+        activeCost
+          { activeCostSpentCards = discard : activeCostSpentCards activeCost
+          }
     Paid payment -> do
-      pure $ activeCost
-        { activeCostPayment = activeCostPayment activeCost <> payment
-        }
-      -- cards <- getAvailablePaymentSources
-      -- abilities <- getResourceAbilities
-      -- paid <- resourceCostPaid activeCost'
+      pure $
+        activeCost
+          { activeCostPayment = activeCostPayment activeCost <> payment
+          }
+    -- cards <- getAvailablePaymentSources
+    -- abilities <- getResourceAbilities
+    -- paid <- resourceCostPaid activeCost'
     CheckPayment ident | ident == activeCostId activeCost -> do
       if isResourceCost (activeCostCost activeCost)
         then do
@@ -214,44 +229,47 @@ instance RunMessage ActiveCost where
           pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
         else push $ FinishedPayment $ activeCostId activeCost
       pure activeCost
-    WithDiscarded (ActiveCostTarget ident) _ cards
+    WithDiscarded (ActiveCostRef ident) _ cards
       | ident == activeCostId activeCost -> do
-        pushAll $ map
-          (Paid . DiscardHandCardPayment)
-          cards
-        pure activeCost
+          pushAll $
+            map
+              (Paid . DiscardHandCardPayment)
+              cards
+          pure activeCost
     FinishedPayment ident | ident == activeCostId activeCost -> do
       cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
       case activeCostTarget activeCost of
         ForCard card -> do
-          push $ PutCardIntoPlay
-            (activeCostIdentityId activeCost)
-            card
-            (activeCostPayment activeCost)
-            (activeCostWindow activeCost)
+          push $
+            PutCardIntoPlay
+              (activeCostIdentityId activeCost)
+              card
+              (activeCostPayment activeCost)
+              (activeCostWindow activeCost)
         ForAbility ab -> do
-          rest <- concatMapM
-            (choiceMessages $ activeCostIdentityId activeCost)
-            (abilityChoices ab)
+          rest <-
+            concatMapM
+              (choiceMessages $ activeCostIdentityId activeCost)
+              (abilityChoices ab)
           pushAll $ UsedAbility (activeCostIdentityId activeCost) ab : rest
         ForTreachery -> pure ()
-      pushAll
-        $ map
-            (DiscardedCard . PlayerCard)
-            (reverse $ activeCostSpentCards activeCost)
-        <> [DisableActiveCost $ activeCostId activeCost]
+      pushAll $
+        map
+          (DiscardedCard . PlayerCard)
+          (reverse $ activeCostSpentCards activeCost)
+          <> [DisableActiveCost $ activeCostId activeCost]
       pure activeCost
     _ -> pure activeCost
 
-resourceCostPaid
-  :: ( Projection m PlayerIdentity
-     , HasGame m
-     , HasQueue m
-     , MonadRandom m
-     , MonadThrow m
-     )
-  => ActiveCost
-  -> m Bool
+resourceCostPaid ::
+  ( Projection m PlayerIdentity
+  , HasGame m
+  , HasQueue m
+  , MonadRandom m
+  , MonadThrow m
+  ) =>
+  ActiveCost ->
+  m Bool
 resourceCostPaid ActiveCost {..} = do
   let
     (rs, mrs) =
@@ -270,20 +288,3 @@ resourceCostPaid ActiveCost {..} = do
           pure True
     prs' <- get
     pure $ l && length prs' >= length mrs
-
-sourceToTarget :: Source -> Target
-sourceToTarget = \case
-  IdentitySource ident -> IdentityTarget ident
-  VillainSource ident -> VillainTarget ident
-  MinionSource ident -> MinionTarget ident
-  AllySource ident -> AllyTarget ident
-  EventSource ident -> EventTarget ident
-  EffectSource ident -> EffectTarget ident
-  SupportSource ident -> SupportTarget ident
-  TreacherySource ident -> TreacheryTarget ident
-  ObligationSource ident -> ObligationTarget ident
-  SideSchemeSource ident -> SideSchemeTarget ident
-  MainSchemeSource ident -> MainSchemeTarget ident
-  AttachmentSource ident -> AttachmentTarget ident
-  UpgradeSource ident -> UpgradeTarget ident
-  GameSource -> error "unhandled"

@@ -13,15 +13,15 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types
 import Marvel.Window
 
 newtype Rhino = Rhino (Attrs Villain)
-  deriving anyclass IsVillain
+  deriving anyclass (IsVillain)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 rhino :: VillainCard Rhino
@@ -31,22 +31,24 @@ rhino1 :: VillainCard Rhino
 rhino1 = villain Rhino Cards.rhino1 (Sch 1) (Atk 2) (HP $ PerPlayer 14)
 
 rhino2 :: VillainCard Rhino
-rhino2 = villainWith
-  Rhino
-  Cards.rhino2
-  (Sch 1)
-  (Atk 3)
-  (HP $ PerPlayer 15)
-  (stageL .~ 2)
+rhino2 =
+  villainWith
+    Rhino
+    Cards.rhino2
+    (Sch 1)
+    (Atk 3)
+    (HP $ PerPlayer 15)
+    (stageL .~ 2)
 
 rhino3 :: VillainCard Rhino
-rhino3 = villainWith
-  Rhino
-  Cards.rhino3
-  (Sch 1)
-  (Atk 4)
-  (HP $ PerPlayer 16)
-  ((stageL .~ 3) . (toughL .~ True))
+rhino3 =
+  villainWith
+    Rhino
+    Cards.rhino3
+    (Sch 1)
+    (Atk 4)
+    (HP $ PerPlayer 16)
+    ((stageL .~ 3) . (toughL .~ True))
 
 instance HasAbilities Rhino where
   getAbilities (Rhino a) = case villainStage a of
@@ -55,10 +57,10 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed
-            When
-            (VillainWithId $ villainId a)
-            RevealedFromVillain
+          ( VillainRevealed
+              When
+              (VillainWithId $ villainId a)
+              RevealedFromVillain
           )
           ForcedResponse
           NoCost
@@ -68,10 +70,10 @@ instance HasAbilities Rhino where
       [ windowAbility
           a
           1
-          (VillainRevealed
-            When
-            (VillainWithId $ villainId a)
-            RevealedFromVillain
+          ( VillainRevealed
+              When
+              (VillainWithId $ villainId a)
+              RevealedFromVillain
           )
           ForcedResponse
           NoCost

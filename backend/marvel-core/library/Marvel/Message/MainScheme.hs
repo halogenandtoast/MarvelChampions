@@ -1,7 +1,7 @@
 module Marvel.Message.MainScheme where
 
 import Marvel.Prelude
-import Marvel.Source
+import Marvel.Ref
 
 data MainSchemeMessage
   = MainSchemeThwarted Source Natural

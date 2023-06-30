@@ -3,20 +3,22 @@
 
 module Base.Api.Handler.CurrentUser where
 
+import Data.Text (Text)
+import GHC.Generics (Generic)
 import Import
 
 data CurrentUser = CurrentUser
   { username :: Text
-  , email    :: Text
+  , email :: Text
   }
-  deriving stock Generic
-  deriving anyclass ToJSON
+  deriving stock (Generic)
+  deriving anyclass (ToJSON)
 
 getApiV1CurrentUserR :: Handler CurrentUser
 getApiV1CurrentUserR = do
   mUserId <- getRequestUserId
   case mUserId of
-    Nothing     -> notAuthenticated
+    Nothing -> notAuthenticated
     Just userId -> runDB $ do
       User {..} <- get404 userId
       pure $ CurrentUser userUsername userEmail

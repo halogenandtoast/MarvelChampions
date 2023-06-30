@@ -11,11 +11,9 @@ import Marvel.Id as X (AttachmentId)
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
-import Text.Show qualified
+import Marvel.Ref
 
-data Attachment = forall a . IsAttachment a => Attachment a
+data Attachment = forall a. (IsAttachment a) => Attachment a
 
 instance Show Attachment where
   show (Attachment a) = show a
@@ -28,11 +26,14 @@ instance Eq Attachment where
     Just Refl -> a == b
     Nothing -> False
 
-data SomeAttachmentCard = forall a . IsAttachment a => SomeAttachmentCard
-  (AttachmentCard a)
+data SomeAttachmentCard
+  = forall a.
+    (IsAttachment a) =>
+    SomeAttachmentCard
+      (AttachmentCard a)
 
-liftAttachmentCard
-  :: (forall a . AttachmentCard a -> b) -> SomeAttachmentCard -> b
+liftAttachmentCard ::
+  (forall a. AttachmentCard a -> b) -> SomeAttachmentCard -> b
 liftAttachmentCard f (SomeAttachmentCard a) = f a
 
 someAttachmentCardCode :: SomeAttachmentCard -> CardCode
@@ -55,23 +56,19 @@ instance Entity Attachment where
     AttachmentDamage :: Field Attachment Natural
   field fld a =
     let AttachmentAttrs {..} = toAttrs a
-    in
-      case fld of
-        AttachmentId -> attachmentId
-        AttachmentCardDef -> attachmentCardDef
-        AttachmentEnemy -> attachmentEnemy
-        AttachmentDamage -> attachmentDamage
+     in case fld of
+          AttachmentId -> attachmentId
+          AttachmentCardDef -> attachmentCardDef
+          AttachmentEnemy -> attachmentEnemy
+          AttachmentDamage -> attachmentDamage
   toId = attachmentId . toAttrs
   toAttrs (Attachment a) = toAttachmentAttrs a
 
 instance RunMessage Attachment where
   runMessage msg (Attachment a) = Attachment <$> runMessage msg a
 
-instance IsSource Attachment where
-  toSource = AttachmentSource . toId
-
-instance IsTarget Attachment where
-  toTarget = AttachmentTarget . toId
+instance IsRef Attachment where
+  toRef = AttachmentRef . toId
 
 instance HasAbilities Attachment where
   getAbilities (Attachment a) = getAbilities a
@@ -88,60 +85,64 @@ instance HasCardDef Attachment where
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasAbilities a, HasModifiersFor a, RunMessage a) => IsAttachment a where
   toAttachmentAttrs :: a -> Attrs Attachment
-  default toAttachmentAttrs :: Coercible a (Attrs Attachment) => a -> Attrs Attachment
+  default toAttachmentAttrs :: (Coercible a (Attrs Attachment)) => a -> Attrs Attachment
   toAttachmentAttrs = coerce
 
 type AttachmentCard a = CardBuilder AttachmentId a
 
 enemyL :: Lens' (Attrs Attachment) (Maybe EnemyId)
-enemyL = lens attachmentEnemy $ \m x -> m { attachmentEnemy = x }
+enemyL = lens attachmentEnemy $ \m x -> m {attachmentEnemy = x}
 
 damageL :: Lens' (Attrs Attachment) Natural
-damageL = lens attachmentDamage $ \m x -> m { attachmentDamage = x }
+damageL = lens attachmentDamage $ \m x -> m {attachmentDamage = x}
 
 instance HasCardCode (Attrs Attachment) where
   toCardCode = toCardCode . attachmentCardDef
 
 attachment :: (Attrs Attachment -> a) -> CardDef -> CardBuilder AttachmentId a
-attachment f cardDef = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \mid -> f $ AttachmentAttrs
-    { attachmentId = mid
-    , attachmentCardDef = cardDef
-    , attachmentEnemy = Nothing
-    , attachmentDamage = 0
+attachment f cardDef =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \mid ->
+        f $
+          AttachmentAttrs
+            { attachmentId = mid
+            , attachmentCardDef = cardDef
+            , attachmentEnemy = Nothing
+            , attachmentDamage = 0
+            }
     }
-  }
 
-instance IsSource (Attrs Attachment) where
-  toSource = AttachmentSource . attachmentId
-
-instance IsTarget (Attrs Attachment) where
-  toTarget = AttachmentTarget . attachmentId
+instance IsRef (Attrs Attachment) where
+  toRef = AttachmentRef . attachmentId
 
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = case msg of
     AttachmentMessage attachmentId' msg'
       | attachmentId' == attachmentId attrs -> case msg' of
-        AttachedToEnemy enemyId -> do
-          case enemyId of
-            EnemyMinionId minionId -> do
-              push
-                (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
-            EnemyVillainId villainId -> do
-              push
-                (VillainMessage villainId $ AttachedToVillain $ attachmentId
-                  attrs
-                )
-          pure $ attrs & enemyL ?~ enemyId
-        _ -> pure attrs
+          AttachedToEnemy enemyId -> do
+            case enemyId of
+              EnemyMinionId minionId -> do
+                push
+                  (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
+              EnemyVillainId villainId -> do
+                push
+                  ( VillainMessage villainId $
+                      AttachedToVillain $
+                        attachmentId
+                          attrs
+                  )
+            pure $ attrs & enemyL ?~ enemyId
+          _ -> pure attrs
     _ -> pure attrs
 
 instance IsCard (Attrs Attachment) where
-  toCard a = EncounterCard $ MkEncounterCard
-    { ecCardId = CardId $ unAttachmentId $ attachmentId a
-    , ecCardDef = getCardDef a
-    }
+  toCard a =
+    EncounterCard $
+      MkEncounterCard
+        { ecCardId = CardId $ unAttachmentId $ attachmentId a
+        , ecCardDef = getCardDef a
+        }
 
 instance HasCardDef (Attrs Attachment) where
   getCardDef = attachmentCardDef

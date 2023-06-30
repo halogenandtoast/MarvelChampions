@@ -12,11 +12,9 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
-import Text.Show qualified
+import Marvel.Ref
 
-data Event = forall a . IsEvent a => Event a
+data Event = forall a. (IsEvent a) => Event a
 
 instance Show Event where
   show (Event a) = show a
@@ -29,9 +27,9 @@ instance Eq Event where
     Just Refl -> a == b
     Nothing -> False
 
-data SomeEventCard = forall a . IsEvent a => SomeEventCard (EventCard a)
+data SomeEventCard = forall a. (IsEvent a) => SomeEventCard (EventCard a)
 
-liftEventCard :: (forall a . EventCard a -> b) -> SomeEventCard -> b
+liftEventCard :: (forall a. EventCard a -> b) -> SomeEventCard -> b
 liftEventCard f (SomeEventCard a) = f a
 
 someEventCardCode :: SomeEventCard -> CardCode
@@ -55,11 +53,10 @@ instance Entity Event where
     EventController :: Field Event IdentityId
   field fld e =
     let EventAttrs {..} = toAttrs e
-    in
-      case fld of
-        EventId -> eventId
-        EventCardDef -> eventCardDef
-        EventController -> eventController
+     in case fld of
+          EventId -> eventId
+          EventCardDef -> eventCardDef
+          EventController -> eventController
   toId = eventId . toAttrs
   toAttrs (Event a) = toEventAttrs a
 
@@ -68,7 +65,7 @@ instance RunMessage Event where
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMessage a) => IsEvent a where
   toEventAttrs :: a -> Attrs Event
-  default toEventAttrs :: Coercible a (Attrs Event) => a -> Attrs Event
+  default toEventAttrs :: (Coercible a (Attrs Event)) => a -> Attrs Event
   toEventAttrs = coerce
 
 type EventCard a = CardBuilder (IdentityId, EventId) a
@@ -77,37 +74,41 @@ instance HasCardCode (Attrs Event) where
   toCardCode = toCardCode . eventCardDef
 
 event :: (Attrs Event -> a) -> CardDef -> CardBuilder (IdentityId, EventId) a
-event f cardDef = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(ident, aid) -> f $ EventAttrs
-    { eventId = aid
-    , eventCardDef = cardDef
-    , eventController = ident
+event f cardDef =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \(ident, aid) ->
+        f $
+          EventAttrs
+            { eventId = aid
+            , eventCardDef = cardDef
+            , eventController = ident
+            }
     }
-  }
 
-instance IsSource (Attrs Event) where
-  toSource = EventSource . eventId
-
-instance IsTarget (Attrs Event) where
-  toTarget = EventTarget . eventId
+instance IsRef (Attrs Event) where
+  toRef = EventRef . eventId
 
 instance IsCard (Attrs Event) where
-  toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId . unEventId $ eventId a
-    , pcCardDef = eventCardDef a
-    , pcOwner = Just $ eventController a
-    , pcController = Just $ eventController a
-    }
+  toCard a =
+    PlayerCard $
+      MkPlayerCard
+        { pcCardId = CardId . unEventId $ eventId a
+        , pcCardDef = eventCardDef a
+        , pcOwner = Just $ eventController a
+        , pcController = Just $ eventController a
+        }
 
 damageChoice :: Attrs Event -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
-  EnemyMinionId vid -> TargetLabel
-    (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+  EnemyVillainId vid ->
+    TargetLabel
+      (toRef vid)
+      [DamageEnemy (toRef vid) (toRef attrs) dmg]
+  EnemyMinionId vid ->
+    TargetLabel
+      (toRef vid)
+      [DamageEnemy (toRef vid) (toRef attrs) dmg]
 
 instance RunMessage (Attrs Event) where
   runMessage msg e = case msg of

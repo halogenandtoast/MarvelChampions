@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.TheMastersOfEvil
-  ( theMastersOfEvil
-  , TheMastersOfEvil(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.TheMastersOfEvil (
+  theMastersOfEvil,
+  TheMastersOfEvil (..),
+) where
 
 import Marvel.Prelude
 
@@ -13,10 +13,9 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 import Marvel.Trait
 
 theMastersOfEvil :: SideSchemeCard TheMastersOfEvil
@@ -25,16 +24,17 @@ theMastersOfEvil =
 
 newtype TheMastersOfEvil = TheMastersOfEvil (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage TheMastersOfEvil where
   runMessage msg ss@(TheMastersOfEvil attrs) = case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
-        push $ DiscardUntil
-          FromEncounterDeck
-          (CardWithType MinionType <> CardWithTrait MastersOfEvil)
-          (toTarget attrs)
+        push $
+          DiscardUntil
+            FromEncounterDeck
+            (CardWithType MinionType <> CardWithTrait MastersOfEvil)
+            (toTarget attrs)
         pure ss
       _ -> TheMastersOfEvil <$> runMessage msg attrs
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do

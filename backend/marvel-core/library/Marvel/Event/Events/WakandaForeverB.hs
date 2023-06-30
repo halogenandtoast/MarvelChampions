@@ -1,7 +1,7 @@
-module Marvel.Event.Events.WakandaForeverB
-  ( wakandaForeverB
-  , WakandaForeverB(..)
-  ) where
+module Marvel.Event.Events.WakandaForeverB (
+  wakandaForeverB,
+  WakandaForeverB (..),
+) where
 
 import Marvel.Prelude
 
@@ -17,26 +17,25 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Trait
 
 wakandaForeverB :: EventCard WakandaForeverB
 wakandaForeverB =
   event (WakandaForeverB . (`With` Meta mempty)) Cards.wakandaForeverB
 
-newtype Meta = Meta { remaining :: HashSet UpgradeId }
+newtype Meta = Meta {remaining :: HashSet UpgradeId}
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 newtype WakandaForeverB = WakandaForeverB (Attrs Event `With` Meta)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance IsEvent WakandaForeverB where
   toEventAttrs (WakandaForeverB (attrs `With` _)) = attrs
 
 instance HasModifiersFor WakandaForeverB where
-  getModifiersFor _ (UpgradeTarget uid) (WakandaForeverB (_ `With` meta))
+  getModifiersFor _ (UpgradeRef uid) (WakandaForeverB (_ `With` meta))
     | HashSet.singleton uid == remaining meta = pure [LastSpecial]
   getModifiersFor _ _ _ = pure []
 
@@ -48,13 +47,15 @@ instance RunMessage WakandaForeverB where
         chooseOneAtATime
           identityId
           [ TargetLabel
-              (UpgradeTarget upgradeId)
-              [RunAbility (UpgradeTarget upgradeId) 1]
+            (toRef upgradeId)
+            [RunAbility (toRef upgradeId) 1]
           | upgradeId <- HashSet.toList upgradeIds
           ]
         pure $ WakandaForeverB (attrs `With` Meta upgradeIds)
       _ -> WakandaForeverB . (`With` meta) <$> runMessage msg attrs
-    RanAbility (UpgradeTarget upgradeId) 1 _ _
-      | upgradeId `member` remaining meta -> pure $ WakandaForeverB
-        (attrs `With` Meta (HashSet.delete upgradeId $ remaining meta))
+    RanAbility (UpgradeRef upgradeId) 1 _ _
+      | upgradeId `member` remaining meta ->
+          pure $
+            WakandaForeverB
+              (attrs `With` Meta (HashSet.delete upgradeId $ remaining meta))
     _ -> WakandaForeverB . (`With` meta) <$> runMessage msg attrs

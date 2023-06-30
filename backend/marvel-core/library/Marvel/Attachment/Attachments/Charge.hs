@@ -1,7 +1,7 @@
-module Marvel.Attachment.Attachments.Charge
-  ( charge
-  , Charge(..)
-  ) where
+module Marvel.Attachment.Attachments.Charge (
+  charge,
+  Charge (..),
+) where
 
 import Marvel.Prelude
 
@@ -18,8 +18,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window
 
 charge :: AttachmentCard Charge
@@ -27,23 +26,23 @@ charge = attachment Charge Cards.charge
 
 newtype Charge = Charge (Attrs Attachment)
   deriving anyclass (IsAttachment)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Charge where
   getAbilities (Charge a) = case attachmentEnemy a of
     Just enemyId ->
       [ windowAbility
-            a
-            1
-            (EnemyAttacked When (EnemyWithId enemyId) AnyIdentity)
-            ForcedInterrupt
-            NoCost
+          a
+          1
+          (EnemyAttacked When (EnemyWithId enemyId) AnyIdentity)
+          ForcedInterrupt
+          NoCost
           $ runAbility a 1
       ]
     _ -> []
 
 instance HasModifiersFor Charge where
-  getModifiersFor _ (VillainTarget vid) (Charge a)
+  getModifiersFor _ (VillainRef vid) (Charge a)
     | Just (EnemyVillainId vid) == attachmentEnemy a = pure [AttackModifier 3]
   getModifiersFor _ _ _ = pure []
 
@@ -58,12 +57,12 @@ instance RunMessage Charge where
     RanAbility (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyVillainId vid) -> do
         replaceMatchingMessage
-            (const
+          ( const
               [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a]
-            )
+          )
           $ \case
-              VillainMessage vid' VillainEndAttack -> vid == vid'
-              _ -> False
+            VillainMessage vid' VillainEndAttack -> vid == vid'
+            _ -> False
         pushAll [VillainMessage vid VillainAttackGainOverkill]
         pure a
       _ -> error "Invalid call"

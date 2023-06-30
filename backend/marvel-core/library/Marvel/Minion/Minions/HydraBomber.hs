@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.HydraBomber
-  ( hydraBomber
-  , HydraBomber(..)
-  ) where
+module Marvel.Minion.Minions.HydraBomber (
+  hydraBomber,
+  HydraBomber (..),
+) where
 
 import Marvel.Prelude
 
@@ -17,7 +17,7 @@ hydraBomber = minion HydraBomber Cards.hydraBomber (Sch 1) (Atk 1) (HP 2)
 
 newtype HydraBomber = HydraBomber (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage HydraBomber where
   runMessage msg e@(HydraBomber attrs) = case msg of
@@ -26,15 +26,15 @@ instance RunMessage HydraBomber where
         chooseOne
           identityId
           [ Label
-            "Take 2 damage"
-            [ DamageCharacter
-                (IdentityCharacter identityId)
-                (toSource attrs)
-                (toDamage 2 FromAbility)
-            ]
+              "Take 2 damage"
+              [ DamageCharacter
+                  (IdentityCharacter identityId)
+                  (toSource attrs)
+                  (toDamage 2 FromAbility)
+              ]
           , Label
-            "Place 1 threat on the main scheme"
-            [PlaceThreat (toSource attrs) 1 MainScheme]
+              "Place 1 threat on the main scheme"
+              [PlaceThreat (toSource attrs) 1 MainScheme]
           ]
         pure e
       _ -> HydraBomber <$> runMessage msg attrs

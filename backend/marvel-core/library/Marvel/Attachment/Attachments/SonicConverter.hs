@@ -1,7 +1,7 @@
-module Marvel.Attachment.Attachments.SonicConverter
-  ( sonicConverter
-  , SonicConverter(..)
-  ) where
+module Marvel.Attachment.Attachments.SonicConverter (
+  sonicConverter,
+  SonicConverter (..),
+) where
 
 import Marvel.Prelude
 
@@ -19,9 +19,8 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 import Marvel.Window
 
 sonicConverter :: AttachmentCard SonicConverter
@@ -29,10 +28,10 @@ sonicConverter = attachment SonicConverter Cards.sonicConverter
 
 newtype SonicConverter = SonicConverter (Attrs Attachment)
   deriving anyclass (IsAttachment)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor SonicConverter where
-  getModifiersFor _ (VillainTarget vid) (SonicConverter a)
+  getModifiersFor _ (VillainRef vid) (SonicConverter a)
     | Just (EnemyVillainId vid) == attachmentEnemy a = pure [AttackModifier 1]
   getModifiersFor _ _ _ = pure []
 
@@ -45,14 +44,14 @@ instance HasAbilities SonicConverter where
           (EnemyAttackedAndDamaged (EnemyWithId enemyId) AnyCharacter)
           ForcedResponse
           NoCost
-        $ runAbility a 1
+          $ runAbility a 1
       , ability
           a
           2
           HeroAction
           NoCriteria
           (MultiResourceCost [Just Energy, Just Mental, Just Physical])
-        $ DiscardTarget (toTarget a)
+          $ DiscardTarget (toRef a)
       ]
     _ -> []
 

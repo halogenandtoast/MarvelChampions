@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.Sandman
-  ( sandman
-  , Sandman(..)
-  ) where
+module Marvel.Minion.Minions.Sandman (
+  sandman,
+  Sandman (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,7 +15,7 @@ sandman =
 
 newtype Sandman = Sandman (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Sandman where
   runMessage msg (Sandman attrs) = Sandman <$> runMessage msg attrs

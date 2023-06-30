@@ -1,6 +1,6 @@
 module Base.Util where
 
-import Relude
+import Prelude
 
 without :: Int -> [a] -> [a]
-without n as = [ a | (i, a) <- zip [0 ..] as, i /= n ]
+without n as = [a | (i, a) <- zip [0 ..] as, i /= n]

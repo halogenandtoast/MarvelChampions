@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Attack
 import Marvel.Damage
 import Marvel.Id
-import Marvel.Source
+import Marvel.Ref
 
 data AllyMessage
   = ExhaustedAlly

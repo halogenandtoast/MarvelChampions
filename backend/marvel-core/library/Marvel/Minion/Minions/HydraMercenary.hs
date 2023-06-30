@@ -12,7 +12,7 @@ hydraMercenary =
 
 newtype HydraMercenary = HydraMercenary (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage HydraMercenary where
   runMessage msg (HydraMercenary attrs) =

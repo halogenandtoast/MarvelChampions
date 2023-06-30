@@ -1,8 +1,10 @@
-module Api.Handler.Marvel.Replay
-  ( getApiV1MarvelGameReplayR
-  ) where
+module Api.Handler.Marvel.Replay (
+  getApiV1MarvelGameReplayR,
+) where
 
-import Import hiding (delete, on, (==.))
+import Data.IORef
+import GHC.Generics (Generic)
+import Import hiding (delete, (==.))
 import Marvel.Game
 
 data GetReplayJson = GetReplayJson
@@ -10,11 +12,11 @@ data GetReplayJson = GetReplayJson
   , game :: MarvelGame
   }
   deriving stock (Show, Generic)
-  deriving anyclass ToJSON
+  deriving anyclass (ToJSON)
 
-newtype ReplayId = ReplayId { id :: MarvelGameId }
+newtype ReplayId = ReplayId {id :: MarvelGameId}
   deriving stock (Show, Generic)
-  deriving anyclass ToJSON
+  deriving anyclass (ToJSON)
 
 getApiV1MarvelGameReplayR :: MarvelGameId -> Int -> Handler GetReplayJson
 getApiV1MarvelGameReplayR gameId step = do
@@ -23,20 +25,21 @@ getApiV1MarvelGameReplayR gameId step = do
   let gameJson = marvelGameCurrentData ge
   let steps = reverse (take step (reverse $ marvelGameSteps ge))
 
-  gameRef <- newIORef gameJson
-  queueRef <- newIORef []
+  gameRef <- liftIO $ newIORef gameJson
+  queueRef <- liftIO $ newIORef []
 
   runGameApp
     (GameApp gameRef queueRef Nothing)
     (replayChoices $ map stepPatchUp steps)
 
-  ge' <- readIORef gameRef
-  pure $ GetReplayJson
-    (length steps)
-    (MarvelGame
-      (marvelGameName ge)
-      ge'
-      (marvelGameSteps ge)
-      []
-      (marvelGameMultiplayerVariant ge)
-    )
+  ge' <- liftIO $ readIORef gameRef
+  pure $
+    GetReplayJson
+      (length steps)
+      ( MarvelGame
+          (marvelGameName ge)
+          ge'
+          (marvelGameSteps ge)
+          []
+          (marvelGameMultiplayerVariant ge)
+      )

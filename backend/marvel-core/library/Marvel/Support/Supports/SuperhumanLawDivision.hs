@@ -1,32 +1,31 @@
-module Marvel.Support.Supports.SuperhumanLawDivision
-  ( superhumanLawDivision
-  , SuperhumanLawDivision(..)
-  )
+module Marvel.Support.Supports.SuperhumanLawDivision (
+  superhumanLawDivision,
+  SuperhumanLawDivision (..),
+)
 where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Cost
 import Marvel.Card.Code
+import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Support.Types
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 
 superhumanLawDivision :: SupportCard SuperhumanLawDivision
 superhumanLawDivision = support SuperhumanLawDivision Cards.superhumanLawDivision
 
 newtype SuperhumanLawDivision = SuperhumanLawDivision (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities SuperhumanLawDivision where
   getAbilities (SuperhumanLawDivision a) =

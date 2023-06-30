@@ -3,10 +3,70 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: esqueleto-3.5.10.0@sha256:0f1fbb60decbd9586517ab27ae743bc017e71cf64c0a1140cef4d07e3bff1659,4966
+    pantry-tree:
+      sha256: e4eed82b2fb5a599cb1a938c70a28eb0c3473c8b54ad90b0cfaa8b9dd492d716
+      size: 2491
+  original:
+    hackage: esqueleto-3.5.10.0
+- completed:
+    hackage: yesod-1.6.2.1@sha256:504bc888257dae9bb40f4cd1e1110c4e80dfe7b867e8e207b22c4ca4dbd87f9a,2030
+    pantry-tree:
+      sha256: 5a78fa0c6e7dcb46c9acd687ab9409c8fcda0d59b930e2a93e5dc44128c740ec
+      size: 618
+  original:
+    hackage: yesod-1.6.2.1
+- completed:
+    hackage: yesod-persistent-1.6.0.8@sha256:5b7b77bd269f184696cc0f282748270e3cf08d083c43167056068b0369a67f2b,1732
+    pantry-tree:
+      sha256: 982f7147d3b1e875912da739f82c35afe3a7c45c6566f3931c5596ad0a523151
+      size: 497
+  original:
+    hackage: yesod-persistent-1.6.0.8
+- completed:
+    hackage: persistent-2.14.5.1@sha256:fbdb2b83bb21f83ae0afd5ebede51e3c0273c685bd155ce7e687018e2b68e35d,7199
+    pantry-tree:
+      sha256: 2ff38b9ba98a0f6c363ab4e45d330fc23080592cad562e36d7b65922a5b37a5a
+      size: 6601
+  original:
+    hackage: persistent-2.14.5.1
+- completed:
+    hackage: persistent-postgresql-2.13.5.2@sha256:936bbb7d15e56a998b4bcca0f56798c95ad1b137d71a5b95c26b2bf7e9d08028,3686
+    pantry-tree:
+      sha256: 9e5c087792814d46c5d677bf5d3877095889688770a5b12f78db4cdd1181ad7a
+      size: 1140
+  original:
+    hackage: persistent-postgresql-2.13.5.2
+- completed:
+    hackage: yesod-websockets-0.3.0.3@sha256:99f49618f7cbb944c928d2870872b6ff867602c80af5d83421a68feb2ad94186,1068
+    pantry-tree:
+      sha256: c5d20966fa615a5f11d7759ebb7b408b9ab69b3503c71e4d29dbd3e095bddff4
+      size: 320
+  original:
+    hackage: yesod-websockets-0.3.0.3
+- completed:
+    hackage: yesod-core-1.6.24.2@sha256:4c965b34718e932bfbbeb53c71f2299461b00c0c4c342f8c2bd200717c0baffc,8219
+    pantry-tree:
+      sha256: 460532d8375d79fc3619894daecb738e8b89367a1a237195aa2722622a717f31
+      size: 5520
+  original:
+    hackage: yesod-core-1.6.24.2
+- completed:
+    name: clientsession
+    pantry-tree:
+      sha256: e8f800c0c0fed1a148257f2d47361d1f08319092e38ab3ab5b11f0d9f74f8c9a
+      size: 699
+    sha256: 92f25a8aefb742124e8d6f9b83023f80a4f89e0a59e5e1516966151bbcc6e9d4
+    size: 11215
+    url: https://github.com/jmazon/clientsession/archive/1221230770feff60f77ff676d52fc464cb77b2d9.tar.gz
+    version: 0.9.1.2
+  original:
+    url: https://github.com/jmazon/clientsession/archive/1221230770feff60f77ff676d52fc464cb77b2d9.tar.gz
 snapshots:
 - completed:
-    sha256: ca5d5cf1eb34ea2647e5bd63f5f0207cf536b204b3e62cd07d6f3c7ec5e949a4
-    size: 623064
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/4/29.yaml
-  original: nightly-2023-04-29
+    sha256: 7cb8c85885c204500c43790ea0e7802a6f8bdaf1a27309de33cbd8898f2c1c00
+    size: 531943
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/6/27.yaml
+  original: nightly-2023-06-27

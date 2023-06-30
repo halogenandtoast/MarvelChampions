@@ -5,20 +5,18 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.MainScheme.Types
 import Marvel.MainScheme.Cards qualified as Cards
+import Marvel.MainScheme.Types
 import Marvel.Message
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 
 theBreakIn :: MainSchemeCard TheBreakIn
 theBreakIn =
   mainScheme TheBreakIn Cards.theBreakIn (PerPlayer 7) (Static 0) (PerPlayer 1)
 
 newtype TheBreakIn = TheBreakIn (Attrs MainScheme)
-  deriving anyclass IsMainScheme
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsMainScheme)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage TheBreakIn where
   runMessage msg ms@(TheBreakIn attrs) = case msg of

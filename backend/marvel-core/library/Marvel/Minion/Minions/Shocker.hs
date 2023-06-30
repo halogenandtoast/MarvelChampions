@@ -14,7 +14,7 @@ shocker = minion Shocker Cards.shocker (Sch 1) (Atk 2) (HP 3)
 
 newtype Shocker = Shocker (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Shocker where
   runMessage msg e@(Shocker attrs) = case msg of
@@ -23,11 +23,11 @@ instance RunMessage Shocker where
         players <- getPlayers
         pushAll $ flip concatMap players $ \player ->
           [ CheckWindows
-            [ W.Window W.When
-                $ W.IdentityTakeDamage player (toDamage 1 FromAbility)
-            ]
-          , IdentityMessage player
-            $ IdentityDamaged (toSource attrs) (toDamage 1 FromAbility)
+              [ W.Window W.When $
+                  W.IdentityTakeDamage player (toDamage 1 FromAbility)
+              ]
+          , IdentityMessage player $
+              IdentityDamaged (toSource attrs) (toDamage 1 FromAbility)
           ]
         pure e
       _ -> Shocker <$> runMessage msg attrs

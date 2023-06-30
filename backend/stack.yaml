@@ -3,8 +3,8 @@ require-stack-version: ">= 2.3.1"
 concurrent-tests: false
 system-ghc: true
 install-ghc: false
-resolver: nightly-2023-04-29
-compiler: ghc-9.4.5
+resolver: nightly-2023-06-27
+compiler: ghc-9.6.2
 
 ghc-options:
   "$locals":
@@ -31,6 +31,19 @@ ghc-options:
     -hiedir=.hie
 
 packages:
-  - marvel-core
-  - marvel-api
-  - cards-discover
+- marvel-core
+- marvel-api
+- cards-discover
+
+allow-newer: true
+
+extra-deps:
+- esqueleto-3.5.10.0
+- yesod-1.6.2.1
+- yesod-persistent-1.6.0.8
+- persistent-2.14.5.1
+- persistent-postgresql-2.13.5.2
+- yesod-websockets-0.3.0.3
+- yesod-core-1.6.24.2
+- github: jmazon/clientsession
+  commit: 1221230770feff60f77ff676d52fc464cb77b2d9

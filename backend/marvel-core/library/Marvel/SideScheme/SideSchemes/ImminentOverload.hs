@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.ImminentOverload
-  ( imminentOverload
-  , ImminentOverload(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.ImminentOverload (
+  imminentOverload,
+  ImminentOverload (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,8 +12,6 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 imminentOverload :: SideSchemeCard ImminentOverload
 imminentOverload =
@@ -21,7 +19,7 @@ imminentOverload =
 
 newtype ImminentOverload = ImminentOverload (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage ImminentOverload where
   runMessage msg (ImminentOverload attrs) = case msg of

@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.FalseAlarm
-  ( falseAlarm
-  , FalseAlarm(..)
-  ) where
+module Marvel.Treachery.Treacheries.FalseAlarm (
+  falseAlarm,
+  FalseAlarm (..),
+) where
 
 import Marvel.Prelude
 
@@ -10,8 +10,6 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -19,8 +17,8 @@ falseAlarm :: TreacheryCard FalseAlarm
 falseAlarm = treachery FalseAlarm Cards.falseAlarm
 
 newtype FalseAlarm = FalseAlarm (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage FalseAlarm where
   runMessage msg t@(FalseAlarm attrs) = case msg of

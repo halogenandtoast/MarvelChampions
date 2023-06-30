@@ -9,6 +9,8 @@ data EncounterSet
   | BombScare
   | Klaw
   | MastersOfEvil
+  | Ultron
+  | UnderAttack
   | Standard
   | SpiderManNemesis
   | CaptainMarvelNemesis
@@ -26,7 +28,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "01029" -> IronManNemesis
   "01040" -> BlackPantherNemesis
   cCode ->
-    error
-      $ "No nemesis set for "
-      <> show cCode
-      <> " are you sure you've added it to EncounterSet.hs"
+    error $
+      "No nemesis set for "
+        <> show cCode
+        <> " are you sure you've added it to EncounterSet.hs"

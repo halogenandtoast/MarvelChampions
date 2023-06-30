@@ -1,7 +1,7 @@
-module Marvel.Event.Events.PhotonicBlast
-  ( photonicBlast
-  , PhotonicBlast(..)
-  ) where
+module Marvel.Event.Events.PhotonicBlast (
+  photonicBlast,
+  PhotonicBlast (..),
+) where
 
 import Marvel.Prelude
 
@@ -17,16 +17,15 @@ import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Query
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 
 photonicBlast :: EventCard PhotonicBlast
 photonicBlast = event PhotonicBlast Cards.photonicBlast
 
 newtype PhotonicBlast = PhotonicBlast (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage PhotonicBlast where
   runMessage msg e@(PhotonicBlast attrs) = case msg of
@@ -38,9 +37,10 @@ instance RunMessage PhotonicBlast where
           usedEnergy
           (push $ IdentityMessage identityId $ DrawCards FromDeck 1)
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map
-          (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId))
-          enemies
+        chooseOne identityId $
+          map
+            (damageChoice attrs (toDamage 5 $ FromPlayerAttack identityId))
+            enemies
         pure e
       _ -> PhotonicBlast <$> runMessage msg attrs
     _ -> PhotonicBlast <$> runMessage msg attrs

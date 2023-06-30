@@ -2,12 +2,13 @@ name: marvel-core
 
 dependencies:
 - base >= 4.7 && < 5
-- relude
 - MonadRandom
 - text
 - exceptions
 - lens
 - extra
+- hashable
+- mtl
 
 default-extensions:
 - BlockArguments

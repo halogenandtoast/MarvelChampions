@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.GangUp
-  ( gangUp
-  , GangUp(..)
-  ) where
+module Marvel.Treachery.Treacheries.GangUp (
+  gangUp,
+  GangUp (..),
+) where
 
 import Marvel.Prelude
 
@@ -11,8 +11,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -20,8 +18,8 @@ gangUp :: TreacheryCard GangUp
 gangUp = treachery GangUp Cards.gangUp
 
 newtype GangUp = GangUp (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage GangUp where
   runMessage msg t@(GangUp attrs) = case msg of
@@ -31,11 +29,14 @@ instance RunMessage GangUp where
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            minions <- selectList $ MinionEngagedWith $ IdentityWithId
-              identityId
-            pushAll
-              $ VillainMessage villainId (VillainAttacks identityId)
-              : map (`MinionMessage` MinionAttacks identityId) minions
+            minions <-
+              selectList $
+                MinionEngagedWith $
+                  IdentityWithId
+                    identityId
+            pushAll $
+              VillainMessage villainId (VillainAttacks identityId)
+                : map (`MinionMessage` MinionAttacks identityId) minions
             pure t
           else pure . GangUp $ attrs & surgeL .~ True
       _ -> GangUp <$> runMessage msg attrs

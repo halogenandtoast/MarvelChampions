@@ -1,7 +1,7 @@
-module Marvel.Ally.Types
-  ( module Marvel.Ally.Types
-  , module X
-  ) where
+module Marvel.Ally.Types (
+  module Marvel.Ally.Types,
+  module X,
+) where
 
 import Marvel.Prelude
 
@@ -10,9 +10,8 @@ import Marvel.Entity as X
 import Marvel.Hp as X
 import Marvel.Modifier as X
 import Marvel.Queue as X
-import Marvel.Source as X
+import Marvel.Ref as X
 import Marvel.Stats as X
-import Marvel.Target as X
 
 import Data.Typeable
 import Marvel.Ability.Types
@@ -23,16 +22,15 @@ import Marvel.Id qualified as Id
 import Marvel.Message hiding (AllyStunned)
 import Marvel.Question hiding (AllyAttack, AllyThwart)
 import Marvel.Window qualified as W
-import Text.Show qualified
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a, IsSource a) => IsAlly a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a) => IsAlly a where
   toAllyAttrs :: a -> Attrs Ally
-  default toAllyAttrs :: Coercible a (Attrs Ally) => a -> Attrs Ally
+  default toAllyAttrs :: (Coercible a (Attrs Ally)) => a -> Attrs Ally
   toAllyAttrs = coerce
 
 type AllyCard a = CardBuilder (IdentityId, Id.AllyId) a
 
-data Ally = forall a . IsAlly a => Ally a
+data Ally = forall a. (IsAlly a) => Ally a
 
 instance Show Ally where
   show (Ally a) = show a
@@ -45,39 +43,39 @@ instance Eq Ally where
     Just Refl -> a == b
     Nothing -> False
 
-data SomeAllyCard = forall a . IsAlly a => SomeAllyCard (AllyCard a)
+data SomeAllyCard = forall a. (IsAlly a) => SomeAllyCard (AllyCard a)
 
-liftAllyCard :: (forall a . AllyCard a -> b) -> SomeAllyCard -> b
+liftAllyCard :: (forall a. AllyCard a -> b) -> SomeAllyCard -> b
 liftAllyCard f (SomeAllyCard a) = f a
 
 someAllyCardCode :: SomeAllyCard -> CardCode
 someAllyCardCode = liftAllyCard cbCardCode
 
 upgradesL :: Lens' (Attrs Ally) (HashSet UpgradeId)
-upgradesL = lens allyUpgrades $ \m x -> m { allyUpgrades = x }
+upgradesL = lens allyUpgrades $ \m x -> m {allyUpgrades = x}
 
 countersL :: Lens' (Attrs Ally) Natural
-countersL = lens allyCounters $ \m x -> m { allyCounters = x }
+countersL = lens allyCounters $ \m x -> m {allyCounters = x}
 
 damageL :: Lens' (Attrs Ally) Natural
-damageL = lens allyDamage $ \m x -> m { allyDamage = x }
+damageL = lens allyDamage $ \m x -> m {allyDamage = x}
 
 toughL :: Lens' (Attrs Ally) Bool
-toughL = lens allyTough $ \m x -> m { allyTough = x }
+toughL = lens allyTough $ \m x -> m {allyTough = x}
 
 confusedL :: Lens' (Attrs Ally) Bool
-confusedL = lens allyConfused $ \m x -> m { allyConfused = x }
+confusedL = lens allyConfused $ \m x -> m {allyConfused = x}
 
 stunnedL :: Lens' (Attrs Ally) Bool
-stunnedL = lens allyStunned $ \m x -> m { allyStunned = x }
+stunnedL = lens allyStunned $ \m x -> m {allyStunned = x}
 
 exhaustedL :: Lens' (Attrs Ally) Bool
-exhaustedL = lens allyExhausted $ \m x -> m { allyExhausted = x }
+exhaustedL = lens allyExhausted $ \m x -> m {allyExhausted = x}
 
 instance HasController (Attrs Ally) where
   controller = allyController
 
-controllerMessage :: IsAlly a => a -> IdentityMessage -> Message
+controllerMessage :: (IsAlly a) => a -> IdentityMessage -> Message
 controllerMessage a = IdentityMessage (allyController $ toAllyAttrs a)
 
 instance HasCardCode (Attrs Ally) where
@@ -86,53 +84,52 @@ instance HasCardCode (Attrs Ally) where
 instance HasCardDef (Attrs Ally) where
   getCardDef = allyCardDef
 
-allyWith
-  :: (Attrs Ally -> a)
-  -> CardDef
-  -> (Thw, Natural)
-  -> (Atk, Natural)
-  -> HP Natural
-  -> (Attrs Ally -> Attrs Ally)
-  -> CardBuilder (IdentityId, Id.AllyId) a
+allyWith ::
+  (Attrs Ally -> a) ->
+  CardDef ->
+  (Thw, Natural) ->
+  (Atk, Natural) ->
+  HP Natural ->
+  (Attrs Ally -> Attrs Ally) ->
+  CardBuilder (IdentityId, Id.AllyId) a
 allyWith f cardDef thwPair atkPair hp g =
   ally (f . g) cardDef thwPair atkPair hp
 
-ally
-  :: (Attrs Ally -> a)
-  -> CardDef
-  -> (Thw, Natural)
-  -> (Atk, Natural)
-  -> HP Natural
-  -> CardBuilder (IdentityId, Id.AllyId) a
+ally ::
+  (Attrs Ally -> a) ->
+  CardDef ->
+  (Thw, Natural) ->
+  (Atk, Natural) ->
+  HP Natural ->
+  CardBuilder (IdentityId, Id.AllyId) a
 ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
   CardBuilder
     { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, aid) -> f $ AllyAttrs
-      { allyId = aid
-      , allyCardDef = cardDef
-      , allyDamage = 0
-      , allyAttack = atk
-      , allyAttackConsequentialDamage = atkConsequentialDamage
-      , allyThwart = thw
-      , allyThwartConsequentialDamage = thwConsequentialDamage
-      , allyController = ident
-      , allyHitPoints = hp
-      , allyExhausted = False
-      , allyStunned = False
-      , allyConfused = False
-      , allyTough = False
-      , allyCounters = 0
-      , allyUpgrades = mempty
-      }
+    , cbCardBuilder = \(ident, aid) ->
+        f $
+          AllyAttrs
+            { allyId = aid
+            , allyCardDef = cardDef
+            , allyDamage = 0
+            , allyAttack = atk
+            , allyAttackConsequentialDamage = atkConsequentialDamage
+            , allyThwart = thw
+            , allyThwartConsequentialDamage = thwConsequentialDamage
+            , allyController = ident
+            , allyHitPoints = hp
+            , allyExhausted = False
+            , allyStunned = False
+            , allyConfused = False
+            , allyTough = False
+            , allyCounters = 0
+            , allyUpgrades = mempty
+            }
     }
 
-instance IsSource (Attrs Ally) where
-  toSource = AllySource . allyId
+instance IsRef (Attrs Ally) where
+  toRef = AllyRef . allyId
 
-instance IsTarget (Attrs Ally) where
-  toTarget = AllyTarget . allyId
-
-getModifiedAttack :: HasGame m => Attrs Ally -> m Natural
+getModifiedAttack :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ allyAttack attrs) modifiers
@@ -140,7 +137,7 @@ getModifiedAttack attrs = do
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedThwart :: HasGame m => Attrs Ally -> m Natural
+getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unThw $ allyThwart attrs) modifiers
@@ -150,62 +147,70 @@ getModifiedThwart attrs = do
 
 damageChoice :: Attrs Ally -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [ DamageEnemy (VillainTarget vid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]
+  EnemyVillainId vid ->
+    TargetLabel
+      (toRef vid)
+      [ DamageEnemy (toRef vid) (toRef attrs) dmg
+      , Run
+          [ CheckWindows
+              [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]
+          ]
       ]
-    ]
-  EnemyMinionId vid -> TargetLabel
-    (MinionTarget vid)
-    [ DamageEnemy (MinionTarget vid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]
+  EnemyMinionId vid ->
+    TargetLabel
+      (toRef vid)
+      [ DamageEnemy (toRef vid) (toRef attrs) dmg
+      , Run
+          [ CheckWindows
+              [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]
+          ]
       ]
-    ]
 
 thwartChoice :: Attrs Ally -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid -> TargetLabel
-    (MainSchemeTarget vid)
-    [ ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw
-    , Run
-      [ CheckWindows
-          [ W.Window W.After
-              $ W.AllyThwart (allyId attrs) (SchemeMainSchemeId vid)
+  SchemeMainSchemeId vid ->
+    TargetLabel
+      (toRef vid)
+      [ ThwartScheme (toRef vid) (toRef attrs) thw
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.AllyThwart (allyId attrs) (SchemeMainSchemeId vid)
+              ]
           ]
       ]
-    ]
-  SchemeSideSchemeId sid -> TargetLabel
-    (SideSchemeTarget sid)
-    [ ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw
-    , Run
-      [ CheckWindows
-          [ W.Window W.After
-              $ W.AllyThwart (allyId attrs) (SchemeSideSchemeId sid)
+  SchemeSideSchemeId sid ->
+    TargetLabel
+      (toRef sid)
+      [ ThwartScheme (toRef sid) (toRef attrs) thw
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.AllyThwart (allyId attrs) (SchemeSideSchemeId sid)
+              ]
           ]
       ]
-    ]
 
-stunChoice :: IsAlly a => a -> EnemyId -> Choice
+stunChoice :: (IsAlly a) => a -> EnemyId -> Choice
 stunChoice a = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [Stun (VillainTarget vid) (AllySource $ allyId $ toAllyAttrs a)]
-  EnemyMinionId vid -> TargetLabel
-    (MinionTarget vid)
-    [Stun (MinionTarget vid) (AllySource $ allyId $ toAllyAttrs a)]
+  EnemyVillainId vid ->
+    TargetLabel
+      (toRef vid)
+      [Stun (toRef vid) (toRef $ toAllyAttrs a)]
+  EnemyMinionId vid ->
+    TargetLabel
+      (toRef vid)
+      [Stun (toRef vid) (toRef $ toAllyAttrs a)]
 
 instance IsCard (Attrs Ally) where
-  toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId $ unAllyId (allyId a)
-    , pcCardDef = allyCardDef a
-    , pcOwner = Just (allyController a)
-    , pcController = Just (allyController a)
-    }
+  toCard a =
+    PlayerCard $
+      MkPlayerCard
+        { pcCardId = CardId $ unAllyId (allyId a)
+        , pcCardDef = allyCardDef a
+        , pcOwner = Just (allyController a)
+        , pcController = Just (allyController a)
+        }
 
 instance Entity Ally where
   type Id Ally = Id.AllyId
@@ -248,23 +253,22 @@ instance Entity Ally where
   toAttrs (Ally a) = toAllyAttrs a
   field fld a =
     let AllyAttrs {..} = toAttrs a
-    in
-      case fld of
-        AllyId -> allyId
-        AllyCardDef -> allyCardDef
-        AllyDamage -> allyDamage
-        AllyHitPoints -> allyHitPoints
-        AllyThwart -> allyThwart
-        AllyThwartConsequentialDamage -> allyThwartConsequentialDamage
-        AllyAttack -> allyAttack
-        AllyAttackConsequentialDamage -> allyAttackConsequentialDamage
-        AllyController -> allyController
-        AllyExhausted -> allyExhausted
-        AllyCounters -> allyCounters
-        AllyUpgrades -> allyUpgrades
-        AllyStunned -> allyStunned
-        AllyConfused -> allyConfused
-        AllyTough -> allyTough
+     in case fld of
+          AllyId -> allyId
+          AllyCardDef -> allyCardDef
+          AllyDamage -> allyDamage
+          AllyHitPoints -> allyHitPoints
+          AllyThwart -> allyThwart
+          AllyThwartConsequentialDamage -> allyThwartConsequentialDamage
+          AllyAttack -> allyAttack
+          AllyAttackConsequentialDamage -> allyAttackConsequentialDamage
+          AllyController -> allyController
+          AllyExhausted -> allyExhausted
+          AllyCounters -> allyCounters
+          AllyUpgrades -> allyUpgrades
+          AllyStunned -> allyStunned
+          AllyConfused -> allyConfused
+          AllyTough -> allyTough
 
 instance RunMessage Ally where
   runMessage msg (Ally a) = Ally <$> runMessage msg a
@@ -275,8 +279,8 @@ instance Exhaustable Ally where
 instance IsCard Ally where
   toCard = toCard . toAttrs
 
-instance IsSource Ally where
-  toSource = AllySource . toId
+instance IsRef Ally where
+  toRef = AllyRef . toId
 
 getAllyController :: Ally -> IdentityId
 getAllyController = allyController . toAttrs

@@ -16,35 +16,35 @@ import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Window
 
 jenniferWalters :: AlterEgoCard JenniferWalters
-jenniferWalters = alterEgo
-  JenniferWalters
-  Cards.jenniferWalters
-  (HP $ Static 15)
-  (HandSize 6)
-  (Rec 5)
-  [Cards.legalWork]
+jenniferWalters =
+  alterEgo
+    JenniferWalters
+    Cards.jenniferWalters
+    (HP $ Static 15)
+    (HandSize 6)
+    (Rec 5)
+    [Cards.legalWork]
 
 newtype JenniferWalters = JenniferWalters (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities JenniferWalters where
   getAbilities a =
     [ label "\"I Object!\""
         $ limited (PerRound 1)
         $ limitedWindowAbility
-            a
-            1
-            (ThreatWouldBePlaced AnyThreatSource AnyScheme)
-            Interrupt
-            IsSelf
-            NoCost
+          a
+          1
+          (ThreatWouldBePlaced AnyThreatSource AnyScheme)
+          Interrupt
+          IsSelf
+          NoCost
         $ runAbility a 1
     ]
 

@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.WeaponsRunner
-  ( weaponsRunner
-  , WeaponsRunner(..)
-  ) where
+module Marvel.Minion.Minions.WeaponsRunner (
+  weaponsRunner,
+  WeaponsRunner (..),
+) where
 
 import Marvel.Prelude
 
@@ -19,7 +19,7 @@ weaponsRunner = minion WeaponsRunner Cards.weaponsRunner (Sch 1) (Atk 1) (HP 2)
 
 newtype WeaponsRunner = WeaponsRunner (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage WeaponsRunner where
   runMessage msg e@(WeaponsRunner attrs) = case msg of

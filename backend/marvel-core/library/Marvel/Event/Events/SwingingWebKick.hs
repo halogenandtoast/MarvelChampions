@@ -1,7 +1,7 @@
-module Marvel.Event.Events.SwingingWebKick
-  ( SwingingWebKick
-  , swingingWebKick
-  ) where
+module Marvel.Event.Events.SwingingWebKick (
+  SwingingWebKick,
+  swingingWebKick,
+) where
 
 import Marvel.Prelude
 
@@ -15,24 +15,24 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 swingingWebKick :: EventCard SwingingWebKick
 swingingWebKick = event SwingingWebKick Cards.swingingWebKick
 
 newtype SwingingWebKick = SwingingWebKick (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SwingingWebKick where
   runMessage msg e@(SwingingWebKick attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map
-          (damageChoice attrs (toDamage 8 $ FromPlayerAttack identityId))
-          enemies
+        chooseOne identityId $
+          map
+            (damageChoice attrs (toDamage 8 $ FromPlayerAttack identityId))
+            enemies
         pure e
       _ -> SwingingWebKick <$> runMessage msg attrs
     _ -> SwingingWebKick <$> runMessage msg attrs

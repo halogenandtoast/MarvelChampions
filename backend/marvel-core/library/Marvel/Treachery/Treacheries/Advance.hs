@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.Advance
-  ( advance
-  , Advance(..)
-  ) where
+module Marvel.Treachery.Treacheries.Advance (
+  advance,
+  Advance (..),
+) where
 
 import Marvel.Prelude
 
@@ -11,8 +11,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -20,8 +18,8 @@ advance :: TreacheryCard Advance
 advance = treachery Advance Cards.advance
 
 newtype Advance = Advance (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Advance where
   runMessage msg t@(Advance attrs) = case msg of

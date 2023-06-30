@@ -15,18 +15,18 @@ mariaHill = ally MariaHill Cards.mariaHill (Thw 2, 1) (Atk 1, 1) (HP 2)
 
 instance HasAbilities MariaHill where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost
-        $ runAbility a 1
+    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $
+        runAbility a 1
     ]
 
 newtype MariaHill = MariaHill (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance RunMessage MariaHill where
   runMessage msg a@(MariaHill attrs) = case msg of
     RanAbility (isTarget a -> True) 1 _ _ -> do
       players <- getPlayers
-      pushAll [ IdentityMessage p $ DrawCards FromDeck 1 | p <- players ]
+      pushAll [IdentityMessage p $ DrawCards FromDeck 1 | p <- players]
       pure a
     _ -> MariaHill <$> runMessage msg attrs

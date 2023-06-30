@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.Whiplash
-  ( whiplash
-  , Whiplash(..)
-  ) where
+module Marvel.Minion.Minions.Whiplash (
+  whiplash,
+  Whiplash (..),
+) where
 
 import Marvel.Prelude
 
@@ -18,7 +18,7 @@ whiplash = minion Whiplash Cards.whiplash (Sch 2) (Atk 3) (HP 4)
 
 newtype Whiplash = Whiplash (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Whiplash where
   runMessage msg (Whiplash attrs) = Whiplash <$> runMessage msg attrs

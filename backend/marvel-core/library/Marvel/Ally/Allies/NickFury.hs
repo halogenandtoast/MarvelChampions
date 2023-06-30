@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.NickFury
-  ( nickFury
-  , NickFury(..)
-  ) where
+module Marvel.Ally.Allies.NickFury (
+  nickFury,
+  NickFury (..),
+) where
 
 import Marvel.Prelude
 
@@ -19,22 +19,24 @@ nickFury = ally NickFury Cards.nickFury (Thw 2, 1) (Atk 2, 1) (HP 3)
 
 newtype NickFury = NickFury (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities NickFury where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost
-      $ ChooseOneLabelChoice
-          [ ( "Remove 2 threat from a scheme"
+    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
+        ChooseOneLabelChoice
+          [
+            ( "Remove 2 threat from a scheme"
             , RemoveThreat (toSource a) 2 ThwartableScheme
             )
           , ("Draw 3 cards", ChooseDrawCards 3 You)
-          , ( "Deal 4 damage to an enemy"
+          ,
+            ( "Deal 4 damage to an enemy"
             , ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy
             )
           ]
-    , limitedWindowAbility a 2 RoundEnds ForcedResponse OwnsThis NoCost
-      $ TargetLabel (toTarget a) [DiscardTarget $ toTarget a]
+    , limitedWindowAbility a 2 RoundEnds ForcedResponse OwnsThis NoCost $
+        TargetLabel (toTarget a) [DiscardTarget $ toTarget a]
     ]
 
 instance RunMessage NickFury where

@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.BombScare
-  ( bombScare
-  , BombScare(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.BombScare (
+  bombScare,
+  BombScare (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,15 +12,13 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 bombScare :: SideSchemeCard BombScare
 bombScare = sideScheme BombScare Cards.bombScare (Static 2)
 
 newtype BombScare = BombScare (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage BombScare where
   runMessage msg (BombScare attrs) = case msg of
