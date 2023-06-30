@@ -15,33 +15,35 @@ import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Payment
 import Marvel.Question
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
 import Marvel.Stats
 
 peterParker :: AlterEgoCard PeterParker
-peterParker = alterEgo
-  PeterParker
-  Cards.peterParker
-  (HP $ Static 10)
-  (HandSize 6)
-  (Rec 3)
-  [Cards.evictionNotice]
+peterParker =
+  alterEgo
+    PeterParker
+    Cards.peterParker
+    (HP $ Static 10)
+    (HandSize 6)
+    (Rec 3)
+    [Cards.evictionNotice]
 
 newtype PeterParker = PeterParker (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities PeterParker where
   getAbilities a =
-    [ label "Scientist" $ limitedAbility
-        a
-        1
-        (PerRound 1)
-        Resource
-        IsSelf
-        NoCost
-        (Pay $ ResourcePayment Mental)
+    [ label "Scientist" $
+        limitedAbility
+          a
+          1
+          (PerRound 1)
+          Resource
+          IsSelf
+          NoCost
+          (Pay $ ResourcePayment Mental)
     ]
 
 instance RunMessage PeterParker where

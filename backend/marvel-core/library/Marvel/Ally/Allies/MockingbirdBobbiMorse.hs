@@ -12,22 +12,23 @@ import Marvel.Query
 import Marvel.Window
 
 mockingbirdBobbiMorse :: AllyCard MockingbirdBobbiMorse
-mockingbirdBobbiMorse = ally
-  MockingbirdBobbiMorse
-  Cards.mockingbirdBobbiMorse
-  (Thw 1, 1)
-  (Atk 1, 1)
-  (HP 3)
+mockingbirdBobbiMorse =
+  ally
+    MockingbirdBobbiMorse
+    Cards.mockingbirdBobbiMorse
+    (Thw 1, 1)
+    (Atk 1, 1)
+    (HP 3)
 
 instance HasAbilities MockingbirdBobbiMorse where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost
-        $ runAbility a 1
+    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $
+        runAbility a 1
     ]
 
 newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, HasController)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef, HasController)
 
 instance RunMessage MockingbirdBobbiMorse where
   runMessage msg a@(MockingbirdBobbiMorse attrs) = case msg of

@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.ImTough
-  ( imTough
-  , ImTough(..)
-  ) where
+module Marvel.Treachery.Treacheries.ImTough (
+  imTough,
+  ImTough (..),
+) where
 
 import Marvel.Prelude
 
@@ -11,8 +11,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -20,8 +18,8 @@ imTough :: TreacheryCard ImTough
 imTough = treachery ImTough Cards.imTough
 
 newtype ImTough = ImTough (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage ImTough where
   runMessage msg t@(ImTough attrs) = case msg of

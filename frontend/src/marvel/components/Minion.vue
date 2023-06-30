@@ -19,32 +19,7 @@ const emit = defineEmits<{
 
 const card = computed(() => ({ cardId: props.minion.minionId, cardDef: props.minion.minionCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
-
-const activeAbility = computed(() => {
-  return choices.
-    value.
-    findIndex((choice) => {
-      if (choice.tag !== 'TargetLabel') {
-        return false
-      }
-
-      const { contents } = choice.target
-        if (typeof contents === "string") {
-          return contents == props.minion.minionId
-        }
-
-        switch (contents.tag) {
-          case 'EnemyMinionId':
-            return contents.contents === props.minion.minionId
-          default:
-            return false
-        }
-
-    })
-})
-
 const upgrades = computed(() => props.minion.minionUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
-
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
     if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.minion.minionId) {
@@ -57,7 +32,7 @@ const abilities = computed(() => {
 
 <template>
   <div class="minion">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
     <div v-if="minion.minionDamage > 0" class="damage">{{minion.minionDamage}}</div>
     <div v-if="minion.minionTough" class="tough">tough</div>
     <div v-if="minion.minionConfused" class="confused">confused</div>

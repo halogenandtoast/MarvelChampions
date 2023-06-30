@@ -14,12 +14,9 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source (IsSource(..), Source)
-import Marvel.Source qualified as Source
-import Marvel.Target
-import Text.Show qualified
+import Marvel.Ref
 
-data Effect = forall a . IsEffect a => Effect a
+data Effect = forall a. (IsEffect a) => Effect a
 
 instance Show Effect where
   show (Effect a) = show a
@@ -56,20 +53,19 @@ instance Entity Effect where
     EffectEnds :: Field Effect (Maybe EffectTiming)
   field fld e =
     let EffectAttrs {..} = toAttrs e
-    in
-      case fld of
-        EffectId -> effectId
-        EffectCardCode -> effectCardCode
-        EffectSource -> effectSource
-        EffectMatcher -> effectMatcher
-        EffectModifiers -> effectModifiers
-        EffectEnds -> effectEnds
+     in case fld of
+          EffectId -> effectId
+          EffectCardCode -> effectCardCode
+          EffectSource -> effectSource
+          EffectMatcher -> effectMatcher
+          EffectModifiers -> effectModifiers
+          EffectEnds -> effectEnds
   toId = effectId . toAttrs
   toAttrs (Effect a) = toEffectAttrs a
 
-data SomeCardEffect = forall a . IsEffect a => SomeCardEffect (CardEffect a)
+data SomeCardEffect = forall a. (IsEffect a) => SomeCardEffect (CardEffect a)
 
-liftCardEffect :: (forall a . CardEffect a -> b) -> SomeCardEffect -> b
+liftCardEffect :: (forall a. CardEffect a -> b) -> SomeCardEffect -> b
 liftCardEffect f (SomeCardEffect a) = f a
 
 someCardEffectCardCode :: SomeCardEffect -> CardCode
@@ -79,11 +75,12 @@ instance HasModifiersFor Effect where
   getModifiersFor _ target e = do
     valid <- effectValidFor attrs target
     pure $ if valid then effectModifiers attrs else []
-    where attrs = toAttrs e
+   where
+    attrs = toAttrs e
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect a where
   toEffectAttrs :: a -> Attrs Effect
-  default toEffectAttrs :: Coercible a (Attrs Effect) => a -> Attrs Effect
+  default toEffectAttrs :: (Coercible a (Attrs Effect)) => a -> Attrs Effect
   toEffectAttrs = coerce
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
@@ -93,45 +90,45 @@ data EffectTiming = DisableAtEndOfPhase | DisableAtEndOfRound
   deriving anyclass (ToJSON, FromJSON)
 
 modifiersL :: Lens' (Attrs Effect) [Modifier]
-modifiersL = lens effectModifiers $ \m x -> m { effectModifiers = x }
+modifiersL = lens effectModifiers $ \m x -> m {effectModifiers = x}
 
 endsL :: Lens' (Attrs Effect) (Maybe EffectTiming)
-endsL = lens effectEnds $ \m x -> m { effectEnds = x }
+endsL = lens effectEnds $ \m x -> m {effectEnds = x}
 
-instance IsTarget (Attrs Effect) where
-  toTarget = EffectTarget . effectId
+instance IsRef (Attrs Effect) where
+  toRef = EffectRef . effectId
 
-instance IsSource (Attrs Effect) where
-  toSource = Source.EffectSource . effectId
-
-effectWith
-  :: (Attrs Effect -> a)
-  -> CardDef
-  -> (Attrs Effect -> Attrs Effect)
-  -> CardBuilder (Source, EntityMatcher, EffectId) a
+effectWith ::
+  (Attrs Effect -> a) ->
+  CardDef ->
+  (Attrs Effect -> Attrs Effect) ->
+  CardBuilder (Source, EntityMatcher, EffectId) a
 effectWith f cardDef g = effect (f . g) cardDef
 
-effect
-  :: (Attrs Effect -> a)
-  -> CardDef
-  -> CardBuilder (Source, EntityMatcher, EffectId) a
-effect f cardDef = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(source, matcher, eid) -> f $ EffectAttrs
-    { effectId = eid
-    , effectCardCode = cdCardCode cardDef
-    , effectSource = source
-    , effectMatcher = matcher
-    , effectModifiers = mempty
-    , effectEnds = Nothing
+effect ::
+  (Attrs Effect -> a) ->
+  CardDef ->
+  CardBuilder (Source, EntityMatcher, EffectId) a
+effect f cardDef =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \(source, matcher, eid) ->
+        f $
+          EffectAttrs
+            { effectId = eid
+            , effectCardCode = cdCardCode cardDef
+            , effectSource = source
+            , effectMatcher = matcher
+            , effectModifiers = mempty
+            , effectEnds = Nothing
+            }
     }
-  }
 
-effectValidFor :: HasGame m => Attrs Effect -> Target -> m Bool
+effectValidFor :: (HasGame m) => Attrs Effect -> Target -> m Bool
 effectValidFor e target = case (target, effectMatcher e) of
-  (IdentityTarget ident, IdentityEntity matcher) ->
+  (IdentityRef ident, IdentityEntity matcher) ->
     member ident <$> select matcher
-  (AllyTarget ident, AllyEntity matcher) -> member ident <$> select matcher
+  (AllyRef ident, AllyEntity matcher) -> member ident <$> select matcher
   _ -> pure False
 
 instance RunMessage (Attrs Effect) where
@@ -139,10 +136,14 @@ instance RunMessage (Attrs Effect) where
     EffectMessage ident msg' | ident == effectId a -> case msg' of
       DisableEffect -> a <$ push (DisabledEffect $ effectId a)
       _ -> pure a
-    EndPhase _ -> a <$ when
-      (effectEnds a == Just DisableAtEndOfPhase)
-      (push $ EffectMessage (effectId a) DisableEffect)
-    EndRound -> a <$ when
-      (effectEnds a == Just DisableAtEndOfRound)
-      (push $ EffectMessage (effectId a) DisableEffect)
+    EndPhase _ ->
+      a
+        <$ when
+          (effectEnds a == Just DisableAtEndOfPhase)
+          (push $ EffectMessage (effectId a) DisableEffect)
+    EndRound ->
+      a
+        <$ when
+          (effectEnds a == Just DisableAtEndOfRound)
+          (push $ EffectMessage (effectId a) DisableEffect)
     _ -> pure a

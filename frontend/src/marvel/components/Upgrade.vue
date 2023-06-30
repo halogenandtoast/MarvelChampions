@@ -27,15 +27,11 @@ const abilities = computed(() => {
     return acc
   }, [])
 })
-
-const activeAbility = computed(() => {
-  return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.upgrade.upgradeId)
-})
 </script>
 
 <template>
   <div class="upgrade">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: upgrade.upgradeExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: upgrade.upgradeExhausted }" />
     <AbilityButton
           v-for="ability in abilities"
           :key="ability"

@@ -1,7 +1,7 @@
-module Marvel.Event.Events.RelentlessAssault
-  ( relentlessAssault
-  , RelentlessAssault(..)
-  ) where
+module Marvel.Event.Events.RelentlessAssault (
+  relentlessAssault,
+  RelentlessAssault (..),
+) where
 
 import Marvel.Prelude
 
@@ -16,16 +16,15 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Question
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 
 relentlessAssault :: EventCard RelentlessAssault
 relentlessAssault = event RelentlessAssault Cards.relentlessAssault
 
 newtype RelentlessAssault = RelentlessAssault (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage RelentlessAssault where
   runMessage msg e@(RelentlessAssault attrs) = case msg of
@@ -35,10 +34,11 @@ instance RunMessage RelentlessAssault where
         let
           usedPhysical = Physical `elem` resources || Wild `elem` resources
           modifyDamage = if usedPhysical then withOverkill else id
-        pushChoice identityId $ ChooseDamage
-          (toSource attrs)
-          (modifyDamage $ toDamage 5 $ FromPlayerAttack identityId)
-          MinionEnemy
+        pushChoice identityId $
+          ChooseDamage
+            (toSource attrs)
+            (modifyDamage $ toDamage 5 $ FromPlayerAttack identityId)
+            MinionEnemy
         pure e
       _ -> RelentlessAssault <$> runMessage msg attrs
     _ -> RelentlessAssault <$> runMessage msg attrs

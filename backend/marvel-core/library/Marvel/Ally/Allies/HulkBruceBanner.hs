@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.HulkBruceBanner
-  ( hulkBruceBanner
-  , HulkBruceBanner(..)
-  ) where
+module Marvel.Ally.Allies.HulkBruceBanner (
+  hulkBruceBanner,
+  HulkBruceBanner (..),
+) where
 
 import Marvel.Prelude
 
@@ -22,24 +22,24 @@ hulkBruceBanner =
 
 newtype HulkBruceBanner = HulkBruceBanner (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget, HasController)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef, HasController)
 
 instance HasAbilities HulkBruceBanner where
   getAbilities (HulkBruceBanner a) =
     [ limitedWindowAbility
-          a
-          1
-          (AllyAttacked After (AllyWithId $ allyId a) AnyEnemy)
-          ForcedResponse
-          OwnsThis
-          NoCost
+        a
+        1
+        (AllyAttacked After (AllyWithId $ allyId a) AnyEnemy)
+        ForcedResponse
+        OwnsThis
+        NoCost
         $ runAbility a 1
     ]
 
 instance RunMessage HulkBruceBanner where
   runMessage msg a@(HulkBruceBanner attrs) = case msg of
     RanAbility (isTarget a -> True) 1 _ _ -> do
-      push . controllerMessage a $ DiscardFrom FromDeck 1 (Just $ toTarget a)
+      push . controllerMessage a $ DiscardFrom FromDeck 1 (Just $ toRef a)
       pure a
     WithDiscarded (isTarget a -> True) _ (onlyPlayerCards -> cards) -> do
       case cards of
@@ -53,7 +53,7 @@ instance RunMessage HulkBruceBanner where
                 [ Label
                     "Deal 2 damage to an enemy"
                     [ ChooseDamage
-                        (toSource a)
+                        (toRef a)
                         (toDamage 2 FromAbility)
                         AnyEnemy
                     ]
@@ -63,11 +63,11 @@ instance RunMessage HulkBruceBanner where
                     "Deal 1 damage to each character"
                     [ DamageAllCharacters
                         AnyCharacter
-                        (toSource a)
+                        (toRef a)
                         (toDamage 1 FromAbility)
                     ]
                 ]
-              Mental -> [Label "Discard Hulk" [DiscardTarget $ toTarget a]]
+              Mental -> [Label "Discard Hulk" [DiscardTarget $ toRef a]]
               Wild -> toChoice Physical <> toChoice Energy <> toChoice Mental
             choices = concatMap toChoice resources
           chooseOneAtATime (controller a) choices

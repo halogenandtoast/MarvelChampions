@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-module Marvel.Hero.Runner
-  ( module X
-  , module Marvel.Hero.Runner
-  ) where
+
+module Marvel.Hero.Runner (
+  module X,
+  module Marvel.Hero.Runner,
+) where
 
 import Marvel.Prelude
 
@@ -19,9 +20,8 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Window qualified as W
 
 instance HasAbilities Hero where
@@ -32,7 +32,7 @@ instance HasAbilities Hero where
       , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
-getModifiedAttack :: HasGame m => Attrs Hero -> m Natural
+getModifiedAttack :: (HasGame m) => Attrs Hero -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
@@ -40,7 +40,7 @@ getModifiedAttack attrs = do
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedThwart :: HasGame m => Attrs Hero -> m Natural
+getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
@@ -48,7 +48,7 @@ getModifiedThwart attrs = do
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-getModifiedDefense :: HasGame m => Attrs Hero -> m Natural
+getModifiedDefense :: (HasGame m) => Attrs Hero -> m Natural
 getModifiedDefense attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
@@ -58,35 +58,39 @@ getModifiedDefense attrs = do
 
 damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [ DamageEnemy (VillainTarget vid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [ W.Window W.After
-              $ W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
+  EnemyVillainId vid ->
+    TargetLabel
+      (toRef vid)
+      [ DamageEnemy (toRef vid) (toSource attrs) dmg
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
+              ]
           ]
       ]
-    ]
-  EnemyMinionId mid -> TargetLabel
-    (MinionTarget mid)
-    [ DamageEnemy (MinionTarget mid) (toSource attrs) dmg
-    , Run
-      [ CheckWindows
-          [ W.Window W.After
-              $ W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)
+  EnemyMinionId mid ->
+    TargetLabel
+      (toRef mid)
+      [ DamageEnemy (toRef mid) (toSource attrs) dmg
+      , Run
+          [ CheckWindows
+              [ W.Window W.After $
+                  W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)
+              ]
           ]
       ]
-    ]
 
 thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid -> TargetLabel
-    (MainSchemeTarget vid)
-    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid -> TargetLabel
-    (SideSchemeTarget sid)
-    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
+  SchemeMainSchemeId vid ->
+    TargetLabel
+      (toRef vid)
+      [ThwartScheme (toRef vid) (toSource attrs) thw]
+  SchemeSideSchemeId sid ->
+    TargetLabel
+      (toRef sid)
+      [ThwartScheme (toRef sid) (toSource attrs) thw]
 
 instance RunMessage Hero where
   runMessage msg (Hero a) = Hero <$> runMessage msg a
@@ -102,9 +106,11 @@ instance RunMessage (Attrs Hero) where
               enemies <- selectList AttackableEnemy
               dmg <- getModifiedAttack a
               pushAll
-                [ Ask ident $ ChooseOne $ map
-                  (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
-                  enemies
+                [ Ask ident $
+                    ChooseOne $
+                      map
+                        (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
+                        enemies
                 , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
                 ]
               pure a
@@ -128,10 +134,10 @@ instance RunMessage (Attrs Hero) where
             [ IdentityMessage ident ExhaustedIdentity
             , IdentityMessage ident $ IdentityDefended def
             , case enemyId of
-              EnemyVillainId vid ->
-                VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
-              EnemyMinionId vid ->
-                MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
+                EnemyVillainId vid ->
+                  VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
+                EnemyMinionId vid ->
+                  MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
             ]
           pure a
         _ -> pure a

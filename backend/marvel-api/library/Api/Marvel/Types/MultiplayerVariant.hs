@@ -1,10 +1,11 @@
 module Api.Marvel.Types.MultiplayerVariant where
 
-import Relude
+import Prelude
 
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Database.Persist
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Json
 
 data MultiplayerVariant = Solo | WithFriends

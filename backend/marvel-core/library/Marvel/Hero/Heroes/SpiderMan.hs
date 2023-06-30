@@ -14,36 +14,37 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Window qualified as W
 
 spiderMan :: HeroCard SpiderMan
-spiderMan = hero
-  SpiderMan
-  Cards.spiderMan
-  (HP $ Static 10)
-  (HandSize 5)
-  (Thw 1)
-  (Atk 2)
-  (Def 3)
+spiderMan =
+  hero
+    SpiderMan
+    Cards.spiderMan
+    (HP $ Static 10)
+    (HandSize 5)
+    (Thw 1)
+    (Atk 2)
+    (Def 3)
 
 instance HasAbilities SpiderMan where
   getAbilities a =
-    [ label "Spider-Sense" $ limitedWindowAbility
-        a
-        1
-        (W.EnemyWouldAttack VillainEnemy You)
-        Interrupt
-        IsSelf
-        NoCost
-        (ChooseDrawCards 1 You)
+    [ label "Spider-Sense" $
+        limitedWindowAbility
+          a
+          1
+          (W.EnemyWouldAttack VillainEnemy You)
+          Interrupt
+          IsSelf
+          NoCost
+          (ChooseDrawCards 1 You)
     ]
 
 newtype SpiderMan = SpiderMan (Attrs Hero)
   deriving anyclass (IsHero, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance RunMessage SpiderMan where
   runMessage msg (SpiderMan attrs) = SpiderMan <$> runMessage msg attrs

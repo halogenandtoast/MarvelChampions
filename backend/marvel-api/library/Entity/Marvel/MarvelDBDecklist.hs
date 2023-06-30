@@ -1,11 +1,13 @@
 module Entity.Marvel.MarvelDBDecklist where
 
-import Relude
+import Prelude
 
 import Data.Aeson.Types
-import qualified Data.Text as T
+import Data.Map.Strict (Map)
+import Data.Text qualified as T
 import Database.Persist.Postgresql.JSON ()
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Marvel.Card.Code
 
 fmapLeft :: (a -> b) -> Either a c -> Either b c

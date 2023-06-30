@@ -6,6 +6,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Id
 import Marvel.Id
+import Marvel.Ref
 
 data PlayerCard = MkPlayerCard
   { pcCardId :: CardId
@@ -16,6 +17,9 @@ data PlayerCard = MkPlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+instance IsRef PlayerCard where
+  toRef = CardIdRef . pcCardId
+
 instance HasCardId PlayerCard where
   toCardId = pcCardId
 
@@ -24,4 +28,3 @@ instance HasCardCode PlayerCard where
 
 instance HasCardDef PlayerCard where
   getCardDef = pcCardDef
-

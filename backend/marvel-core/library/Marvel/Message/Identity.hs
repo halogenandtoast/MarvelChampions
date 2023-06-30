@@ -7,8 +7,7 @@ import Marvel.Card.Types
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Message.Deck
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window.Types (Window)
 
 data IdentityMessage
@@ -70,5 +69,3 @@ data SideMessage
   | Defended EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
-
-

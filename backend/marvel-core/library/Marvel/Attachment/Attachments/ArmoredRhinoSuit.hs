@@ -16,8 +16,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window qualified as W
 
 armoredRhinoSuit :: AttachmentCard ArmoredRhinoSuit
@@ -25,17 +24,17 @@ armoredRhinoSuit = attachment ArmoredRhinoSuit Cards.armoredRhinoSuit
 
 newtype ArmoredRhinoSuit = ArmoredRhinoSuit (Attrs Attachment)
   deriving anyclass (IsAttachment, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities ArmoredRhinoSuit where
   getAbilities (ArmoredRhinoSuit a) = case attachmentEnemy a of
     Just (EnemyVillainId vid) ->
       [ windowAbility
-            a
-            1
-            (W.VillainDamaged W.When $ VillainWithId vid)
-            ForcedInterrupt
-            NoCost
+          a
+          1
+          (W.VillainDamaged W.When $ VillainWithId vid)
+          ForcedInterrupt
+          NoCost
           $ runAbility a 1
       ]
     _ -> []
@@ -60,9 +59,9 @@ instance RunMessage ArmoredRhinoSuit where
       _ -> ArmoredRhinoSuit <$> runMessage msg attrs
     RanAbility (isTarget a -> True) 1 (getDetails -> (vid, dmg)) _ -> do
       replaceMatchingMessage
-          (const [AttachmentMessage (attachmentId attrs) (AttachmentDamaged dmg)])
+        (const [AttachmentMessage (attachmentId attrs) (AttachmentDamaged dmg)])
         $ \case
-            VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
-            _ -> False
+          VillainMessage vid' (VillainDamaged _ _) | vid == vid' -> True
+          _ -> False
       pure a
     _ -> ArmoredRhinoSuit <$> runMessage msg attrs

@@ -9,15 +9,13 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 breakinAndTakin :: SideSchemeCard BreakinAndTakin
 breakinAndTakin = sideScheme BreakinAndTakin Cards.breakinAndTakin (Static 2)
 
 newtype BreakinAndTakin = BreakinAndTakin (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage BreakinAndTakin where
   runMessage msg (BreakinAndTakin attrs) = case msg of

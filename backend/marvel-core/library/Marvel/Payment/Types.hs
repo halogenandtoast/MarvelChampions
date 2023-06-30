@@ -3,9 +3,9 @@ module Marvel.Payment.Types where
 import Marvel.Prelude
 
 import Marvel.Card.Types
-import Marvel.Resource.Types
 import Marvel.Matchers.Types
-import Marvel.Target
+import Marvel.Ref
+import Marvel.Resource.Types
 
 data Payment
   = Payments [Payment]

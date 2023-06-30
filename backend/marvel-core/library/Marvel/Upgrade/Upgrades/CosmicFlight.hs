@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.CosmicFlight
-  ( cosmicFlight
-  , CosmicFlight(..)
-  ) where
+module Marvel.Upgrade.Upgrades.CosmicFlight (
+  cosmicFlight,
+  CosmicFlight (..),
+) where
 
 import Marvel.Prelude
 
@@ -16,8 +16,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Trait
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -27,31 +26,32 @@ cosmicFlight :: UpgradeCard CosmicFlight
 cosmicFlight = upgrade CosmicFlight Cards.cosmicFlight
 
 newtype CosmicFlight = CosmicFlight (Attrs Upgrade)
-  deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsUpgrade)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor CosmicFlight where
-  getModifiersFor _ (IdentityTarget ident) (CosmicFlight attrs)
+  getModifiersFor _ (IdentityRef ident) (CosmicFlight attrs)
     | ident == upgradeController attrs = pure [TraitModifier Aerial]
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities CosmicFlight where
   getAbilities a =
     [ limitedWindowAbility
-          a
-          1
-          (WouldTakeDamage You FromAnyDamageSource AnyValue)
-          Response
-          OwnsThis
-          NoCost
+        a
+        1
+        (WouldTakeDamage You FromAnyDamageSource AnyValue)
+        Response
+        OwnsThis
+        NoCost
         $ runAbility a 1
     ]
 
 decreaseDamage :: Message -> [Message]
 decreaseDamage (IdentityMessage ident (IdentityDamaged source dmg)) =
-  [ IdentityMessage ident $ IdentityDamaged
+  [ IdentityMessage ident $
+    IdentityDamaged
       source
-      (dmg { damageAmount = max 0 $ damageAmount dmg - 3 })
+      (dmg {damageAmount = max 0 $ damageAmount dmg - 3})
   | damageAmount dmg > 3
   ]
 decreaseDamage _ = error "Invalid message"

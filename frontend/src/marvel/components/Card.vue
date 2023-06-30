@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   card: PlayerCard
   identityId: string
   game: Game
-  sideways: boolean
+  sideways?: boolean
 }>(), { sideways: false })
 
 const emit = defineEmits<{

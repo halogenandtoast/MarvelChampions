@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Cost.Types
 import {-# SOURCE #-} Marvel.Criteria
 import {-# SOURCE #-} Marvel.Question
-import Marvel.Source
+import Marvel.Ref
 import {-# SOURCE #-} Marvel.Window.Types
 
 data AbilityType
@@ -22,7 +22,7 @@ data AbilityType
   | Special
   | Basic
   | Setup
-  -- | WhenRevealed
+  -- \| WhenRevealed
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -71,11 +71,11 @@ instance Eq Ability where
       && (abilityLabel a == abilityLabel b)
 
 windowL :: Lens' Ability (Maybe WindowMatcher)
-windowL = lens abilityWindow $ \m x -> m { abilityWindow = x }
+windowL = lens abilityWindow $ \m x -> m {abilityWindow = x}
 
 choicesL :: Lens' Ability [Choice]
-choicesL = lens abilityChoices $ \m x -> m { abilityChoices = x }
+choicesL = lens abilityChoices $ \m x -> m {abilityChoices = x}
 
 class HasAbilities a where
-  getAbilities :: HasCallStack => a -> [Ability]
+  getAbilities :: (HasCallStack) => a -> [Ability]
   getAbilities _ = []

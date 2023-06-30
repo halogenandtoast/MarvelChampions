@@ -1,7 +1,7 @@
-module Marvel.Cost
-  ( module Marvel.Cost
-  , module Marvel.Cost.Types
-  ) where
+module Marvel.Cost (
+  module Marvel.Cost,
+  module Marvel.Cost.Types,
+) where
 
 import Marvel.Prelude
 
@@ -17,43 +17,45 @@ import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
 
-passesCanAffordCost
-  :: ( HasQueue m
-     , MonadRandom m
-     , MonadThrow m
-     , Projection m PlayerIdentity
-     , HasGame m
-     )
-  => IdentityId
-  -> Ability
-  -> m Bool
+passesCanAffordCost ::
+  ( HasQueue m
+  , MonadRandom m
+  , MonadThrow m
+  , Projection m PlayerIdentity
+  , HasGame m
+  ) =>
+  IdentityId ->
+  Ability ->
+  m Bool
 passesCanAffordCost identityId a = go (abilityCost a)
  where
   go = \case
     NoCost -> pure True
     DamageCost _ -> pure True
     HealCost n -> case source of
-      IdentitySource ident -> member ident
-        <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
+      IdentityRef ident ->
+        member ident
+          <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
       _ -> error "Unhandled"
     DamageThisCost _ -> pure True
     DiscardCost _ -> pure True -- TODO: we need to check if target exists
-    DiscardHandCardCost n -> if n < 1
-      then pure True
-      else projectP PlayerIdentityHand (notNull . unHand) identityId
+    DiscardHandCardCost n ->
+      if n < 1
+        then pure True
+        else projectP PlayerIdentityHand (notNull . unHand) identityId
     ExhaustCost -> case source of
-      IdentitySource ident -> member ident <$> select UnexhaustedIdentity
-      AllySource ident -> member ident <$> select UnexhaustedAlly
-      SupportSource ident -> member ident <$> select UnexhaustedSupport
-      UpgradeSource ident -> member ident <$> select UnexhaustedUpgrade
+      IdentityRef ident -> member ident <$> select UnexhaustedIdentity
+      AllyRef ident -> member ident <$> select UnexhaustedAlly
+      SupportRef ident -> member ident <$> select UnexhaustedSupport
+      UpgradeRef ident -> member ident <$> select UnexhaustedUpgrade
       _ -> error "Unhandled"
     UseCost -> case source of
-      UpgradeSource ident -> member ident <$> select UpgradeWithAnyUses
-      SupportSource ident -> member ident <$> select SupportWithAnyUses
-      AllySource ident -> member ident <$> select AllyWithAnyUses
+      UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses
+      SupportRef ident -> member ident <$> select SupportWithAnyUses
+      AllyRef ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost mr -> do
       resources <- getAvailableResourcesFor Nothing

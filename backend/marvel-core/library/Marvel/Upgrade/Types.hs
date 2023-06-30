@@ -16,11 +16,9 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
-import Text.Show qualified
+import Marvel.Ref
 
-data Upgrade = forall a . IsUpgrade a => Upgrade a
+data Upgrade = forall a. (IsUpgrade a) => Upgrade a
 
 instance Show Upgrade where
   show (Upgrade a) = show a
@@ -33,10 +31,13 @@ instance Eq Upgrade where
 instance ToJSON Upgrade where
   toJSON (Upgrade a) = toJSON a
 
-data SomeUpgradeCard = forall a . IsUpgrade a => SomeUpgradeCard
-  (UpgradeCard a)
+data SomeUpgradeCard
+  = forall a.
+    (IsUpgrade a) =>
+    SomeUpgradeCard
+      (UpgradeCard a)
 
-liftUpgradeCard :: (forall a . UpgradeCard a -> b) -> SomeUpgradeCard -> b
+liftUpgradeCard :: (forall a. UpgradeCard a -> b) -> SomeUpgradeCard -> b
 liftUpgradeCard f (SomeUpgradeCard a) = f a
 
 someUpgradeCardCode :: SomeUpgradeCard -> CardCode
@@ -65,15 +66,17 @@ instance Entity Upgrade where
     UpgradeAttachedAlly :: Field Upgrade (Maybe AllyId)
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
-  field fld u = let UpgradeAttrs {..} = toAttrs u in case fld of
-    UpgradeId -> upgradeId
-    UpgradeCardDef -> upgradeCardDef
-    UpgradeController -> upgradeController
-    UpgradeExhausted -> upgradeExhausted
-    UpgradeAttachedEnemy -> upgradeAttachedEnemy
-    UpgradeAttachedAlly -> upgradeAttachedAlly
-    UpgradeUses -> upgradeUses
-    UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
+  field fld u =
+    let UpgradeAttrs {..} = toAttrs u
+     in case fld of
+          UpgradeId -> upgradeId
+          UpgradeCardDef -> upgradeCardDef
+          UpgradeController -> upgradeController
+          UpgradeExhausted -> upgradeExhausted
+          UpgradeAttachedEnemy -> upgradeAttachedEnemy
+          UpgradeAttachedAlly -> upgradeAttachedAlly
+          UpgradeUses -> upgradeUses
+          UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
   toId = upgradeId . toAttrs
   toAttrs (Upgrade a) = toUpgradeAttrs a
 
@@ -83,8 +86,8 @@ instance RunMessage Upgrade where
 instance Exhaustable Upgrade where
   isExhausted = upgradeExhausted . toAttrs
 
-instance IsSource Upgrade where
-  toSource = UpgradeSource . toId
+instance IsRef Upgrade where
+  toRef = UpgradeRef . toId
 
 instance HasAbilities Upgrade where
   getAbilities (Upgrade a) = getAbilities a
@@ -106,69 +109,74 @@ instance HasModifiersFor Upgrade where
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a, HasModifiersFor a) => IsUpgrade a where
   toUpgradeAttrs :: a -> Attrs Upgrade
-  default toUpgradeAttrs :: Coercible a (Attrs Upgrade) => a -> Attrs Upgrade
+  default toUpgradeAttrs :: (Coercible a (Attrs Upgrade)) => a -> Attrs Upgrade
   toUpgradeAttrs = coerce
 
 type UpgradeCard a = CardBuilder (IdentityId, UpgradeId) a
 
 attachedAllyL :: Lens' (Attrs Upgrade) (Maybe AllyId)
 attachedAllyL =
-  lens upgradeAttachedAlly $ \m x -> m { upgradeAttachedAlly = x }
+  lens upgradeAttachedAlly $ \m x -> m {upgradeAttachedAlly = x}
 
 attachedEnemyL :: Lens' (Attrs Upgrade) (Maybe EnemyId)
 attachedEnemyL =
-  lens upgradeAttachedEnemy $ \m x -> m { upgradeAttachedEnemy = x }
+  lens upgradeAttachedEnemy $ \m x -> m {upgradeAttachedEnemy = x}
 
 exhaustedL :: Lens' (Attrs Upgrade) Bool
-exhaustedL = lens upgradeExhausted $ \m x -> m { upgradeExhausted = x }
+exhaustedL = lens upgradeExhausted $ \m x -> m {upgradeExhausted = x}
 
 usesL :: Lens' (Attrs Upgrade) Natural
-usesL = lens upgradeUses $ \m x -> m { upgradeUses = x }
+usesL = lens upgradeUses $ \m x -> m {upgradeUses = x}
 
 discardIfNoUsesL :: Lens' (Attrs Upgrade) Bool
 discardIfNoUsesL =
-  lens upgradeDiscardIfNoUses $ \m x -> m { upgradeDiscardIfNoUses = x }
+  lens upgradeDiscardIfNoUses $ \m x -> m {upgradeDiscardIfNoUses = x}
 
 instance HasCardCode (Attrs Upgrade) where
   toCardCode = toCardCode . upgradeCardDef
 
-upgradeWith
-  :: (Attrs Upgrade -> a)
-  -> CardDef
-  -> (Attrs Upgrade -> Attrs Upgrade)
-  -> CardBuilder (IdentityId, UpgradeId) a
+upgradeWith ::
+  (Attrs Upgrade -> a) ->
+  CardDef ->
+  (Attrs Upgrade -> Attrs Upgrade) ->
+  CardBuilder (IdentityId, UpgradeId) a
 upgradeWith f cardDef g = upgrade (f . g) cardDef
 
-upgrade
-  :: (Attrs Upgrade -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
-upgrade f cardDef = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \(ident, mid) -> f $ UpgradeAttrs
-    { upgradeId = mid
-    , upgradeCardDef = cardDef
-    , upgradeController = ident
-    , upgradeExhausted = False
-    , upgradeAttachedEnemy = Nothing
-    , upgradeAttachedAlly = Nothing
-    , upgradeUses = 0
-    , upgradeDiscardIfNoUses = False
+upgrade ::
+  (Attrs Upgrade -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
+upgrade f cardDef =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \(ident, mid) ->
+        f $
+          UpgradeAttrs
+            { upgradeId = mid
+            , upgradeCardDef = cardDef
+            , upgradeController = ident
+            , upgradeExhausted = False
+            , upgradeAttachedEnemy = Nothing
+            , upgradeAttachedAlly = Nothing
+            , upgradeUses = 0
+            , upgradeDiscardIfNoUses = False
+            }
     }
-  }
 
 damageChoice :: Attrs Upgrade -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel
-    (VillainTarget vid)
-    [DamageEnemy (VillainTarget vid) (toSource attrs) dmg]
-  EnemyMinionId vid -> TargetLabel
-    (MinionTarget vid)
-    [DamageEnemy (MinionTarget vid) (toSource attrs) dmg]
+  EnemyVillainId vid ->
+    TargetLabel
+      (toRef vid)
+      [DamageEnemy (toRef vid) (toSource attrs) dmg]
+  EnemyMinionId vid ->
+    TargetLabel
+      (toRef vid)
+      [DamageEnemy (toRef vid) (toSource attrs) dmg]
 
-thwartGuard
-  :: (HasGame m, HasQueue m, IsUpgrade u)
-  => u
-  -> m u
-  -> m u
+thwartGuard ::
+  (HasGame m, HasQueue m, IsUpgrade u) =>
+  u ->
+  m u ->
+  m u
 thwartGuard u f = do
   let ident = upgradeController (toUpgradeAttrs u)
   confused <- selectAny (IdentityWithId ident <> ConfusedIdentity)
@@ -180,36 +188,38 @@ thwartGuard u f = do
 
 thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid -> TargetLabel
-    (MainSchemeTarget vid)
-    [ThwartScheme (MainSchemeTarget vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid -> TargetLabel
-    (SideSchemeTarget sid)
-    [ThwartScheme (SideSchemeTarget sid) (toSource attrs) thw]
+  SchemeMainSchemeId vid ->
+    TargetLabel
+      (toRef vid)
+      [ThwartScheme (toRef vid) (toSource attrs) thw]
+  SchemeSideSchemeId sid ->
+    TargetLabel
+      (toRef sid)
+      [ThwartScheme (toRef sid) (toSource attrs) thw]
 
-instance IsSource (Attrs Upgrade) where
-  toSource = UpgradeSource . upgradeId
-
-instance IsTarget (Attrs Upgrade) where
-  toTarget = UpgradeTarget . upgradeId
+instance IsRef (Attrs Upgrade) where
+  toRef = UpgradeRef . upgradeId
 
 instance HasCardDef (Attrs Upgrade) where
   getCardDef = upgradeCardDef
 
 instance IsCard (Attrs Upgrade) where
-  toCard a = PlayerCard $ MkPlayerCard
-    { pcCardId = CardId $ unUpgradeId $ upgradeId a
-    , pcCardDef = getCardDef a
-    , pcOwner = Just (upgradeController a)
-    , pcController = Just (upgradeController a)
-    }
+  toCard a =
+    PlayerCard $
+      MkPlayerCard
+        { pcCardId = CardId $ unUpgradeId $ upgradeId a
+        , pcCardDef = getCardDef a
+        , pcOwner = Just (upgradeController a)
+        , pcController = Just (upgradeController a)
+        }
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade ->
-        a <$ push
-          (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
+        a
+          <$ push
+            (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
       AddUpgradeUses n -> do

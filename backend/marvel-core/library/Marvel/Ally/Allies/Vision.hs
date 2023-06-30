@@ -22,7 +22,7 @@ vision = ally Vision Cards.vision (Thw 1, 1) (Atk 2, 1) (HP 3)
 
 newtype Vision = Vision (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Vision where
   getAbilities a@(Vision attrs) =
@@ -44,7 +44,7 @@ instance RunMessage Vision where
 
 newtype VisionEffect = VisionEffect (Attrs Effect)
   deriving anyclass IsEffect
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 visionEffect :: CardEffect VisionEffect
 visionEffect =

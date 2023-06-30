@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Damage
 import Marvel.Id
-import Marvel.Source
+import Marvel.Ref
 
 data MinionMessage
   = RevealMinion IdentityId

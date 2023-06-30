@@ -1,7 +1,7 @@
-module Marvel.Event.Events.Haymaker
-  ( Haymaker
-  , haymaker
-  ) where
+module Marvel.Event.Events.Haymaker (
+  Haymaker,
+  haymaker,
+) where
 
 import Marvel.Prelude
 
@@ -16,27 +16,27 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 haymaker :: EventCard Haymaker
 haymaker = event Haymaker Cards.haymaker
 
 newtype Haymaker = Haymaker (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage Haymaker where
   runMessage msg e@(Haymaker attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        pushAll =<< choiceMessages
-          identityId
-          (ChooseDamage
-            (toSource attrs)
-            (toDamage 3 $ FromPlayerAttack identityId)
-            AttackableEnemy
-          )
+        pushAll
+          =<< choiceMessages
+            identityId
+            ( ChooseDamage
+                (toSource attrs)
+                (toDamage 3 $ FromPlayerAttack identityId)
+                AttackableEnemy
+            )
         pure e
       _ -> Haymaker <$> runMessage msg attrs
     _ -> Haymaker <$> runMessage msg attrs

@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.CrowdControl
-  ( crowdControl
-  , CrowdControl(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.CrowdControl (
+  crowdControl,
+  CrowdControl (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,8 +12,6 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 crowdControl :: SideSchemeCard CrowdControl
 crowdControl =
@@ -21,7 +19,7 @@ crowdControl =
 
 newtype CrowdControl = CrowdControl (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage CrowdControl where
   runMessage msg (CrowdControl attrs) = CrowdControl <$> runMessage msg attrs

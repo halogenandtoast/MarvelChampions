@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.Inspired
-  ( inspired
-  , Inspired(..)
-  ) where
+module Marvel.Upgrade.Upgrades.Inspired (
+  inspired,
+  Inspired (..),
+) where
 
 import Marvel.Prelude
 
@@ -14,8 +14,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -23,16 +22,17 @@ inspired :: UpgradeCard Inspired
 inspired = upgrade Inspired Cards.inspired
 
 newtype Inspired = Inspired (Attrs Upgrade)
-  deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsUpgrade)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasAbilities Inspired where
   getAbilities _ = []
 
 instance HasModifiersFor Inspired where
-  getModifiersFor _ (AllyTarget aid) (Inspired attrs)
-    | Just aid == upgradeAttachedAlly attrs = pure
-      [ThwartModifier 1, AttackModifier 1]
+  getModifiersFor _ (AllyRef aid) (Inspired attrs)
+    | Just aid == upgradeAttachedAlly attrs =
+        pure
+          [ThwartModifier 1, AttackModifier 1]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage Inspired where
@@ -40,13 +40,14 @@ instance RunMessage Inspired where
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade -> do
         allies <- selectList AnyAlly
-        chooseOne (upgradeController a) $ map
-          (\allyId -> TargetLabel
-            (AllyTarget allyId)
-            [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
-          )
-          allies
+        chooseOne (upgradeController a) $
+          map
+            ( \allyId ->
+                TargetLabel
+                  (toRef allyId)
+                  [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
+            )
+            allies
         pure u
       _ -> Inspired <$> runMessage msg a
     _ -> Inspired <$> runMessage msg a
-

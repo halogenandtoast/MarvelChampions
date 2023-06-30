@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.SweepingSwoop
-  ( sweepingSwoop
-  , SweepingSwoop(..)
-  ) where
+module Marvel.Treachery.Treacheries.SweepingSwoop (
+  sweepingSwoop,
+  SweepingSwoop (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,8 +12,6 @@ import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -21,8 +19,8 @@ sweepingSwoop :: TreacheryCard SweepingSwoop
 sweepingSwoop = treachery SweepingSwoop Cards.sweepingSwoop
 
 newtype SweepingSwoop = SweepingSwoop (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage SweepingSwoop where
   runMessage msg t@(SweepingSwoop attrs) = case msg of

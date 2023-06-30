@@ -13,9 +13,9 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types
 import Marvel.Window
@@ -35,48 +35,49 @@ klaw2 =
   villainWith Klaw Cards.klaw2 (Sch 2) (Atk 1) (HP $ PerPlayer 18) (stageL .~ 2)
 
 klaw3 :: VillainCard Klaw
-klaw3 = villainWith
-  Klaw
-  Cards.klaw3
-  (Sch 3)
-  (Atk 2)
-  (HP $ PerPlayer 22)
-  ((stageL .~ 3) . (toughL .~ True))
+klaw3 =
+  villainWith
+    Klaw
+    Cards.klaw3
+    (Sch 3)
+    (Atk 2)
+    (HP $ PerPlayer 22)
+    ((stageL .~ 3) . (toughL .~ True))
 
 instance HasAbilities Klaw where
   getAbilities (Klaw a) = case villainStage a of
     1 ->
       [ windowAbility
-            a
-            1
-            (EnemyWouldAttack (EnemyIs Cards.klaw1) AnyIdentity)
-            ForcedInterrupt
-            NoCost
+          a
+          1
+          (EnemyWouldAttack (EnemyIs Cards.klaw1) AnyIdentity)
+          ForcedInterrupt
+          NoCost
           $ RunAbility (toTarget a) 1
       ]
     2 ->
       [ windowAbility
-        a
-        1
-        (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain)
-        ForcedResponse
-        NoCost
-        (RunAbility (toTarget a) 1)
+          a
+          1
+          (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain)
+          ForcedResponse
+          NoCost
+          (RunAbility (toTarget a) 1)
       , windowAbility
           a
           1
           (EnemyWouldAttack (EnemyIs Cards.klaw2) AnyIdentity)
           ForcedInterrupt
           NoCost
-        $ RunAbility (toTarget a) 2
+          $ RunAbility (toTarget a) 2
       ]
     3 ->
       [ windowAbility
-            a
-            1
-            (EnemyWouldAttack (EnemyIs Cards.klaw3) AnyIdentity)
-            ForcedInterrupt
-            NoCost
+          a
+          1
+          (EnemyWouldAttack (EnemyIs Cards.klaw3) AnyIdentity)
+          ForcedInterrupt
+          NoCost
           $ RunAbility (toTarget a) 1
       ]
     _ -> error "Invalid stage"

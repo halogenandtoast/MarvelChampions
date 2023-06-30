@@ -13,27 +13,28 @@ import Marvel.Matchers
 import Marvel.Window
 
 hawkeyeClintBarton :: AllyCard HawkeyeClintBarton
-hawkeyeClintBarton = allyWith
-  HawkeyeClintBarton
-  Cards.hawkeyeClintBarton
-  (Thw 1, 1)
-  (Atk 1, 1)
-  (HP 3)
-  (countersL .~ 4)
+hawkeyeClintBarton =
+  allyWith
+    HawkeyeClintBarton
+    Cards.hawkeyeClintBarton
+    (Thw 1, 1)
+    (Atk 1, 1)
+    (HP 3)
+    (countersL .~ 4)
 
 newtype HawkeyeClintBarton = HawkeyeClintBarton (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities HawkeyeClintBarton where
   getAbilities a =
     [ limitedWindowAbility
-          a
-          1
-          (MinionEntersPlay After AnyMinion)
-          Response
-          OwnsThis
-          UseCost
+        a
+        1
+        (MinionEntersPlay After AnyMinion)
+        Response
+        OwnsThis
+        UseCost
         $ runAbility a 1
     ]
 
@@ -46,8 +47,9 @@ findMinion = \case
 instance RunMessage HawkeyeClintBarton where
   runMessage msg x@(HawkeyeClintBarton a) = case msg of
     RanAbility (isTarget x -> True) 1 (findMinion -> minionId) _ -> do
-      push . MinionMessage minionId $ MinionDamaged
-        (toSource x)
-        (toDamage 2 FromAbility)
+      push . MinionMessage minionId $
+        MinionDamaged
+          (toRef x)
+          (toDamage 2 FromAbility)
       pure x
     _ -> HawkeyeClintBarton <$> runMessage msg a

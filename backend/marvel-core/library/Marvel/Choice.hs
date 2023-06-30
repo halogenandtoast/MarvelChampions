@@ -3,32 +3,31 @@ module Marvel.Choice where
 import Marvel.Prelude
 
 import Marvel.Ability.Types hiding (Attack, Thwart)
-import Marvel.Damage
-import Marvel.Message
-import Marvel.Question
 import Marvel.ActiveCost.Types
+import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
+import Marvel.Message
 import Marvel.Query
+import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
-import Marvel.Window (Window(..), WindowTiming(..))
+import Marvel.Ref
+import Marvel.Window (Window (..), WindowTiming (..))
 import Marvel.Window qualified as W
 
-pushChoice
-  :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> Choice -> m ()
+pushChoice ::
+  (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> Choice -> m ()
 pushChoice ident choice = do
   msgs <- choiceMessages ident choice
   pushAll msgs
 
-choiceMessages
-  :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m)
-  => IdentityId
-  -> Choice
-  -> m [Message]
+choiceMessages ::
+  (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) =>
+  IdentityId ->
+  Choice ->
+  m [Message]
 choiceMessages ident = \case
   Run msgs -> pure msgs
   Label _ choices -> concatMapM (choiceMessages ident) choices
@@ -42,10 +41,12 @@ choiceMessages ident = \case
       case targets of
         [] -> throwM NoChoices
         [x] -> pure [f x]
-        xs -> pure
-          [ Ask ident $ ChooseOne
-              [ TargetLabel (IdentityTarget x) [Run [f x]] | x <- xs ]
-          ]
+        xs ->
+          pure
+            [ Ask ident $
+                ChooseOne
+                  [TargetLabel (toRef x) [Run [f x]] | x <- xs]
+            ]
     TargetMatches entityMatcher -> case entityMatcher of
       IdentityEntity matcher -> do
         targets <- selectList matcher
@@ -53,41 +54,47 @@ choiceMessages ident = \case
         case targets of
           [] -> throwM NoChoices
           [x] -> pure [f x]
-          xs -> pure
-            [ Ask ident $ ChooseOne
-                [ TargetLabel (IdentityTarget x) [Run [f x]] | x <- xs ]
-            ]
+          xs ->
+            pure
+              [ Ask ident $
+                  ChooseOne
+                    [TargetLabel (toRef x) [Run [f x]] | x <- xs]
+              ]
       AllyEntity matcher -> do
         targets <- selectList matcher
         let f = CreatedEffect def source . AllyEntity . AllyWithId
         case targets of
           [] -> throwM NoChoices
           [x] -> pure [f x]
-          xs -> pure
-            [ Ask ident
-                $ ChooseOne [ TargetLabel (AllyTarget x) [Run [f x]] | x <- xs ]
-            ]
+          xs ->
+            pure
+              [ Ask ident $
+                  ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]
+              ]
       AttachmentEntity matcher -> do
         targets <- selectList matcher
         let f = CreatedEffect def source . AttachmentEntity . AttachmentWithId
         case targets of
           [] -> throwM NoChoices
           [x] -> pure [f x]
-          xs -> pure
-            [ Ask ident $ ChooseOne
-                [ TargetLabel (AttachmentTarget x) [Run [f x]] | x <- xs ]
-            ]
+          xs ->
+            pure
+              [ Ask ident $
+                  ChooseOne
+                    [TargetLabel (toRef x) [Run [f x]] | x <- xs]
+              ]
   UseAbility a -> do
     activeCostId <- getRandom
     pure
-      [ SetActiveCost $ ActiveCost
-          activeCostId
-          ident
-          (ForAbility a)
-          (abilityCost a)
-          NoPayment
-          Nothing
-          mempty
+      [ SetActiveCost $
+          ActiveCost
+            activeCostId
+            ident
+            (ForAbility a)
+            (abilityCost a)
+            NoPayment
+            Nothing
+            mempty
       ]
   -- UseAbility a -> do
   --   rest <- concatMapM (choiceMessages ident) (abilityChoices a)
@@ -111,7 +118,7 @@ choiceMessages ident = \case
   DamageAllEnemies matcher source damage -> do
     enemies <- selectList $ DamageableEnemy <> matcher
     concatMapM
-      (\e -> choiceMessages ident (DamageEnemy (EnemyTarget e) source damage))
+      (\e -> choiceMessages ident (DamageEnemy (toRef e) source damage))
       enemies
   DamageAllCharacters matcher source damage -> do
     characters <- selectList $ DamageableCharacter <> matcher
@@ -121,40 +128,40 @@ choiceMessages ident = \case
   DamageEnemy target source damage -> do
     let
       isIdentity = case source of
-        IdentitySource _ -> True
+        IdentityRef _ -> True
         _ -> False
     case target of
-      VillainTarget vid ->
-        pure
-          $ [ CheckWindows [Window When $ W.DamagedVillain vid damage]
-            , VillainMessage vid $ VillainDamaged source damage
-            ]
-          <> [ CheckWindows
-                 [Window After $ W.IdentityAttack ident (EnemyVillainId vid)]
-             | damageSource damage == FromAttack && isIdentity
-             ]
-      MinionTarget mid ->
-        pure [MinionMessage mid $ MinionDamaged source damage]
-      EnemyTarget enemy -> case enemy of
-        EnemyVillainId vid ->
-          pure
-            $ [ CheckWindows [Window When $ W.DamagedVillain vid damage]
-              , VillainMessage vid $ VillainDamaged source damage
-              ]
-            <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy]
+      VillainRef vid ->
+        pure $
+          [ CheckWindows [Window When $ W.DamagedVillain vid damage]
+          , VillainMessage vid $ VillainDamaged source damage
+          ]
+            <> [ CheckWindows
+                [Window After $ W.IdentityAttack ident (EnemyVillainId vid)]
                | damageSource damage == FromAttack && isIdentity
                ]
+      MinionRef mid ->
+        pure [MinionMessage mid $ MinionDamaged source damage]
+      EnemyRef enemy -> case enemy of
+        EnemyVillainId vid ->
+          pure $
+            [ CheckWindows [Window When $ W.DamagedVillain vid damage]
+            , VillainMessage vid $ VillainDamaged source damage
+            ]
+              <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy]
+                 | damageSource damage == FromAttack && isIdentity
+                 ]
         EnemyMinionId mid ->
           pure [MinionMessage mid $ MinionDamaged source damage]
       _ -> error "can not damage target"
   ThwartScheme target source n -> case target of
-    MainSchemeTarget mid ->
+    MainSchemeRef mid ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-    SideSchemeTarget sid ->
+    SideSchemeRef sid ->
       pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
-    SchemeTarget (SchemeMainSchemeId mid) ->
+    SchemeRef (SchemeMainSchemeId mid) ->
       pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-    SchemeTarget (SchemeSideSchemeId sid) ->
+    SchemeRef (SchemeSideSchemeId sid) ->
       pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
     _ -> error $ "can not thwart target: " <> show target
   RemoveThreat source n schemeMatcher -> do
@@ -162,14 +169,16 @@ choiceMessages ident = \case
     let f target = ThwartScheme target source n
     case schemes of
       [] -> pure []
-      [x] -> choiceMessages ident (f $ SchemeTarget x)
-      xs -> pure
-        [ Ask ident $ ChooseOne
-            [ TargetLabel target [f target]
-            | x <- xs
-            , let target = SchemeTarget x
-            ]
-        ]
+      [x] -> choiceMessages ident (f $ toRef x)
+      xs ->
+        pure
+          [ Ask ident $
+              ChooseOne
+                [ TargetLabel target [f target]
+                | x <- xs
+                , let target = toRef x
+                ]
+          ]
   PlaceThreat _source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     let
@@ -186,8 +195,8 @@ choiceMessages ident = \case
       [x] -> choiceMessages ident (f x)
       xs ->
         pure
-          [ Ask ident
-              $ ChooseOne [ TargetLabel (CharacterTarget x) [f x] | x <- xs ]
+          [ Ask ident $
+              ChooseOne [TargetLabel (toRef x) [f x] | x <- xs]
           ]
   ChooseDamage source damage enemyMatcher -> do
     enemies <- selectList (enemyMatcher <> DamageableEnemy)
@@ -195,26 +204,28 @@ choiceMessages ident = \case
     case enemies of
       [] -> pure []
       [x] -> do
-        msgs <- choiceMessages ident (f $ EnemyTarget x)
+        msgs <- choiceMessages ident (f $ toRef x)
         pure $ msgs <> [ClearRemoved]
-      xs -> pure
-        [ Ask ident $ ChooseOne
-          [ TargetLabel target [f target]
-          | x <- xs
-          , let target = EnemyTarget x
+      xs ->
+        pure
+          [ Ask ident $
+              ChooseOne
+                [ TargetLabel target [f target]
+                | x <- xs
+                , let target = toRef x
+                ]
+          , ClearRemoved
           ]
-        , ClearRemoved
-        ]
   Stun target source -> case target of
-    VillainTarget vid -> pure [VillainMessage vid $ VillainStunned source]
-    MinionTarget mid -> pure [MinionMessage mid $ MinionStunned source]
-    EnemyTarget eid -> case eid of
+    VillainRef vid -> pure [VillainMessage vid $ VillainStunned source]
+    MinionRef mid -> pure [MinionMessage mid $ MinionStunned source]
+    EnemyRef eid -> case eid of
       EnemyVillainId vid -> pure [VillainMessage vid $ VillainStunned source]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionStunned source]
     _ -> error "can not stun target"
   Confuse target source -> case target of
-    VillainTarget vid -> pure [VillainMessage vid $ VillainConfused source]
-    MinionTarget vid -> pure [MinionMessage vid $ MinionConfused source]
+    VillainRef vid -> pure [VillainMessage vid $ VillainConfused source]
+    MinionRef vid -> pure [MinionMessage vid $ MinionConfused source]
     _ -> error "can not damage target"
   Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
   Heal characterId n -> case characterId of
@@ -244,26 +255,29 @@ choiceMessages ident = \case
   ChooseEnemy matcher target -> do
     enemies <- selectList matcher
     pure
-      [ Ask ident $ ChooseOne
-          [ TargetLabel (EnemyTarget e) [Run [ChoseEnemy e target]]
-          | e <- enemies
-          ]
+      [ Ask ident $
+          ChooseOne
+            [ TargetLabel (toRef e) [Run [ChoseEnemy e target]]
+            | e <- enemies
+            ]
       ]
   ChooseUpgrade matcher target -> do
     upgrades <- selectList matcher
     pure
-      [ Ask ident $ ChooseOne
-          [ TargetLabel (UpgradeTarget u) [Run [ChoseUpgrade u target]]
-          | u <- upgrades
-          ]
+      [ Ask ident $
+          ChooseOne
+            [ TargetLabel (toRef u) [Run [ChoseUpgrade u target]]
+            | u <- upgrades
+            ]
       ]
   ChoosePlayer matcher target -> do
     players <- selectList matcher
     pure
-      [ Ask ident $ ChooseOne
-          [ TargetLabel (IdentityTarget p) [Run [ChosePlayer p target]]
-          | p <- players
-          ]
+      [ Ask ident $
+          ChooseOne
+            [ TargetLabel (toRef p) [Run [ChosePlayer p target]]
+            | p <- players
+            ]
       ]
   ChooseDrawCards n identityMatcher -> do
     identities <- selectList identityMatcher
@@ -271,32 +285,32 @@ choiceMessages ident = \case
     case identities of
       [] -> pure []
       [x] -> choiceMessages ident (f x)
-      xs -> pure
-        [ Ask ident
-            $ ChooseOne
+      xs ->
+        pure
+          [ Ask ident $
+              ChooseOne
                 [ TargetLabel target [f x]
                 | x <- xs
-                , let target = IdentityTarget x
+                , let target = toRef x
                 ]
-        ]
+          ]
   ReturnTargetToHand target -> pure [ReturnToHand target]
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
-chooseOne :: HasQueue m => IdentityId -> [Choice] -> m ()
+chooseOne :: (HasQueue m) => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 
-chooseOneAtATime :: HasQueue m => IdentityId -> [Choice] -> m ()
+chooseOneAtATime :: (HasQueue m) => IdentityId -> [Choice] -> m ()
 chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
 
-chooseOrRunOne
-  :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => IdentityId -> [Choice] -> m ()
+chooseOrRunOne ::
+  (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => IdentityId -> [Choice] -> m ()
 chooseOrRunOne ident = \case
   [] -> throwM NoChoices
   [choice] -> pushAll =<< choiceMessages ident choice
   choices -> push (Ask ident $ ChooseOne choices)
 
-choosePlayerOrder :: HasQueue m => IdentityId -> [IdentityId] -> m ()
+choosePlayerOrder :: (HasQueue m) => IdentityId -> [IdentityId] -> m ()
 choosePlayerOrder ident xs =
   push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)
-

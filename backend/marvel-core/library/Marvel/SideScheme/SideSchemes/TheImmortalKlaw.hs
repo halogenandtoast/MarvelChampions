@@ -1,7 +1,7 @@
-module Marvel.SideScheme.SideSchemes.TheImmortalKlaw
-  ( theImmortalKlaw
-  , TheImmortalKlaw(..)
-  ) where
+module Marvel.SideScheme.SideSchemes.TheImmortalKlaw (
+  theImmortalKlaw,
+  TheImmortalKlaw (..),
+) where
 
 import Marvel.Prelude
 
@@ -10,21 +10,20 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Source
-import Marvel.Target
 
 theImmortalKlaw :: SideSchemeCard TheImmortalKlaw
 theImmortalKlaw =
   sideScheme TheImmortalKlaw Cards.theImmortalKlaw (PerPlayer 1)
 
 newtype TheImmortalKlaw = TheImmortalKlaw (Attrs SideScheme)
-  deriving anyclass IsSideScheme
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsSideScheme)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasModifiersFor TheImmortalKlaw where
-  getModifiersFor _ (VillainTarget _) (TheImmortalKlaw _) =
+  getModifiersFor _ (VillainRef _) (TheImmortalKlaw _) =
     pure [HitPointModifier 10]
   getModifiersFor _ _ _ = pure []
 

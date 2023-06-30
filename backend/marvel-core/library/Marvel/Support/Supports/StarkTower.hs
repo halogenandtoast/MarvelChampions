@@ -18,10 +18,9 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Support.Types
+import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 import Marvel.Trait
 
 starkTower :: SupportCard StarkTower
@@ -29,7 +28,7 @@ starkTower = support StarkTower Cards.starkTower
 
 newtype StarkTower = StarkTower (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities StarkTower where
   getAbilities (StarkTower a) =
@@ -47,15 +46,18 @@ instance HasAbilities StarkTower where
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> s
-      <$ pushChoice
-        (supportController attrs)
-        (ChoosePlayer AnyIdentity target)
+    RanAbility target 1 _ _
+      | isTarget attrs target ->
+          s
+            <$ pushChoice
+              (supportController attrs)
+              (ChoosePlayer AnyIdentity target)
     ChosePlayer identityId target | isTarget attrs target -> do
-      mTechCard <- selectOne $
-        TopmostCardInDiscardOf
-          (IdentityWithId identityId)
-          (CardWithTrait Tech)
+      mTechCard <-
+        selectOne $
+          TopmostCardInDiscardOf
+            (IdentityWithId identityId)
+            (CardWithTrait Tech)
       case mTechCard of
         Nothing -> error "should have targetted a card"
         Just x -> push $ IdentityMessage identityId (AddToHand x)

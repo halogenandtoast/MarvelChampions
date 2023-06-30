@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.LukeCage
-  ( lukeCage
-  , LukeCage(..)
-  ) where
+module Marvel.Ally.Allies.LukeCage (
+  lukeCage,
+  LukeCage (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,7 +15,7 @@ lukeCage =
 
 newtype LukeCage = LukeCage (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage LukeCage where
   runMessage msg (LukeCage attrs) = LukeCage <$> runMessage msg attrs

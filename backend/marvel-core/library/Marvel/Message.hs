@@ -1,7 +1,7 @@
-module Marvel.Message
-  ( module Marvel.Message
-  , module X
-  ) where
+module Marvel.Message (
+  module Marvel.Message,
+  module X,
+) where
 
 import Marvel.Prelude
 
@@ -25,15 +25,14 @@ import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Identity.Types
 import Marvel.Matchers.Types
 import Marvel.Payment.Types
 import Marvel.Phase
+import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
-import Marvel.Projection
-import Marvel.Identity.Types
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window.Types (Window, WindowType)
 
 class RunMessage a where

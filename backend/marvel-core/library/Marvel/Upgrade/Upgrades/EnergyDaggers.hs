@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.EnergyDaggers
-  ( energyDaggers
-  , EnergyDaggers(..)
-  ) where
+module Marvel.Upgrade.Upgrades.EnergyDaggers (
+  energyDaggers,
+  EnergyDaggers (..),
+) where
 
 import Marvel.Prelude
 
@@ -19,8 +19,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -29,7 +28,7 @@ energyDaggers = upgrade EnergyDaggers Cards.energyDaggers
 
 newtype EnergyDaggers = EnergyDaggers (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities EnergyDaggers where
   getAbilities (EnergyDaggers a) =
@@ -43,27 +42,30 @@ instance RunMessage EnergyDaggers where
       minionMap <-
         HashMap.fromList
           <$> traverse
-                (\iid -> (iid, )
+            ( \iid ->
+                (iid,)
                   <$> selectList (MinionEngagedWith $ IdentityWithId iid)
-                )
-                players
+            )
+            players
       modifiers <- getModifiers attrs
       let
         dmg =
           toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
-      u <$ chooseOne
-        (upgradeController attrs)
-        [ TargetLabel
-            (IdentityTarget ident)
-            [ Run
-              $ VillainMessage villain (VillainDamaged (toSource attrs) dmg)
-              : map
-                  (\minionId -> MinionMessage
-                    minionId
-                    (MinionDamaged (toSource attrs) dmg)
-                  )
-                  (HashMap.findWithDefault [] ident minionMap)
+      u
+        <$ chooseOne
+          (upgradeController attrs)
+          [ TargetLabel
+            (toRef ident)
+            [ Run $
+                VillainMessage villain (VillainDamaged (toSource attrs) dmg)
+                  : map
+                    ( \minionId ->
+                        MinionMessage
+                          minionId
+                          (MinionDamaged (toSource attrs) dmg)
+                    )
+                    (HashMap.findWithDefault [] ident minionMap)
             ]
-        | ident <- players
-        ]
+          | ident <- players
+          ]
     _ -> EnergyDaggers <$> runMessage msg attrs

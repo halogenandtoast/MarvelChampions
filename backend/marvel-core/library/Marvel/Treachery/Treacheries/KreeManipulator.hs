@@ -1,7 +1,7 @@
-module Marvel.Treachery.Treacheries.KreeManipulator
-  ( kreeManipulator
-  , KreeManipulator(..)
-  ) where
+module Marvel.Treachery.Treacheries.KreeManipulator (
+  kreeManipulator,
+  KreeManipulator (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,8 +12,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -21,8 +19,8 @@ kreeManipulator :: TreacheryCard KreeManipulator
 kreeManipulator = treachery KreeManipulator Cards.kreeManipulator
 
 newtype KreeManipulator = KreeManipulator (Attrs Treachery)
-  deriving anyclass IsTreachery
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsTreachery)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage KreeManipulator where
   runMessage msg t@(KreeManipulator attrs) = case msg of
@@ -37,8 +35,9 @@ instance RunMessage KreeManipulator where
       _ -> KreeManipulator <$> runMessage msg attrs
     Boost msg' -> case msg' of
       RevealedAsBoost target enemyId | isTarget attrs target -> do
-        undefended <- member enemyId
-          <$> select (VillainEnemy <> UndefendedEnemy)
+        undefended <-
+          member enemyId
+            <$> select (VillainEnemy <> UndefendedEnemy)
         when undefended $ do
           mainScheme <- selectJust MainScheme
           case mainScheme of

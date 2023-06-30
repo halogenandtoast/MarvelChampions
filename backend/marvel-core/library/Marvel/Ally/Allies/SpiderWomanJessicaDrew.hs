@@ -1,7 +1,7 @@
-module Marvel.Ally.Allies.SpiderWomanJessicaDrew
-  ( spiderWomanJessicaDrew
-  , SpiderWomanJessicaDrew(..)
-  ) where
+module Marvel.Ally.Allies.SpiderWomanJessicaDrew (
+  spiderWomanJessicaDrew,
+  SpiderWomanJessicaDrew (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,21 +15,22 @@ import Marvel.Query
 import Marvel.Window
 
 spiderWomanJessicaDrew :: AllyCard SpiderWomanJessicaDrew
-spiderWomanJessicaDrew = ally
-  SpiderWomanJessicaDrew
-  Cards.spiderWomanJessicaDrew
-  (Thw 2, 1)
-  (Atk 2, 1)
-  (HP 2)
+spiderWomanJessicaDrew =
+  ally
+    SpiderWomanJessicaDrew
+    Cards.spiderWomanJessicaDrew
+    (Thw 2, 1)
+    (Atk 2, 1)
+    (HP 2)
 
 newtype SpiderWomanJessicaDrew = SpiderWomanJessicaDrew (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities SpiderWomanJessicaDrew where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost
-        $ runAbility a 1
+    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $
+        runAbility a 1
     ]
 
 instance RunMessage SpiderWomanJessicaDrew where

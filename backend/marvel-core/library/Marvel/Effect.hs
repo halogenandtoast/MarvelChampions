@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
+
 module Marvel.Effect where
 
 import Marvel.Prelude
@@ -10,7 +11,7 @@ import Marvel.Effect.Types
 import Marvel.Event.Events
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Support.Supports
 import Marvel.Upgrade.Upgrades
 
@@ -24,12 +25,12 @@ instance FromJSON Effect where
 
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
-  fromList
-    $ [ ("01039", SomeCardEffect rocketBootsEffect)
-      , ("01068", SomeCardEffect visionEffect)
-      , ("01070", SomeCardEffect leadFromTheFrontEffect)
-      , ("01092", SomeCardEffect helicarrierEffect)
-      ]
+  fromList $
+    [ ("01039", SomeCardEffect rocketBootsEffect)
+    , ("01068", SomeCardEffect visionEffect)
+    , ("01070", SomeCardEffect leadFromTheFrontEffect)
+    , ("01092", SomeCardEffect helicarrierEffect)
+    ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect
 lookupEffect cardCode source entityMatcher effectId =

@@ -1,7 +1,7 @@
-module Marvel.Support.Supports.SurveillanceTeam
-  ( surveillanceTeam
-  , SurveillanceTeam(..)
-  ) where
+module Marvel.Support.Supports.SurveillanceTeam (
+  surveillanceTeam,
+  SurveillanceTeam (..),
+) where
 
 import Marvel.Prelude
 
@@ -14,20 +14,19 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Source
-import Marvel.Support.Types
+import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
-import Marvel.Target
+import Marvel.Support.Types
 
 surveillanceTeam :: SupportCard SurveillanceTeam
 surveillanceTeam =
-  supportWith SurveillanceTeam Cards.surveillanceTeam
-    $ (usesL .~ 3)
-    . (discardIfNoUsesL .~ True)
+  supportWith SurveillanceTeam Cards.surveillanceTeam $
+    (usesL .~ 3)
+      . (discardIfNoUsesL .~ True)
 
 newtype SurveillanceTeam = SurveillanceTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities SurveillanceTeam where
   getAbilities (SurveillanceTeam a) =

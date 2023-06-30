@@ -1,9 +1,10 @@
 {-# LANGUAGE CPP #-}
-module Import.NoFoundation
-    ( module Import
-    ) where
 
-import Relude as Import hiding (get)
+module Import.NoFoundation (
+  module Import,
+) where
+
+import Prelude as Import
 
 import Database.Persist.Postgresql as Import
 import Model as Import

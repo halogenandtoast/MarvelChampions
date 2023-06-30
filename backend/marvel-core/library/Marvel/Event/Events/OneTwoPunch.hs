@@ -1,7 +1,7 @@
-module Marvel.Event.Events.OneTwoPunch
-  ( oneTwoPunch
-  , OneTwoPunch(..)
-  ) where
+module Marvel.Event.Events.OneTwoPunch (
+  oneTwoPunch,
+  OneTwoPunch (..),
+) where
 
 import Marvel.Prelude
 
@@ -12,15 +12,14 @@ import Marvel.Event.Types
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 oneTwoPunch :: EventCard OneTwoPunch
 oneTwoPunch = event OneTwoPunch Cards.oneTwoPunch
 
 newtype OneTwoPunch = OneTwoPunch (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage OneTwoPunch where
   runMessage msg e@(OneTwoPunch attrs) = case msg of

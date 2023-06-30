@@ -1,20 +1,23 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Entity.Marvel.Game
-  ( module Entity.Marvel.Game
-  ) where
 
-import Relude
+module Entity.Marvel.Game (
+  module Entity.Marvel.Game,
+) where
+
+import Prelude
 
 import Api.Marvel.Types.MultiplayerVariant
 import Data.Aeson.Diff
 import Data.Aeson.Types
-import qualified Data.Text as T
+import Data.Text (Text)
+import Data.Text qualified as T
 import Data.UUID
 import Database.Persist.Postgresql.JSON ()
 import Database.Persist.Sql
 import Database.Persist.TH
+import GHC.Generics (Generic)
 import Json
 import Marvel.Game
 import Marvel.Message
@@ -39,7 +42,9 @@ instance PersistField [Step] where
     fmapLeft f (Left a) = Left (f a)
     fmapLeft _ (Right a) = Right a -- Rewrap to fix types.
 
-share [mkPersist sqlSettings] [persistLowerCase|
+share
+  [mkPersist sqlSettings]
+  [persistLowerCase|
 MarvelGame sql=marvel_games
   Id UUID default=uuid_generate_v4()
   name Text

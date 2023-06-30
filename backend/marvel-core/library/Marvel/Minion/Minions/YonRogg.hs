@@ -22,7 +22,7 @@ yonRogg = minion YonRogg Cards.yonRogg (Sch 2) (Atk 3) (HP 5)
 
 newtype YonRogg = YonRogg (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities YonRogg where
   getAbilities (YonRogg a) =

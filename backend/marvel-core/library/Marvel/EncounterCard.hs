@@ -1,10 +1,11 @@
-module Marvel.EncounterCard
-  ( module Marvel.EncounterCard
-  , module X
-  ) where
+module Marvel.EncounterCard (
+  module Marvel.EncounterCard,
+  module X,
+) where
 
 import Marvel.Prelude
 
+import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Attachment.Cards
 import Marvel.Card.Code
@@ -19,20 +20,22 @@ allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
   allAttachments <> allMinions <> allTreacheries <> allSideSchemes
 
-gatherEncounterSets
-  :: MonadRandom m => HashSet EncounterSet -> m [EncounterCard]
+gatherEncounterSets ::
+  (MonadRandom m) => HashSet EncounterSet -> m [EncounterCard]
 gatherEncounterSets = concatMapM gatherEncounterSet . HashSet.toList
 
-gatherEncounterSet :: MonadRandom m => EncounterSet -> m [EncounterCard]
-gatherEncounterSet encounterSet = concat <$> for
-  defs
-  \def -> traverse genEncounterCard
-    $ replicate (fromIntegral $ fromMaybe 0 (cdEncounterSetQuantity def)) def
+gatherEncounterSet :: (MonadRandom m) => EncounterSet -> m [EncounterCard]
+gatherEncounterSet encounterSet =
+  concat <$> for
+    defs
+    \def ->
+      traverse genEncounterCard $
+        replicate (fromIntegral $ fromMaybe 0 (cdEncounterSetQuantity def)) def
  where
   defs =
-    filter ((== Just encounterSet) . cdEncounterSet) $ toList allEncounterCards
+    filter ((== Just encounterSet) . cdEncounterSet) $ HashMap.elems allEncounterCards
 
-genEncounterCard :: MonadRandom m => CardDef -> m EncounterCard
+genEncounterCard :: (MonadRandom m) => CardDef -> m EncounterCard
 genEncounterCard cardDef = do
   cardId <- getRandom
   pure $ MkEncounterCard cardId cardDef

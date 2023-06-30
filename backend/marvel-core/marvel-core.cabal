@@ -54,6 +54,7 @@ library
       Marvel.Attachment.Attachments.Charge
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.GeneticallyEnhanced
+      Marvel.Attachment.Attachments.ProgramTransmitter
       Marvel.Attachment.Attachments.SolidSoundBody
       Marvel.Attachment.Attachments.SonicConverter
       Marvel.Attachment.Cards
@@ -204,6 +205,7 @@ library
       Marvel.Query
       Marvel.Question
       Marvel.Queue
+      Marvel.Ref
       Marvel.Resource
       Marvel.Resource.Cards
       Marvel.Resource.Types
@@ -225,7 +227,6 @@ library
       Marvel.SideScheme.SideSchemes.ThePsycheMagnitron
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.SideScheme.Types
-      Marvel.Source
       Marvel.Stats
       Marvel.Support
       Marvel.Support.Cards
@@ -244,7 +245,6 @@ library
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheTriskellion
       Marvel.Support.Types
-      Marvel.Target
       Marvel.Trait
       Marvel.Trait.Types
       Marvel.Treachery
@@ -306,6 +306,7 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Rhino
+      Marvel.Villain.Villains.Ultron
       Marvel.Window
       Marvel.Window.Types
   other-modules:
@@ -349,9 +350,10 @@ library
     , base >=4.7 && <5
     , exceptions
     , extra
+    , hashable
     , lens
+    , mtl
     , random-shuffle
-    , relude
     , template-haskell
     , text
     , unordered-containers
@@ -401,8 +403,9 @@ test-suite MarvelChampions-test
     , base >=4.7 && <5
     , exceptions
     , extra
+    , hashable
     , lens
     , marvel-core
-    , relude
+    , mtl
     , text
   default-language: Haskell2010

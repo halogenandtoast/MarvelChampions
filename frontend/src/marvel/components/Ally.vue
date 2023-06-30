@@ -35,33 +35,13 @@ const defendAction = computed(() => {
     .findIndex((c) => c.tag === 'AllyDefend' && c.contents == props.ally.allyId)
 })
 
-const activeAbility = computed(() => {
-  return choices.value.findIndex((choice) => {
-    if (choice.tag !== 'TargetLabel') {
-      return false
-    }
-
-    const { contents } = choice.target
-      if (typeof contents === "string") {
-        return contents == props.ally.allyId
-      }
-
-      switch (contents.tag) {
-        case 'AllyCharacter':
-          return contents.contents === props.ally.allyId
-        default:
-          return false
-      }
-  })
-})
-
 const upgrades = computed(() => props.ally.allyUpgrades.map((upgradeId) => props.game.upgrades[upgradeId]))
 </script>
 
 <template>
   <div class="ally">
     <div class="contents">
-      <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: ally.allyExhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+      <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ exhausted: ally.allyExhausted }" />
       <Upgrade
         v-for="upgrade in upgrades"
         :key="upgrade.upgradeId"

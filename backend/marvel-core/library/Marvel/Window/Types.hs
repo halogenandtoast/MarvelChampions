@@ -37,6 +37,7 @@ data WindowMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
   | VillainDamaged WindowTiming VillainMatcher
+  | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
@@ -68,6 +69,7 @@ data WindowType
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
   | EnemyAttacksAndDamages EnemyId CharacterId
+  | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId
   | AllyAttack AllyId EnemyId

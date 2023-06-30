@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.ArcReactor
-  ( arcReactor
-  , ArcReactor(..)
-  ) where
+module Marvel.Upgrade.Upgrades.ArcReactor (
+  arcReactor,
+  ArcReactor (..),
+) where
 
 import Marvel.Prelude
 
@@ -13,8 +13,7 @@ import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -23,7 +22,7 @@ arcReactor = upgrade ArcReactor Cards.arcReactor
 
 newtype ArcReactor = ArcReactor (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities ArcReactor where
   getAbilities (ArcReactor a) =

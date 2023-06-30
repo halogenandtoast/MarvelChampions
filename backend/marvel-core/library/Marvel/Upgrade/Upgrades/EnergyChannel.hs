@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.EnergyChannel
-  ( energyChannel
-  , EnergyChannel(..)
-  ) where
+module Marvel.Upgrade.Upgrades.EnergyChannel (
+  energyChannel,
+  EnergyChannel (..),
+) where
 
 import Marvel.Prelude
 
@@ -16,11 +16,10 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Question
+import Marvel.Queue
+import Marvel.Ref
 import Marvel.Resource
-import Marvel.Source
-import Marvel.Target
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -29,15 +28,15 @@ energyChannel = upgrade EnergyChannel Cards.energyChannel
 
 newtype EnergyChannel = EnergyChannel (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities EnergyChannel where
   getAbilities a =
-    [ ability a 1 Action OwnsThis (DynamicResourceCost $ Just Energy)
-      $ RunAbility (toTarget a) 1
-    , subtype Ability.Attack
-      $ ability a 2 HeroAction OwnsThis (DiscardCost $ toTarget a)
-      $ RunAbility (toTarget a) 2
+    [ ability a 1 Action OwnsThis (DynamicResourceCost $ Just Energy) $
+        RunAbility (toTarget a) 1
+    , subtype Ability.Attack $
+        ability a 2 HeroAction OwnsThis (DiscardCost $ toTarget a) $
+          RunAbility (toTarget a) 2
     ]
 
 instance RunMessage EnergyChannel where
@@ -48,7 +47,7 @@ instance RunMessage EnergyChannel where
       pure u
     RanAbility (isTarget attrs -> True) 2 _ _ -> do
       let amount = min 10 (2 * (upgradeUses attrs))
-      pushChoice (upgradeController attrs)
-        $ ChooseDamage (toSource attrs) (toDamage amount FromAbility) AnyEnemy
+      pushChoice (upgradeController attrs) $
+        ChooseDamage (toSource attrs) (toDamage amount FromAbility) AnyEnemy
       pure u
     _ -> EnergyChannel <$> runMessage msg attrs

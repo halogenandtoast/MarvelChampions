@@ -23,7 +23,7 @@ radioactiveMan =
 
 newtype RadioactiveMan = RadioactiveMan (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities RadioactiveMan where
   getAbilities (RadioactiveMan a) =

@@ -19,10 +19,6 @@ const emit = defineEmits<{
 const card = computed(() => ({ cardId: props.attachment.attachmentId, cardDef: props.attachment.attachmentCardDef }))
 const choices = computed(() => MarvelGame.choices(props.game, props.identityId))
 
-const activeAbility = computed(() => {
-  return choices.value.findIndex((choice) => choice.tag === 'TargetLabel' && choice.target.contents == props.attachment.attachmentId)
-})
-
 const abilities = computed(() => {
   return choices.value.reduce<number[]>((acc, v, i) => {
     if (v.tag === 'UseAbility' && v.contents.abilitySource.contents == props.attachment.attachmentId) {
@@ -35,7 +31,7 @@ const abilities = computed(() => {
 
 <template>
   <div class="attachment">
-    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" :class="{ active: activeAbility !== -1 }" />
+    <Card :card="card" :game="game" :identityId="identityId" @choose="emit('choose', $event)" />
     <div v-if="attachment.attachmentDamage > 0" class="damage">damage: {{attachment.attachmentDamage}}</div>
     <AbilityButton
           v-for="ability in abilities"

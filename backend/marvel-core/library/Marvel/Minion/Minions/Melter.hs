@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.Melter
-  ( melter
-  , Melter(..)
-  ) where
+module Marvel.Minion.Minions.Melter (
+  melter,
+  Melter (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,17 +15,18 @@ import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 
 melter :: MinionCard Melter
-melter = minionWith
-  Melter
-  Cards.melter
-  (Sch 1)
-  (Atk 3)
-  (HP 5)
-  (defensePriorityL .~ AllyIfAble)
+melter =
+  minionWith
+    Melter
+    Cards.melter
+    (Sch 1)
+    (Atk 3)
+    (HP 5)
+    (defensePriorityL .~ AllyIfAble)
 
 newtype Melter = Melter (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Melter where
   runMessage msg e@(Melter attrs) = case msg of

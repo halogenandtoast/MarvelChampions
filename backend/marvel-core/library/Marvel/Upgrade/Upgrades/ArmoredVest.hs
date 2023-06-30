@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.ArmoredVest
-  ( armoredVest
-  , ArmoredVest(..)
-  ) where
+module Marvel.Upgrade.Upgrades.ArmoredVest (
+  armoredVest,
+  ArmoredVest (..),
+) where
 
 import Marvel.Prelude
 
@@ -10,20 +10,19 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Source
-import Marvel.Target
-import Marvel.Upgrade.Types
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Types
 
 armoredVest :: UpgradeCard ArmoredVest
 armoredVest = upgrade ArmoredVest Cards.armoredVest
 
 newtype ArmoredVest = ArmoredVest (Attrs Upgrade)
-  deriving anyclass IsUpgrade
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving anyclass (IsUpgrade)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasModifiersFor ArmoredVest where
-  getModifiersFor _ (IdentityTarget iid) (ArmoredVest a)
+  getModifiersFor _ (IdentityRef iid) (ArmoredVest a)
     | iid == upgradeController a = pure [DefenseModifier 1]
   getModifiersFor _ _ _ = pure []
 

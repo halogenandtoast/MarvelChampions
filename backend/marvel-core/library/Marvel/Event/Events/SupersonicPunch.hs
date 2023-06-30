@@ -1,7 +1,7 @@
-module Marvel.Event.Events.SupersonicPunch
-  ( supersonicPunch
-  , SupersonicPunch(..)
-  ) where
+module Marvel.Event.Events.SupersonicPunch (
+  supersonicPunch,
+  SupersonicPunch (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,8 +15,7 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Trait
 
 supersonicPunch :: EventCard SupersonicPunch
@@ -24,7 +23,7 @@ supersonicPunch = event SupersonicPunch Cards.supersonicPunch
 
 newtype SupersonicPunch = SupersonicPunch (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SupersonicPunch where
   runMessage msg e@(SupersonicPunch attrs) = case msg of
@@ -34,9 +33,10 @@ instance RunMessage SupersonicPunch where
           selectAny $ IdentityWithId identityId <> IdentityWithTrait Aerial
         let dmg = if aerial then 8 else 4
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $ map
-          (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId))
-          enemies
+        chooseOne identityId $
+          map
+            (damageChoice attrs (toDamage dmg $ FromPlayerAttack identityId))
+            enemies
         pure e
       _ -> SupersonicPunch <$> runMessage msg attrs
     _ -> SupersonicPunch <$> runMessage msg attrs

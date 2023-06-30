@@ -16,23 +16,23 @@ import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Stats
-import Marvel.Target
 import Marvel.Trait
 
 tChalla :: AlterEgoCard TChalla
-tChalla = alterEgo
-  TChalla
-  Cards.tChalla
-  (HP $ Static 11)
-  (HandSize 6)
-  (Rec 4)
-  [Cards.affairsOfState]
+tChalla =
+  alterEgo
+    TChalla
+    Cards.tChalla
+    (HP $ Static 11)
+    (HandSize 6)
+    (Rec 4)
+    [Cards.affairsOfState]
 
 newtype TChalla = TChalla (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities TChalla where
   getAbilities a = [ability a 1 Setup NoCriteria NoCost $ runAbility a 1]
@@ -40,10 +40,11 @@ instance HasAbilities TChalla where
 instance RunMessage TChalla where
   runMessage msg ae@(TChalla a) = case msg of
     RanAbility (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage (alterEgoIdentityId a) $ Search
-        (SearchIdentityDeck (alterEgoIdentityId a) AllOfDeck)
-        (CardWithTrait BlackPanther <> CardWithType UpgradeType)
-        SearchDrawOne
-        ShuffleBackIn
+      push . IdentityMessage (alterEgoIdentityId a) $
+        Search
+          (SearchIdentityDeck (alterEgoIdentityId a) AllOfDeck)
+          (CardWithTrait BlackPanther <> CardWithType UpgradeType)
+          SearchDrawOne
+          ShuffleBackIn
       pure ae
     _ -> TChalla <$> runMessage msg a

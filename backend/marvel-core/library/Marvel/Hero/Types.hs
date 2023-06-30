@@ -1,8 +1,9 @@
 {-# LANGUAGE QuantifiedConstraints #-}
-module Marvel.Hero.Types
-  ( module Marvel.Hero.Types
-  , module X
-  ) where
+
+module Marvel.Hero.Types (
+  module Marvel.Hero.Types,
+  module X,
+) where
 
 import Marvel.Prelude
 
@@ -19,12 +20,10 @@ import Marvel.Hp as X
 import Marvel.Id as X
 import {-# SOURCE #-} Marvel.Message
 import {-# SOURCE #-} Marvel.Modifier
-import Marvel.Source
+import Marvel.Ref
 import Marvel.Stats
-import Marvel.Target
-import Text.Show qualified
 
-data Hero = forall a . IsHero a => Hero a
+data Hero = forall a. (IsHero a) => Hero a
 
 instance Show Hero where
   show (Hero a) = show a
@@ -49,8 +48,8 @@ instance HasCardCode Hero where
 instance HasCardDef Hero where
   getCardDef = getCardDef . toAttrs
 
-instance IsSource Hero where
-  toSource = toSource . toAttrs
+instance IsRef Hero where
+  toRef = IdentityRef . toId
 
 instance Entity Hero where
   type Id Hero = IdentityId
@@ -77,54 +76,55 @@ instance Entity Hero where
     HeroCardDef :: Field Hero CardDef
   field fld h =
     let HeroAttrs {..} = toAttrs h
-    in
-      case fld of
-        HeroIdentityId -> heroIdentityId
-        HeroBaseHandSize -> heroBaseHandSize
-        HeroBaseThwart -> heroBaseThwart
-        HeroBaseAttack -> heroBaseAttack
-        HeroBaseDefense -> heroBaseDefense
-        HeroAlterEgoForms -> heroAlterEgoForms
-        HeroStartingHP -> heroStartingHP
-        HeroCardDef -> heroCardDef
+     in case fld of
+          HeroIdentityId -> heroIdentityId
+          HeroBaseHandSize -> heroBaseHandSize
+          HeroBaseThwart -> heroBaseThwart
+          HeroBaseAttack -> heroBaseAttack
+          HeroBaseDefense -> heroBaseDefense
+          HeroAlterEgoForms -> heroAlterEgoForms
+          HeroStartingHP -> heroStartingHP
+          HeroCardDef -> heroCardDef
   toId = heroIdentityId . toAttrs
   toAttrs (Hero a) = toHeroAttrs a
 
-data SomeHeroCard = forall a . IsHero a => SomeHeroCard (HeroCard a)
+data SomeHeroCard = forall a. (IsHero a) => SomeHeroCard (HeroCard a)
 
-liftHeroCard :: (forall a . HeroCard a -> b) -> SomeHeroCard -> b
+liftHeroCard :: (forall a. HeroCard a -> b) -> SomeHeroCard -> b
 liftHeroCard f (SomeHeroCard a) = f a
 
 someHeroCardCode :: SomeHeroCard -> CardCode
 someHeroCardCode = liftHeroCard cbCardCode
 
-
-hero
-  :: (Attrs Hero -> a)
-  -> CardDef
-  -> HP GameValue
-  -> HandSize
-  -> Thw
-  -> Atk
-  -> Def
-  -> CardBuilder IdentityId a
-hero f cardDef hp hSize thw atk def = CardBuilder
-  { cbCardCode = cdCardCode cardDef
-  , cbCardBuilder = \ident -> f $ HeroAttrs
-    { heroIdentityId = ident
-    , heroBaseHandSize = hSize
-    , heroBaseThwart = thw
-    , heroBaseAttack = atk
-    , heroBaseDefense = def
-    , heroAlterEgoForms = [A]
-    , heroStartingHP = hp
-    , heroCardDef = cardDef
+hero ::
+  (Attrs Hero -> a) ->
+  CardDef ->
+  HP GameValue ->
+  HandSize ->
+  Thw ->
+  Atk ->
+  Def ->
+  CardBuilder IdentityId a
+hero f cardDef hp hSize thw atk def =
+  CardBuilder
+    { cbCardCode = cdCardCode cardDef
+    , cbCardBuilder = \ident ->
+        f $
+          HeroAttrs
+            { heroIdentityId = ident
+            , heroBaseHandSize = hSize
+            , heroBaseThwart = thw
+            , heroBaseAttack = atk
+            , heroBaseDefense = def
+            , heroAlterEgoForms = [A]
+            , heroStartingHP = hp
+            , heroCardDef = cardDef
+            }
     }
-  }
 
-class (ToJSON a, FromJSON a, Show a, Eq a, Typeable a, HasAbilities a, RunMessage a, IsSource a, HasModifiersFor a) => IsHero a where
+class (ToJSON a, FromJSON a, Show a, Eq a, Typeable a, HasAbilities a, RunMessage a, HasModifiersFor a, IsRef a) => IsHero a where
   toHeroAttrs :: a -> Attrs Hero
-  default toHeroAttrs :: Coercible a (Attrs Hero) => a -> Attrs Hero
+  default toHeroAttrs :: (Coercible a (Attrs Hero)) => a -> Attrs Hero
   toHeroAttrs = coerce
 
 type HeroCard a = CardBuilder IdentityId a
@@ -141,8 +141,5 @@ instance HasCardCode (Attrs Hero) where
 instance HasCardDef (Attrs Hero) where
   getCardDef = heroCardDef
 
-instance IsSource (Attrs Hero) where
-  toSource = IdentitySource . heroIdentityId
-
-instance IsTarget (Attrs Hero) where
-  toTarget = IdentityTarget . heroIdentityId
+instance IsRef (Attrs Hero) where
+  toRef = IdentityRef . heroIdentityId

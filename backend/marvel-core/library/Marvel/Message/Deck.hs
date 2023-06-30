@@ -3,7 +3,7 @@ module Marvel.Message.Deck where
 import Marvel.Prelude
 
 import Marvel.Id
-import Marvel.Target
+import Marvel.Ref
 
 data FromZone = FromDeck | FromHand | FromDiscard | RandomFromHand | FromEncounterDeck
   deriving stock (Show, Eq, Generic)
@@ -36,4 +36,3 @@ data ReturnOption
   | DiscardRest
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
-

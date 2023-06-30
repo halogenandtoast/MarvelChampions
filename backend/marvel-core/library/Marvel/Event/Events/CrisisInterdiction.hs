@@ -1,7 +1,7 @@
-module Marvel.Event.Events.CrisisInterdiction
-  ( crisisInterdiction
-  , CrisisInterdiction(..)
-  ) where
+module Marvel.Event.Events.CrisisInterdiction (
+  crisisInterdiction,
+  CrisisInterdiction (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,15 +15,14 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 
 crisisInterdiction :: EventCard CrisisInterdiction
 crisisInterdiction = event CrisisInterdiction Cards.crisisInterdiction
 
 newtype CrisisInterdiction = CrisisInterdiction (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage CrisisInterdiction where
   runMessage msg e@(CrisisInterdiction attrs) = case msg of
@@ -33,23 +32,26 @@ instance RunMessage CrisisInterdiction where
           handleRest [] = []
           handleRest xs =
             [ Run
-                [ Ask identityId $ ChooseOne
-                    [ TargetLabel
+                [ Ask identityId $
+                    ChooseOne
+                      [ TargetLabel
                         target
                         [ThwartScheme target (toSource attrs) 2]
-                    | x <- xs
-                    , let target = SchemeTarget x
-                    ]
+                      | x <- xs
+                      , let target = toRef x
+                      ]
                 ]
             ]
         schemesWithRest <- removeEach <$> selectList AnyScheme
-        push $ Ask identityId $ ChooseOne
-          [ TargetLabel target
-            $ ThwartScheme target (toSource attrs) 2
-            : handleRest rest
-          | (x, rest) <- schemesWithRest
-          , let target = SchemeTarget x
-          ]
+        push $
+          Ask identityId $
+            ChooseOne
+              [ TargetLabel target $
+                ThwartScheme target (toSource attrs) 2
+                  : handleRest rest
+              | (x, rest) <- schemesWithRest
+              , let target = toRef x
+              ]
         pure e
       _ -> CrisisInterdiction <$> runMessage msg attrs
     _ -> CrisisInterdiction <$> runMessage msg attrs

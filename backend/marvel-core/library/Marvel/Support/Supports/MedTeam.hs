@@ -1,7 +1,7 @@
-module Marvel.Support.Supports.MedTeam
-  ( medTeam
-  , MedTeam(..)
-  ) where
+module Marvel.Support.Supports.MedTeam (
+  medTeam,
+  MedTeam (..),
+) where
 
 import Marvel.Prelude
 
@@ -14,10 +14,9 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Source
+import Marvel.Ref
+import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
-import qualified Marvel.Support.Cards as Cards
-import Marvel.Target
 
 medTeam :: SupportCard MedTeam
 medTeam =
@@ -25,7 +24,7 @@ medTeam =
 
 newtype MedTeam = MedTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities MedTeam where
   getAbilities (MedTeam a) =

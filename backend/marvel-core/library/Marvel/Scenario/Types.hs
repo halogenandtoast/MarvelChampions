@@ -3,6 +3,7 @@ module Marvel.Scenario.Types where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Data.List (find)
 import Data.Typeable
 import Marvel.Card
 import Marvel.Difficulty
@@ -15,16 +16,15 @@ import Marvel.Message
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Window qualified as W
 import System.Random.Shuffle
-import Text.Show qualified
 
-data Scenario = forall a . IsScenario a => Scenario a
+data Scenario = forall a. (IsScenario a) => Scenario a
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsScenario a where
   toScenarioAttrs :: a -> Attrs Scenario
-  default toScenarioAttrs :: Coercible a (Attrs Scenario) => a -> Attrs Scenario
+  default toScenarioAttrs :: (Coercible a (Attrs Scenario)) => a -> Attrs Scenario
   toScenarioAttrs = coerce
 
 instance Show Scenario where
@@ -38,10 +38,13 @@ instance Eq Scenario where
     Just Refl -> a == b
     Nothing -> False
 
-data SomeScenarioCard = forall a . IsScenario a => SomeScenarioCard
-  (ScenarioCard a)
+data SomeScenarioCard
+  = forall a.
+    (IsScenario a) =>
+    SomeScenarioCard
+      (ScenarioCard a)
 
-liftScenarioCard :: (forall a . ScenarioCard a -> b) -> SomeScenarioCard -> b
+liftScenarioCard :: (forall a. ScenarioCard a -> b) -> SomeScenarioCard -> b
 liftScenarioCard f (SomeScenarioCard a) = f a
 
 someScenarioCardCode :: SomeScenarioCard -> CardCode
@@ -77,16 +80,18 @@ instance Entity Scenario where
     ScenarioDifficulty :: Field Scenario Difficulty
     ScenarioSetAsideCards :: Field Scenario [Card]
     ScenarioAccelerationTokens :: Field Scenario Natural
-  field fld s = let ScenarioAttrs {..} = toAttrs s in case fld of
-    ScenarioId -> scenarioId
-    ScenarioVillains -> scenarioVillains
-    ScenarioMainSchemes -> scenarioMainSchemes
-    ScenarioEncounterSets -> scenarioEncounterSets
-    ScenarioEncounterDeck -> scenarioEncounterDeck
-    ScenarioDiscard -> scenarioDiscard
-    ScenarioDifficulty -> scenarioDifficulty
-    ScenarioSetAsideCards -> scenarioSetAsideCards
-    ScenarioAccelerationTokens -> scenarioAccelerationTokens
+  field fld s =
+    let ScenarioAttrs {..} = toAttrs s
+     in case fld of
+          ScenarioId -> scenarioId
+          ScenarioVillains -> scenarioVillains
+          ScenarioMainSchemes -> scenarioMainSchemes
+          ScenarioEncounterSets -> scenarioEncounterSets
+          ScenarioEncounterDeck -> scenarioEncounterDeck
+          ScenarioDiscard -> scenarioDiscard
+          ScenarioDifficulty -> scenarioDifficulty
+          ScenarioSetAsideCards -> scenarioSetAsideCards
+          ScenarioAccelerationTokens -> scenarioAccelerationTokens
   toId = scenarioId . toAttrs
   toAttrs (Scenario a) = toScenarioAttrs a
 
@@ -94,65 +99,68 @@ getScenarioDifficulty :: Scenario -> Difficulty
 getScenarioDifficulty = scenarioDifficulty . toAttrs
 
 discardL :: Lens' (Attrs Scenario) [EncounterCard]
-discardL = lens scenarioDiscard $ \m x -> m { scenarioDiscard = x }
+discardL = lens scenarioDiscard $ \m x -> m {scenarioDiscard = x}
 
 encounterDeckL :: Lens' (Attrs Scenario) [EncounterCard]
 encounterDeckL =
-  lens scenarioEncounterDeck $ \m x -> m { scenarioEncounterDeck = x }
+  lens scenarioEncounterDeck $ \m x -> m {scenarioEncounterDeck = x}
 
 setAsideCardsL :: Lens' (Attrs Scenario) [Card]
 setAsideCardsL =
-  lens scenarioSetAsideCards $ \m x -> m { scenarioSetAsideCards = x }
+  lens scenarioSetAsideCards $ \m x -> m {scenarioSetAsideCards = x}
 
 accelerationTokensL :: Lens' (Attrs Scenario) Natural
 accelerationTokensL =
-  lens scenarioAccelerationTokens $ \m x -> m { scenarioAccelerationTokens = x }
+  lens scenarioAccelerationTokens $ \m x -> m {scenarioAccelerationTokens = x}
 
 mainSchemesL :: Lens' (Attrs Scenario) [CardCode]
-mainSchemesL = lens scenarioMainSchemes $ \m x -> m { scenarioMainSchemes = x }
+mainSchemesL = lens scenarioMainSchemes $ \m x -> m {scenarioMainSchemes = x}
 
-scenario
-  :: (Attrs Scenario -> a)
-  -> CardCode
-  -> [CardCode]
-  -> [CardCode]
-  -> [EncounterSet]
-  -> CardBuilder () a
-scenario f cCode villains mainSchemes encounterSets = CardBuilder
-  { cbCardCode = cCode
-  , cbCardBuilder = \() -> f $ ScenarioAttrs
-    { scenarioId = cCode
-    , scenarioVillains = villains
-    , scenarioMainSchemes = mainSchemes
-    , scenarioEncounterDeck = mempty
-    , scenarioDiscard = mempty
-    , scenarioDifficulty = Normal
-    , scenarioEncounterSets = HashSet.fromList encounterSets
-    , scenarioSetAsideCards = mempty
-    , scenarioAccelerationTokens = 0
+scenario ::
+  (Attrs Scenario -> a) ->
+  CardCode ->
+  [CardCode] ->
+  [CardCode] ->
+  [EncounterSet] ->
+  CardBuilder () a
+scenario f cCode villains mainSchemes encounterSets =
+  CardBuilder
+    { cbCardCode = cCode
+    , cbCardBuilder = \() ->
+        f $
+          ScenarioAttrs
+            { scenarioId = cCode
+            , scenarioVillains = villains
+            , scenarioMainSchemes = mainSchemes
+            , scenarioEncounterDeck = mempty
+            , scenarioDiscard = mempty
+            , scenarioDifficulty = Normal
+            , scenarioEncounterSets = HashSet.fromList encounterSets
+            , scenarioSetAsideCards = mempty
+            , scenarioAccelerationTokens = 0
+            }
     }
-  }
 
 instance RunMessage (Attrs Scenario) where
   runMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
         shuffleM
-        . (<> scenarioEncounterDeck)
-        =<< gatherEncounterSets scenarioEncounterSets
+          . (<> scenarioEncounterDeck)
+          =<< gatherEncounterSets scenarioEncounterSets
       let
         (mainScheme, remainingMainSchemes) = case scenarioMainSchemes of
           [] -> error "No main schemes"
           x : xs -> (x, xs)
-      pushAll
-        $ map AddVillain scenarioVillains
-        <> [AddMainScheme mainScheme, SetupMainScheme, BeginPhase PlayerPhase]
-      pure
-        $ attrs
-        & encounterDeckL
-        .~ encounterCards
-        & mainSchemesL
-        .~ remainingMainSchemes
+      pushAll $
+        map AddVillain scenarioVillains
+          <> [AddMainScheme mainScheme, SetupMainScheme, BeginPhase PlayerPhase]
+      pure $
+        attrs
+          & encounterDeckL
+            .~ encounterCards
+          & mainSchemesL
+            .~ remainingMainSchemes
     NextMainScheme -> do
       let
         (mainScheme, remainingMainSchemes) = case scenarioMainSchemes of
@@ -168,34 +176,35 @@ instance RunMessage (Attrs Scenario) where
       pure $ attrs & encounterDeckL .~ deck'
     BeginPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll
-        $ map (($ BeginTurn) . IdentityMessage) players
-        <> [EndPhase PlayerPhase]
+      pushAll $
+        map (($ BeginTurn) . IdentityMessage) players
+          <> [EndPhase PlayerPhase]
       pure attrs
     EndPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll
-        $ concatMap
-            (\ident -> map
-              (IdentityMessage ident)
-              [DiscardCards, DrawOrDiscardToHandLimit]
-            )
-            players
-        <> map (($ ReadyCards) . IdentityMessage) players
-        <> [BeginPhase VillainPhase]
+      pushAll $
+        concatMap
+          ( \ident ->
+              map
+                (IdentityMessage ident)
+                [DiscardCards, DrawOrDiscardToHandLimit]
+          )
+          players
+          <> map (($ ReadyCards) . IdentityMessage) players
+          <> [BeginPhase VillainPhase]
       pure attrs
     AddAccelerationToken -> do
       pure $ attrs & accelerationTokensL +~ 1
     BeginPhase VillainPhase -> do
       players <- getPlayers
       hazards <- fromIntegral <$> getHazardCount
-      pushAll
-        $ AccelerateMainScheme
-        : map (($ VillainAndMinionsActivate) . IdentityMessage) players
-        <> map DealEncounterCard players
-        <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
-        <> map (($ RevealEncounterCards) . IdentityMessage) players
-        <> [PassFirstPlayer, EndRound]
+      pushAll $
+        AccelerateMainScheme
+          : map (($ VillainAndMinionsActivate) . IdentityMessage) players
+            <> map DealEncounterCard players
+            <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
+            <> map (($ RevealEncounterCards) . IdentityMessage) players
+            <> [PassFirstPlayer, EndRound]
       pure attrs
     EndRound -> do
       pushAll [CheckWindows [W.Window W.When W.RoundEnded], BeginRound]
@@ -205,11 +214,11 @@ instance RunMessage (Attrs Scenario) where
       pure attrs
     EmptyScenarioDeck -> do
       deck' <- shuffleM scenarioDiscard
-      pure
-        $ attrs
-        & (accelerationTokensL +~ 1)
-        & (encounterDeckL .~ deck')
-        & (discardL .~ mempty)
+      pure $
+        attrs
+          & (accelerationTokensL +~ 1)
+          & (encounterDeckL .~ deck')
+          & (discardL .~ mempty)
     DealEncounterCard ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
@@ -228,7 +237,7 @@ instance RunMessage (Attrs Scenario) where
     DealBoost target -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       case target of
-        VillainTarget vid ->
+        VillainRef vid ->
           pushAll $ map (VillainMessage vid . VillainDealtBoost) ecs
         _ -> error "Can not deal boost to target"
       when (null deck') (push EmptyScenarioDeck)
@@ -254,18 +263,16 @@ instance RunMessage (Attrs Scenario) where
           pure $ attrs & encounterDeckL .~ xs & discardL .~ discarded
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      case
-          find ((== cardDef) . getCardDef)
-          $ scenarioEncounterDeck
-          <> scenarioDiscard
-        of
-          Nothing -> do
-            push ShuffleEncounterDeck
-            pure attrs
-          Just card -> do
-            pushAll [RevealEncounterCard ident card, ShuffleEncounterDeck]
-            pure
-              $ attrs
+      case find ((== cardDef) . getCardDef) $
+        scenarioEncounterDeck
+          <> scenarioDiscard of
+        Nothing -> do
+          push ShuffleEncounterDeck
+          pure attrs
+        Just card -> do
+          pushAll [RevealEncounterCard ident card, ShuffleEncounterDeck]
+          pure $
+            attrs
               & (discardL %~ filter (/= card))
               & (encounterDeckL %~ filter (/= card))
     _ -> pure attrs

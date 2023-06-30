@@ -1,7 +1,7 @@
-module Marvel.Question
-  ( module Marvel.Question
-  , module Marvel.Payment
-  ) where
+module Marvel.Question (
+  module Marvel.Question,
+  module Marvel.Payment,
+) where
 
 import Marvel.Prelude
 
@@ -12,9 +12,8 @@ import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Payment
-import Marvel.Source
-import Marvel.Target
-import Marvel.Window (Window(..))
+import Marvel.Ref
+import Marvel.Window (Window (..))
 
 data Question
   = ChooseOne [Choice]
@@ -24,10 +23,10 @@ data Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-newtype Sorted a = Sorted { unSorted :: [a] }
+newtype Sorted a = Sorted {unSorted :: [a]}
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)
 
-newtype Unsorted a = Unsorted { unUnsorted :: [a] }
+newtype Unsorted a = Unsorted {unUnsorted :: [a]}
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)
 
 data ChooseATarget = ChooseAPlayer | TargetMatches EntityMatcher
@@ -80,8 +79,8 @@ data Choice
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-runAbility :: IsTarget a => a -> Natural -> Choice
+runAbility :: (IsRef a) => a -> Natural -> Choice
 runAbility a = RunAbility (toTarget a)
 
-cardLabel :: HasCardCode a => a -> Choice -> Choice
+cardLabel :: (HasCardCode a) => a -> Choice -> Choice
 cardLabel a = CardLabel (toCardCode a)

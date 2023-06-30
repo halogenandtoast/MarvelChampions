@@ -1,7 +1,7 @@
-module Marvel.Upgrade.Upgrades.Indomitable
-  ( indomitable
-  , Indomitable(..)
-  ) where
+module Marvel.Upgrade.Upgrades.Indomitable (
+  indomitable,
+  Indomitable (..),
+) where
 
 import Marvel.Prelude
 
@@ -15,8 +15,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Source
-import Marvel.Target
+import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Window
@@ -26,17 +25,17 @@ indomitable = upgrade Indomitable Cards.indomitable
 
 newtype Indomitable = Indomitable (Attrs Upgrade)
   deriving anyclass (IsUpgrade, HasModifiersFor)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsSource, IsTarget)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Indomitable where
   getAbilities (Indomitable a) =
     [ limitedWindowAbility
-          a
-          1
-          (HeroDefended After (IdentityWithId $ upgradeController a) AnyEnemy)
-          Response
-          OwnsThis
-          NoCost
+        a
+        1
+        (HeroDefended After (IdentityWithId $ upgradeController a) AnyEnemy)
+        Response
+        OwnsThis
+        NoCost
         $ RunAbility (toTarget a) 1
     ]
 
