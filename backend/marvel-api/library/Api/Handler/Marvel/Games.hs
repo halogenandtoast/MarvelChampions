@@ -293,7 +293,7 @@ putApiV1MarvelGameRawR gameId = do
   let
     gameJson = marvelGameCurrentData
     message = gameMessage response
-  let currentQueue = maybe [] stepMessages (NE.head <$> nonEmpty marvelGameSteps)
+  let currentQueue = maybe [] stepMessages (headMay marvelGameSteps)
   gameRef <- liftIO $ newIORef gameJson
   queueRef <- liftIO $ newIORef (message : currentQueue)
   logRef <- liftIO $ newIORef []
