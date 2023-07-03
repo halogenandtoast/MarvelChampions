@@ -7,6 +7,7 @@
     <h2>Active Games</h2>
     <div v-for="game in games" class="game" :key="game.id">
       <div class="game-details">
+        {{game}}
         <router-link class="title" :to="`/games/${game.id}`">{{game.name}}</router-link>
         <div class="game-delete">
           <a href="#delete" @click.prevent="deleteId = game.id"><font-awesome-icon icon="trash" /></a>

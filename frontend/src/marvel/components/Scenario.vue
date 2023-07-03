@@ -88,6 +88,9 @@ const focusedCards = computed(() => props.game.focusedCards)
 
 .player {
   grid-area: player;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .active {
