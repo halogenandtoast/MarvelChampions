@@ -28,6 +28,9 @@ import Yesod.Core.Unsafe qualified as Unsafe
 
 import Orphans ()
 
+getRooms :: HandlerFor App (TVar (Map MarvelGameId Room))
+getRooms = appGameRooms <$> getYesod
+
 data Room = Room
   { roomGameId :: MarvelGameId
   , roomClients :: TVar Int

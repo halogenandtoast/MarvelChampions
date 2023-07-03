@@ -27,7 +27,9 @@ const playCardAction = computed(() => {
 const targetAbility = computed(() => {
   return choices
     .value
-    .findIndex((c) => c.tag === 'TargetLabel' && c.target.contents === props.card.cardId)
+    .findIndex((c) => {
+      return c.tag === 'TargetLabel' && (c.target.contents === props.card.cardId || c.target.contents?.contents == props.card.cardId)
+    })
 })
 
 const activeAbility = computed(() => {

@@ -57,20 +57,14 @@ logger = Just $ DebugLogger pPrint
 
 gameStream :: MarvelGameId -> WebSocketsT Handler ()
 gameStream gameId = catchingConnectionException $ do
-  roomsRef <- appGameRooms <$> lift getYesod
-  (writeChannel, mRoom) <- liftIO $ atomically $ do
-    writeChannel <- getChannelSTM gameId roomsRef
-    rooms <- readTVar roomsRef
-    pure (writeChannel, Map.lookup gameId rooms)
-  case mRoom of
-    Nothing -> sendClose ("Game not found" :: Text)
-    Just room -> do
-      liftIO $ atomically $ modifyTVar' (roomClients room) (+ 1)
-      bracket (liftIO $ atomically $ dupTChan writeChannel) (closeConnection room) $
-        \readChannel ->
-          race_
-            (forever $ liftIO (atomically (readTChan readChannel)) >>= sendTextData)
-            (runConduit $ sourceWS .| mapM_C (liftIO . atomically . writeTChan writeChannel))
+  room <- lift $ getRoom gameId
+  let writeChannel = roomChan room
+  liftIO $ atomically $ modifyTVar' (roomClients room) (+ 1)
+  bracket (liftIO $ atomically $ dupTChan writeChannel) (closeConnection room) $
+    \readChannel ->
+      race_
+        (forever $ liftIO (atomically (readTChan readChannel)) >>= sendTextData)
+        (runConduit $ sourceWS .| mapM_C (liftIO . atomically . writeTChan writeChannel))
  where
   closeConnection room _ = do
     roomsRef <- appGameRooms <$> lift getYesod
@@ -255,7 +249,6 @@ putApiV1MarvelGameR gameId = do
   gameRef <- liftIO $ newIORef gameJson
   queueRef <- liftIO $ newIORef (messages <> currentQueue)
   logRef <- liftIO $ newIORef []
-  writeChannel <- getChannel gameId
   runGameApp (GameApp gameRef queueRef logger) runGameMessages
   ge <- liftIO $ readIORef gameRef
   let
@@ -284,11 +277,7 @@ putApiV1MarvelGameR gameId = do
       WithFriends -> pure ()
 
   apiResponse <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId updatedGame)
-  liftIO $
-    atomically $
-      writeTChan
-        writeChannel
-        (encode $ GameUpdate apiResponse)
+  sendRoom gameId $ GameUpdate apiResponse
 
 newtype RawGameJsonPut = RawGameJsonPut
   { gameMessage :: Message
@@ -308,7 +297,6 @@ putApiV1MarvelGameRawR gameId = do
   gameRef <- liftIO $ newIORef gameJson
   queueRef <- liftIO $ newIORef (message : currentQueue)
   logRef <- liftIO $ newIORef []
-  writeChannel <- getChannel gameId
   runGameApp (GameApp gameRef queueRef Nothing) runGameMessages
   ge <- liftIO $ readIORef gameRef
   updatedQueue <- liftIO $ readIORef queueRef
@@ -325,11 +313,7 @@ putApiV1MarvelGameRawR gameId = do
         updatedLog
         marvelGameMultiplayerVariant
   apiResponse <- runGameApp (GameApp gameRef queueRef Nothing) (toApiGame $ Entity gameId updatedGame)
-  liftIO $
-    atomically $
-      writeTChan
-        writeChannel
-        (encode $ GameUpdate apiResponse)
+  sendRoom gameId $ GameUpdate apiResponse
   void $ runDB $ replace gameId updatedGame
 
 deleteApiV1MarvelGameR :: MarvelGameId -> Handler ()
