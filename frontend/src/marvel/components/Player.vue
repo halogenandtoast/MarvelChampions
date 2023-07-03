@@ -185,7 +185,7 @@ const toggleDebug = inject('toggleDebug')
     </div>
     <div>
       <div class="identityCard">
-        <img :src="playerImg" alt="player" width="150" class="identityCardImg" :class="{ exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" />
+        <img :src="playerImg" alt="player" width="150" class="identityCardImg" :class="{ card, exhausted: player.exhausted, active: activeAbility !== -1 }" @click="emit('choose', activeAbility)" data-role="card" />
         <div class="info">
           <div>HP: {{player.hp - player.damage}}</div>
           <div v-if="player.stunned">stunned</div>
