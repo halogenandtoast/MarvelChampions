@@ -10,7 +10,7 @@ import Control.Concurrent.STM (STM, atomically)
 import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM.TVar
 import Control.Monad.Random (MonadRandom (..))
-import Data.ByteString.Lazy qualified as BSL
+import Data.Aeson (encode)
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet (HashSet)
@@ -181,22 +181,29 @@ findRoom gameId roomsRef = do
   rooms <- readTVar roomsRef
   pure $ Map.lookup gameId rooms
 
-getChannel :: MarvelGameId -> Handler (TChan BSL.ByteString)
-getChannel gameId = do
-  roomsRef <- appGameRooms <$> getYesod
-  liftIO $ atomically $ getChannelSTM gameId roomsRef
+sendRoom :: (ToJSON a) => MarvelGameId -> a -> Handler ()
+sendRoom gameId msg = do
+  rooms <- getRooms
+  liftIO $ atomically $ do
+    room <- getRoomSTM gameId rooms
+    writeTChan (roomChan room) (encode msg)
 
-getChannelSTM :: MarvelGameId -> TVar (Map.Map MarvelGameId Room) -> STM (TChan BSL.ByteString)
-getChannelSTM gameId roomsRef = do
+getRoom :: MarvelGameId -> Handler Room
+getRoom gameId = do
+  roomsRef <- appGameRooms <$> getYesod
+  liftIO $ atomically $ getRoomSTM gameId roomsRef
+
+getRoomSTM :: MarvelGameId -> TVar (Map.Map MarvelGameId Room) -> STM Room
+getRoomSTM gameId roomsRef = do
   mRoom <- findRoom gameId roomsRef
   case mRoom of
-    Just room -> pure $ roomChan room
+    Just room -> pure room
     Nothing -> do
       chan <- newBroadcastTChan
       clients <- newTVar 0
       let room = Room gameId clients chan
       modifyTVar' roomsRef $ Map.insert gameId room
-      pure chan
+      pure room
 
 toDeck :: MarvelDBDecklist -> IO Deck
 toDeck =

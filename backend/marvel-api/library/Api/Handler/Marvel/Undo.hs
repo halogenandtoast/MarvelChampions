@@ -5,11 +5,9 @@ module Api.Handler.Marvel.Undo (
 import Import hiding (delete, (==.))
 
 import Api.Marvel.Helpers
-import Control.Concurrent.STM.TChan
 import Control.Lens (view)
 import Data.Coerce (coerce)
 import Data.IORef
-import GHC.Conc (atomically)
 import Json
 import Marvel.Debug
 import Marvel.Game
@@ -28,9 +26,7 @@ putApiV1MarvelGameUndoR gameId = do
   case marvelGameSteps of
     [] -> pure ()
     [_] -> pure () -- can't undo the initial change
-    step : remaining -> do
-      writeChannel <- getChannel gameId
-
+    step : remaining ->
       case patch marvelGameCurrentData (stepPatchDown step) of
         Error e -> error $ show e
         Success ge -> do
@@ -45,11 +41,7 @@ putApiV1MarvelGameUndoR gameId = do
           gameRef <- liftIO $ newIORef ge
           queueRef <- liftIO $ newIORef []
           apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId game')
-          liftIO $
-            atomically $
-              writeTChan
-                writeChannel
-                (encode $ GameUpdate apiResponse)
+          sendRoom gameId (GameUpdate apiResponse)
           runDB $ do
             replace gameId game'
             replace pid $

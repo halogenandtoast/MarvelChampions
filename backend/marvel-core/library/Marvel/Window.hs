@@ -114,7 +114,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           liftA2
             (&&)
-            (enemyMatches enemyMatcher (EnemyMinionId minionId))
+            (enemyMatches (DefeatedEnemy enemyMatcher) (EnemyMinionId minionId))
             (damageMatches damageMatcher damage)
     DefeatedVillain villainId damage
       | windowTiming w == timing ->

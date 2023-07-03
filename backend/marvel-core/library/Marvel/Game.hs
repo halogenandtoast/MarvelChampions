@@ -1183,22 +1183,32 @@ gameSelectAttachment m = do
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
 
--- TODO: can not remember what specifically wanted removed villains/minions
+-- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
   villains <- HashMap.elems <$> getsGame gameVillains
   minions <- HashMap.elems <$> getsGame gameMinions
-  -- removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
-  -- removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
-  -- villains' <- map (EnemyVillainId . toId)
-  --   <$> filterM (`goVillain` m) (villains <> removedVillains)
-  -- minions' <- map (EnemyMinionId . toId)
-  --   <$> filterM (`goMinion` m) (minions <> removedMinions)
-  villains' <- map (EnemyVillainId . toId) <$> filterM (`goVillain` m) villains
-  minions' <- map (EnemyMinionId . toId) <$> filterM (`goMinion` m) minions
+  removedVillains <-
+    if includeRemoved
+      then HashMap.elems <$> getsGame (view (removedEntitiesL . villainsL))
+      else pure []
+  removedMinions <-
+    if includeRemoved
+      then HashMap.elems <$> getsGame (view (removedEntitiesL . minionsL))
+      else pure []
+  villains' <-
+    map (EnemyVillainId . toId)
+      <$> filterM (`goVillain` m) (villains <> removedVillains)
+  minions' <-
+    map (EnemyMinionId . toId)
+      <$> filterM (`goMinion` m) (minions <> removedMinions)
   pure $ HashSet.fromList (villains' <> minions')
  where
+  includeRemoved = case m of
+    DefeatedEnemy _ -> True
+    _ -> False
   goVillain e = \case
+    DefeatedEnemy m' -> goVillain e m'
     EnemyWithId enemyId -> pure $ case enemyId of
       EnemyVillainId villainId -> toId e == villainId
       EnemyMinionId _ -> False
@@ -1215,6 +1225,7 @@ gameSelectEnemy m = do
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
   goMinion e = \case
+    DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
       EnemyVillainId _ -> False
       EnemyMinionId minionId -> toId e == minionId

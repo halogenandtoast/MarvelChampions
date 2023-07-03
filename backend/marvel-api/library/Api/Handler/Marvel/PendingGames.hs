@@ -5,14 +5,11 @@ module Api.Handler.Marvel.PendingGames (
 import Import hiding ((==.))
 
 import Api.Marvel.Helpers
-import Control.Concurrent.STM.TChan
 import Control.Monad (when)
-import Data.Aeson
 import Data.Coerce (coerce)
 import Data.IORef
 import Data.List.NonEmpty (nonEmpty)
 import Data.List.NonEmpty qualified as NE
-import GHC.Conc (atomically)
 import GHC.Generics (Generic)
 import Marvel.Debug
 import Marvel.Entity
@@ -62,12 +59,7 @@ putApiV1MarvelPendingGameR gameId = do
 
   apiResponse <- runGameApp (GameApp gameRef queueRef logger) (toApiGame $ Entity gameId game')
 
-  writeChannel <- getChannel gameId
-  liftIO $
-    atomically $
-      writeTChan writeChannel $
-        encode $
-          GameUpdate apiResponse
+  sendRoom gameId $ GameUpdate apiResponse
 
   runDB $ replace gameId game'
 

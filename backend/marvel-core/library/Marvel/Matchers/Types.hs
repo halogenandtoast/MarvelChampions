@@ -52,8 +52,9 @@ instance Semigroup IdentityMatcher where
 
 pattern IdentityWithAnyDamage :: IdentityMatcher
 pattern IdentityWithAnyDamage <-
-  IdentityWithDamage (GreaterThan (Static 0)) where
-  IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
+  IdentityWithDamage (GreaterThan (Static 0))
+  where
+    IdentityWithAnyDamage = IdentityWithDamage (GreaterThan (Static 0))
 
 data AllyMatcher
   = UnexhaustedAlly
@@ -70,8 +71,9 @@ data AllyMatcher
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 pattern AllyWithAnyUses :: AllyMatcher
-pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0)) where
-  AllyWithAnyUses = AllyWithUses (GreaterThan (Static 0))
+pattern AllyWithAnyUses <- AllyWithUses (GreaterThan (Static 0))
+  where
+    AllyWithAnyUses = AllyWithUses (GreaterThan (Static 0))
 
 instance Semigroup AllyMatcher where
   AnyAlly <> x = x
@@ -87,12 +89,14 @@ data SupportMatcher
   | SupportWithUses GameValueMatcher
 
 pattern SupportWithAnyUses :: SupportMatcher
-pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0)) where
-  SupportWithAnyUses = SupportWithUses (GreaterThan (Static 0))
+pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))
+  where
+    SupportWithAnyUses = SupportWithUses (GreaterThan (Static 0))
 
 pattern UpgradeWithAnyUses :: UpgradeMatcher
-pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0)) where
-  UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
+pattern UpgradeWithAnyUses <- UpgradeWithUses (GreaterThan (Static 0))
+  where
+    UpgradeWithAnyUses = UpgradeWithUses (GreaterThan (Static 0))
 
 upgradeControlledBy :: IdentityId -> UpgradeMatcher
 upgradeControlledBy = UpgradeControlledBy . IdentityWithId
@@ -128,6 +132,7 @@ data EnemyMatcher
   | UndefendedEnemy
   | EnemyWithUpgrade UpgradeMatcher
   | EnemyMatches [EnemyMatcher]
+  | DefeatedEnemy EnemyMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -141,8 +146,9 @@ instance Semigroup EnemyMatcher where
 
 pattern VillainWithAnyDamage :: VillainMatcher
 pattern VillainWithAnyDamage <-
-  VillainWithDamage (GreaterThan (Static 0)) where
-  VillainWithAnyDamage = VillainWithDamage (GreaterThan (Static 0))
+  VillainWithDamage (GreaterThan (Static 0))
+  where
+    VillainWithAnyDamage = VillainWithDamage (GreaterThan (Static 0))
 
 data VillainMatcher
   = ActiveVillain
@@ -194,8 +200,9 @@ data GameValueMatcher = AnyValue | GreaterThan GameValue | AtLeast GameValue
 
 pattern CharacterWithAnyDamage :: CharacterMatcher
 pattern CharacterWithAnyDamage <-
-  CharacterWithDamage (GreaterThan (Static 0)) where
-  CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
+  CharacterWithDamage (GreaterThan (Static 0))
+  where
+    CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
 
 data CharacterMatcher
   = CharacterWithDamage GameValueMatcher
