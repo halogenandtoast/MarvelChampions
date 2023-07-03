@@ -7,6 +7,7 @@ import Marvel.Ability.Types
 import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Marvel.Card.Types
 import Marvel.Entity
 import Marvel.Id hiding (SupportId)
 import Marvel.Id as X (SupportId)
@@ -112,6 +113,16 @@ discardIfNoUsesL =
 instance HasCardCode (Attrs Support) where
   toCardCode = toCardCode . supportCardDef
 
+instance IsCard (Attrs Support) where
+  toCard a =
+    PlayerCard $
+      MkPlayerCard
+        { pcCardId = CardId . unSupportId $ supportId a
+        , pcCardDef = supportCardDef a
+        , pcOwner = Just $ supportController a
+        , pcController = Just $ supportController a
+        }
+
 supportWith ::
   (Attrs Support -> a) ->
   CardDef ->
@@ -149,6 +160,6 @@ instance RunMessage (Attrs Support) where
       SpendSupportUse -> do
         when
           (supportUses a == 1 && supportDiscardIfNoUses a)
-          (push $ RemoveFromPlay (toTarget a))
+          (pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)])
         pure $ a & usesL -~ 1
     _ -> pure a
