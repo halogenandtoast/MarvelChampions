@@ -68,6 +68,7 @@ instance Entity Minion where
   data Attrs Minion = MinionAttrs
     { minionId :: MinionId
     , minionCardDef :: CardDef
+    , minionOriginalCardDef :: CardDef
     , minionDamage :: Natural
     , minionHitPoints :: HP Natural
     , minionScheme :: Sch
@@ -202,6 +203,7 @@ minion f cardDef sch atk hp =
           MinionAttrs
             { minionId = mid
             , minionCardDef = cardDef
+            , minionOriginalCardDef = cardDef
             , minionDamage = 0
             , minionAttack = atk
             , minionScheme = sch

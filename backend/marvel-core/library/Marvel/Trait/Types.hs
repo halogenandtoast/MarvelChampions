@@ -16,6 +16,7 @@ data Trait
   | Criminal
   | Defender
   | Defense
+  | Drone
   | Elite
   | Gamma
   | Genius

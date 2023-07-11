@@ -169,6 +169,7 @@ library
       Marvel.Minion.Cards
       Marvel.Minion.Minions
       Marvel.Minion.Minions.ArmoredGuard
+      Marvel.Minion.Minions.Drone
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.Killmonger

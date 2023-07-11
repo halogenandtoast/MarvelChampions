@@ -18,7 +18,7 @@ import Marvel.Treachery.Cards
 
 allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
-  allAttachments <> allMinions <> allTreacheries <> allSideSchemes
+  allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions
 
 gatherEncounterSets ::
   (MonadRandom m) => HashSet EncounterSet -> m [EncounterCard]
