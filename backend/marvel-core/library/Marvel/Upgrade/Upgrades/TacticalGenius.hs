@@ -31,12 +31,10 @@ instance HasAbilities TacticalGenius where
 
 instance RunMessage TacticalGenius where
   runMessage msg u@(TacticalGenius attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> thwartGuard u $ do
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> thwartGuard u $ do
       modifiers <- getModifiers attrs
       let dmg = if LastSpecial `elem` modifiers then 2 else 1
-      msgs <-
-        choiceMessages (upgradeController attrs) $
-          RemoveThreat (toRef attrs) dmg ThwartableScheme
+      msgs <- choiceMessages ident $ RemoveThreat (toRef attrs) dmg ThwartableScheme
       pushAll msgs
       pure u
     _ -> TacticalGenius <$> runMessage msg attrs

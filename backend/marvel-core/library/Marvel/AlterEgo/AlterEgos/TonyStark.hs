@@ -42,10 +42,10 @@ instance HasAbilities TonyStark where
 
 instance RunMessage TonyStark where
   runMessage msg ae@(TonyStark a) = case msg of
-    RanAbility (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage (alterEgoIdentityId a) $
+    RanAbility ident (isTarget a -> True) 1 _ _ -> do
+      push . IdentityMessage ident $
         Search
-          (SearchIdentityDeck (alterEgoIdentityId a) $ TopOfDeck 3)
+          (SearchIdentityDeck ident $ TopOfDeck 3)
           AnyCard
           SearchDrawOne
           DiscardRest

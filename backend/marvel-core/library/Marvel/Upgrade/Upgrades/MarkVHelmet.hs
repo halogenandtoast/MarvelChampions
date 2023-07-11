@@ -41,8 +41,7 @@ instance HasAbilities MarkVHelmet where
 
 instance RunMessage MarkVHelmet where
   runMessage msg u@(MarkVHelmet attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> thwartGuard u $ do
-      let ident = upgradeController attrs
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> thwartGuard u $ do
       aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
       schemes <- selectList ThwartableScheme
       if aerial

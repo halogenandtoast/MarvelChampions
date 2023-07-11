@@ -42,13 +42,12 @@ instance HasAbilities PoweredGauntlets where
 
 instance RunMessage PoweredGauntlets where
   runMessage msg u@(PoweredGauntlets attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> do
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       aerial <-
         selectAny
-          (IdentityWithId (upgradeController attrs) <> IdentityWithTrait Aerial)
+          (IdentityWithId ident <> IdentityWithTrait Aerial)
       let
         dmg = if aerial then 2 else 1
-        ident = upgradeController attrs
       enemies <- selectList AttackableEnemy
       chooseOne ident $
         map

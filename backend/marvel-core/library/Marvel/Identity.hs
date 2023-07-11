@@ -376,7 +376,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             , DrawOrDiscardToHandLimit
             ]
             <> map
-              (\a -> RanAbility (toTarget pid) (abilityIndex a) [] NoPayment)
+              (\a -> RanAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment)
               setupAbilities
       pure pid
     BeginTurn -> do

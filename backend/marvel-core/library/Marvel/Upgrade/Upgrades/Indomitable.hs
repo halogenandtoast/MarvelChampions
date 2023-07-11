@@ -41,10 +41,10 @@ instance HasAbilities Indomitable where
 
 instance RunMessage Indomitable where
   runMessage msg u@(Indomitable attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> do
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       pushAll
-        [ RemoveFromPlay target
-        , IdentityMessage (upgradeController attrs) ReadiedIdentity
+        [ RemoveFromPlay (toRef u)
+        , IdentityMessage ident ReadiedIdentity
         ]
       pure u
     _ -> Indomitable <$> runMessage msg attrs

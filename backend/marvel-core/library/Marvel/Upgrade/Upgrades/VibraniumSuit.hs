@@ -35,11 +35,10 @@ instance HasAbilities VibraniumSuit where
 
 instance RunMessage VibraniumSuit where
   runMessage msg u@(VibraniumSuit attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> do
-      let ident = upgradeController attrs
-      stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
+      stunned <- selectAny $ IdentityWithId ident <> StunnedIdentity
       if stunned
-        then push (IdentityMessage ident IdentityRemoveStunned)
+        then push $ IdentityMessage ident IdentityRemoveStunned
         else do
           modifiers <- getModifiers attrs
           sustainedDamage <-

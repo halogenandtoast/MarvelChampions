@@ -54,7 +54,7 @@ instance RunMessage Charge where
         push $ VillainMessage villainId $ AttachedToVillain ident
         pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> Charge <$> runMessage msg attrs
-    RanAbility (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
+    RanAbility _ (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyVillainId vid) -> do
         replaceMatchingMessage
           ( const

@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.Whirlwind
-  ( whirlwind
-  , Whirlwind(..)
-  ) where
+module Marvel.Minion.Minions.Whirlwind (
+  whirlwind,
+  Whirlwind (..),
+) where
 
 import Marvel.Prelude
 
@@ -29,33 +29,36 @@ newtype Whirlwind = Whirlwind (Attrs Minion)
 instance HasAbilities Whirlwind where
   getAbilities (Whirlwind a) =
     [ windowAbility
-          a
-          1
-          (EnemyAttacked When (EnemyWithId $ EnemyMinionId $ minionId a) You)
-          ForcedResponse
-          NoCost
+        a
+        1
+        (EnemyAttacked When (EnemyWithId $ EnemyMinionId $ minionId a) You)
+        ForcedResponse
+        NoCost
         $ RunAbility (toTarget a) 1
     ]
 
 instance RunMessage Whirlwind where
   runMessage msg e@(Whirlwind attrs) = case msg of
-    RanAbility target 1 [EnemyAttack _ ident] _ | isTarget attrs target -> do
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       otherPlayers <- L.delete ident <$> getPlayers
-      for_ otherPlayers $ \other -> pushAll
-        [ DeclareDefense other (toEnemyId attrs) AnyDefense
-        , MinionMessage (minionId attrs) MinionAttacked
-        ]
+      for_ otherPlayers $ \other ->
+        pushAll
+          [ DeclareDefense other (toEnemyId attrs) AnyDefense
+          , MinionMessage (minionId attrs) MinionAttacked
+          ]
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         players <- getPlayers
-        e <$ pushAll
-          (map
-            (\ident -> IdentityMessage
-              ident
-              (IdentityDamaged (toSource attrs) (toDamage 1 FromAbility))
+        e
+          <$ pushAll
+            ( map
+                ( \ident ->
+                    IdentityMessage
+                      ident
+                      (IdentityDamaged (toSource attrs) (toDamage 1 FromAbility))
+                )
+                players
             )
-            players
-          )
       _ -> Whirlwind <$> runMessage msg attrs
     _ -> Whirlwind <$> runMessage msg attrs
