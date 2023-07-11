@@ -3,16 +3,23 @@ module Marvel.Villain.Villains.Ultron where
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Choice
+import Marvel.Cost
 import Marvel.Difficulty
 import Marvel.Entity
 import Marvel.Game.Source -- Would like to remove
 import Marvel.GameValue.Types
 import Marvel.Hp
+import Marvel.Id
+import Marvel.Matchers
 import Marvel.Message
+import Marvel.Question
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Stats
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types
+import Marvel.Window
 
 newtype Ultron = Ultron (Attrs Villain)
   deriving anyclass (IsVillain)
@@ -32,13 +39,13 @@ ultron3 = villain Ultron Cards.ultron1 (Sch 2) (Atk 4) (HP $ PerPlayer 27)
 
 instance HasAbilities Ultron where
   getAbilities (Ultron a) = case villainStage a of
-    1 -> []
+    1 -> [windowAbility a 1 (EnemyAttacked After (EnemyWithId $ EnemyVillainId $ villainId a) You) ForcedResponse NoCost (RunAbility (toTarget a) 1)]
     2 -> []
     3 -> []
     _ -> error "Invalid stage"
 
 instance RunMessage Ultron where
-  runMessage msg (Ultron attrs) = case msg of
+  runMessage msg e@(Ultron attrs) = case msg of
     VillainMessage ident msg' | ident == villainId attrs -> case msg' of
       VillainDefeated -> do
         difficulty <- getDifficulty
@@ -53,4 +60,14 @@ instance RunMessage Ultron where
           (_, 3) -> Ultron <$> runMessage msg attrs
           (_, _) -> error "Invalid ultron progression"
       _ -> Ultron <$> runMessage msg attrs
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
+      case villainStage attrs of
+        1 -> do
+          chooseOne
+            ident
+            [ Label "Place 1 threat on the main scheme" [PlaceThreat (toRef attrs) 1 MainScheme]
+            , Label "Put the top card of your deck into play facedown, engaged with you as a [[Drone]] minion" []
+            ]
+        _ -> error "Invalid choice"
+      pure e
     _ -> Ultron <$> runMessage msg attrs

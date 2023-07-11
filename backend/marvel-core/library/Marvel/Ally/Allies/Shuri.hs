@@ -27,10 +27,10 @@ instance HasAbilities Shuri where
 
 instance RunMessage Shuri where
   runMessage msg a@(Shuri attrs) = case msg of
-    RanAbility (isTarget a -> True) 1 _ _ -> do
-      push . controllerMessage a $
+    RanAbility ident (isTarget a -> True) 1 _ _ -> do
+      push . IdentityMessage ident $
         Search
-          (SearchIdentityDeck (controller a) AllOfDeck)
+          (SearchIdentityDeck ident AllOfDeck)
           (CardWithType UpgradeType)
           SearchDrawOne
           ShuffleBackIn

@@ -1,7 +1,7 @@
-module Marvel.Minion.Minions.YonRogg
-  ( yonRogg
-  , YonRogg(..)
-  ) where
+module Marvel.Minion.Minions.YonRogg (
+  yonRogg,
+  YonRogg (..),
+) where
 
 import Marvel.Prelude
 
@@ -27,19 +27,20 @@ newtype YonRogg = YonRogg (Attrs Minion)
 instance HasAbilities YonRogg where
   getAbilities (YonRogg a) =
     [ windowAbility
-          a
-          1
-          (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ minionId a) You)
-          ForcedResponse
-          NoCost
+        a
+        1
+        (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ minionId a) You)
+        ForcedResponse
+        NoCost
         $ RunAbility (toTarget a) 1
     ]
 
 instance RunMessage YonRogg where
   runMessage msg e@(YonRogg attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> do
-      mThePsycheMagnitron <- selectOne
-        $ SideSchemeIs SideSchemes.thePsycheMagnitron
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
+      mThePsycheMagnitron <-
+        selectOne $
+          SideSchemeIs SideSchemes.thePsycheMagnitron
       for_ mThePsycheMagnitron $ \thePsycheMagnitron ->
         push $ SideSchemeMessage thePsycheMagnitron $ SideSchemePlaceThreat 1
       pure e

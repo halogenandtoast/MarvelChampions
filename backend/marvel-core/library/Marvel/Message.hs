@@ -81,7 +81,7 @@ data Message
   | AttachmentMessage AttachmentId AttachmentMessage
   | Ask IdentityId Question
   | UsedAbility IdentityId Ability
-  | RanAbility Target Natural [WindowType] Payment
+  | RanAbility IdentityId Target Natural [WindowType] Payment
   | SearchFoundCards Target [Card]
   | DiscardTopOfEncounterDeck Natural (Maybe Target)
   | WithDiscarded Target FromZone [Card]

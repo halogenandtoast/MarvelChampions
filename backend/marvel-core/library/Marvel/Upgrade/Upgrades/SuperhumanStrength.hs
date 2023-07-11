@@ -52,11 +52,8 @@ getEnemyTarget (_ : xs) = getEnemyTarget xs
 
 instance RunMessage SuperhumanStrength where
   runMessage msg u@(SuperhumanStrength attrs) = case msg of
-    RanAbility target 1 windows _ | isTarget attrs target -> do
-      let enemyTarget = getEnemyTarget windows
-      stunMsgs <-
-        choiceMessages (upgradeController attrs) $
-          Stun enemyTarget (toSource attrs)
-      pushAll $ RemoveFromPlay target : stunMsgs
+    RanAbility ident (isTarget attrs -> True) 1 (getEnemyTarget -> enemyTarget) _ -> do
+      stunMsgs <- choiceMessages ident $ Stun enemyTarget (toSource attrs)
+      pushAll $ RemoveFromPlay (toRef u) : stunMsgs
       pure u
     _ -> SuperhumanStrength <$> runMessage msg attrs

@@ -55,7 +55,7 @@ getDetails (_ : xs) = getDetails xs
 
 instance RunMessage JenniferWalters where
   runMessage msg a@(JenniferWalters attrs) = case msg of
-    RanAbility (isTarget attrs -> True) 1 (getDetails -> (schemeId, n)) _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 (getDetails -> (schemeId, n)) _ -> do
       let
         newMsg = case schemeId of
           SchemeMainSchemeId sid ->

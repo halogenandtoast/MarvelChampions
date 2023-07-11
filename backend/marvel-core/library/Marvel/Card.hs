@@ -1,7 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-module Marvel.Card
-  ( module X
-  ) where
+
+module Marvel.Card (
+  module X,
+) where
 
 import Marvel.Prelude
 

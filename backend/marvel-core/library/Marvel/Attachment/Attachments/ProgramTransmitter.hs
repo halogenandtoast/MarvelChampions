@@ -47,7 +47,7 @@ instance RunMessage ProgramTransmitter where
         push $ VillainMessage villainId $ AttachedToVillain ident
         pure . ProgramTransmitter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> ProgramTransmitter <$> runMessage msg attrs
-    RanAbility (isTarget attrs -> True) 1 _ _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       sideSchemes <- selectList AnySideScheme
       pushAll [SideSchemeMessage sideScheme $ SideSchemePlaceThreat 1 | sideScheme <- sideSchemes]
       pure a

@@ -57,7 +57,7 @@ instance RunMessage WebbedUp where
             enemies
         pure u
       _ -> WebbedUp <$> runMessage msg a
-    RanAbility target 1 _ _ | isTarget a target -> do
+    RanAbility _ (isTarget a -> True) 1 _ _ -> do
       case upgradeAttachedEnemy a of
         Just enemyId -> do
           replaceMatchingMessage

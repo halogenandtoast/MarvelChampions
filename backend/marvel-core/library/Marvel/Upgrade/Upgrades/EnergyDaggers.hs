@@ -36,7 +36,7 @@ instance HasAbilities EnergyDaggers where
 
 instance RunMessage EnergyDaggers where
   runMessage msg u@(EnergyDaggers attrs) = case msg of
-    RanAbility target 1 _ _ | isTarget attrs target -> do
+    RanAbility ident target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
       villain <- selectJust ActiveVillain
       minionMap <-
@@ -51,21 +51,21 @@ instance RunMessage EnergyDaggers where
       let
         dmg =
           toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
-      u
-        <$ chooseOne
-          (upgradeController attrs)
-          [ TargetLabel
-            (toRef ident)
-            [ Run $
-                VillainMessage villain (VillainDamaged (toSource attrs) dmg)
-                  : map
-                    ( \minionId ->
-                        MinionMessage
-                          minionId
-                          (MinionDamaged (toSource attrs) dmg)
-                    )
-                    (HashMap.findWithDefault [] ident minionMap)
-            ]
-          | ident <- players
+      chooseOne
+        ident
+        [ TargetLabel
+          (toRef ident')
+          [ Run $
+              VillainMessage villain (VillainDamaged (toSource attrs) dmg)
+                : map
+                  ( \minionId ->
+                      MinionMessage
+                        minionId
+                        (MinionDamaged (toSource attrs) dmg)
+                  )
+                  (HashMap.findWithDefault [] ident' minionMap)
           ]
+        | ident' <- players
+        ]
+      pure u
     _ -> EnergyDaggers <$> runMessage msg attrs
