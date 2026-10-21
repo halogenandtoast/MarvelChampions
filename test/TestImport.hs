@@ -9,6 +9,7 @@ import Data.Text qualified as T
 import Data.Vector qualified as Vector
 import Marvel.MainScheme.Types (getMainSchemeThreat)
 import Marvel.Scenario.Types (scenarioDiscard)
+import Marvel.SideScheme.Types (getSideSchemeThreat)
 import Marvel.Card.Id (CardId (..))
 import Data.IORef as X
 import Marvel.Decklist as X
@@ -422,3 +423,31 @@ isLabelStarting :: Text -> Choice -> Bool
 isLabelStarting l = \case
   Label l' _ -> l `T.isPrefixOf` l'
   _ -> False
+
+-- | Whether the choice uses the ability with this label.
+isNamedAbility :: Text -> Choice -> Bool
+isNamedAbility l = \case
+  UseAbility ab -> abilityLabel ab == Just l
+  _ -> False
+
+-- | Whether the choice is the player defending against this enemy.
+isDefend :: Choice -> Bool
+isDefend = \case
+  Defend _ -> True
+  _ -> False
+
+isEndTurn :: Choice -> Bool
+isEndTurn = \case
+  EndTurn -> True
+  _ -> False
+
+mainSchemeIdNow :: GameAppT MainSchemeId
+mainSchemeIdNow = getsGame (HashMap.keys . gameMainSchemes) >>= \case
+  [m] -> pure m
+  _ -> error "expected one main scheme"
+
+sideSchemeThreat :: SideSchemeId -> GameAppT Natural
+sideSchemeThreat sid = getsGame (maybe 0 getSideSchemeThreat . HashMap.lookup sid . gameSideSchemes)
+
+supportOf :: PlayerCard -> SupportId
+supportOf = SupportId . unCardId . pcCardId
