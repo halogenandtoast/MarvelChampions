@@ -61,6 +61,7 @@ export interface PlayerView {
   discard: CardView[]
   dealtEncounterCards: number
   allies: AllyView[]
+  allyLimit: number
   supports: SupportView[]
   upgrades: UpgradeView[]
   engagedMinions: string[]

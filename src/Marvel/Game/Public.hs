@@ -106,6 +106,7 @@ data PlayerView = PlayerView
   , discard :: [CardView]
   , dealtEncounterCards :: Int
   , allies :: [AllyView]
+  , allyLimit :: Natural
   , supports :: [SupportView]
   , upgrades :: [UpgradeView]
   -- ^ on the identity itself
@@ -303,6 +304,7 @@ gameView seesHand g = do
         otherCode = maybe (toCardCode p) sideCode (HashMap.lookup other a.playerIdentitySides)
     hp <- getModifiedHp p
     hs <- getModifiedHandSize p
+    allyLimit <- getModifiedAllyLimit p
     (thw, atk, def, rec) <- case currentIdentity p of
       HeroSide h -> do
         let ha = toAttrs h
@@ -333,6 +335,7 @@ gameView seesHand g = do
         , discard = map (cardView . PlayerCard) (unDiscard a.playerIdentityDiscard)
         , dealtEncounterCards = length a.playerIdentityEncounterCards
         , allies
+        , allyLimit
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
         , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy
         , engagedMinions = HashSet.toList a.playerIdentityMinions

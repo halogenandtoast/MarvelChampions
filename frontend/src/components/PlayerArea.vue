@@ -18,6 +18,7 @@ const { player, minions = [], active = false, compact = false } = defineProps<{
 }>()
 const { t } = useI18n()
 
+const openAllySlots = computed(() => Math.max(0, (player.allyLimit ?? 0) - (player.allies?.length ?? 0)))
 const hero = computed(() => player.form === 'hero')
 const stats = computed(() =>
   (
@@ -82,7 +83,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
       </div>
     </div>
 
-    <div class="zone allies" :class="{ empty: !player.allies?.length }">
+    <div class="zone allies">
       <span class="zone-label">{{ t('game.zones.allies') }}</span>
       <div class="cards">
         <BoardCard
@@ -100,6 +101,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :tough="ally.tough"
           :attached="ally.upgrades ?? []"
         />
+        <!-- a free slot for each ally still allowed -->
+        <span v-for="n in openAllySlots" :key="`slot-${n}`" class="ally-slot" />
       </div>
     </div>
 
@@ -176,6 +179,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .minion { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
 .zone.engaged .zone-label { color: #e48b91; }
 .zone.allies { flex: 1 1 auto; }
+.ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }
 .piles { display: flex; gap: 10px; margin-left: auto; flex: none; padding-top: 18px; }
 .compact { padding: 10px 12px; }
 </style>
