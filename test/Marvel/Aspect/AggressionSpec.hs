@@ -79,6 +79,20 @@ spec = describe "Aggression" do
         -- healed before the consequential damage is dealt, so she ends with 1
         (.allyDamage) <$> allyIn "01051" `shouldReturn` 1
 
+    it "has nothing to heal when undamaged: her response comes before the consequential damage" do
+      tg <- testGame ["she-hulk"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        putIntoPlay p "01051"
+        mercenary <- addMinion p Cards.hydraMercenary
+        tigra <- allyIn "01051"
+        resolve [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
+        choose "attack with Tigra" (isAllyAttack tigra)
+        choose "attack the mercenary" (isTargetChoice mercenary)
+        offers (isAbilityOf (allyId tigra)) `shouldReturn` False
+        (.allyDamage) <$> allyIn "01051" `shouldReturn` 1
+
   describe "Chase Them Down (01052)" do
     it "removes 2 threat after the hero attacks and defeats an enemy" do
       tg <- testGame ["she-hulk"]
