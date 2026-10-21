@@ -9,6 +9,7 @@ import { useCards, type Back } from '../cards'
 import CardFace from './CardFace.vue'
 import ChoiceMenu from './ChoiceMenu.vue'
 import StatusTokens from './StatusTokens.vue'
+import TokenStack from './TokenStack.vue'
 
 export interface Attached {
   id: string
@@ -117,9 +118,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <CardFace :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag">{{ flag }}</span>
       <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
-      <span v-if="threat !== null" class="token threat" :title="$t('game.threatOn', { count: threat })">{{ threat }}</span>
-      <span v-if="damage > 0" class="token damage" :title="$t('game.damageOn', { count: damage })">{{ damage }}</span>
-      <span v-if="counters" class="token counters" :title="$t('game.countersOn', { count: counters })">{{ counters }}</span>
+      <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
+      <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
+      <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
       <span v-if="left !== null" class="hp" :class="{ hurt: damage > 0 }" :title="$t('game.hitPointsLeft', { left, total: hitPoints })">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2 0 3.4 1.1 4.1 2.3h3C14.2 6.1 15.6 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21Z" fill="currentColor"/></svg>
         {{ left }}<small>/{{ hitPoints }}</small>
@@ -208,28 +209,12 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 }
 .statuses { position: absolute; top: 4%; left: 4%; }
 
-/* tokens: round, a heavy number, lifted off the art */
-.token {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  min-width: max(22px, 26cqi);
-  height: max(22px, 26cqi);
-  padding: 0 4px;
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: max(14px, 17cqi);
-  font-weight: 800;
-  line-height: 1;
-  border: 2px solid rgb(255 255 255 / 0.85);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.6);
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
-}
-.token.damage { top: 4%; right: 4%; background: radial-gradient(circle at 35% 30%, #e05a61, var(--crimson-deep)); }
-.token.threat { top: 50%; left: 50%; translate: -50% -50%; min-width: max(30px, 22cqi); height: max(30px, 22cqi); font-size: max(18px, 15cqi); background: radial-gradient(circle at 35% 30%, #f2c063, var(--amber-deep)); }
-.card:not(.landscape) .token.threat { min-width: max(28px, 34cqi); height: max(28px, 34cqi); font-size: max(17px, 22cqi); }
-.token.counters { bottom: 24%; right: 4%; background: radial-gradient(circle at 35% 30%, #8fb6da, var(--steel-deep)); }
+/* tokens: the printed ones, lifted off the art */
+.token { position: absolute; --token-size: max(22px, 26cqi); }
+.token.damage { top: 4%; right: 4%; }
+.token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, 22cqi); }
+.card:not(.landscape) .token.threat { --token-size: max(28px, 34cqi); }
+.token.counters { bottom: 24%; right: 4%; }
 
 /* hit points left, along the bottom */
 .hp {

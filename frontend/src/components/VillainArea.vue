@@ -8,6 +8,7 @@ import type { GameView, SchemeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
+import TokenStack from './TokenStack.vue'
 
 const { game } = defineProps<{ game: GameView }>()
 const { t } = useI18n()
@@ -69,7 +70,12 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
       <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
       <p v-if="escalation(scheme) !== null" class="escalation">
         {{ t('game.perRound', { count: escalation(scheme)! + (game.accelerationTokens ?? 0) }) }}
-        <template v-if="game.accelerationTokens">· {{ t('game.acceleration', { count: game.accelerationTokens }) }}</template>
+        <TokenStack
+          v-if="game.accelerationTokens"
+          kind="acceleration"
+          :count="game.accelerationTokens"
+          :title="t('game.acceleration', { count: game.accelerationTokens })"
+        />
       </p>
     </div>
 
@@ -139,7 +145,7 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
 
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .scheme.main :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
-.escalation { margin: 0; font-size: 0.7rem; color: var(--text-faint); }
+.escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
 .encounter-piles { display: flex; gap: 14px; margin-left: auto; flex: none; padding-top: 4px; }
