@@ -351,6 +351,14 @@ getObligations attrs = case currentIdentity attrs of
   AlterEgoSide side ->
     traverse genEncounterCard (alterEgoObligations $ toAttrs side)
 
+-- | The obligations of the identity's alter-egos.
+identityObligations :: PlayerIdentity -> [CardDef]
+identityObligations = concatMap obligationsOf . HashMap.elems . playerIdentitySides . toAttrs
+ where
+  obligationsOf = \case
+    AlterEgoSide side -> alterEgoObligations (toAttrs side)
+    HeroSide _ -> []
+
 toRetaliate :: [Keyword] -> Natural
 toRetaliate [] = 0
 toRetaliate (Retaliate n : _) = n
