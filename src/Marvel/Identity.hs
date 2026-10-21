@@ -967,3 +967,9 @@ instance FromJSON (Attrs PlayerIdentity) where
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity
+
+-- | The obligations that come with the identity: whichever form it is in, those of its
+-- alter-ego.
+identityObligations :: PlayerIdentity -> [CardDef]
+identityObligations (PlayerIdentity attrs) =
+  [def | AlterEgoSide x <- HashMap.elems (playerIdentitySides attrs), def <- alterEgoObligations (toAttrs x)]

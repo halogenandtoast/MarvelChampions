@@ -638,17 +638,29 @@ runGameMessage msg g@Game {..} = case msg of
           g
             & (entitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
       ObligationType -> do
-        let obligation = createObligation card
-        -- TODO: FOCUS CARDS SHOULD BE CARDS...
-        pushAll
-          [ FocusCards [toCard obligation]
-          , ObligationMessage (toId obligation) $ RevealObligation ident
-          , UnfocusCards
-          , ObligationMessage (toId obligation) $ ResolvedObligation ident
-          ]
-        pure $
-          g
-            & (entitiesL . obligationsL %~ insertMap (toId obligation) obligation)
+        let
+          obligation = createObligation card
+          -- "Give to the Peter Parker player": the player whose identity it comes with
+          -- resolves it; with them gone it is removed from the game and another card is
+          -- revealed. ponytail: every obligation so far is given to its identity's player
+          owners =
+            [ toId p | p <- HashMap.elems (gamePlayers g), getCardDef card `elem` identityObligations p
+            ]
+        case owners of
+          [] -> do
+            push $ Marvel.Message.Surge ident
+            pure g
+          owner : _ -> do
+            -- TODO: FOCUS CARDS SHOULD BE CARDS...
+            pushAll
+              [ FocusCards [toCard obligation]
+              , ObligationMessage (toId obligation) $ RevealObligation owner
+              , UnfocusCards
+              , ObligationMessage (toId obligation) $ ResolvedObligation owner
+              ]
+            pure $
+              g
+                & (entitiesL . obligationsL %~ insertMap (toId obligation) obligation)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         pushAll
