@@ -14,28 +14,29 @@ const share = computed(() => (max ? Math.min(100, Math.max(0, ((invert ? max - v
 </script>
 
 <template>
-  <div class="meter" :class="`tone-${tone}`">
-    <span class="label">{{ label }}</span>
+  <div class="meter" :class="`tone-${tone}`" role="meter" :aria-label="label" :aria-valuenow="value" :aria-valuemax="max ?? undefined" :title="label">
+    <span v-if="max !== null" class="fill" :style="{ width: `${share}%` }" />
     <span class="value">{{ value }}<small v-if="max !== null">/{{ max }}</small></span>
-    <span v-if="max !== null" class="track"><span class="fill" :style="{ width: `${share}%` }" /></span>
   </div>
 </template>
 
 <style scoped>
+/* the count sits inside its bar */
 .meter {
   --tone: var(--health);
+  position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  gap: 2px 8px;
+  place-items: center;
   width: 100%;
   min-width: 0;
+  height: 20px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 0.08);
+  overflow: hidden;
 }
 .meter.tone-threat { --tone: var(--amber); }
 .meter.tone-villain { --tone: var(--crimson-bright); }
-.label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
-.value { justify-self: end; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
-.value small { font-size: 0.75em; color: var(--text-faint); }
-.track { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: rgb(255 255 255 / 0.08); overflow: hidden; }
-.fill { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 70%, black), var(--tone)); transition: width 0.4s ease; }
+.fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, black), color-mix(in srgb, var(--tone) 85%, black)); transition: width 0.4s ease; }
+.value { position: relative; font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.7); font-variant-numeric: tabular-nums; }
+.value small { font-size: 0.8em; color: rgb(255 255 255 / 0.75); }
 </style>
