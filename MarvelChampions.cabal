@@ -77,6 +77,7 @@ library
       Marvel.Damage
       Marvel.Debug
       Marvel.Deck
+      Marvel.Decklist
       Marvel.Difficulty
       Marvel.Discard
       Marvel.Effect
@@ -121,6 +122,7 @@ library
       Marvel.Exception
       Marvel.Frontend
       Marvel.Game
+      Marvel.Game.Public
       Marvel.Game.Source
       Marvel.GameValue
       Marvel.GameValue.Types
@@ -371,6 +373,94 @@ library
     , unordered-containers
     , uuid
     , vector
+  default-language: GHC2021
+
+executable marvel-champions
+  main-is: Main.hs
+  other-modules:
+      AppPrelude
+      Auth
+      BugUpload
+      CardDb
+      Decks
+      GameLog
+      Model
+      Paths_MarvelChampions
+  hs-source-dirs:
+      app
+  default-extensions:
+      BlockArguments
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+      QuantifiedConstraints
+      NoPolyKinds
+      MultiWayIf
+      OverloadedRecordDot
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      MarvelChampions
+    , MonadRandom
+    , aeson
+    , aeson-casing
+    , aeson-diff
+    , base >=4.7 && <5
+    , base16-bytestring
+    , bcrypt
+    , bytestring
+    , classy-prelude
+    , containers
+    , crypton
+    , exceptions
+    , extra
+    , hashable
+    , http-client
+    , http-client-tls
+    , http-types
+    , jose
+    , lens
+    , monad-logger
+    , monad-time
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , ram
+    , random
+    , random-shuffle
+    , safe
+    , splitmix
+    , template-haskell
+    , text
+    , time
+    , unordered-containers
+    , uuid
+    , vector
+    , yesod-core
+    , yesod-persistent
+    , yesod-websockets
   default-language: GHC2021
 
 test-suite MarvelChampions-test
