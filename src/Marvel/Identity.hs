@@ -840,9 +840,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               handleFoundCards =
                 if null foundCards
                   then
+                    -- the cards looked at go back as the rest would
                     Ask
                       playerIdentityId
-                      (ChooseOne [Label "No matching cards found" []])
+                      (ChooseOne [Label "$label.noMatchingCardsFound" [Run $ handleReturnCards rest]])
                   else case searchOption of
                     SearchTarget target ->
                       SearchFoundCards target $ PlayerCard <$> foundCards
