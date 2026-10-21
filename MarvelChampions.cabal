@@ -470,6 +470,7 @@ test-suite MarvelChampions-test
   main-is: Spec.hs
   other-modules:
       Marvel.CoverageSpec
+      Marvel.Hero.SpiderManSpec
       Marvel.LogSpec
       Marvel.PublicSpec
       Marvel.SmokeSpec
@@ -525,6 +526,7 @@ test-suite MarvelChampions-test
     , extra
     , hashable
     , hspec
+    , hspec-expectations-lifted
     , lens
     , mtl
     , random

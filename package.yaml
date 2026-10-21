@@ -109,6 +109,7 @@ tests:
     dependencies:
     - MarvelChampions
     - hspec
+    - hspec-expectations-lifted
     - random
     - bytestring
     build-tools:
