@@ -6,12 +6,13 @@ module Marvel.Treachery.Treacheries.KreeManipulator (
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Entity
-import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
-import Marvel.Queue
+import Marvel.Question
+import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -25,12 +26,8 @@ newtype KreeManipulator = KreeManipulator (Attrs Treachery)
 instance RunMessage KreeManipulator where
   runMessage msg t@(KreeManipulator attrs) = case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
-      RevealTreachery _ -> do
-        mainScheme <- selectJust MainScheme
-        case mainScheme of
-          SchemeMainSchemeId mainSchemeId -> do
-            push $ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat 1
-          _ -> error "Not the main scheme"
+      RevealTreachery identityId -> do
+        pushChoice identityId $ PlaceThreat (toRef attrs) 1 MainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     Boost msg' -> case msg' of
@@ -39,11 +36,8 @@ instance RunMessage KreeManipulator where
           member enemyId
             <$> select (VillainEnemy <> UndefendedEnemy)
         when undefended $ do
-          mainScheme <- selectJust MainScheme
-          case mainScheme of
-            SchemeMainSchemeId mainSchemeId -> do
-              push $ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat 1
-            _ -> error "Not the main scheme"
+          identityId <- selectJust You
+          pushChoice identityId $ PlaceThreat (toRef attrs) 1 MainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     _ -> KreeManipulator <$> runMessage msg attrs

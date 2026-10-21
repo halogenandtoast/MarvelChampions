@@ -71,7 +71,8 @@ instance RunMessage WebbedUp where
                 ]
             )
             $ \case
-              VillainMessage _ (VillainBeginAttack _) -> True
+              VillainMessage vid (VillainBeginAttack _) -> enemyId == EnemyVillainId vid
+              MinionMessage mid (MinionBeginAttack _) -> enemyId == EnemyMinionId mid
               _ -> False
           cancelMatchingMessage $ \case
             CheckWindows [Window Would (EnemyAttack enemyId' _)] ->

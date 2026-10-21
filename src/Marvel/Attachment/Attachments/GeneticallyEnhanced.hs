@@ -16,6 +16,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
+import Marvel.Queue
 import Marvel.Ref
 
 geneticallyEnhanced :: AttachmentCard GeneticallyEnhanced
@@ -35,18 +36,22 @@ instance RunMessage GeneticallyEnhanced where
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment identityId -> do
         minions <- selectList MinionWithHighestPrintedHitPoints
-        chooseOne
-          identityId
-          [ TargetLabel
-            (toRef minionId)
-            [ Run
-                [ AttachmentMessage (attachmentId attrs) $
-                    AttachedToEnemy $
-                      EnemyMinionId minionId
+        -- with no minion it is discarded, and surges
+        if null minions
+          then pushAll [RemoveFromPlay (toTarget attrs), Surge identityId]
+          else
+            chooseOrRunOne
+              identityId
+              [ TargetLabel
+                (toRef minionId)
+                [ Run
+                    [ AttachmentMessage (attachmentId attrs) $
+                        AttachedToEnemy $
+                          EnemyMinionId minionId
+                    ]
                 ]
-            ]
-          | minionId <- minions
-          ]
+              | minionId <- minions
+              ]
         pure a
       _ -> GeneticallyEnhanced <$> runMessage msg attrs
     _ -> GeneticallyEnhanced <$> runMessage msg attrs

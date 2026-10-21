@@ -18,8 +18,10 @@ newtype Titania = Titania (Attrs Minion)
 
 instance HasModifiersFor Titania where
   getModifiersFor _ target (Titania attrs)
-    | isTarget attrs target =
-        pure [AttackModifier $ minionRemainingHitPoints attrs]
+    | isTarget attrs target = do
+        -- her remaining hit points count what attachments add
+        hp <- getModifiedHitPoints attrs
+        pure [AttackModifier $ subtractNatural (minionDamage attrs) hp]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage Titania where

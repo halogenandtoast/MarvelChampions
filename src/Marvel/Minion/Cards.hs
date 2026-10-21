@@ -151,9 +151,7 @@ killmonger =
 titania :: CardDef
 titania =
   unique $
-    (minion "01162" "Titania" [Brute, Elite] [Boost, Boost] SheHulkNemesis 1)
-      { cdKeywords = singleton Quickstrike
-      }
+    minion "01162" "Titania" [Brute, Elite] [Boost, Boost] SheHulkNemesis 1
 
 vulture :: CardDef
 vulture =

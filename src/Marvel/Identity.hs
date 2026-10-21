@@ -977,3 +977,4 @@ instance FromJSON (Attrs PlayerIdentity) where
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity
+

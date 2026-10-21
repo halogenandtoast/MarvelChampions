@@ -3,7 +3,14 @@ module TestImport (
   module TestImport,
 ) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
+import Data.Text qualified as T
+import Data.Vector qualified as Vector
+import Marvel.MainScheme.Types (getMainSchemeThreat)
+import Marvel.Scenario.Types (scenarioDiscard)
+import Marvel.SideScheme.Types (getSideSchemeThreat)
+import Marvel.Card.Id (CardId (..))
 import Data.IORef as X
 import Marvel.Decklist as X
 import Marvel.Difficulty as X
@@ -350,6 +357,18 @@ stackDiscard ident codes = do
   pure cards
 
 -- | Set a player's damage.
+-- * More card test helpers
+
+-- | Run these messages now, ahead of the question that was waiting, without answering
+-- anything: the test answers what they ask, and the waiting question comes back after.
+runNow :: [Message] -> GameAppT ()
+runNow msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGame
+
+-- | Set the damage on a player's identity.
 setDamage :: IdentityId -> Natural -> GameAppT ()
 setDamage ident n = withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
   PlayerIdentity a {playerIdentityDamage = n}
@@ -418,3 +437,101 @@ stackEncounterDeck defs = do
 
 encounterDeckSize :: GameAppT Int
 encounterDeckSize = getsGame (length . field ScenarioEncounterDeck . gameScenario)
+
+playerAttrs :: IdentityId -> GameAppT (Attrs PlayerIdentity)
+playerAttrs ident = toAttrs <$> getPlayer ident
+
+mainSchemeThreat :: GameAppT Natural
+mainSchemeThreat = getsGame (sum . map getMainSchemeThreat . HashMap.elems . gameMainSchemes)
+
+villainIdNow :: GameAppT VillainId
+villainIdNow = toId <$> getVillain
+
+-- | Whether the choice is the "no response" choice of a response window.
+isNoResponse :: Choice -> Bool
+isNoResponse = isLabel "$label.noResponse"
+
+-- | Whether the choice is declaring no defender.
+isNoDefender :: Choice -> Bool
+isNoDefender = isLabel "$label.noDefender"
+
+-- | The choices asked now, for a test to see when it fails.
+showAsked :: GameAppT ()
+showAsked = asked >>= liftIO . print . fmap (second (map (take 160 . show)))
+
+-- | Whether the choice uses an ability of the ally, support or upgrade played from this
+-- card.
+isAbilityOfCard :: PlayerCard -> Choice -> Bool
+isAbilityOfCard c = \case
+  UseAbility ab -> abilitySource ab `elem` [AllyRef (AllyId u), SupportRef (SupportId u), UpgradeRef (UpgradeId u)]
+  _ -> False
+ where
+  u = unCardId (pcCardId c)
+
+-- | Whether the choice uses any forced or optional ability.
+isAnyAbility :: Choice -> Bool
+isAnyAbility = \case
+  UseAbility _ -> True
+  _ -> False
+
+encounterDiscard :: GameAppT [EncounterCard]
+encounterDiscard = getsGame (scenarioDiscard . toAttrs . gameScenario)
+
+-- | Reveal an encounter card for the player now, answering nothing.
+revealNow :: IdentityId -> CardDef -> GameAppT EncounterCard
+revealNow ident def = do
+  card <- encounterCard def
+  runNow [RevealEncounterCard ident card]
+  pure card
+
+upgradeOf :: PlayerCard -> UpgradeId
+upgradeOf = UpgradeId . unCardId . pcCardId
+
+minionOf :: EncounterCard -> MinionId
+minionOf = MinionId . unCardId . ecCardId
+
+sideSchemeOf :: EncounterCard -> SideSchemeId
+sideSchemeOf = SideSchemeId . unCardId . ecCardId
+
+-- | Whether the player's identity is stunned, confused, exhausted.
+isStunned, isConfused, isExhaustedNow :: IdentityId -> GameAppT Bool
+isStunned ident = (.playerIdentityStunned) <$> playerAttrs ident
+isConfused ident = (.playerIdentityConfused) <$> playerAttrs ident
+isExhaustedNow ident = (.playerIdentityExhausted) <$> playerAttrs ident
+
+upgradeCodes :: GameAppT [CardCode]
+upgradeCodes = getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameUpgrades)
+
+-- | Whether the choice is a label starting with this text.
+isLabelStarting :: Text -> Choice -> Bool
+isLabelStarting l = \case
+  Label l' _ -> l `T.isPrefixOf` l'
+  _ -> False
+
+-- | Whether the choice uses the ability with this label.
+isNamedAbility :: Text -> Choice -> Bool
+isNamedAbility l = \case
+  UseAbility ab -> abilityLabel ab == Just l
+  _ -> False
+
+-- | Whether the choice is the player defending against this enemy.
+isDefend :: Choice -> Bool
+isDefend = \case
+  Defend _ -> True
+  _ -> False
+
+isEndTurn :: Choice -> Bool
+isEndTurn = \case
+  EndTurn -> True
+  _ -> False
+
+mainSchemeIdNow :: GameAppT MainSchemeId
+mainSchemeIdNow = getsGame (HashMap.keys . gameMainSchemes) >>= \case
+  [m] -> pure m
+  _ -> error "expected one main scheme"
+
+sideSchemeThreat :: SideSchemeId -> GameAppT Natural
+sideSchemeThreat sid = getsGame (maybe 0 getSideSchemeThreat . HashMap.lookup sid . gameSideSchemes)
+
+supportOf :: PlayerCard -> SupportId
+supportOf = SupportId . unCardId . pcCardId

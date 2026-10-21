@@ -352,7 +352,7 @@ runVillainMessage msg attrs = case msg of
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
   VillainDefendedBy characterId ->
-    pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
+    pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
   VillainSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of

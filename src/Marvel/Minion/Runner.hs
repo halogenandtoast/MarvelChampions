@@ -85,7 +85,7 @@ runMinionMessage msg attrs = case msg of
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionBecomeTough -> pure $ attrs & toughL .~ True
   MinionDefendedBy characterId ->
-    pure $ attrs & attackingL . _Just . attackCharacterL .~ characterId
+    pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
   AttachedToMinion attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToMinion upgradeId ->

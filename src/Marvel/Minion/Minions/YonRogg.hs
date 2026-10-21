@@ -7,9 +7,11 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Hp
+import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Minion.Cards qualified as Cards
@@ -37,11 +39,12 @@ instance HasAbilities YonRogg where
 
 instance RunMessage YonRogg where
   runMessage msg e@(YonRogg attrs) = case msg of
-    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       mThePsycheMagnitron <-
         selectOne $
           SideSchemeIs SideSchemes.thePsycheMagnitron
       for_ mThePsycheMagnitron $ \thePsycheMagnitron ->
-        push $ SideSchemeMessage thePsycheMagnitron $ SideSchemePlaceThreat 1
+        pushChoice ident $
+          PlaceThreat (toSource attrs) 1 (SchemeWithId $ SchemeSideSchemeId thePsycheMagnitron)
       pure e
     _ -> YonRogg <$> runMessage msg attrs

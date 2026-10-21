@@ -23,7 +23,7 @@ windowMatches matcher w source = case matcher of
   WouldTakeDamage identityMatcher damageSource' gameValueMatcher ->
     case windowType w of
       IdentityTakeDamage ident damage
-        | damageSource damage == damageSource' ->
+        | damageSource' `elem` [damageSource damage, FromAnyDamageSource] ->
             liftA2
               (&&)
               (identityMatches identityMatcher ident)
