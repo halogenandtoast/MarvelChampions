@@ -177,7 +177,7 @@ instance RunMessage (Attrs Scenario) where
           x : xs -> (x, xs)
       pushAll $
         map AddVillain scenarioVillains
-          <> [AddMainScheme mainScheme, SetupMainScheme, BeginPhase PlayerPhase]
+          <> [AddSetupMainScheme mainScheme, BeginPhase PlayerPhase]
       pure $
         attrs
           & encounterDeckL

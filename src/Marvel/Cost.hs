@@ -51,6 +51,8 @@ passesCanAffordCost identityId a = go (abilityCost a)
       AllyRef ident -> member ident <$> select UnexhaustedAlly
       SupportRef ident -> member ident <$> select UnexhaustedSupport
       UpgradeRef ident -> member ident <$> select UnexhaustedUpgrade
+      -- "exhaust your hero" on an encounter card
+      AttachmentRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses

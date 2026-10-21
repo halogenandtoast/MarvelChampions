@@ -36,15 +36,17 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL %~ subtractNatural n
   MinionHealAllDamage -> do
     pure $ attrs & damageL .~ 0
-  MinionDamaged source damage ->
-    if minionTough attrs
-      then pure $ attrs & toughL .~ False
-      else do
+  MinionDamaged source damage -> do
+    hitPoints <- getModifiedHitPoints attrs
+    if
+      -- already defeated: damage to a minion on its way out of play does nothing
+      | minionDamage attrs >= hitPoints -> pure attrs
+      | minionTough attrs -> pure $ attrs & toughL .~ False
+      | otherwise -> do
         keywords <- getModifiedKeywords attrs
-        hitPoints <- getModifiedHitPoints attrs
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
-            let overkill = damageAmount damage - (hitPoints - minionDamage attrs)
+            let overkill = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
             when (overkill > 0 && damageOverkill damage) $ do
               villain <- selectJust ActiveVillain
               push $
@@ -93,6 +95,7 @@ runMinionMessage msg attrs = case msg of
   MinionDefeated -> do
     pushAll $
       map (RemoveFromPlay . toRef) (toList $ minionUpgrades attrs)
+        <> map (RemoveFromPlay . toRef) (toList $ minionAttachments attrs)
         <> [ RemoveFromPlay (toRef attrs)
            , IdentityMessage
               (minionEngagedIdentity attrs)
@@ -160,4 +163,6 @@ instance RunMessage (Attrs Minion) where
     MinionMessage ident msg'
       | ident == minionId attrs ->
           runMinionMessage msg' attrs
+    AttachmentRemoved attachmentId ->
+      pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
     _ -> pure attrs

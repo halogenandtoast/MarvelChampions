@@ -72,6 +72,9 @@ villainAttackDetails = villainAttacking . toAttrs
 instance HasAbilities Villain where
   getAbilities (Villain a) = getAbilities a
 
+instance HasModifiersFor Villain where
+  getModifiersFor source target (Villain a) = getModifiersFor source target a
+
 instance RunMessage Villain where
   runMessage msg (Villain a) = Villain <$> runMessage msg a
 
@@ -139,7 +142,7 @@ instance Entity Villain where
   toId = villainId . toAttrs
   toAttrs (Villain a) = toVillainAttrs a
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a) => IsVillain a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a, HasModifiersFor a) => IsVillain a where
   toVillainAttrs :: a -> Attrs Villain
   default toVillainAttrs :: (Coercible a (Attrs Villain)) => a -> Attrs Villain
   toVillainAttrs = coerce
