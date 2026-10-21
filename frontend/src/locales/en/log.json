@@ -1,0 +1,81 @@
+{
+  "scenarioBegins": "{scenario}",
+  "round": "Round {count}",
+  "phase": {
+    "player": "Player phase",
+    "villain": "Villain phase"
+  },
+  "gameOver": {
+    "won": "The heroes win",
+    "lost": "The villain wins"
+  },
+
+  "plays": "{player} plays {card}",
+  "usesAbility": "{player} uses {card}",
+  "forced": "Forced: {card}",
+  "putsIntoPlay": "{player} puts {card} into play",
+  "changesForm": "{player} flips to {identity}",
+  "endsTurn": "{player} ends their turn",
+  "firstPlayer": "{player} is the first player",
+
+  "attacks": "{attacker} attacks {target}",
+  "thwarts": "{thwarter} thwarts {scheme}",
+  "defends": "{defender} defends against {enemy}",
+  "undefended": "{player} takes the attack undefended",
+  "villainAttacks": "{villain} attacks {player}",
+  "villainSchemes": "{villain} schemes",
+  "minionAttacks": "{minion} attacks {player}",
+  "minionSchemes": "{minion} schemes",
+
+  "takesDamage": "{target} takes {count} damage",
+  "takesDamageFrom": "{target} takes {count} damage from {source}",
+  "heals": "{target} heals {count} damage",
+  "recovers": "{player} recovers {count}",
+  "defeated": "{target} is defeated",
+  "stunned": "{target} is stunned",
+  "confused": "{target} is confused",
+  "tough": "{target} gets a tough status",
+  "statusRemoved": "{target} loses its {status} status",
+  "exhausts": "{target} exhausts",
+  "readies": "{target} readies",
+
+  "threatPlaced": "{count} threat is placed on {scheme}",
+  "threatRemoved": "{count} threat is removed from {scheme}",
+  "acceleration": "Acceleration: {count} more threat on {scheme}",
+  "schemeAdvances": "{scheme} advances",
+  "schemeDefeated": "{scheme} is defeated",
+  "villainStage": "{villain} advances to stage {stage}",
+
+  "revealed": "Revealed {card}",
+  "dealtEncounterCard": "{player} is dealt an encounter card",
+  "boost": "Boost: {card} ({count})",
+  "surge": "{card} surges",
+  "engages": "{minion} engages {player}",
+
+  "drawsCards": "{player} draws {cards}",
+  "drawsCount": "{player} draws a card | {player} draws {count} cards",
+  "discards": "{player} discards {card}",
+  "mulligan": "{player} mulligans {count} cards",
+  "shufflesDiscardIntoDeck": "{player} shuffles their discard pile into their deck",
+  "deckEmpty": "{player}'s deck runs out: they take an encounter card",
+
+  "stat": "{value}{icon}",
+  "stats": {
+    "thwart": "THW",
+    "attack": "ATK",
+    "defense": "DEF",
+    "recover": "REC",
+    "scheme": "SCH",
+    "threat": "threat",
+    "health": "HP",
+    "hand": "hand"
+  },
+  "listSeparator": ", ",
+  "listLast": " and ",
+  "undoToHere": "Undo to before this",
+  "undoConfirm": "Undo the game back to just before \"{entry}\"?",
+  "pinned": "Pinned",
+  "empty": "Nothing has happened yet.",
+  "say": "Say",
+  "sayPlaceholder": "Say something to the table"
+}

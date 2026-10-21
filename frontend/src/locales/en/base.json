@@ -1,0 +1,161 @@
+{
+  "appName": "Marvel Champions",
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "create": "Create",
+    "delete": "Delete",
+    "game": "Game",
+    "scenario": "Scenario",
+    "loading": "Loading…"
+  },
+  "nav": {
+    "home": "Games",
+    "cards": "Cards",
+    "decks": "Decks",
+    "watch": "Watch",
+    "admin": "Admin",
+    "about": "About"
+  },
+  "footer": {
+    "notice": "{game} and all related content © {ffg} and {marvel}. This fan site is not produced, endorsed by or affiliated with FFG or Marvel."
+  },
+  "about": {
+    "gameName": "Marvel Champions: The Card Game™",
+    "copyrightTitle": "Copyright disclaimer",
+    "copyrightBody": "The information presented in this app about {game}, both textual and graphical, is © Fantasy Flight Games and © Marvel. This app is a fan project and is not produced, endorsed, or supported by, or affiliated with Fantasy Flight Games or Marvel.",
+    "copyrightMarvel": "Marvel and the names of its characters are trademarks of Marvel Characters, Inc., used by Fantasy Flight Games under license.",
+    "copyrightArtwork": "All artwork and illustrations are the intellectual property of their respective creators. All Marvel Champions images and graphics are copyrighted by Fantasy Flight Games and Marvel.",
+    "dataTitle": "Card data",
+    "dataBody": "Card text and statistics come from {marvelcdb}, the community's card database, whose deck links this app imports.",
+    "projectTitle": "Project details",
+    "projectBody": "This application was created by {author} and contributors for the Marvel Champions community. Its source code is available on {source}, where feedback and bug reports are welcome as issues."
+  },
+  "titles": {
+    "card": "Card",
+    "deck": "Deck",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "createAccount": "Create an account",
+    "usernameOrEmail": "Username or email",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "Password (8 characters or more)",
+    "newHere": "New to the team?",
+    "haveAccount": "Already have an account?",
+    "oneMoment": "One moment…",
+    "couldNotSignIn": "Could not sign in.",
+    "couldNotCreateAccount": "Could not create the account.",
+    "tagline": "Assemble your heroes. Stop the villain."
+  },
+  "aspects": {
+    "aggression": "Aggression",
+    "justice": "Justice",
+    "leadership": "Leadership",
+    "protection": "Protection",
+    "basic": "Basic",
+    "hero": "Hero",
+    "encounter": "Encounter",
+    "campaign": "Campaign",
+    "pool": "Pool"
+  },
+  "modulars": {
+    "BombScare": "Bomb Scare",
+    "MastersOfEvil": "Masters of Evil",
+    "UnderAttack": "Under Attack",
+    "LegionsOfHydra": "Legions of Hydra",
+    "TheDoomsdayChair": "The Doomsday Chair"
+  },
+  "difficulty": {
+    "Normal": "Standard",
+    "Expert": "Expert"
+  },
+  "home": {
+    "waitingForPlayers": "Waiting for players",
+    "yourGames": "Your games",
+    "games": "Games",
+    "activeGames": "Active",
+    "finishedGames": "Finished",
+    "loadGame": "Load game",
+    "loading": "Loading…",
+    "chooseFile": "Choose an exported game (.json)",
+    "serverUnreachable": "The server could not be reached.",
+    "couldNotLoadFile": "Could not load that file.",
+    "noActiveGames": "No games in progress. Start one and put a villain away.",
+    "noFinishedGames": "No finished games yet.",
+    "won": "Won",
+    "lost": "Lost",
+    "deleteGame": "Delete game",
+    "confirmDelete": "Delete this game?",
+    "spectate": "Open to watch",
+    "watchAll": "See all",
+    "versus": "vs {villain}"
+  },
+  "newGame": {
+    "title": "New game",
+    "villain": "Villain",
+    "chooseVillain": "Choose your villain",
+    "recommended": "recommended",
+    "modulars": "Modular encounter sets",
+    "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
+    "difficulty": "Difficulty",
+    "difficultyHint": "Expert adds the expert encounter set and starts the villain a stage later.",
+    "gameName": "Game name",
+    "creating": "Creating…",
+    "couldNotCreateGame": "Could not create the game.",
+    "deck": "Deck",
+    "players": "Players",
+    "seat": "Seat {n}",
+    "chooseDeck": "Choose a deck",
+    "changeDeck": "Change",
+    "openSeat": "Open seat",
+    "openSeatHint": "A friend takes it from the game's link",
+    "playWithFriends": "Play with friends",
+    "playWithFriendsHint": "Leave seats open for friends: the game waits in its lobby until they join with their decks, or you start it.",
+    "takeSeat": "Your seat",
+    "leaveOpen": "Leave open",
+    "starterDeck": "Core set starter",
+    "starterTab": "Starters",
+    "myDecks": "My decks",
+    "noDecks": "You have no decks yet. Load one from a MarvelCDB link, or import it on the Decks page.",
+    "heroTaken": "In play",
+    "loader": {
+      "hero": "Hero",
+      "cards": "Cards",
+      "save": "Save to my decks",
+      "use": "Use this deck"
+    },
+    "allowSpectators": "Allow spectators",
+    "allowSpectatorsHint": "List this game on the Watch page so anyone can watch it. Spectators see the table but cannot take any actions.",
+    "makeDefault": "Make this my default",
+    "defaultSaved": "Saved as your default",
+    "summary": "{villain} · {difficulty} · {players}",
+    "playerCount": "{count} player | {count} players"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageHint": "The language of the interface and the game's messages. Card names and text stay in English for now.",
+    "spectators": "Spectators",
+    "spectatorsHint": "Whether new games are open to spectators unless you say otherwise when you make one.",
+    "allowByDefault": "Allow spectators by default",
+    "saved": "Saved"
+  },
+  "watch": {
+    "title": "Watch",
+    "none": "No one is playing a game open to spectators right now."
+  },
+  "admin": {
+    "users": "Users",
+    "activeUsers": "Active users (14 days)",
+    "games": "Games",
+    "recentGames": "Recent games"
+  }
+}

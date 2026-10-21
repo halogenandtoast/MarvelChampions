@@ -1,0 +1,15 @@
+# TLS ends at the load balancer, so Caddy only speaks plain HTTP.
+:80 {
+	encode zstd gzip
+
+	# The API and the game websockets (/api/games/:id).
+	handle /api/* {
+		reverse_proxy marvel-backend:3000
+	}
+
+	handle {
+		root * /usr/share/caddy
+		try_files {path} /index.html
+		file_server
+	}
+}

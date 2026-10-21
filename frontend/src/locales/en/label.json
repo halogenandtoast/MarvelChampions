@@ -1,0 +1,20 @@
+{
+  "endTurn": "End turn",
+  "changeForm": "Change form",
+  "changeToA": "Flip to hero",
+  "changeToB": "Flip to alter-ego",
+  "finishPayment": "Finish paying",
+  "readyIdentity": "Ready your identity",
+  "recover": "Recover",
+  "attack": "Attack",
+  "thwart": "Thwart",
+  "defend": "Defend",
+  "pass": "Pass",
+  "continue": "Continue",
+  "done": "Done",
+  "yes": "Yes",
+  "no": "No",
+  "undefended": "Take it undefended",
+  "mulligan": "Mulligan",
+  "keepHand": "Keep this hand"
+}

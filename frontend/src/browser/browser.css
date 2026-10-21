@@ -1,0 +1,145 @@
+/*
+ * The card browser's tokens and shared primitives, from the app it was ported from,
+ * kept under `.card-browser` so its generic names (`.button`, `--shadow`) stay out of
+ * the rest of the app. Its colours are mapped onto this app's palette.
+ */
+.card-browser {
+  --c-bg: transparent;
+  --c-surface: var(--ink-2);
+  --c-surface-2: var(--ink-3);
+  --c-surface-3: var(--ink-4);
+  --c-border: var(--line);
+  --c-border-strong: var(--line-strong);
+  --c-text: var(--text);
+  --c-text-muted: var(--text-muted);
+  --c-text-faint: var(--text-faint);
+
+  --c-accent: var(--crimson);
+  --c-accent-dim: var(--crimson-deep);
+  --c-accent-contrast: #fff;
+  --c-focus: var(--steel-bright);
+  --c-danger: var(--danger);
+
+  /* A card is 63 x 88 mm. */
+  --card-aspect-portrait: 63 / 88;
+  --card-aspect-landscape: 88 / 63;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-card: 5% / 3.6%;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.6rem;
+
+  --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.4);
+  --shadow-lg: 0 12px 32px hsl(0 0% 0% / 0.55);
+
+  --sidebar-width: 17rem;
+  --header-height: var(--nav-height);
+
+  --transition: 120ms ease;
+
+  color: var(--c-text);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+/* #app is a flex column: a page with auto side margins would shrink to its content. */
+.card-browser.page {
+  width: 100%;
+  flex: 1 0 auto;
+}
+
+/* Resets sit in a layer, so the components' own unlayered styles win over them. */
+@layer card-browser {
+  .card-browser :where(*) { margin: 0; }
+  .card-browser :where(dialog) { margin: auto; color: var(--c-text); }
+  .card-browser :where(img, picture, svg) { display: block; max-width: 100%; }
+  .card-browser :where(input, button, textarea, select) { font: inherit; color: inherit; }
+  .card-browser :where(button) { background: none; border: none; cursor: pointer; padding: 0; }
+  .card-browser :where(ul, ol) { list-style: none; padding: 0; }
+  .card-browser :where(a) { color: inherit; text-decoration: none; }
+  .card-browser :where(h1, h2, h3, h4) { line-height: 1.2; text-wrap: balance; }
+  .card-browser :where(*) { scrollbar-width: thin; scrollbar-color: var(--c-border-strong) transparent; }
+  .card-browser :focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+  .card-browser .button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface-2);
+    color: var(--c-text);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .card-browser .button:hover { background: var(--c-surface-3); border-color: var(--c-border-strong); }
+  .card-browser .button[aria-pressed='true'],
+  .card-browser .button.is-active {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: var(--c-accent-contrast);
+    font-weight: 600;
+  }
+  .card-browser .button--ghost { background: none; border-color: transparent; }
+  .card-browser .button--ghost:hover { background: var(--c-surface-2); border-color: var(--c-border); }
+  .card-browser .button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .card-browser .input {
+    width: 100%;
+    padding: 0.4375rem 0.75rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background-color: var(--input-background);
+    color: var(--c-text);
+    font-size: var(--text-sm);
+  }
+  .card-browser select.input { padding-right: 2.25rem; }
+  .card-browser .input::placeholder { color: var(--c-text-faint); }
+  .card-browser .input:focus-visible { border-color: var(--c-accent-dim); }
+
+  .card-browser .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.0625rem 0.4375rem;
+    border-radius: 999px;
+    background: var(--c-surface-3);
+    color: var(--c-text-muted);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+
+  .card-browser .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .card-browser .stack { display: flex; flex-direction: column; gap: var(--space-3); }
+  .card-browser .row { display: flex; align-items: center; gap: var(--space-2); }
+  .card-browser .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-browser .muted { color: var(--c-text-muted); }
+}

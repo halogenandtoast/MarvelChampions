@@ -1,60 +1,39 @@
-<template>
-  <form @submit.prevent="register">
-    <header><i class="secret"></i></header>
-    <section>
-      <div>
-        <input
-          v-model="registration.username"
-          type="text"
-          placeholder="Username"
-        />
-      </div>
-      <div>
-        <input
-          v-model="registration.email"
-          type="email"
-          placeholder="Email"
-        />
-      </div>
-      <div>
-        <input
-          v-model="registration.password"
-          type="password"
-          placeholder="Password"
-        />
-      </div>
-      <div>
-        <button>Register</button>
-      </div>
-    </section>
-  </form>
-</template>
+<script lang="ts" setup>
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { signUp } from '../auth'
+import AuthForm from '../components/AuthForm.vue'
 
-<script lang="ts">
-import { defineComponent, reactive } from 'vue'
-import { useStore } from 'vuex'
-import { useRoute, useRouter } from 'vue-router'
-import { Registration } from '@/types'
-export default defineComponent({
-  setup() {
-    const route = useRoute()
-    const router = useRouter()
-    const store = useStore()
-    const registration = reactive<Registration>({
-      username: '',
-      email: '',
-      password: '',
-    })
-    async function register() {
-      await store.dispatch('register', registration)
-      const { nextUrl } = route.query
-      if (nextUrl) {
-        router.push({ path: nextUrl as string })
-      } else {
-        router.push({ path: '/' })
-      }
-    }
-    return { registration, register }
+const { t } = useI18n()
+const router = useRouter()
+const username = ref('')
+const email = ref('')
+const password = ref('')
+const error = ref<string | null>(null)
+const submitting = ref(false)
+
+const submit = async () => {
+  submitting.value = true
+  error.value = null
+  try {
+    await signUp(username.value, email.value, password.value)
+    await router.push('/')
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : t('auth.couldNotCreateAccount')
+  } finally {
+    submitting.value = false
   }
-});
+}
 </script>
+
+<template>
+  <AuthForm :title="$t('auth.createAccount')" :submit-label="$t('auth.signUp')" :error="error" :submitting="submitting" @submit="submit">
+    <input v-model="username" type="text" autocomplete="username" :placeholder="$t('auth.username')" required />
+    <input v-model="email" type="email" autocomplete="email" :placeholder="$t('auth.email')" required />
+    <input v-model="password" type="password" autocomplete="new-password" minlength="8" :placeholder="$t('auth.newPassword')" required />
+    <template #links>
+      {{ $t('auth.haveAccount') }} <RouterLink to="/sign-in">{{ $t('auth.signIn') }}</RouterLink>
+    </template>
+  </AuthForm>
+</template>

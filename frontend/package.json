@@ -1,42 +1,27 @@
 {
-  "name": "marvel-champions",
-  "version": "0.1.0",
+  "name": "marvel-champions-web",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "e2e": "playwright test"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.1.1",
-    "@fortawesome/free-brands-svg-icons": "^6.1.1",
-    "@fortawesome/free-solid-svg-icons": "^6.1.1",
-    "@fortawesome/vue-fontawesome": "^3.0.1",
-    "@types/md5": "^2.3.1",
-    "axios": "^0.24.0",
-    "core-js": "^3.19.3",
-    "md5": "^2.3.0",
-    "ts.data.json": "^2.1.1",
-    "vue": "^3.3.4",
-    "vue-router": "^4.0.16",
-    "vuex": "^4.1.0"
+    "@vueuse/core": "^13.9.0",
+    "lucide-vue-next": "^1.0.0",
+    "vue": "^3.5.13",
+    "vue-i18n": "^11.4.16",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.61.0",
-    "@typescript-eslint/parser": "^5.61.0",
-    "@vue/cli-plugin-babel": "~5.0.6",
-    "@vue/cli-plugin-eslint": "^5.0.6",
-    "@vue/cli-plugin-router": "~5.0.6",
-    "@vue/cli-plugin-typescript": "~5.0.6",
-    "@vue/cli-plugin-vuex": "~5.0.6",
-    "@vue/cli-service": "~5.0.6",
-    "@vue/compiler-sfc": "^3.2.37",
-    "@vue/eslint-config-typescript": "^11.0.0",
-    "eslint": "^8.5.0",
-    "eslint-plugin-vue": "^9.0.0",
-    "sass": "^1.53.0",
-    "sass-loader": "^13.0.2",
-    "typescript": "5.1.6",
-    "fork-ts-checker-webpack-plugin": "^4.0.0"
+    "@playwright/test": "^1.64.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.7",
+    "vue-tsc": "^2.2.0"
   }
 }

@@ -1,0 +1,317 @@
+:root {
+  /* Board metrics: a card shrinks with the screen so a laptop still fits the table. */
+  --card-width: clamp(58px, min(7.4vw, 12.4vh), 124px);
+  --card-aspect: 0.716;
+  --gap: 10px;
+  --nav-height: 46px;
+
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-ui: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* kept under the old name for the components ported from Lord of the Rings */
+  --font-title: var(--font-display);
+
+  /* Palette: ink and graphite, a desaturated Marvel red used sparingly, cool steel for
+     the heroes, amber for threat and green for health. */
+  --ink-0: #0b0d12;
+  --ink-1: #11141b;
+  --ink-2: #161a23;
+  --ink-3: #1d222d;
+  --ink-4: #262c39;
+  --ink-5: #313847;
+
+  --crimson: #b8323a;
+  --crimson-bright: #d2434b;
+  --crimson-deep: #6e1d23;
+  --steel: #5b8db8;
+  --steel-bright: #8fb6da;
+  --steel-deep: #24384d;
+  --amber: #e2a33b;
+  --amber-deep: #6b4a16;
+  --health: #4fae6a;
+  --health-deep: #1d4a2c;
+  --violet: #8e7cc3;
+
+  /* aspects and factions, for deck and card chips */
+  --aggression: #c9474e;
+  --justice: #d8b545;
+  --leadership: #4f8bd0;
+  --protection: #4cab6c;
+  --basic: #8f97a6;
+  --hero: #7aa2c8;
+  --encounter: #b0773f;
+  --campaign: #5aa7a2;
+  --pool: #b56fbf;
+
+  /* Roles */
+  --surface-0: var(--ink-0);
+  --surface-1: var(--ink-2);
+  --surface-2: var(--ink-3);
+  --surface-3: var(--ink-4);
+  --surface-4: var(--ink-5);
+  --well: #090b0f;
+
+  --text: #e7eaf0;
+  --text-muted: #a3abba;
+  --text-faint: #6d7688;
+  --title: #f2f4f8;
+  --accent: var(--crimson);
+  --accent-bright: var(--crimson-bright);
+  --hero-tone: var(--steel);
+  --danger: #d65058;
+  --success: var(--health);
+  --cream-muted: var(--text-muted);
+  --cream-faint: var(--text-faint);
+  --cream: var(--text);
+
+  /* Choices: electric cyan on what can be clicked, so it never reads as the villain's red. */
+  --interactive: #4cc8ff;
+  --interactive-glow: rgb(76 200 255 / 0.55);
+  --target: #ffb547;
+
+  --page-background: var(--ink-1);
+  --panel: rgb(22 26 35 / 0.97);
+  --box-background: var(--ink-2);
+  --box-border: var(--line);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --input-background: var(--well);
+  --nav-background: rgb(13 15 21 / 0.96);
+  --nav-link: var(--text-muted);
+  --bar-background: var(--ink-2);
+  --menu-background: var(--ink-4);
+  --menu-section-text: var(--text-faint);
+
+  --button-primary: var(--crimson);
+  --button-primary-hover: var(--crimson-bright);
+  --button-primary-text: #fff;
+  --button-secondary: var(--ink-4);
+  --button-secondary-hover: var(--ink-5);
+  --button-disabled: var(--ink-4);
+  --button-disabled-text: var(--text-faint);
+
+  --hover-tint: rgb(255 255 255 / 0.06);
+  --highlight-tint: rgb(184 50 58 / 0.14);
+  --subtle-tint: rgb(255 255 255 / 0.04);
+  --shadow: rgb(0 0 0 / 0.5);
+  --shadow-strong: rgb(0 0 0 / 0.8);
+
+  /* the log's stat colours */
+  --threat-red: var(--amber);
+  --attack: #f08a4b;
+  --defense: var(--steel-bright);
+  --willpower: var(--amber);
+
+  --phase-player: var(--steel);
+  --phase-villain: var(--crimson);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+html { -webkit-text-size-adjust: 100%; }
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgb(184 50 58 / 0.07), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgb(91 141 184 / 0.07), transparent 60%),
+    var(--page-background);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+a { color: var(--steel-bright); }
+
+button, a, input, select, label, [data-card-id] { touch-action: manipulation; }
+
+/* a page's scrolling body, its scrollbar's room kept so the content never shifts */
+.page-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: 28px 16px 40px;
+}
+.page-content { width: min(1100px, 100%); margin: 0 auto; }
+
+.page-title {
+  margin: 0 0 14px;
+  color: var(--title);
+  font-size: 2.3rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+/* the red bar that marks a page's title */
+.page-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 0.8em;
+  margin-right: 12px;
+  border-radius: 2px;
+  background: var(--crimson);
+  vertical-align: 0.02em;
+}
+
+.box {
+  background: var(--box-background);
+  border: 1px solid var(--box-border);
+  color: var(--text);
+  padding: 16px;
+  border-radius: 10px;
+}
+.box.error { border-color: var(--danger); color: var(--danger); }
+.box p { margin: 0; }
+
+/* buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--ink-4);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: var(--ink-5); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn svg { width: 16px; height: 16px; }
+.btn.primary { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--crimson-bright); border-color: var(--crimson-bright); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.btn.ghost:hover:not(:disabled) { background: var(--hover-tint); color: var(--text); }
+.btn.big { padding: 13px 22px; font-size: 1rem; }
+
+.input, .page-container input[type='text'], .page-container input[type='email'], .page-container input[type='password'], .page-container input[type='url'] {
+  font: inherit;
+  color: var(--text);
+  background: var(--input-background);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: 0;
+}
+.input:focus, .page-container input:focus { border-color: var(--steel); box-shadow: 0 0 0 3px rgb(91 141 184 / 0.2); }
+
+/* an aspect or faction, as a small coloured chip */
+.aspect-chip {
+  --chip: var(--basic);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--chip) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip) 45%, transparent);
+  color: color-mix(in srgb, var(--chip) 70%, white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.aspect-chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--chip); }
+[data-aspect='aggression'] { --chip: var(--aggression); --aspect: var(--aggression); }
+[data-aspect='justice'] { --chip: var(--justice); --aspect: var(--justice); }
+[data-aspect='leadership'] { --chip: var(--leadership); --aspect: var(--leadership); }
+[data-aspect='protection'] { --chip: var(--protection); --aspect: var(--protection); }
+[data-aspect='basic'] { --chip: var(--basic); --aspect: var(--basic); }
+[data-aspect='hero'] { --chip: var(--hero); --aspect: var(--hero); }
+[data-aspect='encounter'] { --chip: var(--encounter); --aspect: var(--encounter); }
+[data-aspect='campaign'] { --chip: var(--campaign); --aspect: var(--campaign); }
+[data-aspect='pool'] { --chip: var(--pool); --aspect: var(--pool); }
+
+/* a hero's or villain's portrait: the art from the top right of their card, clear of the
+   stats down its left edge and the name across its top */
+.portrait {
+  display: block;
+  background-color: var(--ink-4);
+  background-size: 132% auto;
+  background-position: 95% 19%;
+  background-repeat: no-repeat;
+}
+.portrait.square { background-size: 165% auto; background-position: 72% 22%; }
+
+/* an on/off setting: a checkbox drawn as a sliding switch, its label beside it */
+.switch { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 0.9rem; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch .track {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--ink-5);
+  transition: background 0.15s;
+}
+.switch .track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: translate 0.15s;
+}
+.switch input:checked + .track { background: var(--crimson); }
+.switch input:checked + .track::after { translate: 16px 0; }
+.switch input:focus-visible + .track { outline: 2px solid var(--steel-bright); outline-offset: 2px; }
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a3abba' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.7rem;
+  padding-right: 2.2rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+::selection { background: rgb(184 50 58 / 0.4); }
+
+* { scrollbar-width: thin; scrollbar-color: var(--ink-5) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}

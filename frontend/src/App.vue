@@ -1,67 +1,43 @@
-<template>
-  <div class="app">
-    <NavBar class="nav" />
-    <router-view class="main-view" />
-  </div>
-</template>
+<script setup lang="ts">
+import { watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+import NavBar from './components/NavBar.vue'
 
-<script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import { useStore } from 'vuex'
-import NavBar from '@/components/NavBar.vue'
-export default defineComponent({
-  components: { NavBar },
-  setup() {
-    const store = useStore()
-    onMounted(async () => await store.dispatch('loadUserFromStorage'))
-  }
+const route = useRoute()
+const { t } = useI18n()
+
+watchEffect(() => {
+  document.title = t((route.meta.title as string | undefined) ?? 'appName')
 })
 </script>
 
-<style lang="scss">
-@font-face {
-  font-family: "Exo2";
-  src: url("../public/fonts/exo2.ttf");
+<template>
+  <NavBar />
+  <RouterView :key="$route.path" />
+  <!-- whose the game and its content are, on every page -->
+  <i18n-t keypath="footer.notice" tag="footer" scope="global">
+    <template #game><a href="https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/" rel="noreferrer" target="_blank" tabindex="-1">{{ $t('about.gameName') }}</a></template>
+    <template #ffg><a href="https://www.fantasyflightgames.com" rel="noreferrer" target="_blank" tabindex="-1">Fantasy Flight Games</a></template>
+    <template #marvel><a href="https://www.marvel.com" rel="noreferrer" target="_blank" tabindex="-1">Marvel</a></template>
+  </i18n-t>
+</template>
+
+<style scoped>
+footer {
+  position: fixed;
+  bottom: 0;
+  z-index: 100;
+  width: 100%;
+  padding: 1px 8px;
+  font-size: 0.6rem;
+  color: var(--text-faint);
+  background: var(--ink-0);
+  text-align: center;
+  pointer-events: none;
 }
-
-#app {
-  height: 100%;
-}
-
-.app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  height: 100%;
-  display: flex;
-  flex-flow: column;
-}
-
-.nav {
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-
-  flex: 0 1 auto;
-}
-
-.main-view {
-  flex: 1 1 auto;
-}
-
-body {
-  padding: 0;
-  margin: 0;
-  height: 100%;
-}
-
-html {
-  height: 100%;
+footer a { color: inherit; pointer-events: auto; }
+@media (width < 800px) and (orientation: portrait) {
+  footer { display: none; }
 }
 </style>

@@ -1,0 +1,178 @@
+{
+  "round": "Round {round}",
+  "turnOf": "{name}'s turn",
+  "phaseTracker": "Round and phase",
+  "phases": {
+    "PlayerPhase": "Player phase",
+    "VillainPhase": "Villain phase"
+  },
+  "loading": "Loading the game…",
+  "notDealt": "The game has not been dealt yet.",
+  "hp": "Hit points",
+  "threat": "Threat",
+  "boost": "Boost",
+  "crisis": "Crisis",
+  "perRound": "+{count} threat each villain phase",
+  "acceleration": "{count} acceleration",
+  "threatOn": "{count} threat",
+  "damageOn": "{count} damage",
+  "countersOn": "{count} counters",
+  "hitPointsLeft": "{left} of {total} hit points left",
+  "hand": "Hand",
+  "handOf": "{name}'s hand",
+  "emptyHand": "No cards in hand",
+  "stats": {
+    "thw": "THW",
+    "atk": "ATK",
+    "def": "DEF",
+    "rec": "REC",
+    "sch": "SCH",
+    "hand": "HAND"
+  },
+  "form": {
+    "hero": "Hero",
+    "alterEgo": "Alter-ego"
+  },
+  "status": {
+    "stunned": "Stunned",
+    "confused": "Confused",
+    "tough": "Tough"
+  },
+  "zones": {
+    "villain": "Villain",
+    "engaged": "Engaged",
+    "allies": "Allies",
+    "supports": "Supports & upgrades",
+    "focused": "Revealed"
+  },
+  "piles": {
+    "encounterDeck": "Encounter",
+    "encounterDiscard": "Discard",
+    "deck": "Deck",
+    "discard": "Discard",
+    "dealt": "Dealt"
+  },
+  "abilityTypes": {
+    "Interrupt": "Interrupt",
+    "HeroInterrupt": "Hero interrupt",
+    "ForcedInterrupt": "Forced interrupt",
+    "Resource": "Resource",
+    "HeroResource": "Hero resource",
+    "Response": "Response",
+    "ForcedResponse": "Forced response",
+    "Action": "Action",
+    "HeroAction": "Hero action",
+    "AlterEgoAction": "Alter-ego action",
+    "Special": "Special",
+    "Basic": "Basic power",
+    "Setup": "Setup"
+  },
+  "choices": {
+    "ability": "Use",
+    "play": "Play",
+    "pay": "Pay with this",
+    "defend": "Defend",
+    "allyAttack": "Attack",
+    "allyThwart": "Thwart",
+    "allyDefend": "Defend",
+    "damage": "Damage",
+    "thwartScheme": "Thwart",
+    "stun": "Stun",
+    "confuse": "Confuse",
+    "heal": "Heal",
+    "discard": "Discard",
+    "returnToHand": "Return to hand",
+    "player": "Choose",
+    "target": "Choose",
+    "label": "Choose"
+  },
+  "prompt": {
+    "chooseOne": "Choose one",
+    "chooseN": "Choose any",
+    "chooseOneAtATime": "Choose in turn",
+    "choosePlayerOrder": "Choose the first player",
+    "yourMove": "Your move",
+    "asking": "{name}'s move",
+    "orClickHighlighted": "or click the highlighted card | or click a highlighted card",
+    "waiting": "Nothing to decide right now."
+  },
+  "outcome": {
+    "won": "The heroes win",
+    "lost": "The villain wins"
+  },
+  "waitingOn": "Waiting for {name}…",
+  "seats": {
+    "label": "Seats",
+    "asked": "Being asked",
+    "turn": "Turn",
+    "hand": "{count} in hand",
+    "all": "All seats"
+  },
+  "bar": {
+    "restartScenario": "Restart scenario",
+    "restartConfirm": "Deal the game again from the start? Every move so far is lost.",
+    "file": "File",
+    "exportGame": "Export game",
+    "fileBug": "File bug",
+    "testing": "Testing",
+    "debugMessage": "Run engine message…",
+    "undo": "Undo",
+    "undoLastAnswer": "Undo last answer",
+    "undoTo": "Undo to",
+    "startOfPhase": "Start of phase",
+    "startOfRound": "Start of round",
+    "toggleSidebar": "Toggle the log",
+    "spectating": "Spectating"
+  },
+  "lobby": {
+    "eyebrow": "Lobby",
+    "waiting": "Waiting for players",
+    "you": "you",
+    "invite": "Send this link to the friends you are playing with",
+    "copy": "Copy",
+    "copied": "Copied",
+    "dealtWhenFull": "The game is dealt as soon as every seat is taken.",
+    "chooseDeck": "Choose your deck",
+    "join": "Take a seat",
+    "startNow": "Start now, on your own | Start now with {n} players",
+    "leave": "Leave your seat | Leave your seats",
+    "takeAnother": "Take another seat"
+  },
+  "debug": {
+    "title": "Run an engine message",
+    "explain": "The message is run against the game as it stands, as the engine's JSON encodes it, and can be undone like any answer.",
+    "invalid": "That is not JSON.",
+    "send": "Run"
+  },
+  "fileBug": {
+    "title": "File a bug",
+    "explain": "This uploads the game, undo history included, so the bug can be replayed, then opens a new GitHub issue with your report filled in for you to submit.",
+    "titlePlaceholder": "What went wrong, in a few words",
+    "descriptionPlaceholder": "What you did, what happened, and what should have happened",
+    "submit": "Submit",
+    "uploading": "Uploading…",
+    "failed": "Could not upload the game. Try again, or export it and attach the file."
+  },
+  "errors": {
+    "serverUnreachable": "The server could not be reached."
+  },
+  "choicesNamed": {
+    "ability": "Use {card}",
+    "play": "Play {card}",
+    "pay": "Pay with {card}",
+    "defend": "Defend against {card}",
+    "allyAttack": "Attack with {card}",
+    "allyThwart": "Thwart with {card}",
+    "allyDefend": "Defend with {card}",
+    "damage": "Damage {card}",
+    "thwartScheme": "Thwart {card}",
+    "stun": "Stun {card}",
+    "confuse": "Confuse {card}",
+    "heal": "Heal {card}",
+    "discard": "Discard {card}",
+    "returnToHand": "Return {card} to hand",
+    "player": "{card}",
+    "target": "{card}",
+    "label": "{card}"
+  }
+}
