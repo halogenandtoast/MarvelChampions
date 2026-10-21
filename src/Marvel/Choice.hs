@@ -238,7 +238,7 @@ choiceMessages ident = \case
     MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
   DamageCharacter characterId source damage -> case characterId of
     IdentityCharacter ident' ->
-      pure [IdentityMessage ident' $ IdentityDamaged source damage]
+      pure $ damageIdentity ident' source damage
     AllyCharacter ident' ->
       pure [AllyMessage ident' $ AllyDamaged source damage]
     VillainCharacter ident' ->

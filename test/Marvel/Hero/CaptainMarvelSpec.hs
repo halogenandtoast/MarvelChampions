@@ -7,6 +7,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Upgrade.Types (getUpgradeUses)
 import Marvel.Villain.Types qualified as V
+import Marvel.Damage (DamageSource (..), toDamage)
 import TestImport
 
 captainMarvel :: IO TestGame
@@ -162,6 +163,19 @@ spec = describe "Captain Marvel" do
             damageOf p
     defended False `shouldReturn` 2
     defended True `shouldReturn` 1
+
+  it "Cosmic Flight answers damage that is not from an attack" do
+    tg <- captainMarvel
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      flight <- inPlay p "01017" ["01088"]
+      runNow (damageIdentity p GameRef (toDamage 2 FromAbility))
+      choose "use Cosmic Flight" (isAbilityOfCard flight)
+      pass
+      damageOf p `shouldReturn` 0
+      upgradeCodes `shouldReturn` []
 
   it "Cosmic Flight is discarded to prevent 3 of the damage she would take" do
     tg <- captainMarvel

@@ -25,6 +25,7 @@ import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
+import Marvel.Damage (Damage)
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -34,10 +35,18 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
-import Marvel.Window.Types (Window, WindowType)
+import Marvel.Window.Types (Window (..), WindowTiming (When), WindowType (IdentityTakeDamage))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
+
+-- | Damage to a hero or alter-ego from anything but an attack: first the window for
+-- what answers "when you would take damage", then the damage.
+damageIdentity :: IdentityId -> Source -> Damage -> [Message]
+damageIdentity ident source damage =
+  [ CheckWindows [Window When $ IdentityTakeDamage ident damage]
+  , IdentityMessage ident $ IdentityDamaged source damage
+  ]
 
 data FinishedStatus
   = Won

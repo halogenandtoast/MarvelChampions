@@ -47,10 +47,6 @@ instance RunMessage ElectromagneticBacklash where
               energyCount =
                 count (== Energy) $ concatMap (printedResources . getCardDef) cs
             when (energyCount > 0) $
-              push $
-                IdentityMessage ident $
-                  IdentityDamaged
-                    (toSource attrs)
-                    (toDamage energyCount FromTreachery)
+              pushAll $ damageIdentity ident (toSource attrs) (toDamage energyCount FromTreachery)
             pure t
     _ -> ElectromagneticBacklash <$> runMessage msg attrs

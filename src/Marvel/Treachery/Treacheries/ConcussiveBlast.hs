@@ -42,5 +42,5 @@ instance RunMessage ConcussiveBlast where
       players <- selectList identities
       allyIds <- selectList allies
       pushAll $
-        [IdentityMessage p (IdentityDamaged (toSource attrs) damage) | p <- players]
+        concatMap (\p -> damageIdentity p (toSource attrs) damage) players
           <> [AllyMessage a (AllyDamaged (toSource attrs) damage) | a <- allyIds]

@@ -39,7 +39,7 @@ instance RunMessage UnderAttack where
           Label "$label.placeTwoThreatOnUnderAttack" [Run [SideSchemeMessage ident (SideSchemePlaceThreat 2)]]
             : [ Label
                 "$label.deal3DamageToYourHero"
-                [Run [IdentityMessage p $ IdentityDamaged (toSource attrs) (toDamage 3 FromAbility)]]
+                [Run $ damageIdentity p (toSource attrs) (toDamage 3 FromAbility)]
               | p `elem` heroes
               ]
         | p <- players

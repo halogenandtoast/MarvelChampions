@@ -51,10 +51,7 @@ instance RunMessage Whirlwind where
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         heroes <- selectList HeroIdentity
-        pushAll
-          [ IdentityMessage ident (IdentityDamaged (toSource attrs) (toDamage 1 FromAbility))
-          | ident <- heroes
-          ]
+        pushAll $ concatMap (\ident -> damageIdentity ident (toSource attrs) (toDamage 1 FromAbility)) heroes
         pure e
       _ -> Whirlwind <$> runMessage msg attrs
     _ -> Whirlwind <$> runMessage msg attrs

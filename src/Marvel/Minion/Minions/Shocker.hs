@@ -22,13 +22,7 @@ instance RunMessage Shocker where
       RevealMinion _ -> do
         players <- selectList HeroIdentity
         pushAll $ flip concatMap players $ \player ->
-          [ CheckWindows
-              [ W.Window W.When $
-                  W.IdentityTakeDamage player (toDamage 1 FromAbility)
-              ]
-          , IdentityMessage player $
-              IdentityDamaged (toSource attrs) (toDamage 1 FromAbility)
-          ]
+          damageIdentity player (toSource attrs) (toDamage 1 FromAbility)
         pure e
       _ -> Shocker <$> runMessage msg attrs
     _ -> Shocker <$> runMessage msg attrs

@@ -36,12 +36,9 @@ instance RunMessage SoundManipulation where
             push $ VillainMessage villainId (VillainHealed 4)
             pure t
           (True, _) -> do
-            pushAll
-              [ IdentityMessage
-                  identityId
-                  (IdentityDamaged (toSource attrs) (toDamage 2 FromAbility))
-              , VillainMessage villainId (VillainHealed 2)
-              ]
+            pushAll $
+              damageIdentity identityId (toSource attrs) (toDamage 2 FromAbility)
+                <> [VillainMessage villainId (VillainHealed 2)]
             pure t
       _ -> SoundManipulation <$> runMessage msg attrs
     _ -> SoundManipulation <$> runMessage msg attrs
