@@ -13,9 +13,13 @@ import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
+import Marvel.Hand
+import Marvel.Identity.Types (Field (..))
+import Marvel.Projection
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
+import System.Random.Shuffle (shuffleM)
 
 highwayRobbery :: SideSchemeCard HighwayRobbery
 highwayRobbery = sideScheme HighwayRobbery Cards.highwayRobbery (PerPlayer 3)
@@ -32,16 +36,14 @@ getCardOwner pc = case pcOwner pc of
 instance RunMessage HighwayRobbery where
   runMessage msg s@(HighwayRobbery attrs) = case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
+      -- the cards are held here facedown: out of their hands, not discarded
       RevealSideScheme -> do
         players <- getPlayers
-        pushAll $
-          map
-            ( \identityId ->
-                IdentityMessage identityId $
-                  DiscardFor (toRef attrs) RandomFromHand 1 1
-            )
-            players
-        pure s
+        taken <- for players \identityId ->
+          headMay <$> (shuffleM =<< projectMap PlayerIdentityHand unHand identityId)
+        let cards = catMaybes taken
+        pushAll [RemoveFromGame (CardIdRef $ pcCardId c) | c <- cards]
+        pure . HighwayRobbery $ attrs & heldCardsL <>~ cards
       DefeatSideScheme -> do
         pushAll $
           map
@@ -49,6 +51,4 @@ instance RunMessage HighwayRobbery where
             (sideSchemeHeldCards attrs)
         pure s
       _ -> HighwayRobbery <$> runMessage msg attrs
-    WithDiscarded target _ cards | isTarget attrs target -> do
-      pure . HighwayRobbery $ attrs & heldCardsL <>~ onlyPlayerCards cards
     _ -> HighwayRobbery <$> runMessage msg attrs
