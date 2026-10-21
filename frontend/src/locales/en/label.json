@@ -28,5 +28,11 @@
   "continue": "Continue",
   "done": "Done",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "doNotFlipToAlterEgo": "Do not flip to alter-ego",
+  "exhaustTonyStarkRemoveBusinessProblems": "Exhaust Tony Stark → remove Business Problems from the game",
+  "exhaustEachUpgradeDiscardObligation": "Exhaust each upgrade you control, then discard this obligation",
+  "exhaustTChallaRemoveAffairsOfState": "Exhaust T'Challa → remove Affairs of State from the game",
+  "discardBlackPantherUpgradeDiscardObligation": "Discard a Black Panther upgrade you control, then discard this obligation",
+  "noMatchingCardsFound": "No matching cards found"
 }
