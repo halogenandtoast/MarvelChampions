@@ -66,5 +66,9 @@ instance RunMessage ElectricWhipAttack where
               (UpgradeControlledBy $ IdentityWithId ident)
               target
         pure t
+      -- turned up as a boost, it hears of the upgrade chosen from the boost area
+      ChoseUpgrade upgradeId target
+        | isTarget attrs target ->
+            t <$ push (RemoveFromPlay $ toRef upgradeId)
       _ -> ElectricWhipAttack <$> runMessage msg attrs
     _ -> ElectricWhipAttack <$> runMessage msg attrs
