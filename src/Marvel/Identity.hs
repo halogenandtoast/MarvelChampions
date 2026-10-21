@@ -191,6 +191,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
       , playerIdentityId = ident
       , playerIdentityName = ""
+      , playerIdentitySearching = False
       , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
       , playerIdentityDamage = 0
       , playerIdentityDeck = Deck []
@@ -488,18 +489,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       FromDeck -> do
         let
           (cards, deck) = splitAt (fromIntegral n) (unDeck playerIdentityDeck)
-        when (length (unDeck playerIdentityDeck) < fromIntegral n) $
-          pushAll
-            [ IdentityMessage playerIdentityId ShuffleIdentityDiscardBackIntoDeck
-            , DealEncounterCard playerIdentityId
-            , IdentityMessage playerIdentityId $
-                DrawCards
-                  fromZone
-                  ( subtractNatural
-                      (fromIntegral (length (unDeck playerIdentityDeck)))
-                      n
-                  )
-            ]
+          short = subtractNatural (fromIntegral $ length cards) n
+        -- the deck emptying is made again at once (see 'RunMessage PlayerIdentity'),
+        -- and the drawing carries on from it
+        when (short > 0 && notNull (unDiscard playerIdentityDiscard)) $
+          push $ IdentityMessage playerIdentityId $ DrawCards fromZone short
         pure $
           PlayerIdentity $
             attrs
@@ -885,8 +879,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               [ FocusCards $ PlayerCard <$> focusedCards
               , handleFoundCards
               , UnfocusCards
+              , IdentityMessage playerIdentityId FinishedSearching
               ]
-            pure $ PlayerIdentity $ attrs & deckL .~ Deck deck'
+            -- the cards looked at are out of the deck until the search is over: the deck
+            -- is not empty meanwhile
+            pure $ PlayerIdentity $ attrs & deckL .~ Deck deck' & \a -> a {playerIdentitySearching = True}
+    FinishedSearching -> pure $ PlayerIdentity attrs {playerIdentitySearching = False}
     Search _ _ _ _ -> error "Unhandled"
     IdentityRetaliate n enemyId -> do
       let
@@ -918,8 +916,26 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                 . at playerIdentitySide
                 ?~ newSide
 
+-- | A player deck that empties is made again from its discard pile at once, and its
+-- player dealt a facedown encounter card; with nothing in the discard pile, as soon as
+-- there is.
 instance RunMessage PlayerIdentity where
-  runMessage msg pid@(PlayerIdentity attrs) = case msg of
+  runMessage msg pid = do
+    pid' <- runPlayerMessage msg pid
+    let a = toAttrs pid'
+    when (null (unDeck a.playerIdentityDeck) && notNull (unDiscard a.playerIdentityDiscard) && not a.playerIdentitySearching) $
+      pushAll
+        [ IdentityMessage a.playerIdentityId ShuffleIdentityDiscardBackIntoDeck
+        , DealEncounterCard a.playerIdentityId
+        ]
+    pure pid'
+
+runPlayerMessage ::
+  (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) =>
+  Message ->
+  PlayerIdentity ->
+  m PlayerIdentity
+runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     DiscardedCard (PlayerCard card)
       | pcOwner card == Just (playerIdentityId attrs) ->
           pure $

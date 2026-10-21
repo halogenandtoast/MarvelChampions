@@ -23,6 +23,8 @@ instance Entity PlayerIdentity where
     { playerIdentityId :: IdentityId
     , playerIdentityName :: Text
     -- ^ who plays it, as the table knows them
+    , playerIdentitySearching :: Bool
+    -- ^ whether the deck's cards are out being searched
     , playerIdentitySide :: Side
     , playerIdentitySides :: HashMap Side PlayerIdentitySide
     , playerIdentityHP :: HP Natural

@@ -43,6 +43,7 @@ data IdentityMessage
   | ReadyCards
   | SetupIdentity
   | DealStartingHand
+  | FinishedSearching
   | VillainAndMinionsActivate
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards
