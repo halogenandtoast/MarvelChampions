@@ -16,6 +16,7 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
+import Marvel.Trait
 
 crisisInterdiction :: EventCard CrisisInterdiction
 crisisInterdiction = event CrisisInterdiction Cards.crisisInterdiction
@@ -42,13 +43,14 @@ instance RunMessage CrisisInterdiction where
                       ]
                 ]
             ]
-        schemesWithRest <- removeEach <$> selectList AnyScheme
+        aerial <- identityMatches (IdentityWithTrait Aerial) identityId
+        schemesWithRest <- removeEach <$> selectList ThwartableScheme
         push $
           Ask identityId $
             ChooseOne
               [ TargetLabel target $
                 ThwartScheme target (toSource attrs) 2
-                  : handleRest rest
+                  : [c | aerial, c <- handleRest rest]
               | (x, rest) <- schemesWithRest
               , let target = toRef x
               ]
