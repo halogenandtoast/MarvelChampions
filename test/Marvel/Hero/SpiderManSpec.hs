@@ -400,3 +400,24 @@ spec = describe "Spider-Man" do
       pass
       runNow [MinionMessage (minionOf mercenary) (MinionAttacks p)]
       offers (isAbilityOf p) `shouldReturn` False
+
+  it "Eviction Notice is given to the Peter Parker player, whoever reveals it" do
+    tg <- testGame ["captain-marvel", "spider-man"]
+    inGame tg do
+      [carol, peter] <- players
+      _ <- revealNow carol Obligations.evictionNotice
+      fmap fst <$> asked `shouldReturn` Just peter
+      choose "exhaust Peter Parker" (isLabelStarting "Exhaust")
+      isExhaustedNow peter `shouldReturn` True
+      isExhaustedNow carol `shouldReturn` False
+
+  it "Eviction Notice without Peter Parker in the game is removed, and another card is revealed" do
+    tg <- testGame ["captain-marvel"]
+    let p = player1 tg
+    inGame tg do
+      [next] <- stackEncounterDeck [Minions.hydraMercenary]
+      eviction <- revealNow p Obligations.evictionNotice
+      pass
+      getsGame (HashMap.null . gameObligations) `shouldReturn` True
+      (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` notElem (ecCardId eviction))
+      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
