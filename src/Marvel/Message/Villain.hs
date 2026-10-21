@@ -29,5 +29,7 @@ data VillainMessage
   | AttachedToVillain AttachmentId
   | AttachedUpgradeToVillain UpgradeId
   | VillainAdvanced
+  | -- | its hit points (and remaining hit points) go up or down by this much
+    VillainHitPointsChanged Int
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

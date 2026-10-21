@@ -253,7 +253,13 @@ runVillainMessage msg attrs = case msg of
     pure attrs
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
-    pure $ attrs & hpL .~ HP hp & maxHpL .~ HP hp
+    modifiers <- getModifiers attrs
+    let hp' = hp + sum [fromIntegral n | HitPointModifier n <- modifiers]
+    pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp'
+  VillainHitPointsChanged n -> do
+    let remaining = unHp (villainHp attrs) + n
+    when (remaining <= 0) $ push $ VillainMessage (villainId attrs) VillainDefeated
+    pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
       attrs
