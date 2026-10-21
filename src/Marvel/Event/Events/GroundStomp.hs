@@ -14,7 +14,7 @@ import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Question
 import Marvel.Ref
 
 groundStomp :: EventCard GroundStomp
@@ -28,11 +28,9 @@ instance RunMessage GroundStomp where
   runMessage msg e@(GroundStomp attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        enemies <- selectList AnyEnemy
-        chooseOneAtATime identityId $
-          map
-            (damageChoice attrs (toDamage 1 $ FromPlayerAttack identityId))
-            enemies
+        -- not an attack: no attack window, no retaliate
+        pushChoice identityId $
+          DamageAllEnemies AnyEnemy (toSource attrs) (toDamage 1 FromAbility)
         pure e
       _ -> GroundStomp <$> runMessage msg attrs
     _ -> GroundStomp <$> runMessage msg attrs
