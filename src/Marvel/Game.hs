@@ -82,7 +82,7 @@ import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideC
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
-import Marvel.Support.Types (Support, getSupportController, getSupportUses)
+import Marvel.Support.Types (Attrs (supportCardDef), Support, getSupportController, getSupportUses)
 import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
@@ -299,6 +299,25 @@ getActivePlayerId = toId <$> getActivePlayer
 
 getPlayerCount :: (HasGame m) => m Int
 getPlayerCount = length <$> getsGame gamePlayerOrder
+
+-- | Each unique card in play, and each identity, as a title and the subtitles and
+-- alter-ego titles that go with it: a unique card matching one cannot enter play.
+getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
+getUniqueTitlesInPlay = getsGame \g ->
+  let
+    named n = (title n, maybe [] pure (subtitle n))
+    unique = map (named . cdName) . filter cdUnique
+    sideName = \case
+      HeroSide h -> title (cdName $ getCardDef h)
+      AlterEgoSide a -> title (cdName $ getCardDef a)
+    identity p = case map sideName (HashMap.elems $ playerIdentitySides $ toAttrs p) of
+      [] -> []
+      t : ts -> [(t, ts)]
+   in
+    unique (map getCardDef $ HashMap.elems $ gameAllies g)
+      <> unique (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
+      <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
+      <> concatMap identity (HashMap.elems $ gamePlayers g)
 
 getActivePlayer :: (HasGame m) => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
@@ -1336,7 +1355,8 @@ gameSelectExtendedCard m = do
     AffordableCardBy identityMatcher extendedCardMatcher -> do
       identities <- selectList identityMatcher
       let players' = filter ((`elem` identities) . toId) players
-      inner <- go players' cards extendedCardMatcher
+      -- the cards may be anyone's: only who affords them is narrowed
+      inner <- go players cards extendedCardMatcher
       concatMapM (\ident -> filterM (isPlayable ident) inner) players'
     BasicCardMatches cardMatcher -> do
       pure $ filter (cardMatch cardMatcher) cards
@@ -1418,6 +1438,12 @@ gameSelectSupport = \case
     HashSet.fromList
       . map toId
       <$> filterM (gameValueMatches gameValueMatcher . getSupportUses) upgrades
+  SupportNamed name -> do
+    supports <- HashMap.elems <$> getsGame gameSupports
+    pure $ HashSet.fromList $ map toId $ filter ((== name) . cdName . supportCardDef . toAttrs) supports
+  SupportMatches xs -> do
+    all' <- HashSet.fromList . HashMap.keys <$> getsGame gameSupports
+    foldr HashSet.intersection all' <$> traverse gameSelectSupport xs
 
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do

@@ -52,6 +52,13 @@ import Data.Aeson (Result (..), Value (Object), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
 
+import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck))
+import Marvel.Ally.Types as X (Ally, Attrs (..))
+import Marvel.Support.Types as X (Support, Attrs (..))
+import Marvel.Upgrade.Types as X (Upgrade, Attrs (..))
+import Marvel.Minion.Types as X (Minion, Attrs (..))
+import Marvel.Damage as X
+
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
 dealtGame :: ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text])
@@ -535,3 +542,87 @@ sideSchemeThreat sid = getsGame (maybe 0 getSideSchemeThreat . HashMap.lookup si
 
 supportOf :: PlayerCard -> SupportId
 supportOf = SupportId . unCardId . pcCardId
+
+-- | The attributes of every ally in play with this card code.
+alliesWith :: CardCode -> GameAppT [Attrs Ally]
+alliesWith code = getsGame (filter ((== code) . toCardCode . allyCardDef) . map toAttrs . HashMap.elems . gameAllies)
+
+-- | The one ally in play with this card code.
+allyIn :: (HasCallStack) => CardCode -> GameAppT (Attrs Ally)
+allyIn code = alliesWith code >>= \case
+  [a] -> pure a
+  as -> error $ "expected one ally " <> show code <> ", found " <> show (length as)
+
+isAllyAttack :: Attrs Ally -> Choice -> Bool
+isAllyAttack a = \case
+  UseAbility ab -> AllyAttack (allyId a) `elem` abilityChoices ab
+  _ -> False
+
+isAllyThwart :: Attrs Ally -> Choice -> Bool
+isAllyThwart a = \case
+  UseAbility ab -> AllyThwart (allyId a) `elem` abilityChoices ab
+  _ -> False
+
+-- | The hero's basic attack or thwart.
+isHeroAttack, isHeroThwart :: IdentityId -> Choice -> Bool
+isHeroAttack ident = \case
+  UseAbility ab -> Attack `elem` abilityChoices ab && abilitySource ab == toSource ident
+  _ -> False
+isHeroThwart ident = \case
+  UseAbility ab -> Thwart `elem` abilityChoices ab && abilitySource ab == toSource ident
+  _ -> False
+
+supportsWith :: CardCode -> GameAppT [Attrs Support]
+supportsWith code = getsGame (filter ((== code) . toCardCode . supportCardDef) . map toAttrs . HashMap.elems . gameSupports)
+
+upgradesWith :: CardCode -> GameAppT [Attrs Upgrade]
+upgradesWith code = getsGame (filter ((== code) . toCardCode . upgradeCardDef) . map toAttrs . HashMap.elems . gameUpgrades)
+
+-- | Reveal a minion from the encounter deck to the player, returning it.
+addMinion :: IdentityId -> CardDef -> GameAppT MinionId
+addMinion ident def = do
+  before <- getsGame (HashMap.keys . gameMinions)
+  card <- encounterCard def
+  resolve [RevealEncounterCard ident card]
+  getsGame (filter (`notElem` before) . HashMap.keys . gameMinions) >>= \case
+    [m] -> pure m
+    _ -> error "the minion did not enter play"
+
+-- | A minion's damage, or Nothing once it has left play.
+minionDamageOf :: MinionId -> GameAppT (Maybe Natural)
+minionDamageOf m = getsGame (fmap (minionDamage . toAttrs) . HashMap.lookup m . gameMinions)
+
+placeMainThreat :: Natural -> GameAppT ()
+placeMainThreat n = do
+  m <- mainSchemeId
+  resolve [MainSchemeMessage m (MainSchemePlaceThreat n)]
+
+-- | Whether the player is exhausted.
+exhaustedNow :: IdentityId -> GameAppT Bool
+exhaustedNow ident = (.playerIdentityExhausted) . toAttrs <$> getPlayer ident
+
+-- | Answer with the first choice that matches when it is offered.
+chooseIf :: (Choice -> Bool) -> GameAppT ()
+chooseIf p = whenM (offers p) $ choose "optional choice" p
+
+-- | Put a new copy of a card into a player's discard pile.
+putInDiscard :: IdentityId -> CardCode -> GameAppT PlayerCard
+putInDiscard ident code = do
+  cardId <- getRandom
+  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
+    PlayerIdentity a {playerIdentityDiscard = Discard (card : unDiscard a.playerIdentityDiscard)}
+  pure card
+
+-- | The second seat's player.
+player2 :: TestGame -> IdentityId
+player2 tg = case tg.seats of
+  (_ : p : _) -> p
+  _ -> error "no second player"
+
+-- | The encounter discard pile, the latest first.
+encounterDiscardNow :: GameAppT [EncounterCard]
+encounterDiscardNow = getsGame (scenarioDiscard . toAttrs . gameScenario)
+
+scenarioEncounterDeckNow :: GameAppT [EncounterCard]
+scenarioEncounterDeckNow = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)

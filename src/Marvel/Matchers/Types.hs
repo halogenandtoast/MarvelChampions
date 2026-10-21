@@ -87,6 +87,8 @@ data SupportMatcher
   = UnexhaustedSupport
   | SupportControlledBy IdentityMatcher
   | SupportWithUses GameValueMatcher
+  | SupportNamed Name
+  | SupportMatches [SupportMatcher]
 
 pattern SupportWithAnyUses :: SupportMatcher
 pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))

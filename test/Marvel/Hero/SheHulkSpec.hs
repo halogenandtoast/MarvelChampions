@@ -11,7 +11,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (isCrisis)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
-import TestImport
+import TestImport hiding (minionDamageOf)
 
 sheHulk :: IO TestGame
 sheHulk = testGame ["she-hulk"]

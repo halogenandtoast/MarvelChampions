@@ -32,8 +32,8 @@ instance RunMessage ForJustice where
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let
-          usedEnergy = Energy `elem` resources || Wild `elem` resources
-          thwart = if usedEnergy then 4 else 3
+          usedMental = Mental `elem` resources || Wild `elem` resources
+          thwart = if usedMental then 4 else 3
         pushAll
           =<< choiceMessages
             identityId

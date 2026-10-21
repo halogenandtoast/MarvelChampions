@@ -31,7 +31,7 @@ instance HasAbilities InterrogationRoom where
     [ limitedWindowAbility
         a
         1
-        (W.MinionDefeated W.After AnyMinion)
+        (W.EnemyDefeated W.After MinionEnemy AnyDamage)
         Response
         OwnsThis
         ExhaustCost

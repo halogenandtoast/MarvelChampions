@@ -295,8 +295,8 @@ counterPunch =
 getBehindMe :: CardDef
 getBehindMe =
   (event "01078" "Get Behind Me!" 1 HeroInterrupt [] [Mental] Protection)
-    { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
-    , cdAbilitySubType = Just Ability.Attack
+    { cdResponseWindow =
+        Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
     }
 
 emergency :: CardDef

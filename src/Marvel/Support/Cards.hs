@@ -111,7 +111,7 @@ surveillanceTeam =
 
 theTriskellion :: CardDef
 theTriskellion = unique
-  $ support "01073" "The Triskellion" 3 [Location, Shield] [Energy] Leadership
+  $ support "01073" "The Triskelion" 1 [Location, Shield] [Energy] Leadership
 
 medTeam :: CardDef
 medTeam = support "01080" "Med Team" 3 [Shield] [Energy] Protection
