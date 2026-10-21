@@ -5,14 +5,16 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loader, Trophy, Skull } from 'lucide-vue-next'
-import { useChoiceLabel } from '../composables/useChoices'
+import { useChoiceLabel, useKeyed } from '../composables/useChoices'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useCards } from '../cards'
 import CardFace from './CardFace.vue'
 import type { ChoiceView } from '../server'
 
-const { kind = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, outcome = null, things = {} } = defineProps<{
+const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, outcome = null, things = {} } = defineProps<{
   kind?: string | null
+  /** what is asked, as the engine says it */
+  prompt?: string | null
   buttons?: ChoiceView[]
   /** how many choices are on cards */
   onBoard?: number
@@ -29,7 +31,8 @@ const { t, te } = useI18n()
 const label = useChoiceLabel()
 const cards = useCards()
 
-const prompt = computed(() => (kind && te(`game.prompt.${kind}`) ? t(`game.prompt.${kind}`) : t('game.prompt.chooseOne')))
+const keyed = useKeyed()
+const prompt = computed(() => (asked ? keyed(asked) : kind && te(`game.prompt.${kind}`) ? t(`game.prompt.${kind}`) : t('game.prompt.chooseOne')))
 const overlay = useCardOverlay()
 const about = (choice: ChoiceView) => {
   const thing = choice.target ? things[choice.target] : undefined

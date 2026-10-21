@@ -11,11 +11,13 @@ export interface Choices {
   /** The choices about each card or entity, by its id. */
   byTarget: ComputedRef<Map<string, ChoiceView[]>>
   choose: (index: number) => void
+  /** the card the open question is about */
+  sourceId: ComputedRef<string | null>
 }
 
 const key: InjectionKey<Choices> = Symbol('choices')
 
-export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void) => {
+export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void, source: () => string | null = () => null) => {
   const byTarget = computed(() => {
     const map = new Map<string, ChoiceView[]>()
     for (const choice of choices()) {
@@ -24,12 +26,24 @@ export const provideChoices = (choices: () => ChoiceView[], choose: (index: numb
     }
     return map
   })
-  const provided = { byTarget, choose }
+  const provided = { byTarget, choose, sourceId: computed(source) }
   provide(key, provided)
   return provided
 }
 
-export const useChoices = () => inject(key, { byTarget: computed(() => new Map()), choose: () => {} })
+export const useChoices = () => inject(key, { byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
+
+/** Server text that may be a key the locale lacks yet: then its last word, spaced out. */
+export const useKeyed = () => {
+  const { t, te } = useI18n()
+  return (body: string) => {
+    if (!body.startsWith('$')) return body
+    const name = body.slice(1).split(' ')[0]
+    // a key the locale lacks yet reads better as its last word than as the key
+    if (!te(name)) return (name.split('.').pop() ?? name).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase())
+    return handleI18n(body, t)
+  }
+}
 
 /**
  * What a choice says, in the player's language. A `$` label is a key; plain text is shown
@@ -38,20 +52,16 @@ export const useChoices = () => inject(key, { byTarget: computed(() => new Map()
  */
 export const useChoiceLabel = () => {
   const { t, te } = useI18n()
-  const keyed = (body: string) => {
-    if (!body.startsWith('$')) return body
-    const name = body.slice(1).split(' ')[0]
-    // a key the locale lacks yet reads better as its last word than as the key
-    if (!te(name)) return (name.split('.').pop() ?? name).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase())
-    return handleI18n(body, t)
-  }
+  const keyed = useKeyed()
   // `cardName` names what it is about: on its own card a chip says only what it does,
   // elsewhere a button says what to
   return (choice: ChoiceView, cardName = '', named = false): string => {
     if (choice.label && choice.kind !== 'ability') return keyed(choice.label)
     if (choice.kind === 'ability') {
       const type = choice.abilityType ? (te(`game.abilityTypes.${choice.abilityType}`) ? t(`game.abilityTypes.${choice.abilityType}`) : choice.abilityType) : t('game.choices.ability')
-      const what = choice.label ? `${type}: ${keyed(choice.label)}` : type
+      // a basic power is named by what it does: attack, thwart, recover
+      const basic = choice.abilityType === 'Basic' || /^\$label\.(changeForm|changeTo[AB]|attack|thwart|recover|defend)\b/.test(choice.label ?? '')
+      const what = choice.label ? (basic ? keyed(choice.label) : `${type}: ${keyed(choice.label)}`) : type
       return named && cardName ? `${cardName} — ${what}` : what
     }
     const kind = `game.${named && cardName ? 'choicesNamed' : 'choices'}.${choice.kind}`

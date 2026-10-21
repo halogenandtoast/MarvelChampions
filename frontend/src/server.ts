@@ -118,7 +118,22 @@ export interface ChoiceView {
 
 export interface QuestionView {
   kind: 'chooseOne' | 'chooseN' | 'chooseOneAtATime' | 'choosePlayerOrder' | string
+  /** What is asked: an i18n key when it starts with `$`, plain text otherwise. */
+  prompt?: string | null
+  /** The id of the card or entity the question is about. */
+  source?: string | null
   choices: ChoiceView[]
+}
+
+/** A card or ability being paid for, and the resources paid so far. */
+export interface ActiveCostView {
+  player: string
+  /** the card being played */
+  card: CardView | null
+  /** or the card whose ability is being paid for, by id */
+  source: string | null
+  paid: string[]
+  spent: CardView[]
 }
 
 export interface GameView {
@@ -139,6 +154,7 @@ export interface GameView {
   accelerationTokens: number
   question: Record<string, QuestionView>
   questionVersion: number
+  activeCost?: ActiveCostView | null
   [more: string]: unknown
 }
 
@@ -147,7 +163,7 @@ export interface Table {
   withFriends: boolean
   seats: number
   owner: number
-  seated: { position: number; userId: number; username: string }[]
+  seated: { position: number; userId: number; username: string; hero?: string | null }[]
 }
 
 export interface GameData {

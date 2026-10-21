@@ -47,7 +47,7 @@ const props = withDefaults(
 
 const cards = useCards()
 const overlay = useCardOverlay()
-const { byTarget, choose } = useChoices()
+const { byTarget, choose, sourceId } = useChoices()
 const label = useChoiceLabel()
 const el = useTemplateRef<HTMLElement>('el')
 
@@ -55,6 +55,8 @@ const landscape = computed(() => !props.back && cards.landscape(props.code))
 const title = computed(() => cards.name(props.code, props.name))
 const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : []))
 const active = computed(() => options.value.length > 0)
+// the card the question is about: lifted, and ringed in amber
+const source = computed(() => !!props.id && sourceId.value === props.id)
 const menuOpen = ref(false)
 watch(options, () => (menuOpen.value = false))
 // the chips: each distinct thing it can do, named; several of the same are told apart
@@ -101,7 +103,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape }"
+      :class="{ active, exhausted, landscape, source }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :title="title"
@@ -188,6 +190,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card :deep(.card-face) { border-radius: inherit; }
 .card.exhausted { transform: rotate(90deg) scale(0.9); }
 .card.exhausted :deep(.card-face) { filter: brightness(0.82); }
+.card.source { z-index: 3; transform: translateY(-6px) scale(1.06); box-shadow: 0 0 0 2px var(--target), 0 0 22px rgb(255 181 71 / 0.55), 0 12px 24px rgb(0 0 0 / 0.5); }
+.card.source.exhausted { transform: rotate(90deg) scale(0.96); }
+.card.source.active { box-shadow: 0 0 0 2px var(--target), 0 0 0 5px var(--interactive), 0 0 22px var(--interactive-glow); }
 .card.active { cursor: pointer; box-shadow: 0 0 0 2px var(--interactive), 0 0 16px var(--interactive-glow); }
 .card.active:hover { box-shadow: 0 0 0 3px var(--interactive), 0 0 24px var(--interactive-glow); }
 

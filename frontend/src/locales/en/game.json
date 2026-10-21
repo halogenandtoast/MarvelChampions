@@ -174,5 +174,18 @@
     "player": "{card}",
     "target": "{card}",
     "label": "{card}"
+  },
+  "paying": {
+    "title": "Paying",
+    "by": "{name} is paying",
+    "paid": "Paid",
+    "spent": "Spent",
+    "nothingYet": "Nothing yet"
+  },
+  "resources": {
+    "energy": "Energy",
+    "mental": "Mental",
+    "physical": "Physical",
+    "wild": "Wild"
   }
 }

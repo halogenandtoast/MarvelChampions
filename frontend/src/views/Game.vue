@@ -17,6 +17,7 @@ import GameLog from '../components/GameLog.vue'
 import HandFan from '../components/HandFan.vue'
 import Lobby from '../components/Lobby.vue'
 import PlayerArea from '../components/PlayerArea.vue'
+import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import VillainArea from '../components/VillainArea.vue'
@@ -53,13 +54,7 @@ const answering = computed(() => {
   return yours.find((id) => id === viewing.value) ?? yours[0] ?? null
 })
 const question = computed(() => (answering.value ? (game.value?.question[answering.value] ?? null) : null))
-// A defence is offered against the attacker, but it is the defender who acts: put it on
-// the asked identity, naming the enemy.
-const choices = computed<ChoiceView[]>(() =>
-  (question.value?.choices ?? []).map((c) =>
-    c.kind === 'defend' && answering.value ? { ...c, target: answering.value, code: c.code ?? things.value[c.target ?? '']?.code ?? null } : c,
-  ),
-)
+const choices = computed<ChoiceView[]>(() => question.value?.choices ?? [])
 const waitingOn = computed(() => (answering.value ? null : (asked.value.map((id) => playerName.value[id]).find(Boolean) ?? null)))
 
 // the seat shown: yours at first, then whoever of yours is asked
@@ -100,6 +95,11 @@ const onBoard = computed(() => {
     }
   }
   add(viewed.value?.hand ?? [])
+  // what is being paid for, and with, sits on the paying tray
+  if (g.activeCost) {
+    add(g.activeCost.card ? [g.activeCost.card] : [])
+    add(g.activeCost.spent)
+  }
   return ids
 })
 // everything with an id, for naming what a button is about
@@ -131,6 +131,10 @@ const things = computed(() => {
   add(g.sideSchemes)
   add(g.encounterDiscard)
   add(g.focusedCards)
+  if (g.activeCost) {
+    add(g.activeCost.card ? [g.activeCost.card] : [])
+    add(g.activeCost.spent)
+  }
   return map
 })
 const boardChoices = computed(() => choices.value.filter((c) => c.target && onBoard.value.has(c.target)))
@@ -140,7 +144,7 @@ const buttons = computed(() => choices.value.filter((c) => !c.target || !onBoard
 const choose = (index: number) => {
   if (answering.value && game.value) void answer(game.value.questionVersion, index, answering.value)
 }
-provideChoices(() => boardChoices.value, choose)
+provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null)
 
 const filingBug = ref(false)
 const debugging = ref(false)
@@ -242,9 +246,11 @@ const resetGame = () => {
       </main>
 
       <aside class="side">
+        <PayingTray v-if="game?.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" />
         <QuestionZone
           v-if="game"
           :kind="question?.kind ?? null"
+          :prompt="question?.prompt ?? null"
           :buttons="buttons"
           :on-board="boardChoices.length"
           :asking="answering && mySeats.length > 1 ? playerName[answering] : null"

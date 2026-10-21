@@ -5,10 +5,14 @@ import { computed } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import GameIcon from '../browser/components/GameIcon.vue'
 import type { LogPart, LogRef } from '../gameLog'
+import { useCards } from '../cards'
 
 const props = defineProps<{ part: LogPart }>()
 
 const overlay = useCardOverlay()
+const cards = useCards()
+// a ref the engine could only name by its code is named from the card database
+const refName = (ref: LogRef) => (ref.cardCode && ref.name === ref.cardCode ? cards.name(ref.cardCode, ref.name) : ref.name)
 
 const i18nKey = computed(() => (props.part.tag === 'LogI18n' ? props.part.contents[0] : ''))
 const i18nVars = computed(() => (props.part.tag === 'LogI18n' ? props.part.contents[1] : {}))
@@ -53,7 +57,7 @@ const words = ['thwart', 'attack', 'defense', 'recover', 'scheme', 'threat', 'he
     @pointerenter="(e: PointerEvent) => e.pointerType === 'mouse' && show(part.contents as LogRef, e)"
     @pointerleave="(e: PointerEvent) => e.pointerType === 'mouse' && overlay.hide()"
     @pointerup="(e: PointerEvent) => e.pointerType === 'touch' && show(part.contents as LogRef, e)"
-    >{{ part.contents.name }}</span
+    >{{ refName(part.contents as LogRef) }}</span
   >
 
   <span v-else-if="part.tag === 'LogNumber'" class="log-num">{{ part.contents }}</span>

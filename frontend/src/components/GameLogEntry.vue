@@ -30,6 +30,7 @@ const structureTone = computed(() => {
   if (key.startsWith('log.phase.')) return key.slice('log.phase.'.length)
   if (key === 'log.scenarioBegins') return 'scenario'
   if (key === 'log.round') return 'round'
+  if (key === 'log.turn') return 'turn'
   if (key.startsWith('log.gameOver.')) return 'over'
   return null
 })
@@ -188,6 +189,7 @@ const requestUndo = () => {
   text-align: center;
   color: var(--title);
 }
+.log-structure--turn { --tone: var(--steel-deep); margin: 10px -0.6rem 4px; padding-block: 3px; font-size: 0.82em; letter-spacing: 0.08em; color: var(--steel-bright); }
 .log-structure--round { --tone: var(--line-strong); margin-top: 22px; font-size: 1em; }
 .log-structure--pinned {
   position: sticky;

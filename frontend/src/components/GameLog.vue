@@ -43,7 +43,7 @@ const opener = (name: string): LogEntry => ({
   seq: 0,
   step: null,
   kind: 'Structure',
-  body: [{ tag: 'LogI18n', contents: ['log.scenarioBegins', { scenario: { tag: 'LogRefPart', contents: { kind: 'RefScenario', name, cardCode: null, cardId: null, entityId: null, faceDown: false } } }] }],
+  body: [{ tag: 'LogI18n', contents: ['log.scenarioBegins', { villain: { tag: 'LogRefPart', contents: { kind: 'RefVillain', name, cardCode: null, cardId: null, entityId: null, faceDown: false } } }] }],
   source: null,
   children: [],
   audience: { tag: 'Everyone' },
