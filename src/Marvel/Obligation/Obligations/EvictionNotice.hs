@@ -47,7 +47,7 @@ instance RunMessage EvictionNotice where
             identityId
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust Peter Parker -> remove EvictionNotice from the game."
+            "Exhaust Peter Parker -> remove Eviction Notice from the game."
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toTarget attrs)
