@@ -132,7 +132,8 @@ choicesOf = \case
 -- | Answer the open question with the first choice that matches, failing the test when
 -- there is none.
 choose :: (HasCallStack) => Text -> (Choice -> Bool) -> GameAppT ()
-choose what p =
+choose what p = do
+  refreshTurn
   asked >>= \case
     Nothing -> error $ "nothing was asked when trying to " <> show what
     Just (ident, cs) -> case findIndex' p cs of
@@ -144,7 +145,17 @@ choose what p =
 
 -- | Whether the open question offers a matching choice.
 offers :: (Choice -> Bool) -> GameAppT Bool
-offers p = maybe False (any p . snd) <$> asked
+offers p = refreshTurn >> maybe False (any p . snd) <$> asked
+
+-- | Ask the turn question afresh, as a test may have changed the game under it.
+refreshTurn :: GameAppT ()
+refreshTurn =
+  openQuestion >>= \case
+    Just (ident, QuestionLabel "$label.yourTurn" _ _) -> do
+      withGame_ $ questionL .~ mempty
+      push $ IdentityMessage ident PlayerTurnOption
+      runGame
+    _ -> pure ()
 
 isPlay :: PlayerCard -> Choice -> Bool
 isPlay c = \case
@@ -230,6 +241,7 @@ keepCards :: GameAppT ()
 keepCards =
   openQuestion >>= \case
     Just (ident, QuestionLabel "$label.discardAnyCards" _ _) -> answerQuestion ident 0 >> keepCards
+    Just (ident, QuestionLabel "$label.discardToHandSize" _ _) -> answerQuestion ident 0 >> keepCards
     _ -> pure ()
 
 -- | Decline responses and defending until something else is asked.
@@ -297,3 +309,7 @@ encounterCard = genEncounterCard
 players :: GameAppT [IdentityId]
 players = getsGame gamePlayerOrder
 
+
+-- | The first seat's player.
+player1 :: TestGame -> IdentityId
+player1 tg = fromMaybe (error "no players") (headMay tg.seats)
