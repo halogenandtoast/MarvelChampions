@@ -12,6 +12,7 @@ import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -47,7 +48,10 @@ instance HasAbilities StarkTower where
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      pushChoice ident $ ChoosePlayer AnyIdentity (toRef s)
+      -- only a player with a Tech card in their discard pile may be chosen
+      players <- getPlayers
+      withTech <- filterM (\p -> selectAny $ TopmostCardInDiscardOf (IdentityWithId p) (CardWithTrait Tech)) players
+      chooseOne ident [TargetLabel (toRef p) [Run [ChosePlayer p (toRef s)]] | p <- withTech]
       pure s
     ChosePlayer identityId target | isTarget attrs target -> do
       mTechCard <-
