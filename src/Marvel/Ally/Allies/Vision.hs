@@ -56,8 +56,8 @@ instance RunMessage VisionEffect where
       UsedEffect identityId -> do
         chooseOne
           identityId
-          [ Label "THW" [Run [EffectMessage ident $ EffectChoice 1]]
-          , Label "ATK" [Run [EffectMessage ident $ EffectChoice 2]]
+          [ Label "$label.thwartPlusOne" [Run [EffectMessage ident $ EffectChoice 1]]
+          , Label "$label.attackPlusOne" [Run [EffectMessage ident $ EffectChoice 2]]
           ]
         pure e
       EffectChoice n -> case n of

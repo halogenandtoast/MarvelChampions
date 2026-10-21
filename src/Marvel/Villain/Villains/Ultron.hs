@@ -102,8 +102,8 @@ instance RunMessage Ultron where
         1 ->
           chooseOne
             ident
-            [ Label "Place 1 threat on the main scheme" [PlaceThreat (toRef attrs) 1 MainScheme]
-            , Label "Put the top card of your deck into play as a Drone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
+            [ Label "$label.placeOneThreatOnMainScheme" [PlaceThreat (toRef attrs) 1 MainScheme]
+            , Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
             ]
         2 -> push $ PutTopOfDeckIntoPlayAsDrone ident
         3 -> push $ SearchForAndRevealScheme Cards.ultronsImperative

@@ -612,7 +612,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             , Ask playerIdentityId $
                 ChooseOne $
                   [ Label
-                    "Done"
+                    "$label.done"
                     [Run [WithChosen target FromDiscard $ PlayerCard <$> cards]]
                   | length cards >= fromIntegral chooseMin
                   ]
@@ -656,7 +656,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           push $
             Ask playerIdentityId $
               ChooseOne $
-                [ Label "Done" [Run [WithDiscarded target FromHand cards]]
+                [ Label "$label.done" [Run [WithDiscarded target FromHand cards]]
                 | length cards >= fromIntegral discardMin
                 ]
                   <> [ TargetLabel

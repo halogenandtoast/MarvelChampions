@@ -36,9 +36,9 @@ instance RunMessage UnderAttack where
       heroes <- selectList HeroIdentity
       pushAll
         [ Ask p . ChooseOne $
-          Label "Place 2 threat on Under Attack" [Run [SideSchemeMessage ident (SideSchemePlaceThreat 2)]]
+          Label "$label.placeTwoThreatOnUnderAttack" [Run [SideSchemeMessage ident (SideSchemePlaceThreat 2)]]
             : [ Label
-                "Deal 3 damage to your hero"
+                "$label.deal3DamageToYourHero"
                 [Run [IdentityMessage p $ IdentityDamaged (toSource attrs) (toDamage 3 FromAbility)]]
               | p `elem` heroes
               ]

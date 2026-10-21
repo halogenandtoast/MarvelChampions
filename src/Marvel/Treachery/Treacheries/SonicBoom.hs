@@ -48,13 +48,13 @@ instance RunMessage SonicBoom where
         chooseOrRunOne
           identityId
           ( Label
-              "Exhaust each character you control"
+              "$label.exhaustEachCharacterYouControl"
               [ Run $
                   IdentityMessage identityId ExhaustedIdentity
                     : map (\a -> AllyMessage a ExhaustedAlly) allies
               ]
               : [ Label
-                  "Spend {energy}{mental}{physical} resources"
+                  "$label.spendEnergyMentalPhysicalResources"
                   [ Run
                       [ SetActiveCost $
                           ActiveCost

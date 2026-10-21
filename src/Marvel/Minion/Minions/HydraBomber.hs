@@ -26,14 +26,14 @@ instance RunMessage HydraBomber where
         chooseOne
           identityId
           [ Label
-              "Take 2 damage"
+              "$label.take2Damage"
               [ DamageCharacter
                   (IdentityCharacter identityId)
                   (toSource attrs)
                   (toDamage 2 FromAbility)
               ]
           , Label
-              "Place 1 threat on the main scheme"
+              "$label.placeOneThreatOnMainScheme"
               [PlaceThreat (toSource attrs) 1 MainScheme]
           ]
         pure e

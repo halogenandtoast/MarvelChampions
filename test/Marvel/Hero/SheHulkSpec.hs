@@ -145,7 +145,7 @@ spec = describe "She-Hulk" do
       junk <- traverse (putInHand p) ["01088", "01088", "01088"]
       choose "play Legal Practice" (isPlay practice)
       for_ junk \c -> choose "discard" (isTargetChoice c)
-      choose "done discarding" (isLabel "Done")
+      choose "done discarding" (isLabel "$label.done")
       pass
       mainSchemeThreat `shouldReturn` (before - 3)
       length <$> discardOf p `shouldReturn` 4

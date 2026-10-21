@@ -36,14 +36,14 @@ instance RunMessage ElectricWhipAttack where
           Ask identityId $
             ChooseOne
               [ Label
-                  "Deal 1 damage to your hero for each upgrade you control"
+                  "$label.deal1DamageToYourHeroForEachUpgradeYouControl"
                   [ DamageCharacter
                       (IdentityCharacter identityId)
                       (toRef attrs)
                       (toDamage (fromIntegral $ length upgrades) FromTreachery)
                   ]
               , Label
-                  "Discard an upgrade you control"
+                  "$label.discardAnUpgradeYouControl"
                   [ ChooseUpgrade
                       (UpgradeControlledBy $ IdentityWithId identityId)
                       (toTarget attrs)

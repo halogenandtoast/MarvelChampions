@@ -20,7 +20,7 @@ spec = describe "Aggression" do
         choose "attack with Hulk" (isAllyAttack h)
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
-        choose "deal 2 damage" (isLabel "Deal 2 damage to an enemy")
+        choose "deal 2 damage" (isLabel "$label.deal2DamageToAnEnemy")
         chooseIf (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 5
         -- one consequential damage
@@ -39,7 +39,7 @@ spec = describe "Aggression" do
         choose "attack with Hulk" (isAllyAttack h)
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
-        chooseIf (isLabel "Discard Hulk")
+        chooseIf (isLabel "$label.discardHulk")
         alliesWith "01050" `shouldReturn` []
 
     it "deals 1 damage to each character when the card has an energy resource" do
@@ -54,7 +54,7 @@ spec = describe "Aggression" do
         choose "attack with Hulk" (isAllyAttack h)
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
-        chooseIf (isLabel "Deal 1 damage to each character")
+        chooseIf (isLabel "$label.deal1DamageToEachCharacter")
         villainDamageNow `shouldReturn` 4
         damageOf p `shouldReturn` 1
         -- 1 from the effect, 1 consequential

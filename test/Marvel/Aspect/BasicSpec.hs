@@ -55,7 +55,7 @@ spec = describe "Basic" do
         playWith fury [strength, energy]
         nick <- allyIn "01084"
         choose "Nick Fury's forced response" (isAbilityOf (allyId nick))
-        choose "draw 3 cards" (isLabel "Draw 3 cards")
+        choose "draw 3 cards" (isLabel "$label.draw3Cards")
         length <$> handOf p `shouldReturn` 3
         toNextTurn
         alliesWith "01084" `shouldReturn` []
@@ -72,7 +72,7 @@ spec = describe "Basic" do
         playWith fury [strength, energy]
         nick <- allyIn "01084"
         choose "Nick Fury's forced response" (isAbilityOf (allyId nick))
-        choose "deal 4 damage" (isLabel "Deal 4 damage to an enemy")
+        choose "deal 4 damage" (isLabel "$label.deal4DamageToAnEnemy")
         villain <- getVillain
         chooseIf (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 4

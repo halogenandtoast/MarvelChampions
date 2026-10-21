@@ -35,8 +35,8 @@ instance RunMessage AssaultOnNorad where
       pushAll
         [ Ask p $
           ChooseOne
-            [ Label "Place 2 threat on Assault on NORAD" [Run [MainSchemeMessage (mainSchemeId attrs) (MainSchemePlaceThreat 2)]]
-            , Label "Put the top card of your deck into play as a Drone" [Run [PutTopOfDeckIntoPlayAsDrone p]]
+            [ Label "$label.placeTwoThreatOnAssaultOnNorad" [Run [MainSchemeMessage (mainSchemeId attrs) (MainSchemePlaceThreat 2)]]
+            , Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone p]]
             ]
         | p <- players
         ]

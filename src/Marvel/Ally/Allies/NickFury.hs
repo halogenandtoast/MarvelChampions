@@ -26,12 +26,12 @@ instance HasAbilities NickFury where
     [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
         ChooseOneLabelChoice
           [
-            ( "Remove 2 threat from a scheme"
+            ( "$label.remove2ThreatFromAScheme"
             , RemoveThreat (toSource a) 2 ThwartableScheme
             )
-          , ("Draw 3 cards", ChooseDrawCards 3 You)
+          , ("$label.draw3Cards", ChooseDrawCards 3 You)
           ,
-            ( "Deal 4 damage to an enemy"
+            ( "$label.deal4DamageToAnEnemy"
             , ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy
             )
           ]

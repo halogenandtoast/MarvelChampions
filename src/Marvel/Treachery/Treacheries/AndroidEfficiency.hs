@@ -58,7 +58,7 @@ instance RunMessage AndroidEfficiency where
       activeCostId <- getRandom
       let resource = boostResource attrs
       chooseOrRunOne ident $
-        Label "Put the top card of your deck into play as a Drone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
+        Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
           : [ Label
               ("Spend a {" <> T.toLower (tshow resource) <> "} resource")
               [ Run

@@ -51,7 +51,7 @@ instance RunMessage HulkBruceBanner where
             toChoice = \case
               Physical ->
                 [ Label
-                    "Deal 2 damage to an enemy"
+                    "$label.deal2DamageToAnEnemy"
                     [ ChooseDamage
                         (toRef a)
                         (toDamage 2 FromAbility)
@@ -60,14 +60,14 @@ instance RunMessage HulkBruceBanner where
                 ]
               Energy ->
                 [ Label
-                    "Deal 1 damage to each character"
+                    "$label.deal1DamageToEachCharacter"
                     [ DamageAllCharacters
                         AnyCharacter
                         (toRef a)
                         (toDamage 1 FromAbility)
                     ]
                 ]
-              Mental -> [Label "Discard Hulk" [DiscardTarget $ toRef a]]
+              Mental -> [Label "$label.discardHulk" [DiscardTarget $ toRef a]]
               Wild -> toChoice Physical <> toChoice Energy <> toChoice Mental
             choices = concatMap toChoice resources
           chooseOneAtATime (controller a) choices
