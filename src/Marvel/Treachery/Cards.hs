@@ -104,7 +104,7 @@ mastersOfMayhem =
 
 heartShapedHerb :: CardDef
 heartShapedHerb =
-  treachery "01158" "Heart-Shaped Herb" [Star] BlackPantherNemesis 1
+  treachery "01158" "Heart-Shaped Herb" [Star, Boost] BlackPantherNemesis 1
 
 ritualCombat :: CardDef
 ritualCombat =
