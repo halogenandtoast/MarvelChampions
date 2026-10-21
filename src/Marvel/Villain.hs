@@ -9,6 +9,7 @@ import Marvel.Card.Def
 import Marvel.Villain.Types
 import Marvel.Villain.Villains.Klaw
 import Marvel.Villain.Villains.Rhino
+import Marvel.Villain.Villains.Ultron
 
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
@@ -38,4 +39,8 @@ allVillains = fromList $ map
   , SomeVillainCard klaw1
   , SomeVillainCard klaw2
   , SomeVillainCard klaw3
+  , SomeVillainCard ultron
+  , SomeVillainCard ultron1
+  , SomeVillainCard ultron2
+  , SomeVillainCard ultron3
   ]

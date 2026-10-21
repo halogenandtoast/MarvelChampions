@@ -46,6 +46,16 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard caughtOffGuard
   , SomeTreacheryCard gangUp
   , SomeTreacheryCard shadowOfThePast
+  , SomeTreacheryCard androidEfficiencyA
+  , SomeTreacheryCard androidEfficiencyB
+  , SomeTreacheryCard androidEfficiencyC
+  , SomeTreacheryCard rageOfUltron
+  , SomeTreacheryCard repairSequence
+  , SomeTreacheryCard swarmAttack
+  , SomeTreacheryCard concussiveBlast
+  , SomeTreacheryCard exhaustion
+  , SomeTreacheryCard masterplan
+  , SomeTreacheryCard underFire
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

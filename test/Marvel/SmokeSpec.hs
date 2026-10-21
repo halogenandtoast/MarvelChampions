@@ -22,7 +22,7 @@ playRandomly seed = go (mkStdGen seed)
 
 spec :: Spec
 spec = describe "random play" do
-  for_ ["01094", "01113"] \villain ->
+  for_ ["01094", "01113", "01134"] \villain ->
     for_ tables \heroes ->
       for_ [Normal, Expert] \difficulty ->
         it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do

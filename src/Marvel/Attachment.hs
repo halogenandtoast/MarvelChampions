@@ -32,11 +32,11 @@ allAttachments =
       , SomeAttachmentCard sonicConverter
       , SomeAttachmentCard solidSoundBody
       , SomeAttachmentCard programTransmitter
-      , -- , SomeAttachmentCard upgradedDrones
-        -- , SomeAttachmentCard vibraniumArmor
-        -- , SomeAttachmentCard concussionBlasters
-        SomeAttachmentCard geneticallyEnhanced
-        -- , SomeAttachmentCard biomechanicalUpgrades
+      , SomeAttachmentCard upgradedDrones
+      , SomeAttachmentCard vibraniumArmor
+      , SomeAttachmentCard concussionBlasters
+      , SomeAttachmentCard geneticallyEnhanced
+      , SomeAttachmentCard biomechanicalUpgrades
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

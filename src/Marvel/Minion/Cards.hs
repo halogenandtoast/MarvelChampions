@@ -33,6 +33,10 @@ allMinions =
       , vulture
       , whiplash
       , yonRogg
+      , advancedUltronDrone
+      , madameHydra
+      , hydraSoldier
+      , modok
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -179,3 +183,26 @@ yonRogg =
 
 drone :: CardDef
 drone = minion "xdrone" "Drone" [Drone] [] Ultron 0
+
+advancedUltronDrone :: CardDef
+advancedUltronDrone =
+  (minion "01143" "Advanced Ultron Drone" [Drone] [Boost, Boost] Ultron 3)
+    { cdKeywords = singleton Guard
+    }
+
+madameHydra :: CardDef
+madameHydra =
+  unique $ minion "01181" "Madame Hydra" [Elite, Hydra] [Boost, Boost] LegionsOfHydra 1
+
+hydraSoldier :: CardDef
+hydraSoldier =
+  (minion "01182" "Hydra Soldier" [Hydra] [Boost] LegionsOfHydra 3)
+    { cdKeywords = singleton Guard
+    }
+
+modok :: CardDef
+modok =
+  unique $
+    (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
+      { cdKeywords = singleton (Retaliate 2)
+      }

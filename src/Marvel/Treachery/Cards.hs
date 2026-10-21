@@ -37,6 +37,16 @@ allTreacheries = fromList $ map
   , caughtOffGuard
   , gangUp
   , shadowOfThePast
+  , androidEfficiencyA
+  , androidEfficiencyB
+  , androidEfficiencyC
+  , rageOfUltron
+  , repairSequence
+  , swarmAttack
+  , concussiveBlast
+  , exhaustion
+  , masterplan
+  , underFire
   ]
 
 treachery
@@ -144,3 +154,40 @@ gangUp = treachery "01189" "Gang-Up" [Boost] Standard 1
 shadowOfThePast :: CardDef
 shadowOfThePast =
   treachery "01190" "Shadow of the Past" [Boost, Boost] Standard 1
+
+-- | Android Efficiency's three copies differ in the resource their boost asks for.
+androidEfficiencyA :: CardDef
+androidEfficiencyA = treachery "01144a" "Android Efficiency" [Star] Ultron 1
+
+androidEfficiencyB :: CardDef
+androidEfficiencyB = treachery "01144b" "Android Efficiency" [Star] Ultron 1
+
+androidEfficiencyC :: CardDef
+androidEfficiencyC = treachery "01144c" "Android Efficiency" [Star] Ultron 1
+
+rageOfUltron :: CardDef
+rageOfUltron = treachery "01145" "Rage of Ultron" [Boost, Boost] Ultron 2
+
+repairSequence :: CardDef
+repairSequence = treachery "01146" "Repair Sequence" [Boost, Star] Ultron 2
+
+swarmAttack :: CardDef
+swarmAttack = treachery "01147" "Swarm Attack" [Boost] Ultron 2
+
+concussiveBlast :: CardDef
+concussiveBlast = treachery "01154" "Concussive Blast" [Star] UnderAttack 2
+
+exhaustion :: CardDef
+exhaustion =
+  (treachery "01191" "Exhaustion" [Boost, Boost] ExpertSet 1)
+    { cdKeywords = singleton Keyword.Surge
+    }
+
+masterplan :: CardDef
+masterplan = treachery "01192" "Masterplan" [Boost, Boost] ExpertSet 1
+
+underFire :: CardDef
+underFire =
+  (treachery "01193" "Under Fire" [Boost, Boost, Boost] ExpertSet 1)
+    { cdKeywords = singleton Keyword.Surge
+    }
