@@ -36,12 +36,14 @@ instance RunMessage TitaniasFury where
   runMessage msg t@(TitaniasFury (attrs `With` meta)) = case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
+        -- "your hero": an alter-ego is not attacked
         mTitania <- selectOne $ MinionIs Cards.titania
+        isHero <- identityMatches HeroIdentity identityId
         case mTitania of
-          Just titaniaId -> do
+          Just titaniaId | isHero -> do
             push (MinionMessage titaniaId $ MinionAttacks identityId)
             pure t
-          Nothing ->
+          _ ->
             pure . TitaniasFury . (`With` meta) $ attrs & surgeL .~ True
       ResolvedTreachery _ ->
         if titaniaAttacked meta
@@ -62,9 +64,8 @@ instance RunMessage TitaniasFury where
     Boost msg' -> case msg' of
       RevealedAsBoost target enemyId | isTarget attrs target -> do
         case enemyId of
-          EnemyMinionId minionId -> push (DealBoost $ toTarget minionId)
-          EnemyVillainId villainId ->
-            push (DealBoost $ toTarget villainId)
+          EnemyVillainId villainId -> push (DealBoost $ toTarget villainId)
+          EnemyMinionId _ -> pure ()
         pure t
       _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs
     _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs
