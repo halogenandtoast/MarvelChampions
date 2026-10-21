@@ -1,0 +1,25 @@
+module Marvel.Upgrade.Upgrades (module X) where
+
+import Marvel.Upgrade.Upgrades.ArcReactor as X
+import Marvel.Upgrade.Upgrades.ArmoredVest as X
+import Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet as X
+import Marvel.Upgrade.Upgrades.CombatTraining as X
+import Marvel.Upgrade.Upgrades.CosmicFlight as X
+import Marvel.Upgrade.Upgrades.EnergyChannel as X
+import Marvel.Upgrade.Upgrades.EnergyDaggers as X
+import Marvel.Upgrade.Upgrades.FocusedRage as X
+import Marvel.Upgrade.Upgrades.HeroicIntuition as X
+import Marvel.Upgrade.Upgrades.Indomitable as X
+import Marvel.Upgrade.Upgrades.Inspired as X
+import Marvel.Upgrade.Upgrades.MarkVArmor as X
+import Marvel.Upgrade.Upgrades.MarkVHelmet as X
+import Marvel.Upgrade.Upgrades.PantherClaws as X
+import Marvel.Upgrade.Upgrades.PoweredGauntlets as X
+import Marvel.Upgrade.Upgrades.RocketBoots as X
+import Marvel.Upgrade.Upgrades.SpiderTracer as X
+import Marvel.Upgrade.Upgrades.SuperhumanStrength as X
+import Marvel.Upgrade.Upgrades.TacticalGenius as X
+import Marvel.Upgrade.Upgrades.Tenacity as X
+import Marvel.Upgrade.Upgrades.VibraniumSuit as X
+import Marvel.Upgrade.Upgrades.WebbedUp as X
+import Marvel.Upgrade.Upgrades.WebShooter as X

@@ -1,0 +1,6 @@
+snapshot: nightly-2026-10-19
+compiler: ghc-9.14.1
+packages:
+- .
+system-ghc: true
+install-ghc: false

@@ -1,0 +1,422 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           MarvelChampions
+version:        0.0.0
+build-type:     Simple
+
+library
+  exposed-modules:
+      Marvel.Ability
+      Marvel.Ability.Types
+      Marvel.ActiveCost
+      Marvel.ActiveCost.Types
+      Marvel.Ally
+      Marvel.Ally.Allies
+      Marvel.Ally.Allies.BlackCatFeliciaHardy
+      Marvel.Ally.Allies.BlackWidowNatashaRomanoff
+      Marvel.Ally.Allies.DaredevilMattMurdock
+      Marvel.Ally.Allies.HawkeyeClintBarton
+      Marvel.Ally.Allies.HellcatPatsyWalker
+      Marvel.Ally.Allies.HulkBruceBanner
+      Marvel.Ally.Allies.JessicaJones
+      Marvel.Ally.Allies.LukeCage
+      Marvel.Ally.Allies.MariaHill
+      Marvel.Ally.Allies.MockingbirdBobbiMorse
+      Marvel.Ally.Allies.NickFury
+      Marvel.Ally.Allies.Shuri
+      Marvel.Ally.Allies.SpiderWomanJessicaDrew
+      Marvel.Ally.Allies.TigraGreerGrantNelson
+      Marvel.Ally.Allies.Vision
+      Marvel.Ally.Allies.WarMachineJamesRhodes
+      Marvel.Ally.Cards
+      Marvel.Ally.Runner
+      Marvel.Ally.Types
+      Marvel.AlterEgo
+      Marvel.AlterEgo.AlterEgos
+      Marvel.AlterEgo.AlterEgos.CarolDanvers
+      Marvel.AlterEgo.AlterEgos.JenniferWalters
+      Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.AlterEgos.TChalla
+      Marvel.AlterEgo.AlterEgos.TonyStark
+      Marvel.AlterEgo.Cards
+      Marvel.AlterEgo.Runner
+      Marvel.AlterEgo.Types
+      Marvel.Aspect
+      Marvel.Attachment
+      Marvel.Attachment.Attachments
+      Marvel.Attachment.Attachments.ArmoredRhinoSuit
+      Marvel.Attachment.Attachments.Charge
+      Marvel.Attachment.Attachments.EnhancedIvoryHorn
+      Marvel.Attachment.Attachments.GeneticallyEnhanced
+      Marvel.Attachment.Attachments.ProgramTransmitter
+      Marvel.Attachment.Attachments.SolidSoundBody
+      Marvel.Attachment.Attachments.SonicConverter
+      Marvel.Attachment.Cards
+      Marvel.Attachment.Types
+      Marvel.Attack
+      Marvel.Boost
+      Marvel.Card
+      Marvel.Card.Builder
+      Marvel.Card.Code
+      Marvel.Card.Def
+      Marvel.Card.EncounterCard
+      Marvel.Card.Id
+      Marvel.Card.PlayerCard
+      Marvel.Card.PlayerCard.Types
+      Marvel.Card.Side
+      Marvel.Card.Types
+      Marvel.Choice
+      Marvel.Cost
+      Marvel.Cost.Types
+      Marvel.Count
+      Marvel.Criteria
+      Marvel.Damage
+      Marvel.Debug
+      Marvel.Deck
+      Marvel.Difficulty
+      Marvel.Discard
+      Marvel.Effect
+      Marvel.Effect.Types
+      Marvel.EncounterCard
+      Marvel.EncounterSet
+      Marvel.Entity
+      Marvel.Event
+      Marvel.Event.Cards
+      Marvel.Event.Events
+      Marvel.Event.Events.AncestralKnowledge
+      Marvel.Event.Events.Backflip
+      Marvel.Event.Events.ChaseThemDown
+      Marvel.Event.Events.CounterPunch
+      Marvel.Event.Events.CrisisInterdiction
+      Marvel.Event.Events.Emergency
+      Marvel.Event.Events.EnhancedSpiderSense
+      Marvel.Event.Events.FirstAid
+      Marvel.Event.Events.ForJustice
+      Marvel.Event.Events.GammaSlam
+      Marvel.Event.Events.GetBehindMe
+      Marvel.Event.Events.GetReady
+      Marvel.Event.Events.GreatResponsibility
+      Marvel.Event.Events.GroundStomp
+      Marvel.Event.Events.Haymaker
+      Marvel.Event.Events.LeadFromTheFront
+      Marvel.Event.Events.LegalPractice
+      Marvel.Event.Events.MakeTheCall
+      Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.PhotonicBlast
+      Marvel.Event.Events.RelentlessAssault
+      Marvel.Event.Events.RepulsorBlast
+      Marvel.Event.Events.SplitPersonality
+      Marvel.Event.Events.SupersonicPunch
+      Marvel.Event.Events.SwingingWebKick
+      Marvel.Event.Events.Uppercut
+      Marvel.Event.Events.WakandaForeverA
+      Marvel.Event.Events.WakandaForeverB
+      Marvel.Event.Events.WakandaForeverC
+      Marvel.Event.Events.WakandaForeverD
+      Marvel.Event.Types
+      Marvel.Exception
+      Marvel.Game
+      Marvel.Game.Source
+      Marvel.GameValue
+      Marvel.GameValue.Types
+      Marvel.Hand
+      Marvel.Hero
+      Marvel.Hero.Cards
+      Marvel.Hero.Heroes
+      Marvel.Hero.Heroes.BlackPanther
+      Marvel.Hero.Heroes.CaptainMarvel
+      Marvel.Hero.Heroes.IronMan
+      Marvel.Hero.Heroes.SheHulk
+      Marvel.Hero.Heroes.SpiderMan
+      Marvel.Hero.Runner
+      Marvel.Hero.Types
+      Marvel.Hp
+      Marvel.Id
+      Marvel.Identity
+      Marvel.Identity.Types
+      Marvel.Keyword
+      Marvel.MainScheme
+      Marvel.MainScheme.Cards
+      Marvel.MainScheme.MainSchemes
+      Marvel.MainScheme.MainSchemes.SecretRendezvous
+      Marvel.MainScheme.MainSchemes.TheBreakIn
+      Marvel.MainScheme.MainSchemes.UndergroundDistribution
+      Marvel.MainScheme.Types
+      Marvel.Matchers
+      Marvel.Matchers.Types
+      Marvel.Message
+      Marvel.Message.Ally
+      Marvel.Message.Attachment
+      Marvel.Message.Deck
+      Marvel.Message.Effect
+      Marvel.Message.Event
+      Marvel.Message.Identity
+      Marvel.Message.MainScheme
+      Marvel.Message.Minion
+      Marvel.Message.Obligation
+      Marvel.Message.SideScheme
+      Marvel.Message.Support
+      Marvel.Message.Treachery
+      Marvel.Message.Upgrade
+      Marvel.Message.Villain
+      Marvel.Minion
+      Marvel.Minion.Cards
+      Marvel.Minion.Minions
+      Marvel.Minion.Minions.ArmoredGuard
+      Marvel.Minion.Minions.Drone
+      Marvel.Minion.Minions.HydraBomber
+      Marvel.Minion.Minions.HydraMercenary
+      Marvel.Minion.Minions.Killmonger
+      Marvel.Minion.Minions.Melter
+      Marvel.Minion.Minions.RadioactiveMan
+      Marvel.Minion.Minions.Sandman
+      Marvel.Minion.Minions.Shocker
+      Marvel.Minion.Minions.TigerShark
+      Marvel.Minion.Minions.Titania
+      Marvel.Minion.Minions.Vulture
+      Marvel.Minion.Minions.WeaponsRunner
+      Marvel.Minion.Minions.Whiplash
+      Marvel.Minion.Minions.Whirlwind
+      Marvel.Minion.Minions.YonRogg
+      Marvel.Minion.Runner
+      Marvel.Minion.Types
+      Marvel.Modifier
+      Marvel.Modifier.Types
+      Marvel.Name
+      Marvel.Obligation
+      Marvel.Obligation.Cards
+      Marvel.Obligation.Obligations
+      Marvel.Obligation.Obligations.AffairsOfState
+      Marvel.Obligation.Obligations.BusinessProblems
+      Marvel.Obligation.Obligations.EvictionNotice
+      Marvel.Obligation.Obligations.FamilyEmergency
+      Marvel.Obligation.Obligations.LegalWork
+      Marvel.Obligation.Types
+      Marvel.Payment
+      Marvel.Payment.Types
+      Marvel.Phase
+      Marvel.PlayerCard
+      Marvel.Prelude
+      Marvel.Projection
+      Marvel.Query
+      Marvel.Question
+      Marvel.Queue
+      Marvel.Ref
+      Marvel.Resource
+      Marvel.Resource.Cards
+      Marvel.Resource.Types
+      Marvel.Scenario
+      Marvel.Scenario.Types
+      Marvel.SideScheme
+      Marvel.SideScheme.Cards
+      Marvel.SideScheme.SideSchemes
+      Marvel.SideScheme.SideSchemes.BombScare
+      Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.CrowdControl
+      Marvel.SideScheme.SideSchemes.DefenseNetwork
+      Marvel.SideScheme.SideSchemes.HighwayRobbery
+      Marvel.SideScheme.SideSchemes.IllegalArmsFactory
+      Marvel.SideScheme.SideSchemes.ImminentOverload
+      Marvel.SideScheme.SideSchemes.PersonalChallenge
+      Marvel.SideScheme.SideSchemes.TheImmortalKlaw
+      Marvel.SideScheme.SideSchemes.TheMastersOfEvil
+      Marvel.SideScheme.SideSchemes.ThePsycheMagnitron
+      Marvel.SideScheme.SideSchemes.UsurpTheThrone
+      Marvel.SideScheme.Types
+      Marvel.Stats
+      Marvel.Support
+      Marvel.Support.Cards
+      Marvel.Support.Supports
+      Marvel.Support.Supports.AlphaFlightStation
+      Marvel.Support.Supports.AuntMay
+      Marvel.Support.Supports.AvengersMansion
+      Marvel.Support.Supports.Helicarrier
+      Marvel.Support.Supports.InterrogationRoom
+      Marvel.Support.Supports.MedTeam
+      Marvel.Support.Supports.PepperPotts
+      Marvel.Support.Supports.StarkTower
+      Marvel.Support.Supports.SuperhumanLawDivision
+      Marvel.Support.Supports.SurveillanceTeam
+      Marvel.Support.Supports.TacTeam
+      Marvel.Support.Supports.TheGoldenCity
+      Marvel.Support.Supports.TheTriskellion
+      Marvel.Support.Types
+      Marvel.Trait
+      Marvel.Trait.Types
+      Marvel.Treachery
+      Marvel.Treachery.Cards
+      Marvel.Treachery.Treacheries
+      Marvel.Treachery.Treacheries.Advance
+      Marvel.Treachery.Treacheries.Assault
+      Marvel.Treachery.Treacheries.CaughtOffGuard
+      Marvel.Treachery.Treacheries.ElectricWhipAttack
+      Marvel.Treachery.Treacheries.ElectromagneticBacklash
+      Marvel.Treachery.Treacheries.Explosion
+      Marvel.Treachery.Treacheries.FalseAlarm
+      Marvel.Treachery.Treacheries.GangUp
+      Marvel.Treachery.Treacheries.HardToKeepDown
+      Marvel.Treachery.Treacheries.HeartShapedHerb
+      Marvel.Treachery.Treacheries.ImTough
+      Marvel.Treachery.Treacheries.KlawsVengeance
+      Marvel.Treachery.Treacheries.KreeManipulator
+      Marvel.Treachery.Treacheries.MastersOfMayhem
+      Marvel.Treachery.Treacheries.RitualCombat
+      Marvel.Treachery.Treacheries.ShadowOfThePast
+      Marvel.Treachery.Treacheries.SonicBoom
+      Marvel.Treachery.Treacheries.SoundManipulation
+      Marvel.Treachery.Treacheries.Stampede
+      Marvel.Treachery.Treacheries.SweepingSwoop
+      Marvel.Treachery.Treacheries.TheVulturesPlans
+      Marvel.Treachery.Treacheries.TitaniasFury
+      Marvel.Treachery.Treacheries.YonRoggsTreason
+      Marvel.Treachery.Types
+      Marvel.Upgrade
+      Marvel.Upgrade.Cards
+      Marvel.Upgrade.Types
+      Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.ArcReactor
+      Marvel.Upgrade.Upgrades.ArmoredVest
+      Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
+      Marvel.Upgrade.Upgrades.CombatTraining
+      Marvel.Upgrade.Upgrades.CosmicFlight
+      Marvel.Upgrade.Upgrades.EnergyChannel
+      Marvel.Upgrade.Upgrades.EnergyDaggers
+      Marvel.Upgrade.Upgrades.FocusedRage
+      Marvel.Upgrade.Upgrades.HeroicIntuition
+      Marvel.Upgrade.Upgrades.Indomitable
+      Marvel.Upgrade.Upgrades.Inspired
+      Marvel.Upgrade.Upgrades.MarkVArmor
+      Marvel.Upgrade.Upgrades.MarkVHelmet
+      Marvel.Upgrade.Upgrades.PantherClaws
+      Marvel.Upgrade.Upgrades.PoweredGauntlets
+      Marvel.Upgrade.Upgrades.RocketBoots
+      Marvel.Upgrade.Upgrades.SpiderTracer
+      Marvel.Upgrade.Upgrades.SuperhumanStrength
+      Marvel.Upgrade.Upgrades.TacticalGenius
+      Marvel.Upgrade.Upgrades.Tenacity
+      Marvel.Upgrade.Upgrades.VibraniumSuit
+      Marvel.Upgrade.Upgrades.WebbedUp
+      Marvel.Upgrade.Upgrades.WebShooter
+      Marvel.Villain
+      Marvel.Villain.Cards
+      Marvel.Villain.Types
+      Marvel.Villain.Villains.Klaw
+      Marvel.Villain.Villains.Rhino
+      Marvel.Villain.Villains.Ultron
+      Marvel.Window
+      Marvel.Window.Types
+  other-modules:
+      Paths_MarvelChampions
+  hs-source-dirs:
+      src
+  default-extensions:
+      BlockArguments
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+      QuantifiedConstraints
+      NoPolyKinds
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans
+  build-depends:
+      MonadRandom
+    , aeson
+    , aeson-casing
+    , aeson-diff
+    , base >=4.7 && <5
+    , exceptions
+    , extra
+    , hashable
+    , lens
+    , mtl
+    , random-shuffle
+    , template-haskell
+    , text
+    , unordered-containers
+    , uuid
+    , vector
+  default-language: GHC2021
+
+test-suite MarvelChampions-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_MarvelChampions
+  hs-source-dirs:
+      test
+  default-extensions:
+      BlockArguments
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+      ViewPatterns
+      QuantifiedConstraints
+      NoPolyKinds
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      MarvelChampions
+    , MonadRandom
+    , aeson
+    , aeson-casing
+    , aeson-diff
+    , base >=4.7 && <5
+    , exceptions
+    , extra
+    , hashable
+    , lens
+    , mtl
+    , random-shuffle
+    , template-haskell
+    , text
+    , unordered-containers
+    , uuid
+    , vector
+  default-language: GHC2021
