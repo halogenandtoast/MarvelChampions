@@ -5,6 +5,7 @@ import Data.Text (unpack)
 import Control.Monad.IO.Class (liftIO)
 import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
+import System.Environment (lookupEnv)
 import TestImport
 
 -- | Answer whatever is asked at random, from a seed, for as many answers as given, or
@@ -17,9 +18,13 @@ playRandomly seed = go (mkStdGen seed)
     openQuestion >>= \case
       Nothing -> pure n
       Just (ident, q) -> do
-        let (choice, gen') = randomR (0, questionSize q - 1) gen
-        answerQuestion ident choice
-        go gen' (n - 1)
+        -- ending the turn is chosen rarely, so that cards get played
+        let (roll, gen') = randomR (0 :: Int, 9) gen
+            others = [i | (i, c) <- zip [0 ..] (choicesOf q), c /= EndTurn]
+            pool = if roll == 0 || null others || length others == questionSize q then [0 .. questionSize q - 1] else others
+            (k, gen'') = randomR (0, length pool - 1) gen'
+        answerQuestion ident (pool !! k)
+        go gen'' (n - 1)
 
 spec :: Spec
 spec = describe "random play" do
@@ -34,8 +39,10 @@ spec = describe "random play" do
       it (show villain <> " with " <> show modular) do
         playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
  where
-  playSetup setup heroes =
-    for_ [1 .. 8 :: Int] \seed -> do
+  playSetup setup heroes = do
+   -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
+   seeds <- maybe 8 read <$> lookupEnv "SMOKE_SEEDS"
+   for_ [1 .. seeds :: Int] \seed -> do
       (app, ran) <- dealtGame setup (map starter heroes) seed
       result <- try do
         _ <- runGameApp app (playRandomly (seed * 31) 2000)
