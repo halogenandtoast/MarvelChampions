@@ -14,11 +14,28 @@ spec = describe "defending" do
       vid <- villainIdNow
       runNow [VillainMessage vid (VillainAttacks p)]
       pass' p
+      choose "ask Captain Marvel to defend" (isTargetChoice other)
+      -- her player decides
+      fmap fst <$> asked `shouldReturn` Just other
       choose "Captain Marvel defends" (isTargetChoice other)
       pass
       damageOf p `shouldReturn` 0
       -- Rhino's 2 ATK and any boost, less Captain Marvel's 1 DEF, is hers
       damageOf other >>= (`shouldSatisfy` (> 0))
+
+  it "another player may decline to defend, and is not asked again" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    let p = player1 tg
+        other = player2 tg
+    inGame tg do
+      runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+      vid <- villainIdNow
+      runNow [VillainMessage vid (VillainAttacks p)]
+      pass' p
+      choose "ask Captain Marvel to defend" (isTargetChoice other)
+      choose "she declines" (isLabel "$label.declineToDefend")
+      fmap fst <$> asked `shouldReturn` Just p
+      offers (isTargetChoice other) `shouldReturn` False
  where
   -- answer what comes before the defender is declared, such as Spider-Sense
   pass' ident =

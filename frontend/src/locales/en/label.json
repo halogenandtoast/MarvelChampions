@@ -58,5 +58,7 @@
   "deal1DamageToYourHeroForEachUpgradeYouControl": "Deal 1 damage to your hero for each upgrade you control",
   "discardAnUpgradeYouControl": "Discard an upgrade you control",
   "take2Damage": "Take 2 damage",
-  "deal3DamageToYourHero": "Deal 3 damage to your hero"
+  "deal3DamageToYourHero": "Deal 3 damage to your hero",
+  "askedToDefend": "Defend this attack?",
+  "declineToDefend": "Do not defend"
 }

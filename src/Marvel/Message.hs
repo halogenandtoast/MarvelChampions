@@ -134,6 +134,8 @@ data Message
   | DrawAndRevealEncounterCard IdentityId
   | DiscardedCard Card
   | DeclareDefense IdentityId EnemyId DefensePriority
+  | -- | the defender is declared, the players who declined to defend not asked again
+    DeclareDefenseWithout IdentityId EnemyId DefensePriority [IdentityId]
   | RemoveFromPlay Target
   | RemoveFromGame Target
   | CreatedEffect CardDef Source EntityMatcher

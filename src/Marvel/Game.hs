@@ -829,24 +829,44 @@ runGameMessage msg g@Game {..} = case msg of
               forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
+    push $ DeclareDefenseWithout ident enemyId defensePriority []
+    pure g
+  -- any player may defend with a character they control, and decides for themselves:
+  -- the attacked player is offered their own characters and the others', and offering
+  -- another player's asks that player, who may decline
+  DeclareDefenseWithout ident enemyId defensePriority declined -> do
     allies <- selectList UnexhaustedAlly
     identities <-
       if defensePriority == AllyIfAble && not (null allies)
         then pure mempty
         else select $ UnexhaustedIdentity <> HeroIdentity
-    -- any player may defend with a character they control: another player's hero
-    -- defending becomes the attack's target
+    controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
+    let
+      ask owner defense =
+        Ask owner
+          . promptedAbout "$label.askedToDefend" enemyId
+          . ChooseOne
+          $ [ defense
+            , Label "$label.declineToDefend" [Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]]
+            ]
+      offered owner ref defense
+        | owner == ident = defense
+        | otherwise = TargetLabel ref [Run [ask owner defense]]
     push
       $ Ask ident
         . promptedAbout "$label.declareDefender" enemyId
         . ChooseOne
       $ Label "$label.noDefender" []
         : [Defend enemyId | ident `member` identities]
-          <> [ TargetLabel (IdentityRef other) [Run [IdentityMessage other (SideMessage (Defended enemyId))]]
+          <> [ offered other (IdentityRef other) (TargetLabel (IdentityRef other) [Run [IdentityMessage other (SideMessage (Defended enemyId))]])
              | other <- toList identities
              , other /= ident
+             , other `notElem` declined
              ]
-          <> map (`AllyDefend` enemyId) allies
+          <> [ offered owner (AllyRef a) (AllyDefend a enemyId)
+             | (a, Just owner) <- controllers
+             , owner `notElem` declined
+             ]
     pure g
   _ -> pure g
 
