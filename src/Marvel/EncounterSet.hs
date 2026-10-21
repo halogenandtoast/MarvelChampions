@@ -11,7 +11,10 @@ data EncounterSet
   | MastersOfEvil
   | Ultron
   | UnderAttack
+  | LegionsOfHydra
+  | TheDoomsdayChair
   | Standard
+  | ExpertSet
   | SpiderManNemesis
   | CaptainMarvelNemesis
   | SheHulkNemesis
@@ -19,6 +22,11 @@ data EncounterSet
   | BlackPantherNemesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+-- | The modular encounter sets of the core set, any of which a scenario may be played
+-- with in place of the one it recommends.
+modularSets :: [EncounterSet]
+modularSets = [BombScare, MastersOfEvil, UnderAttack, LegionsOfHydra, TheDoomsdayChair]
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of

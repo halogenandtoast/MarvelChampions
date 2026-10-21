@@ -9,6 +9,7 @@ import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -53,7 +54,17 @@ someScenarioCardCode = liftScenarioCard cbCardCode
 instance RunMessage Scenario where
   runMessage msg (Scenario a) = Scenario <$> runMessage msg a
 
-type ScenarioCard a = CardBuilder () a
+-- | How a scenario is to be played: the villain's, with which modular sets and at which
+-- difficulty. Expert adds the expert set and starts the villain a stage later.
+data ScenarioSetup = ScenarioSetup
+  { scenarioCode :: CardCode
+  , modulars :: [EncounterSet]
+  , difficulty :: Difficulty
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+type ScenarioCard a = CardBuilder ScenarioSetup a
 
 instance Entity Scenario where
   type Id Scenario = CardCode
@@ -116,26 +127,34 @@ accelerationTokensL =
 mainSchemesL :: Lens' (Attrs Scenario) [CardCode]
 mainSchemesL = lens scenarioMainSchemes $ \m x -> m {scenarioMainSchemes = x}
 
+-- | A scenario: its villain's stage for standard and for expert play, its main schemes
+-- in order, and its own encounter sets, to which the setup adds the modular sets, the
+-- standard set and, for expert play, the expert set.
 scenario ::
   (Attrs Scenario -> a) ->
   CardCode ->
-  [CardCode] ->
+  (CardCode, CardCode) ->
   [CardCode] ->
   [EncounterSet] ->
-  CardBuilder () a
-scenario f cCode villains mainSchemes encounterSets =
+  CardBuilder ScenarioSetup a
+scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
   CardBuilder
     { cbCardCode = cCode
-    , cbCardBuilder = \() ->
+    , cbCardBuilder = \setup ->
         f $
           ScenarioAttrs
             { scenarioId = cCode
-            , scenarioVillains = villains
+            , scenarioVillains = [if setup.difficulty == Expert then expertVillain else standardVillain]
             , scenarioMainSchemes = mainSchemes
             , scenarioEncounterDeck = mempty
             , scenarioDiscard = mempty
-            , scenarioDifficulty = Normal
-            , scenarioEncounterSets = HashSet.fromList encounterSets
+            , scenarioDifficulty = setup.difficulty
+            , scenarioEncounterSets =
+                HashSet.fromList $
+                  encounterSets
+                    <> setup.modulars
+                    <> [EncounterSet.Standard]
+                    <> [EncounterSet.ExpertSet | setup.difficulty == Expert]
             , scenarioSetAsideCards = mempty
             , scenarioAccelerationTokens = 0
             }
