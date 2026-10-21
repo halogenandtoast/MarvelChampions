@@ -112,7 +112,6 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
 }
 .villain { display: flex; flex-direction: column; gap: 8px; flex: none; width: var(--card-width); }
 .villain-info { display: flex; flex-direction: column; gap: 6px; }
-.stage dd { color: var(--crimson); }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(30px, 1fr)); gap: 4px; margin: 0; }
 .stats div { flex: 1; padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
 .stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
