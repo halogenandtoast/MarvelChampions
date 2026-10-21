@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Build the card database (frontend/public/data/cards.json) from MarvelCDB.
+
+usage: tools/generate-cards.py [cards.json packs.json]
+
+With no arguments the MarvelCDB public API is fetched. The other face of a
+double-sided card (alter-ego, villain stages, main scheme B sides) only comes
+nested under `linked_card`, so it is lifted into a card of its own here.
+The server reads this file to resolve decks; the card browser reads it too.
+"""
+import json
+import re
+import sys
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "frontend" / "public" / "data" / "cards.json"
+API = "https://marvelcdb.com/api/public"
+
+LANDSCAPE = {"main_scheme", "side_scheme", "player_side_scheme"}
+
+
+def fetch(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "marvel-champions-importer"})
+    with urllib.request.urlopen(req) as r:
+        return json.load(r)
+
+
+def html_to_text(s):
+    """MarvelCDB text is HTML with icon spans; keep <b>/<i>, turn icons into [name]."""
+    if s is None:
+        return None
+    s = re.sub(r'<span class="icon-([a-z_]+)"[^>]*></span>', r"[\1]", s)
+    s = re.sub(r"</?p>", "\n", s)
+    s = re.sub(r"<br\s*/?>", "\n", s)
+    return re.sub(r"\n{2,}", "\n", s).strip()
+
+
+def traits(s):
+    return [t.strip() for t in (s or "").split(".") if t.strip()]
+
+
+def card(c, pack_order):
+    t = c["type_code"]
+    out = {
+        "code": c["code"],
+        "name": c["name"],
+        "subname": c.get("subname"),
+        "packCode": c["pack_code"],
+        "packName": c.get("pack_name"),
+        "packOrder": pack_order.get(c["pack_code"]),
+        "position": c.get("position"),
+        "setCode": c.get("card_set_code"),
+        "setName": c.get("card_set_name"),
+        "setType": c.get("card_set_type_name_code"),
+        "setPosition": c.get("set_position"),
+        "type": t,
+        "typeName": c.get("type_name"),
+        "faction": c.get("faction_code"),
+        "factionName": c.get("faction_name"),
+        "cost": c.get("cost"),
+        "resources": {
+            k: c.get("resource_" + k)
+            for k in ("energy", "physical", "mental", "wild")
+            if c.get("resource_" + k)
+        },
+        "thwart": c.get("thwart"),
+        "thwartCost": c.get("thwart_cost"),
+        "attack": c.get("attack"),
+        "attackCost": c.get("attack_cost"),
+        "defense": c.get("defense"),
+        "recover": c.get("recover"),
+        "scheme": c.get("scheme"),
+        "health": c.get("health"),
+        "healthPerHero": c.get("health_per_hero", False),
+        "handSize": c.get("hand_size"),
+        "boost": c.get("boost"),
+        "boostStar": c.get("boost_star", False),
+        "threat": c.get("threat"),
+        "threatFixed": c.get("threat_fixed", False),
+        "baseThreat": c.get("base_threat"),
+        "baseThreatFixed": c.get("base_threat_fixed", False),
+        "escalationThreat": c.get("escalation_threat"),
+        "escalationThreatFixed": c.get("escalation_threat_fixed", False),
+        "acceleration": c.get("scheme_acceleration"),
+        "crisis": c.get("scheme_crisis"),
+        "hazard": c.get("scheme_hazard"),
+        "amplify": c.get("scheme_amplify"),
+        "stage": c.get("stage"),
+        "traits": traits(c.get("real_traits") or c.get("traits")),
+        "text": html_to_text(c.get("text")),
+        "flavor": html_to_text(c.get("flavor")),
+        "backName": c.get("back_name"),
+        "backText": html_to_text(c.get("back_text")),
+        "backFlavor": html_to_text(c.get("back_flavor")),
+        "quantity": c.get("quantity", 1),
+        "deckLimit": c.get("deck_limit"),
+        "unique": c.get("is_unique", False),
+        "permanent": c.get("permanent", False),
+        "hidden": c.get("hidden", False),
+        "doubleSided": c.get("double_sided", False),
+        "linkedTo": c.get("linked_to_code") or c.get("linked_code"),
+        "duplicateOf": c.get("duplicate_of_code"),
+        "illustrator": c.get("illustrator"),
+        "image": c["code"] + ".avif",
+        "remoteImage": c.get("imagesrc"),
+        "remoteBackImage": c.get("backimagesrc"),
+        "orientation": "landscape" if t in LANDSCAPE else "portrait",
+        "deckRequirements": c.get("deck_requirements"),
+        "deckOptions": c.get("deck_options"),
+    }
+    return {k: v for k, v in out.items() if v not in (None, {}, [])} | {"traits": out["traits"]}
+
+
+def main(argv):
+    if len(argv) == 3:
+        raw = json.loads(Path(argv[1]).read_text())
+        packs = json.loads(Path(argv[2]).read_text())
+    else:
+        packs = fetch(API + "/packs/")
+        raw = fetch(API + "/cards/?encounter=1")
+    pack_order = {p["code"]: p["position"] for p in packs}
+    cards = {}
+    for c in raw:
+        cards.setdefault(c["code"], card(c, pack_order))
+        linked = c.get("linked_card")
+        if linked:
+            lc = card(linked, pack_order)
+            lc["linkedTo"] = c["code"]
+            cards.setdefault(linked["code"], lc)
+    out = {
+        "version": 1,
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "packs": [
+            {"code": p["code"], "name": p["name"], "order": p["position"], "released": p.get("available"), "cardCount": p.get("known")}
+            for p in sorted(packs, key=lambda p: p["position"])
+        ],
+        "cards": sorted(cards.values(), key=lambda c: (c.get("packOrder") or 999, c.get("position") or 0, c["code"])),
+    }
+    OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
+    print(f"wrote {len(out['cards'])} cards in {len(out['packs'])} packs to {OUT}")
+
+
+if __name__ == "__main__":
+    main(sys.argv)
