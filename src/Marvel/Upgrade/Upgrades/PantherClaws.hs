@@ -43,7 +43,7 @@ instance RunMessage PantherClaws where
           let dmg = if LastSpecial `elem` modifiers then 4 else 2
           msgs <-
             choiceMessages (upgradeController attrs) $
-              ChooseDamage (toRef attrs) (toDamage dmg FromAbility) (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
+              ChooseDamage (toRef attrs) (toDamage dmg $ FromPlayerAttack ident) (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
           pushAll msgs
       pure u
     _ -> PantherClaws <$> runMessage msg attrs
