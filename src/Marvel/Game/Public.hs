@@ -6,7 +6,7 @@
 -- out, and at a game with friends so do the hands of the players a viewer does not hold.
 --
 -- Stored games and exports keep the engine's own JSON; this is only ever sent.
-module Marvel.Game.Public (publicGame, publicGameFor, GameView (..), ChoiceView (..)) where
+module Marvel.Game.Public (publicGame, publicGameFor, owedFor, GameView (..), ChoiceView (..)) where
 
 import Marvel.Prelude
 
@@ -15,11 +15,14 @@ import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.ActiveCost.Types
 import Marvel.Payment (paymentResources)
-import Marvel.Resource.Types (Resource)
+import Data.List qualified as L
+import Marvel.Cost.Types (Cost (..), costResources)
+import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
+import Marvel.Attack qualified as Attack
 import Marvel.Card
 import Marvel.Deck
 import Marvel.Discard
@@ -66,12 +69,25 @@ data GameView = GameView
   , encounterDeckSize :: Int
   , encounterDiscard :: [CardView]
   , focusedCards :: [CardView]
+  , attack :: Maybe AttackView
+  -- ^ an enemy's attack, while it is made
+  , boostCards :: [BoostView]
+  -- ^ face down as dealt, then face up once flipped
   , accelerationTokens :: Natural
   , question :: HashMap IdentityId QuestionView
   , questionVersion :: Int
   , activeCost :: Maybe ActiveCostView
   -- ^ what is being paid for, while it is
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+data AttackView = AttackView {attacker :: Text, target :: Text}
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A boost card: its code and name only once it is flipped.
+data BoostView = BoostView {id :: CardId, code :: Maybe CardCode, name :: Maybe Text}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -217,6 +233,10 @@ data ActiveCostView = ActiveCostView
   , card :: Maybe CardView
   , source :: Maybe Text
   , paid :: [Resource]
+  , owed :: [Maybe Resource]
+  -- ^ what the paid resources do not yet cover: a resource of that kind, or any
+  , anyAmount :: Bool
+  -- ^ an X cost, paid as far as the player likes
   , spent :: [CardView]
   }
   deriving stock (Show, Generic)
@@ -261,6 +281,8 @@ gameView seesHand g = do
             ForAbility a -> refId a.abilitySource
             _ -> Nothing
         , paid
+        , owed = owedFor (costResources c.activeCostCost) paid
+        , anyAmount = dynamic c.activeCostCost
         , spent = map (cardView . PlayerCard) c.activeCostSpentCards
         }
   pure
@@ -286,6 +308,10 @@ gameView seesHand g = do
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , focusedCards = map cardView (gameFocusedCards g)
+      , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
+      , boostCards =
+          [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
+            <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
       , accelerationTokens = scenario.scenarioAccelerationTokens
       , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
@@ -487,6 +513,37 @@ describeChoice asked = \case
   plain kind label = ChoiceView 0 kind label Nothing Nothing Nothing
   on kind t = ChoiceView 0 kind Nothing (refId t) Nothing Nothing
   onCard kind cid = ChoiceView 0 kind Nothing (Just $ idText cid) Nothing Nothing
+
+-- | The resources a cost still needs once those paid are matched to it: each kind first,
+-- a wild in place of one, then what is left over against the generic ones.
+owedFor :: [Maybe Resource] -> [Resource] -> [Maybe Resource]
+owedFor cost paid = map Just unmet <> replicate (length generic - length left) Nothing
+ where
+  (specific, generic) = (catMaybes cost, filter isNothing cost)
+  (unmet, left) = foldl' match ([], paid) specific
+  match (missed, have) r
+    | r `elem` have = (missed, L.delete r have)
+    | Wild `elem` have = (missed, L.delete Wild have)
+    | otherwise = (missed <> [r], have)
+
+dynamic :: Cost -> Bool
+dynamic = \case
+  DynamicResourceCost _ -> True
+  Costs cs -> any dynamic cs
+  _ -> False
+
+attackView :: Maybe Attack.Attack -> Maybe AttackView
+attackView = fmap \a ->
+  AttackView
+    { attacker = case Attack.attackEnemy a of
+        EnemyVillainId x -> idText x
+        EnemyMinionId x -> idText x
+    , target = case Attack.attackCharacter a of
+        IdentityCharacter x -> idText x
+        AllyCharacter x -> idText x
+        VillainCharacter x -> idText x
+        MinionCharacter x -> idText x
+    }
 
 -- | The id the client keys a card or entity by: the uuid inside the ref.
 refId :: Ref focus -> Maybe Text

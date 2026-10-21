@@ -2,7 +2,8 @@ module Marvel.PublicSpec (spec) where
 
 import Control.Monad (replicateM_)
 import Data.ByteString.Lazy qualified as BL
-import Marvel.Game.Public (publicGame)
+import Marvel.Game.Public (owedFor, publicGame)
+import Marvel.Resource.Types (Resource (..))
 import System.Environment (lookupEnv)
 import TestImport
 
@@ -18,3 +19,9 @@ spec = describe "the game as the client sees it" do
     case view of
       Object _ -> pure ()
       _ -> expectationFailure "the view is not an object"
+
+  it "says what a cost still needs once resources are paid" $ id @(IO ()) do
+    owedFor [Just Physical, Nothing, Nothing] [] `shouldBe` [Just Physical, Nothing, Nothing]
+    owedFor [Just Physical, Nothing, Nothing] [Energy] `shouldBe` [Just Physical, Nothing]
+    owedFor [Just Physical, Nothing] [Wild, Mental] `shouldBe` []
+    owedFor [Nothing] [Physical, Mental] `shouldBe` []

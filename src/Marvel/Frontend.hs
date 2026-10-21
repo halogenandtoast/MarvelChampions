@@ -2,6 +2,7 @@
 
 module Marvel.Frontend (module Marvel.Frontend) where
 
+import Marvel.Card.Code
 import Marvel.Card.Id
 import Marvel.Log.Entry
 import Marvel.Prelude
@@ -12,6 +13,12 @@ data FrontendMessage
     Logged {entry :: LogEntry}
   | -- | cards shuffled back into a deck, which may be drawn straight out again
     ShuffleIntoDeck {cardIds :: [CardId]}
+  | -- | a deck shuffled: @deck-encounter@ or @deck-@ and the player's identity
+    Shuffled {pile :: Text}
+  | -- | a boost card dealt face down from the encounter deck
+    BoostDealt {cardId :: CardId}
+  | -- | an encounter card turned face up, revealed or flipped as a boost
+    Revealing {cardId :: CardId, code :: CardCode, boost :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
