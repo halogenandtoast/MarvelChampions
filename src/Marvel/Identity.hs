@@ -481,6 +481,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               FromDeck
               (fromIntegral diff)
       pure pid
+    DrawToPrintedHandSize -> do
+      let short = fromIntegral (unHandSize $ handSize pid) - length (unHand playerIdentityHand)
+      when (short > 0) $ push $ IdentityMessage playerIdentityId $ DrawCards FromDeck (fromIntegral short)
+      pure pid
     DrawCards fromZone n -> case fromZone of
       FromHand -> error "Impossible"
       FromDiscard -> error "Impossible"

@@ -235,6 +235,11 @@ instance RunMessage (Attrs Scenario) where
     BeginRound -> do
       push (BeginPhase PlayerPhase)
       pure attrs
+    -- with no encounter deck and no discard pile to make one, acceleration tokens would
+    -- be placed without end: the players lose
+    EmptyScenarioDeck | null scenarioDiscard && null scenarioEncounterDeck -> do
+      push $ GameOver Lost
+      pure attrs
     EmptyScenarioDeck -> do
       deck' <- shuffleM scenarioDiscard
       pure $

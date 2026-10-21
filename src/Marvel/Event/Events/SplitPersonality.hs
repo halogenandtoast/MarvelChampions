@@ -32,7 +32,7 @@ instance RunMessage SplitPersonality where
         pushAll $
           map
             (IdentityMessage identityId)
-            [ChangedToForm newForm, DrawToHandLimit]
+            [ChangedToForm newForm, DrawToPrintedHandSize]
         pure e
       _ -> SplitPersonality <$> runMessage msg attrs
     _ -> SplitPersonality <$> runMessage msg attrs

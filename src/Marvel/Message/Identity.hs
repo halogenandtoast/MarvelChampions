@@ -40,6 +40,8 @@ data IdentityMessage
   | ReadiedIdentity
   | DrawOrDiscardToHandLimit
   | DrawToHandLimit
+  | -- | the hand size printed on the identity, without what modifies it
+    DrawToPrintedHandSize
   | ReadyCards
   | SetupIdentity
   | DealStartingHand
