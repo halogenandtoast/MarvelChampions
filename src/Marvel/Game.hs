@@ -349,6 +349,7 @@ runGameMessage msg g@Game {..} = case msg of
     pure g
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
+  BeginPhase phase -> pure $ g & phaseL .~ phase
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do
     let order = case gamePlayerOrder of

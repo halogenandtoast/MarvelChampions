@@ -123,6 +123,7 @@ library
       Marvel.Frontend
       Marvel.Game
       Marvel.Game.Public
+      Marvel.Game.Run
       Marvel.Game.Source
       Marvel.GameValue
       Marvel.GameValue.Types
@@ -145,6 +146,7 @@ library
       Marvel.Keyword
       Marvel.Log
       Marvel.Log.Entry
+      Marvel.Log.Narrator
       Marvel.MainScheme
       Marvel.MainScheme.Cards
       Marvel.MainScheme.MainSchemes
@@ -467,6 +469,8 @@ test-suite MarvelChampions-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Marvel.CoverageSpec
+      Marvel.LogSpec
       Marvel.PublicSpec
       Marvel.SmokeSpec
       TestImport
