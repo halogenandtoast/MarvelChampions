@@ -133,7 +133,7 @@ markVHelmet =
 
 poweredGauntlets :: CardDef
 poweredGauntlets =
-  identityUpgrade "01038" "Power Gauntlets" 2 [Armor, Tech] [Energy]
+  identityUpgrade "01038" "Powered Gauntlets" 2 [Armor, Tech] [Energy]
 
 rocketBoots :: CardDef
 rocketBoots = identityUpgrade "01039" "Rocket Boots" 1 [Armor, Tech] [Mental]
