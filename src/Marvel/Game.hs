@@ -557,10 +557,12 @@ runGameMessage msg g@Game {..} = case msg of
       ]
     pure g
   RevealedEncounterCard ident card -> do
+    -- surge is resolved after the rest of the card; treacheries surge as they resolve
+    let surge = [Marvel.Message.Surge ident | Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)]
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
-        pushAll [AttachmentMessage (toId attachment) $ RevealAttachment ident]
+        pushAll $ AttachmentMessage (toId attachment) (RevealAttachment ident) : surge
         pure $
           g
             & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
@@ -578,6 +580,7 @@ runGameMessage msg g@Game {..} = case msg of
                , MinionMessage (toId minion) (MinionEngagedIdentity ident)
                , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
                ]
+            <> surge
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
@@ -1360,7 +1363,8 @@ gameSelectEnemy m = do
     VillainEnemy -> pure True
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
-    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
+    -- guard keeps the player it is engaged with from attacking the villain
+    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith You)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
@@ -1426,6 +1430,7 @@ gameSelectMinion m = do
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    MinionMatches xs -> andM . traverse matchFilter xs
 
 gameSelectTreachery :: (HasGame m) => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case
