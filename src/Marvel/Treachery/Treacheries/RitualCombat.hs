@@ -5,6 +5,7 @@ module Marvel.Treachery.Treacheries.RitualCombat (
 
 import Marvel.Prelude
 
+import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Choice
 import Marvel.Damage
@@ -38,9 +39,10 @@ instance RunMessage RitualCombat where
             Just ident -> do
               let
                 x =
-                  (+ 1) . fromIntegral . sum $
+                  -- a boost star is not a boost icon
+                  (+ 1) . sum $
                     map
-                      (length . cdBoostIcons . getCardDef)
+                      (boostCount . cdBoostIcons . getCardDef)
                       cards
               chooseOne
                 ident

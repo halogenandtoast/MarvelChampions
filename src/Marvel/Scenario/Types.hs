@@ -269,6 +269,13 @@ instance RunMessage (Attrs Scenario) where
         _ -> error "Can not deal boost to target"
       when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
+    -- ponytail: a deck running out partway stops there; only 1 card is ever discarded
+    DiscardTopOfEncounterDeck n mTarget -> do
+      let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
+      pushAll $
+        [WithDiscarded target FromEncounterDeck (EncounterCard <$> discarded) | Just target <- [mTarget]]
+          <> [EmptyScenarioDeck | null deck']
+      pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :)
     DiscardUntil FromEncounterDeck cardMatcher target -> do
