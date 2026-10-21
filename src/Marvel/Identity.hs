@@ -903,6 +903,10 @@ instance RunMessage PlayerIdentity where
             & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    -- a card played from another player's discard pile (Make the Call) leaves it
+    IdentityMessage ident (PlayedCard card _)
+      | ident /= playerIdentityId attrs ->
+          pure $ PlayerIdentity $ attrs & (discardL %~ Discard . filter (/= card) . unDiscard)
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid
