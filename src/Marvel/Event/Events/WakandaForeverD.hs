@@ -43,7 +43,8 @@ instance RunMessage WakandaForeverD where
   runMessage msg (WakandaForeverD (attrs `With` meta)) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        upgradeIds <- select (UpgradeWithTrait BlackPanther)
+        upgradeIds <-
+          select $ UpgradeWithTrait BlackPanther <> UpgradeControlledBy (IdentityWithId identityId)
         chooseOneAtATime
           identityId
           [ TargetLabel
