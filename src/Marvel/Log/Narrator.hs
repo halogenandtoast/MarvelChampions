@@ -98,8 +98,11 @@ identityNarration ident = \case
     who <- playerRef' ident
     face <- getsGame \g -> do
       p <- lookup ident (gamePlayers g)
-      faceCode <$> lookup side (toAttrs p).playerIdentitySides
-    pure [action [ikeyPart "log.changesForm" ["player" ~> who, "identity" ~> codeRef RefIdentity code]] | Just code <- [face]]
+      faceDef <$> lookup side (toAttrs p).playerIdentitySides
+    pure
+      [ action [ikeyPart "log.changesForm" ["player" ~> who, "identity" ~> (codeRef RefIdentity (cdCardCode def)) {logRefName = display (cdName def)}]]
+      | Just def <- [face]
+      ]
   SideMessage Attacked -> Just $ simplyPlayer "log.basicAttack"
   SideMessage Thwarted -> Just $ simplyPlayer "log.basicThwart"
   SideMessage Recovered -> Just $ simplyPlayer "log.recovers"
@@ -169,8 +172,8 @@ minionNarration mid = \case
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
-  AllyAttacked -> Just $ simply "log.allyAttacks" (AllyRef aid)
-  AllyThwarted -> Just $ simply "log.allyThwarts" (AllyRef aid)
+  AllyAttacked -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyAttacks" ["ally" ~> a]]
+  AllyThwarted -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyThwarts" ["ally" ~> a]]
   AllyDefended enemy -> Just $ whenRef (AllyRef aid) \a -> whenRef (EnemyRef enemy) \e ->
     one $ action [ikeyPart "log.allyDefends" ["ally" ~> a, "enemy" ~> e]]
   AllyDamaged _ dmg | damageAmount dmg > 0 -> Just do
@@ -243,10 +246,10 @@ playerRef' ident =
     Just p -> (playerRef ident (toAttrs p).playerIdentityName) {logRefCardCode = Just (toCardCode p)}
     Nothing -> playerRef ident ""
 
-faceCode :: PlayerIdentitySide -> CardCode
-faceCode = \case
-  HeroSide x -> toCardCode x
-  AlterEgoSide x -> toCardCode x
+faceDef :: PlayerIdentitySide -> CardDef
+faceDef = \case
+  HeroSide x -> getCardDef x
+  AlterEgoSide x -> getCardDef x
 
 codeRef :: LogRefKind -> CardCode -> LogRef
 codeRef kind code = (logRef kind (unCardCode code)) {logRefCardCode = Just code}
