@@ -16,6 +16,7 @@ const cards = useCards()
 const villains = computed(() => game.villains ?? [])
 const mainSchemes = computed(() => game.mainSchemes ?? [])
 const sideSchemes = computed(() => game.sideSchemes ?? [])
+const environments = computed(() => game.environments ?? [])
 const heroes = computed(() => Math.max(1, (game.players ?? []).length))
 
 // the threat that completes a scheme, printed per hero unless fixed
@@ -76,6 +77,12 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
     <div v-if="sideSchemes.length" class="side-schemes">
       <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
         <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" size="sm" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" />
+      </div>
+    </div>
+
+    <div v-if="environments.length" class="side-schemes environments">
+      <div v-for="environment in environments" :key="environment.id" class="scheme side">
+        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" size="sm" :attached="environment.attachments ?? []" />
       </div>
     </div>
 

@@ -136,6 +136,13 @@ export interface ActiveCostView {
   spent: CardView[]
 }
 
+export interface EnvironmentView {
+  id: string
+  code: string
+  name: string
+  attachments?: { id: string; code: string; name: string; damage?: number }[]
+}
+
 export interface GameView {
   round: number
   phase: 'PlayerPhase' | 'VillainPhase' | string
@@ -148,6 +155,8 @@ export interface GameView {
   mainSchemes: SchemeView[]
   sideSchemes: SchemeView[]
   minions: MinionView[]
+  /** Environments: lasting encounter cards, with what is attached to them. */
+  environments?: EnvironmentView[]
   encounterDeckSize: number
   encounterDiscard: CardView[]
   focusedCards: CardView[]
