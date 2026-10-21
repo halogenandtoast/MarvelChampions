@@ -68,7 +68,6 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
             :code="minion.code"
             :name="minion.name"
             :damage="minion.damage"
-            :hit-points="minion.hitPoints"
             :stunned="minion.stunned"
             :confused="minion.confused"
             :tough="minion.tough"
