@@ -1,10 +1,17 @@
-import { computed, onScopeDispose, readonly, ref, shallowReadonly, shallowRef } from 'vue'
+import { computed, nextTick, onScopeDispose, readonly, ref, shallowReadonly, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { apiFetch, type DeckChoice } from '../api'
 import { token } from '../auth'
 import type { GameData, GameView, ServerMessage } from '../server'
 import type { LogEntry } from '../gameLog'
-import { withViewTransition } from './useViewTransition'
+import { useCards } from '../cards'
+import type { RiverCard } from '../components/River.vue'
+import { dealFrom, intoRiver, riffle } from './dealing'
+import { transitionsOn, withViewTransition } from './useViewTransition'
+
+// how long a card turned up in the river is left to be read
+const HOLD_MS = 650
+const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
 // entries are numbered from 1, so a page not reaching it has more before it
 const olderThan = (page: LogEntry[]) => (page[0]?.seq ?? 1) > 1
@@ -22,6 +29,9 @@ export const useGame = (gameId: string, spectate = false) => {
   const error = ref<string | null>(null)
   const data = shallowRef<GameData | null>(null)
   const log = shallowRef<LogEntry[]>([])
+  // cards the server said were dealt or turned up, shown in the river until the state after
+  const river = shallowRef<RiverCard[]>([])
+  const cards = useCards()
   const hasOlder = ref(false)
   const queue: ServerMessage[] = []
   let draining = false
@@ -33,10 +43,28 @@ export const useGame = (gameId: string, spectate = false) => {
       log.value = next.log
       hasOlder.value = olderThan(next.log)
     }
-    // cards morph between zones, as a hand card going into play
-    await withViewTransition(() => {
+    // cards morph between zones, as a hand card going into play, or fly from and to piles
+    const before = data.value?.game ?? null
+    const dealing = transitionsOn() && next.game ? dealFrom(before, next.game, cards.sources, new Map(river.value.map((c) => [c.id, c.code]))) : null
+    await withViewTransition(async () => {
+      dealing?.lift()
       data.value = next
+      river.value = []
+      await nextTick()
+      dealing?.land()
     })
+    dealing?.done()
+  }
+
+  // a card into the river: a boost off the encounter deck face down, or a card turned up
+  const toRiver = async (card: RiverCard, faceUp: boolean) => {
+    const moving = transitionsOn() ? intoRiver(card.id, faceUp, cards.sources) : null
+    await withViewTransition(() => {
+      moving?.lift()
+      river.value = [...river.value.filter((c) => c.id !== card.id), card]
+    })
+    moving?.done()
+    if (faceUp && moving) await sleep(HOLD_MS)
   }
 
   // Log entries arrive while the server works; the state that follows is applied in order.
@@ -47,6 +75,12 @@ export const useGame = (gameId: string, spectate = false) => {
       case 'Logged':
         log.value = [...log.value, message.entry]
         return
+      case 'Shuffled':
+        return transitionsOn() ? riffle(message.pile) : undefined
+      case 'BoostDealt':
+        return toRiver({ id: message.cardId, code: null }, false)
+      case 'Revealing':
+        return toRiver({ id: message.cardId, code: message.code }, true)
       default:
         return
     }
@@ -116,6 +150,7 @@ export const useGame = (gameId: string, spectate = false) => {
     started: computed(() => data.value?.started ?? false),
     table: computed(() => data.value?.table ?? null),
     log: shallowReadonly(log),
+    river: shallowReadonly(river),
     hasOlder: readonly(hasOlder),
     loadOlder: async (before: number) => {
       const response = await apiFetch(`/api/games/${gameId}/log?before=${before}`).catch(() => null)

@@ -329,3 +329,11 @@ select {
 .stat-atk dd { color: var(--stat-atk); }
 .stat-def dd { color: var(--stat-def); }
 .stat-rec dd { color: var(--stat-rec); }
+
+/* Cards morph between zones as the state changes; a card from a deck turns face up. */
+::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.28s; }
+@keyframes deal-turn-away { from { transform: rotateY(0deg); } 50%, to { transform: rotateY(90deg); } }
+@keyframes deal-turn-up { from, 50% { transform: rotateY(-90deg); } to { transform: rotateY(0deg); } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

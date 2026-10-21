@@ -7,8 +7,7 @@ import { currentUser } from '../auth'
 import { exportGame } from '../api'
 import { useGame } from '../composables/useGame'
 import { provideChoices } from '../composables/useChoices'
-import type { CardView, ChoiceView, PlayerView } from '../server'
-import BoardCard from '../components/BoardCard.vue'
+import type { ChoiceView, PlayerView } from '../server'
 import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
 import FileBug from '../components/FileBug.vue'
@@ -19,6 +18,7 @@ import Lobby from '../components/Lobby.vue'
 import PlayerArea from '../components/PlayerArea.vue'
 import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
+import River, { type RiverCard } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import VillainArea from '../components/VillainArea.vue'
 
@@ -27,7 +27,7 @@ const { t } = useI18n()
 const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
-const { error, game, data, log, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
+const { error, game, data, log, river, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
   useGame(gameId, spectate)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
@@ -64,7 +64,27 @@ watch(answering, (id) => {
 }, { immediate: true })
 const shownSeats = computed(() => (allSeats.value ? players.value : viewed.value ? [viewed.value] : []))
 const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m) => m.engagedWith === player.id || player.engagedMinions?.includes(m.id))
-const focused = computed<CardView[]>(() => game.value?.focusedCards ?? [])
+// what is happening now: cards revealed, boost cards dealt and turned up, and those the
+// server has told of before the state that follows
+const riverCards = computed<RiverCard[]>(() => {
+  const cards = new Map<string, RiverCard>()
+  for (const c of game.value?.focusedCards ?? []) cards.set(c.id, c)
+  for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
+  for (const c of river.value) cards.set(c.id, { ...cards.get(c.id), ...c })
+  return [...cards.values()]
+})
+// a card in the river may be on the table or in hand too, as a revealed minion is
+const elsewhere = computed(() => {
+  const g = game.value
+  const ids = new Set([...(g?.minions ?? []), ...(g?.sideSchemes ?? []), ...(g?.environments ?? [])].map((x) => x.id))
+  for (const p of g?.players ?? []) [...(p.hand ?? []), ...(p.supports ?? []), ...(p.upgrades ?? []), ...(p.allies ?? []), ...(p.discard ?? [])].forEach((c) => ids.add(c.id))
+  return ids
+})
+const riverLabel = computed(() => {
+  const attack = game.value?.attack
+  if (!attack) return null
+  return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
+})
 
 // What the board draws, by id: a choice about anything else is a button instead.
 const onBoard = computed(() => {
@@ -80,7 +100,7 @@ const onBoard = computed(() => {
   add(g.mainSchemes)
   add(g.sideSchemes)
   add(g.encounterDiscard)
-  add(focused.value)
+  add(riverCards.value)
   for (const p of shownSeats.value) {
     ids.add(p.id)
     add(p.allies)
@@ -208,16 +228,13 @@ const resetGame = () => {
         <p v-else-if="!game" class="notice">{{ t('game.notDealt') }}</p>
 
         <template v-if="game">
-          <div class="half">
+          <div class="half villain-half">
             <VillainArea :game="game" />
-
-            <section v-if="focused.length" class="focused" :aria-label="t('game.zones.focused')">
-              <span class="zone-label">{{ t('game.zones.focused') }}</span>
-              <div class="cards">
-                <BoardCard v-for="card in focused" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
-              </div>
-            </section>
           </div>
+
+          <River class="river" :cards="riverCards" :label="riverLabel" :elsewhere="elsewhere" :shared="!!game.activeCost">
+            <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" />
+          </River>
 
           <div class="player-half">
             <div class="half">
@@ -241,7 +258,6 @@ const resetGame = () => {
                 :compact="allSeats && players.length > 1"
               >
                 <template v-if="seat.id === viewed?.id">
-                  <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" />
                   <QuestionZone
                     :kind="question?.kind ?? null"
                     :prompt="question?.prompt ?? null"
@@ -298,9 +314,12 @@ const resetGame = () => {
   padding: 12px;
 }
 .layout.no-side { grid-template-columns: minmax(0, 1fr); }
+/* the villain's side and the river a quarter of the board each, at least a card high, the
+   players' side the rest */
 .board {
-  display: flex;
-  flex-direction: column;
+  --row: calc(var(--card-width) / var(--card-aspect) + 26px);
+  display: grid;
+  grid-template-rows: minmax(min-content, 25%) minmax(var(--row), 25%) minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
   min-height: 0;
@@ -308,12 +327,12 @@ const resetGame = () => {
   padding-right: 2px;
 }
 .board > * { flex: none; }
-/* the villain's side fills the top half of the board, the players' the bottom */
+.board > .notice, .board > :deep(.lobby) { grid-row: 1 / -1; }
 .board > .half, .player-half > .half { flex: 1 1 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden auto; }
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
 /* the hand floats over the foot of the player area */
-.board > .player-half { flex: 1 1 0; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; }
 .floating-hand { position: absolute; z-index: 0; inset: auto 0 0; pointer-events: none; }
 .floating-hand :deep(.in-hand) { pointer-events: auto; }
 .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
@@ -321,19 +340,6 @@ const resetGame = () => {
 .error { margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgb(214 80 88 / 0.5); background: rgb(214 80 88 / 0.08); color: #f0a4a9; font-size: 0.8rem; overflow-wrap: anywhere; }
 .file-bug-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
 
-.focused {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: radial-gradient(ellipse at 50% 0%, rgb(226 163 59 / 0.16), transparent 70%), var(--ink-2);
-  border: 1px solid rgb(226 163 59 / 0.4);
-  animation: reveal 0.3s ease-out;
-}
-.focused .cards { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-.zone-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); text-align: center; }
-@keyframes reveal { from { opacity: 0; transform: translateY(-6px); } }
 
 .side :deep(.game-log) { flex: 1; }
 

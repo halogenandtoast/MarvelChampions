@@ -89,8 +89,8 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
     </div>
 
     <div class="encounter-piles">
-      <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" />
-      <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" />
+      <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" pile="deck-encounter" />
+      <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
     </div>
   </section>
 </template>

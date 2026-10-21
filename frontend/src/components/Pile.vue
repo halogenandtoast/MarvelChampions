@@ -9,8 +9,10 @@ import type { CardView } from '../server'
 import BoardCard from './BoardCard.vue'
 import CardFace from './CardFace.vue'
 
-const { label, back = null, count = null, cards = null } = defineProps<{
+const { label, back = null, count = null, cards = null, pile = null } = defineProps<{
   label: string
+  /** what cards flying to and from it look for: deck-encounter, discard-<player> and so on */
+  pile?: string | null
   /** face down: a deck */
   back?: Back | null
   count?: number | null
@@ -34,7 +36,7 @@ const close = () => dialog.value?.close()
 </script>
 
 <template>
-  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length }">
+  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length }" :data-pile="pile ?? undefined">
     <button
       type="button"
       class="stack"

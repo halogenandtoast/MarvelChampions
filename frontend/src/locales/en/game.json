@@ -45,7 +45,11 @@
     "engaged": "Engaged",
     "allies": "Allies",
     "supports": "Supports & upgrades",
-    "focused": "Revealed"
+    "river": "In play now"
+  },
+  "river": {
+    "revealed": "Revealed",
+    "attacks": "{attacker} attacks {target}"
   },
   "piles": {
     "encounterDeck": "Encounter",
@@ -182,7 +186,11 @@
     "by": "{name} is paying",
     "paid": "Paid",
     "spent": "Spent",
-    "nothingYet": "Nothing yet"
+    "nothingYet": "Nothing yet",
+    "needs": "Needs {count} more",
+    "covered": "Cost covered",
+    "anyAmount": "Pay as much as you like",
+    "anyResource": "Any resource"
   },
   "resources": {
     "energy": "Energy",

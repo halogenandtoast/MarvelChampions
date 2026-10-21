@@ -134,6 +134,10 @@ export interface ActiveCostView {
   /** or the card whose ability is being paid for, by id */
   source: string | null
   paid: string[]
+  /** what the paid resources do not yet cover: a resource of that kind, or null for any */
+  owed: (string | null)[]
+  /** an X cost, paid as far as the player likes */
+  anyAmount: boolean
   spent: CardView[]
 }
 
@@ -142,6 +146,12 @@ export interface EnvironmentView {
   code: string
   name: string
   attachments?: { id: string; code: string; name: string; damage?: number }[]
+}
+
+export interface BoostView {
+  id: string
+  code: string | null
+  name: string | null
 }
 
 export interface GameView {
@@ -161,6 +171,10 @@ export interface GameView {
   encounterDeckSize: number
   encounterDiscard: CardView[]
   focusedCards: CardView[]
+  /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
+  attack?: { attacker: string; target: string } | null
+  /** boost cards: face down, without a code, until flipped */
+  boostCards?: BoostView[]
   accelerationTokens: number
   question: Record<string, QuestionView>
   questionVersion: number
@@ -190,6 +204,9 @@ export type ServerMessage =
   | { tag: 'Update'; contents: GameData }
   | { tag: 'Logged'; entry: LogEntry }
   | { tag: 'ShuffleIntoDeck'; cardIds: string[] }
+  | { tag: 'Shuffled'; pile: string }
+  | { tag: 'BoostDealt'; cardId: string }
+  | { tag: 'Revealing'; cardId: string; code: string; boost: boolean }
 
 export interface SeatSummary {
   name: string
