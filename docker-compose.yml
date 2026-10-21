@@ -1,26 +1,27 @@
+# Everything for a local game: postgres, the API, and the client (which serves the card
+# images it was built with, and proxies /api to the API).
 services:
   db:
-    image: postgres:14.1
+    image: postgres:17
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=marvel-champions-backend
-    ports:
-      - "5433:5432"
+      - POSTGRES_DB=marvelchampions
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./setup.sql:/docker-entrypoint-initdb.d/create_tables.sql
-  web:
-    build:
-      context: .
-      args:
-        - GHC_VERSION=8.10.7
+  marvel-backend:
+    build: .
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/marvel-champions-backend
-    ports:
-      - "3000:3000"
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/marvelchampions
+      - JWT_SECRET=local-docker-secret-change-me-at-least-32-bytes
     depends_on:
       - db
-volumes: 
- pgdata:
+  frontend:
+    build: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - marvel-backend
+volumes:
+  pgdata:

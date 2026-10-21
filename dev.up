@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Start API (stack file-watch, auto-restart on rebuild) + frontend (vite).
+# Ctrl-C stops everything.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+API_PID_FILE=.stack-work/dev-api.pid
+
+say() { printf '==> [%s] %s\n' "$1" "$2"; }
+tag() { while IFS= read -r l; do printf '[%s] %s\n' "$1" "$l"; done; }
+in_use() { lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1; }
+
+# Preferred port if free, else random free one in 20000-59999.
+pick_port() {
+  local p=$1
+  while in_use "$p"; do p=$((RANDOM % 40000 + 20000)); done
+  echo "$p"
+}
+
+stop_api() {
+  [ -f "$API_PID_FILE" ] || return 0
+  kill "$(cat "$API_PID_FILE")" 2>/dev/null || true
+  rm -f "$API_PID_FILE"
+  for _ in $(seq 50); do in_use "$PORT" || break; sleep 0.1; done
+}
+
+# Invoked by stack --exec after each successful build.
+if [ "${1:-}" = "--restart-api" ]; then
+  stop_api
+  say api "starting on :$PORT"
+  DEVELOPMENT=true stack exec marvel-champions > >(tag api) 2>&1 &
+  echo $! > "$API_PID_FILE"
+  exit 0
+fi
+
+API_PORT=$(pick_port "${API_PORT:-3000}")
+export API_PORT PORT=$API_PORT
+
+[ -d frontend/node_modules ] || { say web "installing npm deps"; (cd frontend && npm install); }
+
+DATABASE_NAME=${DATABASE_NAME:-marvelchampions}
+export DATABASE_URL=${DATABASE_URL:-"host=localhost dbname=$DATABASE_NAME"}
+if ! pg_isready -q 2>/dev/null; then
+  say db "postgres is not running - start it (e.g. brew services start postgresql) and rerun"
+  exit 1
+fi
+if psql -lqt | cut -d'|' -f1 | grep -qw "$DATABASE_NAME"; then
+  say db "using database $DATABASE_NAME"
+else
+  say db "creating database $DATABASE_NAME"
+  createdb "$DATABASE_NAME"
+fi
+
+cleanup() {
+  trap - INT TERM EXIT
+  say dev "shutting down"
+  stop_api
+  kill 0 2>/dev/null
+  exit 0
+}
+trap cleanup INT TERM EXIT
+
+say build "checking/compiling API (first build can take a while)"
+{
+stack build --no-run-tests --fast MarvelChampions \
+  --ghc-options "-DDEVELOPMENT ${GHC_OPTIONS:-}" \
+  --interleaved-output --file-watch \
+  --exec "$PWD/dev.up --restart-api" < <(tail -f /dev/null) 2>&1 | # file-watch quits on stdin EOF
+  while IFS= read -r l; do
+    case $l in
+      "==> "* | "[api] "*) printf '%s\n' "$l"; continue ;; # from --restart-api
+      *"local file changes:"*) say build "change detected, rebuilding" ;;
+      *"> build ("*) say build "compiling" ;;
+      *"Success! Waiting for next file change."*) say build "OK" ;;
+      *"Error: ["*) say build "FAILED - fix errors, retries on save" ;;
+    esac
+    printf '[build] %s\n' "$l"
+  done
+  say build "watcher exited - restart dev.up"
+} &
+
+# Status poller: announce API up/down; start vite once API first answers.
+api_up=false web_port=""
+say web "waiting for API before starting"
+while true; do
+  if in_use "$API_PORT"; then
+    if ! $api_up; then api_up=true; say api "ready on :$API_PORT"; fi
+    if [ -z "$web_port" ]; then
+      web_port=$(pick_port "${FRONTEND_PORT:-5173}")
+      say web "starting vite"
+      (cd frontend && npx vite --port "$web_port" --strictPort) > >(tag web) 2>&1 &
+      web_pid=$!
+      until in_use "$web_port"; do
+        kill -0 "$web_pid" 2>/dev/null || { say web "vite exited"; break; }
+        sleep 0.2
+      done
+      echo
+      say web "ready -> http://localhost:$web_port"
+      echo
+    fi
+  elif $api_up; then
+    api_up=false
+    say api "down (rebuilding/restarting)"
+  fi
+  sleep 0.5
+done

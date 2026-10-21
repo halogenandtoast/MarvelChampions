@@ -1,98 +1,55 @@
-FROM node:lts as frontend
+# syntax=docker/dockerfile:1.7
 
-# Frontend
+# Stage 1: build the Haskell binary with stack. The haskell image's ghc matches
+# stack.yaml's compiler, which stack.yaml tells stack to use (system-ghc).
+FROM haskell:9.14.1 AS builder
 
-ENV LC_ALL=en_US.UTF-8
+WORKDIR /build
 
-RUN npm install -g @vue/cli
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       ca-certificates curl gnupg lsb-release \
+       libgmp-dev zlib1g-dev pkg-config \
+  && install -d /usr/share/postgresql-common/pgdg \
+  && curl -fsSLo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+       https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+  && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+       > /etc/apt/sources.list.d/pgdg.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends libpq-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/marvel/src/frontend
+# Pull in just the dependency descriptors first so dependency compilation
+# can be cached independently from source changes.
+COPY stack.yaml stack.yaml.lock package.yaml MarvelChampions.cabal ./
+RUN stack build --only-dependencies
 
-# ENV VUE_APP_API_HOST "https://marvel-horror-api.herokuapp.com"
+COPY . .
+RUN stack install --local-bin-path /out MarvelChampions:exe:marvel-champions
 
-WORKDIR /opt/marvel/src/frontend
-COPY ./frontend/package.json /opt/marvel/src/frontend/package.json
-COPY ./frontend/babel.config.js /opt/marvel/src/frontend/babel.config.js
-COPY ./frontend/tsconfig.json /opt/marvel/src/frontend/tsconfig.json
-COPY ./frontend/package-lock.json /opt/marvel/src/frontend/package-lock.json
-RUN npm ci
-WORKDIR /opt/marvel/src/frontend
-COPY ./frontend /opt/marvel/src/frontend
-ENV VUE_APP_ASSET_HOST ${ASSET_HOST:-""}
-RUN npm run build
+# Stage 2: minimal runtime.
+FROM debian:bookworm-slim AS runtime
 
-FROM fpco/stack-build:latest as dependencies
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       libgmp10 \
+       libtinfo6 \
+       libpq5 \
+       zlib1g \
+       ca-certificates \
+       netbase \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd --create-home --shell /usr/sbin/nologin marvel
 
-ENV LC_ALL=en_US.UTF-8
+USER marvel
+WORKDIR /home/marvel
 
-RUN mkdir -p \
-  /opt/marvel/bin \
-  /opt/marvel/src/backend/marvel-api \
-  /opt/marvel/src/backend/marvel-core \
-  /opt/marvel/src/backend/cards-discover
+COPY --from=builder /out/marvel-champions /usr/local/bin/marvel-champions
+# Decks resolve against the card browser's database.
+COPY frontend/public/data/cards.json /home/marvel/cards.json
 
-WORKDIR /opt/marvel/src/backend
-COPY ./backend/stack.yaml /opt/marvel/src/backend/stack.yaml
-COPY ./backend/marvel-api/package.yaml /opt/marvel/src/backend/marvel-api/package.yaml
-COPY ./backend/marvel-core/package.yaml /opt/marvel/src/backend/marvel-core/package.yaml
-COPY ./backend/cards-discover/package.yaml /opt/marvel/src/backend/cards-discover/package.yaml
-RUN stack build --system-ghc --dependencies-only --no-terminal --ghc-options '-j4 +RTS -A128m -n2m -RTS'
-
-FROM fpco/stack-build:lts-18.18 as api
-
-ENV LC_ALL=en_US.UTF-8
-
-# API
-
-ENV PATH "$PATH:/opt/stack/bin:/opt/marvel/bin"
-
-RUN mkdir -p \
-  /opt/marvel/src/backend \
-  /opt/marvel/bin
-
-COPY ./backend /opt/marvel/src/backend
-COPY --from=dependencies /root/.stack /root/.stack
-
-WORKDIR /opt/marvel/src/backend/cards-discover
-RUN stack build --system-ghc --no-terminal --ghc-options '-j4 +RTS -A128m -n2m -RTS' cards-discover
-
-WORKDIR /opt/marvel/src/backend/marvel-api
-RUN stack build --no-terminal --system-ghc --ghc-options '-j4 +RTS -A128m -n2m -RTS'
-RUN stack --no-terminal --local-bin-path /opt/marvel/bin install
-
-FROM ubuntu:18.04 as app
-
-# App
-
-ENV LC_ALL=en_US.UTF-8
-
-RUN apt-get update && \
-  apt-get upgrade -y --assume-yes && \
-  apt-get install -y --assume-yes libpq-dev ca-certificates nginx && \
-  rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p \
-  /opt/marvel/bin \
-  /opt/marvel/src/backend/marvel-api \
-  /opt/marvel/src/frontend \
-  /var/log/nginx \
-  /var/lib/nginx \
-  /run
-
-COPY --from=frontend /opt/marvel/src/frontend/dist /opt/marvel/src/frontend/dist
-COPY --from=api /opt/marvel/bin/marvel-api /opt/marvel/bin/marvel-api
-COPY ./backend/marvel-api/config /opt/marvel/src/backend/marvel-api/config
-COPY ./prod.nginxconf /opt/marvel/src/backend/prod.nginxconf
-COPY ./start.sh /opt/marvel/src/backend/marvel-api/start.sh
-
-RUN useradd -ms /bin/bash yesod && \
-  chown -R yesod:yesod /opt/marvel /var/log/nginx /var/lib/nginx /run && \
-  chmod a+x /opt/marvel/src/backend/marvel-api/start.sh
-USER yesod
-ENV PATH "$PATH:/opt/stack/bin:/opt/marvel/bin"
-
+ENV PORT=3000
+ENV CARDS_JSON=/home/marvel/cards.json
 EXPOSE 3000
 
-WORKDIR /opt/marvel/src/backend/marvel-api
-ENV PORT ${PORT:-"3000"}
-CMD ["./start.sh"]
+CMD ["marvel-champions"]

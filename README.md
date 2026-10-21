@@ -1,11 +1,34 @@
-# Running locally
+# Marvel Champions
 
-If you have docker installed, you can get an instance running by running
+An online Marvel Champions: The Card Game. The engine and API are Haskell (`src/`,
+`app/`), the client is Vue (`frontend/`).
+
+## Developing
+
+With postgres running locally and GHC 9.14 / stack on the path:
 
 ```
-docker-compose up
+./dev.up
 ```
 
-And then opening <http://localhost:3000> in your browser once it is finished.
-Please be aware it takes a long time to build initially and you'll want docker
-to have ~16GB or RAM and ~30GB of disk space allocated.
+builds and watches the API, restarting it on each rebuild, and starts the client once
+the API answers. Tests: `stack test`.
+
+## Card data and images
+
+- `tools/generate-cards.py` rebuilds `frontend/public/data/cards.json` from MarvelCDB.
+- `tools/import-images.py` turns the HD scans (`MarvelHD.zip`, not in the repo) into
+  `frontend/public/images/cards/<code>.avif`. The images are not committed.
+
+## Rules
+
+`docs/rules/` holds the Rules Reference and Learn to Play as markdown.
+
+## Docker
+
+```
+docker compose up
+```
+
+then open <http://localhost:3000>. The client image carries the card images it was
+built with.

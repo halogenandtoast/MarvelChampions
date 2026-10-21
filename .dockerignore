@@ -1,0 +1,11 @@
+.stack-work/
+.stack-work-claude/
+.git/
+.claude/
+.DS_Store
+*~
+tags
+images/
+MarvelHD.zip
+frontend/
+!frontend/public/data/cards.json
