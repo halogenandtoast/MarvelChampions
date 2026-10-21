@@ -327,15 +327,27 @@ runGameMessage ::
   Game ->
   m Game
 runGameMessage msg g@Game {..} = case msg of
+  -- setup, as the rules reference's appendix II has it: a first player, the identities'
+  -- obligations and nemesis sets set aside, the scenario, then everyone's hand
   StartGame -> do
-    push StartScenario
-    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder
     case gamePlayerOrder of
       [] -> throwM NoPlayers
-      [p] -> push (SetPlayerOrder [p])
-      players@(p : _) -> choosePlayerOrder p players
+      [_] -> pure ()
+      players@(p : _) ->
+        chooseOne p $
+          [ TargetLabel (IdentityRef first) [Run [SetPlayerOrder (after <> before)]]
+          | (n, first) <- zip [0 ..] players
+          , let (before, after) = splitAt n players
+          ]
+    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder <> [StartScenario, SetupPlayers]
     pure $ g {gameState = InProgress}
-  SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs}
+  SetupPlayers -> do
+    pushAll $
+      concatMap (\p -> [SetActivePlayer p, IdentityMessage p DealStartingHand]) gamePlayerOrder
+        <> map SetActivePlayer (take 1 gamePlayerOrder)
+        <> [BeginPhase PlayerPhase]
+    pure g
+  SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do

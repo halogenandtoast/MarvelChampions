@@ -42,6 +42,7 @@ data IdentityMessage
   | DrawToHandLimit
   | ReadyCards
   | SetupIdentity
+  | DealStartingHand
   | VillainAndMinionsActivate
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards

@@ -28,7 +28,7 @@ import Control.Lens as X (
 import Control.Lens.TH as X
 import Control.Monad as X (forM_, guard, join, unless, void, when)
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
-import Control.Monad.Extra as X (allM, andM, anyM, concatMapM, filterM, orM, whenM)
+import Control.Monad.Extra as X (allM, andM, anyM, concatMapM, filterM, mapMaybeM, orM, whenM)
 import Control.Monad.Random as X (MonadRandom (..), Random, getRandom)
 import Control.Monad.Reader as X (MonadReader)
 import Data.Aeson as X hiding (Key)
@@ -175,3 +175,6 @@ insertMap = HashMap.insert
 
 deleteMap :: (Hashable k) => k -> HashMap k v -> HashMap k v
 deleteMap = HashMap.delete
+
+forMaybeM :: (Monad m) => [a] -> (a -> m (Maybe b)) -> m [b]
+forMaybeM = flip mapMaybeM

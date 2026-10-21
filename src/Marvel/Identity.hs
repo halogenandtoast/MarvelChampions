@@ -364,24 +364,25 @@ runIdentityMessage ::
 runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
   case msg of
     SetupIdentity -> do
-      let
-        nemesisSet = getNemesisSet $ toCardCode pid
-        setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
+      let nemesisSet = getNemesisSet $ toCardCode pid
       obligations <- getObligations pid
       nemesisSetCards <- gatherEncounterSet nemesisSet
+      pushAll
+        [ SetAside (EncounterCard <$> nemesisSetCards)
+        , ShuffleIntoEncounterDeck obligations
+        , IdentityMessage playerIdentityId ShuffleDeck
+        ]
+      pure pid
+    -- draw up to hand size, mulligan any of it, draw again, then the setup abilities
+    DealStartingHand -> do
+      let setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
       pushAll $
-        SetAside (EncounterCard <$> nemesisSetCards)
-          : ShuffleIntoEncounterDeck obligations
-          : map
-            (IdentityMessage playerIdentityId)
-            [ ShuffleDeck
-            , DrawOrDiscardToHandLimit
-            , DiscardCards
-            , DrawOrDiscardToHandLimit
-            ]
-            <> map
-              (\a -> RanAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment)
-              setupAbilities
+        map
+          (IdentityMessage playerIdentityId)
+          [DrawOrDiscardToHandLimit, DiscardCards, DrawOrDiscardToHandLimit]
+          <> map
+            (\a -> RanAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment)
+            setupAbilities
       pure pid
     BeginTurn -> do
       takeTurn pid

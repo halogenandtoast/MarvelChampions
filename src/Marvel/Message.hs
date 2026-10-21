@@ -66,6 +66,9 @@ data Message
   | ReplaceMainScheme CardCode
   | SetupMainScheme
   | SetPlayerOrder [IdentityId]
+  | -- | the rest of setup, once the first player is chosen: hands, mulligans and the
+    -- player cards' setup abilities, in player order, then the first round
+    SetupPlayers
   | -- | whose turn it is, or whom the villain phase is resolving for: "you" on cards
     SetActivePlayer IdentityId
   | -- | the response window, offered to these players in turn until all pass

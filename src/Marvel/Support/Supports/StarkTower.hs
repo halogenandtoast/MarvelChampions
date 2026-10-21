@@ -12,6 +12,7 @@ import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
@@ -26,6 +27,9 @@ import Marvel.Trait
 starkTower :: SupportCard StarkTower
 starkTower = support StarkTower Cards.starkTower
 
+techUpgrade :: CardMatcher
+techUpgrade = CardWithTrait Tech <> CardWithType UpgradeType
+
 newtype StarkTower = StarkTower (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
@@ -38,7 +42,7 @@ instance HasAbilities StarkTower where
         AlterEgoAction
         ( OwnsThis
             <> ExtendedCardExists
-              (TopmostCardInDiscardOf AnyIdentity (CardWithTrait Tech))
+              (TopmostCardInDiscardOf AnyIdentity techUpgrade)
         )
         ExhaustCost
         $ RunAbility (toTarget a) 1
@@ -46,17 +50,14 @@ instance HasAbilities StarkTower where
 
 instance RunMessage StarkTower where
   runMessage msg s@(StarkTower attrs) = case msg of
+    -- only a player with a Tech upgrade in their discard pile is worth choosing
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      pushChoice ident $ ChoosePlayer AnyIdentity (toRef s)
-      pure s
-    ChosePlayer identityId target | isTarget attrs target -> do
-      mTechCard <-
-        selectOne $
-          TopmostCardInDiscardOf
-            (IdentityWithId identityId)
-            (CardWithTrait Tech)
-      case mTechCard of
-        Nothing -> error "should have targetted a card"
-        Just x -> push $ IdentityMessage identityId (AddToHand x)
+      players <- getPlayers
+      returns <- forMaybeM players \player ->
+        fmap (player,) <$> selectOne (TopmostCardInDiscardOf (IdentityWithId player) techUpgrade)
+      chooseOrRunOne ident
+        [ TargetLabel (IdentityRef player) [Run [IdentityMessage player (AddToHand card)]]
+        | (player, card) <- returns
+        ]
       pure s
     _ -> StarkTower <$> runMessage msg attrs
