@@ -30,5 +30,5 @@ instance RunMessage SecretRendezvous where
     AdvanceMainScheme -> ms <$ push (GameOver Lost)
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
-      ms <$ push (RevealEncounterCard firstPlayer card)
+      ms <$ push (PutEncounterCardIntoPlay firstPlayer card)
     _ -> SecretRendezvous <$> runMessage msg attrs

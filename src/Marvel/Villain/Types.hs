@@ -72,6 +72,9 @@ villainAttackDetails = villainAttacking . toAttrs
 instance HasAbilities Villain where
   getAbilities (Villain a) = getAbilities a
 
+instance HasModifiersFor Villain where
+  getModifiersFor source target (Villain a) = getModifiersFor source target a
+
 instance RunMessage Villain where
   runMessage msg (Villain a) = Villain <$> runMessage msg a
 
@@ -139,7 +142,7 @@ instance Entity Villain where
   toId = villainId . toAttrs
   toAttrs (Villain a) = toVillainAttrs a
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a) => IsVillain a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a, HasModifiersFor a) => IsVillain a where
   toVillainAttrs :: a -> Attrs Villain
   default toVillainAttrs :: (Coercible a (Attrs Villain)) => a -> Attrs Villain
   toVillainAttrs = coerce
@@ -253,7 +256,13 @@ runVillainMessage msg attrs = case msg of
     pure attrs
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
-    pure $ attrs & hpL .~ HP hp & maxHpL .~ HP hp
+    modifiers <- getModifiers attrs
+    let hp' = hp + sum [fromIntegral n | HitPointModifier n <- modifiers]
+    pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp'
+  VillainHitPointsChanged n -> do
+    let remaining = unHp (villainHp attrs) + n
+    when (remaining <= 0) $ push $ VillainMessage (villainId attrs) VillainDefeated
+    pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
       attrs
@@ -262,11 +271,26 @@ runVillainMessage msg attrs = case msg of
             . min (unHp $ villainMaxHp attrs)
             . (+ fromIntegral n)
             . unHp
-  VillainDamaged _ damage ->
+  VillainDamaged _ damage -> do
+    -- retaliate answers the attack whether or not a tough status card takes it
+    keywords <- getModifiedKeywords attrs
+    for_ keywords $ \case
+      Retaliate n -> case damageSource damage of
+        FromPlayerAttack ident ->
+          push $
+            IdentityMessage
+              ident
+              (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
+        FromAllyAttack ident ->
+          push $
+            AllyMessage
+              ident
+              (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
+        _ -> pure ()
+      _ -> pure ()
     if villainTough attrs
       then pure $ attrs & toughL .~ False
       else do
-        keywords <- getModifiedKeywords attrs
         when
           ( subtractNatural
               (damageAmount damage)
@@ -274,21 +298,6 @@ runVillainMessage msg attrs = case msg of
               == 0
           )
           (push $ VillainMessage (villainId attrs) VillainDefeated)
-
-        for_ keywords $ \case
-          Retaliate n -> case damageSource damage of
-            FromPlayerAttack ident ->
-              push $
-                IdentityMessage
-                  ident
-                  (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
-            FromAllyAttack ident ->
-              push $
-                AllyMessage
-                  ident
-                  (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
-            _ -> pure ()
-          _ -> pure ()
         pure $
           attrs
             & hpL
@@ -359,6 +368,7 @@ runVillainMessage msg attrs = case msg of
                     threat
               ]
           , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
+          , CheckWindows [W.Window W.After $ W.Schemed (villainId attrs)]
           ]
         pure $ attrs & boostL .~ 0
       _ -> error "not Main scheme"

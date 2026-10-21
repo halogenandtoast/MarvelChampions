@@ -1,0 +1,78 @@
+module Marvel.Encounter.UltronSpec (spec) where
+
+import Data.HashMap.Strict qualified as HashMap
+import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Card.Def (getCardDef)
+import Marvel.Card.PlayerCard (PlayerCard (..))
+import Marvel.Damage
+import Marvel.Deck (unDeck)
+import Marvel.Discard (unDiscard)
+import Marvel.Entity
+import Marvel.Environment.Cards qualified as Cards
+import Marvel.Identity.Types (Attrs (..), PlayerIdentity)
+import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types (Minion, getMinionFacedownCard, getModifiedAttack, getModifiedHitPoints)
+import Marvel.Minion.Types qualified as Minion
+import Marvel.Ref
+import Marvel.Scenario.Types (scenarioDiscard)
+import Marvel.Stats
+import TestImport
+
+ultron :: IO GameApp
+ultron = do
+  let setup = fromMaybe (error "no setup") (recommendedSetup "01134")
+  (app, _) <- dealtGame setup [starter "spider-man"] 1
+  runGameApp app toFirstTurn
+  pure app
+
+drones :: GameAppT [Minion]
+drones = getsGame $ filter ((== Cards.drone) . getCardDef) . HashMap.elems . gameMinions
+
+player :: GameAppT PlayerIdentity
+player = players >>= \case
+  [p] -> getIdentity p
+  _ -> error "one player"
+
+spec :: Spec
+spec = describe "Ultron" do
+  it "sets up the Ultron Drones environment and deals a facedown drone from the player's deck" do
+    app <- ultron
+    runGameApp app do
+      environments <- getsGame (map getCardDef . HashMap.elems . gameEnvironments)
+      liftIO $ environments `shouldBe` [Cards.ultronDrones]
+      ds <- drones
+      liftIO $ length ds `shouldBe` 1
+      p <- player
+      for_ ds \drone -> do
+        let attrs = toAttrs drone
+        liftIO $ Minion.minionEngagedIdentity attrs `shouldBe` toId p
+        liftIO $ unSch (Minion.minionScheme attrs) `shouldBe` 1
+        getModifiedAttack attrs >>= liftIO . (`shouldBe` 1)
+        getModifiedHitPoints attrs >>= liftIO . (`shouldBe` 1)
+        -- the card is no longer in the deck
+        let Just card = getMinionFacedownCard drone
+        liftIO $ map pcCardId (unDeck $ playerIdentityDeck $ toAttrs p) `shouldNotContain` [pcCardId card]
+      -- and the game, environment and drone included, is saved and loaded as it is
+      g <- getGame
+      liftIO $ (fromJSON (toJSON g) :: Result Game) `shouldBe` Success g
+
+  it "a defeated facedown drone goes to its owner's discard pile, and Upgraded Drones makes them bigger" do
+    app <- ultron
+    runGameApp app do
+      [you] <- players
+      upgraded <- encounterCard Cards.upgradedDrones
+      resolve [RevealEncounterCard you upgraded]
+      ds <- drones
+      for_ ds \drone -> do
+        getModifiedAttack (toAttrs drone) >>= liftIO . (`shouldBe` 2)
+        getModifiedHitPoints (toAttrs drone) >>= liftIO . (`shouldBe` 2)
+      resolve [PutTopOfDeckIntoPlayAsDrone you]
+      ds' <- drones
+      liftIO $ length ds' `shouldBe` 2
+      for_ ds' \drone ->
+        resolve [MinionMessage (toId drone) $ MinionDamaged GameRef (toDamage 2 FromAbility)]
+      drones >>= liftIO . (`shouldBe` 0) . length
+      discard <- map pcCardId . unDiscard . playerIdentityDiscard . toAttrs <$> player
+      liftIO $ mapMaybe (fmap pcCardId . getMinionFacedownCard) ds' `shouldSatisfy` all (`elem` discard)
+      encounterDiscard <- getsGame (map getCardDef . scenarioDiscard . toAttrs . gameScenario)
+      liftIO $ encounterDiscard `shouldNotContain` [Cards.drone]

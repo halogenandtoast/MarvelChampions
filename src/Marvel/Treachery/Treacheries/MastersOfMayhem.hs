@@ -36,7 +36,7 @@ instance RunMessage MastersOfMayhem where
       RevealTreachery _ -> do
         mastersOfEvilMinions <- selectList (MinionWithTrait MastersOfEvil)
         for_ mastersOfEvilMinions $ \minion -> do
-          mEngagedWith <- selectOne (IdentityEngagedWith $ MinionWithId minion)
+          mEngagedWith <- selectOne (IdentityEngagedWith (MinionWithId minion) <> HeroIdentity)
           case mEngagedWith of
             Nothing -> pure ()
             Just engagedWith ->

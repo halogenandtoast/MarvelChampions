@@ -59,3 +59,6 @@ newtype EventId = EventId {unEventId :: UUID}
 
 newtype EffectId = EffectId {unEffectId :: UUID}
   deriving newtype (Show, Eq, Ord, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
+
+newtype EnvironmentId = EnvironmentId {unEnvironmentId :: UUID}
+  deriving newtype (Show, Eq, Ord, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)

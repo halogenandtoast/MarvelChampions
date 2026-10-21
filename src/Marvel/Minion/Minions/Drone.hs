@@ -1,21 +1,19 @@
-module Marvel.Minion.Minions.Drone
-  ( drone
-  , Drone(..)
-  )
+module Marvel.Minion.Minions.Drone (
+  drone,
+  Drone (..),
+)
 where
 
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Card.Code
-import Marvel.Entity
-import Marvel.Hp
-import Marvel.Message
-import Marvel.Minion.Runner
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Runner
 
+-- | A player card put into play facedown as a Drone minion. The Ultron Drones
+-- environment gives it a base SCH, ATK and hit points of 1.
 drone :: MinionCard Drone
-drone = minion Drone Cards.drone (Sch 0) (Atk 0) (HP 1)
+drone = minion Drone Cards.drone (Sch 1) (Atk 1) (HP 1)
 
 newtype Drone = Drone (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)

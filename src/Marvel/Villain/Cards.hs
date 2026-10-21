@@ -63,4 +63,4 @@ ultron2 :: CardDef
 ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
-ultron3 = villain "01136" "Ultron" [Android]
+ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}

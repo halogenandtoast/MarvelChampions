@@ -1,11 +1,15 @@
 module Marvel.Minion.Minions (module X) where
 
+import Marvel.Minion.Minions.AdvancedUltronDrone as X
 import Marvel.Minion.Minions.ArmoredGuard as X
 import Marvel.Minion.Minions.Drone as X
 import Marvel.Minion.Minions.HydraBomber as X
 import Marvel.Minion.Minions.HydraMercenary as X
+import Marvel.Minion.Minions.HydraSoldier as X
 import Marvel.Minion.Minions.Killmonger as X
+import Marvel.Minion.Minions.MadameHydra as X
 import Marvel.Minion.Minions.Melter as X
+import Marvel.Minion.Minions.Modok as X
 import Marvel.Minion.Minions.RadioactiveMan as X
 import Marvel.Minion.Minions.Sandman as X
 import Marvel.Minion.Minions.Shocker as X

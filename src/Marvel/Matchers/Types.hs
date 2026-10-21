@@ -191,8 +191,21 @@ data MinionMatcher
   | MinionEngagedWith IdentityMatcher
   | MinionIs CardDef
   | MinionWithHighestPrintedHitPoints
+  | MinionMatches [MinionMatcher]
+  | NotMinion MinionMatcher
+  | MinionWithAttachment AttachmentMatcher
+  | -- | of the minions matching, those with the highest printed hit points
+    MinionWithHighestPrintedHitPointsAmong MinionMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup MinionMatcher where
+  AnyMinion <> x = x
+  x <> AnyMinion = x
+  MinionMatches xs <> MinionMatches ys = MinionMatches $ xs <> ys
+  x <> MinionMatches ys = MinionMatches $ x : ys
+  MinionMatches xs <> y = MinionMatches $ xs <> [y]
+  x <> y = MinionMatches [x, y]
 
 data GameValueMatcher = AnyValue | GreaterThan GameValue | AtLeast GameValue
   deriving stock (Show, Eq, Generic)
@@ -245,7 +258,11 @@ instance Semigroup ExtendedCardMatcher where
   ExtendedCardMatches xs <> y = ExtendedCardMatches $ xs <> [y]
   x <> y = ExtendedCardMatches [x, y]
 
-newtype AttachmentMatcher = AttachmentWithId AttachmentId
+data AttachmentMatcher = AttachmentWithId AttachmentId | AttachmentIs CardDef
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

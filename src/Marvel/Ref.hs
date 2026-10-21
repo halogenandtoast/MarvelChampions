@@ -29,6 +29,7 @@ data Ref (focus :: Focus)
   | CardIdRef CardId
   | ActiveCostRef ActiveCostId
   | GameRef
+  | EnvironmentRef EnvironmentId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable, ToJSONKey, FromJSONKey)
 
@@ -67,6 +68,9 @@ instance IsRef EnemyId where
 
 instance IsRef AttachmentId where
   toRef = AttachmentRef
+
+instance IsRef EnvironmentId where
+  toRef = EnvironmentRef
 
 instance IsRef AllyId where
   toRef = AllyRef

@@ -24,6 +24,12 @@ allSideSchemes = fromList $ map
   , highwayRobbery
   , imminentOverload
   , thePsycheMagnitron
+  , droneFactory
+  , invasiveAI
+  , ultronsImperative
+  , underAttack
+  , legionsOfHydra
+  , theDoomsdayChair
   ]
 
 sideScheme
@@ -122,3 +128,28 @@ thePsycheMagnitron = (sideScheme
                      )
   { cdHazards = 1
   }
+
+droneFactory :: CardDef
+droneFactory =
+  (sideScheme "01148" "Drone Factory" [Boost, Boost] Ultron 1) {cdAcceleration = 1}
+
+invasiveAI :: CardDef
+invasiveAI =
+  (sideScheme "01149" "Invasive AI" [Boost, Boost, Boost] Ultron 1) {cdHazards = 1}
+
+ultronsImperative :: CardDef
+ultronsImperative =
+  (sideScheme "01150" "Ultron's Imperative" [Boost, Boost, Boost] Ultron 1) {cdHazards = 1}
+
+underAttack :: CardDef
+underAttack = sideScheme "01151" "Under Attack" [Boost, Boost, Boost] UnderAttack 1
+
+legionsOfHydra :: CardDef
+legionsOfHydra =
+  (sideScheme "01180" "Legions of Hydra" [Boost, Boost, Boost] LegionsOfHydra 2) {cdHazards = 1}
+
+theDoomsdayChair :: CardDef
+theDoomsdayChair =
+  (sideScheme "01183" "The Doomsday Chair" [Boost, Boost, Boost] TheDoomsdayChair 2)
+    { cdAcceleration = 1
+    }

@@ -11,6 +11,7 @@ import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
@@ -21,7 +22,7 @@ import Marvel.Villain.Types
 import Marvel.Window
 
 newtype Klaw = Klaw (Attrs Villain)
-  deriving anyclass (IsVillain)
+  deriving anyclass (IsVillain, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 klaw :: VillainCard Klaw

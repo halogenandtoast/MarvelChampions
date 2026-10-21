@@ -15,7 +15,7 @@ import Marvel.SideScheme.Types
 
 illegalArmsFactory :: SideSchemeCard IllegalArmsFactory
 illegalArmsFactory =
-  sideScheme IllegalArmsFactory Cards.illegalArmsFactory (PerPlayer 1)
+  sideScheme IllegalArmsFactory Cards.illegalArmsFactory (Static 3)
 
 newtype IllegalArmsFactory = IllegalArmsFactory (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)

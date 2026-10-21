@@ -26,9 +26,9 @@ allMainSchemes = fromList $ map
   [ SomeMainSchemeCard theBreakIn
   , SomeMainSchemeCard undergroundDistribution
   , SomeMainSchemeCard secretRendezvous
-      -- , SomeMainSchemeCard theCrimsonCowl
-      -- , SomeMainSchemeCard assaultOnNorad
-      -- , SomeMainSchemeCard countdownToOblivion
+  , SomeMainSchemeCard theCrimsonCowl
+  , SomeMainSchemeCard assaultOnNorad
+  , SomeMainSchemeCard countdownToOblivion
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

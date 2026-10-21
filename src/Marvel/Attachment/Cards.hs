@@ -7,6 +7,8 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.EncounterSet
+import Data.HashSet (singleton)
+import Marvel.Keyword
 import Marvel.Name
 import Marvel.Trait
 
@@ -22,6 +24,10 @@ allAttachments =
       , solidSoundBody
       , programTransmitter
       , geneticallyEnhanced
+      , upgradedDrones
+      , vibraniumArmor
+      , concussionBlasters
+      , biomechanicalUpgrades
       ]
 
 attachment ::
@@ -62,7 +68,7 @@ armoredRhinoSuit :: CardDef
 armoredRhinoSuit = attachment "01098" "Armored Rhino Suit" [Armor] [] Rhino 1
 
 charge :: CardDef
-charge = attachment "01099" "Charge" [] [Boost, Boost] Rhino 2
+charge = attachment "01099" "Charge" [Weapon] [Boost, Boost] Rhino 2
 
 enhancedIvoryHorn :: CardDef
 enhancedIvoryHorn =
@@ -84,3 +90,19 @@ programTransmitter =
 geneticallyEnhanced :: CardDef
 geneticallyEnhanced =
   attachment "01163" "Genetically Enhanced" [Condition] [Boost] SheHulkNemesis 1
+
+upgradedDrones :: CardDef
+upgradedDrones = attachment "01142" "Upgraded Drones" [Condition] [] Ultron 2
+
+vibraniumArmor :: CardDef
+vibraniumArmor = attachment "01152" "Vibranium Armor" [Armor] [Boost] UnderAttack 1
+
+concussionBlasters :: CardDef
+concussionBlasters =
+  attachment "01153" "Concussion Blasters" [Weapon] [Boost] UnderAttack 1
+
+biomechanicalUpgrades :: CardDef
+biomechanicalUpgrades =
+  (attachment "01185" "Biomechanical Upgrades" [Tech] [Boost] TheDoomsdayChair 3)
+    { cdKeywords = singleton Surge
+    }

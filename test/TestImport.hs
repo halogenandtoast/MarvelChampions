@@ -34,6 +34,8 @@ import Marvel.Log as X (LogEntry, entryText)
 import System.Random (mkStdGen)
 import Test.Hspec as X hiding (shouldBe, shouldReturn, shouldSatisfy)
 import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldReturn, shouldSatisfy)
+import Control.Monad.IO.Class as X (liftIO)
+import Marvel.EncounterCard (genEncounterCard)
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -84,15 +86,15 @@ questionSize = \case
 
 -- | A game for testing a card: dealt and played to the start of the first player's
 -- turn, mulligans kept.
-data TestGame = TestGame {app :: GameApp, ran :: IORef [Text], logged :: IORef [LogEntry], players :: [IdentityId]}
+data TestGame = TestGame {app :: GameApp, ran :: IORef [Text], logged :: IORef [LogEntry], seats :: [IdentityId]}
 
 -- | Against the scenario with the starter decks of the heroes given.
 testGameAgainst :: CardCode -> [Text] -> IO TestGame
 testGameAgainst villain heroes = do
   let setup = fromMaybe (error "no setup") (recommendedSetup villain)
   (app, ran, logged) <- dealtGameLogged setup (map starter heroes) 1
-  players <- runGameApp app (getsGame gameSeats)
-  let tg = TestGame app ran logged players
+  seats <- runGameApp app (getsGame gameSeats)
+  let tg = TestGame app ran logged seats
   inGame tg toFirstTurn
   pure tg
 
@@ -103,13 +105,17 @@ testGame = testGameAgainst "01094"
 inGame :: TestGame -> GameAppT a -> IO a
 inGame tg = runGameApp tg.app
 
--- | Through the first player's choice and the mulligans: keep every hand.
+-- | Play through setup, answering with first choices (the first seat goes first, every
+-- hand is kept), to the first player's first turn.
 toFirstTurn :: GameAppT ()
-toFirstTurn =
-  openQuestion >>= \case
-    Just (ident, QuestionLabel "$label.chooseFirstPlayer" _ _) -> answerQuestion ident 0 >> toFirstTurn
-    Just (ident, QuestionLabel "$label.discardAnyCards" _ _) -> answerQuestion ident 0 >> toFirstTurn
-    _ -> pure ()
+toFirstTurn = go (200 :: Int)
+ where
+  go 0 = error "setup did not reach a turn"
+  go n =
+    openQuestion >>= \case
+      Just (_, q) | EndTurn `elem` choicesOf q -> pure ()
+      Just (ident, _) -> answerQuestion ident 0 >> go (n - 1)
+      Nothing -> error "no question during setup"
 
 -- | Who is asked, and the choices, without the prompt.
 asked :: GameAppT (Maybe (IdentityId, [Choice]))
@@ -259,3 +265,35 @@ damageOf ident = (.playerIdentityDamage) . toAttrs <$> getPlayer ident
 
 villainDamageNow :: GameAppT Natural
 villainDamageNow = villainDamage <$> getVillain
+
+-- | Run these messages now, answering whatever they ask with its first choice (the first
+-- forced ability, or not responding), until the game is back at the question it was
+-- waiting on or is over.
+resolve :: [Message] -> GameAppT ()
+resolve msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGameMessages
+  settle waiting (200 :: Int)
+ where
+  settle waiting n = do
+    current <- openQuestion
+    finished <- getsGame (isFinished . gameState)
+    case current of
+      Just (ident, _) | n > 0, current /= waiting, not finished -> do
+        answerQuestion ident 0
+        settle waiting (n - 1)
+      _ -> pure ()
+  isFinished = \case
+    Finished _ -> True
+    _ -> False
+
+-- | A fresh copy of an encounter card.
+encounterCard :: CardDef -> GameAppT EncounterCard
+encounterCard = genEncounterCard
+
+-- | The players in player order.
+players :: GameAppT [IdentityId]
+players = getsGame gamePlayerOrder
+

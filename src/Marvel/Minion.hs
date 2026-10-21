@@ -37,15 +37,15 @@ allMinions =
       , SomeMinionCard tigerShark
       , SomeMinionCard melter
       , SomeMinionCard drone
-      , -- , SomeMinionCard advancedUltronDrone
-        SomeMinionCard killmonger
+      , SomeMinionCard advancedUltronDrone
+      , SomeMinionCard killmonger
       , SomeMinionCard titania
       , SomeMinionCard vulture
       , SomeMinionCard whiplash
       , SomeMinionCard yonRogg
-      -- , SomeMinionCard madameHydra
-      -- , SomeMinionCard hydraSoldier
-      -- , SomeMinionCard modok
+      , SomeMinionCard madameHydra
+      , SomeMinionCard hydraSoldier
+      , SomeMinionCard modok
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

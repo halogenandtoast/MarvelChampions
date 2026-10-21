@@ -60,6 +60,8 @@ gameSelectSupport :: (HasGame m) => SupportMatcher -> m (HashSet SupportId)
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectAttachment ::
   (HasGame m) => AttachmentMatcher -> m (HashSet AttachmentId)
+gameSelectEnvironment ::
+  (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
 gameSelectScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectSideScheme ::
   (HasGame m) => SideSchemeMatcher -> m (HashSet SideSchemeId)

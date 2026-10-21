@@ -6,6 +6,7 @@ import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (TreacheryId)
+import Marvel.Keyword qualified as Keyword
 import Marvel.Id as X (TreacheryId)
 import Marvel.Message
 import Marvel.Queue
@@ -132,7 +133,9 @@ instance RunMessage (Attrs Treachery) where
       ResolvedTreachery identityId -> do
         pushAll $
           RemoveFromPlay (toTarget attrs)
-            : [Surge identityId | treacherySurge attrs]
+            : [ Surge identityId
+              | treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)
+              ]
         pure attrs
       _ -> pure attrs
     _ -> pure attrs

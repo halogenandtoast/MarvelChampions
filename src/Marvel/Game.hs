@@ -36,6 +36,8 @@ import Marvel.Effect
 import Marvel.Effect.Types (Effect)
 import Marvel.EncounterCard
 import Marvel.EncounterSet
+import Marvel.Environment
+import Marvel.Environment.Types (Environment)
 import Marvel.Entity
 import Marvel.Event
 import Marvel.Event.Types (Event)
@@ -54,9 +56,12 @@ import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Minion.Types (
   Minion,
+  facedownCardL,
+  overMinion,
   getMinionDamage,
   getMinionEngagedIdentity,
   getMinionPrintedHitPoints,
+  minionAttachments,
   minionAttackDetails,
   minionUpgrades,
  )
@@ -73,7 +78,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Scenario, getScenarioDifficulty)
+import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -114,6 +119,7 @@ data Entities = Entities
   , entitiesSideSchemes :: EntityMap SideScheme
   , entitiesEffects :: EntityMap Effect
   , entitiesEvents :: EntityMap Event
+  , entitiesEnvironments :: EntityMap Environment
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -136,6 +142,7 @@ defaultEntities =
     , entitiesMainSchemes = mempty
     , entitiesEffects = mempty
     , entitiesEvents = mempty
+    , entitiesEnvironments = mempty
     }
 
 data Game = Game
@@ -205,6 +212,9 @@ gameObligations = entitiesObligations . gameEntities
 
 gameVillains :: Game -> EntityMap Villain
 gameVillains = entitiesVillains . gameEntities
+
+gameEnvironments :: Game -> EntityMap Environment
+gameEnvironments = entitiesEnvironments . gameEntities
 
 instance ToJSON Game where
   toJSON = genericToJSON $ aesonOptions $ Just "game"
@@ -419,6 +429,10 @@ runGameMessage msg g@Game {..} = case msg of
       for_ (lookup sid $ gameSideSchemes g) $
         \sideScheme -> push $ DiscardedCard $ toCard sideScheme
       pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid)
+    EnvironmentRef eid -> do
+      for_ (lookup eid $ gameEnvironments g) $
+        \environment -> push $ DiscardedCard $ toCard environment
+      pure $ g & (entitiesL . environmentsL %~ deleteMap eid)
     _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
     mainSchemeId <- getRandom
@@ -427,6 +441,17 @@ runGameMessage msg g@Game {..} = case msg of
         push $ MainSchemeMessage mainSchemeId RevealMainScheme
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddMainScheme" cardCode
+  AddSetupMainScheme cardCode -> do
+    mainSchemeId <- getRandom
+    case lookupMainScheme cardCode mainSchemeId of
+      Just x -> do
+        pushAll $
+          [SetupMainScheme, MainSchemeMessage mainSchemeId RevealMainScheme]
+            <> [ CheckWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
+               | villainId <- HashMap.keys (gameVillains g)
+               ]
+        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
+      Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
   ReplaceMainScheme cardCode -> do
     push (AddMainScheme cardCode)
     pure $ g & (entitiesL . mainSchemesL .~ mempty)
@@ -570,10 +595,12 @@ runGameMessage msg g@Game {..} = case msg of
       ]
     pure g
   RevealedEncounterCard ident card -> do
+    -- surge is resolved after the rest of the card; treacheries surge as they resolve
+    let surge = [Marvel.Message.Surge ident | Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)]
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
-        pushAll [AttachmentMessage (toId attachment) $ RevealAttachment ident]
+        pushAll $ AttachmentMessage (toId attachment) (RevealAttachment ident) : surge
         pure $
           g
             & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
@@ -591,6 +618,7 @@ runGameMessage msg g@Game {..} = case msg of
                , MinionMessage (toId minion) (MinionEngagedIdentity ident)
                , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
                ]
+            <> surge
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
@@ -630,7 +658,51 @@ runGameMessage msg g@Game {..} = case msg of
         pure $
           g
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
+      EnvironmentType -> do
+        let environment = createEnvironment card
+        pure $ g & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
       _ -> error "Unhandled"
+  PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
+    MinionType -> do
+      let
+        minion = createMinion ident card
+        isTough = Toughness `member` cdKeywords (getCardDef card)
+      pushAll $
+        [MinionMessage (toId minion) MinionBecomeTough | isTough]
+          <> [ IdentityMessage ident (MinionEngaged $ toId minion)
+             , MinionMessage (toId minion) (MinionEngagedIdentity ident)
+             , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+             ]
+      pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+    _ -> do
+      push $ RevealedEncounterCard ident card
+      pure g
+  PutTopOfDeckIntoPlayAsDrone ident -> case lookup ident (gamePlayers g) of
+    Nothing -> pure g
+    Just player -> do
+      let
+        attrs = toAttrs player
+        reshuffle = [IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck, DealEncounterCard ident]
+      case unDeck (playerIdentityDeck attrs) of
+        []
+          | null (unDiscard $ playerIdentityDiscard attrs) -> pure g
+          | otherwise -> do
+              pushAll $ reshuffle <> [PutTopOfDeckIntoPlayAsDrone ident]
+              pure g
+        card : rest -> do
+          let
+            minionId = MinionId $ unCardId $ pcCardId card
+            drone =
+              overMinion (facedownCardL ?~ card) $
+                lookupMinion "xdrone" ident minionId
+          pushAll $
+            [ RemoveFromGame (CardIdRef $ pcCardId card)
+            , IdentityMessage ident (MinionEngaged minionId)
+            , MinionMessage minionId (MinionEngagedIdentity ident)
+            , CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]
+            ]
+              <> [msg' | null rest, msg' <- reshuffle]
+          pure $ g & (entitiesL . minionsL %~ insertMap minionId drone)
   EndCheckWindows -> pure g
   IdentityEndedTurn ident ->
     pure $
@@ -682,11 +754,17 @@ runGameMessage msg g@Game {..} = case msg of
       concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         windows
+    let
+      -- an ability on an encounter card is anyone's to trigger, so its limit counts
+      -- every player's uses: a forced ability used once is not offered to the next
+      usedByAnyone = HashMap.singleton ident (concat $ HashMap.elems usedAbilities)
+      withinLimit a =
+        passesUseLimit ident (maybe usedByAnyone (const usedAbilities) (abilityController g a)) a
     validAbilities <-
       filterM
         ( andM
             . sequence
-              [ pure . passesUseLimit ident usedAbilities
+              [ pure . withinLimit
               , passesCriteria ident
               , passesCanAffordCost ident
               , \a -> anyM (`abilityInWindow` a) windows
@@ -821,6 +899,7 @@ instance RunMessage Entities where
       >>= traverseOf (minionsL . each) (runMessage msg)
       >>= traverseOf (sideSchemesL . each) (runMessage msg)
       >>= traverseOf (mainSchemesL . each) (runMessage msg)
+      >>= traverseOf (environmentsL . each) (runMessage msg)
 
 instance RunMessage Game where
   runMessage msg g =
@@ -875,6 +954,10 @@ createMinion ident card =
 createAttachment :: EncounterCard -> Attachment
 createAttachment card =
   lookupAttachment (toCardCode card) (AttachmentId $ unCardId $ ecCardId card)
+
+createEnvironment :: EncounterCard -> Environment
+createEnvironment card =
+  lookupEnvironment (toCardCode card) (EnvironmentId $ unCardId $ ecCardId card)
 
 createEffect :: EffectId -> CardCode -> Source -> EntityMatcher -> Effect
 createEffect ident cardCode source matcher =
@@ -998,6 +1081,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameVillains g)
       <> concatMap getAbilities (HashMap.elems $ gameAttachments g)
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
+      <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
 
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on
 -- encounter cards are anyone's.
@@ -1270,13 +1354,15 @@ gameSelectEncounterCard ::
   EncounterCardMatcher ->
   m (HashSet EncounterCard)
 gameSelectEncounterCard m = case m of
+  -- the nemesis set the player set aside during setup, as much of it as is still there
   NemesisSetFor identityId -> do
     mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
-    case mIdentity of
-      Nothing -> pure mempty
-      Just iid -> do
-        cards <- gatherEncounterSet $ getNemesisSet $ toCardCode iid
-        pure $ HashSet.fromList cards
+    setAside <- getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
+    pure $ case mIdentity of
+      Nothing -> mempty
+      Just iid ->
+        HashSet.fromList $
+          filter ((== Just (getNemesisSet $ toCardCode iid)) . cdEncounterSet . getCardDef) setAside
 
 gameSelectAlly :: (HasGame m) => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
@@ -1350,6 +1436,17 @@ gameSelectAttachment m = do
  where
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
+    AttachmentIs def -> pure . (== def) . getCardDef
+
+gameSelectEnvironment ::
+  (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
+gameSelectEnvironment m = do
+  environments <- HashMap.elems <$> getsGame gameEnvironments
+  pure . HashSet.fromList . map toId $ filter matches environments
+ where
+  matches e = case m of
+    AnyEnvironment -> True
+    EnvironmentIs def -> getCardDef e == def
 
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
@@ -1384,7 +1481,8 @@ gameSelectEnemy m = do
     VillainEnemy -> pure True
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
-    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard)
+    -- guard keeps the player it is engaged with from attacking the villain
+    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith You)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
@@ -1450,6 +1548,18 @@ gameSelectMinion m = do
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    MinionMatches xs -> andM . traverse matchFilter xs
+    NotMinion m' -> fmap not . matchFilter m'
+    MinionWithAttachment attachmentMatcher -> \minion -> do
+      attachments <- select attachmentMatcher
+      pure . not . null $ minionAttachments (toAttrs minion) `HashSet.intersection` attachments
+    MinionWithHighestPrintedHitPointsAmong m' -> \minion -> do
+      minions <- HashMap.elems <$> getsGame gameMinions
+      candidates <- filterM (matchFilter m') minions
+      let highest = maximum $ map (unHp . getMinionPrintedHitPoints) candidates
+      pure $
+        toId minion `elem` map toId candidates
+          && unHp (getMinionPrintedHitPoints minion) == highest
 
 gameSelectTreachery :: (HasGame m) => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case
@@ -1552,6 +1662,8 @@ getModifiers a = withDepthGuard 2 $ do
   events <- HashMap.elems <$> getsGame gameEvents
   players <- HashMap.elems <$> getsGame gamePlayers
   sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
+  villains <- HashMap.elems <$> getsGame gameVillains
+  environments <- HashMap.elems <$> getsGame gameEnvironments
   mconcat
     <$> sequence
       [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
@@ -1563,6 +1675,8 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) villains
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) environments
       ]
 
 getCurrentWindows :: (HasGame m) => m [Window]
@@ -1606,13 +1720,20 @@ abilityResources a = go (abilityChoices a)
 getHazardCount :: (HasGame m) => m Natural
 getHazardCount = do
   sideSchemes <- getsGame gameSideSchemes
-  pure $ foldr ((+) . cdHazards . getCardDef) 0 sideSchemes
+  villains <- getsGame gameVillains
+  pure $
+    sum (map (cdHazards . getCardDef) (HashMap.elems sideSchemes))
+      + sum (map (cdHazards . getCardDef) (HashMap.elems villains))
 
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCount = do
   tokens <- getsGame (scenarioAccelerationTokens . gameScenario)
   sideSchemes <- getsGame gameSideSchemes
-  pure $ foldr ((+) . cdAcceleration . getCardDef) tokens sideSchemes
+  villains <- getsGame gameVillains
+  pure $
+    tokens
+      + sum (map (cdAcceleration . getCardDef) (HashMap.elems sideSchemes))
+      + sum (map (cdAcceleration . getCardDef) (HashMap.elems villains))
 
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural

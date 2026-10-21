@@ -9,6 +9,7 @@ import Marvel.Message.Ally as X
 import Marvel.Message.Attachment as X
 import Marvel.Message.Deck as X
 import Marvel.Message.Effect as X
+import Marvel.Message.Environment as X
 import Marvel.Message.Event as X
 import Marvel.Message.Identity as X
 import Marvel.Message.MainScheme as X
@@ -146,5 +147,15 @@ data Message
   | ChoseUpgrade UpgradeId Target
   | DiscardUntil FromZone CardMatcher Target
   | WithDiscardedMatch Target FromZone Card
+  | -- | setup puts the first main scheme into play: its 1A "Setup", then its 1B "When
+    -- Revealed", then the villain's "When Revealed"
+    AddSetupMainScheme CardCode
+  | EnvironmentMessage EnvironmentId EnvironmentMessage
+  | -- | the top card of the player's deck is put into play facedown, engaged with them,
+    -- as a Drone minion
+    PutTopOfDeckIntoPlayAsDrone IdentityId
+  | -- | an encounter card put into play without being revealed: its "When Revealed"
+    -- abilities and surge do not resolve
+    PutEncounterCardIntoPlay IdentityId EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

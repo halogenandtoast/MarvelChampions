@@ -86,6 +86,10 @@ costMessages iid activeCost = go (activeCostCost activeCost)
             [ UpgradeMessage ident ExhaustedUpgrade
             , Paid ExhaustPayment
             ]
+          AttachmentRef _ ->
+            [ IdentityMessage iid ExhaustedIdentity
+            , Paid ExhaustPayment
+            ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
     DiscardCost target -> pure $ case target of

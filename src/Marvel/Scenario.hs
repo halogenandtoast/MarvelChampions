@@ -28,7 +28,7 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-  [SomeScenarioCard rhinoScenario, SomeScenarioCard klawScenario]
+  [SomeScenarioCard rhinoScenario, SomeScenarioCard klawScenario, SomeScenarioCard ultronScenario]
 
 -- | The scenario with the set it recommends, at standard difficulty.
 recommendedSetup :: CardCode -> Maybe ScenarioSetup
@@ -83,6 +83,21 @@ klawScenario = scenario
   ("01113", "01114")
   ["01116", "01117"]
   [EncounterSet.Klaw]
+
+newtype UltronScenario = UltronScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage UltronScenario where
+  runMessage msg (UltronScenario a) = UltronScenario <$> runMessage msg a
+
+ultronScenario :: ScenarioCard UltronScenario
+ultronScenario = scenario
+  UltronScenario
+  "01134"
+  ("01134", "01135")
+  ["01137", "01138", "01139"]
+  [EncounterSet.Ultron]
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs

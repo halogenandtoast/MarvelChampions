@@ -97,6 +97,10 @@ instance (HasGame m) => Query m AttachmentMatcher where
   type QueryElement AttachmentMatcher = AttachmentId
   select = gameSelectAttachment
 
+instance (HasGame m) => Query m EnvironmentMatcher where
+  type QueryElement EnvironmentMatcher = EnvironmentId
+  select = gameSelectEnvironment
+
 instance (HasGame m) => Query m SideSchemeMatcher where
   type QueryElement SideSchemeMatcher = SideSchemeId
   select = gameSelectSideScheme

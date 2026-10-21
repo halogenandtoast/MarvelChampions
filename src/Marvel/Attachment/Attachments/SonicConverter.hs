@@ -10,6 +10,7 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
@@ -37,17 +38,10 @@ instance HasModifiersFor SonicConverter where
 
 instance HasAbilities SonicConverter where
   getAbilities (SonicConverter a) = case attachmentEnemy a of
-    Just enemyId ->
-      [ windowAbility
+    Just _ ->
+      [ ability
           a
           1
-          (EnemyAttackedAndDamaged (EnemyWithId enemyId) AnyCharacter)
-          ForcedResponse
-          NoCost
-          $ runAbility a 1
-      , ability
-          a
-          2
           HeroAction
           NoCriteria
           (MultiResourceCost [Just Energy, Just Mental, Just Physical])
@@ -63,10 +57,16 @@ instance RunMessage SonicConverter where
         push $ VillainMessage villainId $ AttachedToVillain ident
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
-    RanAbility _ (isTarget a -> True) 1 [EnemyAttacksAndDamages _ cid] _ -> do
-      case cid of
-        IdentityCharacter ident -> push $ IdentityMessage ident IdentityStunned
-        AllyCharacter ident -> push $ AllyMessage ident AllyStunned
-        _ -> error "impossible"
+    -- Forced Response: after Klaw attacks and damages a character, stun that character
+    IdentityMessage ident (IdentityDamaged source damage) | byKlawsAttack source damage -> do
+      push $ IdentityMessage ident IdentityStunned
+      pure a
+    AllyMessage ident (AllyDamaged source damage) | byKlawsAttack source damage -> do
+      push $ AllyMessage ident AllyStunned
       pure a
     _ -> SonicConverter <$> runMessage msg attrs
+   where
+    byKlawsAttack source damage = case (source, attachmentEnemy attrs) of
+      (VillainRef vid, Just (EnemyVillainId vid')) ->
+        vid == vid' && damageSource damage == FromAttack && damageAmount damage > 0
+      _ -> False

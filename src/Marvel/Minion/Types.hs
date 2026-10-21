@@ -48,6 +48,15 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   toMinionAttrs :: a -> Attrs Minion
   default toMinionAttrs :: (Coercible a (Attrs Minion)) => a -> Attrs Minion
   toMinionAttrs = coerce
+  overMinionAttrs :: (Attrs Minion -> Attrs Minion) -> a -> a
+  default overMinionAttrs :: (Coercible a (Attrs Minion)) => (Attrs Minion -> Attrs Minion) -> a -> a
+  overMinionAttrs = coerce
+
+overMinion :: (Attrs Minion -> Attrs Minion) -> Minion -> Minion
+overMinion f (Minion a) = Minion (overMinionAttrs f a)
+
+getMinionFacedownCard :: Minion -> Maybe PlayerCard
+getMinionFacedownCard = minionFacedownCard . toAttrs
 
 type MinionCard a = CardBuilder (IdentityId, MinionId) a
 
@@ -81,6 +90,8 @@ instance Entity Minion where
     , minionUpgrades :: HashSet UpgradeId
     , minionAttachments :: HashSet AttachmentId
     , minionDefensePriority :: DefensePriority
+    , minionFacedownCard :: Maybe PlayerCard
+    -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -99,6 +110,7 @@ instance Entity Minion where
     MinionUpgrades :: Field Minion (HashSet UpgradeId)
     MinionAttachments :: Field Minion (HashSet AttachmentId)
     MinionDefensePriority :: Field Minion DefensePriority
+    MinionFacedownCard :: Field Minion (Maybe PlayerCard)
   field fld m =
     let MinionAttrs {..} = toAttrs m
      in case fld of
@@ -116,6 +128,7 @@ instance Entity Minion where
           MinionUpgrades -> minionUpgrades
           MinionAttachments -> minionAttachments
           MinionDefensePriority -> minionDefensePriority
+          MinionFacedownCard -> minionFacedownCard
   toId = minionId . toAttrs
   toAttrs (Minion a) = toMinionAttrs a
 
@@ -172,6 +185,9 @@ toughL = lens minionTough $ \m x -> m {minionTough = x}
 upgradesL :: Lens' (Attrs Minion) (HashSet UpgradeId)
 upgradesL = lens minionUpgrades $ \m x -> m {minionUpgrades = x}
 
+facedownCardL :: Lens' (Attrs Minion) (Maybe PlayerCard)
+facedownCardL = lens minionFacedownCard $ \m x -> m {minionFacedownCard = x}
+
 attachmentsL :: Lens' (Attrs Minion) (HashSet AttachmentId)
 attachmentsL = lens minionAttachments $ \m x -> m {minionAttachments = x}
 
@@ -216,13 +232,17 @@ minion f cardDef sch atk hp =
             , minionUpgrades = mempty
             , minionAttachments = mempty
             , minionDefensePriority = AnyDefense
+            , minionFacedownCard = Nothing
             }
     }
 
 instance IsRef (Attrs Minion) where
   toRef = MinionRef . minionId
 
+-- | A facedown minion is its owner's player card, so it goes to their discard pile when
+-- it leaves play.
 instance IsCard (Attrs Minion) where
+  toCard a | Just card <- minionFacedownCard a = PlayerCard card
   toCard a =
     EncounterCard $
       MkEncounterCard

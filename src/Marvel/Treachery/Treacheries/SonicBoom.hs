@@ -77,7 +77,7 @@ instance RunMessage SonicBoom where
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> pure t
       IdentityMessage identityId (IdentityDamaged _ _) -> do
-        push $ IdentityMessage identityId IdentityStunned
+        push $ IdentityMessage identityId ExhaustedIdentity
         pure t
       _ -> SonicBoom <$> runMessage msg attrs
     _ -> SonicBoom <$> runMessage msg attrs

@@ -35,6 +35,12 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard highwayRobbery
   , SomeSideSchemeCard imminentOverload
   , SomeSideSchemeCard thePsycheMagnitron
+  , SomeSideSchemeCard droneFactory
+  , SomeSideSchemeCard invasiveAI
+  , SomeSideSchemeCard ultronsImperative
+  , SomeSideSchemeCard underAttack
+  , SomeSideSchemeCard legionsOfHydra
+  , SomeSideSchemeCard theDoomsdayChair
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme
