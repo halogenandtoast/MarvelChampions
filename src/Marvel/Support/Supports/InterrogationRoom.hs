@@ -27,11 +27,11 @@ newtype InterrogationRoom = InterrogationRoom (Attrs Support)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities InterrogationRoom where
-  getAbilities a =
+  getAbilities a@(InterrogationRoom attrs) =
     [ limitedWindowAbility
         a
         1
-        (W.EnemyDefeated W.After MinionEnemy AnyDamage)
+        (W.EnemyDefeated W.After MinionEnemy (DamageByPlayer $ IdentityWithId $ supportController attrs))
         Response
         OwnsThis
         ExhaustCost

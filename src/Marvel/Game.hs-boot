@@ -50,6 +50,7 @@ getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
+getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 -- Matchers
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)

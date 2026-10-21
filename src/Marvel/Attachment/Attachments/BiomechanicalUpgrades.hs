@@ -63,7 +63,7 @@ instance RunMessage BiomechanicalUpgrades where
         let
           defeat = \case
             MinionMessage mid' MinionDefeated -> mid == mid'
-            CheckWindows [W.Window W.After (W.DefeatedMinion mid' _)] -> mid == mid'
+            CheckWindows [W.Window W.After (W.DefeatedMinion mid' _ _)] -> mid == mid'
             _ -> False
         cancelMatchingMessage defeat
         cancelMatchingMessage defeat

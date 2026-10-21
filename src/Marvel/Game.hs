@@ -40,7 +40,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment)
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Event)
+import Marvel.Event.Types (Attrs (eventController), Event)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -1148,6 +1148,16 @@ abilityController g a = case abilitySource a of
   AllyRef aid -> getAllyController <$> lookup aid (gameAllies g)
   SupportRef sid -> getSupportController <$> lookup sid (gameSupports g)
   UpgradeRef uid -> getUpgradeController <$> lookup uid (gameUpgrades g)
+  _ -> Nothing
+
+-- | The player controlling the card a source names, if a player does.
+getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
+getSourceController source = getsGame \g -> case source of
+  IdentityRef ident -> Just ident
+  AllyRef aid -> getAllyController <$> lookup aid (gameAllies g)
+  SupportRef sid -> getSupportController <$> lookup sid (gameSupports g)
+  UpgradeRef uid -> getUpgradeController <$> lookup uid (gameUpgrades g)
+  EventRef eid -> eventController . toAttrs <$> lookup eid (gameEvents g)
   _ -> Nothing
 
 -- | The abilities in play a player may trigger.

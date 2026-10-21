@@ -272,6 +272,11 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data DamageMatcher = AttackFromPlayer IdentityMatcher | AttackFromAlly AllyMatcher | AnyDamage
+data DamageMatcher
+  = AttackFromPlayer IdentityMatcher
+  | AttackFromAlly AllyMatcher
+  | -- | damage a player dealt: by attacking, or with a card they control
+    DamageByPlayer IdentityMatcher
+  | AnyDamage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

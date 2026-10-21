@@ -6,6 +6,7 @@ import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Matchers.Types
+import Marvel.Ref (Source)
 
 data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
@@ -65,7 +66,8 @@ data WindowType
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
   | DefeatedVillain VillainId Damage
-  | DefeatedMinion MinionId Damage
+  | -- | the minion, the damage that defeated it, and what dealt it
+    DefeatedMinion MinionId Damage Source
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
   | EnemyAttacksAndDamages EnemyId CharacterId

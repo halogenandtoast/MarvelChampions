@@ -74,10 +74,10 @@ runMinionMessage msg attrs = case msg of
 
             pushAll
               [ CheckWindows
-                  [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage]
+                  [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source]
               , MinionMessage (minionId attrs) MinionDefeated
               , CheckWindows
-                  [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage]
+                  [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
               ]
           else retaliate
         pure $ attrs & damageL +~ damageAmount damage

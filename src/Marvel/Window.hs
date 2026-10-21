@@ -105,17 +105,17 @@ windowMatches matcher w source = case matcher of
           villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
-    DefeatedMinion minionId _
+    DefeatedMinion minionId _ _
       | windowTiming w == timing ->
           minionMatches minionMatcher minionId
     _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
-    DefeatedMinion minionId damage
+    DefeatedMinion minionId damage source
       | windowTiming w == timing ->
           liftA2
             (&&)
             (enemyMatches (DefeatedEnemy enemyMatcher) (EnemyMinionId minionId))
-            (damageMatches damageMatcher damage)
+            (damageMatchesFrom damageMatcher damage source)
     DefeatedVillain villainId damage
       | windowTiming w == timing ->
           liftA2

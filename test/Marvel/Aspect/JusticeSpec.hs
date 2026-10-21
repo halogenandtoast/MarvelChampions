@@ -149,6 +149,18 @@ spec = describe "Justice" do
         chooseIf (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 1)
 
+    it "does not answer a minion another player defeats" do
+      tg <- testGame ["spider-man", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        clearHand p
+        putIntoPlay p "01063"
+        mercenary <- addMinion p Cards.hydraMercenary
+        runNow [MinionMessage mercenary (MinionDamaged (toSource other) (toDamage 10 FromAbility))]
+        [room] <- supportsWith "01063"
+        offers (isAbilityOf (supportId room)) `shouldReturn` False
+
   describe "Surveillance Team (01064)" do
     it "has 3 uses, each exhausting it to remove 1 threat" do
       tg <- testGame ["spider-man"]
