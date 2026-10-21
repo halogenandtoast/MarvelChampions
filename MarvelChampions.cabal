@@ -119,6 +119,7 @@ library
       Marvel.Event.Events.WakandaForeverD
       Marvel.Event.Types
       Marvel.Exception
+      Marvel.Frontend
       Marvel.Game
       Marvel.Game.Source
       Marvel.GameValue
@@ -135,10 +136,13 @@ library
       Marvel.Hero.Runner
       Marvel.Hero.Types
       Marvel.Hp
+      Marvel.I18n
       Marvel.Id
       Marvel.Identity
       Marvel.Identity.Types
       Marvel.Keyword
+      Marvel.Log
+      Marvel.Log.Entry
       Marvel.MainScheme
       Marvel.MainScheme.Cards
       Marvel.MainScheme.MainSchemes
@@ -343,6 +347,8 @@ library
       ViewPatterns
       QuantifiedConstraints
       NoPolyKinds
+      MultiWayIf
+      OverloadedRecordDot
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans
   build-depends:
       MonadRandom
@@ -350,12 +356,16 @@ library
     , aeson-casing
     , aeson-diff
     , base >=4.7 && <5
+    , containers
     , exceptions
     , extra
     , hashable
     , lens
     , mtl
+    , random
     , random-shuffle
+    , safe
+    , splitmix
     , template-haskell
     , text
     , unordered-containers
@@ -400,6 +410,8 @@ test-suite MarvelChampions-test
       ViewPatterns
       QuantifiedConstraints
       NoPolyKinds
+      MultiWayIf
+      OverloadedRecordDot
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
@@ -408,12 +420,16 @@ test-suite MarvelChampions-test
     , aeson-casing
     , aeson-diff
     , base >=4.7 && <5
+    , containers
     , exceptions
     , extra
     , hashable
     , lens
     , mtl
+    , random
     , random-shuffle
+    , safe
+    , splitmix
     , template-haskell
     , text
     , unordered-containers

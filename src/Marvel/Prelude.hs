@@ -29,7 +29,7 @@ import Control.Lens.TH as X
 import Control.Monad as X (guard, unless, when)
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
 import Control.Monad.Extra as X (allM, andM, anyM, concatMapM, filterM, orM, whenM)
-import Control.Monad.Random as X (MonadRandom, Random, getRandom)
+import Control.Monad.Random as X (MonadRandom (..), Random, getRandom)
 import Control.Monad.Reader as X (MonadReader)
 import Data.Aeson as X hiding (Key)
 import Data.Bifunctor as X (first, second)

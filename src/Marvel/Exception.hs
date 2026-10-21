@@ -36,3 +36,15 @@ newtype UnhandledMessage = UnhandledMessage Text
 
 instance Exception UnhandledMessage where
   displayException (UnhandledMessage s) = T.unpack s
+
+-- | An answer for a player who was not asked anything.
+data NoQuestion = NoQuestion
+  deriving stock (Show)
+
+instance Exception NoQuestion
+
+-- | An answer naming a choice the question does not have.
+data InvalidChoice = InvalidChoice
+  deriving stock (Show)
+
+instance Exception InvalidChoice

@@ -3,6 +3,7 @@ language: GHC2021
 
 dependencies:
 - base >= 4.7 && < 5
+- safe
 - MonadRandom
 - text
 - exceptions
@@ -10,6 +11,9 @@ dependencies:
 - extra
 - hashable
 - mtl
+- containers
+- random
+- splitmix
 - uuid
 - vector
 - template-haskell
@@ -49,6 +53,8 @@ default-extensions:
 - ViewPatterns
 - QuantifiedConstraints
 - NoPolyKinds
+- MultiWayIf
+- OverloadedRecordDot
 
 ghc-options:
 - -Wall

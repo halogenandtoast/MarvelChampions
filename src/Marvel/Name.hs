@@ -14,3 +14,8 @@ data Name = Name
 
 instance IsString Name where
   fromString = flip Name Nothing . fromString
+
+-- | The name as printed: the title, then the subtitle after a colon.
+display :: Name -> Text
+display (Name t Nothing) = t
+display (Name t (Just s)) = t <> ": " <> s

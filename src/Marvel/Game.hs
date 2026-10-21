@@ -10,6 +10,10 @@ import Data.Aeson.Diff qualified as Diff
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.IORef
+import Data.Tuple (swap)
+import Marvel.Frontend
+import Safe (atMay)
+import System.Random (StdGen, mkStdGen, random, randomR, randomRs, randoms, splitGen)
 import Data.List (find)
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
@@ -153,6 +157,9 @@ data Game = Game
   , gameScenario :: Scenario
   , gameFocusedCards :: [Card]
   , gameBoostCards :: HashMap Target EncounterCard
+  , gameQuestionVersion :: Int
+  -- ^ bumped with each question asked, so a stale answer is refused
+  , gameRound :: Int
   }
   deriving stock (Show, Eq, Generic)
 
@@ -212,13 +219,32 @@ patch g p = case Diff.patch p (toJSON g) of
   Success a -> fromJSON a
 
 newtype GameAppT a = GameAppT {unGameAppT :: ReaderT GameApp IO a}
-  deriving newtype (MonadReader GameApp, Functor, Applicative, Monad, MonadFail, MonadIO, MonadRandom, MonadCatch, MonadThrow)
+  deriving newtype (MonadReader GameApp, Functor, Applicative, Monad, MonadFail, MonadIO, MonadCatch, MonadThrow)
 
+-- | A game being played: the game and its queue, the random generator it rolls with
+-- (stored with the game, so a reloaded game rolls the same), and where what it says to
+-- its clients goes.
 data GameApp = GameApp
   { appGame :: IORef Game
   , appQueue :: IORef [Message]
   , appDebugLogger :: Maybe DebugLogger
+  , appRandomGen :: IORef StdGen
+  , appFrontend :: FrontendMessage -> IO ()
   }
+
+instance MonadRandom GameAppT where
+  getRandomR lohi = withGen (randomR lohi)
+  getRandom = withGen random
+  getRandomRs lohi = randomRs lohi <$> withGen splitGen
+  getRandoms = randoms <$> withGen splitGen
+
+withGen :: (StdGen -> (a, StdGen)) -> GameAppT a
+withGen f = do
+  ref <- asks appRandomGen
+  liftIO $ atomicModifyIORef' ref (swap . f)
+
+instance Frontend GameAppT where
+  send msg = asks appFrontend >>= \f -> liftIO (f msg)
 
 instance HasGame GameAppT where
   getGame = getGameRef >>= liftIO . readIORef
@@ -235,10 +261,20 @@ instance HasGameRef GameAppT where
 instance MonadGame GameApp GameAppT
 
 newApp :: (MonadIO m) => Game -> [Message] -> m GameApp
-newApp g msgs = do
-  gameRef <- liftIO $ newIORef g
-  queueRef <- liftIO $ newIORef msgs
-  pure $ GameApp gameRef queueRef Nothing
+newApp g msgs = newGameApp g msgs (mkStdGen 0) (const $ pure ())
+
+-- | A game to play from its queue, rolling with the generator given and telling its
+-- clients through the function given.
+newGameApp :: (MonadIO m) => Game -> [Message] -> StdGen -> (FrontendMessage -> IO ()) -> m GameApp
+newGameApp g msgs gen frontend = liftIO do
+  gameRef <- newIORef g
+  queueRef <- newIORef msgs
+  genRef <- newIORef gen
+  pure $ GameApp gameRef queueRef Nothing genRef frontend
+
+-- | The game, its queue and its random generator as they now stand.
+currentState :: GameApp -> IO (Game, [Message], StdGen)
+currentState app = (,,) <$> readIORef (appGame app) <*> readIORef (appQueue app) <*> readIORef (appRandomGen app)
 
 runGameApp :: (MonadIO m) => GameApp -> GameAppT a -> m a
 runGameApp gameApp = liftIO . flip runReaderT gameApp . unGameAppT
@@ -826,6 +862,8 @@ newGame player scenario =
     , gameScenario = scenario
     , gameFocusedCards = []
     , gameBoostCards = mempty
+    , gameQuestionVersion = 0
+    , gameRound = 1
     }
 
 addPlayer :: (MonadGame env m) => PlayerIdentity -> m ()
@@ -910,17 +948,71 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameAttachments g)
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
 
+-- | Run messages until the queue empties or someone has to answer a question.
 runGameMessages :: (MonadGame env m, Projection m PlayerIdentity) => m ()
-runGameMessages = do
-  mMsg <- pop
-  for_ mMsg debug
-  for_ mMsg $ \case
-    Ask ident choices -> do
-      withGame_ $ questionL .~ fromList [(ident, choices)]
-    other -> do
-      withGame_ $ questionL .~ mempty
-      withGameM $ runMessage other
-      runGameMessages
+runGameMessages = go (0 :: Int)
+ where
+  go n = do
+    g <- getGame
+    if
+      | notNull (gameQuestion g) || isFinished g -> pure ()
+      | n >= messageLimit -> error "message limit reached: the game is probably looping"
+      | otherwise ->
+          pop >>= \case
+            Nothing -> pure ()
+            Just (Ask ident question) -> do
+              withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
+            Just other -> do
+              debug other
+              withGameM $ runMessage other
+              go (n + 1)
+  isFinished g = case gameState g of
+    Finished _ -> True
+    _ -> False
+
+messageLimit :: Int
+messageLimit = 10000
+
+-- | Answer the question a player was asked with the choice at the index given, and play
+-- on to the next question.
+answerQuestion :: IdentityId -> Int -> GameAppT ()
+answerQuestion ident n = do
+  g <- getGame
+  question <- maybe (throwM NoQuestion) pure $ lookup ident (gameQuestion g)
+  withGame_ $ questionL .~ mempty
+  msgs <- case question of
+    ChooseOne qs -> maybe (throwM InvalidChoice) (choiceMessages ident) (atMay qs n)
+    ChooseN k qs -> case atMay qs n of
+      Nothing -> throwM InvalidChoice
+      Just choice -> do
+        msgs <- choiceMessages ident choice
+        let rest = take n qs <> drop (n + 1) qs
+        pure $ msgs <> [Ask ident (ChooseN (k - 1) rest) | k > 1, notNull rest]
+    ChooseOneAtATime qs -> case atMay qs n of
+      Nothing -> throwM InvalidChoice
+      Just choice -> do
+        msgs <- choiceMessages ident choice
+        let rest = take n qs <> drop (n + 1) qs
+        pure $ msgs <> [Ask ident (ChooseOneAtATime rest) | notNull rest]
+    ChoosePlayerOrder (Unsorted unsorted) (Sorted sorted) -> case atMay unsorted n of
+      Nothing -> throwM InvalidChoice
+      Just chosen -> do
+        let sorted' = sorted <> [chosen]
+        pure case filter (/= chosen) unsorted of
+          [] -> [SetPlayerOrder sorted']
+          [lastOne] -> [SetPlayerOrder (sorted' <> [lastOne])]
+          rest -> [Ask ident (ChoosePlayerOrder (Unsorted rest) (Sorted sorted'))]
+  pushAll msgs
+  runGameMessages
+
+-- | Run a debug message now, even while a question waits: it and whatever it leads to go
+-- first, then the waiting question is asked again and play carries on from there.
+runDebug :: Message -> GameAppT ()
+runDebug msg = do
+  asked <- getsGame gameQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msg : [Ask ident q | (ident, q) <- HashMap.toList asked]
+  runGameMessages
 
 -- TODO: implement this for api
 replayChoices :: (MonadGame env m) => [Diff.Patch] -> m ()
