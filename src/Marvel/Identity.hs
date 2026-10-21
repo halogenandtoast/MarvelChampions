@@ -419,7 +419,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             & (discardL .~ Discard [])
     ShuffleIntoIdentityDeck cards -> do
       deck <- shuffleM (unDeck (attrs ^. deckL) <> cards)
-      pure $ PlayerIdentity $ attrs & deckL .~ Deck deck
+      -- a card shuffled in from the discard pile leaves it
+      pure $ PlayerIdentity $ attrs & deckL .~ Deck deck & discardL %~ Discard . filter (`notElem` cards) . unDiscard
     DrawOrDiscardToHandLimit -> do
       modifiedHandSize <- getModifiedHandSize pid
       let
