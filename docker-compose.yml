@@ -12,6 +12,8 @@ services:
       - pgdata:/var/lib/postgresql/data
   marvel-backend:
     build: .
+    # postgres takes a moment on first boot; the API retries until it is up
+    restart: on-failure
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/marvelchampions
       - JWT_SECRET=local-docker-secret-change-me-at-least-32-bytes
