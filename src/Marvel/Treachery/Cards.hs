@@ -131,7 +131,7 @@ electromagneticBacklash =
 
 kreeManipulator :: CardDef
 kreeManipulator =
-  (treachery "01178" "Kree Manipulator" [Star] CaptainMarvelNemesis 1)
+  (treachery "01178" "Kree Manipulator" [Star] CaptainMarvelNemesis 2)
     { cdKeywords = singleton Keyword.Surge
     }
 
