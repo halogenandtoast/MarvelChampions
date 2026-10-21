@@ -3,3 +3,7 @@
 tags
 .hie/
 .DS_Store
+# HD card scans: Fantasy Flight Games' artwork, synced to s3, never committed
+MarvelHD.zip
+/images/
+frontend/public/images/cards/
