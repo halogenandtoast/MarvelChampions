@@ -78,7 +78,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Scenario, getScenarioDifficulty)
+import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -649,6 +649,21 @@ runGameMessage msg g@Game {..} = case msg of
         let environment = createEnvironment card
         pure $ g & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
       _ -> error "Unhandled"
+  PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
+    MinionType -> do
+      let
+        minion = createMinion ident card
+        isTough = Toughness `member` cdKeywords (getCardDef card)
+      pushAll $
+        [MinionMessage (toId minion) MinionBecomeTough | isTough]
+          <> [ IdentityMessage ident (MinionEngaged $ toId minion)
+             , MinionMessage (toId minion) (MinionEngagedIdentity ident)
+             , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+             ]
+      pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+    _ -> do
+      push $ RevealedEncounterCard ident card
+      pure g
   PutTopOfDeckIntoPlayAsDrone ident -> case lookup ident (gamePlayers g) of
     Nothing -> pure g
     Just player -> do
@@ -726,11 +741,17 @@ runGameMessage msg g@Game {..} = case msg of
       concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         windows
+    let
+      -- an ability on an encounter card is anyone's to trigger, so its limit counts
+      -- every player's uses: a forced ability used once is not offered to the next
+      usedByAnyone = HashMap.singleton ident (concat $ HashMap.elems usedAbilities)
+      withinLimit a =
+        passesUseLimit ident (maybe usedByAnyone (const usedAbilities) (abilityController g a)) a
     validAbilities <-
       filterM
         ( andM
             . sequence
-              [ pure . passesUseLimit ident usedAbilities
+              [ pure . withinLimit
               , passesCriteria ident
               , passesCanAffordCost ident
               , \a -> anyM (`abilityInWindow` a) windows
@@ -1309,13 +1330,15 @@ gameSelectEncounterCard ::
   EncounterCardMatcher ->
   m (HashSet EncounterCard)
 gameSelectEncounterCard m = case m of
+  -- the nemesis set the player set aside during setup, as much of it as is still there
   NemesisSetFor identityId -> do
     mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
-    case mIdentity of
-      Nothing -> pure mempty
-      Just iid -> do
-        cards <- gatherEncounterSet $ getNemesisSet $ toCardCode iid
-        pure $ HashSet.fromList cards
+    setAside <- getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
+    pure $ case mIdentity of
+      Nothing -> mempty
+      Just iid ->
+        HashSet.fromList $
+          filter ((== Just (getNemesisSet $ toCardCode iid)) . cdEncounterSet . getCardDef) setAside
 
 gameSelectAlly :: (HasGame m) => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
