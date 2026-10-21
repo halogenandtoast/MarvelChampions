@@ -27,6 +27,8 @@
     "def": "DEF",
     "rec": "REC",
     "sch": "SCH",
+    "stage": "STAGE",
+    "boost": "BOOST",
     "hand": "HAND"
   },
   "form": {

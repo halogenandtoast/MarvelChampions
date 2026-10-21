@@ -52,15 +52,12 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
         :attached="upgradesAndAttachments(villain)"
       />
       <div class="villain-info">
-        <p class="villain-name">
-          <span class="stage">{{ roman(villain.stage) }}</span>
-          {{ villain.name }}
-        </p>
         <Meter :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :max="villain.hitPoints" tone="villain" />
         <dl class="stats">
+          <div class="stage" :title="villain.name"><dt>{{ t('game.stats.stage') }}</dt><dd>{{ roman(villain.stage) }}</dd></div>
           <div><dt>{{ t('game.stats.sch') }}</dt><dd>{{ villain.scheme }}</dd></div>
           <div><dt>{{ t('game.stats.atk') }}</dt><dd>{{ villain.attack }}</dd></div>
-          <div v-if="villain.boostCards"><dt>{{ t('game.boost') }}</dt><dd>{{ villain.boostCards }}</dd></div>
+          <div v-if="villain.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ villain.boostCards }}</dd></div>
         </dl>
       </div>
     </div>
@@ -113,34 +110,12 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
   overflow-x: auto;
 }
-.villain { display: flex; gap: 12px; align-items: flex-start; flex: none; }
-.villain-info { display: flex; flex-direction: column; gap: 10px; width: 132px; padding-top: 2px; }
-.villain-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
-  color: var(--title);
-}
-.stage {
-  display: grid;
-  place-items: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 4px;
-  border-radius: 6px;
-  background: var(--crimson);
-  color: #fff;
-  font-size: 0.9rem;
-}
-.stats { display: flex; gap: 6px; margin: 0; }
+.villain { display: flex; flex-direction: column; gap: 8px; flex: none; width: var(--card-width); }
+.villain-info { display: flex; flex-direction: column; gap: 6px; }
+.stage dd { color: var(--crimson); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 4px; margin: 0; }
 .stats div { flex: 1; padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
-.stats dt { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
+.stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
 .stats dd { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1.05; }
 
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
