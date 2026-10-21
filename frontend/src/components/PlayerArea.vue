@@ -55,9 +55,9 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           </dl>
         </div>
       </div>
+      <!-- what this player is asked sits beneath them, at the foot of the area -->
+      <div v-if="$slots.default" class="asked"><slot /></div>
     </div>
-    <!-- what this player is asked sits beside them, at the foot of the area -->
-    <div v-if="$slots.default" class="asked"><slot /></div>
 
     <div v-if="minions.length" class="zone engaged">
       <span class="zone-label">{{ t('game.zones.engaged') }}</span>
@@ -141,10 +141,10 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   overflow-x: auto;
 }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
-.identity-column { display: flex; flex-direction: column; flex: none; width: var(--card-width); }
+.identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); }
 /* above the hand that floats over the foot of the board */
-.asked { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; flex: none; align-self: stretch; width: 230px; }
-.identity { display: flex; flex-direction: column; gap: 8px; }
+.asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+.identity { display: flex; flex-direction: column; gap: 8px; width: var(--card-width); }
 .identity-info { display: flex; flex-direction: column; gap: 6px; }
 .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; margin: 0; }
 .stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
