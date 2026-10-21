@@ -20,6 +20,10 @@ import Control.Monad.Random (evalRand)
 import Marvel.Debug as X
 import System.Random (mkStdGen)
 import Test.Hspec as X
+import Control.Monad.IO.Class as X (liftIO)
+import Marvel.Card.Def (CardDef)
+import Marvel.Card.EncounterCard (EncounterCard)
+import Marvel.EncounterCard (genEncounterCard)
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -55,3 +59,45 @@ questionSize = \case
   ChooseN _ cs -> length cs
   ChooseOneAtATime cs -> length cs
   ChoosePlayerOrder (Unsorted xs) _ -> length xs
+
+-- | Run these messages now, answering whatever they ask with its first choice (the first
+-- forced ability, or not responding), until the game is back at the question it was
+-- waiting on or is over.
+resolve :: [Message] -> GameAppT ()
+resolve msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGameMessages
+  settle waiting (200 :: Int)
+ where
+  settle waiting n = do
+    current <- openQuestion
+    finished <- getsGame (isFinished . gameState)
+    case current of
+      Just (ident, _) | n > 0, current /= waiting, not finished -> do
+        answerQuestion ident 0
+        settle waiting (n - 1)
+      _ -> pure ()
+  isFinished = \case
+    Finished _ -> True
+    _ -> False
+
+-- | A fresh copy of an encounter card.
+encounterCard :: CardDef -> GameAppT EncounterCard
+encounterCard = genEncounterCard
+
+-- | The players in player order.
+players :: GameAppT [IdentityId]
+players = getsGame gamePlayerOrder
+
+-- | Play through setup, answering with first choices, to the first player's first turn.
+toFirstTurn :: GameAppT ()
+toFirstTurn = go (200 :: Int)
+ where
+  go 0 = error "setup did not reach a turn"
+  go n =
+    openQuestion >>= \case
+      Just (_, ChooseOne cs) | EndTurn `elem` cs -> pure ()
+      Just (ident, _) -> answerQuestion ident 0 >> go (n - 1)
+      Nothing -> error "no question during setup"
