@@ -392,7 +392,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     PlayerTurnOption -> do
       choices <- getChoices pid
-      chooseOne playerIdentityId (EndTurn : choices)
+      chooseOnePrompted playerIdentityId "$label.yourTurn" (EndTurn : choices)
       pure pid
     EndedTurn -> do
       push $ IdentityEndedTurn playerIdentityId
@@ -424,8 +424,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               FromDeck
               (fromIntegral diff)
       when (diff < 0) $
-        chooseOne
+        chooseOnePrompted
           playerIdentityId
+          "$label.discardToHandSize"
           [ TargetLabel
             (toRef c)
             [ Run
@@ -536,8 +537,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     CheckAllyLimit -> do
       limit <- fromIntegral <$> getModifiedAllyLimit pid
       when (HashSet.size playerIdentityAllies > limit) $
-        chooseOne
+        chooseOnePrompted
           playerIdentityId
+          "$label.discardAnAlly"
           [ TargetLabel (toRef aid) [DiscardTarget $ toRef aid]
           | aid <- toList playerIdentityAllies
           ]
@@ -659,8 +661,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
     DiscardCards -> do
       unless (null $ unHand playerIdentityHand) $ do
-        chooseOne playerIdentityId $
-          Label "Continue without discarding" []
+        chooseOnePrompted playerIdentityId "$label.discardAnyCards" $
+          Label "$label.doneDiscarding" []
             : [ TargetLabel
                 (toRef c)
                 [ Run
@@ -707,6 +709,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           pushAll $
             VillainMessage villain (VillainAttacks playerIdentityId)
               : [ Ask playerIdentityId $
+                  prompted "$label.chooseMinionToActivate" $
                   ChooseOneAtATime $
                     map
                       ( \minionId ->
@@ -726,6 +729,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           pushAll $
             VillainMessage villain VillainSchemes
               : [ Ask playerIdentityId $
+                  prompted "$label.chooseMinionToActivate" $
                   ChooseOneAtATime $
                     map
                       ( \minionId ->

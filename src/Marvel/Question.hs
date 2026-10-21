@@ -20,6 +20,9 @@ data Question
   | ChooseN Natural [Choice]
   | ChooseOneAtATime [Choice]
   | ChoosePlayerOrder (Unsorted IdentityId) (Sorted IdentityId)
+  | -- | a question with a prompt (an i18n key under @$label.@, or text) and the card
+    -- it is about, for the client to say what is being asked
+    QuestionLabel Text (Maybe Target) Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -29,6 +32,15 @@ hasChoices = \case
   ChooseN _ cs -> notNull cs
   ChooseOneAtATime cs -> notNull cs
   ChoosePlayerOrder (Unsorted xs) _ -> notNull xs
+  QuestionLabel _ _ q -> hasChoices q
+
+-- | A question with a prompt.
+prompted :: Text -> Question -> Question
+prompted l = QuestionLabel l Nothing
+
+-- | A question with a prompt, about a card.
+promptedAbout :: (IsRef a) => Text -> a -> Question -> Question
+promptedAbout l a = QuestionLabel l (Just $ toTarget a)
 
 newtype Sorted a = Sorted {unSorted :: [a]}
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)

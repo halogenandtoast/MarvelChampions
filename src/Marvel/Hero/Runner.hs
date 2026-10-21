@@ -107,6 +107,7 @@ instance RunMessage (Attrs Hero) where
               dmg <- getModifiedAttack a
               pushAll
                 [ Ask ident $
+                    prompted "$label.chooseEnemyToAttack" $
                     ChooseOne $
                       map
                         (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
@@ -123,7 +124,7 @@ instance RunMessage (Attrs Hero) where
             then do
               schemes <- selectList ThwartableScheme
               thw <- getModifiedThwart a
-              push $ Ask ident $ ChooseOne $ map (thwartChoice a thw) schemes
+              push $ Ask ident $ prompted "$label.chooseSchemeToThwart" $ ChooseOne $ map (thwartChoice a thw) schemes
               pure a
             else do
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveConfused

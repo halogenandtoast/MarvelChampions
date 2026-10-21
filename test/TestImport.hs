@@ -67,3 +67,4 @@ questionSize = \case
   ChooseN _ cs -> length cs
   ChooseOneAtATime cs -> length cs
   ChoosePlayerOrder (Unsorted xs) _ -> length xs
+  QuestionLabel _ _ q -> questionSize q

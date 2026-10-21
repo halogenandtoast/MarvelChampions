@@ -25,6 +25,7 @@ import Control.Lens as X (
   (^.),
   _Just,
  )
+import Control.Applicative as X ((<|>))
 import Control.Lens.TH as X
 import Control.Monad as X (forM_, guard, join, unless, void, when)
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)

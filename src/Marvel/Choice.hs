@@ -301,6 +301,10 @@ choiceMessages ident = \case
 chooseOne :: (HasQueue m) => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
 
+-- | Ask one of the choices, saying what is being asked.
+chooseOnePrompted :: (HasQueue m) => IdentityId -> Text -> [Choice] -> m ()
+chooseOnePrompted ident prompt msgs = push (Ask ident $ prompted prompt $ ChooseOne msgs)
+
 chooseOneAtATime :: (HasQueue m) => IdentityId -> [Choice] -> m ()
 chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
 

@@ -115,15 +115,22 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     ResourceCost _ -> resourcePayment
     MultiResourceCost _ -> resourcePayment
     Costs xs -> concatMapM go (condenseResourceCosts xs)
+  payingFor = case activeCostTarget activeCost of
+    ForCard card -> Just (toTarget card)
+    ForAbility a -> Just (refocus $ abilitySource a)
+    ForTreachery -> Nothing
   resourcePayment = do
     cards <- getAvailablePaymentSources payer
     abilities <- getResourceAbilities payer
     paid <- resourceCostPaid activeCost
     pure
-      if null cards && null abilities && not paid
-        then [AbortPayment (activeCostId activeCost)]
-        else
+      if
+        | null cards && null abilities && not paid -> [AbortPayment (activeCostId activeCost)]
+        -- nothing left to pay with, and nothing left to pay
+        | null cards && null abilities -> [FinishedPayment (activeCostId activeCost)]
+        | otherwise ->
           [ Ask payer $
+              QuestionLabel "$label.pay" payingFor $
               ChooseOne $
                 map PayWithCard cards
                   <> map UseAbility abilities

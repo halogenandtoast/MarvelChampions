@@ -68,7 +68,8 @@ data Table = Table
   deriving stock (Generic)
   deriving anyclass (ToJSON)
 
-data SeatView = SeatView {position :: Int, userId :: UserId, username :: Text}
+-- | A seat taken: by whom, and as which hero, so the lobby can show who is coming.
+data SeatView = SeatView {position :: Int, userId :: UserId, username :: Text, hero :: Maybe CardCode}
   deriving stock (Generic)
   deriving anyclass (ToJSON)
 
@@ -348,8 +349,12 @@ tableFor :: MarvelGameId -> MarvelGame -> Handler Table
 tableFor gid row = do
   seated <- runDB do
     seats <- selectList [MarvelSeatGameId ==. gid] [Asc MarvelSeatPosition]
-    for seats \(Entity _ seat) ->
-      SeatView seat.marvelSeatPosition seat.marvelSeatUserId . maybe "" (.userUsername) <$> get seat.marvelSeatUserId
+    for seats \(Entity _ seat) -> do
+      name <- maybe "" (.userUsername) <$> get seat.marvelSeatUserId
+      let hero = case fromJSON <$> seat.marvelSeatDeck of
+            Just (Success (d :: DeckList)) -> Just d.hero
+            _ -> Nothing
+      pure $ SeatView seat.marvelSeatPosition seat.marvelSeatUserId name hero
   pure Table {withFriends = row.marvelGameWithFriends, seats = row.marvelGameSeats, owner = row.marvelGameUserId, seated}
 
 -- | The game as a viewer may see it: with friends, only your own seat's hand, and only

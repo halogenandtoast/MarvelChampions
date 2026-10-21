@@ -13,6 +13,9 @@ import Marvel.Prelude
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types (Ability (..), AbilityType)
+import Marvel.ActiveCost.Types
+import Marvel.Payment (paymentResources)
+import Marvel.Resource.Types (Resource)
 import Marvel.Ally.Types (Ally)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Types qualified as AlterEgo
@@ -64,6 +67,8 @@ data GameView = GameView
   , accelerationTokens :: Natural
   , question :: HashMap IdentityId QuestionView
   , questionVersion :: Int
+  , activeCost :: Maybe ActiveCostView
+  -- ^ what is being paid for, while it is
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -187,6 +192,10 @@ data SchemeView = SchemeView
 data QuestionView = QuestionView
   { kind :: Text
   -- ^ @chooseOne@, @chooseN@, @chooseOneAtATime@ or @choosePlayerOrder@
+  , prompt :: Maybe Text
+  -- ^ an i18n key under @$label.@, or text
+  , source :: Maybe Text
+  -- ^ the id of the card the question is about
   , choices :: [ChoiceView]
   }
   deriving stock (Show, Generic)
@@ -194,6 +203,18 @@ data QuestionView = QuestionView
 
 -- | One choice, as the client offers it: on a card when it is about one, as a button
 -- otherwise.
+-- | A card or ability being paid for: the card, or the card the ability is on, and the
+-- resources paid so far.
+data ActiveCostView = ActiveCostView
+  { player :: IdentityId
+  , card :: Maybe CardView
+  , source :: Maybe Text
+  , paid :: [Resource]
+  , spent :: [CardView]
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
 data ChoiceView = ChoiceView
   { index :: Int
   , kind :: Text
@@ -221,6 +242,20 @@ gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
+  activeCost <- for (headMay $ gameActiveCost g) \c -> do
+    paid <- paymentResources c.activeCostPayment
+    pure
+      ActiveCostView
+        { player = c.activeCostIdentityId
+        , card = case c.activeCostTarget of
+            ForCard pc -> Just (cardView (PlayerCard pc))
+            _ -> Nothing
+        , source = case c.activeCostTarget of
+            ForAbility a -> refId a.abilitySource
+            _ -> Nothing
+        , paid
+        , spent = map (cardView . PlayerCard) c.activeCostSpentCards
+        }
   pure
     GameView
       { round = gameRound g
@@ -240,8 +275,9 @@ gameView seesHand g = do
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , focusedCards = map cardView (gameFocusedCards g)
       , accelerationTokens = scenario.scenarioAccelerationTokens
-      , question = HashMap.map questionView (gameQuestion g)
+      , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
+      , activeCost
       }
  where
   scenario = toAttrs (gameScenario g)
@@ -375,26 +411,29 @@ sideCode = \case
 cardView :: Card -> CardView
 cardView c = CardView (toCardId c) (toCardCode c) (display . cdName $ getCardDef c)
 
-questionView :: Question -> QuestionView
-questionView = \case
-  ChooseOne cs -> QuestionView "chooseOne" (described cs)
-  ChooseN _ cs -> QuestionView "chooseN" (described cs)
-  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" (described cs)
+-- | The question as asked of a player.
+questionView :: IdentityId -> Question -> QuestionView
+questionView asked = \case
+  QuestionLabel l t q -> (questionView asked q) {prompt = Just l, source = refId =<< t}
+  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (described cs)
+  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (described cs)
+  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (described cs)
   ChoosePlayerOrder (Unsorted xs) _ ->
-    QuestionView "choosePlayerOrder" [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs]
+    QuestionView "choosePlayerOrder" Nothing Nothing [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs]
  where
-  described cs = [(describeChoice c) {index = n} | (n, c) <- zip [0 ..] cs]
+  described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
 
--- | What a choice is about, for the client to put it on the card it concerns.
-describeChoice :: Choice -> ChoiceView
-describeChoice = \case
-  CardLabel code c -> (describeChoice c) {code = Just code}
+-- | What a choice is about, for the client to put it on the card it concerns: the
+-- player asked defends with their own identity.
+describeChoice :: IdentityId -> Choice -> ChoiceView
+describeChoice asked = \case
+  CardLabel code c -> (describeChoice asked c) {code = Just code}
   Label l _ -> plain "label" (Just l)
   TargetLabel t _ -> on "target" t
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
     (on "ability" (refocus a.abilitySource))
-      { label = a.abilityLabel
+      { label = a.abilityLabel <|> basicLabel a.abilityChoices
       , abilityType = Just a.abilityType
       }
   RunAbility t _ -> on "ability" t
@@ -407,7 +446,7 @@ describeChoice = \case
   Recover -> plain "recover" (Just "$label.recover")
   Attack -> plain "attack" (Just "$label.attack")
   Thwart -> plain "thwart" (Just "$label.thwart")
-  Defend e -> on "defend" (EnemyRef e)
+  Defend _ -> on "defend" (IdentityRef asked)
   AllyAttack a -> on "allyAttack" (AllyRef a)
   AllyThwart a -> on "allyThwart" (AllyRef a)
   AllyDefend a _ -> on "allyDefend" (AllyRef a)
@@ -422,6 +461,15 @@ describeChoice = \case
   ReturnTargetToHand t -> on "returnToHand" t
   other -> plain "other" (Just (tshow other))
  where
+  -- the powers every identity and ally has are named by what they do
+  basicLabel = \case
+    (ChangeForm : _) -> Just "$label.changeForm"
+    (Attack : _) -> Just "$label.attack"
+    (Thwart : _) -> Just "$label.thwart"
+    (Recover : _) -> Just "$label.recover"
+    (AllyAttack _ : _) -> Just "$label.attack"
+    (AllyThwart _ : _) -> Just "$label.thwart"
+    _ -> Nothing
   plain kind label = ChoiceView 0 kind label Nothing Nothing Nothing
   on kind t = ChoiceView 0 kind Nothing (refId t) Nothing Nothing
   onCard kind cid = ChoiceView 0 kind Nothing (Just $ idText cid) Nothing Nothing

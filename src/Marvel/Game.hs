@@ -334,7 +334,7 @@ runGameMessage msg g@Game {..} = case msg of
       [] -> throwM NoPlayers
       [_] -> pure ()
       players@(p : _) ->
-        chooseOne p $
+        chooseOnePrompted p "$label.chooseFirstPlayer" $
           [ TargetLabel (IdentityRef first) [Run [SetPlayerOrder (after <> before)]]
           | (n, first) <- zip [0 ..] players
           , let (before, after) = splitAt n players
@@ -701,6 +701,7 @@ runGameMessage msg g@Game {..} = case msg of
       ([], as, cs) ->
         push
           $ Ask ident
+            . prompted "$label.respond"
             . ChooseOne
           $ Label "$label.noResponse" [Run [CheckWindowsFor rest windows]]
             : map (UseAbility . (choicesL <>~ [Run [again]])) as
@@ -713,7 +714,7 @@ runGameMessage msg g@Game {..} = case msg of
                 cs
       (forced, _, _) ->
         push $
-          Ask ident . ChooseOne $
+          Ask ident . prompted "$label.resolveForced" . ChooseOne $
             map
               (UseAbility . (choicesL <>~ [Run [again]]))
               forced
@@ -726,8 +727,9 @@ runGameMessage msg g@Game {..} = case msg of
         else select $ UnexhaustedIdentity <> HeroIdentity
     push
       $ Ask ident
+        . promptedAbout "$label.declareDefender" enemyId
         . ChooseOne
-      $ Label "No defenders" []
+      $ Label "$label.noDefender" []
         : [Defend enemyId | ident `member` identities]
           <> map (`AllyDefend` enemyId) allies
     pure g
@@ -1052,30 +1054,32 @@ answerQuestionWith before ident n = do
   g <- getGame
   question <- maybe (throwM NoQuestion) pure $ lookup ident (gameQuestion g)
   withGame_ $ questionL .~ mempty
-  msgs <- case question of
-    ChooseOne qs -> maybe (throwM InvalidChoice) (choiceMessages ident) (atMay qs n)
-    ChooseN k qs -> case atMay qs n of
-      Nothing -> throwM InvalidChoice
-      Just choice -> do
-        msgs <- choiceMessages ident choice
-        let rest = take n qs <> drop (n + 1) qs
-        pure $ msgs <> [Ask ident (ChooseN (k - 1) rest) | k > 1, notNull rest]
-    ChooseOneAtATime qs -> case atMay qs n of
-      Nothing -> throwM InvalidChoice
-      Just choice -> do
-        msgs <- choiceMessages ident choice
-        let rest = take n qs <> drop (n + 1) qs
-        pure $ msgs <> [Ask ident (ChooseOneAtATime rest) | notNull rest]
+  (msgs, remaining) <- answer question
+  pushAll $ msgs <> [Ask ident q | Just q <- [remaining]]
+  runGameMessagesWith before
+ where
+  -- what the choice does, and what is left to ask
+  answer = \case
+    QuestionLabel l t q -> second (fmap (QuestionLabel l t)) <$> answer q
+    ChooseOne qs -> (,Nothing) <$> pick qs
+    ChooseN k qs -> do
+      msgs <- pick qs
+      let rest = without qs
+      pure (msgs, guard (k > 1 && notNull rest) $> ChooseN (k - 1) rest)
+    ChooseOneAtATime qs -> do
+      msgs <- pick qs
+      let rest = without qs
+      pure (msgs, guard (notNull rest) $> ChooseOneAtATime rest)
     ChoosePlayerOrder (Unsorted unsorted) (Sorted sorted) -> case atMay unsorted n of
       Nothing -> throwM InvalidChoice
       Just chosen -> do
         let sorted' = sorted <> [chosen]
         pure case filter (/= chosen) unsorted of
-          [] -> [SetPlayerOrder sorted']
-          [lastOne] -> [SetPlayerOrder (sorted' <> [lastOne])]
-          rest -> [Ask ident (ChoosePlayerOrder (Unsorted rest) (Sorted sorted'))]
-  pushAll msgs
-  runGameMessagesWith before
+          [] -> ([SetPlayerOrder sorted'], Nothing)
+          [lastOne] -> ([SetPlayerOrder (sorted' <> [lastOne])], Nothing)
+          rest -> ([], Just $ ChoosePlayerOrder (Unsorted rest) (Sorted sorted'))
+  pick qs = maybe (throwM InvalidChoice) (choiceMessages ident) (atMay qs n)
+  without qs = take n qs <> drop (n + 1) qs
 
 -- | Run a debug message now, even while a question waits: it and whatever it leads to go
 -- first, then the waiting question is asked again and play carries on from there.

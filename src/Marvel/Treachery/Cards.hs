@@ -105,7 +105,7 @@ titaniasFury =
   treachery "01164" "Titania's Fury" [Star, Boost] SheHulkNemesis 2
 
 sweepingSwoop :: CardDef
-sweepingSwoop = treachery "01168" "Sweeping Shoop" [Star] SpiderManNemesis 2
+sweepingSwoop = treachery "01168" "Sweeping Swoop" [Star] SpiderManNemesis 2
 
 theVulturesPlans :: CardDef
 theVulturesPlans =
