@@ -18,6 +18,19 @@ mechanic there before implementing it.
   needs something new, add it to the view.
 - `test/Marvel/SmokeSpec.hs` deals every starter deck against each scenario and answers
   at random. Keep it passing; a crash there is an engine bug.
+- Every core card has a behaviour test that plays it as a player would
+  (`test/Marvel/Hero/`, `test/Marvel/Aspect/`, `test/Marvel/Encounter/`), and
+  `CoverageSpec` checks each MarvelCDB core code is implemented. A new card gets a test
+  in the same style: `testGame [heroes]`, `inGame`, `putInHand`, `playWith`, `choose`,
+  `offers` and friends from `test/TestImport.hs`.
+- Damage to a hero from anything but an attack goes through `damageIdentity`, and threat a
+  card places through `placeThreatOn`, so "would take damage" and "would place threat"
+  interrupts can answer it.
+- Labels the client shows are i18n keys (`$label.…`); add the English to
+  `frontend/src/locales/en/label.json`. Log keys live in `log.json`.
+
+Card text is in `frontend/public/data/cards.json` (MarvelCDB, rebuilt by
+`tools/generate-cards.py`).
 
 ## The game log
 
