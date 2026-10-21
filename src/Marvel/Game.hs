@@ -160,6 +160,9 @@ data Game = Game
   , gameQuestionVersion :: Int
   -- ^ bumped with each question asked, so a stale answer is refused
   , gameRound :: Int
+  , gameSeats :: [IdentityId]
+  -- ^ the players as they sat down, which never changes: the server finds whose seat is
+  -- whose by it, while the player order turns as the first player passes
   }
   deriving stock (Show, Eq, Generic)
 
@@ -334,6 +337,10 @@ runGameMessage msg g@Game {..} = case msg of
       players@(p : _) -> choosePlayerOrder p players
     pure $ g {gameState = InProgress}
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs}
+  -- the first player token goes to the next player, who takes the first turn of the round
+  PassFirstPlayer -> pure $ g & playerOrderL %~ \case
+    [] -> []
+    (p : ps) -> ps <> [p]
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     CardIdRef _ -> pure g -- Should be handled by Identity
@@ -613,6 +620,7 @@ runGameMessage msg g@Game {..} = case msg of
   EndRound ->
     pure $
       g
+        & roundL +~ 1
         & usedAbilitiesL . each
           %~ filter
             ((/= PerRound 1) . abilityLimit . fst)
@@ -864,7 +872,18 @@ newGame player scenario =
     , gameBoostCards = mempty
     , gameQuestionVersion = 0
     , gameRound = 1
+    , gameSeats = [toId player]
     }
+
+-- | A game with a seat for each player, in the order given.
+newTable :: Scenario -> NonEmpty PlayerIdentity -> Game
+newTable scenario (player :| others) = foldl' seat (newGame player scenario) others
+ where
+  seat g p =
+    g
+      & (entitiesL . playersL %~ insertMap (toId p) p)
+      & (playerOrderL <>~ [toId p])
+      & (seatsL <>~ [toId p])
 
 addPlayer :: (MonadGame env m) => PlayerIdentity -> m ()
 addPlayer player =

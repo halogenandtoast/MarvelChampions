@@ -189,6 +189,7 @@ createIdentity ident alterEgoSide heroSide =
       { playerIdentitySide = B
       , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
       , playerIdentityId = ident
+      , playerIdentityName = ""
       , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
       , playerIdentityDamage = 0
       , playerIdentityDeck = Deck []
@@ -213,6 +214,9 @@ createIdentity ident alterEgoSide heroSide =
   hp = case alterEgoSide of
     AlterEgoSide x -> startingHP x
     HeroSide x -> startingHP x
+
+setName :: Text -> PlayerIdentity -> PlayerIdentity
+setName name (PlayerIdentity attrs) = PlayerIdentity $ attrs {playerIdentityName = name}
 
 setDeck :: Deck -> PlayerIdentity -> PlayerIdentity
 setDeck deck (PlayerIdentity attrs) = PlayerIdentity $ attrs & deckL .~ deck'

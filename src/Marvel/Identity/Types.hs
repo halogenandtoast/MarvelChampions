@@ -21,6 +21,8 @@ instance Entity PlayerIdentity where
   type Id PlayerIdentity = IdentityId
   data Attrs PlayerIdentity = PlayerIdentityAttrs
     { playerIdentityId :: IdentityId
+    , playerIdentityName :: Text
+    -- ^ who plays it, as the table knows them
     , playerIdentitySide :: Side
     , playerIdentitySides :: HashMap Side PlayerIdentitySide
     , playerIdentityHP :: HP Natural
@@ -46,6 +48,7 @@ instance Entity PlayerIdentity where
     deriving stock (Show, Eq, Generic)
   data Field PlayerIdentity :: Type -> Type where
     PlayerIdentityId :: Field PlayerIdentity IdentityId
+    PlayerIdentityName :: Field PlayerIdentity Text
     PlayerIdentitySide :: Field PlayerIdentity Side
     PlayerIdentitySides :: Field PlayerIdentity (HashMap Side PlayerIdentitySide)
     PlayerIdentityHP :: Field PlayerIdentity (HP Natural)
@@ -69,6 +72,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityDefended :: Field PlayerIdentity Bool
   field fld p = let PlayerIdentityAttrs {..} = toAttrs p in case fld of
     PlayerIdentityId -> playerIdentityId
+    PlayerIdentityName -> playerIdentityName
     PlayerIdentitySide -> playerIdentitySide
     PlayerIdentitySides -> playerIdentitySides
     PlayerIdentityHP -> playerIdentityHP
