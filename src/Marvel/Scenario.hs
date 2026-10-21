@@ -7,7 +7,6 @@ import Marvel.Card.Builder
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Card.Code
 import Marvel.Difficulty
-import Marvel.EncounterSet (EncounterSet)
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Message

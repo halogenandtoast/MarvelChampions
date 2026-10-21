@@ -9,7 +9,6 @@ module Marvel.Log (module Marvel.Log, module Marvel.Log.Entry) where
 
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
-import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Id
 import Marvel.Card.Types

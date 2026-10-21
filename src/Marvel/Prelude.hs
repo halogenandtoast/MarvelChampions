@@ -26,7 +26,7 @@ import Control.Lens as X (
   _Just,
  )
 import Control.Lens.TH as X
-import Control.Monad as X (guard, unless, when)
+import Control.Monad as X (forM_, guard, join, unless, void, when)
 import Control.Monad.Catch as X (MonadCatch, MonadThrow, handleAll, throwM)
 import Control.Monad.Extra as X (allM, andM, anyM, concatMapM, filterM, orM, whenM)
 import Control.Monad.Random as X (MonadRandom (..), Random, getRandom)
@@ -36,6 +36,7 @@ import Data.Bifunctor as X (first, second)
 import Data.Coerce as X (Coercible, coerce)
 import Data.Foldable as X (foldlM, for_, traverse_)
 import Data.Function as X ((&))
+import Data.Functor as X (($>), (<&>))
 import Data.HashMap.Strict as X (HashMap)
 import Data.HashSet as X (HashSet, member)
 import Data.Hashable as X (Hashable)

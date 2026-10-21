@@ -12,7 +12,7 @@ import BugUpload (uploadBugExport)
 import CardDb (CardDb, loadCardDb)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Control.Monad.Random (evalRand, mkStdGen, randomIO)
-import Data.Aeson (Result (..), Value (Null))
+import Data.Aeson (Result (..))
 import Data.Aeson.Diff qualified as Diff
 import Data.Char (isAlphaNum)
 import Data.HashMap.Strict qualified as HashMap
@@ -353,11 +353,12 @@ tableFor gid row = do
 
 -- | The game as a viewer may see it: with friends, only your own seat's hand, and only
 -- the log entries meant for whoever sees it.
-gameData :: Maybe UserId -> MarvelGame -> Table -> Maybe Game -> Maybe [LogEntry] -> GameData
-gameData viewer row table g entries =
-  GameData
+gameData :: (MonadIO m) => Maybe UserId -> MarvelGame -> Table -> Maybe Game -> Maybe [LogEntry] -> m GameData
+gameData viewer row table g entries = do
+  view <- liftIO $ for g \g' -> publicGameFor (seesHand table viewer (gameSeats g')) g'
+  pure $ GameData
     (isJust g)
-    (toJSON . (\g' -> publicGameFor (seesHand table viewer (gameSeats g')) g') <$> g)
+    view
     (gameActivePlayer <$> g)
     (row.marvelGameStep > 0)
     table
@@ -369,8 +370,10 @@ seesHand table viewer seatOrder pid
   | table.withFriends = isJust viewer && any (\seat -> Just seat.userId == viewer && seatOrder `atMay` seat.position == Just pid) table.seated
   | otherwise = True
 
-updateFor :: Maybe UserId -> MarvelGame -> Table -> Maybe Game -> Maybe [LogEntry] -> LByteString
-updateFor viewer row table g entries = encode $ object ["tag" .= String "Update", "contents" .= gameData viewer row table g entries]
+updateFor :: (MonadIO m) => Maybe UserId -> MarvelGame -> Table -> Maybe Game -> Maybe [LogEntry] -> m LByteString
+updateFor viewer row table g entries = do
+  contents <- gameData viewer row table g entries
+  pure $ encode $ object ["tag" .= String "Update", "contents" .= contents]
 
 -- | The game to its clients, with the log afresh when given.
 broadcast :: MarvelGameId -> MarvelGame -> Maybe Game -> Maybe [LogEntry] -> Handler ()
@@ -622,10 +625,10 @@ deal gid row players = do
 handleSocket :: Maybe UserId -> TChan Outgoing -> WebSocketsT Handler ()
 handleSocket viewer chan = do
   readChannel <- atomically $ dupTChan chan
-  forever $ atomically (readTChan readChannel) >>= traverse_ sendTextData . \case
-    Said bytes -> Just bytes
-    Told table seatOrder e -> guard (readsEntry (seesHand table viewer seatOrder) e) $> encode (Logged e)
-    Updated row table g entries -> Just $ updateFor viewer row table g entries
+  forever $ atomically (readTChan readChannel) >>= \case
+    Said bytes -> sendTextData bytes
+    Told table seatOrder e -> when (readsEntry (seesHand table viewer seatOrder) e) $ sendTextData (encode (Logged e))
+    Updated row table g entries -> sendTextData =<< updateFor viewer row table g entries
 
 -- | The game as it stands, or its updates as they come over a websocket.
 serveGame :: MarvelGameId -> MarvelGame -> Handler Value
@@ -635,7 +638,7 @@ serveGame gid row = do
   table <- tableFor gid row
   entries <- runDB $ logTail gid
   g <- storedGame row
-  pure $ toJSON $ gameData viewer row table g (Just entries)
+  toJSON <$> gameData viewer row table g (Just entries)
 
 getGameR :: MarvelGameId -> Handler Value
 getGameR gid = serveGame gid =<< requirePlayableGame gid

@@ -467,6 +467,9 @@ test-suite MarvelChampions-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Marvel.PublicSpec
+      Marvel.SmokeSpec
+      TestImport
       Paths_MarvelChampions
   hs-source-dirs:
       test
@@ -503,6 +506,8 @@ test-suite MarvelChampions-test
       MultiWayIf
       OverloadedRecordDot
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      hspec-discover:hspec-discover
   build-depends:
       MarvelChampions
     , MonadRandom
@@ -510,10 +515,12 @@ test-suite MarvelChampions-test
     , aeson-casing
     , aeson-diff
     , base >=4.7 && <5
+    , bytestring
     , containers
     , exceptions
     , extra
     , hashable
+    , hspec
     , lens
     , mtl
     , random

@@ -968,7 +968,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
 
 -- | Run messages until the queue empties or someone has to answer a question.
-runGameMessages :: (MonadGame env m, Projection m PlayerIdentity) => m ()
+runGameMessages :: (MonadGame env m) => m ()
 runGameMessages = go (0 :: Int)
  where
   go n = do

@@ -108,3 +108,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - MarvelChampions
+    - hspec
+    - random
+    - bytestring
+    build-tools:
+    - hspec-discover
