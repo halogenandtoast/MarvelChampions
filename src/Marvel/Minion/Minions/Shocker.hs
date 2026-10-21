@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Damage
-import Marvel.Game.Source
+import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Window qualified as W
@@ -20,7 +20,7 @@ instance RunMessage Shocker where
   runMessage msg e@(Shocker attrs) = case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       RevealMinion _ -> do
-        players <- getPlayers
+        players <- selectList HeroIdentity
         pushAll $ flip concatMap players $ \player ->
           [ CheckWindows
               [ W.Window W.When $

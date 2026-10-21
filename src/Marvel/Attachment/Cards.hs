@@ -62,7 +62,7 @@ armoredRhinoSuit :: CardDef
 armoredRhinoSuit = attachment "01098" "Armored Rhino Suit" [Armor] [] Rhino 1
 
 charge :: CardDef
-charge = attachment "01099" "Charge" [] [Boost, Boost] Rhino 2
+charge = attachment "01099" "Charge" [Weapon] [Boost, Boost] Rhino 2
 
 enhancedIvoryHorn :: CardDef
 enhancedIvoryHorn =

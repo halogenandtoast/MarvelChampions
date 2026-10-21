@@ -11,6 +11,7 @@ import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
@@ -101,8 +102,8 @@ instance RunMessage Rhino where
       case villainStage attrs of
         2 -> push $ SearchForAndRevealScheme Cards.breakinAndTakin
         3 -> do
-          players <- getPlayers
-          pushAll $ map (`IdentityMessage` IdentityStunned) players
+          heroes <- selectList HeroIdentity
+          pushAll $ map (`IdentityMessage` IdentityStunned) heroes
         _ -> error "Invalid choice"
       pure e
     _ -> Rhino <$> runMessage msg attrs

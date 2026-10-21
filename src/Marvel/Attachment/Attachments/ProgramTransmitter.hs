@@ -28,8 +28,13 @@ programTransmitter :: AttachmentCard ProgramTransmitter
 programTransmitter = attachment ProgramTransmitter Cards.programTransmitter
 
 newtype ProgramTransmitter = ProgramTransmitter (Attrs Attachment)
-  deriving anyclass (IsAttachment, HasModifiersFor)
+  deriving anyclass (IsAttachment)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
+
+instance HasModifiersFor ProgramTransmitter where
+  getModifiersFor _ (VillainRef vid) (ProgramTransmitter a)
+    | Just (EnemyVillainId vid) == attachmentEnemy a = pure [SchemeModifier 1]
+  getModifiersFor _ _ _ = pure []
 
 instance HasAbilities ProgramTransmitter where
   getAbilities (ProgramTransmitter a) = case attachmentEnemy a of

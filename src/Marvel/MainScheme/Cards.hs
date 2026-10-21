@@ -10,7 +10,7 @@ import Marvel.Name
 
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
-  fromList $ map (toFst toCardCode) [theBreakIn, undergroundDistribution]
+  fromList $ map (toFst toCardCode) [theBreakIn, undergroundDistribution, secretRendezvous, theCrimsonCowl, assaultOnNorad, countdownToOblivion]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
 mainScheme code name encounterSet = CardDef
@@ -36,10 +36,19 @@ mainScheme code name encounterSet = CardDef
   }
 
 theBreakIn :: CardDef
-theBreakIn = mainScheme "01097" "Breakin' & Takin'" Rhino
+theBreakIn = mainScheme "01097" "The Break-In!" Rhino
 
 undergroundDistribution :: CardDef
 undergroundDistribution = mainScheme "01116" "Underground Distribution" Klaw
 
 secretRendezvous :: CardDef
 secretRendezvous = mainScheme "01117" "Secret Rendezvous" Klaw
+
+theCrimsonCowl :: CardDef
+theCrimsonCowl = mainScheme "01137" "The Crimson Cowl" Ultron
+
+assaultOnNorad :: CardDef
+assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
+
+countdownToOblivion :: CardDef
+countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
