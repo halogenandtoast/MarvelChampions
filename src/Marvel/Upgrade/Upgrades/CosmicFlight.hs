@@ -6,6 +6,7 @@ module Marvel.Upgrade.Upgrades.CosmicFlight (
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Ability qualified as Ability
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
@@ -35,15 +36,16 @@ instance HasModifiersFor CosmicFlight where
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities CosmicFlight where
-  getAbilities a =
-    [ limitedWindowAbility
-        a
-        1
-        (WouldTakeDamage You FromAnyDamageSource AnyValue)
-        Response
-        OwnsThis
-        NoCost
-        $ runAbility a 1
+  getAbilities a@(CosmicFlight attrs) =
+    [ subtype Ability.Defense $
+        limitedWindowAbility
+          a
+          1
+          (WouldTakeDamage (IdentityWithId $ upgradeController attrs) FromAnyDamageSource AnyValue)
+          HeroInterrupt
+          (OwnsThis <> InHeroForm)
+          (DiscardCost $ toTarget a)
+          $ runAbility a 1
     ]
 
 decreaseDamage :: Message -> [Message]
