@@ -503,6 +503,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.UltronSpec
       Marvel.Encounter.VillainStagesSpec
       Marvel.Hero.CaptainMarvelSpec
+      Marvel.Hero.SheHulkSpec
       Marvel.Hero.SpiderManSpec
       Marvel.LogSpec
       Marvel.PublicSpec
