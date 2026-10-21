@@ -78,6 +78,7 @@ instance Entity Scenario where
     , scenarioDifficulty :: Difficulty
     , scenarioSetAsideCards :: [Card]
     , scenarioAccelerationTokens :: Natural
+    , scenarioReshufflesThisRound :: Natural
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -91,6 +92,7 @@ instance Entity Scenario where
     ScenarioDifficulty :: Field Scenario Difficulty
     ScenarioSetAsideCards :: Field Scenario [Card]
     ScenarioAccelerationTokens :: Field Scenario Natural
+    ScenarioReshufflesThisRound :: Field Scenario Natural
   field fld s =
     let ScenarioAttrs {..} = toAttrs s
      in case fld of
@@ -103,6 +105,7 @@ instance Entity Scenario where
           ScenarioDifficulty -> scenarioDifficulty
           ScenarioSetAsideCards -> scenarioSetAsideCards
           ScenarioAccelerationTokens -> scenarioAccelerationTokens
+          ScenarioReshufflesThisRound -> scenarioReshufflesThisRound
   toId = scenarioId . toAttrs
   toAttrs (Scenario a) = toScenarioAttrs a
 
@@ -157,6 +160,7 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
                     <> [EncounterSet.ExpertSet | setup.difficulty == Expert]
             , scenarioSetAsideCards = mempty
             , scenarioAccelerationTokens = 0
+            , scenarioReshufflesThisRound = 0
             }
     }
 
@@ -196,20 +200,17 @@ instance RunMessage (Attrs Scenario) where
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       pushAll $
-        map (($ BeginTurn) . IdentityMessage) players
+        concatMap (\p -> [SetActivePlayer p, IdentityMessage p BeginTurn]) players
           <> [EndPhase PlayerPhase]
       pure attrs
     EndPhase PlayerPhase -> do
       players <- getPlayers
       pushAll $
         concatMap
-          ( \ident ->
-              map
-                (IdentityMessage ident)
-                [DiscardCards, DrawOrDiscardToHandLimit]
-          )
+          (\ident -> [SetActivePlayer ident, IdentityMessage ident DiscardCards, IdentityMessage ident DrawOrDiscardToHandLimit])
           players
           <> map (($ ReadyCards) . IdentityMessage) players
+          <> map SetActivePlayer (take 1 players)
           <> [BeginPhase VillainPhase]
       pure attrs
     AddAccelerationToken -> do
@@ -219,15 +220,15 @@ instance RunMessage (Attrs Scenario) where
       hazards <- fromIntegral <$> getHazardCount
       pushAll $
         AccelerateMainScheme
-          : map (($ VillainAndMinionsActivate) . IdentityMessage) players
+          : concatMap (\p -> [SetActivePlayer p, IdentityMessage p VillainAndMinionsActivate]) players
             <> map DealEncounterCard players
             <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
-            <> map (($ RevealEncounterCards) . IdentityMessage) players
+            <> concatMap (\p -> [SetActivePlayer p, IdentityMessage p RevealEncounterCards]) players
             <> [PassFirstPlayer, EndRound]
       pure attrs
     EndRound -> do
       pushAll [CheckWindows [W.Window W.When W.RoundEnded], BeginRound]
-      pure attrs
+      pure attrs {scenarioReshufflesThisRound = 0}
     BeginRound -> do
       push (BeginPhase PlayerPhase)
       pure attrs
@@ -238,11 +239,15 @@ instance RunMessage (Attrs Scenario) where
           & (accelerationTokensL +~ 1)
           & (encounterDeckL .~ deck')
           & (discardL .~ mempty)
+          & \a -> a {scenarioReshufflesThisRound = scenarioReshufflesThisRound + 1}
     DealEncounterCard ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
       when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
+    -- ponytail: a deck worn down to surge cards would surge forever, so after a few
+    -- reshuffles in a round surge stops; a real table would just stop too
+    Surge _ | scenarioReshufflesThisRound >= 3 -> pure attrs
     Surge ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
       pushAll $ map (RevealEncounterCard ident) ecs
@@ -285,6 +290,17 @@ instance RunMessage (Attrs Scenario) where
       case find ((== cardDef) . getCardDef) $
         scenarioEncounterDeck
           <> scenarioDiscard of
+        Nothing -> do
+          push ShuffleEncounterDeck
+          pure attrs
+        Just card -> do
+          pushAll [RevealEncounterCard ident card, ShuffleEncounterDeck]
+          pure $
+            attrs
+              & (discardL %~ filter (/= card))
+              & (encounterDeckL %~ filter (/= card))
+    SearchForAndRevealEncounterCard ident matcher ->
+      case find (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard) of
         Nothing -> do
           push ShuffleEncounterDeck
           pure attrs

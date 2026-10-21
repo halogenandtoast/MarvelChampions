@@ -16,20 +16,23 @@ import Marvel.Question as X
 import Marvel.Queue as X
 import Marvel.Scenario as X
 import Marvel.Scenario.Types as X (ScenarioSetup (..))
+import Control.Monad.Random (evalRand)
+import Marvel.Debug as X
 import System.Random (mkStdGen)
 import Test.Hspec as X
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
--- question, with the log entries it writes kept.
+-- question, with the messages it runs kept, the latest first.
 dealtGame :: ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text])
 dealtGame setup decks seed = do
   scenario <- maybe (error "no such scenario") pure $ lookupScenario setup
-  players <- either (error . show) pure . sequence =<< traverse loadPlayer decks
+  players <- either (error . show) pure . sequence $ evalRand (traverse loadPlayer decks) (mkStdGen seed)
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
-  logged <- newIORef []
-  app <- newGameApp (newTable scenario seated) [StartGame] (mkStdGen seed) (\m -> modifyIORef' logged (tshow m :))
-  runGameApp app runGameMessages
-  pure (app, logged)
+  ran <- newIORef []
+  app <- newGameApp (newTable scenario seated) [StartGame] (mkStdGen seed) (const $ pure ())
+  let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 60 . (tshow m :))}
+  runGameApp app' runGameMessages
+  pure (app', ran)
  where
   nonEmpty' = \case
     [] -> Nothing

@@ -23,6 +23,13 @@ data Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+hasChoices :: Question -> Bool
+hasChoices = \case
+  ChooseOne cs -> notNull cs
+  ChooseN _ cs -> notNull cs
+  ChooseOneAtATime cs -> notNull cs
+  ChoosePlayerOrder (Unsorted xs) _ -> notNull xs
+
 newtype Sorted a = Sorted {unSorted :: [a]}
   deriving newtype (Show, Semigroup, Monoid, Eq, ToJSON, FromJSON)
 

@@ -39,6 +39,7 @@ costMessages ::
   m [Message]
 costMessages iid activeCost = go (activeCostCost activeCost)
  where
+  payer = activeCostIdentityId activeCost
   go = \case
     NoCost -> pure []
     DiscardHandCardCost n ->
@@ -110,40 +111,24 @@ costMessages iid activeCost = go (activeCostCost activeCost)
             ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
-    DynamicResourceCost _ -> do
-      cards <- getAvailablePaymentSources
-      abilities <- getResourceAbilities
-      paid <- resourceCostPaid activeCost
-      pure
-        [ Ask (activeCostIdentityId activeCost) $
-            ChooseOne $
-              map PayWithCard cards
-                <> map UseAbility abilities
-                <> [FinishPayment | paid]
-        ]
-    ResourceCost _ -> do
-      cards <- getAvailablePaymentSources
-      abilities <- getResourceAbilities
-      paid <- resourceCostPaid activeCost
-      pure
-        [ Ask (activeCostIdentityId activeCost) $
-            ChooseOne $
-              map PayWithCard cards
-                <> map UseAbility abilities
-                <> [FinishPayment | paid]
-        ]
-    MultiResourceCost _ -> do
-      cards <- getAvailablePaymentSources
-      abilities <- getResourceAbilities
-      paid <- resourceCostPaid activeCost
-      pure
-        [ Ask (activeCostIdentityId activeCost) $
-            ChooseOne $
-              map PayWithCard cards
-                <> map UseAbility abilities
-                <> [FinishPayment | paid]
-        ]
+    DynamicResourceCost _ -> resourcePayment
+    ResourceCost _ -> resourcePayment
+    MultiResourceCost _ -> resourcePayment
     Costs xs -> concatMapM go (condenseResourceCosts xs)
+  resourcePayment = do
+    cards <- getAvailablePaymentSources payer
+    abilities <- getResourceAbilities payer
+    paid <- resourceCostPaid activeCost
+    pure
+      if null cards && null abilities && not paid
+        then [AbortPayment (activeCostId activeCost)]
+        else
+          [ Ask payer $
+              ChooseOne $
+                map PayWithCard cards
+                  <> map UseAbility abilities
+                  <> [FinishPayment | paid]
+          ]
 
 condenseResourceCosts :: [Cost] -> [Cost]
 condenseResourceCosts xs = go xs False
@@ -236,6 +221,14 @@ instance RunMessage ActiveCost where
               (Paid . DiscardHandCardPayment)
               cards
           pure activeCost
+    AbortPayment ident | ident == activeCostId activeCost -> do
+      cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
+      let payer = activeCostIdentityId activeCost
+      pushAll $
+        [IdentityMessage payer (AddToHand card) | ForCard card <- [activeCostTarget activeCost]]
+          <> map (IdentityMessage payer . AddToHand) (activeCostSpentCards activeCost)
+          <> [DisableActiveCost $ activeCostId activeCost]
+      pure activeCost
     FinishedPayment ident | ident == activeCostId activeCost -> do
       cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
       case activeCostTarget activeCost of

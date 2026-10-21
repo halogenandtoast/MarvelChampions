@@ -252,7 +252,7 @@ instance HasAbilities PlayerIdentity where
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
-  resources <- getAvailableResourcesFor (Just c)
+  resources <- getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
@@ -326,7 +326,7 @@ getChoices ::
   (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
 getChoices attrs = do
   let ident = toId attrs
-  abilities <- getsGame getAbilities
+  abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
   playableCards <- getPlayableCards attrs
   validAbilities <-
@@ -671,7 +671,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               ]
       pure pid
     DiscardFrom fromZone n mTarget -> case fromZone of
-      FromHand -> error "Unhandled"
+      FromHand -> do
+        push $ IdentityMessage playerIdentityId $ DiscardedFor (fromMaybe GameRef mTarget) FromHand n n []
+        pure pid
       FromDiscard -> error "Unhandled"
       FromEncounterDeck -> error "Unhandled"
       RandomFromHand -> do

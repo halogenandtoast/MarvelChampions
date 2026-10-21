@@ -66,6 +66,10 @@ data Message
   | ReplaceMainScheme CardCode
   | SetupMainScheme
   | SetPlayerOrder [IdentityId]
+  | -- | whose turn it is, or whom the villain phase is resolving for: "you" on cards
+    SetActivePlayer IdentityId
+  | -- | the response window, offered to these players in turn until all pass
+    CheckWindowsFor [IdentityId] [Window]
   | IdentityMessage IdentityId IdentityMessage
   | VillainMessage VillainId VillainMessage
   | EventMessage EventId EventMessage
@@ -92,6 +96,8 @@ data Message
   | Spent ActiveCostId PlayerCard
   | Paid Payment
   | FinishedPayment ActiveCostId
+  | -- | the cost cannot be paid after all: what was spent goes back to hand
+    AbortPayment ActiveCostId
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
@@ -120,6 +126,9 @@ data Message
   | FocusCards [Card]
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
+  | -- | the first card matching in the encounter deck or its discard pile is revealed
+    -- for the player, then the deck is shuffled
+    SearchForAndRevealEncounterCard IdentityId CardMatcher
   | ShuffleEncounterDeck
   | ReturnToHand Target
   | SetAside [Card]

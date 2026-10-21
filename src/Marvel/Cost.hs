@@ -58,17 +58,17 @@ passesCanAffordCost identityId a = go (abilityCost a)
       AllyRef ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost mr -> do
-      resources <- getAvailableResourcesFor Nothing
+      resources <- getAvailableResourcesFor identityId Nothing
       pure $ case mr of
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
     DynamicResourceCost mr -> do
-      resources <- getAvailableResourcesFor Nothing
+      resources <- getAvailableResourcesFor identityId Nothing
       pure $ case mr of
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
     MultiResourceCost mr -> do
-      resources <- getAvailableResourcesFor Nothing
+      resources <- getAvailableResourcesFor identityId Nothing
       let
         goPay [] bs = ([], bs)
         goPay as [] = (as, [])

@@ -38,6 +38,6 @@ instance RunMessage AlphaFlightStation where
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       isCarolDanvers <- ident `match` IdentityWithTitle "Carol Danvers"
       let drawCount = if isCarolDanvers then 2 else 1
-      push $ IdentityMessage ident $ DrawCards FromHand drawCount
+      push $ IdentityMessage ident $ DrawCards FromDeck drawCount
       pure s
     _ -> AlphaFlightStation <$> runMessage msg attrs

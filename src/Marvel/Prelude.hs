@@ -54,6 +54,7 @@ import GHC.Generics as X (Generic)
 import GHC.Natural as X (Natural, minusNaturalMaybe)
 import GHC.Stack as X (HasCallStack)
 import Prelude as X hiding (lookup)
+import Safe as X (atMay, headMay, lastMay)
 
 import Data.Aeson.Casing (camelCase)
 import Data.Aeson.KeyMap qualified as KeyMap

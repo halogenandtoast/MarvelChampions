@@ -49,6 +49,7 @@ getActivePlayerId :: (HasGame m) => m IdentityId
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
+getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 -- Matchers
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
@@ -87,6 +88,7 @@ getAvailableResourcesFor ::
   , HasGame m
   , Projection m PlayerIdentity
   ) =>
+  IdentityId ->
   Maybe PlayerCard ->
   m [Resource]
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
@@ -96,7 +98,7 @@ getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getHazardCount :: (HasGame m) => m Natural
 getAccelerationCount :: (HasGame m) => m Natural
-getAvailablePaymentSources :: (HasGame m) => m [PlayerCard]
+getAvailablePaymentSources :: (HasGame m) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
@@ -105,6 +107,7 @@ getResourceAbilities ::
   , HasGame m
   , Projection m PlayerIdentity
   ) =>
+  IdentityId ->
   m [Ability]
 gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural

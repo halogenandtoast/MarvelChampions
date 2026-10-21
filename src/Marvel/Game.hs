@@ -12,7 +12,6 @@ import Data.HashSet qualified as HashSet
 import Data.IORef
 import Data.Tuple (swap)
 import Marvel.Frontend
-import Safe (atMay)
 import System.Random (StdGen, mkStdGen, random, randomR, randomRs, randoms, splitGen)
 import Data.List (find)
 import Marvel.Ability
@@ -337,10 +336,13 @@ runGameMessage msg g@Game {..} = case msg of
       players@(p : _) -> choosePlayerOrder p players
     pure $ g {gameState = InProgress}
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs}
+  SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
   -- the first player token goes to the next player, who takes the first turn of the round
-  PassFirstPlayer -> pure $ g & playerOrderL %~ \case
-    [] -> []
-    (p : ps) -> ps <> [p]
+  PassFirstPlayer -> do
+    let order = case gamePlayerOrder of
+          [] -> []
+          (p : ps) -> ps <> [p]
+    pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     CardIdRef _ -> pure g -- Should be handled by Identity
@@ -348,10 +350,16 @@ runGameMessage msg g@Game {..} = case msg of
   RemoveFromPlay target -> case target of
     IdentityRef iid -> do
       when (length (g ^. entitiesL . playersL) <= 1) (push $ GameOver Lost)
+      let order = filter (/= iid) gamePlayerOrder
+          -- whoever is left takes over from an eliminated active player
+          next = case break (== iid) gamePlayerOrder of
+            (before, _ : after) -> headMay (after <> before)
+            _ -> headMay order
       pure $
         g
           & (entitiesL . playersL %~ deleteMap iid)
-          & (playerOrderL %~ filter (/= iid))
+          & (playerOrderL .~ order)
+          & (activePlayerL %~ \active -> if active == iid then fromMaybe active next else active)
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
@@ -645,15 +653,22 @@ runGameMessage msg g@Game {..} = case msg of
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
+  -- everyone may respond, the active player first, then the others in player order;
+  -- forced abilities resolve before anyone is asked
   CheckWindows windows -> do
-    abilities <- getsGame getAbilities
+    active <- getActivePlayerId
+    let order = active : filter (/= active) gamePlayerOrder
+    push $ CheckWindowsFor order windows
+    pure g
+  CheckWindowsFor [] _ -> pure g
+  CheckWindowsFor (ident : rest) windows -> do
+    abilities <- getAbilitiesFor ident
     usedAbilities <- getUsedAbilities
-    attrs <- getActivePlayer
+    attrs <- getIdentity ident
     playableCards <-
       concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         windows
-    ident <- toId <$> getActivePlayer
     validAbilities <-
       filterM
         ( andM
@@ -666,26 +681,28 @@ runGameMessage msg g@Game {..} = case msg of
         )
         abilities
     let forcedAbiltiies = filter isForcedAbility validAbilities
+        -- after a response the window is open again to everyone
+        again = CheckWindows windows
     case (forcedAbiltiies, validAbilities, playableCards) of
-      ([], [], []) -> pure ()
+      ([], [], []) -> push $ CheckWindowsFor rest windows
       ([], as, cs) ->
         push
           $ Ask ident
             . ChooseOne
-          $ Label "Use no responses/interrupts" []
-            : map (UseAbility . (choicesL <>~ [Run [CheckWindows windows]])) as
+          $ Label "$label.noResponse" [Run [CheckWindowsFor rest windows]]
+            : map (UseAbility . (choicesL <>~ [Run [again]])) as
               <> map
                 ( \(c, mwindow) ->
                     TargetLabel
                       (toRef c)
-                      [PlayCard c mwindow, Run [CheckWindows windows]]
+                      [PlayCard c mwindow, Run [again]]
                 )
                 cs
       (forced, _, _) ->
         push $
           Ask ident . ChooseOne $
             map
-              (UseAbility . (choicesL <>~ [Run [CheckWindows windows]]))
+              (UseAbility . (choicesL <>~ [Run [again]]))
               forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
@@ -734,7 +751,7 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window attrs c = do
-  resources <- getAvailableResourcesFor (Just c)
+  resources <- getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   passedWindow <-
@@ -968,6 +985,20 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
 
 -- | Run messages until the queue empties or someone has to answer a question.
+-- | Who may trigger an ability: the player controlling the card it is on. Abilities on
+-- encounter cards are anyone's.
+abilityController :: Game -> Ability -> Maybe IdentityId
+abilityController g a = case abilitySource a of
+  IdentityRef ident -> Just ident
+  AllyRef aid -> getAllyController <$> lookup aid (gameAllies g)
+  SupportRef sid -> getSupportController <$> lookup sid (gameSupports g)
+  UpgradeRef uid -> getUpgradeController <$> lookup uid (gameUpgrades g)
+  _ -> Nothing
+
+-- | The abilities in play a player may trigger.
+getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
+getAbilitiesFor ident = getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
+
 runGameMessages :: (MonadGame env m) => m ()
 runGameMessages = go (0 :: Int)
  where
@@ -979,6 +1010,8 @@ runGameMessages = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
+            -- nothing is asked when there is nothing to choose
+            Just (Ask _ question) | not (hasChoices question) -> go (n + 1)
             Just (Ask ident question) -> do
               withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
             Just other -> do
@@ -1037,10 +1070,10 @@ runDebug msg = do
 replayChoices :: (MonadGame env m) => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
 
-getAvailablePaymentSources :: (HasGame m) => m [PlayerCard]
-getAvailablePaymentSources = do
-  players <- HashMap.elems <$> getsGame gamePlayers
-  pure $ concatMap (unHand . playerIdentityHand . toAttrs) players
+-- | The cards a player may discard to pay: those in their own hand.
+getAvailablePaymentSources :: (HasGame m) => IdentityId -> m [PlayerCard]
+getAvailablePaymentSources ident =
+  getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
 
 getAvailableResourcesFor ::
   ( HasCallStack
@@ -1050,12 +1083,12 @@ getAvailableResourcesFor ::
   , HasGame m
   , Projection m PlayerIdentity
   ) =>
+  IdentityId ->
   Maybe PlayerCard ->
   m [Resource]
-getAvailableResourcesFor mc = do
-  players <- HashMap.elems <$> getsGame gamePlayers
-  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities
-  playerResources <- concatMapM (`resourcesFor` mc) players
+getAvailableResourcesFor ident mc = do
+  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident
+  playerResources <- concatMapM (`resourcesFor` mc) =<< getAvailablePaymentSources ident
   pure $ playerResources <> abilitiesResources
 
 getResourceAbilities ::
@@ -1066,18 +1099,18 @@ getResourceAbilities ::
   , HasGame m
   , Projection m PlayerIdentity
   ) =>
+  IdentityId ->
   m [Ability]
-getResourceAbilities = do
-  player <- getActivePlayer
-  abilities <- getsGame getAbilities
+getResourceAbilities ident = do
+  abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
   filterM
     ( andM
         . sequence
-          [ pure . passesUseLimit (toId player) usedAbilities
-          , pure . (== Resource) . abilityType
-          , passesCanAffordCost (toId player)
-          , passesCriteria (toId player)
+          [ pure . passesUseLimit ident usedAbilities
+          , pure . (`elem` [Resource, HeroResource]) . abilityType
+          , passesCanAffordCost ident
+          , passesCriteria ident
           ]
     )
     abilities

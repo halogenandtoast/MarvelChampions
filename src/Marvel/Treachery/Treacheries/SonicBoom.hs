@@ -34,7 +34,7 @@ instance RunMessage SonicBoom where
   runMessage msg t@(SonicBoom attrs) = case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
-        resources <- getAvailableResourcesFor Nothing
+        resources <- getAvailableResourcesFor identityId Nothing
         allies <- selectList (AllyControlledBy $ IdentityWithId identityId)
         let
           goPay [] bs = ([], bs)

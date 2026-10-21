@@ -45,12 +45,7 @@ instance RunMessage MastersOfMayhem where
       CheckTreacheryCondition identityId -> do
         unless (attackMade meta) $
           push $
-            IdentityMessage identityId $
-              Search
-                SearchEncounterDeckAndDiscardPile
-                (CardWithType MinionType <> CardWithTrait MastersOfEvil)
-                (SearchTarget $ toTarget attrs)
-                ShuffleBackIn
+            SearchForAndRevealEncounterCard identityId (CardWithType MinionType <> CardWithTrait MastersOfEvil)
 
         pure t
       _ -> MastersOfMayhem . (`With` meta) <$> runMessage msg attrs
