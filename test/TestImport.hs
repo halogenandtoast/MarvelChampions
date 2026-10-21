@@ -40,7 +40,10 @@ import Marvel.Identity (getModifiedHandSize, getModifiedHp)
 import Marvel.MainScheme.Types (getMainSchemeThreat)
 import Marvel.Minion.Types (getMinionDamage)
 import Marvel.Payment.Types (Payment (NoPayment))
-import Marvel.Scenario.Types (Field (ScenarioDiscard))
+import Marvel.Scenario.Types (Field (ScenarioDiscard, ScenarioEncounterDeck))
+import Data.Aeson (Result (..), Value (Object), fromJSON)
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Types (parseEither)
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -396,3 +399,22 @@ encounterDiscardCodes = getsGame (map (toCardCode @EncounterCard) . field Scenar
 
 obligationsInPlay :: GameAppT Int
 obligationsInPlay = getsGame (length . gameObligations)
+
+-- | Put new encounter cards on top of the encounter deck, first given on top.
+stackEncounterDeck :: [CardDef] -> GameAppT [EncounterCard]
+stackEncounterDeck defs = do
+  cards <- traverse genEncounterCard defs
+  withGame_ \g -> g {gameScenario = restack cards (gameScenario g)}
+  pure cards
+ where
+  -- ponytail: through the scenario's JSON, as the scenario is existential
+  restack cards s = case toJSON s of
+    Object o
+      | Just deck <- KeyMap.lookup "scenarioEncounterDeck" o
+      , Success deck' <- fromJSON @[EncounterCard] deck ->
+          either error id . parseEither parseJSON . Object $
+            KeyMap.insert "scenarioEncounterDeck" (toJSON (cards <> deck')) o
+    _ -> error "no encounter deck"
+
+encounterDeckSize :: GameAppT Int
+encounterDeckSize = getsGame (length . field ScenarioEncounterDeck . gameScenario)

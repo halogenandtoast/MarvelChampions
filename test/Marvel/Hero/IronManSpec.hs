@@ -200,6 +200,17 @@ spec = describe "Iron Man" do
       choose "hit Rhino" (isTargetChoice (toId villain))
       villainDamageNow `shouldReturn` 3
 
+  it "Powered Gauntlets' attack only removes the stun from a stunned Iron Man" do
+    tg <- testGame ["iron-man"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      gauntlets <- putIntoPlay p "01038"
+      resolve [IdentityMessage p IdentityStunned]
+      choose "use Powered Gauntlets" (isAbilityOf (upgradeIdOf gauntlets))
+      villainDamageNow `shouldReturn` 0
+      (.playerIdentityStunned) . toAttrs <$> getPlayer p `shouldReturn` False
+
   it "Rocket Boots' Aerial lasts until the end of the phase" do
     tg <- testGame ["iron-man"]
     let p = player1 tg
