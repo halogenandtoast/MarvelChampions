@@ -401,3 +401,12 @@ exhaustedNow ident = (.playerIdentityExhausted) . toAttrs <$> getPlayer ident
 -- | Answer with the first choice that matches when it is offered.
 chooseIf :: (Choice -> Bool) -> GameAppT ()
 chooseIf p = whenM (offers p) $ choose "optional choice" p
+
+-- | Run these messages now, up to the next question they ask, leaving it open; the game
+-- goes back to the question it was waiting on once they have run.
+runNow :: [Message] -> GameAppT ()
+runNow msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGameMessages
