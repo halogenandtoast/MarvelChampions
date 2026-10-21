@@ -17,6 +17,7 @@ import Marvel.Question as X
 import Marvel.Queue as X
 import Marvel.Scenario as X
 import Marvel.Scenario.Types as X (ScenarioSetup (..))
+import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck))
 import Control.Monad.Random (evalRand)
 import Marvel.Debug as X
 import Marvel.Ability as X (Ability (..))
@@ -425,3 +426,14 @@ player2 :: TestGame -> IdentityId
 player2 tg = case tg.seats of
   (_ : p : _) -> p
   _ -> error "no second player"
+
+-- | The encounter discard pile, the latest first.
+encounterDiscardNow :: GameAppT [EncounterCard]
+encounterDiscardNow = getsGame (scenarioDiscard . toAttrs . gameScenario)
+
+-- | What is asked, briefly, for a test being written.
+showAsked :: GameAppT ()
+showAsked = asked >>= liftIO . print . fmap (map (take 200 . show) . snd)
+
+scenarioEncounterDeckNow :: GameAppT [EncounterCard]
+scenarioEncounterDeckNow = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)
