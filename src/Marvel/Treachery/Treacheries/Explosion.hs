@@ -41,7 +41,7 @@ instance RunMessage Explosion where
                 <$> selectCount
                   SchemeThreat
                   (SchemeWithId $ SchemeSideSchemeId bombScare)
-            players <- getPlayers
+            players <- selectList HeroIdentity
             allies <- selectList AnyAlly
             pushAll $
               replicate threat $
