@@ -606,6 +606,10 @@ runGameMessage msg g@Game {..} = case msg of
     pushAll $ map (DiscardedCard . EncounterCard) (HashMap.elems gameBoostCards)
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
+  -- a card still to be revealed for a player eliminated meanwhile is discarded
+  RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
+    push $ DiscardedCard (EncounterCard card)
+    pure g
   RevealEncounterCard ident card -> do
     pushAll
       [ FocusCards [EncounterCard card]
@@ -778,6 +782,10 @@ runGameMessage msg g@Game {..} = case msg of
     push $ CheckWindowsFor order windows
     pure g
   CheckWindowsFor [] _ -> pure g
+  -- a player eliminated while the window goes round is no longer asked
+  CheckWindowsFor (ident : rest) windows | not (HashMap.member ident (gamePlayers g)) -> do
+    push $ CheckWindowsFor rest windows
+    pure g
   CheckWindowsFor (ident : rest) windows -> do
     abilities <- getAbilitiesFor ident
     usedAbilities <- getUsedAbilities
@@ -1103,7 +1111,7 @@ class HasGameRef m where
 instance (Monad m) => HasGame (ReaderT Game m) where
   getGame = ask
 
-getIdentity :: (HasGame m) => IdentityId -> m PlayerIdentity
+getIdentity :: (HasCallStack, HasGame m) => IdentityId -> m PlayerIdentity
 getIdentity ident = do
   g <- getGame
   case lookup ident (gamePlayers g) of

@@ -833,7 +833,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                   )
                   (toList playerIdentityMinions)
         _ -> pure ()
-      pure $ PlayerIdentity $ attrs & defeatedL .~ True
+      -- the cards they control leave play, and the encounter cards dealt to them are
+      -- discarded (rules reference, "Player Elimination")
+      upgrades <- selectList (UpgradeControlledBy $ IdentityWithId playerIdentityId)
+      pushAll $
+        map (RemoveFromPlay . toRef) (toList playerIdentityAllies)
+          <> map (RemoveFromPlay . toRef) (toList playerIdentitySupports)
+          <> map (RemoveFromPlay . toRef) upgrades
+          <> map (DiscardedCard . EncounterCard) playerIdentityEncounterCards
+      pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
     IdentityDefended n ->
       pure $ PlayerIdentity $ attrs & damageReductionL +~ n & defendedL .~ True
     IdentityHealed n ->

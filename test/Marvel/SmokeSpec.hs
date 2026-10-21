@@ -52,6 +52,6 @@ spec = describe "random play" do
         Right _ -> pure ()
         Left (err :: SomeException) -> do
           latest <- readIORef ran
-          expectationFailure $ unlines $ ("seed " <> show seed <> ": " <> displayException err) : "the last messages run, latest last:" : map unpack (reverse latest)
+          expectationFailure $ unlines $ ("seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
   heroes = map fst starterDecks
   tables = map pure heroes <> zipWith (\a b -> [a, b]) heroes (drop 1 heroes) <> [take 4 heroes]

@@ -96,7 +96,7 @@ runMinionMessage msg attrs = case msg of
     when
       (isHero && Quickstrike `member` cdKeywords (getCardDef attrs))
       (push $ MinionMessage (minionId attrs) $ MinionAttacks ident)
-    pure attrs
+    pure attrs {minionEngagedIdentity = ident}
   MinionDefeated -> do
     pushAll $
       map (RemoveFromPlay . toRef) (toList $ minionUpgrades attrs)

@@ -517,6 +517,7 @@ test-suite MarvelChampions-test
       Marvel.PublicSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
+      Marvel.Rules.EliminationSpec
       Marvel.SmokeSpec
       TestImport
       Paths_MarvelChampions
