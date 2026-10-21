@@ -38,12 +38,30 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL .~ 0
   MinionDamaged source damage -> do
     hitPoints <- getModifiedHitPoints attrs
+    keywords <- getModifiedKeywords attrs
+    let
+      retaliate = for_ keywords $ \case
+          Retaliate n -> case damageSource damage of
+            FromPlayerAttack ident ->
+              push $
+                IdentityMessage
+                  ident
+                  (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
+            FromAllyAttack ident ->
+              push $
+                AllyMessage
+                  ident
+                  (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
+            _ -> pure ()
+          _ -> pure ()
     if
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
-      | minionTough attrs -> pure $ attrs & toughL .~ False
+      -- retaliate answers the attack whether or not a tough status card takes it
+      | minionTough attrs -> do
+        retaliate
+        pure $ attrs & toughL .~ False
       | otherwise -> do
-        keywords <- getModifiedKeywords attrs
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
             let overkill = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
@@ -61,20 +79,7 @@ runMinionMessage msg attrs = case msg of
               , CheckWindows
                   [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage]
               ]
-          else for_ keywords $ \case
-            Retaliate n -> case damageSource damage of
-              FromPlayerAttack ident ->
-                push $
-                  IdentityMessage
-                    ident
-                    (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
-              FromAllyAttack ident ->
-                push $
-                  AllyMessage
-                    ident
-                    (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
-              _ -> pure ()
-            _ -> pure ()
+          else retaliate
         pure $ attrs & damageL +~ damageAmount damage
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
