@@ -28,6 +28,13 @@
   --amber: #e2a33b;
   --amber-deep: #6b4a16;
   --health: #4fae6a;
+
+  /* the colours the cards print their stats in */
+  --stat-thw: #5d9be0;
+  --stat-sch: #5d9be0;
+  --stat-atk: #e0535b;
+  --stat-def: #52b36c;
+  --stat-rec: #e6c43f;
   --health-deep: #1d4a2c;
   --violet: #8e7cc3;
 
@@ -315,3 +322,10 @@ select {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* a stat box's number in the colour the cards print it */
+.stat-thw dd { color: var(--stat-thw); }
+.stat-sch dd { color: var(--stat-sch); }
+.stat-atk dd { color: var(--stat-atk); }
+.stat-def dd { color: var(--stat-def); }
+.stat-rec dd { color: var(--stat-rec); }

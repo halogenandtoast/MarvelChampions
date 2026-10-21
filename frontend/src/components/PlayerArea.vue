@@ -48,37 +48,38 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :tough="player.tough"
         />
         <div class="identity-info">
-          <p class="who">
-            <span class="form">{{ t(hero ? 'game.form.hero' : 'game.form.alterEgo') }}</span>
-            <span class="player-name">{{ player.name }}</span>
-          </p>
           <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
           <dl class="stats">
-            <div v-for="[stat, value] in stats" :key="stat"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
+            <div v-for="[stat, value] in stats" :key="stat" :class="`stat-${stat}`"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
             <div><dt>{{ t('game.stats.hand') }}</dt><dd>{{ player.handSize }}</dd></div>
           </dl>
         </div>
       </div>
-      <!-- what this player is asked sits beneath them, at the foot of the area -->
-      <div v-if="$slots.default" class="asked"><slot /></div>
     </div>
+    <!-- what this player is asked sits beside them, at the foot of the area -->
+    <div v-if="$slots.default" class="asked"><slot /></div>
 
     <div v-if="minions.length" class="zone engaged">
       <span class="zone-label">{{ t('game.zones.engaged') }}</span>
       <div class="cards">
-        <BoardCard
-          v-for="minion in minions"
-          :id="minion.id"
-          :key="minion.id"
-          :code="minion.code"
-          :name="minion.name"
-          :damage="minion.damage"
-          :hit-points="minion.hitPoints"
-          :stunned="minion.stunned"
-          :confused="minion.confused"
-          :tough="minion.tough"
-          :attached="minionAttached(minion)"
-        />
+        <div v-for="minion in minions" :key="minion.id" class="minion">
+          <BoardCard
+            :id="minion.id"
+            :code="minion.code"
+            :name="minion.name"
+            :damage="minion.damage"
+            :hit-points="minion.hitPoints"
+            :stunned="minion.stunned"
+            :confused="minion.confused"
+            :tough="minion.tough"
+            :attached="minionAttached(minion)"
+          />
+          <Meter :label="t('game.hp')" :value="Math.max(0, minion.hitPoints - minion.damage)" :max="minion.hitPoints" tone="villain" />
+          <dl class="stats">
+            <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme }}</dd></div>
+            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ minion.attack }}</dd></div>
+          </dl>
+        </div>
       </div>
     </div>
 
@@ -141,18 +142,14 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   overflow-x: auto;
 }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
-.identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); }
+.identity-column { display: flex; flex-direction: column; flex: none; width: var(--card-width); }
 /* above the hand that floats over the foot of the board */
-.asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
-.identity { display: flex; gap: 12px; align-items: flex-start; flex: none; }
-.identity-info { display: flex; flex-direction: column; gap: 10px; width: 152px; padding-top: 2px; }
-.who { display: flex; flex-direction: column; gap: 2px; margin: 0; }
-.form { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel-bright); }
-.alter-ego .form { color: var(--text-faint); }
-.player-name { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; line-height: 1.05; color: var(--title); overflow: hidden; text-overflow: ellipsis; }
-.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; margin: 0; }
+.asked { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; flex: none; align-self: stretch; width: 230px; }
+.identity { display: flex; flex-direction: column; gap: 8px; }
+.identity-info { display: flex; flex-direction: column; gap: 6px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; margin: 0; }
 .stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
-.stats dt { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
+.stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
 .stats dd { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; line-height: 1.05; }
 
 .zone {
@@ -177,6 +174,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   background: rgb(184 50 58 / 0.08);
   border: 1px solid rgb(184 50 58 / 0.25);
 }
+.minion { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
 .zone.engaged .zone-label { color: #e48b91; }
 .zone.allies { flex: 1 1 auto; }
 .piles { display: flex; gap: 10px; margin-left: auto; flex: none; padding-top: 18px; }

@@ -55,8 +55,8 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
         <Meter :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :max="villain.hitPoints" tone="villain" />
         <dl class="stats">
           <div class="stage" :title="villain.name"><dt>{{ t('game.stats.stage') }}</dt><dd>{{ roman(villain.stage) }}</dd></div>
-          <div><dt>{{ t('game.stats.sch') }}</dt><dd>{{ villain.scheme }}</dd></div>
-          <div><dt>{{ t('game.stats.atk') }}</dt><dd>{{ villain.attack }}</dd></div>
+          <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ villain.scheme }}</dd></div>
+          <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ villain.attack }}</dd></div>
           <div v-if="villain.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ villain.boostCards }}</dd></div>
         </dl>
       </div>
@@ -113,7 +113,7 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
 .villain { display: flex; flex-direction: column; gap: 8px; flex: none; width: var(--card-width); }
 .villain-info { display: flex; flex-direction: column; gap: 6px; }
 .stage dd { color: var(--crimson); }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 4px; margin: 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(30px, 1fr)); gap: 4px; margin: 0; }
 .stats div { flex: 1; padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
 .stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
 .stats dd { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1.05; }
