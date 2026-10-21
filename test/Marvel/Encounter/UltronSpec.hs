@@ -52,6 +52,9 @@ spec = describe "Ultron" do
         -- the card is no longer in the deck
         let Just card = getMinionFacedownCard drone
         liftIO $ map pcCardId (unDeck $ playerIdentityDeck $ toAttrs p) `shouldNotContain` [pcCardId card]
+      -- and the game, environment and drone included, is saved and loaded as it is
+      g <- getGame
+      liftIO $ (fromJSON (toJSON g) :: Result Game) `shouldBe` Success g
 
   it "a defeated facedown drone goes to its owner's discard pile, and Upgraded Drones makes them bigger" do
     app <- ultron
