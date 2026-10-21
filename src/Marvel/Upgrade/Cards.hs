@@ -155,11 +155,11 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = limited (MaxPerPlayer 1)
+combatTraining = limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = limited (MaxPerPlayer 1)
+heroicIntuition = limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
@@ -169,7 +169,7 @@ inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
   }
 
 armoredVest :: CardDef
-armoredVest = limited (MaxPerPlayer 1)
+armoredVest = limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef

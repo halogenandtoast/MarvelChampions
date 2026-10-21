@@ -13,6 +13,7 @@ import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Choice (chooseOrRunOne)
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -54,6 +55,8 @@ instance Entity Upgrade where
     , upgradeAttachedAlly :: Maybe AllyId
     , upgradeUses :: Natural
     , upgradeDiscardIfNoUses :: Bool
+    , upgradeOwner :: IdentityId
+    -- ^ whose deck it came from, and whose discard pile it goes to
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -158,6 +161,7 @@ upgrade f cardDef =
             , upgradeAttachedAlly = Nothing
             , upgradeUses = 0
             , upgradeDiscardIfNoUses = False
+            , upgradeOwner = ident
             }
     }
 
@@ -209,17 +213,33 @@ instance IsCard (Attrs Upgrade) where
       MkPlayerCard
         { pcCardId = CardId $ unUpgradeId $ upgradeId a
         , pcCardDef = getCardDef a
-        , pcOwner = Just (upgradeController a)
+        , pcOwner = Just (upgradeOwner a)
         , pcController = Just (upgradeController a)
         }
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      PlayedUpgrade ->
-        a
-          <$ push
-            (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
+      PlayedUpgrade -> case cdLimit (upgradeCardDef a) of
+        -- "play under any player's control": its player chooses whose, among those
+        -- without one
+        Just (MaxPerPlayerUnderAnyControl n) -> do
+          players <- getPlayers
+          open <- flip filterM players \p ->
+            (< n) . fromIntegral . length . filter (/= upgradeId a)
+              <$> selectList (UpgradeNamed (cdName $ upgradeCardDef a) <> UpgradeControlledBy (IdentityWithId p))
+          chooseOrRunOne (upgradeController a)
+            [ TargetLabel (IdentityRef p) [Run [UpgradeMessage (upgradeId a) (UpgradeControlledByPlayer p)]]
+            | p <- open
+            ]
+          pure a
+        _ ->
+          a
+            <$ push
+              (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
+      UpgradeControlledByPlayer p -> do
+        push $ IdentityMessage p $ UpgradeCreated (upgradeId a)
+        pure a {upgradeController = p}
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
       AddUpgradeUses n -> do

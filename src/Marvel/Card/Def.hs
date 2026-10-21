@@ -73,7 +73,12 @@ data ResourceRestriction
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data InPlayLimit = MaxPerPlayer Natural | MaxPerEnemy Natural | MaxPerAlly Natural
+data InPlayLimit
+  = MaxPerPlayer Natural
+  | MaxPerEnemy Natural
+  | MaxPerAlly Natural
+  | -- | "Play under any player's control. Max N per player."
+    MaxPerPlayerUnderAnyControl Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

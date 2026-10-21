@@ -311,6 +311,12 @@ checkPlayLimits ident c = case cdLimit def of
       SupportType -> selectNone $ SupportMatches [SupportNamed name, SupportControlledBy $ IdentityWithId (toId ident)]
       _ -> error "Unhandled"
     MaxPerPlayer _ -> error "Unhandled"
+    -- any player without one may take it
+    MaxPerPlayerUnderAnyControl n -> do
+      players <- getPlayers
+      flip anyM players \p ->
+        (< n) . fromIntegral . length
+          <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"

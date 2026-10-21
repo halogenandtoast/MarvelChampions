@@ -9,6 +9,7 @@ data UpgradeMessage
   | DiscardUpgrade
   | ReadiedUpgrade
   | PlayedUpgrade
+  | UpgradeControlledByPlayer IdentityId
   | UpgradeAttachedToEnemy EnemyId
   | UpgradeAttachedToAlly AllyId
   | SpendUpgradeUse

@@ -170,6 +170,22 @@ spec = describe "Justice" do
         supportsWith "01064" `shouldReturn` []
 
   describe "Heroic Intuition (01065)" do
+    it "may be played under another player's control, and is discarded to its owner's pile" do
+      tg <- testGame ["spider-man", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        clearHand p
+        intuition <- putInHand p "01065"
+        energy <- putInHand p "01088"
+        playWith intuition [energy]
+        choose "give it to Captain Marvel" (isTargetChoice other)
+        upgrades <- upgradesWith "01065"
+        map upgradeController upgrades `shouldBe` [other]
+        for_ upgrades \u -> runNow [UpgradeMessage (upgradeId u) DiscardUpgrade]
+        map toCardCode <$> discardOf p >>= (`shouldSatisfy` elem "01065")
+        map toCardCode <$> discardOf other >>= (`shouldSatisfy` notElem "01065")
+
     it "gives the hero +1 THW, max 1 per player" do
       tg <- testGame ["spider-man"]
       let p = player1 tg
