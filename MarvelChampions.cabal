@@ -496,6 +496,9 @@ test-suite MarvelChampions-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Marvel.Encounter.KeywordsSpec
+      Marvel.Encounter.UltronSpec
+      Marvel.Encounter.VillainStagesSpec
       Marvel.PublicSpec
       Marvel.SmokeSpec
       TestImport
