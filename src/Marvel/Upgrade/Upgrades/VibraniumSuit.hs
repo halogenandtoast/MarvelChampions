@@ -20,6 +20,7 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
+import Marvel.Minion.Cards qualified as Cards
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 
@@ -53,8 +54,8 @@ instance RunMessage VibraniumSuit where
             choiceMessages (upgradeController attrs) $
               ChooseDamage
                 (toRef attrs)
-                (toDamage dmg FromAbility)
-                AttackableEnemy
+                (toDamage dmg $ FromPlayerAttack ident)
+                (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
           healMsgs <-
             choiceMessages (upgradeController attrs) $
               Heal (IdentityCharacter $ upgradeController attrs) dmg

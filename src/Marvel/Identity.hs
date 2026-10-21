@@ -351,6 +351,14 @@ getObligations attrs = case currentIdentity attrs of
   AlterEgoSide side ->
     traverse genEncounterCard (alterEgoObligations $ toAttrs side)
 
+-- | The obligations of the identity's alter-egos.
+identityObligations :: PlayerIdentity -> [CardDef]
+identityObligations = concatMap obligationsOf . HashMap.elems . playerIdentitySides . toAttrs
+ where
+  obligationsOf = \case
+    AlterEgoSide side -> alterEgoObligations (toAttrs side)
+    HeroSide _ -> []
+
 toRetaliate :: [Keyword] -> Natural
 toRetaliate [] = 0
 toRetaliate (Retaliate n : _) = n
@@ -411,7 +419,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             & (discardL .~ Discard [])
     ShuffleIntoIdentityDeck cards -> do
       deck <- shuffleM (unDeck (attrs ^. deckL) <> cards)
-      pure $ PlayerIdentity $ attrs & deckL .~ Deck deck
+      -- a card shuffled in from the discard pile leaves it
+      pure $ PlayerIdentity $ attrs & deckL .~ Deck deck & discardL %~ Discard . filter (`notElem` cards) . unDiscard
     DrawOrDiscardToHandLimit -> do
       modifiedHandSize <- getModifiedHandSize pid
       let
@@ -831,9 +840,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               handleFoundCards =
                 if null foundCards
                   then
+                    -- the cards looked at go back as the rest would
                     Ask
                       playerIdentityId
-                      (ChooseOne [Label "No matching cards found" []])
+                      (ChooseOne [Label "$label.noMatchingCardsFound" [Run $ handleReturnCards rest]])
                   else case searchOption of
                     SearchTarget target ->
                       SearchFoundCards target $ PlayerCard <$> foundCards

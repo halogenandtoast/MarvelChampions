@@ -40,7 +40,8 @@ instance HasModifiersFor IronMan where
       selectListCount $
         UpgradeControlledBy (IdentityWithId $ heroIdentityId a)
           <> UpgradeWithTrait Tech
-    pure [HandSizeModifier x]
+    -- base hand size 1, so at most 6 more for a maximum of 7
+    pure [HandSizeModifier (min 6 x)]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage IronMan where

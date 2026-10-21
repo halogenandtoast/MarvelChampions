@@ -32,8 +32,8 @@ instance RunMessage BusinessProblems where
         pushAll $
           [ Ask identityId $
             ChooseOne
-              [ Label "Do not flip to alter-ego" []
-              , Label "Flip to alter-ego" [ChangeForm]
+              [ Label "$label.doNotFlipToAlterEgo" []
+              , Label "$label.changeToB" [ChangeForm]
               ]
           | isHero
           ]
@@ -51,7 +51,7 @@ instance RunMessage BusinessProblems where
             UpgradeControlledBy (IdentityWithId identityId)
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust Tony Stark -> remove Business Problems from the game."
+            "$label.exhaustTonyStarkRemoveBusinessProblems"
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toTarget attrs)
@@ -60,7 +60,7 @@ instance RunMessage BusinessProblems where
           | isUnexhaustedAlterEgo
           ]
             <> [ Label
-                  "Exhaust each upgrade you control. Discard this obligation"
+                  "$label.exhaustEachUpgradeDiscardObligation"
                   [ Run
                       [ UpgradeMessage u ExhaustedUpgrade
                       | u <- ironManUpgrades

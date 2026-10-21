@@ -36,6 +36,14 @@ import Test.Hspec as X hiding (shouldBe, shouldReturn, shouldSatisfy)
 import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldReturn, shouldSatisfy)
 import Control.Monad.IO.Class as X (liftIO)
 import Marvel.EncounterCard (genEncounterCard)
+import Marvel.Identity (getModifiedHandSize, getModifiedHp)
+import Marvel.MainScheme.Types (getMainSchemeThreat)
+import Marvel.Minion.Types (getMinionDamage)
+import Marvel.Payment.Types (Payment (NoPayment))
+import Marvel.Scenario.Types (Field (ScenarioDiscard, ScenarioEncounterDeck))
+import Data.Aeson (Result (..), Value (Object), fromJSON)
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Types (parseEither)
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -313,3 +321,100 @@ players = getsGame gamePlayerOrder
 -- | The first seat's player.
 player1 :: TestGame -> IdentityId
 player1 tg = fromMaybe (error "no players") (headMay tg.seats)
+
+-- | Put a new copy of a player card into play for a player, as if played for free.
+putIntoPlay :: IdentityId -> CardCode -> GameAppT PlayerCard
+putIntoPlay ident code = do
+  cardId <- getRandom
+  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  resolve [PutCardIntoPlay ident card NoPayment Nothing]
+  pure card
+
+upgradeIdOf :: PlayerCard -> UpgradeId
+upgradeIdOf = UpgradeId . unCardId . pcCardId
+
+allyIdOf :: PlayerCard -> AllyId
+allyIdOf = AllyId . unCardId . pcCardId
+
+supportIdOf :: PlayerCard -> SupportId
+supportIdOf = SupportId . unCardId . pcCardId
+
+-- | Put new copies of cards on top of a player's discard pile, first given on top.
+stackDiscard :: IdentityId -> [CardCode] -> GameAppT [PlayerCard]
+stackDiscard ident codes = do
+  cards <- for codes \code -> do
+    cardId <- getRandom
+    pure $ MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
+    PlayerIdentity a {playerIdentityDiscard = Discard (cards <> unDiscard a.playerIdentityDiscard)}
+  pure cards
+
+-- | Set a player's damage.
+setDamage :: IdentityId -> Natural -> GameAppT ()
+setDamage ident n = withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
+  PlayerIdentity a {playerIdentityDamage = n}
+
+-- | An ability with this label, such as an identity's named ability.
+isLabeledAbility :: Text -> Choice -> Bool
+isLabeledAbility l = \case
+  UseAbility ab -> abilityLabel ab == Just l
+  _ -> False
+
+handSizeOf :: IdentityId -> GameAppT Natural
+handSizeOf ident = getModifiedHandSize =<< getPlayer ident
+
+hitPointsOf :: IdentityId -> GameAppT Natural
+hitPointsOf ident = getModifiedHp =<< getPlayer ident
+
+isExhaustedPlayer :: IdentityId -> GameAppT Bool
+isExhaustedPlayer ident = (.playerIdentityExhausted) . toAttrs <$> getPlayer ident
+
+upgradesOf :: IdentityId -> GameAppT [UpgradeId]
+upgradesOf ident = toList . (.playerIdentityUpgrades) . toAttrs <$> getPlayer ident
+
+upgradeIsExhausted :: UpgradeId -> GameAppT Bool
+upgradeIsExhausted uid = getsGame (maybe False isExhausted . HashMap.lookup uid . gameUpgrades)
+
+mainSchemeThreatNow :: GameAppT Natural
+mainSchemeThreatNow = getsGame (sum . map getMainSchemeThreat . HashMap.elems . gameMainSchemes)
+
+minionDamages :: GameAppT [Natural]
+minionDamages = getsGame (map getMinionDamage . HashMap.elems . gameMinions)
+
+-- | The main scheme's id.
+mainSchemeId :: GameAppT MainSchemeId
+mainSchemeId = getsGame (fromMaybe (error "no main scheme") . headMay . HashMap.keys . gameMainSchemes)
+
+-- | Run these messages, stopping at the first thing they ask for the test to answer; the
+-- question the game was waiting on is asked again after them.
+start :: [Message] -> GameAppT ()
+start msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGameMessages
+
+encounterDiscardCodes :: GameAppT [CardCode]
+encounterDiscardCodes = getsGame (map (toCardCode @EncounterCard) . field ScenarioDiscard . gameScenario)
+
+obligationsInPlay :: GameAppT Int
+obligationsInPlay = getsGame (length . gameObligations)
+
+-- | Put new encounter cards on top of the encounter deck, first given on top.
+stackEncounterDeck :: [CardDef] -> GameAppT [EncounterCard]
+stackEncounterDeck defs = do
+  cards <- traverse genEncounterCard defs
+  withGame_ \g -> g {gameScenario = restack cards (gameScenario g)}
+  pure cards
+ where
+  -- ponytail: through the scenario's JSON, as the scenario is existential
+  restack cards s = case toJSON s of
+    Object o
+      | Just deck <- KeyMap.lookup "scenarioEncounterDeck" o
+      , Success deck' <- fromJSON @[EncounterCard] deck ->
+          either error id . parseEither parseJSON . Object $
+            KeyMap.insert "scenarioEncounterDeck" (toJSON (cards <> deck')) o
+    _ -> error "no encounter deck"
+
+encounterDeckSize :: GameAppT Int
+encounterDeckSize = getsGame (length . field ScenarioEncounterDeck . gameScenario)

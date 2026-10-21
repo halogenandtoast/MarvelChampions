@@ -639,12 +639,20 @@ runGameMessage msg g@Game {..} = case msg of
             & (entitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
       ObligationType -> do
         let obligation = createObligation card
+            -- "Give to the Tony Stark player": an identity's obligation goes to its player
+            owner =
+              fromMaybe ident $
+                headMay
+                  [ toId p
+                  | p <- HashMap.elems (gamePlayers g)
+                  , getCardDef card `elem` identityObligations p
+                  ]
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         pushAll
           [ FocusCards [toCard obligation]
-          , ObligationMessage (toId obligation) $ RevealObligation ident
+          , ObligationMessage (toId obligation) $ RevealObligation owner
           , UnfocusCards
-          , ObligationMessage (toId obligation) $ ResolvedObligation ident
+          , ObligationMessage (toId obligation) $ ResolvedObligation owner
           ]
         pure $
           g
