@@ -5,6 +5,8 @@ module Marvel.SideScheme.SideSchemes.UnderAttack (
 
 import Marvel.Prelude
 
+import Marvel.Id (SchemeId (..))
+
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
@@ -36,7 +38,7 @@ instance RunMessage UnderAttack where
       heroes <- selectList HeroIdentity
       pushAll
         [ Ask p . ChooseOne $
-          Label "$label.placeTwoThreatOnUnderAttack" [Run [SideSchemeMessage ident (SideSchemePlaceThreat 2)]]
+          Label "$label.placeTwoThreatOnUnderAttack" [Run $ placeThreatOn (SchemeSideSchemeId ident) 2]
             : [ Label
                 "$label.deal3DamageToYourHero"
                 [Run $ damageIdentity p (toSource attrs) (toDamage 3 FromAbility)]

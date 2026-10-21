@@ -5,6 +5,8 @@ module Marvel.SideScheme.SideSchemes.DroneFactory (
 
 import Marvel.Prelude
 
+import Marvel.Id (SchemeId (..))
+
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
@@ -36,6 +38,6 @@ instance RunMessage DroneFactory where
       drones <- selectListCount (MinionWithTrait Drone)
       pushAll $
         map PutTopOfDeckIntoPlayAsDrone players
-          <> [SideSchemeMessage ident $ SideSchemePlaceThreat (drones + fromIntegral (length players))]
+          <> placeThreatOn (SchemeSideSchemeId ident) (drones + fromIntegral (length players))
       pure s
     _ -> DroneFactory <$> runMessage msg attrs

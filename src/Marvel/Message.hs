@@ -35,7 +35,7 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
-import Marvel.Window.Types (Window (..), WindowTiming (When), WindowType (IdentityTakeDamage))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (When, Would), WindowType (IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -47,6 +47,16 @@ damageIdentity ident source damage =
   [ CheckWindows [Window When $ IdentityTakeDamage ident damage]
   , IdentityMessage ident $ IdentityDamaged source damage
   ]
+
+-- | Threat a card places on a scheme: first the window for what answers "when threat
+-- would be placed", then the threat.
+placeThreatOn :: SchemeId -> Natural -> [Message]
+placeThreatOn scheme n =
+  [CheckWindows [Window Would $ ThreatPlaced ThreatFromAbility scheme n] | n > 0]
+    <> [ case scheme of
+          SchemeMainSchemeId sid -> MainSchemeMessage sid (MainSchemePlaceThreat n)
+          SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
+       ]
 
 data FinishedStatus
   = Won

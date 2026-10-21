@@ -92,6 +92,21 @@ spec = describe "Justice" do
         mainSchemeThreatNow `shouldReturn` threat
         damageOf p `shouldReturn` 1
 
+    it "takes threat a card would place as damage instead" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        responsibility <- putInHand p "01061"
+        threat <- mainSchemeThreatNow
+        scheme <- mainSchemeId
+        runNow (placeThreatOn (SchemeMainSchemeId scheme) 2)
+        choose "play Great Responsibility" (isPlay responsibility)
+        pass
+        mainSchemeThreatNow `shouldReturn` threat
+        damageOf p `shouldReturn` 2
+
   describe "The Power of Justice (01062)" do
     it "pays 2 for a Justice card, 1 otherwise" do
       tg <- testGame ["spider-man"]

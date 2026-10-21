@@ -5,6 +5,8 @@ module Marvel.Minion.Minions.MadameHydra (
 
 import Marvel.Prelude
 
+import Marvel.Id (SchemeId (..))
+
 import Marvel.Ability
 import Marvel.Choice
 import Marvel.Cost
@@ -42,7 +44,7 @@ placeThreatOnLegions = do
   unless (null legions) $
     chooseOrRunOne
       firstPlayer
-      [ TargetLabel (toRef sid) [Run [SideSchemeMessage sid (SideSchemePlaceThreat 2)]]
+      [ TargetLabel (toRef sid) [Run $ placeThreatOn (SchemeSideSchemeId sid) 2]
       | sid <- legions
       ]
 

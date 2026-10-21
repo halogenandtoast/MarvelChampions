@@ -54,6 +54,6 @@ instance RunMessage ProgramTransmitter where
       _ -> ProgramTransmitter <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       sideSchemes <- selectList AnySideScheme
-      pushAll [SideSchemeMessage sideScheme $ SideSchemePlaceThreat 1 | sideScheme <- sideSchemes]
+      pushAll $ concatMap (\s -> placeThreatOn (SchemeSideSchemeId s) 1) sideSchemes
       pure a
     _ -> ProgramTransmitter <$> runMessage msg attrs

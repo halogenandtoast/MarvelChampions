@@ -2,6 +2,8 @@ module Marvel.MainScheme.MainSchemes.AssaultOnNorad where
 
 import Marvel.Prelude
 
+import Marvel.Id (SchemeId (..))
+
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
@@ -35,7 +37,7 @@ instance RunMessage AssaultOnNorad where
       pushAll
         [ Ask p $
           ChooseOne
-            [ Label "$label.placeTwoThreatOnAssaultOnNorad" [Run [MainSchemeMessage (mainSchemeId attrs) (MainSchemePlaceThreat 2)]]
+            [ Label "$label.placeTwoThreatOnAssaultOnNorad" [Run $ placeThreatOn (SchemeMainSchemeId $ mainSchemeId attrs) 2]
             , Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone p]]
             ]
         | p <- players

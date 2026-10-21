@@ -5,6 +5,8 @@ module Marvel.Treachery.Treacheries.Masterplan (
 
 import Marvel.Prelude
 
+import Marvel.Id (SchemeId (..))
+
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Matchers
@@ -29,7 +31,7 @@ instance RunMessage Masterplan where
       pushAll $
         if null sideSchemes
           then [DiscardUntil FromEncounterDeck (CardWithType SideSchemeType) (toTarget attrs)]
-          else [SideSchemeMessage s (SideSchemePlaceThreat 4) | s <- sideSchemes]
+          else concatMap (\s -> placeThreatOn (SchemeSideSchemeId s) 4) sideSchemes
       pure . Masterplan $ attrs & resolverL ?~ identityId
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       for_ (treacheryResolver attrs) \identityId -> push $ RevealEncounterCard identityId card
