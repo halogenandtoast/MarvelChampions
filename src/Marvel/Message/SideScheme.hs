@@ -10,5 +10,7 @@ data SideSchemeMessage
   | SideSchemePlaceInitialThreat
   | SideSchemePlaceThreat Natural
   | SideSchemeThwarted Source Natural
+  | -- | what a scheme's When Revealed does once the cards it put into play are there
+    SideSchemeRevealedThen
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

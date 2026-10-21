@@ -504,6 +504,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.LeadershipSpec
       Marvel.Aspect.ProtectionSpec
       Marvel.CoverageSpec
+      Marvel.Encounter.CountsSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.UltronSpec
       Marvel.Encounter.VillainStagesSpec

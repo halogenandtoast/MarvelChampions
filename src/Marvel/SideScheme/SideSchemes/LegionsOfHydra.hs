@@ -28,15 +28,15 @@ newtype LegionsOfHydra = LegionsOfHydra (Attrs SideScheme)
 instance RunMessage LegionsOfHydra where
   runMessage msg s@(LegionsOfHydra attrs) = case msg of
     -- if Madame Hydra is not in play she is found and engages you, then 2 more threat
-    -- is placed here for each Hydra enemy in play
-    -- ponytail: Madame Hydra is counted as found when she is not in play; she could
-    -- only be missed if she were facedown somewhere, as a boost or a dealt card
+    -- is placed here for each Hydra enemy in play, counted once she is
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       inPlay <- selectAny (MinionIs Cards.madameHydra)
-      hydra <- selectListCount (MinionWithTrait Hydra)
-      let enemies = hydra + (if inPlay then 0 else 1)
       pushAll $
         [SearchForAndRevealScheme Cards.madameHydra | not inPlay]
-          <> [SideSchemeMessage ident (SideSchemePlaceThreat $ 2 * enemies)]
+          <> [SideSchemeMessage ident SideSchemeRevealedThen]
+      pure s
+    SideSchemeMessage ident SideSchemeRevealedThen | ident == sideSchemeId attrs -> do
+      hydra <- selectListCount (MinionWithTrait Hydra)
+      push $ SideSchemeMessage ident (SideSchemePlaceThreat $ 2 * hydra)
       pure s
     _ -> LegionsOfHydra <$> runMessage msg attrs

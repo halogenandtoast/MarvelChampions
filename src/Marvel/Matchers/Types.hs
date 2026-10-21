@@ -196,6 +196,7 @@ data MinionMatcher
   | MinionMatches [MinionMatcher]
   | NotMinion MinionMatcher
   | MinionWithAttachment AttachmentMatcher
+  | StunnedMinion
   | -- | of the minions matching, those with the highest printed hit points
     MinionWithHighestPrintedHitPointsAmong MinionMatcher
   deriving stock (Show, Eq, Generic)

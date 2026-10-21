@@ -30,14 +30,13 @@ newtype DroneFactory = DroneFactory (Attrs SideScheme)
 instance RunMessage DroneFactory where
   runMessage msg s@(DroneFactory attrs) = case msg of
     -- each player puts a Drone into play, then 1 threat is placed here for each Drone
-    -- minion in play
-    -- ponytail: counted as the drones now in play plus one for each player, as each
-    -- player is about to add one; a player with no cards left to make one is not seen
+    -- minion in play, counted once they are
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
+      pushAll $ map PutTopOfDeckIntoPlayAsDrone players <> [SideSchemeMessage ident SideSchemeRevealedThen]
+      pure s
+    SideSchemeMessage ident SideSchemeRevealedThen | ident == sideSchemeId attrs -> do
       drones <- selectListCount (MinionWithTrait Drone)
-      pushAll $
-        map PutTopOfDeckIntoPlayAsDrone players
-          <> placeThreatOn (SchemeSideSchemeId ident) (drones + fromIntegral (length players))
+      pushAll $ placeThreatOn (SchemeSideSchemeId ident) drones
       pure s
     _ -> DroneFactory <$> runMessage msg attrs

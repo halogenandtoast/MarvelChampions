@@ -55,6 +55,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Minion.Types (
+  Attrs (minionStunned),
   Minion,
   facedownCardL,
   overMinion,
@@ -1622,6 +1623,7 @@ gameSelectMinion m = do
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    StunnedMinion -> pure . minionStunned . toAttrs
     MinionMatches xs -> andM . traverse matchFilter xs
     NotMinion m' -> fmap not . matchFilter m'
     MinionWithAttachment attachmentMatcher -> \minion -> do

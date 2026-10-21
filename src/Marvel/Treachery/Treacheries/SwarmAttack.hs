@@ -27,10 +27,11 @@ instance RunMessage SwarmAttack where
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
       drones <-
         selectList $ MinionWithTrait Drone <> MinionEngagedWith (IdentityWithId identityId)
-      -- ponytail: a stunned drone counts as attacking, though it only loses its stun
+      -- a stunned drone only loses its stun: it makes no attack
+      attacking <-
+        selectList $ MinionWithTrait Drone <> MinionEngagedWith (IdentityWithId identityId) <> NotMinion StunnedMinion
       pushAll $
-        if null drones
-          then [PutTopOfDeckIntoPlayAsDrone identityId]
-          else map (`MinionMessage` MinionAttacks identityId) drones
+        map (`MinionMessage` MinionAttacks identityId) drones
+          <> [PutTopOfDeckIntoPlayAsDrone identityId | null attacking]
       pure t
     _ -> SwarmAttack <$> runMessage msg attrs
