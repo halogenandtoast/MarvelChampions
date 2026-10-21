@@ -786,11 +786,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         retaliate = case currentIdentity pid of
           HeroSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
           AlterEgoSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
-      when (retaliate > 0) $
-        push $
-          IdentityMessage
-            playerIdentityId
-            (IdentityRetaliate retaliate $ attackEnemy attack')
+      -- pushed last to first: the damage, then retaliate (forced, so before any
+      -- response), then the window for responses to defending
       when playerIdentityDefended $
         push
           ( CheckWindows
@@ -798,6 +795,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                   W.HeroDefends playerIdentityId (attackEnemy attack')
               ]
           )
+      when (retaliate > 0) $
+        push $
+          IdentityMessage
+            playerIdentityId
+            (IdentityRetaliate retaliate $ attackEnemy attack')
       when (damage > 0) $
         pushAll
           [ CheckWindows

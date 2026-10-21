@@ -68,12 +68,13 @@ spec = describe "Protection" do
         counter <- putInHand p "01077"
         changeForm p
         toVillainAttack p
+        start <- villainDamageNow
         choose "defend" isDefend
-        before <- villainDamageNow
+        -- retaliate is forced, so it comes before Counter-Punch is offered
+        villainDamageNow `shouldReturn` start + 1
         choose "play Counter-Punch" (isPlay counter)
-        -- Black Panther has 2 ATK, and retaliates 1 once the attack is over
-        after <- villainDamageNow
-        after `shouldBe` before + 2 + 1
+        -- Black Panther has 2 ATK
+        villainDamageNow `shouldReturn` start + 1 + 2
 
   describe "Get Behind Me! (01078)" do
     it "cancels a treachery's when revealed effects and the villain attacks you instead" do
