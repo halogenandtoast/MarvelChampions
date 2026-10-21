@@ -834,12 +834,18 @@ runGameMessage msg g@Game {..} = case msg of
       if defensePriority == AllyIfAble && not (null allies)
         then pure mempty
         else select $ UnexhaustedIdentity <> HeroIdentity
+    -- any player may defend with a character they control: another player's hero
+    -- defending becomes the attack's target
     push
       $ Ask ident
         . promptedAbout "$label.declareDefender" enemyId
         . ChooseOne
       $ Label "$label.noDefender" []
         : [Defend enemyId | ident `member` identities]
+          <> [ TargetLabel (IdentityRef other) [Run [IdentityMessage other (SideMessage (Defended enemyId))]]
+             | other <- toList identities
+             , other /= ident
+             ]
           <> map (`AllyDefend` enemyId) allies
     pure g
   _ -> pure g

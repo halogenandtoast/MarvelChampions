@@ -514,6 +514,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.SpiderManSpec
       Marvel.LogSpec
       Marvel.PublicSpec
+      Marvel.Rules.DefenseSpec
       Marvel.SmokeSpec
       TestImport
       Paths_MarvelChampions
