@@ -28,6 +28,7 @@ import Marvel.Entity
 import Marvel.Game
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Hero.Types qualified as HeroTypes
+import Marvel.Environment.Types qualified as Environment
 import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
@@ -61,6 +62,7 @@ data GameView = GameView
   , mainSchemes :: [SchemeView]
   , sideSchemes :: [SchemeView]
   , minions :: [MinionView]
+  , environments :: [EnvironmentView]
   , encounterDeckSize :: Int
   , encounterDiscard :: [CardView]
   , focusedCards :: [CardView]
@@ -175,6 +177,10 @@ data MinionView = MinionView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
+data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView]}
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
 data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -271,6 +277,11 @@ gameView seesHand g = do
       , mainSchemes = map mainSchemeView (HashMap.elems $ gameMainSchemes g)
       , sideSchemes = map sideSchemeView (HashMap.elems $ gameSideSchemes g)
       , minions
+      , environments =
+          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments)
+          | e <- HashMap.elems (gameEnvironments g)
+          , let a = toAttrs e
+          ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , focusedCards = map cardView (gameFocusedCards g)
