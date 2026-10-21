@@ -1,12 +1,12 @@
 // Card codes as the engine names them, to what the board draws: the scan, its MarvelCDB
 // fallback, which way up it is printed.
 import { useCardStore } from '@browser/stores/cards'
-import { localImage, remoteImage, type Card } from '@browser/types/card'
+import { CARD_IMAGES, localImage, remoteImage, type Card } from '@browser/types/card'
 
 export const BACKS = {
-  player: '/images/cards/back-player.avif',
-  encounter: '/images/cards/back-encounter.avif',
-  villain: '/images/cards/back-villain.avif',
+  player: `${CARD_IMAGES}/back-player.avif`,
+  encounter: `${CARD_IMAGES}/back-encounter.avif`,
+  villain: `${CARD_IMAGES}/back-villain.avif`,
 } as const
 export type Back = keyof typeof BACKS
 
@@ -22,7 +22,7 @@ export const faceCode = (code: string, cardByCode: (code: string) => Card | unde
 /** The images to try for a card, best first; a placeholder follows when all fail. */
 export const imageSources = (code: string, cardByCode: (code: string) => Card | undefined): string[] => {
   const card = cardByCode(faceCode(code, cardByCode))
-  if (!card) return [`/images/cards/${code}.avif`]
+  if (!card) return [`${CARD_IMAGES}/${code}.avif`]
   return [localImage(card), remoteImage(card)].filter((s): s is string => s !== null)
 }
 

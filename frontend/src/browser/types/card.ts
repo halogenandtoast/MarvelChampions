@@ -91,8 +91,11 @@ export const FACTIONS = ['aggression', 'justice', 'leadership', 'protection', 'b
 export const PLAYER_TYPES = ['hero', 'alter_ego', 'ally', 'event', 'support', 'upgrade', 'resource', 'player_side_scheme'] as const
 export const ENCOUNTER_TYPES = ['villain', 'main_scheme', 'side_scheme', 'minion', 'treachery', 'attachment', 'obligation', 'environment', 'leader'] as const
 
+/** Where the card scans are served from: this site, or a bucket named at build time. */
+export const CARD_IMAGES = `${import.meta.env.VITE_ASSET_HOST ?? ''}/images/cards`
+
 /** Where a card's scan is kept, by its file in the HD export. */
-export const localImage = (card: Pick<Card, 'code' | 'image'>) => `/images/cards/${card.image ?? `${card.code}.avif`}`
+export const localImage = (card: Pick<Card, 'code' | 'image'>) => `${CARD_IMAGES}/${card.image ?? `${card.code}.avif`}`
 
 /** MarvelCDB's own scan, for a card the export has none of. */
 export const remoteImage = (card: Pick<Card, 'remoteImage'>) => (card.remoteImage ? `https://marvelcdb.com${card.remoteImage}` : null)

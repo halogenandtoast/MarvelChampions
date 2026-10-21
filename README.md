@@ -18,7 +18,9 @@ the API answers. Tests: `stack test`.
 
 - `tools/generate-cards.py` rebuilds `frontend/public/data/cards.json` from MarvelCDB.
 - `tools/import-images.py` turns the HD scans (`MarvelHD.zip`, not in the repo) into
-  `frontend/public/images/cards/<code>.avif`. The images are not committed.
+  `frontend/public/images/cards/<code>.avif`. The images are not committed. To serve
+  them from elsewhere (an S3 bucket), build the client with `VITE_ASSET_HOST` set to its
+  origin; it reads `<host>/images/cards/<code>.avif`.
 
 ## Rules
 
