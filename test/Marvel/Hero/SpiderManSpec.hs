@@ -271,8 +271,8 @@ spec = describe "Spider-Man" do
     inGame tg do
       changeForm p
       eviction <- revealNow p Obligations.evictionNotice
-      choose "flip to alter-ego" (isLabel "Flip to alter-ego")
-      choose "exhaust Peter Parker" (isLabelStarting "Exhaust")
+      choose "flip to alter-ego" (isLabel "$label.changeToB")
+      choose "exhaust Peter Parker" (isLabelStarting "$label.exhaust")
       isExhaustedNow p `shouldReturn` True
       a <- playerAttrs p
       a.playerIdentitySide `shouldBe` B
@@ -288,7 +288,7 @@ spec = describe "Spider-Man" do
       card <- putInHand p "01088"
       [next] <- stackEncounterDeck [Minions.hydraMercenary]
       eviction <- revealNow p Obligations.evictionNotice
-      choose "stay a hero" (isLabel "Do not flip to alter-ego")
+      choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       pass
       handOf p `shouldReturn` []
       discardOf p `shouldReturn` [card]
@@ -407,7 +407,7 @@ spec = describe "Spider-Man" do
       [carol, peter] <- players
       _ <- revealNow carol Obligations.evictionNotice
       fmap fst <$> asked `shouldReturn` Just peter
-      choose "exhaust Peter Parker" (isLabelStarting "Exhaust")
+      choose "exhaust Peter Parker" (isLabelStarting "$label.exhaust")
       isExhaustedNow peter `shouldReturn` True
       isExhaustedNow carol `shouldReturn` False
 

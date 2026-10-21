@@ -31,8 +31,8 @@ instance RunMessage LegalWork where
         pushAll $
           [ Ask identityId $
             ChooseOne
-              [ Label "Do not flip to alter-ego" []
-              , Label "Flip to alter-ego" [ChangeForm]
+              [ Label "$label.doNotFlipToAlterEgo" []
+              , Label "$label.changeToB" [ChangeForm]
               ]
           | isHero
           ]
@@ -47,7 +47,7 @@ instance RunMessage LegalWork where
             identityId
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust Jennifer Walters-> remove Legal Work from the game."
+            "$label.exhaustJenniferWaltersRemoveLegalWork"
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toTarget attrs)
@@ -56,7 +56,7 @@ instance RunMessage LegalWork where
           | isUnexhaustedAlterEgo
           ]
             <> [ Label
-                  "Give the main scheme 1 acceleration token. Discard this obligation"
+                  "$label.accelerationTokenDiscardObligation"
                   [Run [AddAccelerationToken]]
                ]
         pure o

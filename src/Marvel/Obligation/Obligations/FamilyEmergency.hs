@@ -31,8 +31,8 @@ instance RunMessage FamilyEmergency where
         pushAll $
           [ Ask identityId $
             ChooseOne
-              [ Label "Do not flip to alter-ego" []
-              , Label "Flip to alter-ego" [ChangeForm]
+              [ Label "$label.doNotFlipToAlterEgo" []
+              , Label "$label.changeToB" [ChangeForm]
               ]
           | isHero
           ]
@@ -47,7 +47,7 @@ instance RunMessage FamilyEmergency where
             identityId
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust Carol Danvers -> remove Family Emergency from the game."
+            "$label.exhaustCarolDanversRemoveFamilyEmergency"
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toRef attrs)
@@ -56,7 +56,7 @@ instance RunMessage FamilyEmergency where
           | isUnexhaustedAlterEgo
           ]
             <> [ Label
-                  "You are stunned. This card gains surge. Discard this obligation"
+                  "$label.stunnedSurgeDiscardObligation"
                   [Run [IdentityMessage identityId IdentityStunned, Surge identityId]]
                ]
         pure o

@@ -34,5 +34,11 @@
   "exhaustEachUpgradeDiscardObligation": "Exhaust each upgrade you control, then discard this obligation",
   "exhaustTChallaRemoveAffairsOfState": "Exhaust T'Challa → remove Affairs of State from the game",
   "discardBlackPantherUpgradeDiscardObligation": "Discard a Black Panther upgrade you control, then discard this obligation",
-  "noMatchingCardsFound": "No matching cards found"
+  "noMatchingCardsFound": "No matching cards found",
+  "exhaustPeterParkerRemoveEvictionNotice": "Exhaust Peter Parker → remove Eviction Notice from the game",
+  "discardRandomCardSurgeDiscardObligation": "Discard 1 card at random from your hand; this card gains surge. Discard this obligation",
+  "exhaustCarolDanversRemoveFamilyEmergency": "Exhaust Carol Danvers → remove Family Emergency from the game",
+  "stunnedSurgeDiscardObligation": "You are stunned and this card gains surge. Discard this obligation",
+  "exhaustJenniferWaltersRemoveLegalWork": "Exhaust Jennifer Walters → remove Legal Work from the game",
+  "accelerationTokenDiscardObligation": "Give the main scheme 1 acceleration token. Discard this obligation"
 }

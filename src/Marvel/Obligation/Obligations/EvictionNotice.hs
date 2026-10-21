@@ -31,8 +31,8 @@ instance RunMessage EvictionNotice where
         pushAll $
           [ Ask identityId $
             ChooseOne
-              [ Label "Do not flip to alter-ego" []
-              , Label "Flip to alter-ego" [ChangeForm]
+              [ Label "$label.doNotFlipToAlterEgo" []
+              , Label "$label.changeToB" [ChangeForm]
               ]
           | isHero
           ]
@@ -47,7 +47,7 @@ instance RunMessage EvictionNotice where
             identityId
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust Peter Parker -> remove Eviction Notice from the game."
+            "$label.exhaustPeterParkerRemoveEvictionNotice"
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toTarget attrs)
@@ -56,7 +56,7 @@ instance RunMessage EvictionNotice where
           | isUnexhaustedAlterEgo
           ]
             <> [ Label
-                  "Discard 1 card at random from your hand. This card gains surge, Discard this obligation"
+                  "$label.discardRandomCardSurgeDiscardObligation"
                   [ Run
                       [ IdentityMessage identityId $
                           DiscardFrom RandomFromHand 1 Nothing

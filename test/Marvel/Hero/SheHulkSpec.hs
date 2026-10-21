@@ -260,8 +260,8 @@ spec = describe "She-Hulk" do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
       _ <- revealNow p Obligations.legalWork
-      choose "flip to alter-ego" (isLabel "Flip to alter-ego")
-      choose "exhaust Jennifer Walters" (isLabelStarting "Exhaust")
+      choose "flip to alter-ego" (isLabel "$label.changeToB")
+      choose "exhaust Jennifer Walters" (isLabelStarting "$label.exhaust")
       isExhaustedNow p `shouldReturn` True
       getsGame (HashMap.null . gameObligations) `shouldReturn` True
       getsGame (scenarioAccelerationTokens . gameScenario) `shouldReturn` 0
@@ -273,7 +273,7 @@ spec = describe "She-Hulk" do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
       work <- revealNow p Obligations.legalWork
-      choose "stay a hero" (isLabel "Do not flip to alter-ego")
+      choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       pass
       getsGame (scenarioAccelerationTokens . gameScenario) `shouldReturn` 1
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId work))

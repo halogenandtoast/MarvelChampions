@@ -230,8 +230,8 @@ spec = describe "Captain Marvel" do
     inGame tg do
       changeForm p
       _ <- revealNow p Obligations.familyEmergency
-      choose "flip to alter-ego" (isLabel "Flip to alter-ego")
-      choose "exhaust Carol Danvers" (isLabelStarting "Exhaust")
+      choose "flip to alter-ego" (isLabel "$label.changeToB")
+      choose "exhaust Carol Danvers" (isLabelStarting "$label.exhaust")
       isExhaustedNow p `shouldReturn` True
       getsGame (HashMap.null . gameObligations) `shouldReturn` True
       isStunned p `shouldReturn` False
@@ -243,7 +243,7 @@ spec = describe "Captain Marvel" do
       changeForm p
       [next] <- stackEncounterDeck [Minions.hydraMercenary]
       emergency <- revealNow p Obligations.familyEmergency
-      choose "stay a hero" (isLabel "Do not flip to alter-ego")
+      choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       pass
       isStunned p `shouldReturn` True
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId emergency))
