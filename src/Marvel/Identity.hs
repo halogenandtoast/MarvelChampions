@@ -36,6 +36,7 @@ import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
+import Marvel.Name (Name (..))
 import Marvel.Payment
 import Marvel.Projection
 import Marvel.Query
@@ -256,11 +257,16 @@ isPlayable attrs c = do
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
+  matchesUnique <-
+    if cdUnique def
+      then any (uniqueMatch (title $ cdName def, maybe [] pure (subtitle $ cdName def))) <$> getUniqueTitlesInPlay
+      else pure False
   pure $
     length resources
       >= modifiedCost
       && passedCriteria
       && passedPlayLimits
+      && not matchesUnique
       && isNothing (cdResponseWindow def)
       && (cdCardType def /= ResourceType)
  where
@@ -286,6 +292,15 @@ isPlayable attrs c = do
     ExtendedCardExists m -> selectAny (NotCard c <> m)
 
 -- \^ this is critical and order matters to avoid infinite recursionl
+
+-- | Whether two unique cards match (RR "Unique"): they share a title and neither has a
+-- subtitle or alter-ego title, or a subtitle or alter-ego title of one is any name of the
+-- other.
+uniqueMatch :: (Text, [Text]) -> (Text, [Text]) -> Bool
+uniqueMatch (t1, s1) (t2, s2) =
+  (t1 == t2 && null s1 && null s2)
+    || any (`elem` (t2 : s2)) s1
+    || any (`elem` (t1 : s1)) s2
 
 checkPlayLimits :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 checkPlayLimits ident c = case cdLimit def of

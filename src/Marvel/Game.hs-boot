@@ -98,6 +98,7 @@ getCurrentWindows :: (HasGame m) => m [Window]
 getCurrentPayment :: (HasGame m) => m Payment
 getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
+getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getHazardCount :: (HasGame m) => m Natural
 getAccelerationCount :: (HasGame m) => m Natural
 getAvailablePaymentSources :: (HasGame m) => IdentityId -> m [PlayerCard]

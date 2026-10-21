@@ -300,6 +300,25 @@ getActivePlayerId = toId <$> getActivePlayer
 getPlayerCount :: (HasGame m) => m Int
 getPlayerCount = length <$> getsGame gamePlayerOrder
 
+-- | Each unique card in play, and each identity, as a title and the subtitles and
+-- alter-ego titles that go with it: a unique card matching one cannot enter play.
+getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
+getUniqueTitlesInPlay = getsGame \g ->
+  let
+    named n = (title n, maybe [] pure (subtitle n))
+    unique = map (named . cdName) . filter cdUnique
+    sideName = \case
+      HeroSide h -> title (cdName $ getCardDef h)
+      AlterEgoSide a -> title (cdName $ getCardDef a)
+    identity p = case map sideName (HashMap.elems $ playerIdentitySides $ toAttrs p) of
+      [] -> []
+      t : ts -> [(t, ts)]
+   in
+    unique (map getCardDef $ HashMap.elems $ gameAllies g)
+      <> unique (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
+      <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
+      <> concatMap identity (HashMap.elems $ gamePlayers g)
+
 getActivePlayer :: (HasGame m) => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
   case lookup (g ^. activePlayerL) (g ^. entitiesL . playersL) of
