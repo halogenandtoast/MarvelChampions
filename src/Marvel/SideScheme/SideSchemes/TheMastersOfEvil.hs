@@ -39,5 +39,5 @@ instance RunMessage TheMastersOfEvil where
       _ -> TheMastersOfEvil <$> runMessage msg attrs
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
-      ss <$ push (RevealEncounterCard firstPlayer card)
+      ss <$ push (PutEncounterCardIntoPlay firstPlayer card)
     _ -> TheMastersOfEvil <$> runMessage msg attrs

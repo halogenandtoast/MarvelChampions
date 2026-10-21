@@ -196,7 +196,10 @@ instance RunMessage (Attrs Scenario) where
       pure $ attrs & encounterDeckL .~ deck'
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
-      pure $ attrs & encounterDeckL .~ deck'
+      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards)
+    -- a set-aside card (a nemesis set's) leaves the set-aside area as it comes out
+    RevealEncounterCard _ card -> pure $ attrs & setAsideCardsL %~ filter (/= EncounterCard card)
+    PutEncounterCardIntoPlay _ card -> pure $ attrs & setAsideCardsL %~ filter (/= EncounterCard card)
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       pushAll $
@@ -275,16 +278,16 @@ instance RunMessage (Attrs Scenario) where
       case remaining of
         [] -> do
           push EmptyScenarioDeck
-          pure $ attrs & encounterDeckL .~ [] & discardL .~ discarded
+          pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
         [x] -> do
           pushAll
             [ EmptyScenarioDeck
             , WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
             ]
-          pure $ attrs & encounterDeckL .~ [] & discardL .~ discarded
+          pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
         x : xs -> do
           push $ WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
-          pure $ attrs & encounterDeckL .~ xs & discardL .~ discarded
+          pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
       case find ((== cardDef) . getCardDef) $

@@ -47,7 +47,8 @@ instance RunMessage ShadowOfThePast where
         pushAll $
           map (RevealEncounterCard identityId) minions
             <> map (RevealEncounterCard identityId) sideSchemes
-            <> [ShuffleIntoEncounterDeck rest]
-        pure t
+            <> [ShuffleIntoEncounterDeck rest | notNull rest]
+        -- the nemesis minion did not enter play: it already has
+        pure $ if null minions then ShadowOfThePast (attrs & surgeL .~ True) else t
       _ -> ShadowOfThePast <$> runMessage msg attrs
     _ -> ShadowOfThePast <$> runMessage msg attrs

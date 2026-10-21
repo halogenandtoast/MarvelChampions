@@ -151,5 +151,8 @@ data Message
   | -- | the top card of the player's deck is put into play facedown, engaged with them,
     -- as a Drone minion
     PutTopOfDeckIntoPlayAsDrone IdentityId
+  | -- | an encounter card put into play without being revealed: its "When Revealed"
+    -- abilities and surge do not resolve
+    PutEncounterCardIntoPlay IdentityId EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
