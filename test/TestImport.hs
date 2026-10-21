@@ -36,6 +36,13 @@ import Test.Hspec as X hiding (shouldBe, shouldReturn, shouldSatisfy)
 import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldReturn, shouldSatisfy)
 import Control.Monad.IO.Class as X (liftIO)
 import Marvel.EncounterCard (genEncounterCard)
+import Marvel.Ally.Types as X (Ally, Attrs (..))
+import Marvel.Support.Types as X (Support, Attrs (..))
+import Marvel.Upgrade.Types as X (Upgrade, Attrs (..))
+import Marvel.Minion.Types as X (Minion, Attrs (..))
+import Marvel.MainScheme.Types (getMainSchemeThreat)
+import Marvel.Payment.Types (Payment (NoPayment))
+import Marvel.Damage as X
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -313,3 +320,84 @@ players = getsGame gamePlayerOrder
 -- | The first seat's player.
 player1 :: TestGame -> IdentityId
 player1 tg = fromMaybe (error "no players") (headMay tg.seats)
+
+-- * Aspect card helpers
+
+-- | The attributes of every ally in play with this card code.
+alliesWith :: CardCode -> GameAppT [Attrs Ally]
+alliesWith code = getsGame (filter ((== code) . toCardCode . allyCardDef) . map toAttrs . HashMap.elems . gameAllies)
+
+-- | The one ally in play with this card code.
+allyIn :: (HasCallStack) => CardCode -> GameAppT (Attrs Ally)
+allyIn code = alliesWith code >>= \case
+  [a] -> pure a
+  as -> error $ "expected one ally " <> show code <> ", found " <> show (length as)
+
+isAllyAttack :: Attrs Ally -> Choice -> Bool
+isAllyAttack a = \case
+  UseAbility ab -> AllyAttack (allyId a) `elem` abilityChoices ab
+  _ -> False
+
+isAllyThwart :: Attrs Ally -> Choice -> Bool
+isAllyThwart a = \case
+  UseAbility ab -> AllyThwart (allyId a) `elem` abilityChoices ab
+  _ -> False
+
+-- | The hero's basic attack or thwart.
+isHeroAttack, isHeroThwart :: IdentityId -> Choice -> Bool
+isHeroAttack ident = \case
+  UseAbility ab -> Attack `elem` abilityChoices ab && abilitySource ab == toSource ident
+  _ -> False
+isHeroThwart ident = \case
+  UseAbility ab -> Thwart `elem` abilityChoices ab && abilitySource ab == toSource ident
+  _ -> False
+
+supportsWith :: CardCode -> GameAppT [Attrs Support]
+supportsWith code = getsGame (filter ((== code) . toCardCode . supportCardDef) . map toAttrs . HashMap.elems . gameSupports)
+
+upgradesWith :: CardCode -> GameAppT [Attrs Upgrade]
+upgradesWith code = getsGame (filter ((== code) . toCardCode . upgradeCardDef) . map toAttrs . HashMap.elems . gameUpgrades)
+
+-- | Reveal a minion from the encounter deck to the player, returning it.
+addMinion :: IdentityId -> CardDef -> GameAppT MinionId
+addMinion ident def = do
+  before <- getsGame (HashMap.keys . gameMinions)
+  card <- encounterCard def
+  resolve [RevealEncounterCard ident card]
+  getsGame (filter (`notElem` before) . HashMap.keys . gameMinions) >>= \case
+    [m] -> pure m
+    _ -> error "the minion did not enter play"
+
+-- | A minion's damage, or Nothing once it has left play.
+minionDamageOf :: MinionId -> GameAppT (Maybe Natural)
+minionDamageOf m = getsGame (fmap (minionDamage . toAttrs) . HashMap.lookup m . gameMinions)
+
+mainSchemeId :: GameAppT MainSchemeId
+mainSchemeId = getsGame (HashMap.keys . gameMainSchemes) >>= \case
+  [m] -> pure m
+  _ -> error "expected one main scheme"
+
+mainSchemeThreatNow :: GameAppT Natural
+mainSchemeThreatNow = getsGame (sum . map getMainSchemeThreat . HashMap.elems . gameMainSchemes)
+
+placeMainThreat :: Natural -> GameAppT ()
+placeMainThreat n = do
+  m <- mainSchemeId
+  resolve [MainSchemeMessage m (MainSchemePlaceThreat n)]
+
+-- | Put a card from nowhere into play under a player's control, as if it had been played.
+putIntoPlay :: IdentityId -> CardCode -> GameAppT ()
+putIntoPlay ident code = do
+  cardId <- getRandom
+  resolve [PutCardIntoPlay ident (MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)) NoPayment Nothing]
+
+setDamage :: IdentityId -> Natural -> GameAppT ()
+setDamage ident n = withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDamage = n}
+
+-- | Whether the player is exhausted.
+exhaustedNow :: IdentityId -> GameAppT Bool
+exhaustedNow ident = (.playerIdentityExhausted) . toAttrs <$> getPlayer ident
+
+-- | Answer with the first choice that matches when it is offered.
+chooseIf :: (Choice -> Bool) -> GameAppT ()
+chooseIf p = whenM (offers p) $ choose "optional choice" p
