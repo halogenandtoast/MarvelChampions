@@ -39,12 +39,14 @@ const place = (i: number) => {
   transform-origin: 50% 120%;
   transition: transform 0.18s ease, margin 0.18s ease;
 }
-.in-hand:hover, .in-hand:focus-within {
-  z-index: 50 !important;
-  transform: translateY(-14px) rotate(0deg) scale(1.06);
+/* the card lifts inside a holder that stays put, so the pointer never slips off it */
+.in-hand > :deep(.slot) { transform-origin: 50% 120%; transition: transform 0.18s ease, margin 0.2s ease; }
+.in-hand:hover, .in-hand:focus-within { z-index: 50 !important; }
+.in-hand:hover > :deep(.slot), .in-hand:focus-within > :deep(.slot) {
+  transform: translateY(calc(-14px - var(--drop))) rotate(calc(-1 * var(--rotate))) scale(1.06);
 }
 .in-hand:has(:deep(.card.active)) { transform: translateY(calc(var(--drop) - 8px)) rotate(var(--rotate)); }
-.in-hand:has(:deep(.card.active)):hover { transform: translateY(-16px) rotate(0deg) scale(1.06); }
+.in-hand:has(:deep(.card.active)):hover > :deep(.slot) { transform: translateY(calc(-8px - var(--drop))) rotate(calc(-1 * var(--rotate))) scale(1.06); }
 .fan:has(.empty) { min-height: 0; padding: 4px; }
 .empty { margin: auto; color: var(--text-faint); font-size: 0.8rem; font-style: italic; }
 </style>
