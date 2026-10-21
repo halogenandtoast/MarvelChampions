@@ -293,7 +293,7 @@ checkPlayLimits ident c = case cdLimit def of
   Just limit -> case limit of
     MaxPerPlayer 1 -> case cdCardType def of
       UpgradeType -> selectNone $ UpgradeNamed name <> upgradeControlledBy (toId ident)
-      SupportType -> selectNone $ UpgradeNamed name <> upgradeControlledBy (toId ident)
+      SupportType -> selectNone $ SupportMatches [SupportNamed name, SupportControlledBy $ IdentityWithId (toId ident)]
       _ -> error "Unhandled"
     MaxPerPlayer _ -> error "Unhandled"
     MaxPerAlly 1 -> case cdCardType def of

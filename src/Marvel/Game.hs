@@ -82,7 +82,7 @@ import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideC
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
-import Marvel.Support.Types (Support, getSupportController, getSupportUses)
+import Marvel.Support.Types (Attrs (supportCardDef), Support, getSupportController, getSupportUses)
 import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
@@ -1406,6 +1406,12 @@ gameSelectSupport = \case
     HashSet.fromList
       . map toId
       <$> filterM (gameValueMatches gameValueMatcher . getSupportUses) upgrades
+  SupportNamed name -> do
+    supports <- HashMap.elems <$> getsGame gameSupports
+    pure $ HashSet.fromList $ map toId $ filter ((== name) . cdName . supportCardDef . toAttrs) supports
+  SupportMatches xs -> do
+    all' <- HashSet.fromList . HashMap.keys <$> getsGame gameSupports
+    foldr HashSet.intersection all' <$> traverse gameSelectSupport xs
 
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do
