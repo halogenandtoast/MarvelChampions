@@ -9,14 +9,13 @@ import type { CardView } from '../server'
 import BoardCard from './BoardCard.vue'
 import CardFace from './CardFace.vue'
 
-const { label, back = null, count = null, cards = null, size = 'sm' } = defineProps<{
+const { label, back = null, count = null, cards = null } = defineProps<{
   label: string
   /** face down: a deck */
   back?: Back | null
   count?: number | null
   /** face up: a discard pile, newest last */
   cards?: readonly CardView[] | null
-  size?: 'xs' | 'sm' | 'md'
 }>()
 
 const overlay = useCardOverlay()
@@ -35,7 +34,7 @@ const close = () => dialog.value?.close()
 </script>
 
 <template>
-  <div class="pile" :class="[`size-${size}`, { empty: total === 0, active, openable: cards?.length }]">
+  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length }">
     <button
       type="button"
       class="stack"
@@ -57,16 +56,14 @@ const close = () => dialog.value?.close()
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
       </header>
       <div class="cards">
-        <BoardCard v-for="card in [...(cards ?? [])].reverse()" :id="card.id" :key="card.id" :code="card.code" :name="card.name" size="md" :morph="false" />
+        <BoardCard v-for="card in [...(cards ?? [])].reverse()" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
       </div>
     </dialog>
   </div>
 </template>
 
 <style scoped>
-.pile { --w: calc(var(--card-width) * 0.72); display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
-.size-xs { --w: calc(var(--card-width) * 0.56); }
-.size-md { --w: var(--card-width); }
+.pile { --w: var(--card-width); display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
 .stack {
   position: relative;
   width: var(--w);

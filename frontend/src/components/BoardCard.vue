@@ -25,7 +25,6 @@ const props = withDefaults(
     code?: string | null
     name?: string
     back?: Back | null
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'hand'
     exhausted?: boolean
     damage?: number
     hitPoints?: number | null
@@ -42,7 +41,7 @@ const props = withDefaults(
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
   }>(),
-  { morph: true, id: null, code: null, name: '', back: null, size: 'md', damage: 0, hitPoints: null, threat: null, counters: null, attached: () => [], flag: null },
+  { morph: true, id: null, code: null, name: '', back: null, damage: 0, hitPoints: null, threat: null, counters: null, attached: () => [], flag: null },
 )
 
 const cards = useCards()
@@ -99,7 +98,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 </script>
 
 <template>
-  <div class="slot" :class="[`size-${size}`, { exhausted, landscape, hosting: attached.length }]">
+  <div class="slot" :class="{ exhausted, landscape, hosting: attached.length }">
     <div
       ref="el"
       class="card"
@@ -166,10 +165,6 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   width: var(--w);
   transition: margin 0.2s ease;
 }
-.size-xs { --w: calc(var(--card-width) * 0.62); }
-.size-sm { --w: calc(var(--card-width) * 0.82); }
-.size-lg { --w: calc(var(--card-width) * 1.32); }
-.size-hand { --w: calc(var(--card-width) * 1.08); }
 .slot.landscape { width: calc(var(--w) / var(--card-aspect)); }
 /* an exhausted card turns sideways, so it takes its height in width */
 .slot.exhausted:not(.landscape) { margin-inline: calc((var(--w) / var(--card-aspect) * 0.9 - var(--w)) / 2); }

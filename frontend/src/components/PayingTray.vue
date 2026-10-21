@@ -21,7 +21,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       <h2>{{ paying?.name ?? $t('game.paying.title') }}</h2>
     </header>
     <div class="body">
-      <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" size="sm" :morph="false" />
+      <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" :morph="false" />
       <div class="ledger">
         <span class="label">{{ $t('game.paying.paid') }}</span>
         <p v-if="cost.paid.length" class="resources">
@@ -31,7 +31,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
         <template v-if="cost.spent.length">
           <span class="label">{{ $t('game.paying.spent') }}</span>
           <div class="spent">
-            <BoardCard v-for="card in cost.spent" :id="card.id" :key="card.id" :code="card.code" :name="card.name" size="xs" :morph="false" />
+            <BoardCard v-for="card in cost.spent" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
           </div>
         </template>
       </div>

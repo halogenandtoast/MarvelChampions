@@ -19,8 +19,8 @@ const place = (i: number) => {
     <span class="hand-label">{{ label }} <b>{{ shown.length }}</b></span>
     <div class="fan">
       <div v-for="(card, i) in shown" :key="card.id" class="in-hand" :style="place(i)">
-        <BoardCard v-if="cards" :id="card.id" :code="card.code" :name="card.name" size="hand" />
-        <BoardCard v-else back="player" size="hand" />
+        <BoardCard v-if="cards" :id="card.id" :code="card.code" :name="card.name" />
+        <BoardCard v-else back="player" />
       </div>
       <p v-if="!shown.length" class="empty">{{ $t('game.emptyHand') }}</p>
     </div>
@@ -31,7 +31,7 @@ const place = (i: number) => {
 .hand { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 6px; }
 .hand-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .hand-label b { color: var(--text-muted); margin-left: 4px; }
-.fan { display: flex; justify-content: center; align-items: flex-end; padding: 14px 24px 6px; min-height: calc(var(--card-width) * 1.08 / var(--card-aspect) + 20px); }
+.fan { display: flex; justify-content: center; align-items: flex-end; padding: 14px 24px 6px; min-height: calc(var(--card-width) / var(--card-aspect) + 20px); }
 .in-hand {
   position: relative;
   margin-inline: calc(var(--card-width) * -0.1);

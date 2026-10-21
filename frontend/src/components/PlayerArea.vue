@@ -35,29 +35,32 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 
 <template>
   <section class="player-area" :class="{ active, compact, hero, 'alter-ego': !hero }">
-    <div class="identity">
-      <BoardCard
-        :id="player.id"
-        :code="player.code"
-        :name="player.name"
-        :size="compact ? 'md' : 'lg'"
-        :exhausted="player.exhausted"
-        :damage="player.damage"
-        :stunned="player.stunned"
-        :confused="player.confused"
-        :tough="player.tough"
-      />
-      <div class="identity-info">
-        <p class="who">
-          <span class="form">{{ t(hero ? 'game.form.hero' : 'game.form.alterEgo') }}</span>
-          <span class="player-name">{{ player.name }}</span>
-        </p>
-        <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
-        <dl class="stats">
-          <div v-for="[stat, value] in stats" :key="stat"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
-          <div><dt>{{ t('game.stats.hand') }}</dt><dd>{{ player.handSize }}</dd></div>
-        </dl>
+    <div class="identity-column">
+      <div class="identity">
+        <BoardCard
+          :id="player.id"
+          :code="player.code"
+          :name="player.name"
+          :exhausted="player.exhausted"
+          :damage="player.damage"
+          :stunned="player.stunned"
+          :confused="player.confused"
+          :tough="player.tough"
+        />
+        <div class="identity-info">
+          <p class="who">
+            <span class="form">{{ t(hero ? 'game.form.hero' : 'game.form.alterEgo') }}</span>
+            <span class="player-name">{{ player.name }}</span>
+          </p>
+          <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
+          <dl class="stats">
+            <div v-for="[stat, value] in stats" :key="stat"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
+            <div><dt>{{ t('game.stats.hand') }}</dt><dd>{{ player.handSize }}</dd></div>
+          </dl>
+        </div>
       </div>
+      <!-- what this player is asked sits beneath them, at the foot of the area -->
+      <div v-if="$slots.default" class="asked"><slot /></div>
     </div>
 
     <div v-if="minions.length" class="zone engaged">
@@ -69,7 +72,6 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :key="minion.id"
           :code="minion.code"
           :name="minion.name"
-          :size="compact ? 'sm' : 'md'"
           :damage="minion.damage"
           :hit-points="minion.hitPoints"
           :stunned="minion.stunned"
@@ -89,7 +91,6 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :key="ally.id"
           :code="ally.code"
           :name="ally.name"
-          :size="compact ? 'sm' : 'md'"
           :exhausted="ally.exhausted"
           :damage="ally.damage"
           :hit-points="ally.hitPoints"
@@ -111,7 +112,6 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :key="card.id"
           :code="card.code"
           :name="card.name"
-          :size="compact ? 'xs' : 'sm'"
           :exhausted="card.exhausted"
           :counters="card.uses ?? null"
         />
@@ -119,9 +119,9 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
     </div>
 
     <div class="piles">
-      <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" size="xs" />
-      <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" size="xs" />
-      <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" size="xs" />
+      <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" />
+      <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" />
+      <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" />
     </div>
   </section>
 </template>
@@ -141,6 +141,9 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   overflow-x: auto;
 }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
+.identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); }
+/* above the hand that floats over the foot of the board */
+.asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .identity { display: flex; gap: 12px; align-items: flex-start; flex: none; }
 .identity-info { display: flex; flex-direction: column; gap: 10px; width: 152px; padding-top: 2px; }
 .who { display: flex; flex-direction: column; gap: 2px; margin: 0; }
@@ -163,7 +166,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .zone-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .cards { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 .zone.empty .cards {
-  width: calc(var(--card-width) * 0.82);
+  width: var(--card-width);
   aspect-ratio: var(--card-aspect);
   border: 1px dashed var(--line);
   border-radius: 8px;

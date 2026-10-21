@@ -44,7 +44,6 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
         :id="villain.id"
         :code="villain.code"
         :name="villain.name"
-        size="lg"
         :damage="villain.damage"
         :stunned="villain.stunned"
         :confused="villain.confused"
@@ -66,7 +65,7 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
     </div>
 
     <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
-      <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" size="lg" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" />
+      <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" />
       <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
       <p v-if="escalation(scheme) !== null" class="escalation">
         {{ t('game.perRound', { count: escalation(scheme)! + (game.accelerationTokens ?? 0) }) }}
@@ -76,13 +75,13 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
 
     <div v-if="sideSchemes.length" class="side-schemes">
       <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
-        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" size="sm" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" />
+        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" />
       </div>
     </div>
 
     <div v-if="environments.length" class="side-schemes environments">
       <div v-for="environment in environments" :key="environment.id" class="scheme side">
-        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" size="sm" :attached="environment.attachments ?? []" />
+        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" />
       </div>
     </div>
 
@@ -139,7 +138,7 @@ const upgradesAndAttachments = (v: { attachments?: { id: string; code: string; n
 .stats dd { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1.05; }
 
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
-.scheme.main :deep(.meter) { width: calc(var(--card-width) * 1.32 / var(--card-aspect)); }
+.scheme.main :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 .escalation { margin: 0; font-size: 0.7rem; color: var(--text-faint); }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 

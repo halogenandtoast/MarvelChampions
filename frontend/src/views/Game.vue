@@ -201,70 +201,78 @@ const resetGame = () => {
     <DebugDialog :open="debugging" @close="debugging = false" @send="debug" />
     <CardOverlay />
 
-    <div class="layout">
+    <div class="layout" :class="{ 'no-side': !showSidebar }">
       <main class="board">
         <Lobby v-if="data && !started && table?.withFriends" :table="table" @join="join" @leave="leave" @start="start" />
         <p v-else-if="!data" class="notice">{{ t('game.loading') }}</p>
         <p v-else-if="!game" class="notice">{{ t('game.notDealt') }}</p>
 
         <template v-if="game">
-          <VillainArea :game="game" />
+          <div class="half">
+            <VillainArea :game="game" />
 
-          <section v-if="focused.length" class="focused" :aria-label="t('game.zones.focused')">
-            <span class="zone-label">{{ t('game.zones.focused') }}</span>
-            <div class="cards">
-              <BoardCard v-for="card in focused" :id="card.id" :key="card.id" :code="card.code" :name="card.name" size="lg" :morph="false" />
+            <section v-if="focused.length" class="focused" :aria-label="t('game.zones.focused')">
+              <span class="zone-label">{{ t('game.zones.focused') }}</span>
+              <div class="cards">
+                <BoardCard v-for="card in focused" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
+              </div>
+            </section>
+          </div>
+
+          <div class="player-half">
+            <div class="half">
+              <SeatTabs
+                v-if="players.length > 1"
+                :players="players"
+                :viewing="viewed?.id ?? null"
+                :asked="asked"
+                :active="active"
+                :mine="withFriends ? mySeats : []"
+                :all="allSeats"
+                @view="(id) => ((viewing = id), (allSeats = false))"
+                @all="allSeats = !allSeats"
+              />
+              <PlayerArea
+                v-for="seat in shownSeats"
+                :key="seat.id"
+                :player="seat"
+                :minions="minionsOf(seat)"
+                :active="seat.id === active && players.length > 1"
+                :compact="allSeats && players.length > 1"
+              >
+                <template v-if="seat.id === viewed?.id">
+                  <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" />
+                  <QuestionZone
+                    :kind="question?.kind ?? null"
+                    :prompt="question?.prompt ?? null"
+                    :buttons="buttons"
+                    :on-board="boardChoices.length"
+                    :asking="answering && mySeats.length > 1 ? playerName[answering] : null"
+                    :waiting-on="waitingOn"
+                    :outcome="game.outcome"
+                    :things="things"
+                    @choose="choose"
+                  />
+                  <p v-if="error" class="error">
+                    {{ tr(error) }}
+                    <button v-if="!spectate" type="button" class="file-bug-link" @click="filingBug = true">{{ t('game.bar.fileBug') }}</button>
+                  </p>
+                </template>
+              </PlayerArea>
             </div>
-          </section>
-
-          <SeatTabs
-            v-if="players.length > 1"
-            :players="players"
-            :viewing="viewed?.id ?? null"
-            :asked="asked"
-            :active="active"
-            :mine="withFriends ? mySeats : []"
-            :all="allSeats"
-            @view="(id) => ((viewing = id), (allSeats = false))"
-            @all="allSeats = !allSeats"
-          />
-          <PlayerArea
-            v-for="seat in shownSeats"
-            :key="seat.id"
-            :player="seat"
-            :minions="minionsOf(seat)"
-            :active="seat.id === active && players.length > 1"
-            :compact="allSeats && players.length > 1"
-          />
-          <HandFan
-            v-if="viewed"
-            :cards="viewed.hand"
-            :count="viewed.handCount"
-            :label="players.length > 1 ? t('game.handOf', { name: viewed.name }) : t('game.hand')"
-          />
+            <HandFan
+              v-if="viewed"
+              class="floating-hand"
+              :cards="viewed.hand"
+              :count="viewed.handCount"
+              :label="players.length > 1 ? t('game.handOf', { name: viewed.name }) : t('game.hand')"
+            />
+          </div>
         </template>
       </main>
 
-      <aside class="side">
-        <PayingTray v-if="game?.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" />
-        <QuestionZone
-          v-if="game"
-          :kind="question?.kind ?? null"
-          :prompt="question?.prompt ?? null"
-          :buttons="buttons"
-          :on-board="boardChoices.length"
-          :asking="answering && mySeats.length > 1 ? playerName[answering] : null"
-          :waiting-on="waitingOn"
-          :outcome="game.outcome"
-          :things="things"
-          @choose="choose"
-        />
-        <p v-if="error" class="error">
-          {{ tr(error) }}
-          <button v-if="!spectate" type="button" class="file-bug-link" @click="filingBug = true">{{ t('game.bar.fileBug') }}</button>
-        </p>
+      <aside v-if="showSidebar" class="side">
         <GameLog
-          v-if="showSidebar"
           :entries="log"
           :can-undo="!spectate && canUndo"
           :can-chat="!spectate"
@@ -289,6 +297,7 @@ const resetGame = () => {
   min-height: 0;
   padding: 12px;
 }
+.layout.no-side { grid-template-columns: minmax(0, 1fr); }
 .board {
   display: flex;
   flex-direction: column;
@@ -299,6 +308,14 @@ const resetGame = () => {
   padding-right: 2px;
 }
 .board > * { flex: none; }
+/* the villain's side fills the top half of the board, the players' the bottom */
+.board > .half, .player-half > .half { flex: 1 1 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden auto; }
+.half > * { flex: none; }
+.half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
+/* the hand floats over the foot of the player area */
+.board > .player-half { flex: 1 1 0; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.floating-hand { position: absolute; z-index: 0; inset: auto 0 0; pointer-events: none; }
+.floating-hand :deep(.in-hand) { pointer-events: auto; }
 .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .notice { margin: auto; color: var(--text-muted); }
 .error { margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgb(214 80 88 / 0.5); background: rgb(214 80 88 / 0.08); color: #f0a4a9; font-size: 0.8rem; overflow-wrap: anywhere; }
