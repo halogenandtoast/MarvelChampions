@@ -33,8 +33,8 @@ instance RunMessage AffairsOfState where
         pushAll $
           [ Ask identityId $
             ChooseOne
-              [ Label "Do not flip to alter-ego" []
-              , Label "Flip to alter-ego" [ChangeForm]
+              [ Label "$label.doNotFlipToAlterEgo" []
+              , Label "$label.changeToB" [ChangeForm]
               ]
           | isHero
           ]
@@ -53,7 +53,7 @@ instance RunMessage AffairsOfState where
               <> UpgradeControlledBy (IdentityWithId identityId)
         chooseOrRunOne identityId $
           [ Label
-            "Exhaust T'Challa -> remove Affairs of State from the game."
+            "$label.exhaustTChallaRemoveAffairsOfState"
             [ Run
                 [ IdentityMessage identityId ExhaustedIdentity
                 , RemoveFromGame (toTarget attrs)
@@ -62,7 +62,7 @@ instance RunMessage AffairsOfState where
           | isUnexhaustedAlterEgo
           ]
             <> [ Label
-                  "Choose and discard a Black Panther upgrade you control. Discard this obligation"
+                  "$label.discardBlackPantherUpgradeDiscardObligation"
                   [ Run
                       [ Ask identityId $
                           ChooseOne
