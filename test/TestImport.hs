@@ -8,6 +8,7 @@ import Data.IORef as X
 import Marvel.Decklist as X
 import Marvel.Difficulty as X
 import Marvel.Game as X
+import Marvel.Game.Run as X
 import Marvel.Id as X
 import Marvel.Identity as X (setName)
 import Marvel.Message as X
@@ -18,6 +19,8 @@ import Marvel.Scenario as X
 import Marvel.Scenario.Types as X (ScenarioSetup (..))
 import Control.Monad.Random (evalRand)
 import Marvel.Debug as X
+import Marvel.Frontend as X
+import Marvel.Log as X (LogEntry, entryText)
 import System.Random (mkStdGen)
 import Test.Hspec as X
 
@@ -25,14 +28,23 @@ import Test.Hspec as X
 -- question, with the messages it runs kept, the latest first.
 dealtGame :: ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text])
 dealtGame setup decks seed = do
+  (app, ran, _) <- dealtGameLogged setup decks seed
+  pure (app, ran)
+
+-- | The same, keeping the log entries it writes too, oldest first.
+dealtGameLogged :: ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text], IORef [LogEntry])
+dealtGameLogged setup decks seed = do
   scenario <- maybe (error "no such scenario") pure $ lookupScenario setup
   players <- either (error . show) pure . sequence $ evalRand (traverse loadPlayer decks) (mkStdGen seed)
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
   ran <- newIORef []
-  app <- newGameApp (newTable scenario seated) [StartGame] (mkStdGen seed) (const $ pure ())
+  logged <- newIORef []
+  app <- newGameApp (newTable scenario seated) [StartGame] (mkStdGen seed) \case
+    Logged e -> modifyIORef' logged (<> [e])
+    _ -> pure ()
   let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 60 . (tshow m :))}
-  runGameApp app' runGameMessages
-  pure (app', ran)
+  runGameApp app' runGame
+  pure (app', ran, logged)
  where
   nonEmpty' = \case
     [] -> Nothing

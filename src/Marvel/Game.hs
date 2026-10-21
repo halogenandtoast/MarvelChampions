@@ -984,7 +984,6 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameAttachments g)
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
 
--- | Run messages until the queue empties or someone has to answer a question.
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on
 -- encounter cards are anyone's.
 abilityController :: Game -> Ability -> Maybe IdentityId
@@ -999,8 +998,15 @@ abilityController g a = case abilitySource a of
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getAbilitiesFor ident = getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
 
+-- | Run messages until the queue empties or someone has to answer a question, saying
+-- nothing: for games played out of sight, such as a look ahead.
 runGameMessages :: (MonadGame env m) => m ()
-runGameMessages = go (0 :: Int)
+runGameMessages = runGameMessagesWith (const $ pure ())
+
+-- | Run messages until the queue empties or someone has to answer a question, telling
+-- the function given about each message before it runs: that is where the log is told.
+runGameMessagesWith :: (MonadGame env m) => (Message -> m ()) -> m ()
+runGameMessagesWith before = go (0 :: Int)
  where
   go n = do
     g <- getGame
@@ -1016,6 +1022,7 @@ runGameMessages = go (0 :: Int)
               withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
             Just other -> do
               debug other
+              before other
               withGameM $ runMessage other
               go (n + 1)
   isFinished g = case gameState g of
@@ -1027,8 +1034,8 @@ messageLimit = 10000
 
 -- | Answer the question a player was asked with the choice at the index given, and play
 -- on to the next question.
-answerQuestion :: IdentityId -> Int -> GameAppT ()
-answerQuestion ident n = do
+answerQuestionWith :: (Message -> GameAppT ()) -> IdentityId -> Int -> GameAppT ()
+answerQuestionWith before ident n = do
   g <- getGame
   question <- maybe (throwM NoQuestion) pure $ lookup ident (gameQuestion g)
   withGame_ $ questionL .~ mempty
@@ -1055,16 +1062,16 @@ answerQuestion ident n = do
           [lastOne] -> [SetPlayerOrder (sorted' <> [lastOne])]
           rest -> [Ask ident (ChoosePlayerOrder (Unsorted rest) (Sorted sorted'))]
   pushAll msgs
-  runGameMessages
+  runGameMessagesWith before
 
 -- | Run a debug message now, even while a question waits: it and whatever it leads to go
 -- first, then the waiting question is asked again and play carries on from there.
-runDebug :: Message -> GameAppT ()
-runDebug msg = do
+runDebugWith :: (Message -> GameAppT ()) -> Message -> GameAppT ()
+runDebugWith before msg = do
   asked <- getsGame gameQuestion
   withGame_ $ questionL .~ mempty
   pushAll $ msg : [Ask ident q | (ident, q) <- HashMap.toList asked]
-  runGameMessages
+  runGameMessagesWith before
 
 -- TODO: implement this for api
 replayChoices :: (MonadGame env m) => [Diff.Patch] -> m ()

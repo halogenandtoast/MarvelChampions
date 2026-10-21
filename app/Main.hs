@@ -31,6 +31,7 @@ import Marvel.Entity (toAttrs)
 import Marvel.Frontend (FrontendMessage (..))
 import Marvel.Game
 import Marvel.Game.Public (publicGameFor)
+import Marvel.Game.Run (answerQuestion, runDebug, runGame)
 import Marvel.I18n (ikey, ikeyWith, textVar)
 import Marvel.Id (IdentityId)
 import Marvel.Identity (identityDamage, setName)
@@ -505,7 +506,7 @@ startGame setup players seed = case lookupScenario setup of
     Left missing -> pure $ Left $ ikeyWith "error.unknownCards" [textVar "cards" (intercalate ", " (map unCardCode missing))]
     Right seated -> do
       (app, said) <- appFor (newTable scenario seated) [StartGame] (mkStdGen $ seed + 1)
-      runGameApp app runGameMessages
+      runGameApp app runGame
       Right <$> ((,) <$> currentState app <*> (reverse <$> readIORef said))
 
 postGamesR :: Handler Value
