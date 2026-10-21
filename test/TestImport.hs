@@ -3,7 +3,13 @@ module TestImport (
   module TestImport,
 ) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
+import Data.Text qualified as T
+import Data.Vector qualified as Vector
+import Marvel.MainScheme.Types (getMainSchemeThreat)
+import Marvel.Scenario.Types (scenarioDiscard)
+import Marvel.Card.Id (CardId (..))
 import Data.IORef as X
 import Marvel.Decklist as X
 import Marvel.Difficulty as X
@@ -313,3 +319,106 @@ players = getsGame gamePlayerOrder
 -- | The first seat's player.
 player1 :: TestGame -> IdentityId
 player1 tg = fromMaybe (error "no players") (headMay tg.seats)
+
+-- * More card test helpers
+
+-- | Run these messages now, ahead of the question that was waiting, without answering
+-- anything: the test answers what they ask, and the waiting question comes back after.
+runNow :: [Message] -> GameAppT ()
+runNow msgs = do
+  waiting <- openQuestion
+  withGame_ $ questionL .~ mempty
+  pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+  runGame
+
+-- | Set the damage on a player's identity.
+setDamage :: IdentityId -> Natural -> GameAppT ()
+setDamage ident n = withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
+  PlayerIdentity a {playerIdentityDamage = n}
+
+playerAttrs :: IdentityId -> GameAppT (Attrs PlayerIdentity)
+playerAttrs ident = toAttrs <$> getPlayer ident
+
+-- | Put encounter cards on top of the encounter deck, first given on top.
+stackEncounterDeck :: [CardDef] -> GameAppT [EncounterCard]
+stackEncounterDeck defs = do
+  cards <- traverse encounterCard defs
+  withGame_ \g ->
+    let scenario = case toJSON (gameScenario g) of
+          Object o -> Object $ maybe o (\d -> KeyMap.insert "scenarioEncounterDeck" (onDeck cards d) o) (KeyMap.lookup "scenarioEncounterDeck" o)
+          v -> v
+     in case fromJSON scenario of
+          Success s -> g {gameScenario = s}
+          Error e -> error e
+  pure cards
+ where
+  onDeck cards = \case
+    Array xs -> Array (Vector.fromList (map toJSON cards) <> xs)
+    v -> v
+
+mainSchemeThreat :: GameAppT Natural
+mainSchemeThreat = getsGame (sum . map getMainSchemeThreat . HashMap.elems . gameMainSchemes)
+
+villainIdNow :: GameAppT VillainId
+villainIdNow = toId <$> getVillain
+
+-- | Whether the choice is the "no response" choice of a response window.
+isNoResponse :: Choice -> Bool
+isNoResponse = isLabel "$label.noResponse"
+
+-- | Whether the choice is declaring no defender.
+isNoDefender :: Choice -> Bool
+isNoDefender = isLabel "$label.noDefender"
+
+-- | The choices asked now, for a test to see when it fails.
+showAsked :: GameAppT ()
+showAsked = asked >>= liftIO . print . fmap (second (map (take 160 . show)))
+
+-- | Whether the choice uses an ability of the ally, support or upgrade played from this
+-- card.
+isAbilityOfCard :: PlayerCard -> Choice -> Bool
+isAbilityOfCard c = \case
+  UseAbility ab -> abilitySource ab `elem` [AllyRef (AllyId u), SupportRef (SupportId u), UpgradeRef (UpgradeId u)]
+  _ -> False
+ where
+  u = unCardId (pcCardId c)
+
+-- | Whether the choice uses any forced or optional ability.
+isAnyAbility :: Choice -> Bool
+isAnyAbility = \case
+  UseAbility _ -> True
+  _ -> False
+
+encounterDiscard :: GameAppT [EncounterCard]
+encounterDiscard = getsGame (scenarioDiscard . toAttrs . gameScenario)
+
+-- | Reveal an encounter card for the player now, answering nothing.
+revealNow :: IdentityId -> CardDef -> GameAppT EncounterCard
+revealNow ident def = do
+  card <- encounterCard def
+  runNow [RevealEncounterCard ident card]
+  pure card
+
+upgradeOf :: PlayerCard -> UpgradeId
+upgradeOf = UpgradeId . unCardId . pcCardId
+
+minionOf :: EncounterCard -> MinionId
+minionOf = MinionId . unCardId . ecCardId
+
+sideSchemeOf :: EncounterCard -> SideSchemeId
+sideSchemeOf = SideSchemeId . unCardId . ecCardId
+
+-- | Whether the player's identity is stunned, confused, exhausted.
+isStunned, isConfused, isExhaustedNow :: IdentityId -> GameAppT Bool
+isStunned ident = (.playerIdentityStunned) <$> playerAttrs ident
+isConfused ident = (.playerIdentityConfused) <$> playerAttrs ident
+isExhaustedNow ident = (.playerIdentityExhausted) <$> playerAttrs ident
+
+upgradeCodes :: GameAppT [CardCode]
+upgradeCodes = getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameUpgrades)
+
+-- | Whether the choice is a label starting with this text.
+isLabelStarting :: Text -> Choice -> Bool
+isLabelStarting l = \case
+  Label l' _ -> l `T.isPrefixOf` l'
+  _ -> False
