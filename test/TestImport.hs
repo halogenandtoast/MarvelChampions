@@ -410,3 +410,18 @@ runNow msgs = do
   withGame_ $ questionL .~ mempty
   pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
   runGameMessages
+
+-- | Put a new copy of a card into a player's discard pile.
+putInDiscard :: IdentityId -> CardCode -> GameAppT PlayerCard
+putInDiscard ident code = do
+  cardId <- getRandom
+  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
+    PlayerIdentity a {playerIdentityDiscard = Discard (card : unDiscard a.playerIdentityDiscard)}
+  pure card
+
+-- | The second seat's player.
+player2 :: TestGame -> IdentityId
+player2 tg = case tg.seats of
+  (_ : p : _) -> p
+  _ -> error "no second player"
