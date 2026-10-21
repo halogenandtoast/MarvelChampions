@@ -186,7 +186,9 @@ choiceMessages ident = \case
         MainSchemeMessage msid (MainSchemePlaceThreat n)
       toMsg (SchemeSideSchemeId ssid) =
         SideSchemeMessage ssid (SideSchemePlaceThreat n)
-    pure $ map toMsg schemes
+      -- the threat can be answered before it is placed
+      would s = [CheckWindows [Window Would $ W.ThreatPlaced W.ThreatFromAbility s n] | n > 0]
+    pure $ concatMap (\s -> would s <> [toMsg s]) schemes
   ChooseHeal n characterMatcher -> do
     characters <- selectList characterMatcher
     let f character = Heal character n
