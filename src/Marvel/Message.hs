@@ -59,6 +59,14 @@ placeThreatOn scheme n =
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
 
+-- | The character's own ref, as status cards are given by.
+characterRef :: CharacterId -> Target
+characterRef = \case
+  IdentityCharacter i -> IdentityRef i
+  AllyCharacter a -> AllyRef a
+  VillainCharacter v -> VillainRef v
+  MinionCharacter m -> MinionRef m
+
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
 cardSpecific a key v = CardSpecific (toTarget a) key (toJSON v)
@@ -193,5 +201,9 @@ data Message
     -- card it does not have, or has one taken off it
     GiveStatus Target StatusCard
   | RemoveStatus Target StatusCard
+  | -- | the card targeted looks at the top card of the encounter deck, told it as
+    -- @LookedAt@ (none if the deck is empty)
+    LookAtTopOfEncounterDeck Target
+  | LookedAt Target [Card]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

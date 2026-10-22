@@ -285,6 +285,9 @@ instance RunMessage (Attrs Scenario) where
           <> [EmptyScenarioDeck | null deck']
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
+    LookAtTopOfEncounterDeck target -> do
+      push $ LookedAt target (EncounterCard <$> take 1 scenarioEncounterDeck)
+      pure attrs
     DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :)
     DiscardUntil FromEncounterDeck cardMatcher target -> do
       let
