@@ -10,6 +10,7 @@ module Marvel.Message.Lifted (
 
 import Marvel.Prelude
 
+import Marvel.Attack (Attack (..))
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
@@ -217,6 +218,129 @@ cardSpecific a key = push . Msg.cardSpecific a key
 checkWindows :: (ReverseQueue m) => [Window] -> m ()
 checkWindows = push . CheckWindows
 
+-- * Encounter cards
+
+-- | Damage to the character as a card deals it: to a hero or alter-ego through
+-- 'damageIdentity'.
+damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
+damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
+
+-- | Threat placed on each scheme matching, by the card.
+placeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
+placeThreat you source n = Choice.pushChoice you . PlaceThreat (toSource source) n
+
+-- | Threat a card places on the scheme ('placeThreatOn').
+placeThreatOnScheme :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
+placeThreatOnScheme scheme = pushAll . placeThreatOn (toScheme scheme)
+
+-- | The threat put on the scheme, past the window for placing it ('threatPlacement').
+threatPlaced :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
+threatPlaced scheme = push . threatPlacement (toScheme scheme)
+
+stunIdentity :: (ReverseQueue m) => IdentityId -> m ()
+stunIdentity ident = push $ IdentityMessage ident IdentityStunned
+
+confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
+confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
+
+stunAlly :: (ReverseQueue m) => AllyId -> m ()
+stunAlly ally = push $ AllyMessage ally AllyStunned
+
+exhaustAlly :: (ReverseQueue m) => AllyId -> m ()
+exhaustAlly ally = push $ AllyMessage ally Msg.ExhaustedAlly
+
+-- | The villain or minion is given a tough status card.
+enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+enemyBecomesTough enemy = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
+  EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
+
+-- | All of the minion's damage is healed.
+healAllDamage :: (ReverseQueue m) => MinionId -> m ()
+healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
+
+removeFromPlay :: (ReverseQueue m, IsRef a) => a -> m ()
+removeFromPlay = push . RemoveFromPlay . toTarget
+
+surge :: (ReverseQueue m) => IdentityId -> m ()
+surge = push . Surge
+
+dealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
+dealEncounterCard = push . DealEncounterCard
+
+-- | Cards discarded from the player's hand at random.
+discardAtRandom :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+discardAtRandom ident n = push $ IdentityMessage ident $ DiscardFrom RandomFromHand n Nothing
+
+-- | The top cards of the encounter deck are discarded, the target told which
+-- ('WithDiscarded').
+discardTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
+discardTopOfEncounterDeck n = push . DiscardTopOfEncounterDeck n . Just . toTarget
+
+putTopOfDeckIntoPlayAsDrone :: (ReverseQueue m) => IdentityId -> m ()
+putTopOfDeckIntoPlayAsDrone = push . PutTopOfDeckIntoPlayAsDrone
+
+-- | The boost card stays in play, under the player.
+putBoostIntoPlay :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
+putBoostIntoPlay card = push . PutBoostIntoPlay (toTarget card)
+
+-- | More boost icons for the villain's activation.
+addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
+addBoost vid = push . VillainMessage vid . VillainAddBoost
+
+villainAttackGainsOverkill :: (ReverseQueue m) => VillainId -> m ()
+villainAttackGainsOverkill vid = push $ VillainMessage vid VillainAttackGainOverkill
+
+-- | The attachment is attached to the enemy ('AttachedToEnemy').
+attachTo :: (ReverseQueue m, IsEnemy enemy) => AttachmentId -> enemy -> m ()
+attachTo attachment = push . AttachmentMessage attachment . AttachedToEnemy . toEnemy
+
+-- | The enemy is told the attachment is attached to it.
+attachedTo :: (ReverseQueue m, IsEnemy enemy) => enemy -> AttachmentId -> m ()
+attachedTo enemy attachment = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (AttachedToVillain attachment)
+  EnemyMinionId mid -> MinionMessage mid (AttachedToMinion attachment)
+
+attachToEnvironment :: (ReverseQueue m) => EnvironmentId -> AttachmentId -> m ()
+attachToEnvironment environment = push . EnvironmentMessage environment . AttachedToEnvironment
+
+damageAttachment :: (ReverseQueue m) => AttachmentId -> Natural -> m ()
+damageAttachment attachment = push . AttachmentMessage attachment . AttachmentDamaged
+
+-- * Minions
+
+defeatMinion :: (ReverseQueue m) => MinionId -> m ()
+defeatMinion mid = push $ MinionMessage mid MinionDefeated
+
+-- | The player is no longer engaged with the minion.
+minionDisengages :: (ReverseQueue m) => IdentityId -> MinionId -> m ()
+minionDisengages ident = push . IdentityMessage ident . MinionDisengaged
+
+-- | The minion's attack against the player, past its would window.
+minionBeginsAttack :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
+minionBeginsAttack mid = push . MinionMessage mid . MinionBeginAttack
+
+minionAttacked :: (ReverseQueue m) => MinionId -> m ()
+minionAttacked mid = push $ MinionMessage mid MinionAttacked
+
+minionEndsAttack :: (ReverseQueue m) => MinionId -> m ()
+minionEndsAttack mid = push $ MinionMessage mid MinionEndAttack
+
+-- | The minion's scheme, it not confused: threat on the main scheme.
+minionSchemed :: (ReverseQueue m) => MinionId -> m ()
+minionSchemed mid = push $ MinionMessage mid MinionSchemed
+
+-- | The player declares who defends the enemy's attack.
+declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
+declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
+
+-- | The character the attack is against is attacked.
+characterAttacked :: (ReverseQueue m) => Attack -> m ()
+characterAttacked atk = case attackCharacter atk of
+  IdentityCharacter ident -> push $ IdentityMessage ident $ IdentityWasAttacked atk
+  AllyCharacter ally -> push $ AllyMessage ally $ AllyWasAttacked atk
+  _ -> error "Invalid damage target"
+
 -- * Interrupts: what is on the queue changed
 
 -- | All of the damage the identity is about to take is cancelled.
@@ -236,3 +360,9 @@ insteadOf :: (ReverseQueue m) => (Message -> Bool) -> m () -> m ()
 insteadOf matcher body = do
   msgs <- capture body
   replaceMatchingMessage (const msgs) matcher
+
+-- | What the body does follows the first message queued matching.
+afterMatching :: (ReverseQueue m) => (Message -> Bool) -> m () -> m ()
+afterMatching matcher body = do
+  msgs <- capture body
+  replaceMatchingMessage (: msgs) matcher
