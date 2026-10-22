@@ -1,7 +1,8 @@
 module Marvel.Hero.DoctorStrangeSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.List (elemIndex, sortOn)
+import Control.Monad (replicateM)
+import Data.List (elemIndex, nub, sortOn)
 import Data.Typeable (cast)
 import Marvel.Hero.Heroes.DoctorStrange (DoctorStrange (..), InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Types (Hero (..))
@@ -75,6 +76,45 @@ spec = describe "Doctor Strange" do
         d' <- invocationOf p
         length d'.invocationDeck `shouldBe` 5
         d'.invocationDiscard `shouldBe` []
+
+    it "is shuffled as the game begins" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        orders <- replicateM 10 do
+          resolve [invocation p SetUpInvocationDeck]
+          map toCardCode . (.invocationDeck) <$> invocationOf p
+        length (nub orders) `shouldSatisfy` (> 1)
+
+    it "emptied by Spell Mastery, is made again with all five, the card resolved too" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        stackInvocation p ["09032", "09033", "09034", "09035", "09036"]
+        resolve $ replicate 4 (invocation p DiscardTopInvocation)
+        topInvocation p `shouldReturn` "09036"
+        choose "Spell Mastery" spellMastery
+        length <$> handOf p `shouldReturn` 3
+        d <- invocationOf p
+        length d.invocationDeck `shouldBe` 5
+        d.invocationDiscard `shouldBe` []
+
+    it "Master of the Mystic Arts keeps the last card on top, the deck not made again" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        stackInvocation p ["09032", "09033", "09034", "09035", "09036"]
+        resolve $ replicate 4 (invocation p DiscardTopInvocation)
+        master <- putInHand p "09005"
+        playPaying p master ["01089"]
+        length <$> handOf p `shouldReturn` 3
+        d <- invocationOf p
+        map toCardCode d.invocationDeck `shouldBe` ["09036"]
+        length d.invocationDiscard `shouldBe` 4
 
   it "Natural Talent discards the top card of the Invocation deck, once a turn, as Stephen Strange" do
     tg <- doctorStrange

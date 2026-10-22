@@ -32,7 +32,7 @@ import System.Random.Shuffle (shuffleM)
 doctorStrange :: HeroCard DoctorStrange
 doctorStrange =
   hero
-    (DoctorStrange . (`With` InvocationDeck [] []))
+    (DoctorStrange . (`With` InvocationDeck [] [] Nothing))
     Cards.doctorStrange
     (HP $ Static 10)
     (HandSize 5)
@@ -41,10 +41,13 @@ doctorStrange =
     (Def 2)
 
 -- | The Invocation deck, its top card first, and its discard pile, newest first. Doctor
--- Strange keeps it for his identity whichever face is up.
+-- Strange keeps it for his identity whichever face is up. A card resolves from the top
+-- and leaves it only once its "Special" is done, so the deck emptied by it is made again
+-- with all five; Master of the Mystic Arts' card, kept, never leaves.
 data InvocationDeck = InvocationDeck
   { invocationDeck :: [PlayerCard]
   , invocationDiscard :: [PlayerCard]
+  , invocationKeptOnTop :: Maybe PlayerCard
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -102,22 +105,24 @@ instance RunMessage DoctorStrange where
             cards <- for invocationCards \def -> do
               cardId <- getRandom
               pure $ MkPlayerCard cardId def (Just ident) (Just ident)
-            settled $ InvocationDeck cards []
+            shuffled <- shuffleM cards
+            settled $ InvocationDeck shuffled [] Nothing
           DiscardTopInvocation -> case invocationDeck deck of
             [] -> settled deck
-            top : rest -> settled $ InvocationDeck rest (top : invocationDiscard deck)
-          ResolveTopInvocation backOnTop -> case invocationDeck deck of
+            top : rest -> settled deck {invocationDeck = rest, invocationDiscard = top : invocationDiscard deck}
+          ResolveTopInvocation keep -> case invocationDeck deck of
             [] -> settled deck
-            top : rest -> do
-              pushAll $
-                ResolveEventWithoutPlaying ident top
-                  : [invocation ident (ReturnToTopOfInvocationDeck top) | backOnTop]
-              settled deck {invocationDeck = rest}
-          PlaceInInvocationDiscard card ->
-            settled deck {invocationDiscard = card : invocationDiscard deck}
-          ReturnToTopOfInvocationDeck card ->
-            settled $
-              InvocationDeck (card : invocationDeck deck) (filter (/= card) $ invocationDiscard deck)
+            top : _ -> do
+              push $ ResolveEventWithoutPlaying ident top
+              settled deck {invocationKeptOnTop = if keep then Just top else Nothing}
+          PlaceInInvocationDiscard card
+            | invocationKeptOnTop deck == Just card -> settled deck {invocationKeptOnTop = Nothing}
+            | otherwise ->
+                settled
+                  deck
+                    { invocationDeck = filter (/= card) (invocationDeck deck)
+                    , invocationDiscard = card : invocationDiscard deck
+                    }
           PlaceTopInvocationUnder target -> case invocationDeck deck of
             [] -> settled deck
             top : rest -> do
@@ -130,9 +135,9 @@ instance RunMessage DoctorStrange where
    where
     -- an empty Invocation deck is made again from its discard pile at once
     settled d = case d of
-      InvocationDeck [] discard@(_ : _) -> do
+      InvocationDeck [] discard@(_ : _) kept -> do
         cards <- shuffleM discard
-        pure $ DoctorStrange (a `With` InvocationDeck cards [])
+        pure $ DoctorStrange (a `With` InvocationDeck cards [] kept)
       _ -> pure $ DoctorStrange (a `With` d)
 
 invocationCards :: [CardDef]
