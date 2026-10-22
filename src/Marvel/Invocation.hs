@@ -1,7 +1,8 @@
 -- | Doctor Strange's Invocation deck (see the Doctor Strange insert): the five
 -- Invocation cards, set aside beside his player deck and never part of it. Its top card
--- is always faceup; resolved Invocation cards go to a discard pile of its own, and once
--- the deck is empty that pile is shuffled to make it again.
+-- is always faceup; it is shuffled as the game begins, resolved Invocation cards go to a
+-- discard pile of its own, and once the deck is empty that pile is shuffled to make it
+-- again.
 --
 -- Doctor Strange keeps the deck; everything else asks him for a step with 'invocation'.
 module Marvel.Invocation (
@@ -22,14 +23,13 @@ import Marvel.Ref
 data InvocationStep
   = SetUpInvocationDeck
   | DiscardTopInvocation
-  | -- | resolve the top card's "Special", and put it back on top after if so
+  | -- | resolve the top card's "Special", keeping it on top after if so
     ResolveTopInvocation Bool
   | PlaceInInvocationDiscard PlayerCard
   | -- | the top card facedown under the card targeted, which is told it as
     -- @CardSpecific target "invocationUnder" card@
     PlaceTopInvocationUnder Target
   | ShuffleIntoInvocationDeck PlayerCard
-  | ReturnToTopOfInvocationDeck PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

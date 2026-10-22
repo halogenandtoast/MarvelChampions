@@ -69,7 +69,8 @@ instance RunMessage MagicBlast where
           printedResourceEffects
             (concatMap (printedResources . getCardDef) cards)
             (Stun target (toSource attrs))
-            (DamageEnemy target (toSource attrs) (toDamage 2 FromAbility))
+            -- damage of the same attack (RR "Attack (Player Ability Type)")
+            (DamageEnemy target (toSource attrs) (toDamage 2 $ FromPlayerAttack ident))
             (Confuse target (toSource attrs))
       pushAll effects
       pure e

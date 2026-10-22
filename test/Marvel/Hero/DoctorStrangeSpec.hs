@@ -1,11 +1,15 @@
 module Marvel.Hero.DoctorStrangeSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.List (elemIndex, sortOn)
+import Control.Monad (replicateM)
+import Data.List (elemIndex, nub, sortOn)
 import Data.Typeable (cast)
 import Marvel.Hero.Heroes.DoctorStrange (DoctorStrange (..), InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Types (Hero (..))
 import Marvel.Invocation
+import Marvel.Matchers (IdentityMatcher (IdentityWithTrait), identityMatches)
+import Marvel.Trait (Trait (Aerial))
+import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -76,6 +80,45 @@ spec = describe "Doctor Strange" do
         length d'.invocationDeck `shouldBe` 5
         d'.invocationDiscard `shouldBe` []
 
+    it "is shuffled as the game begins" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        orders <- replicateM 10 do
+          resolve [invocation p SetUpInvocationDeck]
+          map toCardCode . (.invocationDeck) <$> invocationOf p
+        length (nub orders) `shouldSatisfy` (> 1)
+
+    it "emptied by Spell Mastery, is made again with all five, the card resolved too" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        stackInvocation p ["09032", "09033", "09034", "09035", "09036"]
+        resolve $ replicate 4 (invocation p DiscardTopInvocation)
+        topInvocation p `shouldReturn` "09036"
+        choose "Spell Mastery" spellMastery
+        length <$> handOf p `shouldReturn` 3
+        d <- invocationOf p
+        length d.invocationDeck `shouldBe` 5
+        d.invocationDiscard `shouldBe` []
+
+    it "Master of the Mystic Arts keeps the last card on top, the deck not made again" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        stackInvocation p ["09032", "09033", "09034", "09035", "09036"]
+        resolve $ replicate 4 (invocation p DiscardTopInvocation)
+        master <- putInHand p "09005"
+        playPaying p master ["01089"]
+        length <$> handOf p `shouldReturn` 3
+        d <- invocationOf p
+        map toCardCode d.invocationDeck `shouldBe` ["09036"]
+        length d.invocationDiscard `shouldBe` 4
+
   it "Natural Talent discards the top card of the Invocation deck, once a turn, as Stephen Strange" do
     tg <- doctorStrange
     let p = player1 tg
@@ -115,6 +158,19 @@ spec = describe "Doctor Strange" do
     inGame tg do
       stackInvocation p ["09036"]
       offers spellMastery `shouldReturn` False
+
+  it "Counterspell does not cancel an Invocation card's Special, which is resolved, not played" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      _ <- revealNow p Attachments.counterspell
+      resolve []
+      stackInvocation p ["09036"]
+      choose "Spell Mastery" spellMastery
+      length <$> handOf p `shouldReturn` 3
+      getsGame (HashMap.size . gameAttachments) `shouldReturn` 1
 
   it "Winds of Watoomb costs nothing and draws 3 cards" do
     tg <- doctorStrange
@@ -245,6 +301,24 @@ spec = describe "Doctor Strange" do
       v <- toAttrs <$> getVillain
       (v.villainStunned, v.villainConfused) `shouldBe` (True, True)
 
+  it "Magic Blast's 2 more damage is the same attack: a retaliating enemy retaliates once" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      -- Whiplash has 4 HP and retaliate 1; his tough card takes the 5
+      whiplash <- addMinion p Minions.whiplash
+      resolve [GiveStatus (MinionRef whiplash) ToughStatus]
+      -- Energy is energy: 2 more damage
+      _ <- stackDeck p ["09022"]
+      blast <- putInHand p "09004"
+      playPaying p blast ["01088", "01089"]
+      choose "Whiplash" (isTargetChoice (EnemyMinionId whiplash))
+      resolve []
+      minionDamageOf whiplash `shouldReturn` Just 2
+      damageOf p `shouldReturn` 1
+
   it "Astral Projection removes 3 threat and 1 more for each boost icon on the top encounter card" do
     tg <- doctorStrange
     let p = player1 tg
@@ -307,7 +381,9 @@ spec = describe "Doctor Strange" do
     inGame tg do
       clearHand p
       changeForm p
+      identityMatches (IdentityWithTrait Aerial) p `shouldReturn` False
       cloak <- putIntoPlay p "09009"
+      identityMatches (IdentityWithTrait Aerial) p `shouldReturn` True
       resolve [IdentityMessage p ExhaustedIdentity]
       choose "the cloak" (isAbilityOfCard cloak)
       isExhaustedNow p `shouldReturn` False
