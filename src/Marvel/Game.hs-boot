@@ -3,6 +3,7 @@ module Marvel.Game where
 import Marvel.Prelude
 
 import Control.Monad.IO.Class
+import Control.Monad.Reader (ReaderT)
 import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
@@ -46,8 +47,13 @@ class
 
 data Game
 
+instance (Monad m) => HasGame (ReaderT Game m)
+instance (HasQueue m) => HasQueue (ReaderT Game m)
+
 getPlayers :: (HasGame m) => m [IdentityId]
 getActivePlayerId :: (HasGame m) => m IdentityId
+getYou :: (HasGame m) => m IdentityId
+asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
@@ -119,9 +125,7 @@ getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
   , HasQueue m
-  , HasCallStack
   , HasGame m
-  , Projection m PlayerIdentity
   ) =>
   IdentityId ->
   Maybe PlayerCard ->

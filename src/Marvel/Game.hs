@@ -160,6 +160,10 @@ data Game = Game
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
+  , gameYou :: Maybe IdentityId
+  -- ^ who "you" is while a player's card, choice or window is looked at: its
+  -- controller, or the player choosing or being offered it (see 'asYou'); otherwise
+  -- the active player
   , gameActiveCost :: [ActiveCost]
   , gameWindowDepth :: Int
   , gameDepth :: Int
@@ -325,6 +329,15 @@ getUniqueTitlesInPlay = getsGame \g ->
       <> unique (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
       <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
       <> concatMap identity (HashMap.elems $ gamePlayers g)
+
+-- | Who "you" is: the player 'asYou' names, or else the active player.
+getYou :: (HasGame m) => m IdentityId
+getYou = getsGame \g -> fromMaybe (gameActivePlayer g) (gameYou g)
+
+-- | Look at the game as the player given: "you" on a player card is its controller, or
+-- the player who would play or trigger it (RR "You").
+asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
+asYou ident body = getGame >>= runReaderT body . (youL ?~ ident)
 
 -- | The player the villain's activation under way is against: who resolves its boost
 -- cards, the "you" of their boost abilities.
@@ -898,8 +911,9 @@ runGameMessage msg g@Game {..} = case msg of
             _ -> False
           _ -> pure True
     openWindows <- filterM open windows
+    -- "you" on what is offered is the player it is offered to
     playableCards <-
-      concatMapM
+      asYou ident $ concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         openWindows
     let
@@ -909,7 +923,7 @@ runGameMessage msg g@Game {..} = case msg of
       withinLimit a =
         passesUseLimit ident (maybe usedByAnyone (const usedAbilities) (abilityController g a)) a
     validAbilities <-
-      filterM
+      asYou ident $ filterM
         ( andM
             . sequence
               [ pure . withinLimit
@@ -948,9 +962,9 @@ runGameMessage msg g@Game {..} = case msg of
   DeclareDefense ident enemyId defensePriority -> do
     push $ DeclareDefenseWithout ident enemyId defensePriority []
     pure g
-  -- any player may defend with a character they control, and decides for themselves:
-  -- the attacked player is offered their own characters and the others', and offering
-  -- another player's asks that player, who may decline
+  -- each player decides for themselves whether a character they control defends (RR
+  -- "Defend"): the attacked player first, who may ask another player before deciding;
+  -- once they decline, each other player in turn is asked
   DeclareDefenseWithout ident enemyId defensePriority declined -> do
     allies <- selectList UnexhaustedAlly
     identities <-
@@ -959,31 +973,31 @@ runGameMessage msg g@Game {..} = case msg of
         else select $ UnexhaustedIdentity <> HeroIdentity
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
-      ask owner defense =
+      defensesOf owner =
+        [ if owner == ident
+          then Defend enemyId
+          else TargetLabel (IdentityRef owner) [Run [IdentityMessage owner (SideMessage (Defended enemyId))]]
+        | owner `member` identities
+        ]
+          <> [AllyDefend a enemyId | (a, Just controller) <- controllers, controller == owner]
+      decline owner = Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]
+      ask owner =
         Ask owner
           . promptedAbout "$label.askedToDefend" enemyId
           . ChooseOne
-          $ [ defense
-            , Label "$label.declineToDefend" [Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]]
-            ]
-      offered owner ref defense
-        | owner == ident = defense
-        | otherwise = TargetLabel ref [Run [ask owner defense]]
-    push
-      $ Ask ident
-        . promptedAbout "$label.declareDefender" enemyId
-        . ChooseOne
-      $ Label "$label.noDefender" []
-        : [Defend enemyId | ident `member` identities]
-          <> [ offered other (IdentityRef other) (TargetLabel (IdentityRef other) [Run [IdentityMessage other (SideMessage (Defended enemyId))]])
-             | other <- toList identities
-             , other /= ident
-             , other `notElem` declined
-             ]
-          <> [ offered owner (AllyRef a) (AllyDefend a enemyId)
-             | (a, Just owner) <- controllers
-             , owner `notElem` declined
-             ]
+          $ defensesOf owner <> [Label "$label.declineToDefend" [decline owner]]
+      (before, from) = break (== ident) gamePlayerOrder
+      others = [o | o <- from <> before, o /= ident, o `notElem` declined, notNull (defensesOf o)]
+    if ident `elem` declined
+      then for_ (headMay others) (push . ask)
+      else
+        push
+          $ Ask ident
+            . promptedAbout "$label.declareDefender" enemyId
+            . ChooseOne
+          $ Label "$label.noDefender" [decline ident]
+            : defensesOf ident
+              <> [TargetLabel (IdentityRef o) [Run [ask o]] | o <- others]
     pure g
   _ -> pure g
 
@@ -1047,14 +1061,14 @@ abilityInWindow window a =
 
 instance RunMessage Entities where
   runMessage msg entities =
-    traverseOf (playersL . each) (runMessage msg) entities
-      >>= traverseOf (alliesL . each) (runMessage msg)
-      >>= traverseOf (supportsL . each) (runMessage msg)
-      >>= traverseOf (upgradesL . each) (runMessage msg)
+    traverseOf (playersL . each) (\p -> asYou (toId p) $ runMessage msg p) entities
+      >>= traverseOf (alliesL . each) (\a -> asYou (getAllyController a) $ runMessage msg a)
+      >>= traverseOf (supportsL . each) (\a -> asYou (getSupportController a) $ runMessage msg a)
+      >>= traverseOf (upgradesL . each) (\a -> asYou (getUpgradeController a) $ runMessage msg a)
       >>= traverseOf (treacheriesL . each) (runMessage msg)
       >>= traverseOf (obligationsL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
-      >>= traverseOf (eventsL . each) (runMessage msg)
+      >>= traverseOf (eventsL . each) (\a -> asYou (eventController $ toAttrs a) $ runMessage msg a)
       >>= traverseOf (effectsL . each) (runMessage msg)
       >>= traverseOf (attachmentsL . each) (runMessage msg)
       >>= traverseOf (minionsL . each) (runMessage msg)
@@ -1071,7 +1085,7 @@ instance RunMessage Game where
       >>= traverseOf entitiesL (runMessage msg)
       >>= traverseOf removedEntitiesL (runMessage msg)
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
-      >>= traverseOf (activeCostL . ix 0) (runMessage msg)
+      >>= traverseOf (activeCostL . ix 0) (\c -> asYou (activeCostIdentityId c) $ runMessage msg c)
       >>= runGameMessage msg
 
 class (Monad m) => HasGame m where
@@ -1158,6 +1172,7 @@ newGame player scenario =
     , gameQuestion = mempty
     , gameUsedAbilities = mempty
     , gameActivePlayer = toId player
+    , gameYou = Nothing
     , gameScenario = scenario
     , gameFocusedCards = []
     , gameBoostCards = mempty
@@ -1229,6 +1244,9 @@ class HasGameRef m where
 
 instance (Monad m) => HasGame (ReaderT Game m) where
   getGame = ask
+
+instance (HasQueue m) => HasQueue (ReaderT Game m) where
+  getQueue = lift getQueue
 
 getIdentity :: (HasCallStack, HasGame m) => IdentityId -> m PlayerIdentity
 getIdentity ident = do
@@ -1387,7 +1405,7 @@ replayChoices _ = pure ()
 -- criteria say when it may be spent: "spend this card only in hero form".
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
-getAvailablePaymentSources ident = do
+getAvailablePaymentSources ident = asYou ident do
   hand <- getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
   flip filterM hand \c ->
     if cdCardType (getCardDef c) == ResourceType
@@ -1414,15 +1432,13 @@ getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
   , HasQueue m
-  , HasCallStack
   , HasGame m
-  , Projection m PlayerIdentity
   ) =>
   IdentityId ->
   -- | the card being paid for, if a card is
   Maybe PlayerCard ->
   m [Ability]
-getResourceAbilities ident mc = do
+getResourceAbilities ident mc = asYou ident do
   abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
   filterM
@@ -1472,9 +1488,7 @@ gameSelectIdentity m = do
       pure $ case ps of
         fp : _ -> toId a == fp
         _ -> False
-    You -> \a -> do
-      ap <- getActivePlayer
-      pure $ a == ap
+    You -> \a -> (== toId a) <$> getYou
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case

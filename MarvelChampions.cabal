@@ -712,6 +712,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.PrintingSpec
       Marvel.Rules.RecoverSpec
       Marvel.Rules.SurgeSpec
+      Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       TestImport
       Paths_MarvelChampions
