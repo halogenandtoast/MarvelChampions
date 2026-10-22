@@ -25,7 +25,7 @@ import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
-import Marvel.Damage (Damage)
+import Marvel.Damage (Damage (..))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -47,6 +47,20 @@ damageIdentity ident source damage =
   [ CheckWindows [Window When $ IdentityTakeDamage ident damage]
   , IdentityMessage ident $ IdentityDamaged source damage
   ]
+
+-- | Prevent some of the damage the identity would take, as an interrupt to "when you
+-- would take damage" does: all of it prevented, the damage is not taken at all.
+preventDamage :: (HasQueue m) => IdentityId -> Natural -> m ()
+preventDamage ident n = replaceMatchingMessage prevent \case
+  IdentityMessage ident' (IdentityDamaged _ _) -> ident' == ident
+  _ -> False
+ where
+  prevent = \case
+    IdentityMessage i (IdentityDamaged source dmg) ->
+      [ IdentityMessage i $ IdentityDamaged source dmg {damageAmount = damageAmount dmg - n}
+      | damageAmount dmg > n
+      ]
+    msg -> [msg]
 
 -- | Threat a card places on a scheme: first the window for what answers "when threat
 -- would be placed", then the threat.
