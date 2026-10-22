@@ -26,13 +26,60 @@ data EncounterSet
   | ThorNemesis
   | DoctorStrangeNemesis
   | HulkNemesis
+  -- The Green Goblin
+  | RiskyBusiness
+  | MutagenFormula
+  | GoblinGimmicks
+  | AMessOfThings
+  | PowerDrain
+  | RunningInterference
+  -- The Wrecking Crew
+  | Breakout
+  | Wrecker
+  | Thunderball
+  | Piledriver
+  | Bulldozer
+  -- The Rise of Red Skull
+  | Crossbones
+  | ExperimentalWeapons
+  | AbsorbingMan
+  | Taskmaster
+  | Zola
+  | RedSkull
+  | HydraAssault
+  | WeaponMaster
+  | HydraPatrol
+  | HydraCamp
+  | ExpertCampaign
+  | HawkeyeNemesis
+  | SpiderWomanNemesis
+  -- The Once and Future Kang
+  | Kang
+  | ExpertKang
+  | Temporal
+  | Anachronauts
+  | MasterOfTime
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
--- | The modular encounter sets of the core set, any of which a scenario may be played
+-- | The modular encounter sets, any of which a scenario may be played
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
-modularSets = [BombScare, MastersOfEvil, UnderAttack, LegionsOfHydra, TheDoomsdayChair]
+modularSets =
+  [ BombScare
+  , MastersOfEvil
+  , UnderAttack
+  , LegionsOfHydra
+  , TheDoomsdayChair
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
+  ]
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
@@ -47,6 +94,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "06001" -> ThorNemesis
   "09001" -> DoctorStrangeNemesis
   "10001" -> HulkNemesis
+  "04001" -> HawkeyeNemesis
+  "04031" -> SpiderWomanNemesis
   cCode ->
     error $
       "No nemesis set for "

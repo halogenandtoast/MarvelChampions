@@ -10,7 +10,17 @@ import Marvel.Criteria
 import Marvel.EncounterSet
 
 allEnvironments :: HashMap CardCode CardDef
-allEnvironments = fromList $ map (toFst toCardCode) [ultronDrones]
+allEnvironments = fromList $ map (toFst toCardCode)
+  [ ultronDrones
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
+  ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
 -- into the encounter deck.

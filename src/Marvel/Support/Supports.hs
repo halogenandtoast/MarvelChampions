@@ -27,3 +27,11 @@ import Marvel.Support.Supports.SanctumSanctorum as X
 import Marvel.Support.Supports.TheNightNurse as X
 import Marvel.Support.Supports.BannersLaboratory as X
 import Marvel.Support.Supports.BeatCop as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

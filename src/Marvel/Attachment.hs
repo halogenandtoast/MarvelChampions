@@ -38,6 +38,14 @@ allAttachments =
       , SomeAttachmentCard geneticallyEnhanced
       , SomeAttachmentCard biomechanicalUpgrades
       , SomeAttachmentCard counterspell
+      -- The Green Goblin
+
+      -- The Wrecking Crew
+
+      -- The Rise of Red Skull
+
+      -- The Once and Future Kang
+
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

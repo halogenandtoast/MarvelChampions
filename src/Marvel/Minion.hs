@@ -58,6 +58,14 @@ allMinions =
       , SomeMinionCard frostGiant
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
+      -- The Green Goblin
+
+      -- The Wrecking Crew
+
+      -- The Rise of Red Skull
+
+      -- The Once and Future Kang
+
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -38,3 +38,11 @@ import Marvel.Ally.Allies.IronManTonyStark as X
 import Marvel.Ally.Allies.Brawn as X
 import Marvel.Ally.Allies.SentryRobertReynolds as X
 import Marvel.Ally.Allies.SheHulkJenniferWalters as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

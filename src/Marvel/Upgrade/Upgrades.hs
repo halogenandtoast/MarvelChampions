@@ -66,3 +66,11 @@ import Marvel.Upgrade.Upgrades.ImmovableObject as X
 import Marvel.Upgrade.Upgrades.MartialProwess as X
 import Marvel.Upgrade.Upgrades.ElectrostaticArmor as X
 import Marvel.Upgrade.Upgrades.Resourceful as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

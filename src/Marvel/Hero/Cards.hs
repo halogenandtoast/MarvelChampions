@@ -13,7 +13,27 @@ import Marvel.Name
 import Marvel.Trait
 
 allHeroCards :: [CardDef]
-allHeroCards = [spiderMan, captainMarvel, sheHulk, ironMan, blackPanther, captainAmerica, msMarvel, blackWidow, thor, doctorStrange, hulk]
+allHeroCards =
+  [ spiderMan
+  , captainMarvel
+  , sheHulk
+  , ironMan
+  , blackPanther
+  , captainAmerica
+  , msMarvel
+  , blackWidow
+  , thor
+  , doctorStrange
+  , hulk
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
+  ]
 
 allHeroesMap :: HashMap CardCode CardDef
 allHeroesMap = fromList $ map (toFst toCardCode) allHeroCards

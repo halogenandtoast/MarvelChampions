@@ -43,6 +43,14 @@ allSupports = fromList $ concatMap
   , theNightNurse
   , bannersLaboratory
   , beatCop
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 support

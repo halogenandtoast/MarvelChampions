@@ -11,6 +11,14 @@ import Marvel.Villain.Villains.Klaw
 import Marvel.Villain.Villains.Rhino
 import Marvel.Villain.Villains.Ultron
 
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -43,4 +51,12 @@ allVillains = fromList $ map
   , SomeVillainCard ultron1
   , SomeVillainCard ultron2
   , SomeVillainCard ultron3
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]

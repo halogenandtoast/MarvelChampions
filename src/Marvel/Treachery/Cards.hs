@@ -55,6 +55,14 @@ allTreacheries = fromList $ map
   , trickster
   , thoughtcasting
   , clashOfTheTitans
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 treachery

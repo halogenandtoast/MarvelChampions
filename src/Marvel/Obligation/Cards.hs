@@ -13,7 +13,26 @@ import Marvel.Name
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-  [affairsOfState, legalWork, evictionNotice, businessProblems, familyEmergency, manOutOfTime, homeByDawn, burnNotice, odinsAnger, physicalToll, innerDemons]
+    [ affairsOfState
+    , legalWork
+    , evictionNotice
+    , businessProblems
+    , familyEmergency
+    , manOutOfTime
+    , homeByDawn
+    , burnNotice
+    , odinsAnger
+    , physicalToll
+    , innerDemons
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
+    ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
 obligation code name boostIcons = CardDef

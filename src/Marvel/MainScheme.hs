@@ -29,6 +29,14 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard theCrimsonCowl
   , SomeMainSchemeCard assaultOnNorad
   , SomeMainSchemeCard countdownToOblivion
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

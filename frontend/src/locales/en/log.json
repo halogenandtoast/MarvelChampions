@@ -62,5 +62,14 @@
   "empty": "Nothing has happened yet.",
   "say": "Say",
   "sayPlaceholder": "Say something to the table",
-  "hitPointsSetTo": "{target}'s hit points are set to {count}"
+  "hitPointsSetTo": "{target}'s hit points are set to {count}",
+  "-- The Green Goblin --": "",
+
+  "-- The Wrecking Crew --": "",
+
+  "-- The Rise of Red Skull --": "",
+
+  "-- The Once and Future Kang --": "",
+
+  "-- end --": ""
 }

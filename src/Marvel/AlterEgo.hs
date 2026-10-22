@@ -35,6 +35,14 @@ allAlterEgos = fromList $ map
   , SomeAlterEgoCard odinson
   , SomeAlterEgoCard stephenStrange
   , SomeAlterEgoCard bruceBanner
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

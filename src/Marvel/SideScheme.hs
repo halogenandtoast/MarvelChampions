@@ -47,6 +47,14 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard familyFeud
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

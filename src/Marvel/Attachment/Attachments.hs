@@ -12,3 +12,11 @@ import Marvel.Attachment.Attachments.SonicConverter as X
 import Marvel.Attachment.Attachments.UpgradedDrones as X
 import Marvel.Attachment.Attachments.VibraniumArmor as X
 import Marvel.Attachment.Attachments.Counterspell as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

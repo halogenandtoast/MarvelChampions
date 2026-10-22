@@ -90,6 +90,14 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard martialProwess
   , SomeUpgradeCard electrostaticArmor
   , SomeUpgradeCard resourceful
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

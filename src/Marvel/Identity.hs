@@ -31,7 +31,7 @@ import Marvel.Hand
 import Marvel.Hero
 import Marvel.Hero.Runner
 import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Keyword hiding (Setup)
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Modifier
