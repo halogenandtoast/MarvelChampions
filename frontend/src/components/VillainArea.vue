@@ -92,7 +92,7 @@ const escalation = (scheme: SchemeView) => {
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
         <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :held="scheme.held || null" />
-        <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" :adding="game.threat?.scheme === scheme.id ? game.threat.amount : 0" tone="threat" />
+        <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
           {{ t('game.perRound', { count: escalation(scheme)! + tokens + icons }) }}
           <span v-if="icons" class="icons" :title="t('game.accelerationIcons', icons)">
