@@ -67,6 +67,31 @@ spec = describe "\"you\"" do
       runNow (damageIdentity other GameRef (toDamage 2 FromAbility))
       neverOffered (isPlay block)
       damageOf other `shouldReturn` 2
+  it "a hero defending for another player is offered their own Counter-Punch, and the attacked player is not" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    let p = player1 tg
+        other = player2 tg
+    inGame tg do
+      heroes [p, other]
+      clearHand p
+      clearHand other
+      mine <- putInHand p "01077"
+      counter <- putInHand other "01077"
+      vid <- villainIdNow
+      runNow [VillainMessage vid (VillainAttacks p)]
+      passUntil isNoDefender
+      choose "Spider-Man does not defend" isNoDefender
+      choose "Captain Marvel defends" (isTargetChoice other)
+      start <- villainDamageNow
+      passUntil (isPlay counter)
+      fmap fst <$> asked `shouldReturn` Just other
+      offers (isPlay mine) `shouldReturn` False
+      choose "play Counter-Punch" (isPlay counter)
+      neverOffered (isPlay mine)
+      -- Captain Marvel has 2 ATK
+      villainDamageNow `shouldReturn` start + 2
+      handOf p `shouldReturn` [mine]
+
  where
   heroes = runNow . map (\ident -> IdentityMessage ident (ChangedToForm A))
   passable c = isNoResponse c || isNoDefender c || isLabel "$label.declineToDefend" c
