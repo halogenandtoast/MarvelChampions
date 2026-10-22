@@ -375,6 +375,9 @@ data Message
   | -- | each player's obligations are taken out of the encounter deck and the game, as a
     -- setup says
     RemovePlayerObligationsFromGame
+  | -- | indirect damage the player has still to assign among the characters they
+    -- control, and what they have assigned so far: dealt at once when all is assigned
+    AssignIndirectDamage IdentityId Source Natural [(CharacterId, Natural)]
   | -- | one effect on several game elements at once, as damage dealt to each of several
     -- enemies: each message is run before anything any of them leads to
     Simultaneously [Message]

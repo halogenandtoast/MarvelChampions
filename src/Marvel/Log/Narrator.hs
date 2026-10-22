@@ -84,6 +84,10 @@ narrationFor = \case
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
+  -- told once, as it is dealt; each character's share is told as it takes it
+  AssignIndirectDamage ident _ n [] | n > 0 -> Just do
+    who <- playerRef' ident
+    one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
   _ -> Nothing
  where
   statusKey = \case

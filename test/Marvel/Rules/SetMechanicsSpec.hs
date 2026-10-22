@@ -88,3 +88,19 @@ spec = describe "set mechanics" do
       _ <- revealNow (player1 tg) Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
       after <- mainSchemeThreatNow
       liftIO $ after `shouldBe` before + 2
+
+  it "indirect damage is divided among the player's characters, none past defeat" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      hellcat <- allyIdOf <$> putIntoPlay you "01020"
+      runNow [AssignIndirectDamage you GameRef 5 []]
+      offered <- offers (isTargetChoice you)
+      liftIO $ offered `shouldBe` True
+      -- Hellcat has 3 hit points: once she is assigned 3, the rest goes to the hero
+      for_ [1 .. 3 :: Int] \_ -> choose "assign to Hellcat" (isTargetChoice hellcat)
+      damage <- damageOf you
+      hellcats <- alliesWith "01020"
+      liftIO $ (damage, length hellcats) `shouldBe` (2, 0)
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    text `shouldSatisfy` T.isInfixOf "$log.takesIndirectDamage"

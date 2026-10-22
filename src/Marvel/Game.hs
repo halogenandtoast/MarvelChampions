@@ -27,6 +27,7 @@ import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Count
 import Marvel.Criteria
 import Marvel.Debug
@@ -682,6 +683,25 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     for_ (HashMap.elems gameBoostCards) discardCard
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
+  -- indirect damage (RR): assigned a point at a time among the characters the player
+  -- controls that can take damage, none past what would defeat it (a tough one too, its
+  -- card preventing what it is given), then dealt at once; what cannot be assigned is
+  -- ignored
+  AssignIndirectDamage ident source n assigned -> do
+    let given c = sum [k | (c', k) <- assigned, c' == c]
+    identity <- for (maybe [] pure $ lookup ident (gamePlayers g)) \p -> (IdentityCharacter ident,,) <$> getModifiedHp p <*> pure (identityDamage p)
+    allies <- for [a | a <- HashMap.elems (gameAllies g), getAllyController a == ident] \a ->
+      (AllyCharacter (toId a),,) <$> Ally.getModifiedHitPoints (toAttrs a) <*> pure (getAllyDamage a)
+    open <-
+      filterM (fmap (notElem CannotTakeDamage) . getModifiers . characterRef . fst)
+        [(c, room) | (c, hp, damage) <- identity <> allies, let room = subtractNatural (damage + given c) hp, room > 0]
+    let assign c k = indirectDamageAssigned ident source (n - k) ((c, k) : assigned)
+    case open of
+      _ | n == 0 || null open ->
+        pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture $ damageCharacter c source (toDamage k FromAbility)) (HashMap.toList $ HashMap.fromListWith (+) assigned)
+      [(c, room)] -> assign c (min n room)
+      _ -> chooseOnePrompted ident "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
+    pure g
   RevealedEncounterCard ident card -> do
     -- incite is a "When Revealed": its threat first, then the rest of the card
     incite card

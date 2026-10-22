@@ -162,6 +162,15 @@ damageIdentity ident source = pushAll . Msg.damageIdentity ident (toSource sourc
 retaliate :: (ReverseQueue m, IsRef source) => source -> CharacterId -> Natural -> m ()
 retaliate source attacker = pushAll . retaliateDamage (toSource source) attacker
 
+-- | Indirect damage dealt to the player: they divide it among the characters they
+-- control, each point through 'damageCharacter' (an identity's 'damageIdentity').
+dealIndirectDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
+dealIndirectDamage ident source n = indirectDamageAssigned ident (toSource source) n []
+
+-- | The indirect damage left to assign, and what has been.
+indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Natural -> [(CharacterId, Natural)] -> m ()
+indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
+
 setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 
