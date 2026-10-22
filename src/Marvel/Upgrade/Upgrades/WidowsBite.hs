@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.Card
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -46,9 +47,9 @@ instance RunMessage WidowsBite where
   runMessage msg u@(WidowsBite attrs) = case msg of
     RanAbility ident (isTarget attrs -> True) 1 [MinionEnteredPlay minion] _ ->
       attackGuard ident u do
-        pushAll
-          [ MinionMessage minion $ MinionDamaged (toSource attrs) (toDamage 2 $ FromPlayerAttack ident)
-          , MinionMessage minion $ MinionStunned (toSource attrs)
-          ]
+        -- "deal 2 damage to that minion and stun it": both at once
+        (before, damage, after) <-
+          splitDamage <$> choiceMessages ident (DamageEnemy (toRef minion) (toSource attrs) (toDamage 2 $ FromPlayerAttack ident))
+        pushAll $ before <> [Simultaneously (MinionMessage minion (MinionStunned $ toSource attrs) : damage)] <> after
         pure u
     _ -> WidowsBite <$> runMessage msg attrs
