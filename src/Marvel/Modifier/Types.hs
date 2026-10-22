@@ -18,5 +18,7 @@ data Modifier
   | KeywordModifier Keyword
   | LastSpecial
   | RecoveryModifier Natural
+  | -- | a scheme threat cannot be removed from
+    ThreatCannotBeRemoved
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

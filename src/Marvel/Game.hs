@@ -1695,7 +1695,7 @@ gameSelectScheme = \case
         <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
   ThwartableScheme -> do
     crisisSideSchemes <- selectAny CrisisSideScheme
-    sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
+    sideSchemes <- filterM (fmap (notElem ThreatCannotBeRemoved) . getModifiers) . HashMap.elems =<< getsGame gameSideSchemes
     if crisisSideSchemes
       then
         pure $

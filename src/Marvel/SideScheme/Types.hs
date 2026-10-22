@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (SideSchemeId)
 import Marvel.Id as X (SideSchemeId)
@@ -157,12 +158,14 @@ instance IsCard (Attrs SideScheme) where
 
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = case msg of
-    SideSchemeMessage ident msg' | ident == sideSchemeId attrs ->
+    SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
+      modifiers <- getModifiers attrs
       case msg' of
         SideSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
+        SideSchemeThwarted _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
         SideSchemeThwarted _ n -> do
           when
             (subtractNatural n (sideSchemeThreat attrs) == 0)
