@@ -5,7 +5,6 @@ import Marvel.Prelude
 import Marvel.Area (experimentalWeaponsDeck)
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types

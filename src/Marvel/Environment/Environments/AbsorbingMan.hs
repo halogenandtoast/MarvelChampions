@@ -14,7 +14,6 @@ module Marvel.Environment.Environments.AbsorbingMan (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..))
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
@@ -31,7 +30,6 @@ import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
-import Marvel.Ref
 import Marvel.Window
 
 -- | Forced Response: after Absorbing Man makes an undefended attack against you. He is

@@ -11,7 +11,6 @@ import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Keyword (Keyword (Piercing))
 import Marvel.Matchers
