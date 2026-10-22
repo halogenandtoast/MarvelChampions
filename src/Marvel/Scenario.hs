@@ -57,9 +57,8 @@ recommendedModulars =
     , ("01113", [EncounterSet.MastersOfEvil])
     , ("01134", [EncounterSet.UnderAttack])
     -- The Green Goblin
-    -- ponytail: a core modular until Goblin Gimmicks, the one they recommend, is in
-    , ("02001a", [EncounterSet.BombScare])
-    , ("02014", [EncounterSet.BombScare])
+    , ("02001a", [EncounterSet.GoblinGimmicks])
+    , ("02014", [EncounterSet.GoblinGimmicks])
 
     -- The Wrecking Crew
 

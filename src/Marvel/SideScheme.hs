@@ -54,12 +54,18 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard oscorpManufacturing
   , SomeSideSchemeCard overrun
   , SomeSideSchemeCard payoff
+  , SomeSideSchemeCard aMessOfThings
+  , SomeSideSchemeCard powerDrain
+  , SomeSideSchemeCard runningInterference
 
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , SomeSideSchemeCard timePortal
+  , SomeSideSchemeCard theAnachronauts
+  , SomeSideSchemeCard lightOfCenturiesSphere
 
   ]
 

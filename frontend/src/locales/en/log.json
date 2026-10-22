@@ -70,6 +70,7 @@
   "takesIndirectDamage": "{player} takes {count} indirect damage",
   "attachedTo": "{card} is attached to {target}",
   "-- The Green Goblin --": "",
+  "encounterCardsDiscarded": "The top card of the encounter deck is discarded | The top {count} cards of the encounter deck are discarded",
 
   "-- The Wrecking Crew --": "",
 

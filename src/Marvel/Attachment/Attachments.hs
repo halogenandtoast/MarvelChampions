@@ -15,8 +15,10 @@ import Marvel.Attachment.Attachments.Counterspell as X
 
 -- The Green Goblin
 import Marvel.Attachment.Attachments.GoblinGlider as X
-import Marvel.Attachment.Attachments.Hysteria as X
 import Marvel.Attachment.Attachments.PumpkinBombs as X
+import Marvel.Attachment.Attachments.AllTiedUp as X
+import Marvel.Attachment.Attachments.MediaCoverage as X
+import Marvel.Attachment.Attachments.Hysteria as X
 
 -- The Wrecking Crew
 

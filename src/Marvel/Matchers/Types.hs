@@ -150,6 +150,7 @@ data EnemyMatcher
   | NotEnemy EnemyMatcher
   | UndefendedEnemy
   | EnemyWithUpgrade UpgradeMatcher
+  | EnemyWithAttachment AttachmentMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
   | -- | an enemy whose attack is under way
@@ -158,9 +159,6 @@ data EnemyMatcher
     EnemyWithHighestAttack
   | StunnedEnemy
   | EnemyWithTrait Trait
-  | -- | of the enemies matching, those whose printed hit points are the highest
-    EnemyWithHighestPrintedHitPointsAmong EnemyMatcher
-  | EnemyWithAttachment AttachmentMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

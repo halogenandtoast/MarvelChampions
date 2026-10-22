@@ -45,9 +45,17 @@ import Marvel.Treachery.Treacheries.ISeeYou as X
 import Marvel.Treachery.Treacheries.MadGenius as X
 import Marvel.Treachery.Treacheries.Overconfidence as X
 import Marvel.Treachery.Treacheries.WickedAmbitions as X
+import Marvel.Treachery.Treacheries.Intimidation as X
+import Marvel.Treachery.Treacheries.RegenerativeHealing as X
+import Marvel.Treachery.Treacheries.TailSweep as X
+import Marvel.Treachery.Treacheries.ElectromagneticPulse as X
+import Marvel.Treachery.Treacheries.LightningBolt as X
+import Marvel.Treachery.Treacheries.ShockTherapy as X
 
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
 
 -- The Once and Future Kang
+import Marvel.Treachery.Treacheries.KangsChosen as X
+import Marvel.Treachery.Treacheries.AncientGrudge as X

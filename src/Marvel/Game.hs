@@ -4,7 +4,9 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+import Marvel.GameValue (fromGameValue)
 
+import Control.Monad (replicateM_)
 import Control.Monad.Reader
 import Data.Aeson.Diff qualified as Diff
 import Data.HashMap.Strict qualified as HashMap
@@ -24,6 +26,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment, Field (AttachmentCounters))
+import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
@@ -73,12 +76,12 @@ import Marvel.Modifier
 import Marvel.Name
 import Marvel.Obligation
 import Marvel.Obligation.Types (Obligation)
+import Marvel.Obligation.Types qualified as Obligation
 import Marvel.Payment
 import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
-import Marvel.GameValue (fromGameValue)
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
@@ -451,9 +454,35 @@ intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
 
--- | The villain's stage, I to III (0 for one not in play).
+-- | How many times a "When Revealed" the player reveals resolves: once, and once more
+-- for each ability that says so (Media Coverage).
+whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
+whenRevealedTimes ident = (+ 1) . fromIntegral . count (== ResolveWhenRevealedAgain) <$> getModifiers ident
+
+-- | The player a boost card turned up for the enemy's activation is resolved by: the
+-- one the villain's activation is against, or the player whose turn it is.
+getBoostedPlayer :: (HasGame m) => EnemyId -> m IdentityId
+getBoostedPlayer = \case
+  EnemyVillainId vid -> maybe getActivePlayerId pure =<< getVillainActivationPlayer vid
+  EnemyMinionId _ -> getActivePlayerId
+
+-- | The obligations in the player's play area.
+countObligationsOf :: (HasGame m) => IdentityId -> m Natural
+countObligationsOf ident =
+  getsGame $ fromIntegral . length . filter ((== Just ident) . Obligation.obligationOwner . toAttrs) . HashMap.elems . gameObligations
+
+-- | The villain's stage.
 getVillainStage :: (HasGame m) => VillainId -> m Natural
 getVillainStage vid = getsGame $ maybe 0 (Villain.villainStage . toAttrs) . lookup vid . gameVillains
+
+-- | The enemy's printed hit points: a villain's for the number of players.
+getEnemyPrintedHitPoints :: (HasGame m) => EnemyId -> m Natural
+getEnemyPrintedHitPoints = \case
+  EnemyVillainId vid ->
+    getsGame (lookup vid . gameVillains) >>= \case
+      Nothing -> pure 0
+      Just v -> fromIntegral <$> fromGameValue (unHp $ Villain.villainStartingHp $ toAttrs v)
+  EnemyMinionId mid -> getsGame $ maybe 0 (unHp . getMinionPrintedHitPoints) . lookup mid . gameMinions
 
 -- | The counters on the environment, main scheme or attachment.
 getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
@@ -868,10 +897,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       _ -> chooseOnePrompted ident "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
     pure g
   RevealedEncounterCard ident card -> do
+    -- each "When Revealed" resolves once, and once more for each ability that says so
+    -- (Media Coverage); incite and surge are "When Revealed" abilities (RR)
+    times <- whenRevealedTimes ident
+    let whenRevealed = replicateM_ times
     -- incite is a "When Revealed": its threat first, then the rest of the card
-    incite card
+    whenRevealed (incite card)
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
-    let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (surge ident)
+    let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (whenRevealed $ surge ident)
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
@@ -887,7 +920,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         when isTough $ enemyBecomesTough (toId minion)
         focusing [toCard minion] do
           checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
-          minionStep (toId minion) (RevealMinion ident)
+          whenRevealed $ minionStep (toId minion) (RevealMinion ident)
         engageMinion (toId minion) ident
         checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
         surges
@@ -897,7 +930,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         focusing [toCard treachery] do
           checkWindows [W.Window When $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck]
-          treacheryStep (toId treachery) $ RevealTreachery ident
+          whenRevealed $ treacheryStep (toId treachery) $ RevealTreachery ident
           treacheryStep (toId treachery) $ CheckTreacheryCondition ident
         treacheryStep (toId treachery) $ ResolvedTreachery ident
         pure $
@@ -909,9 +942,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           -- "Give to the Peter Parker player": the player whose identity it comes with
           -- resolves it; with them gone it is removed from the game and another card is
           -- revealed. ponytail: every obligation so far is given to its identity's player
-          owners =
-            [ toId p | p <- HashMap.elems (gamePlayers g), getCardDef card `elem` identityObligations p
-            ]
+          owners
+            -- one of an encounter set is the revealing player's (RR, Obligation)
+            | isJust (cdEncounterSet (getCardDef card)) = [ident]
+            | otherwise =
+                [ toId p | p <- HashMap.elems (gamePlayers g), getCardDef card `elem` identityObligations p
+                ]
         case owners of
           -- "ignore the card's ability, remove it from the game, and reveal an
           -- additional encounter card": not surge
@@ -929,7 +965,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       SideSchemeType -> do
         let sideScheme = createSideScheme card
         sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
-        sideSchemeStep (toId sideScheme) RevealSideScheme
+        whenRevealed $ sideSchemeStep (toId sideScheme) RevealSideScheme
         pure $
           g
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
@@ -1360,6 +1396,9 @@ getsGame f = f <$> getGame
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
 getEncounterDeck = fmap pileDeck . getPile =<< getDeckKeyFor =<< getYou
 
+getEncounterDiscard :: (HasGame m) => m [EncounterCard]
+getEncounterDiscard = fmap pileDiscard . getPile =<< getDeckKeyFor =<< getYou
+
 -- | The cards played this round, and by whom.
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisRound = getsGame gamePlayedThisRound
@@ -1430,6 +1469,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameAttachments g)
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
       <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
+      <> concatMap getAbilities (HashMap.elems $ gameObligations g)
 
 -- | The def of the player card an ability is on: in play, or an upgrade just discarded
 -- to pay for it.
@@ -1449,6 +1489,10 @@ abilityController g a = case abilitySource a of
   AllyRef aid -> getAllyController <$> lookup aid (gameAllies g)
   SupportRef sid -> getSupportController <$> lookup sid (gameSupports g)
   UpgradeRef uid -> getUpgradeController <$> lookup uid (gameUpgrades g)
+  -- only the player whose identity an attachment is on, or whose play area an
+  -- obligation is in, may trigger it (RR, Attachment and Obligation)
+  AttachmentRef aid -> Attachment.attachmentIdentity . toAttrs =<< lookup aid (gameAttachments g)
+  ObligationRef oid -> Obligation.obligationOwner . toAttrs =<< lookup oid (gameObligations g)
   _ -> Nothing
 
 -- | The player controlling the card a source names, if a player does.
@@ -1941,7 +1985,10 @@ gameSelectEnemy m = do
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
     -- guard keeps the player it is engaged with from attacking the villain
-    AttackableBy attacker -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker)
+    AttackableBy attacker -> do
+      guarded <- selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker)
+      barred <- barredFrom attacker e
+      pure $ not (guarded || barred)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)
@@ -1950,11 +1997,10 @@ gameSelectEnemy m = do
     EnemyMatches xs -> allM (goVillain e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
+    EnemyWithAttachment m' -> not . null . HashSet.intersection (Villain.villainAttachments $ toAttrs e) <$> select m'
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
     EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
-    EnemyWithHighestPrintedHitPointsAmong m' -> andM [goVillain e m', (==) <$> villainPrinted e <*> highestPrinted m']
-    EnemyWithAttachment a -> not . null . HashSet.intersection (Villain.villainAttachments $ toAttrs e) <$> select a
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -1964,7 +2010,7 @@ gameSelectEnemy m = do
     VillainEnemy -> pure False
     MinionEnemy -> pure True
     DamageableEnemy -> pure True
-    AttackableBy _ -> pure True
+    AttackableBy attacker -> not <$> barredFrom attacker e
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)
@@ -1973,21 +2019,19 @@ gameSelectEnemy m = do
     EnemyMatches xs -> allM (goMinion e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
+    EnemyWithAttachment m' -> not . null . HashSet.intersection (minionAttachments $ toAttrs e) <$> select m'
     EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
     EnemyWithTrait t -> member t <$> getTraits e
-    EnemyWithHighestPrintedHitPointsAmong m' -> andM [goMinion e m', (== minionPrinted e) <$> highestPrinted m']
-    EnemyWithAttachment a -> not . null . HashSet.intersection (minionAttachments $ toAttrs e) <$> select a
+  -- a player kept from attacking the enemy's title (Fear of Kang)
+  barredFrom attacker e = do
+    mods <- concatMapM getModifiers =<< selectList attacker
+    pure $ title (cdName $ getCardDef e) `elem` [t | CannotAttackTitled t <- mods]
   highestAttack = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
     pure $ foldl' max 0 (villains <> minions)
-  villainPrinted v = fromGameValue (unHp $ Villain.villainStartingHp (toAttrs v))
-  minionPrinted = fromIntegral . unHp . getMinionPrintedHitPoints
-  highestPrinted m' = do
-    villains <- traverse villainPrinted =<< filterM (`goVillain` m') . HashMap.elems =<< getsGame gameVillains
-    minions <- map minionPrinted <$> (filterM (`goMinion` m') . HashMap.elems =<< getsGame gameMinions)
-    pure $ foldl' max 0 (villains <> minions)
+
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
@@ -2162,6 +2206,7 @@ getModifiers a = withDepthGuard 2 $ do
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
   treacheries <- HashMap.elems <$> getsGame gameTreacheries
+  obligations <- HashMap.elems <$> getsGame gameObligations
   -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
   -- allies only, the one kind so far that does
   inHand <- case toTarget a of
@@ -2188,6 +2233,7 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) villains
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) environments
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) treacheries
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) obligations
       ]
 
 getCurrentWindows :: (HasGame m) => m [Window]

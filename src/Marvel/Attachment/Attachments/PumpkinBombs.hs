@@ -10,8 +10,8 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
-import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Criteria
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -28,11 +28,14 @@ newtype PumpkinBombs = PumpkinBombs (Attrs Attachment)
   deriving anyclass (IsAttachment, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
+-- | [star] Forced Response: after the villain attacks you, discard Pumpkin Bombs and take
+-- 2 indirect damage. Hero Action: spend [physical] [physical] resources → discard this
+-- card.
 instance HasAbilities PumpkinBombs where
   getAbilities (PumpkinBombs a) = case attachmentEnemy a of
     Just enemy ->
-      [ windowAbility a 2 (EnemyAttacked After (EnemyWithId enemy) You) ForcedResponse NoCost $ runAbility a 2
-      , ability a 1 HeroAction NoCriteria (MultiResourceCost [Just Physical, Just Physical]) $ DiscardTarget (toRef a)
+      [ windowAbility a 1 (EnemyAttacked After (EnemyWithId enemy) AnyIdentity) ForcedResponse NoCost $ runAbility a 1
+      , ability a 2 HeroAction NoCriteria (MultiResourceCost [Just Physical, Just Physical]) $ DiscardTarget (toRef a)
       ]
     Nothing -> []
 
@@ -42,8 +45,7 @@ instance RunMessage PumpkinBombs where
       villain <- selectJust ActiveVillain
       attachTo ident villain
       pure a
-    -- after the villain attacks you: discard Pumpkin Bombs and take 2 indirect damage
-    RanAbility you (isTarget attrs -> True) 2 _ _ -> do
+    RanAbility _ (isTarget a -> True) 1 [EnemyAttack _ you] _ -> do
       removeFromPlay attrs
       dealIndirectDamage you attrs 2
       pure a

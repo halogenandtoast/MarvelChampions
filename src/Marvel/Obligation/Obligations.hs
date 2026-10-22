@@ -19,3 +19,4 @@ import Marvel.Obligation.Obligations.InnerDemons as X
 -- The Rise of Red Skull
 
 -- The Once and Future Kang
+import Marvel.Obligation.Obligations.FearOfKang as X

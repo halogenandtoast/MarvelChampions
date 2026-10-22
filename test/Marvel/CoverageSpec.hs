@@ -21,35 +21,72 @@ import Marvel.Support (allSupports)
 import Marvel.Upgrade (allUpgrades)
 import TestImport
 
-data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, set :: Maybe Text}
+data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, setCode :: Maybe Text}
 
 -- | A pack's cards as MarvelCDB lists them.
 packCards :: Text -> IO [PackCard]
-packCards pack = do
+packCards pack = cardsWhere (== pack) (const True)
+
+-- | The cards of the encounter set, by MarvelCDB set code.
+setCards :: Text -> IO [PackCard]
+setCards set = cardsWhere (const True) (== Just set)
+
+cardsWhere :: (Text -> Bool) -> (Maybe Text -> Bool) -> IO [PackCard]
+cardsWhere inPack inSet = do
   json <- either error pure =<< eitherDecodeFileStrict' "frontend/public/data/cards.json"
   either error pure $ flip parseEither json $ withObject "cards" \o -> do
     cards <- o .: "cards"
     fmap catMaybes $ for cards $ withObject "card" \c -> do
       pack' <- c .: "packCode"
-      if pack' == pack
-        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> c .:? "setCode")
+      set <- c .:? "setCode"
+      if inPack pack' && inSet set
+        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> pure set)
         else pure Nothing
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "gob"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk"]
 
--- | The sets of a pack implemented so far, where not all of them are.
-setsOf :: Text -> Maybe [Text]
-setsOf = \case
-  "gob" -> Just ["risky_business", "mutagen_formula"]
-  _ -> Nothing
+-- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
+-- set code.
+modularSets :: [Text]
+modularSets =
+  [ "risky_business"
+  , "mutagen_formula"
+  , "goblin_gimmicks"
+  , "a_mess_of_things"
+  , "power_drain"
+  , "running_interference"
+  , "temporal"
+  , "anachronauts"
+  , "mot"
+  ]
+
+encounterImplemented :: PackCard -> Bool
+encounterImplemented c = case c.cardType of
+  "villain" -> HashMap.member c.code allVillains
+  "minion" -> HashMap.member c.code allMinions
+  "treachery" -> HashMap.member c.code allTreacheries
+  "attachment" -> HashMap.member c.code allAttachments
+  "side_scheme" -> HashMap.member c.code allSideSchemes
+  "environment" -> HashMap.member c.code allEnvironments
+  "obligation" -> HashMap.member c.code allObligations
+  -- main schemes are kept by their base code, the sides being one card
+  "main_scheme" -> HashMap.member (toBaseCardCode c.code) allMainSchemes
+  _ -> True
 
 spec :: Spec
-spec = for_ packs \pack -> describe (show pack) do
-  let packCards' p = filter (\c -> maybe True (\sets -> maybe False (`elem` sets) c.set) (setsOf p)) <$> packCards p
+spec = do
+  describe "modular sets" $ for_ modularSets \set -> it (show set <> " has every card implemented") do
+    cards <- setCards set
+    length cards `shouldSatisfy` (> 0)
+    [(c.code, c.name) | c <- cards, not (encounterImplemented c)] `shouldBe` []
+  packSpec
+
+packSpec :: Spec
+packSpec = for_ packs \pack -> describe (show pack) do
   it "has every player card implemented" do
-    cards <- packCards' pack
+    cards <- packCards pack
     let implemented c = case c.cardType of
           "hero" -> HashMap.member c.code allHeroes
           "alter_ego" -> HashMap.member c.code allAlterEgos
@@ -62,7 +99,7 @@ spec = for_ packs \pack -> describe (show pack) do
           _ -> True
     [(c.code, c.name) | c <- cards, not (implemented c)] `shouldBe` []
   it "has every encounter card implemented" do
-    cards <- packCards' pack
+    cards <- packCards pack
     let implemented c = case c.cardType of
           "villain" -> HashMap.member c.code allVillains
           "minion" -> HashMap.member c.code allMinions

@@ -33,8 +33,12 @@ allAttachments =
       , counterspell
       -- The Green Goblin
       , goblinGlider
-      , hysteria
       , pumpkinBombs
+      , allTiedUp
+      , mediaCoverage
+      , goblinGliderMutagenFormula
+      , hysteria
+      , pumpkinBombsMutagenFormula
 
       -- The Wrecking Crew
 
@@ -131,10 +135,24 @@ counterspell =
 -- The Green Goblin
 
 goblinGlider :: CardDef
-goblinGlider = attachment "02019" "Goblin Glider" [Vehicle] [Boost, Boost, Boost] MutagenFormula 1
+goblinGlider = attachment "02033" "Goblin Glider" [Vehicle] [Boost, Boost, Boost] GoblinGimmicks 2
+
+pumpkinBombs :: CardDef
+pumpkinBombs = attachment "02034" "Pumpkin Bombs" [Weapon] [Boost, Boost] GoblinGimmicks 2
+
+allTiedUp :: CardDef
+allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
+
+mediaCoverage :: CardDef
+mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2
+
+goblinGliderMutagenFormula :: CardDef
+goblinGliderMutagenFormula =
+  (reprint "02019" goblinGlider) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
 
 hysteria :: CardDef
 hysteria = attachment "02020" "Hysteria" [Condition] [Boost] MutagenFormula 1
 
-pumpkinBombs :: CardDef
-pumpkinBombs = attachment "02021" "Pumpkin Bombs" [Weapon] [Boost, Boost] MutagenFormula 1
+pumpkinBombsMutagenFormula :: CardDef
+pumpkinBombsMutagenFormula =
+  (reprint "02021" pumpkinBombs) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
