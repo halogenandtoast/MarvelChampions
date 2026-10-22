@@ -18,6 +18,7 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
+import Marvel.Area
 import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
@@ -81,7 +82,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
+import Marvel.Scenario.Types (Attrs (scenarioDecks, scenarioDiscard, scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -180,6 +181,10 @@ data Game = Game
   , gamePlayedThisRound :: [(IdentityId, CardDef)]
   -- ^ the cards each player has played this round, for "max 1 per round" and "the first
   -- ally played each round"
+  , gameAreas :: [Area]
+  -- ^ the game areas, the first the one every game starts with ("Marvel.Area")
+  , gameSignatureSchemes :: HashMap VillainId SideSchemeId
+  -- ^ each villain's own side scheme, as Wrecker's Day of Reckoning
   }
   deriving stock (Show, Eq, Generic)
 
@@ -339,6 +344,107 @@ getYou = getsGame \g -> fromMaybe (gameActivePlayer g) (gameYou g)
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 asYou ident body = getGame >>= runReaderT body . (youL ?~ ident)
 
+-- * Game areas
+
+getAreas :: (HasGame m) => m [Area]
+getAreas = getsGame gameAreas
+
+-- | The area a game element is in, by its ref: a minion is where the player it is
+-- engaged with is, a player's card where that player is, and what no area lists is in
+-- the first.
+areaOfTarget :: Game -> Target -> Maybe Area
+areaOfTarget g = \case
+  IdentityRef i -> listing (elem i . areaPlayers)
+  VillainRef v -> listing (elem v . areaVillains)
+  EnemyRef (EnemyVillainId v) -> areaOfTarget g (VillainRef v)
+  EnemyRef (EnemyMinionId m) -> areaOfTarget g (MinionRef m)
+  CharacterRef (IdentityCharacter i) -> areaOfTarget g (IdentityRef i)
+  CharacterRef (AllyCharacter a) -> areaOfTarget g (AllyRef a)
+  CharacterRef (VillainCharacter v) -> areaOfTarget g (VillainRef v)
+  CharacterRef (MinionCharacter m) -> areaOfTarget g (MinionRef m)
+  MainSchemeRef s -> listing (elem s . areaMainSchemes)
+  SideSchemeRef s -> listing (elem s . areaSideSchemes)
+  SchemeRef (SchemeMainSchemeId s) -> areaOfTarget g (MainSchemeRef s)
+  SchemeRef (SchemeSideSchemeId s) -> areaOfTarget g (SideSchemeRef s)
+  EnvironmentRef e -> listing (elem e . areaEnvironments)
+  MinionRef m -> player . getMinionEngagedIdentity =<< lookup m (gameMinions g)
+  AllyRef a -> player . getAllyController =<< lookup a (gameAllies g)
+  SupportRef s -> player . getSupportController =<< lookup s (gameSupports g)
+  UpgradeRef u -> player . getUpgradeController =<< lookup u (gameUpgrades g)
+  _ -> headMay (gameAreas g)
+ where
+  listing p = areaListing p (gameAreas g)
+  player = areaOfTarget g . IdentityRef
+
+getAreaOfTarget :: (HasGame m, IsRef a) => a -> m AreaId
+getAreaOfTarget a = getsGame \g -> maybe defaultAreaId areaId (areaOfTarget g (toTarget a))
+
+-- | The area the player is in.
+getAreaOf :: (HasGame m) => IdentityId -> m Area
+getAreaOf ident = getsGame \g -> fromMaybe (newArea defaultAreaId []) (areaOfTarget g (IdentityRef ident))
+
+-- | The area "you" are in: what "the villain", "the main scheme" and "the encounter
+-- deck" are there.
+getYourArea :: (HasGame m) => m Area
+getYourArea = getAreaOf =<< getYou
+
+-- | Whether the game element is in "your" area. With one area everything is.
+inYourArea :: (HasGame m) => Target -> m Bool
+inYourArea t = do
+  you <- getYou
+  getsGame \g -> case gameAreas g of
+    _ : _ : _ -> (areaId <$> areaOfTarget g t) == (areaId <$> areaOfTarget g (IdentityRef you))
+    _ -> True
+
+-- | Only those in "your" area: players cannot target game elements in other areas.
+inYourAreaOnly :: (HasGame m) => (a -> Target) -> [a] -> m [a]
+inYourAreaOnly ref = filterM (inYourArea . ref)
+
+-- | The villains in play in the area, as it lists them.
+villainsIn :: Game -> AreaId -> [VillainId]
+villainsIn g aid = case break ((== aid) . areaId) (gameAreas g) of
+  (before, a : _) -> filter inPlay (areaVillains a) <> (if null before then unlisted else [])
+  _ -> []
+ where
+  inPlay v = HashMap.member v (gameVillains g)
+  unlisted = filter (`notElem` concatMap areaVillains (gameAreas g)) (HashMap.keys $ gameVillains g)
+
+getVillainsInArea :: (HasGame m) => AreaId -> m [VillainId]
+getVillainsInArea aid = getsGame (`villainsIn` aid)
+
+-- | The area's active villain: the one it names while he is in play, or else the first
+-- of its villains.
+activeVillainIn :: Game -> AreaId -> Maybe VillainId
+activeVillainIn g aid = case [a | a <- gameAreas g, areaId a == aid] of
+  a : _ | Just v <- areaActiveVillain a, HashMap.member v (gameVillains g) -> Just v
+  _ -> headMay (villainsIn g aid)
+
+getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
+getActiveVillainIn aid = getsGame (`activeVillainIn` aid)
+
+-- | What "the encounter deck" is for the player: their area's active villain's own deck,
+-- when he has one, or else the encounter deck.
+getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
+getDeckKeyFor ident = do
+  aid <- areaId <$> getAreaOf ident
+  getsGame \g -> case activeVillainIn g aid of
+    Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
+    _ -> EncounterDeckKey
+
+-- | The deck and its discard pile, each top card first.
+getPile :: (HasGame m) => DeckKey -> m Pile
+getPile = \case
+  EncounterDeckKey -> getsGame \g -> let a = toAttrs (gameScenario g) in Pile (scenarioEncounterDeck a) (scenarioDiscard a)
+  key -> getsGame $ fromMaybe emptyPile . lookup key . scenarioDecks . toAttrs . gameScenario
+
+-- | The pure step: the game with the area changed.
+overArea :: AreaId -> (Area -> Area) -> Game -> Game
+overArea aid f = areasL %~ map \a -> if areaId a == aid then f a else a
+
+-- | The game element is put into the area the player is in.
+intoAreaOf :: IdentityId -> (Area -> Area) -> Game -> Game
+intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (IdentityRef ident))
+
 -- | The player the villain's activation under way is against: who resolves its boost
 -- cards, the "you" of their boost abilities.
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
@@ -386,7 +492,7 @@ runPreGameMessage msg g = runQueueT $ case msg of
     let
       scenario = toAttrs (gameScenario g)
       source
-        | card `elem` scenarioDiscard scenario = W.RevealedFromDiscardPile
+        | card `elem` (scenarioDiscard scenario <> concatMap pileDiscard (HashMap.elems $ scenarioDecks scenario)) = W.RevealedFromDiscardPile
         | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
         | otherwise = W.RevealedFromEncounterDeck
     focusing [EncounterCard card] $
@@ -453,6 +559,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   RemoveFromPlay target -> case target of
     IdentityRef iid -> do
       when (length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
+      -- the last player of an area defeated, with players left in others
+      area <- getAreaOf iid
+      when (length (g ^. entitiesL . playersL) > 1 && all (== iid) (areaPlayers area)) $
+        push (AreaDefeated $ areaId area)
       let order = filter (/= iid) gamePlayerOrder
           -- whoever is left takes over from an eliminated active player
           next = case break (== iid) gamePlayerOrder of
@@ -463,6 +573,31 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           & (entitiesL . playersL %~ deleteMap iid)
           & (playerOrderL .~ order)
           & (activePlayerL %~ \active -> if active == iid then fromMaybe active next else active)
+          & (areasL . each %~ \a -> a {areaPlayers = filter (/= iid) (areaPlayers a)})
+    -- a villain leaving play takes his own deck and side scheme with him, and what is
+    -- attached to him is discarded; the next villain of his area becomes active
+    VillainRef vid -> case lookup vid (gameVillains g) of
+      Nothing -> pure g
+      Just v -> do
+        let a = toAttrs v
+        for_ (Villain.villainAttachments a) (removeFromPlay . AttachmentRef)
+        for_ (villainUpgrades a) (removeFromPlay . UpgradeRef)
+        push $ RemoveDeck (VillainDeckKey vid)
+        let
+          signature = lookup vid gameSignatureSchemes
+          leave area =
+            let rest = filter (/= vid) (areaVillains area)
+             in area
+                  { areaVillains = rest
+                  , areaActiveVillain = if areaActiveVillain area == Just vid then headMay rest else areaActiveVillain area
+                  , areaSideSchemes = filter ((/= signature) . Just) (areaSideSchemes area)
+                  }
+        pure $
+          g
+            & (entitiesL . villainsL %~ deleteMap vid)
+            & (entitiesL . sideSchemesL %~ maybe id deleteMap signature)
+            & (signatureSchemesL %~ deleteMap vid)
+            & (areasL . each %~ leave)
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
@@ -508,6 +643,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     ObligationRef oid -> do
       for_ (lookup oid $ gameObligations g) discardCard
       pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
+    -- a villain's own side scheme cannot leave play while he is in play
+    SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
     SideSchemeRef sid -> do
       -- what is attached to it is discarded with it, first
       for_
@@ -527,7 +664,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
         mainSchemeStep mainSchemeId RevealMainScheme
-        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
+        you <- getYou
+        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
       Nothing -> throwM $ MissingCardCode "AddMainScheme" cardCode
   AddSetupMainScheme cardCode -> do
     mainSchemeId <- getRandom
@@ -537,24 +675,32 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         mainSchemeStep mainSchemeId RevealMainScheme
         for_ (HashMap.keys (gameVillains g)) \villainId ->
           checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
-        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
+        you <- getYou
+        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
-  -- the main scheme leaves the game, each card attached to it discarded
+  -- the main scheme of "your" area leaves the game, each card attached to it discarded
   ReplaceMainScheme cardCode -> do
+    old <- filterM (inYourArea . MainSchemeRef) (HashMap.keys $ gameMainSchemes g)
     for_
       [ uid
       | (uid, u) <- HashMap.toList (gameUpgrades g)
-      , isJust (upgradeAttachedMainScheme (toAttrs u))
+      , Just sid <- [upgradeAttachedMainScheme (toAttrs u)]
+      , sid `elem` old
       ]
       removeFromPlay
     addMainScheme cardCode
-    pure $ g & (entitiesL . mainSchemesL .~ mempty)
+    pure $
+      g
+        & (entitiesL . mainSchemesL %~ \m -> foldr deleteMap m old)
+        & (areasL . each %~ \a -> a {areaMainSchemes = filter (`notElem` old) (areaMainSchemes a)})
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
       Just x -> do
         villainStep villainId SetVillainHp
-        pure $ g & (entitiesL . villainsL . at villainId ?~ x)
+        you <- getYou
+        let join a = a {areaVillains = areaVillains a <> [villainId], areaActiveVillain = areaActiveVillain a <|> Just villainId}
+        pure $ g & (entitiesL . villainsL . at villainId ?~ x) & intoAreaOf you join
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ HashMap.insertWith (<>) ident [(a, gameWindowDepth)]
@@ -775,9 +921,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         pure $
           g
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
+            & intoAreaOf ident (\a -> a {areaSideSchemes = areaSideSchemes a <> [toId sideScheme]})
       EnvironmentType -> do
         let environment = createEnvironment card
-        pure $ g & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
+        pure $
+          g
+            & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
+            & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
       _ -> error "Unhandled"
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     MinionType -> do
@@ -861,6 +1011,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           when inDiscard $ addToHand controller c
       pure g
     _ -> error "unhandled"
+  CreateArea aid players -> pure $ g & areasL %~ (movePlayers players aid . (<> [newArea aid []]))
+  MovePlayerToArea ident aid -> pure $ g & areasL %~ movePlayers [ident] aid
+  CombineAreas from into -> pure $ g & areasL %~ combine from into
+  SetActiveVillain vid -> do
+    aid <- getAreaOfTarget vid
+    pure $ g & overArea aid \a -> a {areaActiveVillain = Just vid}
+  SetSignatureScheme vid sid -> pure $ g & signatureSchemesL %~ insertMap vid sid
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
   -- everyone may respond, the active player first, then the others in player order;
@@ -1151,6 +1308,8 @@ newGame player scenario =
     , gameRound = 1
     , gameSeats = [toId player]
     , gamePlayedThisRound = []
+    , gameAreas = [newArea defaultAreaId [toId player]]
+    , gameSignatureSchemes = mempty
     }
 
 -- | A game with a seat for each player, in the order given.
@@ -1162,12 +1321,20 @@ newTable scenario (player :| others) = foldl' seat (newGame player scenario) oth
       & (entitiesL . playersL %~ insertMap (toId p) p)
       & (playerOrderL <>~ [toId p])
       & (seatsL <>~ [toId p])
+      & joinFirstArea (toId p)
+
+-- | A player sitting down plays in the first area.
+joinFirstArea :: IdentityId -> Game -> Game
+joinFirstArea ident = areasL %~ \case
+  a : as -> a {areaPlayers = areaPlayers a <> [ident]} : as
+  [] -> [newArea defaultAreaId [ident]]
 
 addPlayer :: (MonadGame env m) => PlayerIdentity -> m ()
 addPlayer player =
   withGame_ $
     (entitiesL . playersL %~ insertMap (toId player) player)
       . (playerOrderL <>~ [toId player])
+      . joinFirstArea (toId player)
 
 withGame :: (MonadGame env m) => (Game -> (Game, a)) -> m a
 withGame f = do
@@ -1185,7 +1352,7 @@ getsGame f = f <$> getGame
 
 -- | The encounter deck, its top card first.
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
-getEncounterDeck = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)
+getEncounterDeck = fmap pileDeck . getPile =<< getDeckKeyFor =<< getYou
 
 -- | The cards played this round, and by whom.
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
@@ -1429,10 +1596,18 @@ getResourceAbilities ident mc = asYou ident do
 
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
-  identities <- HashMap.elems <$> getsGame gamePlayers
+  everyone <- HashMap.elems <$> getsGame gamePlayers
+  identities <- if named m then pure everyone else inYourAreaOnly (IdentityRef . toId) everyone
   result <- filterM (matchFilter m) identities
   pure $ HashSet.fromList $ map toId result
  where
+  -- a player named, or the first player, is who they are in any area
+  named = \case
+    FirstPlayer -> True
+    You -> True
+    IdentityWithId _ -> True
+    IdentityMatchAll xs -> any named xs
+    _ -> False
   matchFilter x = case x of
     AnyIdentity -> pure . const True
     HeroIdentity -> pure . isHero
@@ -1614,7 +1789,7 @@ gameSelectEncounterCard m = case m of
 
 gameSelectAlly :: (HasGame m) => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
-  allies <- HashMap.elems <$> getsGame gameAllies
+  allies <- inYourAreaOnly (AllyRef . toId) . HashMap.elems =<< getsGame gameAllies
   result <- filterM (matchFilter m) allies
   pure $ HashSet.fromList $ map toId result
  where
@@ -1723,8 +1898,8 @@ gameSelectEnvironment m = do
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
-  villains <- HashMap.elems <$> getsGame gameVillains
-  minions <- HashMap.elems <$> getsGame gameMinions
+  villains <- inYourAreaOnly (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
+  minions <- inYourAreaOnly (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
   removedVillains <-
     if includeRemoved
       then HashMap.elems <$> getsGame (view (removedEntitiesL . villainsL))
@@ -1792,14 +1967,17 @@ gameSelectEnemy m = do
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
-  villains <- HashMap.elems <$> getsGame gameVillains
+  villains <- inYourAreaOnly (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
   -- removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
   -- result <- filterM (matchFilter m) (villains <> removedVillains)
   result <- filterM (matchFilter m) villains
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
-    ActiveVillain -> pure . const True
+    -- "the villain": the active villain of "your" area
+    ActiveVillain -> \v -> do
+      aid <- areaId <$> getYourArea
+      getsGame \g -> activeVillainIn g aid == Just (toId v)
     AnyVillain -> pure . const True
     VillainWithId ident' -> pure . (== ident') . toId
     VillainWithDamage gameValueMatcher ->
@@ -1809,7 +1987,7 @@ gameSelectVillain m = do
 
 gameSelectMinion :: (HasGame m) => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
-  minions <- HashMap.elems <$> getsGame gameMinions
+  minions <- inYourAreaOnly (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
   -- removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
   -- result <- filterM (matchFilter m) (minions <> removedMinions)
   result <- filterM (matchFilter m) minions
@@ -1851,7 +2029,11 @@ gameSelectTreachery = \case
     pure $ HashSet.fromList $ map toId treacheries
 
 gameSelectScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
-gameSelectScheme = \case
+gameSelectScheme m = fmap HashSet.fromList . inYourAreaOnly SchemeRef . HashSet.toList =<< gameSelectAnyScheme m
+
+-- | The schemes matching, in any area.
+gameSelectAnyScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
+gameSelectAnyScheme = \case
   AnyScheme -> do
     mainSchemes <- HashMap.elems <$> getsGame gameMainSchemes
     sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
@@ -1916,7 +2098,7 @@ gameSelectCountScheme aggregate matcher = do
 gameSelectSideScheme ::
   (HasGame m) => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
-  sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
+  sideSchemes <- inYourAreaOnly (SideSchemeRef . toId) . HashMap.elems =<< getsGame gameSideSchemes
   result <- filterM (matchFilter m) sideSchemes
   pure $ HashSet.fromList $ map toId result
  where
@@ -1930,6 +2112,9 @@ gameSelectSideScheme m = do
       attached <- getsGame $ filter ((== Just (toId sideScheme)) . upgradeAttachedSideScheme . toAttrs) . HashMap.elems . gameUpgrades
       pure $ any ((`member` upgrades) . toId) attached
     NotSideScheme m' -> fmap not . matchFilter m'
+    SignatureSchemeOf villainMatcher -> \sideScheme -> do
+      villains <- select villainMatcher
+      getsGame \g -> any (`member` villains) [v | (v, sid) <- HashMap.toList (gameSignatureSchemes g), sid == toId sideScheme]
 
 withDepthGuard :: (HasGame m, Monoid a) => Int -> ReaderT Game m a -> m a
 withDepthGuard depthGuard body = do
@@ -2024,23 +2209,28 @@ abilityResources a = go (abilityChoices a)
       _ -> error "invalid matcher"
   go (_ : xs) = go xs
 
+-- | The hazard icons in "your" area.
 getHazardCount :: (HasGame m) => m Natural
-getHazardCount = do
-  sideSchemes <- getsGame gameSideSchemes
-  villains <- getsGame gameVillains
-  pure $
-    sum (map (cdHazards . getCardDef) (HashMap.elems sideSchemes))
-      + sum (map (cdHazards . getCardDef) (HashMap.elems villains))
+getHazardCount = getHazardCountIn . areaId =<< getYourArea
 
+getHazardCountIn :: (HasGame m) => AreaId -> m Natural
+getHazardCountIn aid = getsGame \g ->
+  sum (map (cdHazards . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
+    + sum (map (cdHazards . getCardDef) (inArea g aid VillainRef (gameVillains g)))
+
+-- | The cards of the map in the area.
+inArea :: Game -> AreaId -> (k -> Target) -> HashMap k a -> [a]
+inArea g aid ref = map snd . filter (\(k, _) -> (areaId <$> areaOfTarget g (ref k)) == Just aid) . HashMap.toList
+
+-- | The acceleration tokens and the acceleration icons in "your" area.
 getAccelerationCount :: (HasGame m) => m Natural
-getAccelerationCount = do
-  tokens <- getsGame (scenarioAccelerationTokens . gameScenario)
-  sideSchemes <- getsGame gameSideSchemes
-  villains <- getsGame gameVillains
-  pure $
-    tokens
-      + sum (map (cdAcceleration . getCardDef) (HashMap.elems sideSchemes))
-      + sum (map (cdAcceleration . getCardDef) (HashMap.elems villains))
+getAccelerationCount = getAccelerationCountIn . areaId =<< getYourArea
+
+getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
+getAccelerationCountIn aid = getsGame \g ->
+  scenarioAccelerationTokens (gameScenario g)
+    + sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
+    + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
 
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural

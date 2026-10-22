@@ -73,6 +73,7 @@ library
       Marvel.AlterEgo.Cards
       Marvel.AlterEgo.Runner
       Marvel.AlterEgo.Types
+      Marvel.Area
       Marvel.Aspect
       Marvel.Attachment
       Marvel.Attachment.Attachments
@@ -707,6 +708,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.ThorSpec
       Marvel.LogSpec
       Marvel.PublicSpec
+      Marvel.Rules.AreasSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec

@@ -56,7 +56,21 @@
     "discard": "Discard",
     "dealt": "Dealt",
     "invocation": "Invocation",
-    "invocationDiscard": "Invocations used"
+    "invocationDiscard": "Invocations used",
+    "villainDeck": "{name}'s deck",
+    "villainDiscard": "{name}'s discard",
+    "sideSchemeDeck": "Side schemes",
+    "sideSchemeDiscard": "Side-scheme discard",
+    "named": {
+      "experimentalWeapons": "Experimental Weapons"
+    }
+  },
+  "activeVillain": "Active",
+  "areas": {
+    "label": "Game areas",
+    "area": "Area {n}",
+    "yours": "Yours",
+    "empty": "No players"
   },
   "abilityTypes": {
     "Interrupt": "Interrupt",

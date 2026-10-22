@@ -9,8 +9,10 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (SideSchemeId)
 import Marvel.Id as X (SideSchemeId)
+import Marvel.Matchers.Types (SideSchemeMatcher (SignatureSchemeOf), VillainMatcher (AnyVillain))
 import Marvel.Message.Lifted
 import Marvel.Modifier
+import Marvel.Query (match)
 import Marvel.Ref
 import Marvel.Window
 
@@ -166,7 +168,9 @@ instance RunMessage (Attrs SideScheme) where
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
         SideSchemeThwarted _ n -> do
-          when (subtractNatural n (sideSchemeThreat attrs) == 0) $ defeatSideScheme (sideSchemeId attrs)
+          -- a villain's own side scheme is not discarded with no threat on it
+          signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
+          when (subtractNatural n (sideSchemeThreat attrs) == 0 && not signature) $ defeatSideScheme (sideSchemeId attrs)
           pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
     _ -> pure attrs
