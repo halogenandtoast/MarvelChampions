@@ -147,6 +147,21 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         supportsWith "03019" `shouldReturn` []
         discardOf p >>= (`shouldSatisfy` elem quinjet)
 
+    it "is not used with only a unique Avenger already in play to put into play" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        quinjet <- putIntoPlay p "03019"
+        _ <- putIntoPlay p "03013"
+        pass
+        _ <- putInHand p "03013"
+        runNow [CheckWindows [Window After (TurnBegan p)]]
+        choose "add a time counter" (isAbilityOfCard quinjet)
+        runNow [CheckWindows [Window After (TurnBegan p)]]
+        choose "add a time counter" (isAbilityOfCard quinjet)
+        offers (isAbilityOfCard quinjet) `shouldReturn` False
+
   describe "Avengers Tower (03024)" do
     it "raises the ally limit while each of the player's allies is an Avenger" do
       tg <- testGame ["captain-america"]

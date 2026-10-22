@@ -5,7 +5,6 @@ module Marvel.Support.Supports.Quinjet (
 
 import Marvel.Prelude
 
-import Data.Maybe (maybeToList)
 
 import Marvel.Ability
 import Marvel.Card
@@ -14,11 +13,9 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Identity (uniqueMatch)
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
-import Marvel.Name
 import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Query
 import Marvel.Question
@@ -37,12 +34,13 @@ newtype Quinjet = Quinjet (Attrs Support)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | The Avenger allies in the player's hand it could put into play: their printed cost
--- no more than its time counters.
+-- no more than its time counters, and not unique with a card in play. With none, the
+-- action has no target and is not offered.
 avengersInHand :: Attrs Support -> ExtendedCardMatcher
 avengersInHand a =
   InHandOf (IdentityWithId $ supportController a) $
-    BasicCardMatches $
-      CardWithType AllyType <> CardWithTrait Avenger <> CardWithPrintedCostAtMost (supportUses a)
+    BasicCardMatches (CardWithType AllyType <> CardWithTrait Avenger <> CardWithPrintedCostAtMost (supportUses a))
+      <> CanEnterPlay
 
 instance HasAbilities Quinjet where
   getAbilities (Quinjet a) =
@@ -57,11 +55,6 @@ instance RunMessage Quinjet where
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> pure $ Quinjet $ attrs & usesL +~ 1
     RanAbility ident (isTarget attrs -> True) 2 _ _ -> do
       cards <- selectList (avengersInHand attrs)
-      -- a unique ally whose title is in play cannot enter it
-      inPlay <- getUniqueTitlesInPlay
-      let
-        named c = (title $ cdName $ getCardDef c, maybeToList $ subtitle $ cdName $ getCardDef c)
-        enters c = not (cdUnique $ getCardDef c) || not (any (uniqueMatch (named c)) inPlay)
       chooseOne ident
         [ TargetLabel
           (toRef c)
@@ -71,7 +64,7 @@ instance RunMessage Quinjet where
               , PutCardIntoPlay ident c NoPayment Nothing
               ]
           ]
-        | c <- filter enters cards
+        | c <- cards
         ]
       pure s
     _ -> Quinjet <$> runMessage msg attrs
