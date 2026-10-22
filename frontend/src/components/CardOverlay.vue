@@ -13,7 +13,8 @@ const { card, sideways, placement, visible } = useCardOverlay()
       :class="{ sideways }"
       :style="{ top: `${placement.top}px`, left: `${placement.left}px`, width: `${placement.width}px`, height: `${placement.height}px` }"
     >
-      <CardFace :code="card.code" :back="card.back ?? null" :name="card.name" eager />
+      <img v-if="card.image" class="image" :src="card.image" :alt="card.name ?? ''" />
+      <CardFace v-else :code="card.code" :back="card.back ?? null" :name="card.name" eager />
     </div>
   </Teleport>
 </template>
@@ -29,6 +30,7 @@ const { card, sideways, placement, visible } = useCardOverlay()
   animation: overlay-in 0.12s ease-out;
   background: var(--ink-3);
 }
+.image { display: block; width: 100%; height: 100%; object-fit: cover; }
 @keyframes overlay-in {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: none; }

@@ -118,7 +118,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     >
       <CardFace :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
-      <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
+      <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" @leave="el && preview(el)" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />

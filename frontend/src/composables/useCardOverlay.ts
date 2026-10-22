@@ -2,11 +2,12 @@ import { computed, reactive, readonly, ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Back } from '../cards'
 
-/** What the overlay draws: a card by its code, or a back. */
+/** What the overlay draws: a card by its code, a back, or an image, as a status card. */
 export interface Preview {
   code: string | null
   name?: string
   back?: Back | null
+  image?: string | null
 }
 
 const OVERLAY_WIDTH = 320
