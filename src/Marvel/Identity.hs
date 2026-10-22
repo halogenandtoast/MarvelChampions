@@ -747,7 +747,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     RevealEncounterCards -> case playerIdentityEncounterCards of
       [] -> pure pid
       ec : rest -> do
-        revealCard playerIdentityId ec
+        revealEncounterCard playerIdentityId ec
         identityStep playerIdentityId RevealEncounterCards
         pure $ PlayerIdentity $ attrs & encounterCardsL .~ rest
     IdentityWasAttacked attack' -> do

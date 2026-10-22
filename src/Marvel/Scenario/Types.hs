@@ -301,7 +301,7 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
       pure attrs
     DrawAndRevealEncounterCard ident -> do
       (ecs, attrs') <- drawEncounterCard attrs
-      for_ ecs (revealCard ident)
+      for_ ecs (revealEncounterCard ident)
       pure attrs'
     DealBoost target -> do
       (ecs, attrs') <- drawEncounterCard attrs
@@ -333,8 +333,8 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      search ident (CardIs cardDef) (revealCard ident)
-    SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealCard ident)
+      search ident (CardIs cardDef) (revealEncounterCard ident)
+    SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealEncounterCard ident)
     SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (putEncounterCardIntoPlay ident)
     _ -> pure attrs
  where

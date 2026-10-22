@@ -30,6 +30,6 @@ instance RunMessage Masterplan where
         else for_ sideSchemes \s -> placeThreat s 4
       pure . Masterplan $ attrs & resolverL ?~ identityId
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
-      for_ (treacheryResolver attrs) \identityId -> revealCard identityId card
+      for_ (treacheryResolver attrs) \identityId -> revealEncounterCard identityId card
       pure t
     _ -> Masterplan <$> runMessage msg attrs

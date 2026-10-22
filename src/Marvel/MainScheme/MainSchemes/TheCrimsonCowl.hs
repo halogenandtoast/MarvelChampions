@@ -33,7 +33,7 @@ instance RunMessage TheCrimsonCowl where
     SetupMainScheme -> do
       firstPlayer <- selectJust FirstPlayer
       drones <- genEncounterCard Cards.ultronDrones
-      revealEncounterCard firstPlayer drones
+      revealEncounterCardWithoutWindows firstPlayer drones
       shuffleEncounterDeck
       pure ms
     AdvanceMainScheme -> ms <$ nextMainScheme

@@ -387,8 +387,10 @@ putTopOfDeckIntoPlayAsDrone = push . PutTopOfDeckIntoPlayAsDrone
 putEncounterCardIntoPlay :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
 putEncounterCardIntoPlay ident = push . PutEncounterCardIntoPlay ident
 
-revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
-revealEncounterCard ident = push . RevealedEncounterCard ident
+-- | The encounter card resolves as revealed, without the windows a reveal opens:
+-- put into play, as setup does.
+revealEncounterCardWithoutWindows :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+revealEncounterCardWithoutWindows ident = push . RevealedEncounterCard ident
 
 shuffleEncounterDeck :: (ReverseQueue m) => m ()
 shuffleEncounterDeck = push ShuffleEncounterDeck
@@ -541,8 +543,8 @@ gainSurge :: (ReverseQueue m, IsRef a) => a -> m ()
 gainSurge = push . GainSurge . toTarget
 
 -- | The player reveals the encounter card, its "when revealed" windows answered.
-revealCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
-revealCard ident = push . RevealEncounterCard ident
+revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+revealEncounterCard ident = push . RevealEncounterCard ident
 
 -- | The top cards of the encounter deck are discarded, the target told which
 -- ('WithDiscarded').
