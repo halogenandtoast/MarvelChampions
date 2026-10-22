@@ -208,6 +208,8 @@ data SchemeView = SchemeView
   , name :: Text
   , threat :: Natural
   , crisis :: Bool
+  , upgrades :: [UpgradeView]
+  -- ^ the player upgrades attached to it
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -363,19 +365,20 @@ gameView seesHand g = do
         , allies
         , allyLimit
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
-        , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy
+        , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         }
   allyView (ally :: Ally) = do
     let a = toAttrs ally
     thw <- Ally.getModifiedThwart a
     atk <- Ally.getModifiedAttack a
+    hp <- Ally.getModifiedHitPoints a
     pure
       AllyView
         { id = a.allyId
         , code = toCardCode a.allyCardDef
         , name = display (cdName a.allyCardDef)
-        , hitPoints = unHp a.allyHitPoints
+        , hitPoints = hp
         , damage = a.allyDamage
         , thwart = thw
         , attack = atk
@@ -438,10 +441,10 @@ gameView seesHand g = do
         }
   mainSchemeView (s :: MainScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis
+     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis []
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId)
 
 sideCode :: PlayerIdentitySide -> CardCode
 sideCode = \case

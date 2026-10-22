@@ -48,6 +48,8 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
+  | IdentityWouldBeDefeated IdentityMatcher
+  | TurnBegins IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -82,5 +84,7 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
+  | IdentityDefeat IdentityId
+  | TurnBegan IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

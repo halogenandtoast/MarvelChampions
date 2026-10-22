@@ -2,7 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Types (AbilityType (..))
+import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
 import Marvel.Matchers.Types
 
 data Criteria
@@ -22,6 +22,7 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | UpgradeExists UpgradeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -45,4 +46,10 @@ abilityTypeCriteria = \case
   HeroAction -> InHeroForm
   AlterEgoAction -> InAlterEgoForm
   AlterEgoResource -> InAlterEgoForm
+  _ -> NoCriteria
+
+-- | What a thwart needs of the player making it.
+abilitySubTypeCriteria :: AbilitySubType -> Criteria
+abilitySubTypeCriteria = \case
+  Thwart -> SelfMatches IdentityCanThwart
   _ -> NoCriteria

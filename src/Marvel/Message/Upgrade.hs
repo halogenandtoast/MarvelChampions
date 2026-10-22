@@ -14,6 +14,7 @@ data UpgradeMessage
   | UpgradeAttachedToAlly AllyId
   | SpendUpgradeUse
   | AddUpgradeUses Natural
+  | UpgradeAttachedToSideScheme SideSchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

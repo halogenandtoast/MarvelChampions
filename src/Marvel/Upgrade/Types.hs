@@ -53,6 +53,7 @@ instance Entity Upgrade where
     , upgradeExhausted :: Bool
     , upgradeAttachedEnemy :: Maybe EnemyId
     , upgradeAttachedAlly :: Maybe AllyId
+    , upgradeAttachedSideScheme :: Maybe SideSchemeId
     , upgradeUses :: Natural
     , upgradeDiscardIfNoUses :: Bool
     , upgradeOwner :: IdentityId
@@ -67,6 +68,7 @@ instance Entity Upgrade where
     UpgradeExhausted :: Field Upgrade Bool
     UpgradeAttachedEnemy :: Field Upgrade (Maybe EnemyId)
     UpgradeAttachedAlly :: Field Upgrade (Maybe AllyId)
+    UpgradeAttachedSideScheme :: Field Upgrade (Maybe SideSchemeId)
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
   field fld u =
@@ -78,6 +80,7 @@ instance Entity Upgrade where
           UpgradeExhausted -> upgradeExhausted
           UpgradeAttachedEnemy -> upgradeAttachedEnemy
           UpgradeAttachedAlly -> upgradeAttachedAlly
+          UpgradeAttachedSideScheme -> upgradeAttachedSideScheme
           UpgradeUses -> upgradeUses
           UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
   toId = upgradeId . toAttrs
@@ -159,6 +162,7 @@ upgrade f cardDef =
             , upgradeExhausted = False
             , upgradeAttachedEnemy = Nothing
             , upgradeAttachedAlly = Nothing
+            , upgradeAttachedSideScheme = Nothing
             , upgradeUses = 0
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
@@ -261,6 +265,8 @@ instance RunMessage (Attrs Upgrade) where
       UpgradeAttachedToAlly allyId -> do
         push (AllyMessage allyId $ AttachedUpgradeToAlly (upgradeId a))
         pure $ a & attachedAllyL ?~ allyId
+      UpgradeAttachedToSideScheme sideSchemeId ->
+        pure a {upgradeAttachedSideScheme = Just sideSchemeId}
       DiscardUpgrade -> do
         pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
         pure a

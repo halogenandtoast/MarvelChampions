@@ -98,6 +98,7 @@ export interface MinionView extends CardView {
 export interface SchemeView extends CardView {
   threat: number
   crisis: boolean
+  upgrades?: UpgradeView[]
 }
 
 export type ChoiceKind =
