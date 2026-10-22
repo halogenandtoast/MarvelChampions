@@ -27,35 +27,30 @@ instance HasAbilities Heimdall where
 -- | Look at the top 3 cards of the encounter deck, discard 1 of them, and put the
 -- others back in the order chosen, the first chosen on top.
 instance RunMessage Heimdall where
-  runMessage msg a@(Heimdall attrs) = case msg of
+  runMessage msg a@(Heimdall attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
-      push $ LookAtTopOfEncounterDeck 3 (toTarget a)
+      lookAtTopOfEncounterDeck 3 a
       pure a
     SearchFoundCards (isTarget a -> True) (onlyEncounterCards -> cards) -> do
-      pushAll
-        [ FocusCards $ EncounterCard <$> cards
-        , Ask (allyController attrs) $
-            promptedAbout "$label.chooseCardToDiscard" a $
-              ChooseOne
-                [ TargetLabel (toRef c) [Run [DiscardedCard (EncounterCard c), order [] (delete c cards)]]
-                | c <- cards
-                ]
-        , UnfocusCards
-        ]
+      focusing (EncounterCard <$> cards) $
+        chooseOnePromptedAbout (allyController attrs) "$label.chooseCardToDiscard" a
+          [ targeting c do
+              discardCard c
+              order [] (delete c cards)
+          | c <- cards
+          ]
       pure a
     CardSpecific (isTarget a -> True) "order" (decode -> Just (chosen, rest))
       | length rest <= 1 -> do
-          push $ PutOnTopOfEncounterDeck (chosen <> rest)
+          putOnTopOfEncounterDeck (chosen <> rest)
           pure a
       | otherwise -> do
-          push $
-            Ask (allyController attrs) $
-              promptedAbout "$label.chooseNextCardOnTop" a $
-                ChooseOne [TargetLabel (toRef c) [Run [order (chosen <> [c]) (delete c rest)]] | c <- rest]
+          chooseOnePromptedAbout (allyController attrs) "$label.chooseNextCardOnTop" a
+            [targeting c $ order (chosen <> [c]) (delete c rest) | c <- rest]
           pure a
     _ -> Heimdall <$> runMessage msg attrs
    where
-    order :: [EncounterCard] -> [EncounterCard] -> Message
+    order :: (ReverseQueue m) => [EncounterCard] -> [EncounterCard] -> m ()
     order chosen rest = cardSpecific a "order" (chosen, rest)
     decode v = case fromJSON v of
       Success x -> Just x

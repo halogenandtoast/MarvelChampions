@@ -45,6 +45,10 @@ chooseOne you choices = push . Ask you . ChooseOne =<< sequence choices
 chooseOnePrompted :: (ReverseQueue m) => IdentityId -> Text -> [m Choice] -> m ()
 chooseOnePrompted you prompt choices = push . Ask you . prompted prompt . ChooseOne =<< sequence choices
 
+-- | Ask one of the choices, saying what is being asked about which card.
+chooseOnePromptedAbout :: (ReverseQueue m, IsRef a) => IdentityId -> Text -> a -> [m Choice] -> m ()
+chooseOnePromptedAbout you prompt a choices = push . Ask you . promptedAbout prompt a . ChooseOne =<< sequence choices
+
 chooseOneAtATime :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOneAtATime you choices = push . Ask you . ChooseOneAtATime =<< sequence choices
 
@@ -91,6 +95,22 @@ dealDamageThen enemy source damage body = do
 -- | Damage to each enemy matching.
 damageAllEnemies :: (ReverseQueue m, IsRef source) => source -> Damage -> EnemyMatcher -> m ()
 damageAllEnemies source damage matcher = resolve $ DamageAllEnemies matcher (toSource source) damage
+
+-- | Damage to each character matching, as one effect.
+damageAllCharacters :: (ReverseQueue m, IsRef source) => source -> Damage -> CharacterMatcher -> m ()
+damageAllCharacters source damage matcher = resolve $ DamageAllCharacters matcher (toSource source) damage
+
+-- | Damage to the character: an identity's goes through 'damageIdentity'.
+damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
+damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
+
+-- | An attack's damage to the identity, which is not 'damageIdentity''s.
+attackDamageIdentity :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
+attackDamageIdentity ident source = push . IdentityMessage ident . IdentityDamaged (toSource source)
+
+-- | The window after an enemy's attack damages the character, if the damage is that.
+attackDealtDamageTo :: (ReverseQueue m, IsCharacter character) => Source -> Damage -> character -> m ()
+attackDealtDamageTo source damage = pushAll . attackDealtDamage source damage . toCharacter
 
 -- | Damage to an enemy matching, the player choosing which.
 chooseDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> EnemyMatcher -> m ()
@@ -176,34 +196,37 @@ instance Readyable AllyId where
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
 
--- | What can be exhausted, as the message that exhausts it.
-class ExhaustsAs a where
+-- | What can be exhausted.
+class Exhaustible a where
   exhausted :: a -> Message
 
-instance ExhaustsAs IdentityId where
+instance Exhaustible IdentityId where
   exhausted ident = IdentityMessage ident Msg.ExhaustedIdentity
 
-instance ExhaustsAs AllyId where
+instance Exhaustible AllyId where
   exhausted ally = AllyMessage ally Msg.ExhaustedAlly
 
-instance ExhaustsAs UpgradeId where
+instance Exhaustible UpgradeId where
   exhausted upgrade = UpgradeMessage upgrade ExhaustedUpgrade
 
-instance ExhaustsAs SupportId where
+instance Exhaustible SupportId where
   exhausted support = SupportMessage support ExhaustedSupport
 
-exhaust :: (ReverseQueue m, ExhaustsAs a) => a -> m ()
+exhaust :: (ReverseQueue m, Exhaustible a) => a -> m ()
 exhaust = push . exhausted
+
+-- | The ally's attack on the enemy, past the window before it.
+allyAttackLands :: (ReverseQueue m, IsEnemy enemy) => AllyId -> enemy -> Damage -> m ()
+allyAttackLands ally enemy = push . AllyMessage ally . AllyAttackLands (toEnemy enemy)
+
+defeatAlly :: (ReverseQueue m) => AllyId -> m ()
+defeatAlly ally = push $ AllyMessage ally AllyDefeated
 
 confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
 confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
 
 stunAlly :: (ReverseQueue m) => AllyId -> m ()
 stunAlly ally = push $ AllyMessage ally AllyStunned
-
--- | Damage to the character not from an attack: to an identity, through 'damageIdentity'.
-damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
-damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
 
 -- | The enemy is given a tough status card.
 enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
@@ -378,6 +401,10 @@ removeFromGame = push . RemoveFromGame . toTarget
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize
 
+-- | The cards are shown to everyone while the body runs.
+focusing :: (ReverseQueue m) => [Card] -> m () -> m ()
+focusing cards body = focusCards cards >> body >> unfocusCards
+
 -- | The top cards of the player's deck are discarded, the target told which
 -- ('WithDiscarded').
 discardFromDeck :: (ReverseQueue m, IsRef target) => IdentityId -> Natural -> target -> m ()
@@ -428,6 +455,7 @@ putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing
 returnToHand :: (ReverseQueue m, IsRef a) => a -> m ()
 returnToHand = push . ReturnToHand . toTarget
 
+
 -- | The top cards of the encounter deck are looked at, the target told which
 -- ('SearchFoundCards').
 lookAtTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
@@ -477,6 +505,10 @@ placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 resolveObligation :: (ReverseQueue m) => ObligationId -> IdentityId -> m ()
 resolveObligation oid = push . ObligationMessage oid . ResolveObligation
 
+-- | The cards go on top of the encounter deck, the first on top.
+putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
+putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
+
 -- * Effects and steps
 
 createEffect :: (ReverseQueue m, IsRef source) => CardDef -> source -> EntityMatcher -> m ()
@@ -484,6 +516,10 @@ createEffect def source = push . CreatedEffect def (toSource source)
 
 disableEffect :: (ReverseQueue m) => EffectId -> m ()
 disableEffect eid = push $ EffectMessage eid DisableEffect
+
+-- | The option chosen of the effect's own ('EffectChoice').
+effectChoice :: (ReverseQueue m) => EffectId -> Natural -> m ()
+effectChoice eid = push . EffectMessage eid . EffectChoice
 
 -- | The disabled effect leaves the game.
 effectDisabled :: (ReverseQueue m) => EffectId -> m ()

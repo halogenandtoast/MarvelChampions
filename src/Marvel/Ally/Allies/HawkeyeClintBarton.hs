@@ -45,11 +45,8 @@ findMinion = \case
   (_ : xs) -> findMinion xs
 
 instance RunMessage HawkeyeClintBarton where
-  runMessage msg x@(HawkeyeClintBarton a) = case msg of
+  runMessage msg x@(HawkeyeClintBarton a) = runQueueT $ case msg of
     RanAbility _ (isTarget x -> True) 1 (findMinion -> minionId) _ -> do
-      push . MinionMessage minionId $
-        MinionDamaged
-          (toRef x)
-          (toDamage 2 FromAbility)
+      dealDamage minionId x (toDamage 2 FromAbility)
       pure x
     _ -> HawkeyeClintBarton <$> runMessage msg a

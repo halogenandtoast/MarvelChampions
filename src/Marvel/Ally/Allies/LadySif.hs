@@ -27,9 +27,9 @@ instance HasAbilities LadySif where
 
 -- | "Ready Thor or Odinson": the player whose identity it is, whoever controls her.
 instance RunMessage LadySif where
-  runMessage msg a@(LadySif attrs) = case msg of
+  runMessage msg a@(LadySif attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       thor <- (<>) <$> selectList (IdentityWithTitle "Thor") <*> selectList (IdentityWithTitle "Odinson")
-      pushAll [IdentityMessage ident ReadiedIdentity | ident <- thor]
+      for_ thor ready
       pure a
     _ -> LadySif <$> runMessage msg attrs

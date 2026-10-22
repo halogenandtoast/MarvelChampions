@@ -37,6 +37,9 @@ instance IsCard PlayerCard where
 instance IsCard Card where
   toCard = id
 
+instance IsCard EncounterCard where
+  toCard = EncounterCard
+
 _PlayerCard :: Traversal' Card PlayerCard
 _PlayerCard f (PlayerCard pc) = PlayerCard <$> f pc
 _PlayerCard _ other = pure other
