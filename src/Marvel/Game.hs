@@ -22,7 +22,7 @@ import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAll
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment)
+import Marvel.Attachment.Types (Attachment, Field (AttachmentCounters))
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
@@ -38,7 +38,7 @@ import Marvel.Effect
 import Marvel.Effect.Types (Effect)
 import Marvel.EncounterSet
 import Marvel.Environment
-import Marvel.Environment.Types (Environment)
+import Marvel.Environment.Types (Environment, Field (EnvironmentCounters))
 import Marvel.Entity
 import Marvel.Event
 import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets)
@@ -50,7 +50,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types (Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
@@ -77,6 +77,7 @@ import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
+import Marvel.GameValue (fromGameValue)
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
@@ -343,6 +344,18 @@ asYou ident body = getGame >>= runReaderT body . (youL ?~ ident)
 -- cards, the "you" of their boost abilities.
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
+
+-- | The villain's stage, I to III (0 for one not in play).
+getVillainStage :: (HasGame m) => VillainId -> m Natural
+getVillainStage vid = getsGame $ maybe 0 (Villain.villainStage . toAttrs) . lookup vid . gameVillains
+
+-- | The counters on the environment, main scheme or attachment.
+getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
+getCountersOn a = getsGame \g -> case toTarget a of
+  EnvironmentRef eid -> maybe 0 (field EnvironmentCounters) (lookup eid $ gameEnvironments g)
+  MainSchemeRef mid -> maybe 0 (field MainSchemeCounters) (lookup mid $ gameMainSchemes g)
+  AttachmentRef aid -> maybe 0 (field AttachmentCounters) (lookup aid $ gameAttachments g)
+  _ -> 0
 
 -- | How many cards in play have the trait: of every type, each identity one card.
 countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
@@ -625,7 +638,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               & (entitiesL . minionsL %~ insertMap (toId minion) minion)
               & (boostCardsL %~ deleteMap target)
         _ -> error "messed up somewhere"
-    _ -> error "Unhandled"
+    -- any other card ("put Goblin Nation into play") enters play as it would revealed,
+    -- without its windows, and is no longer a boost card to discard
+    _ -> case lookup target gameBoostCards of
+      Just card -> do
+        putEncounterCardIntoPlay ident card
+        pure $ g & boostCardsL %~ deleteMap target
+      Nothing -> pure g
   RevealBoostCard card enemyId -> do
     player <- getActivePlayerId
     let
@@ -770,6 +789,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
       EnvironmentType -> do
         let environment = createEnvironment card
+        environmentStep (toId environment) EnvironmentEntered
         pure $ g & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
       _ -> error "Unhandled"
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
@@ -1448,6 +1468,12 @@ gameSelectIdentity m = do
         fp : _ -> toId a == fp
         _ -> False
     You -> \a -> (== toId a) <$> getYou
+    IdentityWithFewestRemainingHitPoints m' -> \a -> do
+      candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gamePlayers
+      remaining <- for candidates \p -> (toId p,) . subtractNatural (identityDamage p) <$> getModifiedHp p
+      pure $ case find ((== toId a) . fst) remaining of
+        Just (_, mine) -> all ((>= mine) . snd) remaining
+        Nothing -> False
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
@@ -1751,6 +1777,8 @@ gameSelectEnemy m = do
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
+    EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
+    EnemyWithHighestPrintedHitPoints -> (==) <$> villainPrinted e <*> highestPrinted
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -1771,9 +1799,17 @@ gameSelectEnemy m = do
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
     EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
+    EnemyWithTrait t -> member t <$> getTraits e
+    EnemyWithHighestPrintedHitPoints -> (== minionPrinted e) <$> highestPrinted
   highestAttack = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
+    pure $ foldl' max 0 (villains <> minions)
+  villainPrinted v = fromGameValue (unHp $ Villain.villainStartingHp (toAttrs v))
+  minionPrinted = fromIntegral . unHp . getMinionPrintedHitPoints
+  highestPrinted = do
+    villains <- traverse villainPrinted . HashMap.elems =<< getsGame gameVillains
+    minions <- map minionPrinted . HashMap.elems <$> getsGame gameMinions
     pure $ foldl' max 0 (villains <> minions)
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
@@ -1938,6 +1974,7 @@ getModifiers a = withDepthGuard 2 $ do
   sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
+  treacheries <- HashMap.elems <$> getsGame gameTreacheries
   -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
   -- allies only, the one kind so far that does
   inHand <- case toTarget a of
@@ -1963,6 +2000,7 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) villains
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) environments
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) treacheries
       ]
 
 getCurrentWindows :: (HasGame m) => m [Window]
@@ -2007,19 +2045,23 @@ getHazardCount :: (HasGame m) => m Natural
 getHazardCount = do
   sideSchemes <- getsGame gameSideSchemes
   villains <- getsGame gameVillains
+  mainSchemes <- getsGame gameMainSchemes
   pure $
     sum (map (cdHazards . getCardDef) (HashMap.elems sideSchemes))
       + sum (map (cdHazards . getCardDef) (HashMap.elems villains))
+      + sum (map (cdHazards . getCardDef) (HashMap.elems mainSchemes))
 
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCount = do
   tokens <- getsGame (scenarioAccelerationTokens . gameScenario)
   sideSchemes <- getsGame gameSideSchemes
   villains <- getsGame gameVillains
+  mainSchemes <- getsGame gameMainSchemes
   pure $
     tokens
       + sum (map (cdAcceleration . getCardDef) (HashMap.elems sideSchemes))
       + sum (map (cdAcceleration . getCardDef) (HashMap.elems villains))
+      + sum (map (cdAcceleration . getCardDef) (HashMap.elems mainSchemes))
 
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
