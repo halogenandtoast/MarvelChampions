@@ -34,5 +34,9 @@ import Marvel.Minion.Minions.Abomination as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Minion.Minions.UltimateBioServant as X
+import Marvel.Minion.Minions.ZolasMutate as X
+import Marvel.Minion.Minions.BerserkMutate as X
 
 -- The Once and Future Kang

@@ -43,6 +43,10 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Zola
+      , SomeAttachmentCard defensiveProgramming
+      , SomeAttachmentCard painInhibitors
+      , SomeAttachmentCard neurologicalImplants
 
       -- The Once and Future Kang
 

@@ -52,6 +52,10 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeSideSchemeCard hydraPrison
+  , SomeSideSchemeCard testSubjects
+  , SomeSideSchemeCard zolasExperiments
 
   -- The Once and Future Kang
 

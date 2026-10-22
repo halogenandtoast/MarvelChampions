@@ -36,6 +36,8 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Zola
+    , SomeScenarioCard zolaScenario
 
     -- The Once and Future Kang
 
@@ -59,6 +61,8 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Zola
+    , ("04109", [EncounterSet.UnderAttack])
 
     -- The Once and Future Kang
 
@@ -117,6 +121,24 @@ ultronScenario = scenario
   ("01134", "01135")
   ["01137", "01138", "01139"]
   [EncounterSet.Ultron]
+
+-- The Rise of Red Skull
+-- Zola
+
+newtype ZolaScenario = ZolaScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage ZolaScenario where
+  runMessage msg (ZolaScenario a) = ZolaScenario <$> runMessage msg a
+
+zolaScenario :: ScenarioCard ZolaScenario
+zolaScenario = scenario
+  ZolaScenario
+  "04109"
+  ("04109", "04110")
+  ["04112", "04113"]
+  [EncounterSet.Zola]
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs

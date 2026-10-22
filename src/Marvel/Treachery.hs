@@ -67,6 +67,9 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeTreacheryCard mindRay
+  , SomeTreacheryCard technologicalEnhancements
 
   -- The Once and Future Kang
 

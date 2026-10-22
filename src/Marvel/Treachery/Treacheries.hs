@@ -43,5 +43,8 @@ import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Treachery.Treacheries.MindRay as X
+import Marvel.Treachery.Treacheries.TechnologicalEnhancements as X
 
 -- The Once and Future Kang

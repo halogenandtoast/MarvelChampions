@@ -18,5 +18,9 @@ import Marvel.Attachment.Attachments.Counterspell as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Attachment.Attachments.DefensiveProgramming as X
+import Marvel.Attachment.Attachments.PainInhibitors as X
+import Marvel.Attachment.Attachments.NeurologicalImplants as X
 
 -- The Once and Future Kang

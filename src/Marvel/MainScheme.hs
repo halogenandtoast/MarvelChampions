@@ -34,6 +34,9 @@ allMainSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeMainSchemeCard theIslandOfDrZola
+  , SomeMainSchemeCard theMadDoctor
 
   -- The Once and Future Kang
 

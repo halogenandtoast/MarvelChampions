@@ -63,6 +63,10 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Zola
+      , SomeMinionCard ultimateBioServant
+      , SomeMinionCard zolasMutate
+      , SomeMinionCard berserkMutate
 
       -- The Once and Future Kang
 

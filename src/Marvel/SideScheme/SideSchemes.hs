@@ -30,5 +30,9 @@ import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.SideScheme.SideSchemes.HydraPrison as X
+import Marvel.SideScheme.SideSchemes.TestSubjects as X
+import Marvel.SideScheme.SideSchemes.ZolasExperiments as X
 
 -- The Once and Future Kang

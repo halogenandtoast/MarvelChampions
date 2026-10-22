@@ -9,6 +9,8 @@ import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Name
 import Marvel.Trait
+import Data.HashSet (singleton)
+import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
@@ -26,6 +28,10 @@ allVillainCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , zola1
+  , zola2
+  , zola3
 
   -- The Once and Future Kang
 
@@ -87,3 +93,15 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+-- The Rise of Red Skull
+-- Zola
+
+zola1 :: CardDef
+zola1 = (villain "04109" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola2 :: CardDef
+zola2 = (villain "04110" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola3 :: CardDef
+zola3 = (villain "04111" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
