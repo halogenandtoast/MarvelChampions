@@ -12,6 +12,10 @@ import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.MainScheme.MainSchemes.TheIslandOfDrZola as X
+import Marvel.MainScheme.MainSchemes.TheMadDoctor as X
+
 -- Red Skull
 import Marvel.MainScheme.MainSchemes.NewWorldHydra as X
 import Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull as X

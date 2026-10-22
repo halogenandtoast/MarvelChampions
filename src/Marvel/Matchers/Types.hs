@@ -227,6 +227,8 @@ data MinionMatcher
   | StunnedMinion
   | -- | of the minions matching, those with the highest printed hit points
     MinionWithHighestPrintedHitPointsAmong MinionMatcher
+  | -- | of the minions matching, those with the most hit points remaining
+    MinionWithMostRemainingHitPointsAmong MinionMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

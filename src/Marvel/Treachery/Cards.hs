@@ -67,6 +67,10 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , mindRay
+  , technologicalEnhancements
+
   -- Red Skull
   , bitterRival
   , spreadingLies
@@ -245,6 +249,18 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+-- The Rise of Red Skull
+-- Zola
+
+mindRay :: CardDef
+mindRay = treachery "04120" "Mind Ray" [Boost, Boost] Zola 3
+
+technologicalEnhancements :: CardDef
+technologicalEnhancements =
+  (treachery "04121" "Technological Enhancements" [Star] Zola 2)
+    { cdKeywords = singleton (Keyword.Incite 1)
+    }
 
 -- Red Skull
 

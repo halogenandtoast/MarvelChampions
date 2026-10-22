@@ -54,7 +54,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types (Attrs (mainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
@@ -435,6 +435,10 @@ getDeckKeyFor ident = do
   getsGame \g -> case activeVillainIn g aid of
     Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
     _ -> EncounterDeckKey
+
+-- | The counters on the main scheme: Zola's test counters, say.
+getMainSchemeCounters :: (HasGame m) => MainSchemeId -> m Natural
+getMainSchemeCounters ms = getsGame (maybe 0 (mainSchemeCounters . toAttrs) . lookup ms . gameMainSchemes)
 
 -- | The player cards set aside out of play, as an encounter set's Captive allies.
 getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
@@ -1008,6 +1012,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
             & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
       _ -> error "Unhandled"
+  AttachEncounterCard card enemy -> do
+    let attachment = createAttachment card
+    attachTo (toId attachment) enemy
+    pure $ g & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment) & (boostCardsL %~ HashMap.filter (/= card))
+  -- a boost card shuffled into the encounter deck is not discarded with the others
+  ShuffleIntoEncounterDeck cards -> pure $ g & boostCardsL %~ HashMap.filter (`notElem` cards)
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     MinionType -> do
       let
@@ -2096,7 +2106,8 @@ gameSelectMinion m = do
       minions <- HashMap.elems <$> getsGame gameMinions
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
-    MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    -- a keyword it gains counts, as guard from Defensive Programming
+    MinionWithKeyword k -> fmap (elem k) . Minion.getModifiedKeywords . toAttrs
     StunnedMinion -> pure . minionStunned . toAttrs
     MinionMatches xs -> andM . traverse matchFilter xs
     NotMinion m' -> fmap not . matchFilter m'
@@ -2110,6 +2121,13 @@ gameSelectMinion m = do
       pure $
         toId minion `elem` map toId candidates
           && unHp (getMinionPrintedHitPoints minion) == highest
+    MinionWithMostRemainingHitPointsAmong m' -> \minion -> do
+      minions <- HashMap.elems <$> getsGame gameMinions
+      candidates <- filterM (matchFilter m') minions
+      let remaining mn = subtractNatural (getMinionDamage mn) <$> Minion.getModifiedHitPoints (toAttrs mn)
+      most <- maximum . (0 :) <$> traverse remaining candidates
+      mine <- remaining minion
+      pure $ toId minion `elem` map toId candidates && mine == most
 
 gameSelectTreachery :: (HasGame m) => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case

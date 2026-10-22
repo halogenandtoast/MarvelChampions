@@ -463,6 +463,11 @@ attachedTo enemy attachment = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (AttachedToVillain attachment)
   EnemyMinionId mid -> MinionMessage mid (AttachedToMinion attachment)
 
+-- | The attachment card is put into play attached to the enemy, without being revealed:
+-- "attach that card to Zola's Mutate".
+attachEncounterCard :: (ReverseQueue m, IsEnemy enemy) => EncounterCard -> enemy -> m ()
+attachEncounterCard card = push . AttachEncounterCard card . toEnemy
+
 -- | The attachment is attached to the player's identity card.
 attachToIdentity :: (ReverseQueue m) => AttachmentId -> IdentityId -> m ()
 attachToIdentity attachment = push . AttachmentMessage attachment . AttachedToIdentity

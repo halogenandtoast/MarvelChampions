@@ -46,6 +46,11 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , hydraPrison
+  , testSubjects
+  , zolasExperiments
+
   -- Red Skull
   , theRedHouse
   , theSleeperAwakened
@@ -224,6 +229,19 @@ openTheDarkDimension =
   (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
     }
+
+-- The Rise of Red Skull
+-- Zola
+
+hydraPrison :: CardDef
+hydraPrison = sideScheme "04122" "Hydra Prison" [] Zola 1
+
+testSubjects :: CardDef
+testSubjects = (sideScheme "04123" "Test Subjects" [Boost, Boost] Zola 2) {cdHazards = 1}
+
+zolasExperiments :: CardDef
+zolasExperiments =
+  (sideScheme "04124" "Zola's Experiments" [Boost, Boost, Boost] Zola 1) {cdAcceleration = 1}
 
 -- Red Skull
 

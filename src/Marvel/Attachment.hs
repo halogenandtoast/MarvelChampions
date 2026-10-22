@@ -47,6 +47,11 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Zola
+      , SomeAttachmentCard defensiveProgramming
+      , SomeAttachmentCard painInhibitors
+      , SomeAttachmentCard neurologicalImplants
+
       -- Red Skull
       , SomeAttachmentCard redSkullsLuger
       , SomeAttachmentCard redSkullsRightHook

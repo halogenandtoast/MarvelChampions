@@ -69,6 +69,23 @@ allAllies = fromList $ concatMap
 
   ]
 
+-- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
+-- aspect nor basic. ponytail: kept by hand, as identityAlly and basicAlly make the same
+-- def; a new hero's own ally is added here.
+heroSpecificAllies :: [CardDef]
+heroSpecificAllies =
+  [ blackCatFeliciaHardy
+  , spiderWomanJessicaDrew
+  , hellcatPatsyWalker
+  , warMachineJamesRhodes
+  , shuri
+  , agent13SharonCarter
+  , redDagger
+  , winterSoldierBuckyBarnes
+  , ladySif
+  , wong
+  ]
+
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
 ally code name cost traits resources aspect =
   baseAlly code name cost traits resources (Just aspect)

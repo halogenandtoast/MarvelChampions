@@ -40,6 +40,11 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Zola
+      , defensiveProgramming
+      , painInhibitors
+      , neurologicalImplants
+
       -- Red Skull
       , redSkullsLuger
       , redSkullsRightHook
@@ -138,6 +143,18 @@ biomechanicalUpgrades =
 counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
+
+-- The Rise of Red Skull
+-- Zola
+
+defensiveProgramming :: CardDef
+defensiveProgramming = attachment "04117" "Defensive Programming" [Tech] [Boost] Zola 3
+
+painInhibitors :: CardDef
+painInhibitors = attachment "04118" "Pain Inhibitors" [Tech] [Boost] Zola 2
+
+neurologicalImplants :: CardDef
+neurologicalImplants = attachment "04119" "Neurological Implants" [Tech] [Boost] Zola 2
 
 -- Red Skull
 

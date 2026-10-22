@@ -24,6 +24,10 @@ allMainSchemes =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Zola
+    , theIslandOfDrZola
+    , theMadDoctor
+
     -- Red Skull
     , theRiseOfRedSkull
     , newWorldHydra
@@ -78,6 +82,15 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- The Rise of Red Skull
+-- Zola
+
+theIslandOfDrZola :: CardDef
+theIslandOfDrZola = mainScheme "04112" "The Island of Dr. Zola" Zola
+
+theMadDoctor :: CardDef
+theMadDoctor = mainScheme "04113" "The Mad Doctor" Zola
 
 -- Red Skull
 

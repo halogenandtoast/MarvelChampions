@@ -75,6 +75,10 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeTreacheryCard mindRay
+  , SomeTreacheryCard technologicalEnhancements
+
   -- Red Skull
   , SomeTreacheryCard bitterRival
   , SomeTreacheryCard spreadingLies

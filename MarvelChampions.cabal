@@ -87,11 +87,14 @@ library
       Marvel.Attachment.Attachments.Charge
       Marvel.Attachment.Attachments.ConcussionBlasters
       Marvel.Attachment.Attachments.Counterspell
+      Marvel.Attachment.Attachments.DefensiveProgramming
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.GoblinGlider
       Marvel.Attachment.Attachments.MasterStrategist
       Marvel.Attachment.Attachments.MediaCoverage
+      Marvel.Attachment.Attachments.NeurologicalImplants
+      Marvel.Attachment.Attachments.PainInhibitors
       Marvel.Attachment.Attachments.PhotographicReflexes
       Marvel.Attachment.Attachments.ProgramTransmitter
       Marvel.Attachment.Attachments.PumpkinBombs
@@ -268,6 +271,8 @@ library
       Marvel.MainScheme.MainSchemes.SecretRendezvous
       Marvel.MainScheme.MainSchemes.TheBreakIn
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
+      Marvel.MainScheme.MainSchemes.TheIslandOfDrZola
+      Marvel.MainScheme.MainSchemes.TheMadDoctor
       Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.MainScheme.Types
@@ -301,6 +306,7 @@ library
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
+      Marvel.Minion.Minions.BerserkMutate
       Marvel.Minion.Minions.ChitauriSoldier
       Marvel.Minion.Minions.Deathunt9000
       Marvel.Minion.Minions.Drone
@@ -332,12 +338,14 @@ library
       Marvel.Minion.Minions.Titania
       Marvel.Minion.Minions.Tombstone
       Marvel.Minion.Minions.TyrannosaurusRex
+      Marvel.Minion.Minions.UltimateBioServant
       Marvel.Minion.Minions.Vulture
       Marvel.Minion.Minions.WeaponsRunner
       Marvel.Minion.Minions.Whiplash
       Marvel.Minion.Minions.Whirlwind
       Marvel.Minion.Minions.Wildrun
       Marvel.Minion.Minions.YonRogg
+      Marvel.Minion.Minions.ZolasMutate
       Marvel.Minion.Runner
       Marvel.Minion.Types
       Marvel.Modifier
@@ -389,6 +397,7 @@ library
       Marvel.SideScheme.SideSchemes.GenerationWhy
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.HitSquad
+      Marvel.SideScheme.SideSchemes.HydraPrison
       Marvel.SideScheme.SideSchemes.HydraReinforcements
       Marvel.SideScheme.SideSchemes.IllegalArmsFactory
       Marvel.SideScheme.SideSchemes.ImminentOverload
@@ -403,6 +412,7 @@ library
       Marvel.SideScheme.SideSchemes.PrisonCamps
       Marvel.SideScheme.SideSchemes.RunningInterference
       Marvel.SideScheme.SideSchemes.TaskmastersTrainingCamp
+      Marvel.SideScheme.SideSchemes.TestSubjects
       Marvel.SideScheme.SideSchemes.TheAnachronauts
       Marvel.SideScheme.SideSchemes.TheDoomsdayChair
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
@@ -415,6 +425,7 @@ library
       Marvel.SideScheme.SideSchemes.UltronsImperative
       Marvel.SideScheme.SideSchemes.UnderAttack
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
+      Marvel.SideScheme.SideSchemes.ZolasExperiments
       Marvel.SideScheme.Types
       Marvel.Stats
       Marvel.Status
@@ -485,6 +496,7 @@ library
       Marvel.Treachery.Treacheries.Masterplan
       Marvel.Treachery.Treacheries.MastersOfMayhem
       Marvel.Treachery.Treacheries.Mimicry
+      Marvel.Treachery.Treacheries.MindRay
       Marvel.Treachery.Treacheries.RageOfUltron
       Marvel.Treachery.Treacheries.RegenerativeHealing
       Marvel.Treachery.Treacheries.RepairSequence
@@ -498,6 +510,7 @@ library
       Marvel.Treachery.Treacheries.SwarmAttack
       Marvel.Treachery.Treacheries.SweepingSwoop
       Marvel.Treachery.Treacheries.TailSweep
+      Marvel.Treachery.Treacheries.TechnologicalEnhancements
       Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Treachery.Treacheries.Thoughtcasting
       Marvel.Treachery.Treacheries.TitaniasFury
@@ -583,6 +596,7 @@ library
       Marvel.Villain.Villains.Rhino
       Marvel.Villain.Villains.Taskmaster
       Marvel.Villain.Villains.Ultron
+      Marvel.Villain.Villains.Zola
       Marvel.Window
       Marvel.Window.Types
   other-modules:
@@ -762,6 +776,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.ThorNemesisSpec
       Marvel.Encounter.UltronSpec
       Marvel.Encounter.VillainStagesSpec
+      Marvel.Encounter.ZolaSpec
       Marvel.Hero.BlackPantherSpec
       Marvel.Hero.BlackWidowSpec
       Marvel.Hero.CaptainAmericaSpec

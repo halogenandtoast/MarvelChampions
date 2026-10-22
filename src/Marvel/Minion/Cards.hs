@@ -57,6 +57,11 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Zola
+      , ultimateBioServant
+      , zolasMutate
+      , berserkMutate
+
       -- Red Skull
       , theSleeper
       , hydraExoSoldier
@@ -305,6 +310,24 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- The Rise of Red Skull
+-- Zola
+
+ultimateBioServant :: CardDef
+ultimateBioServant =
+  (minion "04114" "Ultimate Bio-Servant" [Hydra, Mutate] [Star] Zola 4)
+    { cdKeywords = singleton Toughness
+    }
+
+zolasMutate :: CardDef
+zolasMutate = minion "04115" "Zola's Mutate" [Hydra, Mutate] [Star] Zola 3
+
+berserkMutate :: CardDef
+berserkMutate =
+  (minion "04116" "Berserk Mutate" [Hydra, Mutate] [Star] Zola 3)
+    { cdKeywords = singleton Quickstrike
+    }
 
 -- Red Skull
 

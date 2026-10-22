@@ -33,6 +33,11 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.SideScheme.SideSchemes.HydraPrison as X
+import Marvel.SideScheme.SideSchemes.TestSubjects as X
+import Marvel.SideScheme.SideSchemes.ZolasExperiments as X
+
 -- Red Skull
 import Marvel.SideScheme.SideSchemes.CensorThePast as X
 import Marvel.SideScheme.SideSchemes.HydraReinforcements as X

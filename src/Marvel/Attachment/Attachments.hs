@@ -22,6 +22,11 @@ import Marvel.Attachment.Attachments.MediaCoverage as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Attachment.Attachments.DefensiveProgramming as X
+import Marvel.Attachment.Attachments.PainInhibitors as X
+import Marvel.Attachment.Attachments.NeurologicalImplants as X
+
 -- Red Skull
 import Marvel.Attachment.Attachments.MasterStrategist as X
 import Marvel.Attachment.Attachments.RedSkullsLuger as X

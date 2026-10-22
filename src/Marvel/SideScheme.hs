@@ -55,6 +55,11 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeSideSchemeCard hydraPrison
+  , SomeSideSchemeCard testSubjects
+  , SomeSideSchemeCard zolasExperiments
+
   -- Red Skull
   , SomeSideSchemeCard theRedHouse
   , SomeSideSchemeCard theSleeperAwakened

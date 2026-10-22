@@ -37,6 +37,11 @@ import Marvel.Minion.Minions.Tombstone as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Minion.Minions.UltimateBioServant as X
+import Marvel.Minion.Minions.ZolasMutate as X
+import Marvel.Minion.Minions.BerserkMutate as X
+
 -- Red Skull
 import Marvel.Minion.Minions.HydraExoSoldier as X
 import Marvel.Minion.Minions.TheSleeper as X
