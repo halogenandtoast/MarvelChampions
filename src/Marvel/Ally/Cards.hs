@@ -84,8 +84,8 @@ allAllies = fromList $ concatMap
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
--- aspect nor basic. ponytail: kept by hand, as identityAlly and basicAlly make the same
--- def; a new hero's own ally is added here.
+-- aspect nor basic. ponytail: kept by hand; HeroSpecificCard now tells them apart, by a
+-- basic card's Neutral aspect, and could replace this list.
 heroSpecificAllies :: [CardDef]
 heroSpecificAllies =
   [ blackCatFeliciaHardy
