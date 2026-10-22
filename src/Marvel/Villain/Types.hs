@@ -284,9 +284,11 @@ runVillainMessage msg attrs = case msg of
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
   VillainDamaged _ damage -> do
-    if villainTough attrs && preventedByTough damage
-      then pure $ attrs & toughL .~ False
-      else do
+    cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
+    if
+      | cannotTakeDamage -> pure attrs
+      | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
+      | otherwise -> do
         when
           ( subtractNatural
               (damageAmount damage)

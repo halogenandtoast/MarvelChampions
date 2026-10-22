@@ -23,7 +23,7 @@ import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAll
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment)
+import Marvel.Attachment.Types (Attachment, Attrs (attachmentSideScheme))
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
@@ -68,6 +68,7 @@ import Marvel.Minion.Types (
   minionAttachments,
   minionAttackDetails,
   minionUpgrades,
+  minionEngagedIdentity,
  )
 import Marvel.Modifier
 import Marvel.Name
@@ -554,6 +555,24 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
+    -- out of the game, not discarded: what is attached to it is discarded
+    SideSchemeRef sid -> do
+      for_
+        [ uid
+        | (uid, u) <- HashMap.toList (gameUpgrades g)
+        , upgradeAttachedSideScheme (toAttrs u) == Just sid
+        ]
+        removeFromPlay
+      for_ [aid | (aid, a) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
+      pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid) & (areasL . each %~ \a -> a {areaSideSchemes = filter (/= sid) (areaSideSchemes a)})
+    MinionRef mid -> case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        let a = toAttrs minion
+        for_ (minionUpgrades a) removeFromPlay
+        for_ (minionAttachments a) removeFromPlay
+        minionDisengages (minionEngagedIdentity a) mid
+        pure $ g & (entitiesL . minionsL %~ deleteMap mid)
     CardIdRef _ -> pure g -- Should be handled by Identity
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
