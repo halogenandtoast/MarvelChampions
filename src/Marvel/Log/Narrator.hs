@@ -165,6 +165,7 @@ identityNarration ident = \case
 villainNarration :: (HasGame m) => VillainId -> VillainMessage -> Maybe (m [LogEntry])
 villainNarration vid = \case
   VillainAttacks ident -> Just $ activation (VillainRef vid) ident "log.attacks" =<< getsGame (maybe False ((.villainStunned) . toAttrs) . lookup vid . gameVillains)
+  VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
   VillainSchemes -> Just $ schemes (VillainRef vid) =<< getsGame (maybe False ((.villainConfused) . toAttrs) . lookup vid . gameVillains)
   VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains

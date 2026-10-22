@@ -404,6 +404,10 @@ revealBoost card = push . RevealBoost (toTarget card)
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
 
+-- | The villain attacks the player, no boost cards dealt for the attack.
+villainAttacksWithoutBoost :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
+villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWithoutBoost
+
 -- | "The attack gains overkill" (piercing, ranged): the enemy's attack under way.
 attackGains :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
 attackGains enemy k = push case toEnemy enemy of

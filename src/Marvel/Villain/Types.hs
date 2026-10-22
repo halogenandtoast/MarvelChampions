@@ -345,10 +345,13 @@ runVillainMessage msg attrs = case msg of
         -- the attack is under way from when it is declared, as its would windows open
         attack' <- newAttack ident
         pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
+  VillainAttacksWithoutBoost ident -> do
+    attrs' <- runVillainMessage (VillainAttacks ident) attrs
+    pure $ attrs' & attackingL . _Just %~ \a -> a {attackWithoutBoost = True}
   VillainBeginAttack ident -> do
     attack' <- keepingGains (villainAttacking attrs) <$> newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    dealBoost attrs
+    unless (attackWithoutBoost attack') $ dealBoost attrs
     declareDefense ident vid AnyDefense
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked

@@ -450,6 +450,10 @@ intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
 
+-- | The villain's ATK, as modified: "Crossbones' ATK".
+getVillainAttack :: (HasGame m) => VillainId -> m Natural
+getVillainAttack vid = maybe (pure 0) (Villain.getModifiedAttack . toAttrs) =<< getsGame (lookup vid . gameVillains)
+
 -- | How many cards in play have the trait: of every type, each identity one card.
 countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
 countCardsInPlayWithTrait t = do

@@ -15,6 +15,8 @@ data Attack = Attack
   , attackDefended :: Bool
   , attackPiercing :: Bool
   , attackRanged :: Bool
+  , attackWithoutBoost :: Bool
+  -- ^ no boost cards are dealt for it
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -51,6 +53,7 @@ attack enemyId characterId dmg =
     , attackDefended = False
     , attackPiercing = False
     , attackRanged = False
+    , attackWithoutBoost = False
     }
 
 -- | "The attack gains overkill, piercing or ranged"; no other keyword is an attack's.
@@ -78,4 +81,5 @@ keepingGains (Just old) a =
     { attackOverkill = attackOverkill a || attackOverkill old
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
+    , attackWithoutBoost = attackWithoutBoost a || attackWithoutBoost old
     }
