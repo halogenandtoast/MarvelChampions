@@ -188,6 +188,10 @@ placeCounters a = push . PlaceCounters (toTarget a)
 removeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
 removeCounters a = push . RemoveCounters (toTarget a)
 
+-- | Each player's obligations out of the encounter deck and the game.
+removePlayerObligationsFromGame :: (ReverseQueue m) => m ()
+removePlayerObligationsFromGame = push RemovePlayerObligationsFromGame
+
 -- | The identity is given a tough status card.
 becomeTough :: (ReverseQueue m) => IdentityId -> m ()
 becomeTough ident = push $ IdentityMessage ident IdentityBecomeTough

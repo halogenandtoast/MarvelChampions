@@ -312,6 +312,7 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
       pushAll [WithDiscarded target FromEncounterDeck (EncounterCard <$> discarded) | Just target <- [mTarget]]
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
+    RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
     -- a card discarded from the encounter deck, as one looked at there, leaves it
     DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :) & encounterDeckL %~ filter (/= ec)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)

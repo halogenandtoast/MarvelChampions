@@ -39,3 +39,7 @@ genEncounterCard :: (MonadRandom m) => CardDef -> m EncounterCard
 genEncounterCard cardDef = do
   cardId <- getRandom
   pure $ MkEncounterCard cardId cardDef
+
+-- | A player's obligation, shuffled in with their identity, not one of an encounter set.
+isPlayerObligation :: (HasCardDef a) => a -> Bool
+isPlayerObligation (getCardDef -> def) = cdCardType def == ObligationType && isNothing (cdEncounterSet def)

@@ -713,6 +713,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.EncounterDeckSpec
       Marvel.Rules.PrintingSpec
       Marvel.Rules.RecoverSpec
+      Marvel.Rules.SetMechanicsSpec
       Marvel.Rules.SurgeSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
