@@ -81,7 +81,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Attrs (scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
+import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -367,6 +367,25 @@ runPreGameMessage msg g = case msg of
   -- pushed before the card answers, so the window follows what the ability does
   RanAbility ident target _ _ _ | Just def <- abilityCardDef g target -> do
     push $ CheckWindows [W.Window After $ W.ResolvedAbility ident def]
+    pure g
+  -- begun before the scenario takes the card from where it was, so where that was is
+  -- known; a card still to be revealed for a player eliminated meanwhile is discarded
+  RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
+    push $ DiscardedCard (EncounterCard card)
+    pure g
+  RevealEncounterCard ident card -> do
+    let
+      scenario = toAttrs (gameScenario g)
+      source
+        | card `elem` scenarioDiscard scenario = W.RevealedFromDiscardPile
+        | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
+        | otherwise = W.RevealedFromEncounterDeck
+    pushAll
+      [ FocusCards [EncounterCard card]
+      , CheckWindows [W.Window When $ W.EncounterCardRevealed source ident card]
+      , UnfocusCards
+      , RevealedEncounterCard ident card
+      ]
     pure g
   CheckWindows windows -> do
     push EndCheckWindows
@@ -676,18 +695,6 @@ runGameMessage msg g@Game {..} = case msg of
     pushAll $ map (DiscardedCard . EncounterCard) (HashMap.elems gameBoostCards)
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
-  -- a card still to be revealed for a player eliminated meanwhile is discarded
-  RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
-    push $ DiscardedCard (EncounterCard card)
-    pure g
-  RevealEncounterCard ident card -> do
-    pushAll
-      [ FocusCards [EncounterCard card]
-      , CheckWindows [W.Window When $ W.EncounterCardRevealed ident card]
-      , UnfocusCards
-      , RevealedEncounterCard ident card
-      ]
-    pure g
   RevealedEncounterCard ident card -> do
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
     let surge = [Marvel.Message.Surge ident | Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)]
@@ -888,7 +895,7 @@ runGameMessage msg g@Game {..} = case msg of
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
             _ -> False
-          W.Window _ (W.EncounterCardRevealed _ card) -> isQueued \case
+          W.Window _ (W.EncounterCardRevealed _ _ card) -> isQueued \case
             RevealedEncounterCard _ card' -> card' == card
             _ -> False
           W.Window _ (W.IdentityTakeDamage iid _) -> isQueued \case

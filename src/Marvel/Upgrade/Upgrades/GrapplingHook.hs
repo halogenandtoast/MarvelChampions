@@ -47,7 +47,7 @@ instance HasAbilities GrapplingHook where
 -- included.
 instance RunMessage GrapplingHook where
   runMessage msg u@(GrapplingHook attrs) = case msg of
-    RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ card] _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ _ card] _ -> do
       replaceMatchingMessage (const [DiscardedCard (EncounterCard card)]) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False

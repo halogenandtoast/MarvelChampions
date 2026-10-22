@@ -14,7 +14,11 @@ data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data RevealSource = RevealedFromEncounterDeck | RevealedFromVillain
+data RevealSource
+  = RevealedFromEncounterDeck
+  | RevealedFromVillain
+  | RevealedFromDiscardPile
+  | RevealedFromSetAside
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -48,7 +52,8 @@ data WindowMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
-  | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
+  | -- | revealed from the encounter deck, by any player
+    EncounterCardRevealedFromDeck WindowTiming BasicEncounterCardMatcher
   | RoundEnds
   | IdentityWouldBeDefeated IdentityMatcher
   | TurnBegins IdentityMatcher
@@ -109,7 +114,7 @@ data WindowType
   | MadeBasicAttack IdentityId
   | DefeatedSideScheme SideSchemeId
   | HeroDefends IdentityId EnemyId
-  | EncounterCardRevealed IdentityId EncounterCard
+  | EncounterCardRevealed RevealSource IdentityId EncounterCard
   | RoundEnded
   | IdentityDefeat IdentityId
   | TurnBegan IdentityId
