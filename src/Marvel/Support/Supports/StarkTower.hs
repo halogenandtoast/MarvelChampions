@@ -8,17 +8,15 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -49,15 +47,12 @@ instance HasAbilities StarkTower where
     ]
 
 instance RunMessage StarkTower where
-  runMessage msg s@(StarkTower attrs) = case msg of
+  runMessage msg s@(StarkTower attrs) = runQueueT $ case msg of
     -- only a player with a Tech upgrade in their discard pile is worth choosing
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       players <- getPlayers
       returns <- forMaybeM players \player ->
         fmap (player,) <$> selectOne (TopmostCardInDiscardOf (IdentityWithId player) techUpgrade)
-      chooseOrRunOne ident
-        [ TargetLabel (IdentityRef player) [Run [IdentityMessage player (AddToHand card)]]
-        | (player, card) <- returns
-        ]
+      chooseOrRunOne ident [targeting player (addToHand player card) | (player, card) <- returns]
       pure s
     _ -> StarkTower <$> runMessage msg attrs

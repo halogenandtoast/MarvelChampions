@@ -11,11 +11,10 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -34,10 +33,9 @@ instance HasAbilities AlphaFlightStation where
     ]
 
 instance RunMessage AlphaFlightStation where
-  runMessage msg s@(AlphaFlightStation attrs) = case msg of
+  runMessage msg s@(AlphaFlightStation attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       isCarolDanvers <- ident `match` IdentityWithTitle "Carol Danvers"
-      let drawCount = if isCarolDanvers then 2 else 1
-      push $ IdentityMessage ident $ DrawCards FromDeck drawCount
+      drawCards ident $ if isCarolDanvers then 2 else 1
       pure s
     _ -> AlphaFlightStation <$> runMessage msg attrs

@@ -11,11 +11,10 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Window
@@ -54,19 +53,8 @@ getDetails (ThreatPlaced _ schemeId n : _) = (schemeId, n)
 getDetails (_ : xs) = getDetails xs
 
 instance RunMessage JenniferWalters where
-  runMessage msg a@(JenniferWalters attrs) = case msg of
+  runMessage msg a@(JenniferWalters attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 (getDetails -> (schemeId, n)) _ -> do
-      let
-        newMsg = case schemeId of
-          SchemeMainSchemeId sid ->
-            MainSchemeMessage sid (MainSchemePlaceThreat (subtractNatural 1 n))
-          SchemeSideSchemeId sid ->
-            SideSchemeMessage sid (SideSchemePlaceThreat (subtractNatural 1 n))
-      replaceMatchingMessage (const [newMsg]) $ \case
-        (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
-          schemeId == SchemeMainSchemeId mid
-        (SideSchemeMessage mid (SideSchemePlaceThreat _)) ->
-          schemeId == SchemeSideSchemeId mid
-        _ -> False
+      insteadOf (isThreatPlacement schemeId) $ placeThreatPastWindow schemeId (subtractNatural 1 n)
       pure a
     _ -> JenniferWalters <$> runMessage msg attrs

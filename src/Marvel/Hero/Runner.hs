@@ -16,11 +16,10 @@ import Marvel.Game.Source
 import Marvel.Hero.Types as X
 import Marvel.Keyword (Keyword (Overkill))
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Window qualified as W
@@ -57,40 +56,22 @@ getModifiedDefense attrs = do
   applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
-damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg = \case
-  EnemyVillainId vid -> TargetLabel (toRef vid) [DamageEnemy (toRef vid) (toSource attrs) dmg]
-  EnemyMinionId mid -> TargetLabel (toRef mid) [DamageEnemy (toRef mid) (toSource attrs) dmg]
-
-thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
-thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid ->
-    TargetLabel
-      (toRef vid)
-      [ThwartScheme (toRef vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid ->
-    TargetLabel
-      (toRef sid)
-      [ThwartScheme (toRef sid) (toSource attrs) thw]
-
 instance RunMessage Hero where
   runMessage msg (Hero a) = Hero <$> runMessage msg a
 
 instance RunMessage (Attrs Hero) where
-  runMessage msg a = case msg of
+  runMessage msg a = runQueueT $ case msg of
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
         -- the interrupts to making a basic attack or thwart come first: what they add to
         -- the power is added to the attack or thwart waiting for them
         Attacked -> do
           stunned <- identityMatches StunnedIdentity (heroIdentityId a)
-          pushAll $
-            if stunned
-              then [IdentityMessage ident IdentityRemoveStunned]
-              else
-                [ CheckWindows [W.Window W.When $ W.MadeBasicAttack ident]
-                , IdentityMessage ident $ SideMessage $ BasicAttack 0
-                ]
+          if stunned
+            then removeStun ident
+            else do
+              checkWindows [W.Window W.When $ W.MadeBasicAttack ident]
+              basicAttack ident 0
           pure a
         BasicAttack bonus -> do
           enemies <- selectList $ AttackableBy (IdentityWithId ident)
@@ -98,44 +79,37 @@ instance RunMessage (Attrs Hero) where
           -- an attack that gains overkill: the hero has it as a keyword while it is made
           overkill <- elem (KeywordModifier Overkill) <$> getModifiers a
           let damage = toDamage dmg (FromPlayerAttack ident) & if overkill then withOverkill else id
-          pushAll
-            [ Ask ident $
-                prompted "$label.chooseEnemyToAttack" $
-                ChooseOne $
-                  map (damageChoice a damage) enemies
-            , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
-            ]
+          chooseOnePrompted ident "$label.chooseEnemyToAttack"
+            [targeting (enemyRef enemy) (dealDamage enemy a damage) | enemy <- enemies]
+          checkWindows [W.Window W.After $ W.MadeBasicAttack ident]
           pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
-          pushAll $
-            if confused
-              then [IdentityMessage ident IdentityRemoveConfused]
-              else
-                [ CheckWindows [W.Window W.When $ W.MadeBasicThwart ident]
-                , IdentityMessage ident $ SideMessage $ BasicThwart 0
-                ]
+          if confused
+            then removeConfused ident
+            else do
+              checkWindows [W.Window W.When $ W.MadeBasicThwart ident]
+              basicThwart ident 0
           pure a
         BasicThwart bonus -> do
           schemes <- selectList ThwartableScheme
           thw <- (+ bonus) <$> getModifiedThwart a
-          push $ Ask ident $ prompted "$label.chooseSchemeToThwart" $ ChooseOne $ map (thwartChoice a thw) schemes
+          chooseOnePrompted ident "$label.chooseSchemeToThwart"
+            [targeting (schemeTarget scheme) (thwartScheme scheme a thw) | scheme <- schemes]
           pure a
-        Defended enemyId -> do
-          pushAll
-            [ IdentityMessage ident ExhaustedIdentity
-            , case enemyId of
-                EnemyVillainId vid ->
-                  VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
-                EnemyMinionId vid ->
-                  MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
-            , CheckWindows [W.Window W.When $ W.HeroDefends ident enemyId]
-            , IdentityMessage ident $ SideMessage $ DefenseApplied enemyId
-            ]
+        Defended enemy -> do
+          exhaustIdentity ident
+          enemyDefendedBy enemy (IdentityCharacter ident)
+          checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+          defenseApplied ident enemy
           pure a
         DefenseApplied _ -> do
-          def <- getModifiedDefense a
-          push $ IdentityMessage ident $ IdentityDefended def
+          addDefense ident =<< getModifiedDefense a
           pure a
         _ -> pure a
     _ -> pure a
+   where
+    -- a scheme's own ref, main or side
+    schemeTarget = \case
+      SchemeMainSchemeId sid -> toTarget sid
+      SchemeSideSchemeId sid -> toTarget sid

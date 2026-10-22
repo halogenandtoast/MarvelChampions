@@ -13,11 +13,10 @@ import Marvel.Hero.Cards qualified as Cards
 import Marvel.Hero.Runner
 import Marvel.Identity.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Window qualified as W
@@ -51,10 +50,10 @@ newtype Hulk = Hulk (Attrs Hero)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance RunMessage Hulk where
-  runMessage msg h@(Hulk attrs) = case msg of
+  runMessage msg h@(Hulk attrs) = runQueueT $ case msg of
     -- "discard your hand"
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       hand <- project PlayerIdentityHand ident
-      pushAll $ map (DiscardedCard . PlayerCard) (unHand hand)
+      for_ (unHand hand) $ discardCard . PlayerCard
       pure h
     _ -> Hulk <$> runMessage msg attrs

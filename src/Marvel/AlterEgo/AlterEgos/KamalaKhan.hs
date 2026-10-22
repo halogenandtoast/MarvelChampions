@@ -13,11 +13,10 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Events
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Support.Cards qualified as Supports
@@ -62,11 +61,11 @@ instance HasAbilities KamalaKhan where
     ]
 
 instance RunMessage KamalaKhan where
-  runMessage msg a@(KamalaKhan attrs) = case msg of
+  runMessage msg a@(KamalaKhan attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push $ IdentityMessage ident $ DiscardFromDeckUntil msMarvelCard (toTarget a)
+      discardFromDeckUntil ident msMarvelCard a
       pure a
     WithDiscardedMatch (isTarget a -> True) _ (PlayerCard card) -> do
-      push $ IdentityMessage (alterEgoIdentityId attrs) (AddToHand card)
+      addToHand (alterEgoIdentityId attrs) card
       pure a
     _ -> KamalaKhan <$> runMessage msg attrs

@@ -11,11 +11,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Trait
@@ -38,13 +37,13 @@ instance HasAbilities TChalla where
   getAbilities a = [ability a 1 Setup NoCriteria NoCost $ runAbility a 1]
 
 instance RunMessage TChalla where
-  runMessage msg ae@(TChalla a) = case msg of
+  runMessage msg ae@(TChalla a) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage ident $
-        Search
-          (SearchIdentityDeck ident AllOfDeck)
-          (CardWithTrait BlackPanther <> CardWithType UpgradeType)
-          SearchDrawOne
-          ShuffleBackIn
+      search
+        ident
+        (SearchIdentityDeck ident AllOfDeck)
+        (CardWithTrait BlackPanther <> CardWithType UpgradeType)
+        SearchDrawOne
+        ShuffleBackIn
       pure ae
     _ -> TChalla <$> runMessage msg a

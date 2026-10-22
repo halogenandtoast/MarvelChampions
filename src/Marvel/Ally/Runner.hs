@@ -99,7 +99,7 @@ instance RunMessage (Attrs Ally) where
           pure a
       AllyDefended enemyId -> do
         exhaust ident
-        defendedBy enemyId ident
+        enemyDefendedBy enemyId (AllyCharacter ident)
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyWasAttacked attack' -> do
