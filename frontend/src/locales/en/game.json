@@ -17,6 +17,7 @@
   "threatOn": "{count} threat",
   "damageOn": "{count} damage",
   "countersOn": "{count} counters",
+  "heldBeneath": "{count} facedown beneath",
   "hand": "Hand",
   "handOf": "{name}'s hand",
   "emptyHand": "No cards in hand",

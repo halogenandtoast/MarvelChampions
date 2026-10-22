@@ -612,6 +612,12 @@ runPreGameMessage msg g = runQueueT $ case msg of
           )
   _ -> pure g
 
+-- | A side scheme that cannot leave play (The Sleeper Awakened) stays where it is.
+whenCanLeavePlay :: (HasGame m) => Game -> SideSchemeId -> m Game -> m Game
+whenCanLeavePlay g sid body = do
+  stays <- elem CannotLeavePlay <$> getModifiers (SideSchemeRef sid)
+  if stays then pure g else body
+
 runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- setup, as the rules reference's appendix II has it: a first player, the identities'
@@ -650,7 +656,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     -- out of the game, not discarded: what is attached to it is discarded
-    SideSchemeRef sid -> do
+    SideSchemeRef sid -> whenCanLeavePlay g sid do
       for_
         [ uid
         | (uid, u) <- HashMap.toList (gameUpgrades g)
@@ -777,7 +783,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     -- a villain's own side scheme cannot leave play while he is in play
     SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
-    SideSchemeRef sid -> do
+    SideSchemeRef sid -> whenCanLeavePlay g sid do
       -- what is attached to it is discarded with it, first
       for_
         [ uid

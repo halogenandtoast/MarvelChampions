@@ -76,6 +76,8 @@
   "activeVillain": "{villain} becomes the active villain",
 
   "-- The Rise of Red Skull --": "",
+  "takesNoDamage": "{target} takes no damage",
+  "takesControlOf": "{player} rescues {card} and takes control of it",
 
   "-- The Once and Future Kang --": "",
 
