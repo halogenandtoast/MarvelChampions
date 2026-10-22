@@ -143,7 +143,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
   letter-spacing: 0.06em;
 }
 /* the meter under the card, as on the board */
-.scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
+.scheme { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
 .scheme-card { display: flex; align-items: center; gap: 8px; }
 /* the threat about to go on, to the card's left */
 .adding { --token-size: 30px; }
