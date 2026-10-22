@@ -9,7 +9,6 @@ import Marvel.Card as X
 import Marvel.Entity as X
 import Marvel.Hp as X
 import Marvel.Modifier as X
-import Marvel.Queue as X
 import Marvel.Ref as X
 import Marvel.Stats as X
 
@@ -17,15 +16,12 @@ import Data.Typeable
 import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types
 import Marvel.Cost.Types (Cost (NoCost))
-import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id hiding (AllyId)
 import Marvel.Id qualified as Id
 import Marvel.Message hiding (AllyStunned)
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Question hiding (AllyAttack, AllyThwart)
 import Marvel.Trait
-import Marvel.Window qualified as W
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a) => IsAlly a where
   toAllyAttrs :: a -> Attrs Ally
@@ -164,50 +160,6 @@ getModifiedThwart attrs = do
  where
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
-
-damageChoice :: Attrs Ally -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg enemy =
-  TargetLabel
-    (case enemy of EnemyVillainId vid -> toRef vid; EnemyMinionId mid -> toRef mid)
-    [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) enemy]]
-    , Run [AllyMessage (allyId attrs) (AllyAttackLands enemy dmg)]
-    ]
-
-thwartChoice :: Attrs Ally -> Natural -> SchemeId -> Choice
-thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid ->
-    TargetLabel
-      (toRef vid)
-      [ ThwartScheme (toRef vid) (toRef attrs) thw
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.AllyThwart (allyId attrs) (SchemeMainSchemeId vid)
-              ]
-          ]
-      ]
-  SchemeSideSchemeId sid ->
-    TargetLabel
-      (toRef sid)
-      [ ThwartScheme (toRef sid) (toRef attrs) thw
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.AllyThwart (allyId attrs) (SchemeSideSchemeId sid)
-              ]
-          ]
-      ]
-
-stunChoice :: (IsAlly a) => a -> EnemyId -> Choice
-stunChoice a = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [Stun (toRef vid) (toRef $ toAllyAttrs a)]
-  EnemyMinionId vid ->
-    TargetLabel
-      (toRef vid)
-      [Stun (toRef vid) (toRef $ toAllyAttrs a)]
 
 instance IsCard (Attrs Ally) where
   toCard a =

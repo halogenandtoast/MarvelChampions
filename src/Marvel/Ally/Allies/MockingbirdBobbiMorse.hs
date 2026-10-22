@@ -31,9 +31,9 @@ newtype MockingbirdBobbiMorse = MockingbirdBobbiMorse (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef, HasController)
 
 instance RunMessage MockingbirdBobbiMorse where
-  runMessage msg a@(MockingbirdBobbiMorse attrs) = case msg of
+  runMessage msg a@(MockingbirdBobbiMorse attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       enemies <- selectList AnyEnemy
-      push $ Ask ident $ ChooseOne $ stunChoice a <$> enemies
+      chooseOne ident [targeting (enemyRef enemy) $ stun enemy a | enemy <- enemies]
       pure a
     _ -> MockingbirdBobbiMorse <$> runMessage msg attrs
