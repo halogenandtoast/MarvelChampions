@@ -242,9 +242,10 @@ const onKeydown = (event: KeyboardEvent) => {
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
-// the scenario's own villain, the first of the first area's
+// the scenario's own villain, the first of the first area's; at a split table, the
+// villain of the area shown, when it has one
 const scenarioName = computed(() => {
-  const first = game.value?.areas?.[0]?.villains?.[0]
+  const first = shownArea.value?.activeVillain ?? game.value?.areas?.[0]?.villains?.[0]
   return (game.value?.villains ?? []).find((v) => v.id === first)?.name ?? game.value?.villains?.[0]?.name ?? null
 })
 const active = computed(() => game.value?.activePlayer ?? null)
