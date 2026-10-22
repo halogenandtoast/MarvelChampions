@@ -14,6 +14,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hero.Types as X
+import Marvel.Keyword (Keyword (Overkill))
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message
 import Marvel.Modifier
@@ -99,25 +100,32 @@ instance RunMessage (Attrs Hero) where
   runMessage msg a = case msg of
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
+        -- "when you make a basic attack" is answered before its damage is known
         Attacked -> do
           stunned <- identityMatches StunnedIdentity (heroIdentityId a)
           if not stunned
             then do
-              enemies <- selectList AttackableEnemy
-              dmg <- getModifiedAttack a
               pushAll
-                [ Ask ident $
-                    prompted "$label.chooseEnemyToAttack" $
-                    ChooseOne $
-                      map
-                        (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
-                        enemies
-                , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
+                [ CheckWindows [W.Window W.When $ W.MadeBasicAttack ident]
+                , IdentityMessage ident (SideMessage BasicAttackDamage)
                 ]
               pure a
             else do
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveStunned
               pure a
+        BasicAttackDamage -> do
+          enemies <- selectList AttackableEnemy
+          dmg <- getModifiedAttack a
+          overkill <- elem (KeywordModifier Overkill) <$> getModifiers a
+          let damage = toDamage dmg (FromPlayerAttack ident) & if overkill then withOverkill else id
+          pushAll
+            [ Ask ident $
+                prompted "$label.chooseEnemyToAttack" $
+                ChooseOne $
+                  map (damageChoice a damage) enemies
+            , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
+            ]
+          pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
           if not confused

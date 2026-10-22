@@ -73,5 +73,7 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
+  | -- | the basic attack, once "when you make a basic attack" has been answered
+    BasicAttackDamage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -10,5 +10,6 @@ data Keyword
   | Surge
   | -- | a player controls no more than two restricted cards
     Restricted
+  | Overkill
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
