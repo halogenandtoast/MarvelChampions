@@ -99,6 +99,7 @@ export interface MinionView extends CardView {
   stunned: boolean
   confused: boolean
   tough: boolean
+  boostCards: number
   attachments: AttachmentView[]
   upgrades: UpgradeView[]
 }

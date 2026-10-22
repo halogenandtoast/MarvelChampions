@@ -200,6 +200,7 @@ data MinionView = MinionView
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
+  , boostCards :: Int
   , attachments :: [AttachmentView]
   , upgrades :: [UpgradeView]
   }
@@ -326,6 +327,7 @@ gameView seesHand g = do
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
       , boostCards =
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
+            <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
       , accelerationTokens = scenario.scenarioAccelerationTokens
       , question = HashMap.mapWithKey questionView (gameQuestion g)
@@ -456,6 +458,7 @@ gameView seesHand g = do
         , stunned = a.minionStunned
         , confused = a.minionConfused
         , tough = a.minionTough
+        , boostCards = length a.minionBoostCards
         , attachments = attachmentsIn a.minionAttachments
         , upgrades = upgradesOn \u -> u.upgradeAttachedEnemy == Just (EnemyMinionId a.minionId)
         }

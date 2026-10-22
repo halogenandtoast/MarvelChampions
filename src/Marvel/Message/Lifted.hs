@@ -380,7 +380,8 @@ defeatVillain vid = villainStep vid VillainDefeated
 changeVillainHitPoints :: (ReverseQueue m) => VillainId -> Int -> m ()
 changeVillainHitPoints vid = villainStep vid . VillainHitPointsChanged
 
--- | A boost card dealt facedown to the enemy.
+-- | A boost card dealt facedown to the enemy, villain or minion: "give this enemy another
+-- boost card" as its boost cards are turned up.
 dealBoost :: (ReverseQueue m, IsRef enemy) => enemy -> m ()
 dealBoost = push . DealBoost . toTarget
 

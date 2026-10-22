@@ -94,6 +94,10 @@ instance Entity Minion where
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
     , minionAttackTarget :: Maybe CharacterId
     -- ^ the character its coming attack is against, when not the player's identity
+    , minionBoostCards :: [EncounterCard]
+    -- ^ dealt facedown for its activation, as a villainous minion's are
+    , minionBoost :: Natural
+    -- ^ the boost icons its activation under way has
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -190,6 +194,12 @@ upgradesL = lens minionUpgrades $ \m x -> m {minionUpgrades = x}
 facedownCardL :: Lens' (Attrs Minion) (Maybe PlayerCard)
 facedownCardL = lens minionFacedownCard $ \m x -> m {minionFacedownCard = x}
 
+boostCardsL :: Lens' (Attrs Minion) [EncounterCard]
+boostCardsL = lens minionBoostCards $ \m x -> m {minionBoostCards = x}
+
+boostL :: Lens' (Attrs Minion) Natural
+boostL = lens minionBoost $ \m x -> m {minionBoost = x}
+
 attachmentsL :: Lens' (Attrs Minion) (HashSet AttachmentId)
 attachmentsL = lens minionAttachments $ \m x -> m {minionAttachments = x}
 
@@ -236,6 +246,8 @@ minion f cardDef sch atk hp =
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
             , minionAttackTarget = Nothing
+            , minionBoostCards = []
+            , minionBoost = 0
             }
     }
 

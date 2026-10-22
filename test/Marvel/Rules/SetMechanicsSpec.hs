@@ -8,10 +8,11 @@ import Data.Text qualified as T
 import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Attack (Attack (..), attack)
 import Marvel.Hp
-import Marvel.Keyword (Keyword (Incite))
+import Marvel.Keyword (Keyword (Incite, Villainous))
 import Marvel.MainScheme.Types (Field (MainSchemeCounters))
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types (overMinion)
 import Marvel.Obligation.Obligations.EvictionNotice (EvictionNotice (..), evictionNotice)
 import Marvel.Obligation.Types (Obligation (..), heldCardsL, toObligationAttrs)
 import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
@@ -138,3 +139,19 @@ spec = describe "set mechanics" do
       resolve [AllyMessage warMachine (AllyAttackLands (EnemyMinionId whiplash) hit)]
       afterPlain <- (.allyDamage) <$> allyIn "01030"
       liftIO $ (afterRanged, afterPlain) `shouldBe` (1, 3)
+
+  it "a villainous minion is given a boost card as it schemes, its icons added" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      mercenary <- addMinion you Cards.hydraMercenary
+      withGame_ $ entitiesL . minionsL . ix mercenary %~ overMinion \a -> a {minionCardDef = Cards.hydraMercenary {cdKeywords = singleton Villainous}}
+      -- Whiplash has two boost icons; the mercenary schemes for 0
+      [boost] <- stackEncounterDeck [Cards.whiplash]
+      before <- mainSchemeThreatNow
+      resolve [MinionMessage mercenary MinionSchemes]
+      after <- mainSchemeThreatNow
+      discarded <- encounterDiscardNow
+      liftIO do
+        after `shouldBe` before + 2
+        discarded `shouldContain` [boost]
