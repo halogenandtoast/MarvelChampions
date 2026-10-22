@@ -18,7 +18,7 @@ import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 
 openTheDarkDimension :: SideSchemeCard OpenTheDarkDimension
-openTheDarkDimension = sideScheme OpenTheDarkDimension Cards.openTheDarkDimension (Static 3)
+openTheDarkDimension = sideScheme OpenTheDarkDimension Cards.openTheDarkDimension (PerPlayer 3)
 
 newtype OpenTheDarkDimension = OpenTheDarkDimension (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)

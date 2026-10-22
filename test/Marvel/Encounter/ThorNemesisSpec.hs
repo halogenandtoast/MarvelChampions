@@ -26,6 +26,22 @@ spec = describe "Thor's nemesis set" do
         pass
         sideSchemeThreat (sideSchemeOf feud) `shouldReturn` 4
 
+    it "counts every type of Asgard card: identity, ally, support, upgrade and minion" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        -- Thor, Lady Sif, Asgard, Mjolnir and Loki
+        _ <- putIntoPlay p "06002"
+        _ <- putIntoPlay p "06007"
+        _ <- putIntoPlay p "06009"
+        _ <- addMinion p Minions.loki
+        pass
+        feud <- revealNow p SideSchemes.familyFeud
+        pass
+        sideSchemeThreat (sideSchemeOf feud) `shouldReturn` 7
+
   describe "Loki (06028)" do
     it "heals all his damage instead of being defeated when a treachery is discarded" do
       tg <- thor

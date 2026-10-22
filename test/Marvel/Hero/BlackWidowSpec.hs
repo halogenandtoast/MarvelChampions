@@ -339,7 +339,7 @@ spec = describe "Black Widow" do
       choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       chooseIf (isLabel "$label.discardHighestCostPreparationDiscardObligation")
       pass
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
  where
   isAnyPay = \case
     PayWithCard _ -> True

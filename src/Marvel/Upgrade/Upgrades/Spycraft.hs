@@ -42,7 +42,7 @@ instance HasAbilities Spycraft where
 -- | The card is discarded instead of resolving, and another revealed in its place.
 instance RunMessage Spycraft where
   runMessage msg u@(Spycraft attrs) = case msg of
-    RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed ident card] _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ ident card] _ -> do
       replaceMatchingMessage (const [DiscardedCard (EncounterCard card), DrawAndRevealEncounterCard ident]) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False

@@ -66,6 +66,14 @@ spec = describe "Doctor Strange's nemesis set" do
       resolve [SideSchemeMessage sid (SideSchemeThwarted (toSource p) 3)]
       length . (.invocationDeck) <$> invocationOf p `shouldReturn` 5
 
+  it "Open the Dark Dimension enters with 3 threat per player" do
+    tg <- testGame ["doctor-strange", "spider-man"]
+    inGame tg do
+      [p, _] <- players
+      card <- revealNow p SideSchemes.openTheDarkDimension
+      resolve []
+      sideSchemeThreat (sideSchemeOf card) `shouldReturn` 6
+
   describe "Counterspell" do
     it "attaches to your hero and cancels the next event you play, then is discarded" do
       tg <- doctorStrange

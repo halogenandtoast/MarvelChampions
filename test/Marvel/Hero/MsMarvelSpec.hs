@@ -3,6 +3,7 @@ module Marvel.Hero.MsMarvelSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
+import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
 msMarvel :: IO TestGame
@@ -56,6 +57,21 @@ spec = describe "Ms. Marvel" do
         boost <- putInHand p "05032"
         playPaying p boost ["01088"]
         chooseIf (isTargetChoice p)
+        offers (isNamedAbility "Morphogenetics") `shouldReturn` False
+
+    -- the Ms. Marvel pack's printing is the core set's card, with no trait (MarvelCDB's
+    -- data gives it Thwart; the printed card and FAQ do not)
+    it "Morphogenetics does not answer Get Behind Me! (05013), which has no trait" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        behind <- putInHand p "05013"
+        payment <- putInHand p "01089"
+        _ <- revealNow p Treacheries.advance
+        playWith behind [payment]
+        choose "take the attack" isNoDefender
         offers (isNamedAbility "Morphogenetics") `shouldReturn` False
 
     it "Morphogenetics costs exhausting her" do
@@ -378,4 +394,4 @@ spec = describe "Ms. Marvel" do
         _ <- revealNow p Obligations.homeByDawn
         choose "stay" (isLabel "$label.doNotFlipToAlterEgo")
         pass
-        getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+        dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
