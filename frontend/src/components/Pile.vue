@@ -4,7 +4,7 @@
 import { computed, useTemplateRef } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoices } from '../composables/useChoices'
-import type { Back } from '../cards'
+import { useCards, type Back } from '../cards'
 import type { CardView } from '../server'
 import BoardCard from './BoardCard.vue'
 import CardFace from './CardFace.vue'
@@ -21,6 +21,7 @@ const { label, back = null, count = null, cards = null, pile = null } = definePr
 }>()
 
 const overlay = useCardOverlay()
+const faces = useCards()
 const { byTarget } = useChoices()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const total = computed(() => count ?? cards?.length ?? 0)
@@ -47,6 +48,8 @@ const close = () => dialog.value?.close()
       @pointerleave="overlay.hide()"
     >
       <CardFace v-if="back" :back="back" />
+      <!-- a landscape card turned to lie in the pile, as it would on the table -->
+      <span v-else-if="top && faces.landscape(top.code)" class="turned"><CardFace :code="top.code" :name="top.name" /></span>
       <CardFace v-else-if="top" :code="top.code" :name="top.name" />
       <span v-else class="hollow" />
       <span class="count">{{ total }}</span>
@@ -84,6 +87,16 @@ const close = () => dialog.value?.close()
 .pile.empty .stack { box-shadow: none; }
 .stack :deep(.card-face) { border-radius: inherit; }
 .pile.active .stack { box-shadow: 0 0 0 2px var(--interactive), 0 0 14px var(--interactive-glow); }
+.turned {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--w) / var(--card-aspect));
+  height: var(--w);
+  translate: -50% -50%;
+  rotate: 90deg;
+  border-radius: inherit;
+}
 .hollow { display: block; width: 100%; height: 100%; border: 1px dashed var(--line-strong); border-radius: inherit; }
 .count {
   position: absolute;
