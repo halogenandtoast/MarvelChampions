@@ -70,6 +70,14 @@ allMinions =
       , SomeMinionCard tombstone
 
       -- The Wrecking Crew
+      , SomeMinionCard corruptPrisonGuard
+      , SomeMinionCard (reprintAs Cards.corruptPrisonGuardThunderball corruptPrisonGuard)
+      , SomeMinionCard (reprintAs Cards.corruptPrisonGuardPiledriver corruptPrisonGuard)
+      , SomeMinionCard (reprintAs Cards.corruptPrisonGuardBulldozer corruptPrisonGuard)
+      , SomeMinionCard escapedConvict
+      , SomeMinionCard (reprintAs Cards.escapedConvictThunderball escapedConvict)
+      , SomeMinionCard (reprintAs Cards.escapedConvictPiledriver escapedConvict)
+      , SomeMinionCard (reprintAs Cards.escapedConvictBulldozer escapedConvict)
 
       -- The Rise of Red Skull
       , SomeMinionCard crossfire

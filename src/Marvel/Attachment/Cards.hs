@@ -41,6 +41,17 @@ allAttachments =
       , pumpkinBombsMutagenFormula
 
       -- The Wrecking Crew
+      , heldHostage
+      , heldHostageThunderball
+      , heldHostagePiledriver
+      , heldHostageBulldozer
+      , magicCrowbar
+      , wreckersCommand
+      , ballAndChain
+      , radioactiveBuildup
+      , distractingTaunts
+      , bulldozersHelmet
+      , rammingSpeed
 
       -- The Rise of Red Skull
       , crossfiresRifle
@@ -50,7 +61,7 @@ allAttachments =
       , energyShield
       , powerGauntlets
       , exoSuit
-      , ballAndChain
+      , absorbingMansBallAndChain
       , combatKnife
       , hydraSidearm
 
@@ -180,8 +191,9 @@ powerGauntlets = attachment "04074" "Power Gauntlets" [Experimental, Weapon] [Bo
 exoSuit :: CardDef
 exoSuit = attachment "04075" "Exo-Suit" [Experimental, Weapon] [Boost, Boost] ExperimentalWeapons 1
 
-ballAndChain :: CardDef
-ballAndChain = unique $ attachment "04084" "Ball and Chain" [Weapon] [Star] AbsorbingMan 1
+-- | Absorbing Man's; Thunderball has a Ball and Chain of his own.
+absorbingMansBallAndChain :: CardDef
+absorbingMansBallAndChain = unique $ attachment "04084" "Ball and Chain" [Weapon] [Star] AbsorbingMan 1
 
 combatKnife :: CardDef
 combatKnife = attachment "04148" "Combat Knife" [Weapon] [Boost] WeaponMaster 1
@@ -255,3 +267,39 @@ taskmastersShield = unique $ attachment "04103" "Taskmaster's Shield" [Armor, We
 
 photographicReflexes :: CardDef
 photographicReflexes = attachment "04104" "Photographic Reflexes" [] [Boost, Boost] Taskmaster 2
+
+-- The Wrecking Crew
+
+heldHostage :: CardDef
+heldHostage = attachment "07005" "Held Hostage" [] [Boost] Wrecker 1
+
+-- | Held Hostage, one in each of the Wrecking Crew's decks.
+heldHostageThunderball :: CardDef
+heldHostageThunderball = (reprint "07021" heldHostage) {cdEncounterSet = Just Thunderball}
+
+heldHostagePiledriver :: CardDef
+heldHostagePiledriver = (reprint "07036" heldHostage) {cdEncounterSet = Just Piledriver}
+
+heldHostageBulldozer :: CardDef
+heldHostageBulldozer = (reprint "07050" heldHostage) {cdEncounterSet = Just Bulldozer}
+
+magicCrowbar :: CardDef
+magicCrowbar = unique $ attachment "07006" "Magic Crowbar" [] [Boost, Boost, Boost] Wrecker 1
+
+wreckersCommand :: CardDef
+wreckersCommand = unique $ attachment "07007" "Wrecker's Command" [] [Boost] Wrecker 1
+
+ballAndChain :: CardDef
+ballAndChain = unique $ attachment "07020" "Ball and Chain" [Weapon] [Boost, Boost, Boost] Thunderball 1
+
+radioactiveBuildup :: CardDef
+radioactiveBuildup = attachment "07022" "Radioactive Buildup" [Condition] [Boost, Boost, Boost] Thunderball 1
+
+distractingTaunts :: CardDef
+distractingTaunts = attachment "07035" "Distracting Taunts" [] [Boost, Boost] Piledriver 2
+
+bulldozersHelmet :: CardDef
+bulldozersHelmet = unique $ attachment "07049" "Bulldozer's Helmet" [Armor] [Boost, Boost, Boost] Bulldozer 1
+
+rammingSpeed :: CardDef
+rammingSpeed = attachment "07051" "Ramming Speed" [Condition] [Boost, Boost] Bulldozer 2

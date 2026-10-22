@@ -50,6 +50,10 @@ allSideSchemes = fromList $ map
   , runningInterference
 
   -- The Wrecking Crew
+  , dayOfReckoning
+  , thunderstruck
+  , pileItOn
+  , clearTheRoad
 
   -- The Rise of Red Skull
   , markedForDeath
@@ -358,3 +362,17 @@ capturedByHydra = (sideScheme "04107" "Captured by Hydra" [Boost, Boost] Taskmas
 
 taskmastersTrainingCamp :: CardDef
 taskmastersTrainingCamp = (sideScheme "04108" "Taskmaster's Training Camp" [Boost, Boost, Boost] Taskmaster 1) {cdHazards = 1}
+
+-- The Wrecking Crew
+
+dayOfReckoning :: CardDef
+dayOfReckoning = sideScheme "07004" "Day of Reckoning" [] Wrecker 1
+
+thunderstruck :: CardDef
+thunderstruck = sideScheme "07019" "Thunderstruck" [] Thunderball 1
+
+pileItOn :: CardDef
+pileItOn = sideScheme "07034" "Pile It On!" [] Piledriver 1
+
+clearTheRoad :: CardDef
+clearTheRoad = sideScheme "07048" "Clear the Road" [] Bulldozer 1

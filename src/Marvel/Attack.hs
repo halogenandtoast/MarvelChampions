@@ -15,8 +15,6 @@ data Attack = Attack
   , attackDefended :: Bool
   , attackPiercing :: Bool
   , attackRanged :: Bool
-  , attackWithoutBoost :: Bool
-  -- ^ no boost cards are dealt for it
   , attackPrevented :: Bool
   -- ^ "prevent all damage from this attack"
   }
@@ -55,7 +53,6 @@ attack enemyId characterId dmg =
     , attackDefended = False
     , attackPiercing = False
     , attackRanged = False
-    , attackWithoutBoost = False
     , attackPrevented = False
     }
 
@@ -88,5 +85,4 @@ keepingGains (Just old) a =
     { attackOverkill = attackOverkill a || attackOverkill old
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
-    , attackWithoutBoost = attackWithoutBoost a || attackWithoutBoost old
     }

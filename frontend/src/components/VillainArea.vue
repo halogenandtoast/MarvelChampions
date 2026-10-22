@@ -16,10 +16,14 @@ const { game, area = null } = defineProps<{ game: GameView; area?: AreaView | nu
 const { t, te } = useI18n()
 const cards = useCards()
 
-// what is in the area, or everything when there is no area to narrow to
+// what is in the area, in the area's order, or everything when there is no area to narrow to
 const inArea = <T extends { id: string }>(xs: T[] | undefined, ids: string[] | undefined): T[] =>
-  area && ids ? (xs ?? []).filter((x) => ids.includes(x.id)) : (xs ?? [])
-const villains = computed(() => inArea(game.villains, area?.villains))
+  area && ids ? ids.flatMap((id) => (xs ?? []).filter((x) => x.id === id)) : (xs ?? [])
+// the villains as they were set out (Wrecker, Thunderball, Piledriver, Bulldozer)
+const villains = computed(() => {
+  const order = area?.villains ?? game.areas?.[0]?.villains
+  return order ? order.flatMap((id) => (game.villains ?? []).filter((v) => v.id === id)) : (game.villains ?? [])
+})
 const mainSchemes = computed(() => inArea(game.mainSchemes, area?.mainSchemes))
 const sideSchemes = computed(() => inArea(game.sideSchemes, area?.sideSchemes))
 const environments = computed(() => inArea(game.environments, area?.environments))
@@ -32,6 +36,11 @@ const deckLabel = (deck: DeckView) => {
 }
 const discardLabel = (deck: DeckView) =>
   deck.kind === 'villain' ? t('game.piles.villainDiscard', { name: deck.name ?? '' }) : t('game.piles.sideSchemeDiscard')
+// with villains' own decks the encounter deck is not used (The Wrecking Crew): shown only
+// should a card end up in it
+const encounterUnused = computed(
+  () => decks.value.some((d) => d.kind === 'villain') && !game.encounterDeckSize && !(game.encounterDiscard ?? []).length,
+)
 const heroes = computed(() => Math.max(1, (game.players ?? []).length))
 
 // the threat that completes a scheme, printed per hero unless fixed
@@ -104,8 +113,10 @@ const escalation = (scheme: SchemeView) => {
     </div>
 
     <div class="encounter-piles">
-      <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" pile="deck-encounter" />
-      <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
+      <template v-if="!encounterUnused">
+        <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" pile="deck-encounter" />
+        <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
+      </template>
       <template v-for="deck in decks" :key="`${deck.kind}-${deck.name}`">
         <Pile :label="deckLabel(deck)" back="encounter" :count="deck.size" />
         <!-- a named deck's cards are discarded to the encounter discard pile -->
@@ -119,6 +130,7 @@ const escalation = (scheme: SchemeView) => {
 .villain-area {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 18px;
   padding: 14px 16px;
@@ -152,5 +164,6 @@ const escalation = (scheme: SchemeView) => {
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
 .schemes { display: flex; gap: 18px; align-items: flex-start; margin-left: auto; min-width: 0; }
-.encounter-piles { display: flex; gap: 14px; flex: none; padding-top: 4px; }
+/* several decks wrap onto rows of their own, not over the schemes */
+.encounter-piles { display: flex; flex-wrap: wrap; gap: 14px; flex: 0 1 auto; min-width: 0; padding-top: 4px; }
 </style>

@@ -14,6 +14,7 @@ import Marvel.MainScheme.MainSchemes.MutagenCloud as X
 import Marvel.MainScheme.MainSchemes.UnleashingTheMutagen as X
 
 -- The Wrecking Crew
+import Marvel.MainScheme.MainSchemes.Breakout as X
 
 -- The Rise of Red Skull
 import Marvel.MainScheme.MainSchemes.AttackOnMountAthena as X

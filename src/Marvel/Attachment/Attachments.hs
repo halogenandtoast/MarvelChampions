@@ -21,6 +21,14 @@ import Marvel.Attachment.Attachments.MediaCoverage as X
 import Marvel.Attachment.Attachments.Hysteria as X
 
 -- The Wrecking Crew
+import Marvel.Attachment.Attachments.HeldHostage as X
+import Marvel.Attachment.Attachments.MagicCrowbar as X
+import Marvel.Attachment.Attachments.WreckersCommand as X
+import Marvel.Attachment.Attachments.BallAndChain as X
+import Marvel.Attachment.Attachments.RadioactiveBuildup as X
+import Marvel.Attachment.Attachments.DistractingTaunts as X
+import Marvel.Attachment.Attachments.BulldozersHelmet as X
+import Marvel.Attachment.Attachments.RammingSpeed as X
 
 -- The Rise of Red Skull
 import Marvel.Attachment.Attachments.CrossfiresRifle as X
@@ -30,7 +38,7 @@ import Marvel.Attachment.Attachments.LaserRifle as X
 import Marvel.Attachment.Attachments.EnergyShield as X
 import Marvel.Attachment.Attachments.PowerGauntlets as X
 import Marvel.Attachment.Attachments.ExoSuit as X
-import Marvel.Attachment.Attachments.BallAndChain as X
+import Marvel.Attachment.Attachments.AbsorbingMansBallAndChain as X
 import Marvel.Attachment.Attachments.CombatKnife as X
 import Marvel.Attachment.Attachments.HydraSidearm as X
 

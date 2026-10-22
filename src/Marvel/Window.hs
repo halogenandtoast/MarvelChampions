@@ -48,7 +48,7 @@ windowMatches matcher w source = case matcher of
             (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   EnemyAttackedAndDamaged enemyMatcher characterMatcher -> case windowType w of
-    EnemyAttacksAndDamages enemyId ident
+    EnemyAttacksAndDamages enemyId ident _
       | windowTiming w == After ->
           liftA2
             (&&)
@@ -163,6 +163,16 @@ windowMatches matcher w source = case matcher of
     DefeatedSideScheme sideSchemeId
       | windowTiming w == timing ->
           sideSchemeMatches sideSchemeMatcher sideSchemeId
+    _ -> pure False
+  DefeatsSideScheme identityMatcher -> case windowType w of
+    DefeatedSideSchemeBy _ identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  UsesRecovery identityMatcher -> case windowType w of
+    UsedRecovery identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
     _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId

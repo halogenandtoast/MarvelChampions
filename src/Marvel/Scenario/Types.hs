@@ -8,6 +8,7 @@ import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
 import Marvel.Area (discardsTo, emptyPile, isEncounterDeck)
+import Marvel.Campaign.Steps (runCampaignStep)
 import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
@@ -285,12 +286,21 @@ runScenarioMessage msg attrs = case msg of
   -- a card set aside leaves the set-aside area for wherever it goes
   RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId)
   RemoveDeck EncounterDeckKey -> pure attrs
+  -- a defeated villain's cards still in play are his deck's: they have no discard pile
+  -- to go to
+  RemoveDeck key@(VillainDeckKey _) -> pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs)}
   RemoveDeck key ->
     pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}
-  -- to the discard pile of its own deck, wherever in the decks it was looked at
+  -- to the discard pile of its own deck, wherever in the decks it was looked at; a card
+  -- of a defeated villain's deck, his deck gone with him, leaves the game
   DiscardedCard (EncounterCard ec) -> do
     let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
-    pure $ leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
+    pure $
+      if home == EncounterDeckKey || HashMap.member home (scenarioDecks attrs)
+        then leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
+        else leaves ec attrs
+  -- the Campaign Instructions: a scenario adds its own steps answering this first
+  CampaignStep step -> attrs <$ runCampaignStep step
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
     areas <- getAreas

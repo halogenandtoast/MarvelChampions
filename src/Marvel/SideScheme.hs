@@ -59,6 +59,10 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard runningInterference
 
   -- The Wrecking Crew
+  , SomeSideSchemeCard dayOfReckoning
+  , SomeSideSchemeCard thunderstruck
+  , SomeSideSchemeCard pileItOn
+  , SomeSideSchemeCard clearTheRoad
 
   -- The Rise of Red Skull
   , SomeSideSchemeCard markedForDeath

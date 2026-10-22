@@ -182,5 +182,10 @@ instance RunMessage (Attrs SideScheme) where
           when defeated $ defeatSideScheme (sideSchemeId attrs)
           defeater <- if defeated then getSourceController source else pure Nothing
           pure $ attrs & threatL %~ subtractNatural n & \a -> a {sideSchemeDefeatedBy = defeater <|> sideSchemeDefeatedBy a}
+        -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
+        SideSchemeThreatRemoved n -> do
+          signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
+          when (subtractNatural n (sideSchemeThreat attrs) == 0 && not signature) $ defeatSideScheme (sideSchemeId attrs)
+          pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
     _ -> pure attrs

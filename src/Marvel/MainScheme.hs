@@ -36,6 +36,7 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard mutagenCloud
 
   -- The Wrecking Crew
+  , SomeMainSchemeCard breakout
 
   -- The Rise of Red Skull
   , SomeMainSchemeCard attackOnMountAthena

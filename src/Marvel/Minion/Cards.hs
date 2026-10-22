@@ -61,6 +61,14 @@ allMinions =
       , tombstone
 
       -- The Wrecking Crew
+      , corruptPrisonGuard
+      , corruptPrisonGuardThunderball
+      , corruptPrisonGuardPiledriver
+      , corruptPrisonGuardBulldozer
+      , escapedConvict
+      , escapedConvictThunderball
+      , escapedConvictPiledriver
+      , escapedConvictBulldozer
 
       -- The Rise of Red Skull
       , crossfire
@@ -508,3 +516,31 @@ timeDisplacedSoldier =
 
 hydraHunter :: CardDef
 hydraHunter = minion "04101" "Hydra Hunter" [Hydra] [Star] Taskmaster 2
+
+-- The Wrecking Crew
+
+corruptPrisonGuard :: CardDef
+corruptPrisonGuard = (minion "07008" "Corrupt Prison Guard" [Traitor] [] Wrecker 1) {cdKeywords = singleton Guard}
+
+-- | Corrupt Prison Guard, one in each of the Wrecking Crew's decks.
+corruptPrisonGuardThunderball :: CardDef
+corruptPrisonGuardThunderball = (reprint "07023" corruptPrisonGuard) {cdEncounterSet = Just Thunderball}
+
+corruptPrisonGuardPiledriver :: CardDef
+corruptPrisonGuardPiledriver = (reprint "07037" corruptPrisonGuard) {cdEncounterSet = Just Piledriver}
+
+corruptPrisonGuardBulldozer :: CardDef
+corruptPrisonGuardBulldozer = (reprint "07052" corruptPrisonGuard) {cdEncounterSet = Just Bulldozer}
+
+escapedConvict :: CardDef
+escapedConvict = (minion "07009" "Escaped Convict" [Criminal] [Star] Wrecker 1) {cdKeywords = singleton Surge}
+
+-- | Escaped Convict, one in each of the Wrecking Crew's decks.
+escapedConvictThunderball :: CardDef
+escapedConvictThunderball = (reprint "07024" escapedConvict) {cdEncounterSet = Just Thunderball}
+
+escapedConvictPiledriver :: CardDef
+escapedConvictPiledriver = (reprint "07038" escapedConvict) {cdEncounterSet = Just Piledriver}
+
+escapedConvictBulldozer :: CardDef
+escapedConvictBulldozer = (reprint "07053" escapedConvict) {cdEncounterSet = Just Bulldozer}

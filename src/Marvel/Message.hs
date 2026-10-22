@@ -24,6 +24,7 @@ import Marvel.Message.Villain as X
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Area (AreaId, DeckKey)
+import Marvel.Campaign (CampaignRecord, CampaignStepKind)
 import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
@@ -152,7 +153,7 @@ attackedYou enemy character = do
 -- | After an enemy's attack deals damage to a character, the window for it.
 attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
 attackDealtDamage source damage character =
-  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character]
+  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character (damageAmount damage)]
   | damageSource damage == FromAttack
   , damageAmount damage > 0
   , Just enemy <- [sourceEnemy source]
@@ -206,7 +207,13 @@ simultaneously = Simultaneously
 -- dealt. Damage a boost ability deals is not the attack's.
 attackDamages :: Message -> Maybe (EnemyId, CharacterId)
 attackDamages = \case
-  CheckWindows [Window After (EnemyAttacksAndDamages enemy character)] -> Just (enemy, character)
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character _)] -> Just (enemy, character)
+  _ -> Nothing
+
+-- | The damage an enemy's attack dealt a character, as it is dealt.
+attackDamageWindow :: Message -> Maybe (EnemyId, CharacterId, Natural)
+attackDamageWindow = \case
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character n)] -> Just (enemy, character, n)
   _ -> Nothing
 
 -- | The character's own ref, as status cards are given by.
@@ -413,5 +420,13 @@ data Message
   | -- | each player in the area has been defeated, with players left elsewhere: the
     -- scenario says what that does, by default nothing
     AreaDefeated AreaId
+  | -- | a part of the scenario's Campaign Instructions, in a campaign game: the
+    -- scenario says what it does ('Marvel.Campaign.Steps' by default), and may add its own
+    CampaignStep CampaignStepKind
+  | -- | what the game writes in the campaign log it was dealt with
+    RecordInCampaignLog CampaignRecord
+  | -- | an obligation drawn from the player's deck goes into play in their play area,
+    -- as an expert campaign's do
+    PutObligationIntoPlay IdentityId PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

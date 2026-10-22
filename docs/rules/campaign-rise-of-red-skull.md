@@ -57,6 +57,12 @@ decklists.
 
 - 265 cards, consisting of 82 player cards, 15 villain cards, and 168 encounter cards
 
+### Set Symbol
+
+Cards from *The Rise of Red Skull* expansion can be identified by this set symbol:
+
+*(Image: the Hydra skull-and-tentacles symbol.)*
+
 ### New Keywords
 
 **Incite X**

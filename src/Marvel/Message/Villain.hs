@@ -22,11 +22,12 @@ data VillainMessage
   | -- | all damage from its attack under way is prevented
     VillainAttackDamagePrevented
   | VillainAttacks IdentityId
-  | -- | it attacks, and no boost cards are dealt for the attack
+  | -- | it attacks the player, the attack given no boost card (Escaped Convict)
     VillainAttacksWithoutBoost IdentityId
   | -- | its attack by the character resolved: retaliate answers it
     VillainRetaliates CharacterId
   | VillainBeginAttack IdentityId
+  | VillainBeginAttackWithoutBoost IdentityId
   | VillainEndAttack
   | VillainAttacked
   | VillainSchemes

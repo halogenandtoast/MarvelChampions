@@ -8,8 +8,11 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Card.Code
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
+import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Entity
-import Marvel.Message
+import Marvel.Game.Source
+import Marvel.Message.Lifted
+import Marvel.Ref
 import Marvel.Scenario.Types hiding (scenarioAccelerationTokens)
 import Marvel.Scenario.Types qualified as Types
 
@@ -36,6 +39,8 @@ allScenarios = fromList $ map
     , SomeScenarioCard mutagenFormulaScenario
 
     -- The Wrecking Crew
+    , SomeScenarioCard (breakoutScenario "07001")
+    , SomeScenarioCard (breakoutScenario "07001a")
 
     -- The Rise of Red Skull
     , SomeScenarioCard crossbonesScenario
@@ -159,6 +164,51 @@ zolaScenario = scenario
   ("04109", "04110")
   ["04112", "04113"]
   [EncounterSet.Zola]
+
+-- | Breakout (The Wrecking Crew): the four villains, each with his own side scheme and
+-- encounter deck and no other encounter sets; version A for standard, B for expert
+-- (TWC insert p.7). Set up by the A side's code, it is the extreme variant: version A
+-- with version B under it ('versionBEnters').
+newtype BreakoutScenario = BreakoutScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+breakoutScenario :: CardCode -> ScenarioCard BreakoutScenario
+breakoutScenario code =
+  ScenarioCard code \setup ->
+    let BreakoutScenario a = buildScenario (scenario BreakoutScenario code ("07002", "07003") ["07001"] []) setup
+        expert = setup.difficulty == Expert && code /= "07001a"
+     in BreakoutScenario
+          a
+            { Types.scenarioVillains = if expert then ["07003", "07018", "07033", "07047"] else ["07002", "07017", "07032", "07046"]
+            , Types.scenarioEncounterSets = mempty
+            }
+
+-- | Wrecker holds the active counter at setup (Breakout 1A). When the active villain is
+-- defeated with others left, the counter goes to the villain whose side scheme has the
+-- most threat, the first player choosing among those tied (TWC insert p.6); the players
+-- win once all four are defeated (p.7).
+instance RunMessage BreakoutScenario where
+  runMessage msg (BreakoutScenario a) = BreakoutScenario <$> case msg of
+    StartScenario -> runQueueT do
+      for_ (Types.scenarioVillains a) addVillain
+      addSetupMainScheme "07001"
+      pure $ a & mainSchemesL .~ []
+    ResolveVillainDefeat vid -> runQueueT do
+      aid <- getAreaOfTarget vid
+      wasActive <- (== Just vid) <$> getActiveVillainIn aid
+      others <- filter (/= vid) <$> getVillainsInArea aid
+      if null others
+        then gameOver Won
+        else do
+          removeFromPlay (VillainRef vid)
+          when wasActive $ cardSpecific GameRef "breakoutNextActive" ()
+      pure a
+    CardSpecific GameRef "breakoutNextActive" _ -> runQueueT $ a <$ moveActiveCounter MostThreat
+    -- the obligations are the encounter deck's only cards: emptied of them, it is not an
+    -- encounter deck run out
+    RemovePlayerObligationsFromGame -> pure $ a & encounterDeckL %~ filter (not . isPlayerObligation)
+    _ -> runMessage msg a
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs

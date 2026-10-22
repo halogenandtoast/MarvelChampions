@@ -16,6 +16,10 @@ import Marvel.Villain.Villains.GreenGoblin qualified as Mutagen
 import Marvel.Villain.Villains.NormanOsborn
 
 -- The Wrecking Crew
+import Marvel.Villain.Villains.Bulldozer
+import Marvel.Villain.Villains.Piledriver
+import Marvel.Villain.Villains.Thunderball
+import Marvel.Villain.Villains.Wrecker
 
 -- The Rise of Red Skull
 import Marvel.Villain.Villains.Crossbones
@@ -75,6 +79,14 @@ allVillains = fromList $ map
   , SomeVillainCard Mutagen.greenGoblin3
 
   -- The Wrecking Crew
+  , SomeVillainCard wreckerA
+  , SomeVillainCard wreckerB
+  , SomeVillainCard thunderballA
+  , SomeVillainCard thunderballB
+  , SomeVillainCard piledriverA
+  , SomeVillainCard piledriverB
+  , SomeVillainCard bulldozerA
+  , SomeVillainCard bulldozerB
 
   -- The Rise of Red Skull
   , SomeVillainCard crossbones

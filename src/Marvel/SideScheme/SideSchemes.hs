@@ -37,6 +37,10 @@ import Marvel.SideScheme.SideSchemes.PowerDrain as X
 import Marvel.SideScheme.SideSchemes.RunningInterference as X
 
 -- The Wrecking Crew
+import Marvel.SideScheme.SideSchemes.DayOfReckoning as X
+import Marvel.SideScheme.SideSchemes.Thunderstruck as X
+import Marvel.SideScheme.SideSchemes.PileItOn as X
+import Marvel.SideScheme.SideSchemes.ClearTheRoad as X
 
 -- The Rise of Red Skull
 import Marvel.SideScheme.SideSchemes.MarkedForDeath as X

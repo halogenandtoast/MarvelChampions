@@ -14,6 +14,7 @@ import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
+import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
@@ -33,7 +34,10 @@ import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase)
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Query (selectJust)
+import Marvel.Count (selectCount)
+import Marvel.Matchers qualified as Matchers
+import Marvel.Name (display)
+import Marvel.Query (selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (Incite))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
@@ -78,6 +82,10 @@ targeting a body = TargetLabel (toTarget a) . pure . Run <$> capture body
 -- | A choice by its label (an i18n key under @$label.@), doing what the body does.
 labeled :: (ReverseQueue m) => Text -> m () -> m Choice
 labeled l body = Label l . pure . Run <$> capture body
+
+-- | A choice shown as the card, doing what the body does.
+cardLabeled :: (ReverseQueue m) => CardCode -> m () -> m Choice
+cardLabeled code body = CardLabel code . Run <$> capture body
 
 -- | The card's ability as a choice: what it does is worked out as it is chosen.
 targetingAbility :: (Applicative m, IsRef a) => a -> Natural -> m Choice
@@ -408,10 +416,6 @@ activationBonus vid = push . VillainMessage vid . VillainActivationBonus
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
 
--- | The villain attacks the player, no boost cards dealt for the attack.
-villainAttacksWithoutBoost :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
-villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWithoutBoost
-
 -- | "The attack gains overkill" (piercing, ranged): the enemy's attack under way.
 attackGains :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
 attackGains enemy k = push case toEnemy enemy of
@@ -513,8 +517,14 @@ nextMainScheme = push NextMainScheme
 
 -- | The side scheme is defeated, past the window for it, and leaves play.
 defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
-defeatSideScheme sid =
-  pushAll [CheckWindows [Window When $ W.DefeatedSideScheme sid], SideSchemeMessage sid DefeatSideScheme, RemoveFromPlay (toTarget sid)]
+defeatSideScheme sid = do
+  you <- getYou
+  pushAll
+    [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
+    , SideSchemeMessage sid DefeatSideScheme
+    , RemoveFromPlay (toTarget sid)
+    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you]
+    ]
 
 -- | What the side scheme does once what it revealed is done.
 sideSchemeRevealedThen :: (ReverseQueue m) => SideSchemeId -> m ()
@@ -857,6 +867,103 @@ fromDeck key body = pushAll . map (UsingDeck key) =<< capture body
 resolveVillainDefeat :: (ReverseQueue m) => VillainId -> m ()
 resolveVillainDefeat = push . ResolveVillainDefeat
 
+-- * Villains with side schemes of their own (The Wrecking Crew)
+
+data ThreatExtreme = MostThreat | LeastThreat
+  deriving stock (Show, Eq)
+
+-- | Of those scored, the ones with the most (or the least).
+extremes :: ThreatExtreme -> [(a, Natural)] -> [a]
+extremes _ [] = []
+extremes ex scored = [a | (a, n) <- scored, n == best]
+ where
+  best = (if ex == MostThreat then maximum else minimum) (map snd scored)
+
+sideSchemeThreatOf :: (HasGame m) => SideSchemeId -> m Natural
+sideSchemeThreatOf = selectCount Matchers.SchemeThreat . SchemeWithId . SchemeSideSchemeId
+
+-- | The villain's own side scheme, while he is in play.
+signatureSchemeOf :: (HasGame m) => VillainId -> m (Maybe SideSchemeId)
+signatureSchemeOf = selectOne . SignatureSchemeOf . VillainWithId
+
+-- | The villain whose own the side scheme is.
+signatureSchemeOwner :: (HasGame m) => SideSchemeId -> m (Maybe VillainId)
+signatureSchemeOwner sid = headMay <$> (filterM (fmap (== Just sid) . signatureSchemeOf) =<< selectList AnyVillain)
+
+-- | What the body does with one of them, the first player choosing among several tied:
+-- "if there is a tie, the first player chooses" (TWC insert p.6, Breakout 1B).
+chooseAmongTied :: (ReverseQueue m, IsRef a) => [a] -> (a -> m ()) -> m ()
+chooseAmongTied xs body = case xs of
+  [] -> pure ()
+  [x] -> body x
+  _ -> do
+    first <- selectJust FirstPlayer
+    chooseOnePrompted first "$label.breakTie" [targeting x (body x) | x <- xs]
+
+-- | "The villain whose side scheme has the most (least) threat": of the villains with a
+-- side scheme of their own.
+withVillainBySideSchemeThreat :: (ReverseQueue m) => ThreatExtreme -> (VillainId -> m ()) -> m ()
+withVillainBySideSchemeThreat ex body = do
+  villains <- selectList AnyVillain
+  scored <- fmap catMaybes $ for villains \v -> traverse (fmap (v,) . sideSchemeThreatOf) =<< signatureSchemeOf v
+  chooseAmongTied (extremes ex scored) body
+
+-- | "The side scheme with the most (least) threat", of those matching.
+withSideSchemeByThreat :: (ReverseQueue m) => ThreatExtreme -> SideSchemeMatcher -> (SideSchemeId -> m ()) -> m ()
+withSideSchemeByThreat ex matcher body = do
+  schemes <- selectList matcher
+  scored <- for schemes \sid -> (sid,) <$> sideSchemeThreatOf sid
+  chooseAmongTied (extremes ex scored) body
+
+-- | "Move the active counter to the villain whose side scheme has the most (least)
+-- threat."
+moveActiveCounter :: (ReverseQueue m) => ThreatExtreme -> m ()
+moveActiveCounter ex = withVillainBySideSchemeThreat ex setActiveVillain
+
+-- | The villain attacks the player, the attack given no boost card.
+villainAttacksWithoutBoost :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
+villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWithoutBoost
+
+-- | Threat taken off the side scheme, not by thwarting.
+removeSideSchemeThreat :: (ReverseQueue m) => SideSchemeId -> Natural -> m ()
+removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved
+
+-- | Of the upgrades and the supports the player controls, as asked for, those with the
+-- highest printed cost.
+highestCostControlled :: (HasGame m) => IdentityId -> Bool -> Bool -> m [Target]
+highestCostControlled you upgrades supports = do
+  us <- if upgrades then selectList (UpgradeControlledBy $ IdentityWithId you) else pure []
+  ss <- if supports then selectList (SupportControlledBy $ IdentityWithId you) else pure []
+  costed <- for (map UpgradeRef us <> map SupportRef ss) \t ->
+    (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
+  pure $ extremes MostThreat costed
+
+-- | What the body does once the enemy's activation under way is over: after its attack,
+-- or after its scheming. A boost ability that has another activation follow it waits
+-- for this one to end, so the two are not run inside each other.
+afterActivation :: (ReverseQueue m) => EnemyId -> m () -> m ()
+afterActivation enemy body = do
+  attacking <- case enemy of
+    EnemyVillainId v -> isJust <$> getVillainAttack v
+    EnemyMinionId _ -> pure True
+  flip afterMatching body \case
+    VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
+    VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
+    MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
+    _ -> False
+
+-- | The villain in play with the title, if he is.
+villainNamed :: (HasGame m) => Text -> m (Maybe VillainId)
+villainNamed name = headMay <$> (filterM named =<< selectList AnyVillain)
+ where
+  named v = getsGame \g -> maybe False ((== name) . display . cdName) (abilityCardDef g (VillainRef v))
+
+-- | The player's upgrade or support goes to its owner's discard pile.
+discardControlled :: (ReverseQueue m) => Target -> m ()
+discardControlled = \case
+  UpgradeRef u -> discardUpgrade u
+  t -> removeFromPlay t
+
 -- * Effects
 
 createEffect :: (ReverseQueue m, IsRef source) => CardDef -> source -> EntityMatcher -> m ()
@@ -951,6 +1058,27 @@ addSetupMainScheme = push . AddSetupMainScheme
 -- | The main scheme leaves play for the next one.
 replaceMainScheme :: (ReverseQueue m) => CardCode -> m ()
 replaceMainScheme = push . ReplaceMainScheme
+
+-- * Campaigns
+
+-- | The scenario follows that part of its Campaign Instructions.
+campaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
+campaignStep = push . CampaignStep
+
+-- | Written in the campaign log, in a campaign game; otherwise nothing.
+recordInCampaignLog :: (ReverseQueue m) => CampaignRecord -> m ()
+recordInCampaignLog = push . RecordInCampaignLog
+
+-- | Written in the log for the player, who the log knows by their identity.
+recordForPlayer :: (ReverseQueue m) => IdentityId -> (CardCode -> CampaignRecord) -> m ()
+recordForPlayer ident f = recordInCampaignLog . f =<< getIdentityCode ident
+
+-- | The player's card crossed out of the campaign log: not in their deck again.
+removeFromCampaignLog :: (ReverseQueue m) => IdentityId -> CardCode -> m ()
+removeFromCampaignLog ident code = recordForPlayer ident (`RemoveFromCampaignLog` code)
+
+putObligationIntoPlay :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+putObligationIntoPlay ident = push . PutObligationIntoPlay ident
 
 -- | Each player's obligations out of the encounter deck and the game.
 removePlayerObligationsFromGame :: (ReverseQueue m) => m ()

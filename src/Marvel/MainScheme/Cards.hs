@@ -26,6 +26,7 @@ allMainSchemes =
     , mutagenCloud
 
     -- The Wrecking Crew
+    , breakout
 
     -- The Rise of Red Skull
     , attackOnMountAthena
@@ -139,3 +140,8 @@ newWorldHydra = mainScheme "04129" "New World Hydra" RedSkull
 
 huntingDownHeroes :: CardDef
 huntingDownHeroes = mainScheme "04096" "Hunting Down Heroes" Taskmaster
+
+-- The Wrecking Crew
+
+breakout :: CardDef
+breakout = mainScheme "07001" "Breakout" Breakout

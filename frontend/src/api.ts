@@ -1,7 +1,7 @@
 import type { DeckList } from './browser/types/deck'
 import { authHeaders, signOut } from './auth'
 import { router } from './router'
-import type { GameSummary, ScenarioList, StarterDeck } from './server'
+import type { CampaignMode, CampaignView, GameSummary, ScenarioList, StarterDeck } from './server'
 
 /** A fetch that signs the request and sends a signed-out user to sign in. */
 export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Response> => {
@@ -76,3 +76,21 @@ export const importGame = async (file: File) =>
     headers: { 'Content-Type': 'application/json' },
     body: await file.text(),
   }).then((r) => json<{ id: string }>(r))
+
+export interface NewCampaign {
+  name: string
+  mode: CampaignMode
+  difficulty: 'Normal' | 'Expert'
+  decks: DeckChoice[]
+}
+
+export const fetchCampaigns = () => apiFetch('/api/campaigns').then((r) => json<CampaignView[]>(r))
+
+export const fetchCampaign = (id: string) => apiFetch(`/api/campaigns/${id}`).then((r) => json<CampaignView>(r))
+
+export const createCampaign = (campaign: NewCampaign) => post('/api/campaigns', campaign).then((r) => json<{ id: string }>(r))
+
+/** The campaign's game being played, or its next scenario dealt from the log. */
+export const continueCampaign = (id: string) => post(`/api/campaigns/${id}/continue`, {}).then((r) => json<{ gameId: string }>(r))
+
+export const deleteCampaign = (id: string) => apiFetch(`/api/campaigns/${id}`, { method: 'DELETE' })

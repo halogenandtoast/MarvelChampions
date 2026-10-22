@@ -19,6 +19,7 @@ import Marvel.Message.Lifted
 import Marvel.Question
 import Marvel.Trait
 import Marvel.Stats
+import Marvel.Window qualified as W
 
 instance HasAbilities AlterEgo where
   getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
@@ -40,6 +41,7 @@ instance RunMessage (Attrs AlterEgo) where
       case msg' of
         Recovered -> do
           heal ident =<< getModifiedRecovery a
+          checkWindows [W.Window W.After $ W.UsedRecovery ident]
           pure a
         _ -> pure a
     _ -> pure a

@@ -31,7 +31,7 @@ instance RunMessage FullAuto where
       hero <- identityMatches HeroIdentity you
       if hero
         then do
-          x <- maybe (pure 0) getVillainAttack =<< selectOne ActiveVillain
+          x <- maybe (pure 0) getVillainAttackValue =<< selectOne ActiveVillain
           discardTopOfEncounterDeckThen x \cards -> do
             let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
             when (n > 0) $ dealIndirectDamage you attrs n

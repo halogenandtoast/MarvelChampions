@@ -1,5 +1,8 @@
 module Marvel.Villain.Cards where
 
+import Data.HashSet (singleton)
+import Marvel.Keyword (Keyword (Retaliate))
+import Marvel.EncounterSet (EncounterSet (Bulldozer, Piledriver, Thunderball, Wrecker))
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -35,6 +38,14 @@ allVillainCards =
   , greenGoblinMutagen3
 
   -- The Wrecking Crew
+  , wreckerA
+  , wreckerB
+  , thunderballA
+  , thunderballB
+  , piledriverA
+  , piledriverB
+  , bulldozerA
+  , bulldozerB
 
   -- The Rise of Red Skull
   , crossbones1
@@ -200,3 +211,34 @@ taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
 
 taskmasterVillain3 :: CardDef
 taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]
+
+-- The Wrecking Crew
+
+-- | The Wrecking Crew's villains, each his own encounter set: version A for standard, B
+-- for expert (TWC insert p.7).
+wreckingCrewVillain :: CardCode -> Name -> EncounterSet -> CardDef
+wreckingCrewVillain code name set = (villain code name [WreckingCrew]) {cdEncounterSet = Just set}
+
+wreckerA :: CardDef
+wreckerA = wreckingCrewVillain "07002" "Wrecker" Wrecker
+
+wreckerB :: CardDef
+wreckerB = wreckingCrewVillain "07003" "Wrecker" Wrecker
+
+thunderballA :: CardDef
+thunderballA = wreckingCrewVillain "07017" "Thunderball" Thunderball
+
+thunderballB :: CardDef
+thunderballB = wreckingCrewVillain "07018" "Thunderball" Thunderball
+
+piledriverA :: CardDef
+piledriverA = (wreckingCrewVillain "07032" "Piledriver" Piledriver) {cdKeywords = singleton (Retaliate 1)}
+
+piledriverB :: CardDef
+piledriverB = (wreckingCrewVillain "07033" "Piledriver" Piledriver) {cdKeywords = singleton (Retaliate 1)}
+
+bulldozerA :: CardDef
+bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
+
+bulldozerB :: CardDef
+bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer

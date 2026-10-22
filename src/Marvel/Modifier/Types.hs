@@ -45,6 +45,11 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | "your hero gets -1 THW": taken off, not below 0
+    ThwartPenalty Natural
+  | AttackPenalty Natural
+  | DefensePenalty Natural
+  | HandSizePenalty Natural
   | -- | an enemy not given a boost card as it activates
     NoActivationBoostCard
 
@@ -53,6 +58,11 @@ data Modifier
   | -- | on a side scheme: it cannot leave play, by defeat, discard or removal
     CannotLeavePlay
 
+  | -- | an enemy the players cannot attack (Distracting Taunts)
+    CannotBeAttacked
+  | -- | an enemy whose attacks the player must defend with an ally they control, if
+    -- able (Ramming Speed)
+    DefendedByAllyIfAble
   | -- | on an identity: each "When Revealed" ability its player reveals resolves once
     -- more for each of these
     ResolveWhenRevealedAgain

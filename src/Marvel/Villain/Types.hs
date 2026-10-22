@@ -337,31 +337,10 @@ runVillainMessage msg attrs = case msg of
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
-  VillainAttacks ident ->
-    if villainStunned attrs
-      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
-      else do
-        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
-        villainStep vid (VillainBeginAttack ident)
-        villainStep vid VillainEndAttack
-        clearBoosts
-        -- the attack is under way from when it is declared, as its would windows open
-        attack' <- newAttack ident
-        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
-  VillainAttacksWithoutBoost ident -> do
-    attrs' <- runVillainMessage (VillainAttacks ident) attrs
-    pure $ attrs' & attackingL . _Just %~ \a -> a {attackWithoutBoost = True}
-  VillainBeginAttack ident -> do
-    -- with what its activation already got for itself
-    attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
-    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    unless (attackWithoutBoost attack') dealActivationBoost
-    declareDefense ident vid AnyDefense
-    villainStep vid VillainFlipBoostCards
-    villainStep vid VillainAttacked
-    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
-    pure $
-      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
+  VillainAttacks ident -> attacks (VillainBeginAttack ident) ident
+  VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident
+  VillainBeginAttack ident -> beginAttack True ident
+  VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
@@ -409,6 +388,31 @@ runVillainMessage msg attrs = case msg of
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
+  attacks begin ident =
+    if villainStunned attrs
+      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
+      else do
+        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        villainStep vid begin
+        villainStep vid VillainEndAttack
+        clearBoosts
+        -- the attack is under way from when it is declared, as its would windows open
+        attack' <- newAttack ident
+        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
+  -- an attack "that does not get a boost card" is dealt none
+  beginAttack boosted ident = do
+    -- with the keywords it gained as it was declared, and what its activation already
+    -- got for itself
+    attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
+    modifiers <- getModifiers attrs
+    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    when boosted dealActivationBoost
+    declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
+    villainStep vid VillainFlipBoostCards
+    villainStep vid VillainAttacked
+    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
+    pure $
+      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
   dealActivationBoost = do
     modifiers <- getModifiers attrs
     unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
@@ -472,3 +476,11 @@ getModifiedScheme attrs = do
  where
   applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
+
+-- | The Wrecking Crew's extreme variant (TWC insert p.7, "Adjustable Difficulty"): each
+-- villain starts as version A with version B under it, and when version A is defeated
+-- version B enters play. Played as the scenario set up by Breakout's A side.
+versionBEnters :: (HasGame m) => Attrs Villain -> m Bool
+versionBEnters attrs
+  | villainStage attrs /= 1 = pure False
+  | otherwise = (== "07001a") <$> getScenarioCode

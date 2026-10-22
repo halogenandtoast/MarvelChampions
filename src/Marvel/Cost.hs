@@ -56,6 +56,8 @@ canAffordCost identityId source = go
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
     DamageThisCost _ -> pure True
     DiscardCost _ -> pure True -- TODO: we need to check if target exists
+    DiscardRandomHandCardsCost n ->
+      projectP PlayerIdentityHand ((>= n) . fromIntegral . length . unHand) identityId
     DiscardHandCardsCost n _ ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
@@ -77,6 +79,8 @@ canAffordCost identityId source = go
       UpgradeRef ident -> member ident <$> select UnexhaustedUpgrade
       -- "exhaust your hero" on an encounter card
       AttachmentRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
+      -- "exhaust your alter-ego" on an expert campaign's obligation
+      ObligationRef _ -> member identityId <$> select (UnexhaustedIdentity <> AlterEgoIdentity)
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses

@@ -45,6 +45,7 @@ payCostPart activeCost = go
     DiscardHandCardsCost n m -> do
       inHand <- projectMap PlayerIdentityHand (fromIntegral . length . unHand) iid
       discardFor iid (ActiveCostRef acid) FromHand n (fromMaybe inHand m)
+    DiscardRandomHandCardsCost n -> discardFrom iid RandomFromHand n
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
         damageIdentity iid (abilitySource a) (toDamage n FromAbility)
@@ -68,6 +69,7 @@ payCostPart activeCost = go
           SupportRef support -> exhaust support
           UpgradeRef upgrade -> exhaust upgrade
           AttachmentRef _ -> exhaust iid
+          ObligationRef _ -> exhaust iid
           _ -> error "Unhandled"
         paid ExhaustPayment
       _ -> error "Unhandled"

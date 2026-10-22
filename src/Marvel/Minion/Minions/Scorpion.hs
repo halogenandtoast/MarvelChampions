@@ -29,7 +29,7 @@ instance HasAbilities Scorpion where
 
 instance RunMessage Scorpion where
   runMessage msg e@(Scorpion attrs) = runQueueT $ case msg of
-    RanAbility _ (isTarget attrs -> True) 1 [EnemyAttacksAndDamages _ character] _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 [EnemyAttacksAndDamages _ character _] _ -> do
       giveStatus character StunnedStatus
       pure e
     _ -> Scorpion <$> runMessage msg attrs
