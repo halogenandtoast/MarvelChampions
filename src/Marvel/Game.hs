@@ -683,6 +683,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
   RevealedEncounterCard ident card -> do
+    -- incite is a "When Revealed": its threat first, then the rest of the card
+    incite card
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
     let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (surge ident)
     case cdCardType (getCardDef card) of

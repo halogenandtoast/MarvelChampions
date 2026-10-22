@@ -80,3 +80,11 @@ spec = describe "set mechanics" do
     text <- T.concat . map entryText <$> readIORef tg.logged
     for_ ["$log.countersPlaced", "$log.countersRemoved", "$log.playerObligationsRemoved"] \key ->
       text `shouldSatisfy` T.isInfixOf key
+
+  it "a card with incite, revealed, places its threat on the main scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      before <- mainSchemeThreatNow
+      _ <- revealNow (player1 tg) Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
+      after <- mainSchemeThreatNow
+      liftIO $ after `shouldBe` before + 2
