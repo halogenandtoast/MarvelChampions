@@ -6,16 +6,12 @@ module Marvel.Obligation.Obligations.AffairsOfState (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Trait
 
 affairsOfState :: ObligationCard AffairsOfState
@@ -26,51 +22,29 @@ newtype AffairsOfState = AffairsOfState (Attrs Obligation)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage AffairsOfState where
-  runMessage msg o@(AffairsOfState attrs) = case msg of
+  runMessage msg o@(AffairsOfState attrs) = runQueueT $ case msg of
     ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
       RevealObligation identityId -> do
         isHero <- identityMatches HeroIdentity identityId
-        pushAll $
-          [ Ask identityId $
-            ChooseOne
-              [ Label "$label.doNotFlipToAlterEgo" []
-              , Label "$label.changeToB" [ChangeForm]
-              ]
-          | isHero
-          ]
-            <> [ ObligationMessage (obligationId attrs) $
-                  ResolveObligation identityId
-               ]
+        when isHero $
+          chooseOne identityId
+            [ labeled "$label.doNotFlipToAlterEgo" (pure ())
+            , labeled "$label.changeToB" (changeForm identityId)
+            ]
+        resolveObligation (obligationId attrs) identityId
         pure o
       ResolveObligation identityId -> do
-        isUnexhaustedAlterEgo <-
-          identityMatches
-            (AlterEgoIdentity <> UnexhaustedIdentity)
-            identityId
+        isUnexhaustedAlterEgo <- identityMatches (AlterEgoIdentity <> UnexhaustedIdentity) identityId
         blackPantherUpgrades <-
           selectRefs $
             UpgradeWithTrait BlackPanther
               <> UpgradeControlledBy (IdentityWithId identityId)
         chooseOrRunOne identityId $
-          [ Label
-            "$label.exhaustTChallaRemoveAffairsOfState"
-            [ Run
-                [ IdentityMessage identityId ExhaustedIdentity
-                , RemoveFromGame (toTarget attrs)
-                ]
-            ]
+          [ labeled "$label.exhaustTChallaRemoveAffairsOfState" (exhaust identityId >> removeFromGame attrs)
           | isUnexhaustedAlterEgo
           ]
-            <> [ Label
-                  "$label.discardBlackPantherUpgradeDiscardObligation"
-                  [ Run
-                      [ Ask identityId $
-                          ChooseOne
-                            [ TargetLabel target [DiscardTarget target]
-                            | target <- blackPantherUpgrades
-                            ]
-                      ]
-                  ]
+            <> [ labeled "$label.discardBlackPantherUpgradeDiscardObligation" $
+                  chooseOne identityId [targeting target (removeFromPlay target) | target <- blackPantherUpgrades]
                ]
         pure o
       _ -> AffairsOfState <$> runMessage msg attrs

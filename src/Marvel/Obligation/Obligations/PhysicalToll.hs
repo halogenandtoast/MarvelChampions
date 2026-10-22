@@ -8,16 +8,13 @@ module Marvel.Obligation.Obligations.PhysicalToll (
 import Marvel.Prelude
 
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Effect.Types
 import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -39,35 +36,26 @@ instance IsObligation PhysicalToll where
 -- the game, or the next event you play costs 3 additional resources, this obligation
 -- staying in play until you play one.
 instance RunMessage PhysicalToll where
-  runMessage msg o@(PhysicalToll (attrs `With` meta)) = case msg of
+  runMessage msg o@(PhysicalToll (attrs `With` meta)) = runQueueT $ case msg of
     ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
       RevealObligation identityId -> do
         isHero <- identityMatches HeroIdentity identityId
-        pushAll $
-          [ Ask identityId $
-            ChooseOne
-              [ Label "$label.doNotFlipToAlterEgo" []
-              , Label "$label.changeToB" [ChangeForm]
-              ]
-          | isHero
-          ]
-            <> [ObligationMessage (obligationId attrs) $ ResolveObligation identityId]
+        when isHero $
+          chooseOne identityId
+            [ labeled "$label.doNotFlipToAlterEgo" (pure ())
+            , labeled "$label.changeToB" (changeForm identityId)
+            ]
+        resolveObligation (obligationId attrs) identityId
         pure o
       ResolveObligation identityId -> do
-        unexhaustedAlterEgo <- identityMatches (AlterEgoIdentity <> UnexhaustedIdentity) identityId
+        isUnexhaustedAlterEgo <- identityMatches (AlterEgoIdentity <> UnexhaustedIdentity) identityId
         chooseOrRunOne identityId $
-          [ Label
-            "$label.exhaustStephenStrangeRemovePhysicalToll"
-            [Run [IdentityMessage identityId ExhaustedIdentity, RemoveFromGame (toTarget attrs)]]
-          | unexhaustedAlterEgo
+          [ labeled "$label.exhaustStephenStrangeRemovePhysicalToll" (exhaust identityId >> removeFromGame attrs)
+          | isUnexhaustedAlterEgo
           ]
-            <> [ Label
-                  "$label.nextEventCosts3More"
-                  [ Run
-                      [ CreatedEffect Cards.physicalToll (toSource attrs) (IdentityEntity $ IdentityWithId identityId)
-                      , cardSpecific attrs "lingers" ()
-                      ]
-                  ]
+            <> [ labeled "$label.nextEventCosts3More" do
+                  createEffect Cards.physicalToll attrs (IdentityEntity $ IdentityWithId identityId)
+                  cardSpecific attrs "lingers" ()
                ]
         pure o
       -- staying in play, it is discarded by its effect once an event is played
@@ -88,12 +76,12 @@ physicalTollEffect =
     modifiersL .~ [AdditionalResourceCost (CardWithType EventType) 3]
 
 instance RunMessage PhysicalTollEffect where
-  runMessage msg e@(PhysicalTollEffect attrs) = case msg of
+  runMessage msg e@(PhysicalTollEffect attrs) = runQueueT $ case msg of
     CheckWindows windows
       | ident : _ <- [i | W.Window W.After (W.EventPlayed i _ _) <- windows] -> do
           played <- effectValidFor attrs (toRef ident)
-          when played $
-            pushAll
-              [EffectMessage (effectId attrs) DisableEffect, RemoveFromPlay (refocus $ effectSource attrs)]
+          when played do
+            disableEffect (effectId attrs)
+            removeFromPlay (refocus (effectSource attrs) :: Target)
           pure e
     _ -> PhysicalTollEffect <$> runMessage msg attrs
