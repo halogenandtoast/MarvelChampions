@@ -34,6 +34,8 @@ allMainSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , SomeMainSchemeCard huntingDownHeroes
 
   -- The Once and Future Kang
 

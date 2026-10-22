@@ -67,6 +67,9 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , SomeTreacheryCard mimicry
+  , SomeTreacheryCard huntedByHydra
 
   -- The Once and Future Kang
 

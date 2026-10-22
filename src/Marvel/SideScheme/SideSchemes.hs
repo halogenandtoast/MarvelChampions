@@ -30,5 +30,8 @@ import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.SideScheme.SideSchemes.CapturedByHydra as X
+import Marvel.SideScheme.SideSchemes.TaskmastersTrainingCamp as X
 
 -- The Once and Future Kang

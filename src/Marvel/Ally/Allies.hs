@@ -44,5 +44,10 @@ import Marvel.Ally.Allies.SheHulkJenniferWalters as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.Ally.Allies.Elektra as X
+import Marvel.Ally.Allies.MoonKnightMarcSpector as X
+import Marvel.Ally.Allies.ShangChi as X
+import Marvel.Ally.Allies.WhiteTigerAngelaDelToro as X
 
 -- The Once and Future Kang

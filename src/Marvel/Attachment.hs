@@ -43,6 +43,10 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Taskmaster
+      , SomeAttachmentCard taskmastersSword
+      , SomeAttachmentCard taskmastersShield
+      , SomeAttachmentCard photographicReflexes
 
       -- The Once and Future Kang
 

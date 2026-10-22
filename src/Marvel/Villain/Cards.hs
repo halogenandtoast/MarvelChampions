@@ -26,6 +26,10 @@ allVillainCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , taskmasterVillain1
+  , taskmasterVillain2
+  , taskmasterVillain3
 
   -- The Once and Future Kang
 
@@ -87,3 +91,16 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+taskmasterVillain1 :: CardDef
+taskmasterVillain1 = villain "04093" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain2 :: CardDef
+taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain3 :: CardDef
+taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]

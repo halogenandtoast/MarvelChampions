@@ -36,6 +36,8 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Taskmaster
+    , SomeScenarioCard taskmasterScenario
 
     -- The Once and Future Kang
 
@@ -59,6 +61,8 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Taskmaster: Hydra Patrol is required, Weapon Master the modular
+    , ("04093", [EncounterSet.WeaponMaster])
 
     -- The Once and Future Kang
 
@@ -120,3 +124,24 @@ ultronScenario = scenario
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+newtype TaskmasterScenario = TaskmasterScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage TaskmasterScenario where
+  runMessage msg (TaskmasterScenario a) = TaskmasterScenario <$> runMessage msg a
+
+-- | Encounter deck: the Taskmaster and Hydra Patrol sets (Hydra Patrol "is required when
+-- playing Taskmaster", TRORS rulebook p.10), a modular set and the standard set.
+taskmasterScenario :: ScenarioCard TaskmasterScenario
+taskmasterScenario = scenario
+  TaskmasterScenario
+  "04093"
+  ("04093", "04094")
+  ["04096"]
+  [EncounterSet.Taskmaster, EncounterSet.HydraPatrol]

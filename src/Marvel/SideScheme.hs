@@ -52,6 +52,9 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , SomeSideSchemeCard capturedByHydra
+  , SomeSideSchemeCard taskmastersTrainingCamp
 
   -- The Once and Future Kang
 

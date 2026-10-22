@@ -74,6 +74,11 @@ allAllies = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , SomeAllyCard moonKnightMarcSpector
+  , SomeAllyCard shangChi
+  , SomeAllyCard whiteTigerAngelaDelToro
+  , SomeAllyCard elektra
 
   -- The Once and Future Kang
 

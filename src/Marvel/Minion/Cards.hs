@@ -54,6 +54,8 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Taskmaster
+      , hydraHunter
 
       -- The Once and Future Kang
 
@@ -286,3 +288,10 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+hydraHunter :: CardDef
+hydraHunter = minion "04101" "Hydra Hunter" [Hydra] [Star] Taskmaster 2

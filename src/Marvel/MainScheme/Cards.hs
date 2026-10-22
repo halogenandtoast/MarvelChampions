@@ -24,6 +24,8 @@ allMainSchemes =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Taskmaster
+    , huntingDownHeroes
 
     -- The Once and Future Kang
 
@@ -72,3 +74,10 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+huntingDownHeroes :: CardDef
+huntingDownHeroes = mainScheme "04096" "Hunting Down Heroes" Taskmaster

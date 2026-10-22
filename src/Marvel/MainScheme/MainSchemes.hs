@@ -12,5 +12,7 @@ import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.MainScheme.MainSchemes.HuntingDownHeroes as X
 
 -- The Once and Future Kang

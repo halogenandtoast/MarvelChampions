@@ -18,5 +18,9 @@ import Marvel.Attachment.Attachments.Counterspell as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.Attachment.Attachments.PhotographicReflexes as X
+import Marvel.Attachment.Attachments.TaskmastersShield as X
+import Marvel.Attachment.Attachments.TaskmastersSword as X
 
 -- The Once and Future Kang

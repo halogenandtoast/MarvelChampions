@@ -36,6 +36,10 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Taskmaster
+      , taskmastersSword
+      , taskmastersShield
+      , photographicReflexes
 
       -- The Once and Future Kang
 
@@ -124,3 +128,16 @@ biomechanicalUpgrades =
 counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+taskmastersSword :: CardDef
+taskmastersSword = unique $ attachment "04102" "Taskmaster's Sword" [Weapon] [Boost, Boost, Boost] Taskmaster 1
+
+taskmastersShield :: CardDef
+taskmastersShield = unique $ attachment "04103" "Taskmaster's Shield" [Armor, Weapon] [Boost, Boost, Boost] Taskmaster 1
+
+photographicReflexes :: CardDef
+photographicReflexes = attachment "04104" "Photographic Reflexes" [] [Boost, Boost] Taskmaster 2

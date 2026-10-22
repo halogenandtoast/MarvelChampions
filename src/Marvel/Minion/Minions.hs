@@ -34,5 +34,7 @@ import Marvel.Minion.Minions.Abomination as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.Minion.Minions.HydraHunter as X
 
 -- The Once and Future Kang

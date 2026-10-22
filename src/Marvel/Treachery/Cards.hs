@@ -60,6 +60,9 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , mimicry
+  , huntedByHydra
 
   -- The Once and Future Kang
 
@@ -228,3 +231,13 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+mimicry :: CardDef
+mimicry = treachery "04105" "Mimicry" [Boost] Taskmaster 2
+
+huntedByHydra :: CardDef
+huntedByHydra = (treachery "04106" "Hunted by Hydra" [Boost] Taskmaster 2) {cdKeywords = singleton (Keyword.Incite 1)}

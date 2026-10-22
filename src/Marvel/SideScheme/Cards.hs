@@ -43,6 +43,9 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , capturedByHydra
+  , taskmastersTrainingCamp
 
   -- The Once and Future Kang
 
@@ -207,3 +210,13 @@ openTheDarkDimension =
   (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
     }
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+capturedByHydra :: CardDef
+capturedByHydra = (sideScheme "04107" "Captured by Hydra" [Boost, Boost] Taskmaster 4) {cdAcceleration = 1}
+
+taskmastersTrainingCamp :: CardDef
+taskmastersTrainingCamp = (sideScheme "04108" "Taskmaster's Training Camp" [Boost, Boost, Boost] Taskmaster 1) {cdHazards = 1}

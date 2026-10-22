@@ -43,5 +43,8 @@ import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Taskmaster
+import Marvel.Treachery.Treacheries.HuntedByHydra as X
+import Marvel.Treachery.Treacheries.Mimicry as X
 
 -- The Once and Future Kang

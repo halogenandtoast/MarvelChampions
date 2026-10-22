@@ -8,6 +8,7 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -58,6 +59,11 @@ allAllies = fromList $ concatMap
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Taskmaster
+  , moonKnightMarcSpector
+  , shangChi
+  , whiteTigerAngelaDelToro
+  , elektra
 
   -- The Once and Future Kang
 
@@ -264,3 +270,26 @@ ironFistDannyRand =
 ironManTonyStark :: CardDef
 ironManTonyStark =
   ally "09039" ("Iron Man" <:> "Tony Stark") 4 [Avenger] [Wild] Leadership
+
+-- The Rise of Red Skull
+
+-- Taskmaster: the Captive allies, set aside out of play in the encounter set until a
+-- player rescues one
+
+-- | A Captive ally of the Taskmaster encounter set: a player card, cost 0, kept out of
+-- the encounter deck (it is not an encounter card) and owned by whoever rescues it.
+captiveAlly :: CardCode -> Name -> CardDef
+captiveAlly code name =
+  (basicAlly code name 0 [Captive, HeroForHire] [Wild]) {cdEncounterSet = Just EncounterSet.Taskmaster, cdEncounterSetQuantity = Just 1}
+
+moonKnightMarcSpector :: CardDef
+moonKnightMarcSpector = captiveAlly "04097" ("Moon Knight" <:> "Marc Spector")
+
+shangChi :: CardDef
+shangChi = reprintedAs ["10098"] $ captiveAlly "04098" "Shang-Chi"
+
+whiteTigerAngelaDelToro :: CardDef
+whiteTigerAngelaDelToro = captiveAlly "04099" ("White Tiger" <:> "Angela Del Toro")
+
+elektra :: CardDef
+elektra = captiveAlly "04100" "Elektra"

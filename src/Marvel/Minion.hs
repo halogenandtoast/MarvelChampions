@@ -63,6 +63,8 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Taskmaster
+      , SomeMinionCard hydraHunter
 
       -- The Once and Future Kang
 
