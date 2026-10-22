@@ -71,8 +71,8 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
         </div>
         <div v-if="scheme" class="scheme">
           <div class="scheme-card">
-            <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
             <TokenStack class="adding" kind="threat" :count="scheme.amount" :title="t('game.threatOn', { count: scheme.amount })" />
+            <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
           </div>
           <Meter :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
         </div>
@@ -145,7 +145,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 /* the meter under the card, as on the board */
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .scheme-card { display: flex; align-items: center; gap: 8px; }
-/* the threat about to go on, beside the card */
+/* the threat about to go on, to the card's left */
 .adding { --token-size: 30px; }
 .scheme :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 /* stats to the card's left, not under it, so the river stays a card high */
