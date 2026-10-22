@@ -167,8 +167,33 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
             }
     }
 
+-- | However it empties, the encounter deck is made again from the discard pile at once,
+-- with an acceleration token; with no discard pile to make it from, the tokens would be
+-- placed without end, and the players lose.
 instance RunMessage (Attrs Scenario) where
-  runMessage msg attrs@ScenarioAttrs {..} = case msg of
+  runMessage msg attrs = do
+    attrs' <- runScenarioMessage msg attrs
+    case (scenarioEncounterDeck attrs', scenarioDiscard attrs') of
+      ([], []) | notNull (scenarioEncounterDeck attrs) -> attrs' <$ push (GameOver Lost)
+      ([], discard) | notNull discard -> do
+        deck' <- shuffleM discard
+        pure $
+          attrs'
+            & (accelerationTokensL +~ 1)
+            & (encounterDeckL .~ deck')
+            & (discardL .~ mempty)
+            & \a -> a {scenarioReshufflesThisRound = scenarioReshufflesThisRound a + 1}
+      _ -> pure attrs'
+
+-- | The top card of the encounter deck, which is never empty while its discard pile has
+-- cards: with neither, the players have lost.
+drawEncounterCard :: (HasQueue m) => Attrs Scenario -> m ([EncounterCard], Attrs Scenario)
+drawEncounterCard attrs = case scenarioEncounterDeck attrs of
+  [] -> ([], attrs) <$ push (GameOver Lost)
+  card : deck' -> pure ([card], attrs & encounterDeckL .~ deck')
+
+runScenarioMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m) => Message -> Attrs Scenario -> m (Attrs Scenario)
+runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
         shuffleM
@@ -238,53 +263,34 @@ instance RunMessage (Attrs Scenario) where
     BeginRound -> do
       push (BeginPhase PlayerPhase)
       pure attrs
-    -- with no encounter deck and no discard pile to make one, acceleration tokens would
-    -- be placed without end: the players lose
-    EmptyScenarioDeck | null scenarioDiscard && null scenarioEncounterDeck -> do
-      push $ GameOver Lost
-      pure attrs
-    EmptyScenarioDeck -> do
-      deck' <- shuffleM scenarioDiscard
-      pure $
-        attrs
-          & (accelerationTokensL +~ 1)
-          & (encounterDeckL .~ deck')
-          & (discardL .~ mempty)
-          & \a -> a {scenarioReshufflesThisRound = scenarioReshufflesThisRound + 1}
     DealEncounterCard ident -> do
-      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      (ecs, attrs') <- drawEncounterCard attrs
       pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
-      when (null deck') (push EmptyScenarioDeck)
-      pure $ attrs & encounterDeckL .~ deck'
+      pure attrs'
     -- ponytail: a deck worn down to surge cards would surge forever, so after a few
     -- reshuffles in a round surge stops; a real table would just stop too
     Surge _ | scenarioReshufflesThisRound >= 3 -> pure attrs
     Surge ident -> do
-      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      (ecs, attrs') <- drawEncounterCard attrs
       pushAll $
         CheckWindows [W.Window W.Would $ W.SurgeResolves ident]
           : map (RevealEncounterCard ident) ecs
-      when (null deck') (push EmptyScenarioDeck)
-      pure $ attrs & encounterDeckL .~ deck'
+      pure attrs'
     DrawAndRevealEncounterCard ident -> do
-      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      (ecs, attrs') <- drawEncounterCard attrs
       pushAll $ map (RevealEncounterCard ident) ecs
-      when (null deck') (push EmptyScenarioDeck)
-      pure $ attrs & encounterDeckL .~ deck'
+      pure attrs'
     DealBoost target -> do
-      let (ecs, deck') = splitAt 1 scenarioEncounterDeck
+      (ecs, attrs') <- drawEncounterCard attrs
       case target of
         VillainRef vid ->
           pushAll $ map (VillainMessage vid . VillainDealtBoost) ecs
         _ -> error "Can not deal boost to target"
-      when (null deck') (push EmptyScenarioDeck)
-      pure $ attrs & encounterDeckL .~ deck'
-    -- ponytail: a deck running out partway stops there; only 1 card is ever discarded
+      pure attrs'
+    -- a deck emptied partway is fulfilled: the new deck is not discarded from
     DiscardTopOfEncounterDeck n mTarget -> do
       let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
-      pushAll $
-        [WithDiscarded target FromEncounterDeck (EncounterCard <$> discarded) | Just target <- [mTarget]]
-          <> [EmptyScenarioDeck | null deck']
+      pushAll [WithDiscarded target FromEncounterDeck (EncounterCard <$> discarded) | Just target <- [mTarget]]
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     -- a card discarded from the encounter deck, as one looked at there, leaves it
@@ -298,15 +304,7 @@ instance RunMessage (Attrs Scenario) where
         (discarded, remaining) =
           break (cardMatch cardMatcher) scenarioEncounterDeck
       case remaining of
-        [] -> do
-          push EmptyScenarioDeck
-          pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
-        [x] -> do
-          pushAll
-            [ EmptyScenarioDeck
-            , WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
-            ]
-          pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
+        [] -> pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
         x : xs -> do
           push $ WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)

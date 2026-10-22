@@ -179,7 +179,6 @@ data Message
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
-  | EmptyScenarioDeck
   | DealBoost Target
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
