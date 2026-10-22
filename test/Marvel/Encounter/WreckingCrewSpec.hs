@@ -10,6 +10,7 @@ import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Matchers
 import Marvel.Message.Lifted (signatureSchemeOf)
 import Marvel.Query
+import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
@@ -266,6 +267,52 @@ spec = describe "The Wrecking Crew" do
       w <- wrecker
       selectJust ActiveVillain `shouldReturn` w
       traverse (deckSize <=< villainCoded) ["07002", "07018", "07032", "07047"] `shouldReturn` [15, 15, 15, 15]
+
+  it "I've Been Waiting For This! as a boost moves the counter at once, the villain scheming after the attack" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      [w, _, pd, _] <- traverse id [wrecker, thunderball, piledriver, bulldozer]
+      ibwft <- encounterCard Treacheries.iveBeenWaitingForThis
+      resolve [CreateDeck (VillainDeckKey w) [ibwft]]
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      runNow [VillainMessage w (VillainAttacks p)]
+      let settle :: Int -> GameAppT ()
+          settle 0 = pure ()
+          settle n = asked >>= \case
+            Just (_, cs) | EndTurn `elem` cs -> pure ()
+            Just (ident, _) -> answerQuestion ident 0 >> settle (n - 1)
+            Nothing -> pure ()
+      settle 50
+      activeNow `shouldReturn` pd
+      order <- reverse <$> liftIO (readIORef tg.ran)
+      let at m = fromMaybe (error $ "not run: " <> show m) $ headMay [i | (i, x) <- zip [0 :: Int ..] order, x == tshow m]
+      at (VillainMessage pd VillainSchemes) `shouldSatisfy` (> at (VillainMessage w VillainEndAttack))
+      at (SetActiveVillain pd) `shouldSatisfy` (< at (VillainMessage w VillainEndAttack))
+
+  it "activations initiated during an activation follow it in the order the first player chooses" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      w <- wrecker
+      cards <- traverse encounterCard [Treacheries.iveBeenWaitingForThis, Minions.escapedConvict]
+      resolve [CreateDeck (VillainDeckKey w) cards]
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      -- a boost card dealt ahead of the activation is turned up with its own
+      runNow [DealBoost (VillainRef w)]
+      runNow [VillainMessage w (VillainAttacks p)]
+      let untilOrder :: Int -> GameAppT Bool
+          untilOrder 0 = pure False
+          untilOrder n = openQuestion >>= \case
+            Just (_, QuestionLabel "$label.chooseActivationOrder" _ _) -> pure True
+            Just (_, q) | EndTurn `elem` choicesOf q -> pure False
+            Just (ident, _) -> answerQuestion ident 0 >> untilOrder (n - 1)
+            Nothing -> pure False
+      untilOrder 50 `shouldReturn` True
+      ran <- liftIO (readIORef tg.ran)
+      ran `shouldSatisfy` elem (tshow (VillainMessage w VillainEndAttack))
  where
   ranMessage tg msg = elem (tshow msg) <$> liftIO (readIORef tg.ran)
 

@@ -102,6 +102,7 @@
 
   "-- The Wrecking Crew --": "",
   "breakTie": "They are tied: choose one",
+  "chooseActivationOrder": "Choose which of these villains activates next",
   "chooseVillainVersion": "Choose this villain's version",
   "thisVersion": "This version",
   "placeThreatForEachUpgrade": "Place 1 threat on the active villain's side scheme for each upgrade you control",

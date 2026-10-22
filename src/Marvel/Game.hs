@@ -1177,6 +1177,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           when inDiscard $ addToHand controller c
       pure g
     _ -> error "unhandled"
+  PendingActivations [(_, msgs)] -> g <$ pushAll msgs
+  PendingActivations pending -> do
+    first <- selectJust FirstPlayer
+    chooseOneAtATimePrompted first "$label.chooseActivationOrder" [targeting v (pushAll msgs) | (v, msgs) <- pending]
+    pure g
   CreateArea aid players -> pure $ g & areasL %~ (movePlayers players aid . (<> [newArea aid []]))
   MovePlayerToArea ident aid -> pure $ g & areasL %~ movePlayers [ident] aid
   CombineAreas from into -> pure $ g & areasL %~ combine from into

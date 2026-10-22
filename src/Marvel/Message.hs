@@ -411,6 +411,9 @@ data Message
   | -- | a villain is defeated for good: the scenario says what that does, by default
     -- the players win with no villain left, and otherwise he leaves play
     ResolveVillainDefeat VillainId
+  | -- | activations initiated during another, each by its villain, following it once it
+    -- has fully resolved, in the order the first player chooses (RR "Activation")
+    PendingActivations [(VillainId, [Message])]
   | -- | the attachment card is put into play attached to the enemy, from wherever it
     -- was, without being revealed
     AttachEncounterCard EncounterCard EnemyId

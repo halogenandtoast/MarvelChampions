@@ -923,19 +923,29 @@ highestCostControlled you upgrades supports = do
     (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
   pure $ extremes MostThreat costed
 
--- | What the body does once the enemy's activation under way is over: after its attack,
--- or after its scheming. A boost ability that has another activation follow it waits
--- for this one to end, so the two are not run inside each other.
-afterActivation :: (ReverseQueue m) => EnemyId -> m () -> m ()
-afterActivation enemy body = do
+-- | The villain's activation the body initiates during the enemy's activation under way:
+-- "the newly initiated activation resolves after the current activation has finished
+-- resolving", the abilities the current one triggered first, and several initiated so
+-- in the order the first player decides (RR "Activation", v1.8 p.6). It follows the
+-- current attack's end, or its scheming; with no activation under way, it is at once.
+activationAfter :: (ReverseQueue m) => EnemyId -> VillainId -> m () -> m ()
+activationAfter enemy v body = do
+  msgs <- capture body
   attacking <- case enemy of
-    EnemyVillainId v -> isJust <$> getVillainAttack v
+    EnemyVillainId e -> isJust <$> getVillainAttack e
     EnemyMinionId _ -> pure True
-  flip afterMatching body \case
-    VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
-    VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
-    MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
-    _ -> False
+  let ends = \case
+        VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
+        VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
+        MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
+        _ -> False
+  queued <- isQueued ends
+  if not queued
+    then pushAll msgs
+    else withQueue_ \q -> case break ends q of
+      (pre, end : PendingActivations pending : rest) -> pre <> (end : PendingActivations (pending <> [(v, msgs)]) : rest)
+      (pre, end : rest) -> pre <> (end : PendingActivations [(v, msgs)] : rest)
+      (pre, []) -> pre
 
 -- | The villain in play with the title, if he is.
 villainNamed :: (HasGame m) => Text -> m (Maybe VillainId)
