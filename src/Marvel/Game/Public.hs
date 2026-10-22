@@ -205,11 +205,11 @@ data MinionView = MinionView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView]}
+data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural}
+data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural, counters :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -221,6 +221,7 @@ data SchemeView = SchemeView
   , crisis :: Bool
   , upgrades :: [UpgradeView]
   -- ^ the player upgrades attached to it
+  , counters :: Natural
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -314,7 +315,7 @@ gameView seesHand g = do
       , sideSchemes = map sideSchemeView (HashMap.elems $ gameSideSchemes g)
       , minions
       , environments =
-          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments)
+          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters
           | e <- HashMap.elems (gameEnvironments g)
           , let a = toAttrs e
           ]
@@ -415,7 +416,7 @@ gameView seesHand g = do
      in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController
   attachmentView (x :: Attachment) =
     let a = toAttrs x
-     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage
+     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters
   villainView (v :: Villain) = do
     let a = toAttrs v
     sch <- Villain.getModifiedScheme a
@@ -459,10 +460,10 @@ gameView seesHand g = do
         }
   mainSchemeView (s :: MainScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId)
+     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId)
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0
 
 sideCode :: PlayerIdentitySide -> CardCode
 sideCode = \case

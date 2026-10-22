@@ -173,6 +173,13 @@ giveStatus character = push . GiveStatus (characterRef $ toCharacter character)
 removeStatus :: (ReverseQueue m, IsCharacter character) => character -> StatusCard -> m ()
 removeStatus character = push . RemoveStatus (characterRef $ toCharacter character)
 
+-- | Counters placed on, or removed from, an environment, main scheme or attachment.
+placeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
+placeCounters a = push . PlaceCounters (toTarget a)
+
+removeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
+removeCounters a = push . RemoveCounters (toTarget a)
+
 -- | The identity is given a tough status card.
 becomeTough :: (ReverseQueue m) => IdentityId -> m ()
 becomeTough ident = push $ IdentityMessage ident IdentityBecomeTough

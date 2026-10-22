@@ -26,6 +26,7 @@ export interface SupportView extends CardView {
 
 export interface AttachmentView extends CardView {
   damage?: number
+  counters?: number
 }
 
 export interface AllyView extends CardView {
@@ -106,6 +107,7 @@ export interface SchemeView extends CardView {
   threat: number
   crisis: boolean
   upgrades?: UpgradeView[]
+  counters?: number
 }
 
 export type ChoiceKind =
@@ -153,7 +155,8 @@ export interface EnvironmentView {
   id: string
   code: string
   name: string
-  attachments?: { id: string; code: string; name: string; damage?: number }[]
+  attachments?: { id: string; code: string; name: string; damage?: number; counters?: number }[]
+  counters?: number
 }
 
 export interface BoostView {

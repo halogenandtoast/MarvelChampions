@@ -51,6 +51,7 @@ instance Entity MainScheme where
     , mainSchemeThreshold :: GameValue
     , mainSchemeCrisis :: Bool
     , mainSchemeHeldCards :: [PlayerCard]
+    , mainSchemeCounters :: Natural
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -63,6 +64,7 @@ instance Entity MainScheme where
     MainSchemeThreshold :: Field MainScheme GameValue
     MainSchemeCrisis :: Field MainScheme Bool
     MainSchemeHeldCards :: Field MainScheme [PlayerCard]
+    MainSchemeCounters :: Field MainScheme Natural
   field fld m =
     let MainSchemeAttrs {..} = toAttrs m
      in case fld of
@@ -74,6 +76,7 @@ instance Entity MainScheme where
           MainSchemeThreshold -> mainSchemeThreshold
           MainSchemeCrisis -> mainSchemeCrisis
           MainSchemeHeldCards -> mainSchemeHeldCards
+          MainSchemeCounters -> mainSchemeCounters
   toId = mainSchemeId . toAttrs
   toAttrs (MainScheme a) = toMainSchemeAttrs a
 
@@ -101,6 +104,9 @@ type MainSchemeCard a = CardBuilder MainSchemeId a
 
 threatL :: Lens' (Attrs MainScheme) Natural
 threatL = lens mainSchemeThreat $ \m x -> m {mainSchemeThreat = x}
+
+countersL :: Lens' (Attrs MainScheme) Natural
+countersL = lens mainSchemeCounters $ \m x -> m {mainSchemeCounters = x}
 
 instance HasCardCode (Attrs MainScheme) where
   toCardCode = toCardCode . mainSchemeCardDef
@@ -137,6 +143,7 @@ mainScheme f cardDef threshold initialThreat acceleration =
             , mainSchemeThreat = 0
             , mainSchemeCrisis = False
             , mainSchemeHeldCards = []
+            , mainSchemeCounters = 0
             }
     }
 
@@ -169,6 +176,8 @@ instance RunMessage (Attrs MainScheme) where
           pure $ attrs & threatL +~ n
         MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
+    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     AccelerateMainScheme -> do
       acceleration <- getAccelerationCount
       additionalThreat <- fromIntegral <$> fromGameValue (mainSchemeAcceleration attrs)

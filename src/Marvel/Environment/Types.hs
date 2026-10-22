@@ -42,6 +42,7 @@ instance Entity Environment where
     { environmentId :: EnvironmentId
     , environmentCardDef :: CardDef
     , environmentAttachments :: HashSet AttachmentId
+    , environmentCounters :: Natural
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -49,12 +50,14 @@ instance Entity Environment where
     EnvironmentId :: Field Environment EnvironmentId
     EnvironmentCardDef :: Field Environment CardDef
     EnvironmentAttachments :: Field Environment (HashSet AttachmentId)
+    EnvironmentCounters :: Field Environment Natural
   field fld e =
     let EnvironmentAttrs {..} = toAttrs e
      in case fld of
           EnvironmentId -> environmentId
           EnvironmentCardDef -> environmentCardDef
           EnvironmentAttachments -> environmentAttachments
+          EnvironmentCounters -> environmentCounters
   toId = environmentId . toAttrs
   toAttrs (Environment a) = toEnvironmentAttrs a
 
@@ -87,11 +90,14 @@ environment :: (Attrs Environment -> a) -> CardDef -> CardBuilder EnvironmentId 
 environment f cardDef =
   CardBuilder
     { cbCardDef = cardDef
-    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty
+    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0
     }
 
 attachmentsL :: Lens' (Attrs Environment) (HashSet AttachmentId)
 attachmentsL = lens environmentAttachments $ \m x -> m {environmentAttachments = x}
+
+countersL :: Lens' (Attrs Environment) Natural
+countersL = lens environmentCounters $ \m x -> m {environmentCounters = x}
 
 instance IsRef (Attrs Environment) where
   toRef = EnvironmentRef . environmentId
@@ -117,4 +123,6 @@ instance RunMessage (Attrs Environment) where
           pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs
