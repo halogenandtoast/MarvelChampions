@@ -334,6 +334,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
+    AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       for_ players \p -> do

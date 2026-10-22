@@ -85,6 +85,9 @@ narrationFor = \case
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
+  -- put into play attached, not revealed: the card is not in play yet to be named
+  AttachEncounterCard card enemy -> Just $ whenRef (EnemyRef enemy) \t ->
+    one $ toned Bad $ mechanic [ikeyPart "log.attachedTo" ["card" ~> EncounterCard card, "target" ~> t]]
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
   -- told once, as it is dealt; each character's share is told as it takes it
   AssignIndirectDamage ident _ n [] | n > 0 -> Just do
