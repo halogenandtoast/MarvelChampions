@@ -920,7 +920,7 @@ isWindowPlayable ::
 isWindowPlayable window attrs c = do
   resources <- getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
-  passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
+  passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedWindow <-
     maybe
       (pure False)
@@ -930,24 +930,6 @@ isWindowPlayable window attrs c = do
  where
   ident = toId attrs
   def = getCardDef c
-  checkCriteria = \case
-    IsSelf -> error "Irrelevant"
-    OwnsThis -> error "Irrelevant"
-    NoCriteria -> pure True
-    Never -> pure False
-    InHeroForm -> member ident <$> select HeroIdentity
-    InAlterEgoForm -> member ident <$> select AlterEgoIdentity
-    Unexhausted -> member ident <$> select UnexhaustedIdentity
-    Exhausted -> member ident <$> select Matchers.ExhaustedIdentity
-    SelfMatches identityMatcher ->
-      member ident <$> select (IdentityWithId ident <> identityMatcher)
-    Criteria xs -> allM checkCriteria xs
-    MinionExists m -> selectAny m
-    EnemyExists m -> selectAny m
-    CharacterExists m -> selectAny m
-    SchemeExists m -> selectAny m
-    AllyExists m -> selectAny m
-    ExtendedCardExists m -> selectAny m
 
 abilityInWindow :: (HasGame m) => Window -> Ability -> m Bool
 abilityInWindow window a =

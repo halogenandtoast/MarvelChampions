@@ -33,7 +33,6 @@ import Marvel.Hero.Runner
 import Marvel.Identity.Types
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Matchers qualified as Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Name (Name (..))
@@ -256,7 +255,7 @@ isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdent
 isPlayable attrs c = do
   resources <- getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
-  passedCriteria <- checkCriteria (cdCriteria def <> toAdditionalCriteria def)
+  passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
   matchesUnique <-
     if cdUnique def
@@ -273,24 +272,6 @@ isPlayable attrs c = do
  where
   ident = toId attrs
   def = getCardDef c
-  checkCriteria = \case
-    IsSelf -> error "Irrelevant"
-    OwnsThis -> error "Irrelevant"
-    NoCriteria -> pure True
-    Never -> pure False
-    SelfMatches identityMatcher ->
-      member ident <$> select (IdentityWithId ident <> identityMatcher)
-    InHeroForm -> member ident <$> select HeroIdentity
-    InAlterEgoForm -> member ident <$> select AlterEgoIdentity
-    Unexhausted -> member ident <$> select UnexhaustedIdentity
-    Exhausted -> member ident <$> select Matchers.ExhaustedIdentity
-    Criteria xs -> allM checkCriteria xs
-    MinionExists m -> selectAny m
-    EnemyExists m -> selectAny m
-    CharacterExists m -> selectAny m
-    AllyExists m -> selectAny m
-    SchemeExists m -> selectAny m
-    ExtendedCardExists m -> selectAny (NotCard c <> m)
 
 -- \^ this is critical and order matters to avoid infinite recursionl
 

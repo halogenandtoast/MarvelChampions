@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types as X
+import Marvel.Card.PlayerCard.Types
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Game.Source
@@ -147,6 +148,30 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
   source = abilitySource a
+
+-- | Whether a card's criteria hold for the player who would play it.
+passesCardCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> PlayerCard -> Criteria -> m Bool
+passesCardCriteria ident card = go
+ where
+  go = \case
+    IsSelf -> error "Irrelevant"
+    OwnsThis -> error "Irrelevant"
+    NoCriteria -> pure True
+    Never -> pure False
+    SelfMatches identityMatcher ->
+      member ident <$> select (IdentityWithId ident <> identityMatcher)
+    InHeroForm -> member ident <$> select HeroIdentity
+    InAlterEgoForm -> member ident <$> select AlterEgoIdentity
+    Unexhausted -> member ident <$> select UnexhaustedIdentity
+    Exhausted -> member ident <$> select ExhaustedIdentity
+    Criteria xs -> allM go xs
+    MinionExists m -> selectAny m
+    EnemyExists m -> selectAny m
+    CharacterExists m -> selectAny m
+    AllyExists m -> selectAny m
+    SchemeExists m -> selectAny m
+    -- the card itself, about to leave the hand, is not one of them
+    ExtendedCardExists m -> selectAny (NotCard card <> m)
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])
