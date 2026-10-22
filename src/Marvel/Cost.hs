@@ -81,5 +81,7 @@ passesCanAffordCost identityId a = go (abilityCost a)
         (anyResources, specificResources) = partitionMaybes mr
         (uncovered, remaining) = goPay specificResources resources
       pure $ null uncovered && length remaining >= length anyResources
+    DifferentResourcesCost n ->
+      coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
     Costs xs -> allM go xs
   source = abilitySource a

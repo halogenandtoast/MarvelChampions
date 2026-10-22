@@ -34,6 +34,7 @@ mainScheme code name encounterSet = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 theBreakIn :: CardDef

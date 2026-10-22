@@ -63,5 +63,8 @@
   "askedToDefend": "Defend this attack?",
   "declineToDefend": "Do not defend",
   "exhaustSteveRogersRemoveManOutOfTime": "Exhaust Steve Rogers → remove Man Out of Time from the game",
-  "discardHalfYourHandDiscardObligation": "Discard half the cards in your hand, rounded down. Discard this obligation"
+  "discardHalfYourHandDiscardObligation": "Discard half the cards in your hand, rounded down. Discard this obligation",
+  "exhaustKamalaKhanRemoveHomeByDawn": "Exhaust Kamala Khan → remove Home by Dawn from the game",
+  "discardPersonaSupportDiscardObligation": "Discard a Persona support you control (surge if none), discard Home by Dawn",
+  "discardAPersonaSupport": "Discard a Persona support"
 }

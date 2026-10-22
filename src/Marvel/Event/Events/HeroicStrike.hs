@@ -31,10 +31,9 @@ newtype HeroicStrike = HeroicStrike (Attrs Event)
 instance RunMessage HeroicStrike where
   runMessage msg e@(HeroicStrike attrs) = case msg of
     EventMessage ident (PlayedEvent identityId payments _) | ident == eventId attrs -> do
-      resources <- paymentResources payments
+      stuns <- paidWith Physical payments
       enemies <- selectList AttackableEnemy
       let
-        stuns = Physical `elem` resources || Wild `elem` resources
         damage = toDamage 6 $ FromPlayerAttack identityId
       chooseOne identityId
         [ TargetLabel enemy $

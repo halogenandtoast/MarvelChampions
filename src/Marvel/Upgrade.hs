@@ -54,6 +54,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard enraged
   , SomeUpgradeCard followed
   , SomeUpgradeCard enhancedAwareness
+  , SomeUpgradeCard biokineticPolymerSuit
+  , SomeUpgradeCard embiggen
+  , SomeUpgradeCard shrink
+  , SomeUpgradeCard energyBarrier
+  , SomeUpgradeCard endurance
+  , SomeUpgradeCard enhancedReflexes
+  , SomeUpgradeCard downTime
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

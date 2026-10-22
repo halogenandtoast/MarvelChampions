@@ -10,7 +10,7 @@ import Marvel.Trait
 
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
-  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla, steveRogers]
+  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla, steveRogers, kamalaKhan]
 
 allAlterEgosMap :: HashMap CardCode CardDef
 allAlterEgosMap = fromList $ map (toFst toCardCode) allAlterEgoCards
@@ -37,6 +37,7 @@ alterEgo cardCode name traits = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 peterParker :: CardDef
@@ -56,3 +57,6 @@ tChalla = alterEgo "01040b" "T'Challa" [King, Wakanda]
 
 steveRogers :: CardDef
 steveRogers = alterEgo "03001b" "Steve Rogers" [Shield, Soldier]
+
+kamalaKhan :: CardDef
+kamalaKhan = alterEgo "05001b" "Kamala Khan" [Inhuman]

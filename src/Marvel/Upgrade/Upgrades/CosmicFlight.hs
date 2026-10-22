@@ -48,22 +48,9 @@ instance HasAbilities CosmicFlight where
           $ runAbility a 1
     ]
 
-decreaseDamage :: Message -> [Message]
-decreaseDamage (IdentityMessage ident (IdentityDamaged source dmg)) =
-  [ IdentityMessage ident $
-    IdentityDamaged
-      source
-      (dmg {damageAmount = max 0 $ damageAmount dmg - 3})
-  | damageAmount dmg > 3
-  ]
-decreaseDamage _ = error "Invalid message"
-
 instance RunMessage CosmicFlight where
   runMessage msg a@(CosmicFlight attrs) = case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      replaceMatchingMessage decreaseDamage $ \case
-        IdentityMessage identityId' (IdentityDamaged _ _) ->
-          identityId' == ident
-        _ -> False
+      preventDamage ident 3
       pure a
     _ -> CosmicFlight <$> runMessage msg attrs

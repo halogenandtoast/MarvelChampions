@@ -19,3 +19,4 @@ import Marvel.SideScheme.SideSchemes.UltronsImperative as X
 import Marvel.SideScheme.SideSchemes.UnderAttack as X
 import Marvel.SideScheme.SideSchemes.UsurpTheThrone as X
 import Marvel.SideScheme.SideSchemes.HitSquad as X
+import Marvel.SideScheme.SideSchemes.GenerationWhy as X

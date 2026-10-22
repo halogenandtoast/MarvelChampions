@@ -29,6 +29,9 @@ allSupports = fromList $ concatMap
   , stevesApartment
   , quinjet
   , avengersTower
+  , aamirKhan
+  , brunoCarrelli
+  , nakiaBahadir
   ]
 
 support
@@ -67,6 +70,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 unique :: CardDef -> CardDef
@@ -138,3 +142,12 @@ quinjet = support "03019" "Quinjet" 1 [Avenger, Vehicle] [Energy] Leadership
 avengersTower :: CardDef
 avengersTower =
   unique $ basicSupport "03024" "Avengers Tower" 2 [Avenger, Location] [Mental]
+
+aamirKhan :: CardDef
+aamirKhan = unique $ identitySupport "05006" "Aamir Khan" 1 [Persona] [Mental]
+
+brunoCarrelli :: CardDef
+brunoCarrelli = unique $ identitySupport "05007" "Bruno Carrelli" 1 [Persona] [Physical]
+
+nakiaBahadir :: CardDef
+nakiaBahadir = unique $ identitySupport "05008" "Nakia Bahadir" 1 [Persona] [Energy]

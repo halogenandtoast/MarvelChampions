@@ -29,6 +29,7 @@ allObligations = fromList $ map
   , SomeObligationCard businessProblems
   , SomeObligationCard familyEmergency
   , SomeObligationCard manOutOfTime
+  , SomeObligationCard homeByDawn
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

@@ -16,3 +16,6 @@ import Marvel.Support.Supports.TheTriskellion as X
 import Marvel.Support.Supports.StevesApartment as X
 import Marvel.Support.Supports.Quinjet as X
 import Marvel.Support.Supports.AvengersTower as X
+import Marvel.Support.Supports.AamirKhan as X
+import Marvel.Support.Supports.BrunoCarrelli as X
+import Marvel.Support.Supports.NakiaBahadir as X

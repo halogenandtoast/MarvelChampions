@@ -42,5 +42,9 @@ data Trait
   | Cyborg
   | Vehicle
   | Title
+  | Champion
+  | Inhuman
+  | Bird
+  | Robot
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

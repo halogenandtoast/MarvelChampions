@@ -37,3 +37,11 @@ import Marvel.Event.Events.ShieldToss as X
 import Marvel.Event.Events.AvengersAssemble as X
 import Marvel.Event.Events.StrengthInNumbers as X
 import Marvel.Event.Events.ExpertDefense as X
+import Marvel.Event.Events.BigHands as X
+import Marvel.Event.Events.SneakBy as X
+import Marvel.Event.Events.WiggleRoom as X
+import Marvel.Event.Events.PreemptiveStrike as X
+import Marvel.Event.Events.Tackle as X
+import Marvel.Event.Events.Melee as X
+import Marvel.Event.Events.ConcussiveBlow as X
+import Marvel.Event.Events.MoraleBoost as X

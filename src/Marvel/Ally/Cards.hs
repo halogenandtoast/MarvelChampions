@@ -33,6 +33,9 @@ allAllies = fromList $ concatMap
   , falconSamWilson
   , squirrelGirlDoreenGreen
   , wonderManSimonWilliams
+  , redDagger
+  , novaSamAlexander
+  , lockjaw
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -70,6 +73,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 blackCatFeliciaHardy :: CardDef
@@ -172,3 +176,14 @@ squirrelGirlDoreenGreen =
 wonderManSimonWilliams :: CardDef
 wonderManSimonWilliams =
   ally "03014" ("Wonder Man" <:> "Simon Williams") 2 [Avenger] [Physical] Leadership
+
+redDagger :: CardDef
+redDagger = identityAlly "05002" "Red Dagger" 3 [Champion] [Energy]
+
+novaSamAlexander :: CardDef
+novaSamAlexander =
+  ally "05012" ("Nova" <:> "Sam Alexander") 4 [Champion] [Energy] Protection
+
+lockjaw :: CardDef
+lockjaw =
+  (basicAlly "05018" "Lockjaw" 4 [Inhuman] [Physical]) {cdPlayableFromDiscard = True}

@@ -267,7 +267,8 @@ instance RunMessage (Attrs Upgrade) where
         pure $ a & attachedAllyL ?~ allyId
       UpgradeAttachedToSideScheme sideSchemeId ->
         pure a {upgradeAttachedSideScheme = Just sideSchemeId}
+      -- leaving play discards it
       DiscardUpgrade -> do
-        pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
+        push $ RemoveFromPlay (toTarget a)
         pure a
     _ -> pure a

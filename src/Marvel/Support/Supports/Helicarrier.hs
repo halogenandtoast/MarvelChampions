@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
+import Marvel.Card.Def (CardDef)
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
@@ -31,21 +32,26 @@ newtype Helicarrier = Helicarrier (Attrs Support)
 instance RunMessage Helicarrier where
   runMessage msg (Helicarrier a) = Helicarrier <$> runMessage msg a
 
-newtype HelicarrierEffect = HelicarrierEffect (Attrs Effect)
+-- | The next card a player plays this phase costs 1 less: Helicarrier's, and the same
+-- for other cards that say so.
+newtype NextCardCostsLessEffect = NextCardCostsLessEffect (Attrs Effect)
   deriving anyclass (IsEffect)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
-helicarrierEffect :: CardEffect HelicarrierEffect
-helicarrierEffect =
-  effectWith HelicarrierEffect Cards.helicarrier $
+helicarrierEffect :: CardEffect NextCardCostsLessEffect
+helicarrierEffect = nextCardCostsLess Cards.helicarrier
+
+nextCardCostsLess :: CardDef -> CardEffect NextCardCostsLessEffect
+nextCardCostsLess def =
+  effectWith NextCardCostsLessEffect def $
     (modifiersL .~ [ResourceCostReduction 1])
       . (endsL ?~ DisableAtEndOfPhase)
 
-instance RunMessage HelicarrierEffect where
-  runMessage msg e@(HelicarrierEffect attrs) = case msg of
+instance RunMessage NextCardCostsLessEffect where
+  runMessage msg e@(NextCardCostsLessEffect attrs) = case msg of
     IdentityMessage ident (PlayedCard _ _) -> do
       pushWhenM
         (effectValidFor attrs (toRef ident))
         (EffectMessage (effectId attrs) DisableEffect)
       pure e
-    _ -> HelicarrierEffect <$> runMessage msg attrs
+    _ -> NextCardCostsLessEffect <$> runMessage msg attrs

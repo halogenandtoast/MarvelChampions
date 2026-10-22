@@ -33,6 +33,10 @@ allEffects =
     , ("03003", SomeCardEffect fearlessDeterminationEffect)
     , ("03015", SomeCardEffect avengersAssembleEffect)
     , ("03024", SomeCardEffect avengersTowerEffect)
+    , ("05008", SomeCardEffect nakiaBahadirEffect)
+    , ("05010", SomeCardEffect embiggenEffect)
+    , ("05011", SomeCardEffect shrinkEffect)
+    , ("05032", SomeCardEffect moraleBoostEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

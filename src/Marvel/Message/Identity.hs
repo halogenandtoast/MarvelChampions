@@ -67,6 +67,10 @@ data IdentityMessage
   | IdentityRetaliate Natural EnemyId
   | -- | the hit point dial is set: the damage is what leaves this many hit points
     IdentitySetHitPoints Natural
+  | -- | discard from the top of the deck until a card matching is discarded, which the
+    -- target is told of; the deck emptying ends it
+    DiscardFromDeckUntil CardMatcher Target
+  | PlaceOnBottomOfDeck PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

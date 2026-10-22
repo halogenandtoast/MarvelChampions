@@ -63,6 +63,14 @@ allEvents = fromList $ map
   , SomeEventCard avengersAssemble
   , SomeEventCard strengthInNumbers
   , SomeEventCard expertDefense
+  , SomeEventCard bigHands
+  , SomeEventCard sneakBy
+  , SomeEventCard wiggleRoom
+  , SomeEventCard preemptiveStrike
+  , SomeEventCard tackle
+  , SomeEventCard melee
+  , SomeEventCard concussiveBlow
+  , SomeEventCard moraleBoost
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

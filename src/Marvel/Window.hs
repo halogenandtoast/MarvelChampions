@@ -5,6 +5,7 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
+import Marvel.Card.Def (cardMatch)
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -174,4 +175,17 @@ windowMatches matcher w source = case matcher of
     EncounterCardRevealed _ encounterCard
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
+    _ -> pure False
+  PlaysEvent timing identityMatcher cardMatcher -> case windowType w of
+    EventPlayed ident _ def
+      | windowTiming w == timing && cardMatch cardMatcher def ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  AllyDefeated timing allyMatcher -> case windowType w of
+    DefeatedAlly allyId
+      | windowTiming w == timing -> allyMatches allyMatcher allyId
+    _ -> pure False
+  BoostCardFlipped timing enemyMatcher -> case windowType w of
+    FlippedBoostCard _ enemyId
+      | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
     _ -> pure False

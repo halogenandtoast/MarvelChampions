@@ -31,6 +31,7 @@ allSideSchemes = fromList $ map
   , legionsOfHydra
   , theDoomsdayChair
   , hitSquad
+  , generationWhy
   ]
 
 sideScheme
@@ -56,6 +57,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 breakinAndTakin :: CardDef
@@ -160,4 +162,10 @@ hitSquad :: CardDef
 hitSquad =
   (sideScheme "03027" "Hit Squad" [Boost, Boost, Boost] CaptainAmericaNemesis 1)
     { cdAcceleration = 1
+    }
+
+generationWhy :: CardDef
+generationWhy =
+  (sideScheme "05026" "Generation Why?" [Boost, Boost, Boost] MsMarvelNemesis 1)
+    { cdHazards = 1
     }

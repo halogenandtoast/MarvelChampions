@@ -68,7 +68,6 @@ instance RunMessage Quinjet where
           -- discarded before what answers the ally entering play
           [ Run
               [ RemoveFromPlay (toTarget attrs)
-              , DiscardedCard (toCard attrs)
               , PutCardIntoPlay ident c NoPayment Nothing
               ]
           ]

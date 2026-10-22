@@ -46,6 +46,13 @@ allUpgrades = fromList $ concatMap
   , enraged
   , followed
   , enhancedAwareness
+  , biokineticPolymerSuit
+  , embiggen
+  , shrink
+  , energyBarrier
+  , endurance
+  , enhancedReflexes
+  , downTime
   ]
 
 upgrade
@@ -84,6 +91,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 unique :: CardDef -> CardDef
@@ -220,3 +228,27 @@ followed = limited (MaxPerSideScheme 1) $
 enhancedAwareness :: CardDef
 enhancedAwareness =
   basicUpgrade "03034" "Enhanced Awareness" 2 [Condition] [Mental]
+
+biokineticPolymerSuit :: CardDef
+biokineticPolymerSuit =
+  unique $ identityUpgrade "05009" "Biokinetic Polymer Suit" 1 [Armor] [Mental]
+
+embiggen :: CardDef
+embiggen = identityUpgrade "05010" "Embiggen!" 2 [Condition, Superpower] [Energy]
+
+shrink :: CardDef
+shrink = identityUpgrade "05011" "Shrink" 2 [Condition, Superpower] [Mental]
+
+energyBarrier :: CardDef
+energyBarrier = upgrade "05017" "Energy Barrier" 2 [Item, Tech] [Energy] Protection
+
+endurance :: CardDef
+endurance = limited (MaxPerPlayerUnderAnyControl 1)
+  $ basicUpgrade "05023" "Endurance" 1 [Condition] [Energy]
+
+enhancedReflexes :: CardDef
+enhancedReflexes = basicUpgrade "05024" "Enhanced Reflexes" 2 [Condition] [Energy]
+
+downTime :: CardDef
+downTime = limited (MaxPerPlayerUnderAnyControl 1)
+  $ basicUpgrade "05033" "Down Time" 1 [Condition] [Physical]

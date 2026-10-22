@@ -30,3 +30,10 @@ import Marvel.Upgrade.Upgrades.HonoraryAvenger as X
 import Marvel.Upgrade.Upgrades.Enraged as X
 import Marvel.Upgrade.Upgrades.Followed as X
 import Marvel.Upgrade.Upgrades.EnhancedAwareness as X
+import Marvel.Upgrade.Upgrades.BiokineticPolymerSuit as X
+import Marvel.Upgrade.Upgrades.Embiggen as X
+import Marvel.Upgrade.Upgrades.Shrink as X
+import Marvel.Upgrade.Upgrades.EnergyBarrier as X
+import Marvel.Upgrade.Upgrades.Endurance as X
+import Marvel.Upgrade.Upgrades.EnhancedReflexes as X
+import Marvel.Upgrade.Upgrades.DownTime as X

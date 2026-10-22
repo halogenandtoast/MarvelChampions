@@ -21,6 +21,7 @@ data EncounterSet
   | IronManNemesis
   | BlackPantherNemesis
   | CaptainAmericaNemesis
+  | MsMarvelNemesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -37,6 +38,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "01029" -> IronManNemesis
   "01040" -> BlackPantherNemesis
   "03001" -> CaptainAmericaNemesis
+  "05001" -> MsMarvelNemesis
   cCode ->
     error $
       "No nemesis set for "

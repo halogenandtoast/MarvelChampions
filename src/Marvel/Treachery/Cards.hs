@@ -48,6 +48,7 @@ allTreacheries = fromList $ map
   , masterplan
   , underFire
   , hailHydra
+  , harvest
   ]
 
 treachery
@@ -73,6 +74,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 hardToKeepDown :: CardDef
@@ -196,3 +198,6 @@ underFire =
 
 hailHydra :: CardDef
 hailHydra = treachery "03030" "Hail Hydra!" [] CaptainAmericaNemesis 1
+
+harvest :: CardDef
+harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2
