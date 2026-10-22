@@ -141,7 +141,7 @@ choiceMessages ident = \case
         -- an event's attack is answered by the event, after all of it if it is labeled one
         FromPlayerAttack attacker
           | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy)]
-          | otherwise -> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
+          | otherwise -> [enemyRetaliates enemy (IdentityCharacter attacker), CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
         _ -> []
     pure $
       ( case enemy of

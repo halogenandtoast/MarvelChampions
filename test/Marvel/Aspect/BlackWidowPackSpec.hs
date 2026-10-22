@@ -250,6 +250,20 @@ spec = describe "Black Widow's aspect and basic cards" do
         damageOf p `shouldReturn` 1
         upgradeCodes `shouldReturn` []
 
+    it "prevents retaliate's damage, which is not an attack's" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        stance <- putIntoPlay p "08032"
+        whiplash <- addMinion p Minions.whiplash
+        choose "attack" (isHeroAttack p)
+        chooseIf (isTargetChoice whiplash)
+        choose "use Defensive Stance" (isAbilityOfCard stance)
+        pass
+        damageOf p `shouldReturn` 0
+
   describe "Espionage (08033)" do
     it "draws 2 cards when a surge would resolve" do
       tg <- blackWidow

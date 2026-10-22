@@ -77,7 +77,9 @@ instance RunMessage (Attrs Ally) where
         when stillInPlay $
           pushAll $
             damage
-              <> [CheckWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]]
+              <> [ enemyRetaliates enemy (AllyCharacter $ allyId a)
+                 , CheckWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
+                 ]
               <> [ AllyMessage ident (AllyDamaged (toSource a) (toDamage consequential FromConsequential))
                  | consequential > 0
                  ]

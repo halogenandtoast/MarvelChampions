@@ -15,7 +15,6 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Ref
 import Marvel.Trait
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types

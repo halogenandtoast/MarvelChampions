@@ -121,12 +121,15 @@ instance RunMessage (Attrs Event) where
       -- what answers a labeled attack follows the whole of it
       ResolvedEvent -> do
         pushAll $
-          [CheckWindows [W.Window W.After $ W.IdentityAttack attacker enemy] | (attacker, enemy) <- eventAttacked e]
+          concat [attackResolved attacker enemy | (attacker, enemy) <- eventAttacked e]
             <> [DiscardedCard $ toCard e]
         pure e {eventAttacked = []}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy
         | cdAbilitySubType (eventCardDef e) == Just Ability.Attack -> pure e {eventAttacked = eventAttacked e <> [(attacker, enemy)]}
-        | otherwise -> e <$ push (CheckWindows [W.Window W.After $ W.IdentityAttack attacker enemy])
+        | otherwise -> e <$ pushAll (attackResolved attacker enemy)
       _ -> pure e
+     where
+      attackResolved attacker enemy =
+        [enemyRetaliates enemy (IdentityCharacter attacker), CheckWindows [W.Window W.After $ W.IdentityAttack attacker enemy]]
     _ -> pure e
