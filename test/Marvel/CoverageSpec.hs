@@ -21,24 +21,28 @@ import Marvel.Support (allSupports)
 import Marvel.Upgrade (allUpgrades)
 import TestImport
 
-data CoreCard = CoreCard {code :: CardCode, name :: Text, cardType :: Text}
+data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text}
 
--- | The core set's cards as MarvelCDB lists them.
-coreCards :: IO [CoreCard]
-coreCards = do
+-- | A pack's cards as MarvelCDB lists them.
+packCards :: Text -> IO [PackCard]
+packCards pack = do
   json <- either error pure =<< eitherDecodeFileStrict' "frontend/public/data/cards.json"
   either error pure $ flip parseEither json $ withObject "cards" \o -> do
     cards <- o .: "cards"
     fmap catMaybes $ for cards $ withObject "card" \c -> do
       pack' <- c .: "packCode"
-      if pack' == ("core" :: Text)
-        then Just <$> (CoreCard <$> c .: "code" <*> c .: "name" <*> c .: "type")
+      if pack' == pack
+        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type")
         else pure Nothing
 
+-- | The packs implemented, by MarvelCDB pack code.
+packs :: [Text]
+packs = ["core"]
+
 spec :: Spec
-spec = describe "the core set" do
+spec = for_ packs \pack -> describe (show pack) do
   it "has every player card implemented" do
-    cards <- coreCards
+    cards <- packCards pack
     let implemented c = case c.cardType of
           "hero" -> HashMap.member c.code allHeroes
           "alter_ego" -> HashMap.member c.code allAlterEgos
@@ -51,7 +55,7 @@ spec = describe "the core set" do
           _ -> True
     [(c.code, c.name) | c <- cards, not (implemented c)] `shouldBe` []
   it "has every encounter card implemented" do
-    cards <- coreCards
+    cards <- packCards pack
     let implemented c = case c.cardType of
           "villain" -> HashMap.member c.code allVillains
           "minion" -> HashMap.member c.code allMinions
