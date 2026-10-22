@@ -119,7 +119,7 @@ passesUseLimit x aMap a = case abilityLimit a of
   usedAbilities = HashMap.findWithDefault [] x aMap
 
 passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool
-passesCriteria x a = go (abilityCriteria a)
+passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria a)
  where
   go = \case
     IsSelf -> pure $ toSource x == source
@@ -167,7 +167,9 @@ passesTypeIsRelevant ident a = case abilityType a of
   ForcedInterrupt -> pure False
   Resource -> pure False
   HeroResource -> pure False
+  AlterEgoResource -> pure False
   Response -> pure False
+  HeroResponse -> pure False
   ForcedResponse -> pure False
   Action -> pure True
   Basic -> pure True
@@ -186,7 +188,9 @@ isForcedAbility a = case abilityType a of
   ForcedInterrupt -> True
   Resource -> False
   HeroResource -> False
+  AlterEgoResource -> False
   Response -> False
+  HeroResponse -> False
   ForcedResponse -> True
   Action -> False
   HeroAction -> False
@@ -202,7 +206,9 @@ defaultAbilityLimit = \case
   ForcedInterrupt -> PerWindow 1
   Resource -> NoLimit
   HeroResource -> NoLimit
+  AlterEgoResource -> NoLimit
   Response -> PerWindow 1
+  HeroResponse -> PerWindow 1
   ForcedResponse -> PerWindow 1
   Action -> NoLimit
   HeroAction -> NoLimit

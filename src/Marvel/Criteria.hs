@@ -2,6 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
+import Marvel.Ability.Types (AbilityType (..))
 import Marvel.Matchers.Types
 
 data Criteria
@@ -34,3 +35,14 @@ instance Semigroup Criteria where
   Criteria xs <> y = Criteria $ xs <> [y]
   x <> Criteria ys = Criteria $ x : ys
   x <> y = Criteria [x, y]
+
+-- | The form a "Hero …" or "Alter-Ego …" ability is used in.
+abilityTypeCriteria :: AbilityType -> Criteria
+abilityTypeCriteria = \case
+  HeroInterrupt -> InHeroForm
+  HeroResource -> InHeroForm
+  HeroResponse -> InHeroForm
+  HeroAction -> InHeroForm
+  AlterEgoAction -> InAlterEgoForm
+  AlterEgoResource -> InAlterEgoForm
+  _ -> NoCriteria

@@ -1300,7 +1300,7 @@ getResourceAbilities ident = do
     ( andM
         . sequence
           [ pure . passesUseLimit ident usedAbilities
-          , pure . (`elem` [Resource, HeroResource]) . abilityType
+          , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
           , passesCanAffordCost ident
           , passesCriteria ident
           ]

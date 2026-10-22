@@ -151,11 +151,4 @@ class HasCardDef a where
   getCardDef :: a -> CardDef
 
 toAdditionalCriteria :: CardDef -> Criteria
-toAdditionalCriteria def = case cdAbilityType def of
-  Just aType -> case aType of
-    HeroInterrupt -> InHeroForm
-    HeroResource -> InHeroForm
-    HeroAction -> InHeroForm
-    AlterEgoAction -> InAlterEgoForm
-    _ -> NoCriteria
-  Nothing -> NoCriteria
+toAdditionalCriteria = maybe NoCriteria abilityTypeCriteria . cdAbilityType

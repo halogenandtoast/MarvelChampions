@@ -83,6 +83,7 @@ narrationFor = \case
     Basic -> False
     Resource -> False
     HeroResource -> False
+    AlterEgoResource -> False
     Setup -> False
     _ -> True
 

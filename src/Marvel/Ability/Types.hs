@@ -14,7 +14,9 @@ data AbilityType
   | ForcedInterrupt
   | Resource
   | HeroResource
+  | AlterEgoResource
   | Response
+  | HeroResponse
   | ForcedResponse
   | Action
   | HeroAction
