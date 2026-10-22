@@ -123,7 +123,9 @@ runMinionMessage msg attrs = case msg of
           , MinionMessage (minionId attrs) (MinionBeginAttack ident)
           , MinionMessage (minionId attrs) MinionEndAttack
           ]
-        pure attrs
+        -- the attack is under way from when it is declared, as its would windows open
+        atk <- getModifiedAttack attrs
+        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
   MinionBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll

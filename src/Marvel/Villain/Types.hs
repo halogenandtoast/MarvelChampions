@@ -333,7 +333,9 @@ runVillainMessage msg attrs = case msg of
           , VillainMessage (villainId attrs) VillainEndAttack
           , ClearBoosts
           ]
-        pure attrs
+        -- the attack is under way from when it is declared, as its would windows open
+        atk <- getModifiedAttack attrs
+        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
   VillainBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
