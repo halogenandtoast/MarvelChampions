@@ -326,6 +326,31 @@ getUniqueTitlesInPlay = getsGame \g ->
       <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
       <> concatMap identity (HashMap.elems $ gamePlayers g)
 
+-- | How many cards in play have the trait: of every type, each identity one card.
+countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
+countCardsInPlayWithTrait t = do
+  g <- getGame
+  let printed :: [CardDef] -> Natural
+      printed = count (member t . cdTraits)
+      defs :: (HasCardDef a) => EntityMap a -> [CardDef]
+      defs = map getCardDef . HashMap.elems
+      traited :: (HasTraits a) => EntityMap a -> m Natural
+      traited = fmap (count (member t)) . traverse getTraits . HashMap.elems
+  characters <- sum <$> sequence [traited (gamePlayers g), traited (gameAllies g), traited (gameMinions g)]
+  pure $
+    characters
+      + printed (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
+      + printed
+        ( defs (gameVillains g)
+            <> defs (gameUpgrades g)
+            <> defs (gameAttachments g)
+            <> defs (gameTreacheries g)
+            <> defs (gameObligations g)
+            <> defs (gameSideSchemes g)
+            <> defs (gameMainSchemes g)
+            <> defs (gameEnvironments g)
+        )
+
 getActivePlayer :: (HasGame m) => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
   case lookup (g ^. activePlayerL) (g ^. entitiesL . playersL) of
