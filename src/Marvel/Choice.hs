@@ -119,14 +119,10 @@ choiceMessages ident = \case
   Pay payment -> pure [Paid payment]
   DamageAllEnemies matcher source damage -> do
     enemies <- selectList $ DamageableEnemy <> matcher
-    concatMapM
-      (\e -> choiceMessages ident (DamageEnemy (toRef e) source damage))
-      enemies
+    simultaneousDamage <$> traverse (\e -> choiceMessages ident (DamageEnemy (toRef e) source damage)) enemies
   DamageAllCharacters matcher source damage -> do
     characters <- selectList $ DamageableCharacter <> matcher
-    concatMapM
-      (\c -> choiceMessages ident (DamageCharacter c source damage))
-      characters
+    simultaneousDamage <$> traverse (\c -> choiceMessages ident (DamageCharacter c source damage)) characters
   -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do

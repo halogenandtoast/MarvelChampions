@@ -1024,6 +1024,8 @@ instance RunMessage Entities where
       >>= traverseOf (environmentsL . each) (runMessage msg)
 
 instance RunMessage Game where
+  -- the last first, so what the first leads to is queued first
+  runMessage (Simultaneously msgs) g = foldlM (flip runMessage) g (reverse msgs)
   runMessage msg g =
     runPreGameMessage msg g
       >>= traverseOf scenarioL (runMessage msg)

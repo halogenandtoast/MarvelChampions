@@ -101,6 +101,30 @@ attackDealtDamage source damage character =
   , Just enemy <- [sourceEnemy source]
   ]
 
+-- | Damage dealt to each of several targets as one effect, each given as the messages
+-- dealing it ('DamageEnemy'): the interrupts to all of it, then all of the damage at
+-- once, then what answers it.
+simultaneousDamage :: [[Message]] -> [Message]
+simultaneousDamage dealt = concat befores <> [Simultaneously (concat damage) | notNull (concat damage)] <> concat afters
+ where
+  (befores, damage, afters) = unzip3 $ map split dealt
+  split msgs =
+    let (before, rest) = span isWindow msgs
+        (now, after) = break isWindow rest
+     in (before, now, after)
+  isWindow = \case
+    CheckWindows _ -> True
+    _ -> False
+
+-- | The messages a 'Simultaneously' holds, for the queue to look inside it.
+simultaneousMessages :: Message -> Maybe [Message]
+simultaneousMessages = \case
+  Simultaneously msgs -> Just msgs
+  _ -> Nothing
+
+simultaneously :: [Message] -> Message
+simultaneously = Simultaneously
+
 -- | The character's own ref, as status cards are given by.
 characterRef :: CharacterId -> Target
 characterRef = \case
@@ -252,5 +276,8 @@ data Message
     -- card it does not have, or has one taken off it
     GiveStatus Target StatusCard
   | RemoveStatus Target StatusCard
+  | -- | one effect on several game elements at once, as damage dealt to each of several
+    -- enemies: each message is run before anything any of them leads to
+    Simultaneously [Message]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -39,10 +39,12 @@ instance RunMessage Thunderclap where
     CardSpecific (isTarget attrs -> True) "chosen" (fromJSON -> Success chosen) -> do
       let player = eventController attrs
       enemies <- filter (`notElem` chosen) <$> selectList DamageableEnemy
+      -- the chosen are dealt their damage at once
       deal <-
-        concatMapM
-          (\enemy -> choiceMessages player $ DamageEnemy (toRef enemy) (toSource attrs) (toDamage 3 FromAbility))
-          (reverse chosen)
+        simultaneousDamage
+          <$> traverse
+            (\enemy -> choiceMessages player $ DamageEnemy (toRef enemy) (toSource attrs) (toDamage 3 FromAbility))
+            (reverse chosen)
       if length chosen >= 3 || null enemies
         then pushAll deal
         else

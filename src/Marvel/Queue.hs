@@ -42,14 +42,22 @@ pop = withQueue \case
   [] -> ([], Nothing)
   (x : xs) -> (xs, Just x)
 
+-- | Whether a message matching is queued, held in a 'Simultaneously' or not.
 isQueued :: (HasQueue m) => (Message -> Bool) -> m Bool
-isQueued f = withQueue $ \q -> (q, any f q)
+isQueued f = withQueue $ \q -> (q, any (matchesWithin f) q)
+
+matchesWithin :: (Message -> Bool) -> Message -> Bool
+matchesWithin f msg = f msg || maybe False (any (matchesWithin f)) (simultaneousMessages msg)
 
 cancelMatchingMessage :: (HasQueue m) => (Message -> Bool) -> m ()
 cancelMatchingMessage = replaceMatchingMessage (const [])
 
 replaceMatchingMessage ::
   (HasQueue m) => (Message -> [Message]) -> (Message -> Bool) -> m ()
-replaceMatchingMessage spliceF f = withQueue_ $ \q -> case break f q of
-  (pre, []) -> pre
-  (pre, msg : rest) -> pre <> spliceF msg <> rest
+replaceMatchingMessage spliceF f = withQueue_ go
+ where
+  go q = case break (matchesWithin f) q of
+    (pre, []) -> pre
+    (pre, msg : rest)
+      | f msg -> pre <> spliceF msg <> rest
+      | otherwise -> pre <> maybe [msg] (pure . simultaneously . go) (simultaneousMessages msg) <> rest
