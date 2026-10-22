@@ -217,6 +217,8 @@ export interface GameView {
   focusedCards: CardView[]
   /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
   attack?: { attacker: string; target: string } | null
+  /** threat that would be placed on a scheme, while its window is open */
+  threat?: { scheme: string; amount: number; source: 'ThreatFromVillain' | 'ThreatFromMinion' | 'ThreatFromAbility' | 'ThreatFromAcceleration' } | null
   /** boost cards: face down, without a code, until flipped */
   boostCards?: BoostView[]
   accelerationTokens: number

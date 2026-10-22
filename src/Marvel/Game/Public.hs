@@ -56,6 +56,8 @@ import Marvel.Support.Types (Attrs (..), Support)
 import Marvel.Upgrade.Types (Attrs (..), Upgrade)
 import Marvel.Villain.Types (Villain)
 import Marvel.Villain.Types qualified as Villain
+import Marvel.Window.Types (ThreatSource)
+import Marvel.Window.Types qualified as W
 
 data GameView = GameView
   { round :: Int
@@ -77,6 +79,8 @@ data GameView = GameView
   , focusedCards :: [CardView]
   , attack :: Maybe AttackView
   -- ^ an enemy's attack, while it is made
+  , threat :: Maybe ThreatView
+  -- ^ threat that would be placed, while its window is open
   , boostCards :: [BoostView]
   -- ^ face down as dealt, then face up once flipped
   , accelerationTokens :: Natural
@@ -129,6 +133,10 @@ data DeckView = DeckView {kind :: Text, name :: Maybe Text, size :: Int, discard
   deriving anyclass (ToJSON)
 
 data AttackView = AttackView {attacker :: Text, target :: Text}
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+data ThreatView = ThreatView {scheme :: Text, amount :: Natural, source :: ThreatSource}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -381,6 +389,11 @@ gameView seesHand g = do
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
+      , threat =
+          headMay
+            [ ThreatView (schemeIdText sid) n src
+            | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))
+            ]
       , boostCards =
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
@@ -685,6 +698,11 @@ dynamic = \case
   DynamicResourceCost _ -> True
   Costs cs -> any dynamic cs
   _ -> False
+
+schemeIdText :: SchemeId -> Text
+schemeIdText = \case
+  SchemeMainSchemeId x -> idText x
+  SchemeSideSchemeId x -> idText x
 
 attackView :: Maybe Attack.Attack -> Maybe AttackView
 attackView = fmap \a ->

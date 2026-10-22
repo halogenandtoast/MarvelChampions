@@ -127,9 +127,13 @@ const attacker = computed<RiverAttacker | null>(() => {
   return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find((e) => e.id === id) ?? null
 })
 const riverLabel = computed(() => {
+  if (riverCleared.value) return null
   const attack = game.value?.attack
-  if (!attack || riverCleared.value) return null
-  return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
+  if (attack) return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
+  const threat = game.value?.threat
+  const scheme = threat && [...(game.value?.mainSchemes ?? []), ...(game.value?.sideSchemes ?? [])].find((s) => s.id === threat.scheme)
+  if (!threat || !scheme) return null
+  return t('game.river.threat', { source: t(`game.river.${threat.source}`), amount: threat.amount, scheme: scheme.name, from: scheme.threat, to: scheme.threat + threat.amount })
 })
 
 // What the board draws, by id: a choice about anything else is a button instead.

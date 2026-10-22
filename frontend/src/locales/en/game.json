@@ -48,7 +48,12 @@
   },
   "river": {
     "revealed": "Revealed",
-    "attacks": "{attacker} attacks {target}"
+    "attacks": "{attacker} attacks {target}",
+    "threat": "{source}: {amount} threat on {scheme} ({from} → {to})",
+    "ThreatFromVillain": "Villain schemes",
+    "ThreatFromMinion": "Minion schemes",
+    "ThreatFromAbility": "Card effect",
+    "ThreatFromAcceleration": "Acceleration"
   },
   "piles": {
     "encounterDeck": "Encounter",
