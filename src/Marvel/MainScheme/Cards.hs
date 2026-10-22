@@ -32,6 +32,16 @@ allMainSchemes =
     , theInfinityStone
     , theGetaway
     , noneShallPass
+    -- Zola
+    , theIslandOfDrZola
+    , theMadDoctor
+
+    -- Red Skull
+    , theRiseOfRedSkull
+    , newWorldHydra
+
+    -- Taskmaster
+    , huntingDownHeroes
 
     -- The Once and Future Kang
 
@@ -105,3 +115,27 @@ theGetaway = mainScheme "04063" "The Getaway" Crossbones
 
 noneShallPass :: CardDef
 noneShallPass = mainScheme "04079" "None Shall Pass" AbsorbingMan
+
+-- The Rise of Red Skull
+-- Zola
+
+theIslandOfDrZola :: CardDef
+theIslandOfDrZola = mainScheme "04112" "The Island of Dr. Zola" Zola
+
+theMadDoctor :: CardDef
+theMadDoctor = mainScheme "04113" "The Mad Doctor" Zola
+
+-- Red Skull
+
+theRiseOfRedSkull :: CardDef
+theRiseOfRedSkull = mainScheme "04128" "The Rise of Red Skull" RedSkull
+
+newWorldHydra :: CardDef
+newWorldHydra = mainScheme "04129" "New World Hydra" RedSkull
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+huntingDownHeroes :: CardDef
+huntingDownHeroes = mainScheme "04096" "Hunting Down Heroes" Taskmaster

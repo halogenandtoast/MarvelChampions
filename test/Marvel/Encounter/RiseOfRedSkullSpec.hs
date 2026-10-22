@@ -101,4 +101,4 @@ spec = describe "The Rise of Red Skull" do
       surged <- length <$> dealtTo you
       liftIO $ (hadLost, now, hasGained, hasLost, surged) `shouldBe` (True, [toCardCode next], True, False, dealt + 1)
       resolve [AccelerateMainScheme]
-      getMainSchemeCounters `shouldReturn` 1
+      getYourMainSchemeCounters `shouldReturn` 1

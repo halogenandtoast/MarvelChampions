@@ -10,6 +10,7 @@ import Marvel.Message.Lifted as X
 import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
+import Marvel.Game.Source (getModifiers)
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
@@ -93,12 +94,20 @@ instance RunMessage (Attrs Ally) where
         else do
           schemes <- selectList ThwartableScheme
           thw <- getModifiedThwart a
-          chooseOne (allyController a)
-            [ targeting (schemeRef scheme) do
-                thwartScheme scheme a thw
-                checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
-            | scheme <- schemes
-            ]
+          atk <- getModifiedAttack a
+          -- a scheme thwarted with ATK instead of THW, as The Red House allows
+          choices <- for schemes \scheme -> do
+            withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
+            let thwartWith n = do
+                  thwartScheme scheme a n
+                  checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
+            pure $ targeting (schemeRef scheme) $
+              if withAttack && atk /= thw
+                then
+                  chooseOne (allyController a)
+                    [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
+                else thwartWith thw
+          chooseOne (allyController a) choices
           when (allyThwartConsequentialDamage a > 0) $
             damageCharacter ident a (toDamage (allyThwartConsequentialDamage a) FromConsequential)
           pure a
@@ -131,6 +140,7 @@ instance RunMessage (Attrs Ally) where
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
           when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
+          when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       -- leaving play discards it
       AllyDefeated -> do

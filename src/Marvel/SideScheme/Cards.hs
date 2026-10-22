@@ -60,6 +60,23 @@ allSideSchemes = fromList $ map
   , superAbsorbingPower
   , hydraPatrol
 
+  -- Zola
+  , hydraPrison
+  , testSubjects
+  , zolasExperiments
+
+  -- Red Skull
+  , theRedHouse
+  , theSleeperAwakened
+  , prisonCamps
+  , censorThePast
+  , hydraReinforcements
+  , massChaos
+
+  -- Taskmaster
+  , capturedByHydra
+  , taskmastersTrainingCamp
+
   -- The Once and Future Kang
   , timePortal
   , theAnachronauts
@@ -259,6 +276,38 @@ superAbsorbingPower = sideScheme "04092" "Super Absorbing Power" [Star] Absorbin
 
 hydraPatrol :: CardDef
 hydraPatrol = sideScheme "04154" "Hydra Patrol" [Boost, Boost] HydraPatrol 1
+-- The Rise of Red Skull
+-- Zola
+
+hydraPrison :: CardDef
+hydraPrison = sideScheme "04122" "Hydra Prison" [] Zola 1
+
+testSubjects :: CardDef
+testSubjects = (sideScheme "04123" "Test Subjects" [Boost, Boost] Zola 2) {cdHazards = 1}
+
+zolasExperiments :: CardDef
+zolasExperiments =
+  (sideScheme "04124" "Zola's Experiments" [Boost, Boost, Boost] Zola 1) {cdAcceleration = 1}
+
+-- Red Skull
+
+theRedHouse :: CardDef
+theRedHouse = sideScheme "04139" "The Red House" [] RedSkull 1
+
+theSleeperAwakened :: CardDef
+theSleeperAwakened = sideScheme "04140" "The Sleeper Awakened" [] RedSkull 1
+
+prisonCamps :: CardDef
+prisonCamps = (sideScheme "04141" "Prison Camps" [] RedSkull 1) {cdAcceleration = 1}
+
+censorThePast :: CardDef
+censorThePast = (sideScheme "04142" "Censor the Past" [] RedSkull 1) {cdAcceleration = 1}
+
+hydraReinforcements :: CardDef
+hydraReinforcements = (sideScheme "04143" "Hydra Reinforcements" [] RedSkull 1) {cdHazards = 1}
+
+massChaos :: CardDef
+massChaos = sideScheme "04144" "Mass Chaos" [] RedSkull 1
 
 -- The Green Goblin
 
@@ -299,3 +348,13 @@ theAnachronauts = (sideScheme "11045" "The Anachronauts" [Boost, Boost, Boost] A
 lightOfCenturiesSphere :: CardDef
 lightOfCenturiesSphere =
   (sideScheme "11050" "Light of Centuries Sphere" [Boost, Boost, Boost] MasterOfTime 1) {cdHazards = 1}
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+capturedByHydra :: CardDef
+capturedByHydra = (sideScheme "04107" "Captured by Hydra" [Boost, Boost] Taskmaster 4) {cdAcceleration = 1}
+
+taskmastersTrainingCamp :: CardDef
+taskmastersTrainingCamp = (sideScheme "04108" "Taskmaster's Training Camp" [Boost, Boost, Boost] Taskmaster 1) {cdHazards = 1}

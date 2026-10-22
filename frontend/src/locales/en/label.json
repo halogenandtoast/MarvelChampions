@@ -114,6 +114,11 @@
   "takeIndirectDamage": "Take the indirect damage",
   "spendAnEnergyResource": "Spend an energy resource",
 
+  "thwartWithThw": "Thwart with THW",
+  "thwartWithAtk": "Thwart with ATK instead",
+
+  "take1Damage": "Take 1 damage",
+
   "-- The Once and Future Kang --": "",
 
   "-- end --": ""

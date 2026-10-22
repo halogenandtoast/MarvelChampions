@@ -20,5 +20,15 @@ import Marvel.MainScheme.MainSchemes.AttackOnMountAthena as X
 import Marvel.MainScheme.MainSchemes.TheInfinityStone as X
 import Marvel.MainScheme.MainSchemes.TheGetaway as X
 import Marvel.MainScheme.MainSchemes.NoneShallPass as X
+-- Zola
+import Marvel.MainScheme.MainSchemes.TheIslandOfDrZola as X
+import Marvel.MainScheme.MainSchemes.TheMadDoctor as X
+
+-- Red Skull
+import Marvel.MainScheme.MainSchemes.NewWorldHydra as X
+import Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull as X
+
+-- Taskmaster
+import Marvel.MainScheme.MainSchemes.HuntingDownHeroes as X
 
 -- The Once and Future Kang

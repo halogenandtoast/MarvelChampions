@@ -8,7 +8,9 @@ import Marvel.Damage
 import Marvel.Environment.Types (Field (EnvironmentCounters))
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Types qualified as Minion
+import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
@@ -68,6 +70,22 @@ spec = describe "The Green Goblin" do
         environmentNow `shouldReturn` ("02006a", 3)
         damageOf you `shouldReturn` before
 
+    it "the log tells a replaced attack or scheme as what replaces it" do
+      tg <- testGameAgainst "02001a" ["spider-man"]
+      let you = player1 tg
+      inGame tg do
+        changeForm you
+        vid <- villainIdNow
+        liftIO $ writeIORef tg.logged []
+        resolve [VillainMessage vid (VillainAttacks you)]
+        damageVillain you 3
+        resolve [VillainMessage vid VillainSchemes]
+      text <- T.concat . map entryText <$> readIORef tg.logged
+      text `shouldSatisfy` T.isInfixOf "$log.countersPlaced"
+      text `shouldSatisfy` T.isInfixOf "$log.countersRemoved"
+      text `shouldSatisfy` (not . T.isInfixOf "$log.attacks")
+      text `shouldSatisfy` (not . T.isInfixOf "$log.schemes")
+
   describe "Mutagen Formula" do
     it "sets up a Goblin Thrall with each player; Mutagen Cloud accelerates by the Goblin enemies in play" do
       tg <- testGameAgainst "02014" ["spider-man"]
@@ -90,6 +108,43 @@ spec = describe "The Green Goblin" do
         choose "put it into play" (isTargetChoice soldier)
         engaged <- getsGame (filter ((== you) . Minion.minionEngagedIdentity . toAttrs) . filter ((== Minions.goblinSoldier) . getCardDef) . HashMap.elems . gameMinions)
         liftIO $ length engaged `shouldBe` 1
+
+  it "Overrun: a player whose discards empty the encounter deck stops; the next discards from the deck made anew" do
+    tg <- testGameAgainst "02014" ["spider-man", "she-hulk"]
+    let (you, them) = (player1 tg, player2 tg)
+    inGame tg do
+      overrun <- revealNow you SideSchemes.overrun
+      resolve []
+      -- one card left: the first player discards the Soldier and the deck is empty; the
+      -- second discards from the discard pile shuffled anew, the Thrall among it
+      _ <- setEncounterDeck [Minions.goblinSoldier] [Minions.goblinThrall]
+      resolve =<< Lifted.runQueueT (Lifted.capture $ Lifted.defeatSideScheme (sideSchemeOf overrun))
+      let engagedWith p def = getsGame (length . filter (\m -> Minion.minionEngagedIdentity (toAttrs m) == p && getCardDef m == def) . HashMap.elems . gameMinions)
+      engagedWith you Minions.goblinSoldier `shouldReturn` 1
+      -- the setup's Thrall and the one discarded
+      engagedWith them Minions.goblinThrall `shouldReturn` 2
+
+  for_ [(True, False), (False, True)] \(tough, surges) ->
+    it ("Overconfidence counts the damage its attack deals: an ally's tough card preventing it, none (" <> show tough <> ")") do
+      tg <- testGameAgainst "02014" ["spider-man"]
+      let you = player1 tg
+      inGame tg do
+        changeForm you
+        hellcat <- allyIdOf <$> putIntoPlay you "01020"
+        when tough $ resolve [GiveStatus (AllyRef hellcat) ToughStatus]
+        -- Green Goblin's 2 ATK and the boost card's 3 icons
+        _ <- stackEncounterDeck [Attachments.goblinGlider]
+        card <- encounterCard Treacheries.overconfidence
+        start [RevealEncounterCard you card]
+        let defends = \case
+              AllyDefend a _ -> a == hellcat
+              _ -> False
+            toDefense = offers defends >>= \d -> unless d $ choose "no response" (isLabel "$label.noResponse") >> toDefense
+        toDefense
+        choose "Hellcat defends" defends
+        pass
+      ran <- readIORef tg.ran
+      liftIO $ any ("Surge " `T.isPrefixOf`) ran `shouldBe` surges
 
   it "a minion its boost card puts into play as the villain attacks activates in the same step" do
     tg <- testGame ["spider-man"]

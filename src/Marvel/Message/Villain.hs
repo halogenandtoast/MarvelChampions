@@ -30,6 +30,8 @@ data VillainMessage
   | VillainEndAttack
   | VillainAttacked
   | VillainSchemes
+  | -- | its scheme under way, past a confusion: what a replaced scheme never reaches
+    VillainBeginScheme
   | VillainSchemed
   | VillainHealed Natural
   | VillainDefeated

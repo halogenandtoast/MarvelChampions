@@ -68,6 +68,19 @@ import Marvel.Treachery.Treacheries.IcyGrip as X
 import Marvel.Treachery.Treacheries.WeaponMaster as X
 import Marvel.Treachery.Treacheries.ConcussionGrenade as X
 
+-- Zola
+import Marvel.Treachery.Treacheries.MindRay as X
+import Marvel.Treachery.Treacheries.TechnologicalEnhancements as X
+
+-- Red Skull
+import Marvel.Treachery.Treacheries.BitterRival as X
+import Marvel.Treachery.Treacheries.InfinitePower as X
+import Marvel.Treachery.Treacheries.SpreadingLies as X
+
+-- Taskmaster
+import Marvel.Treachery.Treacheries.HuntedByHydra as X
+import Marvel.Treachery.Treacheries.Mimicry as X
+
 -- The Once and Future Kang
 import Marvel.Treachery.Treacheries.KangsChosen as X
 import Marvel.Treachery.Treacheries.AncientGrudge as X

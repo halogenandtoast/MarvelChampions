@@ -49,6 +49,18 @@ import Marvel.Minion.Minions.HydraFlameSoldier as X
 import Marvel.Minion.Minions.HydraJetTrooper as X
 import Marvel.Minion.Minions.HydraRegular as X
 
+-- Zola
+import Marvel.Minion.Minions.UltimateBioServant as X
+import Marvel.Minion.Minions.ZolasMutate as X
+import Marvel.Minion.Minions.BerserkMutate as X
+
+-- Red Skull
+import Marvel.Minion.Minions.HydraExoSoldier as X
+import Marvel.Minion.Minions.TheSleeper as X
+
+-- Taskmaster
+import Marvel.Minion.Minions.HydraHunter as X
+
 -- The Once and Future Kang
 import Marvel.Minion.Minions.AncientWarrior as X
 import Marvel.Minion.Minions.ChitauriSoldier as X

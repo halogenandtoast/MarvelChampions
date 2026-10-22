@@ -40,7 +40,7 @@ afterUndefendedAttack a =
 
 -- | 1, or 2 with 5 or more delay counters on the main scheme.
 delayed :: (HasGame m) => m Natural
-delayed = (\n -> if n >= 5 then 2 else 1) <$> getMainSchemeCounters
+delayed = (\n -> if n >= 5 then 2 else 1) <$> getYourMainSchemeCounters
 
 -- | The forced response's effect for you, and [star] Boost: put this card into play.
 runAbsorbing :: (ReverseQueue m) => (IdentityId -> Natural -> m ()) -> Message -> Attrs Environment -> m Bool

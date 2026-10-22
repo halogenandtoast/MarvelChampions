@@ -84,6 +84,12 @@ allAllies = fromList $ map
   , SomeAllyCard spiderGirlAnyaCorazon
   , SomeAllyCard spiderManPeterParker
 
+  -- Taskmaster
+  , SomeAllyCard moonKnightMarcSpector
+  , SomeAllyCard shangChi
+  , SomeAllyCard whiteTigerAngelaDelToro
+  , SomeAllyCard elektra
+
   -- The Once and Future Kang
 
   ]

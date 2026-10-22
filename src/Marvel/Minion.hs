@@ -81,6 +81,18 @@ allMinions =
       , SomeMinionCard (reprintAs Cards.hydraRegularHydraPatrol hydraRegular)
       , SomeMinionCard (reprintAs Cards.hydraSoldierHydraPatrol hydraSoldier)
 
+      -- Zola
+      , SomeMinionCard ultimateBioServant
+      , SomeMinionCard zolasMutate
+      , SomeMinionCard berserkMutate
+
+      -- Red Skull
+      , SomeMinionCard theSleeper
+      , SomeMinionCard hydraExoSoldier
+
+      -- Taskmaster
+      , SomeMinionCard hydraHunter
+
       -- The Once and Future Kang
       , SomeMinionCard ancientWarrior
       , SomeMinionCard chitauriSoldier

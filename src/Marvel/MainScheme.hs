@@ -42,6 +42,16 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard theInfinityStone
   , SomeMainSchemeCard theGetaway
   , SomeMainSchemeCard noneShallPass
+  -- Zola
+  , SomeMainSchemeCard theIslandOfDrZola
+  , SomeMainSchemeCard theMadDoctor
+
+  -- Red Skull
+  , SomeMainSchemeCard theRiseOfRedSkull
+  , SomeMainSchemeCard newWorldHydra
+
+  -- Taskmaster
+  , SomeMainSchemeCard huntingDownHeroes
 
   -- The Once and Future Kang
 

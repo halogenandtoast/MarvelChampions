@@ -29,7 +29,7 @@ newtype Avalanche = Avalanche (Attrs SideScheme)
 instance RunMessage Avalanche where
   runMessage msg s@(Avalanche attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
-      delay <- getMainSchemeCounters
+      delay <- getYourMainSchemeCounters
       let n = if delay >= 5 then 3 else 2
           cost = MultiResourceCost [Just Energy]
       players <- getPlayers

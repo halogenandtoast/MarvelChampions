@@ -26,12 +26,12 @@ newtype StallTactics = StallTactics (Attrs Treachery)
 instance RunMessage StallTactics where
   runMessage msg t@(StallTactics attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
-      n <- (`div` 2) <$> getMainSchemeCounters
+      n <- (`div` 2) <$> getYourMainSchemeCounters
       if n > 0
         then t <$ placeThreatOnEach attrs n MainScheme
         else pure . StallTactics $ attrs & surgeL .~ True
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
-      delay <- getMainSchemeCounters
+      delay <- getYourMainSchemeCounters
       when (delay >= 5) do
         you <- getBoostedPlayer enemy
         dealIndirectDamage you attrs 1

@@ -97,6 +97,19 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard weaponMaster
   , SomeTreacheryCard concussionGrenade
 
+  -- Zola
+  , SomeTreacheryCard mindRay
+  , SomeTreacheryCard technologicalEnhancements
+
+  -- Red Skull
+  , SomeTreacheryCard bitterRival
+  , SomeTreacheryCard spreadingLies
+  , SomeTreacheryCard infinitePower
+
+  -- Taskmaster
+  , SomeTreacheryCard mimicry
+  , SomeTreacheryCard huntedByHydra
+
   -- The Once and Future Kang
   , SomeTreacheryCard kangsChosen
   , SomeTreacheryCard ancientGrudge

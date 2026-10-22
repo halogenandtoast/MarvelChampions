@@ -407,6 +407,9 @@ data Message
   | -- | a villain is defeated for good: the scenario says what that does, by default
     -- the players win with no villain left, and otherwise he leaves play
     ResolveVillainDefeat VillainId
+  | -- | the attachment card is put into play attached to the enemy, from wherever it
+    -- was, without being revealed
+    AttachEncounterCard EncounterCard EnemyId
   | -- | each player in the area has been defeated, with players left elsewhere: the
     -- scenario says what that does, by default nothing
     AreaDefeated AreaId

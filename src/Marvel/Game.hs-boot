@@ -122,7 +122,7 @@ getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainAttack :: (HasGame m) => VillainId -> m Natural
-getMainSchemeCounters :: (HasGame m) => m Natural
+getYourMainSchemeCounters :: (HasGame m) => m Natural
 getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
@@ -145,6 +145,12 @@ getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
 getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
 getPile :: (HasGame m) => DeckKey -> m Pile
 getDeckKeys :: (HasGame m) => m [DeckKey]
+
+getMainSchemeCounters :: (HasGame m) => MainSchemeId -> m Natural
+
+getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
+
+getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::

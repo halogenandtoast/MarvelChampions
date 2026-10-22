@@ -94,8 +94,19 @@ instance RunMessage (Attrs Hero) where
         BasicThwart bonus -> do
           schemes <- selectList ThwartableScheme
           thw <- (+ bonus) <$> getModifiedThwart a
-          chooseOnePrompted ident "$label.chooseSchemeToThwart"
-            [targeting (schemeTarget scheme) (thwartScheme scheme a thw) | scheme <- schemes]
+          atk <- (+ bonus) <$> getModifiedAttack a
+          -- a scheme thwarted with ATK instead of THW, as The Red House allows
+          choices <- for schemes \scheme -> do
+            withAttack <- elem ThwartWithAttack <$> getModifiers (schemeTarget scheme)
+            pure $ targeting (schemeTarget scheme) $
+              if withAttack && atk /= thw
+                then
+                  chooseOne ident
+                    [ labeled "$label.thwartWithThw" (thwartScheme scheme a thw)
+                    , labeled "$label.thwartWithAtk" (thwartScheme scheme a atk)
+                    ]
+                else thwartScheme scheme a thw
+          chooseOnePrompted ident "$label.chooseSchemeToThwart" choices
           pure a
         Defended enemy -> do
           exhaust ident
