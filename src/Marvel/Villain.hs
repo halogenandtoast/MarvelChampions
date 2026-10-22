@@ -12,6 +12,8 @@ import Marvel.Villain.Villains.Rhino
 import Marvel.Villain.Villains.Ultron
 
 -- The Green Goblin
+import Marvel.Villain.Villains.GreenGoblin qualified as Mutagen
+import Marvel.Villain.Villains.NormanOsborn
 
 -- The Wrecking Crew
 import Marvel.Villain.Villains.Bulldozer
@@ -20,6 +22,14 @@ import Marvel.Villain.Villains.Thunderball
 import Marvel.Villain.Villains.Wrecker
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Villain.Villains.Zola
+
+-- Red Skull
+import Marvel.Villain.Villains.RedSkull
+
+-- Taskmaster
+import Marvel.Villain.Villains.Taskmaster
 
 -- The Once and Future Kang
 
@@ -56,6 +66,15 @@ allVillains = fromList $ map
   , SomeVillainCard ultron2
   , SomeVillainCard ultron3
   -- The Green Goblin
+  , SomeVillainCard normanOsborn1
+  , SomeVillainCard greenGoblin1
+  , SomeVillainCard normanOsborn2
+  , SomeVillainCard greenGoblin2
+  , SomeVillainCard normanOsborn3
+  , SomeVillainCard greenGoblin3
+  , SomeVillainCard Mutagen.greenGoblin1
+  , SomeVillainCard Mutagen.greenGoblin2
+  , SomeVillainCard Mutagen.greenGoblin3
 
   -- The Wrecking Crew
   , SomeVillainCard wreckerA
@@ -68,6 +87,23 @@ allVillains = fromList $ map
   , SomeVillainCard bulldozerB
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeVillainCard zola
+  , SomeVillainCard zola1
+  , SomeVillainCard zola2
+  , SomeVillainCard zola3
+
+  -- Red Skull
+  , SomeVillainCard redSkull
+  , SomeVillainCard redSkull1
+  , SomeVillainCard redSkull2
+  , SomeVillainCard redSkull3
+
+  -- Taskmaster
+  , SomeVillainCard taskmasterVillain
+  , SomeVillainCard taskmasterVillain1
+  , SomeVillainCard taskmasterVillain2
+  , SomeVillainCard taskmasterVillain3
 
   -- The Once and Future Kang
 

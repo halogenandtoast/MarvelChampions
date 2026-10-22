@@ -51,6 +51,8 @@ instance Entity SideScheme where
     , sideSchemeInitialThreat :: GameValue
     , sideSchemeCrisis :: Bool
     , sideSchemeHeldCards :: [PlayerCard]
+    , sideSchemeDefeatedBy :: Maybe IdentityId
+    -- ^ the player whose thwarting removed its last threat: "the player who defeated it"
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -140,8 +142,14 @@ sideScheme f cardDef initialThreat =
             , sideSchemeThreat = 0
             , sideSchemeCrisis = False
             , sideSchemeHeldCards = []
+            , sideSchemeDefeatedBy = Nothing
             }
     }
+
+-- | The player who defeated the side scheme: whose thwarting removed its last threat, or
+-- else "you", for a scheme defeated some other way.
+getDefeatedBy :: (HasGame m) => Attrs SideScheme -> m IdentityId
+getDefeatedBy attrs = maybe getYou pure (sideSchemeDefeatedBy attrs)
 
 instance IsRef (Attrs SideScheme) where
   toRef = SideSchemeRef . sideSchemeId
@@ -167,11 +175,13 @@ instance RunMessage (Attrs SideScheme) where
           pure $ attrs & threatL .~ n
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
-        SideSchemeThwarted _ n -> do
+        SideSchemeThwarted source n -> do
           -- a villain's own side scheme is not discarded with no threat on it
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
-          when (subtractNatural n (sideSchemeThreat attrs) == 0 && not signature) $ defeatSideScheme (sideSchemeId attrs)
-          pure $ attrs & threatL %~ subtractNatural n
+          let defeated = subtractNatural n (sideSchemeThreat attrs) == 0 && not signature
+          when defeated $ defeatSideScheme (sideSchemeId attrs)
+          defeater <- if defeated then getSourceController source else pure Nothing
+          pure $ attrs & threatL %~ subtractNatural n & \a -> a {sideSchemeDefeatedBy = defeater <|> sideSchemeDefeatedBy a}
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
         SideSchemeThreatRemoved n -> do
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)

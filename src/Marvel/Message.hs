@@ -210,8 +210,8 @@ attackDamages = \case
   _ -> Nothing
 
 -- | The damage an enemy's attack dealt a character, as it is dealt.
-attackDamageDealt :: Message -> Maybe (EnemyId, CharacterId, Natural)
-attackDamageDealt = \case
+attackDamageWindow :: Message -> Maybe (EnemyId, CharacterId, Natural)
+attackDamageWindow = \case
   CheckWindows [Window After (EnemyAttacksAndDamages enemy character n)] -> Just (enemy, character, n)
   _ -> Nothing
 
@@ -327,6 +327,9 @@ data Message
   | UpgradeRemoved UpgradeId
   | AttachmentRemoved AttachmentId
   | FocusCards [Card]
+  | -- | the cards are shown to the player only: "look at"
+    ShowCardsTo IdentityId [Card]
+  | HideCardsFrom IdentityId
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
   | -- | the first card matching in the encounter deck or its discard pile is revealed
@@ -408,6 +411,9 @@ data Message
   | -- | a villain is defeated for good: the scenario says what that does, by default
     -- the players win with no villain left, and otherwise he leaves play
     ResolveVillainDefeat VillainId
+  | -- | the attachment card is put into play attached to the enemy, from wherever it
+    -- was, without being revealed
+    AttachEncounterCard EncounterCard EnemyId
   | -- | each player in the area has been defeated, with players left elsewhere: the
     -- scenario says what that does, by default nothing
     AreaDefeated AreaId

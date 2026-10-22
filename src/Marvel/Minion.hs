@@ -59,6 +59,12 @@ allMinions =
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
       -- The Green Goblin
+      , SomeMinionCard goblinKnight
+      , SomeMinionCard goblinSoldier
+      , SomeMinionCard goblinThrall
+      , SomeMinionCard hiredGun
+      , SomeMinionCard monster
+      , SomeMinionCard privateSecuritySpecialist
       , SomeMinionCard scorpion
       , SomeMinionCard electro
       , SomeMinionCard tombstone
@@ -74,6 +80,21 @@ allMinions =
       , SomeMinionCard (reprintAs Cards.escapedConvictBulldozer escapedConvict)
 
       -- The Rise of Red Skull
+      , SomeMinionCard crossfire
+      , SomeMinionCard theViper
+      , SomeMinionCard hydraRegular
+
+      -- Zola
+      , SomeMinionCard ultimateBioServant
+      , SomeMinionCard zolasMutate
+      , SomeMinionCard berserkMutate
+
+      -- Red Skull
+      , SomeMinionCard theSleeper
+      , SomeMinionCard hydraExoSoldier
+
+      -- Taskmaster
+      , SomeMinionCard hydraHunter
 
       -- The Once and Future Kang
       , SomeMinionCard ancientWarrior

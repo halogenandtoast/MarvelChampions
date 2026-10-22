@@ -53,6 +53,9 @@ data IdentityMessage
   | DealStartingHand
   | FinishedSearching
   | VillainAndMinionsActivate
+  | -- | the minions engaged with the player activate, those put into play as the
+    -- villain activated among them
+    MinionsActivate
   | DealtEncounterCard EncounterCard
   | RevealEncounterCards
   | IdentityWasAttacked Attack

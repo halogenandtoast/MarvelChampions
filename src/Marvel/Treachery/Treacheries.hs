@@ -39,6 +39,12 @@ import Marvel.Treachery.Treacheries.Thoughtcasting as X
 import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 
 -- The Green Goblin
+import Marvel.Treachery.Treacheries.AllInADaysWork as X
+import Marvel.Treachery.Treacheries.DeathFromAbove as X
+import Marvel.Treachery.Treacheries.ISeeYou as X
+import Marvel.Treachery.Treacheries.MadGenius as X
+import Marvel.Treachery.Treacheries.Overconfidence as X
+import Marvel.Treachery.Treacheries.WickedAmbitions as X
 import Marvel.Treachery.Treacheries.Intimidation as X
 import Marvel.Treachery.Treacheries.RegenerativeHealing as X
 import Marvel.Treachery.Treacheries.TailSweep as X
@@ -66,6 +72,20 @@ import Marvel.Treachery.Treacheries.UncannyResilience as X
 import Marvel.Treachery.Treacheries.YoureDeadMeat as X
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.SniperShot as X
+
+-- Zola
+import Marvel.Treachery.Treacheries.MindRay as X
+import Marvel.Treachery.Treacheries.TechnologicalEnhancements as X
+
+-- Red Skull
+import Marvel.Treachery.Treacheries.BitterRival as X
+import Marvel.Treachery.Treacheries.InfinitePower as X
+import Marvel.Treachery.Treacheries.SpreadingLies as X
+
+-- Taskmaster
+import Marvel.Treachery.Treacheries.HuntedByHydra as X
+import Marvel.Treachery.Treacheries.Mimicry as X
 
 -- The Once and Future Kang
 import Marvel.Treachery.Treacheries.KangsChosen as X

@@ -15,6 +15,8 @@ data Modifier
   | AllyLimitModifier Natural
   | HitPointModifier Natural
   | HandSizeModifier Natural
+  | -- | "your hand size is reduced by N"
+    HandSizeReduction Natural
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
@@ -43,6 +45,12 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | an enemy not given a boost card as it activates
+    NoActivationBoostCard
+
+  | -- | on a scheme: a character thwarting it may use their ATK instead of their THW
+    ThwartWithAttack
+
   | -- | an enemy the players cannot attack (Distracting Taunts)
     CannotBeAttacked
   | -- | an enemy whose attacks the player must defend with an ally they control, if

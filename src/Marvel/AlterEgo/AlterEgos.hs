@@ -17,5 +17,7 @@ import Marvel.AlterEgo.AlterEgos.BruceBanner as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.AlterEgo.AlterEgos.ClintBarton as X
+import Marvel.AlterEgo.AlterEgos.JessicaDrew as X
 
 -- The Once and Future Kang

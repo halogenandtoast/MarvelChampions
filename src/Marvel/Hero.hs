@@ -49,6 +49,8 @@ allHeroes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeHeroCard hawkeye
+  , SomeHeroCard spiderWoman
 
   -- The Once and Future Kang
 

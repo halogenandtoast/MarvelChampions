@@ -111,6 +111,7 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
+getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getPlayTargets ::
   (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) =>
   IdentityId ->
@@ -122,6 +123,8 @@ getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
+
 getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
 getScenarioCode :: (HasGame m) => m CardCode
 getVillainAttackValue :: (HasGame m) => VillainId -> m Natural
@@ -146,6 +149,13 @@ getVillainsInArea :: (HasGame m) => AreaId -> m [VillainId]
 getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
 getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
 getPile :: (HasGame m) => DeckKey -> m Pile
+getDeckKeys :: (HasGame m) => m [DeckKey]
+
+getMainSchemeCounters :: (HasGame m) => MainSchemeId -> m Natural
+
+getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
+
+getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::

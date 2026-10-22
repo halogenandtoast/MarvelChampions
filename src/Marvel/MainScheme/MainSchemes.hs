@@ -8,10 +8,24 @@ import Marvel.MainScheme.MainSchemes.TheCrimsonCowl as X
 import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 
 -- The Green Goblin
+import Marvel.MainScheme.MainSchemes.CorporateAcquisition as X
+import Marvel.MainScheme.MainSchemes.HostileTakeover as X
+import Marvel.MainScheme.MainSchemes.MutagenCloud as X
+import Marvel.MainScheme.MainSchemes.UnleashingTheMutagen as X
 
 -- The Wrecking Crew
 import Marvel.MainScheme.MainSchemes.Breakout as X
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.MainScheme.MainSchemes.TheIslandOfDrZola as X
+import Marvel.MainScheme.MainSchemes.TheMadDoctor as X
+
+-- Red Skull
+import Marvel.MainScheme.MainSchemes.NewWorldHydra as X
+import Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull as X
+
+-- Taskmaster
+import Marvel.MainScheme.MainSchemes.HuntingDownHeroes as X
 
 -- The Once and Future Kang

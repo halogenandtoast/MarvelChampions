@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Id
+import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Treachery.Treacheries
 import Marvel.Treachery.Cards qualified as Cards
@@ -64,6 +65,12 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard thoughtcasting
   , SomeTreacheryCard clashOfTheTitans
   -- The Green Goblin
+  , SomeTreacheryCard allInADaysWork
+  , SomeTreacheryCard deathFromAbove
+  , SomeTreacheryCard iSeeYou
+  , SomeTreacheryCard madGenius
+  , SomeTreacheryCard overconfidence
+  , SomeTreacheryCard wickedAmbitions
   , SomeTreacheryCard intimidation
   , SomeTreacheryCard regenerativeHealing
   , SomeTreacheryCard (reprintAs Cards.gangUpAMessOfThings gangUp)
@@ -102,6 +109,21 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard leadingTheCharge
 
   -- The Rise of Red Skull
+  , SomeTreacheryCard sniperShot
+  , SomeTreacheryCard (reprintAs Cards.hailHydraSpiderWoman hailHydra)
+
+  -- Zola
+  , SomeTreacheryCard mindRay
+  , SomeTreacheryCard technologicalEnhancements
+
+  -- Red Skull
+  , SomeTreacheryCard bitterRival
+  , SomeTreacheryCard spreadingLies
+  , SomeTreacheryCard infinitePower
+
+  -- Taskmaster
+  , SomeTreacheryCard mimicry
+  , SomeTreacheryCard huntedByHydra
 
   -- The Once and Future Kang
   , SomeTreacheryCard kangsChosen

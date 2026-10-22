@@ -12,6 +12,8 @@ import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Name
 import Marvel.Trait
+import Data.HashSet (singleton)
+import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
@@ -25,6 +27,15 @@ allVillainCards =
   , ultron2
   , ultron3
   -- The Green Goblin
+  , normanOsborn1
+  , greenGoblin1
+  , normanOsborn2
+  , greenGoblin2
+  , normanOsborn3
+  , greenGoblin3
+  , greenGoblinMutagen1
+  , greenGoblinMutagen2
+  , greenGoblinMutagen3
 
   -- The Wrecking Crew
   , wreckerA
@@ -37,6 +48,20 @@ allVillainCards =
   , bulldozerB
 
   -- The Rise of Red Skull
+  -- Zola
+  , zola1
+  , zola2
+  , zola3
+
+  -- Red Skull
+  , redSkull1
+  , redSkull2
+  , redSkull3
+
+  -- Taskmaster
+  , taskmasterVillain1
+  , taskmasterVillain2
+  , taskmasterVillain3
 
   -- The Once and Future Kang
 
@@ -98,6 +123,71 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+-- The Green Goblin
+
+normanOsborn1 :: CardDef
+normanOsborn1 = villain "02001a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin1 :: CardDef
+greenGoblin1 = villain "02001b" "Green Goblin" [Goblin]
+
+normanOsborn2 :: CardDef
+normanOsborn2 = villain "02002a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin2 :: CardDef
+greenGoblin2 = villain "02002b" "Green Goblin" [Goblin]
+
+normanOsborn3 :: CardDef
+normanOsborn3 = villain "02003a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin3 :: CardDef
+greenGoblin3 = villain "02003b" "Green Goblin" [Goblin]
+
+greenGoblinMutagen1 :: CardDef
+greenGoblinMutagen1 = villain "02014" "Green Goblin" [Goblin]
+
+greenGoblinMutagen2 :: CardDef
+greenGoblinMutagen2 = villain "02015" "Green Goblin" [Goblin]
+
+greenGoblinMutagen3 :: CardDef
+greenGoblinMutagen3 = villain "02016" "Green Goblin" [Goblin]
+
+-- The Rise of Red Skull
+-- Zola
+
+zola1 :: CardDef
+zola1 = (villain "04109" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola2 :: CardDef
+zola2 = (villain "04110" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola3 :: CardDef
+zola3 = (villain "04111" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+-- Red Skull
+
+redSkull1 :: CardDef
+redSkull1 = villain "04125" "Red Skull" [Hydra]
+
+redSkull2 :: CardDef
+redSkull2 = villain "04126" "Red Skull" [Hydra]
+
+redSkull3 :: CardDef
+redSkull3 = villain "04127" "Red Skull" [Hydra]
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+taskmasterVillain1 :: CardDef
+taskmasterVillain1 = villain "04093" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain2 :: CardDef
+taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain3 :: CardDef
+taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]
 
 -- The Wrecking Crew
 

@@ -19,6 +19,8 @@ data VillainMessage
   | VillainCheckAdditionalBoosts
   | -- | its attack under way gains the keyword: overkill, piercing or ranged
     VillainAttackGains Keyword
+  | -- | all damage from its attack under way is prevented
+    VillainAttackDamagePrevented
   | VillainAttacks IdentityId
   | -- | it attacks the player, the attack given no boost card (Escaped Convict)
     VillainAttacksWithoutBoost IdentityId
@@ -29,6 +31,8 @@ data VillainMessage
   | VillainEndAttack
   | VillainAttacked
   | VillainSchemes
+  | -- | its scheme under way, past a confusion: what a replaced scheme never reaches
+    VillainBeginScheme
   | VillainSchemed
   | VillainHealed Natural
   | VillainDefeated

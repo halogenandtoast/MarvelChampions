@@ -48,6 +48,12 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
   -- The Green Goblin
+  , SomeSideSchemeCard collapsingBridge
+  , SomeSideSchemeCard goblinNation
+  , SomeSideSchemeCard goblinReinforcements
+  , SomeSideSchemeCard oscorpManufacturing
+  , SomeSideSchemeCard overrun
+  , SomeSideSchemeCard payoff
   , SomeSideSchemeCard aMessOfThings
   , SomeSideSchemeCard powerDrain
   , SomeSideSchemeCard runningInterference
@@ -59,6 +65,25 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard clearTheRoad
 
   -- The Rise of Red Skull
+  , SomeSideSchemeCard markedForDeath
+  , SomeSideSchemeCard theVipersAmbition
+
+  -- Zola
+  , SomeSideSchemeCard hydraPrison
+  , SomeSideSchemeCard testSubjects
+  , SomeSideSchemeCard zolasExperiments
+
+  -- Red Skull
+  , SomeSideSchemeCard theRedHouse
+  , SomeSideSchemeCard theSleeperAwakened
+  , SomeSideSchemeCard prisonCamps
+  , SomeSideSchemeCard censorThePast
+  , SomeSideSchemeCard hydraReinforcements
+  , SomeSideSchemeCard massChaos
+
+  -- Taskmaster
+  , SomeSideSchemeCard capturedByHydra
+  , SomeSideSchemeCard taskmastersTrainingCamp
 
   -- The Once and Future Kang
   , SomeSideSchemeCard timePortal

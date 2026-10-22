@@ -44,5 +44,20 @@ import Marvel.Ally.Allies.SheHulkJenniferWalters as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Ally.Allies.Mockingbird as X
+import Marvel.Ally.Allies.HawkeyeKateBishop as X
+import Marvel.Ally.Allies.BlackKnightDaneWhitman as X
+import Marvel.Ally.Allies.GoliathBillFoster as X
+import Marvel.Ally.Allies.UsAgentJohnWalker as X
+import Marvel.Ally.Allies.WarMachine as X
+import Marvel.Ally.Allies.CaptainMarvelCarolDanvers as X
+import Marvel.Ally.Allies.SpiderGirlAnyaCorazon as X
+import Marvel.Ally.Allies.SpiderManPeterParker as X
+
+-- Taskmaster
+import Marvel.Ally.Allies.Elektra as X
+import Marvel.Ally.Allies.MoonKnightMarcSpector as X
+import Marvel.Ally.Allies.ShangChi as X
+import Marvel.Ally.Allies.WhiteTigerAngelaDelToro as X
 
 -- The Once and Future Kang

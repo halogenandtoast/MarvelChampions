@@ -31,6 +31,8 @@ data IdentityMatcher
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityWithTitle Text
+  | -- | the player playing as this identity, whichever face is up
+    IdentityIs CardDef
   | IdentityWithId IdentityId
   | IdentityWithTrait Trait
   | AnyIdentity
@@ -43,6 +45,8 @@ data IdentityMatcher
     IdentityCanThwart
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm
+  | -- | of the identities matching, those with the fewest hit points remaining
+    IdentityWithFewestRemainingHitPoints IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -75,6 +79,8 @@ data AllyMatcher
   | NotAlly AllyMatcher
   | AllyMatches [AllyMatcher]
   | AllyWithTrait Trait
+  | -- | the card in any of its printings
+    AllyIs CardDef
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -156,6 +162,8 @@ data EnemyMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
     EnemyWithHighestAttack
   | StunnedEnemy
+  | EnemyWithTrait Trait
+  | ConfusedEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -196,7 +204,13 @@ data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId SchemeId
+data SchemeMatcher
+  = AnyScheme
+  | MainScheme
+  | ThwartableScheme
+  | -- | threat can be removed from it, "ignoring any crisis icons in play"
+    ThwartableSchemeIgnoringCrisis
+  | SchemeWithId SchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -227,6 +241,8 @@ data MinionMatcher
   | StunnedMinion
   | -- | of the minions matching, those with the highest printed hit points
     MinionWithHighestPrintedHitPointsAmong MinionMatcher
+  | -- | of the minions matching, those with the most hit points remaining
+    MinionWithMostRemainingHitPointsAmong MinionMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

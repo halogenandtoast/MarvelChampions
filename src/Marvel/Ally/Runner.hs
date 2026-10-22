@@ -10,11 +10,14 @@ import Marvel.Message.Lifted as X
 import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
+import Marvel.Game.Source (getModifiers)
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Card.Def
 import Marvel.Damage
+import Marvel.Keyword
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Query
@@ -64,7 +67,10 @@ instance RunMessage (Attrs Ally) where
         then pure $ a & stunnedL .~ False
         else do
           enemies <- selectList $ AttackableBy $ IdentityWithId $ allyController a
-          dmg <- toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)
+          -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally
+          let keywords = cdKeywords (allyCardDef a)
+              gains = [withPiercing | Piercing `member` keywords] <> [withRanged | Ranged `member` keywords]
+          dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
           chooseOne (allyController a)
             [ targeting (enemyRef enemy) do
                 checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
@@ -88,12 +94,20 @@ instance RunMessage (Attrs Ally) where
         else do
           schemes <- selectList ThwartableScheme
           thw <- getModifiedThwart a
-          chooseOne (allyController a)
-            [ targeting (schemeRef scheme) do
-                thwartScheme scheme a thw
-                checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
-            | scheme <- schemes
-            ]
+          atk <- getModifiedAttack a
+          -- a scheme thwarted with ATK instead of THW, as The Red House allows
+          choices <- for schemes \scheme -> do
+            withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
+            let thwartWith n = do
+                  thwartScheme scheme a n
+                  checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
+            pure $ targeting (schemeRef scheme) $
+              if withAttack && atk /= thw
+                then
+                  chooseOne (allyController a)
+                    [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
+                else thwartWith thw
+          chooseOne (allyController a) choices
           when (allyThwartConsequentialDamage a > 0) $
             damageCharacter ident a (toDamage (allyThwartConsequentialDamage a) FromConsequential)
           pure a
@@ -107,10 +121,18 @@ instance RunMessage (Attrs Ally) where
         let
           overkill = subtractNatural
             (subtractNatural (allyDamage a) hitPoints)
-            (attackDamage attack')
-        damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamage attack'))
+            (attackDamageDealt attack')
+        when (attackDamageDealt attack' > 0) $
+          damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
         when (attackOverkill attack' && overkill > 0) $
           attackDamageIdentity (allyController a) (attackSource attack') (toDamage overkill FromAttack)
+        -- retaliate, if it is still in play after the attack, and the attack not ranged
+        let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
+        when (retaliates > 0 && not (attackRanged attack')) $
+          allyStep ident (AllyRetaliates (attackEnemy attack') retaliates)
+        pure a
+      AllyRetaliates enemy n -> do
+        dealDamage enemy a (toDamage n FromRetaliate)
         pure a
       AllyDamaged source damage -> if allyTough a && preventedByTough damage
         then pure $ a & toughL .~ False
@@ -118,10 +140,11 @@ instance RunMessage (Attrs Ally) where
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
           when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
+          when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       -- leaving play discards it
       AllyDefeated -> do
-        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)
+        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
         checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
         -- which discards it
         removeFromPlay a
@@ -129,6 +152,7 @@ instance RunMessage (Attrs Ally) where
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
+      AllyOwnedBy owner -> pure a {allyOwner = owner}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     -- "if an ability that says an ally gets +X hit points ceases to be in effect and

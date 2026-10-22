@@ -64,7 +64,7 @@ instance RunMessage BulldozersHelmet where
       pure a
     VillainMessage vid (VillainBeginAttack _) | ours vid -> pure $ BulldozersHelmet (attrs `With` Meta 0)
     VillainMessage vid (VillainBeginAttackWithoutBoost _) | ours vid -> pure $ BulldozersHelmet (attrs `With` Meta 0)
-    (attackDamageDealt -> Just (enemy, _, n)) | Just enemy == attachmentEnemy attrs -> do
+    (attackDamageWindow -> Just (enemy, _, n)) | Just enemy == attachmentEnemy attrs -> do
       BulldozersHelmet attrs' <- BulldozersHelmet . (`With` meta) <$> runMessage msg attrs
       pure $ BulldozersHelmet (withAttrs attrs' `With` Meta (dealt meta + n))
     RanAbility _ (isTarget attrs -> True) 1 [EnemyAttack _ you] _ -> do

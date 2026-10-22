@@ -478,7 +478,9 @@ resolveDeck userId = \case
     now <- liftIO getCurrentTime
     runDB $ update deckId [MarvelDeckUsedAt =. Just now]
     pure deckList
-  ListedDeck deckList -> either (sendResponseStatus status400 . unknownCards) pure (checkedDeckList deckList)
+  ListedDeck deckList
+    | not (aspectsBalanced deckList) -> sendResponseStatus status400 (ikey "error.unbalancedAspects")
+    | otherwise -> either (sendResponseStatus status400 . unknownCards) pure (checkedDeckList deckList)
  where
   unknownCards missing = ikeyWith "error.unknownCards" [textVar "cards" (intercalate ", " (map unCardCode missing))]
 

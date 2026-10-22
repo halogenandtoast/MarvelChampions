@@ -20,11 +20,25 @@ allMainSchemes =
     , assaultOnNorad
     , countdownToOblivion
     -- The Green Goblin
+    , hostileTakeover
+    , corporateAcquisition
+    , unleashingTheMutagen
+    , mutagenCloud
 
     -- The Wrecking Crew
     , breakout
 
     -- The Rise of Red Skull
+    -- Zola
+    , theIslandOfDrZola
+    , theMadDoctor
+
+    -- Red Skull
+    , theRiseOfRedSkull
+    , newWorldHydra
+
+    -- Taskmaster
+    , huntingDownHeroes
 
     -- The Once and Future Kang
 
@@ -73,6 +87,44 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- The Green Goblin
+
+hostileTakeover :: CardDef
+hostileTakeover = mainScheme "02004" "Hostile Takeover" RiskyBusiness
+
+corporateAcquisition :: CardDef
+corporateAcquisition = (mainScheme "02005" "Corporate Acquisition" RiskyBusiness) {cdHazards = 1}
+
+unleashingTheMutagen :: CardDef
+unleashingTheMutagen = mainScheme "02017" "Unleashing the Mutagen" MutagenFormula
+
+mutagenCloud :: CardDef
+mutagenCloud = mainScheme "02018" "Mutagen Cloud" MutagenFormula
+
+-- The Rise of Red Skull
+-- Zola
+
+theIslandOfDrZola :: CardDef
+theIslandOfDrZola = mainScheme "04112" "The Island of Dr. Zola" Zola
+
+theMadDoctor :: CardDef
+theMadDoctor = mainScheme "04113" "The Mad Doctor" Zola
+
+-- Red Skull
+
+theRiseOfRedSkull :: CardDef
+theRiseOfRedSkull = mainScheme "04128" "The Rise of Red Skull" RedSkull
+
+newWorldHydra :: CardDef
+newWorldHydra = mainScheme "04129" "New World Hydra" RedSkull
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+huntingDownHeroes :: CardDef
+huntingDownHeroes = mainScheme "04096" "Hunting Down Heroes" Taskmaster
 
 -- The Wrecking Crew
 

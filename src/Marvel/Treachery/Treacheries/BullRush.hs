@@ -55,7 +55,7 @@ instance RunMessage BullRush where
     VillainMessage v VillainSchemed | bulldozer meta == Just v -> pure $ BullRush (attrs `With` meta {scheming = True})
     SideSchemeMessage _ (SideSchemePlaceThreat n) | scheming meta -> placed n
     MainSchemeMessage _ (MainSchemePlaceThreat n) | scheming meta -> placed n
-    (attackDamageDealt -> Just (EnemyVillainId v, _, n)) | bulldozer meta == Just v ->
+    (attackDamageWindow -> Just (EnemyVillainId v, _, n)) | bulldozer meta == Just v ->
       pure $ BullRush (attrs `With` meta {dealt = dealt meta + n})
     CardSpecific (isTarget attrs -> True) "discard" (fromJSON -> Success you) -> do
       when (dealt meta > 0) $ discardTopOfDeck you (dealt meta)

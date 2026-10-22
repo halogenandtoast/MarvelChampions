@@ -284,9 +284,11 @@ runVillainMessage msg attrs = case msg of
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
   VillainDamaged _ damage -> do
-    if villainTough attrs && preventedByTough damage
-      then pure $ attrs & toughL .~ False
-      else do
+    cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
+    if
+      | cannotTakeDamage -> pure attrs
+      | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
+      | otherwise -> do
         when
           ( subtractNatural
               (damageAmount damage)
@@ -313,13 +315,14 @@ runVillainMessage msg attrs = case msg of
   VillainSchemes ->
     if villainConfused attrs
       then pure $ attrs & confusedL .~ False
-      else do
-        dealBoost attrs
-        villainStep vid VillainFlipBoostCards
-        villainStep vid VillainSchemed
-        clearBoosts
-        player <- getActivePlayerId
-        pure attrs {villainActivationPlayer = Just player}
+      else attrs <$ villainStep vid VillainBeginScheme
+  VillainBeginScheme -> do
+    dealActivationBoost
+    villainStep vid VillainFlipBoostCards
+    villainStep vid VillainSchemed
+    clearBoosts
+    player <- getActivePlayerId
+    pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
@@ -330,6 +333,7 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
   -- onto his own side scheme, when he has one, or else the main scheme
@@ -389,13 +393,16 @@ runVillainMessage msg attrs = case msg of
     attack' <- newAttack ident
     modifiers <- getModifiers attrs
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    when boosted $ dealBoost attrs
+    when boosted dealActivationBoost
     declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
       attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
+  dealActivationBoost = do
+    modifiers <- getModifiers attrs
+    unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
   newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 

@@ -17,5 +17,7 @@ import Marvel.Hero.Heroes.Hulk as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Hero.Heroes.Hawkeye as X
+import Marvel.Hero.Heroes.SpiderWoman as X
 
 -- The Once and Future Kang

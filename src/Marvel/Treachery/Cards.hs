@@ -56,6 +56,12 @@ allTreacheries = fromList $ map
   , thoughtcasting
   , clashOfTheTitans
   -- The Green Goblin
+  , allInADaysWork
+  , madGenius
+  , deathFromAbove
+  , iSeeYou
+  , overconfidence
+  , wickedAmbitions
   , intimidation
   , regenerativeHealing
   , gangUpAMessOfThings
@@ -94,6 +100,21 @@ allTreacheries = fromList $ map
   , leadingTheCharge
 
   -- The Rise of Red Skull
+  , sniperShot
+  , hailHydraSpiderWoman
+
+  -- Zola
+  , mindRay
+  , technologicalEnhancements
+
+  -- Red Skull
+  , bitterRival
+  , spreadingLies
+  , infinitePower
+
+  -- Taskmaster
+  , mimicry
+  , huntedByHydra
 
   -- The Once and Future Kang
   , kangsChosen
@@ -265,8 +286,61 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
 
+sniperShot :: CardDef
+sniperShot = treachery "04030" "Sniper Shot" [Boost] HawkeyeNemesis 2
+
+-- | Hail Hydra! as Spider-Woman's nemesis set has it
+hailHydraSpiderWoman :: CardDef
+hailHydraSpiderWoman =
+  (reprint "04057" hailHydra)
+    { cdEncounterSet = Just SpiderWomanNemesis
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = [Boost, Boost]
+    }
+
+
+-- The Rise of Red Skull
+-- Zola
+
+mindRay :: CardDef
+mindRay = treachery "04120" "Mind Ray" [Boost, Boost] Zola 3
+
+technologicalEnhancements :: CardDef
+technologicalEnhancements =
+  (treachery "04121" "Technological Enhancements" [Star] Zola 2)
+    { cdKeywords = singleton (Keyword.Incite 1)
+    }
+
+-- Red Skull
+
+bitterRival :: CardDef
+bitterRival = treachery "04136" "Bitter Rival" [Star] RedSkull 2
+
+spreadingLies :: CardDef
+spreadingLies = treachery "04137" "Spreading Lies" [Boost, Star] RedSkull 2
+
+infinitePower :: CardDef
+infinitePower = treachery "04138" "Infinite Power" [Boost, Boost] RedSkull 2
+
 -- The Green Goblin
 
+allInADaysWork :: CardDef
+allInADaysWork = treachery "02012" "All in a Day's Work" [Star] RiskyBusiness 4
+
+madGenius :: CardDef
+madGenius = treachery "02013" "Mad Genius" [Boost] RiskyBusiness 2
+
+deathFromAbove :: CardDef
+deathFromAbove = treachery "02029" "Death from Above" [Boost] MutagenFormula 2
+
+iSeeYou :: CardDef
+iSeeYou = treachery "02030" "I See You" [Boost, Star] MutagenFormula 1
+
+overconfidence :: CardDef
+overconfidence = treachery "02031" "Overconfidence" [Boost] MutagenFormula 1
+
+wickedAmbitions :: CardDef
+wickedAmbitions = treachery "02032" "Wicked Ambitions" [Boost] MutagenFormula 2
 intimidation :: CardDef
 intimidation = treachery "02035" "Intimidation" [Star, Boost] GoblinGimmicks 2
 
@@ -303,6 +377,16 @@ kangsChosen =
 
 ancientGrudge :: CardDef
 ancientGrudge = treachery "11051" "Ancient Grudge" [Boost] MasterOfTime 2
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+mimicry :: CardDef
+mimicry = treachery "04105" "Mimicry" [Boost] Taskmaster 2
+
+huntedByHydra :: CardDef
+huntedByHydra = (treachery "04106" "Hunted by Hydra" [Boost] Taskmaster 2) {cdKeywords = singleton (Keyword.Incite 1)}
 
 -- The Wrecking Crew
 

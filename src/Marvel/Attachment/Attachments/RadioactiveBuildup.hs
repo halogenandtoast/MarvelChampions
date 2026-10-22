@@ -59,7 +59,7 @@ instance RunMessage RadioactiveBuildup where
    where
     excess attack' = case attachmentEnemy attrs of
       Just enemy@(EnemyVillainId v) | attackEnemy attack' == enemy -> do
-        n <- getExcessDamage (attackCharacter attack') (attackDamage attack')
+        n <- getExcessDamage (attackCharacter attack') (attackDamageDealt attack')
         when (n > 0) $ traverse_ (`placeThreat` n) =<< signatureSchemeOf v
         pure a
       _ -> pure a

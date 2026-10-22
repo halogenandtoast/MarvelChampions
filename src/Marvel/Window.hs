@@ -101,6 +101,11 @@ windowMatches matcher w source = case matcher of
       | timing == windowTiming w ->
           villainMatches villainMatcher villainId
     _ -> pure False
+  VillainDamagedBy timing villainMatcher damageMatcher -> case windowType w of
+    DamagedVillain villainId damage
+      | timing == windowTiming w ->
+          liftA2 (&&) (villainMatches villainMatcher villainId) (damageMatches damageMatcher damage)
+    _ -> pure False
   VillainSchemed timing villainMatcher -> case windowType w of
     Schemed villainId
       | timing == windowTiming w ->

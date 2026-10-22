@@ -40,6 +40,8 @@ allAlterEgos = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeAlterEgoCard clintBarton
+  , SomeAlterEgoCard jessicaDrew
 
   -- The Once and Future Kang
 

@@ -17,7 +17,7 @@ import Marvel.Attack (Attack (..))
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
-import Marvel.Card.PlayerCard.Types (PlayerCard)
+import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Card.Side (Side)
 import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Cost.Types (Cost)
@@ -409,6 +409,12 @@ attackGains enemy k = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
 
+-- | "Prevent all damage from this attack": the enemy's attack under way.
+preventAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+preventAttackDamage enemy = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
+  EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
+
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
 flipVillain vid = do
@@ -466,6 +472,11 @@ attachedTo enemy attachment = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (AttachedToVillain attachment)
   EnemyMinionId mid -> MinionMessage mid (AttachedToMinion attachment)
 
+-- | The attachment card is put into play attached to the enemy, without being revealed:
+-- "attach that card to Zola's Mutate".
+attachEncounterCard :: (ReverseQueue m, IsEnemy enemy) => EncounterCard -> enemy -> m ()
+attachEncounterCard card = push . AttachEncounterCard card . toEnemy
+
 -- | The attachment is attached to the player's identity card.
 attachToIdentity :: (ReverseQueue m) => AttachmentId -> IdentityId -> m ()
 attachToIdentity attachment = push . AttachmentMessage attachment . AttachedToIdentity
@@ -519,6 +530,11 @@ discardFromDeckUntil ident matcher = push . IdentityMessage ident . DiscardFromD
 addToHand :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 addToHand ident = push . IdentityMessage ident . AddToHand
 
+-- | A player card that was nobody's, as a Captive ally set aside in an encounter set, or
+-- another player's, goes into the player's hand: they own and control it from now on.
+takeControlOf :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+takeControlOf ident card = addToHand ident card {pcOwner = Just ident, pcController = Just ident}
+
 placeOnBottomOfDeck :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 placeOnBottomOfDeck ident = push . IdentityMessage ident . PlaceOnBottomOfDeck
 
@@ -543,6 +559,10 @@ removeFromGame = push . RemoveFromGame . toTarget
 
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize
+
+-- | The cards are shown to the player only while the body runs: "look at".
+lookingAt :: (ReverseQueue m) => IdentityId -> [Card] -> m () -> m ()
+lookingAt ident cards body = push (ShowCardsTo ident cards) >> body >> push (HideCardsFrom ident)
 
 -- | The cards are shown to everyone while the body runs.
 focusing :: (ReverseQueue m) => [Card] -> m () -> m ()
@@ -659,11 +679,13 @@ paidCosts = push . PaidCosts
 disableActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
 disableActiveCost = push . DisableActiveCost
 
--- | The card is played, paid for: it enters play and the window after it opens.
+-- | The card is played, paid for: "when you play" is answered, then it enters play and
+-- the window after it opens.
 cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
 cardPlayed ident card payment mWindow =
   pushAll
-    [ IdentityMessage ident (PlayedCard card mWindow)
+    [ CheckWindows [Window When $ W.CardPlayed ident card]
+    , IdentityMessage ident (PlayedCard card mWindow)
     , PutCardIntoPlay ident card payment mWindow
     , CheckWindows [Window After $ W.CardPlayed ident card]
     ]
@@ -1039,6 +1061,9 @@ upgradeStep u = push . UpgradeMessage u
 identityStep :: (ReverseQueue m) => IdentityId -> IdentityMessage -> m ()
 identityStep ident = push . IdentityMessage ident
 
+supportStep :: (ReverseQueue m) => SupportId -> SupportMessage -> m ()
+supportStep s = push . SupportMessage s
+
 allyStep :: (ReverseQueue m) => AllyId -> AllyMessage -> m ()
 allyStep ally = push . AllyMessage ally
 
@@ -1053,6 +1078,9 @@ obligationStep oid = push . ObligationMessage oid
 
 attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
 attachmentStep aid = push . AttachmentMessage aid
+
+environmentStep :: (ReverseQueue m) => EnvironmentId -> EnvironmentMessage -> m ()
+environmentStep eid = push . EnvironmentMessage eid
 
 sideSchemeStep :: (ReverseQueue m) => SideSchemeId -> SideSchemeMessage -> m ()
 sideSchemeStep sid = push . SideSchemeMessage sid

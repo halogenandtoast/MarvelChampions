@@ -8,6 +8,9 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Keyword
+
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -46,6 +49,8 @@ allAllies = fromList $ concatMap
   , valkyrie
   , heimdall
   , wong
+  , mockingbird
+  , captainMarvelCarolDanvers
   , brotherVoodooJerichoDrumm
   , clea
   , ironFistDannyRand
@@ -58,9 +63,43 @@ allAllies = fromList $ concatMap
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , mockingbird
+  , hawkeyeKateBishop
+  , blackKnightDaneWhitman
+  , goliathBillFoster
+  , usAgentJohnWalker
+  , warMachine
+  , captainMarvelCarolDanvers
+  , spiderGirlAnyaCorazon
+  , spiderManPeterParker
+
+  -- Taskmaster
+  , moonKnightMarcSpector
+  , shangChi
+  , whiteTigerAngelaDelToro
+  , elektra
 
   -- The Once and Future Kang
 
+  ]
+
+-- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
+-- aspect nor basic. ponytail: kept by hand, as identityAlly and basicAlly make the same
+-- def; a new hero's own ally is added here.
+heroSpecificAllies :: [CardDef]
+heroSpecificAllies =
+  [ blackCatFeliciaHardy
+  , spiderWomanJessicaDrew
+  , hellcatPatsyWalker
+  , warMachineJamesRhodes
+  , shuri
+  , agent13SharonCarter
+  , redDagger
+  , winterSoldierBuckyBarnes
+  , ladySif
+  , wong
+  , mockingbird
+  , captainMarvelCarolDanvers
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -264,3 +303,64 @@ ironFistDannyRand =
 ironManTonyStark :: CardDef
 ironManTonyStark =
   ally "09039" ("Iron Man" <:> "Tony Stark") 4 [Avenger] [Wild] Leadership
+
+mockingbird :: CardDef
+mockingbird = identityAlly "04004" ("Mockingbird" <:> "Bobbi Morse") 3 [Avenger, Shield] [Wild]
+
+hawkeyeKateBishop :: CardDef
+hawkeyeKateBishop = ally "04011" ("Hawkeye" <:> "Kate Bishop") 2 [Avenger] [Physical] Leadership
+
+-- | "[star] Black Knight's basic attack gains piercing": the keyword on him
+blackKnightDaneWhitman :: CardDef
+blackKnightDaneWhitman =
+  (ally "04012" ("Black Knight" <:> "Dane Whitman") 3 [Avenger] [Physical] Leadership)
+    { cdKeywords = fromList [Piercing]
+    }
+
+goliathBillFoster :: CardDef
+goliathBillFoster = ally "04013" ("Goliath" <:> "Bill Foster") 4 [Avenger] [Mental] Leadership
+
+usAgentJohnWalker :: CardDef
+usAgentJohnWalker =
+  (ally "04014" ("U.S. Agent" <:> "John Walker") 3 [Avenger] [Mental] Leadership)
+    { cdKeywords = fromList [Retaliate 1]
+    }
+
+-- | "[star] War Machine's basic attack gains ranged": the keyword on him
+warMachine :: CardDef
+warMachine =
+  (basicAlly "04020" ("War Machine" <:> "James Rhodes") 4 [Avenger, Shield] [Mental])
+    { cdKeywords = fromList [Toughness, Ranged]
+    }
+
+captainMarvelCarolDanvers :: CardDef
+captainMarvelCarolDanvers = identityAlly "04032" ("Captain Marvel" <:> "Carol Danvers") 4 [Avenger] [Wild]
+
+spiderGirlAnyaCorazon :: CardDef
+spiderGirlAnyaCorazon = ally "04040" ("Spider-Girl" <:> "Anya Corazon") 2 [Avenger] [Energy] Aggression
+
+spiderManPeterParker :: CardDef
+spiderManPeterParker = ally "04045" ("Spider-Man" <:> "Peter Parker") 5 [Avenger] [Mental] Justice
+
+-- The Rise of Red Skull
+
+-- Taskmaster: the Captive allies, set aside out of play in the encounter set until a
+-- player rescues one
+
+-- | A Captive ally of the Taskmaster encounter set: a player card, cost 0, kept out of
+-- the encounter deck (it is not an encounter card) and owned by whoever rescues it.
+captiveAlly :: CardCode -> Name -> CardDef
+captiveAlly code name =
+  (basicAlly code name 0 [Captive, HeroForHire] [Wild]) {cdEncounterSet = Just EncounterSet.Taskmaster, cdEncounterSetQuantity = Just 1}
+
+moonKnightMarcSpector :: CardDef
+moonKnightMarcSpector = captiveAlly "04097" ("Moon Knight" <:> "Marc Spector")
+
+shangChi :: CardDef
+shangChi = reprintedAs ["10098"] $ captiveAlly "04098" "Shang-Chi"
+
+whiteTigerAngelaDelToro :: CardDef
+whiteTigerAngelaDelToro = captiveAlly "04099" ("White Tiger" <:> "Angela Del Toro")
+
+elektra :: CardDef
+elektra = captiveAlly "04100" "Elektra"

@@ -45,6 +45,9 @@ allAttachments =
       , SomeAttachmentCard pumpkinBombs
       , SomeAttachmentCard allTiedUp
       , SomeAttachmentCard mediaCoverage
+      , SomeAttachmentCard (reprintAs Cards.goblinGliderMutagenFormula goblinGlider)
+      , SomeAttachmentCard hysteria
+      , SomeAttachmentCard (reprintAs Cards.pumpkinBombsMutagenFormula pumpkinBombs)
 
       -- The Wrecking Crew
       , SomeAttachmentCard heldHostage
@@ -60,6 +63,23 @@ allAttachments =
       , SomeAttachmentCard rammingSpeed
 
       -- The Rise of Red Skull
+      , SomeAttachmentCard crossfiresRifle
+
+      -- Zola
+      , SomeAttachmentCard defensiveProgramming
+      , SomeAttachmentCard painInhibitors
+      , SomeAttachmentCard neurologicalImplants
+
+      -- Red Skull
+      , SomeAttachmentCard redSkullsLuger
+      , SomeAttachmentCard redSkullsRightHook
+      , SomeAttachmentCard masterStrategist
+      , SomeAttachmentCard twistedReality
+
+      -- Taskmaster
+      , SomeAttachmentCard taskmastersSword
+      , SomeAttachmentCard taskmastersShield
+      , SomeAttachmentCard photographicReflexes
 
       -- The Once and Future Kang
 

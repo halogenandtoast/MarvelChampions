@@ -30,11 +30,25 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard assaultOnNorad
   , SomeMainSchemeCard countdownToOblivion
   -- The Green Goblin
+  , SomeMainSchemeCard hostileTakeover
+  , SomeMainSchemeCard corporateAcquisition
+  , SomeMainSchemeCard unleashingTheMutagen
+  , SomeMainSchemeCard mutagenCloud
 
   -- The Wrecking Crew
   , SomeMainSchemeCard breakout
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeMainSchemeCard theIslandOfDrZola
+  , SomeMainSchemeCard theMadDoctor
+
+  -- Red Skull
+  , SomeMainSchemeCard theRiseOfRedSkull
+  , SomeMainSchemeCard newWorldHydra
+
+  -- Taskmaster
+  , SomeMainSchemeCard huntingDownHeroes
 
   -- The Once and Future Kang
 

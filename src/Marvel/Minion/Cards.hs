@@ -50,6 +50,12 @@ allMinions =
       , baronMordo
       , abomination
       -- The Green Goblin
+      , hiredGun
+      , privateSecuritySpecialist
+      , goblinKnight
+      , goblinSoldier
+      , goblinThrall
+      , monster
       , scorpion
       , electro
       , tombstone
@@ -65,6 +71,21 @@ allMinions =
       , escapedConvictBulldozer
 
       -- The Rise of Red Skull
+      , crossfire
+      , theViper
+      , hydraRegular
+
+      -- Zola
+      , ultimateBioServant
+      , zolasMutate
+      , berserkMutate
+
+      -- Red Skull
+      , theSleeper
+      , hydraExoSoldier
+
+      -- Taskmaster
+      , hydraHunter
 
       -- The Once and Future Kang
       , ancientWarrior
@@ -308,8 +329,80 @@ baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
 
+crossfire :: CardDef
+crossfire =
+  unique $
+    (minion "04027" "Crossfire" [Mercenary] [Star] HawkeyeNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Piercing]
+      }
+
+theViper :: CardDef
+theViper = unique $ minion "04054" "The Viper" [Elite, Hydra] [Boost, Boost, Boost] SpiderWomanNemesis 1
+
+hydraRegular :: CardDef
+hydraRegular =
+  (minion "04056" "Hydra Regular" [Hydra] [Boost, Boost] SpiderWomanNemesis 2)
+    { cdKeywords = fromList [Incite 1]
+    }
+
+-- The Rise of Red Skull
+-- Zola
+
+ultimateBioServant :: CardDef
+ultimateBioServant =
+  (minion "04114" "Ultimate Bio-Servant" [Hydra, Mutate] [Star] Zola 4)
+    { cdKeywords = singleton Toughness
+    }
+
+zolasMutate :: CardDef
+zolasMutate = minion "04115" "Zola's Mutate" [Hydra, Mutate] [Star] Zola 3
+
+berserkMutate :: CardDef
+berserkMutate =
+  (minion "04116" "Berserk Mutate" [Hydra, Mutate] [Star] Zola 3)
+    { cdKeywords = singleton Quickstrike
+    }
+
+-- Red Skull
+
+theSleeper :: CardDef
+theSleeper =
+  unique $
+    (minion "04130" "The Sleeper" [Elite, Hydra, Robot] [Boost] RedSkull 1)
+      { cdKeywords = fromList [Guard, Retaliate 1, Toughness]
+      }
+
+hydraExoSoldier :: CardDef
+hydraExoSoldier =
+  (minion "04131" "Hydra Exo-Soldier" [Hydra] [Star] RedSkull 3)
+    { cdKeywords = singleton Toughness
+    }
+
 -- The Green Goblin
 
+hiredGun :: CardDef
+hiredGun = minion "02007" "Hired Gun" [Criminal] [Boost, Boost, Star] RiskyBusiness 3
+
+privateSecuritySpecialist :: CardDef
+privateSecuritySpecialist =
+  (minion "02008" "Private Security Specialist" [Mercenary] [Boost, Star] RiskyBusiness 4)
+    { cdKeywords = singleton Guard
+    }
+
+goblinKnight :: CardDef
+goblinKnight = unique $ minion "02022" "Goblin Knight" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
+
+goblinSoldier :: CardDef
+goblinSoldier = minion "02023" "Goblin Soldier" [Goblin] [Star] MutagenFormula 4
+
+goblinThrall :: CardDef
+goblinThrall =
+  (minion "02024" "Goblin Thrall" [Goblin] [Star] MutagenFormula 6)
+    { cdKeywords = singleton Guard
+    }
+
+monster :: CardDef
+monster = unique $ minion "02025" "Monster" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
 scorpion :: CardDef
 scorpion =
   unique $
@@ -379,6 +472,13 @@ timeDisplacedSoldier =
   (minion "11048" "Time-Displaced Soldier" [Elite, Trait.Temporal] [Star] MasterOfTime 2)
     { cdKeywords = fromList [Incite 1, Surge]
     }
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+hydraHunter :: CardDef
+hydraHunter = minion "04101" "Hydra Hunter" [Hydra] [Star] Taskmaster 2
 
 -- The Wrecking Crew
 

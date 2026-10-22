@@ -15,7 +15,10 @@ data SearchOption
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-data ChoiceRules = DifferentCards
+data ChoiceRules
+  = DifferentCards
+  | -- | any of the cards, each once
+    AnyCards
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

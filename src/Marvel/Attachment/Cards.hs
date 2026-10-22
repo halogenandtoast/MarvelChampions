@@ -36,6 +36,9 @@ allAttachments =
       , pumpkinBombs
       , allTiedUp
       , mediaCoverage
+      , goblinGliderMutagenFormula
+      , hysteria
+      , pumpkinBombsMutagenFormula
 
       -- The Wrecking Crew
       , heldHostage
@@ -51,6 +54,23 @@ allAttachments =
       , rammingSpeed
 
       -- The Rise of Red Skull
+      , crossfiresRifle
+
+      -- Zola
+      , defensiveProgramming
+      , painInhibitors
+      , neurologicalImplants
+
+      -- Red Skull
+      , redSkullsLuger
+      , redSkullsRightHook
+      , masterStrategist
+      , twistedReality
+
+      -- Taskmaster
+      , taskmastersSword
+      , taskmastersShield
+      , photographicReflexes
 
       -- The Once and Future Kang
 
@@ -140,6 +160,38 @@ counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
 
+crossfiresRifle :: CardDef
+crossfiresRifle = (attachment "04029" "Crossfire's Rifle" [Weapon] [Boost, Boost] HawkeyeNemesis 1) {cdUnique = True}
+
+-- The Rise of Red Skull
+-- Zola
+
+defensiveProgramming :: CardDef
+defensiveProgramming = attachment "04117" "Defensive Programming" [Tech] [Boost] Zola 3
+
+painInhibitors :: CardDef
+painInhibitors = attachment "04118" "Pain Inhibitors" [Tech] [Boost] Zola 2
+
+neurologicalImplants :: CardDef
+neurologicalImplants = attachment "04119" "Neurological Implants" [Tech] [Boost] Zola 2
+
+-- Red Skull
+
+redSkullsLuger :: CardDef
+redSkullsLuger = unique $ attachment "04132" "Red Skull's Luger" [Weapon] [Star] RedSkull 1
+
+redSkullsRightHook :: CardDef
+redSkullsRightHook = attachment "04133" "Red Skull's Right Hook" [Skill] [Boost, Boost, Boost] RedSkull 2
+
+masterStrategist :: CardDef
+masterStrategist = attachment "04134" "Master Strategist" [Skill] [Boost, Boost] RedSkull 2
+
+twistedReality :: CardDef
+twistedReality =
+  (attachment "04135" "Twisted Reality" [Condition] [Boost, Boost] RedSkull 2)
+    { cdKeywords = singleton (Incite 1)
+    }
+
 -- The Green Goblin
 
 goblinGlider :: CardDef
@@ -153,6 +205,30 @@ allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
 
 mediaCoverage :: CardDef
 mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2
+
+goblinGliderMutagenFormula :: CardDef
+goblinGliderMutagenFormula =
+  (reprint "02019" goblinGlider) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
+
+hysteria :: CardDef
+hysteria = attachment "02020" "Hysteria" [Condition] [Boost] MutagenFormula 1
+
+pumpkinBombsMutagenFormula :: CardDef
+pumpkinBombsMutagenFormula =
+  (reprint "02021" pumpkinBombs) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+taskmastersSword :: CardDef
+taskmastersSword = unique $ attachment "04102" "Taskmaster's Sword" [Weapon] [Boost, Boost, Boost] Taskmaster 1
+
+taskmastersShield :: CardDef
+taskmastersShield = unique $ attachment "04103" "Taskmaster's Shield" [Armor, Weapon] [Boost, Boost, Boost] Taskmaster 1
+
+photographicReflexes :: CardDef
+photographicReflexes = attachment "04104" "Photographic Reflexes" [] [Boost, Boost] Taskmaster 2
 
 -- The Wrecking Crew
 

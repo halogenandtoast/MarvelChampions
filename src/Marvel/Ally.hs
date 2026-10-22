@@ -74,6 +74,21 @@ allAllies = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeAllyCard mockingbird
+  , SomeAllyCard hawkeyeKateBishop
+  , SomeAllyCard blackKnightDaneWhitman
+  , SomeAllyCard goliathBillFoster
+  , SomeAllyCard usAgentJohnWalker
+  , SomeAllyCard warMachine
+  , SomeAllyCard captainMarvelCarolDanvers
+  , SomeAllyCard spiderGirlAnyaCorazon
+  , SomeAllyCard spiderManPeterParker
+
+  -- Taskmaster
+  , SomeAllyCard moonKnightMarcSpector
+  , SomeAllyCard shangChi
+  , SomeAllyCard whiteTigerAngelaDelToro
+  , SomeAllyCard elektra
 
   -- The Once and Future Kang
 
