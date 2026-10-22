@@ -24,6 +24,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
+import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
@@ -1914,6 +1915,9 @@ gameSelectAttachment m = do
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
     AttachmentIs def -> pure . sameCard def . getCardDef
+    AttachmentWithTrait t -> pure . member t . cdTraits . getCardDef
+    AttachmentOnEnemy eid -> pure . (== Just eid) . Attachment.attachmentEnemy . toAttrs
+    AttachmentMatches xs -> \a -> allM (`matchFilter` a) xs
 
 gameSelectEnvironment ::
   (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)

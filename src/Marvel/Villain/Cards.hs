@@ -26,6 +26,12 @@ allVillainCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , crossbones1
+  , crossbones2
+  , crossbones3
+  , absorbingMan1
+  , absorbingMan2
+  , absorbingMan3
 
   -- The Once and Future Kang
 
@@ -87,3 +93,21 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+crossbones1 :: CardDef
+crossbones1 = villain "04058" "Crossbones" [Hydra, Mercenary]
+
+crossbones2 :: CardDef
+crossbones2 = villain "04059" "Crossbones" [Hydra, Mercenary]
+
+crossbones3 :: CardDef
+crossbones3 = villain "04060" "Crossbones" [Hydra, Mercenary]
+
+absorbingMan1 :: CardDef
+absorbingMan1 = villain "04076" "Absorbing Man" [Brute]
+
+absorbingMan2 :: CardDef
+absorbingMan2 = villain "04077" "Absorbing Man" [Brute]
+
+absorbingMan3 :: CardDef
+absorbingMan3 = villain "04078" "Absorbing Man" [Brute]

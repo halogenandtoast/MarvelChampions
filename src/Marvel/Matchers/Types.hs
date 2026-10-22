@@ -304,9 +304,24 @@ instance Semigroup ExtendedCardMatcher where
   ExtendedCardMatches xs <> y = ExtendedCardMatches $ xs <> [y]
   x <> y = ExtendedCardMatches [x, y]
 
-data AttachmentMatcher = AttachmentWithId AttachmentId | AttachmentIs CardDef
+data AttachmentMatcher
+  = AttachmentWithId AttachmentId
+  | AttachmentIs CardDef
+  | AttachmentWithTrait Trait
+  | -- | attached to the enemy
+    AttachmentOnEnemy EnemyId
+  | AttachmentMatches [AttachmentMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup AttachmentMatcher where
+  AttachmentMatches xs <> AttachmentMatches ys = AttachmentMatches $ xs <> ys
+  x <> AttachmentMatches ys = AttachmentMatches $ x : ys
+  AttachmentMatches xs <> y = AttachmentMatches $ xs <> [y]
+  x <> y = AttachmentMatches [x, y]
+
+instance Monoid AttachmentMatcher where
+  mempty = AttachmentMatches []
 
 data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef
   deriving stock (Show, Eq, Generic)

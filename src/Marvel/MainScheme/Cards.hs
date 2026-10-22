@@ -24,6 +24,10 @@ allMainSchemes =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , attackOnMountAthena
+    , theInfinityStone
+    , theGetaway
+    , noneShallPass
 
     -- The Once and Future Kang
 
@@ -72,3 +76,15 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+attackOnMountAthena :: CardDef
+attackOnMountAthena = mainScheme "04061" "Attack on Mount Athena" Crossbones
+
+theInfinityStone :: CardDef
+theInfinityStone = mainScheme "04062" "The Infinity Stone" Crossbones
+
+theGetaway :: CardDef
+theGetaway = mainScheme "04063" "The Getaway" Crossbones
+
+noneShallPass :: CardDef
+noneShallPass = mainScheme "04079" "None Shall Pass" AbsorbingMan

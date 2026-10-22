@@ -54,6 +54,11 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , hydraBomberCrossbones
+      , hydraFlameSoldier
+      , hydraJetTrooper
+      , hydraRegular
+      , hydraSoldierHydraPatrol
 
       -- The Once and Future Kang
 
@@ -286,3 +291,34 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- | The core set's Hydra Bomber, two of them in the Crossbones set.
+hydraBomberCrossbones :: CardDef
+hydraBomberCrossbones =
+  (reprint "04066" hydraBomber)
+    { cdEncounterSet = Just Crossbones
+    , cdEncounterSetQuantity = Just 2
+    }
+
+hydraFlameSoldier :: CardDef
+hydraFlameSoldier = minion "04145" "Hydra Flame-Soldier" [Hydra] [Star] HydraAssault 3
+
+hydraJetTrooper :: CardDef
+hydraJetTrooper =
+  (minion "04146" "Hydra Jet-Trooper" [Hydra] [Star] HydraAssault 2)
+    { cdKeywords = singleton Quickstrike
+    }
+
+hydraRegular :: CardDef
+hydraRegular =
+  (minion "04152" "Hydra Regular" [Hydra] [Boost, Boost] HydraPatrol 2)
+    { cdKeywords = singleton (Incite 1)
+    }
+
+-- | The core set's Hydra Soldier, three of them in the Hydra Patrol set.
+hydraSoldierHydraPatrol :: CardDef
+hydraSoldierHydraPatrol =
+  (reprint "04153" hydraSoldier)
+    { cdEncounterSet = Just HydraPatrol
+    , cdEncounterSetQuantity = Just 3
+    }

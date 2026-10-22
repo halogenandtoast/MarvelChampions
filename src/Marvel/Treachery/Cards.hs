@@ -60,6 +60,18 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , fullAuto
+  , hardAsNails
+  , raidTheArmory
+  , stallTactics
+  , swingingStone
+  , steelKick
+  , piercingThorns
+  , omniMorphDuplication
+  , icyGrip
+  , hailHydraHydraAssault
+  , weaponMaster
+  , concussionGrenade
 
   -- The Once and Future Kang
 
@@ -228,3 +240,47 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+fullAuto :: CardDef
+fullAuto = treachery "04067" "Full Auto" [Boost, Boost] Crossbones 2
+
+hardAsNails :: CardDef
+hardAsNails = treachery "04068" "Hard as Nails" [Star] Crossbones 2
+
+raidTheArmory :: CardDef
+raidTheArmory =
+  (treachery "04069" "Raid the Armory" [Boost] Crossbones 2)
+    { cdKeywords = singleton (Keyword.Incite 1)
+    }
+
+stallTactics :: CardDef
+stallTactics = treachery "04085" "Stall Tactics" [Star] AbsorbingMan 2
+
+swingingStone :: CardDef
+swingingStone = treachery "04086" "Swinging Stone" [Boost] AbsorbingMan 2
+
+steelKick :: CardDef
+steelKick = treachery "04087" "Steel Kick" [Boost, Boost] AbsorbingMan 2
+
+piercingThorns :: CardDef
+piercingThorns = treachery "04088" "Piercing Thorns" [Boost, Star] AbsorbingMan 2
+
+omniMorphDuplication :: CardDef
+omniMorphDuplication = treachery "04089" "Omni-Morph Duplication" [Boost] AbsorbingMan 3
+
+icyGrip :: CardDef
+icyGrip = treachery "04090" "Icy Grip" [Boost, Boost, Star] AbsorbingMan 2
+
+-- | Captain America's nemesis set's Hail Hydra!, in the Hydra Assault set.
+hailHydraHydraAssault :: CardDef
+hailHydraHydraAssault =
+  (reprint "04147" hailHydra)
+    { cdEncounterSet = Just HydraAssault
+    , cdBoostIcons = [Boost, Boost]
+    }
+
+weaponMaster :: CardDef
+weaponMaster = treachery "04150" "Weapon Master" [Boost] WeaponMaster 2
+
+concussionGrenade :: CardDef
+concussionGrenade = treachery "04151" "Concussion Grenade" [Boost] WeaponMaster 1
