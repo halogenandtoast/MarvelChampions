@@ -6,7 +6,9 @@ import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (TreacheryId)
+import Marvel.Game.Source (HasGame)
 import Marvel.Keyword qualified as Keyword
+import Marvel.Modifier
 import Marvel.Id as X (TreacheryId)
 import Marvel.Message.Lifted
 import Marvel.Ref
@@ -81,6 +83,13 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsTreach
   toTreacheryAttrs :: a -> Attrs Treachery
   default toTreacheryAttrs :: (Coercible a (Attrs Treachery)) => a -> Attrs Treachery
   toTreacheryAttrs = coerce
+  -- | What the treachery modifies while it is in play, as it resolves: "the villain
+  -- attacks with +2 ATK".
+  treacheryModifiersFor :: (HasGame m) => Source -> Target -> a -> m [Modifier]
+  treacheryModifiersFor _ _ _ = pure []
+
+instance HasModifiersFor Treachery where
+  getModifiersFor source target (Treachery a) = treacheryModifiersFor source target a
 
 type TreacheryCard a = CardBuilder TreacheryId a
 

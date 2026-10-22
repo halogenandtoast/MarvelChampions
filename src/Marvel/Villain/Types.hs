@@ -314,7 +314,7 @@ runVillainMessage msg attrs = case msg of
     if villainConfused attrs
       then pure $ attrs & confusedL .~ False
       else do
-        dealBoost attrs
+        dealActivationBoost
         villainStep vid VillainFlipBoostCards
         villainStep vid VillainSchemed
         clearBoosts
@@ -338,7 +338,7 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttack ident -> do
     attack' <- newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    dealBoost attrs
+    dealActivationBoost
     declareDefense ident vid AnyDefense
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked
@@ -391,6 +391,9 @@ runVillainMessage msg attrs = case msg of
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
+  dealActivationBoost = do
+    modifiers <- getModifiers attrs
+    unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
   newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 

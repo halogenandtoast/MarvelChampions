@@ -56,6 +56,12 @@ allTreacheries = fromList $ map
   , thoughtcasting
   , clashOfTheTitans
   -- The Green Goblin
+  , allInADaysWork
+  , madGenius
+  , deathFromAbove
+  , iSeeYou
+  , overconfidence
+  , wickedAmbitions
   , intimidation
   , regenerativeHealing
   , gangUpAMessOfThings
@@ -254,6 +260,23 @@ hailHydraSpiderWoman =
 
 -- The Green Goblin
 
+allInADaysWork :: CardDef
+allInADaysWork = treachery "02012" "All in a Day's Work" [Star] RiskyBusiness 4
+
+madGenius :: CardDef
+madGenius = treachery "02013" "Mad Genius" [Boost] RiskyBusiness 2
+
+deathFromAbove :: CardDef
+deathFromAbove = treachery "02029" "Death from Above" [Boost] MutagenFormula 2
+
+iSeeYou :: CardDef
+iSeeYou = treachery "02030" "I See You" [Boost, Star] MutagenFormula 1
+
+overconfidence :: CardDef
+overconfidence = treachery "02031" "Overconfidence" [Boost] MutagenFormula 1
+
+wickedAmbitions :: CardDef
+wickedAmbitions = treachery "02032" "Wicked Ambitions" [Boost] MutagenFormula 2
 intimidation :: CardDef
 intimidation = treachery "02035" "Intimidation" [Star, Boost] GoblinGimmicks 2
 

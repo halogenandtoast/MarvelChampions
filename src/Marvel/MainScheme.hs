@@ -30,6 +30,10 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard assaultOnNorad
   , SomeMainSchemeCard countdownToOblivion
   -- The Green Goblin
+  , SomeMainSchemeCard hostileTakeover
+  , SomeMainSchemeCard corporateAcquisition
+  , SomeMainSchemeCard unleashingTheMutagen
+  , SomeMainSchemeCard mutagenCloud
 
   -- The Wrecking Crew
 

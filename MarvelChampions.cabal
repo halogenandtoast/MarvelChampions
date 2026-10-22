@@ -98,6 +98,7 @@ library
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.GoblinGlider
+      Marvel.Attachment.Attachments.Hysteria
       Marvel.Attachment.Attachments.MediaCoverage
       Marvel.Attachment.Attachments.ProgramTransmitter
       Marvel.Attachment.Attachments.PumpkinBombs
@@ -137,6 +138,7 @@ library
       Marvel.Entity
       Marvel.Environment
       Marvel.Environment.Cards
+      Marvel.Environment.Environments.CriminalEnterprise
       Marvel.Environment.Types
       Marvel.Event
       Marvel.Event.Arrow
@@ -281,11 +283,15 @@ library
       Marvel.MainScheme.Cards
       Marvel.MainScheme.MainSchemes
       Marvel.MainScheme.MainSchemes.AssaultOnNorad
+      Marvel.MainScheme.MainSchemes.CorporateAcquisition
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
+      Marvel.MainScheme.MainSchemes.HostileTakeover
+      Marvel.MainScheme.MainSchemes.MutagenCloud
       Marvel.MainScheme.MainSchemes.SecretRendezvous
       Marvel.MainScheme.MainSchemes.TheBreakIn
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
+      Marvel.MainScheme.MainSchemes.UnleashingTheMutagen
       Marvel.MainScheme.Types
       Marvel.Matchers
       Marvel.Matchers.Types
@@ -324,6 +330,10 @@ library
       Marvel.Minion.Minions.EdisonsGiantRobot
       Marvel.Minion.Minions.Electro
       Marvel.Minion.Minions.FrostGiant
+      Marvel.Minion.Minions.GoblinKnight
+      Marvel.Minion.Minions.GoblinSoldier
+      Marvel.Minion.Minions.GoblinThrall
+      Marvel.Minion.Minions.HiredGun
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.HydraRegular
@@ -334,6 +344,8 @@ library
       Marvel.Minion.Minions.MadameHydra
       Marvel.Minion.Minions.Melter
       Marvel.Minion.Minions.Modok
+      Marvel.Minion.Minions.Monster
+      Marvel.Minion.Minions.PrivateSecuritySpecialist
       Marvel.Minion.Minions.RadioactiveMan
       Marvel.Minion.Minions.Sandman
       Marvel.Minion.Minions.Scorpion
@@ -398,11 +410,14 @@ library
       Marvel.SideScheme.SideSchemes.AMessOfThings
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.CollapsingBridge
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.DefenseNetwork
       Marvel.SideScheme.SideSchemes.DroneFactory
       Marvel.SideScheme.SideSchemes.FamilyFeud
       Marvel.SideScheme.SideSchemes.GenerationWhy
+      Marvel.SideScheme.SideSchemes.GoblinNation
+      Marvel.SideScheme.SideSchemes.GoblinReinforcements
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.HitSquad
       Marvel.SideScheme.SideSchemes.IllegalArmsFactory
@@ -413,6 +428,9 @@ library
       Marvel.SideScheme.SideSchemes.LightOfCenturiesSphere
       Marvel.SideScheme.SideSchemes.MarkedForDeath
       Marvel.SideScheme.SideSchemes.OpenTheDarkDimension
+      Marvel.SideScheme.SideSchemes.OscorpManufacturing
+      Marvel.SideScheme.SideSchemes.Overrun
+      Marvel.SideScheme.SideSchemes.Payoff
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.PowerDrain
       Marvel.SideScheme.SideSchemes.RunningInterference
@@ -469,6 +487,7 @@ library
       Marvel.Treachery.Cards
       Marvel.Treachery.Treacheries
       Marvel.Treachery.Treacheries.Advance
+      Marvel.Treachery.Treacheries.AllInADaysWork
       Marvel.Treachery.Treacheries.AncientGrudge
       Marvel.Treachery.Treacheries.AndroidEfficiency
       Marvel.Treachery.Treacheries.Assault
@@ -476,6 +495,7 @@ library
       Marvel.Treachery.Treacheries.ClashOfTheTitans
       Marvel.Treachery.Treacheries.ConcussiveBlast
       Marvel.Treachery.Treacheries.DeadlyShot
+      Marvel.Treachery.Treacheries.DeathFromAbove
       Marvel.Treachery.Treacheries.ElectricWhipAttack
       Marvel.Treachery.Treacheries.ElectromagneticBacklash
       Marvel.Treachery.Treacheries.ElectromagneticPulse
@@ -489,12 +509,15 @@ library
       Marvel.Treachery.Treacheries.HeartShapedHerb
       Marvel.Treachery.Treacheries.ImTough
       Marvel.Treachery.Treacheries.Intimidation
+      Marvel.Treachery.Treacheries.ISeeYou
       Marvel.Treachery.Treacheries.KangsChosen
       Marvel.Treachery.Treacheries.KlawsVengeance
       Marvel.Treachery.Treacheries.KreeManipulator
       Marvel.Treachery.Treacheries.LightningBolt
+      Marvel.Treachery.Treacheries.MadGenius
       Marvel.Treachery.Treacheries.Masterplan
       Marvel.Treachery.Treacheries.MastersOfMayhem
+      Marvel.Treachery.Treacheries.Overconfidence
       Marvel.Treachery.Treacheries.RageOfUltron
       Marvel.Treachery.Treacheries.RegenerativeHealing
       Marvel.Treachery.Treacheries.RepairSequence
@@ -513,6 +536,7 @@ library
       Marvel.Treachery.Treacheries.TitaniasFury
       Marvel.Treachery.Treacheries.Trickster
       Marvel.Treachery.Treacheries.UnderFire
+      Marvel.Treachery.Treacheries.WickedAmbitions
       Marvel.Treachery.Treacheries.YonRoggsTreason
       Marvel.Treachery.Types
       Marvel.Upgrade
@@ -594,7 +618,9 @@ library
       Marvel.Villain
       Marvel.Villain.Cards
       Marvel.Villain.Types
+      Marvel.Villain.Villains.GreenGoblin
       Marvel.Villain.Villains.Klaw
+      Marvel.Villain.Villains.NormanOsborn
       Marvel.Villain.Villains.Rhino
       Marvel.Villain.Villains.Ultron
       Marvel.Window
@@ -768,6 +794,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.GreenGoblinSpec
       Marvel.Encounter.HulkNemesisSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.ModularsSpec

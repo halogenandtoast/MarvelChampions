@@ -4,10 +4,10 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+import Marvel.GameValue (fromGameValue)
 
 import Control.Monad (replicateM_)
 import Control.Monad.Reader
-import Marvel.GameValue (fromGameValue)
 import Data.Aeson.Diff qualified as Diff
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
@@ -25,7 +25,7 @@ import Marvel.Ally.Types (allyOwner, allyUpgrades, getAllyController, getAllyDam
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment)
+import Marvel.Attachment.Types (Attachment, Field (AttachmentCounters))
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attack
 import Marvel.Card
@@ -42,7 +42,7 @@ import Marvel.Effect
 import Marvel.Effect.Types (Effect)
 import Marvel.EncounterSet
 import Marvel.Environment
-import Marvel.Environment.Types (Environment)
+import Marvel.Environment.Types (Environment, Field (EnvironmentCounters))
 import Marvel.Entity
 import Marvel.Event
 import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets)
@@ -54,7 +54,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types (Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
@@ -490,6 +490,14 @@ getEnemyPrintedHitPoints = \case
       Just v -> fromIntegral <$> fromGameValue (unHp $ Villain.villainStartingHp $ toAttrs v)
   EnemyMinionId mid -> getsGame $ maybe 0 (unHp . getMinionPrintedHitPoints) . lookup mid . gameMinions
 
+-- | The counters on the environment, main scheme or attachment.
+getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
+getCountersOn a = getsGame \g -> case toTarget a of
+  EnvironmentRef eid -> maybe 0 (field EnvironmentCounters) (lookup eid $ gameEnvironments g)
+  MainSchemeRef mid -> maybe 0 (field MainSchemeCounters) (lookup mid $ gameMainSchemes g)
+  AttachmentRef aid -> maybe 0 (field AttachmentCounters) (lookup aid $ gameAttachments g)
+  _ -> 0
+
 -- | How many cards in play have the trait: of every type, each identity one card.
 countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
 countCardsInPlayWithTrait t = do
@@ -827,7 +835,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               & (entitiesL . minionsL %~ insertMap (toId minion) minion)
               & (boostCardsL %~ deleteMap target)
         _ -> error "messed up somewhere"
-    _ -> error "Unhandled"
+    -- any other card ("put Goblin Nation into play") enters play as it would revealed,
+    -- without its windows, and is no longer a boost card to discard
+    _ -> case lookup target gameBoostCards of
+      Just card -> do
+        putEncounterCardIntoPlay ident card
+        pure $ g & boostCardsL %~ deleteMap target
+      Nothing -> pure g
   RevealBoostCard card enemyId -> do
     player <- getActivePlayerId
     let
@@ -980,6 +994,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & intoAreaOf ident (\a -> a {areaSideSchemes = areaSideSchemes a <> [toId sideScheme]})
       EnvironmentType -> do
         let environment = createEnvironment card
+        environmentStep (toId environment) EnvironmentEntered
         pure $
           g
             & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
@@ -1707,6 +1722,12 @@ gameSelectIdentity m = do
         fp : _ -> toId a == fp
         _ -> False
     You -> \a -> (== toId a) <$> getYou
+    IdentityWithFewestRemainingHitPoints m' -> \a -> do
+      candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gamePlayers
+      remaining <- for candidates \p -> (toId p,) . subtractNatural (identityDamage p) <$> getModifiedHp p
+      pure $ case find ((== toId a) . fst) remaining of
+        Just (_, mine) -> all ((>= mine) . snd) remaining
+        Nothing -> False
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
@@ -2015,6 +2036,7 @@ gameSelectEnemy m = do
     EnemyWithAttachment m' -> not . null . HashSet.intersection (Villain.villainAttachments $ toAttrs e) <$> select m'
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
+    EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
     ConfusedEnemy -> pure $ Villain.villainConfused (toAttrs e)
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
@@ -2037,6 +2059,7 @@ gameSelectEnemy m = do
     EnemyWithAttachment m' -> not . null . HashSet.intersection (minionAttachments $ toAttrs e) <$> select m'
     EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
+    EnemyWithTrait t -> member t <$> getTraits e
     ConfusedEnemy -> pure $ minionConfused (toAttrs e)
 
   -- a player kept from attacking the enemy's title (Fear of Kang)
@@ -2047,6 +2070,7 @@ gameSelectEnemy m = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
     pure $ foldl' max 0 (villains <> minions)
+
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
@@ -2227,6 +2251,7 @@ getModifiers a = withDepthGuard 2 $ do
   sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
+  treacheries <- HashMap.elems <$> getsGame gameTreacheries
   obligations <- HashMap.elems <$> getsGame gameObligations
   -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
   -- allies only, the one kind so far that does
@@ -2253,6 +2278,7 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) villains
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) environments
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) treacheries
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) obligations
       ]
 
@@ -2302,6 +2328,7 @@ getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getHazardCountIn aid = getsGame \g ->
   sum (map (cdHazards . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdHazards . getCardDef) (inArea g aid VillainRef (gameVillains g)))
+    + sum (map (cdHazards . getCardDef) (inArea g aid MainSchemeRef (gameMainSchemes g)))
 
 -- | The cards of the map in the area.
 inArea :: Game -> AreaId -> (k -> Target) -> HashMap k a -> [a]
@@ -2316,6 +2343,7 @@ getAccelerationCountIn aid = getsGame \g ->
   scenarioAccelerationTokens (gameScenario g)
     + sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
+    + sum (map (cdAcceleration . getCardDef) (inArea g aid MainSchemeRef (gameMainSchemes g)))
 
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural

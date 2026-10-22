@@ -20,6 +20,10 @@ allMainSchemes =
     , assaultOnNorad
     , countdownToOblivion
     -- The Green Goblin
+    , hostileTakeover
+    , corporateAcquisition
+    , unleashingTheMutagen
+    , mutagenCloud
 
     -- The Wrecking Crew
 
@@ -72,3 +76,17 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- The Green Goblin
+
+hostileTakeover :: CardDef
+hostileTakeover = mainScheme "02004" "Hostile Takeover" RiskyBusiness
+
+corporateAcquisition :: CardDef
+corporateAcquisition = (mainScheme "02005" "Corporate Acquisition" RiskyBusiness) {cdHazards = 1}
+
+unleashingTheMutagen :: CardDef
+unleashingTheMutagen = mainScheme "02017" "Unleashing the Mutagen" MutagenFormula
+
+mutagenCloud :: CardDef
+mutagenCloud = mainScheme "02018" "Mutagen Cloud" MutagenFormula

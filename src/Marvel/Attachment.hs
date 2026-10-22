@@ -5,6 +5,7 @@ module Marvel.Attachment where
 import Marvel.Prelude
 
 import Marvel.Attachment.Attachments
+import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Id
@@ -43,6 +44,9 @@ allAttachments =
       , SomeAttachmentCard pumpkinBombs
       , SomeAttachmentCard allTiedUp
       , SomeAttachmentCard mediaCoverage
+      , SomeAttachmentCard (reprintAs Cards.goblinGliderMutagenFormula goblinGlider)
+      , SomeAttachmentCard hysteria
+      , SomeAttachmentCard (reprintAs Cards.pumpkinBombsMutagenFormula pumpkinBombs)
 
       -- The Wrecking Crew
 

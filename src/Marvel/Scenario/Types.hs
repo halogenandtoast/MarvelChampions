@@ -327,6 +327,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleEncounterDeck -> do
       deck' <- shuffleM scenarioEncounterDeck
       pure $ attrs & encounterDeckL .~ deck'
+    -- from wherever they are: set aside, or the discard pile, as a boost card is
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       -- from wherever they were: the set-aside area or the discard pile

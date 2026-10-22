@@ -45,6 +45,8 @@ data IdentityMatcher
     IdentityCanThwart
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm
+  | -- | of the identities matching, those with the fewest hit points remaining
+    IdentityWithFewestRemainingHitPoints IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -160,6 +162,7 @@ data EnemyMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
     EnemyWithHighestAttack
   | StunnedEnemy
+  | EnemyWithTrait Trait
   | ConfusedEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
