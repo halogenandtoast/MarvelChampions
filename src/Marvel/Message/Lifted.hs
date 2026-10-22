@@ -435,11 +435,6 @@ checkWindows = push . CheckWindows
 
 -- * Encounter cards
 
--- | Damage to the character as a card deals it: to a hero or alter-ego through
--- 'damageIdentity'.
-damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
-damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
-
 -- | Threat placed on each scheme matching, by the card.
 placeThreatMatching :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
 placeThreatMatching you source n = Choice.pushChoice you . PlaceThreat (toSource source) n
@@ -449,9 +444,6 @@ confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
 
 stunAlly :: (ReverseQueue m) => AllyId -> m ()
 stunAlly ally = push $ AllyMessage ally AllyStunned
-
-exhaustAlly :: (ReverseQueue m) => AllyId -> m ()
-exhaustAlly ally = push $ AllyMessage ally Msg.ExhaustedAlly
 
 -- | The villain or minion is given a tough status card.
 enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()

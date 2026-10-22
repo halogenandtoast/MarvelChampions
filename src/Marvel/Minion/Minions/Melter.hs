@@ -33,6 +33,6 @@ instance RunMessage Melter where
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         allies <- selectList (AllyControlledBy You <> UnexhaustedAlly)
-        e <$ for_ allies exhaustAlly
+        e <$ for_ allies exhaust
       _ -> Melter <$> runMessage msg attrs
     _ -> Melter <$> runMessage msg attrs
