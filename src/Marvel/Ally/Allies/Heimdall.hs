@@ -32,7 +32,7 @@ instance RunMessage Heimdall where
       lookAtTopOfEncounterDeck 3 a
       pure a
     SearchFoundCards (isTarget a -> True) (onlyEncounterCards -> cards) -> do
-      focusing (EncounterCard <$> cards) $
+      lookingAt (allyController attrs) (EncounterCard <$> cards) $
         chooseOnePromptedAbout (allyController attrs) "$label.chooseCardToDiscard" a
           [ targeting c do
               discardCard c

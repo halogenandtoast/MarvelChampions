@@ -46,6 +46,8 @@ instance Entity Support where
     { supportId :: SupportId
     , supportCardDef :: CardDef
     , supportController :: IdentityId
+    , supportOwner :: IdentityId
+    -- ^ whose deck it came from, and whose discard pile it goes to
     , supportExhausted :: Bool
     , supportUses :: Natural
     , supportDiscardIfNoUses :: Bool
@@ -127,7 +129,7 @@ instance IsCard (Attrs Support) where
       MkPlayerCard
         { pcCardId = CardId . unSupportId $ supportId a
         , pcCardDef = supportCardDef a
-        , pcOwner = Just $ supportController a
+        , pcOwner = Just $ supportOwner a
         , pcController = Just $ supportController a
         }
 
@@ -149,6 +151,7 @@ support f cardDef =
             { supportId = mid
             , supportCardDef = cardDef
             , supportController = ident
+            , supportOwner = ident
             , supportExhausted = False
             , supportUses = 0
             , supportDiscardIfNoUses = False
@@ -170,4 +173,5 @@ instance RunMessage (Attrs Support) where
       SpendSupportUse -> do
         when (supportUses a == 1 && supportDiscardIfNoUses a) $ removeFromPlay a
         pure $ a & usesL -~ 1
+      SupportOwnedBy owner -> pure a {supportOwner = owner}
     _ -> pure a

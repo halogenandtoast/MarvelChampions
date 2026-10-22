@@ -739,10 +739,12 @@ readyForAction =
     { cdCriteria = AllyExists (AllyControlledBy You)
     }
 
--- | "Exhaust an Avenger character you control" is resolved with the effect: one ready
--- to exhaust, and another to ready, are needed.
+-- | "Exhaust an Avenger character you control" is part of its cost.
 earthsMightiestHeroes :: CardDef
-earthsMightiestHeroes = basicEvent "04022" "Earth's Mightiest Heroes" 0 HeroAction [] [Energy]
+earthsMightiestHeroes =
+  (basicEvent "04022" "Earth's Mightiest Heroes" 0 HeroAction [] [Energy])
+    { cdAbilityCost = ExhaustCharacterWithTraitCost Avenger
+    }
 
 venomBlast :: CardDef
 venomBlast =

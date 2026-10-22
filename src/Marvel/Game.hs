@@ -21,7 +21,7 @@ import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
 import Marvel.Area
-import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types (allyOwner, allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
@@ -175,6 +175,8 @@ data Game = Game
   , gameWindows :: [[Window]]
   , gameScenario :: Scenario
   , gameFocusedCards :: [Card]
+  , gamePrivateCards :: HashMap IdentityId [Card]
+  -- ^ cards shown to one player only, as they look at them
   , gameBoostCards :: HashMap Target EncounterCard
   , gameQuestionVersion :: Int
   -- ^ bumped with each question asked, so a stale answer is refused
@@ -772,23 +774,26 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case cdCardType (getCardDef card) of
       AllyType -> do
         let ally = createAlly ident card
+        allyStep (toId ally) (AllyOwnedBy $ fromMaybe ident $ pcOwner card)
         allyStep (toId ally) (AllyPaidWith payment)
         when (Toughness `member` cdKeywords (getCardDef card)) $ push $ GiveStatus (AllyRef $ toId ally) ToughStatus
         identityStep ident (AllyCreated $ toId ally)
         checkWindows [W.Window After $ W.PlayedAlly (toId ally)]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
       SupportType -> do
-        -- played under the control of the player it was played on, if any. ponytail: it
-        -- goes to that player's discard pile too, the support keeping no owner
+        -- played under the control of the player it was played on, if any; it stays its
+        -- owner's, whose discard pile it goes to (RR Owner)
         let controller = case paymentTarget payment of
               Just (IdentityRef p) -> p
               _ -> ident
             support = createSupport controller card
+        supportStep (toId support) (SupportOwnedBy $ fromMaybe ident $ pcOwner card)
         identityStep controller (SupportCreated $ toId support)
         checkWindows [W.Window After $ W.PlayedSupport (toId support)]
         pure $ g & (entitiesL . supportsL %~ insertMap (toId support) support)
       UpgradeType -> do
         let upgrade = createUpgrade ident card
+        upgradeStep (toId upgrade) (UpgradeOwnedBy $ fromMaybe ident $ pcOwner card)
         upgradeStep (toId upgrade) (PlayedUpgrade $ paymentTarget payment)
         pure $ g & (entitiesL . upgradesL %~ insertMap (toId upgrade) upgrade)
       EventType -> do
@@ -1054,11 +1059,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     clearQueue
     pure $ g & stateL .~ Finished status
   ReturnToHand target -> case target of
+    -- to its owner's hand
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let controller = getAllyController ally
+            owner = allyOwner (toAttrs ally)
         identityStep controller (AllyRemoved aid)
-        addToHand controller $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just controller) (Just controller)
+        addToHand owner $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
       pure $ g & entitiesL . alliesL %~ deleteMap aid
     -- to its owner's hand
     UpgradeRef uid -> do
@@ -1086,6 +1093,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   SetSignatureScheme vid sid -> pure $ g & signatureSchemesL %~ insertMap vid sid
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
+  ShowCardsTo ident cards -> pure $ g & privateCardsL . at ident ?~ cards
+  HideCardsFrom ident -> pure $ g & privateCardsL . at ident .~ Nothing
   -- everyone may respond, the active player first, then the others in player order;
   -- forced abilities resolve before anyone is asked
   CheckWindows windows -> do
@@ -1369,6 +1378,7 @@ newGame player scenario =
     , gameYou = Nothing
     , gameScenario = scenario
     , gameFocusedCards = []
+    , gamePrivateCards = mempty
     , gameBoostCards = mempty
     , gameQuestionVersion = 0
     , gameRound = 1
@@ -1700,6 +1710,7 @@ gameSelectIdentity m = do
     IdentityWithId ident' -> pure . (== ident') . toId
     IdentityWithTrait trait -> fmap (member trait) . getTraits
     IdentityWithTitle t -> pure . (== t) . title . cdName . getCardDef
+    IdentityIs def -> pure . (== toBaseCardCode (cdCardCode def)) . toBaseCardCode . toCardCode
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs

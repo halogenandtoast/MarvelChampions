@@ -787,6 +787,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.LeadershipSpec
       Marvel.Aspect.MsMarvelPackSpec
       Marvel.Aspect.ProtectionSpec
+      Marvel.Aspect.RiseOfRedSkullPackSpec
       Marvel.Aspect.ThorPackSpec
       Marvel.CoverageSpec
       Marvel.Encounter.BlackWidowNemesisSpec

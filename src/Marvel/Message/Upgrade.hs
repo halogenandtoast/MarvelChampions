@@ -7,6 +7,8 @@ import Marvel.Ref
 
 data UpgradeMessage
   = ExhaustedUpgrade
+  | -- | whose deck it came from, and whose discard pile it goes to
+    UpgradeOwnedBy IdentityId
   | DiscardUpgrade
   | ReadiedUpgrade
   | -- | on what it was played, chosen before its cost was paid

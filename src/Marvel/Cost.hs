@@ -63,6 +63,11 @@ canAffordCost identityId source = go
     ExhaustAlliesCost n _ ->
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
+    ExhaustCharacterWithTraitCost t ->
+      orM
+        [ selectAny (IdentityWithId identityId <> UnexhaustedIdentity <> IdentityWithTrait t)
+        , selectAny (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId) <> AllyWithTrait t)
+        ]
     DiscardEncounterCardsUntilMinionCost -> pure True
     TargetPrintedCost -> pure True
     ExhaustCost -> case source of

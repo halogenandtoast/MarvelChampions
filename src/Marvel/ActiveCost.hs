@@ -19,6 +19,7 @@ import Marvel.Damage
 import Marvel.Discard
 import Marvel.Hand
 import Marvel.Game.Source
+import Marvel.Id (CharacterId (..))
 import Marvel.Identity.Types
 import Marvel.Message.Lifted
 import Marvel.Payment
@@ -103,6 +104,12 @@ payCostPart activeCost = go
                   payCost acid (ExhaustAlliesCost (subtractNatural 1 n) (subtract 1 <$> m))
                | a <- allies
                ]
+    ExhaustCharacterWithTraitCost t -> do
+      you <- selectList (IdentityWithId iid <> UnexhaustedIdentity <> IdentityWithTrait t)
+      allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid) <> AllyWithTrait t)
+      chooseOrRunOne iid $
+        [targeting i (exhaust i >> paid (ExhaustedCharacterPayment $ IdentityCharacter i)) | i <- you]
+          <> [targeting a (exhaust a >> paid (ExhaustedCharacterPayment $ AllyCharacter a)) | a <- allies]
     DiscardEncounterCardsUntilMinionCost ->
       discardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)
     -- added to the resources as the card was played
