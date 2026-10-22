@@ -12,7 +12,6 @@ import Data.HashSet qualified as HashSet
 import Data.List (partition)
 import Marvel.Ability
 import Marvel.ActiveCost
-import Marvel.Ally (lookupAlly)
 import Marvel.AlterEgo
 import Marvel.AlterEgo.Types
 import Marvel.Attack
@@ -354,17 +353,9 @@ checkPlayLimits ident c = case cdLimit def of
 
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
-  modifiers <- getModifiers attrs
-  own <- ownModifiers
-  pure $ maybe 0 (modifiedCost $ modifiers <> own) (cdCost $ getCardDef c)
+  modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
+  pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
  where
-  -- a card may change its own cost, as Hercules does, from the hand it is played from.
-  -- ponytail: allies only, as only an ally does so far
-  ownModifiers = case cdCardType (getCardDef c) of
-    AllyType ->
-      getModifiersFor (toSource c) (toTarget c) $
-        lookupAlly (toCardCode c) (toId attrs) (AllyId $ unCardId $ pcCardId c)
-    _ -> pure []
   modifiedCost ms cost' = foldr applyModifier cost' ms
   applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
   applyModifier (ResourceCostReductionFor m n) | cardMatch m c = max 0 . subtract (fromIntegral n)
@@ -865,12 +856,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- what answers "would be defeated" may take the defeat off the queue
       pushAll $
         attackDealtDamage source damage (IdentityCharacter playerIdentityId)
-          <> concat
-            [ [ CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId]
-              , IdentityMessage playerIdentityId IdentityDefeated
-              ]
-            | playerIdentityDamage + damageAmount damage >= modifiedHp
-            ]
+          <> [ msg'
+             | playerIdentityDamage + damageAmount damage >= modifiedHp
+             , msg' <- [CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId], IdentityMessage playerIdentityId IdentityDefeated]
+             ]
+          <> [CheckWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage] | damageAmount damage > 0]
       pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
     IdentityDefeated -> do
       players <- getPlayers

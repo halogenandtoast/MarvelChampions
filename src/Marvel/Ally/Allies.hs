@@ -23,6 +23,9 @@ import Marvel.Ally.Allies.WonderManSimonWilliams as X
 import Marvel.Ally.Allies.RedDagger as X
 import Marvel.Ally.Allies.NovaSamAlexander as X
 import Marvel.Ally.Allies.Lockjaw as X
+import Marvel.Ally.Allies.WinterSoldierBuckyBarnes as X
+import Marvel.Ally.Allies.AgentCoulson as X
+import Marvel.Ally.Allies.QuakeDaisyJohnson as X
 import Marvel.Ally.Allies.LadySif as X
 import Marvel.Ally.Allies.Hercules as X
 import Marvel.Ally.Allies.Valkyrie as X

@@ -41,6 +41,8 @@ allMinions =
       , hydraSoldierCaptainAmerica
       , thomasEdison
       , edisonsGiantRobot
+      , taskmaster
+      , hydraMercenaryBlackWidow
       , loki
       , frostGiant
       ]
@@ -235,6 +237,20 @@ thomasEdison =
 edisonsGiantRobot :: CardDef
 edisonsGiantRobot =
   unique $ minion "05028" "Edison's Giant Robot" [Robot] [Boost] MsMarvelNemesis 1
+
+taskmaster :: CardDef
+taskmaster =
+  (minion "08026" "Taskmaster" [Hydra, Elite] [Star] BlackWidowNemesis 1)
+    { cdUnique = True
+    }
+
+-- | Hydra Mercenary in Black Widow's nemesis set.
+hydraMercenaryBlackWidow :: CardDef
+hydraMercenaryBlackWidow =
+  (reprint "08028" hydraMercenary)
+    { cdEncounterSet = Just BlackWidowNemesis
+    , cdEncounterSetQuantity = Just 2
+    }
 
 loki :: CardDef
 loki = unique $ minion "06028" "Loki" [Trait.Asgard] [Boost, Boost, Boost] ThorNemesis 1

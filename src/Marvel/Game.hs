@@ -332,6 +332,10 @@ getActivePlayer = getsGame $ \g ->
 
 runPreGameMessage :: (HasQueue m, HasGame m) => Message -> Game -> m Game
 runPreGameMessage msg g = case msg of
+  -- pushed before the card answers, so the window follows what the ability does
+  RanAbility ident target _ _ _ | Just def <- abilityCardDef g target -> do
+    push $ CheckWindows [W.Window After $ W.ResolvedAbility ident def]
+    pure g
   CheckWindows windows -> do
     push EndCheckWindows
     pure $ g & windowDepthL +~ 1 & windowsL %~ (windows :)
@@ -383,12 +387,8 @@ runGameMessage msg g@Game {..} = case msg of
     pure g
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
-  -- a limit of once per phase starts over with each phase
   BeginPhase phase ->
-    pure $
-      g
-        & phaseL .~ phase
-        & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
+    pure $ g & phaseL .~ phase & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do
     let order = case gamePlayerOrder of
@@ -574,24 +574,31 @@ runGameMessage msg g@Game {..} = case msg of
     _ -> error "Unhandled"
   RevealBoostCard card enemyId -> do
     player <- getActivePlayerId
+    let
+      -- after it is turned faceup, before its boost ability resolves
+      turnedFaceup target =
+        pushAll
+          [ CheckWindows [W.Window After $ W.FlippedBoostCard card enemyId]
+          , RevealedAsBoost target enemyId
+          ]
     case cdCardType (getCardDef card) of
       TreacheryType -> do
         let treachery = createTreachery card
-        push (RevealedAsBoost (toTarget treachery) enemyId)
+        turnedFaceup (toTarget treachery)
         pure $
           g
             & (boostEntitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
             & (boostCardsL . at (toTarget treachery) ?~ card)
       MinionType -> do
         let minion = createMinion player card
-        push (RevealedAsBoost (toTarget minion) enemyId)
+        turnedFaceup (toTarget minion)
         pure $
           g
             & (boostEntitiesL . minionsL %~ insertMap (toId minion) minion)
             & (boostCardsL . at (toTarget minion) ?~ card)
       AttachmentType -> do
         let attachment = createAttachment card
-        push (RevealedAsBoost (toTarget attachment) enemyId)
+        turnedFaceup (toTarget attachment)
         pure $
           g
             & ( boostEntitiesL
@@ -601,7 +608,7 @@ runGameMessage msg g@Game {..} = case msg of
             & (boostCardsL . at (toTarget attachment) ?~ card)
       ObligationType -> do
         let obligation = createObligation card
-        push (RevealedAsBoost (toTarget obligation) enemyId)
+        turnedFaceup (toTarget obligation)
         pure $
           g
             & ( boostEntitiesL
@@ -611,7 +618,7 @@ runGameMessage msg g@Game {..} = case msg of
             & (boostCardsL . at (toTarget obligation) ?~ card)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
-        push (RevealedAsBoost (toTarget sideScheme) enemyId)
+        turnedFaceup (toTarget sideScheme)
         pure $
           g
             & ( boostEntitiesL
@@ -827,12 +834,15 @@ runGameMessage msg g@Game {..} = case msg of
     abilities <- getAbilitiesFor ident
     usedAbilities <- getUsedAbilities
     attrs <- getIdentity ident
-    -- a treachery's reveal is cancelled by taking it off the queue: its window then
-    -- closes, so a second cancel is not offered
+    -- a treachery's reveal, or an encounter card's, is cancelled by taking it off the
+    -- queue: its window then closes, so a second cancel is not offered
     -- likewise damage prevented in full: nothing more answers it
     let open = \case
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
+            _ -> False
+          W.Window _ (W.EncounterCardRevealed _ card) -> isQueued \case
+            RevealedEncounterCard _ card' -> card' == card
             _ -> False
           W.Window _ (W.IdentityTakeDamage iid _) -> isQueued \case
             IdentityMessage iid' (IdentityDamaged _ _) -> iid' == iid
@@ -1215,6 +1225,16 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
       <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
 
+-- | The def of the player card an ability is on: in play, or an upgrade just discarded
+-- to pay for it.
+abilityCardDef :: Game -> Target -> Maybe CardDef
+abilityCardDef g = \case
+  UpgradeRef uid ->
+    getCardDef <$> (lookup uid (gameUpgrades g) <|> lookup uid (g ^. removedEntitiesL . upgradesL))
+  SupportRef sid -> supportCardDef . toAttrs <$> lookup sid (gameSupports g)
+  AllyRef aid -> getCardDef <$> lookup aid (gameAllies g)
+  _ -> Nothing
+
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on
 -- encounter cards are anyone's.
 abilityController :: Game -> Ability -> Maybe IdentityId
@@ -1436,6 +1456,16 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  CharacterControlledBy identityMatcher -> do
+    identities <- selectMap IdentityCharacter identityMatcher
+    allies <- selectMap AllyCharacter (AllyControlledBy identityMatcher)
+    pure . HashSet.fromList $ identities <> allies
+  CharacterWithTrait t -> do
+    villains <- getsGame $ map (VillainCharacter . toId) . filter (member t . cdTraits . getCardDef) . HashMap.elems . gameVillains
+    minions <- selectMap MinionCharacter (MinionWithTrait t)
+    identities <- selectMap IdentityCharacter (IdentityWithTrait t)
+    allies <- selectMap AllyCharacter (AllyWithTrait t)
+    pure . HashSet.fromList $ villains <> minions <> identities <> allies
   CharacterMatches [] -> pure mempty
   CharacterMatches (x : xs) ->
     foldl' HashSet.intersection
@@ -1602,6 +1632,10 @@ gameSelectUpgrade m = do
           && isNothing (upgradeAttachedAlly a)
           && isNothing (upgradeAttachedEnemy a)
           && isNothing (upgradeAttachedSideScheme a)
+    UpgradeWithHighestCostAmong m' -> \upgrade -> do
+      candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gameUpgrades
+      let cost = fromMaybe 0 . cdCost . getCardDef
+      pure $ toId upgrade `elem` map toId candidates && cost upgrade == maximum (map cost candidates)
 
 gameSelectAttachment ::
   (HasGame m) => AttachmentMatcher -> m (HashSet AttachmentId)
@@ -1848,9 +1882,21 @@ getModifiers a = withDepthGuard 2 $ do
   sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
+  -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
+  -- allies only, the one kind so far that does
+  inHand <- case toTarget a of
+    CardIdRef cid -> getsGame \g ->
+      [ createAlly (toId p) c
+      | p <- HashMap.elems (gamePlayers g)
+      , c <- unHand (playerIdentityHand $ toAttrs p)
+      , pcCardId c == cid
+      , cdCardType (getCardDef c) == AllyType
+      ]
+    _ -> pure []
   mconcat
     <$> sequence
       [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) inHand
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments

@@ -37,7 +37,7 @@ packCards pack = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "thor"]
+packs = ["core", "cap", "msm", "bkw", "thor"]
 
 spec :: Spec
 spec = for_ packs \pack -> describe (show pack) do

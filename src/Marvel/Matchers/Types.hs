@@ -122,6 +122,8 @@ data UpgradeMatcher
   | UpgradeOneOf [UpgradeMatcher]
   | -- | on an identity matching: controlled by it, and attached to nothing else
     UpgradeOnIdentity IdentityMatcher
+  | -- | of the upgrades matching, those with the highest printed cost
+    UpgradeWithHighestCostAmong UpgradeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -144,7 +146,8 @@ data EnemyMatcher
   | EnemyWithUpgrade UpgradeMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
-  | AttackingEnemy
+  | -- | an enemy whose attack is under way
+    AttackingEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -237,6 +240,9 @@ data CharacterMatcher
   | DamageableCharacter
   | AnyCharacter
   | CharacterMatches [CharacterMatcher]
+  | -- | the identities and allies of the players matching
+    CharacterControlledBy IdentityMatcher
+  | CharacterWithTrait Trait
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -252,7 +258,12 @@ newtype EncounterCardMatcher = NemesisSetFor IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data BasicEncounterCardMatcher = AnyEncounterCard
+data BasicEncounterCardMatcher
+  = AnyEncounterCard
+  | EncounterCardMatching CardMatcher
+  | EncounterCardWithBoostIcons
+  | -- | a star in its boost field: a "Boost" ability
+    EncounterCardWithBoostAbility
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

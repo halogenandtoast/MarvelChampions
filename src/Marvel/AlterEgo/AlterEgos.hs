@@ -7,4 +7,5 @@ import Marvel.AlterEgo.AlterEgos.TChalla as X
 import Marvel.AlterEgo.AlterEgos.TonyStark as X
 import Marvel.AlterEgo.AlterEgos.SteveRogers as X
 import Marvel.AlterEgo.AlterEgos.KamalaKhan as X
+import Marvel.AlterEgo.AlterEgos.NatashaRomanoff as X
 import Marvel.AlterEgo.AlterEgos.Odinson as X

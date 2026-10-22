@@ -8,7 +8,9 @@ module Marvel.Matchers (
 
 import Marvel.Prelude
 
-import {-# SOURCE #-} Marvel.Card.EncounterCard
+import Marvel.Boost
+import Marvel.Card.Def
+import Marvel.Card.EncounterCard
 import Marvel.Count
 import Marvel.Damage
 import Marvel.Game.Source
@@ -61,8 +63,11 @@ characterMatches ::
 characterMatches matcher ident = member ident <$> gameSelectCharacter matcher
 
 encounterCardMatches :: BasicEncounterCardMatcher -> EncounterCard -> Bool
-encounterCardMatches matcher _ = case matcher of
+encounterCardMatches matcher card = case matcher of
   AnyEncounterCard -> True
+  EncounterCardMatching m -> cardMatch m card
+  EncounterCardWithBoostIcons -> boostCount (cdBoostIcons $ getCardDef card) > 0
+  EncounterCardWithBoostAbility -> Star `elem` cdBoostIcons (getCardDef card)
 
 damageMatches :: (HasGame m) => DamageMatcher -> Damage -> m Bool
 damageMatches matcher damage = case matcher of

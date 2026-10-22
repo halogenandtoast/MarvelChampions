@@ -71,6 +71,9 @@ allEvents = fromList $ map
   , SomeEventCard melee
   , SomeEventCard concussiveBlow
   , SomeEventCard moraleBoost
+  , SomeEventCard covertOps
+  , SomeEventCard danceOfDeath
+  , SomeEventCard stealthStrike
   , SomeEventCard defenderOfTheNineRealms
   , SomeEventCard forAsgard
   , SomeEventCard hammerThrow

@@ -19,5 +19,7 @@ import Marvel.Support.Supports.AvengersTower as X
 import Marvel.Support.Supports.AamirKhan as X
 import Marvel.Support.Supports.BrunoCarrelli as X
 import Marvel.Support.Supports.NakiaBahadir as X
+import Marvel.Support.Supports.SafeHouse29 as X
+import Marvel.Support.Supports.Quincarrier as X
 import Marvel.Support.Supports.Asgard as X
 import Marvel.Support.Supports.HallOfHeroes as X

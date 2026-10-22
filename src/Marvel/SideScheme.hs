@@ -43,6 +43,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard theDoomsdayChair
   , SomeSideSchemeCard hitSquad
   , SomeSideSchemeCard generationWhy
+  , SomeSideSchemeCard killerForHire
   , SomeSideSchemeCard familyFeud
   ]
 

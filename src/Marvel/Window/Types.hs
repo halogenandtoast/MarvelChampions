@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
+import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Matchers.Types
@@ -54,8 +55,21 @@ data WindowMatcher
   | -- | a player matching plays an event matching
     PlaysEvent WindowTiming IdentityMatcher CardMatcher
   | AllyDefeated WindowTiming AllyMatcher
-  | -- | a boost card is turned face up for an enemy's attack
+  | -- | a boost card is turned face up for an enemy's activation
     BoostCardFlipped WindowTiming EnemyMatcher
+  | -- | "you reveal": the encounter card is revealed for a player matching
+    EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
+  | -- | a player matching plays a card matching (paid for and put into play or resolved)
+    PlaysCard WindowTiming IdentityMatcher CardMatcher
+  | -- | a player matching resolves the ability of a card matching
+    ResolvesAbility WindowTiming IdentityMatcher CardMatcher
+  | MinionHasSchemed WindowTiming MinionMatcher
+  | BoostCardTurnedFaceup WindowTiming BasicEncounterCardMatcher
+  | -- | after a player matching takes damage of this kind
+    TookDamage IdentityMatcher DamageSource
+  | -- | an ally a player matching controls is defeated
+    AllyWasDefeated WindowTiming IdentityMatcher
+  | SurgeWouldResolve
   | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
   | MakesBasicThwart WindowTiming IdentityMatcher
   | WindowOneOf [WindowMatcher]
@@ -99,6 +113,16 @@ data WindowType
     EventPlayed IdentityId EventId CardDef
   | DefeatedAlly AllyId
   | FlippedBoostCard EncounterCard EnemyId
+  | CardPlayed IdentityId PlayerCard
+  | -- | the player resolved the ability of a card with this def
+    ResolvedAbility IdentityId CardDef
+  | SchemedByMinion MinionId
+  | -- | the player took damage from this source
+    IdentityTookDamage IdentityId Source Damage
+  | -- | the ally, as a card, and its controller
+    AllyCardDefeated IdentityId PlayerCard
+  | -- | the surge keyword of a card revealed for the player
+    SurgeResolves IdentityId
   | -- | the player engages the minion: it enters play engaged with them, or is made to
     -- engage them
     EngagedMinion IdentityId MinionId

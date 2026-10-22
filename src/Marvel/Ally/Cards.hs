@@ -36,6 +36,9 @@ allAllies = fromList $ concatMap
   , redDagger
   , novaSamAlexander
   , lockjaw
+  , winterSoldierBuckyBarnes
+  , agentCoulson
+  , quakeDaisyJohnson
   , ladySif
   , hercules
   , valkyrie
@@ -191,6 +194,17 @@ novaSamAlexander =
 lockjaw :: CardDef
 lockjaw =
   (basicAlly "05018" "Lockjaw" 4 [Inhuman] [Physical]) {cdPlayableFromDiscard = True}
+
+winterSoldierBuckyBarnes :: CardDef
+winterSoldierBuckyBarnes =
+  identityAlly "08002" ("Winter Soldier" <:> "Bucky Barnes") 4 [Avenger, Spy] [Wild]
+
+agentCoulson :: CardDef
+agentCoulson = ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
+
+quakeDaisyJohnson :: CardDef
+quakeDaisyJohnson =
+  ally "08012" ("Quake" <:> "Daisy Johnson") 2 [Avenger, Shield] [Energy] Justice
 
 ladySif :: CardDef
 ladySif = identityAlly "06002" "Lady Sif" 4 [Asgard] [Wild]

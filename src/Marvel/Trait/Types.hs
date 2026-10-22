@@ -46,6 +46,7 @@ data Trait
   | Inhuman
   | Bird
   | Robot
+  | Preparation
   | Asgard
   | Giant
   | Olympus

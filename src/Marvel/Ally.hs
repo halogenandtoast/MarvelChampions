@@ -54,6 +54,9 @@ allAllies = fromList $ map
   , SomeAllyCard redDagger
   , SomeAllyCard novaSamAlexander
   , SomeAllyCard lockjaw
+  , SomeAllyCard winterSoldierBuckyBarnes
+  , SomeAllyCard agentCoulson
+  , SomeAllyCard quakeDaisyJohnson
   , SomeAllyCard ladySif
   , SomeAllyCard hercules
   , SomeAllyCard valkyrie
