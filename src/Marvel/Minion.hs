@@ -51,6 +51,7 @@ allMinions =
       , SomeMinionCard (reprintAs Cards.hydraSoldierCaptainAmerica hydraSoldier)
       , SomeMinionCard thomasEdison
       , SomeMinionCard edisonsGiantRobot
+      , SomeMinionCard baronMordo
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -30,6 +30,7 @@ allObligations = fromList $ map
   , SomeObligationCard familyEmergency
   , SomeObligationCard manOutOfTime
   , SomeObligationCard homeByDawn
+  , SomeObligationCard physicalToll
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

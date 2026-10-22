@@ -58,6 +58,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard underFire
   , SomeTreacheryCard hailHydra
   , SomeTreacheryCard harvest
+  , SomeTreacheryCard thoughtcasting
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

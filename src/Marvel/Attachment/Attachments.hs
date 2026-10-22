@@ -11,3 +11,4 @@ import Marvel.Attachment.Attachments.SolidSoundBody as X
 import Marvel.Attachment.Attachments.SonicConverter as X
 import Marvel.Attachment.Attachments.UpgradedDrones as X
 import Marvel.Attachment.Attachments.VibraniumArmor as X
+import Marvel.Attachment.Attachments.Counterspell as X

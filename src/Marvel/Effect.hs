@@ -11,6 +11,7 @@ import Marvel.Effect.Types
 import Marvel.Event.Events
 import Marvel.Id
 import Marvel.Matchers
+import Marvel.Obligation.Obligations
 import Marvel.Ref
 import Marvel.Support.Supports
 import Marvel.Upgrade.Upgrades
@@ -37,6 +38,7 @@ allEffects =
     , ("05010", SomeCardEffect embiggenEffect)
     , ("05011", SomeCardEffect shrinkEffect)
     , ("05032", SomeCardEffect moraleBoostEffect)
+    , ("09027", SomeCardEffect physicalTollEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect
