@@ -318,6 +318,7 @@ checkPlayLimits ident c = case cdLimit def of
       flip anyM players \p ->
         (< n) . fromIntegral . length
           <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
+    UnderAnyControl -> pure True
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
