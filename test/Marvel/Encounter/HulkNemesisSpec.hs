@@ -100,7 +100,7 @@ spec = describe "Hulk nemesis" do
         [next] <- stackEncounterDeck [Minions.hydraMercenary]
         _ <- revealNow p Treacheries.clashOfTheTitans
         pass
-        getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+        dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
     it "gains surge when the enemy is stunned" do
       tg <- hulk
@@ -113,4 +113,4 @@ spec = describe "Hulk nemesis" do
         _ <- revealNow p Treacheries.clashOfTheTitans
         pass
         damageOf p `shouldReturn` 0
-        getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+        dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)

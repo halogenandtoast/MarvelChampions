@@ -331,13 +331,13 @@ spec = describe "Black Panther" do
     inGame tg do
       mercenary <- encounterCard Cards.hydraMercenary
       resolve [RevealEncounterCard p mercenary]
-      _ <- stackEncounterDeck [Cards.imminentOverload]
+      [next] <- stackEncounterDeck [Cards.imminentOverload]
       herb <- encounterCard Cards.heartShapedHerb
       resolve [RevealEncounterCard p herb]
       getsGame (map villainIsTough . HashMap.elems . gameVillains) `shouldReturn` [True]
       getsGame (map ((.minionTough) . toAttrs) . HashMap.elems . gameMinions) `shouldReturn` [True]
-      -- the surge revealed the side scheme on top
-      length <$> getsGame (HashMap.elems . gameSideSchemes) `shouldReturn` 1
+      -- the surge dealt the side scheme on top facedown
+      dealtTo p `shouldReturn` [next]
 
   it "Heart-Shaped Herb's boost toughens the villain" do
     tg <- testGame ["black-panther"]

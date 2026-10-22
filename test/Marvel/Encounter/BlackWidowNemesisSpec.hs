@@ -51,6 +51,20 @@ spec = describe "Black Widow's nemesis set" do
       -- Rhino's 1 SCH and 3 upgrades
       mainSchemeThreatNow `shouldReturn` (threat + 4)
 
+  it "Taskmaster as a boost counts the upgrades of the player attacked, not the active player's" do
+    tg <- testGame ["black-widow", "spider-man"]
+    inGame tg do
+      [p1, p2] <- players
+      clearHand p1
+      _ <- putIntoPlay p1 "08017"
+      _ <- putIntoPlay p1 "08024"
+      resolve [IdentityMessage p2 (ChangedToForm A)]
+      _ <- stackEncounterDeck [Minions.taskmaster]
+      vid <- villainIdNow
+      resolve [VillainMessage vid (VillainAttacks p2)]
+      -- Rhino's 2 ATK: Spider-Man controls no upgrade
+      damageOf p2 `shouldReturn` 2
+
   it "Killer for Hire enters with 3 threat and 1 more per hero, and accelerates" do
     tg <- blackWidow
     let p = player1 tg

@@ -76,7 +76,7 @@ narrationFor = \case
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
   GiveStatus target s -> Just $ simply (statusKey s) target
-  RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card, "count" ~> length (cdBoostIcons (getCardDef card))]]
+  RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
   _ -> Nothing
  where
   statusKey = \case
@@ -161,6 +161,8 @@ villainNarration vid = \case
   VillainStunned _ -> Just $ simply "log.stunned" (VillainRef vid)
   VillainConfused _ -> Just $ simply "log.confused" (VillainRef vid)
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
+  -- told as they are added, so icons cancelled as the card turns up are not
+  VillainAddBoost n | n > 0 -> Just $ whenRef (VillainRef vid) \v -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> v, "count" ~> n]]
   _ -> Nothing
 
 minionNarration :: (HasGame m) => MinionId -> MinionMessage -> Maybe (m [LogEntry])

@@ -26,10 +26,6 @@ instance RunMessage EnhancedSpiderSense where
   runMessage msg e@(EnhancedSpiderSense attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) ->
-        do
-          cancelMatchingMessage $ \case
-            TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
-            _ -> False
-          pure e
+        e <$ cancelWhenRevealed tid
       _ -> EnhancedSpiderSense <$> runMessage msg attrs
     _ -> EnhancedSpiderSense <$> runMessage msg attrs

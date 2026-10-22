@@ -708,7 +708,9 @@ test-suite MarvelChampions-test
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec
+      Marvel.Rules.EncounterDeckSpec
       Marvel.Rules.PrintingSpec
+      Marvel.Rules.SurgeSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       TestImport
