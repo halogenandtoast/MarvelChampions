@@ -28,3 +28,11 @@ import Marvel.Minion.Minions.Loki as X
 import Marvel.Minion.Minions.FrostGiant as X
 import Marvel.Minion.Minions.BaronMordo as X
 import Marvel.Minion.Minions.Abomination as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

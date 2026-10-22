@@ -11,7 +11,25 @@ import Marvel.Name
 import Marvel.Trait
 
 allVillainCards :: [CardDef]
-allVillainCards = [rhino1, rhino2, rhino3, klaw1, klaw2, klaw3, ultron1, ultron2, ultron3]
+allVillainCards =
+  [ rhino1
+  , rhino2
+  , rhino3
+  , klaw1
+  , klaw2
+  , klaw3
+  , ultron1
+  , ultron2
+  , ultron3
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
+  ]
 
 allVillainsMap :: HashMap CardCode CardDef
 allVillainsMap = fromList $ map (toFst toCardCode) allVillainCards

@@ -39,6 +39,14 @@ allEffects =
     , ("05011", SomeCardEffect shrinkEffect)
     , ("05032", SomeCardEffect moraleBoostEffect)
     , ("09027", SomeCardEffect physicalTollEffect)
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

@@ -34,6 +34,14 @@ allObligations = fromList $ map
   , SomeObligationCard odinsAnger
   , SomeObligationCard physicalToll
   , SomeObligationCard innerDemons
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

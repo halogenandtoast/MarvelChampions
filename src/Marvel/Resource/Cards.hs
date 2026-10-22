@@ -25,6 +25,14 @@ allResources = fromList $ concatMap
   , genius
   , strength
   , limitlessStrength
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef

@@ -24,3 +24,11 @@ import Marvel.SideScheme.SideSchemes.KillerForHire as X
 import Marvel.SideScheme.SideSchemes.FamilyFeud as X
 import Marvel.SideScheme.SideSchemes.OpenTheDarkDimension as X
 import Marvel.SideScheme.SideSchemes.TotalDestruction as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

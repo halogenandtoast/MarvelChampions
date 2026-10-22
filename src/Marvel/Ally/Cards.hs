@@ -53,6 +53,14 @@ allAllies = fromList $ concatMap
   , brawn
   , sentryRobertReynolds
   , sheHulkJenniferWalters
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef

@@ -12,7 +12,22 @@ import Marvel.Name
 
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
-  fromList $ map (toFst toCardCode) [theBreakIn, undergroundDistribution, secretRendezvous, theCrimsonCowl, assaultOnNorad, countdownToOblivion]
+  fromList $ map (toFst toCardCode)
+    [ theBreakIn
+    , undergroundDistribution
+    , secretRendezvous
+    , theCrimsonCowl
+    , assaultOnNorad
+    , countdownToOblivion
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
+    ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
 mainScheme code name encounterSet = CardDef

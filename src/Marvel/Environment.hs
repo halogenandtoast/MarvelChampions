@@ -26,7 +26,17 @@ withEnvironmentCardCode cCode f = case lookup cCode allEnvironments of
 
 allEnvironments :: HashMap CardCode SomeEnvironmentCard
 allEnvironments =
-  fromList $ map (toFst someEnvironmentCardCode) [SomeEnvironmentCard ultronDrones]
+  fromList $ map (toFst someEnvironmentCardCode)
+    [ SomeEnvironmentCard ultronDrones
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
+    ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment
 lookupEnvironment cardCode = case lookup cardCode allEnvironments of

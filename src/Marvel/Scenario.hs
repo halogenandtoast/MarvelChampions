@@ -28,21 +28,40 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-  [SomeScenarioCard rhinoScenario, SomeScenarioCard klawScenario, SomeScenarioCard ultronScenario]
+    [ SomeScenarioCard rhinoScenario
+    , SomeScenarioCard klawScenario
+    , SomeScenarioCard ultronScenario
+    -- The Green Goblin
 
--- | The scenario with the set it recommends, at standard difficulty.
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
+    ]
+
+-- | The scenario with the sets it recommends, at standard difficulty.
 recommendedSetup :: CardCode -> Maybe ScenarioSetup
 recommendedSetup code = do
   _ <- lookup code allScenarios
-  modular <- lookup code recommendedModulars
-  pure $ ScenarioSetup code [modular] Normal
+  pure $ ScenarioSetup code (HashMap.findWithDefault [] code recommendedModulars) Normal
 
-recommendedModulars :: HashMap CardCode EncounterSet.EncounterSet
+-- | The modular sets each scenario recommends: one, several, or none when not listed.
+recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("01094", EncounterSet.BombScare)
-    , ("01113", EncounterSet.MastersOfEvil)
-    , ("01134", EncounterSet.UnderAttack)
+    [ ("01094", [EncounterSet.BombScare])
+    , ("01113", [EncounterSet.MastersOfEvil])
+    , ("01134", [EncounterSet.UnderAttack])
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario

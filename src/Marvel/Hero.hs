@@ -44,6 +44,14 @@ allHeroes = fromList $ map
   , SomeHeroCard thor
   , SomeHeroCard doctorStrange
   , SomeHeroCard hulk
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

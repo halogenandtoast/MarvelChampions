@@ -62,6 +62,14 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard trickster
   , SomeTreacheryCard thoughtcasting
   , SomeTreacheryCard clashOfTheTitans
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

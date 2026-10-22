@@ -11,3 +11,11 @@ import Marvel.AlterEgo.AlterEgos.NatashaRomanoff as X
 import Marvel.AlterEgo.AlterEgos.Odinson as X
 import Marvel.AlterEgo.AlterEgos.StephenStrange as X
 import Marvel.AlterEgo.AlterEgos.BruceBanner as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

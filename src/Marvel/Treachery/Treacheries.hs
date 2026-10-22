@@ -37,3 +37,11 @@ import Marvel.Treachery.Treacheries.DeadlyShot as X
 import Marvel.Treachery.Treacheries.Trickster as X
 import Marvel.Treachery.Treacheries.Thoughtcasting as X
 import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

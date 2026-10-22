@@ -49,6 +49,14 @@ allMinions =
       , frostGiant
       , baronMordo
       , abomination
+      -- The Green Goblin
+
+      -- The Wrecking Crew
+
+      -- The Rise of Red Skull
+
+      -- The Once and Future Kang
+
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef

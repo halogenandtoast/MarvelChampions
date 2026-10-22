@@ -53,6 +53,14 @@ allSupports = fromList $ map
   , SomeSupportCard theNightNurse
   , SomeSupportCard bannersLaboratory
   , SomeSupportCard beatCop
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

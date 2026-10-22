@@ -38,6 +38,14 @@ allSideSchemes = fromList $ map
   , familyFeud
   , openTheDarkDimension
   , totalDestruction
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 sideScheme

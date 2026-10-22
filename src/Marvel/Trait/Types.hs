@@ -55,5 +55,19 @@ data Trait
   | Artifact
   | Invocation
   | Scientist
+  | Arrow
+  | Businessman
+  | Captive
+  | Creature
+  | Experimental
+  | Goblin
+  | Ice
+  | Metal
+  | Mutate
+  | Stone
+  | Temporal
+  | Traitor
+  | Wood
+  | WreckingCrew
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

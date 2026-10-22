@@ -108,6 +108,14 @@ allEvents = fromList $ map
   , SomeEventCard youllPayForThat
   , SomeEventCard toTheRescue
   , SomeEventCard inspiringPresence
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

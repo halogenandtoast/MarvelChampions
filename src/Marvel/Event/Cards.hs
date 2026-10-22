@@ -105,6 +105,14 @@ allEvents = fromList $ concatMap
   , youllPayForThat
   , toTheRescue
   , inspiringPresence
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]
 
 event

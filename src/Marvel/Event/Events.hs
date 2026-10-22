@@ -82,3 +82,11 @@ import Marvel.Event.Events.ToeToToe as X
 import Marvel.Event.Events.YoullPayForThat as X
 import Marvel.Event.Events.ToTheRescue as X
 import Marvel.Event.Events.InspiringPresence as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

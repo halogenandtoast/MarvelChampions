@@ -74,8 +74,9 @@ interface Release { code: string; name: string; order: number }
 const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 const releaseOf = (code: string | null | undefined, card = cards.card(code)): Release =>
   card ? { code: card.packCode, name: card.packName ?? card.packCode, order: card.packOrder ?? Infinity } : NO_RELEASE
-// the engine's BombScare is MarvelCDB's bomb_scare
-const setCode = (set: string) => set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+// the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
+const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp' }
+const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 const setCards = computed(() => {
   const bySet = new Map<string, (typeof cards.store.all)[number]>()
   for (const c of cards.store.all) if (c.setCode && !bySet.has(c.setCode)) bySet.set(c.setCode, c)

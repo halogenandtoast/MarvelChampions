@@ -28,14 +28,14 @@ playRandomly seed = go (mkStdGen seed)
 
 spec :: Spec
 spec = describe "random play" do
-  for_ ["01094", "01113", "01134"] \villain ->
+  for_ scenarioCodes \villain ->
     for_ tables \heroes ->
       for_ [Normal, Expert] \difficulty ->
         it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do
           playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes
   -- each modular set, with each villain, for a pair of heroes
   for_ modularSets \modular ->
-    for_ ["01094", "01113", "01134"] \villain ->
+    for_ scenarioCodes \villain ->
       it (show villain <> " with " <> show modular) do
         playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
  where

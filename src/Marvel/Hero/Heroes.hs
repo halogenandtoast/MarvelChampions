@@ -11,3 +11,11 @@ import Marvel.Hero.Heroes.MsMarvel as X
 import Marvel.Hero.Heroes.BlackWidow as X
 import Marvel.Hero.Heroes.Thor as X
 import Marvel.Hero.Heroes.Hulk as X
+
+-- The Green Goblin
+
+-- The Wrecking Crew
+
+-- The Rise of Red Skull
+
+-- The Once and Future Kang

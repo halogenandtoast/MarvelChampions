@@ -69,4 +69,12 @@ allAllies = fromList $ map
   , SomeAllyCard brawn
   , SomeAllyCard sentryRobertReynolds
   , SomeAllyCard sheHulkJenniferWalters
+  -- The Green Goblin
+
+  -- The Wrecking Crew
+
+  -- The Rise of Red Skull
+
+  -- The Once and Future Kang
+
   ]

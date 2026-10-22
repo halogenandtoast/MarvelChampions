@@ -12,7 +12,27 @@ import Marvel.Trait
 
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
-  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla, steveRogers, kamalaKhan, natashaRomanoff, odinson, stephenStrange, bruceBanner]
+
+    [ peterParker
+    , carolDanvers
+    , jenniferWalters
+    , tonyStark
+    , tChalla
+    , steveRogers
+    , kamalaKhan
+    , natashaRomanoff
+    , odinson
+    , stephenStrange
+    , bruceBanner
+    -- The Green Goblin
+
+    -- The Wrecking Crew
+
+    -- The Rise of Red Skull
+
+    -- The Once and Future Kang
+
+    ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
 allAlterEgosMap = fromList $ map (toFst toCardCode) allAlterEgoCards
