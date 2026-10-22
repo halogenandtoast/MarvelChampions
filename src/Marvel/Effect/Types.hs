@@ -69,7 +69,7 @@ liftCardEffect :: (forall a. CardEffect a -> b) -> SomeCardEffect -> b
 liftCardEffect f (SomeCardEffect a) = f a
 
 someCardEffectCardCode :: SomeCardEffect -> CardCode
-someCardEffectCardCode = liftCardEffect cbCardCode
+someCardEffectCardCode = liftCardEffect toCardCode
 
 instance HasModifiersFor Effect where
   getModifiersFor _ target e = do
@@ -111,8 +111,8 @@ effect ::
   CardBuilder (Source, EntityMatcher, EffectId) a
 effect f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(source, matcher, eid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (source, matcher, eid) ->
         f $
           EffectAttrs
             { effectId = eid

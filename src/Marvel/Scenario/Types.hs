@@ -49,7 +49,7 @@ liftScenarioCard :: (forall a. ScenarioCard a -> b) -> SomeScenarioCard -> b
 liftScenarioCard f (SomeScenarioCard a) = f a
 
 someScenarioCardCode :: SomeScenarioCard -> CardCode
-someScenarioCardCode = liftScenarioCard cbCardCode
+someScenarioCardCode = liftScenarioCard scenarioCardCode
 
 instance RunMessage Scenario where
   runMessage msg (Scenario a) = Scenario <$> runMessage msg a
@@ -64,7 +64,10 @@ data ScenarioSetup = ScenarioSetup
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
-type ScenarioCard a = CardBuilder ScenarioSetup a
+data ScenarioCard a = ScenarioCard
+  { scenarioCardCode :: CardCode
+  , buildScenario :: ScenarioSetup -> a
+  }
 
 instance Entity Scenario where
   type Id Scenario = CardCode
@@ -139,11 +142,11 @@ scenario ::
   (CardCode, CardCode) ->
   [CardCode] ->
   [EncounterSet] ->
-  CardBuilder ScenarioSetup a
+  ScenarioCard a
 scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
-  CardBuilder
-    { cbCardCode = cCode
-    , cbCardBuilder = \setup ->
+  ScenarioCard
+    { scenarioCardCode = cCode
+    , buildScenario = \setup ->
         f $
           ScenarioAttrs
             { scenarioId = cCode
@@ -302,7 +305,7 @@ instance RunMessage (Attrs Scenario) where
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      case find ((== cardDef) . getCardDef) $
+      case find (sameCard cardDef . getCardDef) $
         scenarioEncounterDeck
           <> scenarioDiscard of
         Nothing -> do

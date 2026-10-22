@@ -33,6 +33,7 @@ mainScheme code name encounterSet = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 theBreakIn :: CardDef

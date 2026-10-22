@@ -25,7 +25,7 @@ withVillainCardCode cCode f = case lookup cCode allVillains of
 
 lookupVillain :: CardCode -> VillainId -> Maybe Villain
 lookupVillain cardCode villainId = case lookup cardCode allVillains of
-  Just (SomeVillainCard a) -> Just . Villain $ cbCardBuilder a villainId
+  Just (SomeVillainCard a) -> Just . Villain $ buildCard a villainId
   Nothing -> Nothing
 
 allVillains :: HashMap CardCode SomeVillainCard

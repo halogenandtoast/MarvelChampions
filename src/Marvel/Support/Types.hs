@@ -39,7 +39,7 @@ liftSupportCard :: (forall a. SupportCard a -> b) -> SomeSupportCard -> b
 liftSupportCard f (SomeSupportCard a) = f a
 
 someSupportCardCode :: SomeSupportCard -> CardCode
-someSupportCardCode = liftSupportCard cbCardCode
+someSupportCardCode = liftSupportCard toCardCode
 
 instance Entity Support where
   type Id Support = SupportId
@@ -134,8 +134,8 @@ support ::
   (Attrs Support -> a) -> CardDef -> CardBuilder (IdentityId, SupportId) a
 support f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, mid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (ident, mid) ->
         f $
           SupportAttrs
             { supportId = mid

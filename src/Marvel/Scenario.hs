@@ -47,7 +47,7 @@ recommendedModulars =
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
 lookupScenario setup = case lookup setup.scenarioCode allScenarios of
-  Just (SomeScenarioCard a) -> Just $ Scenario $ cbCardBuilder a setup
+  Just (SomeScenarioCard a) -> Just $ Scenario $ buildScenario a setup
   Nothing -> Nothing
 
 -- | The scenarios there are, by the code they are set up with.

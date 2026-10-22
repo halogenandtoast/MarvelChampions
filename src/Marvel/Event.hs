@@ -25,6 +25,7 @@ withEventCardCode cCode f = case lookup cCode allEvents of
 allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
+  $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
   [ SomeEventCard backflip
   , SomeEventCard enhancedSpiderSense
   , SomeEventCard swingingWebKick
@@ -59,5 +60,5 @@ allEvents = fromList $ map
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event
 lookupEvent cardCode identityId eventId = case lookup cardCode allEvents of
-  Just (SomeEventCard a) -> Event $ cbCardBuilder a (identityId, eventId)
+  Just (SomeEventCard a) -> Event $ buildCard a (identityId, eventId)
   Nothing -> error $ "Invalid card code for event " <> show cardCode

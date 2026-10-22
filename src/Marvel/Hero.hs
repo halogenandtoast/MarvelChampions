@@ -43,4 +43,4 @@ allHeroes = fromList $ map
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero
 lookupHeroByCardCode cardCode = case lookup cardCode allHeroes of
   Nothing -> error $ "Unknown hero: " <> show cardCode
-  Just (SomeHeroCard a) -> Hero <$> cbCardBuilder a
+  Just (SomeHeroCard a) -> Hero <$> buildCard a

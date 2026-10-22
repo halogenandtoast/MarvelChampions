@@ -50,5 +50,5 @@ allMinions =
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion
 lookupMinion cardCode identityId minionId = case lookup cardCode allMinions of
-  Just (SomeMinionCard a) -> Minion $ cbCardBuilder a (identityId, minionId)
+  Just (SomeMinionCard a) -> Minion $ buildCard a (identityId, minionId)
   Nothing -> error $ "Invalid card code for minion " <> show cardCode

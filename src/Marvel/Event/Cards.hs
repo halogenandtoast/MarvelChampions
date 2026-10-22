@@ -16,8 +16,8 @@ import Marvel.Trait
 import Marvel.Window
 
 allEvents :: HashMap CardCode CardDef
-allEvents = fromList $ map
-  (toFst toCardCode)
+allEvents = fromList $ concatMap
+  toCardCodePairs
   [ backflip
   , enhancedSpiderSense
   , swingingWebKick
@@ -101,6 +101,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 backflip :: CardDef
@@ -233,7 +234,7 @@ wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
 chaseThemDown :: CardDef
-chaseThemDown =
+chaseThemDown = reprintedAs ["06013"] $
   (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
     { cdAbilitySubType = Just Ability.Thwart
     , cdCriteria = SchemeExists AnyScheme
@@ -277,7 +278,7 @@ leadFromTheFront =
   event "01070" "Lead from the Front" 2 HeroAction [Tactic] [Energy] Leadership
 
 makeTheCall :: CardDef
-makeTheCall = (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
+makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
   { cdCriteria =
     ExtendedCardExists
     $ AffordableCardBy You
@@ -293,7 +294,7 @@ counterPunch =
     }
 
 getBehindMe :: CardDef
-getBehindMe =
+getBehindMe = reprintedAs ["05013"] $
   (event "01078" "Get Behind Me!" 1 HeroInterrupt [] [Mental] Protection)
     { cdResponseWindow =
         Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)

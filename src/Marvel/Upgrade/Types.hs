@@ -42,7 +42,7 @@ liftUpgradeCard :: (forall a. UpgradeCard a -> b) -> SomeUpgradeCard -> b
 liftUpgradeCard f (SomeUpgradeCard a) = f a
 
 someUpgradeCardCode :: SomeUpgradeCard -> CardCode
-someUpgradeCardCode = liftUpgradeCard cbCardCode
+someUpgradeCardCode = liftUpgradeCard toCardCode
 
 instance Entity Upgrade where
   type Id Upgrade = UpgradeId
@@ -149,8 +149,8 @@ upgrade ::
   (Attrs Upgrade -> a) -> CardDef -> CardBuilder (IdentityId, UpgradeId) a
 upgrade f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, mid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (ident, mid) ->
         f $
           UpgradeAttrs
             { upgradeId = mid

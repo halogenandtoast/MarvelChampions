@@ -36,5 +36,5 @@ lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect
 lookupEffect cardCode source entityMatcher effectId =
   case lookup cardCode allEffects of
     Just (SomeCardEffect a) ->
-      Effect $ cbCardBuilder a (source, entityMatcher, effectId)
+      Effect $ buildCard a (source, entityMatcher, effectId)
     Nothing -> error $ "Invalid card code for effect " <> show cardCode

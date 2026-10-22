@@ -33,7 +33,7 @@ liftEventCard :: (forall a. EventCard a -> b) -> SomeEventCard -> b
 liftEventCard f (SomeEventCard a) = f a
 
 someEventCardCode :: SomeEventCard -> CardCode
-someEventCardCode = liftEventCard cbCardCode
+someEventCardCode = liftEventCard toCardCode
 
 instance HasModifiersFor Event where
   getModifiersFor source target (Event a) = getModifiersFor source target a
@@ -76,8 +76,8 @@ instance HasCardCode (Attrs Event) where
 event :: (Attrs Event -> a) -> CardDef -> CardBuilder (IdentityId, EventId) a
 event f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, aid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (ident, aid) ->
         f $
           EventAttrs
             { eventId = aid

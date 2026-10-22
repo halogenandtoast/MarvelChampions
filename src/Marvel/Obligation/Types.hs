@@ -35,7 +35,7 @@ liftObligationCard ::
 liftObligationCard f (SomeObligationCard a) = f a
 
 someObligationCardCode :: SomeObligationCard -> CardCode
-someObligationCardCode = liftObligationCard cbCardCode
+someObligationCardCode = liftObligationCard toCardCode
 
 instance Entity Obligation where
   type Id Obligation = ObligationId
@@ -87,8 +87,8 @@ instance HasCardCode (Attrs Obligation) where
 obligation :: (Attrs Obligation -> a) -> CardDef -> CardBuilder ObligationId a
 obligation f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \mid ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef mid ->
         f $
           ObligationAttrs
             { obligationId = mid

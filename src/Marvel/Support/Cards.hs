@@ -11,8 +11,8 @@ import Marvel.Resource
 import Marvel.Trait
 
 allSupports :: HashMap CardCode CardDef
-allSupports = fromList $ map
-  (toFst toCardCode)
+allSupports = fromList $ concatMap
+  toCardCodePairs
   [ alphaFlightStation
   , auntMay
   , superhumanLawDivision
@@ -63,6 +63,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 unique :: CardDef -> CardDef
@@ -102,11 +103,11 @@ tacTeam :: CardDef
 tacTeam = support "01056" "Tac Team" 3 [Shield] [Energy] Aggression
 
 interrogationRoom :: CardDef
-interrogationRoom = limited (MaxPerPlayer 1)
+interrogationRoom = reprintedAs ["08015"] $ limited (MaxPerPlayer 1)
   $ support "01063" "Interrogation Room" 1 [Location] [Energy] Justice
 
 surveillanceTeam :: CardDef
-surveillanceTeam =
+surveillanceTeam = reprintedAs ["08016"] $
   support "01064" "Surveillance Team" 2 [Shield] [Mental] Justice
 
 theTriskellion :: CardDef
@@ -114,12 +115,12 @@ theTriskellion = unique
   $ support "01073" "The Triskelion" 1 [Location, Shield] [Energy] Leadership
 
 medTeam :: CardDef
-medTeam = support "01080" "Med Team" 3 [Shield] [Energy] Protection
+medTeam = reprintedAs ["09018"] $ support "01080" "Med Team" 3 [Shield] [Energy] Protection
 
 avengersMansion :: CardDef
-avengersMansion = limited (MaxPerPlayer 1)
+avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01091" "Avengers Mansion" 4 [Avenger, Location] [Mental]
 
 helicarrier :: CardDef
-helicarrier = limited (MaxPerPlayer 1)
+helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]

@@ -60,5 +60,5 @@ allTreacheries = fromList $ map
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery
 lookupTreachery cardCode = case lookup cardCode allTreacheries of
-  Just (SomeTreacheryCard a) -> Treachery <$> cbCardBuilder a
+  Just (SomeTreacheryCard a) -> Treachery <$> buildCard a
   Nothing -> error $ "Invalid card code for treachery " <> show cardCode

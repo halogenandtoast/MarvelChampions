@@ -34,4 +34,4 @@ allAlterEgos = fromList $ map
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo
 lookupAlterEgoByCardCode cardCode = case lookup cardCode allAlterEgos of
   Nothing -> error $ "Unknown alter ego: " <> show cardCode
-  Just (SomeAlterEgoCard a) -> AlterEgo <$> cbCardBuilder a
+  Just (SomeAlterEgoCard a) -> AlterEgo <$> buildCard a

@@ -11,8 +11,8 @@ import Marvel.Resource
 import Marvel.Trait
 
 allAllies :: HashMap CardCode CardDef
-allAllies = fromList $ map
-  (toFst toCardCode)
+allAllies = fromList $ concatMap
+  toCardCodePairs
   [ blackCatFeliciaHardy
   , spiderWomanJessicaDrew
   , hellcatPatsyWalker
@@ -65,6 +65,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 blackCatFeliciaHardy :: CardDef
@@ -124,7 +125,7 @@ jessicaJones :: CardDef
 jessicaJones = ally "01059" "Jessica Jones" 3 [Defender] [Energy] Justice
 
 hawkeyeClintBarton :: CardDef
-hawkeyeClintBarton =
+hawkeyeClintBarton = reprintedAs ["03012"] $
   ally "01066" ("Hawkeye" <:> "Clint Barton") 3 [Avenger] [Energy] Leadership
 
 mariaHill :: CardDef
@@ -146,8 +147,8 @@ lukeCage :: CardDef
 lukeCage = ally "01076" "Luke Cage" 4 [Defender] [Energy] Protection
 
 mockingbirdBobbiMorse :: CardDef
-mockingbirdBobbiMorse =
+mockingbirdBobbiMorse = reprintedAs ["03020"] $
   basicAlly "01083" ("Mockingbird" <:> "Bobbi Morse") 3 [Shield, Spy] [Physical]
 
 nickFury :: CardDef
-nickFury = basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]

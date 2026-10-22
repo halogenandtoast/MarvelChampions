@@ -12,8 +12,8 @@ import Marvel.Resource
 import Marvel.Trait
 
 allUpgrades :: HashMap CardCode CardDef
-allUpgrades = fromList $ map
-  (toFst toCardCode)
+allUpgrades = fromList $ concatMap
+  toCardCodePairs
   [ spiderTracer
   , webShooter
   , webbedUp
@@ -74,6 +74,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 unique :: CardDef -> CardDef

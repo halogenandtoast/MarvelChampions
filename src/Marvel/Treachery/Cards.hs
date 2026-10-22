@@ -71,6 +71,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 hardToKeepDown :: CardDef

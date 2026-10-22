@@ -23,6 +23,7 @@ withUpgradeCardCode cCode f = case lookup cCode allUpgrades of
 allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
+  $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
   [ SomeUpgradeCard spiderTracer
   , SomeUpgradeCard webShooter
   , SomeUpgradeCard webbedUp
@@ -52,5 +53,5 @@ lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade
 lookupUpgrade cardCode identityId upgradeId =
   case lookup cardCode allUpgrades of
     Just (SomeUpgradeCard a) ->
-      Upgrade $ cbCardBuilder a (identityId, upgradeId)
+      Upgrade $ buildCard a (identityId, upgradeId)
     Nothing -> error $ "Invalid card code for upgrade " <> show cardCode

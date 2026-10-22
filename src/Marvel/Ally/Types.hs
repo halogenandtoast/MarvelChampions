@@ -49,7 +49,7 @@ liftAllyCard :: (forall a. AllyCard a -> b) -> SomeAllyCard -> b
 liftAllyCard f (SomeAllyCard a) = f a
 
 someAllyCardCode :: SomeAllyCard -> CardCode
-someAllyCardCode = liftAllyCard cbCardCode
+someAllyCardCode = liftAllyCard toCardCode
 
 upgradesL :: Lens' (Attrs Ally) (HashSet UpgradeId)
 upgradesL = lens allyUpgrades $ \m x -> m {allyUpgrades = x}
@@ -104,8 +104,8 @@ ally ::
   CardBuilder (IdentityId, Id.AllyId) a
 ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, aid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (ident, aid) ->
         f $
           AllyAttrs
             { allyId = aid

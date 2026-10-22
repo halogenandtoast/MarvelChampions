@@ -1513,7 +1513,7 @@ gameSelectUpgrade m = do
       identities <- select identityMatcher
       pure $ getUpgradeController upgrade `member` identities
     UpgradeMatches xs -> andM . traverse matchFilter xs
-    UpgradeIs def -> pure . (== def) . getCardDef
+    UpgradeIs def -> pure . sameCard def . getCardDef
     UpgradeNamed name -> pure . (== name) . cdName . getCardDef
     UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
     UpgradeOneOf xs -> orM . traverse matchFilter xs
@@ -1527,7 +1527,7 @@ gameSelectAttachment m = do
  where
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
-    AttachmentIs def -> pure . (== def) . getCardDef
+    AttachmentIs def -> pure . sameCard def . getCardDef
 
 gameSelectEnvironment ::
   (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
@@ -1537,7 +1537,7 @@ gameSelectEnvironment m = do
  where
   matches e = case m of
     AnyEnvironment -> True
-    EnvironmentIs def -> getCardDef e == def
+    EnvironmentIs def -> sameCard def (getCardDef e)
 
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
@@ -1577,7 +1577,7 @@ gameSelectEnemy m = do
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
-    EnemyIs def -> pure $ def == getCardDef e
+    EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goVillain e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
@@ -1594,7 +1594,7 @@ gameSelectEnemy m = do
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
-    EnemyIs def -> pure $ def == getCardDef e
+    EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goMinion e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
@@ -1633,7 +1633,7 @@ gameSelectMinion m = do
     MinionEngagedWith identityMatcher -> \minion -> do
       identities <- select identityMatcher
       pure $ getMinionEngagedIdentity minion `member` identities
-    MinionIs cardDef -> pure . (== cardDef) . getCardDef
+    MinionIs cardDef -> pure . sameCard cardDef . getCardDef
     MinionWithHighestPrintedHitPoints -> \minion -> do
       minions <- HashMap.elems <$> getsGame gameMinions
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
@@ -1730,7 +1730,7 @@ gameSelectSideScheme m = do
   matchFilter = \case
     AnySideScheme -> pure . const True
     CrisisSideScheme -> pure . isCrisis
-    SideSchemeIs def -> pure . (== def) . getCardDef
+    SideSchemeIs def -> pure . sameCard def . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId
 
 withDepthGuard :: (HasGame m, Monoid a) => Int -> ReaderT Game m a -> m a

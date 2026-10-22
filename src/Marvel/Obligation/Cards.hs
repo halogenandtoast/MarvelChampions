@@ -34,6 +34,7 @@ obligation code name boostIcons = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 affairsOfState :: CardDef

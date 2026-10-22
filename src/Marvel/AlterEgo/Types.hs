@@ -46,7 +46,7 @@ liftAlterEgoCard :: (forall a. AlterEgoCard a -> b) -> SomeAlterEgoCard -> b
 liftAlterEgoCard f (SomeAlterEgoCard a) = f a
 
 someAlterEgoCardCode :: SomeAlterEgoCard -> CardCode
-someAlterEgoCardCode = liftAlterEgoCard cbCardCode
+someAlterEgoCardCode = liftAlterEgoCard toCardCode
 
 instance HasStartingHP AlterEgo where
   startingHP = startingHP . toAttrs
@@ -107,8 +107,8 @@ alterEgo ::
   CardBuilder IdentityId a
 alterEgo f cardDef hp hSize recovery obligations =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \ident ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef ident ->
         f $
           AlterEgoAttrs
             { alterEgoIdentityId = ident

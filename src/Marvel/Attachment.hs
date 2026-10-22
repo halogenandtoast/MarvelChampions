@@ -41,5 +41,5 @@ allAttachments =
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment
 lookupAttachment cardCode = case lookup cardCode allAttachments of
-  Just (SomeAttachmentCard a) -> Attachment <$> cbCardBuilder a
+  Just (SomeAttachmentCard a) -> Attachment <$> buildCard a
   Nothing -> error $ "Invalid card code for attachment " <> show cardCode

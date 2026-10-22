@@ -59,6 +59,7 @@ attachment code name traits boostIcons encounterSet quantity =
     , cdHazards = 0
     , cdAcceleration = 0
     , cdLimit = Nothing
+    , cdAlternateCardCodes = []
     }
 
 unique :: CardDef -> CardDef

@@ -94,7 +94,7 @@ liftHeroCard :: (forall a. HeroCard a -> b) -> SomeHeroCard -> b
 liftHeroCard f (SomeHeroCard a) = f a
 
 someHeroCardCode :: SomeHeroCard -> CardCode
-someHeroCardCode = liftHeroCard cbCardCode
+someHeroCardCode = liftHeroCard toCardCode
 
 hero ::
   (Attrs Hero -> a) ->
@@ -107,8 +107,8 @@ hero ::
   CardBuilder IdentityId a
 hero f cardDef hp hSize thw atk def =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \ident ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef ident ->
         f $
           HeroAttrs
             { heroIdentityId = ident

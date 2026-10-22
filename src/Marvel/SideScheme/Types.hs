@@ -38,7 +38,7 @@ liftSideSchemeCard ::
 liftSideSchemeCard f (SomeSideSchemeCard a) = f a
 
 someSideSchemeCardCode :: SomeSideSchemeCard -> CardCode
-someSideSchemeCardCode = liftSideSchemeCard cbCardCode
+someSideSchemeCardCode = liftSideSchemeCard toCardCode
 
 instance Entity SideScheme where
   type Id SideScheme = SideSchemeId
@@ -128,8 +128,8 @@ sideScheme ::
   CardBuilder SideSchemeId a
 sideScheme f cardDef initialThreat =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \mid ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef mid ->
         f $
           SideSchemeAttrs
             { sideSchemeId = mid

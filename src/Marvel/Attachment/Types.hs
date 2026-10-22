@@ -37,7 +37,7 @@ liftAttachmentCard ::
 liftAttachmentCard f (SomeAttachmentCard a) = f a
 
 someAttachmentCardCode :: SomeAttachmentCard -> CardCode
-someAttachmentCardCode = liftAttachmentCard cbCardCode
+someAttachmentCardCode = liftAttachmentCard toCardCode
 
 instance Entity Attachment where
   type Id Attachment = AttachmentId
@@ -102,8 +102,8 @@ instance HasCardCode (Attrs Attachment) where
 attachment :: (Attrs Attachment -> a) -> CardDef -> CardBuilder AttachmentId a
 attachment f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \mid ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef mid ->
         f $
           AttachmentAttrs
             { attachmentId = mid

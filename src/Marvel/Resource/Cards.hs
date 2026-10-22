@@ -11,8 +11,8 @@ import Marvel.Resource
 import Marvel.Trait
 
 allResources :: HashMap CardCode CardDef
-allResources = fromList $ map
-  (toFst toCardCode)
+allResources = fromList $ concatMap
+  toCardCodePairs
   [ energyAbsorption
   , vibranium
   , thePowerOfAggression
@@ -58,6 +58,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdHazards = 0
   , cdAcceleration = 0
   , cdLimit = Nothing
+  , cdAlternateCardCodes = []
   }
 
 energyAbsorption :: CardDef
@@ -68,34 +69,34 @@ vibranium :: CardDef
 vibranium = identityResource "01044" "Vibranium" [] [Wild, Wild]
 
 thePowerOfAggression :: CardDef
-thePowerOfAggression =
+thePowerOfAggression = reprintedAs ["06016", "10017"] $
   resource "01055" "The Power of Aggression" [] [Wild] Aggression
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Aggression, Wild)]
 
 thePowerOfJustice :: CardDef
-thePowerOfJustice =
+thePowerOfJustice = reprintedAs ["08014"] $
   resource "01062" "The Power of Justice" [] [Wild] Justice
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
 
 thePowerOfLeadership :: CardDef
-thePowerOfLeadership =
+thePowerOfLeadership = reprintedAs ["03018"] $
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]
 
 thePowerOfProtection :: CardDef
-thePowerOfProtection =
+thePowerOfProtection = reprintedAs ["05016", "09017"] $
   resource "01079" "The Power of Protection" [] [Wild] Protection
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020"] $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021"] $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022"] $ basicResource "01090" "Strength" [] [Physical, Physical]

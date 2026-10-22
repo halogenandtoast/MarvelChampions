@@ -45,5 +45,5 @@ allSideSchemes = fromList $ map
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme
 lookupSideScheme cardCode = case lookup cardCode allSideSchemes of
-  Just (SomeSideSchemeCard a) -> SideScheme <$> cbCardBuilder a
+  Just (SomeSideSchemeCard a) -> SideScheme <$> buildCard a
   Nothing -> error $ "Invalid card code for side scheme " <> show cardCode

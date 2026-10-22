@@ -36,6 +36,7 @@ villain cardCode name traits =
     , cdHazards = 0
     , cdAcceleration = 0
     , cdLimit = Nothing
+    , cdAlternateCardCodes = []
     }
 
 rhino1 :: CardDef

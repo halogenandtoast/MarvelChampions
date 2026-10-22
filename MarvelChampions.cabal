@@ -518,6 +518,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec
+      Marvel.Rules.PrintingSpec
       Marvel.SmokeSpec
       TestImport
       Paths_MarvelChampions

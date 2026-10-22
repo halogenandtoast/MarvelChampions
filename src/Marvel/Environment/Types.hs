@@ -34,7 +34,7 @@ liftEnvironmentCard :: (forall a. EnvironmentCard a -> b) -> SomeEnvironmentCard
 liftEnvironmentCard f (SomeEnvironmentCard a) = f a
 
 someEnvironmentCardCode :: SomeEnvironmentCard -> CardCode
-someEnvironmentCardCode = liftEnvironmentCard cbCardCode
+someEnvironmentCardCode = liftEnvironmentCard toCardCode
 
 instance Entity Environment where
   type Id Environment = EnvironmentId
@@ -86,8 +86,8 @@ type EnvironmentCard a = CardBuilder EnvironmentId a
 environment :: (Attrs Environment -> a) -> CardDef -> CardBuilder EnvironmentId a
 environment f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \eid -> f $ EnvironmentAttrs eid cardDef mempty
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty
     }
 
 attachmentsL :: Lens' (Attrs Environment) (HashSet AttachmentId)

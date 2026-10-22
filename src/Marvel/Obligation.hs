@@ -32,5 +32,5 @@ allObligations = fromList $ map
 
 lookupObligation :: CardCode -> ObligationId -> Obligation
 lookupObligation cardCode = case lookup cardCode allObligations of
-  Just (SomeObligationCard a) -> Obligation <$> cbCardBuilder a
+  Just (SomeObligationCard a) -> Obligation <$> buildCard a
   Nothing -> error $ "Invalid card code for obligation " <> show cardCode

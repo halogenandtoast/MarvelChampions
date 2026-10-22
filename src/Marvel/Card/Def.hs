@@ -102,6 +102,8 @@ data CardDef = CardDef
   , cdHazards :: Natural
   , cdAcceleration :: Natural
   , cdLimit :: Maybe InPlayLimit
+  , -- | the codes the card is also printed under: a reprint, an alternate art
+    cdAlternateCardCodes :: [CardCode]
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -117,6 +119,33 @@ printedResources = mapMaybe printedResource . cdResources
 
 instance HasCardCode CardDef where
   toCardCode = cdCardCode
+
+-- | The card under each of its printings, its own code first: every printing is the
+-- same card with that printing's code, as ArkhamHorror's 'toCardCodePairs' has it.
+toCardCodePairs :: CardDef -> [(CardCode, CardDef)]
+toCardCodePairs c =
+  (cdCardCode c, c)
+    : [ (code, c {cdCardCode = code, cdAlternateCardCodes = map swap' (cdAlternateCardCodes c)})
+      | code <- cdAlternateCardCodes c
+      , let swap' c' = if c' == code then cdCardCode c else c'
+      ]
+
+-- | The card is also printed under these codes.
+reprintedAs :: [CardCode] -> CardDef -> CardDef
+reprintedAs codes def = def {cdAlternateCardCodes = codes}
+
+-- | A printing of the card under its own code, for a reprint whose def differs, as one in
+-- another encounter set; register its entity with 'reprintAs'.
+reprint :: CardCode -> CardDef -> CardDef
+reprint code def = def {cdCardCode = code, cdAlternateCardCodes = [cdCardCode def]}
+
+-- | A key every printing of a card shares: the lowest of its codes.
+canonicalCardCode :: CardDef -> CardCode
+canonicalCardCode c = foldl' min (cdCardCode c) (cdAlternateCardCodes c)
+
+-- | Are these two defs the same card, perhaps in different printings?
+sameCard :: CardDef -> CardDef -> Bool
+sameCard a b = canonicalCardCode a == canonicalCardCode b
 
 class HasCardDef a where
   getCardDef :: a -> CardDef

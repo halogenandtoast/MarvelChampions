@@ -36,7 +36,7 @@ liftTreacheryCard ::
 liftTreacheryCard f (SomeTreacheryCard a) = f a
 
 someTreacheryCardCode :: SomeTreacheryCard -> CardCode
-someTreacheryCardCode = liftTreacheryCard cbCardCode
+someTreacheryCardCode = liftTreacheryCard toCardCode
 
 instance Entity Treachery where
   type Id Treachery = TreacheryId
@@ -102,8 +102,8 @@ treacheryWith f cardDef g = treachery (f . g) cardDef
 treachery :: (Attrs Treachery -> a) -> CardDef -> CardBuilder TreacheryId a
 treachery f cardDef =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \mid ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef mid ->
         f $
           TreacheryAttrs
             { treacheryId = mid

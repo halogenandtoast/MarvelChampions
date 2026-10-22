@@ -34,5 +34,5 @@ allMainSchemes = fromList $ map
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme
 lookupMainScheme cardCode mainSchemeId = case lookup cardCode allMainSchemes of
   Just (SomeMainSchemeCard a) ->
-    Just . MainScheme $ cbCardBuilder a mainSchemeId
+    Just . MainScheme $ buildCard a mainSchemeId
   Nothing -> Nothing

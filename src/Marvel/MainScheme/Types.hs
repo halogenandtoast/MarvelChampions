@@ -38,7 +38,7 @@ liftMainSchemeCard ::
 liftMainSchemeCard f (SomeMainSchemeCard a) = f a
 
 someMainSchemeCardCode :: SomeMainSchemeCard -> CardCode
-someMainSchemeCardCode = liftMainSchemeCard cbCardCode
+someMainSchemeCardCode = liftMainSchemeCard toCardCode
 
 instance Entity MainScheme where
   type Id MainScheme = MainSchemeId
@@ -125,8 +125,8 @@ mainScheme ::
   CardBuilder MainSchemeId a
 mainScheme f cardDef threshold initialThreat acceleration =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \mid ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef mid ->
         f $
           MainSchemeAttrs
             { mainSchemeId = mid

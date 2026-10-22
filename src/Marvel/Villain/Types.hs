@@ -52,7 +52,7 @@ liftVillainCard :: (forall a. VillainCard a -> b) -> SomeVillainCard -> b
 liftVillainCard f (SomeVillainCard a) = f a
 
 someVillainCardCode :: SomeVillainCard -> CardCode
-someVillainCardCode = liftVillainCard cbCardCode
+someVillainCardCode = liftVillainCard toCardCode
 
 villainDamage :: Villain -> Natural
 villainDamage v =
@@ -172,8 +172,8 @@ villain ::
   VillainCard a
 villain f cardDef sch atk startingHp =
   CardBuilder
-    { cbCardCode = toCardCode cardDef
-    , cbCardBuilder = \ident ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef ident ->
         f $
           VillainAttrs
             { villainId = ident
@@ -427,7 +427,7 @@ instance IsRef (Attrs Villain) where
   toRef = VillainRef . villainId
 
 advanceVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
-advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ cbCardBuilder newVillain villainId
+advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildCard newVillain villainId
  where
   update =
     (confusedL .~ villainConfused)

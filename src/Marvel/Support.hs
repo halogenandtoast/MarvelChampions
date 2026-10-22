@@ -25,6 +25,7 @@ withSupportCardCode cCode f = case lookup cCode allSupports of
 allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
+  $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
   [ SomeSupportCard auntMay
   , SomeSupportCard alphaFlightStation
   , SomeSupportCard superhumanLawDivision
@@ -44,5 +45,5 @@ lookupSupport :: CardCode -> IdentityId -> SupportId -> Support
 lookupSupport cardCode identityId supportId =
   case lookup cardCode allSupports of
     Just (SomeSupportCard a) ->
-      Support $ cbCardBuilder a (identityId, supportId)
+      Support $ buildCard a (identityId, supportId)
     Nothing -> error $ "Invalid card code for support " <> show cardCode

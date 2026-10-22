@@ -42,7 +42,7 @@ liftMinionCard :: (forall a. MinionCard a -> b) -> SomeMinionCard -> b
 liftMinionCard f (SomeMinionCard a) = f a
 
 someMinionCardCode :: SomeMinionCard -> CardCode
-someMinionCardCode = liftMinionCard cbCardCode
+someMinionCardCode = liftMinionCard toCardCode
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMessage a, HasAbilities a) => IsMinion a where
   toMinionAttrs :: a -> Attrs Minion
@@ -213,8 +213,8 @@ minion ::
   CardBuilder (IdentityId, MinionId) a
 minion f cardDef sch atk hp =
   CardBuilder
-    { cbCardCode = cdCardCode cardDef
-    , cbCardBuilder = \(ident, mid) ->
+    { cbCardDef = cardDef
+    , cbCardBuilder = \cardDef (ident, mid) ->
         f $
           MinionAttrs
             { minionId = mid

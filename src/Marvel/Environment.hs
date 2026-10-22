@@ -30,7 +30,7 @@ allEnvironments =
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment
 lookupEnvironment cardCode = case lookup cardCode allEnvironments of
-  Just (SomeEnvironmentCard a) -> Environment <$> cbCardBuilder a
+  Just (SomeEnvironmentCard a) -> Environment <$> buildCard a
   Nothing -> error $ "Invalid card code for environment " <> show cardCode
 
 -- | Each facedown Drone minion has a base SCH, ATK and hit points of 1, and goes to its

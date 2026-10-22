@@ -24,12 +24,13 @@ withAllyCardCode cCode f = case lookup cCode allAllies of
 
 lookupAlly :: CardCode -> IdentityId -> AllyId -> Ally
 lookupAlly cardCode identityId allyId = case lookup cardCode allAllies of
-  Just (SomeAllyCard a) -> Ally $ cbCardBuilder a (identityId, allyId)
+  Just (SomeAllyCard a) -> Ally $ buildCard a (identityId, allyId)
   Nothing -> error $ "Invalid card code for ally " <> show cardCode
 
 allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
+  $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
   [ SomeAllyCard blackCatFeliciaHardy
   , SomeAllyCard spiderWomanJessicaDrew
   , SomeAllyCard hellcatPatsyWalker
