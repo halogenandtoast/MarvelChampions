@@ -21,6 +21,6 @@ newtype UnderFire = UnderFire (Attrs Treachery)
 instance RunMessage UnderFire where
   runMessage msg t@(UnderFire attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
-      revealTopOfEncounterDeck identityId
+      drawAndRevealEncounterCard identityId
       pure t
     _ -> UnderFire <$> runMessage msg attrs
