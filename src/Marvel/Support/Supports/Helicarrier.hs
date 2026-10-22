@@ -8,10 +8,9 @@ import Marvel.Card.Def (CardDef)
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -48,10 +47,8 @@ nextCardCostsLess def =
       . (endsL ?~ DisableAtEndOfPhase)
 
 instance RunMessage NextCardCostsLessEffect where
-  runMessage msg e@(NextCardCostsLessEffect attrs) = case msg of
+  runMessage msg e@(NextCardCostsLessEffect attrs) = runQueueT $ case msg of
     IdentityMessage ident (PlayedCard _ _) -> do
-      pushWhenM
-        (effectValidFor attrs (toRef ident))
-        (EffectMessage (effectId attrs) DisableEffect)
+      whenM (effectValidFor attrs (toRef ident)) $ disableEffect (effectId attrs)
       pure e
     _ -> NextCardCostsLessEffect <$> runMessage msg attrs

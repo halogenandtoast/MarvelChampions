@@ -8,18 +8,14 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -51,19 +47,15 @@ instance HasAbilities Quinjet where
 
 -- | Its time counters are kept as its uses.
 instance RunMessage Quinjet where
-  runMessage msg s@(Quinjet attrs) = case msg of
+  runMessage msg s@(Quinjet attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> pure $ Quinjet $ attrs & usesL +~ 1
     RanAbility ident (isTarget attrs -> True) 2 _ _ -> do
       cards <- selectList (avengersInHand attrs)
       chooseOne ident
-        [ TargetLabel
-          (toRef c)
+        [ targeting c do
           -- discarded before what answers the ally entering play
-          [ Run
-              [ RemoveFromPlay (toTarget attrs)
-              , PutCardIntoPlay ident c NoPayment Nothing
-              ]
-          ]
+          removeFromPlay attrs
+          putIntoPlay ident c
         | c <- cards
         ]
       pure s
