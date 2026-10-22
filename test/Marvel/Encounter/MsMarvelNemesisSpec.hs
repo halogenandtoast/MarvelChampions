@@ -1,6 +1,7 @@
 module Marvel.Encounter.MsMarvelNemesisSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.List (sort)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Phase (Phase (..))
 import Marvel.SideScheme.Cards qualified as SideSchemes
@@ -18,6 +19,18 @@ deckSizeOf p = length . unDeck . (.playerIdentityDeck) <$> playerAttrs p
 
 spec :: Spec
 spec = describe "Ms. Marvel nemesis" do
+  describe "Shadow of the Past" do
+    it "puts Thomas Edison, her nemesis minion, into play and shuffles the robot in" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        _ <- revealNow p Treacheries.shadowOfThePast
+        pass
+        getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameMinions) `shouldReturn` ["05027"]
+        getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameSideSchemes) `shouldReturn` ["05026"]
+        sort . filter (`elem` ["05028", "05029"]) . map toCardCode <$> scenarioEncounterDeckNow
+          `shouldReturn` ["05028", "05029", "05029"]
+
   describe "Generation Why? (05026)" do
     it "discards the top card of each player's deck for each ally and Persona support in play" do
       tg <- testGame ["ms-marvel", "black-panther"]
