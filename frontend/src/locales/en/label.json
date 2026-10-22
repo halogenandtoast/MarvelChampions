@@ -74,9 +74,7 @@
   "discardMjolnirStunned": "Discard Mjolnir from your hand or from play, you are stunned, discard Odin's Anger",
   "chooseCardToDiscard": "Choose a card to discard",
   "chooseNextCardOnTop": "Choose the next card to put on top of the encounter deck",
-  "chooseAllyToExhaust": "Choose an ally to exhaust"
-  "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation"
-  "discardAPersonaSupport": "Discard a Persona support"
+  "chooseAllyToExhaust": "Choose an ally to exhaust",
   "heal1FromYourIdentity": "Heal 1 damage from your identity",
   "discardTopInvocation": "Discard the top card of the Invocation deck",
   "chooseCharacterToGiveTough": "Choose a character to give a tough status card",
