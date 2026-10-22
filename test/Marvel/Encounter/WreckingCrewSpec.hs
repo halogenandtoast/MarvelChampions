@@ -197,6 +197,42 @@ spec = describe "The Wrecking Crew" do
     inGame tg do
       codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameVillains)
       sort codes `shouldBe` ["07003", "07018", "07033", "07047"]
+
+  it "Ramming Speed: attacked, you must defend with an ally you control if able, and cannot decline" do
+    tg <- breakout ["spider-man", "she-hulk"]
+    inGame tg do
+      [p1, p2] <- players
+      b <- bulldozer
+      resolve [SetActiveVillain b]
+      _ <- revealNow p1 Attachments.rammingSpeed
+      mine <- allyIdOf <$> putIntoPlay p1 "01002"
+      theirs <- allyIdOf <$> putIntoPlay p2 "01067"
+      runNow [VillainMessage b (VillainAttacks p1)]
+      let defending = \case
+            Just (_, cs) | any isNoResponse cs -> choose "not respond" isNoResponse >> asked
+            q -> pure q
+      asked >>= defending >>= defending >>= \case
+        Just (who, cs) -> do
+          who `shouldBe` p1
+          length cs `shouldBe` 1
+          cs `shouldSatisfy` all \case
+            AllyDefend a _ -> a == mine
+            _ -> False
+          cs `shouldSatisfy` notElem (AllyDefend theirs (EnemyVillainId b))
+        Nothing -> error "no defender asked"
+
+  it "Ramming Speed with no ally able leaves the attack defended as any other" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      b <- bulldozer
+      resolve [SetActiveVillain b]
+      _ <- revealNow p Attachments.rammingSpeed
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      runNow [VillainMessage b (VillainAttacks p)]
+      whenM (offers isNoResponse) $ choose "not respond" isNoResponse
+      offers isNoDefender `shouldReturn` True
  where
   ranMessage tg msg = elem (tshow msg) <$> liftIO (readIORef tg.ran)
 

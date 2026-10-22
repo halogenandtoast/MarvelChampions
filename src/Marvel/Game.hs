@@ -1260,12 +1260,18 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- each player decides for themselves whether a character they control defends (RR
   -- "Defend"): the attacked player first, who may ask another player before deciding;
   -- once they decline, each other player in turn is asked
+  -- "you must defend with an ally you control, if able" (Melter, Ramming Speed): the
+  -- attacked player chooses one of their allies able to defend, and may not decline, nor
+  -- may another player defend instead; with none able, the attack is defended as any other
+  DeclareDefenseWithout ident enemyId AllyIfAble [] -> do
+    own <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
+    if null own
+      then declareDefenseWithout ident enemyId AnyDefense []
+      else chooseOnePromptedAbout ident "$label.declareDefender" enemyId [pure (AllyDefend a enemyId) | a <- own]
+    pure g
   DeclareDefenseWithout ident enemyId defensePriority declined -> do
     allies <- selectList UnexhaustedAlly
-    identities <-
-      if defensePriority == AllyIfAble && not (null allies)
-        then pure mempty
-        else select $ UnexhaustedIdentity <> HeroIdentity
+    identities <- select $ UnexhaustedIdentity <> HeroIdentity
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
       defensesOf owner =
