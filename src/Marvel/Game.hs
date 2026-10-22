@@ -19,6 +19,7 @@ import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
 import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
@@ -1845,3 +1846,12 @@ gameSelectCountIdentity aggregate matcher = do
   case aggregate of
     SustainedDamage -> pure . sum $ map identityDamage identities
     HeroAttackDamage -> sum <$> traverse getIdentityHeroAttackDamage identities
+
+-- | The allies' modified ATK or THW, summed.
+gameSelectCountAlly ::
+  (HasGame m) => QueryCount AllyMatcher -> AllyMatcher -> m Natural
+gameSelectCountAlly aggregate matcher = do
+  allies <- filterM (allyMatches matcher . toId) . HashMap.elems =<< getsGame gameAllies
+  sum <$> for allies \ally -> case aggregate of
+    AllyAttackValue -> Ally.getModifiedAttack (toAttrs ally)
+    AllyThwartValue -> Ally.getModifiedThwart (toAttrs ally)
