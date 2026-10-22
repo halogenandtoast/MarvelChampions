@@ -29,6 +29,27 @@ mechanic there before implementing it.
 - Labels the client shows are i18n keys (`$label.…`); add the English to
   `frontend/src/locales/en/label.json`. Log keys live in `log.json`.
 
+## The lifted layer
+
+Cards are being moved onto it; the events are done, the rest follow this pattern.
+
+- A handler is `runMessage msg e@(X attrs) = runQueueT $ case msg of ...`, falling through
+  with `_ -> X <$> runMessage msg attrs`. Under `runQueueT` what it does runs in the order
+  written; queue edits (`preventDamage`, `cancelWhenRevealed`, `insteadOf`) still see the
+  game's queue, not what the handler has done so far.
+- A card imports `Marvel.Message.Lifted` (helpers in `src/Marvel/Message/Lifted.hs`,
+  `QueueT` in `Lifted/Queue.hs`) instead of `Marvel.Message`, `Marvel.Choice` and
+  `Marvel.Queue`, and never pushes a message itself: `dealDamage enemy attrs dmg`,
+  `removeThreat you attrs 2 ThwartableScheme`, `drawCards you 1`, `cardSpecific attrs k v`.
+  A missing one is added there, one line, its arguments any id that names the element
+  (`IsEnemy`, `IsCharacter`, `IsScheme` in `Marvel.Ref`, or `IsRef`).
+- A question is its choices, each built from what choosing it does:
+  `chooseOne you [targeting (enemyRef enemy) (dealDamage enemy attrs dmg) | enemy <- enemies]`,
+  `labeled "$label.done" (pure ())`. What a choice does is worked out as it is asked, so a
+  step that must see the game after an earlier one is a `cardSpecific` step of its own.
+- Keep the target a choice is offered on as it was (`enemyRef` for a villain's or minion's
+  own ref, `characterRef`): tests and the client find choices by it.
+
 Card text is in `frontend/public/data/cards.json` (MarvelCDB, rebuilt by
 `tools/generate-cards.py`).
 
