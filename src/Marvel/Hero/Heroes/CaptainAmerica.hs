@@ -34,7 +34,7 @@ newtype CaptainAmerica = CaptainAmerica (Attrs Hero)
 instance HasAbilities CaptainAmerica where
   getAbilities (CaptainAmerica a) =
     [ label "\"I Can Do This All Day!\"" $
-        limitedAbility a 1 (PerRound 1) Action IsSelf (DiscardHandCardsCost 1 (Just 1)) ReadyIdentity
+        limitedAbility a 1 (PerRound 1) Action (IsSelf <> Exhausted) (DiscardHandCardsCost 1 (Just 1)) ReadyIdentity
     ]
 
 instance RunMessage CaptainAmerica where

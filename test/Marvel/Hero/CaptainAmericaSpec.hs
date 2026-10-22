@@ -75,15 +75,18 @@ spec = describe "Captain America" do
         attackVillain p
         offers (isLabeledAbility "\"I Can Do This All Day!\"") `shouldReturn` False
 
-    it "needs a card to discard, and is not Steve Rogers's" do
+    it "needs Captain America exhausted and a card to discard, and is not Steve Rogers's" do
       tg <- testGame ["captain-america"]
       let p = player1 tg
       inGame tg do
         clearHand p
         flipTo p A
+        runNow [IdentityMessage p ExhaustedIdentity]
         offers (isLabeledAbility "\"I Can Do This All Day!\"") `shouldReturn` False
         _ <- putInHand p "03003"
         offers (isLabeledAbility "\"I Can Do This All Day!\"") `shouldReturn` True
+        runNow [IdentityMessage p ReadiedIdentity]
+        offers (isLabeledAbility "\"I Can Do This All Day!\"") `shouldReturn` False
         flipTo p B
         offers (isLabeledAbility "\"I Can Do This All Day!\"") `shouldReturn` False
 
