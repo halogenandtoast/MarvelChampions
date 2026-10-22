@@ -1,7 +1,10 @@
 module Marvel.Rules.AreasSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson (Value (..), toJSON)
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
+import Marvel.Game.Public (publicGame)
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
@@ -232,5 +235,24 @@ spec = describe "game areas" do
       ranMessage tg (AreaDefeated aid) `shouldReturn` True
       getsGame gameState `shouldReturn` InProgress
       areaPlayers <$> getAreaOf p1 `shouldReturn` [p1]
+
+  it "a defeated villain's kept deck is shown in the area he was in" do
+    tg <- testGame ["spider-man", "thor"]
+    inGame tg do
+      [_, p2] <- players
+      aid <- splitOff p2
+      klaw <- addVillainFor p2 "01113"
+      deck@[card] <- traverse encounterCard [Treacheries.advance]
+      resolve [CreateDeck (VillainDeckKey klaw) deck]
+      -- kept for his cards still in play, as Breakout keeps it
+      resolve [RemoveFromPlay (VillainRef klaw), CreateDeck (VillainDeckKey klaw) [card]]
+      view <- liftIO . publicGame =<< getGame
+      let decksOf = \case
+            Object a | Just (Array ds) <- KeyMap.lookup "decks" a -> [d | Object d <- toList ds, KeyMap.lookup "kind" d == Just (String "villain")]
+            _ -> []
+          areas = case view of
+            Object o | Just (Array as) <- KeyMap.lookup "areas" o -> [(KeyMap.lookup "id" a, decksOf (Object a)) | Object a <- toList as]
+            _ -> []
+      [(i, length ds) | (i, ds) <- areas] `shouldBe` [(Just (toJSON defaultAreaId), 0), (Just (toJSON aid), 1)]
  where
   scenarioDecksOf = scenarioDecks . toAttrs . gameScenario

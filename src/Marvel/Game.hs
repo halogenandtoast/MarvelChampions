@@ -853,10 +853,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           (removeFromPlay . AttachmentRef)
         let
           leave area =
+            -- he stays listed in his area, out of play there: his kept deck is shown in it
             let rest = filter (/= vid) (areaVillains area)
              in area
-                  { areaVillains = rest
-                  , areaActiveVillain = if areaActiveVillain area == Just vid then headMay rest else areaActiveVillain area
+                  { areaActiveVillain = if areaActiveVillain area == Just vid then headMay rest else areaActiveVillain area
                   , areaSideSchemes = filter ((/= signature) . Just) (areaSideSchemes area)
                   }
         pure $

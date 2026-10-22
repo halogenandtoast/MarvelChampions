@@ -388,6 +388,8 @@ gameView seesHand g = do
         pileView key = maybe [] pure (HashMap.lookup key scenario.scenarioDecks) <&> \(Pile d x) ->
           (length d, map (cardView . EncounterCard) x)
         deckView kind name key = [DeckView kind name size discard | (size, discard) <- pileView key]
+        first = Just aid == fmap areaId (headMay (gameAreas g))
+        defeatedHere v = maybe first ((== aid) . areaId) (L.find (elem v . areaVillains) (gameAreas g))
      in AreaView
           { id = aid
           , players = [pid | pid <- gameSeats g, here (IdentityRef pid)]
@@ -399,9 +401,10 @@ gameView seesHand g = do
           , decks =
               concat [deckView "villain" (villainName v) (VillainDeckKey v) | v <- villainsHere]
                 -- a defeated villain's deck and discard pile, kept for his cards still in
-                -- play, in the first area
-                <> concat [deckView "villain" (villainName v) k | aid == defaultAreaId, k@(VillainDeckKey v) <- HashMap.keys scenario.scenarioDecks, not (HashMap.member v (gameVillains g))]
-                <> concat [deckView "named" (Just n) k | k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
+                -- play, in the area he was in (the first, if none lists him)
+                <> concat [deckView "villain" (villainName v) k | k@(VillainDeckKey v) <- HashMap.keys scenario.scenarioDecks, not (HashMap.member v (gameVillains g)), defeatedHere v]
+                -- a named deck is the scenario's, by the first area's main scheme
+                <> concat [deckView "named" (Just n) k | first, k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
           , accelerationTokens = if Just aid == fmap areaId (headMay (gameAreas g)) then scenario.scenarioAccelerationTokens else 0
           }
