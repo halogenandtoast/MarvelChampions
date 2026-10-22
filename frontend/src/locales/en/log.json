@@ -96,6 +96,9 @@
   "attackGainsRanged": "{target}'s attack gains ranged",
 
   "-- The Once and Future Kang --": "",
+  "areaCreated": "{player} is sent to a game area of their own",
+  "areaJoins": "{player} joins {other}'s game area",
+  "areaJoinsCentral": "{player} joins The Master of Time's game area",
 
   "-- end --": ""
 }

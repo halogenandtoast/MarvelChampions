@@ -21,6 +21,7 @@ import Marvel.Ability.Types (Ability (..), AbilityType (..))
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
+import Marvel.Area (Area (..))
 import Marvel.Card
 import Marvel.EncounterCard (allEncounterCards)
 import Marvel.PlayerCard (allPlayerCards)
@@ -107,6 +108,19 @@ narrationFor = \case
   -- put into play attached, not revealed: the card is not in play yet to be named
   AttachEncounterCard card enemy -> Just $ whenRef (EnemyRef enemy) \t ->
     one $ toned Bad $ mechanic [ikeyPart "log.attachedTo" ["card" ~> EncounterCard card, "target" ~> t]]
+  -- * Game areas
+  CreateArea _ ps -> Just do
+    who <- traverse playerRef' ps
+    pure [mechanic [ikeyPart "log.areaCreated" ["player" ~> p]] | p <- who]
+  -- the players of an area join another's; an area with none left says nothing
+  CombineAreas from into -> Just do
+    areas <- getAreas
+    let playersOf aid = concat [areaPlayers a | a <- areas, areaId a == aid]
+    who <- traverse playerRef' (playersOf from)
+    others <- traverse playerRef' (take 1 $ playersOf into)
+    pure case others of
+      other : _ -> [mechanic [ikeyPart "log.areaJoins" ["player" ~> p, "other" ~> other]] | p <- who]
+      [] -> [mechanic [ikeyPart "log.areaJoinsCentral" ["player" ~> p]] | p <- who]
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
   DiscardTopOfEncounterDeck n _ | n > 0 -> Just $ one $ mechanic [ikeyPart "log.encounterCardsDiscarded" ["count" ~> n]]
   -- told once, as it is dealt; each character's share is told as it takes it

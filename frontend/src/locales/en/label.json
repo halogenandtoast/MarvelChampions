@@ -135,6 +135,11 @@
   "take1Damage": "Take 1 damage",
 
   "-- The Once and Future Kang --": "",
+  "kangPlacesThreat": "Place 1 threat on the main scheme",
+  "kangGetsAttack": "Kang gets +2 ATK for this attack",
+  "keepUniqueCopy": "Areas combine: keep which copy of this unique card? The others are discarded",
+  "discardRandomCardFromHand": "Discard 1 card at random from your hand",
+  "placeTwoThreatHere": "Place 2 threat on Corrupted Timestream",
 
   "-- end --": ""
 }
