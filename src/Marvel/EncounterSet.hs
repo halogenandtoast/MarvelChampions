@@ -72,12 +72,19 @@ modularSets =
   , LegionsOfHydra
   , TheDoomsdayChair
   -- The Green Goblin
+  , GoblinGimmicks
+  , AMessOfThings
+  , PowerDrain
+  , RunningInterference
 
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , Temporal
+  , Anachronauts
+  , MasterOfTime
 
   ]
 

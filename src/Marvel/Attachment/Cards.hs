@@ -32,6 +32,10 @@ allAttachments =
       , biomechanicalUpgrades
       , counterspell
       -- The Green Goblin
+      , goblinGlider
+      , pumpkinBombs
+      , allTiedUp
+      , mediaCoverage
 
       -- The Wrecking Crew
 
@@ -162,3 +166,17 @@ combatKnife = attachment "04148" "Combat Knife" [Weapon] [Boost] WeaponMaster 1
 
 hydraSidearm :: CardDef
 hydraSidearm = attachment "04149" "Hydra Sidearm" [Weapon] [Boost, Boost] WeaponMaster 1
+
+-- The Green Goblin
+
+goblinGlider :: CardDef
+goblinGlider = attachment "02033" "Goblin Glider" [Vehicle] [Boost, Boost, Boost] GoblinGimmicks 2
+
+pumpkinBombs :: CardDef
+pumpkinBombs = attachment "02034" "Pumpkin Bombs" [Weapon] [Boost, Boost] GoblinGimmicks 2
+
+allTiedUp :: CardDef
+allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
+
+mediaCoverage :: CardDef
+mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2

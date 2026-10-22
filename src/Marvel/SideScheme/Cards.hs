@@ -39,6 +39,9 @@ allSideSchemes = fromList $ map
   , openTheDarkDimension
   , totalDestruction
   -- The Green Goblin
+  , aMessOfThings
+  , powerDrain
+  , runningInterference
 
   -- The Wrecking Crew
 
@@ -50,6 +53,9 @@ allSideSchemes = fromList $ map
   , hydraPatrol
 
   -- The Once and Future Kang
+  , timePortal
+  , theAnachronauts
+  , lightOfCenturiesSphere
 
   ]
 
@@ -233,3 +239,26 @@ superAbsorbingPower = sideScheme "04092" "Super Absorbing Power" [Star] Absorbin
 
 hydraPatrol :: CardDef
 hydraPatrol = sideScheme "04154" "Hydra Patrol" [Boost, Boost] HydraPatrol 1
+
+-- The Green Goblin
+
+aMessOfThings :: CardDef
+aMessOfThings = (sideScheme "02037" "A Mess of Things" [Boost, Boost] AMessOfThings 1) {cdHazards = 1}
+
+powerDrain :: CardDef
+powerDrain = (sideScheme "02041" "Power Drain" [Boost, Boost, Boost] PowerDrain 1) {cdAcceleration = 1}
+
+runningInterference :: CardDef
+runningInterference = sideScheme "02046" "Running Interference" [Boost] RunningInterference 1
+
+-- The Once and Future Kang
+
+timePortal :: CardDef
+timePortal = (sideScheme "11033" "Time Portal" [Boost, Boost] Temporal 1) {cdHazards = 1}
+
+theAnachronauts :: CardDef
+theAnachronauts = (sideScheme "11045" "The Anachronauts" [Boost, Boost, Boost] Anachronauts 2) {cdHazards = 1}
+
+lightOfCenturiesSphere :: CardDef
+lightOfCenturiesSphere =
+  (sideScheme "11050" "Light of Centuries Sphere" [Boost, Boost, Boost] MasterOfTime 1) {cdHazards = 1}

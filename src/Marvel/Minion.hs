@@ -59,12 +59,25 @@ allMinions =
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
       -- The Green Goblin
+      , SomeMinionCard scorpion
+      , SomeMinionCard electro
+      , SomeMinionCard tombstone
 
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
 
       -- The Once and Future Kang
+      , SomeMinionCard ancientWarrior
+      , SomeMinionCard chitauriSoldier
+      , SomeMinionCard tyrannosaurusRex
+      , SomeMinionCard apocryphus
+      , SomeMinionCard deathunt9000
+      , SomeMinionCard sirRaston
+      , SomeMinionCard terminatrix
+      , SomeMinionCard wildrun
+      , SomeMinionCard kangMasterOfTime
+      , SomeMinionCard timeDisplacedSoldier
 
       ]
 

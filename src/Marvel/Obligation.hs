@@ -41,6 +41,7 @@ allObligations = fromList $ map
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , SomeObligationCard fearOfKang
 
   ]
 

@@ -87,6 +87,7 @@ narrationFor = \case
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
+  DiscardTopOfEncounterDeck n _ | n > 0 -> Just $ one $ mechanic [ikeyPart "log.encounterCardsDiscarded" ["count" ~> n]]
   -- told once, as it is dealt; each character's share is told as it takes it
   AssignIndirectDamage ident _ n [] | n > 0 -> Just do
     who <- playerRef' ident

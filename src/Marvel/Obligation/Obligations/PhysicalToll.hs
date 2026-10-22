@@ -15,6 +15,8 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
+import Marvel.Ability.Types (HasAbilities)
+import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -27,6 +29,7 @@ newtype Meta = Meta {lingering :: Bool}
   deriving anyclass (ToJSON, FromJSON)
 
 newtype PhysicalToll = PhysicalToll (Attrs Obligation `With` Meta)
+  deriving anyclass (HasAbilities, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
 instance IsObligation PhysicalToll where

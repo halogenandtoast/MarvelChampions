@@ -7,6 +7,7 @@ import Marvel.Card
 import Marvel.Id
 import Marvel.Treachery.Types
 import Marvel.Treachery.Treacheries
+import Marvel.Treachery.Cards qualified as Cards
 
 instance FromJSON Treachery where
   parseJSON = withObject "Treachery" $ \o -> do
@@ -63,12 +64,21 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard thoughtcasting
   , SomeTreacheryCard clashOfTheTitans
   -- The Green Goblin
+  , SomeTreacheryCard intimidation
+  , SomeTreacheryCard regenerativeHealing
+  , SomeTreacheryCard (reprintAs Cards.gangUpAMessOfThings gangUp)
+  , SomeTreacheryCard tailSweep
+  , SomeTreacheryCard electromagneticPulse
+  , SomeTreacheryCard lightningBolt
+  , SomeTreacheryCard shockTherapy
 
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , SomeTreacheryCard kangsChosen
+  , SomeTreacheryCard ancientGrudge
 
   ]
 
