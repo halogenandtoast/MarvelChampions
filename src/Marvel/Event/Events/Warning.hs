@@ -9,7 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -23,7 +23,7 @@ newtype Warning = Warning (Attrs Event)
 
 -- | When a hero would take any amount of damage, reduce that amount by 1.
 instance RunMessage Warning where
-  runMessage msg e@(Warning attrs) = case msg of
+  runMessage msg e@(Warning attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent _ _ (Just (W.IdentityTakeDamage hero _))) | ident == eventId attrs -> do
       preventDamage hero 1
       pure e

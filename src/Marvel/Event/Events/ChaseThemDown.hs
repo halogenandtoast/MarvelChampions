@@ -6,14 +6,12 @@ module Marvel.Event.Events.ChaseThemDown (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
 import Marvel.Ref
 
 chaseThemDown :: EventCard ChaseThemDown
@@ -24,12 +22,10 @@ newtype ChaseThemDown = ChaseThemDown (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage ChaseThemDown where
-  runMessage msg e@(ChaseThemDown attrs) = case msg of
+  runMessage msg e@(ChaseThemDown attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        pushChoice
-          identityId
-          (RemoveThreat (toRef attrs) 2 ThwartableScheme)
+        removeThreat identityId attrs 2 ThwartableScheme
         pure e
       _ -> ChaseThemDown <$> runMessage msg attrs
     _ -> ChaseThemDown <$> runMessage msg attrs

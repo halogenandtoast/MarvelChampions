@@ -6,16 +6,13 @@ module Marvel.Event.Events.ForJustice (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -27,17 +24,14 @@ newtype ForJustice = ForJustice (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage ForJustice where
-  runMessage msg e@(ForJustice attrs) = case msg of
+  runMessage msg e@(ForJustice attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let
           usedMental = Mental `elem` resources || Wild `elem` resources
           thwart = if usedMental then 4 else 3
-        pushAll
-          =<< choiceMessages
-            identityId
-            (RemoveThreat (toSource attrs) thwart ThwartableScheme)
+        removeThreat identityId attrs thwart ThwartableScheme
         pure e
       _ -> ForJustice <$> runMessage msg attrs
     _ -> ForJustice <$> runMessage msg attrs

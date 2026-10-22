@@ -7,15 +7,12 @@ import Marvel.Prelude
 
 import Marvel.Payment
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 legalPractice :: EventCard LegalPractice
@@ -27,9 +24,8 @@ newtype LegalPractice = LegalPractice (Attrs Event)
 
 -- | Discarding up to 5 cards is its cost → remove 1 threat for each.
 instance RunMessage LegalPractice where
-  runMessage msg e@(LegalPractice attrs) = case msg of
+  runMessage msg e@(LegalPractice attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
-      pushChoice identityId $
-        RemoveThreat (toSource attrs) (fromIntegral $ length $ paymentDiscards payment) ThwartableScheme
+      removeThreat identityId attrs (fromIntegral $ length $ paymentDiscards payment) ThwartableScheme
       pure e
     _ -> LegalPractice <$> runMessage msg attrs

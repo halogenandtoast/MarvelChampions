@@ -12,9 +12,8 @@ import Marvel.Effect.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 
 fearlessDetermination :: EventCard FearlessDetermination
@@ -25,12 +24,10 @@ newtype FearlessDetermination = FearlessDetermination (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage FearlessDetermination where
-  runMessage msg e@(FearlessDetermination attrs) = case msg of
+  runMessage msg e@(FearlessDetermination attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      pushAll
-        [ CreatedEffect Cards.fearlessDetermination (toSource e) (IdentityEntity $ IdentityWithId identityId)
-        , IdentityMessage identityId $ DrawCards FromDeck 1
-        ]
+      createEffect Cards.fearlessDetermination e (IdentityEntity $ IdentityWithId identityId)
+      drawCards identityId 1
       pure e
     _ -> FearlessDetermination <$> runMessage msg attrs
 

@@ -7,16 +7,14 @@ import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
 import Marvel.Ref
 import Marvel.Trait
 
@@ -40,18 +38,12 @@ instance HasModifiersFor WakandaForeverA where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage WakandaForeverA where
-  runMessage msg (WakandaForeverA (attrs `With` meta)) = case msg of
+  runMessage msg (WakandaForeverA (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         upgradeIds <-
           select $ UpgradeWithTrait BlackPanther <> UpgradeControlledBy (IdentityWithId identityId)
-        chooseOneAtATime
-          identityId
-          [ TargetLabel
-            (toRef upgradeId)
-            [RunAbility (toRef upgradeId) 1]
-          | upgradeId <- HashSet.toList upgradeIds
-          ]
+        chooseOneAtATime identityId [targetingAbility upgradeId 1 | upgradeId <- HashSet.toList upgradeIds]
         pure $ WakandaForeverA (attrs `With` Meta upgradeIds)
       _ -> WakandaForeverA . (`With` meta) <$> runMessage msg attrs
     RanAbility _ (UpgradeRef upgradeId) 1 _ _

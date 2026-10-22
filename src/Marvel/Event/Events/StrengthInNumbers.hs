@@ -6,17 +6,12 @@ module Marvel.Event.Events.StrengthInNumbers (
 import Marvel.Prelude
 
 import Marvel.Payment
-import Data.Aeson (Result (..), fromJSON)
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Matchers hiding (ExhaustedAlly)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 strengthInNumbers :: EventCard StrengthInNumbers
@@ -28,9 +23,9 @@ newtype StrengthInNumbers = StrengthInNumbers (Attrs Event)
 
 -- | Exhausting any number of allies is its cost → draw a card for each.
 instance RunMessage StrengthInNumbers where
-  runMessage msg e@(StrengthInNumbers attrs) = case msg of
+  runMessage msg e@(StrengthInNumbers attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
       let n = fromIntegral $ length $ paymentExhaustedAllies payment
-      pushWhen (n > 0) $ IdentityMessage identityId $ DrawCards FromDeck n
+      when (n > 0) $ drawCards identityId n
       pure e
     _ -> StrengthInNumbers <$> runMessage msg attrs

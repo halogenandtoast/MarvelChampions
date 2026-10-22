@@ -4,7 +4,6 @@ import Marvel.Prelude
 
 import Data.Typeable
 import Marvel.Card
-import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Identity.Types
@@ -13,7 +12,6 @@ import Marvel.Id hiding (EventId)
 import Marvel.Id as X (EventId)
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Ability.Types qualified as Ability
@@ -111,17 +109,6 @@ instance IsCard (Attrs Event) where
         , pcOwner = Just $ eventController a
         , pcController = Just $ eventController a
         }
-
-damageChoice :: Attrs Event -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [DamageEnemy (toRef vid) (toRef attrs) dmg]
-  EnemyMinionId vid ->
-    TargetLabel
-      (toRef vid)
-      [DamageEnemy (toRef vid) (toRef attrs) dmg]
 
 instance RunMessage (Attrs Event) where
   runMessage msg e = runQueueT $ case msg of

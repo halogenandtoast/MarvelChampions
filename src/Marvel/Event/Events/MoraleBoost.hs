@@ -8,14 +8,13 @@ module Marvel.Event.Events.MoraleBoost (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Effect.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
+import Marvel.Query
 import Marvel.Modifier
-import Marvel.Question
 import Marvel.Ref
 
 moraleBoost :: EventCard MoraleBoost
@@ -26,11 +25,12 @@ newtype MoraleBoost = MoraleBoost (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage MoraleBoost where
-  runMessage msg e@(MoraleBoost attrs) = case msg of
+  runMessage msg e@(MoraleBoost attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        pushChoice identityId $
-          CreateEffect Cards.moraleBoost (toSource attrs) (TargetMatches $ IdentityEntity HeroIdentity)
+        heroes <- selectList HeroIdentity
+        chooseOrRunOne identityId
+          [targeting hero $ createEffect Cards.moraleBoost attrs (IdentityEntity $ IdentityWithId hero) | hero <- heroes]
         pure e
       _ -> MoraleBoost <$> runMessage msg attrs
     _ -> MoraleBoost <$> runMessage msg attrs

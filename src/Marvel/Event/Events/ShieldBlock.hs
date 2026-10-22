@@ -8,11 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 
@@ -26,10 +23,8 @@ newtype ShieldBlock = ShieldBlock (Attrs Event)
 -- | The shield is exhausted as its cost, and all of the damage the player would take is
 -- prevented.
 instance RunMessage ShieldBlock where
-  runMessage msg e@(ShieldBlock attrs) = case msg of
+  runMessage msg e@(ShieldBlock attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      cancelMatchingMessage \case
-        IdentityMessage identityId' (IdentityDamaged _ _) -> identityId' == identityId
-        _ -> False
+      cancelDamage identityId
       pure e
     _ -> ShieldBlock <$> runMessage msg attrs

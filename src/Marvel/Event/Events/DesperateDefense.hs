@@ -11,10 +11,9 @@ import Marvel.Event.Types
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types (Field (PlayerIdentityDamage))
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -45,7 +44,7 @@ instance HasModifiersFor DesperateDefense where
 -- | When your hero defends: +2 DEF for that attack, and if you take no damage from it,
 -- ready your hero.
 instance RunMessage DesperateDefense where
-  runMessage msg (DesperateDefense (attrs `With` meta)) = case msg of
+  runMessage msg (DesperateDefense (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ (Just (W.HeroDefends _ _))) | ident == eventId attrs ->
       pure . DesperateDefense $ attrs `With` Meta (Just identityId)
     IdentityMessage ident (AttackDefended _ damageBefore) | defending meta == Just ident -> do
@@ -53,6 +52,6 @@ instance RunMessage DesperateDefense where
       alive <- elem ident <$> getPlayers
       when alive do
         damage <- project PlayerIdentityDamage ident
-        pushWhen (damage <= damageBefore) $ IdentityMessage ident ReadiedIdentity
+        when (damage <= damageBefore) $ ready ident
       pure . DesperateDefense $ attrs `With` Meta Nothing
     _ -> DesperateDefense . (`With` meta) <$> runMessage msg attrs

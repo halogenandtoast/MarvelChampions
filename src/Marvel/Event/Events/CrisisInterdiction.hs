@@ -10,11 +10,9 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Trait
 
@@ -26,34 +24,18 @@ newtype CrisisInterdiction = CrisisInterdiction (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage CrisisInterdiction where
-  runMessage msg e@(CrisisInterdiction attrs) = case msg of
+  runMessage msg e@(CrisisInterdiction attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        let
-          handleRest [] = []
-          handleRest xs =
-            [ Run
-                [ Ask identityId $
-                    ChooseOne
-                      [ TargetLabel
-                        target
-                        [ThwartScheme target (toSource attrs) 2]
-                      | x <- xs
-                      , let target = toRef x
-                      ]
-                ]
-            ]
         aerial <- identityMatches (IdentityWithTrait Aerial) identityId
         schemesWithRest <- removeEach <$> selectList ThwartableScheme
-        push $
-          Ask identityId $
-            ChooseOne
-              [ TargetLabel target $
-                ThwartScheme target (toSource attrs) 2
-                  : [c | aerial, c <- handleRest rest]
-              | (x, rest) <- schemesWithRest
-              , let target = toRef x
-              ]
+        chooseOne identityId
+          [ targeting scheme do
+              thwartScheme scheme attrs 2
+              when (aerial && notNull rest) $
+                chooseOne identityId [targeting other $ thwartScheme other attrs 2 | other <- rest]
+          | (scheme, rest) <- schemesWithRest
+          ]
         pure e
       _ -> CrisisInterdiction <$> runMessage msg attrs
     _ -> CrisisInterdiction <$> runMessage msg attrs

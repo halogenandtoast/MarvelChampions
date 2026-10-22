@@ -7,17 +7,14 @@ import Marvel.Prelude
 
 import Marvel.Boost
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 astralProjection :: EventCard AstralProjection
@@ -43,22 +40,17 @@ instance IsRef AstralProjection where
 -- | Choose a scheme, then look at the top card of the encounter deck: 3 threat is
 -- removed from it, and 1 more for each boost icon on that card.
 instance RunMessage AstralProjection where
-  runMessage msg e@(AstralProjection (attrs `With` meta)) = case msg of
+  runMessage msg e@(AstralProjection (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
       schemes <- selectList ThwartableScheme
-      push $
-        Ask identityId $
-          prompted "$label.chooseSchemeToThwart" $
-            ChooseOne
-              [ TargetLabel (toRef s) [Run [cardSpecific attrs "scheme" s]]
-              | s <- schemes
-              ]
+      chooseOnePrompted identityId "$label.chooseSchemeToThwart"
+        [targeting s $ cardSpecific attrs "scheme" s | s <- schemes]
       pure e
     CardSpecific (isTarget attrs -> True) "scheme" (fromJSON -> Success s) -> do
-      push $ LookAtTopOfEncounterDeck 1 (toTarget attrs)
+      lookAtTopOfEncounterDeck 1 attrs
       pure . AstralProjection $ attrs `With` Meta (Just s)
     SearchFoundCards (isTarget attrs -> True) cards | Just s <- scheme meta -> do
       let boosts = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-      pushChoice (eventController attrs) $ ThwartScheme (toRef s) (toSource attrs) (3 + boosts)
+      thwartScheme s attrs (3 + boosts)
       pure e
     _ -> AstralProjection . (`With` meta) <$> runMessage msg attrs

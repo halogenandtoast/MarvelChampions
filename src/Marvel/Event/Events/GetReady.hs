@@ -6,15 +6,13 @@ module Marvel.Event.Events.GetReady (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message hiding (ExhaustedAlly)
+import Marvel.Message.Lifted hiding (ExhaustedAlly)
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
 import Marvel.Ref
 
 getReady :: EventCard GetReady
@@ -25,16 +23,11 @@ newtype GetReady = GetReady (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage GetReady where
-  runMessage msg e@(GetReady attrs) = case msg of
+  runMessage msg e@(GetReady attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         allies <- selectList ExhaustedAlly
-        chooseOne identityId $
-          map
-            ( \aid ->
-                TargetLabel (toRef aid) [Run [AllyMessage aid ReadiedAlly]]
-            )
-            allies
+        chooseOne identityId [targeting ally $ ready ally | ally <- allies]
         pure e
       _ -> GetReady <$> runMessage msg attrs
     _ -> GetReady <$> runMessage msg attrs

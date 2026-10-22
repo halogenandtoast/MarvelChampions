@@ -10,9 +10,8 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Id
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -26,10 +25,8 @@ newtype Foiled = Foiled (Attrs Event)
 -- | When a boost card is turned faceup during a scheme activation, cancel its boost
 -- icons: they are added just after it turns faceup, so that is taken off the queue.
 instance RunMessage Foiled where
-  runMessage msg e@(Foiled attrs) = case msg of
+  runMessage msg e@(Foiled attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent _ _ (Just (W.FlippedBoostCard _ (EnemyVillainId vid)))) | ident == eventId attrs -> do
-      cancelMatchingMessage \case
-        VillainMessage vid' (VillainAddBoost _) -> vid' == vid
-        _ -> False
+      cancelBoostIcons vid
       pure e
     _ -> Foiled <$> runMessage msg attrs

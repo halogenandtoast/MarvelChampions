@@ -14,11 +14,9 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 makeTheCall :: EventCard MakeTheCall
@@ -45,10 +43,10 @@ allyInDiscard = InDiscardOf AnyIdentity $ BasicCardMatches (CardWithType AllyTyp
 
 -- | The ally is put into play under your control: it is not played.
 instance RunMessage MakeTheCall where
-  runMessage msg e@(MakeTheCall attrs) = case msg of
+  runMessage msg e@(MakeTheCall attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
       allies <- selectList allyInDiscard
-      for_ [c | Just (CardIdRef cid) <- [paymentTarget payment], c <- allies, pcCardId c == cid] \ally ->
-        push $ PutCardIntoPlay identityId ally NoPayment Nothing
+      for_ [c | Just (CardIdRef cid) <- [paymentTarget payment], c <- allies, pcCardId c == cid] $
+        putIntoPlay identityId
       pure e
     _ -> MakeTheCall <$> runMessage msg attrs

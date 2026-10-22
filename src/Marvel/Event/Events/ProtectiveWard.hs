@@ -9,9 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -23,9 +22,10 @@ newtype ProtectiveWard = ProtectiveWard (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage ProtectiveWard where
-  runMessage msg e@(ProtectiveWard attrs) = case msg of
+  runMessage msg e@(ProtectiveWard attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent _ _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) ->
-        e <$ cancelWhenRevealed tid
+      PlayedEvent _ _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) -> do
+        cancelWhenRevealed tid
+        pure e
       _ -> ProtectiveWard <$> runMessage msg attrs
     _ -> ProtectiveWard <$> runMessage msg attrs

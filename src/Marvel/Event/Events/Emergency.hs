@@ -9,10 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Id
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window
 
@@ -24,25 +22,12 @@ newtype Emergency = Emergency (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage Emergency where
-  runMessage msg e@(Emergency attrs) = case msg of
+  runMessage msg e@(Emergency attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (ThreatPlaced _ schemeId n)) -> do
-        let
-          newMsg = case schemeId of
-            SchemeMainSchemeId sid ->
-              MainSchemeMessage
-                sid
-                (MainSchemePlaceThreat (subtractNatural 1 n))
-            SchemeSideSchemeId sid ->
-              SideSchemeMessage
-                sid
-                (SideSchemePlaceThreat (subtractNatural 1 n))
-        replaceMatchingMessage (const [newMsg]) $ \case
-          (MainSchemeMessage mid (MainSchemePlaceThreat _)) ->
-            schemeId == SchemeMainSchemeId mid
-          (SideSchemeMessage mid (SideSchemePlaceThreat _)) ->
-            schemeId == SchemeSideSchemeId mid
-          _ -> False
+        replaceMatchingMessage
+          (const [threatPlacement schemeId (subtractNatural 1 n)])
+          (isThreatPlacement schemeId)
         pure e
       _ -> Emergency <$> runMessage msg attrs
     _ -> Emergency <$> runMessage msg attrs

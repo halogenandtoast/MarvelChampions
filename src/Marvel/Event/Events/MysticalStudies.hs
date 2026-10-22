@@ -10,9 +10,8 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Supports
 import Marvel.Upgrade.Cards qualified as Upgrades
@@ -42,13 +41,13 @@ doctorStrangeCards =
 -- | Search your deck and discard pile for a Doctor Strange card and add it to your hand.
 -- Shuffle your deck.
 instance RunMessage MysticalStudies where
-  runMessage msg e@(MysticalStudies attrs) = case msg of
+  runMessage msg e@(MysticalStudies attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      push . IdentityMessage identityId $
-        Search
-          (SearchIdentityDeckAndDiscardPile identityId)
-          (CardMatchesAny $ map CardIs doctorStrangeCards)
-          SearchDrawOne
-          ShuffleBackIn
+      search
+        identityId
+        (SearchIdentityDeckAndDiscardPile identityId)
+        (CardMatchesAny $ map CardIs doctorStrangeCards)
+        SearchDrawOne
+        ShuffleBackIn
       pure e
     _ -> MysticalStudies <$> runMessage msg attrs

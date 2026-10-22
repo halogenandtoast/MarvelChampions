@@ -6,14 +6,12 @@ module Marvel.Event.Events.SneakBy (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
 import Marvel.Ref
 
 sneakBy :: EventCard SneakBy
@@ -24,10 +22,10 @@ newtype SneakBy = SneakBy (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SneakBy where
-  runMessage msg e@(SneakBy attrs) = case msg of
+  runMessage msg e@(SneakBy attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        pushChoice identityId $ RemoveThreat (toSource attrs) 3 ThwartableScheme
+        removeThreat identityId attrs 3 ThwartableScheme
         pure e
       _ -> SneakBy <$> runMessage msg attrs
     _ -> SneakBy <$> runMessage msg attrs

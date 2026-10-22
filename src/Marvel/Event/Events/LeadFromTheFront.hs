@@ -8,16 +8,13 @@ module Marvel.Event.Events.LeadFromTheFront (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Effect.Types
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 leadFromTheFront :: EventCard LeadFromTheFront
@@ -28,22 +25,15 @@ newtype LeadFromTheFront = LeadFromTheFront (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage LeadFromTheFront where
-  runMessage msg e@(LeadFromTheFront attrs) = case msg of
+  runMessage msg e@(LeadFromTheFront attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         players <- getPlayers
-        chooseOne
-          identityId
-          [ TargetLabel
-            (toRef targetIdentityId)
-            [ Run $
-                map
-                  (CreatedEffect Cards.leadFromTheFront $ toSource e)
-                  [ IdentityEntity $ IdentityWithId targetIdentityId
-                  , AllyEntity $ AllyControlledBy $ IdentityWithId targetIdentityId
-                  ]
-            ]
-          | targetIdentityId <- players
+        chooseOne identityId
+          [ targeting player $
+              for_ [IdentityEntity $ IdentityWithId player, AllyEntity $ AllyControlledBy $ IdentityWithId player] $
+                createEffect Cards.leadFromTheFront e
+          | player <- players
           ]
         pure e
       _ -> LeadFromTheFront <$> runMessage msg attrs
@@ -61,6 +51,6 @@ leadFromTheFrontEffect =
     (modifiersL .~ [ThwartModifier 1, AttackModifier 1])
 
 instance RunMessage LeadFromTheFrontEffect where
-  runMessage msg e@(LeadFromTheFrontEffect attrs) = case msg of
-    EndPhase _ -> e <$ push (EffectMessage (effectId attrs) DisableEffect)
+  runMessage msg e@(LeadFromTheFrontEffect attrs) = runQueueT $ case msg of
+    EndPhase _ -> e <$ disableEffect (effectId attrs)
     _ -> LeadFromTheFrontEffect <$> runMessage msg attrs
