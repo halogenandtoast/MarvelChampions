@@ -137,6 +137,11 @@ windowMatches matcher w source = case matcher of
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
     _ -> pure False
+  TurnEnds timing identityMatcher -> case windowType w of
+    TurnEnded identityId
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
   IdentityChangedToForm timing identityMatcher -> case windowType w of
     IdentityChangesForm identityId
       | windowTiming w == timing ->

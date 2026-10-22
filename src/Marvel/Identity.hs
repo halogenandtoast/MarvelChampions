@@ -424,8 +424,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       choices <- getChoices pid
       chooseOnePrompted playerIdentityId "$label.yourTurn" (EndTurn : choices)
       pure pid
+    -- "when your turn ends" is answered before it does
     EndedTurn -> do
-      push $ IdentityEndedTurn playerIdentityId
+      pushAll
+        [ CheckWindows [W.Window W.When $ W.TurnEnded playerIdentityId]
+        , IdentityEndedTurn playerIdentityId
+        ]
       pure $ PlayerIdentity $ attrs & passedL .~ True
     ShuffleDeck -> do
       deck <- shuffleM (unDeck $ attrs ^. deckL)
