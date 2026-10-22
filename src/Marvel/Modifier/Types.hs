@@ -31,6 +31,8 @@ data Modifier
     ThreatRemovedModifier Natural
   | RecoveryModifier Natural
   | CannotTakeDamage
+  | -- | to the target threat of a scheme
+    TargetThreatModifier Natural
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   deriving stock (Show, Eq, Generic)

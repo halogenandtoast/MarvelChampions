@@ -35,6 +35,8 @@ allSupports = fromList $ concatMap
   , nakiaBahadir
   , safeHouse29
   , quincarrier
+  , asgard
+  , hallOfHeroes
   , bannersLaboratory
   , beatCop
   ]
@@ -171,3 +173,9 @@ quincarrier :: CardDef
 quincarrier = (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
   { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
   }
+
+asgard :: CardDef
+asgard = unique $ identitySupport "06007" "Asgard" 3 [Asgard, Location] [Mental]
+
+hallOfHeroes :: CardDef
+hallOfHeroes = unique $ support "06017" "Hall of Heroes" 2 [Asgard, Location] [Mental] Aggression

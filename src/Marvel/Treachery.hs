@@ -59,6 +59,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard hailHydra
   , SomeTreacheryCard harvest
   , SomeTreacheryCard deadlyShot
+  , SomeTreacheryCard trickster
   , SomeTreacheryCard clashOfTheTitans
   ]
 

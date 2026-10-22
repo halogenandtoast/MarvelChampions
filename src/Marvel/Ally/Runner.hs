@@ -122,13 +122,13 @@ instance RunMessage (Attrs Ally) where
           (attackSource attack')
           (toDamage (attackDamage attack') FromAttack)
         pure a
-      AllyDamaged _ damage -> if allyTough a
+      AllyDamaged source damage -> if allyTough a && not (damageIgnoresTough damage)
         then pure $ a & toughL .~ False
         else do
           hitPoints <- getModifiedHitPoints a
-          when
-            (damageAmount damage + allyDamage a >= hitPoints)
-            (push $ AllyMessage (allyId a) AllyDefeated)
+          pushAll $
+            attackDealtDamage source damage (AllyCharacter $ allyId a)
+              <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= hitPoints]
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
         let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)
@@ -140,6 +140,7 @@ instance RunMessage (Attrs Ally) where
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
+      AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     _ -> pure a

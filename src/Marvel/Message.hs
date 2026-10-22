@@ -25,7 +25,8 @@ import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
-import Marvel.Damage (Damage (..))
+import Marvel.Attack (sourceEnemy)
+import Marvel.Damage (Damage (..), DamageSource (FromAttack))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -35,7 +36,7 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (When, Would), WindowType (IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -71,6 +72,33 @@ placeThreatOn scheme n =
           SchemeMainSchemeId sid -> MainSchemeMessage sid (MainSchemePlaceThreat n)
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
+
+-- | The minion engages the player, leaving the player it was engaged with.
+engageMinion :: MinionId -> IdentityId -> [Message]
+engageMinion minion ident =
+  [IdentityMessage ident (MinionEngaged minion), MinionMessage minion (MinionEngagedIdentity ident)]
+
+-- | Add to the power of the basic attack or thwart the player is making, as an
+-- interrupt to making it.
+addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
+addToBasicPower ident n = replaceMatchingMessage raise \case
+  IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
+  IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
+  _ -> False
+ where
+  raise = \case
+    IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
+    IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
+    other -> [other]
+
+-- | After an enemy's attack deals damage to a character, the window for it.
+attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
+attackDealtDamage source damage character =
+  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character]
+  | damageSource damage == FromAttack
+  , damageAmount damage > 0
+  , Just enemy <- [sourceEnemy source]
+  ]
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
@@ -199,6 +227,12 @@ data Message
   | -- | a step only one card knows, as ArkhamHorror's @ScenarioSpecific@: the card the
     -- target names reads the key and decodes the value; the engine passes it by
     CardSpecific Target Text Value
+  | -- | the cards, taken from wherever they are in the encounter deck, go on top of it,
+    -- the first given on top
+    PutOnTopOfEncounterDeck [EncounterCard]
+  | -- | the top cards of the encounter deck are looked at, staying where they are: the
+    -- target is answered with @SearchFoundCards@
+    LookAtTopOfEncounterDeck Natural Target
   | -- | the first card matching in the encounter deck or its discard pile is put into
     -- play for the player, then the deck is shuffled
     SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher

@@ -39,6 +39,10 @@ allAllies = fromList $ concatMap
   , winterSoldierBuckyBarnes
   , agentCoulson
   , quakeDaisyJohnson
+  , ladySif
+  , hercules
+  , valkyrie
+  , heimdall
   , brawn
   , sentryRobertReynolds
   , sheHulkJenniferWalters
@@ -214,3 +218,15 @@ agentCoulson = ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
 quakeDaisyJohnson :: CardDef
 quakeDaisyJohnson =
   ally "08012" ("Quake" <:> "Daisy Johnson") 2 [Avenger, Shield] [Energy] Justice
+
+ladySif :: CardDef
+ladySif = identityAlly "06002" "Lady Sif" 4 [Asgard] [Wild]
+
+hercules :: CardDef
+hercules = ally "06011" "Hercules" 6 [Avenger, Olympus] [Physical] Aggression
+
+valkyrie :: CardDef
+valkyrie = ally "06012" "Valkyrie" 3 [Asgard, Avenger] [Energy] Aggression
+
+heimdall :: CardDef
+heimdall = basicAlly "06020" "Heimdall" 5 [Asgard] [Mental]

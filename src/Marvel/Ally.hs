@@ -57,6 +57,10 @@ allAllies = fromList $ map
   , SomeAllyCard winterSoldierBuckyBarnes
   , SomeAllyCard agentCoulson
   , SomeAllyCard quakeDaisyJohnson
+  , SomeAllyCard ladySif
+  , SomeAllyCard hercules
+  , SomeAllyCard valkyrie
+  , SomeAllyCard heimdall
   , SomeAllyCard brawn
   , SomeAllyCard sentryRobertReynolds
   , SomeAllyCard sheHulkJenniferWalters

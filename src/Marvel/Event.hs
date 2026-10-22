@@ -74,6 +74,15 @@ allEvents = fromList $ map
   , SomeEventCard covertOps
   , SomeEventCard danceOfDeath
   , SomeEventCard stealthStrike
+  , SomeEventCard defenderOfTheNineRealms
+  , SomeEventCard forAsgard
+  , SomeEventCard hammerThrow
+  , SomeEventCard lightningStrike
+  , SomeEventCard getOverHere
+  , SomeEventCard meanSwing
+  , SomeEventCard invulnerability
+  , SomeEventCard teamwork
+  , SomeEventCard secondWind
   , SomeEventCard crushingBlow
   , SomeEventCard hulkSmash
   , SomeEventCard subOrbitalLeap

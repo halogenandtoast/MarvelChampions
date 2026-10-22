@@ -18,10 +18,10 @@ import Marvel.Resource
 import Marvel.Window qualified as W
 
 hulkSmash :: EventCard HulkSmash
-hulkSmash = event (HulkSmash . (`With` Meta Nothing)) Cards.hulkSmash
+hulkSmash = event (HulkSmash . (`With` Meta False)) Cards.hulkSmash
 
--- | While the basic attack it answers is made: whether that attack gains overkill.
-newtype Meta = Meta {smashing :: Maybe Bool}
+-- | Whether the basic attack it answers gains overkill, while it is made.
+newtype Meta = Meta {overkill :: Bool}
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -31,24 +31,24 @@ newtype HulkSmash = HulkSmash (Attrs Event `With` Meta)
 instance IsEvent HulkSmash where
   toEventAttrs (HulkSmash (attrs `With` _)) = attrs
 
--- | "You get +10 ATK for that attack", with overkill if paid for using only [physical]
--- resources.
+-- | "If you paid for this card using only [physical] resources, that attack gains
+-- overkill."
 instance HasModifiersFor HulkSmash where
   getModifiersFor _ (IdentityRef ident) (HulkSmash (attrs `With` meta))
-    | ident == eventController attrs
-    , Just overkill <- smashing meta =
-        pure $ AttackModifier 10 : [KeywordModifier Overkill | overkill]
+    | ident == eventController attrs && overkill meta = pure [KeywordModifier Overkill]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage HulkSmash where
   runMessage msg (HulkSmash (attrs `With` meta)) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent _ payment _ -> do
-        overkill <- paidUsingOnly Physical payment
-        pure $ HulkSmash (attrs `With` Meta (Just overkill))
+      -- "you get +10 ATK for that attack"
+      PlayedEvent identityId payment _ -> do
+        addToBasicPower identityId 10
+        physical <- paidUsingOnly Physical payment
+        pure $ HulkSmash (attrs `With` Meta physical)
       _ -> HulkSmash . (`With` meta) <$> runMessage msg attrs
     -- that attack is over
     CheckWindows ws
       | W.Window W.After (W.MadeBasicAttack (eventController attrs)) `elem` ws ->
-          pure $ HulkSmash (attrs `With` Meta Nothing)
+          pure $ HulkSmash (attrs `With` Meta False)
     _ -> HulkSmash . (`With` meta) <$> runMessage msg attrs

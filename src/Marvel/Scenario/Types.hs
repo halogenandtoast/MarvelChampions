@@ -287,7 +287,12 @@ instance RunMessage (Attrs Scenario) where
           <> [EmptyScenarioDeck | null deck']
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
-    DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :)
+    -- a card discarded from the encounter deck, as one looked at there, leaves it
+    DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :) & encounterDeckL %~ filter (/= ec)
+    PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
+    LookAtTopOfEncounterDeck n target -> do
+      push $ SearchFoundCards target $ EncounterCard <$> take (fromIntegral n) scenarioEncounterDeck
+      pure attrs
     DiscardUntil FromEncounterDeck cardMatcher target -> do
       let
         (discarded, remaining) =

@@ -71,6 +71,7 @@ data IdentityMessage
     -- target is told of; the deck emptying ends it
     DiscardFromDeckUntil CardMatcher Target
   | PlaceOnBottomOfDeck PlayerCard
+  | IdentityBecomeTough
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -79,8 +80,10 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
-  | -- | the basic attack, once "when you make a basic attack" has been answered
-    BasicAttackDamage
+  | -- | the basic attack, after the interrupts to making it, and what they add to it
+    BasicAttack Natural
+  | -- | the basic thwart, after the interrupts to making it, and what they add to it
+    BasicThwart Natural
   | -- | the defender's DEF is applied, once "when defends" is answered
     DefenseApplied EnemyId
   deriving stock (Show, Eq, Generic)

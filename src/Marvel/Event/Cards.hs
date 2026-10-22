@@ -13,6 +13,7 @@ import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+import Marvel.Upgrade.Cards qualified as Upgrades
 import Marvel.Upgrade.Cards qualified as Upgrade
 import Marvel.Window
 
@@ -67,6 +68,15 @@ allEvents = fromList $ concatMap
   , covertOps
   , danceOfDeath
   , stealthStrike
+  , defenderOfTheNineRealms
+  , forAsgard
+  , hammerThrow
+  , lightningStrike
+  , getOverHere
+  , meanSwing
+  , invulnerability
+  , teamwork
+  , secondWind
   , crushingBlow
   , hulkSmash
   , subOrbitalLeap
@@ -510,3 +520,54 @@ stealthStrike :: CardDef
 stealthStrike = (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
   { cdAbilitySubType = Just Ability.Attack
   }
+
+defenderOfTheNineRealms :: CardDef
+defenderOfTheNineRealms =
+  (identityEvent "06003" "Defender of the Nine Realms" 0 HeroAction [Thwart] [Physical])
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+forAsgard :: CardDef
+forAsgard = identityEvent "06004" "For Asgard!" 1 AlterEgoAction [] [Physical]
+
+-- | "Exhaust Mjolnir" is part of its cost: Mjolnir must be in play and ready.
+hammerThrow :: CardDef
+hammerThrow =
+  (identityEvent "06005" "Hammer Throw" 3 HeroAction [Attack, Superpower] [Energy])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.mjolnir <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    }
+
+lightningStrike :: CardDef
+lightningStrike = identityEvent "06006" "Lightning Strike" 1 HeroAction [Superpower] [Mental]
+
+getOverHere :: CardDef
+getOverHere =
+  (event "06014" "Get Over Here!" 0 HeroAction [Attack] [Energy] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = MinionExists AnyMinion
+    }
+
+-- | "Exhaust a Weapon upgrade on your hero" is part of its cost.
+meanSwing :: CardDef
+meanSwing =
+  (event "06015" "Mean Swing" 0 HeroInterrupt [Skill] [Physical] Aggression)
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    , cdCriteria =
+        SelfMatches You
+          <> UpgradeExists (UpgradeWithTrait Weapon <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    }
+
+invulnerability :: CardDef
+invulnerability = basicEvent "06021" "Invulnerability" 3 HeroAction [Superpower] [Physical]
+
+-- | "Exhaust an ally you control" is part of its cost.
+teamwork :: CardDef
+teamwork =
+  (event "06032" "Teamwork" 0 HeroInterrupt [Tactic] [Energy] Leadership)
+    { cdResponseWindow = Just (WindowOneOf [MakesBasicAttack When You, MakesBasicThwart When You])
+    , cdCriteria = SelfMatches You <> AllyExists (UnexhaustedAlly <> AllyControlledBy You)
+    }
+
+secondWind :: CardDef
+secondWind = event "06033" "Second Wind" 3 Action [] [Mental] Protection

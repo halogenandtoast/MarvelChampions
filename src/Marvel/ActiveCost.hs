@@ -10,7 +10,9 @@ import Marvel.Prelude
 import Control.Monad.State
 import Data.List (partition)
 import Data.List qualified as L
+import Marvel.Ability (limitedAbility)
 import Marvel.Ability.Types
+import Marvel.Criteria (Criteria (NoCriteria))
 import Marvel.ActiveCost.Types
 import Marvel.Card
 import Marvel.Choice
@@ -28,6 +30,14 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (CardPlayed))
+
+-- | Pay a cost a card names as it resolves, as Lightning Strike's "spend X [energy]":
+-- once it is paid, the card is answered with @RanAbility@ for that step and the payment.
+payForCard :: (MonadRandom m, HasQueue m, IsRef a) => IdentityId -> a -> Natural -> Cost -> m ()
+payForCard ident a step cost = do
+  activeCostId <- getRandom
+  let ab = limitedAbility a step NoLimit Special NoCriteria cost (RunAbility (toTarget a) step)
+  push $ SetActiveCost $ ActiveCost activeCostId ident (ForAbility ab) cost NoPayment Nothing mempty
 
 costMessages ::
   ( MonadThrow m
@@ -48,11 +58,9 @@ costMessages iid activeCost = go (activeCostCost activeCost)
       pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a ->
-        pure
-          [ IdentityMessage iid $
-              IdentityDamaged (abilitySource a) (toDamage n FromAbility)
-          , Paid $ DamagePayment n
-          ]
+        pure $
+          damageIdentity iid (abilitySource a) (toDamage n FromAbility)
+            <> [Paid $ DamagePayment n]
       _ -> error "Unhandled"
     HealCost n ->
       pure

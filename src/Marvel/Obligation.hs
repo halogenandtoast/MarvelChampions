@@ -31,6 +31,7 @@ allObligations = fromList $ map
   , SomeObligationCard manOutOfTime
   , SomeObligationCard homeByDawn
   , SomeObligationCard burnNotice
+  , SomeObligationCard odinsAnger
   , SomeObligationCard innerDemons
   ]
 

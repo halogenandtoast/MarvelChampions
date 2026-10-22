@@ -26,6 +26,10 @@ import Marvel.Ally.Allies.Lockjaw as X
 import Marvel.Ally.Allies.WinterSoldierBuckyBarnes as X
 import Marvel.Ally.Allies.AgentCoulson as X
 import Marvel.Ally.Allies.QuakeDaisyJohnson as X
+import Marvel.Ally.Allies.LadySif as X
+import Marvel.Ally.Allies.Hercules as X
+import Marvel.Ally.Allies.Valkyrie as X
+import Marvel.Ally.Allies.Heimdall as X
 import Marvel.Ally.Allies.Brawn as X
 import Marvel.Ally.Allies.SentryRobertReynolds as X
 import Marvel.Ally.Allies.SheHulkJenniferWalters as X

@@ -308,6 +308,10 @@ checkPlayLimits ident c = case cdLimit def of
       UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
     MaxPerEnemy _ -> error "Unhandled"
+    -- ponytail: every such card attaches to the main scheme, so one in play is one
+    -- on it
+    MaxPerScheme 1 -> selectNone $ UpgradeNamed name
+    MaxPerScheme _ -> error "Unhandled"
     -- copies played by any player count
     MaxPerRound n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisRound
     -- a friendly character without one: an ally, or an identity
@@ -827,14 +831,19 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
+    -- a tough status card prevents all of it, and is discarded instead
+    IdentityDamaged _ damage
+      | playerIdentityTough && damageAmount damage > 0 && not (damageIgnoresTough damage) ->
+          pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
       -- what answers "would be defeated" may take the defeat off the queue
       pushAll $
-        [ msg'
-        | playerIdentityDamage + damageAmount damage >= modifiedHp
-        , msg' <- [CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId], IdentityMessage playerIdentityId IdentityDefeated]
-        ]
+        attackDealtDamage source damage (IdentityCharacter playerIdentityId)
+          <> [ msg'
+             | playerIdentityDamage + damageAmount damage >= modifiedHp
+             , msg' <- [CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId], IdentityMessage playerIdentityId IdentityDefeated]
+             ]
           <> [CheckWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage] | damageAmount damage > 0]
       let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
       pure $
@@ -850,14 +859,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       case ps of
         [x]
           | x /= playerIdentityId ->
-              pushAll $
-                concatMap
-                  ( \minionId ->
-                      [ IdentityMessage x (MinionEngaged minionId)
-                      , MinionMessage minionId (MinionEngagedIdentity x)
-                      ]
-                  )
-                  (toList playerIdentityMinions)
+              pushAll $ concatMap (`engageMinion` x) (toList playerIdentityMinions)
         _ -> pure ()
       -- the cards they control leave play, and the encounter cards dealt to them are
       -- discarded (rules reference, "Player Elimination")
@@ -876,6 +878,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       modifiedHp <- getModifiedHp pid
       pure $ PlayerIdentity $ attrs & damageL .~ subtractNatural n modifiedHp
     IdentityStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ True
+    IdentityBecomeTough -> pure $ PlayerIdentity $ attrs & toughL .~ True
     IdentityConfused -> pure $ PlayerIdentity $ attrs & confusedL .~ True
     IdentityRemoveStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ False
     IdentityRemoveConfused ->
@@ -925,6 +928,20 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             -- the cards looked at are out of the deck until the search is over: the deck
             -- is not empty meanwhile
             pure $ PlayerIdentity $ attrs & deckL .~ Deck deck' & \a -> a {playerIdentitySearching = True}
+    -- the cards stay where they are while searched; the deck is shuffled after
+    Search (SearchIdentityDeckAndDiscardPile iid) cardMatcher SearchDrawOne ShuffleBackIn
+      | iid == playerIdentityId -> do
+          let found = filter (cardMatch cardMatcher) (unDeck playerIdentityDeck <> unDiscard playerIdentityDiscard)
+          pushAll
+            [ FocusCards $ PlayerCard <$> found
+            , Ask playerIdentityId $
+                ChooseOne $
+                  [Label "$label.noMatchingCardsFound" [] | null found]
+                    <> [TargetLabel (toRef c) [Run [IdentityMessage playerIdentityId (AddToHand c)]] | c <- found]
+            , UnfocusCards
+            , IdentityMessage playerIdentityId ShuffleDeck
+            ]
+          pure pid
     FinishedSearching -> pure $ PlayerIdentity attrs {playerIdentitySearching = False}
     DiscardFromDeckUntil matcher target -> do
       let

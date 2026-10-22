@@ -43,6 +43,8 @@ allMinions =
       , edisonsGiantRobot
       , taskmaster
       , hydraMercenaryBlackWidow
+      , loki
+      , frostGiant
       , abomination
       ]
 
@@ -252,4 +254,13 @@ hydraMercenaryBlackWidow =
   (reprint "08028" hydraMercenary)
     { cdEncounterSet = Just BlackWidowNemesis
     , cdEncounterSetQuantity = Just 2
+    }
+
+loki :: CardDef
+loki = unique $ minion "06028" "Loki" [Trait.Asgard] [Boost, Boost, Boost] ThorNemesis 1
+
+frostGiant :: CardDef
+frostGiant =
+  (minion "06029" "Frost Giant" [Giant] [Star, Boost] ThorNemesis 2)
+    { cdKeywords = singleton Toughness
     }

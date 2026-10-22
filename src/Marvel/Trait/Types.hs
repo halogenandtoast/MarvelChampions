@@ -47,6 +47,9 @@ data Trait
   | Bird
   | Robot
   | Preparation
+  | Asgard
+  | Giant
+  | Olympus
   | Scientist
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

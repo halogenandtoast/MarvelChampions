@@ -99,3 +99,7 @@ instance (HasGame m) => Count m IdentityMatcher where
 instance (HasGame m) => Count m SchemeMatcher where
   data QueryCount SchemeMatcher = SchemeThreat
   selectCount = gameSelectCountScheme
+
+instance (HasGame m) => Count m AllyMatcher where
+  data QueryCount AllyMatcher = AllyAttackValue | AllyThwartValue
+  selectCount = gameSelectCountAlly

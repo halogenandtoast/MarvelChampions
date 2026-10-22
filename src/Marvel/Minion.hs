@@ -54,6 +54,8 @@ allMinions =
       , SomeMinionCard edisonsGiantRobot
       , SomeMinionCard taskmaster
       , SomeMinionCard (reprintAs Cards.hydraMercenaryBlackWidow hydraMercenary)
+      , SomeMinionCard loki
+      , SomeMinionCard frostGiant
       , SomeMinionCard abomination
       ]
 

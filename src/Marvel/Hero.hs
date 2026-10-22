@@ -41,6 +41,7 @@ allHeroes = fromList $ map
   , SomeHeroCard captainAmerica
   , SomeHeroCard msMarvel
   , SomeHeroCard blackWidow
+  , SomeHeroCard thor
   , SomeHeroCard hulk
   ]
 

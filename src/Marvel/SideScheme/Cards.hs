@@ -33,6 +33,7 @@ allSideSchemes = fromList $ map
   , hitSquad
   , generationWhy
   , killerForHire
+  , familyFeud
   , totalDestruction
   ]
 
@@ -180,3 +181,8 @@ killerForHire =
   (sideScheme "08027" "Killer for Hire" [Boost, Boost, Boost] BlackWidowNemesis 1)
     { cdAcceleration = 1
     }
+
+familyFeud :: CardDef
+familyFeud = (sideScheme "06027" "Family Feud" [Boost, Boost, Boost] ThorNemesis 1)
+  { cdAcceleration = 1
+  }

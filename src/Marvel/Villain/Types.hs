@@ -291,7 +291,7 @@ runVillainMessage msg attrs = case msg of
               (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
         _ -> pure ()
       _ -> pure ()
-    if villainTough attrs
+    if villainTough attrs && not (damageIgnoresTough damage)
       then pure $ attrs & toughL .~ False
       else do
         when

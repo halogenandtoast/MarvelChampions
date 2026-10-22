@@ -49,6 +49,13 @@ import Marvel.Upgrade.Upgrades.Counterattack as X
 import Marvel.Upgrade.Upgrades.RapidResponse as X
 import Marvel.Upgrade.Upgrades.DefensiveStance as X
 import Marvel.Upgrade.Upgrades.Espionage as X
+import Marvel.Upgrade.Upgrades.GodOfThunder as X
+import Marvel.Upgrade.Upgrades.Mjolnir as X
+import Marvel.Upgrade.Upgrades.ThorsHelmet as X
+import Marvel.Upgrade.Upgrades.BattleFury as X
+import Marvel.Upgrade.Upgrades.Jarnbjorn as X
+import Marvel.Upgrade.Upgrades.UnderSurveillance as X
+import Marvel.Upgrade.Upgrades.EnhancedPhysique as X
 import Marvel.Upgrade.Upgrades.BoundlessRage as X
 import Marvel.Upgrade.Upgrades.ImmovableObject as X
 import Marvel.Upgrade.Upgrades.MartialProwess as X

@@ -10,6 +10,7 @@ import Marvel.GameValue
 import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
 import Marvel.Message
+import Marvel.Modifier.Types (Modifier (..))
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -162,9 +163,9 @@ instance RunMessage (Attrs MainScheme) where
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
         MainSchemePlaceThreat n -> do
-          threshold <-
-            fromIntegral
-              <$> fromGameValue (mainSchemeThreshold attrs)
+          printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
+          modifiers <- getModifiers attrs
+          let threshold = printed + sum [x | TargetThreatModifier x <- modifiers]
           when
             (mainSchemeThreat attrs + n >= threshold)
             (push AdvanceMainScheme)

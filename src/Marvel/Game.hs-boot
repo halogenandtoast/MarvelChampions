@@ -124,3 +124,5 @@ gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
+gameSelectCountAlly ::
+  (HasGame m) => QueryCount AllyMatcher -> AllyMatcher -> m Natural
