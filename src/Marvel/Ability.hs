@@ -147,6 +147,7 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
+    UpgradeExists m -> selectAny m
   source = abilitySource a
 
 partitionMaybes :: [Maybe a] -> ([()], [a])

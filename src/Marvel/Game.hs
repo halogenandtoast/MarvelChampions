@@ -949,6 +949,7 @@ isWindowPlayable window attrs c = do
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
+    UpgradeExists m -> selectAny m
 
 abilityInWindow :: (HasGame m) => Window -> Ability -> m Bool
 abilityInWindow window a =

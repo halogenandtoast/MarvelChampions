@@ -291,6 +291,7 @@ isPlayable attrs c = do
     AllyExists m -> selectAny m
     SchemeExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)
+    UpgradeExists m -> selectAny m
 
 -- \^ this is critical and order matters to avoid infinite recursionl
 

@@ -20,6 +20,7 @@ data Criteria
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher
+  | UpgradeExists UpgradeMatcher
   | Never
   | Criteria [Criteria]
   deriving stock (Show, Eq, Generic)
