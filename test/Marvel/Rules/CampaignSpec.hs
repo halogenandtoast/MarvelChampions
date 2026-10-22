@@ -234,6 +234,15 @@ spec = describe "The Rise of Red Skull campaign" do
     map fst deck.cards `shouldSatisfy` elem "04158"
     map fst deck.cards `shouldSatisfy` notElem "01002"
 
+  it "a deck the campaign took an ally from must be brought back to 40 cards, permanent ones not counted" $ id @(IO ()) do
+    let deck = withCard "04159a" (starter "spider-man")
+        removed = recordInLog (RecordAlliesRemoved ["01002"]) (campaignAt StandardCampaign 4)
+        total = sum [n | (code, n) <- deck.cards, code /= "04159a"]
+        ally = sum [n | (code, n) <- deck.cards, code == "01002"]
+    campaignDeckShortBy (campaignAt StandardCampaign 4) deck `shouldBe` max 0 (40 - total)
+    campaignDeckShortBy removed deck `shouldBe` max 0 (40 - (total - ally))
+    (total - ally < 40) `shouldBe` True
+
   it "an expert campaign's obligation drawn goes into its player's play area" do
     tg <- testGame ["spider-man"]
     inGame tg do
