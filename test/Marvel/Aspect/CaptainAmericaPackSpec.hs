@@ -1,5 +1,6 @@
 module Marvel.Aspect.CaptainAmericaPackSpec (spec) where
 
+import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -193,6 +194,37 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         -- 3 damage does not defeat her
         alliesWith "03002" >>= (`shouldSatisfy` ((== 1) . length))
         upgradeCodes `shouldReturn` ["03025"]
+
+    it "an ally whose damage it held off is defeated as it leaves play" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        flipTo p A
+        _ <- putIntoPlay p "03002"
+        agent <- allyIn "03002"
+        honorary <- putInHand p "03025"
+        playOn honorary (allyId agent) []
+        resolve [AllyMessage (allyId agent) (AllyDamaged GameRef (toDamage 3 FromAbility))]
+        resolve [UpgradeMessage (upgradeIdOf honorary) DiscardUpgrade]
+        alliesWith "03002" `shouldReturn` []
+
+    it "an identity left with no hit points as it leaves play would be defeated" do
+      tg <- testGame ["captain-america", "spider-man"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        flipTo p A
+        helmet <- putIntoPlay p "03008"
+        honorary <- putInHand p "03025"
+        playOn honorary p []
+        hitPointsOf p `shouldReturn` 12
+        setDamage p 11
+        runNow [UpgradeMessage (upgradeIdOf honorary) DiscardUpgrade]
+        -- the helmet answers the defeat
+        choose "use the helmet" (isAbilityOfCard helmet)
+        damageOf p `shouldReturn` 10
+        getsGame (HashMap.member p . gamePlayers) `shouldReturn` True
 
     it "is played only by an Avenger identity, once a character" do
       tg <- testGame ["captain-america"]

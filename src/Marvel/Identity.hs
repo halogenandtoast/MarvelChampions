@@ -1088,7 +1088,15 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
             & (discardL %~ Discard . filter ((/= cid) . pcCardId) . unDiscard)
             & (handL %~ Hand . filter ((/= cid) . pcCardId) . unHand)
             & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
+    -- an upgrade's "gets +X hit points" ceasing reduces the hit point dial, which at
+    -- zero defeats them
     UpgradeRemoved upgradeId -> do
+      let ident = playerIdentityId attrs
+          damage = playerIdentityDamage attrs
+      when (HashSet.member upgradeId (playerIdentityUpgrades attrs) && not (playerIdentityDefeated attrs) && damage > 0) do
+        modifiedHp <- getModifiedHp pid
+        when (damage >= modifiedHp) $
+          pushAll [CheckWindows [W.Window W.Would $ W.IdentityDefeat ident], IdentityMessage ident IdentityDefeated]
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
     GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity $ attrs & statusL s .~ True
