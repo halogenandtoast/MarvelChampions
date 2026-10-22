@@ -29,6 +29,9 @@ allAllies = fromList $ concatMap
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
+  , redDagger
+  , novaSamAlexander
+  , lockjaw
   , ladySif
   , hercules
   , valkyrie
@@ -70,6 +73,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 blackCatFeliciaHardy :: CardDef
@@ -156,6 +160,17 @@ mockingbirdBobbiMorse = reprintedAs ["03020"] $
 
 nickFury :: CardDef
 nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+
+redDagger :: CardDef
+redDagger = identityAlly "05002" "Red Dagger" 3 [Champion] [Energy]
+
+novaSamAlexander :: CardDef
+novaSamAlexander =
+  ally "05012" ("Nova" <:> "Sam Alexander") 4 [Champion] [Energy] Protection
+
+lockjaw :: CardDef
+lockjaw =
+  (basicAlly "05018" "Lockjaw" 4 [Inhuman] [Physical]) {cdPlayableFromDiscard = True}
 
 ladySif :: CardDef
 ladySif = identityAlly "06002" "Lady Sif" 4 [Asgard] [Wild]

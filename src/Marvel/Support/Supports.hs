@@ -13,3 +13,6 @@ import Marvel.Support.Supports.SurveillanceTeam as X
 import Marvel.Support.Supports.TacTeam as X
 import Marvel.Support.Supports.TheGoldenCity as X
 import Marvel.Support.Supports.TheTriskellion as X
+import Marvel.Support.Supports.AamirKhan as X
+import Marvel.Support.Supports.BrunoCarrelli as X
+import Marvel.Support.Supports.NakiaBahadir as X

@@ -11,6 +11,7 @@ import Marvel.Choice
 import Marvel.Cost.Types
 import Marvel.Damage
 import Marvel.Entity
+import Marvel.Id
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers

@@ -30,12 +30,11 @@ instance HasAbilities Valkyrie where
         runAbility a 1
     ]
 
--- | A wild resource paid as an energy resource counts.
 instance RunMessage Valkyrie where
   runMessage msg a@(Valkyrie attrs) = case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      paid <- paymentResources (allyPaidWith attrs)
-      let n = if any (`elem` [Energy, Wild]) paid then 3 else 2
+      energy <- paidWith Energy (allyPaidWith attrs)
+      let n = if energy then 3 else 2
       pushChoice ident $ ChooseDamage (toSource a) (toDamage n FromAbility) MinionEnemy
       pure a
     _ -> Valkyrie <$> runMessage msg attrs

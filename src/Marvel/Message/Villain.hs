@@ -31,5 +31,7 @@ data VillainMessage
   | VillainAdvanced
   | -- | its hit points (and remaining hit points) go up or down by this much
     VillainHitPointsChanged Int
+  | -- | a boost card's icons are added to the activation
+    VillainAddBoost Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -12,6 +12,7 @@ import Marvel.Event.Types
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Queue
+import Marvel.Ref
 import Marvel.Trait
 
 forAsgard :: EventCard ForAsgard

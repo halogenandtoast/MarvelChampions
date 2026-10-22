@@ -61,5 +61,8 @@
   "take2Damage": "Take 2 damage",
   "deal3DamageToYourHero": "Deal 3 damage to your hero",
   "askedToDefend": "Defend this attack?",
-  "declineToDefend": "Do not defend"
+  "declineToDefend": "Do not defend",
+  "exhaustKamalaKhanRemoveHomeByDawn": "Exhaust Kamala Khan → remove Home by Dawn from the game",
+  "discardPersonaSupportDiscardObligation": "Discard a Persona support you control (surge if none), discard Home by Dawn",
+  "discardAPersonaSupport": "Discard a Persona support"
 }

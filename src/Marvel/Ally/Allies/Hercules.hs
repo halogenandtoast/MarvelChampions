@@ -5,6 +5,7 @@ module Marvel.Ally.Allies.Hercules (
 
 import Marvel.Prelude
 
+import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Card.Id

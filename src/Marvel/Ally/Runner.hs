@@ -18,6 +18,7 @@ import Marvel.Damage
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Query
+import Marvel.Window qualified as W
 
 instance HasAbilities Ally where
   getAbilities x@(Ally a) = getAbilities a <> basicAbilities
@@ -130,7 +131,11 @@ instance RunMessage (Attrs Ally) where
               <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= unHp (allyHitPoints a)]
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
-        pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
+        pushAll
+          [ CheckWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
+          , -- which discards it
+            RemoveFromPlay (toTarget a)
+          ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}

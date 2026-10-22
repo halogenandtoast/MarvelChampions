@@ -16,3 +16,6 @@ import Marvel.Ally.Allies.SpiderWomanJessicaDrew as X
 import Marvel.Ally.Allies.TigraGreerGrantNelson as X
 import Marvel.Ally.Allies.Vision as X
 import Marvel.Ally.Allies.WarMachineJamesRhodes as X
+import Marvel.Ally.Allies.RedDagger as X
+import Marvel.Ally.Allies.NovaSamAlexander as X
+import Marvel.Ally.Allies.Lockjaw as X

@@ -40,6 +40,10 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Champion
+  | Inhuman
+  | Bird
+  | Robot
   | Asgard
   | Giant
   | Olympus

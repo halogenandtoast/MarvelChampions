@@ -27,13 +27,12 @@ newtype SecondWind = SecondWind (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | A wild resource paid as a mental resource counts.
 instance RunMessage SecondWind where
   runMessage msg e@(SecondWind attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payment _ -> do
-        paid <- paymentResources payment
-        let n = if any (`elem` [Mental, Wild]) paid then 5 else 4
+        mental <- paidWith Mental payment
+        let n = if mental then 5 else 4
         identities <- selectList AnyIdentity
         chooseOrRunOne identityId [TargetLabel (toRef p) [Heal (IdentityCharacter p) n] | p <- identities]
         pure e
