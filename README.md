@@ -34,3 +34,9 @@ docker compose up
 
 then open <http://localhost:3000>. The client image carries the card images it was
 built with.
+
+## Deploying
+
+`terraform/` sets up DigitalOcean (Kubernetes, managed Postgres, DNS and TLS for
+marvelchampions.app); `scripts/deploy.sh` builds and pushes both images and applies
+`k8s/app.yaml`. See `terraform/README.md`.

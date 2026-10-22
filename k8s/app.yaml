@@ -1,0 +1,68 @@
+# Applied by scripts/deploy.sh, which swaps @TAG@ for the git SHA it built.
+# Terraform owns what the cluster needs before this: the `marvel` secret
+# (DATABASE_URL, JWT_SECRET) and the public load balancer in front of
+# marvel-frontend.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marvel-backend
+spec:
+  # Game channels live in the backend's memory, so there is only ever one, and
+  # the old one stops before the new one starts.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: marvel-backend
+  template:
+    metadata:
+      labels:
+        app: marvel-backend
+    spec:
+      containers:
+        - name: backend
+          image: halogenandtoast/marvel-backend:@TAG@
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: marvel
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marvel-backend
+spec:
+  selector:
+    app: marvel-backend
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marvel-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marvel-frontend
+  template:
+    metadata:
+      labels:
+        app: marvel-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: halogenandtoast/marvel-frontend:@TAG@
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80

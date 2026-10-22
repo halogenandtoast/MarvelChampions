@@ -1,0 +1,24 @@
+# Copy to terraform.tfvars and edit. Do NOT commit terraform.tfvars.
+
+# DigitalOcean API token. Prefer `export DIGITALOCEAN_TOKEN=...` and omit this.
+# do_token = "dop_v1_..."
+
+# Public domain. Terraform adds it to DigitalOcean DNS — point the
+# registrar's nameservers at ns{1,2,3}.digitalocean.com.
+# domain_name = "marvelchampions.app"
+
+# Optional tweaks.
+# region     = "nyc3"
+# node_size  = "s-2vcpu-2gb"
+# node_count = 1
+# db_size    = "db-s-1vcpu-1gb"
+
+# Your IP, to reach the database with psql. curl -s https://api.ipify.org
+# db_trusted_ips = ["203.0.113.4"]
+
+# Extra env for the backend. Bug uploads need an access key for the
+# marvel-champions-bugs IAM user.
+# app_secrets = {
+#   AWS_ACCESS_KEY_ID     = "..."
+#   AWS_SECRET_ACCESS_KEY = "..."
+# }
