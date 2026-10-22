@@ -747,6 +747,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.GreenGoblinSpec
       Marvel.Encounter.HulkNemesisSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.ModularsSpec
