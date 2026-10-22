@@ -21,3 +21,4 @@ import Marvel.Obligation.Obligations.CriminalPast as X
 import Marvel.Obligation.Obligations.UncertainLoyalties as X
 
 -- The Once and Future Kang
+import Marvel.Obligation.Obligations.FearOfKang as X

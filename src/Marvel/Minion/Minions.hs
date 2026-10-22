@@ -30,6 +30,9 @@ import Marvel.Minion.Minions.BaronMordo as X
 import Marvel.Minion.Minions.Abomination as X
 
 -- The Green Goblin
+import Marvel.Minion.Minions.Scorpion as X
+import Marvel.Minion.Minions.Electro as X
+import Marvel.Minion.Minions.Tombstone as X
 
 -- The Wrecking Crew
 
@@ -39,3 +42,13 @@ import Marvel.Minion.Minions.TheViper as X
 import Marvel.Minion.Minions.HydraRegular as X
 
 -- The Once and Future Kang
+import Marvel.Minion.Minions.AncientWarrior as X
+import Marvel.Minion.Minions.ChitauriSoldier as X
+import Marvel.Minion.Minions.TyrannosaurusRex as X
+import Marvel.Minion.Minions.Apocryphus as X
+import Marvel.Minion.Minions.Deathunt9000 as X
+import Marvel.Minion.Minions.SirRaston as X
+import Marvel.Minion.Minions.Terminatrix as X
+import Marvel.Minion.Minions.Wildrun as X
+import Marvel.Minion.Minions.KangMasterOfTime as X
+import Marvel.Minion.Minions.TimeDisplacedSoldier as X

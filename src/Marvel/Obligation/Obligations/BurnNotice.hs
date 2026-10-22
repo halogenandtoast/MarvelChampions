@@ -11,6 +11,8 @@ import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
+import Marvel.Ability.Types (HasAbilities)
+import Marvel.Modifier (HasModifiersFor)
 import Marvel.Query
 import Marvel.Trait
 
@@ -18,7 +20,7 @@ burnNotice :: ObligationCard BurnNotice
 burnNotice = obligation BurnNotice Cards.burnNotice
 
 newtype BurnNotice = BurnNotice (Attrs Obligation)
-  deriving anyclass (IsObligation)
+  deriving anyclass (IsObligation, HasAbilities, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage BurnNotice where

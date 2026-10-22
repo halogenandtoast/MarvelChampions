@@ -39,6 +39,9 @@ allSideSchemes = fromList $ map
   , openTheDarkDimension
   , totalDestruction
   -- The Green Goblin
+  , aMessOfThings
+  , powerDrain
+  , runningInterference
 
   -- The Wrecking Crew
 
@@ -47,6 +50,9 @@ allSideSchemes = fromList $ map
   , theVipersAmbition
 
   -- The Once and Future Kang
+  , timePortal
+  , theAnachronauts
+  , lightOfCenturiesSphere
 
   ]
 
@@ -221,3 +227,26 @@ theVipersAmbition =
   (sideScheme "04055" "The Viper's Ambition" [Boost, Boost] SpiderWomanNemesis 1)
     { cdHazards = 1
     }
+
+-- The Green Goblin
+
+aMessOfThings :: CardDef
+aMessOfThings = (sideScheme "02037" "A Mess of Things" [Boost, Boost] AMessOfThings 1) {cdHazards = 1}
+
+powerDrain :: CardDef
+powerDrain = (sideScheme "02041" "Power Drain" [Boost, Boost, Boost] PowerDrain 1) {cdAcceleration = 1}
+
+runningInterference :: CardDef
+runningInterference = sideScheme "02046" "Running Interference" [Boost] RunningInterference 1
+
+-- The Once and Future Kang
+
+timePortal :: CardDef
+timePortal = (sideScheme "11033" "Time Portal" [Boost, Boost] Temporal 1) {cdHazards = 1}
+
+theAnachronauts :: CardDef
+theAnachronauts = (sideScheme "11045" "The Anachronauts" [Boost, Boost, Boost] Anachronauts 2) {cdHazards = 1}
+
+lightOfCenturiesSphere :: CardDef
+lightOfCenturiesSphere =
+  (sideScheme "11050" "Light of Centuries Sphere" [Boost, Boost, Boost] MasterOfTime 1) {cdHazards = 1}

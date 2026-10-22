@@ -92,6 +92,11 @@
   "nextEventCosts3More": "The next event you play costs 3 more resources",
   "assignIndirectDamage": "Assign 1 indirect damage",
   "-- The Green Goblin --": "",
+  "giveTheVillainAFacedownBoostCard": "Give the villain 1 facedown boost card",
+  "spendTwoResources": "Spend 2 resources of any type",
+  "chooseResourceToDiscard": "Choose a resource to discard",
+  "placeTwoThreatOnRunningInterference": "Place 2 threat on Running Interference",
+  "spendMentalPhysicalResources": "Spend a mental and a physical resource",
 
   "-- The Wrecking Crew --": "",
 

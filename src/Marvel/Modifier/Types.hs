@@ -45,5 +45,10 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | on an identity: each "When Revealed" ability its player reveals resolves once
+    -- more for each of these
+    ResolveWhenRevealedAgain
+  | -- | on an identity: it cannot attack the characters with this title
+    CannotAttackTitled Text
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

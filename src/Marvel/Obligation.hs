@@ -43,6 +43,7 @@ allObligations = fromList $ map
   , SomeObligationCard uncertainLoyalties
 
   -- The Once and Future Kang
+  , SomeObligationCard fearOfKang
 
   ]
 

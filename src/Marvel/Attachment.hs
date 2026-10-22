@@ -39,6 +39,10 @@ allAttachments =
       , SomeAttachmentCard biomechanicalUpgrades
       , SomeAttachmentCard counterspell
       -- The Green Goblin
+      , SomeAttachmentCard goblinGlider
+      , SomeAttachmentCard pumpkinBombs
+      , SomeAttachmentCard allTiedUp
+      , SomeAttachmentCard mediaCoverage
 
       -- The Wrecking Crew
 

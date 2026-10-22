@@ -73,6 +73,8 @@ export interface PlayerView {
   engagedMinions: string[]
   /** encounter cards attached to their hero */
   attachments?: AttachmentView[]
+  /** the obligations in their play area */
+  obligations?: AttachmentView[]
   /** Doctor Strange's Invocation deck: its top card is faceup */
   invocation?: { top: CardView | null; deckSize: number; discard: CardView[] } | null
   [more: string]: unknown
