@@ -6,6 +6,7 @@ import Data.List (nub)
 import {-# SOURCE #-} Marvel.Matchers.Types (UpgradeMatcher)
 import Marvel.Ref
 import Marvel.Resource.Types
+import Marvel.Trait.Types (Trait)
 
 data Cost
   = Costs [Cost]
@@ -30,6 +31,8 @@ data Cost
   | -- | exhaust at least so many allies the payer controls, and at most so many (any
     -- number for Nothing)
     ExhaustAlliesCost Natural (Maybe Natural)
+  | -- | exhaust a character the payer controls with the trait: their identity or an ally
+    ExhaustCharacterWithTraitCost Trait
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
     DiscardEncounterCardsUntilMinionCost
@@ -57,6 +60,7 @@ costResources (DiscardHandCardsCost _ _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (ExhaustAlliesCost _ _) = []
+costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources TargetPrintedCost = []
 costResources (DamageCost _) = []

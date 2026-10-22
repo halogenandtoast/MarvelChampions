@@ -21,6 +21,8 @@ data Payment
   | UsePayment
   | -- | an ally exhausted to pay
     ExhaustedAllyPayment AllyId
+  | -- | a character exhausted to pay
+    ExhaustedCharacterPayment CharacterId
   | -- | X, for a cost of "spend X resources": what was spent beyond the rest of the cost
     XPayment Natural
   | -- | the target chosen as the card was played, before its cost was paid
@@ -62,3 +64,7 @@ paymentDiscards p = [c | DiscardHandCardPayment c <- payments p]
 -- | The allies exhausted to pay.
 paymentExhaustedAllies :: Payment -> [AllyId]
 paymentExhaustedAllies p = [a | ExhaustedAllyPayment a <- payments p]
+
+-- | The characters exhausted to pay.
+paymentExhaustedCharacters :: Payment -> [CharacterId]
+paymentExhaustedCharacters p = [c | ExhaustedCharacterPayment c <- payments p]
