@@ -33,8 +33,8 @@ instance IsTreachery Overconfidence where
 
 -- | When Revealed (Alter-Ego): Green Goblin schemes; (Hero): he attacks you. If at least
 -- 3 threat (damage) was placed by the activation, this card gains surge.
--- ponytail: damage to an ally is counted as dealt, a tough status card on it not
--- looked at; the hero's is counted as taken
+-- The damage counted is that taken, after the windows for it: none a tough status card
+-- prevented.
 instance RunMessage Overconfidence where
   runMessage msg (Overconfidence (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
@@ -47,9 +47,12 @@ instance RunMessage Overconfidence where
         pure . Overconfidence $ (if placed meta >= 3 then attrs & surgeL .~ True else attrs) `With` meta
       _ -> Overconfidence . (`With` meta) <$> runMessage msg attrs
     MainSchemeMessage _ (MainSchemePlaceThreat n) | isJust (activating meta) -> counted n
-    CheckWindows ws -> counted $ sum [damageAmount d | W.Window W.After (W.IdentityTookDamage _ src d) <- ws, byVillain src d]
-    AllyMessage _ (AllyDamaged src d) | byVillain src d -> counted (damageAmount d)
+    CheckWindows ws -> counted $ sum [damageAmount d | W.Window W.After (taken -> Just (src, d)) <- ws, byVillain src d]
     _ -> Overconfidence . (`With` meta) <$> runMessage msg attrs
    where
     counted n = pure $ Overconfidence (attrs `With` meta {placed = placed meta + n})
+    taken = \case
+      W.IdentityTookDamage _ src d -> Just (src, d)
+      W.AllyTookDamage _ src d -> Just (src, d)
+      _ -> Nothing
     byVillain src d = damageSource d == FromAttack && maybe False ((== src) . VillainRef) (activating meta)
