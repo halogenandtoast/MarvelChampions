@@ -58,28 +58,8 @@ getModifiedDefense attrs = do
 
 damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [ DamageEnemy (toRef vid) (toSource attrs) dmg
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
-              ]
-          ]
-      ]
-  EnemyMinionId mid ->
-    TargetLabel
-      (toRef mid)
-      [ DamageEnemy (toRef mid) (toSource attrs) dmg
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)
-              ]
-          ]
-      ]
+  EnemyVillainId vid -> TargetLabel (toRef vid) [DamageEnemy (toRef vid) (toSource attrs) dmg]
+  EnemyMinionId mid -> TargetLabel (toRef mid) [DamageEnemy (toRef mid) (toSource attrs) dmg]
 
 thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
