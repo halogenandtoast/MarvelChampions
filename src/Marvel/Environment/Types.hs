@@ -7,6 +7,7 @@ import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Entity
+import Marvel.Environment.Cards qualified as Cards
 import Marvel.Id hiding (EnvironmentId)
 import Marvel.Id as X (EnvironmentId)
 import Marvel.Message
@@ -121,6 +122,10 @@ instance RunMessage (Attrs Environment) where
     EnvironmentMessage ident (AttachedToEnvironment attachmentId)
       | ident == environmentId attrs ->
           pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
+    EnvironmentMessage ident FlipEnvironment | ident == environmentId attrs ->
+      case lookup (flipCardCode $ toCardCode attrs) Cards.allEnvironments of
+        Just def -> pure attrs {environmentCardDef = def}
+        Nothing -> error $ "No other face for environment " <> show (toCardCode attrs)
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n

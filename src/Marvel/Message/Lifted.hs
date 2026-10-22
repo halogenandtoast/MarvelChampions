@@ -321,6 +321,16 @@ advanceVillain vid = villainStep vid VillainAdvanced
 defeatVillain :: (ReverseQueue m) => VillainId -> m ()
 defeatVillain vid = villainStep vid VillainDefeated
 
+-- | The villain turns to its other face, then its "When Revealed" is answered.
+flipVillain :: (ReverseQueue m) => VillainId -> m ()
+flipVillain vid = do
+  villainStep vid FlipVillain
+  checkWindows [Window When $ W.RevealVillain vid W.RevealedFromVillain]
+
+-- | The environment turns to its other face.
+flipEnvironment :: (ReverseQueue m) => EnvironmentId -> m ()
+flipEnvironment eid = push $ EnvironmentMessage eid FlipEnvironment
+
 changeVillainHitPoints :: (ReverseQueue m) => VillainId -> Int -> m ()
 changeVillainHitPoints vid = villainStep vid . VillainHitPointsChanged
 
