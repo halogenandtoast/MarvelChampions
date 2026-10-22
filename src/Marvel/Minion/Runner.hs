@@ -58,7 +58,7 @@ runMinionMessage msg attrs = case msg of
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
       -- retaliate answers the attack whether or not a tough status card takes it
-      | minionTough attrs -> do
+      | minionTough attrs && not (damageIgnoresTough damage) -> do
         retaliate
         pure $ attrs & toughL .~ False
       | otherwise -> do
