@@ -29,6 +29,8 @@ allAlterEgoCards =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , clintBarton
+    , jessicaDrew
 
     -- The Once and Future Kang
 
@@ -94,3 +96,9 @@ odinson = alterEgo "06001b" "Odinson" [Asgard]
 
 stephenStrange :: CardDef
 stephenStrange = alterEgo "09001b" "Stephen Strange" [Mystic]
+
+clintBarton :: CardDef
+clintBarton = alterEgo "04001b" "Clint Barton" [Shield]
+
+jessicaDrew :: CardDef
+jessicaDrew = alterEgo "04031b" "Jessica Drew" [Shield, Spy]

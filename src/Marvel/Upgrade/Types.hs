@@ -55,6 +55,9 @@ instance Entity Upgrade where
     , upgradeDiscardIfNoUses :: Bool
     , upgradeOwner :: IdentityId
     -- ^ whose deck it came from, and whose discard pile it goes to
+    , upgradeHeldCards :: [PlayerCard]
+    -- ^ cards attached faceup to it, its controller may play as if in hand (Hawkeye's
+    -- Quiver); discarded as it leaves play
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -69,6 +72,7 @@ instance Entity Upgrade where
     UpgradeAttachedMainScheme :: Field Upgrade (Maybe MainSchemeId)
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
+    UpgradeHeldCards :: Field Upgrade [PlayerCard]
   field fld u =
     let UpgradeAttrs {..} = toAttrs u
      in case fld of
@@ -82,6 +86,7 @@ instance Entity Upgrade where
           UpgradeAttachedMainScheme -> upgradeAttachedMainScheme
           UpgradeUses -> upgradeUses
           UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
+          UpgradeHeldCards -> upgradeHeldCards
   toId = upgradeId . toAttrs
   toAttrs (Upgrade a) = toUpgradeAttrs a
 
@@ -147,6 +152,9 @@ attachedEnemyL =
 exhaustedL :: Lens' (Attrs Upgrade) Bool
 exhaustedL = lens upgradeExhausted $ \m x -> m {upgradeExhausted = x}
 
+heldCardsL :: Lens' (Attrs Upgrade) [PlayerCard]
+heldCardsL = lens upgradeHeldCards $ \m x -> m {upgradeHeldCards = x}
+
 usesL :: Lens' (Attrs Upgrade) Natural
 usesL = lens upgradeUses $ \m x -> m {upgradeUses = x}
 
@@ -183,6 +191,7 @@ upgrade f cardDef =
             , upgradeUses = 0
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
+            , upgradeHeldCards = []
             }
     }
 
@@ -278,4 +287,6 @@ instance RunMessage (Attrs Upgrade) where
       DiscardUpgrade -> do
         removeFromPlay a
         pure a
+    -- a held card played leaves it
+    PutCardIntoPlay _ card _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     _ -> pure a

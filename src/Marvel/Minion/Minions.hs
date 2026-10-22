@@ -43,6 +43,9 @@ import Marvel.Minion.Minions.Tombstone as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Minion.Minions.Crossfire as X
+import Marvel.Minion.Minions.TheViper as X
+import Marvel.Minion.Minions.HydraRegular as X
 
 -- The Once and Future Kang
 import Marvel.Minion.Minions.AncientWarrior as X

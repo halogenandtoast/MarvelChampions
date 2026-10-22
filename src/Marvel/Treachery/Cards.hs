@@ -73,6 +73,8 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , sniperShot
+  , hailHydraSpiderWoman
 
   -- The Once and Future Kang
   , kangsChosen
@@ -243,6 +245,18 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+sniperShot :: CardDef
+sniperShot = treachery "04030" "Sniper Shot" [Boost] HawkeyeNemesis 2
+
+-- | Hail Hydra! as Spider-Woman's nemesis set has it
+hailHydraSpiderWoman :: CardDef
+hailHydraSpiderWoman =
+  (reprint "04057" hailHydra)
+    { cdEncounterSet = Just SpiderWomanNemesis
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = [Boost, Boost]
+    }
 
 -- The Green Goblin
 

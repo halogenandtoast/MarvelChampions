@@ -61,6 +61,8 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeSideSchemeCard markedForDeath
+  , SomeSideSchemeCard theVipersAmbition
 
   -- The Once and Future Kang
   , SomeSideSchemeCard timePortal

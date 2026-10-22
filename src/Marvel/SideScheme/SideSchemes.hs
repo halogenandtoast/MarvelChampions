@@ -39,6 +39,8 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
+import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
 
 -- The Once and Future Kang
 import Marvel.SideScheme.SideSchemes.TimePortal as X

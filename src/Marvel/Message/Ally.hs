@@ -17,6 +17,8 @@ data AllyMessage
     AllyAttackLands EnemyId Damage
   | AllyThwarted
   | AllyWasAttacked Attack
+  | -- | retaliate's damage to the enemy that attacked it
+    AllyRetaliates EnemyId Natural
   | AllyDamaged Source Damage
   | AllyDefended EnemyId
   | AllyDefeated

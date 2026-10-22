@@ -25,7 +25,7 @@ data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, setC
 
 -- | A pack's cards as MarvelCDB lists them.
 packCards :: Text -> IO [PackCard]
-packCards pack = cardsWhere (== pack) (const True)
+packCards pack = cardsWhere (== pack) (inScope pack)
 
 -- | The cards of the encounter set, by MarvelCDB set code.
 setCards :: Text -> IO [PackCard]
@@ -45,7 +45,15 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors"]
+
+-- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
+-- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
+-- and campaign sets to come.
+inScope :: Text -> Maybe Text -> Bool
+inScope pack set = case pack of
+  "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
+  _ -> True
 
 -- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
 -- set code.

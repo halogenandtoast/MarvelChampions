@@ -52,6 +52,8 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , markedForDeath
+  , theVipersAmbition
 
   -- The Once and Future Kang
   , timePortal
@@ -218,6 +220,18 @@ openTheDarkDimension :: CardDef
 openTheDarkDimension =
   (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
+    }
+
+markedForDeath :: CardDef
+markedForDeath =
+  (sideScheme "04028" "Marked for Death" [Boost, Boost, Boost] HawkeyeNemesis 1)
+    { cdAcceleration = 1
+    }
+
+theVipersAmbition :: CardDef
+theVipersAmbition =
+  (sideScheme "04055" "The Viper's Ambition" [Boost, Boost] SpiderWomanNemesis 1)
+    { cdHazards = 1
     }
 
 -- The Green Goblin

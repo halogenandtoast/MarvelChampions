@@ -14,6 +14,8 @@ export interface UpgradeView extends CardView {
   exhausted?: boolean
   uses?: number
   controller?: string
+  /** the cards attached faceup to it, played from there (Hawkeye's Quiver) */
+  heldCards?: CardView[]
 }
 
 export interface SupportView extends CardView {

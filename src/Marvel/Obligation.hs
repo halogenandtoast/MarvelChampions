@@ -39,6 +39,8 @@ allObligations = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeObligationCard criminalPast
+  , SomeObligationCard uncertainLoyalties
 
   -- The Once and Future Kang
   , SomeObligationCard fearOfKang

@@ -51,6 +51,7 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeAttachmentCard crossfiresRifle
 
       -- The Once and Future Kang
 

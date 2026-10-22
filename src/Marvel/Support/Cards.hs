@@ -48,6 +48,8 @@ allSupports = fromList $ concatMap
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , teamTraining
+  , jessicaDrewsApartment
 
   -- The Once and Future Kang
 
@@ -127,10 +129,10 @@ theGoldenCity = unique
   $ identitySupport "01045" "The Golden City" 2 [Location, Wakanda] [Energy]
 
 tacTeam :: CardDef
-tacTeam = support "01056" "Tac Team" 3 [Shield] [Energy] Aggression
+tacTeam = reprintedAs ["04042"] $ support "01056" "Tac Team" 3 [Shield] [Energy] Aggression
 
 interrogationRoom :: CardDef
-interrogationRoom = reprintedAs ["08015"] $ limited (MaxPerPlayer 1)
+interrogationRoom = reprintedAs ["08015", "04048"] $ limited (MaxPerPlayer 1)
   $ support "01063" "Interrogation Room" 1 [Location] [Energy] Justice
 
 surveillanceTeam :: CardDef
@@ -160,7 +162,7 @@ quinjet :: CardDef
 quinjet = support "03019" "Quinjet" 1 [Avenger, Vehicle] [Energy] Leadership
 
 avengersTower :: CardDef
-avengersTower =
+avengersTower = reprintedAs ["04021"] $
   unique $ basicSupport "03024" "Avengers Tower" 2 [Avenger, Location] [Mental]
 
 aamirKhan :: CardDef
@@ -200,3 +202,11 @@ sanctumSanctorum =
 theNightNurse :: CardDef
 theNightNurse =
   unique $ support "09019" "The Night Nurse" 1 [Persona] [Mental] Protection
+
+teamTraining :: CardDef
+teamTraining =
+  limited (MaxPerPlayerUnderAnyControl 1) $
+    support "04016" "Team Training" 2 [Condition] [Physical] Leadership
+
+jessicaDrewsApartment :: CardDef
+jessicaDrewsApartment = unique $ identitySupport "04034" "Jessica Drew's Apartment" 1 [Location] [Physical]

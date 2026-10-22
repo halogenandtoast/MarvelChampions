@@ -5,6 +5,7 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Id
+import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Treachery.Treacheries
 import Marvel.Treachery.Cards qualified as Cards
@@ -81,6 +82,8 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeTreacheryCard sniperShot
+  , SomeTreacheryCard (reprintAs Cards.hailHydraSpiderWoman hailHydra)
 
   -- The Once and Future Kang
   , SomeTreacheryCard kangsChosen

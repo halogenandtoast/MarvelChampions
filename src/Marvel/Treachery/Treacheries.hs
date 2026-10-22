@@ -55,6 +55,7 @@ import Marvel.Treachery.Treacheries.ShockTherapy as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.SniperShot as X
 
 -- The Once and Future Kang
 import Marvel.Treachery.Treacheries.KangsChosen as X

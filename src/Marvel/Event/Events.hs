@@ -88,5 +88,20 @@ import Marvel.Event.Events.InspiringPresence as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Event.Events.SonicArrow as X
+import Marvel.Event.Events.ExplosiveArrow as X
+import Marvel.Event.Events.ElectricArrow as X
+import Marvel.Event.Events.CableArrow as X
+import Marvel.Event.Events.VibraniumArrow as X
+import Marvel.Event.Events.ReadyForAction as X
+import Marvel.Event.Events.EarthsMightiestHeroes as X
+import Marvel.Event.Events.VenomBlast as X
+import Marvel.Event.Events.Pheromones as X
+import Marvel.Event.Events.ContaminantImmunity as X
+import Marvel.Event.Events.Inconspicuous as X
+import Marvel.Event.Events.SelfPropelledGlide as X
+import Marvel.Event.Events.PressTheAdvantage as X
+import Marvel.Event.Events.PiercingStrike as X
+import Marvel.Event.Events.ClearTheArea as X
 
 -- The Once and Future Kang
