@@ -332,9 +332,8 @@ spec = describe "She-Hulk" do
       enhanced <- revealNow p Attachments.geneticallyEnhanced
       pass
       getsGame (HashMap.null . gameAttachments) `shouldReturn` True
-      discard <- map ecCardId <$> encounterDiscard
-      discard `shouldSatisfy` elem (ecCardId enhanced)
-      discard `shouldSatisfy` elem (ecCardId next)
+      map ecCardId <$> encounterDiscard >>= (`shouldSatisfy` elem (ecCardId enhanced))
+      dealtTo p `shouldReturn` [next]
 
   it "Titania's Fury: Titania attacks the hero" do
     tg <- sheHulk
@@ -363,7 +362,7 @@ spec = describe "She-Hulk" do
       pass
       damageOf p `shouldReturn` 0
       minionDamageOf titania `shouldReturn` Just 0
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
   it "Titania's Fury as a boost gives the villain another boost card" do
     tg <- sheHulk

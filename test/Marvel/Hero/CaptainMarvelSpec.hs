@@ -261,7 +261,7 @@ spec = describe "Captain Marvel" do
       pass
       isStunned p `shouldReturn` True
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId emergency))
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
   it "The Psyche-Magnitron enters with 3 threat and 1 more per hero, and is a hazard" do
     tg <- captainMarvel
@@ -297,7 +297,7 @@ spec = describe "Captain Marvel" do
       _ <- revealNow p Treacheries.kreeManipulator
       pass
       mainSchemeThreat `shouldReturn` (before + 1)
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
   it "Kree Manipulator as a boost places 1 threat when the villain's attack is undefended" do
     let attackedWith defend = do
@@ -328,12 +328,12 @@ spec = describe "Captain Marvel" do
       pass
       handOf p `shouldReturn` [genius]
       discardOf p >>= (`shouldSatisfy` \d -> energy `elem` d && absorption `elem` d)
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` False
+      dealtTo p >>= (`shouldSatisfy` not . (ecCardId next `elem`) . map ecCardId)
       [next'] <- stackEncounterDeck [Minions.hydraMercenary]
       _ <- revealNow p Treacheries.yonRoggsTreason
       pass
       handOf p `shouldReturn` [genius]
-      getsGame (HashMap.member (minionOf next') . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next' `elem`) . map ecCardId)
 
   it "Energy Channel's discharge is an attack: a stunned hero only loses the stun" do
     tg <- captainMarvel

@@ -2,6 +2,7 @@ module Marvel.Aspect.MsMarvelPackSpec (spec) where
 
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Villain.Types qualified as V
+import Data.Text qualified as T
 import TestImport
 
 msMarvel :: IO TestGame
@@ -68,6 +69,33 @@ spec = describe "Ms. Marvel pack" do
         villainDamageNow `shouldReturn` 2
         -- Rhino's 2 ATK, without the 2 boost
         damageOf p `shouldReturn` 2
+      -- the log tells the card turned up, but no boost added
+      text <- T.concat . map entryText <$> readIORef tg.logged
+      text `shouldSatisfy` T.isInfixOf "$log.boost"
+      text `shouldSatisfy` (not . T.isInfixOf "$log.boostAdded")
+
+    it "defeating the villain's stage mid-attack, the attack goes on at the next stage's ATK" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "05014"
+        energy <- putInHand p "01088"
+        vid <- villainIdNow
+        resolve [VillainMessage vid (VillainDamaged (toSource p) (toDamage 13 FromAbility))]
+        _ <- stackEncounterDeck [Minions.vulture]
+        villainAttacks p
+        choose "no defender" isNoDefender
+        choose "play Preemptive Strike" (isPlay strike)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        pass
+        choose "Rhino II's When Revealed" (isAbilityOf (VillainRef vid))
+        pass
+        villainField V.VillainStage `shouldReturn` 2
+        -- Rhino II's 3 ATK, without the 2 boost
+        damageOf p `shouldReturn` 3
 
     it "is not played as the villain schemes" do
       tg <- msMarvel

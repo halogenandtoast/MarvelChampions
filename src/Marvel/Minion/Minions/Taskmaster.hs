@@ -6,6 +6,7 @@ module Marvel.Minion.Minions.Taskmaster (
 import Marvel.Prelude
 
 import Marvel.Ability
+import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
@@ -25,11 +26,12 @@ instance HasModifiersFor Taskmaster where
   getModifiersFor _ _ _ = pure []
 
 -- | As a boost card: the villain gets as much for the activation, counting the upgrades
--- of the player it is against.
+-- of the player it is against, who resolves the boost card.
 instance RunMessage Taskmaster where
   runMessage msg e@(Taskmaster attrs) = case msg of
     Boost (RevealedAsBoost target (EnemyVillainId vid)) | isTarget attrs target -> do
-      n <- selectListCount (UpgradeControlledBy You)
+      you <- maybe getActivePlayerId pure =<< getVillainActivationPlayer vid
+      n <- selectListCount (UpgradeControlledBy $ IdentityWithId you)
       push $ VillainMessage vid (VillainAddBoost n)
       pure e
     _ -> Taskmaster <$> runMessage msg attrs

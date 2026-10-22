@@ -306,8 +306,8 @@ spec = describe "Spider-Man" do
       handOf p `shouldReturn` []
       discardOf p `shouldReturn` [card]
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId eviction))
-      -- surge: the next card is revealed
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+      -- surge: the next card is dealt facedown
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
   it "Highway Robbery holds a random card from each hand, facedown, until it is defeated" do
     tg <- testGame ["spider-man"]
@@ -350,14 +350,14 @@ spec = describe "Spider-Man" do
       swoop <- revealNow p Treacheries.sweepingSwoop
       pass
       isStunned p `shouldReturn` True
-      getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` False
+      dealtTo p >>= (`shouldSatisfy` not . (ecCardId next `elem`) . map ecCardId)
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId swoop))
       _ <- revealNow p Minions.vulture
       pass
       [next'] <- stackEncounterDeck [Minions.hydraMercenary]
       _ <- revealNow p Treacheries.sweepingSwoop
       pass
-      getsGame (HashMap.member (minionOf next') . gameMinions) `shouldReturn` True
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next' `elem`) . map ecCardId)
 
   it "Sweeping Swoop as a boost stuns the character the attack damages" do
     tg <- testGame ["spider-man"]

@@ -54,6 +54,7 @@ instance Entity Upgrade where
     , upgradeAttachedEnemy :: Maybe EnemyId
     , upgradeAttachedAlly :: Maybe AllyId
     , upgradeAttachedSideScheme :: Maybe SideSchemeId
+    , upgradeAttachedMainScheme :: Maybe MainSchemeId
     , upgradeUses :: Natural
     , upgradeDiscardIfNoUses :: Bool
     , upgradeOwner :: IdentityId
@@ -69,6 +70,7 @@ instance Entity Upgrade where
     UpgradeAttachedEnemy :: Field Upgrade (Maybe EnemyId)
     UpgradeAttachedAlly :: Field Upgrade (Maybe AllyId)
     UpgradeAttachedSideScheme :: Field Upgrade (Maybe SideSchemeId)
+    UpgradeAttachedMainScheme :: Field Upgrade (Maybe MainSchemeId)
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
   field fld u =
@@ -81,6 +83,7 @@ instance Entity Upgrade where
           UpgradeAttachedEnemy -> upgradeAttachedEnemy
           UpgradeAttachedAlly -> upgradeAttachedAlly
           UpgradeAttachedSideScheme -> upgradeAttachedSideScheme
+          UpgradeAttachedMainScheme -> upgradeAttachedMainScheme
           UpgradeUses -> upgradeUses
           UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
   toId = upgradeId . toAttrs
@@ -180,6 +183,7 @@ upgrade f cardDef =
             , upgradeAttachedEnemy = Nothing
             , upgradeAttachedAlly = Nothing
             , upgradeAttachedSideScheme = Nothing
+            , upgradeAttachedMainScheme = Nothing
             , upgradeUses = 0
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
@@ -273,6 +277,8 @@ instance RunMessage (Attrs Upgrade) where
           VillainRef villainId -> UpgradeAttachedToEnemy (EnemyVillainId villainId)
           EnemyRef enemyId -> UpgradeAttachedToEnemy enemyId
           SideSchemeRef sideSchemeId -> UpgradeAttachedToSideScheme sideSchemeId
+          SchemeRef (SchemeMainSchemeId mainSchemeId) -> UpgradeAttachedToMainScheme mainSchemeId
+          MainSchemeRef mainSchemeId -> UpgradeAttachedToMainScheme mainSchemeId
           target -> error $ "an upgrade cannot attach to " <> show target
       UpgradeControlledByPlayer p -> do
         push $ IdentityMessage p $ UpgradeCreated (upgradeId a)
@@ -300,6 +306,8 @@ instance RunMessage (Attrs Upgrade) where
         pure $ a & attachedAllyL ?~ allyId
       UpgradeAttachedToSideScheme sideSchemeId ->
         pure a {upgradeAttachedSideScheme = Just sideSchemeId}
+      UpgradeAttachedToMainScheme mainSchemeId ->
+        pure a {upgradeAttachedMainScheme = Just mainSchemeId}
       -- leaving play discards it
       DiscardUpgrade -> do
         push $ RemoveFromPlay (toTarget a)

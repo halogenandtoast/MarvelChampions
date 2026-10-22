@@ -51,6 +51,7 @@ import Marvel.Scenario.Types (Field (ScenarioDiscard, ScenarioEncounterDeck))
 import Data.Aeson (Result (..), Value (Object), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
+import Data.Aeson.Key (Key)
 
 import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck))
 import Marvel.Ally.Types as X (Ally, Attrs (..))
@@ -441,17 +442,32 @@ obligationsInPlay = getsGame (length . gameObligations)
 stackEncounterDeck :: [CardDef] -> GameAppT [EncounterCard]
 stackEncounterDeck defs = do
   cards <- traverse genEncounterCard defs
-  withGame_ \g -> g {gameScenario = restack cards (gameScenario g)}
+  overEncounterPile "scenarioEncounterDeck" (cards <>)
   pure cards
+
+-- | Make the encounter deck and discard pile exactly new copies of the cards given, the
+-- first on top.
+setEncounterDeck :: [CardDef] -> [CardDef] -> GameAppT ([EncounterCard], [EncounterCard])
+setEncounterDeck deckDefs discardDefs = do
+  deck <- traverse genEncounterCard deckDefs
+  discard <- traverse genEncounterCard discardDefs
+  overEncounterPile "scenarioEncounterDeck" (const deck)
+  overEncounterPile "scenarioDiscard" (const discard)
+  pure (deck, discard)
+
+-- ponytail: through the scenario's JSON, as the scenario is existential
+overEncounterPile :: Key -> ([EncounterCard] -> [EncounterCard]) -> GameAppT ()
+overEncounterPile key f = withGame_ \g -> g {gameScenario = restack (gameScenario g)}
  where
-  -- ponytail: through the scenario's JSON, as the scenario is existential
-  restack cards s = case toJSON s of
+  restack s = case toJSON s of
     Object o
-      | Just deck <- KeyMap.lookup "scenarioEncounterDeck" o
-      , Success deck' <- fromJSON @[EncounterCard] deck ->
-          either error id . parseEither parseJSON . Object $
-            KeyMap.insert "scenarioEncounterDeck" (toJSON (cards <> deck')) o
-    _ -> error "no encounter deck"
+      | Just pile <- KeyMap.lookup key o
+      , Success pile' <- fromJSON @[EncounterCard] pile ->
+          either error id . parseEither parseJSON . Object $ KeyMap.insert key (toJSON (f pile')) o
+    _ -> error "no encounter pile"
+
+accelerationTokensNow :: GameAppT Natural
+accelerationTokensNow = getsGame (scenarioAccelerationTokens . gameScenario)
 
 encounterDeckSize :: GameAppT Int
 encounterDeckSize = getsGame (length . field ScenarioEncounterDeck . gameScenario)
@@ -637,3 +653,7 @@ encounterDiscardNow = getsGame (scenarioDiscard . toAttrs . gameScenario)
 
 scenarioEncounterDeckNow :: GameAppT [EncounterCard]
 scenarioEncounterDeckNow = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)
+
+-- | The facedown encounter cards dealt to a player, in the order dealt.
+dealtTo :: IdentityId -> GameAppT [EncounterCard]
+dealtTo p = (.playerIdentityEncounterCards) <$> playerAttrs p
