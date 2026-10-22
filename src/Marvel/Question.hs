@@ -71,6 +71,8 @@ data Choice
   | DamageAllEnemies EnemyMatcher Source Damage
   | DamageAllCharacters CharacterMatcher Source Damage
   | ThwartScheme Target Source Natural
+  | -- | a hero's or ally's basic thwart: a thwart, whatever its source
+    BasicThwartScheme Target Source Natural
   | Stun Target Source
   | Confuse Target Source
   | Recover

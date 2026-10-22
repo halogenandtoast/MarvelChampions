@@ -40,10 +40,8 @@ instance IsSideScheme LightOfCenturiesSphere where
 instance RunMessage LightOfCenturiesSphere where
   runMessage msg s@(LightOfCenturiesSphere (attrs `With` meta)) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
-      SideSchemeThwarted source _ -> do
-        player <- maybe getActivePlayerId pure =<< getSourceController source
-        attrs' <- runMessage msg attrs
-        pure . LightOfCenturiesSphere $ attrs' `With` Meta (Just player)
+      SideSchemeThwarted source _ -> removedBy source
+      SideSchemeThreatRemoved source _ -> removedBy source
       DefeatSideScheme -> do
         discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         pure s
@@ -53,3 +51,8 @@ instance RunMessage LightOfCenturiesSphere where
       putEncounterCardIntoPlay player minion
       pure s
     _ -> LightOfCenturiesSphere . (`With` meta) <$> runMessage msg attrs
+   where
+    removedBy source = do
+      player <- maybe getActivePlayerId pure =<< getSourceController source
+      attrs' <- runMessage msg attrs
+      pure . LightOfCenturiesSphere $ attrs' `With` Meta (Just player)

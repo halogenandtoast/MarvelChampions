@@ -252,7 +252,7 @@ sideSchemeNarration sid = \case
   RevealSideScheme -> Just $ simply "log.sideSchemeRevealed" (SideSchemeRef sid)
   SideSchemePlaceThreat n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatPlaced" n Bad
   SideSchemeThwarted _ n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good
-  SideSchemeThreatRemoved n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good
+  SideSchemeThreatRemoved _ n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good
   DefeatSideScheme -> Just $ whenRef (SideSchemeRef sid) \s -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> s]]
   _ -> Nothing
 

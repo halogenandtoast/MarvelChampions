@@ -1607,6 +1607,7 @@ abilityCardDef g = \case
   SupportRef sid -> supportCardDef . toAttrs <$> lookup sid (gameSupports g)
   AllyRef aid -> getCardDef <$> lookup aid (gameAllies g)
   VillainRef vid -> getCardDef <$> lookup vid (gameVillains g)
+  EventRef eid -> eventCardDef . toAttrs <$> lookup eid (gameEvents g)
   _ -> Nothing
 
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on

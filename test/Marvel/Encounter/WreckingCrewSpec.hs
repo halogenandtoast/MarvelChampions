@@ -34,7 +34,13 @@ ownScheme v = fromMaybe (error "no side scheme") <$> signatureSchemeOf v
 
 -- | Exactly so much threat on the side scheme (under 10, so nothing fires).
 setThreat :: SideSchemeId -> Natural -> GameAppT ()
-setThreat sid n = resolve $ SideSchemeMessage sid (SideSchemeThreatRemoved 99) : [SideSchemeMessage sid (SideSchemePlaceThreat n) | n > 0]
+setThreat sid n = resolve $ SideSchemeMessage sid (SideSchemeThreatRemoved GameRef 99) : [SideSchemeMessage sid (SideSchemePlaceThreat n) | n > 0]
+
+-- | The choice made now, as the player's only answer.
+answerNow :: IdentityId -> Choice -> GameAppT ()
+answerNow p c = do
+  runNow [Ask p (ChooseOne [c])]
+  answerQuestion p 0
 
 activeNow :: GameAppT VillainId
 activeNow = selectJust ActiveVillain
@@ -150,11 +156,22 @@ spec = describe "The Wrecking Crew" do
       resolve [SetActiveVillain t]
       card <- revealNow p Attachments.heldHostageThunderball
       let hostage = AttachmentId $ unCardId $ ecCardId card
-      before <- sideSchemeThreat st
-      resolve [SideSchemeMessage st (SideSchemeThwarted (IdentityRef p) 2)]
-      sideSchemeThreat st `shouldReturn` before
+      setThreat st 6
       hero <- selectAny (IdentityWithId p <> HeroIdentity)
       unless hero $ changeForm p
+      -- a basic thwart removes none
+      answerNow p (BasicThwartScheme (SideSchemeRef st) (IdentityRef p) 2)
+      sideSchemeThreat st `shouldReturn` 6
+      -- nor does an ability labeled a thwart: For Justice!, "Hero Action (thwart)"
+      clearHand p
+      forJustice <- putInHand p "01060"
+      payment <- traverse (putInHand p) ["01088", "01088"]
+      playWith forJustice payment
+      choose "thwart Thunderstruck" (isTargetChoice (SchemeSideSchemeId st))
+      sideSchemeThreat st `shouldReturn` 6
+      -- a "remove threat" that is not a thwart still removes it
+      answerNow p (ThwartScheme (SideSchemeRef st) GameRef 2)
+      sideSchemeThreat st `shouldReturn` 4
       choose "use Held Hostage" (isAbilityOf (AttachmentRef hostage))
       ranMessage tg (VillainMessage t (VillainAttacks p)) `shouldReturn` True
       -- Spider-Man's sense for the attack is not used

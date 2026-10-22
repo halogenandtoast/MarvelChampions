@@ -183,6 +183,10 @@ setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 thwartScheme :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
 
+-- | A hero's or ally's basic thwart of the scheme.
+basicThwartOf :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
+basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
+
 -- | The threat placed on the scheme without the "would place threat" window
 -- ('threatPlacement'): what an interrupt to that window places in its stead.
 placeThreatWithoutWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
@@ -907,7 +911,7 @@ villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWitho
 
 -- | Threat taken off the side scheme, not by thwarting.
 removeSideSchemeThreat :: (ReverseQueue m) => SideSchemeId -> Natural -> m ()
-removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved
+removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved GameRef
 
 -- | Of the upgrades and the supports the player controls, as asked for, those with the
 -- highest printed cost.
