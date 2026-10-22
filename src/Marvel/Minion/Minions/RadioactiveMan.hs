@@ -39,11 +39,11 @@ instance HasAbilities RadioactiveMan where
 instance RunMessage RadioactiveMan where
   runMessage msg e@(RadioactiveMan attrs) = runQueueT $ case msg of
     RanAbility ident target 1 _ _ | isTarget attrs target -> do
-      discardAtRandom ident 1
+      discardFrom ident RandomFromHand 1
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         ident <- getActivePlayerId
-        e <$ discardAtRandom ident 1
+        e <$ discardFrom ident RandomFromHand 1
       _ -> RadioactiveMan <$> runMessage msg attrs
     _ -> RadioactiveMan <$> runMessage msg attrs

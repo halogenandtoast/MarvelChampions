@@ -553,40 +553,8 @@ checkWindows = push . CheckWindows
 
 -- * Encounter cards
 
--- | Threat placed on each scheme matching, by the card.
-placeThreatMatching :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-placeThreatMatching you source n = Choice.pushChoice you . PlaceThreat (toSource source) n
-
-confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
-confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
-
-stunAlly :: (ReverseQueue m) => AllyId -> m ()
-stunAlly ally = push $ AllyMessage ally AllyStunned
-
--- | The villain or minion is given a tough status card.
-enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
-enemyBecomesTough enemy = push case toEnemy enemy of
-  EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
-  EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
-
--- | All of the minion's damage is healed.
-healAllDamage :: (ReverseQueue m) => MinionId -> m ()
-healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
-
-surge :: (ReverseQueue m) => IdentityId -> m ()
-surge = push . Surge
-
 dealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 dealEncounterCard = push . DealEncounterCard
-
--- | Cards discarded from the player's hand at random.
-discardAtRandom :: (ReverseQueue m) => IdentityId -> Natural -> m ()
-discardAtRandom ident n = push $ IdentityMessage ident $ DiscardFrom RandomFromHand n Nothing
-
--- | The top cards of the encounter deck are discarded, the target told which
--- ('WithDiscarded').
-discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
-discardTopOfEncounterDeckFor n = push . DiscardTopOfEncounterDeck n . Just . toTarget
 
 -- | The boost card stays in play, under the player.
 putBoostIntoPlay :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()

@@ -43,6 +43,6 @@ instance RunMessage YonRogg where
         selectOne $
           SideSchemeIs SideSchemes.thePsycheMagnitron
       for_ mThePsycheMagnitron $ \thePsycheMagnitron ->
-        placeThreatMatching ident attrs 1 (SchemeWithId $ SchemeSideSchemeId thePsycheMagnitron)
+        placeThreatOnEach attrs 1 (SchemeWithId $ SchemeSideSchemeId thePsycheMagnitron)
       pure e
     _ -> YonRogg <$> runMessage msg attrs
