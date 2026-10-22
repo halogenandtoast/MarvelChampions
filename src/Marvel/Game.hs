@@ -954,7 +954,8 @@ isWindowPlayable window attrs c = do
       (pure False)
       (\matcher -> windowMatches matcher window GameRef)
       (cdResponseWindow def)
-  pure $ length resources >= modifiedCost && passedCriteria && passedWindow
+  passedPlayLimits <- checkPlayLimits attrs c
+  pure $ length resources >= modifiedCost && passedCriteria && passedWindow && passedPlayLimits
  where
   ident = toId attrs
   def = getCardDef c
