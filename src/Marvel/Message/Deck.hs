@@ -22,6 +22,7 @@ data ChoiceRules = DifferentCards
 data SearchSignifier
   = SearchIdentityDeck IdentityId DeckProjection
   | SearchEncounterDeckAndDiscardPile
+  | SearchIdentityDeckAndDiscardPile IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

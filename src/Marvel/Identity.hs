@@ -898,6 +898,20 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             -- the cards looked at are out of the deck until the search is over: the deck
             -- is not empty meanwhile
             pure $ PlayerIdentity $ attrs & deckL .~ Deck deck' & \a -> a {playerIdentitySearching = True}
+    -- the cards stay where they are while searched; the deck is shuffled after
+    Search (SearchIdentityDeckAndDiscardPile iid) cardMatcher SearchDrawOne ShuffleBackIn
+      | iid == playerIdentityId -> do
+          let found = filter (cardMatch cardMatcher) (unDeck playerIdentityDeck <> unDiscard playerIdentityDiscard)
+          pushAll
+            [ FocusCards $ PlayerCard <$> found
+            , Ask playerIdentityId $
+                ChooseOne $
+                  [Label "$label.noMatchingCardsFound" [] | null found]
+                    <> [TargetLabel (toRef c) [Run [IdentityMessage playerIdentityId (AddToHand c)]] | c <- found]
+            , UnfocusCards
+            , IdentityMessage playerIdentityId ShuffleDeck
+            ]
+          pure pid
     FinishedSearching -> pure $ PlayerIdentity attrs {playerIdentitySearching = False}
     Search _ _ _ _ -> error "Unhandled"
     IdentityRetaliate n enemyId -> do
