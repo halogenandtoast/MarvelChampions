@@ -41,6 +41,8 @@ data Modifier
     UpgradeOnThisCostReduction Natural
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
+  | -- | a scheme threat cannot be removed from by thwarting (Held Hostage)
+    ThreatCannotBeRemovedByThwarting
   | -- | an identity that stays exhausted when it would ready
     CannotReady
   | -- | an identity that stays in the form it is in

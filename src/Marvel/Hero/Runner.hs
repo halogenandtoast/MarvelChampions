@@ -105,10 +105,10 @@ instance RunMessage (Attrs Hero) where
               if withAttack && atk /= thw
                 then
                   chooseOne ident
-                    [ labeled "$label.thwartWithThw" (thwartScheme scheme a thw)
-                    , labeled "$label.thwartWithAtk" (thwartScheme scheme a atk)
+                    [ labeled "$label.thwartWithThw" (basicThwartOf scheme a thw)
+                    , labeled "$label.thwartWithAtk" (basicThwartOf scheme a atk)
                     ]
-                else thwartScheme scheme a thw
+                else basicThwartOf scheme a thw
           chooseOnePrompted ident "$label.chooseSchemeToThwart" choices
           pure a
         Defended enemy -> do

@@ -3,6 +3,8 @@ module Marvel.Choice where
 import Marvel.Prelude
 
 import Marvel.Ability.Types hiding (Attack, Thwart)
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Card.Def (CardDef (..))
 import Marvel.ActiveCost.Types
 import Marvel.Damage
 import Marvel.Exception
@@ -156,22 +158,12 @@ resolveChoice ident = \case
           EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
       )
         <> attacked
+  -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
+  -- a thwart, as "Hero Action (thwart)"; "remove threat" otherwise is not one
   ThwartScheme target source n' -> do
-    -- each instance of threat the source removes may be increased, as by Shrink
-    bonus <- sourceBonus source \case
-      ThreatRemovedModifier n -> Just n
-      _ -> Nothing
-    let n = n' + bonus
-    case target of
-      MainSchemeRef mid ->
-        pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-      SideSchemeRef sid ->
-        pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
-      SchemeRef (SchemeMainSchemeId mid) ->
-        pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-      SchemeRef (SchemeSideSchemeId sid) ->
-        pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
-      _ -> error $ "can not thwart target: " <> show target
+    labeled <- getsGame \g -> (cdAbilitySubType =<< abilityCardDef g (toTarget source)) == Just Ability.Thwart
+    removeThreatFrom labeled target source n'
+  BasicThwartScheme target source n' -> removeThreatFrom True target source n'
   RemoveThreat source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     let f target = ThwartScheme target source n
@@ -305,5 +297,21 @@ resolveChoice ident = \case
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
 -- | What the source's modifiers add to each instance of what it does.
+-- | The threat removed from the scheme, by thwarting or not.
+removeThreatFrom :: (HasGame m) => Bool -> Target -> Source -> Natural -> m [Message]
+removeThreatFrom thwarting target source n' = do
+  -- each instance of threat the source removes may be increased, as by Shrink
+  bonus <- sourceBonus source \case
+    ThreatRemovedModifier n -> Just n
+    _ -> Nothing
+  let n = n' + bonus
+      side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
+  pure case target of
+    MainSchemeRef mid -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    SideSchemeRef sid -> [side sid]
+    SchemeRef (SchemeMainSchemeId mid) -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    SchemeRef (SchemeSideSchemeId sid) -> [side sid]
+    _ -> error $ "can not thwart target: " <> show target
+
 sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
 sourceBonus source f = sum . mapMaybe f <$> getModifiers source
