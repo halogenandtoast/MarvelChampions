@@ -179,6 +179,22 @@ spec = describe "Black Widow's aspect and basic cards" do
         damageOf p `shouldReturn` 4
         villainDamageNow `shouldReturn` 4
 
+    it "cannot attack the villain while a guard minion is engaged with you" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        counter <- putIntoPlay p "08030"
+        _ <- addMinion p Minions.hydraMercenary
+        _ <- stackEncounterDeck [Treacheries.theVulturesPlans]
+        vid <- villainIdNow
+        start [VillainMessage vid (VillainAttacks p)]
+        choose "no defender" isNoDefender
+        damageOf p >>= (`shouldSatisfy` (> 0))
+        offers (isAbilityOfCard counter) `shouldReturn` False
+        villainDamageNow `shouldReturn` 0
+
   describe "Rapid Response (08031)" do
     it "puts a defeated ally back into play with 1 damage" do
       tg <- blackWidow

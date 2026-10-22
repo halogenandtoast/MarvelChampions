@@ -42,7 +42,8 @@ instance HasAbilities Attacrobatics where
           1
           (BoostCardTurnedFaceup When EncounterCardWithBoostIcons)
           HeroInterrupt
-          OwnsThis
+          -- an attack on the villain, which guard forbids
+          (OwnsThis <> EnemyExists (VillainEnemy <> AttackableBy (IdentityWithId $ upgradeController $ toUpgradeAttrs a)))
           (DiscardCost $ toTarget a)
           (runAbility a 1)
     ]
@@ -56,11 +57,8 @@ instance RunMessage Attacrobatics where
           VillainMessage _ (VillainAddBoost _) -> True
           _ -> False
         let icons = boostCount (cdBoostIcons $ getCardDef card)
-        -- an attack on the villain, which guard forbids
-        guarded <- selectAny (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId ident))
         villain <- selectJust ActiveVillain
-        unless guarded $
-          pushChoice ident $
-            DamageEnemy (toRef villain) (toSource attrs) (toDamage icons $ FromPlayerAttack ident)
+        pushChoice ident $
+          DamageEnemy (toRef villain) (toSource attrs) (toDamage icons $ FromPlayerAttack ident)
         pure u
     _ -> Attacrobatics <$> runMessage msg attrs

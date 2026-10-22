@@ -38,7 +38,7 @@ instance HasAbilities Ally where
              x
              301
              Basic
-             (EnemyExists AttackableEnemy)
+             (EnemyExists $ AttackableBy $ IdentityWithId $ allyController $ toAllyAttrs a)
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]
@@ -61,7 +61,7 @@ instance RunMessage (Attrs Ally) where
       AllyAttacked -> if allyStunned a
         then pure $ a & stunnedL .~ False
         else do
-          enemies <- selectList AttackableEnemy
+          enemies <- selectList $ AttackableBy $ IdentityWithId $ allyController a
           dmg <- getModifiedAttack a
           push $
             Ask

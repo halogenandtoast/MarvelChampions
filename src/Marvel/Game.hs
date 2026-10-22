@@ -1708,7 +1708,7 @@ gameSelectEnemy m = do
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
     -- guard keeps the player it is engaged with from attacking the villain
-    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith You)
+    AttackableBy attacker -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)
@@ -1728,7 +1728,7 @@ gameSelectEnemy m = do
     VillainEnemy -> pure False
     MinionEnemy -> pure True
     DamageableEnemy -> pure True
-    AttackableEnemy -> pure True
+    AttackableBy _ -> pure True
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)

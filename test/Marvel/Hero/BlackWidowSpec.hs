@@ -195,6 +195,20 @@ spec = describe "Black Widow" do
       -- Rhino's 2 ATK, without the 2 boost icons
       damageOf p `shouldReturn` 2
 
+  it "Attacrobatics, an attack on the villain, cannot be used while a guard minion is engaged with you" do
+    tg <- blackWidow
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      acro <- inPlay p "08006" ["01088"]
+      _ <- addMinion p Minions.hydraMercenary
+      _ <- stackEncounterDeck [Treacheries.soundManipulation]
+      vid <- villainIdNow
+      runNow [VillainMessage vid (VillainAttacks p)]
+      choose "no defender" isNoDefender
+      offers (isAbilityOfCard acro) `shouldReturn` False
+
   it "Attacrobatics cannot be used on a boost card without boost icons" do
     tg <- blackWidow
     let p = player1 tg

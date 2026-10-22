@@ -65,8 +65,8 @@ data WindowMatcher
     ResolvesAbility WindowTiming IdentityMatcher CardMatcher
   | MinionHasSchemed WindowTiming MinionMatcher
   | BoostCardTurnedFaceup WindowTiming BasicEncounterCardMatcher
-  | -- | after a player matching takes damage of this kind
-    TookDamage IdentityMatcher DamageSource
+  | -- | after a player matching takes damage of this kind from an enemy matching
+    TookDamage IdentityMatcher DamageSource EnemyMatcher
   | -- | an ally a player matching controls is defeated
     AllyWasDefeated WindowTiming IdentityMatcher
   | SurgeWouldResolve
