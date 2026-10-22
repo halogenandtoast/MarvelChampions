@@ -290,10 +290,6 @@ placeThreat you source n = Choice.pushChoice you . PlaceThreat (toSource source)
 placeThreatOnScheme :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreatOnScheme scheme = pushAll . placeThreatOn (toScheme scheme)
 
--- | The threat put on the scheme, past the window for placing it ('threatPlacement').
-threatPlaced :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
-threatPlaced scheme = push . threatPlacement (toScheme scheme)
-
 stunIdentity :: (ReverseQueue m) => IdentityId -> m ()
 stunIdentity ident = push $ IdentityMessage ident IdentityStunned
 
@@ -315,9 +311,6 @@ enemyBecomesTough enemy = push case toEnemy enemy of
 -- | All of the minion's damage is healed.
 healAllDamage :: (ReverseQueue m) => MinionId -> m ()
 healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
-
-removeFromPlay :: (ReverseQueue m, IsRef a) => a -> m ()
-removeFromPlay = push . RemoveFromPlay . toTarget
 
 surge :: (ReverseQueue m) => IdentityId -> m ()
 surge = push . Surge

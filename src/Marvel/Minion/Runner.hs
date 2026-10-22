@@ -129,7 +129,7 @@ runMinionMessage msg attrs = case msg of
         threat <- getModifiedScheme attrs
         when (threat > 0) $
           checkWindows [W.Window W.Would $ W.ThreatPlaced W.ThreatFromMinion mainScheme threat]
-        threatPlaced mainSchemeId threat
+        placeThreatPastWindow mainSchemeId threat
         checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
         pure attrs
       _ -> error "Not the main scheme"
