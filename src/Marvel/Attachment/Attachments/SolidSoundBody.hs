@@ -14,11 +14,10 @@ import Marvel.Criteria
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -50,11 +49,11 @@ instance HasAbilities SolidSoundBody where
     _ -> []
 
 instance RunMessage SolidSoundBody where
-  runMessage msg (SolidSoundBody attrs) = case msg of
+  runMessage msg (SolidSoundBody attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain ident
+        attachedTo villainId ident
         pure . SolidSoundBody $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SolidSoundBody <$> runMessage msg attrs
     _ -> SolidSoundBody <$> runMessage msg attrs

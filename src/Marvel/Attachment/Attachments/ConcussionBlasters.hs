@@ -14,11 +14,10 @@ import Marvel.Criteria
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -46,9 +45,9 @@ instance HasAbilities ConcussionBlasters where
     ]
 
 instance RunMessage ConcussionBlasters where
-  runMessage msg a@(ConcussionBlasters attrs) = case msg of
+  runMessage msg (ConcussionBlasters attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
       villainId <- selectJust ActiveVillain
-      push $ VillainMessage villainId $ AttachedToVillain ident
+      attachedTo villainId ident
       pure . ConcussionBlasters $ attrs & enemyL ?~ EnemyVillainId villainId
     _ -> ConcussionBlasters <$> runMessage msg attrs

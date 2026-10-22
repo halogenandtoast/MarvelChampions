@@ -13,11 +13,10 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -45,11 +44,11 @@ instance HasAbilities EnhancedIvoryHorn where
     ]
 
 instance RunMessage EnhancedIvoryHorn where
-  runMessage msg (EnhancedIvoryHorn attrs) = case msg of
+  runMessage msg (EnhancedIvoryHorn attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain ident
+        attachedTo villainId ident
         pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> EnhancedIvoryHorn <$> runMessage msg attrs
     _ -> EnhancedIvoryHorn <$> runMessage msg attrs

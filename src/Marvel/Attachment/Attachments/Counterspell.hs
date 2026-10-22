@@ -12,11 +12,10 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -39,17 +38,17 @@ instance HasAbilities Counterspell where
 -- revealed in its place. When you play an event, cancel its effects (it is still played
 -- and discarded), then discard this card.
 instance RunMessage Counterspell where
-  runMessage msg a@(Counterspell attrs) = case msg of
+  runMessage msg a@(Counterspell attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment identityId) | ident == attachmentId attrs -> do
       hero <- member identityId <$> select HeroIdentity
       if hero
         then pure . Counterspell $ attrs {attachmentIdentity = Just identityId}
-        else a <$ push (RemoveFromPlay $ toTarget attrs)
+        else a <$ removeFromPlay attrs
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
       for_ [eid | W.EventPlayed _ eid _ <- windows] \eid ->
         cancelMatchingMessage \case
           ResolveEventEffect _ (EventMessage eid' _) -> eid' == eid
           _ -> False
-      push $ RemoveFromPlay (toTarget attrs)
+      removeFromPlay attrs
       pure a
     _ -> Counterspell <$> runMessage msg attrs

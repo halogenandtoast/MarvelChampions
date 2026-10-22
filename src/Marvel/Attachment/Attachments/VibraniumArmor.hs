@@ -14,11 +14,10 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -41,10 +40,10 @@ instance HasAbilities VibraniumArmor where
     ]
 
 instance RunMessage VibraniumArmor where
-  runMessage msg a@(VibraniumArmor attrs) = case msg of
+  runMessage msg a@(VibraniumArmor attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
       villainId <- selectJust ActiveVillain
-      push $ VillainMessage villainId $ AttachedToVillain ident
+      attachedTo villainId ident
       pure . VibraniumArmor $ attrs & enemyL ?~ EnemyVillainId villainId
     -- Forced Response: after the villain takes damage, give it a tough status card. A
     -- tough villain takes no damage, it only loses the card (the game is read before
@@ -53,6 +52,6 @@ instance RunMessage VibraniumArmor where
       | Just (EnemyVillainId vid) == attachmentEnemy attrs
       , damageAmount damage > 0 -> do
           tough <- villainMatches VillainWithToughStatus vid
-          unless tough $ push $ VillainMessage vid VillainBecomeTough
+          unless tough $ enemyBecomesTough vid
           pure a
     _ -> VibraniumArmor <$> runMessage msg attrs

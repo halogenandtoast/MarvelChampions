@@ -15,11 +15,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Window qualified as W
@@ -45,15 +44,15 @@ instance HasAbilities ProgramTransmitter where
     _ -> []
 
 instance RunMessage ProgramTransmitter where
-  runMessage msg a@(ProgramTransmitter attrs) = case msg of
+  runMessage msg a@(ProgramTransmitter attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain ident
+        attachedTo villainId ident
         pure . ProgramTransmitter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> ProgramTransmitter <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       sideSchemes <- selectList AnySideScheme
-      pushAll $ concatMap (\s -> placeThreatOn (SchemeSideSchemeId s) 1) sideSchemes
+      for_ sideSchemes \s -> placeThreatOnScheme s 1
       pure a
     _ -> ProgramTransmitter <$> runMessage msg attrs

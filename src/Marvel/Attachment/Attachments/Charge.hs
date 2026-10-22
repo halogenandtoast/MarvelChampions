@@ -13,11 +13,10 @@ import Marvel.Cost
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window
 
@@ -47,23 +46,19 @@ instance HasModifiersFor Charge where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage Charge where
-  runMessage msg a@(Charge attrs) = case msg of
+  runMessage msg a@(Charge attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain ident
+        attachedTo villainId ident
         pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> Charge <$> runMessage msg attrs
     RanAbility _ (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyVillainId vid) -> do
-        replaceMatchingMessage
-          ( const
-              [VillainMessage vid VillainEndAttack, RemoveFromPlay $ toTarget a]
-          )
-          $ \case
-            VillainMessage vid' VillainEndAttack -> vid == vid'
-            _ -> False
-        pushAll [VillainMessage vid VillainAttackGainOverkill]
+        flip afterMatching (removeFromPlay a) \case
+          VillainMessage vid' VillainEndAttack -> vid == vid'
+          _ -> False
+        villainAttackGainsOverkill vid
         pure a
       _ -> error "Invalid call"
     _ -> Charge <$> runMessage msg attrs

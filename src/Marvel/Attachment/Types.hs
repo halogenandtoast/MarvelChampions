@@ -8,9 +8,8 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (AttachmentId)
 import Marvel.Id as X (AttachmentId)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 
 data Attachment = forall a. (IsAttachment a) => Attachment a
@@ -120,21 +119,11 @@ instance IsRef (Attrs Attachment) where
   toRef = AttachmentRef . attachmentId
 
 instance RunMessage (Attrs Attachment) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     AttachmentMessage attachmentId' msg'
       | attachmentId' == attachmentId attrs -> case msg' of
           AttachedToEnemy enemyId -> do
-            case enemyId of
-              EnemyMinionId minionId -> do
-                push
-                  (MinionMessage minionId $ AttachedToMinion $ attachmentId attrs)
-              EnemyVillainId villainId -> do
-                push
-                  ( VillainMessage villainId $
-                      AttachedToVillain $
-                        attachmentId
-                          attrs
-                  )
+            attachedTo enemyId (attachmentId attrs)
             pure $ attrs & enemyL ?~ enemyId
           _ -> pure attrs
     _ -> pure attrs

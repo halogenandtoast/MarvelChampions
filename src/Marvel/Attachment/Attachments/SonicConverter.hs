@@ -12,17 +12,14 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Criteria
-import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
-import Marvel.Window
 
 sonicConverter :: AttachmentCard SonicConverter
 sonicConverter = attachment SonicConverter Cards.sonicConverter
@@ -50,19 +47,19 @@ instance HasAbilities SonicConverter where
     _ -> []
 
 instance RunMessage SonicConverter where
-  runMessage msg a@(SonicConverter attrs) = case msg of
+  runMessage msg a@(SonicConverter attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
         villainId <- selectJust ActiveVillain
-        push $ VillainMessage villainId $ AttachedToVillain ident
+        attachedTo villainId ident
         pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
     -- Forced Response: after Klaw attacks and damages a character, stun that character
     IdentityMessage ident (IdentityDamaged source damage) | byKlawsAttack source damage -> do
-      push $ IdentityMessage ident IdentityStunned
+      stunIdentity ident
       pure a
     AllyMessage ident (AllyDamaged source damage) | byKlawsAttack source damage -> do
-      push $ AllyMessage ident AllyStunned
+      stunAlly ident
       pure a
     _ -> SonicConverter <$> runMessage msg attrs
    where

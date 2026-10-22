@@ -9,16 +9,14 @@ import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -38,7 +36,7 @@ instance HasAbilities BiomechanicalUpgrades where
     _ -> []
 
 instance RunMessage BiomechanicalUpgrades where
-  runMessage msg a@(BiomechanicalUpgrades attrs) = case msg of
+  runMessage msg a@(BiomechanicalUpgrades attrs) = runQueueT $ case msg of
     -- attach to the minion with the highest printed hit points without another
     -- Biomechanical Upgrades attached; with none, it is discarded
     AttachmentMessage ident (RevealAttachment identityId) | ident == attachmentId attrs -> do
@@ -48,20 +46,19 @@ instance RunMessage BiomechanicalUpgrades where
             NotMinion $
               MinionWithAttachment (AttachmentIs Cards.biomechanicalUpgrades)
       if null minions
-        then push $ RemoveFromPlay (toTarget attrs)
+        then removeFromPlay attrs
         else
           chooseOrRunOne
             identityId
-            [ TargetLabel (toRef mid) [Run [AttachmentMessage ident $ AttachedToEnemy (EnemyMinionId mid)]]
-            | mid <- minions
-            ]
+            [targeting mid (attachTo ident mid) | mid <- minions]
       pure a
     -- when the minion would be defeated, all its damage is healed instead and this is
     -- discarded
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyMinionId mid) -> do
         cancelMinionDefeat mid
-        pushAll [MinionMessage mid MinionHealAllDamage, RemoveFromPlay (toTarget attrs)]
+        healAllDamage mid
+        removeFromPlay attrs
         pure a
       _ -> pure a
     _ -> BiomechanicalUpgrades <$> runMessage msg attrs

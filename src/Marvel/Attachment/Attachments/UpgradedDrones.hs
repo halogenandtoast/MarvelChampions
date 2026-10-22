@@ -13,12 +13,11 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -48,10 +47,10 @@ instance HasAbilities UpgradedDrones where
     ]
 
 instance RunMessage UpgradedDrones where
-  runMessage msg a@(UpgradedDrones attrs) = case msg of
+  runMessage msg a@(UpgradedDrones attrs) = runQueueT $ case msg of
     -- attached to the Ultron Drones environment
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
       environments <- selectList (EnvironmentIs Cards.ultronDrones)
-      pushAll [EnvironmentMessage e (AttachedToEnvironment ident) | e <- take 1 environments]
+      for_ (take 1 environments) \e -> attachToEnvironment e ident
       pure a
     _ -> UpgradedDrones <$> runMessage msg attrs
