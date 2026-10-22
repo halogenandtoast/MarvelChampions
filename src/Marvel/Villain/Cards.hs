@@ -9,6 +9,8 @@ import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Name
 import Marvel.Trait
+import Data.HashSet (singleton)
+import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
@@ -35,6 +37,20 @@ allVillainCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , zola1
+  , zola2
+  , zola3
+
+  -- Red Skull
+  , redSkull1
+  , redSkull2
+  , redSkull3
+
+  -- Taskmaster
+  , taskmasterVillain1
+  , taskmasterVillain2
+  , taskmasterVillain3
 
   -- The Once and Future Kang
 
@@ -125,3 +141,39 @@ greenGoblinMutagen2 = villain "02015" "Green Goblin" [Goblin]
 
 greenGoblinMutagen3 :: CardDef
 greenGoblinMutagen3 = villain "02016" "Green Goblin" [Goblin]
+
+-- The Rise of Red Skull
+-- Zola
+
+zola1 :: CardDef
+zola1 = (villain "04109" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola2 :: CardDef
+zola2 = (villain "04110" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+zola3 :: CardDef
+zola3 = (villain "04111" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+
+-- Red Skull
+
+redSkull1 :: CardDef
+redSkull1 = villain "04125" "Red Skull" [Hydra]
+
+redSkull2 :: CardDef
+redSkull2 = villain "04126" "Red Skull" [Hydra]
+
+redSkull3 :: CardDef
+redSkull3 = villain "04127" "Red Skull" [Hydra]
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+taskmasterVillain1 :: CardDef
+taskmasterVillain1 = villain "04093" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain2 :: CardDef
+taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
+
+taskmasterVillain3 :: CardDef
+taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]

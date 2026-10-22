@@ -25,7 +25,7 @@ import Marvel.Ally.Types (allyOwner, allyUpgrades, getAllyController, getAllyDam
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment, Field (AttachmentCounters))
+import Marvel.Attachment.Types (Attachment, Attrs (attachmentSideScheme), Field (AttachmentCounters))
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attack
 import Marvel.Card
@@ -54,7 +54,7 @@ import Marvel.Id
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.MainScheme.Types (Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types (Attrs (mainSchemeCounters), Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
@@ -71,6 +71,7 @@ import Marvel.Minion.Types (
   minionAttachments,
   minionAttackDetails,
   minionUpgrades,
+  minionEngagedIdentity,
  )
 import Marvel.Modifier
 import Marvel.Name
@@ -437,10 +438,22 @@ getDeckKeyFor ident = do
     Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
     _ -> EncounterDeckKey
 
+-- | The counters on the main scheme: Zola's test counters, say.
+getMainSchemeCounters :: (HasGame m) => MainSchemeId -> m Natural
+getMainSchemeCounters ms = getsGame (maybe 0 (mainSchemeCounters . toAttrs) . lookup ms . gameMainSchemes)
+
+-- | The player cards set aside out of play, as an encounter set's Captive allies.
+getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
+getSetAsidePlayerCards = getsGame \g -> [c | PlayerCard c <- scenarioSetAsideCards (toAttrs $ gameScenario g)]
+
 -- | The deck and its discard pile, each top card first.
 -- | Every encounter deck in the game: the encounter deck, then any others.
 getDeckKeys :: (HasGame m) => m [DeckKey]
 getDeckKeys = getsGame $ deckKeys . toAttrs . gameScenario
+
+-- | The encounter cards set aside, out of play.
+getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
+getSetAsideEncounterCards = getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
 
 getPile :: (HasGame m) => DeckKey -> m Pile
 getPile = \case
@@ -602,6 +615,24 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
+    -- out of the game, not discarded: what is attached to it is discarded
+    SideSchemeRef sid -> do
+      for_
+        [ uid
+        | (uid, u) <- HashMap.toList (gameUpgrades g)
+        , upgradeAttachedSideScheme (toAttrs u) == Just sid
+        ]
+        removeFromPlay
+      for_ [aid | (aid, a) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
+      pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid) & (areasL . each %~ \a -> a {areaSideSchemes = filter (/= sid) (areaSideSchemes a)})
+    MinionRef mid -> case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        let a = toAttrs minion
+        for_ (minionUpgrades a) removeFromPlay
+        for_ (minionAttachments a) removeFromPlay
+        minionDisengages (minionEngagedIdentity a) mid
+        pure $ g & (entitiesL . minionsL %~ deleteMap mid)
     CardIdRef _ -> pure g -- Should be handled by Identity
     -- an ally in play taken out of the game (tucked): what is attached to it discarded
     AllyRef aid -> do
@@ -683,9 +714,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         attachmentRemoved aid
         discardCard attachment
       pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
+    -- discarded, its own cards with it, and no longer engaged
     MinionRef mid -> case lookup mid (gameMinions g) of
       Nothing -> pure g
       Just minion -> do
+        let a = toAttrs minion
+        for_ (minionUpgrades a) removeFromPlay
+        for_ (minionAttachments a) removeFromPlay
+        minionDisengages (minionEngagedIdentity a) mid
         discardCard minion
         pure $
           g
@@ -717,6 +753,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
+        -- its starting threat, then its "When Revealed"
+        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
         mainSchemeStep mainSchemeId RevealMainScheme
         you <- getYou
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
@@ -726,6 +764,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
         setupMainScheme
+        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
         mainSchemeStep mainSchemeId RevealMainScheme
         for_ (HashMap.keys (gameVillains g)) \villainId ->
           checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
@@ -1000,6 +1039,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
             & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
       _ -> error "Unhandled"
+  AttachEncounterCard card enemy -> do
+    let attachment = createAttachment card
+    attachTo (toId attachment) enemy
+    pure $ g & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment) & (boostCardsL %~ HashMap.filter (/= card))
+  -- a boost card shuffled into the encounter deck is not discarded with the others
+  ShuffleIntoEncounterDeck cards -> pure $ g & boostCardsL %~ HashMap.filter (`notElem` cards)
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     MinionType -> do
       let
@@ -2114,7 +2159,8 @@ gameSelectMinion m = do
       minions <- HashMap.elems <$> getsGame gameMinions
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
-    MinionWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    -- a keyword it gains counts, as guard from Defensive Programming
+    MinionWithKeyword k -> fmap (elem k) . Minion.getModifiedKeywords . toAttrs
     StunnedMinion -> pure . minionStunned . toAttrs
     MinionMatches xs -> andM . traverse matchFilter xs
     NotMinion m' -> fmap not . matchFilter m'
@@ -2128,6 +2174,13 @@ gameSelectMinion m = do
       pure $
         toId minion `elem` map toId candidates
           && unHp (getMinionPrintedHitPoints minion) == highest
+    MinionWithMostRemainingHitPointsAmong m' -> \minion -> do
+      minions <- HashMap.elems <$> getsGame gameMinions
+      candidates <- filterM (matchFilter m') minions
+      let remaining mn = subtractNatural (getMinionDamage mn) <$> Minion.getModifiedHitPoints (toAttrs mn)
+      most <- maximum . (0 :) <$> traverse remaining candidates
+      mine <- remaining minion
+      pure $ toId minion `elem` map toId candidates && mine == most
 
 gameSelectTreachery :: (HasGame m) => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case

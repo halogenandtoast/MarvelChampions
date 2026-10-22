@@ -18,6 +18,14 @@ import Marvel.Villain.Villains.NormanOsborn
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Zola
+import Marvel.Villain.Villains.Zola
+
+-- Red Skull
+import Marvel.Villain.Villains.RedSkull
+
+-- Taskmaster
+import Marvel.Villain.Villains.Taskmaster
 
 -- The Once and Future Kang
 
@@ -67,6 +75,23 @@ allVillains = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeVillainCard zola
+  , SomeVillainCard zola1
+  , SomeVillainCard zola2
+  , SomeVillainCard zola3
+
+  -- Red Skull
+  , SomeVillainCard redSkull
+  , SomeVillainCard redSkull1
+  , SomeVillainCard redSkull2
+  , SomeVillainCard redSkull3
+
+  -- Taskmaster
+  , SomeVillainCard taskmasterVillain
+  , SomeVillainCard taskmasterVillain1
+  , SomeVillainCard taskmasterVillain2
+  , SomeVillainCard taskmasterVillain3
 
   -- The Once and Future Kang
 

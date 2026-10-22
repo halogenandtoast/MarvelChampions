@@ -53,6 +53,22 @@ allAttachments =
       -- The Rise of Red Skull
       , SomeAttachmentCard crossfiresRifle
 
+      -- Zola
+      , SomeAttachmentCard defensiveProgramming
+      , SomeAttachmentCard painInhibitors
+      , SomeAttachmentCard neurologicalImplants
+
+      -- Red Skull
+      , SomeAttachmentCard redSkullsLuger
+      , SomeAttachmentCard redSkullsRightHook
+      , SomeAttachmentCard masterStrategist
+      , SomeAttachmentCard twistedReality
+
+      -- Taskmaster
+      , SomeAttachmentCard taskmastersSword
+      , SomeAttachmentCard taskmastersShield
+      , SomeAttachmentCard photographicReflexes
+
       -- The Once and Future Kang
 
       ]

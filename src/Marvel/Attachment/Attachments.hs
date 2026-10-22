@@ -25,4 +25,20 @@ import Marvel.Attachment.Attachments.Hysteria as X
 -- The Rise of Red Skull
 import Marvel.Attachment.Attachments.CrossfiresRifle as X
 
+-- Zola
+import Marvel.Attachment.Attachments.DefensiveProgramming as X
+import Marvel.Attachment.Attachments.PainInhibitors as X
+import Marvel.Attachment.Attachments.NeurologicalImplants as X
+
+-- Red Skull
+import Marvel.Attachment.Attachments.MasterStrategist as X
+import Marvel.Attachment.Attachments.RedSkullsLuger as X
+import Marvel.Attachment.Attachments.RedSkullsRightHook as X
+import Marvel.Attachment.Attachments.TwistedReality as X
+
+-- Taskmaster
+import Marvel.Attachment.Attachments.PhotographicReflexes as X
+import Marvel.Attachment.Attachments.TaskmastersShield as X
+import Marvel.Attachment.Attachments.TaskmastersSword as X
+
 -- The Once and Future Kang

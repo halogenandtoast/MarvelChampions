@@ -38,6 +38,16 @@ allMainSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Zola
+  , SomeMainSchemeCard theIslandOfDrZola
+  , SomeMainSchemeCard theMadDoctor
+
+  -- Red Skull
+  , SomeMainSchemeCard theRiseOfRedSkull
+  , SomeMainSchemeCard newWorldHydra
+
+  -- Taskmaster
+  , SomeMainSchemeCard huntingDownHeroes
 
   -- The Once and Future Kang
 

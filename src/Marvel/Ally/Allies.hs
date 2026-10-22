@@ -54,4 +54,10 @@ import Marvel.Ally.Allies.CaptainMarvelCarolDanvers as X
 import Marvel.Ally.Allies.SpiderGirlAnyaCorazon as X
 import Marvel.Ally.Allies.SpiderManPeterParker as X
 
+-- Taskmaster
+import Marvel.Ally.Allies.Elektra as X
+import Marvel.Ally.Allies.MoonKnightMarcSpector as X
+import Marvel.Ally.Allies.ShangChi as X
+import Marvel.Ally.Allies.WhiteTigerAngelaDelToro as X
+
 -- The Once and Future Kang

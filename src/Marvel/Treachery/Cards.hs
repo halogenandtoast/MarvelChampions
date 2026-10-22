@@ -76,6 +76,19 @@ allTreacheries = fromList $ map
   , sniperShot
   , hailHydraSpiderWoman
 
+  -- Zola
+  , mindRay
+  , technologicalEnhancements
+
+  -- Red Skull
+  , bitterRival
+  , spreadingLies
+  , infinitePower
+
+  -- Taskmaster
+  , mimicry
+  , huntedByHydra
+
   -- The Once and Future Kang
   , kangsChosen
   , ancientGrudge
@@ -258,6 +271,30 @@ hailHydraSpiderWoman =
     , cdBoostIcons = [Boost, Boost]
     }
 
+
+-- The Rise of Red Skull
+-- Zola
+
+mindRay :: CardDef
+mindRay = treachery "04120" "Mind Ray" [Boost, Boost] Zola 3
+
+technologicalEnhancements :: CardDef
+technologicalEnhancements =
+  (treachery "04121" "Technological Enhancements" [Star] Zola 2)
+    { cdKeywords = singleton (Keyword.Incite 1)
+    }
+
+-- Red Skull
+
+bitterRival :: CardDef
+bitterRival = treachery "04136" "Bitter Rival" [Star] RedSkull 2
+
+spreadingLies :: CardDef
+spreadingLies = treachery "04137" "Spreading Lies" [Boost, Star] RedSkull 2
+
+infinitePower :: CardDef
+infinitePower = treachery "04138" "Infinite Power" [Boost, Boost] RedSkull 2
+
 -- The Green Goblin
 
 allInADaysWork :: CardDef
@@ -313,3 +350,13 @@ kangsChosen =
 
 ancientGrudge :: CardDef
 ancientGrudge = treachery "11051" "Ancient Grudge" [Boost] MasterOfTime 2
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+mimicry :: CardDef
+mimicry = treachery "04105" "Mimicry" [Boost] Taskmaster 2
+
+huntedByHydra :: CardDef
+huntedByHydra = (treachery "04106" "Hunted by Hydra" [Boost] Taskmaster 2) {cdKeywords = singleton (Keyword.Incite 1)}

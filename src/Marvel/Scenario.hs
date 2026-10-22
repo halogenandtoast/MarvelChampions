@@ -38,6 +38,14 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Zola
+    , SomeScenarioCard zolaScenario
+
+    -- Red Skull
+    , SomeScenarioCard redSkullScenario
+
+    -- Taskmaster
+    , SomeScenarioCard taskmasterScenario
 
     -- The Once and Future Kang
 
@@ -63,6 +71,14 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Zola
+    , ("04109", [EncounterSet.UnderAttack])
+
+    -- Red Skull
+    , ("04125", [EncounterSet.HydraAssault, EncounterSet.HydraPatrol])
+
+    -- Taskmaster: Hydra Patrol is required, Weapon Master the modular
+    , ("04093", [EncounterSet.WeaponMaster])
 
     -- The Once and Future Kang
 
@@ -122,6 +138,24 @@ ultronScenario = scenario
   ["01137", "01138", "01139"]
   [EncounterSet.Ultron]
 
+-- The Rise of Red Skull
+-- Zola
+
+newtype ZolaScenario = ZolaScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage ZolaScenario where
+  runMessage msg (ZolaScenario a) = ZolaScenario <$> runMessage msg a
+
+zolaScenario :: ScenarioCard ZolaScenario
+zolaScenario = scenario
+  ZolaScenario
+  "04109"
+  ("04109", "04110")
+  ["04112", "04113"]
+  [EncounterSet.Zola]
+
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
 
@@ -156,3 +190,41 @@ mutagenFormulaScenario = scenario
   ("02014", "02015")
   ["02017", "02018"]
   [EncounterSet.MutagenFormula]
+
+-- Red Skull
+
+newtype RedSkullScenario = RedSkullScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RedSkullScenario where
+  runMessage msg (RedSkullScenario a) = RedSkullScenario <$> runMessage msg a
+
+redSkullScenario :: ScenarioCard RedSkullScenario
+redSkullScenario = scenario
+  RedSkullScenario
+  "04125"
+  ("04125", "04126")
+  ["04128", "04129"]
+  [EncounterSet.RedSkull]
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+newtype TaskmasterScenario = TaskmasterScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage TaskmasterScenario where
+  runMessage msg (TaskmasterScenario a) = TaskmasterScenario <$> runMessage msg a
+
+-- | Encounter deck: the Taskmaster and Hydra Patrol sets (Hydra Patrol "is required when
+-- playing Taskmaster", TRORS rulebook p.10), a modular set and the standard set.
+taskmasterScenario :: ScenarioCard TaskmasterScenario
+taskmasterScenario = scenario
+  TaskmasterScenario
+  "04093"
+  ("04093", "04094")
+  ["04096"]
+  [EncounterSet.Taskmaster, EncounterSet.HydraPatrol]

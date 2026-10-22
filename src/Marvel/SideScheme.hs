@@ -64,6 +64,23 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard markedForDeath
   , SomeSideSchemeCard theVipersAmbition
 
+  -- Zola
+  , SomeSideSchemeCard hydraPrison
+  , SomeSideSchemeCard testSubjects
+  , SomeSideSchemeCard zolasExperiments
+
+  -- Red Skull
+  , SomeSideSchemeCard theRedHouse
+  , SomeSideSchemeCard theSleeperAwakened
+  , SomeSideSchemeCard prisonCamps
+  , SomeSideSchemeCard censorThePast
+  , SomeSideSchemeCard hydraReinforcements
+  , SomeSideSchemeCard massChaos
+
+  -- Taskmaster
+  , SomeSideSchemeCard capturedByHydra
+  , SomeSideSchemeCard taskmastersTrainingCamp
+
   -- The Once and Future Kang
   , SomeSideSchemeCard timePortal
   , SomeSideSchemeCard theAnachronauts

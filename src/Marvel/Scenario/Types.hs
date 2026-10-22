@@ -282,6 +282,8 @@ runScenarioMessage msg attrs = case msg of
     deck' <- shuffleM cards
     let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
     pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
+  -- a card set aside leaves the set-aside area for wherever it goes
+  RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId)
   RemoveDeck EncounterDeckKey -> pure attrs
   RemoveDeck key ->
     pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}
@@ -336,6 +338,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
+    AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       for_ players \p -> do
@@ -420,7 +423,8 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
       for_ mTarget \target -> withDiscarded target FromEncounterDeck (EncounterCard <$> discarded)
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
-    SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
+    -- out of play, from wherever in the decks it was
+    SetAside cards -> pure $ foldr leaves attrs [ec | EncounterCard ec <- cards] & setAsideCardsL <>~ cards
     RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
     LookAtTopOfEncounterDeck n target -> do

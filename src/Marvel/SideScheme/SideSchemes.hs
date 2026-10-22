@@ -42,6 +42,23 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
 import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
 
+-- Zola
+import Marvel.SideScheme.SideSchemes.HydraPrison as X
+import Marvel.SideScheme.SideSchemes.TestSubjects as X
+import Marvel.SideScheme.SideSchemes.ZolasExperiments as X
+
+-- Red Skull
+import Marvel.SideScheme.SideSchemes.CensorThePast as X
+import Marvel.SideScheme.SideSchemes.HydraReinforcements as X
+import Marvel.SideScheme.SideSchemes.MassChaos as X
+import Marvel.SideScheme.SideSchemes.PrisonCamps as X
+import Marvel.SideScheme.SideSchemes.TheRedHouse as X
+import Marvel.SideScheme.SideSchemes.TheSleeperAwakened as X
+
+-- Taskmaster
+import Marvel.SideScheme.SideSchemes.CapturedByHydra as X
+import Marvel.SideScheme.SideSchemes.TaskmastersTrainingCamp as X
+
 -- The Once and Future Kang
 import Marvel.SideScheme.SideSchemes.TimePortal as X
 import Marvel.SideScheme.SideSchemes.TheAnachronauts as X

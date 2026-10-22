@@ -76,6 +76,18 @@ allMinions =
       , SomeMinionCard theViper
       , SomeMinionCard hydraRegular
 
+      -- Zola
+      , SomeMinionCard ultimateBioServant
+      , SomeMinionCard zolasMutate
+      , SomeMinionCard berserkMutate
+
+      -- Red Skull
+      , SomeMinionCard theSleeper
+      , SomeMinionCard hydraExoSoldier
+
+      -- Taskmaster
+      , SomeMinionCard hydraHunter
+
       -- The Once and Future Kang
       , SomeMinionCard ancientWarrior
       , SomeMinionCard chitauriSoldier

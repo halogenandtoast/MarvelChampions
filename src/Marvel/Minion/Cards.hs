@@ -67,6 +67,18 @@ allMinions =
       , theViper
       , hydraRegular
 
+      -- Zola
+      , ultimateBioServant
+      , zolasMutate
+      , berserkMutate
+
+      -- Red Skull
+      , theSleeper
+      , hydraExoSoldier
+
+      -- Taskmaster
+      , hydraHunter
+
       -- The Once and Future Kang
       , ancientWarrior
       , chitauriSoldier
@@ -325,6 +337,39 @@ hydraRegular =
     { cdKeywords = fromList [Incite 1]
     }
 
+-- The Rise of Red Skull
+-- Zola
+
+ultimateBioServant :: CardDef
+ultimateBioServant =
+  (minion "04114" "Ultimate Bio-Servant" [Hydra, Mutate] [Star] Zola 4)
+    { cdKeywords = singleton Toughness
+    }
+
+zolasMutate :: CardDef
+zolasMutate = minion "04115" "Zola's Mutate" [Hydra, Mutate] [Star] Zola 3
+
+berserkMutate :: CardDef
+berserkMutate =
+  (minion "04116" "Berserk Mutate" [Hydra, Mutate] [Star] Zola 3)
+    { cdKeywords = singleton Quickstrike
+    }
+
+-- Red Skull
+
+theSleeper :: CardDef
+theSleeper =
+  unique $
+    (minion "04130" "The Sleeper" [Elite, Hydra, Robot] [Boost] RedSkull 1)
+      { cdKeywords = fromList [Guard, Retaliate 1, Toughness]
+      }
+
+hydraExoSoldier :: CardDef
+hydraExoSoldier =
+  (minion "04131" "Hydra Exo-Soldier" [Hydra] [Star] RedSkull 3)
+    { cdKeywords = singleton Toughness
+    }
+
 -- The Green Goblin
 
 hiredGun :: CardDef
@@ -419,3 +464,10 @@ timeDisplacedSoldier =
   (minion "11048" "Time-Displaced Soldier" [Elite, Trait.Temporal] [Star] MasterOfTime 2)
     { cdKeywords = fromList [Incite 1, Surge]
     }
+
+-- The Rise of Red Skull
+
+-- Taskmaster
+
+hydraHunter :: CardDef
+hydraHunter = minion "04101" "Hydra Hunter" [Hydra] [Star] Taskmaster 2
