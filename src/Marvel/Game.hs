@@ -1560,10 +1560,18 @@ getResourceAbilities ident mc = asYou ident do
 
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
-  identities <- inYourAreaOnly (IdentityRef . toId) . HashMap.elems =<< getsGame gamePlayers
+  everyone <- HashMap.elems <$> getsGame gamePlayers
+  identities <- if named m then pure everyone else inYourAreaOnly (IdentityRef . toId) everyone
   result <- filterM (matchFilter m) identities
   pure $ HashSet.fromList $ map toId result
  where
+  -- a player named, or the first player, is who they are in any area
+  named = \case
+    FirstPlayer -> True
+    You -> True
+    IdentityWithId _ -> True
+    IdentityMatchAll xs -> any named xs
+    _ -> False
   matchFilter x = case x of
     AnyIdentity -> pure . const True
     HeroIdentity -> pure . isHero
