@@ -221,7 +221,10 @@ choiceMessages ident = \case
   Confuse target source -> case target of
     VillainRef vid -> pure [VillainMessage vid $ VillainConfused source]
     MinionRef vid -> pure [MinionMessage vid $ MinionConfused source]
-    _ -> error "can not damage target"
+    EnemyRef eid -> case eid of
+      EnemyVillainId vid -> pure [VillainMessage vid $ VillainConfused source]
+      EnemyMinionId mid -> pure [MinionMessage mid $ MinionConfused source]
+    _ -> error "can not confuse target"
   Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
   Heal characterId n -> case characterId of
     IdentityCharacter ident' ->
