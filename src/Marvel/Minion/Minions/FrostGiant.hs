@@ -19,8 +19,8 @@ newtype FrostGiant = FrostGiant (Attrs Minion)
 -- | [star] Boost: if the villain is attacking and this attack deals damage to a
 -- character, stun that character.
 instance RunMessage FrostGiant where
-  runMessage msg g@(FrostGiant attrs) = case msg of
+  runMessage msg g@(FrostGiant attrs) = runQueueT $ case msg of
     Boost (attackDamages -> Just (EnemyVillainId _, character)) -> do
-      push $ GiveStatus (characterRef character) StunnedStatus
+      giveStatus character StunnedStatus
       pure g
     _ -> FrostGiant <$> runMessage msg attrs

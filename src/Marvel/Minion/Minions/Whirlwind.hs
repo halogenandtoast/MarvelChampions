@@ -33,7 +33,7 @@ instance HasAbilities Whirlwind where
     ]
 
 instance RunMessage Whirlwind where
-  runMessage msg e@(Whirlwind attrs) = case msg of
+  runMessage msg e@(Whirlwind attrs) = runQueueT $ case msg of
     -- the attack is resolved against each other hero once it is done with you, each
     -- defended on its own; "you" stays the player first attacked, so this does not fire
     -- again for them
@@ -44,14 +44,12 @@ instance RunMessage Whirlwind where
         attackDone = \case
           CheckWindows [W.Window W.After (W.EnemyAttack enemy ident')] -> enemy == self && ident' == ident
           _ -> False
-      replaceMatchingMessage
-        (\m -> m : map (MinionMessage (minionId attrs) . MinionBeginAttack) others)
-        attackDone
+      afterMatching attackDone $ for_ others (minionBeginsAttack (minionId attrs))
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         heroes <- selectList HeroIdentity
-        pushAll $ concatMap (\ident -> damageIdentity ident (toSource attrs) (toDamage 1 FromAbility)) heroes
+        for_ heroes \ident -> damageCharacter ident attrs (toDamage 1 FromAbility)
         pure e
       _ -> Whirlwind <$> runMessage msg attrs
     _ -> Whirlwind <$> runMessage msg attrs

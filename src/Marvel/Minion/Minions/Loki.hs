@@ -29,13 +29,13 @@ instance HasAbilities Loki where
 -- | When he would be defeated, the top card of the encounter deck is discarded: a
 -- treachery heals all his damage instead.
 instance RunMessage Loki where
-  runMessage msg l@(Loki attrs) = case msg of
+  runMessage msg l@(Loki attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      push $ DiscardTopOfEncounterDeck 1 (Just $ toTarget attrs)
+      discardTopOfEncounterDeck 1 attrs
       pure l
     WithDiscarded (isTarget attrs -> True) _ (onlyEncounterCards -> cards)
       | any ((== TreacheryType) . cdCardType . getCardDef) cards -> do
           cancelMinionDefeat (minionId attrs)
-          push $ MinionMessage (minionId attrs) MinionHealAllDamage
+          healAllDamage (minionId attrs)
           pure l
     _ -> Loki <$> runMessage msg attrs

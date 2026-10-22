@@ -11,12 +11,11 @@ import Marvel.Card.Code as X
 import Marvel.Entity as X
 import Marvel.Hp as X
 import Marvel.Id as X
-import Marvel.Message as X
+import Marvel.Message.Lifted as X
 import Marvel.Minion.Types as X hiding (Field (..))
 import Marvel.Modifier as X
 import Marvel.Query as X
 import Marvel.Question as X
-import Marvel.Queue as X
 import Marvel.Ref as X
 import Marvel.Stats as X
 
@@ -36,7 +35,7 @@ statusL = \case
   ToughStatus -> toughL
 
 runMinionMessage ::
-  (HasQueue m, HasGame m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
+  (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n
@@ -56,27 +55,18 @@ runMinionMessage msg attrs = case msg of
             -- overkill follows the defeat: a minion that is not defeated after all
             -- deals none past it ('cancelMinionDefeat')
             let overkill = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
-            excess <-
-              if overkill > 0 && damageOverkill damage
-                then do
-                  villain <- selectJust ActiveVillain
-                  pure [VillainMessage villain (VillainDamaged source (toDamage overkill FromOverkill))]
-                else pure []
-            pushAll $
-              [ CheckWindows
-                  [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source]
-              , MinionMessage (minionId attrs) MinionDefeated
-              ]
-                <> excess
-                <> [ CheckWindows
-                      [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
-                   ]
+            checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source]
+            defeatMinion (minionId attrs)
+            when (overkill > 0 && damageOverkill damage) do
+              villain <- selectJust ActiveVillain
+              damageCharacter villain source (toDamage overkill FromOverkill)
+            checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
           else pure ()
         pure $ attrs & damageL +~ damageAmount damage
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    pushAll $ concat [retaliateDamage (toSource attrs) attacker n | Retaliate n <- toList keywords]
+    for_ [n | Retaliate n <- toList keywords] \n -> damageCharacter attacker attrs (toDamage n FromRetaliate)
     pure attrs
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
@@ -92,52 +82,42 @@ runMinionMessage msg attrs = case msg of
   MinionEngagedIdentity ident -> do
     isHero <- identityMatches HeroIdentity ident
     let previous = minionEngagedIdentity attrs
-    pushAll $
-      [IdentityMessage previous (MinionDisengaged $ minionId attrs) | previous /= ident]
-        <> [MinionMessage (minionId attrs) $ MinionAttacks ident | isHero && Quickstrike `member` cdKeywords (getCardDef attrs)]
-        <> [CheckWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]]
+    when (previous /= ident) $ minionDisengages previous (minionId attrs)
+    when (isHero && Quickstrike `member` cdKeywords (getCardDef attrs)) $ enemyAttacks (minionId attrs) ident
+    checkWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]
     pure attrs {minionEngagedIdentity = ident}
   MinionDefeated -> do
-    pushAll $
-      map (RemoveFromPlay . toRef) (toList $ minionUpgrades attrs)
-        <> map (RemoveFromPlay . toRef) (toList $ minionAttachments attrs)
-        <> [ RemoveFromPlay (toRef attrs)
-           , IdentityMessage
-              (minionEngagedIdentity attrs)
-              (MinionDisengaged $ minionId attrs)
-           ]
+    for_ (minionUpgrades attrs) removeFromPlay
+    for_ (minionAttachments attrs) removeFromPlay
+    removeFromPlay attrs
+    minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs
   MinionSchemes ->
     if minionConfused attrs
       then pure $ attrs & confusedL .~ False
       else do
-        push $ MinionMessage (minionId attrs) MinionSchemed
+        minionSchemed (minionId attrs)
         pure attrs
   -- "attacks an ally": the player who controls it is attacked
   MinionAttacksAlly ident allyId -> do
-    push $ MinionMessage (minionId attrs) (MinionAttacks ident)
+    enemyAttacks (minionId attrs) ident
     pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
   MinionAttacks ident ->
     if minionStunned attrs
       then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
-        pushAll
-          [ CheckWindows
-              [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
-          , MinionMessage (minionId attrs) (MinionBeginAttack ident)
-          , MinionMessage (minionId attrs) MinionEndAttack
-          ]
+        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        minionBeginsAttack (minionId attrs) ident
+        minionEndsAttack (minionId attrs)
         -- the attack is under way from when it is declared, as its would windows open
         atk <- getModifiedAttack attrs
         pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   MinionBeginAttack ident -> do
     atk <- getModifiedAttack attrs
-    pushAll
-      [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-      , DeclareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
-      , MinionMessage (minionId attrs) MinionAttacked
-      , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
-      ]
+    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
+    minionAttacked (minionId attrs)
+    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
       attrs {minionAttackTarget = Nothing}
         & attackingL
@@ -147,19 +127,10 @@ runMinionMessage msg attrs = case msg of
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         threat <- getModifiedScheme attrs
-        pushAll $
-          [ CheckWindows
-              [ W.Window W.Would $
-                  W.ThreatPlaced
-                    W.ThreatFromMinion
-                    (SchemeMainSchemeId mainSchemeId)
-                    threat
-              ]
-          | threat > 0
-          ]
-          <> [ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
-             , CheckWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
-             ]
+        when (threat > 0) $
+          checkWindows [W.Window W.Would $ W.ThreatPlaced W.ThreatFromMinion mainScheme threat]
+        threatPlaced mainSchemeId threat
+        checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
         pure attrs
       _ -> error "Not the main scheme"
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
@@ -168,18 +139,13 @@ runMinionMessage msg attrs = case msg of
       Nothing -> error "No current attack"
       Just attack' -> do
         attackedYou (attackEnemy attack') (attackCharacter attack')
-        case attackCharacter attack' of
-          IdentityCharacter ident ->
-            push $ IdentityMessage ident $ IdentityWasAttacked attack'
-          AllyCharacter ident ->
-            push $ AllyMessage ident $ AllyWasAttacked attack'
-          _ -> error "Invalid damage target"
+        characterAttacked attack'
     pure attrs
  where
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
 
 instance RunMessage (Attrs Minion) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     GiveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ True
     RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
     MinionMessage ident msg'

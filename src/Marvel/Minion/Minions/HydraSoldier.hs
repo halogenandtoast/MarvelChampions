@@ -17,10 +17,9 @@ newtype HydraSoldier = HydraSoldier (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage HydraSoldier where
-  runMessage msg (HydraSoldier attrs) = case msg of
+  runMessage msg (HydraSoldier attrs) = runQueueT $ case msg of
     -- When Defeated: deal the engaged player an encounter card
     MinionMessage ident MinionDefeated | ident == minionId attrs -> do
-      attrs' <- runMessage msg attrs
-      push $ DealEncounterCard (minionEngagedIdentity attrs)
-      pure $ HydraSoldier attrs'
+      dealEncounterCard (minionEngagedIdentity attrs)
+      HydraSoldier <$> runMessage msg attrs
     _ -> HydraSoldier <$> runMessage msg attrs

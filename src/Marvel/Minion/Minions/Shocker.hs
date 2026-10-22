@@ -7,7 +7,6 @@ import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Window qualified as W
 
 shocker :: MinionCard Shocker
 shocker = minion Shocker Cards.shocker (Sch 1) (Atk 2) (HP 3)
@@ -17,12 +16,11 @@ newtype Shocker = Shocker (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Shocker where
-  runMessage msg e@(Shocker attrs) = case msg of
+  runMessage msg e@(Shocker attrs) = runQueueT $ case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       RevealMinion _ -> do
         players <- selectList HeroIdentity
-        pushAll $ flip concatMap players $ \player ->
-          damageIdentity player (toSource attrs) (toDamage 1 FromAbility)
+        for_ players \player -> damageCharacter player attrs (toDamage 1 FromAbility)
         pure e
       _ -> Shocker <$> runMessage msg attrs
     _ -> Shocker <$> runMessage msg attrs

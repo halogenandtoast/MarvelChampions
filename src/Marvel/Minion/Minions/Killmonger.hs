@@ -10,7 +10,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Trait
@@ -23,7 +23,7 @@ newtype Killmonger = Killmonger (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Killmonger where
-  runMessage msg m@(Killmonger attrs) = case msg of
+  runMessage msg m@(Killmonger attrs) = runQueueT $ case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       MinionDamaged (UpgradeRef uid) _ -> do
         isBlackPanther <- upgradeMatches (UpgradeWithTrait BlackPanther) uid

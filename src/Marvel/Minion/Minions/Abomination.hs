@@ -12,7 +12,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Resource
@@ -46,17 +46,12 @@ attacked = \case
   [] -> Nothing
 
 instance RunMessage Abomination where
-  runMessage msg e@(Abomination attrs) = case msg of
+  runMessage msg e@(Abomination attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 (attacked -> Just ident) _ -> do
-      push $ IdentityMessage ident $ DiscardFrom FromDeck 1 (Just $ toTarget attrs)
+      discardFromDeck ident 1 attrs
       pure e
     WithDiscarded (isTarget attrs -> True) FromDeck (onlyPlayerCards -> cards) -> do
-      pushAll
-        [ msg'
-        | card <- cards
-        , cardMatch (CardWithResource Physical) card
-        , Just ident <- [pcOwner card]
-        , msg' <- damageIdentity ident (toSource attrs) (toDamage 2 FromAbility)
-        ]
+      for_ [ident | card <- cards, cardMatch (CardWithResource Physical) card, Just ident <- [pcOwner card]] \ident ->
+        damageCharacter ident attrs (toDamage 2 FromAbility)
       pure e
     _ -> Abomination <$> runMessage msg attrs

@@ -11,7 +11,7 @@ import Marvel.Cost
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Window
@@ -35,10 +35,10 @@ instance HasAbilities TigerShark where
     ]
 
 instance RunMessage TigerShark where
-  runMessage msg e@(TigerShark attrs) = case msg of
+  runMessage msg e@(TigerShark attrs) = runQueueT $ case msg of
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         villain <- selectJust ActiveVillain
-        e <$ push (VillainMessage villain VillainBecomeTough)
+        e <$ enemyBecomesTough villain
       _ -> TigerShark <$> runMessage msg attrs
     _ -> TigerShark <$> runMessage msg attrs

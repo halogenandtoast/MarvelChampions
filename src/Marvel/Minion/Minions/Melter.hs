@@ -10,7 +10,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
 import Marvel.Matchers hiding (ExhaustedAlly)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 
@@ -29,10 +29,10 @@ newtype Melter = Melter (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Melter where
-  runMessage msg e@(Melter attrs) = case msg of
+  runMessage msg e@(Melter attrs) = runQueueT $ case msg of
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         allies <- selectList (AllyControlledBy You <> UnexhaustedAlly)
-        e <$ pushAll (map (\a -> AllyMessage a ExhaustedAlly) allies)
+        e <$ for_ allies exhaustAlly
       _ -> Melter <$> runMessage msg attrs
     _ -> Melter <$> runMessage msg attrs

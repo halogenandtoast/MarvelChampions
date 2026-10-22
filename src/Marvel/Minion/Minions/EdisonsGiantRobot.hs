@@ -49,7 +49,7 @@ instance HasAbilities EdisonsGiantRobot where
     ]
 
 instance RunMessage EdisonsGiantRobot where
-  runMessage msg a@(EdisonsGiantRobot (attrs `With` meta)) = case msg of
+  runMessage msg a@(EdisonsGiantRobot (attrs `With` meta)) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> pure $ EdisonsGiantRobot (attrs `With` Meta True)
     EndPhase _ -> pure $ EdisonsGiantRobot (attrs `With` Meta False)
     _ -> EdisonsGiantRobot . (`With` meta) <$> runMessage msg attrs

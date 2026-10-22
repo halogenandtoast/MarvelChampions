@@ -18,11 +18,10 @@ newtype AdvancedUltronDrone = AdvancedUltronDrone (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage AdvancedUltronDrone where
-  runMessage msg (AdvancedUltronDrone attrs) = case msg of
+  runMessage msg (AdvancedUltronDrone attrs) = runQueueT $ case msg of
     -- Forced Interrupt: when defeated, the engaged player puts the top card of their
     -- deck into play as a Drone
     MinionMessage ident MinionDefeated | ident == minionId attrs -> do
-      attrs' <- runMessage msg attrs
-      push $ PutTopOfDeckIntoPlayAsDrone (minionEngagedIdentity attrs)
-      pure $ AdvancedUltronDrone attrs'
+      putTopOfDeckIntoPlayAsDrone (minionEngagedIdentity attrs)
+      AdvancedUltronDrone <$> runMessage msg attrs
     _ -> AdvancedUltronDrone <$> runMessage msg attrs

@@ -28,10 +28,10 @@ instance HasModifiersFor Taskmaster where
 -- | As a boost card: the villain gets as much for the activation, counting the upgrades
 -- of the player it is against, who resolves the boost card.
 instance RunMessage Taskmaster where
-  runMessage msg e@(Taskmaster attrs) = case msg of
+  runMessage msg e@(Taskmaster attrs) = runQueueT $ case msg of
     Boost (RevealedAsBoost target (EnemyVillainId vid)) | isTarget attrs target -> do
       you <- maybe getActivePlayerId pure =<< getVillainActivationPlayer vid
       n <- selectListCount (UpgradeControlledBy $ IdentityWithId you)
-      push $ VillainMessage vid (VillainAddBoost n)
+      addBoost vid n
       pure e
     _ -> Taskmaster <$> runMessage msg attrs

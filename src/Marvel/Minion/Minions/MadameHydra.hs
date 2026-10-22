@@ -5,12 +5,8 @@ module Marvel.Minion.Minions.MadameHydra (
 
 import Marvel.Prelude
 
-import Marvel.Id (SchemeId (..))
-
 import Marvel.Ability
-import Marvel.Choice
 import Marvel.Cost
-import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
@@ -37,28 +33,27 @@ instance HasAbilities MadameHydra where
 
 -- | Place 2 threat on the Legions of Hydra side scheme; the first player picks one if
 -- both copies are in play.
-placeThreatOnLegions :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => m ()
+placeThreatOnLegions :: (ReverseQueue m) => m ()
 placeThreatOnLegions = do
   legions <- selectList (SideSchemeIs Cards.legionsOfHydra)
   firstPlayer <- selectJust FirstPlayer
   unless (null legions) $
     chooseOrRunOne
       firstPlayer
-      [ TargetLabel (toRef sid) [Run $ placeThreatOn (SchemeSideSchemeId sid) 2]
-      | sid <- legions
-      ]
+      [targeting sid (placeThreatOnScheme sid 2) | sid <- legions]
 
 instance RunMessage MadameHydra where
-  runMessage msg e@(MadameHydra attrs) = case msg of
+  runMessage msg e@(MadameHydra attrs) = runQueueT $ case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       -- she cannot take damage while the Legions of Hydra side scheme is in play
       MinionDamaged _ _ -> do
         protected <- selectAny (SideSchemeIs Cards.legionsOfHydra)
         if protected then pure e else MadameHydra <$> runMessage msg attrs
-      -- after she schemes: pushed first so it follows the threat she places
+      -- after she schemes: it follows the threat she places
       MinionSchemed -> do
+        e' <- MadameHydra <$> runMessage msg attrs
         placeThreatOnLegions
-        MadameHydra <$> runMessage msg attrs
+        pure e'
       _ -> MadameHydra <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       placeThreatOnLegions

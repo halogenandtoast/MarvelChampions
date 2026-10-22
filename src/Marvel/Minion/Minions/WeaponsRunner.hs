@@ -10,7 +10,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 
@@ -22,10 +22,10 @@ newtype WeaponsRunner = WeaponsRunner (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage WeaponsRunner where
-  runMessage msg e@(WeaponsRunner attrs) = case msg of
+  runMessage msg e@(WeaponsRunner attrs) = runQueueT $ case msg of
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         ident <- getActivePlayerId
-        e <$ push (PutBoostIntoPlay target ident)
+        e <$ putBoostIntoPlay target ident
       _ -> WeaponsRunner <$> runMessage msg attrs
     _ -> WeaponsRunner <$> runMessage msg attrs

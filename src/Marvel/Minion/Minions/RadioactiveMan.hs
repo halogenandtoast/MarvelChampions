@@ -12,7 +12,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Window
@@ -37,13 +37,13 @@ instance HasAbilities RadioactiveMan where
     ]
 
 instance RunMessage RadioactiveMan where
-  runMessage msg e@(RadioactiveMan attrs) = case msg of
+  runMessage msg e@(RadioactiveMan attrs) = runQueueT $ case msg of
     RanAbility ident target 1 _ _ | isTarget attrs target -> do
-      push $ IdentityMessage ident $ DiscardFrom RandomFromHand 1 Nothing
+      discardAtRandom ident 1
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         ident <- getActivePlayerId
-        e <$ push (IdentityMessage ident $ DiscardFrom RandomFromHand 1 Nothing)
+        e <$ discardAtRandom ident 1
       _ -> RadioactiveMan <$> runMessage msg attrs
     _ -> RadioactiveMan <$> runMessage msg attrs

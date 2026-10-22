@@ -6,7 +6,6 @@ module Marvel.Minion.Minions.HydraBomber (
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
@@ -20,21 +19,13 @@ newtype HydraBomber = HydraBomber (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage HydraBomber where
-  runMessage msg e@(HydraBomber attrs) = case msg of
+  runMessage msg e@(HydraBomber attrs) = runQueueT $ case msg of
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       RevealMinion identityId -> do
         chooseOne
           identityId
-          [ Label
-              "$label.take2Damage"
-              [ DamageCharacter
-                  (IdentityCharacter identityId)
-                  (toSource attrs)
-                  (toDamage 2 FromAbility)
-              ]
-          , Label
-              "$label.placeOneThreatOnMainScheme"
-              [PlaceThreat (toSource attrs) 1 MainScheme]
+          [ labeled "$label.take2Damage" $ damageCharacter identityId attrs (toDamage 2 FromAbility)
+          , labeled "$label.placeOneThreatOnMainScheme" $ placeThreat identityId attrs 1 MainScheme
           ]
         pure e
       _ -> HydraBomber <$> runMessage msg attrs

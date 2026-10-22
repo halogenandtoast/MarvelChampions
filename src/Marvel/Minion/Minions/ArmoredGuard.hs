@@ -9,7 +9,7 @@ import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Hp
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 

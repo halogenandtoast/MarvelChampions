@@ -7,18 +7,15 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Events.MagicBlast (printedResourceEffects)
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Window qualified as W
 
 baronMordo :: MinionCard BaronMordo
@@ -37,24 +34,17 @@ instance HasAbilities BaronMordo where
 -- | When he attacks you, discard the top card of your deck: its printed [physical]
 -- stuns you, [energy] deals you 2 damage, [mental] confuses you, [wild] all three.
 instance RunMessage BaronMordo where
-  runMessage msg e@(BaronMordo attrs) = case msg of
+  runMessage msg e@(BaronMordo attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
-      pushAll
-        [ IdentityMessage ident $ DiscardFrom FromDeck 1 (Just $ toTarget attrs)
-        | W.EnemyAttack _ ident <- windows
-        ]
+      for_ [ident | W.EnemyAttack _ ident <- windows] \ident -> discardFromDeck ident 1 attrs
       pure e
     WithDiscarded (isTarget attrs -> True) FromDeck (onlyPlayerCards -> cards) -> do
-      pushAll $
-        concat
-          [ concat $
-              printedResourceEffects
-                (printedResources $ getCardDef card)
-                [IdentityMessage ident IdentityStunned]
-                (damageIdentity ident (toSource attrs) (toDamage 2 FromAbility))
-                [IdentityMessage ident IdentityConfused]
-          | card <- cards
-          , Just ident <- [pcOwner card]
-          ]
+      for_ [(card, ident) | card <- cards, Just ident <- [pcOwner card]] \(card, ident) ->
+        sequence_ $
+          printedResourceEffects
+            (printedResources $ getCardDef card)
+            (stunIdentity ident)
+            (damageCharacter ident attrs (toDamage 2 FromAbility))
+            (confuseIdentity ident)
       pure e
     _ -> BaronMordo <$> runMessage msg attrs
