@@ -140,7 +140,8 @@ instance RunMessage (Attrs Ally) where
       AllyDefeated -> do
         pushAll
           [ CheckWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
-          , RemoveFromPlay (toTarget a)
+          , -- which discards it
+            RemoveFromPlay (toTarget a)
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1

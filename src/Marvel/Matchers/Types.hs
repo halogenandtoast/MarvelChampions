@@ -18,6 +18,8 @@ data EntityMatcher
   = IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
   | AttachmentEntity AttachmentMatcher
+  | -- | an event being played
+    EventEntity EventId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -90,6 +92,7 @@ data SupportMatcher
   | SupportWithUses GameValueMatcher
   | SupportNamed Name
   | SupportMatches [SupportMatcher]
+  | SupportWithTrait Trait
 
 pattern SupportWithAnyUses :: SupportMatcher
 pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))
@@ -137,6 +140,8 @@ data EnemyMatcher
   | EnemyWithUpgrade UpgradeMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
+  | -- | an enemy whose attack is under way
+    AttackingEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

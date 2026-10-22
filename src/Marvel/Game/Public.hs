@@ -20,6 +20,7 @@ import Marvel.Cost.Types (Cost (..), costResources)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Ally.Types qualified as Ally
+import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.Attack qualified as Attack
@@ -157,7 +158,7 @@ data AllyView = AllyView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural}
+data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -343,7 +344,7 @@ gameView seesHand g = do
       HeroSide h -> do
         let ha = toAttrs h
         (,,,) <$> (Just <$> Hero.getModifiedThwart ha) <*> (Just <$> Hero.getModifiedAttack ha) <*> (Just <$> Hero.getModifiedDefense ha) <*> pure Nothing
-      AlterEgoSide ae -> pure (Nothing, Nothing, Nothing, Just (unRec (toAttrs ae).alterEgoBaseRecovery))
+      AlterEgoSide ae -> (Nothing,Nothing,Nothing,) . Just <$> AlterEgo.getModifiedRecovery (toAttrs ae)
     allies <- traverse allyView [ally | ally <- HashMap.elems (gameAllies g), toId ally `HashSet.member` a.playerIdentityAllies]
     pure
       PlayerView
@@ -402,7 +403,7 @@ gameView seesHand g = do
         }
   supportView (s :: Support) =
     let a = toAttrs s
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards)
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
      in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController

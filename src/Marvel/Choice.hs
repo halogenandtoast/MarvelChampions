@@ -10,6 +10,7 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Message
+import Marvel.Modifier.Types
 import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
@@ -71,6 +72,7 @@ choiceMessages ident = \case
               [ Ask ident $
                   ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
+      EventEntity eid -> pure [CreatedEffect def source (EventEntity eid)]
       AttachmentEntity matcher -> do
         targets <- selectList matcher
         let f = CreatedEffect def source . AttachmentEntity . AttachmentWithId
@@ -125,8 +127,13 @@ choiceMessages ident = \case
     concatMapM
       (\c -> choiceMessages ident (DamageCharacter c source damage))
       characters
-  DamageEnemy target source damage -> do
+  DamageEnemy target source damage' -> do
+    -- each instance of damage the source deals may be increased, as by Embiggen!
+    bonus <- sourceBonus source \case
+      DamageDealtModifier n -> Just n
+      _ -> Nothing
     let
+      damage = damage' {damageAmount = damageAmount damage' + bonus}
       isIdentity = case source of
         IdentityRef _ -> True
         _ -> False
@@ -154,16 +161,22 @@ choiceMessages ident = \case
         EnemyMinionId mid ->
           pure [MinionMessage mid $ MinionDamaged source damage]
       _ -> error "can not damage target"
-  ThwartScheme target source n -> case target of
-    MainSchemeRef mid ->
-      pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-    SideSchemeRef sid ->
-      pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
-    SchemeRef (SchemeMainSchemeId mid) ->
-      pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
-    SchemeRef (SchemeSideSchemeId sid) ->
-      pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
-    _ -> error $ "can not thwart target: " <> show target
+  ThwartScheme target source n' -> do
+    -- each instance of threat the source removes may be increased, as by Shrink
+    bonus <- sourceBonus source \case
+      ThreatRemovedModifier n -> Just n
+      _ -> Nothing
+    let n = n' + bonus
+    case target of
+      MainSchemeRef mid ->
+        pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
+      SideSchemeRef sid ->
+        pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
+      SchemeRef (SchemeMainSchemeId mid) ->
+        pure [MainSchemeMessage mid $ MainSchemeThwarted source n]
+      SchemeRef (SchemeSideSchemeId sid) ->
+        pure [SideSchemeMessage sid $ SideSchemeThwarted source n]
+      _ -> error $ "can not thwart target: " <> show target
   RemoveThreat source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     let f target = ThwartScheme target source n
@@ -295,6 +308,10 @@ choiceMessages ident = \case
   ReturnTargetToHand target -> pure [ReturnToHand target]
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
+
+-- | What the source's modifiers add to each instance of what it does.
+sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
+sourceBonus source f = sum . mapMaybe f <$> getModifiers source
 
 chooseOne :: (HasQueue m) => IdentityId -> [Choice] -> m ()
 chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)

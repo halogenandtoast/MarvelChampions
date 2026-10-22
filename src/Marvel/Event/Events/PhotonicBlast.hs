@@ -31,8 +31,7 @@ instance RunMessage PhotonicBlast where
   runMessage msg e@(PhotonicBlast attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payments _ -> do
-        resources <- paymentResources payments
-        let usedEnergy = Energy `elem` resources || Wild `elem` resources
+        usedEnergy <- paidWith Energy payments
         when
           usedEnergy
           (push $ IdentityMessage identityId $ DrawCards FromDeck 1)

@@ -84,7 +84,7 @@ instance HasAbilities DoctorStrange where
 instance HasModifiersFor DoctorStrange where
   getModifiersFor _ target (DoctorStrange (a `With` deck)) | isTarget a target =
     pure
-      [ AdditionalResourceCost (CardIsOneOf [Events.masterOfTheMysticArts]) n
+      [ AdditionalResourceCost (CardIs Events.masterOfTheMysticArts) n
       | top <- take 1 (invocationDeck deck)
       , let n = printedCost top
       , n > 0

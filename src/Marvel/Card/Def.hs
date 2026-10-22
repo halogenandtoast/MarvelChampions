@@ -40,8 +40,9 @@ data CardMatcher
   | CardWithType CardType
   | CardWithTrait Trait
   | CardMatchesAll [CardMatcher]
-  | -- | any printing of one of these cards
-    CardIsOneOf [CardDef]
+  | -- | the card in any of its printings
+    CardIs CardDef
+  | CardMatchesAny [CardMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -65,7 +66,8 @@ cardMatch matcher a = case matcher of
   CardWithResource resource ->
     resource `elem` map snd (filter isPrintedResource $ cdResources def)
   CardMatchesAll xs -> all (`cardMatch` a) xs
-  CardIsOneOf defs -> any (sameCard def) defs
+  CardIs def' -> sameCard def' def
+  CardMatchesAny xs -> any (`cardMatch` a) xs
  where
   def = getCardDef a
   isPrintedResource (restriction, _) = restriction == PrintedResource
@@ -109,6 +111,8 @@ data CardDef = CardDef
   , cdLimit :: Maybe InPlayLimit
   , -- | the codes the card is also printed under: a reprint, an alternate art
     cdAlternateCardCodes :: [CardCode]
+  , -- | may be played from its owner's discard pile, during their turn
+    cdPlayableFromDiscard :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -154,6 +158,9 @@ sameCard a b = canonicalCardCode a == canonicalCardCode b
 
 class HasCardDef a where
   getCardDef :: a -> CardDef
+
+instance HasCardDef CardDef where
+  getCardDef = id
 
 toAdditionalCriteria :: CardDef -> Criteria
 toAdditionalCriteria = maybe NoCriteria abilityTypeCriteria . cdAbilityType

@@ -2,6 +2,7 @@ module Marvel.Window.Types where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
@@ -48,12 +49,13 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
-  | -- | a player plays an event: not an event's ability resolved without it being played
-    PlaysEvent WindowTiming IdentityMatcher
-  | BoostCardFlipped WindowTiming Activation
+  | -- | a player matching plays an event matching
+    PlaysEvent WindowTiming IdentityMatcher CardMatcher
+  | AllyDefeated WindowTiming AllyMatcher
+  | -- | a boost card is turned face up for an enemy's activation
+    BoostCardFlipped WindowTiming EnemyMatcher
   | -- | the hero defended an attack and took no damage from it
     HeroDefendedWithoutDamage WindowTiming IdentityMatcher
-  | AllyIsDefeated WindowTiming AllyMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -88,15 +90,10 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
-  | EventPlayed IdentityId EventId
-  | -- | a boost card dealt to an enemy turned faceup, before its boost icons count
-    BoostCardTurnedFaceup EnemyId EncounterCard Activation
-  | DefendedWithoutDamage IdentityId EnemyId
+  | -- | the player, the event and its card
+    EventPlayed IdentityId EventId CardDef
   | DefeatedAlly AllyId
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
-
--- | What an enemy's activation is.
-data Activation = AttackActivation | SchemeActivation
+  | FlippedBoostCard EncounterCard EnemyId
+  | DefendedWithoutDamage IdentityId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

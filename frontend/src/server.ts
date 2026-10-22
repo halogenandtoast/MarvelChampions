@@ -19,6 +19,8 @@ export interface UpgradeView extends CardView {
 export interface SupportView extends CardView {
   exhausted?: boolean
   uses?: number
+  /** cards attached to it facedown */
+  facedownCards?: number
 }
 
 export interface AttachmentView extends CardView {

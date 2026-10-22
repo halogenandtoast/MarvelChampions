@@ -47,7 +47,7 @@ instance RunMessage MysticalStudies where
       push . IdentityMessage identityId $
         Search
           (SearchIdentityDeck identityId AllOfDeckAndDiscard)
-          (CardIsOneOf doctorStrangeCards)
+          (CardMatchesAny $ map CardIs doctorStrangeCards)
           SearchDrawOne
           ShuffleBackIn
       pure e

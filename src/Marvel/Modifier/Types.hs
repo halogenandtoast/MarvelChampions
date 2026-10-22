@@ -18,6 +18,12 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | on a source: each instance of damage it deals is increased
+    DamageDealtModifier Natural
+  | -- | on a source: each instance of threat it removes is increased
+    ThreatRemovedModifier Natural
+  | RecoveryModifier Natural
+  | CannotTakeDamage
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural
   deriving stock (Show, Eq, Generic)

@@ -39,6 +39,9 @@ allSupports = fromList $ map
   , SomeSupportCard medTeam
   , SomeSupportCard avengersMansion
   , SomeSupportCard helicarrier
+  , SomeSupportCard aamirKhan
+  , SomeSupportCard brunoCarrelli
+  , SomeSupportCard nakiaBahadir
   , SomeSupportCard sanctumSanctorum
   ]
 

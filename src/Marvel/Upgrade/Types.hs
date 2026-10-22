@@ -265,7 +265,8 @@ instance RunMessage (Attrs Upgrade) where
       UpgradeAttachedToAlly allyId -> do
         push (AllyMessage allyId $ AttachedUpgradeToAlly (upgradeId a))
         pure $ a & attachedAllyL ?~ allyId
+      -- leaving play discards it
       DiscardUpgrade -> do
-        pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
+        push $ RemoveFromPlay (toTarget a)
         pure a
     _ -> pure a

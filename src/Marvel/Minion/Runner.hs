@@ -44,6 +44,7 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL .~ 0
   MinionDamaged source damage -> do
     hitPoints <- getModifiedHitPoints attrs
+    cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
     keywords <- getModifiedKeywords attrs
     let
       retaliate = for_ keywords $ \case
@@ -63,6 +64,7 @@ runMinionMessage msg attrs = case msg of
     if
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
+      | cannotTakeDamage -> pure attrs
       -- retaliate answers the attack whether or not a tough status card takes it
       | minionTough attrs -> do
         retaliate

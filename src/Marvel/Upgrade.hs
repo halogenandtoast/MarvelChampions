@@ -47,6 +47,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard armoredVest
   , SomeUpgradeCard indomitable
   , SomeUpgradeCard tenacity
+  , SomeUpgradeCard biokineticPolymerSuit
+  , SomeUpgradeCard embiggen
+  , SomeUpgradeCard shrink
+  , SomeUpgradeCard energyBarrier
+  , SomeUpgradeCard endurance
+  , SomeUpgradeCard enhancedReflexes
+  , SomeUpgradeCard downTime
   , SomeUpgradeCard cloakOfLevitation
   , SomeUpgradeCard magicalEnhancements
   , SomeUpgradeCard theEyeOfAgamotto

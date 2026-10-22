@@ -62,6 +62,9 @@
   "deal3DamageToYourHero": "Deal 3 damage to your hero",
   "askedToDefend": "Defend this attack?",
   "declineToDefend": "Do not defend",
+  "exhaustKamalaKhanRemoveHomeByDawn": "Exhaust Kamala Khan → remove Home by Dawn from the game",
+  "discardPersonaSupportDiscardObligation": "Discard a Persona support you control (surge if none), discard Home by Dawn",
+  "discardAPersonaSupport": "Discard a Persona support"
   "heal1FromYourIdentity": "Heal 1 damage from your identity",
   "discardTopInvocation": "Discard the top card of the Invocation deck",
   "chooseCharacterToGiveTough": "Choose a character to give a tough status card",

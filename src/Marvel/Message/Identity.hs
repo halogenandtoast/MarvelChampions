@@ -65,6 +65,10 @@ data IdentityMessage
   | ShuffleIdentityDiscardBackIntoDeck
   | Search SearchSignifier CardMatcher SearchOption ReturnOption
   | IdentityRetaliate Natural EnemyId
+  | -- | discard from the top of the deck until a card matching is discarded, which the
+    -- target is told of; the deck emptying ends it
+    DiscardFromDeckUntil CardMatcher Target
+  | PlaceOnBottomOfDeck PlayerCard
   | -- | the attack the hero defended is done with them: their damage before it, to tell
     -- whether they took any from it
     AttackDefended EnemyId Natural

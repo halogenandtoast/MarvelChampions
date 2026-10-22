@@ -5,6 +5,7 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
+import Marvel.Card.Def (cardMatch)
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -165,20 +166,20 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
-  PlaysEvent timing identityMatcher -> case windowType w of
-    EventPlayed identityId _
-      | windowTiming w == timing ->
-          identityMatches identityMatcher identityId
-    _ -> pure False
-  BoostCardFlipped timing activation -> case windowType w of
-    BoostCardTurnedFaceup _ _ activation'
-      | windowTiming w == timing -> pure $ activation == activation'
-    _ -> pure False
   HeroDefendedWithoutDamage timing identityMatcher -> case windowType w of
     DefendedWithoutDamage identityId _
       | windowTiming w == timing -> identityMatches identityMatcher identityId
     _ -> pure False
-  AllyIsDefeated timing allyMatcher -> case windowType w of
+  PlaysEvent timing identityMatcher cardMatcher -> case windowType w of
+    EventPlayed ident _ def
+      | windowTiming w == timing && cardMatch cardMatcher def ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  AllyDefeated timing allyMatcher -> case windowType w of
     DefeatedAlly allyId
       | windowTiming w == timing -> allyMatches allyMatcher allyId
+    _ -> pure False
+  BoostCardFlipped timing enemyMatcher -> case windowType w of
+    FlippedBoostCard _ enemyId
+      | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
     _ -> pure False

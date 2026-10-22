@@ -23,6 +23,13 @@ import Marvel.Upgrade.Upgrades.Tenacity as X
 import Marvel.Upgrade.Upgrades.VibraniumSuit as X
 import Marvel.Upgrade.Upgrades.WebbedUp as X
 import Marvel.Upgrade.Upgrades.WebShooter as X
+import Marvel.Upgrade.Upgrades.BiokineticPolymerSuit as X
+import Marvel.Upgrade.Upgrades.Embiggen as X
+import Marvel.Upgrade.Upgrades.Shrink as X
+import Marvel.Upgrade.Upgrades.EnergyBarrier as X
+import Marvel.Upgrade.Upgrades.Endurance as X
+import Marvel.Upgrade.Upgrades.EnhancedReflexes as X
+import Marvel.Upgrade.Upgrades.DownTime as X
 import Marvel.Upgrade.Upgrades.CloakOfLevitation as X
 import Marvel.Upgrade.Upgrades.MagicalEnhancements as X
 import Marvel.Upgrade.Upgrades.TheEyeOfAgamotto as X
