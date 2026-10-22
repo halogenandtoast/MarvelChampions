@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Control.Monad.IO.Class
 import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.EncounterCard
+import {-# SOURCE #-} Marvel.Card.Def (CardDef)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Count
 import Marvel.Debug
@@ -49,6 +50,8 @@ getActivePlayerId :: (HasGame m) => m IdentityId
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
+getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
+getEncounterDeck :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 -- Matchers

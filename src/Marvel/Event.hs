@@ -56,6 +56,13 @@ allEvents = fromList $ map
   , SomeEventCard emergency
   , SomeEventCard firstAid
   , SomeEventCard haymaker
+  , SomeEventCard fearlessDetermination
+  , SomeEventCard heroicStrike
+  , SomeEventCard shieldBlock
+  , SomeEventCard shieldToss
+  , SomeEventCard avengersAssemble
+  , SomeEventCard strengthInNumbers
+  , SomeEventCard expertDefense
   , SomeEventCard bigHands
   , SomeEventCard sneakBy
   , SomeEventCard wiggleRoom

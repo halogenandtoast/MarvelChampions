@@ -40,6 +40,8 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Vehicle
+  | Title
   | Champion
   | Inhuman
   | Bird

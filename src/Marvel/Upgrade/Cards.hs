@@ -5,7 +5,9 @@ import Marvel.Prelude
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
+import Data.HashSet (singleton)
 import Marvel.Criteria
+import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
@@ -37,6 +39,13 @@ allUpgrades = fromList $ concatMap
   , armoredVest
   , indomitable
   , tenacity
+  , captainAmericasHelmet
+  , captainAmericasShield
+  , superSoldierSerum
+  , honoraryAvenger
+  , enraged
+  , followed
+  , enhancedAwareness
   , biokineticPolymerSuit
   , embiggen
   , shrink
@@ -191,6 +200,39 @@ indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
+
+captainAmericasHelmet :: CardDef
+captainAmericasHelmet =
+  unique $ identityUpgrade "03008" "Captain America's Helmet" 1 [Armor] [Physical]
+
+captainAmericasShield :: CardDef
+captainAmericasShield =
+  (unique $ identityUpgrade "03009" "Captain America's Shield" 1 [Item] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+superSoldierSerum :: CardDef
+superSoldierSerum =
+  identityUpgrade "03010" "Super-Soldier Serum" 2 [Item] [Physical]
+
+honoraryAvenger :: CardDef
+honoraryAvenger =
+  (basicUpgrade "03025" "Honorary Avenger" 0 [Title] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    , cdLimit = Just (MaxPerCharacter 1)
+    }
+
+enraged :: CardDef
+enraged = limited (MaxPerAlly 1) $
+  upgrade "03031" "Enraged" 1 [Condition] [Physical] Aggression
+
+followed :: CardDef
+followed = limited (MaxPerSideScheme 1) $
+  upgrade "03032" "Followed" 1 [] [Energy] Justice
+
+enhancedAwareness :: CardDef
+enhancedAwareness =
+  basicUpgrade "03034" "Enhanced Awareness" 2 [Condition] [Mental]
 
 biokineticPolymerSuit :: CardDef
 biokineticPolymerSuit =

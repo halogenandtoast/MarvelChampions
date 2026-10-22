@@ -81,7 +81,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideCards)
+import Marvel.Scenario.Types (Attrs (scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -90,7 +90,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Upgrade, getUpgradeController, getUpgradeUses)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -173,6 +173,9 @@ data Game = Game
   , gameSeats :: [IdentityId]
   -- ^ the players as they sat down, which never changes: the server finds whose seat is
   -- whose by it, while the player order turns as the first player passes
+  , gamePlayedThisRound :: [(IdentityId, CardDef)]
+  -- ^ the cards each player has played this round, for "max 1 per round" and "the first
+  -- ally played each round"
   }
   deriving stock (Show, Eq, Generic)
 
@@ -409,8 +412,10 @@ runGameMessage msg g@Game {..} = case msg of
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
-        pushAll
-          [IdentityMessage ident $ AllyRemoved aid, DiscardedCard $ toCard ally]
+        -- what is attached to it is discarded with it
+        pushAll $
+          map (RemoveFromPlay . UpgradeRef) (toList $ allyUpgrades $ toAttrs ally)
+            <> [IdentityMessage ident $ AllyRemoved aid, DiscardedCard $ toCard ally]
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     SupportRef sid -> do
       -- it is discarded, and the cards attached to it facedown with it
@@ -451,6 +456,12 @@ runGameMessage msg g@Game {..} = case msg of
     SideSchemeRef sid -> do
       for_ (lookup sid $ gameSideSchemes g) $
         \sideScheme -> push $ DiscardedCard $ toCard sideScheme
+      -- what is attached to it is discarded with it
+      pushAll
+        [ RemoveFromPlay (UpgradeRef uid)
+        | (uid, u) <- HashMap.toList (gameUpgrades g)
+        , upgradeAttachedSideScheme (toAttrs u) == Just sid
+        ]
       pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid)
     EnvironmentRef eid -> do
       for_ (lookup eid $ gameEnvironments g) $
@@ -752,10 +763,13 @@ runGameMessage msg g@Game {..} = case msg of
         & usedAbilitiesL . ix ident
           %~ filter
             ((/= PerTurn 1) . abilityLimit . fst)
+  IdentityMessage ident (PlayedCard card _) ->
+    pure $ g & playedThisRoundL <>~ [(ident, getCardDef card)]
   EndRound ->
     pure $
       g
         & roundL +~ 1
+        & playedThisRoundL .~ []
         & usedAbilitiesL . each
           %~ filter
             ((/= PerRound 1) . abilityLimit . fst)
@@ -777,6 +791,20 @@ runGameMessage msg g@Game {..} = case msg of
                   (Just $ getAllyController ally)
             ]
       pure $ g & entitiesL . alliesL %~ deleteMap aid
+    -- to its owner's hand
+    UpgradeRef uid -> do
+      for_ (lookup uid $ gameUpgrades g) $ \upgrade ->
+        pushAll
+          [ UpgradeRemoved uid
+          , IdentityMessage (upgradeOwner $ toAttrs upgrade) $
+              AddToHand $
+                MkPlayerCard
+                  (CardId $ unUpgradeId uid)
+                  (getCardDef upgrade)
+                  (Just $ upgradeOwner $ toAttrs upgrade)
+                  (Just $ upgradeOwner $ toAttrs upgrade)
+          ]
+      pure $ g & entitiesL . upgradesL %~ deleteMap uid
     -- a played event goes back from its controller's discard pile, if it is still there
     EventRef eid -> do
       for_ (lookup eid $ gameEvents g) \event -> do
@@ -944,7 +972,8 @@ isWindowPlayable window attrs c = do
       (pure False)
       (\matcher -> windowMatches matcher window GameRef)
       (cdResponseWindow def)
-  pure $ length resources >= modifiedCost && passedCriteria && passedWindow
+  passedPlayLimits <- checkPlayLimits attrs c
+  pure $ length resources >= modifiedCost && passedCriteria && passedWindow && passedPlayLimits
  where
   ident = toId attrs
   def = getCardDef c
@@ -1062,6 +1091,7 @@ newGame player scenario =
     , gameQuestionVersion = 0
     , gameRound = 1
     , gameSeats = [toId player]
+    , gamePlayedThisRound = []
     }
 
 -- | A game with a seat for each player, in the order given.
@@ -1093,6 +1123,14 @@ withGameM f = getGame >>= f >>= withGame_ . const
 
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getsGame f = f <$> getGame
+
+-- | The encounter deck, its top card first.
+getEncounterDeck :: (HasGame m) => m [EncounterCard]
+getEncounterDeck = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)
+
+-- | The cards played this round, and by whom.
+getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
+getPlayedThisRound = getsGame gamePlayedThisRound
 
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)
@@ -1345,6 +1383,7 @@ gameSelectIdentity m = do
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs
+    IdentityCanThwart -> fmap (notElem CannotThwart) . getModifiers
     FirstPlayer -> \a -> do
       ps <- getPlayers
       pure $ case ps of
@@ -1438,6 +1477,14 @@ gameSelectExtendedCard m = do
           filter (`elem` cards) $
             concatMap (unDiscard . playerIdentityDiscard . toAttrs) players'
       go players cards' extendedCardMatcher
+    InHandOf identityMatcher extendedCardMatcher -> do
+      identities <- selectList identityMatcher
+      let
+        cards' =
+          filter (`elem` cards) $
+            concatMap (unHand . playerIdentityHand . toAttrs) $
+              filter ((`elem` identities) . toId) players
+      go players cards' extendedCardMatcher
     TopmostCardInDiscardOf identityMatcher cardMatcher -> do
       identities <- selectList identityMatcher
       let players' = filter ((`elem` identities) . toId) players
@@ -1486,6 +1533,7 @@ gameSelectAlly m = do
       gameValueMatches gameValueMatcher . getAllyDamage
     AllyWithId ident' -> pure . (== ident') . toId
     AllyMatches xs -> andM . traverse matchFilter xs
+    AllyWithTrait trait -> fmap (member trait) . getTraits
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
@@ -1538,6 +1586,14 @@ gameSelectUpgrade m = do
     UpgradeNamed name -> pure . (== name) . cdName . getCardDef
     UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
     UpgradeOneOf xs -> orM . traverse matchFilter xs
+    UpgradeOnIdentity identityMatcher -> \upgrade -> do
+      identities <- select identityMatcher
+      let a = toAttrs upgrade
+      pure $
+        getUpgradeController upgrade `member` identities
+          && isNothing (upgradeAttachedAlly a)
+          && isNothing (upgradeAttachedEnemy a)
+          && isNothing (upgradeAttachedSideScheme a)
 
 gameSelectAttachment ::
   (HasGame m) => AttachmentMatcher -> m (HashSet AttachmentId)
@@ -1761,6 +1817,11 @@ gameSelectSideScheme m = do
     CrisisSideScheme -> pure . isCrisis
     SideSchemeIs def -> pure . sameCard def . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId
+    SideSchemeWithUpgrade upgradeMatcher -> \sideScheme -> do
+      upgrades <- select upgradeMatcher
+      attached <- getsGame $ filter ((== Just (toId sideScheme)) . upgradeAttachedSideScheme . toAttrs) . HashMap.elems . gameUpgrades
+      pure $ any ((`member` upgrades) . toId) attached
+    NotSideScheme m' -> fmap not . matchFilter m'
 
 withDepthGuard :: (HasGame m, Monoid a) => Int -> ReaderT Game m a -> m a
 withDepthGuard depthGuard body = do

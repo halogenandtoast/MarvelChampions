@@ -166,6 +166,16 @@ windowMatches matcher w source = case matcher of
             (identityMatches identityMatcher identityId)
             (enemyMatches enemyMatcher enemyId)
     _ -> pure False
+  IdentityWouldBeDefeated identityMatcher -> case windowType w of
+    IdentityDefeat identityId
+      | windowTiming w == Would ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  TurnBegins identityMatcher -> case windowType w of
+    TurnBegan identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
   EncounterCardReveal timing encounterCardMatcher -> case windowType w of
     EncounterCardRevealed _ encounterCard
       | windowTiming w == timing ->

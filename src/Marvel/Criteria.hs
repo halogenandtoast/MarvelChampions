@@ -2,7 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Types (AbilityType (..))
+import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Matchers.Types
 import Marvel.Resource.Types
@@ -24,6 +24,7 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | UpgradeExists UpgradeMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
   | -- | the card's resource cost is paid with only this type of resource: "you can
@@ -72,3 +73,8 @@ spendOnly = \case
 -- spent as any type.
 canSpendOn :: Criteria -> Resource -> Bool
 canSpendOn criteria r = maybe True (\only -> r == only || r == Wild) (spendOnly criteria)
+-- | What a thwart needs of the player making it.
+abilitySubTypeCriteria :: AbilitySubType -> Criteria
+abilitySubTypeCriteria = \case
+  Thwart -> SelfMatches IdentityCanThwart
+  _ -> NoCriteria

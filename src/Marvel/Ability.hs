@@ -120,7 +120,12 @@ passesUseLimit x aMap a = case abilityLimit a of
   usedAbilities = HashMap.findWithDefault [] x aMap
 
 passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool
-passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria a)
+passesCriteria x a =
+  go
+    ( abilityTypeCriteria (abilityType a)
+        <> maybe NoCriteria abilitySubTypeCriteria (abilitySubType a)
+        <> abilityCriteria a
+    )
  where
   go = \case
     IsSelf -> pure $ toSource x == source
@@ -149,6 +154,7 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     ExtendedCardExists m -> selectAny m
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
+    UpgradeExists m -> selectAny m
     -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
   source = abilitySource a
@@ -176,6 +182,7 @@ passesCardCriteria ident card = go
     SchemeExists m -> selectAny m
     -- the card itself, about to leave the hand, is not one of them
     ExtendedCardExists m -> selectAny (NotCard card <> m)
+    UpgradeExists m -> selectAny m
     -- how it is paid for is checked as it is paid
     SpendOnly _ -> pure True
     PayingFor _ -> pure True

@@ -60,5 +60,6 @@
   "pinned": "Pinned",
   "empty": "Nothing has happened yet.",
   "say": "Say",
-  "sayPlaceholder": "Say something to the table"
+  "sayPlaceholder": "Say something to the table",
+  "hitPointsSetTo": "{target}'s hit points are set to {count}"
 }
