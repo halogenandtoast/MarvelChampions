@@ -2,7 +2,7 @@ module Marvel.Window.Types where
 
 import Marvel.Prelude
 
-import {-# SOURCE #-} Marvel.Card.Def
+import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
 import Marvel.Damage
@@ -50,6 +50,11 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
+  | -- | a player matching plays an event matching
+    PlaysEvent WindowTiming IdentityMatcher CardMatcher
+  | AllyDefeated WindowTiming AllyMatcher
+  | -- | a boost card is turned face up for an enemy's activation
+    BoostCardFlipped WindowTiming EnemyMatcher
   | -- | "you reveal": the encounter card is revealed for a player matching
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
@@ -97,15 +102,18 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
+  | -- | the player, the event and its card
+    EventPlayed IdentityId EventId CardDef
+  | DefeatedAlly AllyId
+  | FlippedBoostCard EncounterCard EnemyId
   | CardPlayed IdentityId PlayerCard
   | -- | the player resolved the ability of a card with this def
     ResolvedAbility IdentityId CardDef
   | SchemedByMinion MinionId
-  | BoostCardFlipped EnemyId EncounterCard
   | -- | the player took damage from this source
     IdentityTookDamage IdentityId Source Damage
   | -- | the ally, as a card, and its controller
-    DefeatedAlly IdentityId PlayerCard
+    AllyCardDefeated IdentityId PlayerCard
   | -- | the surge keyword of a card revealed for the player
     SurgeResolves IdentityId
   deriving stock (Show, Eq, Generic)

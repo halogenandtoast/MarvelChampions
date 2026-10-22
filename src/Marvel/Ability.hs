@@ -147,6 +147,8 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
+    -- the card paid for is checked by 'getResourceAbilities'
+    PayingFor _ -> pure True
   source = abilitySource a
 
 partitionMaybes :: [Maybe a] -> ([()], [a])

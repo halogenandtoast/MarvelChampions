@@ -24,7 +24,6 @@ paymentResources
   => Payment
   -> m [Resource]
 paymentResources (ResourcePayment r) = pure [r]
-paymentResources (ResourcePaymentFor _ r) = pure [r]
 paymentResources (ResourcePaymentFromCard matcher) = do
   cards <- selectList matcher
   case cards of
@@ -33,3 +32,17 @@ paymentResources (ResourcePaymentFromCard matcher) = do
     _ -> error "target matches too many cards"
 paymentResources (Payments ps) = concatMapM paymentResources ps
 paymentResources _ = pure []
+
+-- | Whether a resource of this type, or a wild one, went to the payment: "if you paid
+-- for this card using a [physical] resource".
+paidWith
+  :: ( Projection m PlayerIdentity
+     , HasQueue m
+     , HasGame m
+     , MonadRandom m
+     , MonadThrow m
+     )
+  => Resource
+  -> Payment
+  -> m Bool
+paidWith r payment = any (`elem` [r, Wild]) <$> paymentResources payment

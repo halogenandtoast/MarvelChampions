@@ -62,6 +62,9 @@
   "deal3DamageToYourHero": "Deal 3 damage to your hero",
   "askedToDefend": "Defend this attack?",
   "declineToDefend": "Do not defend",
+  "exhaustKamalaKhanRemoveHomeByDawn": "Exhaust Kamala Khan → remove Home by Dawn from the game",
+  "discardPersonaSupportDiscardObligation": "Discard a Persona support you control (surge if none), discard Home by Dawn",
+  "discardAPersonaSupport": "Discard a Persona support",
   "exhaustNatashaRomanoffRemoveBurnNotice": "Exhaust Natasha Romanoff → remove Burn Notice from the game",
   "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation"
 }

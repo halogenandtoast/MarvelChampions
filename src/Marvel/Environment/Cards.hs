@@ -35,4 +35,5 @@ ultronDrones =
     , cdAcceleration = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
+    , cdPlayableFromDiscard = False
     }

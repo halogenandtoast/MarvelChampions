@@ -37,6 +37,7 @@ villain cardCode name traits =
     , cdAcceleration = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
+    , cdPlayableFromDiscard = False
     }
 
 rhino1 :: CardDef

@@ -5,8 +5,7 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
-import Marvel.Card.Def
-import Marvel.Card.PlayerCard.Types
+import Marvel.Card.Def (cardMatch)
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -167,6 +166,19 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
+  PlaysEvent timing identityMatcher cardMatcher -> case windowType w of
+    EventPlayed ident _ def
+      | windowTiming w == timing && cardMatch cardMatcher def ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  AllyDefeated timing allyMatcher -> case windowType w of
+    DefeatedAlly allyId
+      | windowTiming w == timing -> allyMatches allyMatcher allyId
+    _ -> pure False
+  BoostCardFlipped timing enemyMatcher -> case windowType w of
+    FlippedBoostCard _ enemyId
+      | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
+    _ -> pure False
   EncounterCardRevealedBy timing identityMatcher encounterCardMatcher -> case windowType w of
     EncounterCardRevealed ident encounterCard
       | windowTiming w == timing && encounterCardMatches encounterCardMatcher encounterCard ->
@@ -187,7 +199,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing -> minionMatches minionMatcher minionId
     _ -> pure False
   BoostCardTurnedFaceup timing encounterCardMatcher -> case windowType w of
-    BoostCardFlipped _ card ->
+    FlippedBoostCard card _ ->
       pure $ windowTiming w == timing && encounterCardMatches encounterCardMatcher card
     _ -> pure False
   TookDamage identityMatcher damageSource' -> case windowType w of
@@ -196,7 +208,7 @@ windowMatches matcher w source = case matcher of
           identityMatches identityMatcher ident
     _ -> pure False
   AllyWasDefeated timing identityMatcher -> case windowType w of
-    DefeatedAlly ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
+    AllyCardDefeated ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
   SurgeWouldResolve -> case windowType w of
     SurgeResolves _ -> pure $ windowTiming w == Would

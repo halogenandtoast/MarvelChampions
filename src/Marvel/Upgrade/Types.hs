@@ -205,19 +205,6 @@ attackGuard ident u f = do
       pure u
     else f
 
--- | Prevent this much of the damage the player is about to take.
-preventDamage :: (HasQueue m) => IdentityId -> Natural -> m ()
-preventDamage ident n = replaceMatchingMessage reduce \case
-  IdentityMessage ident' (IdentityDamaged _ _) -> ident' == ident
-  _ -> False
- where
-  reduce = \case
-    IdentityMessage _ (IdentityDamaged source dmg) ->
-      [ IdentityMessage ident $ IdentityDamaged source dmg {damageAmount = damageAmount dmg - n}
-      | damageAmount dmg > n
-      ]
-    other -> [other]
-
 thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid ->

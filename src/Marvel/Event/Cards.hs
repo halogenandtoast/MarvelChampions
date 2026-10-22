@@ -48,6 +48,14 @@ allEvents = fromList $ concatMap
   , emergency
   , firstAid
   , haymaker
+  , bigHands
+  , sneakBy
+  , wiggleRoom
+  , preemptiveStrike
+  , tackle
+  , melee
+  , concussiveBlow
+  , moraleBoost
   , covertOps
   , danceOfDeath
   , stealthStrike
@@ -105,6 +113,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 backflip :: CardDef
@@ -318,6 +327,54 @@ haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])
   { cdAbilitySubType = Just Ability.Attack
   }
+
+bigHands :: CardDef
+bigHands =
+  (identityEvent "05003" "Big Hands" 2 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+sneakBy :: CardDef
+sneakBy =
+  (identityEvent "05004" "Sneak By" 2 HeroAction [Skill, Thwart] [Mental])
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+wiggleRoom :: CardDef
+wiggleRoom =
+  (identityEvent "05005" "Wiggle Room" 0 HeroInterrupt [Defense, Superpower] [Energy])
+    { cdAbilitySubType = Just Ability.Defense
+    , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    }
+
+preemptiveStrike :: CardDef
+preemptiveStrike =
+  (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
+    { cdAbilitySubType = Just Ability.Defense
+    , cdResponseWindow = Just (BoostCardFlipped When (VillainEnemy <> AttackingEnemy))
+    }
+
+tackle :: CardDef
+tackle =
+  (event "05015" "Tackle" 3 HeroAction [Attack] [Physical] Protection)
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+melee :: CardDef
+melee =
+  (event "05030" "Melee" 3 HeroAction [Attack] [Mental] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+concussiveBlow :: CardDef
+concussiveBlow =
+  (event "05031" "Concussive Blow" 3 HeroAction [Attack] [Physical] Justice)
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+moraleBoost :: CardDef
+moraleBoost = event "05032" "Morale Boost" 1 HeroAction [] [Energy] Leadership
 
 covertOps :: CardDef
 covertOps = (identityEvent "08003" "Covert Ops" 3 Action [Thwart] [Mental])

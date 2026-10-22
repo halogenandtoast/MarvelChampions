@@ -41,6 +41,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard underAttack
   , SomeSideSchemeCard legionsOfHydra
   , SomeSideSchemeCard theDoomsdayChair
+  , SomeSideSchemeCard generationWhy
   , SomeSideSchemeCard killerForHire
   ]
 

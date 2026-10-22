@@ -49,7 +49,7 @@ instance HasAbilities Attacrobatics where
 
 instance RunMessage Attacrobatics where
   runMessage msg u@(Attacrobatics attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 [BoostCardFlipped _ card] _ ->
+    RanAbility ident (isTarget attrs -> True) 1 [FlippedBoostCard card _] _ ->
       attackGuard ident u do
         -- the card's icons are added next: they are not
         cancelMatchingMessage \case

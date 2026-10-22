@@ -29,8 +29,8 @@ newtype BlackWidowsGauntlet = BlackWidowsGauntlet (Attrs Upgrade)
 
 instance HasAbilities BlackWidowsGauntlet where
   getAbilities a =
-    [ ability a 1 Resource OwnsThis ExhaustCost $
-        Pay (ResourcePaymentFor (CardWithTrait Preparation) Wild)
+    [ ability a 1 Resource (OwnsThis <> PayingFor (CardWithTrait Preparation)) ExhaustCost $
+        Pay (ResourcePayment Wild)
     ]
 
 instance RunMessage BlackWidowsGauntlet where

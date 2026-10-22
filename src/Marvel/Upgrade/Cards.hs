@@ -37,6 +37,13 @@ allUpgrades = fromList $ concatMap
   , armoredVest
   , indomitable
   , tenacity
+  , biokineticPolymerSuit
+  , embiggen
+  , shrink
+  , energyBarrier
+  , endurance
+  , enhancedReflexes
+  , downTime
   , attacrobatics
   , blackWidowsGauntlet
   , grapplingHook
@@ -87,6 +94,7 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 unique :: CardDef -> CardDef
@@ -190,6 +198,30 @@ indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
+
+biokineticPolymerSuit :: CardDef
+biokineticPolymerSuit =
+  unique $ identityUpgrade "05009" "Biokinetic Polymer Suit" 1 [Armor] [Mental]
+
+embiggen :: CardDef
+embiggen = identityUpgrade "05010" "Embiggen!" 2 [Condition, Superpower] [Energy]
+
+shrink :: CardDef
+shrink = identityUpgrade "05011" "Shrink" 2 [Condition, Superpower] [Mental]
+
+energyBarrier :: CardDef
+energyBarrier = upgrade "05017" "Energy Barrier" 2 [Item, Tech] [Energy] Protection
+
+endurance :: CardDef
+endurance = limited (MaxPerPlayerUnderAnyControl 1)
+  $ basicUpgrade "05023" "Endurance" 1 [Condition] [Energy]
+
+enhancedReflexes :: CardDef
+enhancedReflexes = basicUpgrade "05024" "Enhanced Reflexes" 2 [Condition] [Energy]
+
+downTime :: CardDef
+downTime = limited (MaxPerPlayerUnderAnyControl 1)
+  $ basicUpgrade "05033" "Down Time" 1 [Condition] [Physical]
 
 -- | "Play only if you control a Spy character."
 youControlASpy :: Criteria

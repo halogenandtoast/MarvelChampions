@@ -47,6 +47,7 @@ allTreacheries = fromList $ map
   , exhaustion
   , masterplan
   , underFire
+  , harvest
   , deadlyShot
   ]
 
@@ -73,6 +74,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 hardToKeepDown :: CardDef
@@ -193,6 +195,9 @@ underFire =
   (treachery "01193" "Under Fire" [Boost, Boost, Boost] ExpertSet 1)
     { cdKeywords = singleton Keyword.Surge
     }
+
+harvest :: CardDef
+harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2
 
 deadlyShot :: CardDef
 deadlyShot = treachery "08029" "Deadly Shot" [Boost] BlackWidowNemesis 1

@@ -49,7 +49,7 @@ instance HasAbilities RapidResponse where
 -- | The ally comes back from the discard pile, if it is still there, and takes 1 damage.
 instance RunMessage RapidResponse where
   runMessage msg u@(RapidResponse attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 [DefeatedAlly _ card] _ -> do
+    RanAbility ident (isTarget attrs -> True) 1 [AllyCardDefeated _ card] _ -> do
       discard <- projectMap PlayerIdentityDiscard unDiscard ident
       when (card `elem` discard) $
         pushAll

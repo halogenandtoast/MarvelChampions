@@ -30,6 +30,14 @@ import Marvel.Event.Events.WakandaForeverA as X
 import Marvel.Event.Events.WakandaForeverB as X
 import Marvel.Event.Events.WakandaForeverC as X
 import Marvel.Event.Events.WakandaForeverD as X
+import Marvel.Event.Events.BigHands as X
+import Marvel.Event.Events.SneakBy as X
+import Marvel.Event.Events.WiggleRoom as X
+import Marvel.Event.Events.PreemptiveStrike as X
+import Marvel.Event.Events.Tackle as X
+import Marvel.Event.Events.Melee as X
+import Marvel.Event.Events.ConcussiveBlow as X
+import Marvel.Event.Events.MoraleBoost as X
 import Marvel.Event.Events.CovertOps as X
 import Marvel.Event.Events.DanceOfDeath as X
 import Marvel.Event.Events.StealthStrike as X
