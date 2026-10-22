@@ -84,3 +84,31 @@ spec = describe "Red Skull" do
       choose "thwart The Red House" (isTargetChoice sid)
       choose "use ATK" (isLabel "$label.thwartWithAtk")
       sideSchemeThreat sid `shouldReturn` 1
+
+  describe "The Sleeper Awakened" do
+    it "cannot leave play while The Sleeper is in play, by defeat, discard or removal, and leaves the game with him" do
+      tg <- redSkull
+      let p = player1 tg
+      inGame tg do
+        awakened <- revealNow p Cards.theSleeperAwakened
+        pass
+        let sid = sideSchemeOf awakened
+            inPlay = getsGame (HashMap.member sid . gameSideSchemes)
+        [sleeper] <- getsGame (HashMap.keys . HashMap.filter ((== Minions.theSleeper) . getCardDef) . gameMinions)
+        -- thwarted to nothing, discarded, removed: it stays
+        resolve [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p) 1)]
+        inPlay `shouldReturn` True
+        resolve [RemoveFromPlay (SideSchemeRef sid)]
+        inPlay `shouldReturn` True
+        resolve [RemoveFromGame (SideSchemeRef sid)]
+        inPlay `shouldReturn` True
+        -- The Sleeper defeated, it is removed from the game: not discarded
+        -- toughness takes the first
+        resolve [MinionMessage sleeper (MinionDamaged GameRef (toDamage 99 FromAbility))]
+        inPlay `shouldReturn` True
+        resolve [MinionMessage sleeper (MinionDamaged GameRef (toDamage 99 FromAbility))]
+        minionDamageOf sleeper `shouldReturn` Nothing
+        inPlay `shouldReturn` False
+        Pile _ discard <- getPile SideSchemeDeckKey
+        map getCardDef discard `shouldBe` []
+        encounterDiscardCodes >>= (`shouldSatisfy` notElem "04140")
