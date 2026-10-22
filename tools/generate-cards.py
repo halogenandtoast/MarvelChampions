@@ -21,6 +21,13 @@ API = "https://marvelcdb.com/api/public"
 
 LANDSCAPE = {"main_scheme", "side_scheme", "player_side_scheme"}
 
+# MarvelCDB scans filed under the other face's name: its 07001b.png is Breakout's 1A side,
+# and its 07001.png the 1B side. The HD export (frontend/public/images) has them right.
+REMOTE_IMAGE_FIXES = {
+    "07001a": "/bundles/cards/07001b.png",
+    "07001b": "/bundles/cards/07001.png",
+}
+
 
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": "marvel-champions-importer"})
@@ -105,7 +112,7 @@ def card(c, pack_order):
         "duplicateOf": c.get("duplicate_of_code"),
         "illustrator": c.get("illustrator"),
         "image": c["code"] + ".avif",
-        "remoteImage": c.get("imagesrc"),
+        "remoteImage": REMOTE_IMAGE_FIXES.get(c["code"], c.get("imagesrc")),
         "remoteBackImage": c.get("backimagesrc"),
         "orientation": "landscape" if t in LANDSCAPE else "portrait",
         "deckRequirements": c.get("deck_requirements"),

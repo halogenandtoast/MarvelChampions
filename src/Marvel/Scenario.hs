@@ -18,6 +18,10 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message.Lifted
 import Marvel.Ref
+import Data.Aeson (Result (..), fromJSON)
+import Marvel.Matchers (IdentityMatcher (FirstPlayer))
+import Marvel.Query (selectJust)
+import Marvel.Question (Choice (CardLabel))
 import Marvel.Scenario.Types hiding (scenarioAccelerationTokens)
 import Marvel.Scenario.Types qualified as Types
 
@@ -46,6 +50,7 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
     , SomeScenarioCard (breakoutScenario "07001")
     , SomeScenarioCard (breakoutScenario "07001a")
+    , SomeScenarioCard (breakoutScenario "07001b")
 
     -- The Rise of Red Skull
     , SomeScenarioCard crossbonesScenario
@@ -182,7 +187,7 @@ breakoutScenario :: CardCode -> ScenarioCard BreakoutScenario
 breakoutScenario code =
   ScenarioCard code \setup ->
     let BreakoutScenario a = buildScenario (scenario BreakoutScenario code ("07002", "07003") ["07001"] []) setup
-        expert = setup.difficulty == Expert && code /= "07001a"
+        expert = setup.difficulty == Expert && code == "07001"
      in BreakoutScenario
           a
             { Types.scenarioVillains = if expert then ["07003", "07018", "07033", "07047"] else ["07002", "07017", "07032", "07046"]
@@ -193,8 +198,27 @@ breakoutScenario code =
 -- defeated with others left, the counter goes to the villain whose side scheme has the
 -- most threat, the first player choosing among those tied (TWC insert p.6); the players
 -- win once all four are defeated (p.7).
+-- | Each villain's versions, A and B, in the order they are set out.
+versions :: [(CardCode, CardCode)]
+versions = [("07002", "07003"), ("07017", "07018"), ("07032", "07033"), ("07046", "07047")]
+
 instance RunMessage BreakoutScenario where
   runMessage msg (BreakoutScenario a) = BreakoutScenario <$> case msg of
+    -- set up by the B side's code, the players choose each villain's version, A or B
+    -- ("some version-A and some version-B villains", TWC insert p.7)
+    StartScenario | Types.scenarioId a == "07001b" -> runQueueT do
+      cardSpecific GameRef "breakoutVersions" versions
+      pure $ a & mainSchemesL .~ []
+    CardSpecific GameRef "breakoutVersions" (fromJSON -> Success (remaining :: [(CardCode, CardCode)])) -> runQueueT do
+      case remaining of
+        [] -> addSetupMainScheme "07001"
+        (versionA, versionB) : rest -> do
+          first <- selectJust FirstPlayer
+          let version code = CardLabel code <$> labeled "$label.thisVersion" do
+                addVillain code
+                cardSpecific GameRef "breakoutVersions" rest
+          chooseOnePrompted first "$label.chooseVillainVersion" [version versionA, version versionB]
+      pure a
     StartScenario -> runQueueT do
       for_ (Types.scenarioVillains a) addVillain
       addSetupMainScheme "07001"
@@ -210,6 +234,11 @@ instance RunMessage BreakoutScenario where
           when wasActive $ cardSpecific GameRef "breakoutNextActive" ()
       pure a
     CardSpecific GameRef "breakoutNextActive" _ -> runQueueT $ a <$ moveActiveCounter MostThreat
+    -- a defeated villain's deck and discard pile stay: "when an encounter card leaves
+    -- play, it is placed in the discard pile of its corresponding encounter deck", his
+    -- cards still in play remaining in play (TWC insert pp.6-7); only his side scheme is
+    -- removed. It is not drawn from again, being no active villain's.
+    RemoveDeck (VillainDeckKey _) -> pure a
     -- the obligations are the encounter deck's only cards: emptied of them, it is not an
     -- encounter deck run out
     RemovePlayerObligationsFromGame -> pure $ a & encounterDeckL %~ filter (not . isPlayerObligation)

@@ -33,6 +33,6 @@ instance RunMessage EscapedConvict where
     Boost (CardSpecific (isTarget attrs -> True) "attacksAfter" (fromJSON -> Success (v, enemy))) -> do
       you <- getBoostedPlayer enemy
       isHero <- identityMatches HeroIdentity you
-      when isHero $ afterActivation enemy (villainAttacksWithoutBoost v you)
+      when isHero $ activationAfter enemy v (villainAttacksWithoutBoost v you)
       pure e
     _ -> EscapedConvict <$> runMessage msg attrs

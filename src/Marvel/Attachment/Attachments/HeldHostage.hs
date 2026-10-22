@@ -32,9 +32,10 @@ newtype HeldHostage = HeldHostage (Attrs Attachment)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | Attach to the active villain's side scheme. Threat cannot be removed from the
--- attached scheme by thwarting.
+-- attached scheme by thwarting: a basic thwart or an ability labeled a thwart (RR
+-- "Thwart"); other cards' "remove threat" still removes it.
 instance HasModifiersFor HeldHostage where
-  getModifiersFor _ (SideSchemeRef sid) (HeldHostage a) | attachmentSideScheme a == Just sid = pure [ThreatCannotBeRemoved]
+  getModifiersFor _ (SideSchemeRef sid) (HeldHostage a) | attachmentSideScheme a == Just sid = pure [ThreatCannotBeRemovedByThwarting]
   getModifiersFor _ _ _ = pure []
 
 -- | Hero Action: the villain corresponding to the attached side scheme attacks you. Then
