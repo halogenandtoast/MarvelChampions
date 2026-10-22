@@ -115,6 +115,8 @@
 }
 
 * { box-sizing: border-box; }
+/* alt text stays for screen readers but is never drawn while an image loads or fails */
+img { color: transparent; }
 
 html, body { height: 100%; }
 html { -webkit-text-size-adjust: 100%; }
