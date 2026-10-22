@@ -173,3 +173,9 @@ windowMatches matcher w source = case matcher of
             (identityMatches identityMatcher ident)
             (minionMatches minionMatcher minionId)
     _ -> pure False
+  MakesBasicThwart timing identityMatcher -> case windowType w of
+    MadeBasicThwart identityId
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  WindowOneOf matchers -> anyM (\m -> windowMatches m w source) matchers

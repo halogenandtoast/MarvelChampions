@@ -74,5 +74,9 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
+  | -- | the basic attack, after the interrupts to making it, and what they add to it
+    BasicAttack Natural
+  | -- | the basic thwart, after the interrupts to making it, and what they add to it
+    BasicThwart Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

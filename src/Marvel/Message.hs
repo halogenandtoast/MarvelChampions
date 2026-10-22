@@ -25,7 +25,8 @@ import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
-import Marvel.Damage (Damage)
+import Marvel.Attack (sourceEnemy)
+import Marvel.Damage (Damage (..), DamageSource (FromAttack))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -35,7 +36,7 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (When, Would), WindowType (IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -62,6 +63,19 @@ placeThreatOn scheme n =
 engageMinion :: MinionId -> IdentityId -> [Message]
 engageMinion minion ident =
   [IdentityMessage ident (MinionEngaged minion), MinionMessage minion (MinionEngagedIdentity ident)]
+
+-- | Add to the power of the basic attack or thwart the player is making, as an
+-- interrupt to making it.
+addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
+addToBasicPower ident n = replaceMatchingMessage raise \case
+  IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
+  IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
+  _ -> False
+ where
+  raise = \case
+    IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
+    IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
+    other -> [other]
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message

@@ -49,6 +49,8 @@ data WindowMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
   | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
+  | MakesBasicThwart WindowTiming IdentityMatcher
+  | WindowOneOf [WindowMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -86,5 +88,6 @@ data WindowType
   | -- | the player engages the minion: it enters play engaged with them, or is made to
     -- engage them
     EngagedMinion IdentityId MinionId
+  | MadeBasicThwart IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
