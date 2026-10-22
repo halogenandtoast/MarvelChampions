@@ -767,6 +767,12 @@ runGameMessage msg g@Game {..} = case msg of
                   (Just $ getAllyController ally)
             ]
       pure $ g & entitiesL . alliesL %~ deleteMap aid
+    UpgradeRef uid -> do
+      for_ (lookup uid $ gameUpgrades g) \upgrade -> case toCard upgrade of
+        PlayerCard card ->
+          pushAll [UpgradeRemoved uid, IdentityMessage (fromMaybe (getUpgradeController upgrade) (pcOwner card)) (AddToHand card)]
+        EncounterCard _ -> error "an upgrade is a player card"
+      pure $ g & entitiesL . upgradesL %~ deleteMap uid
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
