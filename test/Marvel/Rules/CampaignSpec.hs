@@ -1,5 +1,6 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
+import Marvel.Area (Pile (..), experimentalWeaponsDeck)
 import Marvel.Campaign
 import Marvel.Hp (unHp)
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
@@ -114,6 +115,35 @@ spec = describe "The Rise of Red Skull campaign" do
       removed <- (.campaignLog.alliesRemoved) <$> campaignNow
       removed `shouldBe` map toCardCode (concat prison)
       (.pending) <$> spiderManNow `shouldReturn` []
+
+  it "Crossbones won: each Experimental attachment that entered the game is recorded, and shuffled into the next encounter deck" do
+    tg <- dealScenario (newCampaign StandardCampaign [spiderMan]) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      Pile before _ <- getPile experimentalWeaponsDeck
+      resolve [UsingDeck experimentalWeaponsDeck (DrawAndRevealEncounterCard (player1 tg))]
+      Pile after _ <- getPile experimentalWeaponsDeck
+      let entered = [toCardCode w | w <- before, w `notElem` after]
+      length entered `shouldBe` 1
+      resolve [GameOver Won]
+      c <- campaignNow
+      c.campaignLog.experimentalWeapons `shouldBe` entered
+      -- the next scenario's setup finds the card by its code
+      tg2 <- liftIO $ dealScenario c [starter "spider-man"]
+      liftIO $ inGame tg2 do
+        toFirstTurn
+        deck <- scenarioEncounterDeckNow
+        discard <- encounterDiscardNow
+        attached <- getsGame (map (toCardCode . getCardDef) . foldr (:) [] . gameAttachments)
+        any ((`elem` entered) . toCardCode) (deck <> discard) || any (`elem` entered) attached `shouldBe` True
+
+  it "Absorbing Man won: the delay counters placed on None Shall Pass are recorded" do
+    tg <- dealScenario ((newCampaign StandardCampaign [spiderMan]) {completed = 1}) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      resolve [AccelerateMainScheme, AccelerateMainScheme]
+      resolve [GameOver Won]
+      (.campaignLog.delayCounters) <$> campaignNow `shouldReturn` Just 2
 
   it "places threat for Absorbing Man's delay counters as Red Skull is set up" do
     plain <- testGameAgainst "01094" ["spider-man"]
