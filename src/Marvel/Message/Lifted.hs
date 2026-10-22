@@ -13,7 +13,7 @@ import Marvel.Prelude
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
-import Marvel.Card.Types (IsCard (..))
+import Marvel.Card.Types (Card, EncounterCard, IsCard (..))
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
 import Marvel.Game.Source
@@ -39,6 +39,10 @@ chooseOne you choices = push . Ask you . ChooseOne =<< sequence choices
 -- | Ask one of the choices, saying what is being asked.
 chooseOnePrompted :: (ReverseQueue m) => IdentityId -> Text -> [m Choice] -> m ()
 chooseOnePrompted you prompt choices = push . Ask you . prompted prompt . ChooseOne =<< sequence choices
+
+-- | Ask one of the choices, saying what is being asked about which card.
+chooseOnePromptedAbout :: (ReverseQueue m, IsRef a) => IdentityId -> Text -> a -> [m Choice] -> m ()
+chooseOnePromptedAbout you prompt a choices = push . Ask you . promptedAbout prompt a . ChooseOne =<< sequence choices
 
 chooseOneAtATime :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOneAtATime you choices = push . Ask you . ChooseOneAtATime =<< sequence choices
@@ -86,6 +90,22 @@ dealDamageThen enemy source damage body = do
 -- | Damage to each enemy matching.
 damageAllEnemies :: (ReverseQueue m, IsRef source) => source -> Damage -> EnemyMatcher -> m ()
 damageAllEnemies source damage matcher = resolve $ DamageAllEnemies matcher (toSource source) damage
+
+-- | Damage to each character matching, as one effect.
+damageAllCharacters :: (ReverseQueue m, IsRef source) => source -> Damage -> CharacterMatcher -> m ()
+damageAllCharacters source damage matcher = resolve $ DamageAllCharacters matcher (toSource source) damage
+
+-- | Damage to the character: an identity's goes through 'damageIdentity'.
+damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
+damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
+
+-- | An attack's damage to the identity, which is not 'damageIdentity''s.
+attackDamageIdentity :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
+attackDamageIdentity ident source = push . IdentityMessage ident . IdentityDamaged (toSource source)
+
+-- | The window after an enemy's attack damages the character, if the damage is that.
+attackDealtDamageTo :: (ReverseQueue m, IsCharacter character) => Source -> Damage -> character -> m ()
+attackDealtDamageTo source damage = pushAll . attackDealtDamage source damage . toCharacter
 
 -- | Damage to an enemy matching, the player choosing which.
 chooseDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> EnemyMatcher -> m ()
@@ -144,6 +164,29 @@ instance Readyable AllyId where
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
 
+-- | What can be exhausted.
+class Exhaustible a where
+  exhausted :: a -> Message
+
+instance Exhaustible AllyId where
+  exhausted ally = AllyMessage ally Msg.ExhaustedAlly
+
+exhaust :: (ReverseQueue m, Exhaustible a) => a -> m ()
+exhaust = push . exhausted
+
+-- | The ally's attack on the enemy, past the window before it.
+allyAttackLands :: (ReverseQueue m, IsEnemy enemy) => AllyId -> enemy -> Damage -> m ()
+allyAttackLands ally enemy = push . AllyMessage ally . AllyAttackLands (toEnemy enemy)
+
+defeatAlly :: (ReverseQueue m) => AllyId -> m ()
+defeatAlly ally = push $ AllyMessage ally AllyDefeated
+
+-- | The character defends against the enemy's attack.
+defendedBy :: (ReverseQueue m, IsEnemy enemy, IsCharacter character) => enemy -> character -> m ()
+defendedBy enemy character = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid $ VillainDefendedBy (toCharacter character)
+  EnemyMinionId mid -> MinionMessage mid $ MinionDefendedBy (toCharacter character)
+
 enemyAttacks :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
 enemyAttacks enemy ident = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttacks ident)
@@ -167,6 +210,16 @@ drawCards ident = push . IdentityMessage ident . DrawCards FromDeck
 
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize
+
+addToHand :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+addToHand ident = push . IdentityMessage ident . AddToHand
+
+shuffleDeck :: (ReverseQueue m) => IdentityId -> m ()
+shuffleDeck ident = push $ IdentityMessage ident ShuffleDeck
+
+-- | The cards are shown to everyone while the body runs.
+focusing :: (ReverseQueue m) => [Card] -> m () -> m ()
+focusing cards body = push (FocusCards cards) >> body >> push UnfocusCards
 
 -- | The top cards of the player's deck are discarded, the target told which
 -- ('WithDiscarded').
@@ -197,10 +250,18 @@ putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing
 returnToHand :: (ReverseQueue m, IsRef a) => a -> m ()
 returnToHand = push . ReturnToHand . toTarget
 
+-- | It leaves play, to where it goes from there (its discard pile, say).
+removeFromPlay :: (ReverseQueue m, IsRef a) => a -> m ()
+removeFromPlay = push . RemoveFromPlay . toTarget
+
 -- | The top cards of the encounter deck are looked at, the target told which
 -- ('SearchFoundCards').
 lookAtTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
 lookAtTopOfEncounterDeck n = push . LookAtTopOfEncounterDeck n . toTarget
+
+-- | The cards go on top of the encounter deck, the first on top.
+putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
+putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
 
 -- * Effects and steps
 
@@ -209,6 +270,10 @@ createEffect def source = push . CreatedEffect def (toSource source)
 
 disableEffect :: (ReverseQueue m) => EffectId -> m ()
 disableEffect eid = push $ EffectMessage eid DisableEffect
+
+-- | The option chosen of the effect's own ('EffectChoice').
+effectChoice :: (ReverseQueue m) => EffectId -> Natural -> m ()
+effectChoice eid = push . EffectMessage eid . EffectChoice
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (ReverseQueue m, IsRef a, ToJSON v) => a -> Text -> v -> m ()
