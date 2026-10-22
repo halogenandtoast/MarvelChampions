@@ -27,8 +27,9 @@ newtype StealthStrike = StealthStrike (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | The attack is followed by a step naming the enemy: should the enemy be defeated
--- meanwhile, the step becomes removing the threat.
+-- | The damage is followed by a step naming the enemy: should the damage defeat the
+-- enemy, the step becomes removing the threat. It comes before the window after the
+-- attack, so a response to the attack that defeats the enemy is not this attack's.
 instance RunMessage StealthStrike where
   runMessage msg e@(StealthStrike attrs) = case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
@@ -40,8 +41,9 @@ instance RunMessage StealthStrike where
       pure e
     CardSpecific (isTarget attrs -> True) "attack" (fromJSON -> Success (enemy :: EnemyId)) -> do
       let you = eventController attrs
-      attack <- choiceMessages you $ DamageEnemy (toRef enemy) (toSource attrs) (toDamage 4 $ FromPlayerAttack you)
-      pushAll $ attack <> [cardSpecific attrs "attacked" enemy]
+      (before, damage, after) <-
+        splitDamage <$> choiceMessages you (DamageEnemy (toRef enemy) (toSource attrs) (toDamage 4 $ FromPlayerAttack you))
+      pushAll $ before <> damage <> [cardSpecific attrs "attacked" enemy] <> after
       pure e
     VillainMessage vid VillainDefeated -> defeated (EnemyVillainId vid)
     MinionMessage mid MinionDefeated -> defeated (EnemyMinionId mid)

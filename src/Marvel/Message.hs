@@ -107,11 +107,15 @@ attackDealtDamage source damage character =
 simultaneousDamage :: [[Message]] -> [Message]
 simultaneousDamage dealt = concat befores <> [Simultaneously (concat damage) | notNull (concat damage)] <> concat afters
  where
-  (befores, damage, afters) = unzip3 $ map split dealt
-  split msgs =
-    let (before, rest) = span isWindow msgs
-        (now, after) = break isWindow rest
-     in (before, now, after)
+  (befores, damage, afters) = unzip3 $ map splitDamage dealt
+
+-- | The messages dealing damage ('DamageEnemy'), split into the windows before it, the
+-- damage, and the windows after it.
+splitDamage :: [Message] -> ([Message], [Message], [Message])
+splitDamage msgs = (before, now, after)
+ where
+  (before, rest) = span isWindow msgs
+  (now, after) = break isWindow rest
   isWindow = \case
     CheckWindows _ -> True
     _ -> False

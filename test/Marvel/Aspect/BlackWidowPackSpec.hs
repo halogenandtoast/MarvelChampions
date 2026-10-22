@@ -62,6 +62,30 @@ spec = describe "Black Widow's aspect and basic cards" do
         minionDamageOf mercenary `shouldReturn` Nothing
         mainSchemeThreatNow `shouldReturn` (threat - 2)
 
+    it "removes no threat when a response to the attack, not the attack, defeats the enemy" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        placeMainThreat 5
+        threat <- mainSchemeThreatNow
+        jarnbjorn <- putIntoPlay p "06019"
+        yonRogg <- addMinion p Minions.yonRogg
+        strike <- putInHand p "08013"
+        [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
+        strength <- putInHand p "01090"
+        playWith strike [a, b, c]
+        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        -- Yon-Rogg's 5 hit points take 4: Jarnbjorn's 2 defeat him
+        choose "Jarnbjorn" (isAbilityOfCard jarnbjorn)
+        choose "pay" (isPayWith strength)
+        whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        pass
+        minionDamageOf yonRogg `shouldReturn` Nothing
+        mainSchemeThreatNow `shouldReturn` threat
+
     it "removes no threat when the enemy survives" do
       tg <- blackWidow
       let p = player1 tg
