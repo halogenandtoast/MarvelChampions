@@ -104,6 +104,18 @@ spec = describe "The Thor pack's aspect and basic cards" do
         pass
         engagedWith other `shouldReturn` [loki]
 
+    it "a stunned hero may play it with no minion to attack, and the stun is removed" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        resolve [IdentityMessage p IdentityStunned]
+        getOver <- putInHand p "06014"
+        choose "play" (isPlay getOver)
+        pass
+        isStunned p `shouldReturn` False
+
   describe "Mean Swing (06015)" do
     it "exhausts a Weapon for +3 ATK on the basic attack" do
       tg <- thor
