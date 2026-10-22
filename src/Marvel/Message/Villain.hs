@@ -18,6 +18,8 @@ data VillainMessage
   | VillainCheckAdditionalBoosts
   | VillainAttackGainOverkill
   | VillainAttacks IdentityId
+  | -- | its attack by the character resolved: retaliate answers it
+    VillainRetaliates CharacterId
   | VillainBeginAttack IdentityId
   | VillainEndAttack
   | VillainAttacked

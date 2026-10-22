@@ -13,6 +13,8 @@ import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Window qualified as W
 
 data Event = forall a. (IsEvent a) => Event a
 
@@ -44,6 +46,8 @@ instance Entity Event where
     { eventId :: EventId
     , eventCardDef :: CardDef
     , eventController :: IdentityId
+    , -- | whom a labeled attack attacked, for the windows after it
+      eventAttacked :: [(IdentityId, EnemyId)]
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -83,6 +87,7 @@ event f cardDef =
             { eventId = aid
             , eventCardDef = cardDef
             , eventController = ident
+            , eventAttacked = []
             }
     }
 
@@ -113,6 +118,18 @@ damageChoice attrs dmg = \case
 instance RunMessage (Attrs Event) where
   runMessage msg e = case msg of
     EventMessage ident msg' | ident == eventId e -> case msg' of
-      ResolvedEvent -> e <$ push (DiscardedCard $ toCard e)
+      -- what answers a labeled attack follows the whole of it
+      ResolvedEvent -> do
+        pushAll $
+          concat [attackResolved attacker enemy | (attacker, enemy) <- eventAttacked e]
+            <> [DiscardedCard $ toCard e]
+        pure e {eventAttacked = []}
+      -- each attack of an event not labeled one, as Dance of Death's, is answered as made
+      EventAttacked attacker enemy
+        | cdAbilitySubType (eventCardDef e) == Just Ability.Attack -> pure e {eventAttacked = eventAttacked e <> [(attacker, enemy)]}
+        | otherwise -> e <$ pushAll (attackResolved attacker enemy)
       _ -> pure e
+     where
+      attackResolved attacker enemy =
+        [enemyRetaliates enemy (IdentityCharacter attacker), CheckWindows [W.Window W.After $ W.IdentityAttack attacker enemy]]
     _ -> pure e

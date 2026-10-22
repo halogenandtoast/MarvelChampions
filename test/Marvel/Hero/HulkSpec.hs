@@ -206,6 +206,28 @@ spec = describe "Hulk" do
         minionDamageOf mercenary `shouldReturn` Nothing
         villainDamageNow `shouldReturn` 3
 
+    it "deals its damage to all of them at once, before any is defeated" do
+      tg <- hulk
+      let p = player1 tg
+      inGame tg do
+        [clap, strength, genius] <- asHulk p ["10005", "01090", "01089"]
+        putIntoPlay p "01063"
+        first <- addMinion p Minions.hydraMercenary
+        second <- addMinion p Minions.hydraMercenary
+        pass
+        playWith clap [strength, genius]
+        choose "the first mercenary" (isTargetChoice first)
+        choose "the second mercenary" (isTargetChoice second)
+        vid <- villainIdNow
+        choose "Rhino" (isTargetChoice vid)
+        -- Interrogation Room answers the first defeat: the second mercenary has taken
+        -- its damage already
+        [room] <- supportsWith "01063"
+        offers (isAbilityOf (supportId room)) `shouldReturn` True
+        minionDamageOf first `shouldReturn` Nothing
+        minionDamageOf second `shouldReturn` Just 3
+        villainDamageNow `shouldReturn` 3
+
     it "may stop at fewer" do
       tg <- hulk
       let p = player1 tg

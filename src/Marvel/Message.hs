@@ -26,7 +26,7 @@ import Marvel.ActiveCost.Types
 import Marvel.Card.Types
 import Marvel.Game.Source
 import Marvel.Attack (sourceEnemy)
-import Marvel.Damage (Damage (..), DamageSource (FromAttack))
+import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromRetaliate), toDamage)
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -111,6 +111,49 @@ attackDealtDamage source damage character =
   , damageAmount damage > 0
   , Just enemy <- [sourceEnemy source]
   ]
+
+-- | Damage dealt to each of several targets as one effect, each given as the messages
+-- dealing it ('DamageEnemy'): the interrupts to all of it, then all of the damage at
+-- once, then what answers it.
+simultaneousDamage :: [[Message]] -> [Message]
+simultaneousDamage dealt = concat befores <> [Simultaneously (concat damage) | notNull (concat damage)] <> concat afters
+ where
+  (befores, damage, afters) = unzip3 $ map splitDamage dealt
+
+-- | The messages dealing damage ('DamageEnemy'), split into the windows before it, the
+-- damage, and what answers it.
+splitDamage :: [Message] -> ([Message], [Message], [Message])
+splitDamage msgs = (before, now, after)
+ where
+  (before, rest) = span isWindow msgs
+  (now, after) = splitAt 1 rest
+  isWindow = \case
+    CheckWindows _ -> True
+    _ -> False
+
+-- | The attack by the character on the enemy is resolved: the enemy's retaliate, if it is
+-- still in play, then the window after the attack.
+enemyRetaliates :: EnemyId -> CharacterId -> Message
+enemyRetaliates enemy attacker = case enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainRetaliates attacker)
+  EnemyMinionId mid -> MinionMessage mid (MinionRetaliates attacker)
+
+-- | Retaliate's damage to the character attacking: an identity takes it as damage from
+-- anything but an attack does.
+retaliateDamage :: Source -> CharacterId -> Natural -> [Message]
+retaliateDamage source attacker n = case attacker of
+  IdentityCharacter ident -> damageIdentity ident source (toDamage n FromRetaliate)
+  AllyCharacter aid -> [AllyMessage aid (AllyDamaged source (toDamage n FromRetaliate))]
+  _ -> []
+
+-- | The messages a 'Simultaneously' holds, for the queue to look inside it.
+simultaneousMessages :: Message -> Maybe [Message]
+simultaneousMessages = \case
+  Simultaneously msgs -> Just msgs
+  _ -> Nothing
+
+simultaneously :: [Message] -> Message
+simultaneously = Simultaneously
 
 -- | "If this attack deals damage to a character", as a boost ability that lasts the
 -- activation sees it: the attacking enemy and the character, as the attack's damage is
@@ -271,5 +314,8 @@ data Message
     -- card it does not have, or has one taken off it
     GiveStatus Target StatusCard
   | RemoveStatus Target StatusCard
+  | -- | one effect on several game elements at once, as damage dealt to each of several
+    -- enemies: each message is run before anything any of them leads to
+    Simultaneously [Message]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

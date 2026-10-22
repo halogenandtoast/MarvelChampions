@@ -345,7 +345,7 @@ makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action []
 counterPunch :: CardDef
 counterPunch =
   (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
-    { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
+    { cdResponseWindow = Just (HeroDefended After You AttackableEnemy)
     , cdAbilitySubType = Just Ability.Attack
     }
 

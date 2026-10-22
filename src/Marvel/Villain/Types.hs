@@ -283,23 +283,12 @@ runVillainMessage msg attrs = case msg of
             . min (unHp $ villainMaxHp attrs)
             . (+ fromIntegral n)
             . unHp
-  VillainDamaged _ damage -> do
-    -- retaliate answers the attack whether or not a tough status card takes it
+  -- retaliate answers the attack whether or not a tough status card took its damage
+  VillainRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    for_ keywords $ \case
-      Retaliate n -> case damageSource damage of
-        FromPlayerAttack ident ->
-          push $
-            IdentityMessage
-              ident
-              (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
-        FromAllyAttack ident ->
-          push $
-            AllyMessage
-              ident
-              (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
-        _ -> pure ()
-      _ -> pure ()
+    pushAll $ concat [retaliateDamage (toSource attrs) attacker n | Retaliate n <- toList keywords]
+    pure attrs
+  VillainDamaged _ damage -> do
     if villainTough attrs && not (damageIgnoresTough damage)
       then pure $ attrs & toughL .~ False
       else do

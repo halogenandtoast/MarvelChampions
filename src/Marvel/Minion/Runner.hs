@@ -45,30 +45,11 @@ runMinionMessage msg attrs = case msg of
   MinionDamaged source damage -> do
     hitPoints <- getModifiedHitPoints attrs
     cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
-    keywords <- getModifiedKeywords attrs
-    let
-      retaliate = for_ keywords $ \case
-          Retaliate n -> case damageSource damage of
-            FromPlayerAttack ident ->
-              push $
-                IdentityMessage
-                  ident
-                  (IdentityDamaged (toSource attrs) (toDamage n FromRetaliate))
-            FromAllyAttack ident ->
-              push $
-                AllyMessage
-                  ident
-                  (AllyDamaged (toSource attrs) (toDamage n FromRetaliate))
-            _ -> pure ()
-          _ -> pure ()
     if
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
       | cannotTakeDamage -> pure attrs
-      -- retaliate answers the attack whether or not a tough status card takes it
-      | minionTough attrs && not (damageIgnoresTough damage) -> do
-        retaliate
-        pure $ attrs & toughL .~ False
+      | minionTough attrs && not (damageIgnoresTough damage) -> pure $ attrs & toughL .~ False
       | otherwise -> do
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
@@ -87,8 +68,13 @@ runMinionMessage msg attrs = case msg of
               , CheckWindows
                   [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
               ]
-          else retaliate
+          else pure ()
         pure $ attrs & damageL +~ damageAmount damage
+  -- retaliate answers the attack whether or not a tough status card took its damage
+  MinionRetaliates attacker -> do
+    keywords <- getModifiedKeywords attrs
+    pushAll $ concat [retaliateDamage (toSource attrs) attacker n | Retaliate n <- toList keywords]
+    pure attrs
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
   MinionBecomeTough -> pure $ attrs & toughL .~ True

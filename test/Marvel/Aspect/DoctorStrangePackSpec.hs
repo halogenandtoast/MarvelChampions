@@ -82,6 +82,37 @@ spec = describe "Doctor Strange pack" do
       (.allyCounters) <$> allyIn "09014" `shouldReturn` 1
       V.villainStunned . toAttrs <$> getVillain `shouldReturn` True
 
+  it "Iron Fist takes no consequential damage when his interrupt defeats the enemy he attacks" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      _ <- putIntoPlay p "09014"
+      mercenary <- addMinion p Minions.hydraMercenary
+      runNow [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 2 FromAbility))]
+      fist <- allyIn "09014"
+      choose "attack" (isAllyAttack fist)
+      choose "Hydra Mercenary" (isTargetChoice mercenary)
+      choose "Iron Fist" (isAbilityOf (allyId fist))
+      resolve []
+      minionDamageOf mercenary `shouldReturn` Nothing
+      fist' <- allyIn "09014"
+      fist'.allyDamage `shouldBe` 0
+      fist'.allyExhausted `shouldBe` True
+
+  it "Iron Fist takes consequential damage when the enemy survives his interrupt" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      _ <- putIntoPlay p "09014"
+      fist <- allyIn "09014"
+      choose "attack" (isAllyAttack fist)
+      choose "Rhino" isVillainChoice
+      choose "Iron Fist" (isAbilityOf (allyId fist))
+      resolve []
+      (.allyDamage) <$> allyIn "09014" `shouldReturn` 1
+
   it "Desperate Defense gives +2 DEF for the attack, and readies the hero who takes no damage" do
     tg <- doctorStrange
     let p = player1 tg

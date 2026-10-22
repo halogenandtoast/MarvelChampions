@@ -63,6 +63,9 @@ narrationFor = \case
   UsedAbility ident a | narrates a.abilityType -> Just $ whenRef (refocus a.abilitySource) \source -> do
     who <- playerRef' ident
     one $ action [ikeyPart "log.usesAbility" ["player" ~> who, "card" ~> source]]
+  Simultaneously msgs -> case mapMaybe narrationFor msgs of
+    [] -> Nothing
+    told -> Just $ concat <$> sequence told
   -- * Enemies
   VillainMessage vid msg -> villainNarration vid msg
   MinionMessage mid msg -> minionNarration mid msg

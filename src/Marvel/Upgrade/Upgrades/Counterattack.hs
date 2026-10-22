@@ -37,24 +37,22 @@ instance HasAbilities Counterattack where
         limitedWindowAbility
           a
           1
-          (TookDamage (IdentityWithId $ upgradeController attrs) FromAttack)
+          (TookDamage you FromAttack (AttackableBy you))
           HeroResponse
           OwnsThis
           (DiscardCost $ toTarget a)
           (runAbility a 1)
     ]
+   where
+    you = IdentityWithId $ upgradeController attrs
 
 -- | The enemy that attacked takes as much damage, as an attack: guard keeps the villain
--- from it.
+-- from it, so it is not offered then.
 instance RunMessage Counterattack where
   runMessage msg u@(Counterattack attrs) = case msg of
     RanAbility ident (isTarget attrs -> True) 1 [IdentityTookDamage _ source dmg] _ ->
       attackGuard ident u do
-        guarded <- selectAny (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId ident))
-        let damage = toDamage (damageAmount dmg) (FromPlayerAttack ident)
-        case source of
-          MinionRef _ -> pushChoice ident $ DamageEnemy (refocus source) (toSource attrs) damage
-          VillainRef _ | not guarded -> pushChoice ident $ DamageEnemy (refocus source) (toSource attrs) damage
-          _ -> pure ()
+        pushChoice ident $
+          DamageEnemy (refocus source) (toSource attrs) (toDamage (damageAmount dmg) (FromPlayerAttack ident))
         pure u
     _ -> Counterattack <$> runMessage msg attrs

@@ -12,6 +12,9 @@ data AllyMessage
   = ExhaustedAlly
   | ReadiedAlly
   | AllyAttacked
+  | -- | the interrupts to the attack resolved: the damage lands, if the enemy is still
+    -- in play to take it
+    AllyAttackLands EnemyId Damage
   | AllyThwarted
   | AllyWasAttacked Attack
   | AllyDamaged Source Damage

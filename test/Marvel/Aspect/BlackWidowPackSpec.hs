@@ -62,6 +62,30 @@ spec = describe "Black Widow's aspect and basic cards" do
         minionDamageOf mercenary `shouldReturn` Nothing
         mainSchemeThreatNow `shouldReturn` (threat - 2)
 
+    it "removes no threat when a response to the attack, not the attack, defeats the enemy" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        placeMainThreat 5
+        threat <- mainSchemeThreatNow
+        jarnbjorn <- putIntoPlay p "06019"
+        yonRogg <- addMinion p Minions.yonRogg
+        strike <- putInHand p "08013"
+        [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
+        strength <- putInHand p "01090"
+        playWith strike [a, b, c]
+        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        -- Yon-Rogg's 5 hit points take 4: Jarnbjorn's 2 defeat him
+        choose "Jarnbjorn" (isAbilityOfCard jarnbjorn)
+        choose "pay" (isPayWith strength)
+        whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        pass
+        minionDamageOf yonRogg `shouldReturn` Nothing
+        mainSchemeThreatNow `shouldReturn` threat
+
     it "removes no threat when the enemy survives" do
       tg <- blackWidow
       let p = player1 tg
@@ -179,6 +203,22 @@ spec = describe "Black Widow's aspect and basic cards" do
         damageOf p `shouldReturn` 4
         villainDamageNow `shouldReturn` 4
 
+    it "cannot attack the villain while a guard minion is engaged with you" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        counter <- putIntoPlay p "08030"
+        _ <- addMinion p Minions.hydraMercenary
+        _ <- stackEncounterDeck [Treacheries.theVulturesPlans]
+        vid <- villainIdNow
+        start [VillainMessage vid (VillainAttacks p)]
+        choose "no defender" isNoDefender
+        damageOf p >>= (`shouldSatisfy` (> 0))
+        offers (isAbilityOfCard counter) `shouldReturn` False
+        villainDamageNow `shouldReturn` 0
+
   describe "Rapid Response (08031)" do
     it "puts a defeated ally back into play with 1 damage" do
       tg <- blackWidow
@@ -209,6 +249,20 @@ spec = describe "Black Widow's aspect and basic cards" do
         pass
         damageOf p `shouldReturn` 1
         upgradeCodes `shouldReturn` []
+
+    it "prevents retaliate's damage, which is not an attack's" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        stance <- putIntoPlay p "08032"
+        whiplash <- addMinion p Minions.whiplash
+        choose "attack" (isHeroAttack p)
+        chooseIf (isTargetChoice whiplash)
+        choose "use Defensive Stance" (isAbilityOfCard stance)
+        pass
+        damageOf p `shouldReturn` 0
 
   describe "Espionage (08033)" do
     it "draws 2 cards when a surge would resolve" do

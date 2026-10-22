@@ -14,6 +14,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Modifier
+import Marvel.Matchers
 import Marvel.Message
 import Marvel.Question
 import Marvel.Trait
@@ -22,7 +23,7 @@ import Marvel.Queue
 
 instance HasAbilities AlterEgo where
   getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
-    where basicAbilities = [ability a 200 Basic NoCriteria ExhaustCost Recover]
+    where basicAbilities = [ability a 200 Basic (SelfMatches IdentityWithAnyDamage) ExhaustCost Recover]
 
 instance HasTraits AlterEgo where
   getTraits = pure . cdTraits . getCardDef

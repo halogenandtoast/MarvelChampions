@@ -93,7 +93,7 @@ instance RunMessage (Attrs Hero) where
                 ]
           pure a
         BasicAttack bonus -> do
-          enemies <- selectList AttackableEnemy
+          enemies <- selectList $ AttackableBy (IdentityWithId ident)
           dmg <- (+ bonus) <$> getModifiedAttack a
           -- an attack that gains overkill: the hero has it as a keyword while it is made
           overkill <- elem (KeywordModifier Overkill) <$> getModifiers a

@@ -34,16 +34,10 @@ instance HasAbilities PantherClaws where
 
 instance RunMessage PantherClaws where
   runMessage msg u@(PantherClaws attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      stunned <- selectAny $ IdentityWithId ident <> StunnedIdentity
-      if stunned
-        then push (IdentityMessage ident IdentityRemoveStunned)
-        else do
-          modifiers <- getModifiers attrs
-          let dmg = if LastSpecial `elem` modifiers then 4 else 2
-          msgs <-
-            choiceMessages (upgradeController attrs) $
-              ChooseDamage (toRef attrs) (toDamage dmg $ FromPlayerAttack ident) (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
-          pushAll msgs
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
+      modifiers <- getModifiers attrs
+      let dmg = if LastSpecial `elem` modifiers then 4 else 2
+      pushChoice ident $
+        ChooseDamage (toRef attrs) (toDamage dmg $ FromPlayerAttack ident) (AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger))
       pure u
     _ -> PantherClaws <$> runMessage msg attrs

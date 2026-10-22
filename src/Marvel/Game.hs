@@ -1083,6 +1083,8 @@ instance RunMessage Entities where
       >>= traverseOf (environmentsL . each) (runMessage msg)
 
 instance RunMessage Game where
+  -- the last first, so what the first leads to is queued first
+  runMessage (Simultaneously msgs) g = foldlM (flip runMessage) g (reverse msgs)
   runMessage msg g =
     runPreGameMessage msg g
       >>= traverseOf scenarioL (runMessage msg)
@@ -1768,7 +1770,7 @@ gameSelectEnemy m = do
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
     -- guard keeps the player it is engaged with from attacking the villain
-    AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith You)
+    AttackableBy attacker -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)
@@ -1788,7 +1790,7 @@ gameSelectEnemy m = do
     VillainEnemy -> pure False
     MinionEnemy -> pure True
     DamageableEnemy -> pure True
-    AttackableEnemy -> pure True
+    AttackableBy _ -> pure True
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)

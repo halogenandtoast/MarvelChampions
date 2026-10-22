@@ -36,29 +36,25 @@ instance HasAbilities VibraniumSuit where
 
 instance RunMessage VibraniumSuit where
   runMessage msg u@(VibraniumSuit attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      stunned <- selectAny $ IdentityWithId ident <> StunnedIdentity
-      if stunned
-        then push $ IdentityMessage ident IdentityRemoveStunned
-        else do
-          modifiers <- getModifiers attrs
-          sustainedDamage <-
-            selectCount
-              SustainedDamage
-              (IdentityWithId $ upgradeController attrs)
-          let
-            dmg =
-              min sustainedDamage $
-                if LastSpecial `elem` modifiers then 2 else 1
-          damageMsgs <-
-            choiceMessages (upgradeController attrs) $
-              ChooseDamage
-                (toRef attrs)
-                (toDamage dmg $ FromPlayerAttack ident)
-                (AttackableEnemy <> NotEnemy (EnemyIs Cards.killmonger))
-          healMsgs <-
-            choiceMessages (upgradeController attrs) $
-              Heal (IdentityCharacter $ upgradeController attrs) dmg
-          pushAll $ damageMsgs <> healMsgs
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
+      modifiers <- getModifiers attrs
+      sustainedDamage <-
+        selectCount
+          SustainedDamage
+          (IdentityWithId $ upgradeController attrs)
+      let
+        dmg =
+          min sustainedDamage $
+            if LastSpecial `elem` modifiers then 2 else 1
+      damageMsgs <-
+        choiceMessages (upgradeController attrs) $
+          ChooseDamage
+            (toRef attrs)
+            (toDamage dmg $ FromPlayerAttack ident)
+            (AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger))
+      healMsgs <-
+        choiceMessages (upgradeController attrs) $
+          Heal (IdentityCharacter $ upgradeController attrs) dmg
+      pushAll $ damageMsgs <> healMsgs
       pure u
     _ -> VibraniumSuit <$> runMessage msg attrs
