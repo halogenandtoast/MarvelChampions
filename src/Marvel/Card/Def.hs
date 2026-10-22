@@ -150,5 +150,8 @@ sameCard a b = canonicalCardCode a == canonicalCardCode b
 class HasCardDef a where
   getCardDef :: a -> CardDef
 
+instance HasCardDef CardDef where
+  getCardDef = id
+
 toAdditionalCriteria :: CardDef -> Criteria
 toAdditionalCriteria = maybe NoCriteria abilityTypeCriteria . cdAbilityType

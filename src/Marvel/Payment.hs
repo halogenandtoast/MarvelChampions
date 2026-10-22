@@ -24,6 +24,7 @@ paymentResources
   => Payment
   -> m [Resource]
 paymentResources (ResourcePayment r) = pure [r]
+paymentResources (ResourcePaymentFor _ r) = pure [r]
 paymentResources (ResourcePaymentFromCard matcher) = do
   cards <- selectList matcher
   case cards of

@@ -389,23 +389,21 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToVillain upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
+  -- turned faceup one at a time: each card's boost icons, then its boost ability
   VillainFlipBoostCards -> do
     let
-      boost =
-        foldr
-          ((+) . boostCount . cdBoostIcons . ecCardDef)
-          0
-          (villainBoostCards attrs)
+      enemy = toEnemyId attrs
+      flipCard card =
+        [ CheckWindows [W.Window W.When $ W.BoostCardFlipped enemy card]
+        , VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+        , RevealBoostCard card enemy
+        ]
     pushAll $
-      map
-        (`RevealBoostCard` EnemyVillainId (villainId attrs))
-        (villainBoostCards attrs)
+      concatMap flipCard (villainBoostCards attrs)
         <> [VillainMessage (villainId attrs) VillainCheckAdditionalBoosts]
-    pure $
-      attrs
-        & (boostCardsL .~ mempty)
-        & (boostL .~ boost)
-        & (attackingL . _Just . attackDamageL +~ boost)
+    pure $ attrs & boostCardsL .~ mempty
+  VillainAddBoost n ->
+    pure $ attrs & (boostL +~ n) & (attackingL . _Just . attackDamageL +~ n)
   VillainCheckAdditionalBoosts -> do
     unless
       (null $ villainBoostCards attrs)

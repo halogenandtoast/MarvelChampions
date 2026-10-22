@@ -332,7 +332,7 @@ checkPlayLimits ident c = case cdLimit def of
 
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
-  modifiers <- getModifiers attrs
+  modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
  where
   modifiedCost ms cost' = foldr applyModifier cost' ms
@@ -819,11 +819,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
-    IdentityDamaged _ damage -> do
+    IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
-      when
-        (playerIdentityDamage + damageAmount damage >= modifiedHp)
-        (push $ IdentityMessage playerIdentityId IdentityDefeated)
+      if playerIdentityDamage + damageAmount damage >= modifiedHp
+        then push $ IdentityMessage playerIdentityId IdentityDefeated
+        else
+          pushWhen (damageAmount damage > 0) $
+            CheckWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
       pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
     IdentityDefeated -> do
       players <- getPlayers

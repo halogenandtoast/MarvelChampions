@@ -5,6 +5,8 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
+import Marvel.Card.Def
+import Marvel.Card.PlayerCard.Types
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -164,4 +166,38 @@ windowMatches matcher w source = case matcher of
     EncounterCardRevealed _ encounterCard
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
+    _ -> pure False
+  EncounterCardRevealedBy timing identityMatcher encounterCardMatcher -> case windowType w of
+    EncounterCardRevealed ident encounterCard
+      | windowTiming w == timing && encounterCardMatches encounterCardMatcher encounterCard ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  PlaysCard timing identityMatcher cardMatcher -> case windowType w of
+    CardPlayed ident card
+      | windowTiming w == timing && cardMatch cardMatcher card ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  ResolvesAbility timing identityMatcher cardMatcher -> case windowType w of
+    ResolvedAbility ident def
+      | windowTiming w == timing && cardMatch cardMatcher def ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  MinionHasSchemed timing minionMatcher -> case windowType w of
+    SchemedByMinion minionId
+      | windowTiming w == timing -> minionMatches minionMatcher minionId
+    _ -> pure False
+  BoostCardTurnedFaceup timing encounterCardMatcher -> case windowType w of
+    BoostCardFlipped _ card ->
+      pure $ windowTiming w == timing && encounterCardMatches encounterCardMatcher card
+    _ -> pure False
+  TookDamage identityMatcher damageSource' -> case windowType w of
+    IdentityTookDamage ident _ damage
+      | windowTiming w == After && damageSource damage == damageSource' ->
+          identityMatches identityMatcher ident
+    _ -> pure False
+  AllyWasDefeated timing identityMatcher -> case windowType w of
+    DefeatedAlly ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
+  SurgeWouldResolve -> case windowType w of
+    SurgeResolves _ -> pure $ windowTiming w == Would
     _ -> pure False

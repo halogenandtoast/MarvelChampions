@@ -11,6 +11,9 @@ data Payment
   = Payments [Payment]
   | ResourcePayment Resource
   | ResourcePaymentFromCard ExtendedCardMatcher
+  | -- | a resource that pays only for a card matching ("generate a [wild] resource for
+    -- a Preparation card")
+    ResourcePaymentFor CardMatcher Resource
   | DiscardHandCardPayment Card
   | DamagePayment Natural
   | HealPayment Natural

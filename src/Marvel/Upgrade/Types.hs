@@ -190,6 +190,34 @@ thwartGuard u f = do
       pure u
     else f
 
+-- | An attack: a stunned player only removes the stun (the cost is still paid).
+attackGuard ::
+  (HasGame m, HasQueue m, IsUpgrade u) =>
+  IdentityId ->
+  u ->
+  m u ->
+  m u
+attackGuard ident u f = do
+  stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
+  if stunned
+    then do
+      push (IdentityMessage ident IdentityRemoveStunned)
+      pure u
+    else f
+
+-- | Prevent this much of the damage the player is about to take.
+preventDamage :: (HasQueue m) => IdentityId -> Natural -> m ()
+preventDamage ident n = replaceMatchingMessage reduce \case
+  IdentityMessage ident' (IdentityDamaged _ _) -> ident' == ident
+  _ -> False
+ where
+  reduce = \case
+    IdentityMessage _ (IdentityDamaged source dmg) ->
+      [ IdentityMessage ident $ IdentityDamaged source dmg {damageAmount = damageAmount dmg - n}
+      | damageAmount dmg > n
+      ]
+    other -> [other]
+
 thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid ->
@@ -261,7 +289,8 @@ instance RunMessage (Attrs Upgrade) where
       UpgradeAttachedToAlly allyId -> do
         push (AllyMessage allyId $ AttachedUpgradeToAlly (upgradeId a))
         pure $ a & attachedAllyL ?~ allyId
+      -- leaving play discards it
       DiscardUpgrade -> do
-        pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
+        push $ RemoveFromPlay (toTarget a)
         pure a
     _ -> pure a

@@ -31,5 +31,7 @@ data VillainMessage
   | VillainAdvanced
   | -- | its hit points (and remaining hit points) go up or down by this much
     VillainHitPointsChanged Int
+  | -- | boost for this activation, added to its ATK or SCH
+    VillainAddBoost Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
