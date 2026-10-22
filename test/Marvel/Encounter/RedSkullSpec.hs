@@ -25,8 +25,9 @@ spec = describe "Red Skull" do
     inGame tg do
       _ <- redHouse
       Pile deck discard <- getPile SideSchemeDeckKey
+      -- with the recommended Hydra Patrol set's side scheme too
       liftIO $ sort (map (unCardCode . toCardCode . getCardDef) deck)
-        `shouldBe` sort (map (unCardCode . toCardCode) [Cards.theSleeperAwakened, Cards.prisonCamps, Cards.censorThePast, Cards.hydraReinforcements, Cards.massChaos])
+        `shouldBe` sort (map (unCardCode . toCardCode) [Cards.theSleeperAwakened, Cards.prisonCamps, Cards.censorThePast, Cards.hydraReinforcements, Cards.massChaos, Cards.hydraPatrol])
       liftIO $ discard `shouldBe` []
       encounter <- scenarioEncounterDeckNow
       liftIO $ filter ((== SideSchemeType) . cdCardType . getCardDef) encounter `shouldBe` []
