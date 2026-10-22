@@ -83,6 +83,17 @@ spec = describe "Thor" do
         choose "ready Thor" (isAbilityOfCard sif)
         exhaustedNow p `shouldReturn` False
 
+    it "readies Odinson too" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        resolve [IdentityMessage p ExhaustedIdentity]
+        sif <- putInHand p "06002"
+        playPaying p sif ["01088", "01089", "01090"]
+        choose "ready Odinson" (isAbilityOfCard sif)
+        exhaustedNow p `shouldReturn` False
+
   describe "Defender of the Nine Realms (06003)" do
     it "puts the first minion of the encounter deck into play engaged with him, then removes 3 threat" do
       tg <- thor
@@ -101,6 +112,23 @@ spec = describe "Thor" do
         engaged <- (.playerIdentityMinions) <$> playerAttrs p
         toList engaged `shouldBe` [minionOf mercenary]
         map toCardCode <$> encounterDiscardNow >>= (`shouldSatisfy` elem (toCardCode Treacheries.advance))
+
+    it "with no minion in the encounter deck, discards it all and still removes 3 threat (RR, Discard)" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        placeMainThreat 5
+        before <- mainSchemeThreat
+        _ <- setEncounterDeck [Treacheries.advance, Treacheries.advance] []
+        defender <- putInHand p "06003"
+        choose "play" (isPlay defender)
+        pass
+        mainSchemeThreat `shouldReturn` (before - 3)
+        (.playerIdentityMinions) <$> playerAttrs p `shouldReturn` mempty
+        -- the emptied deck is made again, and not discarded from
+        encounterDeckSize `shouldReturn` 2
 
   describe "For Asgard! (06004)" do
     it "is an alter-ego action that finds an Asgard card in the deck or discard pile" do

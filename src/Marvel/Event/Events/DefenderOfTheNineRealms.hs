@@ -24,9 +24,9 @@ newtype DefenderOfTheNineRealms = DefenderOfTheNineRealms (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | Discarding until a minion and putting it into play engaged with you is the cost:
--- with no minion found, no threat is removed. The minion is put into play, not revealed.
--- | Discarding until a minion and putting it into play engaged with you is its cost.
+-- | Discarding until a minion and putting it into play engaged with you is the cost.
+-- The minion is put into play, not revealed. A deck emptied with no minion found is a
+-- cost fulfilled (RR, Discard): the threat is still removed.
 instance RunMessage DefenderOfTheNineRealms where
   runMessage msg e@(DefenderOfTheNineRealms attrs) = case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
