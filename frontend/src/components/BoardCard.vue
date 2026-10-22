@@ -7,6 +7,7 @@ import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
 import CardFace from './CardFace.vue'
+import GameIcon from '../browser/components/GameIcon.vue'
 import ChoiceMenu from './ChoiceMenu.vue'
 import StatusTokens from './StatusTokens.vue'
 import TokenStack from './TokenStack.vue'
@@ -39,10 +40,12 @@ const props = withDefaults(
     attached?: Attached[]
     /** a label shown on its top edge, as for a crisis */
     flag?: string | null
+    /** a game icon drawn before the flag's label */
+    flagIcon?: string | null
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
   }>(),
-  { morph: true, id: null, code: null, name: '', back: null, damage: 0, hitPoints: null, threat: null, counters: null, attached: () => [], flag: null },
+  { morph: true, id: null, code: null, name: '', back: null, damage: 0, hitPoints: null, threat: null, counters: null, attached: () => [], flag: null, flagIcon: null },
 )
 
 const cards = useCards()
@@ -116,7 +119,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       @click="click"
     >
       <CardFace :code="code" :back="back" :name="name" />
-      <span v-if="flag" class="flag">{{ flag }}</span>
+      <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
@@ -186,8 +189,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card :deep(.card-face) { border-radius: inherit; }
 .card.exhausted { transform: rotate(90deg) scale(0.9); }
 .card.exhausted :deep(.card-face) { filter: brightness(0.82); }
-.card.source { z-index: 3; transform: translateY(-6px) scale(1.06); box-shadow: 0 0 0 2px var(--target), 0 0 22px rgb(255 181 71 / 0.55), 0 12px 24px rgb(0 0 0 / 0.5); }
-.card.source.exhausted { transform: rotate(90deg) scale(0.96); }
+/* lit, not lifted: a lifted card would spill out of its zone's padding */
+.card.source { z-index: 3; box-shadow: 0 0 0 2px var(--target), 0 0 22px rgb(255 181 71 / 0.55), 0 12px 24px rgb(0 0 0 / 0.5); }
 .card.source.active { box-shadow: 0 0 0 2px var(--target), 0 0 0 5px var(--interactive), 0 0 22px var(--interactive-glow); }
 .card.active { cursor: pointer; box-shadow: 0 0 0 2px var(--interactive), 0 0 16px var(--interactive-glow); }
 .card.active:hover { box-shadow: 0 0 0 3px var(--interactive), 0 0 24px var(--interactive-glow); }
