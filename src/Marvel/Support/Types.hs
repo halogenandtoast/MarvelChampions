@@ -50,6 +50,8 @@ instance Entity Support where
     , supportExhausted :: Bool
     , supportUses :: Natural
     , supportDiscardIfNoUses :: Bool
+    , supportThreat :: Natural
+    -- ^ threat moved here, as Beat Cop's
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -144,6 +146,7 @@ support f cardDef =
             , supportExhausted = False
             , supportUses = 0
             , supportDiscardIfNoUses = False
+            , supportThreat = 0
             }
     }
 

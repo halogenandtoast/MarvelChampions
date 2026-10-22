@@ -119,6 +119,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :name="card.name"
           :exhausted="card.exhausted"
           :counters="card.uses ?? null"
+          :threat="card.threat || null"
         />
       </div>
     </div>

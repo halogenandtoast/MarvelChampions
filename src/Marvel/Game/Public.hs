@@ -150,7 +150,7 @@ data AllyView = AllyView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural}
+data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, threat :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -389,7 +389,7 @@ gameView seesHand g = do
         }
   supportView (s :: Support) =
     let a = toAttrs s
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses a.supportThreat
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
      in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController
