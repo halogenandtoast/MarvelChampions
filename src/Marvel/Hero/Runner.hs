@@ -58,28 +58,8 @@ getModifiedDefense attrs = do
 
 damageChoice :: Attrs Hero -> Damage -> EnemyId -> Choice
 damageChoice attrs dmg = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [ DamageEnemy (toRef vid) (toSource attrs) dmg
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.IdentityAttack (heroIdentityId attrs) (EnemyVillainId vid)
-              ]
-          ]
-      ]
-  EnemyMinionId mid ->
-    TargetLabel
-      (toRef mid)
-      [ DamageEnemy (toRef mid) (toSource attrs) dmg
-      , Run
-          [ CheckWindows
-              [ W.Window W.After $
-                  W.IdentityAttack (heroIdentityId attrs) (EnemyMinionId mid)
-              ]
-          ]
-      ]
+  EnemyVillainId vid -> TargetLabel (toRef vid) [DamageEnemy (toRef vid) (toSource attrs) dmg]
+  EnemyMinionId mid -> TargetLabel (toRef mid) [DamageEnemy (toRef mid) (toSource attrs) dmg]
 
 thwartChoice :: Attrs Hero -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
@@ -99,22 +79,21 @@ instance RunMessage (Attrs Hero) where
   runMessage msg a = case msg of
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
+        -- the interrupts to making a basic attack or thwart come first: what they add to
+        -- the power is added to the attack or thwart waiting for them
         Attacked -> do
           stunned <- identityMatches StunnedIdentity (heroIdentityId a)
-          if not stunned
-            then do
-              -- what answers the hero making a basic attack comes before its damage
-              pushAll
+          pushAll $
+            if stunned
+              then [IdentityMessage ident IdentityRemoveStunned]
+              else
                 [ CheckWindows [W.Window W.When $ W.MadeBasicAttack ident]
-                , IdentityMessage ident $ SideMessage BasicAttack
+                , IdentityMessage ident $ SideMessage $ BasicAttack 0
                 ]
-              pure a
-            else do
-              push $ IdentityMessage (heroIdentityId a) IdentityRemoveStunned
-              pure a
-        BasicAttack -> do
+          pure a
+        BasicAttack bonus -> do
           enemies <- selectList AttackableEnemy
-          dmg <- getModifiedAttack a
+          dmg <- (+ bonus) <$> getModifiedAttack a
           pushAll
             [ Ask ident $
                 prompted "$label.chooseEnemyToAttack" $
@@ -127,17 +106,19 @@ instance RunMessage (Attrs Hero) where
           pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
-          if not confused
-            then do
-              schemes <- selectList ThwartableScheme
-              thw <- getModifiedThwart a
-              push $ Ask ident $ prompted "$label.chooseSchemeToThwart" $ ChooseOne $ map (thwartChoice a thw) schemes
-              pure a
-            else do
-              push $ IdentityMessage (heroIdentityId a) IdentityRemoveConfused
-              pure a
-        -- the hero exhausts to defend, and what answers their defending comes before
-        -- their defense is counted
+          pushAll $
+            if confused
+              then [IdentityMessage ident IdentityRemoveConfused]
+              else
+                [ CheckWindows [W.Window W.When $ W.MadeBasicThwart ident]
+                , IdentityMessage ident $ SideMessage $ BasicThwart 0
+                ]
+          pure a
+        BasicThwart bonus -> do
+          schemes <- selectList ThwartableScheme
+          thw <- (+ bonus) <$> getModifiedThwart a
+          push $ Ask ident $ prompted "$label.chooseSchemeToThwart" $ ChooseOne $ map (thwartChoice a thw) schemes
+          pure a
         Defended enemyId -> do
           pushAll
             [ IdentityMessage ident ExhaustedIdentity

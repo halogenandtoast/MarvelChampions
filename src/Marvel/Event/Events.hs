@@ -48,6 +48,15 @@ import Marvel.Event.Events.MoraleBoost as X
 import Marvel.Event.Events.CovertOps as X
 import Marvel.Event.Events.DanceOfDeath as X
 import Marvel.Event.Events.StealthStrike as X
+import Marvel.Event.Events.DefenderOfTheNineRealms as X
+import Marvel.Event.Events.ForAsgard as X
+import Marvel.Event.Events.HammerThrow as X
+import Marvel.Event.Events.LightningStrike as X
+import Marvel.Event.Events.GetOverHere as X
+import Marvel.Event.Events.MeanSwing as X
+import Marvel.Event.Events.Invulnerability as X
+import Marvel.Event.Events.Teamwork as X
+import Marvel.Event.Events.SecondWind as X
 import Marvel.Event.Events.MasterOfTheMysticArts as X
 import Marvel.Event.Events.CrimsonBandsOfCyttorak as X
 import Marvel.Event.Events.ImagesOfIkonn as X

@@ -70,6 +70,9 @@ data WindowMatcher
   | -- | an ally a player matching controls is defeated
     AllyWasDefeated WindowTiming IdentityMatcher
   | SurgeWouldResolve
+  | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
+  | MakesBasicThwart WindowTiming IdentityMatcher
+  | WindowOneOf [WindowMatcher]
   | -- | the hero defended an attack and took no damage from it
     HeroDefendedWithoutDamage WindowTiming IdentityMatcher
   deriving stock (Show, Eq, Generic)
@@ -122,6 +125,10 @@ data WindowType
     AllyCardDefeated IdentityId PlayerCard
   | -- | the surge keyword of a card revealed for the player
     SurgeResolves IdentityId
+  | -- | the player engages the minion: it enters play engaged with them, or is made to
+    -- engage them
+    EngagedMinion IdentityId MinionId
+  | MadeBasicThwart IdentityId
   | DefendedWithoutDamage IdentityId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

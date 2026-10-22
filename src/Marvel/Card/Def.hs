@@ -86,6 +86,7 @@ data InPlayLimit
   | MaxPerAlly Natural
   | -- | "Play under any player's control. Max N per player."
     MaxPerPlayerUnderAnyControl Natural
+  | MaxPerScheme Natural
   | -- | "Max N per round": copies played this round, by any player
     MaxPerRound Natural
   | MaxPerCharacter Natural

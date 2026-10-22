@@ -65,6 +65,13 @@ allUpgrades = fromList $ concatMap
   , rapidResponse
   , defensiveStance
   , espionage
+  , godOfThunder
+  , mjolnir
+  , thorsHelmet
+  , battleFury
+  , jarnbjorn
+  , underSurveillance
+  , enhancedPhysique
   , cloakOfLevitation
   , magicalEnhancements
   , theEyeOfAgamotto
@@ -321,6 +328,37 @@ espionage :: CardDef
 espionage = (basicUpgrade "08033" "Espionage" 1 [Preparation, Skill] [Physical])
   { cdCriteria = youControlASpy
   }
+
+godOfThunder :: CardDef
+godOfThunder = identityUpgrade "06008" "God of Thunder" 2 [Asgard, Title] [Energy]
+
+mjolnir :: CardDef
+mjolnir =
+  unique $
+    (identityUpgrade "06009" "Mjolnir" 1 [Asgard, Weapon] [Energy])
+      { cdKeywords = fromList [Restricted]
+      }
+
+thorsHelmet :: CardDef
+thorsHelmet = unique $ identityUpgrade "06010" "Thor's Helmet" 2 [Asgard, Armor] [Mental]
+
+battleFury :: CardDef
+battleFury = limited (MaxPerPlayerUnderAnyControl 1)
+  $ upgrade "06018" "Battle Fury" 1 [Condition] [Energy] Aggression
+
+jarnbjorn :: CardDef
+jarnbjorn =
+  unique $
+    (upgrade "06019" "Jarnbjorn" 1 [Asgard, Weapon] [Physical] Aggression)
+      { cdKeywords = fromList [Restricted]
+      }
+
+underSurveillance :: CardDef
+underSurveillance = limited (MaxPerScheme 1)
+  $ upgrade "06031" "Under Surveillance" 2 [Condition] [Energy] Justice
+
+enhancedPhysique :: CardDef
+enhancedPhysique = basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
 
 cloakOfLevitation :: CardDef
 cloakOfLevitation =

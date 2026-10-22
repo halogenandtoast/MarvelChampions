@@ -44,6 +44,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard hitSquad
   , SomeSideSchemeCard generationWhy
   , SomeSideSchemeCard killerForHire
+  , SomeSideSchemeCard familyFeud
   , SomeSideSchemeCard openTheDarkDimension
   ]
 

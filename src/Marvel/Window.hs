@@ -48,7 +48,7 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   EnemyAttackedAndDamaged enemyMatcher characterMatcher -> case windowType w of
     EnemyAttacksAndDamages enemyId ident
-      | windowTiming w == When ->
+      | windowTiming w == After ->
           liftA2
             (&&)
             (characterMatches characterMatcher ident)
@@ -227,3 +227,17 @@ windowMatches matcher w source = case matcher of
   SurgeWouldResolve -> case windowType w of
     SurgeResolves _ -> pure $ windowTiming w == Would
     _ -> pure False
+  EngagesMinion timing identityMatcher minionMatcher -> case windowType w of
+    EngagedMinion ident minionId
+      | windowTiming w == timing ->
+          liftA2
+            (&&)
+            (identityMatches identityMatcher ident)
+            (minionMatches minionMatcher minionId)
+    _ -> pure False
+  MakesBasicThwart timing identityMatcher -> case windowType w of
+    MadeBasicThwart identityId
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  WindowOneOf matchers -> anyM (\m -> windowMatches m w source) matchers

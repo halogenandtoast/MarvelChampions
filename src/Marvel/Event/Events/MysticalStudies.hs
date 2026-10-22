@@ -46,7 +46,7 @@ instance RunMessage MysticalStudies where
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
       push . IdentityMessage identityId $
         Search
-          (SearchIdentityDeck identityId AllOfDeckAndDiscard)
+          (SearchIdentityDeckAndDiscardPile identityId)
           (CardMatchesAny $ map CardIs doctorStrangeCards)
           SearchDrawOne
           ShuffleBackIn

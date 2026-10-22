@@ -55,9 +55,9 @@ instance RunMessage AstralProjection where
               ]
       pure e
     CardSpecific (isTarget attrs -> True) "scheme" (fromJSON -> Success s) -> do
-      push $ LookAtTopOfEncounterDeck (toTarget attrs)
+      push $ LookAtTopOfEncounterDeck 1 (toTarget attrs)
       pure . AstralProjection $ attrs `With` Meta (Just s)
-    LookedAt (isTarget attrs -> True) cards | Just s <- scheme meta -> do
+    SearchFoundCards (isTarget attrs -> True) cards | Just s <- scheme meta -> do
       let boosts = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
       pushChoice (eventController attrs) $ ThwartScheme (toRef s) (toSource attrs) (3 + boosts)
       pure e

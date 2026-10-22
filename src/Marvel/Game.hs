@@ -18,7 +18,8 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
-import Marvel.Ally.Types (Attrs (allyConfused, allyStunned, allyTough), allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
@@ -518,7 +519,8 @@ runGameMessage msg g@Game {..} = case msg of
       AllyType -> do
         let ally = createAlly ident card
         pushAll
-          [ IdentityMessage ident (AllyCreated $ toId ally)
+          [ AllyMessage (toId ally) (AllyPaidWith payment)
+          , IdentityMessage ident (AllyCreated $ toId ally)
           , CheckWindows [W.Window After $ W.PlayedAlly (toId ally)]
           ]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
@@ -570,10 +572,7 @@ runGameMessage msg g@Game {..} = case msg of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of
         Just minion -> do
-          pushAll
-            [ IdentityMessage ident $ MinionEngaged minionId
-            , MinionMessage minionId $ MinionEngagedIdentity ident
-            ]
+          pushAll $ engageMinion minionId ident
           pure $
             g
               & (boostEntitiesL . minionsL %~ deleteMap (toId minion))
@@ -672,10 +671,9 @@ runGameMessage msg g@Game {..} = case msg of
                , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
                , MinionMessage (toId minion) (RevealMinion ident)
                , UnfocusCards
-               , IdentityMessage ident (MinionEngaged $ toId minion)
-               , MinionMessage (toId minion) (MinionEngagedIdentity ident)
-               , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
                ]
+            <> engageMinion (toId minion) ident
+            <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
             <> surge
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
@@ -739,10 +737,8 @@ runGameMessage msg g@Game {..} = case msg of
         isTough = Toughness `member` cdKeywords (getCardDef card)
       pushAll $
         [MinionMessage (toId minion) MinionBecomeTough | isTough]
-          <> [ IdentityMessage ident (MinionEngaged $ toId minion)
-             , MinionMessage (toId minion) (MinionEngagedIdentity ident)
-             , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
-             ]
+          <> engageMinion (toId minion) ident
+          <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
     _ -> do
       push $ RevealedEncounterCard ident card
@@ -766,11 +762,8 @@ runGameMessage msg g@Game {..} = case msg of
               overMinion (facedownCardL ?~ card) $
                 lookupMinion "xdrone" ident minionId
           pushAll $
-            [ RemoveFromGame (CardIdRef $ pcCardId card)
-            , IdentityMessage ident (MinionEngaged minionId)
-            , MinionMessage minionId (MinionEngagedIdentity ident)
-            , CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]
-            ]
+            (RemoveFromGame (CardIdRef $ pcCardId card) : engageMinion minionId ident)
+              <> [CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]]
               <> [msg' | null rest, msg' <- reshuffle]
           pure $ g & (entitiesL . minionsL %~ insertMap minionId drone)
   EndCheckWindows -> pure g
@@ -2003,3 +1996,12 @@ gameSelectCountIdentity aggregate matcher = do
   case aggregate of
     SustainedDamage -> pure . sum $ map identityDamage identities
     HeroAttackDamage -> sum <$> traverse getIdentityHeroAttackDamage identities
+
+-- | The allies' modified ATK or THW, summed.
+gameSelectCountAlly ::
+  (HasGame m) => QueryCount AllyMatcher -> AllyMatcher -> m Natural
+gameSelectCountAlly aggregate matcher = do
+  allies <- filterM (allyMatches matcher . toId) . HashMap.elems =<< getsGame gameAllies
+  sum <$> for allies \ally -> case aggregate of
+    AllyAttackValue -> Ally.getModifiedAttack (toAttrs ally)
+    AllyThwartValue -> Ally.getModifiedThwart (toAttrs ally)

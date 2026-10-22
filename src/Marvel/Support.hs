@@ -47,6 +47,8 @@ allSupports = fromList $ map
   , SomeSupportCard nakiaBahadir
   , SomeSupportCard safeHouse29
   , SomeSupportCard quincarrier
+  , SomeSupportCard asgard
+  , SomeSupportCard hallOfHeroes
   , SomeSupportCard sanctumSanctorum
   , SomeSupportCard theNightNurse
   ]

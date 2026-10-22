@@ -10,7 +10,7 @@ import Marvel.Trait
 
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
-  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla, steveRogers, kamalaKhan, natashaRomanoff, stephenStrange]
+  [peterParker, carolDanvers, jenniferWalters, tonyStark, tChalla, steveRogers, kamalaKhan, natashaRomanoff, odinson, stephenStrange]
 
 allAlterEgosMap :: HashMap CardCode CardDef
 allAlterEgosMap = fromList $ map (toFst toCardCode) allAlterEgoCards
@@ -63,6 +63,9 @@ kamalaKhan = alterEgo "05001b" "Kamala Khan" [Inhuman]
 
 natashaRomanoff :: CardDef
 natashaRomanoff = alterEgo "08001b" "Natasha Romanoff" [Shield, Spy]
+
+odinson :: CardDef
+odinson = alterEgo "06001b" "Odinson" [Asgard]
 
 stephenStrange :: CardDef
 stephenStrange = alterEgo "09001b" "Stephen Strange" [Mystic]

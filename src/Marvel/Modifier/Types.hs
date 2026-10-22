@@ -31,6 +31,8 @@ data Modifier
     ThreatRemovedModifier Natural
   | RecoveryModifier Natural
   | CannotTakeDamage
+  | -- | to the target threat of a scheme
+    TargetThreatModifier Natural
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural
   deriving stock (Show, Eq, Generic)

@@ -9,3 +9,4 @@ import Marvel.Hero.Heroes.SpiderMan as X
 import Marvel.Hero.Heroes.CaptainAmerica as X
 import Marvel.Hero.Heroes.MsMarvel as X
 import Marvel.Hero.Heroes.BlackWidow as X
+import Marvel.Hero.Heroes.Thor as X

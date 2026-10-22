@@ -47,6 +47,9 @@ data Trait
   | Bird
   | Robot
   | Preparation
+  | Asgard
+  | Giant
+  | Olympus
   | Mystic
   | Spell
   | Artifact

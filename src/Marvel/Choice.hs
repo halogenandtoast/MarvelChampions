@@ -127,6 +127,8 @@ choiceMessages ident = \case
     concatMapM
       (\c -> choiceMessages ident (DamageCharacter c source damage))
       characters
+  -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
+  -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
     -- each instance of damage the source deals may be increased, as by Embiggen!
     bonus <- sourceBonus source \case
@@ -134,33 +136,23 @@ choiceMessages ident = \case
       _ -> Nothing
     let
       damage = damage' {damageAmount = damageAmount damage' + bonus}
-      isIdentity = case source of
-        IdentityRef _ -> True
-        _ -> False
-    case target of
-      VillainRef vid ->
-        pure $
-          [ CheckWindows [Window When $ W.DamagedVillain vid damage]
-          , VillainMessage vid $ VillainDamaged source damage
-          ]
-            <> [ CheckWindows
-                [Window After $ W.IdentityAttack ident (EnemyVillainId vid)]
-               | damageSource damage == FromAttack && isIdentity
-               ]
-      MinionRef mid ->
-        pure [MinionMessage mid $ MinionDamaged source damage]
-      EnemyRef enemy -> case enemy of
-        EnemyVillainId vid ->
-          pure $
+      enemy = case target of
+        VillainRef vid -> EnemyVillainId vid
+        MinionRef mid -> EnemyMinionId mid
+        EnemyRef e -> e
+        _ -> error "can not damage target"
+      attacked = case damageSource damage of
+        FromPlayerAttack attacker -> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
+        _ -> []
+    pure $
+      ( case enemy of
+          EnemyVillainId vid ->
             [ CheckWindows [Window When $ W.DamagedVillain vid damage]
             , VillainMessage vid $ VillainDamaged source damage
             ]
-              <> [ CheckWindows [Window After $ W.IdentityAttack ident enemy]
-                 | damageSource damage == FromAttack && isIdentity
-                 ]
-        EnemyMinionId mid ->
-          pure [MinionMessage mid $ MinionDamaged source damage]
-      _ -> error "can not damage target"
+          EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
+      )
+        <> attacked
   ThwartScheme target source n' -> do
     -- each instance of threat the source removes may be increased, as by Shrink
     bonus <- sourceBonus source \case

@@ -68,6 +68,12 @@
   "discardPersonaSupportDiscardObligation": "Discard a Persona support you control (surge if none), discard Home by Dawn",
   "discardAPersonaSupport": "Discard a Persona support",
   "exhaustNatashaRomanoffRemoveBurnNotice": "Exhaust Natasha Romanoff → remove Burn Notice from the game",
+  "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation",
+  "exhaustOdinsonRemoveOdinsAnger": "Exhaust Odinson → remove Odin's Anger from the game",
+  "discardMjolnirStunned": "Discard Mjolnir from your hand or from play, you are stunned, discard Odin's Anger",
+  "chooseCardToDiscard": "Choose a card to discard",
+  "chooseNextCardOnTop": "Choose the next card to put on top of the encounter deck",
+  "chooseAllyToExhaust": "Choose an ally to exhaust"
   "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation"
   "discardAPersonaSupport": "Discard a Persona support"
   "heal1FromYourIdentity": "Heal 1 damage from your identity",

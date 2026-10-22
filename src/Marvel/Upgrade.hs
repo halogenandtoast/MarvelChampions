@@ -73,6 +73,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard rapidResponse
   , SomeUpgradeCard defensiveStance
   , SomeUpgradeCard espionage
+  , SomeUpgradeCard godOfThunder
+  , SomeUpgradeCard mjolnir
+  , SomeUpgradeCard thorsHelmet
+  , SomeUpgradeCard battleFury
+  , SomeUpgradeCard jarnbjorn
+  , SomeUpgradeCard underSurveillance
+  , SomeUpgradeCard enhancedPhysique
   , SomeUpgradeCard cloakOfLevitation
   , SomeUpgradeCard magicalEnhancements
   , SomeUpgradeCard theEyeOfAgamotto

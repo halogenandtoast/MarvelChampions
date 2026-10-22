@@ -138,6 +138,7 @@ identityNarration ident = \case
     one $ toned Bad $ mechanic [ikeyPart "log.eliminated" ["player" ~> who]]
   IdentityStunned -> Just $ status "log.stunned"
   IdentityConfused -> Just $ status "log.confused"
+  IdentityBecomeTough -> Just $ status "log.tough"
   _ -> Nothing
  where
   simplyPlayer key = do

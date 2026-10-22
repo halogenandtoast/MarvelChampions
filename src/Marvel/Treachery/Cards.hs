@@ -50,6 +50,7 @@ allTreacheries = fromList $ map
   , hailHydra
   , harvest
   , deadlyShot
+  , trickster
   , thoughtcasting
   ]
 
@@ -206,6 +207,9 @@ harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2
 
 deadlyShot :: CardDef
 deadlyShot = treachery "08029" "Deadly Shot" [Boost] BlackWidowNemesis 1
+
+trickster :: CardDef
+trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
