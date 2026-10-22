@@ -19,14 +19,14 @@ newtype HydraJetTrooper = HydraJetTrooper (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | Quickstrike. [star] Boost: if you are in hero form, the villain attacks you after
--- this activation, no boost cards dealt for that attack. The activation is over as its
--- boost cards are cleared.
+-- this activation, no boost cards dealt for that attack (RR Activation: it follows the
+-- current activation).
 instance RunMessage HydraJetTrooper where
   runMessage msg e@(HydraJetTrooper attrs) = runQueueT $ case msg of
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       you <- getBoostedPlayer enemy
       hero <- identityMatches HeroIdentity you
       villain <- selectOne ActiveVillain
-      for_ villain \vid -> when hero $ afterMatching (== ClearBoosts) (villainAttacksWithoutBoost vid you)
+      for_ villain \vid -> when hero $ activationAfter enemy vid (villainAttacksWithoutBoost vid you)
       pure e
     _ -> HydraJetTrooper <$> runMessage msg attrs

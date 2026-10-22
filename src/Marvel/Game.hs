@@ -511,6 +511,10 @@ getExcessDamage character damage = case character of
         let remaining = subtractNatural (getAllyDamage ally) hp
         pure $ if (toAttrs ally).allyTough then 0 else subtractNatural remaining damage
   _ -> pure 0
+-- | Every trait of each environment in play.
+getEnvironmentTraits :: (HasGame m) => m (HashSet Trait)
+getEnvironmentTraits = getsGame $ foldMap (cdTraits . getCardDef) . HashMap.elems . gameEnvironments
+
 -- | The counters on "your" main scheme, as None Shall Pass's delay counters.
 getYourMainSchemeCounters :: (HasGame m) => m Natural
 getYourMainSchemeCounters = do

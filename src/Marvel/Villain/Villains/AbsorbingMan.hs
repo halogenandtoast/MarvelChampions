@@ -41,12 +41,10 @@ absorbingMan2 = villainWith AbsorbingMan Cards.absorbingMan2 (Sch 2) (Atk 2) (HP
 absorbingMan3 :: VillainCard AbsorbingMan
 absorbingMan3 = villainWith AbsorbingMan Cards.absorbingMan3 (Sch 2) (Atk 3) (HP $ PerPlayer 16) (stageL .~ 3)
 
--- | He gains the trait of each environment in play. ponytail: the traits looked for are
--- his scenario's environments', the only environments in play with him
+-- | He gains the trait of each environment in play.
 instance HasModifiersFor AbsorbingMan where
   getModifiersFor _ (VillainRef vid) (AbsorbingMan a)
-    | vid == villainId a =
-        map TraitModifier <$> filterM (selectAny . EnvironmentWithTrait) [Ice, Metal, Stone, Wood]
+    | vid == villainId a = map TraitModifier . toList <$> getEnvironmentTraits
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities AbsorbingMan where
