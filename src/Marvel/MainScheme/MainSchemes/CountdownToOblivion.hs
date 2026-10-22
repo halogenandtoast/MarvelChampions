@@ -8,8 +8,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
-import Marvel.Message
-import Marvel.Queue
+import Marvel.Message.Lifted
 
 countdownToOblivion :: MainSchemeCard CountdownToOblivion
 countdownToOblivion =
@@ -20,15 +19,15 @@ newtype CountdownToOblivion = CountdownToOblivion (Attrs MainScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage CountdownToOblivion where
-  runMessage msg ms@(CountdownToOblivion attrs) = case msg of
+  runMessage msg ms@(CountdownToOblivion attrs) = runQueueT $ case msg of
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> case msg' of
       -- 3A: each player puts the top card of their deck into play as a Drone
       RevealMainScheme -> do
         players <- getPlayers
-        pushAll $ map PutTopOfDeckIntoPlayAsDrone players
+        for_ players putTopOfDeckIntoPlayAsDrone
         pure ms
       -- threat cannot be removed from this scheme
       MainSchemeThwarted _ _ -> pure ms
       _ -> CountdownToOblivion <$> runMessage msg attrs
-    AdvanceMainScheme -> ms <$ push (GameOver Lost)
+    AdvanceMainScheme -> ms <$ gameOver Lost
     _ -> CountdownToOblivion <$> runMessage msg attrs

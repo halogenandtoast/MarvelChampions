@@ -9,9 +9,8 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier.Types (Modifier (..))
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -156,7 +155,7 @@ instance IsCard (Attrs MainScheme) where
         }
 
 instance RunMessage (Attrs MainScheme) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
         MainSchemePlaceInitialThreat -> do
@@ -166,29 +165,13 @@ instance RunMessage (Attrs MainScheme) where
           printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
           modifiers <- getModifiers attrs
           let threshold = printed + sum [x | TargetThreatModifier x <- modifiers]
-          when
-            (mainSchemeThreat attrs + n >= threshold)
-            (push AdvanceMainScheme)
+          when (mainSchemeThreat attrs + n >= threshold) advanceMainScheme
           pure $ attrs & threatL +~ n
         MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     AccelerateMainScheme -> do
       acceleration <- getAccelerationCount
-      additionalThreat <-
-        fromIntegral
-          <$> fromGameValue (mainSchemeAcceleration attrs)
-      pushAll
-        [ CheckWindows
-            [ W.Window W.Would
-                $ W.ThreatPlaced
-                  W.ThreatFromAcceleration
-                  (SchemeMainSchemeId $ mainSchemeId attrs)
-                $ additionalThreat
-                  + acceleration
-            ]
-        , MainSchemeMessage
-            (mainSchemeId attrs)
-            (MainSchemePlaceThreat $ additionalThreat + acceleration)
-        ]
+      additionalThreat <- fromIntegral <$> fromGameValue (mainSchemeAcceleration attrs)
+      placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + acceleration)
       pure attrs
     _ -> pure attrs

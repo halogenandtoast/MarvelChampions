@@ -8,9 +8,8 @@ import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 
@@ -23,14 +22,14 @@ newtype UndergroundDistribution = UndergroundDistribution (Attrs MainScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage UndergroundDistribution where
-  runMessage msg ms@(UndergroundDistribution attrs) = case msg of
+  runMessage msg ms@(UndergroundDistribution attrs) = runQueueT $ case msg of
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
-        RevealMainScheme -> ms <$ push (DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs))
+        RevealMainScheme -> ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         _ -> UndergroundDistribution <$> runMessage msg attrs
-    SetupMainScheme -> ms <$ push (SearchForAndRevealScheme Cards.defenseNetwork)
-    AdvanceMainScheme -> ms <$ push NextMainScheme
+    SetupMainScheme -> ms <$ searchForAndRevealScheme Cards.defenseNetwork
+    AdvanceMainScheme -> ms <$ nextMainScheme
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
-      ms <$ push (PutEncounterCardIntoPlay firstPlayer card)
+      ms <$ putEncounterCardIntoPlay firstPlayer card
     _ -> UndergroundDistribution <$> runMessage msg attrs
