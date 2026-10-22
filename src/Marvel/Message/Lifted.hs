@@ -834,7 +834,8 @@ dealEncounterCard = push . DealEncounterCard
 -- may be made at once.
 createArea :: (ReverseQueue m) => [IdentityId] -> m AreaId
 createArea players = do
-  aid <- AreaId <$> getRandomR (1, maxBound)
+  -- small enough for the client to read exactly
+  aid <- AreaId <$> getRandomR (1, 2 ^ (31 :: Int))
   push $ CreateArea aid players
   pure aid
 
