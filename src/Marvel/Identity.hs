@@ -833,11 +833,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     IdentityDamaged _ damage
       | playerIdentityTough && damageAmount damage > 0 && not (damageIgnoresTough damage) ->
           pure $ PlayerIdentity $ attrs & toughL .~ False
-    IdentityDamaged _ damage -> do
+    IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
-      when
-        (playerIdentityDamage + damageAmount damage >= modifiedHp)
-        (push $ IdentityMessage playerIdentityId IdentityDefeated)
+      pushAll $
+        attackDealtDamage source damage (IdentityCharacter playerIdentityId)
+          <> [IdentityMessage playerIdentityId IdentityDefeated | playerIdentityDamage + damageAmount damage >= modifiedHp]
       pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
     IdentityDefeated -> do
       players <- getPlayers

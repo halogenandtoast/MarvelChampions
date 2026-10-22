@@ -122,12 +122,12 @@ instance RunMessage (Attrs Ally) where
           (attackSource attack')
           (toDamage (attackDamage attack') FromAttack)
         pure a
-      AllyDamaged _ damage -> if allyTough a
+      AllyDamaged source damage -> if allyTough a && not (damageIgnoresTough damage)
         then pure $ a & toughL .~ False
         else do
-          when
-            (damageAmount damage + allyDamage a >= unHp (allyHitPoints a))
-            (push $ AllyMessage (allyId a) AllyDefeated)
+          pushAll $
+            attackDealtDamage source damage (AllyCharacter $ allyId a)
+              <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= unHp (allyHitPoints a)]
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
         pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]

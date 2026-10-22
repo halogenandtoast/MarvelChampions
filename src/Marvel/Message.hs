@@ -77,6 +77,15 @@ addToBasicPower ident n = replaceMatchingMessage raise \case
     IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
     other -> [other]
 
+-- | After an enemy's attack deals damage to a character, the window for it.
+attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
+attackDealtDamage source damage character =
+  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character]
+  | damageSource damage == FromAttack
+  , damageAmount damage > 0
+  , Just enemy <- [sourceEnemy source]
+  ]
+
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
 cardSpecific a key v = CardSpecific (toTarget a) key (toJSON v)

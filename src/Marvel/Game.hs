@@ -1587,6 +1587,7 @@ gameSelectEnemy m = do
     AttackableEnemy -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith You)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
+    AttackingEnemy -> pure $ isJust (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goVillain e) xs
@@ -1604,6 +1605,7 @@ gameSelectEnemy m = do
     AttackableEnemy -> pure True
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
+    AttackingEnemy -> pure $ isJust (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goMinion e) xs

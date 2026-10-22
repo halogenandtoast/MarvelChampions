@@ -47,7 +47,7 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   EnemyAttackedAndDamaged enemyMatcher characterMatcher -> case windowType w of
     EnemyAttacksAndDamages enemyId ident
-      | windowTiming w == When ->
+      | windowTiming w == After ->
           liftA2
             (&&)
             (characterMatches characterMatcher ident)

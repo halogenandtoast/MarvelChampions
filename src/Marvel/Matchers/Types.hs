@@ -136,6 +136,7 @@ data EnemyMatcher
   | EnemyWithUpgrade UpgradeMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
+  | AttackingEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

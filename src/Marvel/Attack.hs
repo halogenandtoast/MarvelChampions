@@ -20,6 +20,14 @@ attackSource a = case attackEnemy a of
   EnemyMinionId mid -> MinionRef mid
   EnemyVillainId vid -> VillainRef vid
 
+-- | The enemy a source names, as the source of an enemy's attack does.
+sourceEnemy :: Source -> Maybe EnemyId
+sourceEnemy = \case
+  MinionRef mid -> Just (EnemyMinionId mid)
+  VillainRef vid -> Just (EnemyVillainId vid)
+  EnemyRef eid -> Just eid
+  _ -> Nothing
+
 attackCharacterL :: Lens' Attack CharacterId
 attackCharacterL = lens attackCharacter $ \m x -> m {attackCharacter = x}
 
