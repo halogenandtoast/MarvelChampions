@@ -9,15 +9,11 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Hand
-import Marvel.Id
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -35,22 +31,19 @@ printedCost = maybe 0 fromIntegral . cdCost . getCardDef
 -- tied); its printed cost is placed as threat on the main scheme in alter-ego form, or
 -- taken as damage in hero form.
 instance RunMessage Thoughtcasting where
-  runMessage msg t@(Thoughtcasting attrs) = case msg of
+  runMessage msg t@(Thoughtcasting attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
       hand <- projectMap PlayerIdentityHand unHand identityId
       hero <- member identityId <$> select HeroIdentity
       mainScheme <- selectJust MainScheme
       let highest = maximum (0 : map printedCost hand)
           consequence c
-            | hero = damageIdentity identityId (toSource attrs) (toDamage (printedCost c) FromTreachery)
-            | otherwise = placeThreatOn mainScheme (printedCost c)
-      push $
-        Ask identityId $
-          prompted "$label.discardHighestCost" $
-            ChooseOne
-              [ TargetLabel (toRef c) [Run $ DiscardedCard (PlayerCard c) : consequence c]
-              | c <- hand
-              , printedCost c == highest
-              ]
+            | hero = damageCharacter identityId attrs (toDamage (printedCost c) FromTreachery)
+            | otherwise = placeThreat mainScheme (printedCost c)
+      chooseOnePrompted identityId "$label.discardHighestCost"
+        [ targeting c (discardCard c >> consequence c)
+        | c <- hand
+        , printedCost c == highest
+        ]
       pure t
     _ -> Thoughtcasting <$> runMessage msg attrs

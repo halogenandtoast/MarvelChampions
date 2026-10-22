@@ -9,17 +9,12 @@ import Marvel.Prelude
 
 import Data.Text qualified as T
 
-import Marvel.ActiveCost
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Message
-import Marvel.Payment
-import Marvel.Question
-import Marvel.Queue
+import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Treachery.Cards qualified as Cards
@@ -46,33 +41,20 @@ boostResource attrs = case cdCardCode (getCardDef attrs) of
   _ -> Physical
 
 instance RunMessage AndroidEfficiency where
-  runMessage msg t@(AndroidEfficiency attrs) = case msg of
+  runMessage msg t@(AndroidEfficiency attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       players <- getPlayers
-      pushAll $ map PutTopOfDeckIntoPlayAsDrone players
+      for_ players putTopOfDeckIntoPlayAsDrone
       pure t
     -- Boost: spend the resource or put the top card of your deck into play as a Drone
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       ident <- getActivePlayerId
       resources <- getAvailableResourcesFor ident Nothing
-      activeCostId <- getRandom
       let resource = boostResource attrs
       chooseOrRunOne ident $
-        Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
-          : [ Label
-              ("Spend a {" <> T.toLower (tshow resource) <> "} resource")
-              [ Run
-                  [ SetActiveCost $
-                      ActiveCost
-                        activeCostId
-                        ident
-                        ForTreachery
-                        (MultiResourceCost [Just resource])
-                        NoPayment
-                        Nothing
-                        mempty
-                  ]
-              ]
+        labeled "$label.topCardAsDrone" (putTopOfDeckIntoPlayAsDrone ident)
+          : [ labeled ("Spend a {" <> T.toLower (tshow resource) <> "} resource") $
+              payForTreachery ident (MultiResourceCost [Just resource])
             | any (`elem` resources) [resource, Wild]
             ]
       pure t

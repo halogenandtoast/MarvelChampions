@@ -6,12 +6,10 @@ module Marvel.Treachery.Treacheries.CaughtOffGuard (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -23,29 +21,15 @@ newtype CaughtOffGuard = CaughtOffGuard (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage CaughtOffGuard where
-  runMessage msg t@(CaughtOffGuard attrs) = case msg of
+  runMessage msg t@(CaughtOffGuard attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
-        supports <-
-          selectRefs $
-            SupportControlledBy $
-              IdentityWithId
-                identityId
-        upgrades <-
-          selectRefs $
-            UpgradeControlledBy $
-              IdentityWithId
-                identityId
+        supports <- selectRefs $ SupportControlledBy $ IdentityWithId identityId
+        upgrades <- selectRefs $ UpgradeControlledBy $ IdentityWithId identityId
         if null supports && null upgrades
           then pure . CaughtOffGuard $ attrs & surgeL .~ True
           else do
-            chooseOne identityId $
-              [ TargetLabel support [DiscardTarget support]
-              | support <- supports
-              ]
-                <> [ TargetLabel upgrade [DiscardTarget upgrade]
-                   | upgrade <- upgrades
-                   ]
+            chooseOne identityId [targeting c (removeFromPlay c) | c <- supports <> upgrades]
             pure t
       _ -> CaughtOffGuard <$> runMessage msg attrs
     _ -> CaughtOffGuard <$> runMessage msg attrs

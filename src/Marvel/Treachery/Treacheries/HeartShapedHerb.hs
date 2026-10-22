@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -23,20 +22,18 @@ newtype HeartShapedHerb = HeartShapedHerb (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage HeartShapedHerb where
-  runMessage msg t@(HeartShapedHerb attrs) = case msg of
+  runMessage msg t@(HeartShapedHerb attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         villain <- selectJust ActiveVillain
         minions <- selectList $ MinionEngagedWith $ IdentityWithId identityId
-        pushAll $
-          VillainMessage villain VillainBecomeTough
-            : map (`MinionMessage` MinionBecomeTough) minions
+        enemyBecomesTough villain
+        for_ minions enemyBecomesTough
         pure t
       _ -> HeartShapedHerb <$> runMessage msg attrs
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
-        villain <- selectJust ActiveVillain
-        push $ VillainMessage villain VillainBecomeTough
+        enemyBecomesTough =<< selectJust ActiveVillain
         pure t
       _ -> pure t
     _ -> HeartShapedHerb <$> runMessage msg attrs

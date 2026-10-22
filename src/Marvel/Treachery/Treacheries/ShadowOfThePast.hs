@@ -10,10 +10,9 @@ import Marvel.Card.Def
 import Marvel.Card.EncounterCard
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -43,15 +42,13 @@ partitionNemesisSet cards = (minions, sideSchemes, rest)
   rest = filter (\c -> not (isNemesisMinion c || isType SideSchemeType c)) cards
 
 instance RunMessage ShadowOfThePast where
-  runMessage msg t@(ShadowOfThePast attrs) = case msg of
+  runMessage msg t@(ShadowOfThePast attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery identityId -> do
         cards <- selectList (NemesisSetFor identityId)
         let (minions, sideSchemes, rest) = partitionNemesisSet cards
-        pushAll $
-          map (RevealEncounterCard identityId) minions
-            <> map (RevealEncounterCard identityId) sideSchemes
-            <> [ShuffleIntoEncounterDeck rest | notNull rest]
+        for_ (minions <> sideSchemes) (revealEncounterCard identityId)
+        when (notNull rest) $ shuffleIntoEncounterDeck rest
         -- the nemesis minion did not enter play: it already has
         pure $ if null minions then ShadowOfThePast (attrs & surgeL .~ True) else t
       _ -> ShadowOfThePast <$> runMessage msg attrs

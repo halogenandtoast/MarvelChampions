@@ -8,15 +8,10 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
+import Marvel.Message.Lifted
 import Marvel.Resource
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -37,17 +32,11 @@ instance IsTreachery TheVulturesPlans where
   toTreacheryAttrs (TheVulturesPlans (attrs `With` _)) = attrs
 
 instance RunMessage TheVulturesPlans where
-  runMessage msg t@(TheVulturesPlans (attrs `With` meta)) = case msg of
+  runMessage msg t@(TheVulturesPlans (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery _ -> do
         players <- getPlayers
-        pushAll $
-          map
-            ( \identityId ->
-                IdentityMessage identityId $
-                  DiscardFor (toTarget attrs) RandomFromHand 1 1
-            )
-            players
+        for_ players \identityId -> discardFor identityId attrs RandomFromHand 1 1
         pure t
       _ -> TheVulturesPlans . (`With` meta) <$> runMessage msg attrs
     WithDiscarded target _ cards | isTarget attrs target -> do
@@ -55,15 +44,6 @@ instance RunMessage TheVulturesPlans where
         resources =
           HashSet.fromList (concatMap (printedResources . getCardDef) cards)
             `HashSet.difference` unMeta meta
-      identityId <- selectJust You
-      msgs <-
-        choiceMessages
-          identityId
-          ( PlaceThreat
-              (toRef attrs)
-              (fromIntegral $ HashSet.size resources)
-              MainScheme
-          )
-      pushAll msgs
+      placeThreatOnEach attrs (fromIntegral $ HashSet.size resources) MainScheme
       pure $ TheVulturesPlans (attrs `With` Meta (unMeta meta <> resources))
     _ -> TheVulturesPlans . (`With` meta) <$> runMessage msg attrs

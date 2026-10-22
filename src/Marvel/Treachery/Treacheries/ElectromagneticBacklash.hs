@@ -9,9 +9,7 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Message
-import Marvel.Queue
-import Marvel.Ref
+import Marvel.Message.Lifted
 import Marvel.Resource
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -25,16 +23,11 @@ newtype ElectromagneticBacklash = ElectromagneticBacklash (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage ElectromagneticBacklash where
-  runMessage msg t@(ElectromagneticBacklash attrs) = case msg of
+  runMessage msg t@(ElectromagneticBacklash attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery _ -> do
         players <- getPlayers
-        pushAll $
-          map
-            ( \i ->
-                IdentityMessage i $ DiscardFrom FromDeck 5 (Just $ toTarget attrs)
-            )
-            players
+        for_ players \i -> discardFromDeck i 5 attrs
         pure t
       _ -> ElectromagneticBacklash <$> runMessage msg attrs
     WithDiscarded target _ (onlyPlayerCards -> cs) | isTarget attrs target ->
@@ -47,6 +40,6 @@ instance RunMessage ElectromagneticBacklash where
               energyCount =
                 count (== Energy) $ concatMap (printedResources . getCardDef) cs
             when (energyCount > 0) $
-              pushAll $ damageIdentity ident (toSource attrs) (toDamage energyCount FromTreachery)
+              damageCharacter ident attrs (toDamage energyCount FromTreachery)
             pure t
     _ -> ElectromagneticBacklash <$> runMessage msg attrs

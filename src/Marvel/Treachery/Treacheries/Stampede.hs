@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -22,21 +21,21 @@ newtype Stampede = Stampede (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Stampede where
-  runMessage msg t@(Stampede attrs) = case msg of
+  runMessage msg t@(Stampede attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery identityId -> do
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            push $ VillainMessage villainId $ VillainAttacks identityId
+            enemyAttacks villainId identityId
             pure t
           else pure . Stampede $ attrs & surgeL .~ True
       _ -> Stampede <$> runMessage msg attrs
     AllyMessage aid (AllyDamaged _ _) -> do
-      push $ AllyMessage aid AllyStunned
+      stunAlly aid
       pure t
     IdentityMessage aid (IdentityDamaged _ _) -> do
-      push $ IdentityMessage aid IdentityStunned
+      stunIdentity aid
       pure t
     _ -> Stampede <$> runMessage msg attrs

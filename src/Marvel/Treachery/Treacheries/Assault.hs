@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -22,14 +21,14 @@ newtype Assault = Assault (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage Assault where
-  runMessage msg t@(Assault attrs) = case msg of
+  runMessage msg t@(Assault attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            push $ VillainMessage villainId $ VillainAttacks identityId
+            enemyAttacks villainId identityId
             pure t
           else pure . Assault $ attrs & surgeL .~ True
       _ -> Assault <$> runMessage msg attrs

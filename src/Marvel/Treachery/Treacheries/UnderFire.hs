@@ -7,8 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Message
-import Marvel.Queue
+import Marvel.Message.Lifted
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -20,8 +19,8 @@ newtype UnderFire = UnderFire (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage UnderFire where
-  runMessage msg t@(UnderFire attrs) = case msg of
+  runMessage msg t@(UnderFire attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
-      push $ DrawAndRevealEncounterCard identityId
+      revealTopOfEncounterDeck identityId
       pure t
     _ -> UnderFire <$> runMessage msg attrs

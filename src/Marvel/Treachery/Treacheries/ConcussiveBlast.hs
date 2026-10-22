@@ -10,9 +10,8 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -25,7 +24,7 @@ newtype ConcussiveBlast = ConcussiveBlast (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage ConcussiveBlast where
-  runMessage msg t@(ConcussiveBlast attrs) = case msg of
+  runMessage msg t@(ConcussiveBlast attrs) = runQueueT $ case msg of
     -- 1 damage to each friendly character
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       damageEach AnyIdentity AnyAlly
@@ -41,6 +40,5 @@ instance RunMessage ConcussiveBlast where
     damageEach identities allies = do
       players <- selectList identities
       allyIds <- selectList allies
-      pushAll $
-        concatMap (\p -> damageIdentity p (toSource attrs) damage) players
-          <> [AllyMessage a (AllyDamaged (toSource attrs) damage) | a <- allyIds]
+      for_ players \p -> damageCharacter p attrs damage
+      for_ allyIds \a -> damageCharacter a attrs damage
