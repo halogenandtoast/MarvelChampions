@@ -224,6 +224,8 @@ export interface GameView {
   areas?: AreaView[]
   /** the area of the first seat whose hand you see */
   viewerArea?: number | null
+  /** the campaign the game is a scenario of */
+  campaign?: CampaignInfo | null
   [more: string]: unknown
 }
 
@@ -295,6 +297,14 @@ export interface StarterDeck {
   key: string
   hero: string
   aspects: string[]
+}
+
+/** Which campaign a game is a scenario of, and which of its scenarios (from 1). */
+export interface CampaignInfo {
+  name: string | null
+  mode: CampaignMode
+  scenario: number
+  scenarios: number
 }
 
 /** A choice a campaign victory leaves a player, asked as the next game is set up. */

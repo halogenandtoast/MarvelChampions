@@ -152,6 +152,7 @@
     "ExpertCampaign": "Expert campaign",
     "campaigns": "Campaigns",
     "scenario": "Scenario {n}",
+    "scenarioOf": "Scenario {n} of {total}",
     "progress": "{done} of {total} won",
     "next": "Next",
     "continue": "Play {villain}",

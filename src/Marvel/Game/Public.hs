@@ -26,6 +26,7 @@ import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.Obligation.Types (Attrs (..))
 import Marvel.Attack qualified as Attack
+import Marvel.Campaign (Campaign (..), CampaignMode)
 import Marvel.Card
 import Marvel.Deck
 import Marvel.Discard
@@ -87,6 +88,19 @@ data GameView = GameView
   -- ^ the game areas, by the ids of what is in each; a game of one area has one
   , viewerArea :: Maybe AreaId
   -- ^ the area of the first seat whose hand the viewer sees
+  , campaign :: Maybe CampaignInfo
+  -- ^ the campaign the game is a scenario of
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | Which campaign the game is a scenario of, and which of its scenarios.
+data CampaignInfo = CampaignInfo
+  { name :: Maybe Text
+  , mode :: CampaignMode
+  , scenario :: Int
+  -- ^ its place, from 1
+  , scenarios :: Int
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -375,6 +389,14 @@ gameView seesHand g = do
       , activeCost
       , areas = map areaView (gameAreas g)
       , viewerArea = headMay [aid | pid <- gameSeats g, seesHand pid, Just aid <- [areaId <$> areaOfTarget g (IdentityRef pid)]]
+      , campaign =
+          gameCampaign g <&> \c ->
+            CampaignInfo
+              { name = c.campaignName
+              , mode = c.mode
+              , scenario = maybe (c.completed + 1) (+ 1) (L.elemIndex (toId $ gameScenario g) c.scenarios)
+              , scenarios = length c.scenarios
+              }
       }
  where
   scenario = toAttrs (gameScenario g)

@@ -264,6 +264,7 @@ const resetGame = () => {
       :phase="game?.phase ?? null"
       :turn="active ? playerName[active] : null"
       :name="scenarioName"
+      :campaign="game?.campaign ?? null"
       @reset="resetGame"
       @undo="undo($event)"
       @export="exportGame(gameId)"

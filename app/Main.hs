@@ -971,8 +971,9 @@ postContinueCampaignR cid = do
       setup <- maybe (sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode code)])) pure (recommendedSetup code)
       dealt <- maybe (sendResponseStatus status400 ("the campaign has no decks" :: Text)) pure (nonEmpty $ map (campaignDeck c) decks)
       let setup' = ScenarioSetup setup.scenarioCode setup.modulars difficulty
+      let named = c {campaignName = Just row.marvelCampaignName}
       ((g, queue, gen), said) <-
-        either (sendResponseStatus status400) pure =<< liftIO . startGame setup' (Just c) (soloSeats user.userUsername dealt) =<< liftIO randomIO
+        either (sendResponseStatus status400) pure =<< liftIO . startGame setup' (Just named) (soloSeats user.userUsername dealt) =<< liftIO randomIO
       now <- liftIO getCurrentTime
       gid <- runDB do
         gid <-
@@ -990,7 +991,7 @@ postContinueCampaignR cid = do
               , marvelGameAllowSpectators = False
               , marvelGameWithFriends = False
               , marvelGameSeats = length dealt
-              , marvelGameCampaign = Just (toJSON c)
+              , marvelGameCampaign = Just (toJSON named)
               , marvelGameCreatedAt = now
               , marvelGameUpdatedAt = now
               }

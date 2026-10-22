@@ -1,6 +1,8 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Campaign
+import Marvel.Game.Public (publicGameFor)
 import Marvel.Hp (unHp)
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -154,6 +156,18 @@ spec = describe "The Rise of Red Skull campaign" do
       uids <- upgradesOf p
       resolve (map (RemoveFromPlay . UpgradeRef) uids)
       upgradeCodes >>= (`shouldSatisfy` elem "04161a")
+
+  it "shows the board which campaign and which of its scenarios the game is" do
+    tg <- dealCampaign ((campaignAt ExpertCampaign 1) {campaignName = Just "Hydra Rising"}) [starter "spider-man"]
+    view <- publicGameFor (const True) =<< inGame tg getGame
+    let at k = \case
+          Object o -> KeyMap.lookup k o
+          _ -> Nothing
+        info f = at f =<< at "campaign" view
+    info "name" `shouldBe` Just (String "Hydra Rising")
+    info "scenario" `shouldBe` Just (Number 2)
+    info "scenarios" `shouldBe` Just (Number 5)
+    info "mode" `shouldBe` Just (String "ExpertCampaign")
 
   it "a permanent upgrade is not offered to an effect that would discard it" do
     tg <- testGame ["spider-man"]
