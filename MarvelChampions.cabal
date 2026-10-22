@@ -709,6 +709,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec
       Marvel.Rules.PrintingSpec
+      Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       TestImport
       Paths_MarvelChampions

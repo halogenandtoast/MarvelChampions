@@ -29,7 +29,15 @@ choiceMessages ::
   IdentityId ->
   Choice ->
   m [Message]
-choiceMessages ident = \case
+choiceMessages ident = asYou ident . resolveChoice ident
+
+-- | What a choice does, with "you" the player who chose it.
+resolveChoice ::
+  (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) =>
+  IdentityId ->
+  Choice ->
+  m [Message]
+resolveChoice ident = \case
   Run msgs -> pure msgs
   Label _ choices -> concatMapM (choiceMessages ident) choices
   TargetLabel _ choices -> concatMapM (choiceMessages ident) choices

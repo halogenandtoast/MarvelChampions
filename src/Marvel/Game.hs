@@ -160,6 +160,10 @@ data Game = Game
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
+  , gameYou :: Maybe IdentityId
+  -- ^ who "you" is while a player's card, choice or window is looked at: its
+  -- controller, or the player choosing or being offered it (see 'asYou'); otherwise
+  -- the active player
   , gameActiveCost :: [ActiveCost]
   , gameWindowDepth :: Int
   , gameDepth :: Int
@@ -325,6 +329,15 @@ getUniqueTitlesInPlay = getsGame \g ->
       <> unique (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
       <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
       <> concatMap identity (HashMap.elems $ gamePlayers g)
+
+-- | Who "you" is: the player 'asYou' names, or else the active player.
+getYou :: (HasGame m) => m IdentityId
+getYou = getsGame \g -> fromMaybe (gameActivePlayer g) (gameYou g)
+
+-- | Look at the game as the player given: "you" on a player card is its controller, or
+-- the player who would play or trigger it (RR "You").
+asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
+asYou ident body = getGame >>= runReaderT body . (youL ?~ ident)
 
 getActivePlayer :: (HasGame m) => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
@@ -858,8 +871,9 @@ runGameMessage msg g@Game {..} = case msg of
             _ -> False
           _ -> pure True
     openWindows <- filterM open windows
+    -- "you" on what is offered is the player it is offered to
     playableCards <-
-      concatMapM
+      asYou ident $ concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         openWindows
     let
@@ -869,7 +883,7 @@ runGameMessage msg g@Game {..} = case msg of
       withinLimit a =
         passesUseLimit ident (maybe usedByAnyone (const usedAbilities) (abilityController g a)) a
     validAbilities <-
-      filterM
+      asYou ident $ filterM
         ( andM
             . sequence
               [ pure . withinLimit
@@ -1008,14 +1022,14 @@ abilityInWindow window a =
 
 instance RunMessage Entities where
   runMessage msg entities =
-    traverseOf (playersL . each) (runMessage msg) entities
-      >>= traverseOf (alliesL . each) (runMessage msg)
-      >>= traverseOf (supportsL . each) (runMessage msg)
-      >>= traverseOf (upgradesL . each) (runMessage msg)
+    traverseOf (playersL . each) (\p -> asYou (toId p) $ runMessage msg p) entities
+      >>= traverseOf (alliesL . each) (\a -> asYou (getAllyController a) $ runMessage msg a)
+      >>= traverseOf (supportsL . each) (\a -> asYou (getSupportController a) $ runMessage msg a)
+      >>= traverseOf (upgradesL . each) (\a -> asYou (getUpgradeController a) $ runMessage msg a)
       >>= traverseOf (treacheriesL . each) (runMessage msg)
       >>= traverseOf (obligationsL . each) (runMessage msg)
       >>= traverseOf (villainsL . each) (runMessage msg)
-      >>= traverseOf (eventsL . each) (runMessage msg)
+      >>= traverseOf (eventsL . each) (\a -> asYou (eventController $ toAttrs a) $ runMessage msg a)
       >>= traverseOf (effectsL . each) (runMessage msg)
       >>= traverseOf (attachmentsL . each) (runMessage msg)
       >>= traverseOf (minionsL . each) (runMessage msg)
@@ -1030,7 +1044,7 @@ instance RunMessage Game where
       >>= traverseOf entitiesL (runMessage msg)
       >>= traverseOf removedEntitiesL (runMessage msg)
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
-      >>= traverseOf (activeCostL . ix 0) (runMessage msg)
+      >>= traverseOf (activeCostL . ix 0) (\c -> asYou (activeCostIdentityId c) $ runMessage msg c)
       >>= runGameMessage msg
 
 class (Monad m) => HasGame m where
@@ -1104,6 +1118,7 @@ newGame player scenario =
     , gameQuestion = mempty
     , gameUsedAbilities = mempty
     , gameActivePlayer = toId player
+    , gameYou = Nothing
     , gameScenario = scenario
     , gameFocusedCards = []
     , gameBoostCards = mempty
@@ -1175,6 +1190,9 @@ class HasGameRef m where
 
 instance (Monad m) => HasGame (ReaderT Game m) where
   getGame = ask
+
+instance (HasQueue m) => HasQueue (ReaderT Game m) where
+  getQueue = lift getQueue
 
 getIdentity :: (HasCallStack, HasGame m) => IdentityId -> m PlayerIdentity
 getIdentity ident = do
@@ -1333,7 +1351,7 @@ replayChoices _ = pure ()
 -- criteria say when it may be spent: "spend this card only in hero form".
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
-getAvailablePaymentSources ident = do
+getAvailablePaymentSources ident = asYou ident do
   hand <- getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
   flip filterM hand \c ->
     if cdCardType (getCardDef c) == ResourceType
@@ -1360,15 +1378,13 @@ getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
   , HasQueue m
-  , HasCallStack
   , HasGame m
-  , Projection m PlayerIdentity
   ) =>
   IdentityId ->
   -- | the card being paid for, if a card is
   Maybe PlayerCard ->
   m [Ability]
-getResourceAbilities ident mc = do
+getResourceAbilities ident mc = asYou ident do
   abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
   filterM
@@ -1418,9 +1434,7 @@ gameSelectIdentity m = do
       pure $ case ps of
         fp : _ -> toId a == fp
         _ -> False
-    You -> \a -> do
-      ap <- getActivePlayer
-      pure $ a == ap
+    You -> \a -> (== toId a) <$> getYou
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
