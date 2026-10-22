@@ -67,6 +67,11 @@ allSideSchemes = fromList $ map
   -- The Rise of Red Skull
   , SomeSideSchemeCard markedForDeath
   , SomeSideSchemeCard theVipersAmbition
+  , SomeSideSchemeCard crossbonesAssault
+  , SomeSideSchemeCard corneredStaff
+  , SomeSideSchemeCard avalanche
+  , SomeSideSchemeCard superAbsorbingPower
+  , SomeSideSchemeCard hydraPatrol
 
   -- Zola
   , SomeSideSchemeCard hydraPrison

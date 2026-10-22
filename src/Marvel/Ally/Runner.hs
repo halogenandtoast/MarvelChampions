@@ -99,7 +99,7 @@ instance RunMessage (Attrs Ally) where
           choices <- for schemes \scheme -> do
             withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
             let thwartWith n = do
-                  thwartScheme scheme a n
+                  basicThwartOf scheme a n
                   checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
             pure $ targeting (schemeRef scheme) $
               if withAttack && atk /= thw

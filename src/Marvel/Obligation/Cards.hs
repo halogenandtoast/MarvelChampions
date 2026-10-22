@@ -34,6 +34,11 @@ allObligations = fromList $ map
     , criminalPast
     , uncertainLoyalties
 
+    -- The Rise of Red Skull: an Expert Campaign Set
+    , zolasAlgorithm
+    , medicalEmergency
+    , martialLaw
+    , antiHeroPropaganda
     -- The Once and Future Kang
     , fearOfKang
     , weakened
@@ -101,6 +106,24 @@ odinsAnger = obligation "06026" "Odin's Anger" [Boost, Boost]
 physicalToll :: CardDef
 physicalToll = obligation "09027" "Physical Toll" [Boost, Boost]
 
+-- * The Rise of Red Skull: an Expert Campaign Set, obligations with player-card backs
+-- that go into a player's deck
+
+zolasAlgorithm :: CardDef
+zolasAlgorithm = (obligation "04163" "Zola's Algorithm" []) {cdAcceleration = 1}
+
+medicalEmergency :: CardDef
+medicalEmergency = obligation "04164" "Medical Emergency" []
+
+martialLaw :: CardDef
+martialLaw = obligation "04165" "Martial Law" []
+
+antiHeroPropaganda :: CardDef
+antiHeroPropaganda = obligation "04166" "Anti-Hero Propaganda" []
+
+-- | The obligations that go into a player's deck, not the encounter deck.
+playerDeckObligations :: HashMap CardCode CardDef
+playerDeckObligations = fromList $ map (toFst toCardCode) [zolasAlgorithm, medicalEmergency, martialLaw, antiHeroPropaganda]
 criminalPast :: CardDef
 criminalPast = obligation "04026" "Criminal Past" [Boost, Boost]
 

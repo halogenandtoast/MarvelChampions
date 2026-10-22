@@ -78,6 +78,22 @@
   "-- The Rise of Red Skull --": "",
   "takesNoDamage": "{target} takes no damage",
   "takesControlOf": "{player} rescues {card} and takes control of it",
+  "campaign": {
+    "choices": "Campaign: the choices the last victory left",
+    "setup": "Campaign setup",
+    "victory": "Campaign victory",
+    "added": "{player} adds {card} to their deck (campaign log)",
+    "crossedOut": "{card} is crossed out of the campaign log",
+    "recorded": "Recorded in the campaign log: {what}",
+    "delayCounters": "Recorded in the campaign log: {count} delay counters",
+    "engaged": "Recorded in the campaign log: {player} is engaged with a minion",
+    "removed": "Removed from the campaign: {card}",
+    "hitPoints": "Recorded in the campaign log: {player} has {count} hit points left",
+    "scenarioWon": "The scenario is won and written in the campaign log"
+  },
+  "attackGainsOverkill": "{target}'s attack gains overkill",
+  "attackGainsPiercing": "{target}'s attack gains piercing",
+  "attackGainsRanged": "{target}'s attack gains ranged",
 
   "-- The Once and Future Kang --": "",
 

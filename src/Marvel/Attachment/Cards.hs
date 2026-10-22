@@ -56,6 +56,15 @@ allAttachments =
 
       -- The Rise of Red Skull
       , crossfiresRifle
+      , crossbonesMachineGun
+      , crossbonesArmor
+      , laserRifle
+      , energyShield
+      , powerGauntlets
+      , exoSuit
+      , absorbingMansBallAndChain
+      , combatKnife
+      , hydraSidearm
 
       -- Zola
       , defensiveProgramming
@@ -166,6 +175,35 @@ counterspell =
 
 crossfiresRifle :: CardDef
 crossfiresRifle = (attachment "04029" "Crossfire's Rifle" [Weapon] [Boost, Boost] HawkeyeNemesis 1) {cdUnique = True}
+crossbonesMachineGun :: CardDef
+crossbonesMachineGun =
+  unique $ attachment "04064" "Crossbones' Machine Gun" [Weapon] [Boost, Boost, Boost] Crossbones 1
+
+crossbonesArmor :: CardDef
+crossbonesArmor =
+  unique $ attachment "04065" "Crossbones' Armor" [Armor] [Boost, Boost, Boost] Crossbones 1
+
+laserRifle :: CardDef
+laserRifle = attachment "04072" "Laser Rifle" [Experimental, Weapon] [Boost, Boost] ExperimentalWeapons 1
+
+energyShield :: CardDef
+energyShield = attachment "04073" "Energy Shield" [Experimental, Weapon] [Boost, Boost] ExperimentalWeapons 1
+
+powerGauntlets :: CardDef
+powerGauntlets = attachment "04074" "Power Gauntlets" [Experimental, Weapon] [Boost, Boost] ExperimentalWeapons 1
+
+exoSuit :: CardDef
+exoSuit = attachment "04075" "Exo-Suit" [Experimental, Weapon] [Boost, Boost] ExperimentalWeapons 1
+
+-- | Absorbing Man's; Thunderball has a Ball and Chain of his own.
+absorbingMansBallAndChain :: CardDef
+absorbingMansBallAndChain = unique $ attachment "04084" "Ball and Chain" [Weapon] [Star] AbsorbingMan 1
+
+combatKnife :: CardDef
+combatKnife = attachment "04148" "Combat Knife" [Weapon] [Boost] WeaponMaster 1
+
+hydraSidearm :: CardDef
+hydraSidearm = attachment "04149" "Hydra Sidearm" [Weapon] [Boost, Boost] WeaponMaster 1
 
 -- The Rise of Red Skull
 -- Zola

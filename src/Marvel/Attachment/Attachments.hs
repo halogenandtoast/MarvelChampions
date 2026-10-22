@@ -32,6 +32,15 @@ import Marvel.Attachment.Attachments.RammingSpeed as X
 
 -- The Rise of Red Skull
 import Marvel.Attachment.Attachments.CrossfiresRifle as X
+import Marvel.Attachment.Attachments.CrossbonesMachineGun as X
+import Marvel.Attachment.Attachments.CrossbonesArmor as X
+import Marvel.Attachment.Attachments.LaserRifle as X
+import Marvel.Attachment.Attachments.EnergyShield as X
+import Marvel.Attachment.Attachments.PowerGauntlets as X
+import Marvel.Attachment.Attachments.ExoSuit as X
+import Marvel.Attachment.Attachments.AbsorbingMansBallAndChain as X
+import Marvel.Attachment.Attachments.CombatKnife as X
+import Marvel.Attachment.Attachments.HydraSidearm as X
 
 -- Zola
 import Marvel.Attachment.Attachments.DefensiveProgramming as X

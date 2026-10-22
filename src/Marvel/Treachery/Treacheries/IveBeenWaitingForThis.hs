@@ -43,13 +43,14 @@ instance RunMessage IveBeenWaitingForThis where
         heal (VillainCharacter v) 3
         enemyBecomesTough v
       pure t
-    -- the scheming follows the activation under way
+    -- the scheming is initiated now, and so follows the activation under way (RR
+    -- "Activation")
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       withVillainBySideSchemeThreat LeastThreat \v -> do
         setActiveVillain v
         cardSpecific attrs "schemes" (v, enemy)
       pure t
     Boost (CardSpecific (isTarget attrs -> True) "schemes" (fromJSON -> Success (v, enemy))) -> do
-      afterActivation enemy (villainSchemes v)
+      activationAfter enemy v (villainSchemes v)
       pure t
     _ -> IveBeenWaitingForThis <$> runMessage msg attrs

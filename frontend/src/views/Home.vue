@@ -3,10 +3,11 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Plus, Upload } from 'lucide-vue-next'
-import { deleteGame, fetchGames, fetchSpectatableGames, importGame } from '../api'
+import { deleteGame, fetchCampaigns, fetchGames, fetchSpectatableGames, importGame } from '../api'
 import GameRow from '../components/GameRow.vue'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
-import type { GameSummary } from '../server'
+import type { CampaignView, GameSummary } from '../server'
+import { useCards } from '../cards'
 import { useServerText } from '../i18n'
 
 const tr = useServerText()
@@ -36,6 +37,13 @@ fetchGames()
 fetchSpectatableGames()
   .then((result) => (watchable.value = result))
   .catch(() => {})
+
+const cards = useCards()
+const campaigns = ref<CampaignView[]>([])
+fetchCampaigns()
+  .then((result) => (campaigns.value = result))
+  .catch(() => {})
+const campaignNext = (c: CampaignView) => (c.next ? cards.name(c.next, c.next) : null)
 
 const removeGame = (game: GameSummary) =>
   deleteGame(game.id).then(() => {
@@ -102,6 +110,21 @@ const submitImport = async () => {
         <GameRow v-for="game in shown" :key="game.id" :game="game" :delete-game="() => removeGame(game)" />
       </div>
 
+      <section v-if="campaigns.length" class="watchable">
+        <header class="sub-head">
+          <h2>{{ $t('campaign.campaigns') }}</h2>
+        </header>
+        <div class="games">
+          <RouterLink v-for="c in campaigns" :key="c.id" :to="`/campaigns/${c.id}`" class="box campaign-row">
+            <strong>{{ c.name }}</strong>
+            <span>{{ $t(`campaign.${c.campaign.mode}`) }} · {{ $t('campaign.progress', { done: c.campaign.completed, total: c.campaign.scenarios.length }) }}</span>
+            <span v-if="campaignNext(c)" class="next">{{ $t('campaign.next') }}: {{ campaignNext(c) }}</span>
+            <span v-else-if="c.won" class="next">{{ $t('home.won') }}</span>
+            <span v-else class="next">{{ $t('home.lost') }}</span>
+          </RouterLink>
+        </div>
+      </section>
+
       <section v-if="watchable.length" class="watchable">
         <header class="sub-head">
           <h2>{{ $t('home.spectate') }}</h2>
@@ -131,6 +154,9 @@ const submitImport = async () => {
 .watchable { margin-top: 36px; }
 .sub-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
 .sub-head h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; color: var(--text-muted); }
+.campaign-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; color: var(--text); text-decoration: none; }
+.campaign-row span { color: var(--text-muted); font-size: 0.9rem; }
+.campaign-row .next { margin-left: auto; color: var(--amber); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

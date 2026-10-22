@@ -5,11 +5,15 @@ module Marvel.Encounter.WreckingCrewSpec (spec) where
 import Control.Monad ((<=<))
 import Data.List (sort)
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson (Value (..))
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
+import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Matchers
 import Marvel.Message.Lifted (signatureSchemeOf)
 import Marvel.Query
+import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
@@ -34,7 +38,13 @@ ownScheme v = fromMaybe (error "no side scheme") <$> signatureSchemeOf v
 
 -- | Exactly so much threat on the side scheme (under 10, so nothing fires).
 setThreat :: SideSchemeId -> Natural -> GameAppT ()
-setThreat sid n = resolve $ SideSchemeMessage sid (SideSchemeThreatRemoved 99) : [SideSchemeMessage sid (SideSchemePlaceThreat n) | n > 0]
+setThreat sid n = resolve $ SideSchemeMessage sid (SideSchemeThreatRemoved GameRef 99) : [SideSchemeMessage sid (SideSchemePlaceThreat n) | n > 0]
+
+-- | The choice made now, as the player's only answer.
+answerNow :: IdentityId -> Choice -> GameAppT ()
+answerNow p c = do
+  runNow [Ask p (ChooseOne [c])]
+  answerQuestion p 0
 
 activeNow :: GameAppT VillainId
 activeNow = selectJust ActiveVillain
@@ -150,11 +160,22 @@ spec = describe "The Wrecking Crew" do
       resolve [SetActiveVillain t]
       card <- revealNow p Attachments.heldHostageThunderball
       let hostage = AttachmentId $ unCardId $ ecCardId card
-      before <- sideSchemeThreat st
-      resolve [SideSchemeMessage st (SideSchemeThwarted (IdentityRef p) 2)]
-      sideSchemeThreat st `shouldReturn` before
+      setThreat st 6
       hero <- selectAny (IdentityWithId p <> HeroIdentity)
       unless hero $ changeForm p
+      -- a basic thwart removes none
+      answerNow p (BasicThwartScheme (SideSchemeRef st) (IdentityRef p) 2)
+      sideSchemeThreat st `shouldReturn` 6
+      -- nor does an ability labeled a thwart: For Justice!, "Hero Action (thwart)"
+      clearHand p
+      forJustice <- putInHand p "01060"
+      payment <- traverse (putInHand p) ["01088", "01088"]
+      playWith forJustice payment
+      choose "thwart Thunderstruck" (isTargetChoice (SchemeSideSchemeId st))
+      sideSchemeThreat st `shouldReturn` 6
+      -- a "remove threat" that is not a thwart still removes it
+      answerNow p (ThwartScheme (SideSchemeRef st) GameRef 2)
+      sideSchemeThreat st `shouldReturn` 4
       choose "use Held Hostage" (isAbilityOf (AttachmentRef hostage))
       ranMessage tg (VillainMessage t (VillainAttacks p)) `shouldReturn` True
       -- Spider-Man's sense for the attack is not used
@@ -180,6 +201,129 @@ spec = describe "The Wrecking Crew" do
     inGame tg do
       codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameVillains)
       sort codes `shouldBe` ["07003", "07018", "07033", "07047"]
+
+  it "Ramming Speed: attacked, you must defend with an ally you control if able, and cannot decline" do
+    tg <- breakout ["spider-man", "she-hulk"]
+    inGame tg do
+      [p1, p2] <- players
+      b <- bulldozer
+      resolve [SetActiveVillain b]
+      _ <- revealNow p1 Attachments.rammingSpeed
+      mine <- allyIdOf <$> putIntoPlay p1 "01002"
+      theirs <- allyIdOf <$> putIntoPlay p2 "01067"
+      runNow [VillainMessage b (VillainAttacks p1)]
+      let defending = \case
+            Just (_, cs) | any isNoResponse cs -> choose "not respond" isNoResponse >> asked
+            q -> pure q
+      asked >>= defending >>= defending >>= \case
+        Just (who, cs) -> do
+          who `shouldBe` p1
+          length cs `shouldBe` 1
+          cs `shouldSatisfy` all \case
+            AllyDefend a _ -> a == mine
+            _ -> False
+          cs `shouldSatisfy` notElem (AllyDefend theirs (EnemyVillainId b))
+        Nothing -> error "no defender asked"
+
+  it "Ramming Speed with no ally able leaves the attack defended as any other" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      b <- bulldozer
+      resolve [SetActiveVillain b]
+      _ <- revealNow p Attachments.rammingSpeed
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      runNow [VillainMessage b (VillainAttacks p)]
+      whenM (offers isNoResponse) $ choose "not respond" isNoResponse
+      offers isNoDefender `shouldReturn` True
+
+  it "a defeated villain's cards still in play go to his own discard pile as they leave play" do
+    tg <- breakout ["spider-man"]
+    inGame tg do
+      t <- thunderball
+      card <- fromMaybe (error "empty deck") . headMay . pileDeck <$> getPile (VillainDeckKey t)
+      resolve [ResolveVillainDefeat t]
+      resolve [DiscardedCard (EncounterCard card)]
+      pileDiscard <$> getPile (VillainDeckKey t) `shouldReturn` [card]
+      encounterDiscard `shouldReturn` []
+      -- and the board shows them, by his name
+      view <- liftIO . publicGame =<< getGame
+      let decks = case view of
+            Object o | Just (Array areas) <- KeyMap.lookup "areas" o, Just (Object a) <- headMay (toList areas), Just (Array ds) <- KeyMap.lookup "decks" a -> toList ds
+            _ -> []
+          named n = [d | Object d <- decks, KeyMap.lookup "name" d == Just (String n), KeyMap.lookup "kind" d == Just (String "villain")]
+      length (named "Thunderball") `shouldBe` 1
+      [KeyMap.lookup "discard" d <&> \case Array xs -> length xs; _ -> 0 | d <- named "Thunderball"] `shouldBe` [Just 1]
+
+  it "the mixed setup has the first player choose each villain's version, A or B" do
+    (app, _, _) <- dealtGameLogged (ScenarioSetup "07001b" [] Normal) [starter "spider-man"] 1
+    let wanted = ["07002", "07018", "07032", "07047"]
+        setUp :: Int -> GameAppT ()
+        setUp 0 = error "setup did not reach a turn"
+        setUp n =
+          asked >>= \case
+            Just (_, cs) | EndTurn `elem` cs -> pure ()
+            Just (ident, cs)
+              | codes@(_ : _) <- [c | CardLabel c _ <- cs] -> do
+                  codes `shouldSatisfy` ((== 2) . length)
+                  let pick = fromMaybe (error "no wanted version") $ headMay [i | (i, CardLabel c _) <- zip [0 ..] cs, c `elem` wanted]
+                  answerQuestion ident pick >> setUp (n - 1)
+            Just (ident, _) -> answerQuestion ident 0 >> setUp (n - 1)
+            Nothing -> error "no question during setup"
+    runGameApp app do
+      setUp 200
+      codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameVillains)
+      sort codes `shouldBe` wanted
+      w <- wrecker
+      selectJust ActiveVillain `shouldReturn` w
+      traverse (deckSize <=< villainCoded) ["07002", "07018", "07032", "07047"] `shouldReturn` [15, 15, 15, 15]
+
+  it "I've Been Waiting For This! as a boost moves the counter at once, the villain scheming after the attack" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      [w, _, pd, _] <- traverse id [wrecker, thunderball, piledriver, bulldozer]
+      ibwft <- encounterCard Treacheries.iveBeenWaitingForThis
+      resolve [CreateDeck (VillainDeckKey w) [ibwft]]
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      runNow [VillainMessage w (VillainAttacks p)]
+      let settle :: Int -> GameAppT ()
+          settle 0 = pure ()
+          settle n = asked >>= \case
+            Just (_, cs) | EndTurn `elem` cs -> pure ()
+            Just (ident, _) -> answerQuestion ident 0 >> settle (n - 1)
+            Nothing -> pure ()
+      settle 50
+      activeNow `shouldReturn` pd
+      order <- reverse <$> liftIO (readIORef tg.ran)
+      let at m = fromMaybe (error $ "not run: " <> show m) $ headMay [i | (i, x) <- zip [0 :: Int ..] order, x == tshow m]
+      at (VillainMessage pd VillainSchemes) `shouldSatisfy` (> at (VillainMessage w VillainEndAttack))
+      at (SetActiveVillain pd) `shouldSatisfy` (< at (VillainMessage w VillainEndAttack))
+
+  it "activations initiated during an activation follow it in the order the first player chooses" do
+    tg <- breakout ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      w <- wrecker
+      cards <- traverse encounterCard [Treacheries.iveBeenWaitingForThis, Minions.escapedConvict]
+      resolve [CreateDeck (VillainDeckKey w) cards]
+      hero <- selectAny (IdentityWithId p <> HeroIdentity)
+      unless hero $ changeForm p
+      -- a boost card dealt ahead of the activation is turned up with its own
+      runNow [DealBoost (VillainRef w)]
+      runNow [VillainMessage w (VillainAttacks p)]
+      let untilOrder :: Int -> GameAppT Bool
+          untilOrder 0 = pure False
+          untilOrder n = openQuestion >>= \case
+            Just (_, QuestionLabel "$label.chooseActivationOrder" _ _) -> pure True
+            Just (_, q) | EndTurn `elem` choicesOf q -> pure False
+            Just (ident, _) -> answerQuestion ident 0 >> untilOrder (n - 1)
+            Nothing -> pure False
+      untilOrder 50 `shouldReturn` True
+      ran <- liftIO (readIORef tg.ran)
+      ran `shouldSatisfy` elem (tshow (VillainMessage w VillainEndAttack))
  where
   ranMessage tg msg = elem (tshow msg) <$> liftIO (readIORef tg.ran)
 

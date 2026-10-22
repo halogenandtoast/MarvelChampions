@@ -50,6 +50,8 @@ data IdentityMessage
     DrawToPrintedHandSize
   | ReadyCards
   | SetupIdentity
+  | -- | the cards with the setup keyword come out of the deck into play
+    PutSetupCardsIntoPlay
   | DealStartingHand
   | FinishedSearching
   | VillainAndMinionsActivate

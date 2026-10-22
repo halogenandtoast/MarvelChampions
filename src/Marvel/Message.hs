@@ -24,6 +24,7 @@ import Marvel.Message.Villain as X
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Area (AreaId, DeckKey)
+import Marvel.Campaign (CampaignRecord, CampaignStepKind)
 import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
@@ -306,6 +307,8 @@ data Message
   | DealBoost Target
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
+  | -- | "Boost: reveal this card"
+    RevealBoost Target IdentityId
   | DealEncounterCard IdentityId
   | RevealDealtEncounterCards
   | GainSurge Target
@@ -414,6 +417,9 @@ data Message
   | -- | a villain is defeated for good: the scenario says what that does, by default
     -- the players win with no villain left, and otherwise he leaves play
     ResolveVillainDefeat VillainId
+  | -- | activations initiated during another, each by its villain, following it once it
+    -- has fully resolved, in the order the first player chooses (RR "Activation")
+    PendingActivations [(VillainId, [Message])]
   | -- | the attachment card is put into play attached to the enemy, from wherever it
     -- was, without being revealed
     AttachEncounterCard EncounterCard EnemyId
@@ -426,5 +432,13 @@ data Message
   | -- | copies of a unique card in the area, as two areas come together, are discarded
     -- down to one, the first player choosing which stays
     DiscardDuplicateUniques AreaId
+  | -- | a part of the scenario's Campaign Instructions, in a campaign game: the
+    -- scenario says what it does ('Marvel.Campaign.Steps' by default), and may add its own
+    CampaignStep CampaignStepKind
+  | -- | what the game writes in the campaign log it was dealt with
+    RecordInCampaignLog CampaignRecord
+  | -- | an obligation drawn from the player's deck goes into play in their play area,
+    -- as an expert campaign's do
+    PutObligationIntoPlay IdentityId PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

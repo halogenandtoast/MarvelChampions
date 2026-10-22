@@ -96,6 +96,19 @@ allUpgrades = fromList $ concatMap
   , finesse
   , skilledInvestigator
 
+  -- The Rise of Red Skull: the Hydra Campaign set
+  , adrenalStims
+  , tacticalScanner
+  , emergencyTeleporter
+  , laserCannon
+  , basicThwartUpgrade
+  , improvedThwartUpgrade
+  , basicAttackUpgrade
+  , improvedAttackUpgrade
+  , basicDefenseUpgrade
+  , improvedDefenseUpgrade
+  , basicRecoveryUpgrade
+  , improvedRecoveryUpgrade
   -- The Once and Future Kang
 
   ]
@@ -423,6 +436,51 @@ theSorcererSupreme =
     { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
     }
 
+-- * The Rise of Red Skull: the Hydra Campaign set, campaign-only cards
+
+-- | A Tech upgrade: Setup, its own wild resource, and nothing to pay.
+techUpgrade :: CardCode -> Name -> CardDef
+techUpgrade code name = (basicUpgrade code name 0 [Tech] [Wild]) {cdKeywords = singleton Setup}
+
+-- | A Condition upgrade's face: Permanent and Setup, with no cost.
+conditionUpgrade :: CardCode -> Name -> CardDef
+conditionUpgrade code name = (basicUpgrade code name 0 [Condition] []) {cdCost = Nothing, cdKeywords = fromList [Permanent, Setup]}
+
+adrenalStims :: CardDef
+adrenalStims = techUpgrade "04155" "Adrenal Stims"
+
+tacticalScanner :: CardDef
+tacticalScanner = techUpgrade "04156" "Tactical Scanner"
+
+emergencyTeleporter :: CardDef
+emergencyTeleporter = techUpgrade "04157" "Emergency Teleporter"
+
+laserCannon :: CardDef
+laserCannon = techUpgrade "04158" "Laser Cannon"
+
+basicThwartUpgrade :: CardDef
+basicThwartUpgrade = conditionUpgrade "04159a" "Basic Thwart Upgrade"
+
+improvedThwartUpgrade :: CardDef
+improvedThwartUpgrade = conditionUpgrade "04159b" "Improved Thwart Upgrade"
+
+basicAttackUpgrade :: CardDef
+basicAttackUpgrade = conditionUpgrade "04160a" "Basic Attack Upgrade"
+
+improvedAttackUpgrade :: CardDef
+improvedAttackUpgrade = conditionUpgrade "04160b" "Improved Attack Upgrade"
+
+basicDefenseUpgrade :: CardDef
+basicDefenseUpgrade = conditionUpgrade "04161a" "Basic Defense Upgrade"
+
+improvedDefenseUpgrade :: CardDef
+improvedDefenseUpgrade = conditionUpgrade "04161b" "Improved Defense Upgrade"
+
+basicRecoveryUpgrade :: CardDef
+basicRecoveryUpgrade = conditionUpgrade "04162a" "Basic Recovery Upgrade"
+
+improvedRecoveryUpgrade :: CardDef
+improvedRecoveryUpgrade = conditionUpgrade "04162b" "Improved Recovery Upgrade"
 hawkeyesBow :: CardDef
 hawkeyesBow =
   unique $

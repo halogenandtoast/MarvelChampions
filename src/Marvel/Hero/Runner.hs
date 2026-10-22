@@ -38,6 +38,7 @@ getModifiedAttack attrs = do
   pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
  where
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (AttackPenalty n) = subtractNatural n
   applyModifier _ = id
 
 getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
@@ -46,6 +47,7 @@ getModifiedThwart attrs = do
   pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
  where
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (ThwartPenalty n) = subtractNatural n
   applyModifier _ = id
 
 getModifiedDefense :: (HasGame m) => Attrs Hero -> m Natural
@@ -54,6 +56,7 @@ getModifiedDefense attrs = do
   pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
  where
   applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (DefensePenalty n) = subtractNatural n
   applyModifier _ = id
 
 instance RunMessage Hero where
@@ -102,10 +105,10 @@ instance RunMessage (Attrs Hero) where
               if withAttack && atk /= thw
                 then
                   chooseOne ident
-                    [ labeled "$label.thwartWithThw" (thwartScheme scheme a thw)
-                    , labeled "$label.thwartWithAtk" (thwartScheme scheme a atk)
+                    [ labeled "$label.thwartWithThw" (basicThwartOf scheme a thw)
+                    , labeled "$label.thwartWithAtk" (basicThwartOf scheme a atk)
                     ]
-                else thwartScheme scheme a thw
+                else basicThwartOf scheme a thw
           chooseOnePrompted ident "$label.chooseSchemeToThwart" choices
           pure a
         Defended enemy -> do

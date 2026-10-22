@@ -8,6 +8,7 @@ import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
 import Marvel.Area (discardsTo, emptyPile, isEncounterDeck)
+import Marvel.Campaign.Steps (runCampaignStep)
 import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
@@ -298,6 +299,8 @@ runScenarioMessage msg attrs = case msg of
       if home == EncounterDeckKey || HashMap.member home (scenarioDecks attrs)
         then leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
         else leaves ec attrs
+  -- the Campaign Instructions: a scenario adds its own steps answering this first
+  CampaignStep step -> attrs <$ runCampaignStep step
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
     areas <- getAreas
@@ -342,7 +345,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       -- from wherever they were: the set-aside area or the discard pile
-      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards)
+      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards) & discardL %~ filter (`notElem` cards)
     -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs

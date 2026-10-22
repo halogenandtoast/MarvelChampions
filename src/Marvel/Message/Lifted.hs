@@ -14,6 +14,7 @@ import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
+import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
@@ -81,6 +82,10 @@ targeting a body = TargetLabel (toTarget a) . pure . Run <$> capture body
 -- | A choice by its label (an i18n key under @$label.@), doing what the body does.
 labeled :: (ReverseQueue m) => Text -> m () -> m Choice
 labeled l body = Label l . pure . Run <$> capture body
+
+-- | A choice shown as the card, doing what the body does.
+cardLabeled :: (ReverseQueue m) => CardCode -> m () -> m Choice
+cardLabeled code body = CardLabel code . Run <$> capture body
 
 -- | The card's ability as a choice: what it does is worked out as it is chosen.
 targetingAbility :: (Applicative m, IsRef a) => a -> Natural -> m Choice
@@ -182,6 +187,10 @@ setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 
 thwartScheme :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
+
+-- | A hero's or ally's basic thwart of the scheme.
+basicThwartOf :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
+basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
 
 -- | The threat placed on the scheme without the "would place threat" window
 -- ('threatPlacement'): what an interrupt to that window places in its stead.
@@ -399,6 +408,14 @@ clearBoosts = push ClearBoosts
 putBoostIntoPlay :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
 putBoostIntoPlay card = push . PutBoostIntoPlay (toTarget card)
 
+-- | "Boost: reveal this card": the boost card is revealed for the player.
+revealBoost :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
+revealBoost card = push . RevealBoost (toTarget card)
+
+-- | "+n ATK (or SCH) for this activation": for the villain's next activation, which follows.
+activationBonus :: (ReverseQueue m) => VillainId -> Natural -> m ()
+activationBonus vid = push . VillainMessage vid . VillainActivationBonus
+
 -- | More boost icons for the villain's activation.
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
@@ -506,8 +523,14 @@ nextMainScheme = push . NextMainScheme
 
 -- | The side scheme is defeated, past the window for it, and leaves play.
 defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
-defeatSideScheme sid =
-  pushAll [CheckWindows [Window When $ W.DefeatedSideScheme sid], SideSchemeMessage sid DefeatSideScheme, RemoveFromPlay (toTarget sid)]
+defeatSideScheme sid = do
+  you <- getYou
+  pushAll
+    [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
+    , SideSchemeMessage sid DefeatSideScheme
+    , RemoveFromPlay (toTarget sid)
+    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you]
+    ]
 
 -- | What the side scheme does once what it revealed is done.
 sideSchemeRevealedThen :: (ReverseQueue m) => SideSchemeId -> m ()
@@ -909,7 +932,7 @@ villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWitho
 
 -- | Threat taken off the side scheme, not by thwarting.
 removeSideSchemeThreat :: (ReverseQueue m) => SideSchemeId -> Natural -> m ()
-removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved
+removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved GameRef
 
 -- | Of the upgrades and the supports the player controls, as asked for, those with the
 -- highest printed cost.
@@ -932,19 +955,29 @@ highestCostCardsControlled you = do
     (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
   pure $ extremes MostThreat costed
 
--- | What the body does once the enemy's activation under way is over: after its attack,
--- or after its scheming. A boost ability that has another activation follow it waits
--- for this one to end, so the two are not run inside each other.
-afterActivation :: (ReverseQueue m) => EnemyId -> m () -> m ()
-afterActivation enemy body = do
+-- | The villain's activation the body initiates during the enemy's activation under way:
+-- "the newly initiated activation resolves after the current activation has finished
+-- resolving", the abilities the current one triggered first, and several initiated so
+-- in the order the first player decides (RR "Activation", v1.8 p.6). It follows the
+-- current attack's end, or its scheming; with no activation under way, it is at once.
+activationAfter :: (ReverseQueue m) => EnemyId -> VillainId -> m () -> m ()
+activationAfter enemy v body = do
+  msgs <- capture body
   attacking <- case enemy of
-    EnemyVillainId v -> isJust <$> getVillainAttack v
+    EnemyVillainId e -> isJust <$> getVillainAttack e
     EnemyMinionId _ -> pure True
-  flip afterMatching body \case
-    VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
-    VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
-    MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
-    _ -> False
+  let ends = \case
+        VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
+        VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
+        MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
+        _ -> False
+  queued <- isQueued ends
+  if not queued
+    then pushAll msgs
+    else withQueue_ \q -> case break ends q of
+      (pre, end : PendingActivations pending : rest) -> pre <> (end : PendingActivations (pending <> [(v, msgs)]) : rest)
+      (pre, end : rest) -> pre <> (end : PendingActivations [(v, msgs)] : rest)
+      (pre, []) -> pre
 
 -- | The villain in play with the title, if he is.
 villainNamed :: (HasGame m) => Text -> m (Maybe VillainId)
@@ -1057,6 +1090,27 @@ addSetupMainScheme = push . AddSetupMainScheme
 replaceMainScheme :: (ReverseQueue m) => MainSchemeId -> CardCode -> m ()
 replaceMainScheme mid = push . ReplaceMainScheme mid
 
+-- * Campaigns
+
+-- | The scenario follows that part of its Campaign Instructions.
+campaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
+campaignStep = push . CampaignStep
+
+-- | Written in the campaign log, in a campaign game; otherwise nothing.
+recordInCampaignLog :: (ReverseQueue m) => CampaignRecord -> m ()
+recordInCampaignLog = push . RecordInCampaignLog
+
+-- | Written in the log for the player, who the log knows by their identity.
+recordForPlayer :: (ReverseQueue m) => IdentityId -> (CardCode -> CampaignRecord) -> m ()
+recordForPlayer ident f = recordInCampaignLog . f =<< getIdentityCode ident
+
+-- | The player's card crossed out of the campaign log: not in their deck again.
+removeFromCampaignLog :: (ReverseQueue m) => IdentityId -> CardCode -> m ()
+removeFromCampaignLog ident code = recordForPlayer ident (`RemoveFromCampaignLog` code)
+
+putObligationIntoPlay :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+putObligationIntoPlay ident = push . PutObligationIntoPlay ident
+
 -- | Each player's obligations out of the encounter deck and the game.
 removePlayerObligationsFromGame :: (ReverseQueue m) => m ()
 removePlayerObligationsFromGame = push RemovePlayerObligationsFromGame
@@ -1093,11 +1147,11 @@ treacheryStep tid = push . TreacheryMessage tid
 obligationStep :: (ReverseQueue m) => ObligationId -> ObligationMessage -> m ()
 obligationStep oid = push . ObligationMessage oid
 
-attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
-attachmentStep aid = push . AttachmentMessage aid
-
 environmentStep :: (ReverseQueue m) => EnvironmentId -> EnvironmentMessage -> m ()
 environmentStep eid = push . EnvironmentMessage eid
+
+attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
+attachmentStep aid = push . AttachmentMessage aid
 
 sideSchemeStep :: (ReverseQueue m) => SideSchemeId -> SideSchemeMessage -> m ()
 sideSchemeStep sid = push . SideSchemeMessage sid

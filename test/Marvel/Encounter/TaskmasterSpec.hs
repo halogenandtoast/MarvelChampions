@@ -54,7 +54,8 @@ spec = describe "Taskmaster" do
         -- the board shows the card facedown beneath it
         view <- liftIO . publicGame =<< getGame
         let held = [h | Object o <- [view], Just (Array ss) <- [KeyMap.lookup "sideSchemes" o], Object s <- toList ss, Just (Number h) <- [KeyMap.lookup "held" s]]
-        held `shouldBe` [1]
+        -- (Hydra Patrol, put into play by the setup, holds none)
+        filter (> 0) held `shouldBe` [1]
         -- the second player thwarts it to nothing
         runNow [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p2) 5)]
         pass

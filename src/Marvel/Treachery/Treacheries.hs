@@ -73,6 +73,17 @@ import Marvel.Treachery.Treacheries.YoureDeadMeat as X
 
 -- The Rise of Red Skull
 import Marvel.Treachery.Treacheries.SniperShot as X
+import Marvel.Treachery.Treacheries.FullAuto as X
+import Marvel.Treachery.Treacheries.HardAsNails as X
+import Marvel.Treachery.Treacheries.RaidTheArmory as X
+import Marvel.Treachery.Treacheries.StallTactics as X
+import Marvel.Treachery.Treacheries.SwingingStone as X
+import Marvel.Treachery.Treacheries.SteelKick as X
+import Marvel.Treachery.Treacheries.PiercingThorns as X
+import Marvel.Treachery.Treacheries.OmniMorphDuplication as X
+import Marvel.Treachery.Treacheries.IcyGrip as X
+import Marvel.Treachery.Treacheries.WeaponMaster as X
+import Marvel.Treachery.Treacheries.ConcussionGrenade as X
 
 -- Zola
 import Marvel.Treachery.Treacheries.MindRay as X
