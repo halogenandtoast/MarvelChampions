@@ -19,7 +19,6 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource
-import Marvel.Queue (isQueued)
 
 hysteria :: AttachmentCard Hysteria
 hysteria = attachment Hysteria Cards.hysteria
@@ -40,11 +39,8 @@ instance RunMessage Hysteria where
       pure a
     -- an attack under way, past a stun
     VillainMessage vid (VillainBeginAttack _) | attachedTo vid -> a <$ dealBoost vid
-    -- a scheme under way, past a confusion: its boost cards are to be turned up
-    VillainMessage vid VillainSchemes | attachedTo vid -> do
-      scheming <- isQueued (== VillainMessage vid VillainFlipBoostCards)
-      when scheming $ dealBoost vid
-      pure a
+    -- a scheme under way, past a confusion
+    VillainMessage vid VillainBeginScheme | attachedTo vid -> a <$ dealBoost vid
     _ -> Hysteria <$> runMessage msg attrs
    where
     attachedTo vid = attachmentEnemy attrs == Just (EnemyVillainId vid)
