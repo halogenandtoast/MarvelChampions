@@ -414,10 +414,8 @@ runGameMessage msg g@Game {..} = case msg of
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     SupportRef sid -> do
       for_ (lookup sid $ gameSupports g) $ \support ->
-        push $
-          IdentityMessage (getSupportController support) $
-            SupportRemoved
-              sid
+        pushAll
+          [IdentityMessage (getSupportController support) $ SupportRemoved sid, DiscardedCard $ toCard (toAttrs support)]
       pure $ g & (entitiesL . supportsL %~ deleteMap sid)
     UpgradeRef uid -> do
       case (lookup uid $ gameUpgrades g) of

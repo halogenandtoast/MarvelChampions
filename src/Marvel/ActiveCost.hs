@@ -98,6 +98,7 @@ costMessages iid activeCost = go (activeCostCost activeCost)
         [ UpgradeMessage ident $ DiscardUpgrade
         , Paid $ DiscardPayment target
         ]
+      SupportRef _ -> [RemoveFromPlay target, Paid $ DiscardPayment target]
       _ -> error "Unhandled"
     UseCost -> case activeCostTarget activeCost of
       ForAbility a -> do

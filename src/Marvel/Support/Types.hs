@@ -160,6 +160,6 @@ instance RunMessage (Attrs Support) where
       SpendSupportUse -> do
         when
           (supportUses a == 1 && supportDiscardIfNoUses a)
-          (pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)])
+          (push $ RemoveFromPlay (toTarget a))
         pure $ a & usesL -~ 1
     _ -> pure a
