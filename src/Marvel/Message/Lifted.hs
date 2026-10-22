@@ -380,8 +380,8 @@ addUpgradeUses :: (ReverseQueue m) => UpgradeId -> Natural -> m ()
 addUpgradeUses u = push . UpgradeMessage u . AddUpgradeUses
 
 -- | The player draws and reveals an encounter card.
-revealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
-revealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
+drawAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
+drawAndRevealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
 
 -- | The top cards of the encounter deck are looked at, the target told which
 -- ('SearchFoundCards').

@@ -50,7 +50,7 @@ instance RunMessage Spycraft where
         _ -> (q, [])
       instead <- capture do
         discardCard (EncounterCard card)
-        revealEncounterCard ident
+        drawAndRevealEncounterCard ident
       replaceMatchingMessage (const $ instead <> resolved) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False
