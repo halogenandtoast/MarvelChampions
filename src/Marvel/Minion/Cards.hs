@@ -54,6 +54,9 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , crossfire
+      , theViper
+      , hydraRegular
 
       -- The Once and Future Kang
 
@@ -286,3 +289,19 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+crossfire :: CardDef
+crossfire =
+  unique $
+    (minion "04027" "Crossfire" [Mercenary] [Star] HawkeyeNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Piercing]
+      }
+
+theViper :: CardDef
+theViper = unique $ minion "04054" "The Viper" [Elite, Hydra] [Boost, Boost, Boost] SpiderWomanNemesis 1
+
+hydraRegular :: CardDef
+hydraRegular =
+  (minion "04056" "Hydra Regular" [Hydra] [Boost, Boost] SpiderWomanNemesis 2)
+    { cdKeywords = fromList [Incite 1]
+    }

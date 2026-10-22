@@ -21,7 +21,7 @@ import Marvel.Support (allSupports)
 import Marvel.Upgrade (allUpgrades)
 import TestImport
 
-data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text}
+data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, setCode :: Maybe Text}
 
 -- | A pack's cards as MarvelCDB lists them.
 packCards :: Text -> IO [PackCard]
@@ -31,13 +31,20 @@ packCards pack = do
     cards <- o .: "cards"
     fmap catMaybes $ for cards $ withObject "card" \c -> do
       pack' <- c .: "packCode"
-      if pack' == pack
-        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type")
-        else pure Nothing
+      card <- PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> c .:? "setCode"
+      pure $ if pack' == pack && inScope pack' card then Just card else Nothing
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors"]
+
+-- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
+-- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
+-- and campaign sets to come.
+inScope :: Text -> PackCard -> Bool
+inScope pack c = case pack of
+  "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) c.setCode
+  _ -> True
 
 spec :: Spec
 spec = for_ packs \pack -> describe (show pack) do

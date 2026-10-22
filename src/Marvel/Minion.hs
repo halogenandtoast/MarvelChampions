@@ -63,6 +63,9 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeMinionCard crossfire
+      , SomeMinionCard theViper
+      , SomeMinionCard hydraRegular
 
       -- The Once and Future Kang
 

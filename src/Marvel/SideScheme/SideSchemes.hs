@@ -30,5 +30,7 @@ import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
+import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
 
 -- The Once and Future Kang

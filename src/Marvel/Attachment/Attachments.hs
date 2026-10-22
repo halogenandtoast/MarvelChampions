@@ -18,5 +18,6 @@ import Marvel.Attachment.Attachments.Counterspell as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Attachment.Attachments.CrossfiresRifle as X
 
 -- The Once and Future Kang

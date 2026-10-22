@@ -17,5 +17,7 @@ import Marvel.Obligation.Obligations.InnerDemons as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Obligation.Obligations.CriminalPast as X
+import Marvel.Obligation.Obligations.UncertainLoyalties as X
 
 -- The Once and Future Kang

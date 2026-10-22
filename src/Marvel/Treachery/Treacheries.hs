@@ -43,5 +43,6 @@ import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.SniperShot as X
 
 -- The Once and Future Kang

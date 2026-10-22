@@ -95,6 +95,12 @@ allUpgrades = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeUpgradeCard hawkeyesBow
+  , SomeUpgradeCard hawkeyesQuiver
+  , SomeUpgradeCard expertMarksman
+  , SomeUpgradeCard skyCycle
+  , SomeUpgradeCard finesse
+  , SomeUpgradeCard skilledInvestigator
 
   -- The Once and Future Kang
 

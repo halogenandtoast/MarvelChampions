@@ -29,6 +29,8 @@ allObligations = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , criminalPast
+    , uncertainLoyalties
 
     -- The Once and Future Kang
 
@@ -91,3 +93,9 @@ odinsAnger = obligation "06026" "Odin's Anger" [Boost, Boost]
 
 physicalToll :: CardDef
 physicalToll = obligation "09027" "Physical Toll" [Boost, Boost]
+
+criminalPast :: CardDef
+criminalPast = obligation "04026" "Criminal Past" [Boost, Boost]
+
+uncertainLoyalties :: CardDef
+uncertainLoyalties = obligation "04053" "Uncertain Loyalties" [Boost, Boost]
