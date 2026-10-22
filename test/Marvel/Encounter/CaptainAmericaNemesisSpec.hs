@@ -121,8 +121,7 @@ spec = describe "Captain America's nemesis set" do
         soldier <- addMinion p Minions.hydraSoldierCaptainAmerica
         webbed <- putInHand p "01009"
         payment <- traverse (putInHand p) ["01088", "01090"]
-        playWith webbed payment
-        choose "attach to the soldier" (isTargetChoice (EnemyMinionId soldier))
+        playOn webbed (EnemyMinionId soldier) payment
         [bomber] <- stackEncounterDeck [Minions.hydraBomber]
         before <- getsGame (HashMap.keys . gameMinions)
         _ <- revealNow p Treacheries.hailHydra
