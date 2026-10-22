@@ -46,6 +46,8 @@ instance Entity Attachment where
     , attachmentCardDef :: CardDef
     , attachmentEnemy :: Maybe EnemyId
     , attachmentDamage :: Natural
+    , attachmentIdentity :: Maybe IdentityId
+    -- ^ the hero it is attached to, if it is
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -110,6 +112,7 @@ attachment f cardDef =
             , attachmentCardDef = cardDef
             , attachmentEnemy = Nothing
             , attachmentDamage = 0
+            , attachmentIdentity = Nothing
             }
     }
 

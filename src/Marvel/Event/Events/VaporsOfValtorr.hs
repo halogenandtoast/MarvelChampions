@@ -1,7 +1,6 @@
 module Marvel.Event.Events.VaporsOfValtorr (
   vaporsOfValtorr,
   VaporsOfValtorr (..),
-  statusLabel,
 ) where
 
 import Marvel.Prelude
@@ -59,9 +58,3 @@ instance RunMessage VaporsOfValtorr where
     statusCards = [minBound .. maxBound]
     lacking c = filterM (\s -> not . member c <$> select (CharacterWithStatus s)) statusCards
     ask l = push . Ask (eventController attrs) . prompted l . ChooseOne
-
-statusLabel :: StatusCard -> Text
-statusLabel = \case
-  StunnedStatus -> "$label.stunnedStatus"
-  ConfusedStatus -> "$label.confusedStatus"
-  ToughStatus -> "$label.toughStatus"
