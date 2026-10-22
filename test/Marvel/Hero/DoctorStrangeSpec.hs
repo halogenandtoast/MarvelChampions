@@ -285,6 +285,24 @@ spec = describe "Doctor Strange" do
       v <- toAttrs <$> getVillain
       (v.villainStunned, v.villainConfused) `shouldBe` (True, True)
 
+  it "Magic Blast's 2 more damage is the same attack: a retaliating enemy retaliates once" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      -- Whiplash has 4 HP and retaliate 1; his tough card takes the 5
+      whiplash <- addMinion p Minions.whiplash
+      resolve [GiveStatus (MinionRef whiplash) ToughStatus]
+      -- Energy is energy: 2 more damage
+      _ <- stackDeck p ["09022"]
+      blast <- putInHand p "09004"
+      playPaying p blast ["01088", "01089"]
+      choose "Whiplash" (isTargetChoice (EnemyMinionId whiplash))
+      resolve []
+      minionDamageOf whiplash `shouldReturn` Just 2
+      damageOf p `shouldReturn` 1
+
   it "Astral Projection removes 3 threat and 1 more for each boost icon on the top encounter card" do
     tg <- doctorStrange
     let p = player1 tg
