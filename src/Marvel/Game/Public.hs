@@ -6,7 +6,7 @@
 -- out, and at a game with friends so do the hands of the players a viewer does not hold.
 --
 -- Stored games and exports keep the engine's own JSON; this is only ever sent.
-module Marvel.Game.Public (publicGame, publicGameFor, owedFor, GameView (..), ChoiceView (..)) where
+module Marvel.Game.Public (publicGame, publicGameFor, owedFor, describeChoice, GameView (..), ChoiceView (..)) where
 
 import Marvel.Prelude
 
@@ -39,6 +39,7 @@ import Marvel.Id
 import Marvel.Identity
 import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.Message (FinishedStatus (..))
+import Marvel.Message qualified as Msg
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -490,7 +491,7 @@ describeChoice :: IdentityId -> Choice -> ChoiceView
 describeChoice asked = \case
   CardLabel code c -> (describeChoice asked c) {code = Just code}
   Label l _ -> plain "label" (Just l)
-  TargetLabel t _ -> on "target" t
+  TargetLabel t body -> (on "target" t) {kind = fromMaybe "target" (doneTo t body)}
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
     (on "ability" (refocus a.abilitySource))
@@ -530,6 +531,31 @@ describeChoice asked = \case
     (Recover : _) -> Just "$label.recover"
     (AllyAttack _ : _) -> Just "$label.attack"
     (AllyThwart _ : _) -> Just "$label.thwart"
+    _ -> Nothing
+  -- a choice built from what it does is named by the first thing it does to its target,
+  -- as the choice that says so would be: "damage" on the character it damages
+  doneTo t = \case
+    [Run msgs] -> headMay [k | (k, on') <- mapMaybe doneBy (concatMap flat msgs), refId on' == refId t]
+    _ -> Nothing
+  flat = \case
+    Msg.Simultaneously msgs -> concatMap flat msgs
+    m -> [m]
+  doneBy :: Msg.Message -> Maybe (Text, Target)
+  doneBy = \case
+    Msg.IdentityMessage i (Msg.IdentityDamaged _ _) -> Just ("damage", IdentityRef i)
+    Msg.AllyMessage a (Msg.AllyDamaged _ _) -> Just ("damage", AllyRef a)
+    Msg.VillainMessage v (Msg.VillainDamaged _ _) -> Just ("damage", VillainRef v)
+    Msg.MinionMessage m (Msg.MinionDamaged _ _) -> Just ("damage", MinionRef m)
+    Msg.IdentityMessage i (Msg.IdentityHealed _) -> Just ("heal", IdentityRef i)
+    Msg.AllyMessage a (Msg.AllyHealed _) -> Just ("heal", AllyRef a)
+    Msg.VillainMessage v (Msg.VillainStunned _) -> Just ("stun", VillainRef v)
+    Msg.MinionMessage m (Msg.MinionStunned _) -> Just ("stun", MinionRef m)
+    Msg.VillainMessage v (Msg.VillainConfused _) -> Just ("confuse", VillainRef v)
+    Msg.MinionMessage m (Msg.MinionConfused _) -> Just ("confuse", MinionRef m)
+    Msg.MainSchemeMessage m (Msg.MainSchemeThwarted _ _) -> Just ("thwartScheme", MainSchemeRef m)
+    Msg.SideSchemeMessage m (Msg.SideSchemeThwarted _ _) -> Just ("thwartScheme", SideSchemeRef m)
+    Msg.RemoveFromPlay t' -> Just ("discard", t')
+    Msg.ReturnToHand t' -> Just ("returnToHand", t')
     _ -> Nothing
   plain kind label = ChoiceView 0 kind label Nothing Nothing Nothing
   on kind t = ChoiceView 0 kind Nothing (refId t) Nothing Nothing
