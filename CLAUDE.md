@@ -16,8 +16,10 @@ mechanic there before implementing it.
   reloaded game and an undone step roll the same. Never use IO randomness.
 - The client is sent `Marvel.Game.Public`'s view, not the engine's JSON. When the board
   needs something new, add it to the view.
-- `test/Marvel/SmokeSpec.hs` deals every starter deck against each scenario and answers
-  at random. Keep it passing; a crash there is an engine bug.
+- `test/Marvel/SmokeSpec.hs` deals starter decks against each scenario and modular set and
+  answers at random. Keep it passing; a crash there is an engine bug. By default each
+  scenario gets a few tables and 4 seeds; `SMOKE_FULL=1` plays every table and every
+  modular with every scenario, `SMOKE_SEEDS=n` more games.
 - Every core card has a behaviour test that plays it as a player would
   (`test/Marvel/Hero/`, `test/Marvel/Aspect/`, `test/Marvel/Encounter/`), and
   `CoverageSpec` checks each MarvelCDB core code is implemented. A new card gets a test

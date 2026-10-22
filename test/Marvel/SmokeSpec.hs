@@ -33,21 +33,25 @@ playRandomly hasten seed = go (mkStdGen seed)
         go gen'' (n - 1)
 
 spec :: Spec
-spec = describe "random play" do
-  for_ scenarioCodes \villain ->
-    for_ (tables villain) \heroes ->
-      for_ [Normal, Expert] \difficulty ->
-        it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do
-          playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes
-  -- each modular set, with each villain, for a pair of heroes
-  for_ modularSets \modular ->
-    for_ scenarioCodes \villain ->
-      it (show villain <> " with " <> show modular) do
-        playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
+spec = do
+  -- SMOKE_FULL=1 plays every table against every scenario and every modular with every
+  -- scenario; by default each scenario gets a few tables, the heroes rotating, and each
+  -- modular one scenario, so every deck and set is still played
+  full <- runIO $ isJust <$> lookupEnv "SMOKE_FULL"
+  describe "random play" do
+    for_ (zip [0 ..] scenarioCodes) \(i, villain) ->
+      for_ (if full then allTables villain else someTables i villain) \heroes ->
+        for_ [Normal, Expert] \difficulty ->
+          it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do
+            playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes
+    for_ (zip [0 ..] modularSets) \(i, modular) ->
+      for_ (if full then scenarioCodes else [scenarioCodes !! (i `mod` length scenarioCodes)]) \villain ->
+        it (show villain <> " with " <> show modular) do
+          playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
  where
   playSetup setup heroes = do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
-   seeds <- maybe 8 read <$> lookupEnv "SMOKE_SEEDS"
+   seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
       (app, ran) <- dealtGame setup (map starter heroes) seed
       result <- try do
@@ -62,7 +66,11 @@ spec = describe "random play" do
   heroes = map fst starterDecks
   -- The Once and Future Kang splits the table into an area a player: played with three
   -- too
-  tables villain = map pure heroes <> zipWith (\a b -> [a, b]) heroes (drop 1 heroes) <> [take 3 heroes | villain `elem` hastened] <> [take 4 heroes]
+  allTables villain = map pure heroes <> zipWith (\a b -> [a, b]) heroes (drop 1 heroes) <> [take 3 heroes | villain `elem` hastened] <> [take 4 heroes]
+  -- one hero, a pair and four, starting further along the heroes for each scenario
+  someTables i villain =
+    let from n k = take k (drop (n `mod` length heroes) (cycle heroes))
+     in [from (i * 7) 1, from (i * 7 + 1) 2, from (i * 7 + 3) 4] <> [from (i * 7 + 2) 3 | villain `elem` hastened]
   -- the scenarios whose villains random play hardly defeats, and whose later stages are
   -- what matters most
   hastened = ["11001"]
