@@ -39,6 +39,10 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard breakout
 
   -- The Rise of Red Skull
+  , SomeMainSchemeCard attackOnMountAthena
+  , SomeMainSchemeCard theInfinityStone
+  , SomeMainSchemeCard theGetaway
+  , SomeMainSchemeCard noneShallPass
   -- Zola
   , SomeMainSchemeCard theIslandOfDrZola
   , SomeMainSchemeCard theMadDoctor

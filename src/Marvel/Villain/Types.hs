@@ -26,6 +26,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Stats
+import Marvel.Trait
 import Marvel.Window qualified as W
 
 data Villain = forall a. (IsVillain a) => Villain a
@@ -247,6 +248,15 @@ statusL = \case
 toEnemyId :: Attrs Villain -> EnemyId
 toEnemyId = EnemyVillainId . villainId
 
+-- | Its printed traits and those it gains, as Absorbing Man gains each environment's.
+instance HasTraits Villain where
+  getTraits v = do
+    modifiers <- getModifiers (VillainRef $ toId v)
+    pure $ foldr applyModifier (cdTraits $ getCardDef v) modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
+
 getModifiedKeywords :: (HasGame m) => Attrs Villain -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
@@ -314,7 +324,7 @@ runVillainMessage msg attrs = case msg of
   Msg.VillainConfused _ -> pure $ attrs & confusedL .~ True
   VillainSchemes ->
     if villainConfused attrs
-      then pure $ attrs & confusedL .~ False
+      then pure $ attrs & confusedL .~ False & boostL .~ 0
       else attrs <$ villainStep vid VillainBeginScheme
   VillainBeginScheme -> do
     dealActivationBoost
@@ -365,6 +375,7 @@ runVillainMessage msg attrs = case msg of
       villainStep vid (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
     villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
+  VillainActivationBonus n -> pure $ attrs & boostL +~ n
   VillainAddBoost n ->
     pure $
       attrs
@@ -379,7 +390,7 @@ runVillainMessage msg attrs = case msg of
   vid = villainId attrs
   attacks begin ident =
     if villainStunned attrs
-      then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
+      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
       else do
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         villainStep vid begin
@@ -390,7 +401,9 @@ runVillainMessage msg attrs = case msg of
         pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
   -- an attack "that does not get a boost card" is dealt none
   beginAttack boosted ident = do
-    attack' <- newAttack ident
+    -- with the keywords it gained as it was declared, and what its activation already
+    -- got for itself
+    attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
     modifiers <- getModifiers attrs
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     when boosted dealActivationBoost

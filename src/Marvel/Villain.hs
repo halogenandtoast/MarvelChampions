@@ -22,6 +22,8 @@ import Marvel.Villain.Villains.Thunderball
 import Marvel.Villain.Villains.Wrecker
 
 -- The Rise of Red Skull
+import Marvel.Villain.Villains.Crossbones
+import Marvel.Villain.Villains.AbsorbingMan
 -- Zola
 import Marvel.Villain.Villains.Zola
 
@@ -87,6 +89,14 @@ allVillains = fromList $ map
   , SomeVillainCard bulldozerB
 
   -- The Rise of Red Skull
+  , SomeVillainCard crossbones
+  , SomeVillainCard crossbones1
+  , SomeVillainCard crossbones2
+  , SomeVillainCard crossbones3
+  , SomeVillainCard absorbingMan
+  , SomeVillainCard absorbingMan1
+  , SomeVillainCard absorbingMan2
+  , SomeVillainCard absorbingMan3
   -- Zola
   , SomeVillainCard zola
   , SomeVillainCard zola1

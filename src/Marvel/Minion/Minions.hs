@@ -47,6 +47,8 @@ import Marvel.Minion.Minions.EscapedConvict as X
 -- The Rise of Red Skull
 import Marvel.Minion.Minions.Crossfire as X
 import Marvel.Minion.Minions.TheViper as X
+import Marvel.Minion.Minions.HydraFlameSoldier as X
+import Marvel.Minion.Minions.HydraJetTrooper as X
 import Marvel.Minion.Minions.HydraRegular as X
 
 -- Zola

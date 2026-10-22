@@ -47,6 +47,9 @@ data VillainMessage
     VillainHitPointsChanged Int
   | -- | a boost card's icons are added to the activation
     VillainAddBoost Natural
+  | -- | its next activation gets this much more SCH or ATK ("+1 ATK for this
+    -- activation")
+    VillainActivationBonus Natural
   | -- | it attacks the player's ally, the player being attacked
     VillainAttacksAlly IdentityId AllyId
   deriving stock (Show, Eq, Generic)

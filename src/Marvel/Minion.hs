@@ -83,6 +83,11 @@ allMinions =
       , SomeMinionCard crossfire
       , SomeMinionCard theViper
       , SomeMinionCard hydraRegular
+      , SomeMinionCard (reprintAs Cards.hydraBomberCrossbones hydraBomber)
+      , SomeMinionCard hydraFlameSoldier
+      , SomeMinionCard hydraJetTrooper
+      , SomeMinionCard (reprintAs Cards.hydraRegularHydraPatrol hydraRegular)
+      , SomeMinionCard (reprintAs Cards.hydraSoldierHydraPatrol hydraSoldier)
 
       -- Zola
       , SomeMinionCard ultimateBioServant

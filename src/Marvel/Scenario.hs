@@ -43,6 +43,8 @@ allScenarios = fromList $ map
     , SomeScenarioCard (breakoutScenario "07001a")
 
     -- The Rise of Red Skull
+    , SomeScenarioCard crossbonesScenario
+    , SomeScenarioCard absorbingManScenario
     -- Zola
     , SomeScenarioCard zolaScenario
 
@@ -76,6 +78,8 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , ("04058", [EncounterSet.HydraAssault, EncounterSet.WeaponMaster, EncounterSet.LegionsOfHydra])
+    , ("04076", [EncounterSet.HydraPatrol])
     -- Zola
     , ("04109", [EncounterSet.UnderAttack])
 
@@ -240,6 +244,38 @@ mutagenFormulaScenario = scenario
   ("02014", "02015")
   ["02017", "02018"]
   [EncounterSet.MutagenFormula]
+-- The Rise of Red Skull
+
+newtype CrossbonesScenario = CrossbonesScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage CrossbonesScenario where
+  runMessage msg (CrossbonesScenario a) = CrossbonesScenario <$> runMessage msg a
+
+-- | The Experimental Weapons set is made its own deck by Attack on Mount Athena's setup.
+crossbonesScenario :: ScenarioCard CrossbonesScenario
+crossbonesScenario = scenario
+  CrossbonesScenario
+  "04058"
+  ("04058", "04059")
+  ["04061", "04062", "04063"]
+  [EncounterSet.Crossbones, EncounterSet.ExperimentalWeapons]
+
+newtype AbsorbingManScenario = AbsorbingManScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage AbsorbingManScenario where
+  runMessage msg (AbsorbingManScenario a) = AbsorbingManScenario <$> runMessage msg a
+
+absorbingManScenario :: ScenarioCard AbsorbingManScenario
+absorbingManScenario = scenario
+  AbsorbingManScenario
+  "04076"
+  ("04076", "04077")
+  ["04079"]
+  [EncounterSet.AbsorbingMan]
 
 -- Red Skull
 

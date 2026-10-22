@@ -511,6 +511,12 @@ getExcessDamage character damage = case character of
         let remaining = subtractNatural (getAllyDamage ally) hp
         pure $ if (toAttrs ally).allyTough then 0 else subtractNatural remaining damage
   _ -> pure 0
+-- | The counters on "your" main scheme, as None Shall Pass's delay counters.
+getYourMainSchemeCounters :: (HasGame m) => m Natural
+getYourMainSchemeCounters = do
+  schemes <- filterM (inYourArea . MainSchemeRef . toId) . HashMap.elems =<< getsGame gameMainSchemes
+  pure $ sum $ map (mainSchemeCounters . toAttrs) schemes
+
 
 -- | How many times a "When Revealed" the player reveals resolves: once, and once more
 -- for each ability that says so (Media Coverage).
@@ -959,6 +965,19 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         putEncounterCardIntoPlay ident card
         pure $ g & boostCardsL %~ deleteMap target
       Nothing -> pure g
+  -- "Boost: reveal this card": it is no longer a boost card, and is revealed for the
+  -- player
+  RevealBoost target ident -> case lookup target gameBoostCards of
+    Just card -> do
+      revealEncounterCard ident card
+      pure $
+        g
+          & (boostCardsL %~ deleteMap target)
+          & (boostEntitiesL . sideSchemesL %~ deleteMap (SideSchemeId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . attachmentsL %~ deleteMap (AttachmentId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . treacheriesL %~ deleteMap (TreacheryId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . minionsL %~ deleteMap (MinionId $ unCardId $ ecCardId card))
+    Nothing -> pure g
   RevealBoostCard card enemyId -> do
     player <- getActivePlayerId
     let
@@ -1011,6 +1030,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
                   %~ insertMap (toId sideScheme) sideScheme
               )
             & (boostCardsL . at (toTarget sideScheme) ?~ card)
+      EnvironmentType -> do
+        let environment = createEnvironment card
+        turnedFaceup (toTarget environment)
+        pure $
+          g
+            & (boostEntitiesL . environmentsL %~ insertMap (toId environment) environment)
+            & (boostCardsL . at (toTarget environment) ?~ card)
       _ -> pure g
   ClearBoosts -> do
     for_ (HashMap.elems gameBoostCards) discardCard
@@ -1112,10 +1138,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       EnvironmentType -> do
         let environment = createEnvironment card
         environmentStep (toId environment) EnvironmentEntered
-        pure $
-          g
-            & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
-            & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
+        surges
+        pure $ g & environmentIntoPlay ident environment
       _ -> error "Unhandled"
   AttachEncounterCard card enemy -> do
     let attachment = createAttachment card
@@ -1132,6 +1156,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       engageMinion (toId minion) ident
       checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+    -- put into play, not revealed: no surge
+    EnvironmentType -> do
+      let environment = createEnvironment card
+      environmentStep (toId environment) EnvironmentEntered
+      pure $ g & environmentIntoPlay ident environment
     _ -> do
       revealEncounterCardWithoutWindows ident card
       pure g
@@ -1471,6 +1500,13 @@ createMinion ident card =
 createAttachment :: EncounterCard -> Attachment
 createAttachment card =
   lookupAttachment (toCardCode card) (AttachmentId $ unCardId $ ecCardId card)
+
+-- | The environment is in play, in the player's area.
+environmentIntoPlay :: IdentityId -> Environment -> Game -> Game
+environmentIntoPlay ident environment g =
+  g
+    & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
+    & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
 
 createEnvironment :: EncounterCard -> Environment
 createEnvironment card =
@@ -1962,6 +1998,7 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  IdentityCharacters identityMatcher -> HashSet.fromList <$> selectMap IdentityCharacter identityMatcher
   CharacterControlledBy identityMatcher -> do
     identities <- selectMap IdentityCharacter identityMatcher
     allies <- selectMap AllyCharacter (AllyControlledBy identityMatcher)
@@ -2189,6 +2226,9 @@ gameSelectAttachment m = do
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
     AttachmentIs def -> pure . sameCard def . getCardDef
+    AttachmentWithTrait t -> pure . member t . cdTraits . getCardDef
+    AttachmentOnEnemy eid -> pure . (== Just eid) . Attachment.attachmentEnemy . toAttrs
+    AttachmentMatches xs -> \a -> allM (`matchFilter` a) xs
 
 gameSelectEnvironment ::
   (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
@@ -2199,6 +2239,7 @@ gameSelectEnvironment m = do
   matches e = case m of
     AnyEnvironment -> True
     EnvironmentIs def -> sameCard def (getCardDef e)
+    EnvironmentWithTrait t -> t `member` cdTraits (getCardDef e)
 
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
@@ -2306,6 +2347,7 @@ gameSelectVillain m = do
     VillainWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . villainDamage
     VillainWithToughStatus -> pure . villainIsTough
+    VillainWithTrait trait -> fmap (member trait) . getTraits
     VillainMatches xs -> andM . traverse matchFilter xs
 
 gameSelectMinion :: (HasGame m) => MinionMatcher -> m (HashSet MinionId)

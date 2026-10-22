@@ -80,6 +80,9 @@ modularSets =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , HydraAssault
+  , WeaponMaster
+  , HydraPatrol
 
   -- The Once and Future Kang
   , Temporal

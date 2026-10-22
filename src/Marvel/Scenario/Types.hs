@@ -343,7 +343,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       -- from wherever they were: the set-aside area or the discard pile
-      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards)
+      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards) & discardL %~ filter (`notElem` cards)
     -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs

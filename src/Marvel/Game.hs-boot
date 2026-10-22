@@ -133,6 +133,7 @@ getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+getYourMainSchemeCounters :: (HasGame m) => m Natural
 getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
 
 getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
