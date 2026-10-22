@@ -378,6 +378,7 @@ gameView seesHand g = do
       }
  where
   scenario = toAttrs (gameScenario g)
+  villainName v = display . cdName . getCardDef <$> (HashMap.lookup v (gameVillains g) <|> HashMap.lookup v (g ^. removedEntitiesL . villainsL))
   areaView a =
     let aid = areaId a
         here t = (areaId <$> areaOfTarget g t) == Just aid
@@ -394,7 +395,10 @@ gameView seesHand g = do
           , sideSchemes = [idText k | k <- HashMap.keys (gameSideSchemes g), here (SideSchemeRef k)]
           , environments = [idText k | k <- HashMap.keys (gameEnvironments g), here (EnvironmentRef k)]
           , decks =
-              concat [deckView "villain" (display . cdName . getCardDef <$> HashMap.lookup v (gameVillains g)) (VillainDeckKey v) | v <- villainsHere]
+              concat [deckView "villain" (villainName v) (VillainDeckKey v) | v <- villainsHere]
+                -- a defeated villain's deck and discard pile, kept for his cards still in
+                -- play, in the first area
+                <> concat [deckView "villain" (villainName v) k | aid == defaultAreaId, k@(VillainDeckKey v) <- HashMap.keys scenario.scenarioDecks, not (HashMap.member v (gameVillains g))]
                 <> concat [deckView "named" (Just n) k | k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
           }
