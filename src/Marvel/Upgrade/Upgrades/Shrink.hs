@@ -15,10 +15,9 @@ import Marvel.Criteria
 import Marvel.Effect.Types
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Trait qualified as Trait
 import Marvel.Upgrade.Cards qualified as Cards
@@ -45,12 +44,9 @@ instance HasAbilities Shrink where
     ]
 
 instance RunMessage Shrink where
-  runMessage msg a@(Shrink attrs) = case msg of
+  runMessage msg a@(Shrink attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 windows _ -> do
-      pushAll
-        [ CreatedEffect Cards.shrink (toSource a) (EventEntity eid)
-        | W.EventPlayed _ eid _ <- windows
-        ]
+      for_ [eid | W.EventPlayed _ eid _ <- windows] $ createEffect Cards.shrink a . EventEntity
       pure a
     _ -> Shrink <$> runMessage msg attrs
 
