@@ -2,6 +2,7 @@
 // A game before it is dealt: who has sat down, the link to send friends, and a seat to
 // take with a deck. The owner may take several, and may start with the seats taken.
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Copy, Check } from 'lucide-vue-next'
 import DeckPicker from './DeckPicker.vue'
 import HeroPortrait from './HeroPortrait.vue'
@@ -33,7 +34,9 @@ const copy = async () => {
 
 const decks = ref<DeckSummary[]>([])
 const starters = ref<StarterDeck[]>([])
-const deck = ref<DeckKey>('starter:spider-man')
+// a deck's page sends you to a new game to play it: `?deck=<id>` comes along
+const asked = useRoute().query.deck
+const deck = ref<DeckKey>(typeof asked === 'string' && /^\d+$/.test(asked) ? `deck:${asked}` : 'starter:spider-man')
 const refresh = async () => {
   try {
     decks.value = await fetchDecks()
