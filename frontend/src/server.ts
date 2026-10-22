@@ -233,8 +233,16 @@ export interface GameSummary {
 }
 
 export interface ScenarioOption {
+  /** the villain's card code */
   code: string
   name: string
+  /** the modular sets it recommends, by the engine's names */
+  modulars: string[]
+}
+
+/** What can be played: the scenarios, and the modular sets any of them may take. */
+export interface ScenarioList {
+  scenarios: ScenarioOption[]
   modulars: string[]
 }
 
@@ -243,6 +251,3 @@ export interface StarterDeck {
   hero: string
   aspects: string[]
 }
-
-/** The modular encounter sets of the core set, by the engine's names. */
-export const MODULAR_SETS = ['BombScare', 'MastersOfEvil', 'UnderAttack', 'LegionsOfHydra', 'TheDoomsdayChair'] as const

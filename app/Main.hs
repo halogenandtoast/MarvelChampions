@@ -27,6 +27,7 @@ import Marvel.Card.Code (CardCode (..))
 import Marvel.Card.Def (cdName)
 import Marvel.Card.Def qualified as CardDef
 import Marvel.Decklist
+import Marvel.EncounterSet (modularSets)
 import Marvel.Entity (toAttrs)
 import Marvel.Frontend (FrontendMessage (..))
 import Marvel.Game
@@ -41,7 +42,7 @@ import Marvel.Log.Entry
 import Marvel.Message (FinishedStatus (..), Message (StartGame))
 import Marvel.Name (display)
 import Marvel.Phase
-import Marvel.Scenario (lookupScenario, recommendedSetup)
+import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
 import Marvel.Scenario.Types (ScenarioSetup (..))
 import Marvel.Villain.Cards (allVillainsMap)
 import Model
@@ -816,13 +817,17 @@ deleteDeckR deckId = do
 getStarterDecksR :: Handler Value
 getStarterDecksR = pure $ toJSON [object ["key" .= key, "hero" .= d.hero, "aspects" .= d.aspects] | (key, d) <- starterDecks]
 
--- | The scenarios there are, each with the modular set it recommends.
+-- | The scenarios there are, each with the modular set it recommends, and the modular
+-- sets any of them may be played with. The client finds their releases in the card data.
 getScenariosR :: Handler Value
 getScenariosR =
   pure $
-    toJSON
-      [ object ["code" .= s.scenarioCode, "name" .= fst (villainOf s), "modulars" .= s.modulars]
-      | Just s <- map recommendedSetup ["01094", "01113", "01134"]
+    object
+      [ "scenarios"
+          .= [ object ["code" .= s.scenarioCode, "name" .= fst (villainOf s), "modulars" .= s.modulars]
+             | Just s <- map recommendedSetup scenarioCodes
+             ]
+      , "modulars" .= modularSets
       ]
 
 data UndoTarget = LastAnswer | StartOfPhase | StartOfRound | ToStep Int

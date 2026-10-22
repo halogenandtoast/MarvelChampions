@@ -1,7 +1,7 @@
 import type { DeckList } from './browser/types/deck'
 import { authHeaders, signOut } from './auth'
 import { router } from './router'
-import type { GameSummary, ScenarioOption, StarterDeck } from './server'
+import type { GameSummary, ScenarioList, StarterDeck } from './server'
 
 /** A fetch that signs the request and sends a signed-out user to sign in. */
 export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Response> => {
@@ -26,7 +26,7 @@ export const fetchGames = () => apiFetch('/api/games').then((r) => json<GameSumm
 /** Games in progress that are open to spectators. */
 export const fetchSpectatableGames = () => apiFetch('/api/spectatable').then((r) => json<GameSummary[]>(r))
 
-export const fetchScenarios = () => apiFetch('/api/scenarios').then((r) => json<ScenarioOption[]>(r))
+export const fetchScenarios = () => apiFetch('/api/scenarios').then((r) => json<ScenarioList>(r))
 
 export const fetchStarterDecks = () => apiFetch('/api/starter-decks').then((r) => json<StarterDeck[]>(r))
 

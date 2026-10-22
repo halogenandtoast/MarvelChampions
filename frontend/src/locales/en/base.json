@@ -66,13 +66,6 @@
     "campaign": "Campaign",
     "pool": "Pool"
   },
-  "modulars": {
-    "BombScare": "Bomb Scare",
-    "MastersOfEvil": "Masters of Evil",
-    "UnderAttack": "Under Attack",
-    "LegionsOfHydra": "Legions of Hydra",
-    "TheDoomsdayChair": "The Doomsday Chair"
-  },
   "difficulty": {
     "Normal": "Standard",
     "Expert": "Expert"
@@ -103,6 +96,9 @@
     "villain": "Villain",
     "chooseVillain": "Choose your villain",
     "recommended": "recommended",
+    "release": "Release",
+    "allReleases": "All releases",
+    "searchSets": "Search sets",
     "modulars": "Modular encounter sets",
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",
