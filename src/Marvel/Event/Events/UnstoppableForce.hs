@@ -9,10 +9,9 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 
@@ -24,13 +23,12 @@ newtype UnstoppableForce = UnstoppableForce (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage UnstoppableForce where
-  runMessage msg e@(UnstoppableForce attrs) = case msg of
+  runMessage msg e@(UnstoppableForce attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId payment _ -> do
         physical <- paidUsingOnly Physical payment
-        pushAll $
-          IdentityMessage identityId ReadiedIdentity
-            : [IdentityMessage identityId (DrawCards FromDeck 1) | physical]
+        ready identityId
+        when physical $ drawCards identityId 1
         pure e
       _ -> UnstoppableForce <$> runMessage msg attrs
     _ -> UnstoppableForce <$> runMessage msg attrs

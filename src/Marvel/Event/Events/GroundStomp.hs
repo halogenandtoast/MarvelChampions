@@ -6,15 +6,13 @@ module Marvel.Event.Events.GroundStomp (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
 import Marvel.Ref
 
 groundStomp :: EventCard GroundStomp
@@ -25,12 +23,11 @@ newtype GroundStomp = GroundStomp (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage GroundStomp where
-  runMessage msg e@(GroundStomp attrs) = case msg of
+  runMessage msg e@(GroundStomp attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ -> do
+      PlayedEvent _ _ _ -> do
         -- not an attack: no attack window, no retaliate
-        pushChoice identityId $
-          DamageAllEnemies AnyEnemy (toSource attrs) (toDamage 1 FromAbility)
+        damageAllEnemies attrs (toDamage 1 FromAbility) AnyEnemy
         pure e
       _ -> GroundStomp <$> runMessage msg attrs
     _ -> GroundStomp <$> runMessage msg attrs

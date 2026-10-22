@@ -10,7 +10,7 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Keyword
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Ref
@@ -39,7 +39,7 @@ instance HasModifiersFor HulkSmash where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage HulkSmash where
-  runMessage msg (HulkSmash (attrs `With` meta)) = case msg of
+  runMessage msg (HulkSmash (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       -- "you get +10 ATK for that attack"
       PlayedEvent identityId payment _ -> do

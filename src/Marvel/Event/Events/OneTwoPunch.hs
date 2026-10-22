@@ -9,9 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 
 oneTwoPunch :: EventCard OneTwoPunch
@@ -22,10 +21,10 @@ newtype OneTwoPunch = OneTwoPunch (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage OneTwoPunch where
-  runMessage msg e@(OneTwoPunch attrs) = case msg of
+  runMessage msg e@(OneTwoPunch attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        push $ IdentityMessage identityId ReadiedIdentity
+        ready identityId
         pure e
       _ -> OneTwoPunch <$> runMessage msg attrs
     _ -> OneTwoPunch <$> runMessage msg attrs

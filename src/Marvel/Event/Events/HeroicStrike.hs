@@ -6,17 +6,15 @@ module Marvel.Event.Events.HeroicStrike (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment
 import Marvel.Query
-import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource
 
@@ -29,16 +27,15 @@ newtype HeroicStrike = HeroicStrike (Attrs Event)
 
 -- | Paid with a [physical] resource (a wild one is any type), the enemy is stunned too.
 instance RunMessage HeroicStrike where
-  runMessage msg e@(HeroicStrike attrs) = case msg of
+  runMessage msg e@(HeroicStrike attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId payments _) | ident == eventId attrs -> do
       stuns <- paidWith Physical payments
       enemies <- selectList AttackableEnemy
-      let
-        damage = toDamage 6 $ FromPlayerAttack identityId
       chooseOne identityId
-        [ TargetLabel enemy $
-            DamageEnemy enemy (toSource attrs) damage : [Stun enemy (toSource attrs) | stuns]
-        | enemy <- map toRef enemies
+        [ targeting enemy do
+            dealDamage enemy attrs (toDamage 6 $ FromPlayerAttack identityId)
+            when stuns $ stun enemy attrs
+        | enemy <- enemies
         ]
       pure e
     _ -> HeroicStrike <$> runMessage msg attrs

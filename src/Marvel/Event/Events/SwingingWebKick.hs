@@ -6,13 +6,12 @@ module Marvel.Event.Events.SwingingWebKick (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
@@ -25,14 +24,12 @@ newtype SwingingWebKick = SwingingWebKick (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SwingingWebKick where
-  runMessage msg e@(SwingingWebKick attrs) = case msg of
+  runMessage msg e@(SwingingWebKick attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
-        chooseOne identityId $
-          map
-            (damageChoice attrs (toDamage 8 $ FromPlayerAttack identityId))
-            enemies
+        chooseOne identityId
+          [targeting (enemyRef enemy) $ dealDamage enemy attrs (toDamage 8 $ FromPlayerAttack identityId) | enemy <- enemies]
         pure e
       _ -> SwingingWebKick <$> runMessage msg attrs
     _ -> SwingingWebKick <$> runMessage msg attrs

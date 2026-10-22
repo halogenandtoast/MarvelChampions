@@ -6,17 +6,14 @@ module Marvel.Event.Events.CounterPunch (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Count
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window
 
@@ -28,17 +25,11 @@ newtype CounterPunch = CounterPunch (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage CounterPunch where
-  runMessage msg e@(CounterPunch attrs) = case msg of
+  runMessage msg e@(CounterPunch attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ (Just (HeroDefends _ enemyId)) -> do
         dmg <- selectCount HeroAttackDamage (IdentityWithId identityId)
-        msgs <-
-          choiceMessages identityId $
-            DamageEnemy
-              (toRef enemyId)
-              (toRef attrs)
-              (toDamage dmg $ FromPlayerAttack identityId)
-        pushAll msgs
+        dealDamage enemyId attrs (toDamage dmg $ FromPlayerAttack identityId)
         pure e
       _ -> CounterPunch <$> runMessage msg attrs
     _ -> CounterPunch <$> runMessage msg attrs

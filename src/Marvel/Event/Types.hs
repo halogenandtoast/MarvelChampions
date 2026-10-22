@@ -11,7 +11,7 @@ import Marvel.Identity.Types
 import Marvel.Projection
 import Marvel.Id hiding (EventId)
 import Marvel.Id as X (EventId)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Queue
@@ -124,22 +124,22 @@ damageChoice attrs dmg = \case
       [DamageEnemy (toRef vid) (toRef attrs) dmg]
 
 instance RunMessage (Attrs Event) where
-  runMessage msg e = case msg of
+  runMessage msg e = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId e -> case msg' of
       -- what answers a labeled attack follows the whole of it
       ResolvedEvent -> do
-        pushAll $
-          concat [attackResolved attacker enemy | (attacker, enemy) <- eventAttacked e]
-            <> [DiscardedCard $ toCard e]
+        for_ (eventAttacked e) (uncurry attackResolved)
+        discardCard e
         pure e {eventAttacked = []}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy
         -- one attack, however many instances of damage it deals the enemy
         | cdAbilitySubType (eventCardDef e) == Just Ability.Attack ->
             pure e {eventAttacked = eventAttacked e <> [(attacker, enemy) | (attacker, enemy) `notElem` eventAttacked e]}
-        | otherwise -> e <$ pushAll (attackResolved attacker enemy)
+        | otherwise -> e <$ attackResolved attacker enemy
       _ -> pure e
      where
-      attackResolved attacker enemy =
-        [enemyRetaliates enemy (IdentityCharacter attacker), CheckWindows [W.Window W.After $ W.IdentityAttack attacker enemy]]
+      attackResolved attacker enemy = do
+        enemyRetaliates enemy (IdentityCharacter attacker)
+        checkWindows [W.Window W.After $ W.IdentityAttack attacker enemy]
     _ -> pure e

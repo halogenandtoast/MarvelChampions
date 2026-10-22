@@ -6,16 +6,14 @@ module Marvel.Event.Events.Melee (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
 import Marvel.Ref
 
 melee :: EventCard Melee
@@ -28,23 +26,21 @@ newtype Melee = Melee (Attrs Event)
 -- | The second enemy is chosen once the first has been dealt its damage: a guard
 -- defeated by it no longer keeps the villain from being chosen.
 instance RunMessage Melee where
-  runMessage msg e@(Melee attrs) = case msg of
+  runMessage msg e@(Melee attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         enemies <- selectList AttackableEnemy
         chooseOne identityId
-          [ TargetLabel
-            (toRef enemy)
-            [ DamageEnemy (toRef enemy) (toSource attrs) (toDamage 3 $ FromPlayerAttack identityId)
-            , Run [cardSpecific attrs "another" (identityId, enemy)]
-            ]
+          [ targeting enemy do
+              dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack identityId)
+              cardSpecific attrs "another" (identityId, enemy)
           | enemy <- enemies
           ]
         pure e
       _ -> Melee <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "another" (fromJSON -> Success (identityId, first)) -> do
       enemies <- selectList $ AttackableEnemy <> NotEnemy (EnemyWithId first)
-      chooseOne identityId $
-        map (damageChoice attrs (toDamage 3 $ FromPlayerAttack identityId)) enemies
+      chooseOne identityId
+        [targeting (enemyRef enemy) $ dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack identityId) | enemy <- enemies]
       pure e
     _ -> Melee <$> runMessage msg attrs
