@@ -12,6 +12,7 @@ import Marvel.Question as X
 import Data.HashSet qualified as HashSet
 import Marvel.Ability
 import Marvel.Attack
+import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -62,23 +63,25 @@ instance RunMessage (Attrs Ally) where
         else do
           enemies <- selectList AttackableEnemy
           dmg <- getModifiedAttack a
-          consequential <- getModifiedAttackConsequentialDamage a
-          pushAll
-            $ Ask
-                (allyController a)
-                (ChooseOne $ map
-                  (damageChoice a (toDamage dmg $ FromAllyAttack (allyId a)))
-                  enemies
-                )
-            : [ AllyMessage
-                  ident
-                  (AllyDamaged
-                    (toSource a)
-                    (toDamage consequential FromConsequential)
-                  )
-              | consequential > 0
-              ]
+          push $
+            Ask
+              (allyController a)
+              (ChooseOne $ map (damageChoice a (toDamage dmg $ FromAllyAttack (allyId a))) enemies)
           pure a
+      -- an interrupt that defeats the enemy aborts the attack: no damage and no
+      -- consequential damage (RR, Consequential Damage)
+      AllyAttackLands enemy dmg -> do
+        stillInPlay <- selectAny (EnemyWithId enemy)
+        consequential <- getModifiedAttackConsequentialDamage a
+        damage <- choiceMessages (allyController a) (DamageEnemy (toRef enemy) (toRef a) dmg)
+        when stillInPlay $
+          pushAll $
+            damage
+              <> [CheckWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]]
+              <> [ AllyMessage ident (AllyDamaged (toSource a) (toDamage consequential FromConsequential))
+                 | consequential > 0
+                 ]
+        pure a
       AllyThwarted -> if allyConfused a
         then pure $ a & confusedL .~ False
         else do
