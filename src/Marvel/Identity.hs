@@ -738,17 +738,21 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     VillainAndMinionsActivate -> do
       villain <- selectJust ActiveVillain
-      let activateMinions f =
+      case currentIdentity pid of
+        HeroSide _ -> enemyAttacks villain playerIdentityId
+        AlterEgoSide _ -> villainSchemes villain
+      identityStep playerIdentityId MinionsActivate
+      pure pid
+    -- read once the villain has activated: a minion its boost card put into play
+    -- activates too (Green Goblin insert, "Goblin Minions Activation Timing")
+    MinionsActivate -> do
+      let activate f =
             unless (null playerIdentityMinions) $
               chooseOneAtATimePrompted playerIdentityId "$label.chooseMinionToActivate" $
                 [targeting minionId (f minionId) | minionId <- toList playerIdentityMinions]
       case currentIdentity pid of
-        HeroSide _ -> do
-          enemyAttacks villain playerIdentityId
-          activateMinions \minionId -> enemyAttacks minionId playerIdentityId
-        AlterEgoSide _ -> do
-          villainSchemes villain
-          activateMinions minionSchemes
+        HeroSide _ -> activate \minionId -> enemyAttacks minionId playerIdentityId
+        AlterEgoSide _ -> activate minionSchemes
       pure pid
     DealtEncounterCard ec ->
       pure $ PlayerIdentity $ attrs & encounterCardsL %~ (<> [ec])
