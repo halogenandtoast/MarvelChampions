@@ -7,7 +7,9 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (ObligationId)
 import Marvel.Id as X (ObligationId)
+import Marvel.Ability.Types
 import Marvel.Message.Lifted
+import Marvel.Modifier
 import Marvel.Ref
 
 data Obligation = forall a. (IsObligation a) => Obligation a
@@ -44,6 +46,8 @@ instance Entity Obligation where
     , obligationSurge :: Bool
     , obligationHeldCards :: [PlayerCard]
     -- ^ player cards facedown under it, discarded with it
+    , obligationOwner :: Maybe IdentityId
+    -- ^ the player whose play area it is in
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -52,6 +56,7 @@ instance Entity Obligation where
     ObligationCardDef :: Field Obligation CardDef
     ObligationSurge :: Field Obligation Bool
     ObligationHeldCards :: Field Obligation [PlayerCard]
+    ObligationOwner :: Field Obligation (Maybe IdentityId)
   field fld o =
     let ObligationAttrs {..} = toAttrs o
      in case fld of
@@ -59,6 +64,7 @@ instance Entity Obligation where
           ObligationCardDef -> obligationCardDef
           ObligationSurge -> obligationSurge
           ObligationHeldCards -> obligationHeldCards
+          ObligationOwner -> obligationOwner
   toId = obligationId . toAttrs
   toAttrs (Obligation a) = toObligationAttrs a
 
@@ -68,13 +74,19 @@ instance RunMessage Obligation where
 instance IsRef Obligation where
   toRef = ObligationRef . toId
 
+instance HasAbilities Obligation where
+  getAbilities (Obligation a) = getAbilities a
+
+instance HasModifiersFor Obligation where
+  getModifiersFor source target (Obligation a) = getModifiersFor source target a
+
 instance IsCard Obligation where
   toCard = toCard . toAttrs
 
 instance HasCardDef Obligation where
   getCardDef = getCardDef . toAttrs
 
-class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsObligation a where
+class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasAbilities a, HasModifiersFor a, RunMessage a) => IsObligation a where
   toObligationAttrs :: a -> Attrs Obligation
   default toObligationAttrs :: (Coercible a (Attrs Obligation)) => a -> Attrs Obligation
   toObligationAttrs = coerce
@@ -101,6 +113,7 @@ obligation f cardDef =
             , obligationCardDef = cardDef
             , obligationSurge = False
             , obligationHeldCards = []
+            , obligationOwner = Nothing
             }
     }
 
@@ -121,6 +134,7 @@ instance HasCardDef (Attrs Obligation) where
 instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
+      RevealObligation identityId -> pure attrs {obligationOwner = Just identityId}
       ResolvedObligation identityId -> do
         removeFromPlay attrs
         when (obligationSurge attrs) $ surge identityId

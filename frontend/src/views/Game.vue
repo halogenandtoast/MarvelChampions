@@ -153,6 +153,8 @@ const onBoard = computed(() => {
     p.allies?.forEach((a) => add(a.upgrades))
     add(p.supports)
     add(p.upgrades)
+    add(p.attachments)
+    add(p.obligations)
     add(p.discard)
     for (const m of minionsOf(p)) {
       ids.add(m.id)
@@ -182,6 +184,8 @@ const things = computed(() => {
     p.allies?.forEach((a) => add(a.upgrades))
     add(p.supports)
     add(p.upgrades)
+    add(p.attachments)
+    add(p.obligations)
   }
   for (const v of g.villains ?? []) {
     add([v])

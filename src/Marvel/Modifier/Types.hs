@@ -48,5 +48,10 @@ data Modifier
   | -- | an enemy whose attacks the player must defend with an ally they control, if
     -- able (Ramming Speed)
     DefendedByAllyIfAble
+  | -- | on an identity: each "When Revealed" ability its player reveals resolves once
+    -- more for each of these
+    ResolveWhenRevealedAgain
+  | -- | on an identity: it cannot attack the characters with this title
+    CannotAttackTitled Text
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

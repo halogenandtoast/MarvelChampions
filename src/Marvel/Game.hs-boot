@@ -64,6 +64,7 @@ abilityCardDef :: Game -> Target -> Maybe CardDef
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
+getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 -- Matchers
@@ -124,6 +125,11 @@ getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
 getScenarioCode :: (HasGame m) => m CardCode
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
+whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
+getBoostedPlayer :: (HasGame m) => EnemyId -> m IdentityId
+countObligationsOf :: (HasGame m) => IdentityId -> m Natural
+getVillainStage :: (HasGame m) => VillainId -> m Natural
+getEnemyPrintedHitPoints :: (HasGame m) => EnemyId -> m Natural
 getHazardCount :: (HasGame m) => m Natural
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCount :: (HasGame m) => m Natural
