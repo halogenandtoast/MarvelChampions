@@ -61,11 +61,11 @@ spec = describe "Captain America's nemesis set" do
         justice <- putInHand p1 "01060"
         _ <- putInHand p1 "01088"
         offers (isPlay justice) `shouldReturn` False
-        -- nor do their allies thwart
+        -- "you" is the identity: their allies still thwart (rules reference, "You, Your")
         _ <- putIntoPlay p1 "03013"
         pass
         squirrel <- allyIn "03013"
-        offers (isAllyThwart squirrel) `shouldReturn` False
+        offers (isAllyThwart squirrel) `shouldReturn` True
         -- removing threat is not thwarting
         before <- mainSchemeThreat
         agent13 <- putInHand p1 "03002"

@@ -1619,6 +1619,10 @@ gameSelectExtendedCard m = do
           )
           players'
     ExtendedCardMatches matchers -> foldlM (go players) cards matchers
+    CanEnterPlay -> do
+      inPlay <- getUniqueTitlesInPlay
+      let named c = (title $ cdName $ getCardDef c, maybe [] pure $ subtitle $ cdName $ getCardDef c)
+      pure $ filter (\c -> not (cdUnique $ getCardDef c) || not (any (uniqueMatch (named c)) inPlay)) cards
 
 gameSelectEncounterCard ::
   (MonadRandom m, HasGame m) =>
