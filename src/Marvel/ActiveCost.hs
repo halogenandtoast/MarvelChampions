@@ -56,11 +56,9 @@ costMessages iid activeCost = go (activeCostCost activeCost)
       pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a ->
-        pure
-          [ IdentityMessage iid $
-              IdentityDamaged (abilitySource a) (toDamage n FromAbility)
-          , Paid $ DamagePayment n
-          ]
+        pure $
+          damageIdentity iid (abilitySource a) (toDamage n FromAbility)
+            <> [Paid $ DamagePayment n]
       _ -> error "Unhandled"
     HealCost n ->
       pure
