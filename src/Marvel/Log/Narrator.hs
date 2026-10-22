@@ -18,7 +18,12 @@ module Marvel.Log.Narrator (narrationFor) where
 import Marvel.Prelude
 
 import Marvel.Ability.Types (Ability (..), AbilityType (..))
+import Data.HashMap.Strict qualified as HashMap
+import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
+import Marvel.Campaign qualified as Campaign
 import Marvel.Card
+import Marvel.EncounterCard (allEncounterCards)
+import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Damage
 import Marvel.Deck
 import Marvel.Entity
@@ -54,7 +59,14 @@ narrationFor = \case
     n <- getsGame gameRound
     pure [structure [ikeyPart "log.round" ["count" ~> n]], structure [ikeyPart "log.phase.player" []]]
   BeginPhase VillainPhase -> Just $ one $ structure [ikeyPart "log.phase.villain" []]
-  GameOver Won -> Just $ one $ toned Good $ structure [ikeyPart "log.gameOver.won" []]
+  -- a campaign game is won once its Victory steps are written in the log: told then
+  GameOver Won -> Just do
+    pending <- getsGame \g -> case gameCampaign g of
+      Just c -> Campaign.currentScenario c == Just (toId $ gameScenario g)
+      Nothing -> False
+    pure [toned Good $ structure [ikeyPart "log.gameOver.won" []] | not pending]
+  CampaignStep step -> Just $ one $ structure [ikeyPart (campaignStepKey step) []]
+  RecordInCampaignLog r -> campaignNarration r
   GameOver Lost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.lost" []]
   -- * What the players do
   IdentityMessage ident msg -> identityNarration ident msg
@@ -108,6 +120,45 @@ narrationFor = \case
     AlterEgoResource -> False
     Setup -> False
     _ -> True
+
+campaignStepKey :: CampaignStepKind -> Text
+campaignStepKey = \case
+  CampaignChoices -> "log.campaign.choices"
+  CampaignSetup -> "log.campaign.setup"
+  CampaignVictory -> "log.campaign.victory"
+
+-- | What is written in the campaign log, told as it is.
+campaignNarration :: (HasGame m) => CampaignRecord -> Maybe (m [LogEntry])
+campaignNarration = \case
+  RecordTechUpgrade who code -> Just $ added who code
+  RecordConditionUpgrade who code -> Just $ added who code
+  RecordObligation who code -> Just $ added who code
+  RecordRescuedAllies who codes -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.added" ["player" ~> p, "card" ~> map card codes]]
+  RemoveFromCampaignLog _ code -> Just $ one $ notice [ikeyPart "log.campaign.crossedOut" ["card" ~> card code]]
+  RecordExperimentalWeapons codes | notNull codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordDelayCounters n -> Just $ one $ notice [ikeyPart "log.campaign.delayCounters" ["count" ~> n]]
+  RecordEngagedWithMinions who -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.engaged" ["player" ~> p]]
+  RecordAlliesRemoved codes | notNull codes -> Just $ one $ toned Bad $ notice [ikeyPart "log.campaign.removed" ["card" ~> map card codes]]
+  RecordHitPoints who n -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.hitPoints" ["player" ~> p, "count" ~> n]]
+  RecordScenarioWon -> Just $ one $ toned Good $ structure [ikeyPart "log.campaign.scenarioWon" []]
+  _ -> Nothing
+ where
+  added who code = do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.added" ["player" ~> p, "card" ~> card code]]
+  card code = (codeRef RefCard code) {logRefName = maybe (unCardCode code) (display . cdName) (lookup code allPlayerCards <|> lookup code allEncounterCards)}
+  -- the player the log knows by their identity, if they are still at the table
+  identityRef code = do
+    players <- getsGame (HashMap.elems . gamePlayers)
+    case [p | p <- players, toHeroCardCode (toCardCode p) == code] of
+      p : _ -> playerRef' (toId p)
+      [] -> pure $ codeRef RefIdentity code
 
 identityNarration :: (HasGame m) => IdentityId -> IdentityMessage -> Maybe (m [LogEntry])
 identityNarration ident = \case

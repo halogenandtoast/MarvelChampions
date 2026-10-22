@@ -77,6 +77,8 @@ canAffordCost identityId source = go
       UpgradeRef ident -> member ident <$> select UnexhaustedUpgrade
       -- "exhaust your hero" on an encounter card
       AttachmentRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
+      -- "exhaust your alter-ego" on an expert campaign's obligation
+      ObligationRef _ -> member identityId <$> select (UnexhaustedIdentity <> AlterEgoIdentity)
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses

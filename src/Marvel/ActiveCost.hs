@@ -68,6 +68,7 @@ payCostPart activeCost = go
           SupportRef support -> exhaust support
           UpgradeRef upgrade -> exhaust upgrade
           AttachmentRef _ -> exhaust iid
+          ObligationRef _ -> exhaust iid
           _ -> error "Unhandled"
         paid ExhaustPayment
       _ -> error "Unhandled"
