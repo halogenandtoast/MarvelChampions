@@ -10,6 +10,8 @@ defineProps<{
   /** the areas a choice open to you is about */
   lit: number[]
   names: Record<string, string>
+  /** each area's number, as the game made them */
+  numbers: Record<number, number>
 }>()
 const emit = defineEmits<{ show: [areaId: number] }>()
 </script>
@@ -17,7 +19,7 @@ const emit = defineEmits<{ show: [areaId: number] }>()
 <template>
   <nav class="area-tabs" role="tablist" :aria-label="$t('game.areas.label')">
     <button
-      v-for="(area, n) in areas"
+      v-for="area in areas"
       :key="area.id"
       type="button"
       role="tab"
@@ -26,7 +28,7 @@ const emit = defineEmits<{ show: [areaId: number] }>()
       :aria-selected="area.id === shown"
       @click="emit('show', area.id)"
     >
-      <span class="name">{{ $t('game.areas.area', { n: n + 1 }) }}<span v-if="area.id === own" class="yours">{{ $t('game.areas.yours') }}</span></span>
+      <span class="name">{{ $t('game.areas.area', { n: numbers[area.id] ?? '' }) }}<span v-if="area.id === own" class="yours">{{ $t('game.areas.yours') }}</span></span>
       <span class="meta">{{ area.players.map((p) => names[p]).filter(Boolean).join(', ') || $t('game.areas.empty') }}</span>
     </button>
   </nav>

@@ -70,11 +70,12 @@ const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m)
 // first, the others a tab away. One area is drawn as a game always was.
 const areas = computed<AreaView[]>(() => game.value?.areas ?? [])
 const areaOf = (playerId: string | undefined) => areas.value.find((a) => playerId !== undefined && a.players.includes(playerId)) ?? null
-const ownArea = computed(() => areaOf(viewed.value?.id)?.id ?? game.value?.viewerArea ?? areas.value[0]?.id ?? null)
+// yours: your first seat's; shown: the seat you look at's, until another is picked
+const ownArea = computed(() => areaOf(mySeats.value[0])?.id ?? game.value?.viewerArea ?? areas.value[0]?.id ?? null)
 const pickedArea = ref<number | null>(null)
 watch(() => viewed.value?.id, () => (pickedArea.value = null))
 const splitAreas = computed(() => areas.value.length > 1)
-const shownArea = computed(() => (splitAreas.value ? (areas.value.find((a) => a.id === (pickedArea.value ?? ownArea.value)) ?? null) : null))
+const shownArea = computed(() => (splitAreas.value ? (areas.value.find((a) => a.id === (pickedArea.value ?? areaOf(viewed.value?.id)?.id ?? ownArea.value)) ?? null) : null))
 const orderedAreas = computed(() => [...areas.value].sort((a, b) => Number(b.id === ownArea.value) - Number(a.id === ownArea.value)))
 // everything in an area, by id: its villains and schemes, its players and their cards
 const idsIn = (area: AreaView) => {
@@ -237,7 +238,11 @@ const onKeydown = (event: KeyboardEvent) => {
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
-const scenarioName = computed(() => game.value?.villains?.[0]?.name ?? null)
+// the scenario's own villain, the first of the first area's
+const scenarioName = computed(() => {
+  const first = game.value?.areas?.[0]?.villains?.[0]
+  return (game.value?.villains ?? []).find((v) => v.id === first)?.name ?? game.value?.villains?.[0]?.name ?? null
+})
 const active = computed(() => game.value?.activePlayer ?? null)
 const resetGame = () => {
   if (window.confirm(t('game.bar.restartConfirm'))) void reset()
@@ -274,7 +279,7 @@ const resetGame = () => {
 
         <template v-if="game">
           <div class="half villain-half">
-            <AreaTabs v-if="splitAreas" :areas="orderedAreas" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
+            <AreaTabs v-if="splitAreas" :areas="orderedAreas" :numbers="Object.fromEntries(areas.map((a, n) => [a.id, n + 1]))" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
             <VillainArea :game="game" :area="shownArea" />
           </div>
 
