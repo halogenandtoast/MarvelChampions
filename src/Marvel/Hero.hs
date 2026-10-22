@@ -38,6 +38,7 @@ allHeroes = fromList $ map
   , SomeHeroCard sheHulk
   , SomeHeroCard ironMan
   , SomeHeroCard blackPanther
+  , SomeHeroCard msMarvel
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

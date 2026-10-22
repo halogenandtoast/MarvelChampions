@@ -47,4 +47,7 @@ allAllies = fromList $ map
   , SomeAllyCard lukeCage
   , SomeAllyCard mockingbirdBobbiMorse
   , SomeAllyCard nickFury
+  , SomeAllyCard redDagger
+  , SomeAllyCard novaSamAlexander
+  , SomeAllyCard lockjaw
   ]

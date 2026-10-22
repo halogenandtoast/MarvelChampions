@@ -20,3 +20,5 @@ import Marvel.Minion.Minions.WeaponsRunner as X
 import Marvel.Minion.Minions.Whiplash as X
 import Marvel.Minion.Minions.Whirlwind as X
 import Marvel.Minion.Minions.YonRogg as X
+import Marvel.Minion.Minions.ThomasEdison as X
+import Marvel.Minion.Minions.EdisonsGiantRobot as X
