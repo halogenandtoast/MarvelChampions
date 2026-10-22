@@ -10,6 +10,7 @@ module Marvel.Message.Lifted (
 
 import Marvel.Prelude
 
+import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Attack (Attack (..))
 import Marvel.Card.Def (CardDef, CardMatcher)
@@ -30,7 +31,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
-import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (When, Would))
+import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
 import Marvel.Window.Types qualified as W
 
 -- * Questions
@@ -68,13 +69,17 @@ labeled l body = Label l . pure . Run <$> capture body
 targetingAbility :: (Applicative m, IsRef a) => a -> Natural -> m Choice
 targetingAbility a n = pure $ TargetLabel (toTarget a) [runAbility a n]
 
--- * Damage, threat and status
-
 -- | What the choice does, made by "you".
 resolve :: (ReverseQueue m) => Choice -> m ()
 resolve choice = do
   you <- getYou
-  Choice.pushChoice you choice
+  resolveAs you choice
+
+-- | What the choice does, made by the player.
+resolveAs :: (ReverseQueue m) => IdentityId -> Choice -> m ()
+resolveAs ident choice = pushAll =<< Choice.choiceMessages ident choice
+
+-- * Damage, threat and status
 
 dealDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m ()
 dealDamage enemy source = resolve . DamageEnemy (EnemyRef $ toEnemy enemy) (toSource source)
@@ -121,11 +126,11 @@ attackDealtDamageTo source damage = pushAll . attackDealtDamage source damage . 
 
 -- | Damage to an enemy matching, the player choosing which.
 chooseDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> EnemyMatcher -> m ()
-chooseDamage you source damage = Choice.pushChoice you . ChooseDamage (toSource source) damage
+chooseDamage you source damage = resolveAs you . ChooseDamage (toSource source) damage
 
 -- | The player chooses an enemy matching, and the target is told it ('ChoseEnemy').
 chooseEnemy :: (ReverseQueue m, IsRef target) => IdentityId -> EnemyMatcher -> target -> m ()
-chooseEnemy you matcher = Choice.pushChoice you . ChooseEnemy matcher . toTarget
+chooseEnemy you matcher = resolveAs you . ChooseEnemy matcher . toTarget
 
 stun :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> m ()
 stun enemy = resolve . Stun (EnemyRef $ toEnemy enemy) . toSource
@@ -145,7 +150,7 @@ placeThreatPastWindow scheme = push . threatPlacement (toScheme scheme)
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-removeThreat you source n = Choice.pushChoice you . RemoveThreat (toSource source) n
+removeThreat you source n = resolveAs you . RemoveThreat (toSource source) n
 
 -- | Threat a card places on the scheme, past the window for it ('placeThreatOn').
 placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
@@ -431,7 +436,7 @@ discardFor ident target zone lo = push . IdentityMessage ident . DiscardFor (toT
 
 -- | The player chooses an upgrade matching, and the target is told it ('ChoseUpgrade').
 chooseUpgrade :: (ReverseQueue m, IsRef target) => IdentityId -> UpgradeMatcher -> target -> m ()
-chooseUpgrade you matcher = Choice.pushChoice you . ChooseUpgrade matcher . toTarget
+chooseUpgrade you matcher = resolveAs you . ChooseUpgrade matcher . toTarget
 
 -- | The player pays the cost for an encounter card, as a treachery asks.
 payForTreachery :: (ReverseQueue m) => IdentityId -> Cost -> m ()
@@ -539,6 +544,64 @@ resolveObligation oid = push . ObligationMessage oid . ResolveObligation
 -- | The cards go on top of the encounter deck, the first on top.
 putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
+
+-- * Paying
+
+-- | Part of the cost paid.
+paid :: (ReverseQueue m) => Payment -> m ()
+paid = push . Paid
+
+-- | The part of the cost is paid ('PayCost').
+payCost :: (ReverseQueue m) => ActiveCostId -> Cost -> m ()
+payCost acid = push . PayCost acid
+
+-- | The resources still to pay for the cost are asked for.
+checkPayment :: (ReverseQueue m) => ActiveCostId -> m ()
+checkPayment = push . CheckPayment
+
+-- | The resources are paid: the rest of the cost follows.
+finishPayment :: (ReverseQueue m) => ActiveCostId -> m ()
+finishPayment = push . FinishedPayment
+
+-- | The cost cannot be paid: what was spent on it goes back.
+abortPayment :: (ReverseQueue m) => ActiveCostId -> m ()
+abortPayment = push . AbortPayment
+
+-- | The whole cost is paid: what it was paid for follows.
+paidCosts :: (ReverseQueue m) => ActiveCostId -> m ()
+paidCosts = push . PaidCosts
+
+disableActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
+disableActiveCost = push . DisableActiveCost
+
+-- | The card is played, paid for: it enters play and the window after it opens.
+cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
+cardPlayed ident card payment mWindow =
+  pushAll
+    [ IdentityMessage ident (PlayedCard card mWindow)
+    , PutCardIntoPlay ident card payment mWindow
+    , CheckWindows [Window After $ W.CardPlayed ident card]
+    ]
+
+-- | The ability is counted against its limit.
+usedAbility :: (ReverseQueue m) => IdentityId -> Ability -> m ()
+usedAbility ident = push . UsedAbility ident
+
+-- | What has uses to spend.
+class HasUses a where
+  spentUse :: a -> Message
+
+instance HasUses UpgradeId where
+  spentUse u = UpgradeMessage u SpendUpgradeUse
+
+instance HasUses SupportId where
+  spentUse s = SupportMessage s SpendSupportUse
+
+instance HasUses AllyId where
+  spentUse a = AllyMessage a SpendAllyUse
+
+spendUse :: (ReverseQueue m, HasUses a) => a -> m ()
+spendUse = push . spentUse
 
 -- * Effects and steps
 
