@@ -144,7 +144,7 @@ runMinionMessage msg attrs = case msg of
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         threat <- getModifiedScheme attrs
-        pushAll
+        pushAll $
           [ CheckWindows
               [ W.Window W.Would $
                   W.ThreatPlaced
@@ -152,9 +152,11 @@ runMinionMessage msg attrs = case msg of
                     (SchemeMainSchemeId mainSchemeId)
                     threat
               ]
-          , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
-          , CheckWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
+          | threat > 0
           ]
+          <> [ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
+             , CheckWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
+             ]
         pure attrs
       _ -> error "Not the main scheme"
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing

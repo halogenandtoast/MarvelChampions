@@ -74,6 +74,33 @@ spec = describe "Black Widow" do
         _ -> False
       offers isWidowmaker `shouldReturn` False
 
+  it "Widowmaker answers a Preparation card whose ability only draws: Espionage" do
+    tg <- blackWidow
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      espionage <- putIntoPlay p "08033"
+      _ <- stackEncounterDeck [Minions.hydraMercenary]
+      start [Surge p]
+      choose "use Espionage" (isAbilityOfCard espionage)
+      length <$> handOf p `shouldReturn` 2
+      offers isWidowmaker `shouldReturn` True
+
+  it "Widowmaker after Spycraft follows the card revealed in place of the cancelled one" do
+    tg <- blackWidow
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      spycraft <- putIntoPlay p "08018"
+      [next] <- stackEncounterDeck [Minions.hydraMercenary]
+      shot <- encounterCard Treacheries.deadlyShot
+      runNow [RevealEncounterCard p shot]
+      choose "use Spycraft" (isAbilityOfCard spycraft)
+      choose "Widowmaker" isWidowmaker
+      offers (isTargetChoice (EnemyMinionId $ minionOf next)) `shouldReturn` True
+
   it "Mission Prep: after playing a Preparation card, draw 1 card, once a phase" do
     tg <- blackWidow
     let p = player1 tg
@@ -300,6 +327,21 @@ spec = describe "Black Widow" do
       minionDamageOf (minionOf mercenary) `shouldReturn` Just 2
       isMinionStunned (minionOf mercenary) `shouldReturn` True
       discardOf p >>= (`shouldSatisfy` elem bite)
+
+  it "Widow's Bite answers a quickstrike minion after its quickstrike attack (FAQ)" do
+    tg <- blackWidow
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      bite <- inPlay p "08010" ["01088"]
+      vulture <- encounterCard Minions.vulture
+      runNow [RevealEncounterCard p vulture]
+      offers (isAbilityOfCard bite) `shouldReturn` False
+      choose "no defender" isNoDefender
+      damageOf p >>= (`shouldSatisfy` (> 0))
+      choose "use Widow's Bite" (isAbilityOfCard bite)
+      isMinionStunned (minionOf vulture) `shouldReturn` True
 
   it "Widow's Bite is an attack: a stunned Black Widow only loses the stun" do
     tg <- blackWidow

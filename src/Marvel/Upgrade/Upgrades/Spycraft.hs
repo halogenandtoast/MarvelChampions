@@ -39,12 +39,21 @@ instance HasAbilities Spycraft where
         (runAbility a 1)
     ]
 
--- | The card is discarded instead of resolving, and another revealed in its place.
+-- | The card is discarded instead of resolving, and another revealed in its place. The
+-- ability has resolved once that card has, so the window after it (Widowmaker,
+-- Synth-Suit) moves to follow it.
 instance RunMessage Spycraft where
   runMessage msg u@(Spycraft attrs) = case msg of
     RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ ident card] _ -> do
-      replaceMatchingMessage (const [DiscardedCard (EncounterCard card), DrawAndRevealEncounterCard ident]) \case
+      resolved <- withQueue \q -> case break isResolved q of
+        (before, w : after) -> (before <> after, [w])
+        _ -> (q, [])
+      replaceMatchingMessage (const $ [DiscardedCard (EncounterCard card), DrawAndRevealEncounterCard ident] <> resolved) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False
       pure u
     _ -> Spycraft <$> runMessage msg attrs
+   where
+    isResolved = \case
+      CheckWindows [Window After (ResolvedAbility _ def)] -> toCardCode def == toCardCode attrs
+      _ -> False

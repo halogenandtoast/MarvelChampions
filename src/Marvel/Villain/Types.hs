@@ -369,7 +369,7 @@ runVillainMessage msg attrs = case msg of
       SchemeMainSchemeId mainSchemeId -> do
         sch <- getModifiedScheme attrs
         let threat = sch + villainBoost attrs
-        pushAll
+        pushAll $
           [ CheckWindows
               [ W.Window W.Would $
                   W.ThreatPlaced
@@ -377,9 +377,11 @@ runVillainMessage msg attrs = case msg of
                     (SchemeMainSchemeId mainSchemeId)
                     threat
               ]
-          , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
-          , CheckWindows [W.Window W.After $ W.Schemed (villainId attrs)]
+          | threat > 0
           ]
+          <> [ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
+             , CheckWindows [W.Window W.After $ W.Schemed (villainId attrs)]
+             ]
         pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
       _ -> error "not Main scheme"
   VillainAttacked -> do
