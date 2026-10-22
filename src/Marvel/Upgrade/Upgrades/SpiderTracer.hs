@@ -22,7 +22,7 @@ spiderTracer :: UpgradeCard SpiderTracer
 spiderTracer = upgrade SpiderTracer Cards.spiderTracer
 
 newtype SpiderTracer = SpiderTracer (Attrs Upgrade)
-  deriving anyclass (IsUpgrade, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities SpiderTracer where
@@ -38,24 +38,8 @@ instance HasAbilities SpiderTracer where
       ]
     _ -> []
 
+instance IsUpgrade SpiderTracer where
+  upgradeTargets _ = Just . map toTarget <$> selectList AnyMinion
+
 instance RunMessage SpiderTracer where
-  runMessage msg u@(SpiderTracer a) = case msg of
-    UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      PlayedUpgrade -> do
-        minions <- selectList AnyMinion
-        chooseOne (upgradeController a) $
-          map
-            ( \minionId ->
-                TargetLabel
-                  (toRef minionId)
-                  [ Run
-                      [ UpgradeMessage (upgradeId a) $
-                          UpgradeAttachedToEnemy $
-                            EnemyMinionId minionId
-                      ]
-                  ]
-            )
-            minions
-        pure u
-      _ -> SpiderTracer <$> runMessage msg a
-    _ -> SpiderTracer <$> runMessage msg a
+  runMessage msg (SpiderTracer a) = SpiderTracer <$> runMessage msg a

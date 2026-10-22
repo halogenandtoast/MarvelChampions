@@ -28,7 +28,7 @@ followed :: UpgradeCard Followed
 followed = upgrade Followed Cards.followed
 
 newtype Followed = Followed (Attrs Upgrade)
-  deriving anyclass (IsUpgrade, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Followed where
@@ -39,13 +39,8 @@ instance HasAbilities Followed where
     ]
 
 -- | Attached to a side scheme without one.
+instance IsUpgrade Followed where
+  upgradeTargets _ = Just . map toTarget <$> selectList (NotSideScheme $ SideSchemeWithUpgrade $ UpgradeIs Cards.followed)
+
 instance RunMessage Followed where
-  runMessage msg u@(Followed a) = case msg of
-    UpgradeMessage ident PlayedUpgrade | ident == upgradeId a -> do
-      schemes <- selectList $ NotSideScheme $ SideSchemeWithUpgrade $ UpgradeIs Cards.followed
-      chooseOne (upgradeController a) $
-        [ TargetLabel (toRef sid) [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToSideScheme sid]]
-        | sid <- schemes
-        ]
-      pure u
-    _ -> Followed <$> runMessage msg a
+  runMessage msg (Followed a) = Followed <$> runMessage msg a

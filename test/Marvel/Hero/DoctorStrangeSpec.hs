@@ -319,8 +319,8 @@ spec = describe "Doctor Strange" do
       clearHand p
       changeForm p
       enhancements <- putInHand p "09010"
-      playPaying p enhancements ["01088"]
-      choose "Spider-Man" (isTargetChoice other)
+      energy <- putInHand p "01088"
+      playOn enhancements other [energy]
       map (.upgradeController) <$> upgradesWith "09010" `shouldReturn` [other]
       resolve [IdentityMessage other (ChangedToForm A)]
       other' <- getPlayer other

@@ -2,6 +2,8 @@ module Marvel.Support.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -80,6 +82,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 unique :: CardDef -> CardDef

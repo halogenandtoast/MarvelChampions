@@ -244,6 +244,23 @@ spec = describe "Captain America" do
         minionDamageOf minion `shouldReturn` Just 4
         discardOf p >>= (`shouldSatisfy` \d -> a `elem` d && b `elem` d)
 
+    it "a stunned hero still discards the cards and returns the shield: the stun replaces the attack" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        shield <- putIntoPlay p "03009"
+        resolve [IdentityMessage p IdentityStunned]
+        toss <- putInHand p "03006"
+        a <- putInHand p "03003"
+        playWith toss []
+        choose "discard" (isTargetChoice a)
+        isStunned p `shouldReturn` False
+        handOf p >>= (`shouldSatisfy` elem shield)
+        discardOf p >>= (`shouldSatisfy` elem a)
+        villainDamageNow `shouldReturn` 0
+
     it "needs the shield in play" do
       tg <- testGame ["captain-america"]
       let p = player1 tg

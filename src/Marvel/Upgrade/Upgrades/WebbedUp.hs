@@ -26,7 +26,7 @@ webbedUp :: UpgradeCard WebbedUp
 webbedUp = upgrade WebbedUp Cards.webbedUp
 
 newtype WebbedUp = WebbedUp (Attrs Upgrade)
-  deriving anyclass (IsUpgrade, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities WebbedUp where
@@ -42,20 +42,12 @@ instance HasAbilities WebbedUp where
       ]
     _ -> []
 
+instance IsUpgrade WebbedUp where
+  upgradeTargets _ = Just . map toTarget <$> selectList (NotEnemy $ EnemyWithUpgrade $ UpgradeIs Cards.webbedUp)
+
 instance RunMessage WebbedUp where
   runMessage msg u@(WebbedUp a) = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      PlayedUpgrade -> do
-        enemies <- selectList AnyEnemy
-        chooseOne (upgradeController a) $
-          map
-            ( \enemyId ->
-                TargetLabel
-                  (toRef enemyId)
-                  [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToEnemy enemyId]]
-            )
-            enemies
-        pure u
       _ -> WebbedUp <$> runMessage msg a
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       case upgradeAttachedEnemy a of

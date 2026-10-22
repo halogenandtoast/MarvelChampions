@@ -29,7 +29,7 @@ newtype AlphaFlightStation = AlphaFlightStation (Attrs Support)
 
 instance HasAbilities AlphaFlightStation where
   getAbilities (AlphaFlightStation a) =
-    [ ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardCost 1) $
+    [ ability a 1 Action (OwnsThis) (ExhaustCost <> DiscardHandCardsCost 1 (Just 1)) $
         RunAbility (toTarget a) 1
     ]
 

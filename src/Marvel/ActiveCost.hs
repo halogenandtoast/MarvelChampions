@@ -19,26 +19,25 @@ import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
+import Marvel.Discard
+import Marvel.Hand
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Message
 import Marvel.Payment
+import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity, ExhaustedUpgrade)
 import Marvel.Projection
+import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (CardPlayed))
 
--- | Pay a cost a card names as it resolves, as Lightning Strike's "spend X [energy]":
--- once it is paid, the card is answered with @RanAbility@ for that step and the payment.
-payForCard :: (MonadRandom m, HasQueue m, IsRef a) => IdentityId -> a -> Natural -> Cost -> m ()
-payForCard ident a step cost = do
-  activeCostId <- getRandom
-  let ab = limitedAbility a step NoLimit Special NoCriteria cost (RunAbility (toTarget a) step)
-  push $ SetActiveCost $ ActiveCost activeCostId ident (ForAbility ab) cost NoPayment Nothing mempty
 
+-- | What paying this part of the cost does. Resources are paid first, so a cost that
+-- cannot be paid in full is given up before anything else is paid.
 costMessages ::
   ( MonadThrow m
   , HasGame m
@@ -46,16 +45,18 @@ costMessages ::
   , HasQueue m
   , Projection m PlayerIdentity
   ) =>
-  IdentityId ->
   ActiveCost ->
+  Cost ->
   m [Message]
-costMessages iid activeCost = go (activeCostCost activeCost)
+costMessages activeCost = go
  where
-  payer = activeCostIdentityId activeCost
+  iid = activeCostIdentityId activeCost
+  acid = activeCostId activeCost
   go = \case
     NoCost -> pure []
-    DiscardHandCardCost n ->
-      pure [IdentityMessage iid $ DiscardFrom FromHand n Nothing]
+    DiscardHandCardsCost n m -> do
+      inHand <- projectMap PlayerIdentityHand (fromIntegral . length . unHand) iid
+      pure [IdentityMessage iid $ DiscardFor (ActiveCostRef acid) FromHand n (fromMaybe inHand m)]
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a ->
         pure $
@@ -126,15 +127,48 @@ costMessages iid activeCost = go (activeCostCost activeCost)
             ]
           _ -> error "Unhandled"
       _ -> error "Unhandled"
+    ExhaustUpgradeCost matcher -> do
+      upgrades <- selectList (matcher <> UnexhaustedUpgrade <> upgradeControlledBy iid)
+      pure $ oneOf upgrades \u -> [UpgradeMessage u ExhaustedUpgrade, Paid ExhaustPayment]
+    ReturnUpgradeToHandCost matcher -> do
+      upgrades <- selectList (matcher <> upgradeControlledBy iid)
+      pure $ oneOf upgrades \u -> [ReturnToHand (toRef u)]
+    -- one at a time, until the player is done or has exhausted as many as it allows
+    ExhaustAlliesCost n m -> do
+      allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
+      pure
+        [ Ask iid $
+            promptedAbout "$label.chooseAllyToExhaust" (activeCostSource activeCost) $
+              ChooseOne $
+                [Label "$label.done" [] | n == 0]
+                  <> [ TargetLabel
+                      (toRef a)
+                      [ Run
+                          [ AllyMessage a ExhaustedAlly
+                          , Paid (ExhaustedAllyPayment a)
+                          , PayCost acid (ExhaustAlliesCost (subtractNatural 1 n) (subtract 1 <$> m))
+                          ]
+                      ]
+                     | a <- allies
+                     ]
+        | maybe True (> 0) m
+        , notNull allies
+        ]
+    DiscardEncounterCardsUntilMinionCost ->
+      pure [DiscardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)]
+    -- added to the resources as the card was played
+    TargetPrintedCost -> pure []
     DynamicResourceCost _ -> resourcePayment
     ResourceCost _ -> resourcePayment
     MultiResourceCost _ -> resourcePayment
     DifferentResourcesCost _ -> resourcePayment
     Costs xs -> concatMapM go (condenseResourceCosts xs)
   payingFor = case activeCostTarget activeCost of
-    ForCard card -> Just (toTarget card)
-    ForAbility a -> Just (refocus $ abilitySource a)
     ForTreachery -> Nothing
+    _ -> Just (refocus $ activeCostSource activeCost)
+  oneOf xs f = case xs of
+    [x] -> f x
+    _ -> [Ask iid $ ChooseOne [TargetLabel (toRef x) [Run (f x)] | x <- xs]]
   -- only what can be spent on it is offered: "you can only spend [physical] resources"
   resourcePayment = do
     let
@@ -142,16 +176,16 @@ costMessages iid activeCost = go (activeCostCost activeCost)
         ForCard card -> Just card
         _ -> Nothing
       spendable = any (canSpendOn $ maybe NoCriteria (cdCriteria . getCardDef) mcard)
-    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) =<< getAvailablePaymentSources payer
-    abilities <- filterM (fmap spendable . abilityResources) =<< getResourceAbilities payer mcard
+    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) =<< getAvailablePaymentSources iid
+    abilities <- filterM (fmap spendable . abilityResources) =<< getResourceAbilities iid mcard
     paid <- resourceCostPaid activeCost
     pure
       if
-        | null cards && null abilities && not paid -> [AbortPayment (activeCostId activeCost)]
+        | null cards && null abilities && not paid -> [AbortPayment acid]
         -- nothing left to pay with, and nothing left to pay
-        | null cards && null abilities -> [FinishedPayment (activeCostId activeCost)]
+        | null cards && null abilities -> [FinishedPayment acid]
         | otherwise ->
-          [ Ask payer $
+          [ Ask iid $
               QuestionLabel "$label.pay" payingFor $
               ChooseOne $
                 map PayWithCard cards
@@ -159,19 +193,20 @@ costMessages iid activeCost = go (activeCostCost activeCost)
                   <> [FinishPayment | paid]
           ]
 
+-- | What is being paid for.
+activeCostSource :: ActiveCost -> Source
+activeCostSource activeCost = case activeCostTarget activeCost of
+  ForCard card -> toSource card
+  ForAbility a -> abilitySource a
+  ForTreachery -> GameRef
+
 condenseResourceCosts :: [Cost] -> [Cost]
 condenseResourceCosts xs = go xs False
  where
   go [] _ = []
-  go (c@ResourceCost {} : cs) False = c : go cs True
-  go (c@DynamicResourceCost {} : cs) False = c : go cs True
-  go (c@MultiResourceCost {} : cs) False = c : go cs True
-  go (c@DifferentResourcesCost {} : cs) False = c : go cs True
-  go (ResourceCost {} : cs) True = go cs True
-  go (DynamicResourceCost {} : cs) True = go cs True
-  go (MultiResourceCost {} : cs) True = go cs True
-  go (DifferentResourcesCost {} : cs) True = go cs True
-  go (c : cs) b = c : go cs b
+  go (c : cs) paying
+    | isResourceCost c = if paying then go cs True else c : go cs True
+    | otherwise = c : go cs paying
 
 isResourceCost :: Cost -> Bool
 isResourceCost (ResourceCost _) = True
@@ -181,53 +216,54 @@ isResourceCost (DifferentResourcesCost _) = True
 isResourceCost (Costs cs) = any isResourceCost cs
 isResourceCost _ = False
 
-onlyResourceCosts :: Cost -> Cost
-onlyResourceCosts c@(ResourceCost _) = c
-onlyResourceCosts c@(MultiResourceCost _) = c
-onlyResourceCosts c@(DynamicResourceCost _) = c
-onlyResourceCosts c@(DifferentResourcesCost _) = c
-onlyResourceCosts (Costs cs) =
-  case filter (/= NoCost) (map onlyResourceCosts cs) of
-    [] -> NoCost
-    xs -> Costs xs
-onlyResourceCosts _ = NoCost
+-- | The parts of the cost that are, or are not, resources.
+resourceCosts, otherCosts :: Cost -> Cost
+resourceCosts = filterCosts isResourceCost
+otherCosts = filterCosts (not . isResourceCost)
+
+filterCosts :: (Cost -> Bool) -> Cost -> Cost
+filterCosts f = mconcat . filter f . flattenCosts
+
+flattenCosts :: Cost -> [Cost]
+flattenCosts = \case
+  Costs cs -> concatMap flattenCosts cs
+  NoCost -> []
+  c -> [c]
+
+-- | X, for a "spend X resources" cost paid with the rest of its card's or ability's
+-- resources: what was spent of that type beyond the rest. Its payer divides the
+-- resources between the costs, so whatever else could pay the rest does.
+spentX ::
+  ( Projection m PlayerIdentity
+  , HasGame m
+  , HasQueue m
+  , MonadRandom m
+  , MonadThrow m
+  ) =>
+  ActiveCost ->
+  m Payment
+spentX activeCost = case [r | DynamicResourceCost r <- flattenCosts (activeCostCost activeCost)] of
+  [] -> pure NoPayment
+  r : _ -> do
+    resources <- paymentResources (activeCostPayment activeCost)
+    let
+      rest = length (costResources $ activeCostCost activeCost) - 1
+      ofType = count (\x -> maybe True (\r' -> x `elem` [r', Wild]) r) resources
+    pure $ XPayment $ min ofType (fromIntegral $ max 0 $ length resources - rest)
 
 instance RunMessage ActiveCost where
   runMessage msg activeCost = case msg of
     CreatedActiveCost ident | ident == activeCostId activeCost -> do
-      msgs <- costMessages (activeCostIdentityId activeCost) activeCost
-      pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
-      pure $
-        activeCost
-          { activeCostCost = onlyResourceCosts (activeCostCost activeCost)
-          }
+      push $ CheckPayment $ activeCostId activeCost
+      pure activeCost
+    PayCost ident cost | ident == activeCostId activeCost -> do
+      pushAll =<< costMessages activeCost cost
+      pure activeCost
     Spent ident discard | ident == activeCostId activeCost -> do
-      case activeCostTarget activeCost of
-        ForCard card -> do
-          resources <- resourcesFor discard $ Just card
-          push $
-            Paid $
-              mconcat $
-                map
-                  ResourcePayment
-                  resources
-        ForAbility _ -> do
-          resources <- resourcesFor discard Nothing
-          push $
-            Paid $
-              mconcat $
-                map
-                  ResourcePayment
-                  resources
-        ForTreachery -> do
-          resources <- resourcesFor discard Nothing
-          push $
-            Paid $
-              mconcat $
-                map
-                  ResourcePayment
-                  resources
-
+      resources <- resourcesFor discard $ case activeCostTarget activeCost of
+        ForCard card -> Just card
+        _ -> Nothing
+      push $ Paid $ mconcat $ map ResourcePayment resources
       pure $
         activeCost
           { activeCostSpentCards = discard : activeCostSpentCards activeCost
@@ -237,13 +273,11 @@ instance RunMessage ActiveCost where
         activeCost
           { activeCostPayment = activeCostPayment activeCost <> payment
           }
-    -- cards <- getAvailablePaymentSources
-    -- abilities <- getResourceAbilities
-    -- paid <- resourceCostPaid activeCost'
     CheckPayment ident | ident == activeCostId activeCost -> do
-      if isResourceCost (activeCostCost activeCost)
+      let resources = resourceCosts (activeCostCost activeCost)
+      if resources /= NoCost
         then do
-          msgs <- costMessages (activeCostIdentityId activeCost) activeCost
+          msgs <- costMessages activeCost resources
           pushAll $ msgs <> [CheckPayment $ activeCostId activeCost]
         else push $ FinishedPayment $ activeCostId activeCost
       pure activeCost
@@ -254,36 +288,50 @@ instance RunMessage ActiveCost where
               (Paid . DiscardHandCardPayment)
               cards
           pure activeCost
+    WithDiscardedMatch (ActiveCostRef ident) _ (EncounterCard card)
+      | ident == activeCostId activeCost -> do
+          push $ PutEncounterCardIntoPlay (activeCostIdentityId activeCost) card
+          pure activeCost
     AbortPayment ident | ident == activeCostId activeCost -> do
       cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
       let payer = activeCostIdentityId activeCost
+      -- a card played from a discard pile was left there
+      fromHand <- case activeCostTarget activeCost of
+        ForCard card -> projectP PlayerIdentityDiscard (notElem card . unDiscard) payer
+        _ -> pure False
       pushAll $
-        [IdentityMessage payer (AddToHand card) | ForCard card <- [activeCostTarget activeCost]]
+        [IdentityMessage payer (AddToHand card) | ForCard card <- [activeCostTarget activeCost], fromHand]
           <> map (IdentityMessage payer . AddToHand) (activeCostSpentCards activeCost)
           <> [DisableActiveCost $ activeCostId activeCost]
       pure activeCost
+    -- the resources are paid: then the rest of the cost
     FinishedPayment ident | ident == activeCostId activeCost -> do
       cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
+      msgs <- costMessages activeCost (otherCosts $ activeCostCost activeCost)
+      pushAll $ msgs <> [PaidCosts ident]
+      pure activeCost
+    PaidCosts ident | ident == activeCostId activeCost -> do
+      x <- spentX activeCost
+      let
+        payer = activeCostIdentityId activeCost
+        payment = activeCostPayment activeCost <> x
       case activeCostTarget activeCost of
-        ForCard card -> do
-          let ident = activeCostIdentityId activeCost
+        ForCard card ->
           pushAll
-            [ PutCardIntoPlay ident card (activeCostPayment activeCost) (activeCostWindow activeCost)
-            , CheckWindows [Window After $ CardPlayed ident card]
+            [ IdentityMessage payer (PlayedCard card (activeCostWindow activeCost))
+            , PutCardIntoPlay payer card payment (activeCostWindow activeCost)
+            , CheckWindows [Window After $ CardPlayed payer card]
             ]
         ForAbility ab -> do
-          rest <-
-            concatMapM
-              (choiceMessages $ activeCostIdentityId activeCost)
-              (abilityChoices ab)
-          pushAll $ UsedAbility (activeCostIdentityId activeCost) ab : rest
+          rest <- concatMapM (choiceMessages payer) (abilityChoices ab)
+          pushAll $ UsedAbility payer ab : rest
         ForTreachery -> pure ()
       pushAll $
         map
           (DiscardedCard . PlayerCard)
           (reverse $ activeCostSpentCards activeCost)
           <> [DisableActiveCost $ activeCostId activeCost]
-      pure activeCost
+      pure $ activeCost {activeCostPayment = payment}
     _ -> pure activeCost
 
 resourceCostPaid ::

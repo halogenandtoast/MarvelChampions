@@ -2,6 +2,8 @@ module Marvel.Villain.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
@@ -38,6 +40,7 @@ villain cardCode name traits =
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdAbilityCost = NoCost
     }
 
 rhino1 :: CardDef

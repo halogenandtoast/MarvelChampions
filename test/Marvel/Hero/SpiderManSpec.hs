@@ -182,8 +182,8 @@ spec = describe "Spider-Man" do
       offers (isPlay tracer) `shouldReturn` False -- no minion yet
       mercenary <- revealNow p Minions.hydraMercenary
       pass
+      -- the one minion is what it is played on
       playWith tracer [energy]
-      choose "attach to the mercenary" (isTargetChoice (minionOf mercenary))
       mainScheme <- getsGame (HashMap.keys . gameMainSchemes)
       runNow [MainSchemeMessage m (MainSchemePlaceThreat 4) | m <- mainScheme]
       before <- mainSchemeThreat
@@ -235,9 +235,9 @@ spec = describe "Spider-Man" do
       clearHand p
       webbed <- putInHand p "01009"
       payment <- traverse (putInHand p) ["01088", "01090"]
+      -- Rhino is the one enemy to play it on
       playWith webbed payment
       vid <- villainIdNow
-      choose "attach to Rhino" (isTargetChoice (EnemyVillainId vid))
       upgradeCodes `shouldReturn` ["01009"]
       -- max 1 per enemy
       webbed' <- putInHand p "01009"
@@ -260,8 +260,7 @@ spec = describe "Spider-Man" do
       pass
       webbed <- putInHand p "01009"
       payment <- traverse (putInHand p) ["01088", "01090"]
-      playWith webbed payment
-      choose "attach to the mercenary" (isTargetChoice (EnemyMinionId $ minionOf mercenary))
+      playOn webbed (EnemyMinionId $ minionOf mercenary) payment
       runNow [MinionMessage (minionOf mercenary) (MinionAttacks p)]
       choose "resolve Webbed Up" (isAbilityOfCard webbed)
       pass

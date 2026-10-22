@@ -190,8 +190,7 @@ spec = describe "Justice" do
         clearHand p
         intuition <- putInHand p "01065"
         energy <- putInHand p "01088"
-        playWith intuition [energy]
-        choose "give it to Captain Marvel" (isTargetChoice other)
+        playOn intuition other [energy]
         upgrades <- upgradesWith "01065"
         map upgradeController upgrades `shouldBe` [other]
         for_ upgrades \u -> runNow [UpgradeMessage (upgradeId u) DiscardUpgrade]

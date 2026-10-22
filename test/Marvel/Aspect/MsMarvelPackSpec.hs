@@ -147,6 +147,17 @@ spec = describe "Ms. Marvel pack" do
         alliesWith "05018" >>= (`shouldSatisfy` ((== 1) . length))
         discardOf p >>= (`shouldSatisfy` notElem lockjaw)
 
+    it "is left in the discard pile when its cost cannot be paid after all" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        [lockjaw] <- stackDiscard p ["05018"]
+        resolve [IdentityMessage p (PayForCard lockjaw Nothing Nothing)]
+        discardOf p >>= (`shouldSatisfy` elem lockjaw)
+        handOf p `shouldReturn` []
+        alliesWith "05018" `shouldReturn` []
+
   describe "Endurance (05023)" do
     it "gives +3 hit points, max 1 per player" do
       tg <- msMarvel

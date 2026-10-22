@@ -26,20 +26,15 @@ newtype HammerThrow = HammerThrow (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | Exhaust Mjolnir, then 8 damage with overkill, then Mjolnir goes back to hand.
+-- | Mjolnir is exhausted as its cost, then 8 damage with overkill, then Mjolnir goes
+-- back to hand.
 instance RunMessage HammerThrow where
   runMessage msg e@(HammerThrow attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ -> do
-        mjolnir <- selectJust $ UpgradeIs Upgrades.mjolnir <> UnexhaustedUpgrade <> upgradeControlledBy identityId
-        enemies <- selectList AttackableEnemy
-        pushAll
-          [ UpgradeMessage mjolnir ExhaustedUpgrade
-          , Ask identityId $
-              ChooseOne $
-                map (damageChoice attrs (withOverkill $ toDamage 8 $ FromPlayerAttack identityId)) enemies
-          , ReturnToHand (toTarget mjolnir)
-          ]
-        pure e
-      _ -> HammerThrow <$> runMessage msg attrs
+    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
+      mjolnir <- selectList $ UpgradeIs Upgrades.mjolnir <> upgradeControlledBy identityId
+      enemies <- selectList AttackableEnemy
+      pushAll $
+        Ask identityId (ChooseOne $ map (damageChoice attrs (withOverkill $ toDamage 8 $ FromPlayerAttack identityId)) enemies)
+          : map (ReturnToHand . toTarget) (take 1 mjolnir)
+      pure e
     _ -> HammerThrow <$> runMessage msg attrs

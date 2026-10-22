@@ -5,6 +5,7 @@ module Marvel.Event.Events.StrengthInNumbers (
 
 import Marvel.Prelude
 
+import Marvel.Payment
 import Data.Aeson (Result (..), fromJSON)
 import Marvel.Card.Code
 import Marvel.Entity
@@ -25,22 +26,11 @@ newtype StrengthInNumbers = StrengthInNumbers (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | The player exhausts their allies one at a time, as many as they like, counting
--- them, then draws as many cards.
+-- | Exhausting any number of allies is its cost → draw a card for each.
 instance RunMessage StrengthInNumbers where
   runMessage msg e@(StrengthInNumbers attrs) = case msg of
-    EventMessage ident (PlayedEvent _ _ _) | ident == eventId attrs -> do
-      push $ cardSpecific attrs "exhaust" (0 :: Natural)
-      pure e
-    CardSpecific (isTarget attrs -> True) "exhaust" (fromJSON -> Success (n :: Natural)) -> do
-      let identityId = eventController attrs
-      allies <- selectList $ AllyMatches [AllyControlledBy (IdentityWithId identityId), UnexhaustedAlly]
-      push $
-        Ask identityId $
-          ChooseOne $
-            Label "$label.done" [Run [IdentityMessage identityId $ DrawCards FromDeck n | n > 0]]
-              : [ TargetLabel (toRef a) [Run [AllyMessage a ExhaustedAlly, cardSpecific attrs "exhaust" (n + 1)]]
-                | a <- allies
-                ]
+    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
+      let n = fromIntegral $ length $ paymentExhaustedAllies payment
+      pushWhen (n > 0) $ IdentityMessage identityId $ DrawCards FromDeck n
       pure e
     _ -> StrengthInNumbers <$> runMessage msg attrs

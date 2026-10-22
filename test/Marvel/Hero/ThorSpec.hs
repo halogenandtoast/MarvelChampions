@@ -135,6 +135,21 @@ spec = describe "Thor" do
         map pcCardId <$> handOf p >>= (`shouldSatisfy` elem (pcCardId mjolnir))
         upgradeCodes `shouldReturn` []
 
+    it "exhausts Mjolnir even as a stun replaces the attack, Mjolnir staying in play" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        mjolnir <- withMjolnir p
+        resolve [IdentityMessage p IdentityStunned]
+        throw <- putInHand p "06005"
+        playPaying p throw ["01088", "01089", "01090"]
+        pass
+        isStunned p `shouldReturn` False
+        upgradeIsExhausted (upgradeOf mjolnir) `shouldReturn` True
+        villainDamageNow `shouldReturn` 0
+        upgradeCodes `shouldReturn` ["06009"]
+
     it "needs Mjolnir in play and ready" do
       tg <- thor
       let p = player1 tg
@@ -155,10 +170,14 @@ spec = describe "Thor" do
         sandman <- addMinion p Minions.sandman
         pass
         strike <- putInHand p "06006"
+        genius <- putInHand p "01089"
         energy <- putInHand p "01088"
-        playPaying p strike ["01089"]
+        -- X is paid with the card's cost: the mental resource pays for the card, the
+        -- energy resources are X
+        choose "play" (isPlay strike)
+        choose "pay with a mental card" (isPayWith genius)
+        offers isFinishPayment `shouldReturn` False
         choose "spend energy" (isPayWith energy)
-        whenM (offers isFinishPayment) $ choose "done" isFinishPayment
         pass
         villainDamageNow `shouldReturn` 2
         minionDamageOf sandman `shouldReturn` Just 2
@@ -180,6 +199,18 @@ spec = describe "Thor" do
         whenM (offers isFinishPayment) $ choose "done" isFinishPayment
         pass
         minionDamageOf sandman `shouldReturn` Just 0
+
+    it "takes what pays for its own cost out of X" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "06006"
+        energy <- traverse (putInHand p) ["01088", "01088"]
+        playWith strike energy
+        pass
+        villainDamageNow `shouldReturn` 3
 
   describe "Asgard (06007)" do
     it "gives +1 hand size" do

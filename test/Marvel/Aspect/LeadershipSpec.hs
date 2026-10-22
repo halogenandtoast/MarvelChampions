@@ -116,14 +116,25 @@ spec = describe "Leadership" do
         offers (isPlay call) `shouldReturn` False
         maria <- putInDiscard q "01067"
         energy <- putInHand p "01088"
-        choose "play Make the Call" (isPlay call)
-        choose "call Maria Hill" (isPlay maria)
-        choose "pay" (isPayWith energy)
-        chooseIf isFinishPayment
+        -- Maria Hill, the one ally to call, is chosen as it is played: her cost is paid
+        -- with its own
+        playWith call [energy]
         pass
         [m] <- alliesWith "01067"
         m.allyController `shouldBe` p
         map toCardCode <$> discardOf q `shouldReturn` []
+
+    it "chooses the ally before paying: given up, it leaves the ally where it was" do
+      tg <- testGame ["captain-marvel", "spider-man"]
+      let (p, q) = (player1 tg, player2 tg)
+      inGame tg do
+        clearHand p
+        call <- putInHand p "01071"
+        maria <- putInDiscard q "01067"
+        resolve [IdentityMessage p (PayForCard call Nothing (Just $ toTarget maria))]
+        handOf p `shouldReturn` [call]
+        discardOf q `shouldReturn` [maria]
+        alliesWith "01067" `shouldReturn` []
 
   describe "The Power of Leadership (01072)" do
     it "pays 2 for a Leadership card" do

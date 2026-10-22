@@ -2,6 +2,8 @@ module Marvel.SideScheme.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -62,6 +64,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 breakinAndTakin :: CardDef

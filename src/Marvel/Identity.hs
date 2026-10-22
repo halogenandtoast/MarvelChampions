@@ -9,7 +9,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
-import Data.List (partition)
+import Data.List (find, partition)
 import Marvel.Ability
 import Marvel.ActiveCost
 import Marvel.AlterEgo
@@ -260,8 +260,7 @@ instance HasAbilities PlayerIdentity where
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
-  resources <- filter (canSpendOn $ cdCriteria def) <$> getAvailableResourcesFor (toId attrs) (Just c)
-  modifiedCost <- getModifiedCost attrs c
+  affordable <- notNull <$> playableTargets attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
   matchesUnique <-
@@ -269,8 +268,7 @@ isPlayable attrs c = do
       then any (uniqueMatch (title $ cdName def, maybe [] pure (subtitle $ cdName def))) <$> getUniqueTitlesInPlay
       else pure False
   pure $
-    length resources
-      >= modifiedCost
+    affordable
       && passedCriteria
       && passedPlayLimits
       && not matchesUnique
@@ -338,16 +336,61 @@ checkPlayLimits ident c = case cdLimit def of
   def = getCardDef c
   name = cdName def
 
-getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
-getModifiedCost attrs c = do
+-- | The resource cost of playing the card on the target, as modified: Iron Man's "reduce
+-- the cost to play each upgrade on Iron Man" answers for the character it is played on.
+getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m Int
+getModifiedCost attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
-  pure $ maybe 0 (max 0 . (+ sum (map change modifiers))) (cdCost $ getCardDef c)
+  onTarget <- maybe (pure []) getModifiers mTarget
+  pure $
+    maybe 0 (max 0 . (+ sum (map change modifiers <> map changeOn onTarget))) (cdCost $ getCardDef c)
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
     ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
     AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
     _ -> 0
+  changeOn = \case
+    UpgradeOnThisCostReduction n | cdCardType (getCardDef c) == UpgradeType -> negate (fromIntegral n)
+    _ -> 0
+
+-- | The whole cost of playing the card on the target: its resource cost, and the cost
+-- of its ability (an event's "→"), paid together.
+getCardCost ::
+  (HasQueue m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  PlayerIdentity ->
+  PlayerCard ->
+  Maybe Target ->
+  m Cost
+getCardCost attrs c mTarget = do
+  modifiedCost <- getModifiedCost attrs c mTarget
+  printed <- case (cdAbilityCost def, mTarget) of
+    (abilityCost, Just (CardIdRef cid)) | usesTargetCost abilityCost -> do
+      cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) =<< getPlayers
+      pure $ maybe 0 (fromMaybe 0 . cdCost . getCardDef) (find ((== cid) . pcCardId) cards)
+    _ -> pure 0
+  pure $
+    mconcat (replicate modifiedCost (ResourceCost $ spendOnly $ cdCriteria def))
+      <> mconcat (replicate printed (ResourceCost Nothing))
+      <> filterCosts (/= TargetPrintedCost) (cdAbilityCost def)
+ where
+  def = getCardDef c
+  usesTargetCost = elem TargetPrintedCost . flattenCosts
+
+-- | The targets the card can be played on whose cost the player can pay: just
+-- @Nothing@ for a card played on nothing.
+playableTargets ::
+  (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  PlayerIdentity ->
+  PlayerCard ->
+  m [Maybe Target]
+playableTargets attrs c = do
+  targets <- maybe [Nothing] (map Just) <$> getPlayTargets (toId attrs) c
+  flip filterM targets \mTarget -> do
+    cost <- getCardCost attrs c mTarget
+    resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> getAvailableResourcesFor (toId attrs) (Just c)
+    (length resources >= length (costResources cost) &&)
+      <$> canAffordCost (toId attrs) (toSource c) (otherCosts cost)
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
@@ -549,25 +592,34 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         CheckWindows
           [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
       pure $ PlayerIdentity $ attrs & sideL .~ side
-    PlayedCard card mWindow -> do
-      modifiedCost <- getModifiedCost pid card
+    PlayingCard card mWindow -> do
+      targets <- playableTargets pid card
+      let payFor = IdentityMessage playerIdentityId . PayForCard card mWindow
+      case targets of
+        [mTarget] -> push $ payFor mTarget
+        _ ->
+          push $
+            Ask playerIdentityId $
+              promptedAbout "$label.playOn" card $
+                ChooseOne [TargetLabel t [Run [payFor (Just t)]] | Just t <- targets]
+      pure pid
+    -- a card played from a discard pile is left there until it is played, so that
+    -- giving it up leaves it where it was
+    PayForCard card mWindow mTarget -> do
+      cost <- getCardCost pid card mTarget
       activeCostId <- getRandom
-      let cost' = mconcat $ replicate modifiedCost (ResourceCost $ spendOnly $ cdCriteria $ getCardDef card)
       push $
         SetActiveCost $
           ActiveCost
             activeCostId
             playerIdentityId
             (ForCard card)
-            cost'
-            NoPayment
+            cost
+            (maybe NoPayment TargetPayment mTarget)
             mWindow
             mempty
-      pure $
-        PlayerIdentity $
-          attrs
-            & (handL %~ Hand . filter (/= card) . unHand)
-            & (discardL %~ Discard . filter (/= card) . unDiscard)
+      pure $ PlayerIdentity $ attrs & (handL %~ Hand . filter (/= card) . unHand)
+    PlayedCard {} -> pure pid
     PaidWithCard card -> do
       mActiveCost <- getActiveCost
       case mActiveCost of
@@ -1045,10 +1097,6 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     -- an enemy's attack against them begins: none of its damage taken yet
     VillainMessage _ (VillainBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
     MinionMessage _ (MinionBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
-    -- a card played from another player's discard pile (Make the Call) leaves it
-    IdentityMessage ident (PlayedCard card _)
-      | ident /= playerIdentityId attrs ->
-          pure $ PlayerIdentity $ attrs & (discardL %~ Discard . filter (/= card) . unDiscard)
     -- a card put into play leaves wherever it was
     PutCardIntoPlay _ card _ _ ->
       pure $

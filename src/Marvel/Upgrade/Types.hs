@@ -118,6 +118,23 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilitie
   default toUpgradeAttrs :: (Coercible a (Attrs Upgrade)) => a -> Attrs Upgrade
   toUpgradeAttrs = coerce
 
+  -- | What it is played on, chosen before its cost is paid: what it attaches to, or
+  -- the player who takes control of it. Nothing for an upgrade played on neither.
+  upgradeTargets :: (HasGame m) => a -> m (Maybe [Target])
+  upgradeTargets = controlTargets . toUpgradeAttrs
+
+-- | "Play under any player's control": its player chooses whose, among those who may.
+controlTargets :: (HasGame m) => Attrs Upgrade -> m (Maybe [Target])
+controlTargets a = case cdLimit (upgradeCardDef a) of
+  Just (MaxPerPlayerUnderAnyControl n) -> do
+    players <- getPlayers
+    open <- flip filterM players \p ->
+      (< n) . fromIntegral . length
+        <$> selectList (UpgradeNamed (cdName $ upgradeCardDef a) <> UpgradeControlledBy (IdentityWithId p))
+    pure $ Just $ map toTarget open
+  Just UnderAnyControl -> Just . map toTarget <$> getPlayers
+  _ -> pure Nothing
+
 type UpgradeCard a = CardBuilder (IdentityId, UpgradeId) a
 
 attachedAllyL :: Lens' (Attrs Upgrade) (Maybe AllyId)
@@ -239,27 +256,24 @@ instance IsCard (Attrs Upgrade) where
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      PlayedUpgrade -> case cdLimit (upgradeCardDef a) of
-        -- "play under any player's control": its player chooses whose, among those
-        -- without one
-        Just (MaxPerPlayerUnderAnyControl n) -> do
-          players <- getPlayers
-          open <- flip filterM players \p ->
-            (< n) . fromIntegral . length . filter (/= upgradeId a)
-              <$> selectList (UpgradeNamed (cdName $ upgradeCardDef a) <> UpgradeControlledBy (IdentityWithId p))
-          underControlOf open
-        Just UnderAnyControl -> underControlOf =<< getPlayers
-        _ ->
-          a
-            <$ push
-              (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
+      PlayedUpgrade mTarget -> do
+        case mTarget of
+          Just (IdentityRef p) -> push $ UpgradeMessage (upgradeId a) (UpgradeControlledByPlayer p)
+          Just target ->
+            pushAll
+              [ IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a)
+              , UpgradeMessage (upgradeId a) (attachedTo target)
+              ]
+          Nothing -> push $ IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a)
+        pure a
        where
-        underControlOf open = do
-          chooseOrRunOne (upgradeController a)
-            [ TargetLabel (IdentityRef p) [Run [UpgradeMessage (upgradeId a) (UpgradeControlledByPlayer p)]]
-            | p <- open
-            ]
-          pure a
+        attachedTo = \case
+          AllyRef allyId -> UpgradeAttachedToAlly allyId
+          MinionRef minionId -> UpgradeAttachedToEnemy (EnemyMinionId minionId)
+          VillainRef villainId -> UpgradeAttachedToEnemy (EnemyVillainId villainId)
+          EnemyRef enemyId -> UpgradeAttachedToEnemy enemyId
+          SideSchemeRef sideSchemeId -> UpgradeAttachedToSideScheme sideSchemeId
+          target -> error $ "an upgrade cannot attach to " <> show target
       UpgradeControlledByPlayer p -> do
         push $ IdentityMessage p $ UpgradeCreated (upgradeId a)
         pure a {upgradeController = p}

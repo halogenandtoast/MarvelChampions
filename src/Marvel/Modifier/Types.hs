@@ -35,6 +35,8 @@ data Modifier
     TargetThreatModifier Natural
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural
+  | -- | on a character: the cost to play each upgrade on it is reduced
+    UpgradeOnThisCostReduction Natural
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   deriving stock (Show, Eq, Generic)

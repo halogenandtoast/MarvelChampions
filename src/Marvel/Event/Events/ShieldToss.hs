@@ -5,6 +5,7 @@ module Marvel.Event.Events.ShieldToss (
 
 import Marvel.Prelude
 
+import Marvel.Payment
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
@@ -29,29 +30,17 @@ newtype ShieldToss = ShieldToss (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | X cards are discarded, no more than there are enemies to deal the damage to, then
--- the shield goes back to hand, then each of X enemies is dealt 4 damage.
+-- | X cards are discarded and the shield goes back to hand as its cost, then each of X
+-- enemies is dealt 4 damage.
 instance RunMessage ShieldToss where
   runMessage msg e@(ShieldToss attrs) = case msg of
-    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      handSize <- projectMap PlayerIdentityHand (length . unHand) identityId
+    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
       enemies <- selectList AttackableEnemy
-      push $
-        IdentityMessage identityId $
-          DiscardFor (toTarget attrs) FromHand 0 (fromIntegral $ min handSize (length enemies))
-      pure e
-    WithDiscarded (isTarget attrs -> True) FromHand discarded -> do
-      let identityId = eventController attrs
-      shields <- selectList $ UpgradeIs Cards.captainAmericasShield <> upgradeControlledBy identityId
-      enemies <- selectList AttackableEnemy
-      let damage = toDamage 4 $ FromPlayerAttack identityId
-      pushAll $
-        map (ReturnToHand . toRef) (take 1 shields)
-          <> [ Ask identityId $
-              ChooseN
-                (fromIntegral $ length discarded)
-                [TargetLabel enemy [DamageEnemy enemy (toSource attrs) damage] | enemy <- map toRef enemies]
-             | notNull discarded
-             ]
+      let
+        x = min (length enemies) (length $ paymentDiscards payment)
+        damage = toDamage 4 $ FromPlayerAttack identityId
+      pushWhen (x > 0) $
+        Ask identityId $
+          ChooseN (fromIntegral x) [TargetLabel enemy [DamageEnemy enemy (toSource attrs) damage] | enemy <- map toRef enemies]
       pure e
     _ -> ShieldToss <$> runMessage msg attrs

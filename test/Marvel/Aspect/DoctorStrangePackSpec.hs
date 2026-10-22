@@ -118,6 +118,21 @@ spec = describe "Doctor Strange pack" do
       damageOf p `shouldReturn` 1
       villainDamageNow `shouldReturn` 2
 
+  it "Momentum Shift heals as its cost even as a stun replaces the attack" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      setDamage p 3
+      resolve [IdentityMessage p IdentityStunned]
+      shift <- putInHand p "09016"
+      energy <- putInHand p "01088"
+      playWith shift [energy]
+      damageOf p `shouldReturn` 1
+      isStunned p `shouldReturn` False
+      villainDamageNow `shouldReturn` 0
+
   it "The Night Nurse heals 1 damage from a hero and discards a status card from them" do
     tg <- doctorStrange
     let p = player1 tg
@@ -221,6 +236,28 @@ spec = describe "Doctor Strange pack" do
       villainAttacks p
       choose "no defender" isNoDefender
       offers (isPlay foiled) `shouldReturn` False
+
+  it "Iron Man (Tony Stark) reduces the cost to play each upgrade on him by 1" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      _ <- putIntoPlay p "09039"
+      _ <- putIntoPlay p "03002"
+      ironMan <- allyIn "09039"
+      agent <- allyIn "03002"
+      -- with nothing to pay, Inspired is played on Iron Man, the one ally it is free on
+      inspired <- putInHand p "01074"
+      choose "play Inspired" (isPlay inspired)
+      map (.upgradeAttachedAlly) <$> upgradesWith "01074" `shouldReturn` [Just (allyId ironMan)]
+      -- what it is played on is chosen before paying: on Iron Man nothing is paid
+      enraged <- putInHand p "03031"
+      energy <- putInHand p "01088"
+      choose "play Enraged" (isPlay enraged)
+      offers (isTargetChoice (allyId agent)) `shouldReturn` True
+      choose "on Iron Man" (isTargetChoice (allyId ironMan))
+      handOf p `shouldReturn` [energy]
+      map (.upgradeAttachedAlly) <$> upgradesWith "03031" `shouldReturn` [Just (allyId ironMan)]
 
   it "Iron Man (Tony Stark) is an ally" do
     tg <- doctorStrange

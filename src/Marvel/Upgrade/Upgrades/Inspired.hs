@@ -22,8 +22,7 @@ inspired :: UpgradeCard Inspired
 inspired = upgrade Inspired Cards.inspired
 
 newtype Inspired = Inspired (Attrs Upgrade)
-  deriving anyclass (IsUpgrade)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
+    deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasAbilities Inspired where
   getAbilities _ = []
@@ -35,19 +34,8 @@ instance HasModifiersFor Inspired where
           [ThwartModifier 1, AttackModifier 1]
   getModifiersFor _ _ _ = pure []
 
+instance IsUpgrade Inspired where
+  upgradeTargets _ = Just . map toTarget <$> selectList (NotAlly $ AllyWithUpgrade $ UpgradeIs Cards.inspired)
+
 instance RunMessage Inspired where
-  runMessage msg u@(Inspired a) = case msg of
-    UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      PlayedUpgrade -> do
-        allies <- selectList AnyAlly
-        chooseOne (upgradeController a) $
-          map
-            ( \allyId ->
-                TargetLabel
-                  (toRef allyId)
-                  [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
-            )
-            allies
-        pure u
-      _ -> Inspired <$> runMessage msg a
-    _ -> Inspired <$> runMessage msg a
+  runMessage msg (Inspired a) = Inspired <$> runMessage msg a

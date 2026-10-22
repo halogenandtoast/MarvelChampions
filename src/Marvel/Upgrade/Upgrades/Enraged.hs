@@ -22,8 +22,7 @@ enraged :: UpgradeCard Enraged
 enraged = upgrade Enraged Cards.enraged
 
 newtype Enraged = Enraged (Attrs Upgrade)
-  deriving anyclass (IsUpgrade)
-  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
+    deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasAbilities Enraged where
   getAbilities _ = []
@@ -35,13 +34,8 @@ instance HasModifiersFor Enraged where
   getModifiersFor _ _ _ = pure []
 
 -- | Attached to an ally without one.
+instance IsUpgrade Enraged where
+  upgradeTargets _ = Just . map toTarget <$> selectList (NotAlly $ AllyWithUpgrade $ UpgradeIs Cards.enraged)
+
 instance RunMessage Enraged where
-  runMessage msg u@(Enraged a) = case msg of
-    UpgradeMessage ident PlayedUpgrade | ident == upgradeId a -> do
-      allies <- selectList $ NotAlly $ AllyWithUpgrade $ UpgradeIs Cards.enraged
-      chooseOne (upgradeController a) $
-        [ TargetLabel (toRef allyId) [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
-        | allyId <- allies
-        ]
-      pure u
-    _ -> Enraged <$> runMessage msg a
+  runMessage msg (Enraged a) = Enraged <$> runMessage msg a

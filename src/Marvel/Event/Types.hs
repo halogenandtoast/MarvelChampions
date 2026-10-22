@@ -6,6 +6,9 @@ import Data.Typeable
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
+import Marvel.Game.Source
+import Marvel.Identity.Types
+import Marvel.Projection
 import Marvel.Id hiding (EventId)
 import Marvel.Id as X (EventId)
 import Marvel.Message
@@ -67,6 +70,11 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   toEventAttrs :: a -> Attrs Event
   default toEventAttrs :: (Coercible a (Attrs Event)) => a -> Attrs Event
   toEventAttrs = coerce
+
+  -- | What it is played on, chosen before its cost is paid. Nothing for an event
+  -- played on nothing.
+  eventTargets :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => a -> m (Maybe [Target])
+  eventTargets _ = pure Nothing
 
 type EventCard a = CardBuilder (IdentityId, EventId) a
 

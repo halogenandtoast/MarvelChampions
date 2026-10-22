@@ -2,6 +2,8 @@ module Marvel.Attachment.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -62,6 +64,7 @@ attachment code name traits boostIcons encounterSet quantity =
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdAbilityCost = NoCost
     }
 
 unique :: CardDef -> CardDef

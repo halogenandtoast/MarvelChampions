@@ -48,7 +48,7 @@ instance RunMessage Counterspell where
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
       for_ [eid | W.EventPlayed _ eid _ <- windows] \eid ->
         cancelMatchingMessage \case
-          EventMessage eid' (PlayedEvent {}) -> eid' == eid
+          ResolveEventEffect _ (EventMessage eid' _) -> eid' == eid
           _ -> False
       push $ RemoveFromPlay (toTarget attrs)
       pure a

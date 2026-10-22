@@ -16,7 +16,7 @@ wonderManSimonWilliams =
     (Thw 1, 1)
     (Atk 3, 1)
     (HP 3)
-    \a -> a {allyAdditionalAttackCost = DiscardHandCardCost 1}
+    \a -> a {allyAdditionalAttackCost = DiscardHandCardsCost 1 (Just 1)}
 
 instance HasAbilities WonderManSimonWilliams where
   getAbilities _ = []

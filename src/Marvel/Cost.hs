@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.List qualified as L
 import Marvel.Ability
+import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Cost.Types
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -30,22 +31,40 @@ passesCanAffordCost ::
   IdentityId ->
   Ability ->
   m Bool
-passesCanAffordCost identityId a = go (abilityCost a)
+passesCanAffordCost identityId a = canAffordCost identityId (abilitySource a) (abilityCost a)
+
+-- | Whether the player can pay the cost, besides its resources when it is a card's: a
+-- card being played is not in hand to be discarded for its own cost.
+canAffordCost ::
+  ( HasQueue m
+  , MonadRandom m
+  , MonadThrow m
+  , Projection m PlayerIdentity
+  , HasGame m
+  ) =>
+  IdentityId ->
+  Source ->
+  Cost ->
+  m Bool
+canAffordCost identityId source = go
  where
   go = \case
     NoCost -> pure True
     DamageCost _ -> pure True
-    HealCost n -> case source of
-      IdentityRef ident ->
-        member ident
-          <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
-      _ -> error "Unhandled"
+    HealCost n ->
+      member identityId
+        <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
     DamageThisCost _ -> pure True
     DiscardCost _ -> pure True -- TODO: we need to check if target exists
-    DiscardHandCardCost n ->
-      if n < 1
-        then pure True
-        else projectP PlayerIdentityHand (notNull . unHand) identityId
+    DiscardHandCardsCost n _ ->
+      projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
+    ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
+    ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    ExhaustAlliesCost n _ ->
+      (>= n) . fromIntegral . length
+        <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
+    DiscardEncounterCardsUntilMinionCost -> pure True
+    TargetPrintedCost -> pure True
     ExhaustCost -> case source of
       IdentityRef ident -> member ident <$> select UnexhaustedIdentity
       AllyRef ident -> member ident <$> select UnexhaustedAlly
@@ -84,4 +103,4 @@ passesCanAffordCost identityId a = go (abilityCost a)
     DifferentResourcesCost n ->
       coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
     Costs xs -> allM go xs
-  source = abilitySource a
+  notPlaying c = source /= CardIdRef (pcCardId c)

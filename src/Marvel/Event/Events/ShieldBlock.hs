@@ -23,12 +23,11 @@ newtype ShieldBlock = ShieldBlock (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | The shield is exhausted, and all of the damage the player would take is prevented.
+-- | The shield is exhausted as its cost, and all of the damage the player would take is
+-- prevented.
 instance RunMessage ShieldBlock where
   runMessage msg e@(ShieldBlock attrs) = case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      shields <- selectList $ UpgradeIs Cards.captainAmericasShield <> UnexhaustedUpgrade <> upgradeControlledBy identityId
-      pushAll [UpgradeMessage shield ExhaustedUpgrade | shield <- take 1 shields]
       cancelMatchingMessage \case
         IdentityMessage identityId' (IdentityDamaged _ _) -> identityId' == identityId
         _ -> False

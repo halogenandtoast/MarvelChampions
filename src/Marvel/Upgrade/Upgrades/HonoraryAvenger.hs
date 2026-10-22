@@ -24,7 +24,6 @@ honoraryAvenger :: UpgradeCard HonoraryAvenger
 honoraryAvenger = upgrade HonoraryAvenger Cards.honoraryAvenger
 
 newtype HonoraryAvenger = HonoraryAvenger (Attrs Upgrade)
-  deriving anyclass (IsUpgrade)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance HasAbilities HonoraryAvenger where
@@ -41,21 +40,14 @@ instance HasModifiersFor HonoraryAvenger where
 
 -- | Attached to a friendly character without one: an identity, which takes control of
 -- it, or an ally.
+instance IsUpgrade HonoraryAvenger where
+  upgradeTargets _ = do
+    let named = UpgradeIs Cards.honoraryAvenger
+    players <- getPlayers
+    -- one on an identity is controlled by its player, and attached to nothing else
+    identities <- filterM (\p -> selectNone (named <> UpgradeOnIdentity (IdentityWithId p))) players
+    allies <- selectList $ NotAlly $ AllyWithUpgrade named
+    pure $ Just $ map toTarget identities <> map toTarget allies
+
 instance RunMessage HonoraryAvenger where
-  runMessage msg u@(HonoraryAvenger a) = case msg of
-    UpgradeMessage ident PlayedUpgrade | ident == upgradeId a -> do
-      let named = UpgradeIs Cards.honoraryAvenger
-      players <- getPlayers
-      -- this one is on its player's identity until it is attached
-      identities <- flip filterM players \p ->
-        all (== upgradeId a) <$> selectList (named <> UpgradeOnIdentity (IdentityWithId p))
-      allies <- selectList $ NotAlly $ AllyWithUpgrade named
-      chooseOne (upgradeController a) $
-        [ TargetLabel (IdentityRef p) [Run [UpgradeMessage (upgradeId a) $ UpgradeControlledByPlayer p]]
-        | p <- identities
-        ]
-          <> [ TargetLabel (toRef allyId) [Run [UpgradeMessage (upgradeId a) $ UpgradeAttachedToAlly allyId]]
-             | allyId <- allies
-             ]
-      pure u
-    _ -> HonoraryAvenger <$> runMessage msg a
+  runMessage msg (HonoraryAvenger a) = HonoraryAvenger <$> runMessage msg a

@@ -5,6 +5,7 @@ module Marvel.Event.Events.LegalPractice (
 
 import Marvel.Prelude
 
+import Marvel.Payment
 import Marvel.Card.Code
 import Marvel.Choice
 import Marvel.Entity
@@ -24,23 +25,11 @@ newtype LegalPractice = LegalPractice (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
+-- | Discarding up to 5 cards is its cost → remove 1 threat for each.
 instance RunMessage LegalPractice where
   runMessage msg e@(LegalPractice attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ -> do
-        push
-          ( IdentityMessage identityId $ DiscardFor (toTarget attrs) FromHand 1 5
-          )
-        pure e
-      _ -> LegalPractice <$> runMessage msg attrs
-    WithDiscarded target _ cards | isTarget attrs target -> do
-      pushAll
-        =<< choiceMessages
-          (eventController attrs)
-          ( RemoveThreat
-              (toSource attrs)
-              (fromIntegral $ length cards)
-              ThwartableScheme
-          )
+    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
+      pushChoice identityId $
+        RemoveThreat (toSource attrs) (fromIntegral $ length $ paymentDiscards payment) ThwartableScheme
       pure e
     _ -> LegalPractice <$> runMessage msg attrs

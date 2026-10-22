@@ -6,6 +6,7 @@ import Marvel.Ability.Types
 import Marvel.Aspect
 import Marvel.Boost
 import Marvel.Card.Code
+import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.EncounterSet
 import Marvel.Keyword
@@ -120,6 +121,8 @@ data CardDef = CardDef
     cdAlternateCardCodes :: [CardCode]
   , -- | may be played from its owner's discard pile, during their turn
     cdPlayableFromDiscard :: Bool
+  , -- | an event's cost before the arrow, paid with its resource cost
+    cdAbilityCost :: Cost
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

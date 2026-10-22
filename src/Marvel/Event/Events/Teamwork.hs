@@ -5,6 +5,7 @@ module Marvel.Event.Events.Teamwork (
 
 import Marvel.Prelude
 
+import Marvel.Payment
 import Marvel.Card.Code
 import Marvel.Count
 import Marvel.Entity
@@ -26,27 +27,16 @@ newtype Teamwork = Teamwork (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | As the hero uses their basic ATK or THW: exhaust an ally you control → add its
--- matching power to the hero's for this use.
+-- | As the hero uses their basic ATK or THW: exhausting an ally you control is its cost
+-- → add its matching power to the hero's for this use.
 instance RunMessage Teamwork where
   runMessage msg e@(Teamwork attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ window -> do
-        let attacking = case window of
-              Just (MadeBasicAttack _) -> True
-              _ -> False
-        allies <- selectList $ UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId)
-        push $
-          Ask identityId $
-            promptedAbout "$label.chooseAllyToExhaust" attrs $
-              ChooseOne
-                [ TargetLabel (toRef ally) [Run [AllyMessage ally ExhaustedAlly, cardSpecific attrs "add" (ally, attacking)]]
-                | ally <- allies
-                ]
-        pure e
-      _ -> Teamwork <$> runMessage msg attrs
-    CardSpecific (isTarget attrs -> True) "add" (fromJSON -> Success (ally, attacking)) -> do
-      power <- selectCount (if attacking then AllyAttackValue else AllyThwartValue) (AllyWithId ally)
-      addToBasicPower (eventController attrs) power
+    EventMessage ident (PlayedEvent identityId payment window) | ident == eventId attrs -> do
+      let attacking = case window of
+            Just (MadeBasicAttack _) -> True
+            _ -> False
+      for_ (paymentExhaustedAllies payment) \ally -> do
+        power <- selectCount (if attacking then AllyAttackValue else AllyThwartValue) (AllyWithId ally)
+        addToBasicPower identityId power
       pure e
     _ -> Teamwork <$> runMessage msg attrs

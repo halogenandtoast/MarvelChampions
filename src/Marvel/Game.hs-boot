@@ -98,6 +98,11 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
+getPlayTargets ::
+  (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) =>
+  IdentityId ->
+  PlayerCard ->
+  m (Maybe [Target])
 getCurrentWindows :: (HasGame m) => m [Window]
 getCurrentPayment :: (HasGame m) => m Payment
 getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)

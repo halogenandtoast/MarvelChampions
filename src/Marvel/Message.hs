@@ -24,6 +24,7 @@ import Marvel.Message.Villain as X
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Card.Types
+import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
 import Marvel.Attack (sourceEnemy)
 import Marvel.Damage (Damage (..), DamageSource (FromAttack))
@@ -174,9 +175,18 @@ data Message
   | Spent ActiveCostId PlayerCard
   | Paid Payment
   | FinishedPayment ActiveCostId
+  | -- | one part of the cost is paid, as one more ally exhausted for "exhaust any
+    -- number of allies"
+    PayCost ActiveCostId Cost
+  | -- | the resources are paid and the rest of the cost has been: the card is played,
+    -- or the ability resolves
+    PaidCosts ActiveCostId
   | -- | the cost cannot be paid after all: what was spent goes back to hand
     AbortPayment ActiveCostId
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
+  | -- | the effect of an event its player played, which a stun or confusion replaces as
+    -- it would resolve and a cancel cancels
+    ResolveEventEffect IdentityId Message
   | CheckWindows [Window]
   | EndCheckWindows
   | EmptyScenarioDeck

@@ -2,6 +2,8 @@ module Marvel.Obligation.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -36,6 +38,7 @@ obligation code name boostIcons = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 affairsOfState :: CardDef

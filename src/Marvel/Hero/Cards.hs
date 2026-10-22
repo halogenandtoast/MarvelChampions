@@ -2,6 +2,8 @@ module Marvel.Hero.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Data.HashSet (singleton)
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -39,6 +41,7 @@ hero cardCode name traits = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 spiderMan :: CardDef

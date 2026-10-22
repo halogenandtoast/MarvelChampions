@@ -2,6 +2,8 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types
+
 import Marvel.Ability.Types (AbilityType(..))
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Aspect
@@ -158,6 +160,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 backflip :: CardDef
@@ -237,6 +240,7 @@ legalPractice = (identityEvent
                   [Physical]
                 )
   { cdAbilitySubType = Just Ability.Thwart
+  , cdAbilityCost = DiscardHandCardsCost 1 (Just 5)
   }
 
 oneTwoPunch :: CardDef
@@ -335,11 +339,7 @@ leadFromTheFront =
 
 makeTheCall :: CardDef
 makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
-  { cdCriteria =
-    ExtendedCardExists
-    $ AffordableCardBy You
-    $ InDiscardOf AnyIdentity
-    $ BasicCardMatches (CardWithType AllyType)
+  { cdAbilityCost = TargetPrintedCost
   }
 
 counterPunch :: CardDef
@@ -389,17 +389,17 @@ shieldBlock =
   (identityEvent "03005" "Shield Block" 0 Interrupt [Defense] [Mental])
     { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
     , cdAbilitySubType = Just Ability.Defense
-    , cdCriteria = UpgradeExists (UpgradeIs Upgrade.captainAmericasShield <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    , cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrade.captainAmericasShield)
     }
 
 -- | Returning the shield is part of its cost: it is played only with the shield in play.
 shieldToss :: CardDef
 shieldToss =
   (identityEvent "03006" "Shield Toss" 0 HeroAction [Attack, Superpower] [Energy])
-    { cdCriteria =
-        EnemyExists AttackableEnemy
-          <> UpgradeExists (UpgradeIs Upgrade.captainAmericasShield <> UpgradeControlledBy You)
+    { cdCriteria = EnemyExists AttackableEnemy
     , cdAbilitySubType = Just Ability.Attack
+    , cdAbilityCost =
+        DiscardHandCardsCost 0 Nothing <> ReturnUpgradeToHandCost (UpgradeIs Upgrade.captainAmericasShield)
     }
 
 avengersAssemble :: CardDef
@@ -410,7 +410,9 @@ avengersAssemble =
 
 strengthInNumbers :: CardDef
 strengthInNumbers =
-  event "03017" "Strength in Numbers" 0 Action [] [Physical] Leadership
+  (event "03017" "Strength in Numbers" 0 Action [] [Physical] Leadership)
+    { cdAbilityCost = ExhaustAlliesCost 1 Nothing
+    }
 
 expertDefense :: CardDef
 expertDefense =
@@ -541,6 +543,7 @@ defenderOfTheNineRealms :: CardDef
 defenderOfTheNineRealms =
   (identityEvent "06003" "Defender of the Nine Realms" 0 HeroAction [Thwart] [Physical])
     { cdAbilitySubType = Just Ability.Thwart
+    , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     }
 
 forAsgard :: CardDef
@@ -551,11 +554,15 @@ hammerThrow :: CardDef
 hammerThrow =
   (identityEvent "06005" "Hammer Throw" 3 HeroAction [Attack, Superpower] [Energy])
     { cdAbilitySubType = Just Ability.Attack
-    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.mjolnir <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    , cdCriteria = EnemyExists AttackableEnemy
+    , cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrades.mjolnir)
     }
 
 lightningStrike :: CardDef
-lightningStrike = identityEvent "06006" "Lightning Strike" 1 HeroAction [Superpower] [Mental]
+lightningStrike =
+  (identityEvent "06006" "Lightning Strike" 1 HeroAction [Superpower] [Mental])
+    { cdAbilityCost = DynamicResourceCost (Just Energy)
+    }
 
 getOverHere :: CardDef
 getOverHere =
@@ -569,9 +576,8 @@ meanSwing :: CardDef
 meanSwing =
   (event "06015" "Mean Swing" 0 HeroInterrupt [Skill] [Physical] Aggression)
     { cdResponseWindow = Just (MakesBasicAttack When You)
-    , cdCriteria =
-        SelfMatches You
-          <> UpgradeExists (UpgradeWithTrait Weapon <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    , cdCriteria = SelfMatches You
+    , cdAbilityCost = ExhaustUpgradeCost (UpgradeWithTrait Weapon)
     }
 
 invulnerability :: CardDef
@@ -582,7 +588,8 @@ teamwork :: CardDef
 teamwork =
   (event "06032" "Teamwork" 0 HeroInterrupt [Tactic] [Energy] Leadership)
     { cdResponseWindow = Just (WindowOneOf [MakesBasicAttack When You, MakesBasicThwart When You])
-    , cdCriteria = SelfMatches You <> AllyExists (UnexhaustedAlly <> AllyControlledBy You)
+    , cdCriteria = SelfMatches You
+    , cdAbilityCost = ExhaustAlliesCost 1 (Just 1)
     }
 
 secondWind :: CardDef
@@ -627,10 +634,9 @@ desperateDefense =
 momentumShift :: CardDef
 momentumShift =
   (event "09016" "Momentum Shift" 2 HeroAction [Attack] [Physical] Protection)
-    { cdCriteria =
-        EnemyExists AttackableEnemy
-          <> SelfMatches (IdentityWithDamage $ AtLeast $ Static 2)
+    { cdCriteria = EnemyExists AttackableEnemy
     , cdAbilitySubType = Just Ability.Attack
+    , cdAbilityCost = HealCost 2
     }
 
 -- | as errata'd: no longer a defense, nor a Defense card

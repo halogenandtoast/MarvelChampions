@@ -2,6 +2,8 @@ module Marvel.Treachery.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Data.HashSet (singleton)
 import Marvel.Boost
 import Marvel.Card.Code
@@ -79,6 +81,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 hardToKeepDown :: CardDef

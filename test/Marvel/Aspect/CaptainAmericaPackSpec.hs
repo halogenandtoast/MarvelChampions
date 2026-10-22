@@ -119,8 +119,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
       agent <- allyIn "03002"
       _ <- inPlay p "03017" []
       choose "exhaust Wonder Man" (isTargetChoice (allyId wonder))
+      -- with no ally left to exhaust, the cost is paid
       choose "exhaust Agent 13" (isTargetChoice (allyId agent))
-      choose "done" (isLabel "$label.done")
       length <$> handOf p `shouldReturn` 2
       (.allyExhausted) <$> allyIn "03014" `shouldReturn` True
 
@@ -187,8 +187,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         flipTo p A
         _ <- putIntoPlay p "03002"
         agent <- allyIn "03002"
-        _ <- inPlay p "03025" []
-        choose "attach to Agent 13" (isTargetChoice (allyId agent))
+        honorary <- putInHand p "03025"
+        playOn honorary (allyId agent) []
         resolve [AllyMessage (allyId agent) (AllyDamaged GameRef (toDamage 3 FromAbility))]
         -- 3 damage does not defeat her
         alliesWith "03002" >>= (`shouldSatisfy` ((== 1) . length))
@@ -205,8 +205,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         offers (isPlay card) `shouldReturn` False
         flipTo p A
         offers (isPlay card) `shouldReturn` True
+        -- Captain America is the one character to play it on
         _ <- inPlay p "03025" []
-        choose "attach to Captain America" (isTargetChoice p)
         hitPointsOf p `shouldReturn` 12
         -- no character is left without one
         offers (isPlay card) `shouldReturn` False
@@ -219,8 +219,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         clearHand p
         _ <- putIntoPlay p "03002"
         agent <- allyIn "03002"
+        -- Agent 13 is the one ally to play it on
         _ <- inPlay p "03031" ["03003"]
-        choose "attach to Agent 13" (isTargetChoice (allyId agent))
         vid <- villainIdNow
         choose "attack" (isAllyAttack agent)
         choose "attack Rhino" (isTargetChoice vid)
@@ -236,7 +236,6 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         _ <- putIntoPlay p "03002"
         agent <- allyIn "03002"
         enraged <- inPlay p "03031" ["03003"]
-        choose "attach to Agent 13" (isTargetChoice (allyId agent))
         resolve [AllyMessage (allyId agent) AllyDefeated]
         upgradeCodes `shouldReturn` []
         discardOf p >>= (`shouldSatisfy` elem enraged)
@@ -250,7 +249,6 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         scheme <- revealNow p SideSchemes.crowdControl
         pass
         followed <- inPlay p "03032" ["03003"]
-        choose "attach to the scheme" (isTargetChoice (sideSchemeOf scheme))
         runNow [SideSchemeMessage (sideSchemeOf scheme) (SideSchemeThwarted GameRef 20)]
         choose "use Followed" (isAbilityOfCard followed)
         vid <- villainIdNow

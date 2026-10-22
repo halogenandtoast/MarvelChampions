@@ -87,6 +87,28 @@ spec = describe "Doctor Strange's nemesis set" do
         map toCardCode <$> discardOf p >>= (`shouldSatisfy` elem "01087")
         getsGame (HashMap.null . gameAttachments) `shouldReturn` True
 
+    it "cancels a stunned hero's attack event before it would attack: its cost is paid and the stun stays" do
+      tg <- doctorStrange
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        _ <- revealNow p Attachments.counterspell
+        resolve []
+        setDamage p 3
+        resolve [IdentityMessage p IdentityStunned]
+        shift <- putInHand p "09016"
+        _ <- putInHand p "01088"
+        playWith shift []
+        chooseIf (isPayWithCode "01088")
+        chooseIf isFinishPayment
+        chooseIf isAnyAbility
+        resolve []
+        damageOf p `shouldReturn` 1
+        isStunned p `shouldReturn` True
+        villainDamageNow `shouldReturn` 0
+        map toCardCode <$> discardOf p >>= (`shouldSatisfy` elem "09016")
+
     it "is discarded as it comes, an alter-ego having no hero to attach to" do
       tg <- doctorStrange
       let p = player1 tg

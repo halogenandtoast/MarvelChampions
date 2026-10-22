@@ -108,7 +108,7 @@ choiceMessages ident = \case
     pure [RanAbility ident target n (map windowType windows) payment, ClearRemoved]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
-  PlayCard x mWindow -> pure [IdentityMessage ident $ PlayedCard x mWindow]
+  PlayCard x mWindow -> pure [IdentityMessage ident $ PlayingCard x mWindow]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> do
     mcost <- getActiveCost

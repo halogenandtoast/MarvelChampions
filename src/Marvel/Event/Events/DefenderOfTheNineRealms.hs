@@ -26,16 +26,10 @@ newtype DefenderOfTheNineRealms = DefenderOfTheNineRealms (Attrs Event)
 
 -- | Discarding until a minion and putting it into play engaged with you is the cost:
 -- with no minion found, no threat is removed. The minion is put into play, not revealed.
+-- | Discarding until a minion and putting it into play engaged with you is its cost.
 instance RunMessage DefenderOfTheNineRealms where
   runMessage msg e@(DefenderOfTheNineRealms attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent _ _ _ -> do
-        push $ DiscardUntil FromEncounterDeck (CardWithType MinionType) (toTarget attrs)
-        pure e
-      _ -> DefenderOfTheNineRealms <$> runMessage msg attrs
-    WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
-      let you = eventController attrs
-      thwart <- choiceMessages you $ RemoveThreat (toSource attrs) 3 ThwartableScheme
-      pushAll $ PutEncounterCardIntoPlay you card : thwart
+    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
+      pushChoice identityId $ RemoveThreat (toSource attrs) 3 ThwartableScheme
       pure e
     _ -> DefenderOfTheNineRealms <$> runMessage msg attrs

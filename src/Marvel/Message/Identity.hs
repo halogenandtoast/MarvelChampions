@@ -26,7 +26,11 @@ data IdentityMessage
   | -- | over two restricted cards, one is discarded
     CheckRestrictedLimit
   | SideMessage SideMessage
-  | PlayedCard PlayerCard (Maybe Window)
+  | -- | the player begins to play the card: they choose what it is played on, then pay
+    PlayingCard PlayerCard (Maybe Window)
+  | PayForCard PlayerCard (Maybe Window) (Maybe Target)
+  | -- | its cost is paid: it is played
+    PlayedCard PlayerCard (Maybe Window)
   | PaidWithCard PlayerCard
   | AllyCreated AllyId
   | AllyRemoved AllyId

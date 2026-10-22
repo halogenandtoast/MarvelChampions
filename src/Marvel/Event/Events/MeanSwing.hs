@@ -25,17 +25,11 @@ newtype MeanSwing = MeanSwing (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | As the hero makes a basic attack: exhaust a Weapon upgrade on them → +3 ATK for it.
+-- | As the hero makes a basic attack: exhausting a Weapon upgrade is its cost → +3 ATK
+-- for it.
 instance RunMessage MeanSwing where
   runMessage msg e@(MeanSwing attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ -> do
-        pushChoice identityId $
-          ChooseUpgrade (UpgradeWithTrait Weapon <> UnexhaustedUpgrade <> upgradeControlledBy identityId) (toTarget attrs)
-        pure e
-      _ -> MeanSwing <$> runMessage msg attrs
-    ChoseUpgrade weapon (isTarget attrs -> True) -> do
-      push $ UpgradeMessage weapon ExhaustedUpgrade
-      addToBasicPower (eventController attrs) 3
+    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
+      addToBasicPower identityId 3
       pure e
     _ -> MeanSwing <$> runMessage msg attrs

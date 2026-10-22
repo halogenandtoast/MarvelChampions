@@ -5,7 +5,6 @@ module Marvel.Event.Events.LightningStrike (
 
 import Marvel.Prelude
 
-import Marvel.ActiveCost (payForCard)
 import Marvel.Card.Code
 import Marvel.Choice
 import Marvel.Cost.Types
@@ -32,26 +31,20 @@ newtype LightningStrike = LightningStrike (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | Spend X [energy] resources (a wild resource counts) → X damage to the villain and
--- each minion engaged with you, past tough status cards if you are Aerial. Not an
--- attack (FAQ errata).
+-- | Spend X [energy] resources (a wild resource counts), with its resource cost → X
+-- damage to the villain and each minion engaged with you, past tough status cards if
+-- you are Aerial. Not an attack (FAQ errata).
 instance RunMessage LightningStrike where
   runMessage msg e@(LightningStrike attrs) = case msg of
-    EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent identityId _ _ -> do
-        payForCard identityId attrs 1 (DynamicResourceCost $ Just Energy)
-        pure e
-      _ -> LightningStrike <$> runMessage msg attrs
-    RanAbility identityId (isTarget attrs -> True) 1 _ payment -> do
-      x <- count (`elem` [Energy, Wild]) <$> paymentResources payment
+    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
+      let x = paymentX payment
       aerial <- selectAny $ IdentityWithId identityId <> IdentityWithTrait Aerial
       villains <- selectList VillainEnemy
       minions <- selectList $ MinionEngagedWith (IdentityWithId identityId)
-      let damage = (if aerial then ignoringTough else id) $ toDamage (fromIntegral x) FromAbility
-      when (x > 0) $
-        pushAll
-          =<< concatMapM
-            (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) damage)
-            (villains <> map EnemyMinionId minions)
+      let damage = (if aerial then ignoringTough else id) $ toDamage x FromAbility
+      pushAll
+        =<< concatMapM
+          (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) damage)
+          (villains <> map EnemyMinionId minions)
       pure e
     _ -> LightningStrike <$> runMessage msg attrs

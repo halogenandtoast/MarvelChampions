@@ -230,6 +230,17 @@ clearHand ident = withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentit
 playWith :: (HasCallStack) => PlayerCard -> [PlayerCard] -> GameAppT ()
 playWith card payment = do
   choose "play the card" (isPlay card)
+  payWith payment
+
+-- | Play the card on the target chosen as it is played, then pay for it.
+playOn :: (HasCallStack, IsRef a) => PlayerCard -> a -> [PlayerCard] -> GameAppT ()
+playOn card target payment = do
+  choose "play the card" (isPlay card)
+  choose "play it on the target" (isTargetChoice target)
+  payWith payment
+
+payWith :: (HasCallStack) => [PlayerCard] -> GameAppT ()
+payWith payment = do
   for_ payment \p -> choose "pay" (isPayWith p)
   whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
 

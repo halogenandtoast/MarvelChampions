@@ -3,6 +3,7 @@ module Marvel.Cost.Types where
 import Marvel.Prelude
 
 import Data.List (nub)
+import {-# SOURCE #-} Marvel.Matchers.Types (UpgradeMatcher)
 import Marvel.Ref
 import Marvel.Resource.Types
 
@@ -15,14 +16,27 @@ data Cost
   | HealCost Natural
   | DamageThisCost Natural
   | ExhaustCost
-  | DiscardHandCardCost Natural
+  | -- | at least so many cards from hand, and at most so many (any number for Nothing)
+    DiscardHandCardsCost Natural (Maybe Natural)
   | DiscardCost Target
   | UseCost
   | NoCost
   | -- | as many resources, each of a different type
     DifferentResourcesCost Natural
+  | -- | exhaust an upgrade the payer controls, chosen among those matching
+    ExhaustUpgradeCost UpgradeMatcher
+  | -- | return an upgrade the payer controls, chosen among those matching, to hand
+    ReturnUpgradeToHandCost UpgradeMatcher
+  | -- | exhaust at least so many allies the payer controls, and at most so many (any
+    -- number for Nothing)
+    ExhaustAlliesCost Natural (Maybe Natural)
+  | -- | discard encounter cards until a minion is discarded, and put it into play
+    -- engaged with the payer
+    DiscardEncounterCardsUntilMinionCost
+  | -- | the printed resource cost of the card chosen as the card's target
+    TargetPrintedCost
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 instance Monoid Cost where
   mempty = NoCost
@@ -39,12 +53,18 @@ costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources ExhaustCost = []
 costResources (DiscardCost _) = []
-costResources (DiscardHandCardCost _) = []
+costResources (DiscardHandCardsCost _ _) = []
+costResources (ExhaustUpgradeCost _) = []
+costResources (ReturnUpgradeToHandCost _) = []
+costResources (ExhaustAlliesCost _ _) = []
+costResources DiscardEncounterCardsUntilMinionCost = []
+costResources TargetPrintedCost = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
 costResources UseCost = []
-costResources (DynamicResourceCost _) = []
+-- | X is at least 1
+costResources (DynamicResourceCost r) = [r]
 costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs
 costResources (Costs ps) = concatMap costResources ps

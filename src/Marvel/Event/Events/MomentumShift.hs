@@ -25,14 +25,11 @@ newtype MomentumShift = MomentumShift (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | Heal 2 damage from your hero (its cost, which it can be played only to pay in full)
--- → deal 2 damage to an enemy.
+-- | Healing 2 damage from your hero is its cost → deal 2 damage to an enemy.
 instance RunMessage MomentumShift where
   runMessage msg e@(MomentumShift attrs) = case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      damage <-
-        choiceMessages identityId $
-          ChooseDamage (toSource attrs) (toDamage 2 $ FromPlayerAttack identityId) AttackableEnemy
-      pushAll $ IdentityMessage identityId (IdentityHealed 2) : damage
+      pushChoice identityId $
+        ChooseDamage (toSource attrs) (toDamage 2 $ FromPlayerAttack identityId) AttackableEnemy
       pure e
     _ -> MomentumShift <$> runMessage msg attrs

@@ -2,6 +2,8 @@ module Marvel.Minion.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Data.HashSet (singleton)
 import Marvel.Boost
 import Marvel.Card.Code
@@ -88,6 +90,7 @@ minion code name traits boostIcons encounterSet quantity =
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdAbilityCost = NoCost
     }
 
 unique :: CardDef -> CardDef

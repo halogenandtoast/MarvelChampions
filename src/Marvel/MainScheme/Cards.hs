@@ -2,6 +2,8 @@ module Marvel.MainScheme.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
@@ -35,6 +37,7 @@ mainScheme code name encounterSet = CardDef
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   }
 
 theBreakIn :: CardDef

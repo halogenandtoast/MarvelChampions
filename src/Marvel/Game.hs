@@ -41,7 +41,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment)
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventController), Event)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -90,7 +90,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedSideScheme, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -534,34 +534,29 @@ runGameMessage msg g@Game {..} = case msg of
         pure $ g & (entitiesL . supportsL %~ insertMap (toId support) support)
       UpgradeType -> do
         let upgrade = createUpgrade ident card
-        push $ UpgradeMessage (toId upgrade) PlayedUpgrade
+        push $ UpgradeMessage (toId upgrade) (PlayedUpgrade $ paymentTarget payment)
         pure $ g & (entitiesL . upgradesL %~ insertMap (toId upgrade) upgrade)
       EventType -> do
         let
           event = createEvent ident card
-          mSubType = cdAbilitySubType $ getCardDef card
-          playEvent =
-            EventMessage
-              (toId event)
-              (PlayedEvent ident payment (W.windowType <$> mWindow))
-        playedMessage <- case mSubType of
-          Just Ability.Attack -> do
-            stunned <- identityMatches StunnedIdentity ident
-            if stunned
-              then pure (IdentityMessage ident IdentityRemoveStunned)
-              else pure playEvent
-          Just Ability.Thwart -> do
-            confused <- identityMatches ConfusedIdentity ident
-            if confused
-              then pure (IdentityMessage ident IdentityRemoveConfused)
-              else pure playEvent
-          _ -> pure playEvent
-        -- "when you play" answers once the cost is paid, before the event resolves;
-        -- "after you play", once it has
-        let played timing = CheckWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
-        pushAll [played When, playedMessage, EventMessage (toId event) ResolvedEvent, played After]
+          playEvent = EventMessage (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
+          -- "when you play" answers once the cost is paid, before the event resolves;
+          -- "after you play", once it has
+          played timing = CheckWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
+        pushAll [played When, ResolveEventEffect ident playEvent, EventMessage (toId event) ResolvedEvent, played After]
         pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
+  -- the effect of an attack or thwart event is its player's attack or thwart: a stun or
+  -- confusion replaces it as it would resolve, its cost paid ("Stunned", "Confused")
+  ResolveEventEffect ident playEvent@(EventMessage eid _) -> do
+    let subType = cdAbilitySubType . eventCardDef . toAttrs =<< lookup eid (gameEvents g)
+    stunned <- identityMatches StunnedIdentity ident
+    confused <- identityMatches ConfusedIdentity ident
+    push $ case subType of
+      Just Ability.Attack | stunned -> IdentityMessage ident IdentityRemoveStunned
+      Just Ability.Thwart | confused -> IdentityMessage ident IdentityRemoveConfused
+      _ -> playEvent
+    pure g
   ResolveEventWithoutPlaying ident card -> do
     let event = createEvent ident card
     pushAll
@@ -983,8 +978,7 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window attrs c = do
-  resources <- filter (canSpendOn $ cdCriteria def) <$> getAvailableResourcesFor (toId attrs) (Just c)
-  modifiedCost <- getModifiedCost attrs c
+  affordable <- notNull <$> playableTargets attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedWindow <-
     maybe
@@ -992,7 +986,7 @@ isWindowPlayable window attrs c = do
       (\matcher -> windowMatches matcher window GameRef)
       (cdResponseWindow def)
   passedPlayLimits <- checkPlayLimits attrs c
-  pure $ length resources >= modifiedCost && passedCriteria && passedWindow && passedPlayLimits
+  pure $ affordable && passedCriteria && passedWindow && passedPlayLimits
  where
   ident = toId attrs
   def = getCardDef c
@@ -1040,6 +1034,19 @@ instance (HasGame m) => Projection m PlayerIdentity where
   project fld ident = do
     pIdentity <- getIdentity ident
     pure $ field fld pIdentity
+
+-- | What a card is played on, chosen before its cost is paid: the character an upgrade
+-- attaches to, the ally Make the Call puts into play. Nothing for a card played on
+-- nothing.
+getPlayTargets ::
+  (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) =>
+  IdentityId ->
+  PlayerCard ->
+  m (Maybe [Target])
+getPlayTargets ident card = case cdCardType (getCardDef card) of
+  UpgradeType -> case createUpgrade ident card of Upgrade u -> upgradeTargets u
+  EventType -> case createEvent ident card of Event e -> eventTargets e
+  _ -> pure Nothing
 
 createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =

@@ -2,6 +2,8 @@ module Marvel.Environment.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Cost.Types (Cost (NoCost))
+
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
@@ -36,4 +38,5 @@ ultronDrones =
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdAbilityCost = NoCost
     }
