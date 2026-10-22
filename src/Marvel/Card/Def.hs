@@ -82,6 +82,7 @@ data InPlayLimit
   | MaxPerAlly Natural
   | -- | "Play under any player's control. Max N per player."
     MaxPerPlayerUnderAnyControl Natural
+  | MaxPerScheme Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

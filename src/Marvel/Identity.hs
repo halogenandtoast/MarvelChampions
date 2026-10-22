@@ -328,6 +328,10 @@ checkPlayLimits ident c = case cdLimit def of
       UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
     MaxPerEnemy _ -> error "Unhandled"
+    -- ponytail: every such card attaches to the main scheme, so one in play is one
+    -- on it
+    MaxPerScheme 1 -> selectNone $ UpgradeNamed name
+    MaxPerScheme _ -> error "Unhandled"
  where
   def = getCardDef c
   name = cdName def

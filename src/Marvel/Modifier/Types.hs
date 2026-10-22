@@ -17,5 +17,7 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | to the target threat of a scheme
+    TargetThreatModifier Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
