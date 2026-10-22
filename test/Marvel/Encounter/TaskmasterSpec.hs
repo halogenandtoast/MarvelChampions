@@ -2,6 +2,10 @@ module Marvel.Encounter.TaskmasterSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (sort)
+import Data.Text qualified as T
+import Data.Aeson (Value (..))
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
@@ -27,6 +31,13 @@ spec = describe "Taskmaster" do
         sort (map (toCardCode . pcCardDef) captives) `shouldBe` ["04097", "04098", "04099", "04100" :: CardCode]
         map pcOwner captives `shouldBe` replicate 4 Nothing
 
+    it "puts Hydra Patrol (04154) into play, once the Hydra Patrol set's cards exist" do
+      tg <- taskmaster ["spider-man"]
+      inGame tg do
+        codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameSideSchemes)
+        -- ponytail: the set is another package's; without it setup puts nothing into play
+        codes `shouldBe` ["04154" | HashMap.member "04154" SideSchemes.allSideSchemes]
+
   describe "Captured by Hydra" do
     it "holds a random Captive ally; the player who defeats it takes the ally into hand, as theirs, and removes the scheme from the game" do
       tg <- taskmaster ["spider-man", "she-hulk"]
@@ -40,13 +51,20 @@ spec = describe "Taskmaster" do
         length <$> setAsideCaptives `shouldReturn` 3
         -- 5 threat, not per player
         sideSchemeThreat sid `shouldReturn` 5
+        -- the board shows the card facedown beneath it
+        view <- liftIO . publicGame =<< getGame
+        let held = [h | Object o <- [view], Just (Array ss) <- [KeyMap.lookup "sideSchemes" o], Object s <- toList ss, Just (Number h) <- [KeyMap.lookup "held" s]]
+        held `shouldBe` [1]
         -- the second player thwarts it to nothing
-        resolve [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p2) 5)]
+        runNow [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p2) 5)]
+        pass
         getsGame (HashMap.member sid . gameSideSchemes) `shouldReturn` False
         hand2 <- handOf p2
         [rescued] <- pure [c | c <- hand2, pcCardId c == pcCardId ally]
         pcOwner rescued `shouldBe` Just p2
         pcController rescued `shouldBe` Just p2
+        told <- liftIO $ T.concat . map entryText <$> readIORef tg.logged
+        told `shouldSatisfy` T.isInfixOf "$log.takesControlOf"
         map pcCardId <$> handOf p1 >>= (`shouldSatisfy` notElem (pcCardId ally))
         -- removed from the game: not in the encounter discard pile
         encounterDiscardCodes >>= (`shouldSatisfy` notElem "04107")

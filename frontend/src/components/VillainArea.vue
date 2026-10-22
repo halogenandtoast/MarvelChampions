@@ -77,7 +77,7 @@ const escalation = (scheme: SchemeView) => {
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
-        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" />
+        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
           {{ t('game.perRound', { count: escalation(scheme)! + (game.accelerationTokens ?? 0) }) }}
@@ -92,7 +92,7 @@ const escalation = (scheme: SchemeView) => {
 
       <div v-if="sideSchemes.length" class="side-schemes">
         <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
-          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" />
+          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" :held="scheme.held || null" />
         </div>
       </div>
 
