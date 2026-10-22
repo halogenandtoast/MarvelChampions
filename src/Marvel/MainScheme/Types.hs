@@ -174,9 +174,7 @@ instance RunMessage (Attrs MainScheme) where
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
         MainSchemePlaceThreat n -> do
-          printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
-          modifiers <- getModifiers attrs
-          let threshold = printed + sum [x | TargetThreatModifier x <- modifiers]
+          threshold <- getThreshold attrs
           when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
           pure $ attrs & threatL +~ n
         MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
@@ -190,3 +188,10 @@ instance RunMessage (Attrs MainScheme) where
       placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + acceleration)
       pure attrs
     _ -> pure attrs
+
+-- | The threat that advances it: printed, and as modified (Under Surveillance).
+getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural
+getThreshold attrs = do
+  printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
+  modifiers <- getModifiers attrs
+  pure $ printed + sum [x | TargetThreatModifier x <- modifiers]

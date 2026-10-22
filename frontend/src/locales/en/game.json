@@ -50,7 +50,8 @@
   "river": {
     "revealed": "Revealed",
     "attacks": "{attacker} attacks {target}",
-    "threat": "{source}: {amount} threat on {scheme} ({from} → {to})",
+    "threat": "{source}: {amount} threat on {scheme}",
+    "placeThreat": "Place threat on main scheme",
     "ThreatFromVillain": "Villain schemes",
     "ThreatFromMinion": "Minion schemes",
     "ThreatFromAbility": "Card effect",

@@ -15,6 +15,17 @@ export interface RiverCard {
   name?: string | null
 }
 
+/** a scheme threat would be placed on, as it stands and as it would be */
+export interface RiverScheme {
+  id: string
+  code: string
+  name: string
+  from: number
+  to: number
+  /** the threat would advance it */
+  advances: boolean
+}
+
 export interface RiverAttacker {
   id: string
   code: string
@@ -23,11 +34,13 @@ export interface RiverAttacker {
   boostCards?: number
 }
 
-const { cards, label = null, attacker = null, elsewhere, shared = false } = defineProps<{
+const { cards, label = null, attacker = null, scheme = null, elsewhere, shared = false } = defineProps<{
   cards: readonly RiverCard[]
   label?: string | null
   /** the enemy attacking, with its attack as modified now */
   attacker?: RiverAttacker | null
+  /** the scheme threat would be placed on */
+  scheme?: RiverScheme | null
   /** another lane is in the slot */
   shared?: boolean
   /** ids drawn elsewhere on the board too, which must not share a morph */
@@ -39,7 +52,7 @@ const names = useCards()
 
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
-    <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label }">
+    <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label, danger: scheme?.advances }">
       <p class="what">{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
       <div class="cards">
         <div v-if="attacker" class="attacker">
@@ -48,6 +61,12 @@ const names = useCards()
             <div v-if="attacker.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ attacker.boostCards }}</dd></div>
           </dl>
           <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
+        </div>
+        <div v-if="scheme" class="attacker">
+          <dl class="stats">
+            <div class="stat-sch"><dt>{{ t('game.threat') }}</dt><dd>{{ scheme.from }}→{{ scheme.to }}</dd></div>
+          </dl>
+          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
         </div>
         <BoardCard
           v-for="card in cards"
@@ -92,6 +111,18 @@ const names = useCards()
   text-transform: uppercase;
   color: var(--amber);
 }
+/* threat that would advance the scheme */
+.lane.danger {
+  background: radial-gradient(ellipse at 50% 50%, rgb(220 50 50 / 0.2), transparent 70%), var(--ink-2);
+  border-color: var(--crimson-bright);
+  animation: danger 1.4s ease-in-out infinite alternate;
+}
+.lane.danger .what { color: var(--crimson-bright); }
+@keyframes danger {
+  from { box-shadow: 0 0 6px rgb(220 50 50 / 0.35); }
+  to { box-shadow: 0 0 22px rgb(220 50 50 / 0.75); }
+}
+@media (prefers-reduced-motion: reduce) { .lane.danger { animation: none; box-shadow: 0 0 16px rgb(220 50 50 / 0.6); } }
 /* stats to the card's left, not under it, so the river stays a card high */
 .attacker { display: flex; gap: 6px; align-items: flex-start; flex: none; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 44px; }

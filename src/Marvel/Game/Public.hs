@@ -41,6 +41,7 @@ import Marvel.Hp
 import Marvel.Id
 import Marvel.Identity
 import Marvel.MainScheme.Types (Attrs (..), MainScheme)
+import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
 import Marvel.Minion.Types (Minion)
@@ -139,7 +140,7 @@ data AttackView = AttackView {attacker :: Text, target :: Text}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ThreatView = ThreatView {scheme :: Text, amount :: Natural, source :: ThreatSource}
+data ThreatView = ThreatView {scheme :: Text, amount :: Natural, source :: ThreatSource, advances :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -352,6 +353,14 @@ gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
+  -- a main scheme the threat would bring to its threshold advances
+  threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
+    advances <- case sid of
+      SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> do
+        threshold <- MainScheme.getThreshold (toAttrs s)
+        pure $ (toAttrs s).mainSchemeThreat + n >= threshold
+      _ -> pure False
+    pure $ ThreatView (schemeIdText sid) n src advances
   activeCost <- for (headMay $ gameActiveCost g) \c -> do
     paid <- paymentResources c.activeCostPayment
     pure
@@ -392,11 +401,7 @@ gameView seesHand g = do
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
-      , threat =
-          headMay
-            [ ThreatView (schemeIdText sid) n src
-            | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))
-            ]
+      , threat
       , boostCards =
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]

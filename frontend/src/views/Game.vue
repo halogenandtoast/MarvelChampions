@@ -19,7 +19,7 @@ import Lobby from '../components/Lobby.vue'
 import PlayerArea from '../components/PlayerArea.vue'
 import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
-import River, { type RiverAttacker, type RiverCard } from '../components/River.vue'
+import River, { type RiverAttacker, type RiverCard, type RiverScheme } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import VillainArea from '../components/VillainArea.vue'
 
@@ -131,9 +131,16 @@ const riverLabel = computed(() => {
   const attack = game.value?.attack
   if (attack) return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
   const threat = game.value?.threat
-  const scheme = threat && [...(game.value?.mainSchemes ?? []), ...(game.value?.sideSchemes ?? [])].find((s) => s.id === threat.scheme)
-  if (!threat || !scheme) return null
-  return t('game.river.threat', { source: t(`game.river.${threat.source}`), amount: threat.amount, scheme: scheme.name, from: scheme.threat, to: scheme.threat + threat.amount })
+  if (!threat || !riverScheme.value) return null
+  if (threat.source === 'ThreatFromAcceleration') return t('game.river.placeThreat')
+  return t('game.river.threat', { source: t(`game.river.${threat.source}`), amount: threat.amount, scheme: riverScheme.value.name })
+})
+// the scheme threat would be placed on, as it is and would be
+const riverScheme = computed<RiverScheme | null>(() => {
+  const threat = game.value?.threat
+  if (!threat || riverCleared.value || game.value?.attack) return null
+  const s = [...(game.value?.mainSchemes ?? []), ...(game.value?.sideSchemes ?? [])].find((x) => x.id === threat.scheme)
+  return s ? { id: s.id, code: s.code, name: s.name, from: s.threat, to: s.threat + threat.amount, advances: threat.advances } : null
 })
 
 // What the board draws, by id: a choice about anything else is a button instead.
@@ -293,7 +300,7 @@ const resetGame = () => {
             <VillainArea :game="game" :area="shownArea" />
           </div>
 
-          <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" />
           </River>
 
