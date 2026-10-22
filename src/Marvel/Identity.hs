@@ -819,6 +819,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
+    -- a tough status card prevents all of it, and is discarded instead
+    IdentityDamaged _ damage
+      | playerIdentityTough && damageAmount damage > 0 && not (damageIgnoresTough damage) ->
+          pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged _ damage -> do
       modifiedHp <- getModifiedHp pid
       when
@@ -849,6 +853,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     IdentityHealed n ->
       pure $ PlayerIdentity $ attrs & damageL %~ subtractNatural n
     IdentityStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ True
+    IdentityBecomeTough -> pure $ PlayerIdentity $ attrs & toughL .~ True
     IdentityConfused -> pure $ PlayerIdentity $ attrs & confusedL .~ True
     IdentityRemoveStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ False
     IdentityRemoveConfused ->

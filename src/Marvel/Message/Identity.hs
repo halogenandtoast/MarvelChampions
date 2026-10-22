@@ -65,6 +65,7 @@ data IdentityMessage
   | ShuffleIdentityDiscardBackIntoDeck
   | Search SearchSignifier CardMatcher SearchOption ReturnOption
   | IdentityRetaliate Natural EnemyId
+  | IdentityBecomeTough
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
