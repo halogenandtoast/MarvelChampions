@@ -2,6 +2,7 @@ module Marvel.Encounter.RedSkullSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (sort)
+import Data.Text qualified as T
 import Marvel.Area (DeckKey (SideSchemeDeckKey), Pile (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Cards
@@ -36,8 +37,12 @@ spec = describe "Red Skull" do
     tg <- redSkull
     inGame tg do
       vid <- villainIdNow
-      resolve [VillainMessage vid (VillainDamaged GameRef (toDamage 3 FromAbility))]
+      runNow [VillainMessage vid (VillainDamaged GameRef (toDamage 3 FromAbility))]
       villainDamageNow `shouldReturn` 0
+      -- and the log does not say he took it
+      told <- liftIO $ T.concat . map entryText <$> readIORef tg.logged
+      told `shouldSatisfy` T.isInfixOf "$log.takesNoDamage"
+      told `shouldSatisfy` (not . T.isInfixOf "$log.takesDamage")
       sid <- redHouse
       resolve [RemoveFromPlay (SideSchemeRef sid)]
       resolve [VillainMessage vid (VillainDamaged GameRef (toDamage 3 FromAbility))]

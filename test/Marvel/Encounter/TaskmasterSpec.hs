@@ -2,6 +2,7 @@ module Marvel.Encounter.TaskmasterSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (sort)
+import Data.Text qualified as T
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
@@ -41,12 +42,15 @@ spec = describe "Taskmaster" do
         -- 5 threat, not per player
         sideSchemeThreat sid `shouldReturn` 5
         -- the second player thwarts it to nothing
-        resolve [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p2) 5)]
+        runNow [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p2) 5)]
+        pass
         getsGame (HashMap.member sid . gameSideSchemes) `shouldReturn` False
         hand2 <- handOf p2
         [rescued] <- pure [c | c <- hand2, pcCardId c == pcCardId ally]
         pcOwner rescued `shouldBe` Just p2
         pcController rescued `shouldBe` Just p2
+        told <- liftIO $ T.concat . map entryText <$> readIORef tg.logged
+        told `shouldSatisfy` T.isInfixOf "$log.takesControlOf"
         map pcCardId <$> handOf p1 >>= (`shouldSatisfy` notElem (pcCardId ally))
         -- removed from the game: not in the encounter discard pile
         encounterDiscardCodes >>= (`shouldSatisfy` notElem "04107")
