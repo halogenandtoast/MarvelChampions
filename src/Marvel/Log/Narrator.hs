@@ -75,9 +75,14 @@ narrationFor = \case
   RevealEncounterCard ident card -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
+  GiveStatus target s -> Just $ simply (statusKey s) target
   RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card, "count" ~> length (cdBoostIcons (getCardDef card))]]
   _ -> Nothing
  where
+  statusKey = \case
+    StunnedStatus -> "log.stunned"
+    ConfusedStatus -> "log.confused"
+    ToughStatus -> "log.tough"
   -- basic powers are told by what they do; resources by the card they pay for
   narrates = \case
     Basic -> False

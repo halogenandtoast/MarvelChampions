@@ -11,6 +11,7 @@ import Marvel.GameValue.Types
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Name
+import Marvel.Status
 import Marvel.Trait.Types
 
 data EntityMatcher
@@ -226,6 +227,7 @@ data CharacterMatcher
   | DamageableCharacter
   | AnyCharacter
   | CharacterMatches [CharacterMatcher]
+  | CharacterWithStatus StatusCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

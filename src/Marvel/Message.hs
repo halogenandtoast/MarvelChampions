@@ -35,6 +35,7 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
+import Marvel.Status as X
 import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (When, Would), WindowType (IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
@@ -188,5 +189,9 @@ data Message
   | -- | an event's ability resolved for the player without the event being played, as an
     -- Invocation card's "Special": nothing that answers playing an event sees it
     ResolveEventWithoutPlaying IdentityId PlayerCard
+  | -- | a character, by its own ref (identity, ally, villain or minion), is given a status
+    -- card it does not have, or has one taken off it
+    GiveStatus Target StatusCard
+  | RemoveStatus Target StatusCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

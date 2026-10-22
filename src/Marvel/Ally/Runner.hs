@@ -41,6 +41,12 @@ instance HasAbilities Ally where
              (AllyAttack $ toId x)
          ]
 
+statusL :: StatusCard -> Lens' (Attrs Ally) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 instance RunMessage (Attrs Ally) where
   runMessage msg a = case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
@@ -135,4 +141,6 @@ instance RunMessage (Attrs Ally) where
       SpendAllyUse -> pure $ a & countersL -~ 1
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
+    GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
+    RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a

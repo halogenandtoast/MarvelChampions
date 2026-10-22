@@ -18,7 +18,7 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
-import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types (Attrs (allyConfused, allyStunned, allyTough), allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
@@ -55,7 +55,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Minion.Types (
-  Attrs (minionStunned),
+  Attrs (minionConfused, minionStunned, minionTough),
   Minion,
   facedownCardL,
   overMinion,
@@ -90,6 +90,7 @@ import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
 import Marvel.Upgrade.Types (Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
+import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
   Villain,
   villainAttackDetails,
@@ -1383,6 +1384,21 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  CharacterWithStatus s -> getsGame \g ->
+    let
+      -- each character's stunned, confused and tough
+      has :: (a -> (Bool, Bool, Bool)) -> (a -> CharacterId) -> HashMap k a -> [CharacterId]
+      has statuses f = map f . filter (pick . statuses) . HashMap.elems
+      pick (stunned, confused, tough) = case s of
+        StunnedStatus -> stunned
+        ConfusedStatus -> confused
+        ToughStatus -> tough
+     in
+      HashSet.fromList $
+        has ((\a -> (a.playerIdentityStunned, a.playerIdentityConfused, a.playerIdentityTough)) . toAttrs) (IdentityCharacter . toId) (gamePlayers g)
+          <> has ((\a -> (a.allyStunned, a.allyConfused, a.allyTough)) . toAttrs) (AllyCharacter . toId) (gameAllies g)
+          <> has ((\a -> (a.villainStunned, a.villainConfused, a.villainTough)) . toAttrs) (VillainCharacter . toId) (gameVillains g)
+          <> has ((\a -> (a.minionStunned, a.minionConfused, a.minionTough)) . toAttrs) (MinionCharacter . toId) (gameMinions g)
   CharacterMatches [] -> pure mempty
   CharacterMatches (x : xs) ->
     foldl' HashSet.intersection

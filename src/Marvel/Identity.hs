@@ -113,6 +113,12 @@ damageReductionL :: Lens' (Attrs PlayerIdentity) Natural
 damageReductionL = lens playerIdentityDamageReduction $
   \m x -> m {playerIdentityDamageReduction = x}
 
+statusL :: StatusCard -> Lens' (Attrs PlayerIdentity) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 identityIsStunned :: PlayerIdentity -> Bool
 identityIsStunned = playerIdentityStunned . toAttrs
 
@@ -821,6 +827,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
+    -- a tough status card prevents all of the damage, and is discarded instead
+    IdentityDamaged _ damage | playerIdentityTough && damageAmount damage > 0 ->
+      pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged _ damage -> do
       modifiedHp <- getModifiedHp pid
       when
@@ -975,6 +984,10 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
             & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity $ attrs & statusL s .~ True
+    RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity $ attrs & statusL s .~ False
     -- a card played from another player's discard pile (Make the Call) leaves it
     IdentityMessage ident (PlayedCard card _)
       | ident /= playerIdentityId attrs ->
