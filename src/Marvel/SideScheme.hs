@@ -48,6 +48,9 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
   -- The Green Goblin
+  , SomeSideSchemeCard aMessOfThings
+  , SomeSideSchemeCard powerDrain
+  , SomeSideSchemeCard runningInterference
 
   -- The Wrecking Crew
 

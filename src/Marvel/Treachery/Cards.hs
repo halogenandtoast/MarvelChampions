@@ -56,6 +56,13 @@ allTreacheries = fromList $ map
   , thoughtcasting
   , clashOfTheTitans
   -- The Green Goblin
+  , intimidation
+  , regenerativeHealing
+  , gangUpAMessOfThings
+  , tailSweep
+  , electromagneticPulse
+  , lightningBolt
+  , shockTherapy
 
   -- The Wrecking Crew
 
@@ -228,3 +235,31 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+-- The Green Goblin
+
+intimidation :: CardDef
+intimidation = treachery "02035" "Intimidation" [Star, Boost] GoblinGimmicks 2
+
+regenerativeHealing :: CardDef
+regenerativeHealing = treachery "02036" "Regenerative Healing" [Star] GoblinGimmicks 2
+
+-- | The Standard set's Gang-Up, one in A Mess of Things.
+gangUpAMessOfThings :: CardDef
+gangUpAMessOfThings =
+  (reprint "02039" gangUp)
+    { cdEncounterSet = Just AMessOfThings
+    , cdEncounterSetQuantity = Just 1
+    }
+
+tailSweep :: CardDef
+tailSweep = treachery "02040" "Tail Sweep" [Star] AMessOfThings 2
+
+electromagneticPulse :: CardDef
+electromagneticPulse = treachery "02043" "Electromagnetic Pulse" [Star, Boost, Boost] PowerDrain 1
+
+lightningBolt :: CardDef
+lightningBolt = treachery "02044" "Lightning Bolt" [Star, Boost] PowerDrain 1
+
+shockTherapy :: CardDef
+shockTherapy = treachery "02045" "Shock Therapy" [Star, Boost] PowerDrain 1

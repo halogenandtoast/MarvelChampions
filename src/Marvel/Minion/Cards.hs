@@ -12,7 +12,7 @@ import Marvel.Criteria
 import Marvel.EncounterSet
 import Marvel.Keyword
 import Marvel.Name
-import Marvel.Trait hiding (MastersOfEvil)
+import Marvel.Trait hiding (MastersOfEvil, Temporal)
 import Marvel.Trait qualified as Trait
 
 allMinions :: HashMap CardCode CardDef
@@ -50,6 +50,9 @@ allMinions =
       , baronMordo
       , abomination
       -- The Green Goblin
+      , scorpion
+      , electro
+      , tombstone
 
       -- The Wrecking Crew
 
@@ -286,3 +289,18 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- The Green Goblin
+
+scorpion :: CardDef
+scorpion =
+  unique $
+    (minion "02038" "Scorpion" [] [Boost, Boost] AMessOfThings 1)
+      { cdKeywords = singleton Quickstrike
+      }
+
+electro :: CardDef
+electro = unique $ minion "02042" "Electro" [Criminal] [Star, Boost, Boost] PowerDrain 1
+
+tombstone :: CardDef
+tombstone = unique $ minion "02047" "Tombstone" [Criminal] [Boost, Boost] RunningInterference 1

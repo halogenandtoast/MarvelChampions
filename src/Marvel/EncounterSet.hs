@@ -72,6 +72,10 @@ modularSets =
   , LegionsOfHydra
   , TheDoomsdayChair
   -- The Green Goblin
+  , GoblinGimmicks
+  , AMessOfThings
+  , PowerDrain
+  , RunningInterference
 
   -- The Wrecking Crew
 

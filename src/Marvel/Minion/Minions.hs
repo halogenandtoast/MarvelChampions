@@ -30,6 +30,9 @@ import Marvel.Minion.Minions.BaronMordo as X
 import Marvel.Minion.Minions.Abomination as X
 
 -- The Green Goblin
+import Marvel.Minion.Minions.Scorpion as X
+import Marvel.Minion.Minions.Electro as X
+import Marvel.Minion.Minions.Tombstone as X
 
 -- The Wrecking Crew
 

@@ -39,6 +39,9 @@ allSideSchemes = fromList $ map
   , openTheDarkDimension
   , totalDestruction
   -- The Green Goblin
+  , aMessOfThings
+  , powerDrain
+  , runningInterference
 
   -- The Wrecking Crew
 
@@ -207,3 +210,14 @@ openTheDarkDimension =
   (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
     }
+
+-- The Green Goblin
+
+aMessOfThings :: CardDef
+aMessOfThings = (sideScheme "02037" "A Mess of Things" [Boost, Boost] AMessOfThings 1) {cdHazards = 1}
+
+powerDrain :: CardDef
+powerDrain = (sideScheme "02041" "Power Drain" [Boost, Boost, Boost] PowerDrain 1) {cdAcceleration = 1}
+
+runningInterference :: CardDef
+runningInterference = sideScheme "02046" "Running Interference" [Boost] RunningInterference 1

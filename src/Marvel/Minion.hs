@@ -59,6 +59,9 @@ allMinions =
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
       -- The Green Goblin
+      , SomeMinionCard scorpion
+      , SomeMinionCard electro
+      , SomeMinionCard tombstone
 
       -- The Wrecking Crew
 

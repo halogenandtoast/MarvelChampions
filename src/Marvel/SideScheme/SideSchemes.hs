@@ -26,6 +26,9 @@ import Marvel.SideScheme.SideSchemes.OpenTheDarkDimension as X
 import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 
 -- The Green Goblin
+import Marvel.SideScheme.SideSchemes.AMessOfThings as X
+import Marvel.SideScheme.SideSchemes.PowerDrain as X
+import Marvel.SideScheme.SideSchemes.RunningInterference as X
 
 -- The Wrecking Crew
 
