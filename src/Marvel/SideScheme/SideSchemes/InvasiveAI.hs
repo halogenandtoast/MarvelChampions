@@ -9,9 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 
@@ -23,9 +22,9 @@ newtype InvasiveAI = InvasiveAI (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage InvasiveAI where
-  runMessage msg s@(InvasiveAI attrs) = case msg of
+  runMessage msg s@(InvasiveAI attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
-      pushAll [IdentityMessage p $ DiscardFrom FromDeck 3 Nothing | p <- players]
+      for_ players \p -> discardTopOfDeck p 3
       pure s
     _ -> InvasiveAI <$> runMessage msg attrs

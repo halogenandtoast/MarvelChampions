@@ -10,9 +10,8 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Hand
 import Marvel.Identity.Types (Field (..))
 import Marvel.Projection
@@ -34,7 +33,7 @@ getCardOwner pc = case pcOwner pc of
   Just ownerId -> ownerId
 
 instance RunMessage HighwayRobbery where
-  runMessage msg s@(HighwayRobbery attrs) = case msg of
+  runMessage msg s@(HighwayRobbery attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       -- the cards are held here facedown: out of their hands, not discarded
       RevealSideScheme -> do
@@ -42,13 +41,10 @@ instance RunMessage HighwayRobbery where
         taken <- for players \identityId ->
           headMay <$> (shuffleM =<< projectMap PlayerIdentityHand unHand identityId)
         let cards = catMaybes taken
-        pushAll [RemoveFromGame (CardIdRef $ pcCardId c) | c <- cards]
+        for_ cards \c -> removeFromGame (CardIdRef $ pcCardId c)
         pure . HighwayRobbery $ attrs & heldCardsL <>~ cards
       DefeatSideScheme -> do
-        pushAll $
-          map
-            (\c -> IdentityMessage (getCardOwner c) (AddToHand c))
-            (sideSchemeHeldCards attrs)
+        for_ (sideSchemeHeldCards attrs) \c -> addToHand (getCardOwner c) c
         pure s
       _ -> HighwayRobbery <$> runMessage msg attrs
     _ -> HighwayRobbery <$> runMessage msg attrs

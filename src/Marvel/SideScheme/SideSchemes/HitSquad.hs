@@ -13,9 +13,8 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -30,22 +29,21 @@ newtype HitSquad = HitSquad (Attrs SideScheme)
 -- | When Revealed: in player order, each player discards the top card of the encounter
 -- deck and takes 1 damage for each boost icon on it.
 instance RunMessage HitSquad where
-  runMessage msg s@(HitSquad attrs) = case msg of
+  runMessage msg s@(HitSquad attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
-      push $ cardSpecific attrs "discard" players
+      cardSpecific attrs "discard" players
       pure s
     CardSpecific (isTarget attrs -> True) "discard" (fromJSON -> Success (players :: [IdentityId])) ->
       case players of
         [] -> pure s
         p : rest ->
           getEncounterDeck >>= \case
-            [] -> s <$ push (cardSpecific attrs "discard" rest)
+            [] -> s <$ cardSpecific attrs "discard" rest
             card : _ -> do
               let n = boostCount $ cdBoostIcons $ getCardDef card
-              pushAll $
-                DiscardTopOfEncounterDeck 1 Nothing
-                  : [msg' | n > 0, msg' <- damageIdentity p (toSource attrs) (toDamage n FromTreachery)]
-                    <> [cardSpecific attrs "discard" rest]
+              discardTopOfEncounterDeck 1
+              when (n > 0) $ damageHero p attrs (toDamage n FromTreachery)
+              cardSpecific attrs "discard" rest
               pure s
     _ -> HitSquad <$> runMessage msg attrs

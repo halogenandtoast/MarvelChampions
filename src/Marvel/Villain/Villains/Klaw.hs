@@ -10,10 +10,9 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question
-import Marvel.Queue
+import Marvel.Question (Choice (RunAbility))
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
@@ -84,31 +83,31 @@ instance HasAbilities Klaw where
     _ -> error "Invalid stage"
 
 instance RunMessage Klaw where
-  runMessage msg e@(Klaw attrs) = case msg of
+  runMessage msg e@(Klaw attrs) = runQueueT $ case msg of
     VillainMessage ident msg' | ident == villainId attrs -> case msg' of
       VillainDefeated -> do
         difficulty <- getDifficulty
         case (difficulty, villainStage attrs) of
           (_, 1) -> do
-            push (VillainMessage ident VillainAdvanced)
+            advanceVillain ident
             pure $ advanceVillainTo klaw2 attrs
           (Normal, 2) -> Klaw <$> runMessage msg attrs
           (Expert, 2) -> do
-            push (VillainMessage ident VillainAdvanced)
+            advanceVillain ident
             pure $ advanceVillainTo klaw3 attrs
           (_, 3) -> Klaw <$> runMessage msg attrs
           (_, _) -> error "Invalid rhino progression"
       _ -> Klaw <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      push $ case villainStage attrs of
-        1 -> DealBoost (toRef attrs)
-        2 -> SearchForAndRevealScheme Cards.theImmortalKlaw
-        3 -> DealBoost (toRef attrs)
+      case villainStage attrs of
+        1 -> dealBoost attrs
+        2 -> searchForAndRevealScheme Cards.theImmortalKlaw
+        3 -> dealBoost attrs
         _ -> error "Invalid stage"
       pure e
     RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
-      push $ case villainStage attrs of
-        2 -> DealBoost (toRef attrs)
+      case villainStage attrs of
+        2 -> dealBoost attrs
         _ -> error "Invalid stage"
       pure e
     _ -> Klaw <$> runMessage msg attrs
