@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -26,7 +26,7 @@ newtype DefenseNetwork = DefenseNetwork (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage DefenseNetwork where
-  runMessage msg (DefenseNetwork attrs) = case msg of
+  runMessage msg (DefenseNetwork attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         n <- fromIntegral <$> fromGameValue (PerPlayer 1)

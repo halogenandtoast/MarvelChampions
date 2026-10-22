@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -22,4 +22,4 @@ newtype CrowdControl = CrowdControl (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage CrowdControl where
-  runMessage msg (CrowdControl attrs) = CrowdControl <$> runMessage msg attrs
+  runMessage msg (CrowdControl attrs) = runQueueT $ CrowdControl <$> runMessage msg attrs

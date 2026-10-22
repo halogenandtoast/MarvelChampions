@@ -9,9 +9,8 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (SideSchemeId)
 import Marvel.Id as X (SideSchemeId)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window
 
@@ -157,7 +156,7 @@ instance IsCard (Attrs SideScheme) where
         }
 
 instance RunMessage (Attrs SideScheme) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
       modifiers <- getModifiers attrs
       case msg' of
@@ -167,14 +166,7 @@ instance RunMessage (Attrs SideScheme) where
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
         SideSchemeThwarted _ n -> do
-          when
-            (subtractNatural n (sideSchemeThreat attrs) == 0)
-            ( pushAll
-                [ CheckWindows [Window When $ DefeatedSideScheme (sideSchemeId attrs)]
-                , SideSchemeMessage (sideSchemeId attrs) DefeatSideScheme
-                , RemoveFromPlay (toTarget attrs)
-                ]
-            )
+          when (subtractNatural n (sideSchemeThreat attrs) == 0) $ defeatSideScheme (sideSchemeId attrs)
           pure $ attrs & threatL %~ subtractNatural n
         _ -> pure attrs
     _ -> pure attrs
