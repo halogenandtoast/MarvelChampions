@@ -107,6 +107,26 @@ spec = describe "Justice" do
         mainSchemeThreatNow `shouldReturn` threat
         damageOf p `shouldReturn` 2
 
+    it "takes it as damage a would-take-damage interrupt can answer" do
+      tg <- testGame ["captain-marvel"]
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        -- Cosmic Flight: when you would take damage, discard it to prevent 3
+        flightCard <- putInHand p "01017"
+        energy <- putInHand p "01088"
+        playWith flightCard [energy]
+        responsibility <- putInHand p "01061"
+        threat <- mainSchemeThreatNow
+        scheme <- mainSchemeId
+        runNow (placeThreatOn (SchemeMainSchemeId scheme) 2)
+        choose "play Great Responsibility" (isPlay responsibility)
+        choose "use Cosmic Flight" (isAbilityOfCard flightCard)
+        pass
+        mainSchemeThreatNow `shouldReturn` threat
+        damageOf p `shouldReturn` 0
+
   describe "The Power of Justice (01062)" do
     it "pays 2 for a Justice card, 1 otherwise" do
       tg <- testGame ["spider-man"]
