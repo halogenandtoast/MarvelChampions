@@ -50,6 +50,26 @@ spec = describe "Ms. Marvel pack" do
         villainAttacks p2
         offers (isAbilityOfCard nova) `shouldReturn` False
 
+    it "defeating the attacking enemy, its attack deals no damage" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        nova <- putIntoPlay p "05012"
+        energy <- putInHand p "01088"
+        mercenary <- addMinion p Minions.hydraMercenary
+        pass
+        resolve [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
+        start [MinionMessage mercenary (MinionAttacks p)]
+        choose "use Nova" (isAbilityOfCard nova)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        chooseIf (isTargetChoice mercenary)
+        pass
+        minionDamageOf mercenary `shouldReturn` Nothing
+        damageOf p `shouldReturn` 0
+
   describe "Preemptive Strike (05014)" do
     it "cancels the boost icons of a boost card turned up for the villain's attack, 1 damage each" do
       tg <- msMarvel
@@ -223,6 +243,22 @@ spec = describe "Ms. Marvel pack" do
         _ <- putInHand p "01089"
         offers (isPlay second) `shouldReturn` False
 
+    it "is played under another player's control, who gets the hit points" do
+      tg <- testGame ["ms-marvel", "black-panther"]
+      let (p, q) = (player1 tg, player2 tg)
+      inGame tg do
+        clearHand p
+        before <- hitPointsOf q
+        mine <- hitPointsOf p
+        endurance <- putInHand p "05023"
+        energy <- putInHand p "01088"
+        choose "play Endurance" (isPlay endurance)
+        choose "under the other player" (isTargetChoice q)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        hitPointsOf q `shouldReturn` (before + 3)
+        hitPointsOf p `shouldReturn` mine
+
   describe "Enhanced Reflexes (05024)" do
     it "exhausts and spends an energy counter for an energy resource, as a hero" do
       tg <- msMarvel
@@ -253,6 +289,24 @@ spec = describe "Ms. Marvel pack" do
         choose "hit Rhino" (isTargetChoice (EnemyVillainId vid))
         -- no other enemy: nothing more is asked
         villainDamageNow `shouldReturn` 3
+
+    it "the second enemy must be another one" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        vid <- villainIdNow
+        -- not a guard
+        edison <- addMinion p Minions.thomasEdison
+        pass
+        melee <- putInHand p "05030"
+        playPaying p melee ["01089", "01090"]
+        choose "hit Rhino" (isTargetChoice (EnemyVillainId vid))
+        offers (isTargetChoice (EnemyVillainId vid)) `shouldReturn` False
+        choose "hit Edison" (isTargetChoice edison)
+        villainDamageNow `shouldReturn` 3
+        minionDamageOf edison `shouldReturn` Nothing
 
   describe "Concussive Blow (05031)" do
     it "confuses an enemy, and deals it 3 damage when paid with a physical resource" do
@@ -295,3 +349,17 @@ spec = describe "Ms. Marvel pack" do
         setDamage p 9
         choose "recover" (\case UseAbility ab -> Recover `elem` abilityChoices ab; _ -> False)
         damageOf p `shouldReturn` 2
+
+    it "is played under another player's control, whose alter-ego recovers more" do
+      tg <- testGame ["ms-marvel", "black-panther"]
+      let (p, q) = (player1 tg, player2 tg)
+      inGame tg do
+        clearHand p
+        downTime <- putInHand p "05033"
+        energy <- putInHand p "01088"
+        choose "play Down Time" (isPlay downTime)
+        choose "under the other player" (isTargetChoice q)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        upgradesOf q >>= (`shouldSatisfy` ((== 1) . length))
+        upgradesOf p `shouldReturn` []

@@ -235,6 +235,11 @@ hydraSoldierCaptainAmerica =
     , cdEncounterSetQuantity = Just 2
     }
 
+-- | The nemesis minions named so on their cards, in nemesis sets with more than one
+-- minion.
+designatedNemesisMinions :: [CardDef]
+designatedNemesisMinions = [baronZemo, thomasEdison, loki, taskmaster]
+
 thomasEdison :: CardDef
 thomasEdison =
   unique $ minion "05027" "Thomas Edison" [Bird, Genius] [Boost, Boost] MsMarvelNemesis 1
