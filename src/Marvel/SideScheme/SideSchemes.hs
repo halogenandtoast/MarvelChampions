@@ -26,6 +26,12 @@ import Marvel.SideScheme.SideSchemes.OpenTheDarkDimension as X
 import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 
 -- The Green Goblin
+import Marvel.SideScheme.SideSchemes.CollapsingBridge as X
+import Marvel.SideScheme.SideSchemes.GoblinNation as X
+import Marvel.SideScheme.SideSchemes.GoblinReinforcements as X
+import Marvel.SideScheme.SideSchemes.OscorpManufacturing as X
+import Marvel.SideScheme.SideSchemes.Overrun as X
+import Marvel.SideScheme.SideSchemes.Payoff as X
 
 -- The Wrecking Crew
 

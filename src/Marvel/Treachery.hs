@@ -63,6 +63,12 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard thoughtcasting
   , SomeTreacheryCard clashOfTheTitans
   -- The Green Goblin
+  , SomeTreacheryCard allInADaysWork
+  , SomeTreacheryCard deathFromAbove
+  , SomeTreacheryCard iSeeYou
+  , SomeTreacheryCard madGenius
+  , SomeTreacheryCard overconfidence
+  , SomeTreacheryCard wickedAmbitions
 
   -- The Wrecking Crew
 

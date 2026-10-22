@@ -1953,7 +1953,8 @@ gameSelectEnemy m = do
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
     EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
-    EnemyWithHighestPrintedHitPoints -> (==) <$> villainPrinted e <*> highestPrinted
+    EnemyWithHighestPrintedHitPointsAmong m' -> andM [goVillain e m', (==) <$> villainPrinted e <*> highestPrinted m']
+    EnemyWithAttachment a -> not . null . HashSet.intersection (Villain.villainAttachments $ toAttrs e) <$> select a
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -1975,16 +1976,17 @@ gameSelectEnemy m = do
     EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
     EnemyWithTrait t -> member t <$> getTraits e
-    EnemyWithHighestPrintedHitPoints -> (== minionPrinted e) <$> highestPrinted
+    EnemyWithHighestPrintedHitPointsAmong m' -> andM [goMinion e m', (== minionPrinted e) <$> highestPrinted m']
+    EnemyWithAttachment a -> not . null . HashSet.intersection (minionAttachments $ toAttrs e) <$> select a
   highestAttack = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
     pure $ foldl' max 0 (villains <> minions)
   villainPrinted v = fromGameValue (unHp $ Villain.villainStartingHp (toAttrs v))
   minionPrinted = fromIntegral . unHp . getMinionPrintedHitPoints
-  highestPrinted = do
-    villains <- traverse villainPrinted . HashMap.elems =<< getsGame gameVillains
-    minions <- map minionPrinted . HashMap.elems <$> getsGame gameMinions
+  highestPrinted m' = do
+    villains <- traverse villainPrinted =<< filterM (`goVillain` m') . HashMap.elems =<< getsGame gameVillains
+    minions <- map minionPrinted <$> (filterM (`goMinion` m') . HashMap.elems =<< getsGame gameMinions)
     pure $ foldl' max 0 (villains <> minions)
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)

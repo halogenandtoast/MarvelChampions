@@ -48,6 +48,12 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
   -- The Green Goblin
+  , SomeSideSchemeCard collapsingBridge
+  , SomeSideSchemeCard goblinNation
+  , SomeSideSchemeCard goblinReinforcements
+  , SomeSideSchemeCard oscorpManufacturing
+  , SomeSideSchemeCard overrun
+  , SomeSideSchemeCard payoff
 
   -- The Wrecking Crew
 

@@ -39,6 +39,9 @@ allAttachments =
       , SomeAttachmentCard biomechanicalUpgrades
       , SomeAttachmentCard counterspell
       -- The Green Goblin
+      , SomeAttachmentCard goblinGlider
+      , SomeAttachmentCard hysteria
+      , SomeAttachmentCard pumpkinBombs
 
       -- The Wrecking Crew
 

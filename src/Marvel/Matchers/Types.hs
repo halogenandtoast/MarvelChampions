@@ -158,8 +158,9 @@ data EnemyMatcher
     EnemyWithHighestAttack
   | StunnedEnemy
   | EnemyWithTrait Trait
-  | -- | the enemies whose printed hit points are the highest of all enemies'
-    EnemyWithHighestPrintedHitPoints
+  | -- | of the enemies matching, those whose printed hit points are the highest
+    EnemyWithHighestPrintedHitPointsAmong EnemyMatcher
+  | EnemyWithAttachment AttachmentMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

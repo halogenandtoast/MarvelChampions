@@ -30,6 +30,12 @@ import Marvel.Minion.Minions.BaronMordo as X
 import Marvel.Minion.Minions.Abomination as X
 
 -- The Green Goblin
+import Marvel.Minion.Minions.GoblinKnight as X
+import Marvel.Minion.Minions.GoblinSoldier as X
+import Marvel.Minion.Minions.GoblinThrall as X
+import Marvel.Minion.Minions.HiredGun as X
+import Marvel.Minion.Minions.Monster as X
+import Marvel.Minion.Minions.PrivateSecuritySpecialist as X
 
 -- The Wrecking Crew
 

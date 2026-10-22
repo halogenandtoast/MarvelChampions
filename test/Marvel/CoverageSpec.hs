@@ -21,7 +21,7 @@ import Marvel.Support (allSupports)
 import Marvel.Upgrade (allUpgrades)
 import TestImport
 
-data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text}
+data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, set :: Maybe Text}
 
 -- | A pack's cards as MarvelCDB lists them.
 packCards :: Text -> IO [PackCard]
@@ -32,17 +32,24 @@ packCards pack = do
     fmap catMaybes $ for cards $ withObject "card" \c -> do
       pack' <- c .: "packCode"
       if pack' == pack
-        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type")
+        then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> c .:? "setCode")
         else pure Nothing
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "gob"]
+
+-- | The sets of a pack implemented so far, where not all of them are.
+setsOf :: Text -> Maybe [Text]
+setsOf = \case
+  "gob" -> Just ["risky_business", "mutagen_formula"]
+  _ -> Nothing
 
 spec :: Spec
 spec = for_ packs \pack -> describe (show pack) do
+  let packCards' p = filter (\c -> maybe True (\sets -> maybe False (`elem` sets) c.set) (setsOf p)) <$> packCards p
   it "has every player card implemented" do
-    cards <- packCards pack
+    cards <- packCards' pack
     let implemented c = case c.cardType of
           "hero" -> HashMap.member c.code allHeroes
           "alter_ego" -> HashMap.member c.code allAlterEgos
@@ -55,7 +62,7 @@ spec = for_ packs \pack -> describe (show pack) do
           _ -> True
     [(c.code, c.name) | c <- cards, not (implemented c)] `shouldBe` []
   it "has every encounter card implemented" do
-    cards <- packCards pack
+    cards <- packCards' pack
     let implemented c = case c.cardType of
           "villain" -> HashMap.member c.code allVillains
           "minion" -> HashMap.member c.code allMinions

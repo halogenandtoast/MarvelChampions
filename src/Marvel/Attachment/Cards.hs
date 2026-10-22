@@ -32,6 +32,9 @@ allAttachments =
       , biomechanicalUpgrades
       , counterspell
       -- The Green Goblin
+      , goblinGlider
+      , hysteria
+      , pumpkinBombs
 
       -- The Wrecking Crew
 
@@ -124,3 +127,14 @@ biomechanicalUpgrades =
 counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
+
+-- The Green Goblin
+
+goblinGlider :: CardDef
+goblinGlider = attachment "02019" "Goblin Glider" [Vehicle] [Boost, Boost, Boost] MutagenFormula 1
+
+hysteria :: CardDef
+hysteria = attachment "02020" "Hysteria" [Condition] [Boost] MutagenFormula 1
+
+pumpkinBombs :: CardDef
+pumpkinBombs = attachment "02021" "Pumpkin Bombs" [Weapon] [Boost, Boost] MutagenFormula 1
