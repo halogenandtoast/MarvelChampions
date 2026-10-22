@@ -8,8 +8,13 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 |---|---|---|
 | Rules Reference | **v1.8** (PDF created 2026-05-26, modified 2026-07-23; announced in FFG's "Mission Updates", 2026-07-23), 71 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc_rulesreference_v18_compressed.pdf (byte-identical copy at `.../uploads/2026/08/mc_rulesreference_v18_compressed-1.pdf`) |
 | Core Set Learn to Play | 2019 print edition (PDF dated 2019-10-26), 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mvc01_learn_to_play_eng-compressed.pdf |
+| The Green Goblin rules insert (MC02) | PDF dated 2019-05-17, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc02_green_goblin_rules_insert.pdf |
+| The Wrecking Crew rules insert (MC03) | PDF created 2019-06-11, modified 2023-02-02, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc03_wrecking_crew_rules_insert-compressed.pdf |
+| The Rise of Red Skull rulebook (MC10) | PDF dated 2020-09-23, 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_rules_web.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_campaign-log.pdf) |
+| The Once and Future Kang rules insert (MC11) | PDF created 2020-07-30, modified 2023-02-02, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc11_once_and_future_kang_rules_insert-compressed.pdf |
+| MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
 
-Both are linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
+The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
 https://www.fantasyflightgames.com/en/news/2026/7/23/mission-updates/). The PDFs are not committed.
 
 Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference > Learn to Play.
@@ -28,8 +33,15 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [appendices.md](appendices.md) | RR Overview, Appendix I (deck customization), III (card anatomy), VI (game environments) |
 | [faq-errata.md](faq-errata.md) | RR Appendix IV (FAQ) and V (errata), by product and card number |
 | [learn-to-play.md](learn-to-play.md) | Learn to Play specifics not in the RR: components, anatomy positions, tutorial setup, nemesis sets, starter decks, core scenarios (Rhino/Klaw/Ultron) with standard/expert/modular sets, LTP vs RR differences |
+| [scenario-green-goblin.md](scenario-green-goblin.md) | Green Goblin pack: Risky Business (Norman Osborn / Green Goblin flipping, Criminal Enterprise / State of Madness, infamy and madness counters), Mutagen Formula (Goblin minion boost timing); scenario card text |
+| [scenario-wrecking-crew.md](scenario-wrecking-crew.md) | Wrecking Crew pack, Breakout: four villains, the active villain, per-villain encounter decks and signature side schemes, setup, winning, expert/extreme difficulty; scenario card text |
+| [campaign-rise-of-red-skull.md](campaign-rise-of-red-skull.md) | Rise of Red Skull: keywords as printed, campaign mode, campaign log, per-scenario setup/victory steps (Crossbones … Red Skull), Experimental Weapons deck, side-scheme deck, expert campaign (persistent damage, obligations in player decks); campaign card text (Hydra Campaign upgrades, Captive allies, expert obligations) |
+| [scenario-kang.md](scenario-kang.md) | Once and Future Kang: setup, separate game areas (creating, playing in, joining), stage 2B, Kang stages, expert mode, modular sets, clarifications; scenario card text |
 
 ## Conventions
+
+- Product files (`scenario-*.md`, `campaign-*.md`) transcribe the product's insert/rulebook verbatim with
+  `<!-- GOB insert p.N -->`-style markers; the card text they quote comes from MarvelCDB and is labelled as such.
 
 - Each glossary entry is `## Term` (title-cased from the RR's all-caps headings), followed by
   `<!-- RR v1.8 p.N -->` with its PDF page. Search with e.g. `grep -n '^## Surge' docs/rules/*.md`.
