@@ -536,9 +536,20 @@ runGameMessage msg g@Game {..} = case msg of
               then pure (IdentityMessage ident IdentityRemoveConfused)
               else pure playEvent
           _ -> pure playEvent
-        pushAll [playedMessage, EventMessage (toId event) ResolvedEvent]
+        pushAll
+          [ CheckWindows [W.Window When $ W.EventPlayed ident (toId event)]
+          , playedMessage
+          , EventMessage (toId event) ResolvedEvent
+          ]
         pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
+  ResolveEventWithoutPlaying ident card -> do
+    let event = createEvent ident card
+    pushAll
+      [ EventMessage (toId event) (PlayedEvent ident NoPayment Nothing)
+      , EventMessage (toId event) ResolvedEvent
+      ]
+    pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutBoostIntoPlay target ident -> case target of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of

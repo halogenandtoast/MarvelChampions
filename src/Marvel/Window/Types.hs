@@ -48,6 +48,8 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
+  | -- | a player plays an event: not an event's ability resolved without it being played
+    PlaysEvent WindowTiming IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -82,5 +84,6 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
+  | EventPlayed IdentityId EventId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

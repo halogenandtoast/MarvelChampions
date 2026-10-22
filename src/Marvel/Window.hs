@@ -165,3 +165,8 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
+  PlaysEvent timing identityMatcher -> case windowType w of
+    EventPlayed identityId _
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
