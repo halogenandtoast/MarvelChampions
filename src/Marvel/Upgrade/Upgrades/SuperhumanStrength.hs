@@ -41,7 +41,7 @@ instance HasAbilities SuperhumanStrength where
         (IdentityAttacked After You AnyEnemy)
         ForcedResponse
         OwnsThis
-        NoCost
+        (DiscardCost $ toTarget a)
         (RunAbility (toRef a) 1)
     ]
 
@@ -54,6 +54,6 @@ instance RunMessage SuperhumanStrength where
   runMessage msg u@(SuperhumanStrength attrs) = case msg of
     RanAbility ident (isTarget attrs -> True) 1 (getEnemyTarget -> enemyTarget) _ -> do
       stunMsgs <- choiceMessages ident $ Stun enemyTarget (toSource attrs)
-      pushAll $ RemoveFromPlay (toRef u) : stunMsgs
+      pushAll stunMsgs
       pure u
     _ -> SuperhumanStrength <$> runMessage msg attrs

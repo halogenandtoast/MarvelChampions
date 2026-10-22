@@ -35,16 +35,13 @@ instance HasAbilities Indomitable where
         (HeroDefended After (IdentityWithId $ upgradeController a) AnyEnemy)
         Response
         OwnsThis
-        NoCost
+        (DiscardCost $ toTarget a)
         $ RunAbility (toTarget a) 1
     ]
 
 instance RunMessage Indomitable where
   runMessage msg u@(Indomitable attrs) = case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      pushAll
-        [ RemoveFromPlay (toRef u)
-        , IdentityMessage ident ReadiedIdentity
-        ]
+      push $ IdentityMessage ident ReadiedIdentity
       pure u
     _ -> Indomitable <$> runMessage msg attrs

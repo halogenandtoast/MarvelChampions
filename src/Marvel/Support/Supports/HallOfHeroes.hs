@@ -38,7 +38,7 @@ instance HasAbilities HallOfHeroes where
       OwnsThis
       NoCost
       (runAbility a 1)
-      : [ ability a 2 AlterEgoAction OwnsThis ExhaustCost (runAbility a 2)
+      : [ ability a 2 AlterEgoAction OwnsThis (ExhaustCost <> mconcat (replicate 3 UseCost)) (runAbility a 2)
         | supportUses attrs >= 3
         ]
 
@@ -47,5 +47,5 @@ instance RunMessage HallOfHeroes where
     RanAbility _ (isTarget h -> True) 1 _ _ -> pure . HallOfHeroes $ attrs & usesL +~ 1
     RanAbility ident (isTarget h -> True) 2 _ _ -> do
       push $ IdentityMessage ident $ DrawCards FromDeck 3
-      pure . HallOfHeroes $ attrs & usesL -~ 3
+      pure h
     _ -> HallOfHeroes <$> runMessage msg attrs

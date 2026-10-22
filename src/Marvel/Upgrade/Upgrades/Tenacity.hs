@@ -32,12 +32,8 @@ instance HasAbilities Tenacity where
         1
         HeroAction
         (OwnsThis <> Exhausted)
-        (ResourceCost (Just Physical))
-        ( Run
-            [ RemoveFromPlay (toTarget a)
-            , IdentityMessage (upgradeController a) ReadiedIdentity
-            ]
-        )
+        (ResourceCost (Just Physical) <> DiscardCost (toTarget a))
+        (Run [IdentityMessage (upgradeController a) ReadiedIdentity])
     ]
 
 instance RunMessage Tenacity where
