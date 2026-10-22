@@ -66,12 +66,15 @@ data Area = Area
   , areaMainSchemes :: [MainSchemeId]
   , areaSideSchemes :: [SideSchemeId]
   , areaEnvironments :: [EnvironmentId]
+  , areaAccelerationTokens :: Natural
+  -- ^ next to its main scheme: they stay as the main scheme leaves play (RR,
+  -- Acceleration Token)
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
 newArea :: AreaId -> [IdentityId] -> Area
-newArea aid players = Area aid players [] Nothing [] [] []
+newArea aid players = Area aid players [] Nothing [] [] [] 0
 
 -- | The area listing it, or else the first.
 areaListing :: (Area -> Bool) -> [Area] -> Maybe Area
@@ -103,4 +106,5 @@ combine from into areas = case filter ((== from) . areaId) areas of
           , areaMainSchemes = areaMainSchemes a <> areaMainSchemes src
           , areaSideSchemes = areaSideSchemes a <> areaSideSchemes src
           , areaEnvironments = areaEnvironments a <> areaEnvironments src
+          , areaAccelerationTokens = areaAccelerationTokens a + areaAccelerationTokens src
           }

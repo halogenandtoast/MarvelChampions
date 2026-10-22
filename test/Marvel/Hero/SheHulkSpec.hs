@@ -264,7 +264,7 @@ spec = describe "She-Hulk" do
       choose "exhaust Jennifer Walters" (isLabelStarting "$label.exhaust")
       isExhaustedNow p `shouldReturn` True
       getsGame (HashMap.null . gameObligations) `shouldReturn` True
-      getsGame (scenarioAccelerationTokens . gameScenario) `shouldReturn` 0
+      accelerationTokensNow `shouldReturn` 0
 
   it "Legal Work: otherwise the main scheme gets an acceleration token" do
     tg <- sheHulk
@@ -275,7 +275,7 @@ spec = describe "She-Hulk" do
       work <- revealNow p Obligations.legalWork
       choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       pass
-      getsGame (scenarioAccelerationTokens . gameScenario) `shouldReturn` 1
+      accelerationTokensNow `shouldReturn` 1
       (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId work))
 
   it "Personal Challenge is a crisis with 3 threat and 1 more per hero" do

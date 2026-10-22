@@ -20,6 +20,7 @@ data EntityMatcher
   | AttachmentEntity AttachmentMatcher
   | -- | an event being played
     EventEntity EventId
+  | MainSchemeEntity MainSchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

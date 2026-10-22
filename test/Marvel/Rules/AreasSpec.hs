@@ -4,7 +4,9 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson (Value (..), toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
+import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Game.Public (publicGame)
+import Marvel.Modifier (Modifier (RedirectAccelerationTokens))
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
@@ -34,6 +36,17 @@ newIn keys body = do
   getsGame (filter (`notElem` before) . keys) >>= \case
     [x] -> pure x
     _ -> error "nothing new entered play"
+
+-- | A test-only card's effect: whatever modifiers it is given.
+newtype RedirectTest = RedirectTest (Attrs Effect)
+  deriving anyclass (IsEffect)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RedirectTest where
+  runMessage _ = pure
+
+testEffectAttrs :: EffectId -> Source -> EntityMatcher -> Attrs Effect
+testEffectAttrs eid source matcher = EffectAttrs eid "01092" source matcher [] Nothing
 
 -- | A second area made for the second player.
 splitOff :: IdentityId -> GameAppT AreaId
@@ -215,6 +228,34 @@ spec = describe "game areas" do
       pileNow weapons `shouldReturn` Pile [] []
       runNow [UsingDeck weapons (DrawAndRevealEncounterCard p)]
       accelerationTokensNow `shouldReturn` before
+
+  it "a single area's acceleration tokens are on its main scheme, and accelerate it" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      ms <- mainSchemeIdNow
+      resolve [AccelerateMainScheme]
+      before <- mainSchemeThreatNow
+      resolve [AccelerateMainScheme]
+      once <- mainSchemeThreatNow
+      resolve [PlaceAccelerationToken ms]
+      accelerationTokensNow `shouldReturn` 1
+      resolve [AccelerateMainScheme]
+      mainSchemeThreatNow `shouldReturn` once + (once - before) + 1
+
+  it "a card may redirect an acceleration token placed on a scheme to another scheme" do
+    tg <- testGame ["spider-man", "thor"]
+    let (p, q) = (player1 tg, player2 tg)
+    inGame tg do
+      ms <- mainSchemeIdNow
+      there <- splitOff q
+      other <- addMainSchemeFor q "01097"
+      eid <- getRandom
+      let redirect = RedirectTest (testEffectAttrs eid (toSource p) (MainSchemeEntity ms)) {effectModifiers = [RedirectAccelerationTokens other]}
+      withGame_ $ entitiesL . effectsL %~ insertMap eid (Effect redirect)
+      before <- getAccelerationCountIn there
+      resolve [PlaceAccelerationToken ms]
+      getAccelerationCountIn there `shouldReturn` before + 1
+      getsGame (map areaAccelerationTokens . gameAreas) `shouldReturn` [0, 1]
 
   it "the side-scheme deck is made again from its discard pile without penalty" do
     tg <- testGame ["spider-man"]

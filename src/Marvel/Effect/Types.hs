@@ -129,6 +129,7 @@ effectValidFor e target = case (target, effectMatcher e) of
     member ident <$> select matcher
   (AllyRef ident, AllyEntity matcher) -> member ident <$> select matcher
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
+  (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'
   _ -> pure False
 
 instance RunMessage (Attrs Effect) where

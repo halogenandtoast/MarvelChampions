@@ -117,7 +117,7 @@ data AreaView = AreaView
   , environments :: [Text]
   , decks :: [DeckView]
   , accelerationTokens :: Natural
-  -- ^ the acceleration tokens adding threat to its main scheme: the first area's
+  -- ^ the acceleration tokens next to its main scheme
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -385,7 +385,7 @@ gameView seesHand g = do
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
-      , accelerationTokens = scenario.scenarioAccelerationTokens
+      , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g))
       , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
       , activeCost
@@ -429,7 +429,7 @@ gameView seesHand g = do
                 -- a named deck is the scenario's, by the first area's main scheme
                 <> concat [deckView "named" (Just n) k | first, k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
-          , accelerationTokens = if Just aid == fmap areaId (headMay (gameAreas g)) then scenario.scenarioAccelerationTokens else 0
+          , accelerationTokens = areaAccelerationTokens a
           }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
   attachmentsIn ids = [attachmentView a | a <- HashMap.elems (gameAttachments g), toId a `HashSet.member` ids]

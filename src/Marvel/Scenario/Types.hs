@@ -87,7 +87,6 @@ instance Entity Scenario where
     , scenarioDiscard :: [EncounterCard]
     , scenarioDifficulty :: Difficulty
     , scenarioSetAsideCards :: [Card]
-    , scenarioAccelerationTokens :: Natural
     , scenarioReshufflesThisRound :: Natural
     , scenarioDecks :: HashMap DeckKey Pile
     -- ^ the decks besides the encounter deck, each with its discard pile
@@ -105,7 +104,6 @@ instance Entity Scenario where
     ScenarioDiscard :: Field Scenario [EncounterCard]
     ScenarioDifficulty :: Field Scenario Difficulty
     ScenarioSetAsideCards :: Field Scenario [Card]
-    ScenarioAccelerationTokens :: Field Scenario Natural
     ScenarioReshufflesThisRound :: Field Scenario Natural
   field fld s =
     let ScenarioAttrs {..} = toAttrs s
@@ -118,7 +116,6 @@ instance Entity Scenario where
           ScenarioDiscard -> scenarioDiscard
           ScenarioDifficulty -> scenarioDifficulty
           ScenarioSetAsideCards -> scenarioSetAsideCards
-          ScenarioAccelerationTokens -> scenarioAccelerationTokens
           ScenarioReshufflesThisRound -> scenarioReshufflesThisRound
   toId = scenarioId . toAttrs
   toAttrs (Scenario a) = toScenarioAttrs a
@@ -136,10 +133,6 @@ encounterDeckL =
 setAsideCardsL :: Lens' (Attrs Scenario) [Card]
 setAsideCardsL =
   lens scenarioSetAsideCards $ \m x -> m {scenarioSetAsideCards = x}
-
-accelerationTokensL :: Lens' (Attrs Scenario) Natural
-accelerationTokensL =
-  lens scenarioAccelerationTokens $ \m x -> m {scenarioAccelerationTokens = x}
 
 -- | The deck and its discard pile: the encounter deck's are the scenario's own.
 pileL :: DeckKey -> Lens' (Attrs Scenario) Pile
@@ -185,7 +178,6 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
                     <> [EncounterSet.Standard]
                     <> [EncounterSet.ExpertSet | setup.difficulty == Expert]
             , scenarioSetAsideCards = mempty
-            , scenarioAccelerationTokens = 0
             , scenarioReshufflesThisRound = 0
             , scenarioDecks = mempty
             , scenarioCardDecks = mempty
@@ -207,9 +199,9 @@ instance RunMessage (Attrs Scenario) where
       Pile [] discard | notNull discard, not (isNamed key) -> do
         deck' <- shuffleM discard
         let penalty = if isEncounterDeck key then 1 else 0
+        when (penalty > 0) addAccelerationToken
         pure $
           a
-            & (accelerationTokensL +~ penalty)
             & (pileL key .~ Pile deck' [])
             & \a' -> a' {scenarioReshufflesThisRound = scenarioReshufflesThisRound a' + penalty}
       _ -> pure a
@@ -368,8 +360,6 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       for_ (take 1 players) setActivePlayer
       beginPhase VillainPhase
       pure attrs
-    AddAccelerationToken -> do
-      pure $ attrs & accelerationTokensL +~ 1
     -- in each area its active villain activates against its players, and its hazard
     -- icons deal its players more encounter cards
     BeginPhase VillainPhase -> do

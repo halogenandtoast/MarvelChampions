@@ -14,6 +14,7 @@ import Marvel.Card.Id (CardId (..))
 import Data.IORef as X
 import Marvel.Decklist as X
 import Marvel.Difficulty as X
+import Marvel.Area as X (Area (..))
 import Marvel.Game as X
 import Marvel.Game.Run as X
 import Marvel.Id as X
@@ -471,7 +472,7 @@ overEncounterPile key f = withGame_ \g -> g {gameScenario = restack (gameScenari
     _ -> error "no encounter pile"
 
 accelerationTokensNow :: GameAppT Natural
-accelerationTokensNow = getsGame (scenarioAccelerationTokens . gameScenario)
+accelerationTokensNow = getsGame (sum . map areaAccelerationTokens . gameAreas)
 
 encounterDeckSize :: GameAppT Int
 encounterDeckSize = getsGame (length . field ScenarioEncounterDeck . gameScenario)

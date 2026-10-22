@@ -133,12 +133,25 @@ spec = describe "The Once and Future Kang" do
         toStage2 tg
         accelerationTokensNow `shouldReturn` tokens + 1
         getsGame (length . gameSideSchemes) `shouldReturn` 0
-        resolve [AddAccelerationToken]
+        [s1] <- getMainSchemesIn =<< areaOfPlayer (player1 tg)
+        resolve [PlaceAccelerationToken s1]
         before <- stageThreats
         resolve [AccelerateMainScheme]
         after <- stageThreats
         -- each stage 3 its own escalation threat, 1, and no token's
         liftIO $ zipWith (-) after before `shouldBe` [1, 1]
+
+    it "The Master of Time takes an acceleration token placed on a stage 3, and its tokens add threat to no stage 3" do
+      tg <- kang ["spider-man", "she-hulk"]
+      inGame tg do
+        toStage2 tg
+        here <- central
+        [s1] <- getMainSchemesIn =<< areaOfPlayer (player1 tg)
+        tokens <- getAccelerationCountIn here
+        resolve [PlaceAccelerationToken s1]
+        getAccelerationCountIn here `shouldReturn` tokens + 1
+        a1 <- areaOfPlayer (player1 tg)
+        getsGame (map areaAccelerationTokens . filter ((== a1) . areaId) . gameAreas) `shouldReturn` [0]
 
   describe "joining another game area" do
     it "a player whose Kang (II) is defeated joins another area at the end of the phase, not The Master of Time's while another remains; side schemes and minions come along" do

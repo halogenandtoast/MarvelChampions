@@ -10,7 +10,7 @@ import Marvel.GameValue
 import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
 import Marvel.Message.Lifted
-import Marvel.Modifier.Types (Modifier (..))
+import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -99,6 +99,11 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsMainSc
   toMainSchemeAttrs :: a -> Attrs MainScheme
   default toMainSchemeAttrs :: (Coercible a (Attrs MainScheme)) => a -> Attrs MainScheme
   toMainSchemeAttrs = coerce
+  mainSchemeModifiersFor :: (HasGame m) => Source -> Target -> a -> m [Modifier]
+  mainSchemeModifiersFor _ _ _ = pure []
+
+instance HasModifiersFor MainScheme where
+  getModifiersFor source target (MainScheme a) = mainSchemeModifiersFor source target a
 
 type MainSchemeCard a = CardBuilder MainSchemeId a
 

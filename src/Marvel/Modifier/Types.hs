@@ -3,6 +3,7 @@ module Marvel.Modifier.Types where
 import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
+import Marvel.Id (MainSchemeId)
 import Marvel.Keyword
 import Marvel.Trait.Types
 
@@ -20,6 +21,9 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | on a main scheme: an acceleration token that would be placed on it is placed on
+    -- the one given instead
+    RedirectAccelerationTokens MainSchemeId
   | -- | the cost of the cards matching is reduced
     ResourceCostReductionFor CardMatcher Natural
   | -- | the player cannot thwart: no basic thwart, and no thwart ability, for any card

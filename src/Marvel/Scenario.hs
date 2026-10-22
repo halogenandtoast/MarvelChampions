@@ -5,7 +5,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Builder
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Area (experimentalWeaponsDeck)
+import Marvel.Area (experimentalWeaponsDeck, newArea)
 import Marvel.Attachment.Cards (allAttachments)
 import Marvel.Campaign (CampaignRecord (RecordExperimentalWeapons), CampaignStepKind (CampaignVictory))
 import Marvel.Card.Code
@@ -22,7 +22,7 @@ import Data.Aeson (Result (..), fromJSON)
 import Marvel.Matchers (IdentityMatcher (FirstPlayer))
 import Marvel.Query (selectJust)
 import Marvel.Question (Choice (CardLabel))
-import Marvel.Scenario.Types hiding (scenarioAccelerationTokens)
+import Marvel.Scenario.Types
 import Marvel.Scenario.Types qualified as Types
 import Data.List (find)
 import Marvel.MainScheme.Cards qualified as MainSchemes
@@ -254,9 +254,6 @@ instance RunMessage BreakoutScenario where
     RemovePlayerObligationsFromGame -> pure $ a & encounterDeckL %~ filter (not . isPlayerObligation)
     _ -> runMessage msg a
 
-scenarioAccelerationTokens :: Scenario -> Natural
-scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
-
 -- The Green Goblin
 
 newtype RiskyBusinessScenario = RiskyBusinessScenario (Attrs Scenario)
@@ -411,7 +408,7 @@ masterOfTimeArea = do
   pure $ headMay (concat found)
 
 getAreaOfArea :: (HasGame m) => AreaId -> m Area
-getAreaOfArea aid = fromMaybe (Area aid [] [] Nothing [] [] []) . find ((== aid) . areaId) <$> getAreas
+getAreaOfArea aid = fromMaybe (newArea aid []) . find ((== aid) . areaId) <$> getAreas
 
 -- | The area's players join another game area: its players choose which (the first of
 -- them in turn order, or the first player when none is left), and what was in it joins

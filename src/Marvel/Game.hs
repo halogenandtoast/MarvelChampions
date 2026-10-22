@@ -1341,6 +1341,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     first <- selectJust FirstPlayer
     chooseOneAtATimePrompted first "$label.chooseActivationOrder" [targeting v (pushAll msgs) | (v, msgs) <- pending]
     pure g
+  -- the token goes where a redirect on the scheme sends it (The Master of Time), and
+  -- stays in that scheme's area
+  PlaceAccelerationToken ms -> do
+    mods <- getModifiers (MainSchemeRef ms)
+    let ms' = fromMaybe ms (lastMay [to | RedirectAccelerationTokens to <- mods, to /= ms])
+        aid = maybe defaultAreaId areaId $ areaOfTarget g (MainSchemeRef ms')
+    pure $ overArea aid (\a -> a {areaAccelerationTokens = areaAccelerationTokens a + 1}) g
   CreateArea aid players -> pure $ g & areasL %~ (movePlayers players aid . (<> [newArea aid []]))
   -- players come together: copies of a unique card are discarded down to one
   MovePlayerToArea ident aid -> do
@@ -2653,6 +2660,7 @@ getModifiers a = withDepthGuard 2 $ do
   events <- HashMap.elems <$> getsGame gameEvents
   players <- HashMap.elems <$> getsGame gamePlayers
   sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
+  mainSchemes <- HashMap.elems <$> getsGame gameMainSchemes
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
   treacheries <- HashMap.elems <$> getsGame gameTreacheries
@@ -2680,6 +2688,7 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) players
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) sideSchemes
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) mainSchemes
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) villains
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) environments
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) treacheries
@@ -2742,16 +2751,11 @@ inArea g aid ref = map snd . filter (\(k, _) -> (areaId <$> areaOfTarget g (ref 
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCount = getAccelerationCountIn . areaId =<< getYourArea
 
--- | The acceleration tokens are next to the first area's main scheme, and add threat to
--- no other: while The Once and Future Kang splits the table, The Master of Time (2B), in
--- the first area, takes each token placed on another scheme (Forced Interrupt), so none
--- reaches the areas' own stages; they stay as the main scheme advances to stage 4 (RR,
--- Acceleration Token).
--- ponytail: one pile of tokens; tokens of their own per area once a split scenario
--- places them on another area's scheme.
+-- | The acceleration tokens next to the area's main scheme, which stay as it leaves play
+-- (RR, Acceleration Token), and the area's acceleration icons.
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCountIn aid = getsGame \g ->
-  (if maybe True ((== aid) . areaId) (headMay $ gameAreas g) then scenarioAccelerationTokens (gameScenario g) else 0)
+  sum [areaAccelerationTokens a | a <- gameAreas g, areaId a == aid]
     + sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
     -- an obligation in a player's play area, in theirs

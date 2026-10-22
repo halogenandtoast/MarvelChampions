@@ -813,8 +813,14 @@ searchAndRevealEncounterCard ident = push . SearchForAndRevealEncounterCard iden
 searchAndPutIntoPlayEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
 searchAndPutIntoPlayEncounterCard ident = push . SearchForAndPutIntoPlayEncounterCard ident
 
+-- | An acceleration token placed next to "the main scheme": the one of "your" area.
 addAccelerationToken :: (ReverseQueue m) => m ()
-addAccelerationToken = push AddAccelerationToken
+addAccelerationToken = do
+  schemes <- getMainSchemesIn . areaId =<< getYourArea
+  for_ (headMay schemes) placeAccelerationToken
+
+placeAccelerationToken :: (ReverseQueue m) => MainSchemeId -> m ()
+placeAccelerationToken = push . PlaceAccelerationToken
 
 -- | The obligation's own step, once the player may have changed form.
 resolveObligation :: (ReverseQueue m) => ObligationId -> IdentityId -> m ()

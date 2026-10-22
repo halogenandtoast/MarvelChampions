@@ -249,7 +249,9 @@ data Message
   | EndRound
   | BeginRound
   | AccelerateMainScheme
-  | AddAccelerationToken
+  | -- | an acceleration token would be placed on the main scheme: a
+    -- 'RedirectAccelerationTokens' on it places it on another instead
+    PlaceAccelerationToken MainSchemeId
   | IdentityEndedTurn IdentityId
   | AddVillain CardCode
   | AddMainScheme CardCode
