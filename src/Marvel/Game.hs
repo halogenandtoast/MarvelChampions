@@ -2463,9 +2463,16 @@ inArea g aid ref = map snd . filter (\(k, _) -> (areaId <$> areaOfTarget g (ref 
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCount = getAccelerationCountIn . areaId =<< getYourArea
 
+-- | The acceleration tokens are next to the first area's main scheme, and add threat to
+-- no other: while The Once and Future Kang splits the table, The Master of Time (2B), in
+-- the first area, takes each token placed on another scheme (Forced Interrupt), so none
+-- reaches the areas' own stages; they stay as the main scheme advances to stage 4 (RR,
+-- Acceleration Token).
+-- ponytail: one pile of tokens; tokens of their own per area once a split scenario
+-- places them on another area's scheme.
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCountIn aid = getsGame \g ->
-  scenarioAccelerationTokens (gameScenario g)
+  (if maybe True ((== aid) . areaId) (headMay $ gameAreas g) then scenarioAccelerationTokens (gameScenario g) else 0)
     + sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid MainSchemeRef (gameMainSchemes g)))

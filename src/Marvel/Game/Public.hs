@@ -102,6 +102,8 @@ data AreaView = AreaView
   , sideSchemes :: [Text]
   , environments :: [Text]
   , decks :: [DeckView]
+  , accelerationTokens :: Natural
+  -- ^ the acceleration tokens adding threat to its main scheme: the first area's
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -397,6 +399,7 @@ gameView seesHand g = do
               concat [deckView "villain" (display . cdName . getCardDef <$> HashMap.lookup v (gameVillains g)) (VillainDeckKey v) | v <- villainsHere]
                 <> concat [deckView "named" (Just n) k | k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
+          , accelerationTokens = if Just aid == fmap areaId (headMay (gameAreas g)) then scenario.scenarioAccelerationTokens else 0
           }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
   attachmentsIn ids = [attachmentView a | a <- HashMap.elems (gameAttachments g), toId a `HashSet.member` ids]
