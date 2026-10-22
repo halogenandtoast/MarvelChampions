@@ -37,6 +37,8 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , thomasEdison
+      , edisonsGiantRobot
       , abomination
       ]
 
@@ -78,6 +80,7 @@ minion code name traits boostIcons encounterSet quantity =
     , cdAcceleration = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
+    , cdPlayableFromDiscard = False
     }
 
 unique :: CardDef -> CardDef
@@ -207,6 +210,13 @@ modok =
       { cdKeywords = singleton (Retaliate 2)
       }
 
+thomasEdison :: CardDef
+thomasEdison =
+  unique $ minion "05027" "Thomas Edison" [Bird, Genius] [Boost, Boost] MsMarvelNemesis 1
+
+edisonsGiantRobot :: CardDef
+edisonsGiantRobot =
+  unique $ minion "05028" "Edison's Giant Robot" [Robot] [Boost] MsMarvelNemesis 1
 abomination :: CardDef
 abomination =
   unique $ minion "10026" "Abomination" [Elite, Gamma] [Boost, Boost, Boost] HulkNemesis 1

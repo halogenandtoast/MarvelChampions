@@ -120,6 +120,7 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     DynamicResourceCost _ -> resourcePayment
     ResourceCost _ -> resourcePayment
     MultiResourceCost _ -> resourcePayment
+    DifferentResourcesCost _ -> resourcePayment
     Costs xs -> concatMapM go (condenseResourceCosts xs)
   payingFor = case activeCostTarget activeCost of
     ForCard card -> Just (toTarget card)
@@ -156,15 +157,18 @@ condenseResourceCosts xs = go xs False
   go (c@ResourceCost {} : cs) False = c : go cs True
   go (c@DynamicResourceCost {} : cs) False = c : go cs True
   go (c@MultiResourceCost {} : cs) False = c : go cs True
+  go (c@DifferentResourcesCost {} : cs) False = c : go cs True
   go (ResourceCost {} : cs) True = go cs True
   go (DynamicResourceCost {} : cs) True = go cs True
   go (MultiResourceCost {} : cs) True = go cs True
+  go (DifferentResourcesCost {} : cs) True = go cs True
   go (c : cs) b = c : go cs b
 
 isResourceCost :: Cost -> Bool
 isResourceCost (ResourceCost _) = True
 isResourceCost (MultiResourceCost _) = True
 isResourceCost (DynamicResourceCost _) = True
+isResourceCost (DifferentResourcesCost _) = True
 isResourceCost (Costs cs) = any isResourceCost cs
 isResourceCost _ = False
 
@@ -172,6 +176,7 @@ onlyResourceCosts :: Cost -> Cost
 onlyResourceCosts c@(ResourceCost _) = c
 onlyResourceCosts c@(MultiResourceCost _) = c
 onlyResourceCosts c@(DynamicResourceCost _) = c
+onlyResourceCosts c@(DifferentResourcesCost _) = c
 onlyResourceCosts (Costs cs) =
   case filter (/= NoCost) (map onlyResourceCosts cs) of
     [] -> NoCost
@@ -299,4 +304,7 @@ resourceCostPaid ActiveCost {..} = do
           put $ L.delete Wild prs'
           pure True
     prs' <- get
-    pure $ l && length prs' >= length mrs
+    pure $
+      l
+        && length prs' >= length mrs
+        && coversDifferentTypes (differentResourcesNeeded activeCostCost) prs

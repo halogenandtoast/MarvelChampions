@@ -2,6 +2,7 @@ module Marvel.Window.Types where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
@@ -48,6 +49,11 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
+  | -- | a player matching plays an event matching
+    PlaysEvent WindowTiming IdentityMatcher CardMatcher
+  | AllyDefeated WindowTiming AllyMatcher
+  | -- | a boost card is turned face up for an enemy's attack
+    BoostCardFlipped WindowTiming EnemyMatcher
   | -- | a player's turn ends: "when your turn ends"
     TurnEnds WindowTiming IdentityMatcher
   deriving stock (Show, Eq, Generic)
@@ -84,6 +90,10 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
+  | -- | the player, the event and its card
+    EventPlayed IdentityId EventId CardDef
+  | DefeatedAlly AllyId
+  | FlippedBoostCard EncounterCard EnemyId
   | TurnEnded IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

@@ -149,6 +149,7 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     ExtendedCardExists m -> selectAny m
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
+    -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
   source = abilitySource a
 

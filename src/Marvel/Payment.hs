@@ -33,6 +33,20 @@ paymentResources (ResourcePaymentFromCard matcher) = do
 paymentResources (Payments ps) = concatMapM paymentResources ps
 paymentResources _ = pure []
 
+-- | Whether a resource of this type, or a wild one, went to the payment: "if you paid
+-- for this card using a [physical] resource".
+paidWith
+  :: ( Projection m PlayerIdentity
+     , HasQueue m
+     , HasGame m
+     , MonadRandom m
+     , MonadThrow m
+     )
+  => Resource
+  -> Payment
+  -> m Bool
+paidWith r payment = any (`elem` [r, Wild]) <$> paymentResources payment
+
 -- | Whether a card was paid for using only this type of resource: "if you paid for this
 -- card using only [physical] resources". A wild resource is spent as that type; nothing
 -- paid, for a cost reduced to 0, is not paying with it.

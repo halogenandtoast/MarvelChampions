@@ -56,6 +56,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard exhaustion
   , SomeTreacheryCard masterplan
   , SomeTreacheryCard underFire
+  , SomeTreacheryCard harvest
   , SomeTreacheryCard clashOfTheTitans
   ]
 

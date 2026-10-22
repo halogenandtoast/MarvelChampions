@@ -47,6 +47,7 @@ allTreacheries = fromList $ map
   , exhaustion
   , masterplan
   , underFire
+  , harvest
   , clashOfTheTitans
   ]
 
@@ -73,6 +74,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 hardToKeepDown :: CardDef
@@ -194,6 +196,8 @@ underFire =
     { cdKeywords = singleton Keyword.Surge
     }
 
+harvest :: CardDef
+harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2
 clashOfTheTitans :: CardDef
 clashOfTheTitans =
   treachery "10028" "Clash of the Titans" [Boost, Boost, Boost] HulkNemesis 3

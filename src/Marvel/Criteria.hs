@@ -24,12 +24,11 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | -- | a resource ability that pays only for a card matching, as "for an event"
+    PayingFor CardMatcher
   | -- | the card's resource cost is paid with only this type of resource: "you can
     -- only spend [physical] resources to pay for this card"
     SpendOnly Resource
-  | -- | the resource ability pays only for a card that matches: "generate a
-    -- [physical] resource for an [[Attack]] event"
-    PayingFor CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -43,6 +42,13 @@ instance Semigroup Criteria where
   Criteria xs <> y = Criteria $ xs <> [y]
   x <> Criteria ys = Criteria $ x : ys
   x <> y = Criteria [x, y]
+
+-- | The cards a resource ability may pay for, if it is limited to some.
+payingForMatchers :: Criteria -> [CardMatcher]
+payingForMatchers = \case
+  PayingFor m -> [m]
+  Criteria cs -> concatMap payingForMatchers cs
+  _ -> []
 
 -- | The form a "Hero …" or "Alter-Ego …" ability is used in.
 abilityTypeCriteria :: AbilityType -> Criteria
@@ -66,10 +72,3 @@ spendOnly = \case
 -- spent as any type.
 canSpendOn :: Criteria -> Resource -> Bool
 canSpendOn criteria r = maybe True (\only -> r == only || r == Wild) (spendOnly criteria)
-
--- | The cards a resource ability may pay for, if only some.
-payingFor :: Criteria -> Maybe CardMatcher
-payingFor = \case
-  PayingFor m -> Just m
-  Criteria xs -> headMay (mapMaybe payingFor xs)
-  _ -> Nothing

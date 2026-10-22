@@ -17,6 +17,8 @@ data EntityMatcher
   = IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
   | AttachmentEntity AttachmentMatcher
+  | -- | an event being played
+    EventEntity EventId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -89,6 +91,7 @@ data SupportMatcher
   | SupportWithUses GameValueMatcher
   | SupportNamed Name
   | SupportMatches [SupportMatcher]
+  | SupportWithTrait Trait
 
 pattern SupportWithAnyUses :: SupportMatcher
 pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))

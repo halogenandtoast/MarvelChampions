@@ -17,7 +17,12 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | on a source: each instance of damage it deals is increased
+    DamageDealtModifier Natural
+  | -- | on a source: each instance of threat it removes is increased
+    ThreatRemovedModifier Natural
   | RecoveryModifier Natural
+  | CannotTakeDamage
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   deriving stock (Show, Eq, Generic)

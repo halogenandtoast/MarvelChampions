@@ -30,6 +30,7 @@ allSideSchemes = fromList $ map
   , underAttack
   , legionsOfHydra
   , theDoomsdayChair
+  , generationWhy
   , totalDestruction
   ]
 
@@ -56,6 +57,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 breakinAndTakin :: CardDef
@@ -156,6 +158,9 @@ theDoomsdayChair =
     { cdAcceleration = 1
     }
 
+generationWhy :: CardDef
+generationWhy =
+  (sideScheme "05026" "Generation Why?" [Boost, Boost, Boost] MsMarvelNemesis 1)
 totalDestruction :: CardDef
 totalDestruction =
   (sideScheme "10027" "Total Destruction" [Boost, Boost, Boost] HulkNemesis 1)

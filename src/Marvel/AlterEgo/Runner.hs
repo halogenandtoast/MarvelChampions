@@ -39,16 +39,12 @@ instance RunMessage (Attrs AlterEgo) where
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of
         Recovered -> do
-          rec <- getModifiedRecovery a
-          push $ IdentityMessage ident $ IdentityHealed rec
+          push . IdentityMessage ident . IdentityHealed =<< getModifiedRecovery a
           pure a
         _ -> pure a
     _ -> pure a
 
 getModifiedRecovery :: (HasGame m) => Attrs AlterEgo -> m Natural
-getModifiedRecovery attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unRec $ alterEgoBaseRecovery attrs) modifiers
- where
-  applyModifier (RecoveryModifier n) = (+ n)
-  applyModifier _ = id
+getModifiedRecovery a = do
+  modifiers <- getModifiers (alterEgoIdentityId a)
+  pure $ unRec (alterEgoBaseRecovery a) + sum [n | RecoveryModifier n <- modifiers]

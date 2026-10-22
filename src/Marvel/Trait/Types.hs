@@ -41,6 +41,9 @@ data Trait
   | Weapon
   | Cyborg
   | Champion
+  | Inhuman
+  | Bird
+  | Robot
   | Scientist
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

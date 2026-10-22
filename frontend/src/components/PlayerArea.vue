@@ -31,6 +31,9 @@ const stats = computed(() =>
   ).filter(([, v]) => v !== null && v !== undefined),
 )
 const supports = computed(() => [...(player.supports ?? []), ...(player.upgrades ?? [])])
+// cards attached to a support facedown, shown as such
+const facedown = (card: { id: string; facedownCards?: number }) =>
+  Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
 const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgrades ?? [])]
 </script>
 
@@ -120,6 +123,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :exhausted="card.exhausted"
           :counters="card.uses ?? null"
           :threat="card.threat || null"
+          :attached="facedown(card)"
         />
       </div>
     </div>

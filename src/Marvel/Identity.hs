@@ -324,7 +324,10 @@ getModifiedCost attrs c = do
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
  where
-  cards = unHand $ playerIdentityHand $ toAttrs player
+  attrs = toAttrs player
+  cards =
+    unHand (playerIdentityHand attrs)
+      <> filter (cdPlayableFromDiscard . getCardDef) (unDiscard $ playerIdentityDiscard attrs)
 
 getChoices ::
   (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
@@ -895,6 +898,23 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             -- is not empty meanwhile
             pure $ PlayerIdentity $ attrs & deckL .~ Deck deck' & \a -> a {playerIdentitySearching = True}
     FinishedSearching -> pure $ PlayerIdentity attrs {playerIdentitySearching = False}
+    DiscardFromDeckUntil matcher target -> do
+      let
+        (missed, rest) = break (cardMatch matcher) (unDeck playerIdentityDeck)
+        found = take 1 rest
+      for_ found \c -> push $ WithDiscardedMatch target FromDeck (PlayerCard c)
+      pure $
+        PlayerIdentity $
+          attrs
+            & (discardL %~ Discard . (reverse (missed <> found) <>) . unDiscard)
+            & (deckL .~ Deck (drop 1 rest))
+    PlaceOnBottomOfDeck card ->
+      pure $
+        PlayerIdentity $
+          attrs
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (deckL %~ Deck . (<> [card]) . filter (/= card) . unDeck)
     Search _ _ _ _ -> error "Unhandled"
     IdentityRetaliate n enemyId -> do
       let

@@ -129,6 +129,7 @@ effectValidFor e target = case (target, effectMatcher e) of
   (IdentityRef ident, IdentityEntity matcher) ->
     member ident <$> select matcher
   (AllyRef ident, AllyEntity matcher) -> member ident <$> select matcher
+  (EventRef ident, EventEntity ident') -> pure $ ident == ident'
   _ -> pure False
 
 instance RunMessage (Attrs Effect) where
@@ -136,6 +137,10 @@ instance RunMessage (Attrs Effect) where
     EffectMessage ident msg' | ident == effectId a -> case msg' of
       DisableEffect -> a <$ push (DisabledEffect $ effectId a)
       _ -> pure a
+    -- an effect on an event lasts while the event resolves
+    EventMessage eid ResolvedEvent
+      | effectMatcher a == EventEntity eid ->
+          a <$ push (EffectMessage (effectId a) DisableEffect)
     EndPhase _ ->
       a
         <$ when

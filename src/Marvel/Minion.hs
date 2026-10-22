@@ -46,6 +46,8 @@ allMinions =
       , SomeMinionCard madameHydra
       , SomeMinionCard hydraSoldier
       , SomeMinionCard modok
+      , SomeMinionCard thomasEdison
+      , SomeMinionCard edisonsGiantRobot
       , SomeMinionCard abomination
       ]
 

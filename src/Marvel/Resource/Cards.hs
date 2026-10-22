@@ -60,6 +60,7 @@ baseResource code name traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 energyAbsorption :: CardDef

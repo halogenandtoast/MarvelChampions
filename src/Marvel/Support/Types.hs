@@ -50,6 +50,8 @@ instance Entity Support where
     , supportExhausted :: Bool
     , supportUses :: Natural
     , supportDiscardIfNoUses :: Bool
+    , supportHeldCards :: [PlayerCard]
+    -- ^ cards attached here facedown
     , supportThreat :: Natural
     -- ^ threat moved here, as Beat Cop's
     }
@@ -62,6 +64,7 @@ instance Entity Support where
     SupportExhausted :: Field Support Bool
     SupportUses :: Field Support Natural
     SupportDiscardIfNoUses :: Field Support Bool
+    SupportHeldCards :: Field Support [PlayerCard]
   field fld s =
     let SupportAttrs {..} = toAttrs s
      in case fld of
@@ -71,6 +74,7 @@ instance Entity Support where
           SupportExhausted -> supportExhausted
           SupportUses -> supportUses
           SupportDiscardIfNoUses -> supportDiscardIfNoUses
+          SupportHeldCards -> supportHeldCards
   toId = supportId . toAttrs
   toAttrs (Support a) = toSupportAttrs a
 
@@ -107,6 +111,9 @@ exhaustedL = lens supportExhausted $ \m x -> m {supportExhausted = x}
 
 usesL :: Lens' (Attrs Support) Natural
 usesL = lens supportUses $ \m x -> m {supportUses = x}
+
+heldCardsL :: Lens' (Attrs Support) [PlayerCard]
+heldCardsL = lens supportHeldCards $ \m x -> m {supportHeldCards = x}
 
 discardIfNoUsesL :: Lens' (Attrs Support) Bool
 discardIfNoUsesL =
@@ -146,6 +153,7 @@ support f cardDef =
             , supportExhausted = False
             , supportUses = 0
             , supportDiscardIfNoUses = False
+            , supportHeldCards = []
             , supportThreat = 0
             }
     }

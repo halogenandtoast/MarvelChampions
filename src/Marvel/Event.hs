@@ -56,6 +56,14 @@ allEvents = fromList $ map
   , SomeEventCard emergency
   , SomeEventCard firstAid
   , SomeEventCard haymaker
+  , SomeEventCard bigHands
+  , SomeEventCard sneakBy
+  , SomeEventCard wiggleRoom
+  , SomeEventCard preemptiveStrike
+  , SomeEventCard tackle
+  , SomeEventCard melee
+  , SomeEventCard concussiveBlow
+  , SomeEventCard moraleBoost
   , SomeEventCard crushingBlow
   , SomeEventCard hulkSmash
   , SomeEventCard subOrbitalLeap
