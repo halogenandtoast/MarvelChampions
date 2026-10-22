@@ -140,7 +140,7 @@ const riverScheme = computed<RiverScheme | null>(() => {
   const threat = game.value?.threat
   if (!threat || riverCleared.value || game.value?.attack) return null
   const s = [...(game.value?.mainSchemes ?? []), ...(game.value?.sideSchemes ?? [])].find((x) => x.id === threat.scheme)
-  return s ? { id: s.id, code: s.code, name: s.name, from: s.threat, to: s.threat + threat.amount, advances: threat.advances } : null
+  return s ? { id: s.id, code: s.code, name: s.name, from: s.threat, amount: threat.amount, threshold: threat.threshold ?? null } : null
 })
 
 // What the board draws, by id: a choice about anything else is a button instead.

@@ -140,7 +140,8 @@ data AttackView = AttackView {attacker :: Text, target :: Text}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ThreatView = ThreatView {scheme :: Text, amount :: Natural, source :: ThreatSource, advances :: Bool}
+data ThreatView = ThreatView {scheme :: Text, amount :: Natural, source :: ThreatSource, threshold :: Maybe Natural}
+  -- ^ a main scheme's threat that advances it
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -353,14 +354,11 @@ gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
-  -- a main scheme the threat would bring to its threshold advances
   threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
-    advances <- case sid of
-      SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> do
-        threshold <- MainScheme.getThreshold (toAttrs s)
-        pure $ (toAttrs s).mainSchemeThreat + n >= threshold
-      _ -> pure False
-    pure $ ThreatView (schemeIdText sid) n src advances
+    threshold <- case sid of
+      SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> Just <$> MainScheme.getThreshold (toAttrs s)
+      _ -> pure Nothing
+    pure $ ThreatView (schemeIdText sid) n src threshold
   activeCost <- for (headMay $ gameActiveCost g) \c -> do
     paid <- paymentResources c.activeCostPayment
     pure

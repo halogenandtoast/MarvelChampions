@@ -52,6 +52,7 @@
     "attacks": "{attacker} attacks {target}",
     "threat": "{source}: {amount} threat on {scheme}",
     "placeThreat": "Place threat on main scheme",
+    "advances": "The scheme will advance",
     "ThreatFromVillain": "Villain schemes",
     "ThreatFromMinion": "Minion schemes",
     "ThreatFromAbility": "Card effect",

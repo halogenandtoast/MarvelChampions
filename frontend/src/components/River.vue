@@ -4,9 +4,11 @@
 // face down and turned up, a card
 // being paid for (the default slot). Each is a lane, splitting the river between them; it
 // keeps its height when empty so the board never jumps.
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
 import BoardCard from './BoardCard.vue'
+import Meter from './Meter.vue'
 
 export interface RiverCard {
   id: string
@@ -21,9 +23,9 @@ export interface RiverScheme {
   code: string
   name: string
   from: number
-  to: number
-  /** the threat would advance it */
-  advances: boolean
+  amount: number
+  /** the threat that advances a main scheme */
+  threshold: number | null
 }
 
 export interface RiverAttacker {
@@ -48,12 +50,17 @@ const { cards, label = null, attacker = null, scheme = null, elsewhere, shared =
 }>()
 const { t } = useI18n()
 const names = useCards()
+const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.from + scheme.amount >= scheme.threshold)
 </script>
 
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
-    <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label, danger: scheme?.advances }">
-      <p class="what">{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
+    <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label, danger: advances }">
+      <div class="what">
+        <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
+        <Meter v-if="scheme" class="scheme-meter" :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
+        <p v-if="advances" class="warn" role="alert"><span aria-hidden="true">▲</span> {{ t('game.river.advances') }}</p>
+      </div>
       <div class="cards">
         <div v-if="attacker" class="attacker">
           <dl class="stats">
@@ -63,9 +70,6 @@ const names = useCards()
           <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
         </div>
         <div v-if="scheme" class="attacker">
-          <dl class="stats">
-            <div class="stat-sch"><dt>{{ t('game.threat') }}</dt><dd>{{ scheme.from }}→{{ scheme.to }}</dd></div>
-          </dl>
           <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
         </div>
         <BoardCard
@@ -102,7 +106,8 @@ const names = useCards()
   background: radial-gradient(ellipse at 50% 50%, rgb(226 163 59 / 0.12), transparent 70%), var(--ink-2);
   border: 1px solid rgb(226 163 59 / 0.35);
 }
-.what {
+.what { display: flex; flex-direction: column; gap: 6px; }
+.what p {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.15rem;
@@ -117,12 +122,22 @@ const names = useCards()
   border-color: var(--crimson-bright);
   animation: danger 1.4s ease-in-out infinite alternate;
 }
-.lane.danger .what { color: var(--crimson-bright); }
+.lane.danger .what p:not(.warn) { color: var(--crimson-bright); }
 @keyframes danger {
   from { box-shadow: 0 0 6px rgb(220 50 50 / 0.35); }
   to { box-shadow: 0 0 22px rgb(220 50 50 / 0.75); }
 }
 @media (prefers-reduced-motion: reduce) { .lane.danger { animation: none; box-shadow: 0 0 16px rgb(220 50 50 / 0.6); } }
+/* the threshold reached: said, not only coloured */
+.what .warn {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--crimson-bright);
+  color: white;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
 /* stats to the card's left, not under it, so the river stays a card high */
 .attacker { display: flex; gap: 6px; align-items: flex-start; flex: none; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 44px; }
