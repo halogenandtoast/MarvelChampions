@@ -599,6 +599,7 @@ test-suite MarvelChampions-test
       Marvel.CoverageSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
+      Marvel.Encounter.DoctorStrangeNemesisSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.MsMarvelNemesisSpec
       Marvel.Encounter.UltronSpec
