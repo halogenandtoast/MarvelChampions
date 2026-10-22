@@ -18,12 +18,6 @@ import Marvel.Ref
 import Marvel.Window (Window (..), WindowTiming (..))
 import Marvel.Window qualified as W
 
-pushChoice ::
-  (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> Choice -> m ()
-pushChoice ident choice = do
-  msgs <- choiceMessages ident choice
-  pushAll msgs
-
 choiceMessages ::
   (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) =>
   IdentityId ->
@@ -311,24 +305,3 @@ resolveChoice ident = \case
 -- | What the source's modifiers add to each instance of what it does.
 sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
 sourceBonus source f = sum . mapMaybe f <$> getModifiers source
-
-chooseOne :: (HasQueue m) => IdentityId -> [Choice] -> m ()
-chooseOne ident msgs = push (Ask ident $ ChooseOne msgs)
-
--- | Ask one of the choices, saying what is being asked.
-chooseOnePrompted :: (HasQueue m) => IdentityId -> Text -> [Choice] -> m ()
-chooseOnePrompted ident prompt msgs = push (Ask ident $ prompted prompt $ ChooseOne msgs)
-
-chooseOneAtATime :: (HasQueue m) => IdentityId -> [Choice] -> m ()
-chooseOneAtATime ident msgs = push (Ask ident $ ChooseOneAtATime msgs)
-
-chooseOrRunOne ::
-  (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => IdentityId -> [Choice] -> m ()
-chooseOrRunOne ident = \case
-  [] -> throwM NoChoices
-  [choice] -> pushAll =<< choiceMessages ident choice
-  choices -> push (Ask ident $ ChooseOne choices)
-
-choosePlayerOrder :: (HasQueue m) => IdentityId -> [IdentityId] -> m ()
-choosePlayerOrder ident xs =
-  push (Ask ident $ ChoosePlayerOrder (Unsorted xs) mempty)

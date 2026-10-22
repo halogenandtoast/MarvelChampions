@@ -22,6 +22,7 @@ import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Cost.Types (Cost)
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
+import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
@@ -61,7 +62,11 @@ chooseOneAtATimePrompted you prompt choices = push . Ask you . prompted prompt .
 
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
-chooseOrRunOne you choices = Choice.chooseOrRunOne you =<< sequence choices
+chooseOrRunOne you choices =
+  sequence choices >>= \case
+    [] -> throwM NoChoices
+    [choice] -> resolveAs you choice
+    choices' -> push $ Ask you $ ChooseOne choices'
 
 -- | A choice offered on the game element, doing what the body does.
 targeting :: (ReverseQueue m, IsRef a) => a -> m () -> m Choice

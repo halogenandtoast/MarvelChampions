@@ -7,7 +7,6 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message

@@ -9,7 +9,6 @@ import Data.Maybe (maybeToList)
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
