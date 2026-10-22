@@ -28,6 +28,7 @@ data SearchSignifier
 data DeckProjection
   = AllOfDeck
   | TopOfDeck Int
+  | AllOfDeckAndDiscard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

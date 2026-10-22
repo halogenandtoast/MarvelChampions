@@ -876,11 +876,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           do
             let
               deck = unDeck playerIdentityDeck
+              discard = unDiscard playerIdentityDiscard
               (focusedCards, deck') = case projection of
                 AllOfDeck -> (deck, [])
                 TopOfDeck n -> splitAt n deck
+                AllOfDeckAndDiscard -> (deck <> discard, [])
               (foundCards, rest) = partition (cardMatch cardMatcher) focusedCards
-              handleReturnCards = case returnOption of
+              -- the cards left in the discard pile stay there
+              handleReturnCards = returnCards . filter (`notElem` discard)
+              returnCards = case returnOption of
                 ShuffleBackIn ->
                   (: [])
                     . IdentityMessage playerIdentityId
