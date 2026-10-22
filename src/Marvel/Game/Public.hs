@@ -397,7 +397,8 @@ gameView seesHand g = do
           , activeVillain = activeVillainIn g aid
           , mainSchemes = [idText k | k <- HashMap.keys (gameMainSchemes g), here (MainSchemeRef k)]
           , sideSchemes = [idText k | k <- HashMap.keys (gameSideSchemes g), here (SideSchemeRef k)]
-          , environments = [idText k | k <- HashMap.keys (gameEnvironments g), here (EnvironmentRef k)]
+          -- an environment is in every area (RR FAQ, The Once and Future Kang)
+          , environments = map idText (HashMap.keys (gameEnvironments g))
           , decks =
               concat [deckView "villain" (villainName v) (VillainDeckKey v) | v <- villainsHere]
                 -- a defeated villain's deck and discard pile, kept for his cards still in

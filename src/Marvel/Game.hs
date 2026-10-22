@@ -473,6 +473,8 @@ getYourArea = getAreaOf =<< getYou
 
 -- | Whether the game element is in "your" area. With one area everything is.
 inYourArea :: (HasGame m) => Target -> m Bool
+-- an environment is in every area (RR FAQ, The Once and Future Kang)
+inYourArea (EnvironmentRef _) = pure True
 inYourArea t = do
   you <- getYou
   getsGame \g -> case gameAreas g of
