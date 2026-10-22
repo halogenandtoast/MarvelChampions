@@ -69,13 +69,17 @@ dealtGame setup decks seed = do
 
 -- | The same, keeping the log entries it writes too, oldest first.
 dealtGameLogged :: ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text], IORef [LogEntry])
-dealtGameLogged setup decks seed = do
+dealtGameLogged = dealtGameWith id
+
+-- | The same, the table changed before it is dealt: given a campaign, say.
+dealtGameWith :: (Game -> Game) -> ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text], IORef [LogEntry])
+dealtGameWith f setup decks seed = do
   scenario <- maybe (error "no such scenario") pure $ lookupScenario setup
   players <- either (error . show) pure . sequence $ evalRand (traverse loadPlayer decks) (mkStdGen seed)
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
   ran <- newIORef []
   logged <- newIORef []
-  app <- newGameApp (newTable scenario seated) [StartGame] (mkStdGen seed) \case
+  app <- newGameApp (f $ newTable scenario seated) [StartGame] (mkStdGen seed) \case
     Logged e -> modifyIORef' logged (<> [e])
     _ -> pure ()
   let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 60 . (tshow m :))}
