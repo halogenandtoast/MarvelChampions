@@ -102,7 +102,8 @@ getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getHazardCount :: (HasGame m) => m Natural
 getAccelerationCount :: (HasGame m) => m Natural
-getAvailablePaymentSources :: (HasGame m) => IdentityId -> m [PlayerCard]
+getAvailablePaymentSources ::
+  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
@@ -112,7 +113,10 @@ getResourceAbilities ::
   , Projection m PlayerIdentity
   ) =>
   IdentityId ->
+  Maybe PlayerCard ->
   m [Ability]
+abilityResources ::
+  (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
 gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountIdentity ::

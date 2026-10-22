@@ -918,7 +918,7 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window attrs c = do
-  resources <- getAvailableResourcesFor (toId attrs) (Just c)
+  resources <- filter (canSpendOn $ cdCriteria def) <$> getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedWindow <-
@@ -1244,10 +1244,16 @@ runDebugWith before msg = do
 replayChoices :: (MonadGame env m) => [Diff.Patch] -> m ()
 replayChoices _ = pure ()
 
--- | The cards a player may discard to pay: those in their own hand.
-getAvailablePaymentSources :: (HasGame m) => IdentityId -> m [PlayerCard]
-getAvailablePaymentSources ident =
-  getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
+-- | The cards a player may discard to pay: those in their own hand. A resource card's
+-- criteria say when it may be spent: "spend this card only in hero form".
+getAvailablePaymentSources ::
+  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
+getAvailablePaymentSources ident = do
+  hand <- getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
+  flip filterM hand \c ->
+    if cdCardType (getCardDef c) == ResourceType
+      then passesCardCriteria ident c (cdCriteria $ getCardDef c)
+      else pure True
 
 getAvailableResourcesFor ::
   ( HasCallStack
@@ -1261,7 +1267,7 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getAvailableResourcesFor ident mc = do
-  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident
+  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident mc
   playerResources <- concatMapM (`resourcesFor` mc) =<< getAvailablePaymentSources ident
   pure $ playerResources <> abilitiesResources
 
@@ -1274,15 +1280,19 @@ getResourceAbilities ::
   , Projection m PlayerIdentity
   ) =>
   IdentityId ->
+  Maybe PlayerCard ->
   m [Ability]
-getResourceAbilities ident = do
+getResourceAbilities ident mc = do
   abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
+  -- a resource "for an [[Attack]] event" pays only for one
+  let paysFor a = maybe True (\m -> maybe False (cardMatch m) mc) (payingFor $ abilityCriteria a)
   filterM
     ( andM
         . sequence
           [ pure . passesUseLimit ident usedAbilities
           , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
+          , pure . paysFor
           , passesCanAffordCost ident
           , passesCriteria ident
           ]

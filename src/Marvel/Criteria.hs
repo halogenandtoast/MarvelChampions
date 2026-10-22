@@ -3,7 +3,9 @@ module Marvel.Criteria where
 import Marvel.Prelude
 
 import Marvel.Ability.Types (AbilityType (..))
+import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Matchers.Types
+import Marvel.Resource.Types
 
 data Criteria
   = IsSelf
@@ -22,6 +24,12 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | -- | the card's resource cost is paid with only this type of resource: "you can
+    -- only spend [physical] resources to pay for this card"
+    SpendOnly Resource
+  | -- | the resource ability pays only for a card that matches: "generate a
+    -- [physical] resource for an [[Attack]] event"
+    PayingFor CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -46,3 +54,22 @@ abilityTypeCriteria = \case
   AlterEgoAction -> InAlterEgoForm
   AlterEgoResource -> InAlterEgoForm
   _ -> NoCriteria
+
+-- | The type of resource a card's cost must be paid with, if only one may be.
+spendOnly :: Criteria -> Maybe Resource
+spendOnly = \case
+  SpendOnly r -> Just r
+  Criteria xs -> headMay (mapMaybe spendOnly xs)
+  _ -> Nothing
+
+-- | Whether a resource may be spent on a card with these criteria: a wild resource is
+-- spent as any type.
+canSpendOn :: Criteria -> Resource -> Bool
+canSpendOn criteria r = maybe True (\only -> r == only || r == Wild) (spendOnly criteria)
+
+-- | The cards a resource ability may pay for, if only some.
+payingFor :: Criteria -> Maybe CardMatcher
+payingFor = \case
+  PayingFor m -> Just m
+  Criteria xs -> headMay (mapMaybe payingFor xs)
+  _ -> Nothing

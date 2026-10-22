@@ -253,7 +253,7 @@ instance HasAbilities PlayerIdentity where
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable attrs c = do
-  resources <- getAvailableResourcesFor (toId attrs) (Just c)
+  resources <- filter (canSpendOn $ cdCriteria def) <$> getAvailableResourcesFor (toId attrs) (Just c)
   modifiedCost <- getModifiedCost attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
@@ -517,7 +517,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     PlayedCard card mWindow -> do
       modifiedCost <- getModifiedCost pid card
       activeCostId <- getRandom
-      let cost' = mconcat $ replicate modifiedCost (ResourceCost Nothing)
+      let cost' = mconcat $ replicate modifiedCost (ResourceCost $ spendOnly $ cdCriteria $ getCardDef card)
       push $
         SetActiveCost $
           ActiveCost

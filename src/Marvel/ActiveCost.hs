@@ -15,6 +15,7 @@ import Marvel.ActiveCost.Types
 import Marvel.Card
 import Marvel.Choice
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -123,9 +124,15 @@ costMessages iid activeCost = go (activeCostCost activeCost)
     ForCard card -> Just (toTarget card)
     ForAbility a -> Just (refocus $ abilitySource a)
     ForTreachery -> Nothing
+  -- only what can be spent on it is offered: "you can only spend [physical] resources"
   resourcePayment = do
-    cards <- getAvailablePaymentSources payer
-    abilities <- getResourceAbilities payer
+    let
+      mcard = case activeCostTarget activeCost of
+        ForCard card -> Just card
+        _ -> Nothing
+      spendable = any (canSpendOn $ maybe NoCriteria (cdCriteria . getCardDef) mcard)
+    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) =<< getAvailablePaymentSources payer
+    abilities <- filterM (fmap spendable . abilityResources) =<< getResourceAbilities payer mcard
     paid <- resourceCostPaid activeCost
     pure
       if

@@ -147,6 +147,9 @@ passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria 
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
+    -- what is paid for is checked as it is paid (see 'getResourceAbilities')
+    SpendOnly _ -> pure True
+    PayingFor _ -> pure True
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -172,6 +175,9 @@ passesCardCriteria ident card = go
     SchemeExists m -> selectAny m
     -- the card itself, about to leave the hand, is not one of them
     ExtendedCardExists m -> selectAny (NotCard card <> m)
+    -- how it is paid for is checked as it is paid
+    SpendOnly _ -> pure True
+    PayingFor _ -> pure True
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])
