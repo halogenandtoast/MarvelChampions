@@ -11,7 +11,7 @@ import Marvel.Name
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-  [affairsOfState, legalWork, evictionNotice, businessProblems, familyEmergency]
+  [affairsOfState, legalWork, evictionNotice, businessProblems, familyEmergency, physicalToll]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
 obligation code name boostIcons = CardDef
@@ -51,3 +51,6 @@ businessProblems = obligation "01170" "Business Problems" [Boost, Boost]
 
 familyEmergency :: CardDef
 familyEmergency = obligation "01175" "Family Emergency" [Boost, Boost]
+
+physicalToll :: CardDef
+physicalToll = obligation "09027" "Physical Toll" [Boost, Boost]

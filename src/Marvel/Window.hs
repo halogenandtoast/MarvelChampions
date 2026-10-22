@@ -178,3 +178,7 @@ windowMatches matcher w source = case matcher of
     DefendedWithoutDamage identityId _
       | windowTiming w == timing -> identityMatches identityMatcher identityId
     _ -> pure False
+  AllyIsDefeated timing allyMatcher -> case windowType w of
+    DefeatedAlly allyId
+      | windowTiming w == timing -> allyMatches allyMatcher allyId
+    _ -> pure False

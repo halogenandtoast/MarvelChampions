@@ -56,6 +56,16 @@ allEvents = fromList $ map
   , SomeEventCard emergency
   , SomeEventCard firstAid
   , SomeEventCard haymaker
+  , SomeEventCard masterOfTheMysticArts
+  , SomeEventCard crimsonBandsOfCyttorak
+  , SomeEventCard imagesOfIkonn
+  , SomeEventCard sevenRingsOfRaggadorr
+  , SomeEventCard vaporsOfValtorr
+  , SomeEventCard windsOfWatoomb
+  , SomeEventCard astralProjection
+  , SomeEventCard magicBlast
+  , SomeEventCard mysticalStudies
+  , SomeEventCard protectiveWard
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

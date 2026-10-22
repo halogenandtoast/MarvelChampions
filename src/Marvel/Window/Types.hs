@@ -53,6 +53,7 @@ data WindowMatcher
   | BoostCardFlipped WindowTiming Activation
   | -- | the hero defended an attack and took no damage from it
     HeroDefendedWithoutDamage WindowTiming IdentityMatcher
+  | AllyIsDefeated WindowTiming AllyMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -91,6 +92,7 @@ data WindowType
   | -- | a boost card dealt to an enemy turned faceup, before its boost icons count
     BoostCardTurnedFaceup EnemyId EncounterCard Activation
   | DefendedWithoutDamage IdentityId EnemyId
+  | DefeatedAlly AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

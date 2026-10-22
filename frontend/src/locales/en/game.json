@@ -54,7 +54,9 @@
     "encounterDiscard": "Discard",
     "deck": "Deck",
     "discard": "Discard",
-    "dealt": "Dealt"
+    "dealt": "Dealt",
+    "invocation": "Invocation",
+    "invocationDiscard": "Invocations used"
   },
   "abilityTypes": {
     "Interrupt": "Interrupt",

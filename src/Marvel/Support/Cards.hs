@@ -26,6 +26,8 @@ allSupports = fromList $ concatMap
   , medTeam
   , avengersMansion
   , helicarrier
+  , sanctumSanctorum
+  , theNightNurse
   ]
 
 support
@@ -124,3 +126,11 @@ avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (Ma
 helicarrier :: CardDef
 helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+
+sanctumSanctorum :: CardDef
+sanctumSanctorum =
+  unique $ identitySupport "09008" "Sanctum Sanctorum" 1 [Location] [Mental]
+
+theNightNurse :: CardDef
+theNightNurse =
+  unique $ support "09019" "The Night Nurse" 1 [Persona] [Mental] Protection

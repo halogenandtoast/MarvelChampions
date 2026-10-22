@@ -30,6 +30,7 @@ allSideSchemes = fromList $ map
   , underAttack
   , legionsOfHydra
   , theDoomsdayChair
+  , openTheDarkDimension
   ]
 
 sideScheme
@@ -152,5 +153,11 @@ legionsOfHydra =
 theDoomsdayChair :: CardDef
 theDoomsdayChair =
   (sideScheme "01183" "The Doomsday Chair" [Boost, Boost, Boost] TheDoomsdayChair 2)
+    { cdAcceleration = 1
+    }
+
+openTheDarkDimension :: CardDef
+openTheDarkDimension =
+  (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
     }

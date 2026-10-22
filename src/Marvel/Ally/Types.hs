@@ -150,7 +150,8 @@ damageChoice attrs dmg = \case
   EnemyVillainId vid ->
     TargetLabel
       (toRef vid)
-      [ DamageEnemy (toRef vid) (toRef attrs) dmg
+      [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]]
+      , DamageEnemy (toRef vid) (toRef attrs) dmg
       , Run
           [ CheckWindows
               [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]
@@ -159,7 +160,8 @@ damageChoice attrs dmg = \case
   EnemyMinionId vid ->
     TargetLabel
       (toRef vid)
-      [ DamageEnemy (toRef vid) (toRef attrs) dmg
+      [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]]
+      , DamageEnemy (toRef vid) (toRef attrs) dmg
       , Run
           [ CheckWindows
               [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]

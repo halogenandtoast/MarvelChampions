@@ -37,6 +37,11 @@ allUpgrades = fromList $ concatMap
   , armoredVest
   , indomitable
   , tenacity
+  , cloakOfLevitation
+  , magicalEnhancements
+  , theEyeOfAgamotto
+  , unflappable
+  , theSorcererSupreme
   ]
 
 upgrade
@@ -178,3 +183,25 @@ indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
+
+cloakOfLevitation :: CardDef
+cloakOfLevitation =
+  unique $ identityUpgrade "09009" "Cloak of Levitation" 2 [Artifact, Item] [Physical]
+
+magicalEnhancements :: CardDef
+magicalEnhancements = limited UnderAnyControl
+  $ identityUpgrade "09010" "Magical Enhancements" 1 [Condition, Spell] [Energy]
+
+theEyeOfAgamotto :: CardDef
+theEyeOfAgamotto =
+  unique $ identityUpgrade "09011" "The Eye of Agamotto" 2 [Artifact, Item] [Energy]
+
+unflappable :: CardDef
+unflappable = limited (MaxPerPlayerUnderAnyControl 1)
+  $ upgrade "09020" "Unflappable" 1 [Condition] [Mental] Protection
+
+theSorcererSupreme :: CardDef
+theSorcererSupreme =
+  (unique $ basicUpgrade "09026" "The Sorcerer Supreme" 2 [Title] [Mental])
+    { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
+    }

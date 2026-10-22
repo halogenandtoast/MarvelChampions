@@ -32,6 +32,7 @@ library
       Marvel.Ally.Allies.TigraGreerGrantNelson
       Marvel.Ally.Allies.Vision
       Marvel.Ally.Allies.WarMachineJamesRhodes
+      Marvel.Ally.Allies.Wong
       Marvel.Ally.Cards
       Marvel.Ally.Runner
       Marvel.Ally.Types
@@ -40,6 +41,7 @@ library
       Marvel.AlterEgo.AlterEgos.CarolDanvers
       Marvel.AlterEgo.AlterEgos.JenniferWalters
       Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.AlterEgos.StephenStrange
       Marvel.AlterEgo.AlterEgos.TChalla
       Marvel.AlterEgo.AlterEgos.TonyStark
       Marvel.AlterEgo.Cards
@@ -96,9 +98,11 @@ library
       Marvel.Event.Cards
       Marvel.Event.Events
       Marvel.Event.Events.AncestralKnowledge
+      Marvel.Event.Events.AstralProjection
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.ChaseThemDown
       Marvel.Event.Events.CounterPunch
+      Marvel.Event.Events.CrimsonBandsOfCyttorak
       Marvel.Event.Events.CrisisInterdiction
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
@@ -110,21 +114,29 @@ library
       Marvel.Event.Events.GreatResponsibility
       Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.Haymaker
+      Marvel.Event.Events.ImagesOfIkonn
       Marvel.Event.Events.LeadFromTheFront
       Marvel.Event.Events.LegalPractice
+      Marvel.Event.Events.MagicBlast
       Marvel.Event.Events.MakeTheCall
+      Marvel.Event.Events.MasterOfTheMysticArts
+      Marvel.Event.Events.MysticalStudies
       Marvel.Event.Events.OneTwoPunch
       Marvel.Event.Events.PhotonicBlast
+      Marvel.Event.Events.ProtectiveWard
       Marvel.Event.Events.RelentlessAssault
       Marvel.Event.Events.RepulsorBlast
+      Marvel.Event.Events.SevenRingsOfRaggadorr
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.SupersonicPunch
       Marvel.Event.Events.SwingingWebKick
       Marvel.Event.Events.Uppercut
+      Marvel.Event.Events.VaporsOfValtorr
       Marvel.Event.Events.WakandaForeverA
       Marvel.Event.Events.WakandaForeverB
       Marvel.Event.Events.WakandaForeverC
       Marvel.Event.Events.WakandaForeverD
+      Marvel.Event.Events.WindsOfWatoomb
       Marvel.Event.Types
       Marvel.Exception
       Marvel.Frontend
@@ -140,6 +152,7 @@ library
       Marvel.Hero.Heroes
       Marvel.Hero.Heroes.BlackPanther
       Marvel.Hero.Heroes.CaptainMarvel
+      Marvel.Hero.Heroes.DoctorStrange
       Marvel.Hero.Heroes.IronMan
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
@@ -150,6 +163,7 @@ library
       Marvel.Id
       Marvel.Identity
       Marvel.Identity.Types
+      Marvel.Invocation
       Marvel.Keyword
       Marvel.Log
       Marvel.Log.Entry
@@ -257,6 +271,7 @@ library
       Marvel.SideScheme.SideSchemes.UsurpTheThrone
       Marvel.SideScheme.Types
       Marvel.Stats
+      Marvel.Status
       Marvel.Support
       Marvel.Support.Cards
       Marvel.Support.Supports
@@ -267,6 +282,7 @@ library
       Marvel.Support.Supports.InterrogationRoom
       Marvel.Support.Supports.MedTeam
       Marvel.Support.Supports.PepperPotts
+      Marvel.Support.Supports.SanctumSanctorum
       Marvel.Support.Supports.StarkTower
       Marvel.Support.Supports.SuperhumanLawDivision
       Marvel.Support.Supports.SurveillanceTeam
@@ -318,6 +334,7 @@ library
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
       Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
+      Marvel.Upgrade.Upgrades.CloakOfLevitation
       Marvel.Upgrade.Upgrades.CombatTraining
       Marvel.Upgrade.Upgrades.CosmicFlight
       Marvel.Upgrade.Upgrades.EnergyChannel
@@ -326,6 +343,7 @@ library
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
+      Marvel.Upgrade.Upgrades.MagicalEnhancements
       Marvel.Upgrade.Upgrades.MarkVArmor
       Marvel.Upgrade.Upgrades.MarkVHelmet
       Marvel.Upgrade.Upgrades.PantherClaws
@@ -335,6 +353,8 @@ library
       Marvel.Upgrade.Upgrades.SuperhumanStrength
       Marvel.Upgrade.Upgrades.TacticalGenius
       Marvel.Upgrade.Upgrades.Tenacity
+      Marvel.Upgrade.Upgrades.TheEyeOfAgamotto
+      Marvel.Upgrade.Upgrades.TheSorcererSupreme
       Marvel.Upgrade.Upgrades.VibraniumSuit
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter

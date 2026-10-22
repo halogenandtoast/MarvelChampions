@@ -37,6 +37,7 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , baronMordo
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -205,3 +206,8 @@ modok =
     (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+baronMordo :: CardDef
+baronMordo =
+  unique $
+    minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1

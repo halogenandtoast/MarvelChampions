@@ -126,6 +126,10 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
     <div class="piles">
       <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" :pile="`deck-${player.id}`" />
       <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
+      <template v-if="player.invocation">
+        <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
+        <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
+      </template>
       <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" />
     </div>
   </section>

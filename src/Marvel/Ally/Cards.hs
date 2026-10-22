@@ -29,6 +29,11 @@ allAllies = fromList $ concatMap
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
+  , wong
+  , brotherVoodooJerichoDrumm
+  , clea
+  , ironFistDannyRand
+  , ironManTonyStark
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -152,3 +157,21 @@ mockingbirdBobbiMorse = reprintedAs ["03020"] $
 
 nickFury :: CardDef
 nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+
+wong :: CardDef
+wong = identityAlly "09002" "Wong" 3 [Mystic] [Wild]
+
+brotherVoodooJerichoDrumm :: CardDef
+brotherVoodooJerichoDrumm =
+  ally "09012" ("Brother Voodoo" <:> "Jericho Drumm") 3 [Avenger, Mystic] [Mental] Protection
+
+clea :: CardDef
+clea = ally "09013" "Clea" 2 [Mystic] [Physical] Protection
+
+ironFistDannyRand :: CardDef
+ironFistDannyRand =
+  ally "09014" ("Iron Fist" <:> "Danny Rand") 4 [Defender] [Physical] Protection
+
+ironManTonyStark :: CardDef
+ironManTonyStark =
+  ally "09039" ("Iron Man" <:> "Tony Stark") 4 [Avenger] [Wild] Leadership

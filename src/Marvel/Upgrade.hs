@@ -47,6 +47,10 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard armoredVest
   , SomeUpgradeCard indomitable
   , SomeUpgradeCard tenacity
+  , SomeUpgradeCard cloakOfLevitation
+  , SomeUpgradeCard magicalEnhancements
+  , SomeUpgradeCard theEyeOfAgamotto
+  , SomeUpgradeCard theSorcererSupreme
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

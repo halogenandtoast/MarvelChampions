@@ -30,3 +30,13 @@ import Marvel.Event.Events.WakandaForeverA as X
 import Marvel.Event.Events.WakandaForeverB as X
 import Marvel.Event.Events.WakandaForeverC as X
 import Marvel.Event.Events.WakandaForeverD as X
+import Marvel.Event.Events.MasterOfTheMysticArts as X
+import Marvel.Event.Events.CrimsonBandsOfCyttorak as X
+import Marvel.Event.Events.ImagesOfIkonn as X
+import Marvel.Event.Events.SevenRingsOfRaggadorr as X
+import Marvel.Event.Events.VaporsOfValtorr as X
+import Marvel.Event.Events.WindsOfWatoomb as X
+import Marvel.Event.Events.AstralProjection as X
+import Marvel.Event.Events.MagicBlast as X
+import Marvel.Event.Events.MysticalStudies as X
+import Marvel.Event.Events.ProtectiveWard as X
