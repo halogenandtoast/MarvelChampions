@@ -48,6 +48,8 @@ allMinions =
       , SomeMinionCard modok
       , SomeMinionCard thomasEdison
       , SomeMinionCard edisonsGiantRobot
+      , SomeMinionCard loki
+      , SomeMinionCard frostGiant
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

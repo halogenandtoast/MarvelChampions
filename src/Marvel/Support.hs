@@ -42,6 +42,8 @@ allSupports = fromList $ map
   , SomeSupportCard aamirKhan
   , SomeSupportCard brunoCarrelli
   , SomeSupportCard nakiaBahadir
+  , SomeSupportCard asgard
+  , SomeSupportCard hallOfHeroes
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

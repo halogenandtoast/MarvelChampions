@@ -217,10 +217,12 @@ library
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.Drone
       Marvel.Minion.Minions.EdisonsGiantRobot
+      Marvel.Minion.Minions.FrostGiant
       Marvel.Minion.Minions.HydraBomber
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.HydraSoldier
       Marvel.Minion.Minions.Killmonger
+      Marvel.Minion.Minions.Loki
       Marvel.Minion.Minions.MadameHydra
       Marvel.Minion.Minions.Melter
       Marvel.Minion.Minions.Modok
@@ -274,6 +276,7 @@ library
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.DefenseNetwork
       Marvel.SideScheme.SideSchemes.DroneFactory
+      Marvel.SideScheme.SideSchemes.FamilyFeud
       Marvel.SideScheme.SideSchemes.GenerationWhy
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.IllegalArmsFactory
@@ -347,6 +350,7 @@ library
       Marvel.Treachery.Treacheries.SweepingSwoop
       Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Treachery.Treacheries.TitaniasFury
+      Marvel.Treachery.Treacheries.Trickster
       Marvel.Treachery.Treacheries.UnderFire
       Marvel.Treachery.Treacheries.YonRoggsTreason
       Marvel.Treachery.Types
@@ -367,12 +371,14 @@ library
       Marvel.Upgrade.Upgrades.EnergyBarrier
       Marvel.Upgrade.Upgrades.EnergyChannel
       Marvel.Upgrade.Upgrades.EnergyDaggers
+      Marvel.Upgrade.Upgrades.EnhancedPhysique
       Marvel.Upgrade.Upgrades.EnhancedReflexes
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.GodOfThunder
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
+      Marvel.Upgrade.Upgrades.Jarnbjorn
       Marvel.Upgrade.Upgrades.MarkVArmor
       Marvel.Upgrade.Upgrades.MarkVHelmet
       Marvel.Upgrade.Upgrades.Mjolnir
@@ -385,6 +391,7 @@ library
       Marvel.Upgrade.Upgrades.TacticalGenius
       Marvel.Upgrade.Upgrades.Tenacity
       Marvel.Upgrade.Upgrades.ThorsHelmet
+      Marvel.Upgrade.Upgrades.UnderSurveillance
       Marvel.Upgrade.Upgrades.VibraniumSuit
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter

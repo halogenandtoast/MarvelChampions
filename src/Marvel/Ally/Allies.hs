@@ -19,3 +19,7 @@ import Marvel.Ally.Allies.WarMachineJamesRhodes as X
 import Marvel.Ally.Allies.RedDagger as X
 import Marvel.Ally.Allies.NovaSamAlexander as X
 import Marvel.Ally.Allies.Lockjaw as X
+import Marvel.Ally.Allies.LadySif as X
+import Marvel.Ally.Allies.Hercules as X
+import Marvel.Ally.Allies.Valkyrie as X
+import Marvel.Ally.Allies.Heimdall as X

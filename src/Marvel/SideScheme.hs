@@ -42,6 +42,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard legionsOfHydra
   , SomeSideSchemeCard theDoomsdayChair
   , SomeSideSchemeCard generationWhy
+  , SomeSideSchemeCard familyFeud
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

@@ -6,3 +6,4 @@ import Marvel.Obligation.Obligations.EvictionNotice as X
 import Marvel.Obligation.Obligations.FamilyEmergency as X
 import Marvel.Obligation.Obligations.LegalWork as X
 import Marvel.Obligation.Obligations.HomeByDawn as X
+import Marvel.Obligation.Obligations.OdinsAnger as X

@@ -22,3 +22,5 @@ import Marvel.Minion.Minions.Whirlwind as X
 import Marvel.Minion.Minions.YonRogg as X
 import Marvel.Minion.Minions.ThomasEdison as X
 import Marvel.Minion.Minions.EdisonsGiantRobot as X
+import Marvel.Minion.Minions.Loki as X
+import Marvel.Minion.Minions.FrostGiant as X

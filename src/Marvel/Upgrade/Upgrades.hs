@@ -30,3 +30,10 @@ import Marvel.Upgrade.Upgrades.EnergyBarrier as X
 import Marvel.Upgrade.Upgrades.Endurance as X
 import Marvel.Upgrade.Upgrades.EnhancedReflexes as X
 import Marvel.Upgrade.Upgrades.DownTime as X
+import Marvel.Upgrade.Upgrades.GodOfThunder as X
+import Marvel.Upgrade.Upgrades.Mjolnir as X
+import Marvel.Upgrade.Upgrades.ThorsHelmet as X
+import Marvel.Upgrade.Upgrades.BattleFury as X
+import Marvel.Upgrade.Upgrades.Jarnbjorn as X
+import Marvel.Upgrade.Upgrades.UnderSurveillance as X
+import Marvel.Upgrade.Upgrades.EnhancedPhysique as X

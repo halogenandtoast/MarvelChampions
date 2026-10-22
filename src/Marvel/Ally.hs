@@ -50,4 +50,8 @@ allAllies = fromList $ map
   , SomeAllyCard redDagger
   , SomeAllyCard novaSamAlexander
   , SomeAllyCard lockjaw
+  , SomeAllyCard ladySif
+  , SomeAllyCard hercules
+  , SomeAllyCard valkyrie
+  , SomeAllyCard heimdall
   ]

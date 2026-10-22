@@ -64,6 +64,15 @@ allEvents = fromList $ map
   , SomeEventCard melee
   , SomeEventCard concussiveBlow
   , SomeEventCard moraleBoost
+  , SomeEventCard defenderOfTheNineRealms
+  , SomeEventCard forAsgard
+  , SomeEventCard hammerThrow
+  , SomeEventCard lightningStrike
+  , SomeEventCard getOverHere
+  , SomeEventCard meanSwing
+  , SomeEventCard invulnerability
+  , SomeEventCard teamwork
+  , SomeEventCard secondWind
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

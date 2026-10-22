@@ -6,3 +6,4 @@ import Marvel.Hero.Heroes.IronMan as X
 import Marvel.Hero.Heroes.SheHulk as X
 import Marvel.Hero.Heroes.SpiderMan as X
 import Marvel.Hero.Heroes.MsMarvel as X
+import Marvel.Hero.Heroes.Thor as X

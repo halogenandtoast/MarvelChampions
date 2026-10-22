@@ -16,3 +16,5 @@ import Marvel.Support.Supports.TheTriskellion as X
 import Marvel.Support.Supports.AamirKhan as X
 import Marvel.Support.Supports.BrunoCarrelli as X
 import Marvel.Support.Supports.NakiaBahadir as X
+import Marvel.Support.Supports.Asgard as X
+import Marvel.Support.Supports.HallOfHeroes as X

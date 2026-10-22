@@ -38,3 +38,12 @@ import Marvel.Event.Events.Tackle as X
 import Marvel.Event.Events.Melee as X
 import Marvel.Event.Events.ConcussiveBlow as X
 import Marvel.Event.Events.MoraleBoost as X
+import Marvel.Event.Events.DefenderOfTheNineRealms as X
+import Marvel.Event.Events.ForAsgard as X
+import Marvel.Event.Events.HammerThrow as X
+import Marvel.Event.Events.LightningStrike as X
+import Marvel.Event.Events.GetOverHere as X
+import Marvel.Event.Events.MeanSwing as X
+import Marvel.Event.Events.Invulnerability as X
+import Marvel.Event.Events.Teamwork as X
+import Marvel.Event.Events.SecondWind as X

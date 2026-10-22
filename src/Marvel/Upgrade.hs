@@ -54,6 +54,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard endurance
   , SomeUpgradeCard enhancedReflexes
   , SomeUpgradeCard downTime
+  , SomeUpgradeCard godOfThunder
+  , SomeUpgradeCard mjolnir
+  , SomeUpgradeCard thorsHelmet
+  , SomeUpgradeCard battleFury
+  , SomeUpgradeCard jarnbjorn
+  , SomeUpgradeCard underSurveillance
+  , SomeUpgradeCard enhancedPhysique
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade
