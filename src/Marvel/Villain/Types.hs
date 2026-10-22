@@ -100,6 +100,8 @@ instance Entity Villain where
     , villainAttachments :: HashSet AttachmentId
     , villainUpgrades :: HashSet UpgradeId
     , villainStage :: Natural
+    , villainAttackTarget :: Maybe CharacterId
+    -- ^ the character its coming attack is against, when not the player's identity
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -192,6 +194,7 @@ villain f cardDef sch atk startingHp =
             , villainAttachments = mempty
             , villainUpgrades = mempty
             , villainStage = 1
+            , villainAttackTarget = Nothing
             }
     }
 
@@ -322,9 +325,13 @@ runVillainMessage msg attrs = case msg of
           , ClearBoosts
           ]
         pure attrs
+  -- "attacks an ally": the player who controls it is attacked
+  VillainAttacksAlly ident allyId -> do
+    push $ VillainMessage (villainId attrs) (VillainAttacks ident)
+    pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
   VillainAttacks ident ->
     if villainStunned attrs
-      then pure $ attrs & stunnedL .~ False
+      then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
       else do
         pushAll
           [ CheckWindows
@@ -335,7 +342,7 @@ runVillainMessage msg attrs = case msg of
           ]
         -- the attack is under way from when it is declared, as its would windows open
         atk <- getModifiedAttack attrs
-        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
+        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   VillainBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
@@ -347,9 +354,9 @@ runVillainMessage msg attrs = case msg of
       , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
       ]
     pure $
-      attrs
+      attrs {villainAttackTarget = Nothing}
         & attackingL
-          ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
+          ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
@@ -411,6 +418,8 @@ runVillainMessage msg attrs = case msg of
       (null $ villainBoostCards attrs)
       (push $ VillainMessage (villainId attrs) VillainFlipBoostCards)
     pure attrs
+ where
+  attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = case msg of

@@ -31,5 +31,7 @@ data VillainMessage
   | VillainAdvanced
   | -- | its hit points (and remaining hit points) go up or down by this much
     VillainHitPointsChanged Int
+  | -- | it attacks the player's ally, the player being attacked
+    VillainAttacksAlly IdentityId AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

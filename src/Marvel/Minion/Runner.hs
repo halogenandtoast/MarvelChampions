@@ -113,9 +113,13 @@ runMinionMessage msg attrs = case msg of
       else do
         push $ MinionMessage (minionId attrs) MinionSchemed
         pure attrs
+  -- "attacks an ally": the player who controls it is attacked
+  MinionAttacksAlly ident allyId -> do
+    push $ MinionMessage (minionId attrs) (MinionAttacks ident)
+    pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
   MinionAttacks ident ->
     if minionStunned attrs
-      then pure $ attrs & stunnedL .~ False
+      then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
         pushAll
           [ CheckWindows
@@ -125,7 +129,7 @@ runMinionMessage msg attrs = case msg of
           ]
         -- the attack is under way from when it is declared, as its would windows open
         atk <- getModifiedAttack attrs
-        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
+        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   MinionBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
@@ -135,9 +139,9 @@ runMinionMessage msg attrs = case msg of
       , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
       ]
     pure $
-      attrs
+      attrs {minionAttackTarget = Nothing}
         & attackingL
-          ?~ attack (toEnemyId attrs) (IdentityCharacter ident) atk
+          ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   MinionSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
@@ -166,6 +170,8 @@ runMinionMessage msg attrs = case msg of
           push $ AllyMessage ident $ AllyWasAttacked attack'
         _ -> error "Invalid damage target"
     pure attrs
+ where
+  attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = case msg of

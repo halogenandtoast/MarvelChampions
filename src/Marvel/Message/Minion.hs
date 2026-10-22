@@ -25,5 +25,7 @@ data MinionMessage
   | MinionEndAttack
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
+  | -- | it attacks the player's ally, the player being attacked
+    MinionAttacksAlly IdentityId AllyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -92,6 +92,8 @@ instance Entity Minion where
     , minionDefensePriority :: DefensePriority
     , minionFacedownCard :: Maybe PlayerCard
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
+    , minionAttackTarget :: Maybe CharacterId
+    -- ^ the character its coming attack is against, when not the player's identity
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -233,6 +235,7 @@ minion f cardDef sch atk hp =
             , minionAttachments = mempty
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
+            , minionAttackTarget = Nothing
             }
     }
 
