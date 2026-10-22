@@ -7,15 +7,14 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -45,15 +44,14 @@ instance HasAbilities SuperhumanStrength where
         (RunAbility (toRef a) 1)
     ]
 
-getEnemyTarget :: [WindowType] -> Target
+getEnemyTarget :: [WindowType] -> EnemyId
 getEnemyTarget [] = error "Wrong window"
-getEnemyTarget (IdentityAttack _ eid : _) = toRef eid
+getEnemyTarget (IdentityAttack _ eid : _) = eid
 getEnemyTarget (_ : xs) = getEnemyTarget xs
 
 instance RunMessage SuperhumanStrength where
-  runMessage msg u@(SuperhumanStrength attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 (getEnemyTarget -> enemyTarget) _ -> do
-      stunMsgs <- choiceMessages ident $ Stun enemyTarget (toSource attrs)
-      pushAll stunMsgs
+  runMessage msg u@(SuperhumanStrength attrs) = runQueueT $ case msg of
+    RanAbility _ (isTarget attrs -> True) 1 (getEnemyTarget -> enemy) _ -> do
+      stun enemy attrs
       pure u
     _ -> SuperhumanStrength <$> runMessage msg attrs

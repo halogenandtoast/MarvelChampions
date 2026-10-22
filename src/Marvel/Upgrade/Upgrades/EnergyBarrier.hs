@@ -7,13 +7,12 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
@@ -43,9 +42,9 @@ instance HasAbilities EnergyBarrier where
     ]
 
 instance RunMessage EnergyBarrier where
-  runMessage msg a@(EnergyBarrier attrs) = case msg of
+  runMessage msg a@(EnergyBarrier attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       preventDamage ident 1
-      pushChoice ident $ ChooseDamage (toSource a) (toDamage 1 FromAbility) AnyEnemy
+      chooseDamage ident a (toDamage 1 FromAbility) AnyEnemy
       pure a
     _ -> EnergyBarrier <$> runMessage msg attrs

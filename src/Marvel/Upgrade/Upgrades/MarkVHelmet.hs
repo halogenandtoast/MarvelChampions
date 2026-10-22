@@ -7,12 +7,11 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
@@ -40,19 +39,12 @@ instance HasAbilities MarkVHelmet where
     ]
 
 instance RunMessage MarkVHelmet where
-  runMessage msg u@(MarkVHelmet attrs) = case msg of
+  runMessage msg u@(MarkVHelmet attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> thwartGuard u $ do
       aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
       schemes <- selectList ThwartableScheme
       if aerial
-        then
-          traverse_
-            ( \sid ->
-                pushChoice
-                  ident
-                  (ThwartScheme (toRef sid) (toSource attrs) 1)
-            )
-            schemes
-        else chooseOne ident $ map (thwartChoice attrs 1) schemes
+        then for_ (reverse schemes) \scheme -> thwartScheme scheme attrs 1 -- as they ran when pushed one by one
+        else chooseOne ident [targeting (schemeRef scheme) $ thwartScheme scheme attrs 1 | scheme <- schemes]
       pure u
     _ -> MarkVHelmet <$> runMessage msg attrs

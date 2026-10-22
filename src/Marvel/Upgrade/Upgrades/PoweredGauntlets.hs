@@ -7,16 +7,14 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Trait
@@ -42,11 +40,12 @@ instance HasAbilities PoweredGauntlets where
     ]
 
 instance RunMessage PoweredGauntlets where
-  runMessage msg u@(PoweredGauntlets attrs) = case msg of
+  runMessage msg u@(PoweredGauntlets attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
       aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
       let dmg = if aerial then 2 else 1
       enemies <- selectList $ AttackableBy (IdentityWithId ident)
-      chooseOne ident $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack ident)) enemies
+      chooseOne ident
+        [targeting (enemyRef enemy) $ dealDamage enemy attrs (toDamage dmg $ FromPlayerAttack ident) | enemy <- enemies]
       pure u
     _ -> PoweredGauntlets <$> runMessage msg attrs

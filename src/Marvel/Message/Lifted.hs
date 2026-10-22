@@ -92,6 +92,13 @@ dealDamageThen enemy source damage body = do
   rest <- capture body
   pushAll $ before <> now <> rest <> after
 
+-- | Deal the damage and what the body does as one effect: "deal 2 damage and stun it".
+dealDamageAnd :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m () -> m ()
+dealDamageAnd enemy source damage body = do
+  (before, now, after) <- splitDamage <$> capture (dealDamage enemy source damage)
+  also <- capture body
+  pushAll $ before <> [Simultaneously (also <> now)] <> after
+
 -- | Damage to each enemy matching.
 damageAllEnemies :: (ReverseQueue m, IsRef source) => source -> Damage -> EnemyMatcher -> m ()
 damageAllEnemies source damage matcher = resolve $ DamageAllEnemies matcher (toSource source) damage
@@ -176,6 +183,9 @@ removeStun ident = push $ IdentityMessage ident IdentityRemoveStunned
 
 removeConfused :: (ReverseQueue m) => IdentityId -> m ()
 removeConfused ident = push $ IdentityMessage ident IdentityRemoveConfused
+
+setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 
 -- | More DEF for the hero's defense under way.
 addDefense :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -455,6 +465,15 @@ putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing
 returnToHand :: (ReverseQueue m, IsRef a) => a -> m ()
 returnToHand = push . ReturnToHand . toTarget
 
+discardUpgrade :: (ReverseQueue m) => UpgradeId -> m ()
+discardUpgrade u = push $ UpgradeMessage u DiscardUpgrade
+
+addUpgradeUses :: (ReverseQueue m) => UpgradeId -> Natural -> m ()
+addUpgradeUses u = push . UpgradeMessage u . AddUpgradeUses
+
+-- | The player draws and reveals an encounter card.
+drawAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
+drawAndRevealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
 
 -- | The top cards of the encounter deck are looked at, the target told which
 -- ('SearchFoundCards').

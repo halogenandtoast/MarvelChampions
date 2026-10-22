@@ -5,17 +5,14 @@ import Marvel.Prelude
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card
-import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id hiding (UpgradeId)
 import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Choice (chooseOrRunOne)
 import Marvel.Query
-import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 
@@ -190,19 +187,8 @@ upgrade f cardDef =
             }
     }
 
-damageChoice :: Attrs Upgrade -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [DamageEnemy (toRef vid) (toSource attrs) dmg]
-  EnemyMinionId vid ->
-    TargetLabel
-      (toRef vid)
-      [DamageEnemy (toRef vid) (toSource attrs) dmg]
-
 thwartGuard ::
-  (HasGame m, HasQueue m, IsUpgrade u) =>
+  (ReverseQueue m, IsUpgrade u) =>
   u ->
   m u ->
   m u
@@ -211,13 +197,13 @@ thwartGuard u f = do
   confused <- selectAny (IdentityWithId ident <> ConfusedIdentity)
   if confused
     then do
-      push (IdentityMessage ident IdentityRemoveConfused)
+      removeConfused ident
       pure u
     else f
 
 -- | An attack: a stunned player only removes the stun (the cost is still paid).
 attackGuard ::
-  (HasGame m, HasQueue m, IsUpgrade u) =>
+  (ReverseQueue m, IsUpgrade u) =>
   IdentityId ->
   u ->
   m u ->
@@ -226,20 +212,9 @@ attackGuard ident u f = do
   stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
   if stunned
     then do
-      push (IdentityMessage ident IdentityRemoveStunned)
+      removeStun ident
       pure u
     else f
-
-thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
-thwartChoice attrs thw = \case
-  SchemeMainSchemeId vid ->
-    TargetLabel
-      (toRef vid)
-      [ThwartScheme (toRef vid) (toSource attrs) thw]
-  SchemeSideSchemeId sid ->
-    TargetLabel
-      (toRef sid)
-      [ThwartScheme (toRef sid) (toSource attrs) thw]
 
 instance IsRef (Attrs Upgrade) where
   toRef = UpgradeRef . upgradeId
@@ -258,7 +233,7 @@ instance IsCard (Attrs Upgrade) where
         }
 
 instance RunMessage (Attrs Upgrade) where
-  runMessage msg a = case msg of
+  runMessage msg a = runQueueT $ case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade mTarget -> do
         case mTarget of
@@ -288,9 +263,7 @@ instance RunMessage (Attrs Upgrade) where
       AddUpgradeUses n -> do
         pure $ a & usesL +~ n
       SpendUpgradeUse -> do
-        when
-          (upgradeUses a == 1 && upgradeDiscardIfNoUses a)
-          (push $ RemoveFromPlay (toTarget a))
+        when (upgradeUses a == 1 && upgradeDiscardIfNoUses a) $ removeFromPlay a
         pure $ a & usesL -~ 1
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
@@ -310,6 +283,6 @@ instance RunMessage (Attrs Upgrade) where
         pure a {upgradeAttachedMainScheme = Just mainSchemeId}
       -- leaving play discards it
       DiscardUpgrade -> do
-        push $ RemoveFromPlay (toTarget a)
+        removeFromPlay a
         pure a
     _ -> pure a

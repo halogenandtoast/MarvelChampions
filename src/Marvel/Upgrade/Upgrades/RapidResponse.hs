@@ -12,16 +12,13 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Discard
 import Marvel.Entity
-import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Payment
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -48,15 +45,12 @@ instance HasAbilities RapidResponse where
 
 -- | The ally comes back from the discard pile, if it is still there, and takes 1 damage.
 instance RunMessage RapidResponse where
-  runMessage msg u@(RapidResponse attrs) = case msg of
+  runMessage msg u@(RapidResponse attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 [AllyCardDefeated _ card] _ -> do
       discard <- projectMap PlayerIdentityDiscard unDiscard ident
-      when (card `elem` discard) $
-        pushAll
-          [ RemoveFromGame (toTarget card)
-          , PutCardIntoPlay ident card NoPayment Nothing
-          , AllyMessage (AllyId $ unCardId $ pcCardId card) $
-              AllyDamaged (toSource attrs) (toDamage 1 FromAbility)
-          ]
+      when (card `elem` discard) do
+        removeFromGame card
+        putIntoPlay ident card
+        damageCharacter (AllyId $ unCardId $ pcCardId card) attrs (toDamage 1 FromAbility)
       pure u
     _ -> RapidResponse <$> runMessage msg attrs
