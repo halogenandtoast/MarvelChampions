@@ -24,6 +24,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
+import Marvel.Obligation.Types (Attrs (..))
 import Marvel.Attack qualified as Attack
 import Marvel.Card
 import Marvel.Deck
@@ -158,6 +159,8 @@ data PlayerView = PlayerView
   , engagedMinions :: [MinionId]
   , attachments :: [AttachmentView]
   -- ^ encounter cards attached to their hero
+  , obligations :: [ObligationView]
+  -- ^ the obligations in their play area
   , invocation :: Maybe InvocationView
   -- ^ Doctor Strange's Invocation deck
   }
@@ -236,6 +239,10 @@ data MinionView = MinionView
   deriving anyclass (ToJSON)
 
 data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural}
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -435,6 +442,11 @@ gameView seesHand g = do
         , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme && isNothing u.upgradeAttachedMainScheme
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
+        , obligations =
+            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef)
+            | a <- map toAttrs (HashMap.elems (gameObligations g))
+            , a.obligationOwner == Just (toId p)
+            ]
         , invocation =
             invocationDeckOf p <&> \d ->
               InvocationView

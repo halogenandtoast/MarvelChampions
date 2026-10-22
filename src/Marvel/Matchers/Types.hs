@@ -148,6 +148,7 @@ data EnemyMatcher
   | NotEnemy EnemyMatcher
   | UndefendedEnemy
   | EnemyWithUpgrade UpgradeMatcher
+  | EnemyWithAttachment AttachmentMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
   | -- | an enemy whose attack is under way
