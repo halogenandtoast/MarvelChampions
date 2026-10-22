@@ -397,6 +397,19 @@ spec = describe "Captain America" do
         encounterDiscardCodes >>= (`shouldSatisfy` notElem "03026")
         obligationsInPlay `shouldReturn` 0
 
+    it "Captain America may flip to Steve Rogers, then exhaust him" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        flipTo p A
+        _ <- revealNow p Obligations.manOutOfTime
+        choose "flip to Steve Rogers" (isLabel "$label.changeToB")
+        choose "exhaust Steve Rogers" (isLabel "$label.exhaustSteveRogersRemoveManOutOfTime")
+        isExhaustedNow p `shouldReturn` True
+        encounterDiscardCodes >>= (`shouldSatisfy` notElem "03026")
+        -- the flip was the card's: the player may still change form this turn
+        offers (\case UseAbility ab -> ChangeForm `elem` abilityChoices ab; _ -> False) `shouldReturn` True
+
     it "otherwise discards half the hand, rounded down" do
       tg <- testGame ["captain-america"]
       let p = player1 tg
