@@ -252,7 +252,8 @@ data Message
   | IdentityEndedTurn IdentityId
   | AddVillain CardCode
   | AddMainScheme CardCode
-  | ReplaceMainScheme CardCode
+  | -- | the main scheme leaves the game, the one given taking its place in its area
+    ReplaceMainScheme MainSchemeId CardCode
   | SetupMainScheme
   | SetPlayerOrder [IdentityId]
   | -- | the rest of setup, once the first player is chosen: hands, mulligans and the
@@ -321,8 +322,10 @@ data Message
   | RevealEncounterCard IdentityId EncounterCard
   | RevealedEncounterCard IdentityId EncounterCard
   | RevealBoostCard EncounterCard EnemyId
-  | AdvanceMainScheme
-  | NextMainScheme
+  | -- | the main scheme is completed
+    AdvanceMainScheme MainSchemeId
+  | -- | the main scheme gives way to the scenario's next stage
+    NextMainScheme MainSchemeId
   | GameOver FinishedStatus
   | UpgradeRemoved UpgradeId
   | AttachmentRemoved AttachmentId

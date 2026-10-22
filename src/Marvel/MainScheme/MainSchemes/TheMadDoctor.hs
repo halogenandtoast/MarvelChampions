@@ -27,5 +27,5 @@ instance RunMessage TheMadDoctor where
       players <- getPlayers
       for_ players \p -> searchAndRevealEncounterCard p (CardWithType MinionType)
       pure ms
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> TheMadDoctor <$> testCounters msg attrs

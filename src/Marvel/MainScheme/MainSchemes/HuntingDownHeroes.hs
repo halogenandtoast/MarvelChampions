@@ -52,5 +52,5 @@ instance RunMessage HuntingDownHeroes where
           , labeled "$label.take1Damage" $ damageIdentity p attrs (toDamage 1 FromAbility)
           ]
       pure ms'
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> HuntingDownHeroes <$> runMessage msg attrs

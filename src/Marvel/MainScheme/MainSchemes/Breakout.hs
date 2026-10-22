@@ -58,5 +58,5 @@ instance RunMessage Breakout where
     CardSpecific (isTarget attrs -> True) "moveActive" _ -> do
       moveActiveCounter MostThreat
       pure ms
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> Breakout <$> runMessage msg attrs

@@ -326,12 +326,14 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
             .~ encounterCards
           & mainSchemesL
             .~ remainingMainSchemes
-    NextMainScheme -> do
+    -- the scenario's stages are the first area's: a scheme of an area of its own, as The
+    -- Once and Future Kang's stage 3, says itself what its completion does
+    NextMainScheme old -> do
       let
         (mainScheme, remainingMainSchemes) = case scenarioMainSchemes of
           [] -> error "No main schemes"
           x : xs -> (x, xs)
-      replaceMainScheme mainScheme
+      replaceMainScheme old mainScheme
       pure $ attrs & mainSchemesL .~ remainingMainSchemes
     ShuffleEncounterDeck -> do
       deck' <- shuffleM scenarioEncounterDeck

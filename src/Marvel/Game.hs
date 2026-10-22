@@ -464,6 +464,18 @@ getPile = \case
 overArea :: AreaId -> (Area -> Area) -> Game -> Game
 overArea aid f = areasL %~ map \a -> if areaId a == aid then f a else a
 
+-- | The main scheme enters play in the area: its starting threat, then its "When
+-- Revealed".
+addMainSchemeIn :: (ReverseQueue m, MonadThrow m) => AreaId -> CardCode -> Game -> m Game
+addMainSchemeIn aid cardCode g = do
+  mainSchemeId <- getRandom
+  case lookupMainScheme cardCode mainSchemeId of
+    Just x -> do
+      mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
+      mainSchemeStep mainSchemeId RevealMainScheme
+      pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & overArea aid (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
+    Nothing -> throwM $ MissingCardCode "AddMainScheme" cardCode
+
 -- | The game element is put into the area the player is in.
 intoAreaOf :: IdentityId -> (Area -> Area) -> Game -> Game
 intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (IdentityRef ident))
@@ -798,15 +810,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       pure $ g & (entitiesL . environmentsL %~ deleteMap eid)
     _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
-    mainSchemeId <- getRandom
-    case lookupMainScheme cardCode mainSchemeId of
-      Just x -> do
-        -- its starting threat, then its "When Revealed"
-        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
-        mainSchemeStep mainSchemeId RevealMainScheme
-        you <- getYou
-        pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
-      Nothing -> throwM $ MissingCardCode "AddMainScheme" cardCode
+    you <- getYou
+    addMainSchemeIn (maybe defaultAreaId areaId $ areaOfTarget g (IdentityRef you)) cardCode g
   AddSetupMainScheme cardCode -> do
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
@@ -819,21 +824,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         you <- getYou
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
-  -- the main scheme of "your" area leaves the game, each card attached to it discarded
-  ReplaceMainScheme cardCode -> do
-    old <- filterM (inYourArea . MainSchemeRef) (HashMap.keys $ gameMainSchemes g)
+  -- the main scheme leaves the game, each card attached to it discarded, and the next
+  -- takes its place in its area
+  ReplaceMainScheme old cardCode -> do
     for_
       [ uid
       | (uid, u) <- HashMap.toList (gameUpgrades g)
-      , Just sid <- [upgradeAttachedMainScheme (toAttrs u)]
-      , sid `elem` old
+      , upgradeAttachedMainScheme (toAttrs u) == Just old
       ]
       removeFromPlay
-    addMainScheme cardCode
-    pure $
+    let aid = maybe defaultAreaId areaId $ areaOfTarget g (MainSchemeRef old)
+    addMainSchemeIn aid cardCode $
       g
-        & (entitiesL . mainSchemesL %~ \m -> foldr deleteMap m old)
-        & (areasL . each %~ \a -> a {areaMainSchemes = filter (`notElem` old) (areaMainSchemes a)})
+        & (entitiesL . mainSchemesL %~ deleteMap old)
+        & (areasL . each %~ \a -> a {areaMainSchemes = filter (/= old) (areaMainSchemes a)})
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of

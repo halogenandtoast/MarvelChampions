@@ -26,7 +26,7 @@ instance RunMessage SecretRendezvous where
       case msg' of
         RevealMainScheme -> ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         _ -> SecretRendezvous <$> runMessage msg attrs
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
       ms <$ putEncounterCardIntoPlay firstPlayer card

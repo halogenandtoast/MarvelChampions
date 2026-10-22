@@ -19,5 +19,5 @@ newtype TheBreakIn = TheBreakIn (Attrs MainScheme)
 
 instance RunMessage TheBreakIn where
   runMessage msg ms@(TheBreakIn attrs) = runQueueT $ case msg of
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> TheBreakIn <$> runMessage msg attrs

@@ -74,7 +74,7 @@ narrationFor = \case
   -- * Schemes
   MainSchemeMessage sid msg -> schemeNarration (MainSchemeRef sid) msg
   SideSchemeMessage sid msg -> sideSchemeNarration sid msg
-  NextMainScheme -> Just $ one $ toned Bad $ mechanic [ikeyPart "log.mainSchemeAdvances" []]
+  NextMainScheme _ -> Just $ one $ toned Bad $ mechanic [ikeyPart "log.mainSchemeAdvances" []]
   -- the active counter moves: told only when it goes to another villain
   SetActiveVillain vid -> Just do
     aid <- getAreaOfTarget vid

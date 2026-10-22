@@ -40,5 +40,5 @@ instance RunMessage AssaultOnNorad where
           , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone p
           ]
       pure ms'
-    AdvanceMainScheme -> ms <$ nextMainScheme
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> AssaultOnNorad <$> runMessage msg attrs

@@ -29,5 +29,5 @@ instance RunMessage CountdownToOblivion where
       -- threat cannot be removed from this scheme
       MainSchemeThwarted _ _ -> pure ms
       _ -> CountdownToOblivion <$> runMessage msg attrs
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> CountdownToOblivion <$> runMessage msg attrs

@@ -19,5 +19,5 @@ newtype CorporateAcquisition = CorporateAcquisition (Attrs MainScheme)
 
 instance RunMessage CorporateAcquisition where
   runMessage msg ms@(CorporateAcquisition attrs) = runQueueT $ case msg of
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> CorporateAcquisition <$> runMessage msg attrs

@@ -27,5 +27,5 @@ instance RunMessage MutagenCloud where
     AccelerateMainScheme -> do
       goblins <- selectListCount (EnemyWithTrait Goblin)
       MutagenCloud <$> runMessage msg attrs {mainSchemeAcceleration = Static (fromIntegral goblins)}
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> MutagenCloud <$> runMessage msg attrs

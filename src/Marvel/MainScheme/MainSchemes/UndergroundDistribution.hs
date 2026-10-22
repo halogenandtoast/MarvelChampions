@@ -28,7 +28,7 @@ instance RunMessage UndergroundDistribution where
         RevealMainScheme -> ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         _ -> UndergroundDistribution <$> runMessage msg attrs
     SetupMainScheme -> ms <$ searchForAndRevealScheme Cards.defenseNetwork
-    AdvanceMainScheme -> ms <$ nextMainScheme
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
       ms <$ putEncounterCardIntoPlay firstPlayer card

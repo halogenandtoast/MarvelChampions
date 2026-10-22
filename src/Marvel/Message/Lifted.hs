@@ -496,11 +496,13 @@ flipEnvironment eid = push $ EnvironmentMessage eid FlipEnvironment
 
 -- * Schemes
 
-advanceMainScheme :: (ReverseQueue m) => m ()
-advanceMainScheme = push AdvanceMainScheme
+-- | The main scheme is completed: what that does is its own to say.
+advanceMainScheme :: (ReverseQueue m) => MainSchemeId -> m ()
+advanceMainScheme = push . AdvanceMainScheme
 
-nextMainScheme :: (ReverseQueue m) => m ()
-nextMainScheme = push NextMainScheme
+-- | The main scheme leaves play for the next stage of the scenario, in its own area.
+nextMainScheme :: (ReverseQueue m) => MainSchemeId -> m ()
+nextMainScheme = push . NextMainScheme
 
 -- | The side scheme is defeated, past the window for it, and leaves play.
 defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
@@ -1036,9 +1038,9 @@ addVillain = push . AddVillain
 addSetupMainScheme :: (ReverseQueue m) => CardCode -> m ()
 addSetupMainScheme = push . AddSetupMainScheme
 
--- | The main scheme leaves play for the next one.
-replaceMainScheme :: (ReverseQueue m) => CardCode -> m ()
-replaceMainScheme = push . ReplaceMainScheme
+-- | The main scheme leaves play for the one given, which takes its place in its area.
+replaceMainScheme :: (ReverseQueue m) => MainSchemeId -> CardCode -> m ()
+replaceMainScheme mid = push . ReplaceMainScheme mid
 
 -- | Each player's obligations out of the encounter deck and the game.
 removePlayerObligationsFromGame :: (ReverseQueue m) => m ()

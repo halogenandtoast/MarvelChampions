@@ -50,5 +50,5 @@ instance RunMessage TheRiseOfRedSkull where
       ms' <- TheRiseOfRedSkull <$> runMessage msg attrs
       revealTopSideScheme
       pure ms'
-    AdvanceMainScheme -> ms <$ nextMainScheme
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> TheRiseOfRedSkull <$> runMessage msg attrs

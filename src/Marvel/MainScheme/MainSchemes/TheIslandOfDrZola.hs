@@ -32,7 +32,7 @@ instance RunMessage TheIslandOfDrZola where
       players <- getPlayers
       for_ players \p -> searchAndPutIntoPlayEncounterCard p (CardIs Cards.ultimateBioServant)
       pure ms
-    AdvanceMainScheme -> ms <$ nextMainScheme
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> TheIslandOfDrZola <$> testCounters msg attrs
 
 -- | [star] Forced Response: after resolving step one of the villain phase, place 1 test

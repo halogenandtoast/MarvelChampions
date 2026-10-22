@@ -92,7 +92,7 @@ spec = describe "The Green Goblin" do
       inGame tg do
         thralls <- getsGame (filter ((== Minions.goblinThrall) . getCardDef) . HashMap.elems . gameMinions)
         liftIO $ length thralls `shouldBe` 1
-        resolve [NextMainScheme]
+        resolve . pure . NextMainScheme =<< mainSchemeIdNow
         before <- mainSchemeThreatNow
         tokens <- accelerationTokensNow
         resolve [AccelerateMainScheme]

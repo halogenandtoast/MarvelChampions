@@ -172,7 +172,7 @@ instance RunMessage (Attrs MainScheme) where
           printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
           modifiers <- getModifiers attrs
           let threshold = printed + sum [x | TargetThreatModifier x <- modifiers]
-          when (mainSchemeThreat attrs + n >= threshold) advanceMainScheme
+          when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
           pure $ attrs & threatL +~ n
         MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs

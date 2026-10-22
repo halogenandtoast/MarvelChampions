@@ -42,10 +42,10 @@ instance RunMessage UnleashingTheMutagen where
       pure ms
     -- 1B, When Completed: in player order, each player not engaged with a Goblin minion
     -- discards 3 encounter cards and puts the first Goblin minion of them into play
-    AdvanceMainScheme -> do
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> do
       players <- getPlayers
       cardSpecific attrs "goblins" players
-      nextMainScheme
+      nextMainScheme (mainSchemeId attrs)
       pure ms
     CardSpecific (isTarget attrs -> True) "goblins" (fromJSON -> Success (players :: [IdentityId])) -> case players of
       [] -> pure ms

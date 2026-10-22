@@ -27,5 +27,5 @@ instance RunMessage NewWorldHydra where
       ms' <- NewWorldHydra <$> runMessage msg attrs
       revealTopSideScheme
       pure ms'
-    AdvanceMainScheme -> ms <$ gameOver Lost
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> NewWorldHydra <$> runMessage msg attrs

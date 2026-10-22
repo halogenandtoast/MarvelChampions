@@ -36,5 +36,5 @@ instance RunMessage TheCrimsonCowl where
       revealEncounterCardWithoutWindows firstPlayer drones
       shuffleEncounterDeck
       pure ms
-    AdvanceMainScheme -> ms <$ nextMainScheme
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> TheCrimsonCowl <$> runMessage msg attrs

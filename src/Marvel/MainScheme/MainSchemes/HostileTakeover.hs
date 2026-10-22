@@ -35,11 +35,11 @@ instance RunMessage HostileTakeover where
       pure ms
     -- 1B, When Completed: 1[per player] infamy, then a card from each player's deck
     -- for each infamy counter there is
-    AdvanceMainScheme -> do
+    AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> do
       n <- fromGameValue (PerPlayer 1)
       _ <- placeInfamy (fromIntegral n)
       cardSpecific attrs "discard" ()
-      nextMainScheme
+      nextMainScheme (mainSchemeId attrs)
       pure ms
     CardSpecific (isTarget attrs -> True) "discard" _ -> do
       infamy <- getInfamy
