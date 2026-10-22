@@ -112,6 +112,14 @@ attackDealtDamage source damage character =
   , Just enemy <- [sourceEnemy source]
   ]
 
+-- | "If this attack deals damage to a character", as a boost ability that lasts the
+-- activation sees it: the attacking enemy and the character, as the attack's damage is
+-- dealt. Damage a boost ability deals is not the attack's.
+attackDamages :: Message -> Maybe (EnemyId, CharacterId)
+attackDamages = \case
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character)] -> Just (enemy, character)
+  _ -> Nothing
+
 -- | The character's own ref, as status cards are given by.
 characterRef :: CharacterId -> Target
 characterRef = \case
