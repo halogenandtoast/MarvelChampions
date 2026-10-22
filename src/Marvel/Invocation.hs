@@ -8,6 +8,7 @@
 module Marvel.Invocation (
   InvocationStep (..),
   invocation,
+  invoke,
   invocationResolved,
 ) where
 
@@ -18,6 +19,8 @@ import Marvel.Card.PlayerCard
 import Marvel.Event.Types (Attrs (..), Event)
 import Marvel.Id
 import Marvel.Message
+import Marvel.Message.Lifted.Queue
+import Marvel.Queue
 import Marvel.Ref
 
 data InvocationStep
@@ -37,9 +40,13 @@ data InvocationStep
 invocation :: IdentityId -> InvocationStep -> Message
 invocation ident = cardSpecific ident "invocation"
 
+-- | 'invocation', from a handler under 'runQueueT'.
+invoke :: (ReverseQueue m) => IdentityId -> InvocationStep -> m ()
+invoke ident = push . invocation ident
+
 -- | An Invocation card's "Special" is done: the card goes to the Invocation deck's
 -- discard pile, not its player's.
-invocationResolved :: Attrs Event -> Message
-invocationResolved attrs = invocation (eventController attrs) (PlaceInInvocationDiscard card)
+invocationResolved :: (ReverseQueue m) => Attrs Event -> m ()
+invocationResolved attrs = invoke (eventController attrs) (PlaceInInvocationDiscard card)
  where
   card = MkPlayerCard (CardId . unEventId $ eventId attrs) (eventCardDef attrs) (Just $ eventController attrs) (Just $ eventController attrs)

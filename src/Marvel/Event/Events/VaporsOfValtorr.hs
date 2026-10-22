@@ -14,11 +14,9 @@ import Marvel.Event.Types
 import Marvel.Id
 import Marvel.Invocation
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 vaporsOfValtorr :: EventCard VaporsOfValtorr
@@ -32,24 +30,26 @@ newtype VaporsOfValtorr = VaporsOfValtorr (Attrs Event)
 -- that character does not have: the character, then which of its status cards, then
 -- what takes its place.
 instance RunMessage VaporsOfValtorr where
-  runMessage msg e@(VaporsOfValtorr attrs) = case msg of
+  runMessage msg e@(VaporsOfValtorr attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent {} -> do
         characters <- concatMapM (selectList . CharacterWithStatus) statusCards
         replaceable <- filterM (fmap notNull . lacking) (nub characters)
-        ask "$label.chooseStatusToReplace" $
-          [TargetLabel (characterRef c) [Run [cardSpecific attrs "character" c]] | c <- replaceable]
+        ask "$label.chooseStatusToReplace"
+          [targeting (characterRef c) $ cardSpecific attrs "character" c | c <- replaceable]
         pure e
-      ResolvedEvent -> e <$ push (invocationResolved attrs)
+      ResolvedEvent -> e <$ invocationResolved attrs
     CardSpecific (isTarget attrs -> True) "character" (fromJSON -> Success (c :: CharacterId)) -> do
       held <- filterM (\s -> member c <$> select (CharacterWithStatus s)) statusCards
-      ask "$label.chooseStatusToReplace" $
-        [Label (statusLabel s) [Run [cardSpecific attrs "status" (c, s)]] | s <- held]
+      ask "$label.chooseStatusToReplace"
+        [labeled (statusLabel s) $ cardSpecific attrs "status" (c, s) | s <- held]
       pure e
     CardSpecific (isTarget attrs -> True) "status" (fromJSON -> Success (c :: CharacterId, s)) -> do
       others <- lacking c
-      ask "$label.chooseReplacementStatus" $
-        [ Label (statusLabel s') [Run [RemoveStatus (characterRef c) s, GiveStatus (characterRef c) s']]
+      ask "$label.chooseReplacementStatus"
+        [ labeled (statusLabel s') do
+            removeStatus c s
+            giveStatus c s'
         | s' <- others
         ]
       pure e
@@ -57,4 +57,4 @@ instance RunMessage VaporsOfValtorr where
    where
     statusCards = [minBound .. maxBound]
     lacking c = filterM (\s -> not . member c <$> select (CharacterWithStatus s)) statusCards
-    ask l = push . Ask (eventController attrs) . prompted l . ChooseOne
+    ask l = chooseOnePrompted (eventController attrs) l

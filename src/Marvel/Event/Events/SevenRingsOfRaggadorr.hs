@@ -11,11 +11,9 @@ import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Invocation
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 
 sevenRingsOfRaggadorr :: EventCard SevenRingsOfRaggadorr
@@ -28,20 +26,19 @@ newtype SevenRingsOfRaggadorr = SevenRingsOfRaggadorr (Attrs Event)
 -- | Special: give up to 3 characters each a tough status card, one at a time, each one
 -- without one already.
 instance RunMessage SevenRingsOfRaggadorr where
-  runMessage msg e@(SevenRingsOfRaggadorr attrs) = case msg of
+  runMessage msg e@(SevenRingsOfRaggadorr attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent {} -> e <$ push (cardSpecific attrs "tough" (3 :: Natural))
-      ResolvedEvent -> e <$ push (invocationResolved attrs)
+      PlayedEvent {} -> e <$ cardSpecific attrs "tough" (3 :: Natural)
+      ResolvedEvent -> e <$ invocationResolved attrs
     CardSpecific (isTarget attrs -> True) "tough" (fromJSON -> Success (n :: Natural)) | n > 0 -> do
       tough <- select (CharacterWithStatus ToughStatus)
       characters <- filter (not . (`member` tough)) <$> selectList AnyCharacter
-      push $
-        Ask (eventController attrs) $
-          prompted "$label.chooseCharacterToGiveTough" $
-            ChooseOne $
-              Label "$label.done" []
-                : [ TargetLabel (characterRef c) [Run [GiveStatus (characterRef c) ToughStatus, cardSpecific attrs "tough" (n - 1)]]
-                  | c <- characters
-                  ]
+      chooseOnePrompted (eventController attrs) "$label.chooseCharacterToGiveTough" $
+        labeled "$label.done" (pure ())
+          : [ targeting (characterRef c) do
+                giveStatus c ToughStatus
+                cardSpecific attrs "tough" (n - 1)
+            | c <- characters
+            ]
       pure e
     _ -> SevenRingsOfRaggadorr <$> runMessage msg attrs

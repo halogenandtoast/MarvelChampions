@@ -10,9 +10,8 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Invocation
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 
 masterOfTheMysticArts :: EventCard MasterOfTheMysticArts
@@ -25,8 +24,8 @@ newtype MasterOfTheMysticArts = MasterOfTheMysticArts (Attrs Event)
 -- | The printed cost of the top Invocation card is paid with this card's own (Doctor
 -- Strange adds it), so here its "Special" resolves and the card goes back on top.
 instance RunMessage MasterOfTheMysticArts where
-  runMessage msg e@(MasterOfTheMysticArts attrs) = case msg of
+  runMessage msg e@(MasterOfTheMysticArts attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      push $ invocation identityId (ResolveTopInvocation True)
+      invoke identityId (ResolveTopInvocation True)
       pure e
     _ -> MasterOfTheMysticArts <$> runMessage msg attrs
