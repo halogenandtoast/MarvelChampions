@@ -3,9 +3,11 @@ module Marvel.Scenario.Types where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
-import Data.List (find)
+import Data.Function (on)
+import Data.List qualified as List
 import Data.Typeable
 import Marvel.Card
+import Marvel.Choice (chooseOrRunOne)
 import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
@@ -18,6 +20,7 @@ import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards), PlayerIdenti
 import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
+import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -194,6 +197,14 @@ drawEncounterCard attrs = case scenarioEncounterDeck attrs of
   [] -> ([], attrs) <$ push (GameOver Lost)
   card : deck' -> pure ([card], attrs & encounterDeckL .~ deck')
 
+-- | The card leaves the encounter deck, discard pile or set-aside area, wherever it is.
+leaves :: EncounterCard -> Attrs Scenario -> Attrs Scenario
+leaves card attrs =
+  attrs
+    & (setAsideCardsL %~ filter (/= EncounterCard card))
+    & (encounterDeckL %~ filter (/= card))
+    & (discardL %~ filter (/= card))
+
 runScenarioMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> Attrs Scenario -> m (Attrs Scenario)
 runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
@@ -227,9 +238,10 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards)
-    -- a set-aside card (a nemesis set's) leaves the set-aside area as it comes out
-    RevealEncounterCard _ card -> pure $ attrs & setAsideCardsL %~ filter (/= EncounterCard card)
-    PutEncounterCardIntoPlay _ card -> pure $ attrs & setAsideCardsL %~ filter (/= EncounterCard card)
+    -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
+    -- the encounter deck or discard pile searched
+    RevealEncounterCard _ card -> pure $ leaves card attrs
+    PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
       pushAll $
@@ -317,38 +329,14 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      case find (sameCard cardDef . getCardDef) $
-        scenarioEncounterDeck
-          <> scenarioDiscard of
-        Nothing -> do
-          push ShuffleEncounterDeck
-          pure attrs
-        Just card -> do
-          pushAll [RevealEncounterCard ident card, ShuffleEncounterDeck]
-          pure $
-            attrs
-              & (discardL %~ filter (/= card))
-              & (encounterDeckL %~ filter (/= card))
-    SearchForAndRevealEncounterCard ident matcher ->
-      case find (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard) of
-        Nothing -> do
-          push ShuffleEncounterDeck
-          pure attrs
-        Just card -> do
-          pushAll [RevealEncounterCard ident card, ShuffleEncounterDeck]
-          pure $
-            attrs
-              & (discardL %~ filter (/= card))
-              & (encounterDeckL %~ filter (/= card))
-    SearchForAndPutIntoPlayEncounterCard ident matcher ->
-      case find (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard) of
-        Nothing -> do
-          push ShuffleEncounterDeck
-          pure attrs
-        Just card -> do
-          pushAll [PutEncounterCardIntoPlay ident card, ShuffleEncounterDeck]
-          pure $
-            attrs
-              & (discardL %~ filter (/= card))
-              & (encounterDeckL %~ filter (/= card))
+      search ident (CardIs cardDef) (RevealEncounterCard ident)
+    SearchForAndRevealEncounterCard ident matcher -> search ident matcher (RevealEncounterCard ident)
+    SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (PutEncounterCardIntoPlay ident)
     _ -> pure attrs
+ where
+  -- the searching player chooses one of the cards found, then the deck is shuffled
+  search ident matcher f = do
+    let found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard)
+    push ShuffleEncounterDeck
+    chooseOrRunOne ident [TargetLabel (toRef card) [Run [f card]] | card <- found]
+    pure attrs
