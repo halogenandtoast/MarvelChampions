@@ -40,5 +40,7 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Champion
+  | Scientist
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)
