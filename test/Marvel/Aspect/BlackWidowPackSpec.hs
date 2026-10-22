@@ -122,6 +122,31 @@ spec = describe "Black Widow's aspect and basic cards" do
         -- Rhino's 1 SCH and 2 boost, less 3
         mainSchemeThreatNow `shouldReturn` threat
 
+    it "prevents threat a card places on the main scheme" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        ci <- putIntoPlay p "08017"
+        gauntlet <- putIntoPlay p "08007"
+        threat <- mainSchemeThreatNow
+        -- as Natasha Romanoff, Deadly Shot discards an upgrade and places 1 threat
+        _ <- revealNow p Treacheries.deadlyShot
+        choose "discard the gauntlet" (isTargetChoice (upgradeOf gauntlet))
+        choose "use Counterintelligence" (isAbilityOfCard ci)
+        mainSchemeThreatNow `shouldReturn` threat
+
+    it "is not offered when a minion schemes for no threat" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        ci <- putIntoPlay p "08017"
+        mercenary <- addMinion p Minions.hydraMercenary
+        start [MinionMessage mercenary MinionSchemes]
+        offers (isAbilityOfCard ci) `shouldReturn` False
+        upgradeCodes `shouldReturn` ["08017"]
+
   describe "Spycraft (08018)" do
     it "is played only with a Spy character" do
       tg <- testGame ["spider-man"]
