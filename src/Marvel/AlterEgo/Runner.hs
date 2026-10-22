@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.AlterEgo.Runner
   ( module X
+  , getModifiedRecovery
   ) where
 
 import Marvel.Prelude
@@ -11,6 +12,7 @@ import Marvel.Card.Def
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Modifier
 import Marvel.Message
 import Marvel.Question
@@ -37,12 +39,16 @@ instance RunMessage (Attrs AlterEgo) where
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of
         Recovered -> do
-          push
-            (IdentityMessage ident
-            $ IdentityHealed
-            . unRec
-            $ alterEgoBaseRecovery a
-            )
+          rec <- getModifiedRecovery a
+          push $ IdentityMessage ident $ IdentityHealed rec
           pure a
         _ -> pure a
     _ -> pure a
+
+getModifiedRecovery :: (HasGame m) => Attrs AlterEgo -> m Natural
+getModifiedRecovery attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unRec $ alterEgoBaseRecovery attrs) modifiers
+ where
+  applyModifier (RecoveryModifier n) = (+ n)
+  applyModifier _ = id

@@ -20,6 +20,7 @@ import Marvel.Cost.Types (Cost (..), costResources)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Ally.Types qualified as Ally
+import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.Attack qualified as Attack
@@ -335,7 +336,7 @@ gameView seesHand g = do
       HeroSide h -> do
         let ha = toAttrs h
         (,,,) <$> (Just <$> Hero.getModifiedThwart ha) <*> (Just <$> Hero.getModifiedAttack ha) <*> (Just <$> Hero.getModifiedDefense ha) <*> pure Nothing
-      AlterEgoSide ae -> pure (Nothing, Nothing, Nothing, Just (unRec (toAttrs ae).alterEgoBaseRecovery))
+      AlterEgoSide ae -> (Nothing,Nothing,Nothing,) . Just <$> AlterEgo.getModifiedRecovery (toAttrs ae)
     allies <- traverse allyView [ally | ally <- HashMap.elems (gameAllies g), toId ally `HashSet.member` a.playerIdentityAllies]
     pure
       PlayerView
