@@ -606,6 +606,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.BlackPantherSpec
       Marvel.Hero.CaptainAmericaSpec
       Marvel.Hero.CaptainMarvelSpec
+      Marvel.Hero.DoctorStrangeSpec
       Marvel.Hero.IronManSpec
       Marvel.Hero.MsMarvelSpec
       Marvel.Hero.SheHulkSpec
