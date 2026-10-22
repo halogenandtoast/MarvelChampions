@@ -377,10 +377,6 @@ getActivePlayer = getsGame $ \g ->
 
 runPreGameMessage :: (HasQueue m, HasGame m) => Message -> Game -> m Game
 runPreGameMessage msg g = case msg of
-  -- pushed before the card answers, so the window follows what the ability does
-  RanAbility ident target _ _ _ | Just def <- abilityCardDef g target -> do
-    push $ CheckWindows [W.Window After $ W.ResolvedAbility ident def]
-    pure g
   -- begun before the scenario takes the card from where it was, so where that was is
   -- known; a card still to be revealed for a player eliminated meanwhile is discarded
   RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do

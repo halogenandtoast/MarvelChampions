@@ -56,6 +56,7 @@ getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
+abilityCardDef :: Game -> Target -> Maybe CardDef
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getEncounterDeck :: (HasGame m) => m [EncounterCard]

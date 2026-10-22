@@ -33,7 +33,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
-import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (CardPlayed))
+import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (CardPlayed, ResolvedAbility))
 
 
 -- | What paying this part of the cost does. Resources are paid first, so a cost that
@@ -324,7 +324,11 @@ instance RunMessage ActiveCost where
             ]
         ForAbility ab -> do
           rest <- concatMapM (choiceMessages payer) (abilityChoices ab)
-          pushAll $ UsedAbility payer ab : rest
+          def <- getsGame \g -> abilityCardDef g (refocus $ abilitySource ab)
+          -- whatever the ability does, the window after it resolves follows
+          pushAll $
+            UsedAbility payer ab
+              : rest <> [CheckWindows [Window After $ ResolvedAbility payer d] | Just d <- [def]]
         ForTreachery -> pure ()
       pushAll $
         map
