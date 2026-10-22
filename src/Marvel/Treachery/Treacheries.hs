@@ -90,3 +90,7 @@ import Marvel.Treachery.Treacheries.Mimicry as X
 -- The Once and Future Kang
 import Marvel.Treachery.Treacheries.KangsChosen as X
 import Marvel.Treachery.Treacheries.AncientGrudge as X
+import Marvel.Treachery.Treacheries.EnergyBlast as X
+import Marvel.Treachery.Treacheries.ManipulatedTimestream as X
+import Marvel.Treachery.Treacheries.TimeTravelTactics as X
+import Marvel.Treachery.Treacheries.PastMachinations as X

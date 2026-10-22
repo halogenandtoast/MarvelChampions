@@ -41,6 +41,13 @@ allMainSchemes =
     , huntingDownHeroes
 
     -- The Once and Future Kang
+    , kangsArrival
+    , theMasterOfTime
+    , theChronopolis
+    , inexorableFate
+    , theRealmOfRamaTut
+    , thePresentFutureWar
+    , kangsWrath
 
     ]
 
@@ -130,3 +137,26 @@ huntingDownHeroes = mainScheme "04096" "Hunting Down Heroes" Taskmaster
 
 breakout :: CardDef
 breakout = mainScheme "07001" "Breakout" Breakout
+
+-- The Once and Future Kang
+
+kangsArrival :: CardDef
+kangsArrival = mainScheme "11007" "Kang's Arrival" Kang
+
+theMasterOfTime :: CardDef
+theMasterOfTime = mainScheme "11008" "The Master of Time" Kang
+
+theChronopolis :: CardDef
+theChronopolis = mainScheme "11009" "The Chronopolis" Kang
+
+inexorableFate :: CardDef
+inexorableFate = mainScheme "11010" "Inexorable Fate" Kang
+
+theRealmOfRamaTut :: CardDef
+theRealmOfRamaTut = mainScheme "11011" "The Realm of Rama-Tut" Kang
+
+thePresentFutureWar :: CardDef
+thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
+
+kangsWrath :: CardDef
+kangsWrath = mainScheme "11013" "Kang's Wrath" Kang

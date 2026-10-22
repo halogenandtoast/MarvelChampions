@@ -50,3 +50,6 @@ import Marvel.Attachment.Attachments.TaskmastersShield as X
 import Marvel.Attachment.Attachments.TaskmastersSword as X
 
 -- The Once and Future Kang
+import Marvel.Attachment.Attachments.TemporalShield as X
+import Marvel.Attachment.Attachments.FutureWeapon as X
+import Marvel.Attachment.Attachments.FrozenInTime as X

@@ -107,6 +107,7 @@ allMinions =
       , SomeMinionCard wildrun
       , SomeMinionCard kangMasterOfTime
       , SomeMinionCard timeDisplacedSoldier
+      , SomeMinionCard macrobots
 
       ]
 

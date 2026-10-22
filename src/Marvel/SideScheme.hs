@@ -89,6 +89,10 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard timePortal
   , SomeSideSchemeCard theAnachronauts
   , SomeSideSchemeCard lightOfCenturiesSphere
+  , SomeSideSchemeCard corruptedTimestream
+  , SomeSideSchemeCard kangsDominion
+  , SomeSideSchemeCard pinnedDown
+  , SomeSideSchemeCard rampage
 
   ]
 

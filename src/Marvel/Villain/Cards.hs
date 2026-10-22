@@ -64,6 +64,18 @@ allVillainCards =
   , taskmasterVillain3
 
   -- The Once and Future Kang
+  , kang1
+  , kangImmortus
+  , kangIronLad
+  , kangRamaTut
+  , kangScarletCenturion
+  , kang3
+  , kang1Expert
+  , kangImmortusExpert
+  , kangIronLadExpert
+  , kangRamaTutExpert
+  , kangScarletCenturionExpert
+  , kang3Expert
 
   ]
 
@@ -188,6 +200,48 @@ taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
 
 taskmasterVillain3 :: CardDef
 taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]
+
+-- The Once and Future Kang
+
+-- | Kang, the standard set's and the Expert Kang set's, each with toughness.
+kangVillain :: CardCode -> Text -> CardDef
+kangVillain code sub' = (villain code ("Kang" <:> sub') [Temporal]) {cdKeywords = singleton Toughness}
+
+kang1 :: CardDef
+kang1 = kangVillain "11001" "The Conqueror"
+
+kangImmortus :: CardDef
+kangImmortus = kangVillain "11002" "Immortus"
+
+kangIronLad :: CardDef
+kangIronLad = (kangVillain "11003" "Iron Lad") {cdKeywords = fromList [Retaliate 1, Toughness]}
+
+kangRamaTut :: CardDef
+kangRamaTut = kangVillain "11004" "Rama-Tut"
+
+kangScarletCenturion :: CardDef
+kangScarletCenturion = kangVillain "11005" "Scarlet Centurion"
+
+kang3 :: CardDef
+kang3 = kangVillain "11006" "The Conqueror"
+
+kang1Expert :: CardDef
+kang1Expert = kangVillain "11034" "The Conqueror"
+
+kangImmortusExpert :: CardDef
+kangImmortusExpert = kangVillain "11035" "Immortus"
+
+kangIronLadExpert :: CardDef
+kangIronLadExpert = (kangVillain "11036" "Iron Lad") {cdKeywords = fromList [Retaliate 1, Toughness]}
+
+kangRamaTutExpert :: CardDef
+kangRamaTutExpert = kangVillain "11037" "Rama-Tut"
+
+kangScarletCenturionExpert :: CardDef
+kangScarletCenturionExpert = kangVillain "11038" "Scarlet Centurion"
+
+kang3Expert :: CardDef
+kang3Expert = kangVillain "11039" "The Conqueror"
 
 -- The Wrecking Crew
 

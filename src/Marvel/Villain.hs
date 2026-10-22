@@ -32,6 +32,7 @@ import Marvel.Villain.Villains.RedSkull
 import Marvel.Villain.Villains.Taskmaster
 
 -- The Once and Future Kang
+import Marvel.Villain.Villains.Kang
 
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
@@ -106,5 +107,17 @@ allVillains = fromList $ map
   , SomeVillainCard taskmasterVillain3
 
   -- The Once and Future Kang
+  , SomeVillainCard kang1
+  , SomeVillainCard kangImmortus
+  , SomeVillainCard kangIronLad
+  , SomeVillainCard kangRamaTut
+  , SomeVillainCard kangScarletCenturion
+  , SomeVillainCard kang3
+  , SomeVillainCard kang1Expert
+  , SomeVillainCard kangImmortusExpert
+  , SomeVillainCard kangIronLadExpert
+  , SomeVillainCard kangRamaTutExpert
+  , SomeVillainCard kangScarletCenturionExpert
+  , SomeVillainCard kang3Expert
 
   ]

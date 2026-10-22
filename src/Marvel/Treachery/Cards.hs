@@ -119,6 +119,10 @@ allTreacheries = fromList $ map
   -- The Once and Future Kang
   , kangsChosen
   , ancientGrudge
+  , energyBlast
+  , manipulatedTimestream
+  , timeTravelTactics
+  , pastMachinations
 
   ]
 
@@ -377,6 +381,18 @@ kangsChosen =
 
 ancientGrudge :: CardDef
 ancientGrudge = treachery "11051" "Ancient Grudge" [Boost] MasterOfTime 2
+
+energyBlast :: CardDef
+energyBlast = treachery "11026" "Energy Blast" [Boost] Kang 2
+
+manipulatedTimestream :: CardDef
+manipulatedTimestream = treachery "11027" "Manipulated Timestream" [Boost, Boost] Kang 1
+
+timeTravelTactics :: CardDef
+timeTravelTactics = (treachery "11028" "Time-Travel Tactics" [Boost, Star] Kang 2) {cdKeywords = singleton Keyword.Surge}
+
+pastMachinations :: CardDef
+pastMachinations = (treachery "11029" "Past Machinations" [Boost, Boost, Boost] Kang 1) {cdKeywords = singleton (Keyword.Incite 1)}
 
 -- The Rise of Red Skull
 

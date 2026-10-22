@@ -128,6 +128,10 @@ allTreacheries = fromList $ map
   -- The Once and Future Kang
   , SomeTreacheryCard kangsChosen
   , SomeTreacheryCard ancientGrudge
+  , SomeTreacheryCard energyBlast
+  , SomeTreacheryCard manipulatedTimestream
+  , SomeTreacheryCard timeTravelTactics
+  , SomeTreacheryCard pastMachinations
 
   ]
 

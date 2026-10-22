@@ -22,3 +22,7 @@ import Marvel.Obligation.Obligations.UncertainLoyalties as X
 
 -- The Once and Future Kang
 import Marvel.Obligation.Obligations.FearOfKang as X
+import Marvel.Obligation.Obligations.Weakened as X
+import Marvel.Obligation.Obligations.StolenMemories as X
+import Marvel.Obligation.Obligations.Depowered as X
+import Marvel.Obligation.Obligations.TimeTravelHijinks as X

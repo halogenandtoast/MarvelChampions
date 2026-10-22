@@ -8,7 +8,7 @@ import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
-import Marvel.EncounterSet (EncounterSet (MasterOfTime))
+import Marvel.EncounterSet (EncounterSet (Kang, MasterOfTime))
 import Marvel.Name
 import Marvel.Trait qualified as Trait
 
@@ -36,6 +36,10 @@ allObligations = fromList $ map
 
     -- The Once and Future Kang
     , fearOfKang
+    , weakened
+    , stolenMemories
+    , depowered
+    , timeTravelHijinks
 
     ]
 
@@ -113,3 +117,24 @@ fearOfKang =
     , cdEncounterSet = Just MasterOfTime
     , cdEncounterSetQuantity = Just 2
     }
+
+-- | The Kang set's obligations, each the revealer's to keep.
+kangObligation :: CardCode -> Name -> CardDef
+kangObligation code name =
+  (obligation code name [Boost, Boost])
+    { cdTraits = fromList [Trait.Temporal]
+    , cdEncounterSet = Just Kang
+    , cdEncounterSetQuantity = Just 2
+    }
+
+weakened :: CardDef
+weakened = kangObligation "11018" "Weakened"
+
+stolenMemories :: CardDef
+stolenMemories = kangObligation "11019" "Stolen Memories"
+
+depowered :: CardDef
+depowered = kangObligation "11020" "Depowered"
+
+timeTravelHijinks :: CardDef
+timeTravelHijinks = kangObligation "11021" "Time-Travel Hijinks"

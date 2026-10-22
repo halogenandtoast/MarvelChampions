@@ -44,6 +44,10 @@ allObligations = fromList $ map
 
   -- The Once and Future Kang
   , SomeObligationCard fearOfKang
+  , SomeObligationCard weakened
+  , SomeObligationCard stolenMemories
+  , SomeObligationCard depowered
+  , SomeObligationCard timeTravelHijinks
 
   ]
 

@@ -78,6 +78,10 @@ allSideSchemes = fromList $ map
 
   -- The Once and Future Kang
   , timePortal
+  , corruptedTimestream
+  , kangsDominion
+  , pinnedDown
+  , rampage
   , theAnachronauts
   , lightOfCenturiesSphere
 
@@ -327,6 +331,18 @@ theAnachronauts = (sideScheme "11045" "The Anachronauts" [Boost, Boost, Boost] A
 lightOfCenturiesSphere :: CardDef
 lightOfCenturiesSphere =
   (sideScheme "11050" "Light of Centuries Sphere" [Boost, Boost, Boost] MasterOfTime 1) {cdHazards = 1}
+
+corruptedTimestream :: CardDef
+corruptedTimestream = sideScheme "11022" "Corrupted Timestream" [Boost, Boost] Kang 1
+
+kangsDominion :: CardDef
+kangsDominion = sideScheme "11023" "Kang's Dominion" [Boost, Boost, Boost] Kang 4
+
+pinnedDown :: CardDef
+pinnedDown = sideScheme "11024" "Pinned Down" [Boost, Boost] Kang 1
+
+rampage :: CardDef
+rampage = (sideScheme "11025" "Rampage" [Boost, Boost] Kang 2) {cdAcceleration = 1}
 
 -- The Rise of Red Skull
 

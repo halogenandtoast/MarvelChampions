@@ -104,6 +104,8 @@ library
       Marvel.Attachment.Attachments.DefensiveProgramming
       Marvel.Attachment.Attachments.DistractingTaunts
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
+      Marvel.Attachment.Attachments.FrozenInTime
+      Marvel.Attachment.Attachments.FutureWeapon
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.GoblinGlider
       Marvel.Attachment.Attachments.HeldHostage
@@ -124,6 +126,7 @@ library
       Marvel.Attachment.Attachments.SonicConverter
       Marvel.Attachment.Attachments.TaskmastersShield
       Marvel.Attachment.Attachments.TaskmastersSword
+      Marvel.Attachment.Attachments.TemporalShield
       Marvel.Attachment.Attachments.TwistedReality
       Marvel.Attachment.Attachments.UpgradedDrones
       Marvel.Attachment.Attachments.VibraniumArmor
@@ -310,6 +313,9 @@ library
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
       Marvel.MainScheme.MainSchemes.HostileTakeover
       Marvel.MainScheme.MainSchemes.HuntingDownHeroes
+      Marvel.MainScheme.MainSchemes.KangsArrival
+      Marvel.MainScheme.MainSchemes.KangsStageThree
+      Marvel.MainScheme.MainSchemes.KangsWrath
       Marvel.MainScheme.MainSchemes.MutagenCloud
       Marvel.MainScheme.MainSchemes.NewWorldHydra
       Marvel.MainScheme.MainSchemes.SecretRendezvous
@@ -317,6 +323,7 @@ library
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
       Marvel.MainScheme.MainSchemes.TheIslandOfDrZola
       Marvel.MainScheme.MainSchemes.TheMadDoctor
+      Marvel.MainScheme.MainSchemes.TheMasterOfTime
       Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.MainScheme.MainSchemes.UnleashingTheMutagen
@@ -374,6 +381,7 @@ library
       Marvel.Minion.Minions.KangMasterOfTime
       Marvel.Minion.Minions.Killmonger
       Marvel.Minion.Minions.Loki
+      Marvel.Minion.Minions.Macrobots
       Marvel.Minion.Minions.MadameHydra
       Marvel.Minion.Minions.Melter
       Marvel.Minion.Minions.Modok
@@ -414,6 +422,7 @@ library
       Marvel.Obligation.Obligations.BurnNotice
       Marvel.Obligation.Obligations.BusinessProblems
       Marvel.Obligation.Obligations.CriminalPast
+      Marvel.Obligation.Obligations.Depowered
       Marvel.Obligation.Obligations.EvictionNotice
       Marvel.Obligation.Obligations.FamilyEmergency
       Marvel.Obligation.Obligations.FearOfKang
@@ -423,7 +432,10 @@ library
       Marvel.Obligation.Obligations.ManOutOfTime
       Marvel.Obligation.Obligations.OdinsAnger
       Marvel.Obligation.Obligations.PhysicalToll
+      Marvel.Obligation.Obligations.StolenMemories
+      Marvel.Obligation.Obligations.TimeTravelHijinks
       Marvel.Obligation.Obligations.UncertainLoyalties
+      Marvel.Obligation.Obligations.Weakened
       Marvel.Obligation.Types
       Marvel.Payment
       Marvel.Payment.Types
@@ -450,6 +462,7 @@ library
       Marvel.SideScheme.SideSchemes.CensorThePast
       Marvel.SideScheme.SideSchemes.ClearTheRoad
       Marvel.SideScheme.SideSchemes.CollapsingBridge
+      Marvel.SideScheme.SideSchemes.CorruptedTimestream
       Marvel.SideScheme.SideSchemes.CrowdControl
       Marvel.SideScheme.SideSchemes.DayOfReckoning
       Marvel.SideScheme.SideSchemes.DefenseNetwork
@@ -465,6 +478,7 @@ library
       Marvel.SideScheme.SideSchemes.IllegalArmsFactory
       Marvel.SideScheme.SideSchemes.ImminentOverload
       Marvel.SideScheme.SideSchemes.InvasiveAI
+      Marvel.SideScheme.SideSchemes.KangsDominion
       Marvel.SideScheme.SideSchemes.KillerForHire
       Marvel.SideScheme.SideSchemes.LegionsOfHydra
       Marvel.SideScheme.SideSchemes.LightOfCenturiesSphere
@@ -476,8 +490,10 @@ library
       Marvel.SideScheme.SideSchemes.Payoff
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.PileItOn
+      Marvel.SideScheme.SideSchemes.PinnedDown
       Marvel.SideScheme.SideSchemes.PowerDrain
       Marvel.SideScheme.SideSchemes.PrisonCamps
+      Marvel.SideScheme.SideSchemes.Rampage
       Marvel.SideScheme.SideSchemes.RunningInterference
       Marvel.SideScheme.SideSchemes.TaskmastersTrainingCamp
       Marvel.SideScheme.SideSchemes.TestSubjects
@@ -555,6 +571,7 @@ library
       Marvel.Treachery.Treacheries.ElectricWhipAttack
       Marvel.Treachery.Treacheries.ElectromagneticBacklash
       Marvel.Treachery.Treacheries.ElectromagneticPulse
+      Marvel.Treachery.Treacheries.EnergyBlast
       Marvel.Treachery.Treacheries.EnergyProjectiles
       Marvel.Treachery.Treacheries.EscapePlan
       Marvel.Treachery.Treacheries.Exhaustion
@@ -580,6 +597,7 @@ library
       Marvel.Treachery.Treacheries.LightningBlast
       Marvel.Treachery.Treacheries.LightningBolt
       Marvel.Treachery.Treacheries.MadGenius
+      Marvel.Treachery.Treacheries.ManipulatedTimestream
       Marvel.Treachery.Treacheries.Masterplan
       Marvel.Treachery.Treacheries.MastersOfMayhem
       Marvel.Treachery.Treacheries.Mimicry
@@ -587,6 +605,7 @@ library
       Marvel.Treachery.Treacheries.MysticalLink
       Marvel.Treachery.Treacheries.Overconfidence
       Marvel.Treachery.Treacheries.OversizedHands
+      Marvel.Treachery.Treacheries.PastMachinations
       Marvel.Treachery.Treacheries.Pummel
       Marvel.Treachery.Treacheries.RageOfUltron
       Marvel.Treachery.Treacheries.RegenerativeHealing
@@ -606,6 +625,7 @@ library
       Marvel.Treachery.Treacheries.TechnologicalEnhancements
       Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Treachery.Treacheries.Thoughtcasting
+      Marvel.Treachery.Treacheries.TimeTravelTactics
       Marvel.Treachery.Treacheries.TitaniasFury
       Marvel.Treachery.Treacheries.Trickster
       Marvel.Treachery.Treacheries.UncannyResilience
@@ -695,6 +715,7 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.Bulldozer
       Marvel.Villain.Villains.GreenGoblin
+      Marvel.Villain.Villains.Kang
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.NormanOsborn
       Marvel.Villain.Villains.Piledriver
@@ -878,6 +899,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.DoctorStrangeNemesisSpec
       Marvel.Encounter.GreenGoblinSpec
       Marvel.Encounter.HulkNemesisSpec
+      Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.ModularsSpec
       Marvel.Encounter.MsMarvelNemesisSpec

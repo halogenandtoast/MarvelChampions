@@ -29,3 +29,7 @@ import Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull as X
 import Marvel.MainScheme.MainSchemes.HuntingDownHeroes as X
 
 -- The Once and Future Kang
+import Marvel.MainScheme.MainSchemes.KangsArrival as X
+import Marvel.MainScheme.MainSchemes.TheMasterOfTime as X
+import Marvel.MainScheme.MainSchemes.KangsStageThree as X
+import Marvel.MainScheme.MainSchemes.KangsWrath as X

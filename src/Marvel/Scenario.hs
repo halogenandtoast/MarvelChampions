@@ -15,6 +15,14 @@ import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Scenario.Types hiding (scenarioAccelerationTokens)
 import Marvel.Scenario.Types qualified as Types
+import Data.List (find)
+import Marvel.MainScheme.Cards qualified as MainSchemes
+import Marvel.MainScheme.MainSchemes.KangsWrath (kangsDominionDeck)
+import Marvel.SideScheme.Cards qualified as SideSchemes
+import Marvel.Matchers (IdentityMatcher (FirstPlayer))
+import Marvel.Query (selectJust)
+import Marvel.Card (Card (EncounterCard))
+import Marvel.Id (MainSchemeId)
 
 instance FromJSON Scenario where
   parseJSON = withObject "Scenario" $ \o -> do
@@ -53,6 +61,7 @@ allScenarios = fromList $ map
     , SomeScenarioCard taskmasterScenario
 
     -- The Once and Future Kang
+    , SomeScenarioCard kangScenario
 
     ]
 
@@ -86,6 +95,7 @@ recommendedModulars =
     , ("04093", [EncounterSet.WeaponMaster])
 
     -- The Once and Future Kang
+    , ("11001", [EncounterSet.Temporal])
 
     ]
 
@@ -278,3 +288,71 @@ taskmasterScenario = scenario
   ("04093", "04094")
   ["04096"]
   [EncounterSet.Taskmaster, EncounterSet.HydraPatrol]
+
+-- The Once and Future Kang
+
+-- | Kang (TOAFK insert pp.3-7): Kang (I) is the villain deck's only villain; each Kang
+-- (II) and Kang (III) enters play with his stage. Stage 2A splits the players into game
+-- areas of their own; a player whose Kang (II) is defeated, or whose stage 3 is
+-- completed, joins another area at the end of the phase, and the players meet again at
+-- The Master of Time (2B), which advances to stage 4A once they all have.
+newtype KangScenario = KangScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+kangScenario :: ScenarioCard KangScenario
+kangScenario = scenario KangScenario "11001" ("11001", "11034") ["11007", "11008", "11013"] [EncounterSet.Kang]
+
+instance RunMessage KangScenario where
+  runMessage msg (KangScenario a) = KangScenario <$> case msg of
+    -- a stage 3 completed: a set-aside Kang's Dominion goes facedown under stage 4A
+    CardSpecific GameRef "kangDominionUnderStage4" _ -> runQueueT do
+      let Pile under _ = a ^. pileL kangsDominionDeck
+          dominions = [ec | EncounterCard ec <- scenarioSetAsideCards a, toCardCode ec == toCardCode SideSchemes.kangsDominion]
+      for_ (take 1 dominions) \d -> createDeck kangsDominionDeck (under <> [d])
+      pure a
+    CardSpecific GameRef "kangJoinAnotherArea" (fromJSON -> Success aid) -> runQueueT $ a <$ joinAnotherArea aid
+    CardSpecific GameRef "kangAllJoined" _ -> runQueueT do
+      central <- masterOfTimeArea
+      players <- getAllPlayers
+      for_ central \(aid, mid) -> do
+        here <- areaPlayers <$> getAreaOfArea aid
+        when (all (`elem` here) players) $ nextMainScheme mid
+      pure a
+    _ -> runMessage msg a
+
+-- | The area The Master of Time (2B) is in, and the scheme, while it is in play.
+masterOfTimeArea :: (HasGame m) => m (Maybe (AreaId, MainSchemeId))
+masterOfTimeArea = do
+  areas <- getAreas
+  found <- for areas \area -> do
+    schemes <- filterM (fmap (== Just (toCardCode MainSchemes.theMasterOfTime)) . getMainSchemeCode) =<< getMainSchemesIn (areaId area)
+    pure [(areaId area, s) | s <- schemes]
+  pure $ headMay (concat found)
+
+getAreaOfArea :: (HasGame m) => AreaId -> m Area
+getAreaOfArea aid = fromMaybe (Area aid [] [] Nothing [] [] []) . find ((== aid) . areaId) <$> getAreas
+
+-- | The area's players join another game area: its players choose which (the first of
+-- them in turn order, or the first player when none is left), and what was in it joins
+-- them there; The Master of Time's area may be joined only once no other is left.
+joinAnotherArea :: (ReverseQueue m) => AreaId -> m ()
+joinAnotherArea aid = do
+  areas <- getAreas
+  central <- fmap fst <$> masterOfTimeArea
+  for_ (find ((== aid) . areaId) areas) \here -> do
+    let others = filter ((/= aid) . areaId) areas
+        open = filter ((/= central) . Just . areaId) others
+        choices = if null open then others else open
+    order <- getAllPlayers
+    chooser <- maybe (selectJust FirstPlayer) pure $ headMay (filter (`elem` areaPlayers here) order)
+    targets <- for choices \area -> do
+      schemes <- getMainSchemesIn (areaId area)
+      pure $ fromMaybe GameRef $ headMay $ map MainSchemeRef schemes <> map VillainRef (areaVillains area) <> map IdentityRef (areaPlayers area)
+    unless (null choices) $
+      chooseOrRunOne chooser
+        [ targeting target do
+            combineAreas aid (areaId area)
+            cardSpecific GameRef "kangAllJoined" ()
+        | (area, target) <- zip choices targets
+        ]

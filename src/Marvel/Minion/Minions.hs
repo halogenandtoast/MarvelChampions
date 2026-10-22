@@ -72,3 +72,4 @@ import Marvel.Minion.Minions.Terminatrix as X
 import Marvel.Minion.Minions.Wildrun as X
 import Marvel.Minion.Minions.KangMasterOfTime as X
 import Marvel.Minion.Minions.TimeDisplacedSoldier as X
+import Marvel.Minion.Minions.Macrobots as X

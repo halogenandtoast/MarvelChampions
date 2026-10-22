@@ -51,6 +51,13 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard huntingDownHeroes
 
   -- The Once and Future Kang
+  , SomeMainSchemeCard kangsArrival
+  , SomeMainSchemeCard theMasterOfTime
+  , SomeMainSchemeCard theChronopolis
+  , SomeMainSchemeCard inexorableFate
+  , SomeMainSchemeCard theRealmOfRamaTut
+  , SomeMainSchemeCard thePresentFutureWar
+  , SomeMainSchemeCard kangsWrath
 
   ]
 

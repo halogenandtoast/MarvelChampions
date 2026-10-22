@@ -98,6 +98,7 @@ allMinions =
       , wildrun
       , kangMasterOfTime
       , timeDisplacedSoldier
+      , macrobots
 
       ]
 
@@ -290,6 +291,15 @@ hydraSoldierCaptainAmerica =
 designatedNemesisMinions :: [CardDef]
 designatedNemesisMinions = [baronZemo, thomasEdison, loki, taskmaster]
 
+-- | Whether the card is its nemesis set's nemesis minion: the one the set names, or its
+-- only minion.
+isNemesisMinion :: CardDef -> Bool
+isNemesisMinion def =
+  cdCardType def == MinionType
+    && ( toCardCode def `elem` map toCardCode designatedNemesisMinions
+          || cdEncounterSet def `notElem` map cdEncounterSet designatedNemesisMinions
+       )
+
 thomasEdison :: CardDef
 thomasEdison =
   unique $ minion "05027" "Thomas Edison" [Bird, Genius] [Boost, Boost] MsMarvelNemesis 1
@@ -471,6 +481,12 @@ timeDisplacedSoldier :: CardDef
 timeDisplacedSoldier =
   (minion "11048" "Time-Displaced Soldier" [Elite, Trait.Temporal] [Star] MasterOfTime 2)
     { cdKeywords = fromList [Incite 1, Surge]
+    }
+
+macrobots :: CardDef
+macrobots =
+  (minion "11017" "Macrobots" [Robot, Trait.Temporal] [Star] Kang 3)
+    { cdKeywords = fromList [Guard, Retaliate 1]
     }
 
 -- The Rise of Red Skull

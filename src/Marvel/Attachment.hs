@@ -82,6 +82,9 @@ allAttachments =
       , SomeAttachmentCard photographicReflexes
 
       -- The Once and Future Kang
+      , SomeAttachmentCard temporalShield
+      , SomeAttachmentCard futureWeapon
+      , SomeAttachmentCard frozenInTime
 
       ]
 

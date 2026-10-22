@@ -12,7 +12,8 @@ import Marvel.EncounterSet
 import Data.HashSet (singleton)
 import Marvel.Keyword
 import Marvel.Name
-import Marvel.Trait
+import Marvel.Trait hiding (Temporal)
+import Marvel.Trait qualified as Trait
 
 allAttachments :: HashMap CardCode CardDef
 allAttachments =
@@ -73,6 +74,9 @@ allAttachments =
       , photographicReflexes
 
       -- The Once and Future Kang
+      , temporalShield
+      , futureWeapon
+      , frozenInTime
 
       ]
 
@@ -265,3 +269,14 @@ bulldozersHelmet = unique $ attachment "07049" "Bulldozer's Helmet" [Armor] [Boo
 
 rammingSpeed :: CardDef
 rammingSpeed = attachment "07051" "Ramming Speed" [Condition] [Boost, Boost] Bulldozer 2
+
+-- The Once and Future Kang
+
+temporalShield :: CardDef
+temporalShield = attachment "11014" "Temporal Shield" [Tech] [Boost] Kang 2
+
+futureWeapon :: CardDef
+futureWeapon = attachment "11015" "Future Weapon" [Tech, Weapon] [Boost, Boost] Kang 2
+
+frozenInTime :: CardDef
+frozenInTime = attachment "11016" "Frozen in Time" [Trait.Temporal] [Star] Kang 1

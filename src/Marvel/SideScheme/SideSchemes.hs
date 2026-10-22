@@ -67,3 +67,7 @@ import Marvel.SideScheme.SideSchemes.TaskmastersTrainingCamp as X
 import Marvel.SideScheme.SideSchemes.TimePortal as X
 import Marvel.SideScheme.SideSchemes.TheAnachronauts as X
 import Marvel.SideScheme.SideSchemes.LightOfCenturiesSphere as X
+import Marvel.SideScheme.SideSchemes.CorruptedTimestream as X
+import Marvel.SideScheme.SideSchemes.KangsDominion as X
+import Marvel.SideScheme.SideSchemes.PinnedDown as X
+import Marvel.SideScheme.SideSchemes.Rampage as X
