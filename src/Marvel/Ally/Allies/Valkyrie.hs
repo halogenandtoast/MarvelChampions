@@ -8,12 +8,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Matchers
-import Marvel.Payment
 import Marvel.Resource
 import Marvel.Window
 
@@ -31,10 +29,10 @@ instance HasAbilities Valkyrie where
     ]
 
 instance RunMessage Valkyrie where
-  runMessage msg a@(Valkyrie attrs) = case msg of
+  runMessage msg a@(Valkyrie attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       energy <- paidWith Energy (allyPaidWith attrs)
       let n = if energy then 3 else 2
-      pushChoice ident $ ChooseDamage (toSource a) (toDamage n FromAbility) MinionEnemy
+      chooseDamage ident a (toDamage n FromAbility) MinionEnemy
       pure a
     _ -> Valkyrie <$> runMessage msg attrs

@@ -24,9 +24,9 @@ newtype MariaHill = MariaHill (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance RunMessage MariaHill where
-  runMessage msg a@(MariaHill attrs) = case msg of
+  runMessage msg a@(MariaHill attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       players <- getPlayers
-      pushAll [IdentityMessage p $ DrawCards FromDeck 1 | p <- players]
+      for_ players (`drawCards` 1)
       pure a
     _ -> MariaHill <$> runMessage msg attrs

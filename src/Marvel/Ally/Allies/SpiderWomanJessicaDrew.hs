@@ -34,9 +34,9 @@ instance HasAbilities SpiderWomanJessicaDrew where
     ]
 
 instance RunMessage SpiderWomanJessicaDrew where
-  runMessage msg a@(SpiderWomanJessicaDrew attrs) = case msg of
+  runMessage msg a@(SpiderWomanJessicaDrew attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       villain <- selectJust ActiveVillain
-      push $ VillainMessage villain $ VillainConfused (toSource a)
+      confuse villain a
       pure a
     _ -> SpiderWomanJessicaDrew <$> runMessage msg attrs

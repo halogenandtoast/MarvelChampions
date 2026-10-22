@@ -8,11 +8,9 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Queue
 import Marvel.Window qualified as W
 
 clea :: AllyCard Clea
@@ -31,7 +29,7 @@ instance HasAbilities Clea where
 -- | When she is defeated, she is shuffled into her owner's deck instead of staying in
 -- their discard pile: she leaves play as she would, and goes on from there.
 instance RunMessage Clea where
-  runMessage msg a@(Clea attrs) = case msg of
+  runMessage msg a@(Clea attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       let
         owner = allyController attrs

@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -37,9 +36,9 @@ instance HasAbilities NovaSamAlexander where
     ]
 
 instance RunMessage NovaSamAlexander where
-  runMessage msg a@(NovaSamAlexander attrs) = case msg of
-    RanAbility ident (isTarget a -> True) 1 windows _ -> do
+  runMessage msg a@(NovaSamAlexander attrs) = runQueueT $ case msg of
+    RanAbility _ (isTarget a -> True) 1 windows _ -> do
       for_ [enemy | W.EnemyAttack enemy _ <- windows] \enemy ->
-        pushChoice ident $ DamageEnemy (toRef enemy) (toSource a) (toDamage 2 FromAbility)
+        dealDamage enemy a (toDamage 2 FromAbility)
       pure a
     _ -> NovaSamAlexander <$> runMessage msg attrs
