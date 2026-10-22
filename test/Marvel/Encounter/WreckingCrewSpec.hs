@@ -233,6 +233,39 @@ spec = describe "The Wrecking Crew" do
       runNow [VillainMessage b (VillainAttacks p)]
       whenM (offers isNoResponse) $ choose "not respond" isNoResponse
       offers isNoDefender `shouldReturn` True
+
+  it "a defeated villain's cards still in play go to his own discard pile as they leave play" do
+    tg <- breakout ["spider-man"]
+    inGame tg do
+      t <- thunderball
+      card <- fromMaybe (error "empty deck") . headMay . pileDeck <$> getPile (VillainDeckKey t)
+      resolve [ResolveVillainDefeat t]
+      resolve [DiscardedCard (EncounterCard card)]
+      pileDiscard <$> getPile (VillainDeckKey t) `shouldReturn` [card]
+      encounterDiscard `shouldReturn` []
+
+  it "the mixed setup has the first player choose each villain's version, A or B" do
+    (app, _, _) <- dealtGameLogged (ScenarioSetup "07001b" [] Normal) [starter "spider-man"] 1
+    let wanted = ["07002", "07018", "07032", "07047"]
+        setUp :: Int -> GameAppT ()
+        setUp 0 = error "setup did not reach a turn"
+        setUp n =
+          asked >>= \case
+            Just (_, cs) | EndTurn `elem` cs -> pure ()
+            Just (ident, cs)
+              | codes@(_ : _) <- [c | CardLabel c _ <- cs] -> do
+                  codes `shouldSatisfy` ((== 2) . length)
+                  let pick = fromMaybe (error "no wanted version") $ headMay [i | (i, CardLabel c _) <- zip [0 ..] cs, c `elem` wanted]
+                  answerQuestion ident pick >> setUp (n - 1)
+            Just (ident, _) -> answerQuestion ident 0 >> setUp (n - 1)
+            Nothing -> error "no question during setup"
+    runGameApp app do
+      setUp 200
+      codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameVillains)
+      sort codes `shouldBe` wanted
+      w <- wrecker
+      selectJust ActiveVillain `shouldReturn` w
+      traverse (deckSize <=< villainCoded) ["07002", "07018", "07032", "07047"] `shouldReturn` [15, 15, 15, 15]
  where
   ranMessage tg msg = elem (tshow msg) <$> liftIO (readIORef tg.ran)
 

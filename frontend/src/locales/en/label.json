@@ -102,6 +102,8 @@
 
   "-- The Wrecking Crew --": "",
   "breakTie": "They are tied: choose one",
+  "chooseVillainVersion": "Choose this villain's version",
+  "thisVersion": "This version",
   "placeThreatForEachUpgrade": "Place 1 threat on the active villain's side scheme for each upgrade you control",
   "wreckerGetsThreeAttack": "Wrecker gets +3 ATK for this activation",
   "placeTwoThreatOnHisSideScheme": "Place 2 threat on Wrecker's side scheme",
