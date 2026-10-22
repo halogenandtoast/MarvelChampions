@@ -37,7 +37,7 @@ const close = () => dialog.value?.close()
 </script>
 
 <template>
-  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length, discard: !back }" :data-pile="pile ?? undefined">
+  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length, discard: !back && count === null }" :data-pile="pile ?? undefined">
     <button
       type="button"
       class="stack"
@@ -81,7 +81,7 @@ const close = () => dialog.value?.close()
   cursor: default;
 }
 .pile.openable .stack { cursor: pointer; }
-/* a discard pile is faded, out of the way, until looked at or chosen from */
+/* a discard pile is faded, out of the way, until looked at or chosen from; a face-up deck (the Invocation deck) is not */
 .pile.discard .stack { opacity: 0.55; transition: opacity 0.15s ease; }
 .pile.discard .stack:hover, .pile.discard.active .stack { opacity: 1; }
 .pile.empty .stack { box-shadow: none; }
