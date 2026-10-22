@@ -7,8 +7,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
-import Marvel.Message
-import Marvel.Queue
+import Marvel.Message.Lifted
 
 theBreakIn :: MainSchemeCard TheBreakIn
 theBreakIn =
@@ -19,6 +18,6 @@ newtype TheBreakIn = TheBreakIn (Attrs MainScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage TheBreakIn where
-  runMessage msg ms@(TheBreakIn attrs) = case msg of
-    AdvanceMainScheme -> ms <$ push (GameOver Lost)
+  runMessage msg ms@(TheBreakIn attrs) = runQueueT $ case msg of
+    AdvanceMainScheme -> ms <$ gameOver Lost
     _ -> TheBreakIn <$> runMessage msg attrs

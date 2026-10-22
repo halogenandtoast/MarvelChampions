@@ -10,9 +10,8 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Invocation
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -28,18 +27,15 @@ newtype OpenTheDarkDimension = OpenTheDarkDimension (Attrs SideScheme)
 -- player is asked: only Doctor Strange has one). When Defeated: that card is shuffled
 -- back into the Invocation deck.
 instance RunMessage OpenTheDarkDimension where
-  runMessage msg s@(OpenTheDarkDimension attrs) = case msg of
+  runMessage msg s@(OpenTheDarkDimension attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         players <- getPlayers
-        pushAll [invocation p (PlaceTopInvocationUnder $ toTarget attrs) | p <- players]
+        for_ players \p -> invoke p (PlaceTopInvocationUnder $ toTarget attrs)
         pure s
       DefeatSideScheme -> do
-        pushAll
-          [ invocation owner (ShuffleIntoInvocationDeck c)
-          | c <- sideSchemeHeldCards attrs
-          , Just owner <- [pcOwner c]
-          ]
+        for_ [(owner, c) | c <- sideSchemeHeldCards attrs, Just owner <- [pcOwner c]] \(owner, c) ->
+          invoke owner (ShuffleIntoInvocationDeck c)
         pure s
       _ -> OpenTheDarkDimension <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "invocationUnder" (fromJSON -> Success card) ->
