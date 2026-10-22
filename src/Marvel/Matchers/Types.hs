@@ -195,7 +195,13 @@ data TreacheryMatcher = AnyTreachery
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data SchemeMatcher = AnyScheme | MainScheme | ThwartableScheme | SchemeWithId SchemeId
+data SchemeMatcher
+  = AnyScheme
+  | MainScheme
+  | ThwartableScheme
+  | -- | threat can be removed from it, "ignoring any crisis icons in play"
+    ThwartableSchemeIgnoringCrisis
+  | SchemeWithId SchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

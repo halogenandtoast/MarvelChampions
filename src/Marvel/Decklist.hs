@@ -5,6 +5,7 @@ module Marvel.Decklist (
   loadPlayer,
   checkedDeckList,
   missingCards,
+  aspectsBalanced,
   sharedHeroes,
   starterDecks,
   lookupStarterDeck,
@@ -14,6 +15,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (find, nub)
+import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -42,6 +44,26 @@ missingCards d =
   knownIdentity =
     HashMap.member (toHeroCardCode d.hero) allHeroesMap
       && HashMap.member (toAlterEgoCardCode d.hero) allAlterEgosMap
+
+-- | Jessica Drew's Double Agent: her deck is built with two aspects, as many cards of
+-- each (FAQ, Jessica Drew #31B), her own identity-specific cards aside. Any other deck
+-- passes.
+aspectsBalanced :: DeckList -> Bool
+aspectsBalanced d = case lookup (toBaseCardCode d.hero) doubleAgents of
+  Nothing -> True
+  Just own -> case d.aspects of
+    [a, b] | a /= b -> count own a == count own b
+    _ -> False
+ where
+  doubleAgents = HashMap.fromList [("04031", map CardCode ["04032", "04033", "04034", "04035", "04036", "04037", "04038", "04039"])]
+  count own aspect =
+    sum
+      [ n
+      | (c, n) <- d.cards
+      , c `notElem` own
+      , Just def <- [HashMap.lookup c allPlayerCards]
+      , (T.toLower . tshow <$> cdAspect def) == Just (T.toLower aspect)
+      ]
 
 -- | The deck, if the engine can play it.
 checkedDeckList :: DeckList -> Either [CardCode] DeckList

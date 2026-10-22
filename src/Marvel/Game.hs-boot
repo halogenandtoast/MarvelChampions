@@ -107,6 +107,7 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
+getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getPlayTargets ::
   (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) =>
   IdentityId ->

@@ -12,6 +12,7 @@
   "malformedDeck": "That is not a deck JSON file: {reason}",
   "noHero": "That deck has no hero.",
   "unknownCards": "This deck has cards the game does not know yet: {cards}",
+  "unbalancedAspects": "Jessica Drew's deck must be built with two aspects, with as many cards of each.",
   "noSuchDeck": "No such deck.",
   "noStarterDeck": "No {hero} starter deck.",
   "signInFirst": "Sign in first.",

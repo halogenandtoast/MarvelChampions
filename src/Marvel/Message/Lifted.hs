@@ -405,6 +405,12 @@ attackGains enemy k = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
 
+-- | "Prevent all damage from this attack": the enemy's attack under way.
+preventAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+preventAttackDamage enemy = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
+  EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
+
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
 flipVillain vid = do
@@ -655,11 +661,13 @@ paidCosts = push . PaidCosts
 disableActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
 disableActiveCost = push . DisableActiveCost
 
--- | The card is played, paid for: it enters play and the window after it opens.
+-- | The card is played, paid for: "when you play" is answered, then it enters play and
+-- the window after it opens.
 cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
 cardPlayed ident card payment mWindow =
   pushAll
-    [ IdentityMessage ident (PlayedCard card mWindow)
+    [ CheckWindows [Window When $ W.CardPlayed ident card]
+    , IdentityMessage ident (PlayedCard card mWindow)
     , PutCardIntoPlay ident card payment mWindow
     , CheckWindows [Window After $ W.CardPlayed ident card]
     ]

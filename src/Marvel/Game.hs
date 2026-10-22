@@ -90,7 +90,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeHeldCards, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -484,6 +484,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         Just upgrade -> do
           upgradeRemoved uid
           discardCard upgrade
+          for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
           pure $
             g
               & (entitiesL . upgradesL %~ deleteMap uid)
@@ -574,12 +575,18 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       AllyType -> do
         let ally = createAlly ident card
         allyStep (toId ally) (AllyPaidWith payment)
+        when (Toughness `member` cdKeywords (getCardDef card)) $ push $ GiveStatus (AllyRef $ toId ally) ToughStatus
         identityStep ident (AllyCreated $ toId ally)
         checkWindows [W.Window After $ W.PlayedAlly (toId ally)]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
       SupportType -> do
-        let support = createSupport ident card
-        identityStep ident (SupportCreated $ toId support)
+        -- played under the control of the player it was played on, if any. ponytail: it
+        -- goes to that player's discard pile too, the support keeping no owner
+        let controller = case paymentTarget payment of
+              Just (IdentityRef p) -> p
+              _ -> ident
+            support = createSupport controller card
+        identityStep controller (SupportCreated $ toId support)
         checkWindows [W.Window After $ W.PlayedSupport (toId support)]
         pure $ g & (entitiesL . supportsL %~ insertMap (toId support) support)
       UpgradeType -> do
@@ -842,6 +849,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       for_ (lookup uid $ gameUpgrades g) $ \upgrade -> do
         let owner = upgradeOwner $ toAttrs upgrade
         upgradeRemoved uid
+        for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
         addToHand owner $ MkPlayerCard (CardId $ unUpgradeId uid) (getCardDef upgrade) (Just owner) (Just owner)
       pure $ g & entitiesL . upgradesL %~ deleteMap uid
     -- a played event goes back from its controller's discard pile, if it is still there
@@ -1064,6 +1072,12 @@ getPlayTargets ::
 getPlayTargets ident card = case cdCardType (getCardDef card) of
   UpgradeType -> case createUpgrade ident card of Upgrade u -> upgradeTargets u
   EventType -> case createEvent ident card of Event e -> eventTargets e
+  -- "Play under any player's control. Max N per player.": whose, among those who may
+  SupportType | Just (MaxPerPlayerUnderAnyControl n) <- cdLimit (getCardDef card) -> do
+    players <- getPlayers
+    open <- flip filterM players \p ->
+      (< n) <$> selectListCount (SupportMatches [SupportNamed (cdName $ getCardDef card), SupportControlledBy $ IdentityWithId p])
+    pure $ Just $ map toTarget open
   _ -> pure Nothing
 
 createAlly :: IdentityId -> PlayerCard -> Ally
@@ -1860,8 +1874,10 @@ gameSelectScheme = \case
     SchemeSideSchemeId sideSchemeId ->
       HashSet.map SchemeSideSchemeId
         <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
-  ThwartableScheme -> do
-    crisisSideSchemes <- selectAny CrisisSideScheme
+  ThwartableScheme -> thwartable =<< selectAny CrisisSideScheme
+  ThwartableSchemeIgnoringCrisis -> thwartable False
+ where
+  thwartable crisisSideSchemes = do
     sideSchemes <- filterM (fmap (notElem ThreatCannotBeRemoved) . getModifiers) . HashMap.elems =<< getsGame gameSideSchemes
     if crisisSideSchemes
       then
@@ -1924,6 +1940,11 @@ withDepthGuard depthGuard body = do
 
 delve :: Game -> Game
 delve g = g {gameDepth = gameDepth g + 1}
+
+-- | The cards held by the upgrades the player controls, played as if in hand.
+getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
+getUpgradeHeldCards ident =
+  getsGame \g -> [c | u <- HashMap.elems (gameUpgrades g), getUpgradeController u == ident, c <- upgradeHeldCards (toAttrs u)]
 
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiers a = withDepthGuard 2 $ do
