@@ -30,8 +30,8 @@ instance HasAbilities QuakeDaisyJohnson where
 
 -- | Not an attack: 2 damage to the minion that schemed.
 instance RunMessage QuakeDaisyJohnson where
-  runMessage msg a@(QuakeDaisyJohnson attrs) = case msg of
+  runMessage msg a@(QuakeDaisyJohnson attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 [SchemedByMinion minion] _ -> do
-      push $ MinionMessage minion $ MinionDamaged (toSource attrs) (toDamage 2 FromAbility)
+      dealDamage minion attrs (toDamage 2 FromAbility)
       pure a
     _ -> QuakeDaisyJohnson <$> runMessage msg attrs

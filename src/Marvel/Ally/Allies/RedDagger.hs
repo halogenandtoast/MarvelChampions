@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -36,10 +35,9 @@ instance HasAbilities RedDagger where
 
 -- | Defeated, she goes to her owner's hand instead of the discard pile.
 instance RunMessage RedDagger where
-  runMessage msg a@(RedDagger attrs) = case msg of
+  runMessage msg a@(RedDagger attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      let self = toTarget a
-      replaceMatchingMessage (const [ReturnToHand self]) (== RemoveFromPlay self)
-      pushChoice ident $ ChooseDamage (toSource a) (toDamage 2 FromAbility) AnyEnemy
+      insteadOf (== RemoveFromPlay (toTarget a)) (returnToHand a)
+      chooseDamage ident a (toDamage 2 FromAbility) AnyEnemy
       pure a
     _ -> RedDagger <$> runMessage msg attrs
