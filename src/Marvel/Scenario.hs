@@ -8,7 +8,10 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Card.Code
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
-import Marvel.EncounterCard (isPlayerObligation)
+import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
+import Marvel.Area (experimentalWeaponsDeck)
+import Marvel.Card.Def (CardDef (..))
+import Marvel.EncounterCard (allEncounterCards, isPlayerObligation)
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message.Lifted
@@ -250,8 +253,16 @@ newtype CrossbonesScenario = CrossbonesScenario (Attrs Scenario)
   deriving anyclass IsScenario
   deriving newtype (Show, Eq, ToJSON, FromJSON)
 
+-- | Campaign Victory: "Record the name of each Experimental attachment that entered the
+-- game": those no longer in the Experimental Weapons deck (rulebook p.5).
 instance RunMessage CrossbonesScenario where
-  runMessage msg (CrossbonesScenario a) = CrossbonesScenario <$> runMessage msg a
+  runMessage msg (CrossbonesScenario a) = case msg of
+    CampaignStep CampaignVictory -> do
+      let unrevealed = map toCardCode (pileDeck (a ^. pileL experimentalWeaponsDeck))
+          weapons = [cdCardCode d | d <- HashMap.elems allEncounterCards, cdEncounterSet d == Just EncounterSet.ExperimentalWeapons]
+      runQueueT $ recordInCampaignLog (RecordExperimentalWeapons [w | w <- weapons, w `notElem` unrevealed])
+      CrossbonesScenario <$> runMessage msg a
+    _ -> CrossbonesScenario <$> runMessage msg a
 
 -- | The Experimental Weapons set is made its own deck by Attack on Mount Athena's setup.
 crossbonesScenario :: ScenarioCard CrossbonesScenario

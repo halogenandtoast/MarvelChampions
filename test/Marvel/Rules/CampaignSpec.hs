@@ -1,6 +1,7 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Area (experimentalWeaponsDeck)
 import Marvel.Campaign
 import Marvel.Game.Public (publicGameFor)
 import Marvel.Hp (unHp)
@@ -97,7 +98,27 @@ spec = describe "The Rise of Red Skull campaign" do
       codes `shouldSatisfy` notElem "04159a"
       (.conditionUpgrade) <$> spiderManNow `shouldReturn` Just "04159b"
 
-  it "Taskmaster won: the Captive allies a player rescued are added to their deck" do
+  it "Crossbones won: each Experimental attachment that entered the game is recorded" do
+    tg <- dealScenario (newCampaign StandardCampaign [spiderMan]) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      resolve [UsingDeck experimentalWeaponsDeck (DrawAndRevealEncounterCard (player1 tg))]
+      resolve [GameOver Won]
+      weapons <- (.campaignLog.experimentalWeapons) <$> campaignNow
+      length weapons `shouldBe` 1
+      weapons `shouldSatisfy` all (`elem` ["04072", "04073", "04074", "04075"])
+
+  it "Absorbing Man won: the delay counters are recorded, and each player may choose a Basic upgrade" do
+    tg <- dealScenario ((newCampaign StandardCampaign [spiderMan]) {completed = 1}) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      mid <- mainSchemeId
+      resolve [PlaceCounters (MainSchemeRef mid) 3]
+      resolve [GameOver Won]
+      (.campaignLog.delayCounters) <$> campaignNow `shouldReturn` Just 3
+      (.pending) <$> spiderManNow `shouldReturn` [ChooseBasicUpgrade]
+
+  it "Taskmaster won:the Captive allies a player rescued are added to their deck" do
     let c = (newCampaign StandardCampaign [spiderMan]) {completed = 2}
     tg <- dealScenario c [starter "spider-man"]
     inGame tg do
