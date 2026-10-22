@@ -379,7 +379,12 @@ runGameMessage msg g@Game {..} = case msg of
     pure g
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
-  BeginPhase phase -> pure $ g & phaseL .~ phase
+  -- a limit of once per phase starts over with each phase
+  BeginPhase phase ->
+    pure $
+      g
+        & phaseL .~ phase
+        & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do
     let order = case gamePlayerOrder of
@@ -886,6 +891,11 @@ runGameMessage msg g@Game {..} = case msg of
              ]
     pure g
   _ -> pure g
+
+perPhase :: Limit -> Bool
+perPhase = \case
+  PerPhase _ -> True
+  _ -> False
 
 getWindowPlayableCards ::
   ( HasCallStack
