@@ -123,10 +123,12 @@ spec = describe "Captain America's nemesis set" do
         payment <- traverse (putInHand p) ["01088", "01090"]
         playWith webbed payment
         choose "attach to the soldier" (isTargetChoice (EnemyMinionId soldier))
-        _ <- stackEncounterDeck [Minions.hydraBomber]
+        [bomber] <- stackEncounterDeck [Minions.hydraBomber]
         before <- getsGame (HashMap.keys . gameMinions)
         _ <- revealNow p Treacheries.hailHydra
         choose "resolve Webbed Up" (isAbilityOfCard webbed)
+        pass
+        choose "the bomber" (isTargetChoice bomber)
         pass
         damageOf p `shouldReturn` 0
         new <- getsGame (filter (`notElem` before) . HashMap.keys . gameMinions)
