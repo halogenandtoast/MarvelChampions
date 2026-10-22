@@ -112,6 +112,18 @@ spec = describe "Hulk" do
         [blow, _] <- asHulk p ["10002", "01088"]
         offers (isPlay blow) `shouldReturn` False
 
+    it "costs nothing once its cost is reduced to 0, with no [physical] resource spent (FAQ)" do
+      tg <- hulk
+      let p = player1 tg
+      inGame tg do
+        [blow] <- asHulk p ["10002"]
+        heli <- putIntoPlay p "01092"
+        choose "use Helicarrier" (isAbilityOfCard heli)
+        choose "play Crushing Blow" (isPlay blow)
+        vid <- villainIdNow
+        choose "Rhino" (isTargetChoice vid)
+        villainDamageNow `shouldReturn` 3
+
   describe "Hulk Smash (10003)" do
     it "gives +10 ATK to the basic attack it answers" do
       tg <- hulk
@@ -266,6 +278,22 @@ spec = describe "Hulk" do
         playWith force [genius]
         isExhaustedNow p `shouldReturn` False
         length <$> handOf p `shouldReturn` 0
+
+    it "draws nothing when its cost is reduced to 0, as nothing was paid (FAQ)" do
+      tg <- hulk
+      let p = player1 tg
+      inGame tg do
+        [force] <- asHulk p ["10006"]
+        heli <- putIntoPlay p "01092"
+        choose "use Helicarrier" (isAbilityOfCard heli)
+        runNow [SupportMessage (supportOf heli) ReadiedSupport]
+        choose "use Helicarrier again" (isAbilityOfCard heli)
+        choose "attack" (isHeroAttack p)
+        vid <- villainIdNow
+        choose "Rhino" (isTargetChoice vid)
+        choose "play Unstoppable Force" (isPlay force)
+        isExhaustedNow p `shouldReturn` False
+        handOf p `shouldReturn` []
 
   describe "Limitless Strength (10007)" do
     it "pays 3 [physical] in hero form" do

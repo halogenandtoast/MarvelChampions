@@ -387,12 +387,14 @@ runVillainMessage msg attrs = case msg of
   VillainAttacked -> do
     case villainAttacking attrs of
       Nothing -> error "No current attack"
-      Just attack' -> case attackCharacter attack' of
-        IdentityCharacter ident ->
-          push $ IdentityMessage ident $ IdentityWasAttacked attack'
-        AllyCharacter ident ->
-          push $ AllyMessage ident $ AllyWasAttacked attack'
-        _ -> error "Invalid damage target"
+      Just attack' -> do
+        attackedYou (attackEnemy attack') (attackCharacter attack')
+        case attackCharacter attack' of
+          IdentityCharacter ident ->
+            push $ IdentityMessage ident $ IdentityWasAttacked attack'
+          AllyCharacter ident ->
+            push $ AllyMessage ident $ AllyWasAttacked attack'
+          _ -> error "Invalid damage target"
     pure $ attrs & boostL .~ 0
   VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
