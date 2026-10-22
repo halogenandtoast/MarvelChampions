@@ -714,6 +714,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.SurgeSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
+      SpecHook
       TestImport
       Paths_MarvelChampions
   hs-source-dirs:
