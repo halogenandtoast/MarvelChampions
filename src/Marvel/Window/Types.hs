@@ -104,7 +104,8 @@ data WindowType
     DefeatedMinion MinionId Damage Source
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
-  | EnemyAttacksAndDamages EnemyId CharacterId
+  | -- | the damage an enemy's attack dealt the character
+    EnemyAttacksAndDamages EnemyId CharacterId Natural
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId

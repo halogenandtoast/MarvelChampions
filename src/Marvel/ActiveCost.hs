@@ -44,6 +44,7 @@ payCostPart activeCost = go
     DiscardHandCardsCost n m -> do
       inHand <- projectMap PlayerIdentityHand (fromIntegral . length . unHand) iid
       discardFor iid (ActiveCostRef acid) FromHand n (fromMaybe inHand m)
+    DiscardRandomHandCardsCost n -> discardFrom iid RandomFromHand n
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
         damageIdentity iid (abilitySource a) (toDamage n FromAbility)

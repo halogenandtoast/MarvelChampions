@@ -23,7 +23,7 @@ import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAll
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment)
+import Marvel.Attachment.Types (Attachment, Attrs (attachmentSideScheme))
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Choice (choiceMessages)
@@ -450,6 +450,14 @@ intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
 
+-- | The villain's attack under way, if one is.
+getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
+getVillainAttack vid = getsGame \g -> Villain.villainAttackDetails =<< lookup vid (gameVillains g)
+
+-- | The code the scenario is set up by.
+getScenarioCode :: (HasGame m) => m CardCode
+getScenarioCode = getsGame (toId . gameScenario)
+
 -- | How many cards in play have the trait: of every type, each identity one card.
 countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
 countCardsInPlayWithTrait t = do
@@ -583,8 +591,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (Villain.villainAttachments a) (removeFromPlay . AttachmentRef)
         for_ (villainUpgrades a) (removeFromPlay . UpgradeRef)
         push $ RemoveDeck (VillainDeckKey vid)
+        let signature = lookup vid gameSignatureSchemes
+        -- what is attached to his side scheme leaves play with it
+        for_
+          [ aid
+          | (aid, att) <- HashMap.toList (gameAttachments g)
+          , isJust signature
+          , attachmentSideScheme (toAttrs att) == signature
+          ]
+          (removeFromPlay . AttachmentRef)
         let
-          signature = lookup vid gameSignatureSchemes
           leave area =
             let rest = filter (/= vid) (areaVillains area)
              in area
@@ -1678,6 +1694,14 @@ gameSelectCharacter = \case
           <> has ((\a -> (a.allyStunned, a.allyConfused, a.allyTough)) . toAttrs) (AllyCharacter . toId) (gameAllies g)
           <> has ((\a -> (a.villainStunned, a.villainConfused, a.villainTough)) . toAttrs) (VillainCharacter . toId) (gameVillains g)
           <> has ((\a -> (a.minionStunned, a.minionConfused, a.minionTough)) . toAttrs) (MinionCharacter . toId) (gameMinions g)
+  HeroOrAllyWithFewestRemainingHitPoints -> do
+    heroes <- traverse (\p -> (IdentityCharacter (toId p),) . (`subtractNatural'` (toAttrs p).playerIdentityDamage) <$> getModifiedHp p) . filter isHero . HashMap.elems =<< getsGame gamePlayers
+    allies <- traverse (\a -> (AllyCharacter (toId a),) . (`subtractNatural'` getAllyDamage a) <$> Ally.getModifiedHitPoints (toAttrs a)) . HashMap.elems =<< getsGame gameAllies
+    let characters = heroes <> allies
+        fewest = minimum (map snd characters)
+    pure . HashSet.fromList $ [c | not (null characters), (c, hp) <- characters, hp == fewest]
+   where
+    subtractNatural' hp dmg = subtractNatural dmg hp
   HeroOrAllyWithHighestAttack -> do
     heroes <- traverse (\p -> (IdentityCharacter (toId p),) <$> getIdentityHeroAttackDamage p) . filter isHero . HashMap.elems =<< getsGame gamePlayers
     allies <- traverse (\a -> (AllyCharacter (toId a),) <$> Ally.getModifiedAttack (toAttrs a)) . HashMap.elems =<< getsGame gameAllies
@@ -1914,8 +1938,13 @@ gameSelectEnemy m = do
     VillainEnemy -> pure True
     MinionEnemy -> pure False
     DamageableEnemy -> pure True
-    -- guard keeps the player it is engaged with from attacking the villain
-    AttackableBy attacker -> not <$> selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker)
+    -- guard keeps the player it is engaged with from attacking "the villain", the
+    -- active one (TWC insert p.6); a 'CannotBeAttacked' villain is attacked by no one
+    AttackableBy attacker -> do
+      active <- member (toId e) <$> gameSelectVillain ActiveVillain
+      guarded <- if active then selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker) else pure False
+      untouchable <- elem CannotBeAttacked <$> getModifiers (VillainRef $ toId e)
+      pure $ not (guarded || untouchable)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)

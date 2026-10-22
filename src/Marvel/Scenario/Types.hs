@@ -283,12 +283,19 @@ runScenarioMessage msg attrs = case msg of
     let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
     pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
   RemoveDeck EncounterDeckKey -> pure attrs
+  -- a defeated villain's cards still in play are his deck's: they have no discard pile
+  -- to go to
+  RemoveDeck key@(VillainDeckKey _) -> pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs)}
   RemoveDeck key ->
     pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}
-  -- to the discard pile of its own deck, wherever in the decks it was looked at
+  -- to the discard pile of its own deck, wherever in the decks it was looked at; a card
+  -- of a defeated villain's deck, his deck gone with him, leaves the game
   DiscardedCard (EncounterCard ec) -> do
     let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
-    pure $ leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
+    pure $
+      if home == EncounterDeckKey || HashMap.member home (scenarioDecks attrs)
+        then leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
+        else leaves ec attrs
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
     areas <- getAreas

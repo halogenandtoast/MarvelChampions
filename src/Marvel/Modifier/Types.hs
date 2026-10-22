@@ -43,5 +43,10 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | an enemy the players cannot attack (Distracting Taunts)
+    CannotBeAttacked
+  | -- | an enemy whose attacks the player must defend with an ally they control, if
+    -- able (Ramming Speed)
+    DefendedByAllyIfAble
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

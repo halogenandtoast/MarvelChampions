@@ -20,9 +20,12 @@ data VillainMessage
   | -- | its attack under way gains the keyword: overkill, piercing or ranged
     VillainAttackGains Keyword
   | VillainAttacks IdentityId
+  | -- | it attacks the player, the attack given no boost card (Escaped Convict)
+    VillainAttacksWithoutBoost IdentityId
   | -- | its attack by the character resolved: retaliate answers it
     VillainRetaliates CharacterId
   | VillainBeginAttack IdentityId
+  | VillainBeginAttackWithoutBoost IdentityId
   | VillainEndAttack
   | VillainAttacked
   | VillainSchemes

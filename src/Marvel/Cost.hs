@@ -56,6 +56,8 @@ canAffordCost identityId source = go
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
     DamageThisCost _ -> pure True
     DiscardCost _ -> pure True -- TODO: we need to check if target exists
+    DiscardRandomHandCardsCost n ->
+      projectP PlayerIdentityHand ((>= n) . fromIntegral . length . unHand) identityId
     DiscardHandCardsCost n _ ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)

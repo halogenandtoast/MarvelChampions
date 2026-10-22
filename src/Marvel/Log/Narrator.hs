@@ -74,6 +74,11 @@ narrationFor = \case
   MainSchemeMessage sid msg -> schemeNarration (MainSchemeRef sid) msg
   SideSchemeMessage sid msg -> sideSchemeNarration sid msg
   NextMainScheme -> Just $ one $ toned Bad $ mechanic [ikeyPart "log.mainSchemeAdvances" []]
+  -- the active counter moves: told only when it goes to another villain
+  SetActiveVillain vid -> Just do
+    aid <- getAreaOfTarget vid
+    current <- getActiveVillainIn aid
+    if current == Just vid then pure [] else whenRef (VillainRef vid) \v -> one $ mechanic [ikeyPart "log.activeVillain" ["villain" ~> v]]
   -- * The encounter deck
   RevealEncounterCard ident card -> Just do
     who <- playerRef' ident
@@ -164,6 +169,7 @@ identityNarration ident = \case
 villainNarration :: (HasGame m) => VillainId -> VillainMessage -> Maybe (m [LogEntry])
 villainNarration vid = \case
   VillainAttacks ident -> Just $ activation (VillainRef vid) ident "log.attacks" =<< getsGame (maybe False ((.villainStunned) . toAttrs) . lookup vid . gameVillains)
+  VillainAttacksWithoutBoost ident -> Just $ activation (VillainRef vid) ident "log.attacks" =<< getsGame (maybe False ((.villainStunned) . toAttrs) . lookup vid . gameVillains)
   VillainSchemes -> Just $ schemes (VillainRef vid) =<< getsGame (maybe False ((.villainConfused) . toAttrs) . lookup vid . gameVillains)
   VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
@@ -222,6 +228,7 @@ sideSchemeNarration sid = \case
   RevealSideScheme -> Just $ simply "log.sideSchemeRevealed" (SideSchemeRef sid)
   SideSchemePlaceThreat n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatPlaced" n Bad
   SideSchemeThwarted _ n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good
+  SideSchemeThreatRemoved n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good
   DefeatSideScheme -> Just $ whenRef (SideSchemeRef sid) \s -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> s]]
   _ -> Nothing
 

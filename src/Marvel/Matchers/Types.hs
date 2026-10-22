@@ -258,6 +258,8 @@ data CharacterMatcher
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack
+  | -- | of the heroes and allies, those with the fewest hit points remaining
+    HeroOrAllyWithFewestRemainingHitPoints
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

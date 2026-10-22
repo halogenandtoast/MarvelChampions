@@ -324,27 +324,10 @@ runVillainMessage msg attrs = case msg of
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
-  VillainAttacks ident ->
-    if villainStunned attrs
-      then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
-      else do
-        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
-        villainStep vid (VillainBeginAttack ident)
-        villainStep vid VillainEndAttack
-        clearBoosts
-        -- the attack is under way from when it is declared, as its would windows open
-        attack' <- newAttack ident
-        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
-  VillainBeginAttack ident -> do
-    attack' <- newAttack ident
-    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    dealBoost attrs
-    declareDefense ident vid AnyDefense
-    villainStep vid VillainFlipBoostCards
-    villainStep vid VillainAttacked
-    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
-    pure $
-      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
+  VillainAttacks ident -> attacks (VillainBeginAttack ident) ident
+  VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident
+  VillainBeginAttack ident -> beginAttack True ident
+  VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   VillainDefendedBy characterId ->
@@ -390,6 +373,29 @@ runVillainMessage msg attrs = case msg of
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
+  attacks begin ident =
+    if villainStunned attrs
+      then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
+      else do
+        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        villainStep vid begin
+        villainStep vid VillainEndAttack
+        clearBoosts
+        -- the attack is under way from when it is declared, as its would windows open
+        attack' <- newAttack ident
+        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
+  -- an attack "that does not get a boost card" is dealt none
+  beginAttack boosted ident = do
+    attack' <- newAttack ident
+    modifiers <- getModifiers attrs
+    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    when boosted $ dealBoost attrs
+    declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
+    villainStep vid VillainFlipBoostCards
+    villainStep vid VillainAttacked
+    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
+    pure $
+      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
   newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 

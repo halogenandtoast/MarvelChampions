@@ -152,7 +152,7 @@ attackedYou enemy character = do
 -- | After an enemy's attack deals damage to a character, the window for it.
 attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
 attackDealtDamage source damage character =
-  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character]
+  [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character (damageAmount damage)]
   | damageSource damage == FromAttack
   , damageAmount damage > 0
   , Just enemy <- [sourceEnemy source]
@@ -206,7 +206,13 @@ simultaneously = Simultaneously
 -- dealt. Damage a boost ability deals is not the attack's.
 attackDamages :: Message -> Maybe (EnemyId, CharacterId)
 attackDamages = \case
-  CheckWindows [Window After (EnemyAttacksAndDamages enemy character)] -> Just (enemy, character)
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character _)] -> Just (enemy, character)
+  _ -> Nothing
+
+-- | The damage an enemy's attack dealt a character, as it is dealt.
+attackDamageDealt :: Message -> Maybe (EnemyId, CharacterId, Natural)
+attackDamageDealt = \case
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character n)] -> Just (enemy, character, n)
   _ -> Nothing
 
 -- | The character's own ref, as status cards are given by.

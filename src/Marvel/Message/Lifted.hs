@@ -33,7 +33,9 @@ import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase)
 import Marvel.Question
 import Marvel.Queue
-import Marvel.Query (selectJust)
+import Marvel.Count (selectCount)
+import Marvel.Matchers qualified as Matchers
+import Marvel.Query (selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (Incite))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
@@ -814,6 +816,67 @@ fromDeck key body = pushAll . map (UsingDeck key) =<< capture body
 -- | The villain is defeated for good: the scenario says what follows.
 resolveVillainDefeat :: (ReverseQueue m) => VillainId -> m ()
 resolveVillainDefeat = push . ResolveVillainDefeat
+
+-- * Villains with side schemes of their own (The Wrecking Crew)
+
+data ThreatExtreme = MostThreat | LeastThreat
+  deriving stock (Show, Eq)
+
+-- | Of those scored, the ones with the most (or the least).
+extremes :: ThreatExtreme -> [(a, Natural)] -> [a]
+extremes _ [] = []
+extremes ex scored = [a | (a, n) <- scored, n == best]
+ where
+  best = (if ex == MostThreat then maximum else minimum) (map snd scored)
+
+sideSchemeThreatOf :: (HasGame m) => SideSchemeId -> m Natural
+sideSchemeThreatOf = selectCount Matchers.SchemeThreat . SchemeWithId . SchemeSideSchemeId
+
+-- | The villain's own side scheme, while he is in play.
+signatureSchemeOf :: (HasGame m) => VillainId -> m (Maybe SideSchemeId)
+signatureSchemeOf = selectOne . SignatureSchemeOf . VillainWithId
+
+-- | The villain whose own the side scheme is.
+signatureSchemeOwner :: (HasGame m) => SideSchemeId -> m (Maybe VillainId)
+signatureSchemeOwner sid = headMay <$> (filterM (fmap (== Just sid) . signatureSchemeOf) =<< selectList AnyVillain)
+
+-- | What the body does with one of them, the first player choosing among several tied:
+-- "if there is a tie, the first player chooses" (TWC insert p.6, Breakout 1B).
+chooseAmongTied :: (ReverseQueue m, IsRef a) => [a] -> (a -> m ()) -> m ()
+chooseAmongTied xs body = case xs of
+  [] -> pure ()
+  [x] -> body x
+  _ -> do
+    first <- selectJust FirstPlayer
+    chooseOnePrompted first "$label.breakTie" [targeting x (body x) | x <- xs]
+
+-- | "The villain whose side scheme has the most (least) threat": of the villains with a
+-- side scheme of their own.
+withVillainBySideSchemeThreat :: (ReverseQueue m) => ThreatExtreme -> (VillainId -> m ()) -> m ()
+withVillainBySideSchemeThreat ex body = do
+  villains <- selectList AnyVillain
+  scored <- fmap catMaybes $ for villains \v -> traverse (fmap (v,) . sideSchemeThreatOf) =<< signatureSchemeOf v
+  chooseAmongTied (extremes ex scored) body
+
+-- | "The side scheme with the most (least) threat", of those matching.
+withSideSchemeByThreat :: (ReverseQueue m) => ThreatExtreme -> SideSchemeMatcher -> (SideSchemeId -> m ()) -> m ()
+withSideSchemeByThreat ex matcher body = do
+  schemes <- selectList matcher
+  scored <- for schemes \sid -> (sid,) <$> sideSchemeThreatOf sid
+  chooseAmongTied (extremes ex scored) body
+
+-- | "Move the active counter to the villain whose side scheme has the most (least)
+-- threat."
+moveActiveCounter :: (ReverseQueue m) => ThreatExtreme -> m ()
+moveActiveCounter ex = withVillainBySideSchemeThreat ex setActiveVillain
+
+-- | The villain attacks the player, the attack given no boost card.
+villainAttacksWithoutBoost :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
+villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWithoutBoost
+
+-- | Threat taken off the side scheme, not by thwarting.
+removeSideSchemeThreat :: (ReverseQueue m) => SideSchemeId -> Natural -> m ()
+removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved
 
 -- * Effects
 

@@ -19,6 +19,8 @@ data Cost
   | -- | at least so many cards from hand, and at most so many (any number for Nothing)
     DiscardHandCardsCost Natural (Maybe Natural)
   | DiscardCost Target
+  | -- | so many cards discarded at random from the payer's hand
+    DiscardRandomHandCardsCost Natural
   | UseCost
   | NoCost
   | -- | as many resources, each of a different type
@@ -54,6 +56,7 @@ costResources NoCost = []
 costResources ExhaustCost = []
 costResources (DiscardCost _) = []
 costResources (DiscardHandCardsCost _ _) = []
+costResources (DiscardRandomHandCardsCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (ExhaustAlliesCost _ _) = []

@@ -6,6 +6,8 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader (ReaderT)
 import Marvel.Ability.Types
 import Marvel.Area (Area, AreaId, DeckKey, Pile)
+import Marvel.Attack (Attack)
+import Marvel.Card.Code (CardCode)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
 import Marvel.Card.PlayerCard.Types
@@ -119,6 +121,8 @@ getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
+getScenarioCode :: (HasGame m) => m CardCode
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 getHazardCount :: (HasGame m) => m Natural
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
