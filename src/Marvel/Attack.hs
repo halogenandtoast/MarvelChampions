@@ -68,3 +68,14 @@ attackWith keywords enemyId characterId = flip (foldr gainKeyword) keywords . at
 -- | The attack's damage to the character it is against.
 attackDamageTo :: Attack -> Natural -> Damage
 attackDamageTo a n = (toDamage n FromAttack) {damagePiercing = attackPiercing a}
+
+-- | The attack begun afresh keeps the keywords it gained as it was declared, in the
+-- windows before it began.
+keepingGains :: Maybe Attack -> Attack -> Attack
+keepingGains Nothing a = a
+keepingGains (Just old) a =
+  a
+    { attackOverkill = attackOverkill a || attackOverkill old
+    , attackPiercing = attackPiercing a || attackPiercing old
+    , attackRanged = attackRanged a || attackRanged old
+    }

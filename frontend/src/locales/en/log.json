@@ -74,6 +74,9 @@
   "-- The Wrecking Crew --": "",
 
   "-- The Rise of Red Skull --": "",
+  "attackGainsOverkill": "{target}'s attack gains overkill",
+  "attackGainsPiercing": "{target}'s attack gains piercing",
+  "attackGainsRanged": "{target}'s attack gains ranged",
 
   "-- The Once and Future Kang --": "",
 
