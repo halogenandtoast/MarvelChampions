@@ -58,7 +58,6 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
     <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label, danger: advances }">
       <div class="what">
         <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
-        <Meter v-if="scheme" class="scheme-meter" :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
         <p v-if="advances" class="warn" role="alert"><span aria-hidden="true">▲</span> {{ t('game.river.advances') }}</p>
       </div>
       <div class="cards">
@@ -69,8 +68,9 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
           </dl>
           <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
         </div>
-        <div v-if="scheme" class="attacker">
+        <div v-if="scheme" class="scheme">
           <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
+          <Meter :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
         </div>
         <BoardCard
           v-for="card in cards"
@@ -138,6 +138,9 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
+/* the meter under the card, as on the board */
+.scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
+.scheme :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 /* stats to the card's left, not under it, so the river stays a card high */
 .attacker { display: flex; gap: 6px; align-items: flex-start; flex: none; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 44px; }
