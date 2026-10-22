@@ -44,7 +44,7 @@ instance RunMessage BaronMordo where
           printedResourceEffects
             (printedResources $ getCardDef card)
             (stunIdentity ident)
-            (damageCharacter ident attrs (toDamage 2 FromAbility))
+            (damageHero ident attrs (toDamage 2 FromAbility))
             (confuseIdentity ident)
       pure e
     _ -> BaronMordo <$> runMessage msg attrs

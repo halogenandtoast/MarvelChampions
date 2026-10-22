@@ -53,6 +53,6 @@ instance RunMessage ProgramTransmitter where
       _ -> ProgramTransmitter <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       sideSchemes <- selectList AnySideScheme
-      for_ sideSchemes \s -> placeThreatOnScheme s 1
+      for_ sideSchemes \s -> placeThreat s 1
       pure a
     _ -> ProgramTransmitter <$> runMessage msg attrs

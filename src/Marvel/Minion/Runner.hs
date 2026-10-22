@@ -66,7 +66,7 @@ runMinionMessage msg attrs = case msg of
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    for_ [n | Retaliate n <- toList keywords] \n -> damageCharacter attacker attrs (toDamage n FromRetaliate)
+    for_ [n | Retaliate n <- toList keywords] (retaliate attrs attacker)
     pure attrs
   MinionStunned _ -> pure $ attrs & stunnedL .~ True
   MinionConfused _ -> pure $ attrs & confusedL .~ True
@@ -127,9 +127,7 @@ runMinionMessage msg attrs = case msg of
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         threat <- getModifiedScheme attrs
-        when (threat > 0) $
-          checkWindows [W.Window W.Would $ W.ThreatPlaced W.ThreatFromMinion mainScheme threat]
-        placeThreatPastWindow mainSchemeId threat
+        placeThreatFrom W.ThreatFromMinion mainSchemeId threat
         checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
         pure attrs
       _ -> error "Not the main scheme"
@@ -139,7 +137,7 @@ runMinionMessage msg attrs = case msg of
       Nothing -> error "No current attack"
       Just attack' -> do
         attackedYou (attackEnemy attack') (attackCharacter attack')
-        characterAttacked attack'
+        wasAttacked attack'
     pure attrs
  where
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)

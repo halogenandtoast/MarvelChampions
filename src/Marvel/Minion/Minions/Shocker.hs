@@ -20,7 +20,7 @@ instance RunMessage Shocker where
     MinionMessage ident msg' | ident == minionId attrs -> case msg' of
       RevealMinion _ -> do
         players <- selectList HeroIdentity
-        for_ players \player -> damageCharacter player attrs (toDamage 1 FromAbility)
+        for_ players \player -> damageHero player attrs (toDamage 1 FromAbility)
         pure e
       _ -> Shocker <$> runMessage msg attrs
     _ -> Shocker <$> runMessage msg attrs

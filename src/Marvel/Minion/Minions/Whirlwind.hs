@@ -49,7 +49,7 @@ instance RunMessage Whirlwind where
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
         heroes <- selectList HeroIdentity
-        for_ heroes \ident -> damageCharacter ident attrs (toDamage 1 FromAbility)
+        for_ heroes \ident -> damageHero ident attrs (toDamage 1 FromAbility)
         pure e
       _ -> Whirlwind <$> runMessage msg attrs
     _ -> Whirlwind <$> runMessage msg attrs

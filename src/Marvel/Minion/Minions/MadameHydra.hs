@@ -40,7 +40,7 @@ placeThreatOnLegions = do
   unless (null legions) $
     chooseOrRunOne
       firstPlayer
-      [targeting sid (placeThreatOnScheme sid 2) | sid <- legions]
+      [targeting sid (placeThreat sid 2) | sid <- legions]
 
 instance RunMessage MadameHydra where
   runMessage msg e@(MadameHydra attrs) = runQueueT $ case msg of

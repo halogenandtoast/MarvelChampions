@@ -391,15 +391,8 @@ damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => char
 damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
 
 -- | Threat placed on each scheme matching, by the card.
-placeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-placeThreat you source n = Choice.pushChoice you . PlaceThreat (toSource source) n
-
--- | Threat a card places on the scheme ('placeThreatOn').
-placeThreatOnScheme :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
-placeThreatOnScheme scheme = pushAll . placeThreatOn (toScheme scheme)
-
-stunIdentity :: (ReverseQueue m) => IdentityId -> m ()
-stunIdentity ident = push $ IdentityMessage ident IdentityStunned
+placeThreatMatching :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
+placeThreatMatching you source n = Choice.pushChoice you . PlaceThreat (toSource source) n
 
 confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
 confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
@@ -432,11 +425,8 @@ discardAtRandom ident n = push $ IdentityMessage ident $ DiscardFrom RandomFromH
 
 -- | The top cards of the encounter deck are discarded, the target told which
 -- ('WithDiscarded').
-discardTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
-discardTopOfEncounterDeck n = push . DiscardTopOfEncounterDeck n . Just . toTarget
-
-putTopOfDeckIntoPlayAsDrone :: (ReverseQueue m) => IdentityId -> m ()
-putTopOfDeckIntoPlayAsDrone = push . PutTopOfDeckIntoPlayAsDrone
+discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
+discardTopOfEncounterDeckFor n = push . DiscardTopOfEncounterDeck n . Just . toTarget
 
 -- | The boost card stays in play, under the player.
 putBoostIntoPlay :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
@@ -487,17 +477,6 @@ minionEndsAttack mid = push $ MinionMessage mid MinionEndAttack
 -- | The minion's scheme, it not confused: threat on the main scheme.
 minionSchemed :: (ReverseQueue m) => MinionId -> m ()
 minionSchemed mid = push $ MinionMessage mid MinionSchemed
-
--- | The player declares who defends the enemy's attack.
-declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
-declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
-
--- | The character the attack is against is attacked.
-characterAttacked :: (ReverseQueue m) => Attack -> m ()
-characterAttacked atk = case attackCharacter atk of
-  IdentityCharacter ident -> push $ IdentityMessage ident $ IdentityWasAttacked atk
-  AllyCharacter ally -> push $ AllyMessage ally $ AllyWasAttacked atk
-  _ -> error "Invalid damage target"
 
 -- * Interrupts: what is on the queue changed
 

@@ -31,7 +31,7 @@ instance HasAbilities Loki where
 instance RunMessage Loki where
   runMessage msg l@(Loki attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      discardTopOfEncounterDeck 1 attrs
+      discardTopOfEncounterDeckFor 1 attrs
       pure l
     WithDiscarded (isTarget attrs -> True) _ (onlyEncounterCards -> cards)
       | any ((== TreacheryType) . cdCardType . getCardDef) cards -> do
