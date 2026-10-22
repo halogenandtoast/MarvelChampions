@@ -22,6 +22,8 @@ import Marvel.Attachment.Attachments.MediaCoverage as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Attachment.Attachments.CrossfiresRifle as X
+
 -- Zola
 import Marvel.Attachment.Attachments.DefensiveProgramming as X
 import Marvel.Attachment.Attachments.PainInhibitors as X

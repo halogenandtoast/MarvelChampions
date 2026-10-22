@@ -33,6 +33,9 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
+import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
+
 -- Zola
 import Marvel.SideScheme.SideSchemes.HydraPrison as X
 import Marvel.SideScheme.SideSchemes.TestSubjects as X

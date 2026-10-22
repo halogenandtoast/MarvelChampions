@@ -89,6 +89,12 @@ allUpgrades = fromList $ concatMap
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , hawkeyesBow
+  , hawkeyesQuiver
+  , expertMarksman
+  , skyCycle
+  , finesse
+  , skilledInvestigator
 
   -- The Once and Future Kang
 
@@ -213,11 +219,11 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = limited (MaxPerPlayerUnderAnyControl 1)
+combatTraining = reprintedAs ["04041"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = limited (MaxPerPlayerUnderAnyControl 1)
+heroicIntuition = reprintedAs ["04046"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
@@ -416,3 +422,27 @@ theSorcererSupreme =
   (unique $ basicUpgrade "09026" "The Sorcerer Supreme" 2 [Title] [Mental])
     { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
     }
+
+hawkeyesBow :: CardDef
+hawkeyesBow =
+  unique $
+    (identityUpgrade "04002" "Hawkeye's Bow" 0 [Weapon] [Wild])
+      { cdKeywords = fromList [Restricted]
+      }
+
+hawkeyesQuiver :: CardDef
+hawkeyesQuiver = unique $ identityUpgrade "04003" "Hawkeye's Quiver" 1 [Item] [Mental]
+
+expertMarksman :: CardDef
+expertMarksman = identityUpgrade "04010" "Expert Marksman" 1 [Skill] [Wild]
+
+skyCycle :: CardDef
+skyCycle = limited (MaxPerAlly 1) $ upgrade "04015" "Sky Cycle" 1 [Vehicle] [Energy] Leadership
+
+finesse :: CardDef
+finesse = identityUpgrade "04033" "Finesse" 2 [Condition] [Mental]
+
+skilledInvestigator :: CardDef
+skilledInvestigator =
+  limited (MaxPerPlayerUnderAnyControl 1) $
+    upgrade "04047" "Skilled Investigator" 0 [Skill] [Physical] Justice

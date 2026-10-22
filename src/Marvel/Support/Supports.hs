@@ -33,5 +33,7 @@ import Marvel.Support.Supports.BeatCop as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Support.Supports.TeamTraining as X
+import Marvel.Support.Supports.JessicaDrewsApartment as X
 
 -- The Once and Future Kang

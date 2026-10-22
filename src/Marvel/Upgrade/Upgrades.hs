@@ -72,5 +72,11 @@ import Marvel.Upgrade.Upgrades.Resourceful as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Upgrade.Upgrades.HawkeyesBow as X
+import Marvel.Upgrade.Upgrades.HawkeyesQuiver as X
+import Marvel.Upgrade.Upgrades.ExpertMarksman as X
+import Marvel.Upgrade.Upgrades.SkyCycle as X
+import Marvel.Upgrade.Upgrades.Finesse as X
+import Marvel.Upgrade.Upgrades.SkilledInvestigator as X
 
 -- The Once and Future Kang

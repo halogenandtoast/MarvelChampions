@@ -29,6 +29,8 @@ data MinionMessage
   | MinionEndAttack
   | -- | its attack under way gains the keyword: overkill, piercing or ranged
     MinionAttackGains Keyword
+  | -- | all damage from its attack under way is prevented
+    MinionAttackDamagePrevented
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
   | -- | it attacks the player's ally, the player being attacked

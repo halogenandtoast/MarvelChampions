@@ -34,6 +34,7 @@ const supports = computed(() => [...(player.supports ?? []), ...(player.upgrades
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
+const holders = computed(() => (player.upgrades ?? []).filter((u) => u.heldCards?.length))
 const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgrades ?? [])]
 </script>
 
@@ -135,6 +136,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
         <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
         <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
       </template>
+      <Pile v-for="u in holders" :key="u.id" :label="u.name" :cards="u.heldCards ?? []" />
       <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" />
     </div>
   </section>

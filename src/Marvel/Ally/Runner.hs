@@ -15,7 +15,9 @@ import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Card.Def
 import Marvel.Damage
+import Marvel.Keyword
 import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Query
@@ -65,7 +67,10 @@ instance RunMessage (Attrs Ally) where
         then pure $ a & stunnedL .~ False
         else do
           enemies <- selectList $ AttackableBy $ IdentityWithId $ allyController a
-          dmg <- toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)
+          -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally
+          let keywords = cdKeywords (allyCardDef a)
+              gains = [withPiercing | Piercing `member` keywords] <> [withRanged | Ranged `member` keywords]
+          dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
           chooseOne (allyController a)
             [ targeting (enemyRef enemy) do
                 checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
@@ -116,10 +121,18 @@ instance RunMessage (Attrs Ally) where
         let
           overkill = subtractNatural
             (subtractNatural (allyDamage a) hitPoints)
-            (attackDamage attack')
-        damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamage attack'))
+            (attackDamageDealt attack')
+        when (attackDamageDealt attack' > 0) $
+          damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
         when (attackOverkill attack' && overkill > 0) $
           attackDamageIdentity (allyController a) (attackSource attack') (toDamage overkill FromAttack)
+        -- retaliate, if it is still in play after the attack, and the attack not ranged
+        let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
+        when (retaliates > 0 && not (attackRanged attack')) $
+          allyStep ident (AllyRetaliates (attackEnemy attack') retaliates)
+        pure a
+      AllyRetaliates enemy n -> do
+        dealDamage enemy a (toDamage n FromRetaliate)
         pure a
       AllyDamaged source damage -> if allyTough a && preventedByTough damage
         then pure $ a & toughL .~ False

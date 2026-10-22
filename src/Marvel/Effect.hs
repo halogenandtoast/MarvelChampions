@@ -9,6 +9,7 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Effect.Types
 import Marvel.Event.Events
+import Marvel.Hero.Heroes
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Obligation.Obligations
@@ -44,6 +45,8 @@ allEffects =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , ("04031a", SomeCardEffect spiderWomanEffect)
+    , ("04039", SomeCardEffect selfPropelledGlideEffect)
 
     -- The Once and Future Kang
 

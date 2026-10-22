@@ -40,6 +40,8 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , crossfiresRifle
+
       -- Zola
       , defensiveProgramming
       , painInhibitors
@@ -143,6 +145,9 @@ biomechanicalUpgrades =
 counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
+
+crossfiresRifle :: CardDef
+crossfiresRifle = (attachment "04029" "Crossfire's Rifle" [Weapon] [Boost, Boost] HawkeyeNemesis 1) {cdUnique = True}
 
 -- The Rise of Red Skull
 -- Zola

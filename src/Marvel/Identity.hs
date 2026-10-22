@@ -139,7 +139,8 @@ identityDamage = playerIdentityDamage . toAttrs
 getModifiedHandSize :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedHandSize pid = do
   modifiers <- getModifiers pid
-  pure $ foldr applyModifier (unHandSize $ handSize pid) modifiers
+  let raised = foldr applyModifier (unHandSize $ handSize pid) modifiers
+  pure $ subtractNatural (sum [n | HandSizeReduction n <- modifiers]) raised
  where
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
@@ -301,9 +302,9 @@ checkPlayLimits ident c = case cdLimit def of
     -- any player without one may take it
     MaxPerPlayerUnderAnyControl n -> do
       players <- getPlayers
-      flip anyM players \p ->
-        (< n) . fromIntegral . length
-          <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
+      flip anyM players \p -> case cdCardType def of
+        SupportType -> (< n) <$> selectListCount (SupportMatches [SupportNamed name, SupportControlledBy $ IdentityWithId p])
+        _ -> (< n) . fromIntegral . length <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
     UnderAnyControl -> pure True
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
@@ -393,7 +394,9 @@ playableTargets attrs c = do
       <$> canAffordCost (toId attrs) (toSource c) (otherCosts cost)
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
-getPlayableCards player = filterM (isPlayable player) cards
+getPlayableCards player = do
+  held <- getUpgradeHeldCards (toId player)
+  filterM (isPlayable player) (cards <> held)
  where
   attrs = toAttrs player
   cards =
@@ -765,7 +768,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       keywords <- getModifiedKeywords pid
       let
         damage =
-          subtractNatural playerIdentityDamageReduction $ attackDamage attack'
+          subtractNatural playerIdentityDamageReduction $ attackDamageDealt attack'
         -- each instance of retaliate adds to the others; a ranged attack ignores it
         retaliate = if attackRanged attack' then 0 else sum [n | Retaliate n <- keywords]
       -- the damage, then retaliate (forced, so before any response), then the window
@@ -851,7 +854,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                     -- the cards looked at go back as the rest would
                     chooseOne playerIdentityId [labeled "$label.noMatchingCardsFound" (handleReturnCards rest)]
                   else case searchOption of
-                    SearchTarget target -> searchFoundCards target $ PlayerCard <$> foundCards
+                    -- the card chosen goes where the target puts it, the rest back
+                    SearchTarget target ->
+                      chooseOne playerIdentityId
+                        [ targeting c do
+                            searchFoundCards target [PlayerCard c]
+                            handleReturnCards (rest <> cs')
+                        | (c, cs') <- removeEach foundCards
+                        ]
                     SearchDrawOne ->
                       chooseOne playerIdentityId
                         [ targeting c do

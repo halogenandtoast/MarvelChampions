@@ -349,6 +349,7 @@ runVillainMessage msg attrs = case msg of
       attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
   -- onto his own side scheme, when he has one, or else the main scheme

@@ -66,6 +66,10 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeMinionCard crossfire
+      , SomeMinionCard theViper
+      , SomeMinionCard hydraRegular
+
       -- Zola
       , SomeMinionCard ultimateBioServant
       , SomeMinionCard zolasMutate

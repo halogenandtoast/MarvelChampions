@@ -238,9 +238,11 @@ instance RunMessage ActiveCost where
     AbortPayment ident | ident == activeCostId activeCost -> do
       cancelMatchingMessage (== CheckPayment ident)
       let payer = activeCostIdentityId activeCost
-      -- a card played from a discard pile was left there
+      -- a card played from a discard pile, or held by an upgrade, was left there
       fromHand <- case activeCostTarget activeCost of
-        ForCard card -> projectP PlayerIdentityDiscard (notElem card . unDiscard) payer
+        ForCard card -> do
+          held <- getUpgradeHeldCards payer
+          (card `notElem` held &&) <$> projectP PlayerIdentityDiscard (notElem card . unDiscard) payer
         _ -> pure False
       for_ [card | ForCard card <- [activeCostTarget activeCost], fromHand] (addToHand payer)
       for_ (activeCostSpentCards activeCost) (addToHand payer)

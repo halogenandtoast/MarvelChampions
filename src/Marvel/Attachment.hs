@@ -47,6 +47,8 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeAttachmentCard crossfiresRifle
+
       -- Zola
       , SomeAttachmentCard defensiveProgramming
       , SomeAttachmentCard painInhibitors

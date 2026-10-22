@@ -15,6 +15,8 @@ data Modifier
   | AllyLimitModifier Natural
   | HitPointModifier Natural
   | HandSizeModifier Natural
+  | -- | "your hand size is reduced by N"
+    HandSizeReduction Natural
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial

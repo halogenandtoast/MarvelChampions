@@ -55,6 +55,9 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeSideSchemeCard markedForDeath
+  , SomeSideSchemeCard theVipersAmbition
+
   -- Zola
   , SomeSideSchemeCard hydraPrison
   , SomeSideSchemeCard testSubjects

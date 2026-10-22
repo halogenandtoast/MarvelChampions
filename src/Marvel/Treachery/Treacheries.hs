@@ -49,6 +49,8 @@ import Marvel.Treachery.Treacheries.ShockTherapy as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.SniperShot as X
+
 -- Zola
 import Marvel.Treachery.Treacheries.MindRay as X
 import Marvel.Treachery.Treacheries.TechnologicalEnhancements as X
