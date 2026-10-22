@@ -862,15 +862,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
+      -- what answers "would be defeated" may take the defeat off the queue
       pushAll $
         attackDealtDamage source damage (IdentityCharacter playerIdentityId)
-          <> [IdentityMessage playerIdentityId IdentityDefeated | playerIdentityDamage + damageAmount damage >= modifiedHp]
-      -- what answers "would be defeated" may take the defeat off the queue
-      when (playerIdentityDamage + damageAmount damage >= modifiedHp) $
-        pushAll
-          [ CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId]
-          , IdentityMessage playerIdentityId IdentityDefeated
-          ]
+          <> concat
+            [ [ CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId]
+              , IdentityMessage playerIdentityId IdentityDefeated
+              ]
+            | playerIdentityDamage + damageAmount damage >= modifiedHp
+            ]
       pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
     IdentityDefeated -> do
       players <- getPlayers
