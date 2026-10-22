@@ -88,21 +88,21 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
     <div class="zone allies">
       <span class="zone-label">{{ t('game.zones.allies') }}</span>
       <div class="cards">
-        <BoardCard
-          v-for="ally in player.allies ?? []"
-          :id="ally.id"
-          :key="ally.id"
-          :code="ally.code"
-          :name="ally.name"
-          :exhausted="ally.exhausted"
-          :damage="ally.damage"
-          :hit-points="ally.hitPoints"
-          :counters="ally.counters ?? null"
-          :stunned="ally.stunned"
-          :confused="ally.confused"
-          :tough="ally.tough"
-          :attached="ally.upgrades ?? []"
-        />
+        <div v-for="ally in player.allies ?? []" :key="ally.id" class="ally">
+          <BoardCard
+            :id="ally.id"
+            :code="ally.code"
+            :name="ally.name"
+            :exhausted="ally.exhausted"
+            :damage="ally.damage"
+            :counters="ally.counters ?? null"
+            :stunned="ally.stunned"
+            :confused="ally.confused"
+            :tough="ally.tough"
+            :attached="ally.upgrades ?? []"
+          />
+          <Meter :label="t('game.hp')" :value="Math.max(0, ally.hitPoints - ally.damage)" :max="ally.hitPoints" />
+        </div>
         <!-- a free slot for each ally still allowed -->
         <span v-for="n in openAllySlots" :key="`slot-${n}`" class="ally-slot" />
       </div>
@@ -184,6 +184,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .minion { display: flex; flex-direction: column; gap: 6px; }
 .zone.engaged .zone-label { color: #e48b91; }
 .zone.allies { flex: 1 1 auto; }
+.ally { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
 .ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }
 .piles { display: flex; gap: 10px; margin-left: auto; flex: none; padding-top: 18px; }
 .compact { padding: 10px 12px; }

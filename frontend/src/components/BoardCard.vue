@@ -29,7 +29,6 @@ const props = withDefaults(
     back?: Back | null
     exhausted?: boolean
     damage?: number
-    hitPoints?: number | null
     threat?: number | null
     /** uses or counters on it */
     counters?: number | null
@@ -45,7 +44,7 @@ const props = withDefaults(
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
   }>(),
-  { morph: true, id: null, code: null, name: '', back: null, damage: 0, hitPoints: null, threat: null, counters: null, attached: () => [], flag: null, flagIcon: null },
+  { morph: true, id: null, code: null, name: '', back: null, damage: 0, threat: null, counters: null, attached: () => [], flag: null, flagIcon: null },
 )
 
 const cards = useCards()
@@ -72,7 +71,6 @@ const chips = computed(() => {
     return { option, text: n > 1 ? `${text} ${n}` : text }
   })
 })
-const left = computed(() => (props.hitPoints === null ? null : Math.max(0, props.hitPoints - props.damage)))
 
 const preview = (element: HTMLElement, touched = false, code = props.code, back = props.back) =>
   overlay.show({ code, name: title.value, back }, element, !back && cards.landscape(code), touched)
@@ -124,10 +122,6 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
-      <span v-if="left !== null" class="hp" :class="{ hurt: damage > 0 }" :title="$t('game.hitPointsLeft', { left, total: hitPoints })">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2 0 3.4 1.1 4.1 2.3h3C14.2 6.1 15.6 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21Z" fill="currentColor"/></svg>
-        {{ left }}<small>/{{ hitPoints }}</small>
-      </span>
       <div v-if="chips.length" class="chips">
         <button v-for="chip in chips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
       </div>
@@ -219,31 +213,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card:not(.landscape) .token.threat { --token-size: max(28px, 34cqi); }
 .token.counters { bottom: 24%; right: 4%; }
 
-/* hit points left, along the bottom */
-.hp {
-  position: absolute;
-  left: 50%;
-  bottom: 4%;
-  translate: -50% 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 7px 2px 5px;
-  border-radius: 999px;
-  background: rgb(10 12 16 / 0.86);
-  border: 1px solid rgb(79 174 106 / 0.6);
-  color: #d9f2df;
-  font-family: var(--font-display);
-  font-size: max(12px, 13cqi);
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-.hp svg { width: 1em; height: 1em; color: var(--health); }
-.hp small { font-size: 0.75em; color: var(--text-faint); font-weight: 600; }
-.hp.hurt { border-color: rgb(214 80 88 / 0.7); }
-.hp.hurt svg { color: var(--danger); }
-.card.exhausted .hp, .card.exhausted .chips { rotate: -90deg; }
+.card.exhausted .chips { rotate: -90deg; }
 
 /* what it can do, as chips over its foot */
 .chips {

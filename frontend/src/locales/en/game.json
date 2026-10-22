@@ -17,7 +17,6 @@
   "threatOn": "{count} threat",
   "damageOn": "{count} damage",
   "countersOn": "{count} counters",
-  "hitPointsLeft": "{left} of {total} hit points left",
   "hand": "Hand",
   "handOf": "{name}'s hand",
   "emptyHand": "No cards in hand",
