@@ -69,7 +69,7 @@ spec = describe "\"you\"" do
       damageOf other `shouldReturn` 2
  where
   heroes = runNow . map (\ident -> IdentityMessage ident (ChangedToForm A))
-  passable c = isNoResponse c || isNoDefender c
+  passable c = isNoResponse c || isNoDefender c || isLabel "$label.declineToDefend" c
   -- decline what is asked until a matching choice is offered
   passUntil p =
     asked >>= \case

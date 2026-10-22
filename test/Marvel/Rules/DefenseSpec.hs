@@ -36,6 +36,37 @@ spec = describe "defending" do
       choose "she declines" (isLabel "$label.declineToDefend")
       fmap fst <$> asked `shouldReturn` Just p
       offers (isTargetChoice other) `shouldReturn` False
+
+  it "when the attacked player does not defend, the other player decides whether they do" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    let p = player1 tg
+        other = player2 tg
+    inGame tg do
+      runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+      vid <- villainIdNow
+      runNow [VillainMessage vid (VillainAttacks p)]
+      pass' p
+      choose "Spider-Man does not defend" isNoDefender
+      fmap fst <$> asked `shouldReturn` Just other
+      choose "Captain Marvel defends" (isTargetChoice other)
+      pass
+      damageOf p `shouldReturn` 0
+      damageOf other >>= (`shouldSatisfy` (> 0))
+
+  it "no one defends when every player declines" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    let p = player1 tg
+        other = player2 tg
+    inGame tg do
+      runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+      vid <- villainIdNow
+      runNow [VillainMessage vid (VillainAttacks p)]
+      pass' p
+      choose "Spider-Man does not defend" isNoDefender
+      choose "Captain Marvel declines" (isLabel "$label.declineToDefend")
+      pass
+      damageOf other `shouldReturn` 0
+      damageOf p >>= (`shouldSatisfy` (> 0))
  where
   -- answer what comes before the defender is declared, such as Spider-Sense
   pass' ident =

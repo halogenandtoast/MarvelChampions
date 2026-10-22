@@ -922,9 +922,9 @@ runGameMessage msg g@Game {..} = case msg of
   DeclareDefense ident enemyId defensePriority -> do
     push $ DeclareDefenseWithout ident enemyId defensePriority []
     pure g
-  -- any player may defend with a character they control, and decides for themselves:
-  -- the attacked player is offered their own characters and the others', and offering
-  -- another player's asks that player, who may decline
+  -- each player decides for themselves whether a character they control defends (RR
+  -- "Defend"): the attacked player first, who may ask another player before deciding;
+  -- once they decline, each other player in turn is asked
   DeclareDefenseWithout ident enemyId defensePriority declined -> do
     allies <- selectList UnexhaustedAlly
     identities <-
@@ -933,31 +933,31 @@ runGameMessage msg g@Game {..} = case msg of
         else select $ UnexhaustedIdentity <> HeroIdentity
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
-      ask owner defense =
+      defensesOf owner =
+        [ if owner == ident
+          then Defend enemyId
+          else TargetLabel (IdentityRef owner) [Run [IdentityMessage owner (SideMessage (Defended enemyId))]]
+        | owner `member` identities
+        ]
+          <> [AllyDefend a enemyId | (a, Just controller) <- controllers, controller == owner]
+      decline owner = Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]
+      ask owner =
         Ask owner
           . promptedAbout "$label.askedToDefend" enemyId
           . ChooseOne
-          $ [ defense
-            , Label "$label.declineToDefend" [Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]]
-            ]
-      offered owner ref defense
-        | owner == ident = defense
-        | otherwise = TargetLabel ref [Run [ask owner defense]]
-    push
-      $ Ask ident
-        . promptedAbout "$label.declareDefender" enemyId
-        . ChooseOne
-      $ Label "$label.noDefender" []
-        : [Defend enemyId | ident `member` identities]
-          <> [ offered other (IdentityRef other) (TargetLabel (IdentityRef other) [Run [IdentityMessage other (SideMessage (Defended enemyId))]])
-             | other <- toList identities
-             , other /= ident
-             , other `notElem` declined
-             ]
-          <> [ offered owner (AllyRef a) (AllyDefend a enemyId)
-             | (a, Just owner) <- controllers
-             , owner `notElem` declined
-             ]
+          $ defensesOf owner <> [Label "$label.declineToDefend" [decline owner]]
+      (before, from) = break (== ident) gamePlayerOrder
+      others = [o | o <- from <> before, o /= ident, o `notElem` declined, notNull (defensesOf o)]
+    if ident `elem` declined
+      then for_ (headMay others) (push . ask)
+      else
+        push
+          $ Ask ident
+            . promptedAbout "$label.declareDefender" enemyId
+            . ChooseOne
+          $ Label "$label.noDefender" [decline ident]
+            : defensesOf ident
+              <> [TargetLabel (IdentityRef o) [Run [ask o]] | o <- others]
     pure g
   _ -> pure g
 

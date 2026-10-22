@@ -275,7 +275,7 @@ pass =
  where
   passIndex cs = fmap fst $ headMay $ filter (passing . snd) $ zip [0 ..] cs
   passing = \case
-    Label l _ -> l `elem` ["$label.noResponse", "$label.noDefender", "$label.doneDiscarding"]
+    Label l _ -> l `elem` ["$label.noResponse", "$label.noDefender", "$label.declineToDefend", "$label.doneDiscarding"]
     _ -> False
 
 -- | Put cards on top of a player's deck, first given on top.
