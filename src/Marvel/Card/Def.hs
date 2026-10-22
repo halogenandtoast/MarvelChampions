@@ -40,6 +40,8 @@ data CardMatcher
   | CardWithType CardType
   | CardWithTrait Trait
   | CardMatchesAll [CardMatcher]
+  | -- | any printing of one of these cards
+    CardIsOneOf [CardDef]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -63,6 +65,7 @@ cardMatch matcher a = case matcher of
   CardWithResource resource ->
     resource `elem` map snd (filter isPrintedResource $ cdResources def)
   CardMatchesAll xs -> all (`cardMatch` a) xs
+  CardIsOneOf defs -> any (sameCard def) defs
  where
   def = getCardDef a
   isPrintedResource (restriction, _) = restriction == PrintedResource

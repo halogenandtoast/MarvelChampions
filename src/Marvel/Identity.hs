@@ -333,11 +333,12 @@ checkPlayLimits ident c = case cdLimit def of
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
   modifiers <- getModifiers attrs
-  pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
+  pure $ maybe 0 (max 0 . (+ sum (map change modifiers))) (cdCost $ getCardDef c)
  where
-  modifiedCost ms cost' = foldr applyModifier cost' ms
-  applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
-  applyModifier _ = id
+  change = \case
+    ResourceCostReduction n -> negate (fromIntegral n)
+    AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
+    _ -> 0
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
