@@ -34,8 +34,10 @@ instance RunMessage EarthsMightiestHeroes where
       let exhausted = paymentExhaustedCharacters payment
       heroes <- selectList $ IdentityWithId you <> IdentityWithTrait Avenger <> M.ExhaustedIdentity
       allies <- selectList $ AllyControlledBy (IdentityWithId you) <> AllyWithTrait Avenger <> M.ExhaustedAlly
-      chooseOrRunOne you $
-        [targeting (IdentityRef i) (ready i) | i <- heroes, IdentityCharacter i `notElem` exhausted]
-          <> [targeting (AllyRef a) (ready a) | a <- allies, AllyCharacter a `notElem` exhausted]
+      -- none to ready: the event resolves to nothing
+      let readied =
+            [targeting (IdentityRef i) (ready i) | i <- heroes, IdentityCharacter i `notElem` exhausted]
+              <> [targeting (AllyRef a) (ready a) | a <- allies, AllyCharacter a `notElem` exhausted]
+      unless (null readied) $ chooseOrRunOne you readied
       pure e
     _ -> EarthsMightiestHeroes <$> runMessage msg attrs
