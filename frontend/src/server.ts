@@ -350,6 +350,12 @@ export interface CampaignView {
   campaign: Campaign
   difficulty: 'Normal' | 'Expert'
   heroes: string[]
+  /** its seats, as a game's lobby shows them */
+  table: Table
+  /** with friends, seats still open before its first game */
+  waitingForPlayers: boolean
+  /** for each seat taken, how many cards its deck must gain before it is dealt */
+  deckShort: number[]
   next: string | null
   nextName: string | null
   /** the game of it being played, not yet over */

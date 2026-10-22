@@ -82,6 +82,8 @@ export interface NewCampaign {
   mode: CampaignMode
   difficulty: 'Normal' | 'Expert'
   decks: DeckChoice[]
+  /** how many play: seats beyond the decks given are left open for friends */
+  seats?: number
 }
 
 export const fetchCampaigns = () => apiFetch('/api/campaigns').then((r) => json<CampaignView[]>(r))
@@ -94,3 +96,17 @@ export const createCampaign = (campaign: NewCampaign) => post('/api/campaigns', 
 export const continueCampaign = (id: string) => post(`/api/campaigns/${id}/continue`, {}).then((r) => json<{ gameId: string }>(r))
 
 export const deleteCampaign = (id: string) => apiFetch(`/api/campaigns/${id}`, { method: 'DELETE' })
+
+/** Take an open seat of a campaign with friends; the last one taken deals its first game. */
+export const joinCampaign = (id: string, deck: DeckChoice) => post(`/api/campaigns/${id}/join`, { deck }).then((r) => json<{ gameId?: string }>(r))
+
+export const leaveCampaign = (id: string) => post(`/api/campaigns/${id}/leave`, {}).then((r) => (r.ok ? undefined : json<never>(r)))
+
+/** Begin with the seats taken, closing the rest: its first game is dealt. */
+export const startCampaign = (id: string) => post(`/api/campaigns/${id}/start`, {}).then((r) => json<{ gameId: string }>(r))
+
+/** The deck a seat plays the campaign with, for the same hero, between its games. */
+export const changeCampaignDeck = (id: string, position: number, deck: DeckChoice) =>
+  apiFetch(`/api/campaigns/${id}/seats/${position}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deck }) }).then(async (r) => {
+    if (!r.ok) throw new Error((await r.text()) || r.statusText)
+  })
