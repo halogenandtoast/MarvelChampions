@@ -38,7 +38,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -103,6 +103,20 @@ addToBasicPower ident n = replaceMatchingMessage raise \case
     IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
     IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
     other -> [other]
+
+-- | "After [enemy] attacks you" is for the player whose character defended the attack,
+-- or was attacked undefended (RR "Defend"): once the enemy's attack has its target
+-- character, the after window waiting for it is for that character's controller.
+attackedYou :: (HasGame m, HasQueue m) => EnemyId -> CharacterId -> m ()
+attackedYou enemy character = do
+  you <- case character of
+    IdentityCharacter ident -> pure (Just ident)
+    AllyCharacter aid -> getSourceController (AllyRef aid)
+    _ -> pure Nothing
+  for_ you \ident ->
+    replaceMatchingMessage (const [CheckWindows [Window After $ EnemyAttack enemy ident]]) \case
+      CheckWindows [Window After (EnemyAttack enemy' _)] -> enemy' == enemy
+      _ -> False
 
 -- | After an enemy's attack deals damage to a character, the window for it.
 attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]

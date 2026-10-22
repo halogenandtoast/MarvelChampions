@@ -4,6 +4,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
+import Marvel.Card.Side (Side (A))
 import TestImport
 
 hulk :: IO TestGame
@@ -42,6 +43,26 @@ spec = describe "Hulk nemesis" do
         pass
         discardOf p >>= (`shouldSatisfy` elem genius)
         damageOf p `shouldReturn` 3
+
+    it "\"you\" is the player whose hero defended the attack (RR Defend)" do
+      tg <- testGame ["hulk", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+        abomination <- addMinion p Minions.abomination
+        _ <- stackDeck p ["01089"]
+        [strength] <- stackDeck other ["01090"]
+        runNow [MinionMessage abomination (MinionAttacks p)]
+        choose "ask Captain Marvel to defend" (isTargetChoice other)
+        choose "Captain Marvel defends" (isTargetChoice other)
+        choose "Abomination's forced response" isAnyAbility
+        pass
+        discardOf other >>= (`shouldSatisfy` elem strength)
+        discardOf p `shouldReturn` []
+        damageOf p `shouldReturn` 0
+        -- 3 ATK less her 1 DEF, then 2 for the [physical] resource
+        damageOf other `shouldReturn` 4
 
   describe "Total Destruction (10027)" do
     it "enters with 2 threat per player, which cannot be removed while Abomination is in play" do

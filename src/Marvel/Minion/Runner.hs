@@ -161,12 +161,14 @@ runMinionMessage msg attrs = case msg of
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"
-      Just attack' -> case attackCharacter attack' of
-        IdentityCharacter ident ->
-          push $ IdentityMessage ident $ IdentityWasAttacked attack'
-        AllyCharacter ident ->
-          push $ AllyMessage ident $ AllyWasAttacked attack'
-        _ -> error "Invalid damage target"
+      Just attack' -> do
+        attackedYou (attackEnemy attack') (attackCharacter attack')
+        case attackCharacter attack' of
+          IdentityCharacter ident ->
+            push $ IdentityMessage ident $ IdentityWasAttacked attack'
+          AllyCharacter ident ->
+            push $ AllyMessage ident $ AllyWasAttacked attack'
+          _ -> error "Invalid damage target"
     pure attrs
  where
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
