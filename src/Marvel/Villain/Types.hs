@@ -23,6 +23,7 @@ import Marvel.Matchers
 import Marvel.Message hiding (VillainConfused, VillainStunned)
 import Marvel.Message qualified as Msg
 import Marvel.Modifier
+import Marvel.Name (title)
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Ref
@@ -378,7 +379,8 @@ runVillainMessage msg attrs = case msg of
       _ -> error "not Main scheme"
   VillainAttacked -> do
     case villainAttacking attrs of
-      Nothing -> error "No current attack"
+      -- the villain was defeated mid-attack by a stage of another title: it ended
+      Nothing -> pure ()
       Just attack' -> case attackCharacter attack' of
         IdentityCharacter ident ->
           push $ IdentityMessage ident $ IdentityWasAttacked attack'
@@ -435,15 +437,29 @@ instance RunMessage (Attrs Villain) where
 instance IsRef (Attrs Villain) where
   toRef = VillainRef . villainId
 
+-- | The next stage, of the same title, takes over what was on the stage defeated, and
+-- any activation under way resumes with it, its attack using the new stage's ATK (RR,
+-- "Villain Defeat"). A stage of another title takes over nothing, and the activation ends.
 advanceVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
-advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildCard newVillain villainId
+advanceVillainTo newVillain old = overVillainAttrs update next
  where
-  update =
-    (confusedL .~ villainConfused)
-      . (stunnedL .~ villainStunned)
-      . (toughL %~ (|| villainTough))
-      . (attachmentsL .~ villainAttachments)
-      . (upgradesL .~ villainUpgrades)
+  next = buildCard newVillain (villainId old)
+  new = toVillainAttrs next
+  sameTitle = title (cdName $ villainCardDef old) == title (cdName $ villainCardDef new)
+  resumed = attackDamageL %~ \d -> subtractNatural (unAtk $ villainAttack old) d + unAtk (villainAttack new)
+  update a
+    | sameTitle =
+        a
+          & (confusedL .~ villainConfused old)
+          . (stunnedL .~ villainStunned old)
+          . (toughL %~ (|| villainTough old))
+          . (attachmentsL .~ villainAttachments old)
+          . (upgradesL .~ villainUpgrades old)
+          . (boostL .~ villainBoost old)
+          . (boostCardsL .~ villainBoostCards old)
+          . (attackingL .~ (resumed <$> villainAttacking old))
+          . (\v -> v {villainAttackTarget = villainAttackTarget old})
+    | otherwise = a
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do
