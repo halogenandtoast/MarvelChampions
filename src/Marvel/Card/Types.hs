@@ -31,6 +31,9 @@ instance HasCardDef Card where
 class IsCard a where
   toCard :: a -> Card
 
+instance IsCard PlayerCard where
+  toCard = PlayerCard
+
 _PlayerCard :: Traversal' Card PlayerCard
 _PlayerCard f (PlayerCard pc) = PlayerCard <$> f pc
 _PlayerCard _ other = pure other
