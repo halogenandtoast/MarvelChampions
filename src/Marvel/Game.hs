@@ -35,7 +35,6 @@ import Marvel.Difficulty
 import Marvel.Discard
 import Marvel.Effect
 import Marvel.Effect.Types (Effect)
-import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.Environment
 import Marvel.Environment.Types (Environment)
@@ -1243,6 +1242,7 @@ instance (Monad m) => HasGame (ReaderT Game m) where
 
 instance (HasQueue m) => HasQueue (ReaderT Game m) where
   getQueue = lift getQueue
+  pushAll = lift . pushAll
 
 getIdentity :: (HasCallStack, HasGame m) => IdentityId -> m PlayerIdentity
 getIdentity ident = do

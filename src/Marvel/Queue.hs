@@ -11,6 +11,11 @@ type Queue = [Message]
 class (MonadIO m) => HasQueue m where
   getQueue :: m (IORef Queue)
 
+  -- | Put the messages, in the order given, ahead of what is queued. A 'QueueT' holds
+  -- them back until its handler is done.
+  pushAll :: [Message] -> m ()
+  pushAll = withQueue_ . (<>)
+
 withQueue :: (HasQueue m) => (Queue -> (Queue, a)) -> m a
 withQueue body = do
   ref <- getQueue
@@ -26,16 +31,13 @@ clearQueue :: (HasQueue m) => m ()
 clearQueue = withQueue_ (const mempty)
 
 push :: (HasQueue m) => Message -> m ()
-push = withQueue_ . (:)
+push = pushAll . pure
 
 pushWhen :: (HasQueue m) => Bool -> Message -> m ()
 pushWhen b = when b . push
 
 pushWhenM :: (HasQueue m) => m Bool -> Message -> m ()
 pushWhenM b = whenM b . push
-
-pushAll :: (HasQueue m) => [Message] -> m ()
-pushAll = withQueue_ . (<>)
 
 pop :: (HasQueue m) => m (Maybe Message)
 pop = withQueue \case

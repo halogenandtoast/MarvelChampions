@@ -49,6 +49,7 @@ data Game
 
 instance (Monad m) => HasGame (ReaderT Game m)
 instance (HasQueue m) => HasQueue (ReaderT Game m)
+instance (HasGame m) => Projection m PlayerIdentity
 
 getPlayers :: (HasGame m) => m [IdentityId]
 getActivePlayerId :: (HasGame m) => m IdentityId

@@ -262,6 +262,8 @@ library
       Marvel.Message.Environment
       Marvel.Message.Event
       Marvel.Message.Identity
+      Marvel.Message.Lifted
+      Marvel.Message.Lifted.Queue
       Marvel.Message.MainScheme
       Marvel.Message.Minion
       Marvel.Message.Obligation
