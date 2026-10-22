@@ -176,8 +176,12 @@ identityNarration ident = \case
 
 villainNarration :: (HasGame m) => VillainId -> VillainMessage -> Maybe (m [LogEntry])
 villainNarration vid = \case
-  VillainAttacks ident -> Just $ activation (VillainRef vid) ident "log.attacks" =<< getsGame (maybe False ((.villainStunned) . toAttrs) . lookup vid . gameVillains)
-  VillainSchemes -> Just $ schemes (VillainRef vid) =<< getsGame (maybe False ((.villainConfused) . toAttrs) . lookup vid . gameVillains)
+  -- told as each gets under way, so one an ability replaces (Norman Osborn's attack, Green
+  -- Goblin's scheme) is told as what it is replaced with; a stun or confusion as it is spent
+  VillainAttacks ident -> Just $ whenM' (villainHas (.villainStunned) vid) $ activation (VillainRef vid) ident "log.attacks" True
+  VillainBeginAttack ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
+  VillainSchemes -> Just $ whenM' (villainHas (.villainConfused) vid) $ schemes (VillainRef vid) True
+  VillainBeginScheme -> Just $ schemes (VillainRef vid) False
   VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
     damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
@@ -191,6 +195,13 @@ villainNarration vid = \case
   -- told as they are added, so icons cancelled as the card turns up are not
   VillainAddBoost n | n > 0 -> Just $ whenRef (VillainRef vid) \v -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> v, "count" ~> n]]
   _ -> Nothing
+
+-- | What the villain's state says, as the message finds it.
+villainHas :: (HasGame m) => (Attrs Villain.Villain -> Bool) -> VillainId -> m Bool
+villainHas f vid = getsGame (maybe False (f . toAttrs) . lookup vid . gameVillains)
+
+whenM' :: (Monad m) => m Bool -> m [LogEntry] -> m [LogEntry]
+whenM' cond body = cond >>= \b -> if b then body else pure []
 
 minionNarration :: (HasGame m) => MinionId -> MinionMessage -> Maybe (m [LogEntry])
 minionNarration mid = \case

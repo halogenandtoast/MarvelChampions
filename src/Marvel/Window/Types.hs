@@ -130,6 +130,8 @@ data WindowType
   | SchemedByMinion MinionId
   | -- | the player took damage from this source
     IdentityTookDamage IdentityId Source Damage
+  | -- | the ally took damage from this source: none a tough status card prevented
+    AllyTookDamage AllyId Source Damage
   | -- | the ally, as a card, and its controller
     AllyCardDefeated IdentityId PlayerCard
   | -- | the surge keyword of a card revealed for the player

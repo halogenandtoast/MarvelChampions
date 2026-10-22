@@ -140,6 +140,7 @@ instance RunMessage (Attrs Ally) where
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
           when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
+          when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       -- leaving play discards it
       AllyDefeated -> do

@@ -315,13 +315,14 @@ runVillainMessage msg attrs = case msg of
   VillainSchemes ->
     if villainConfused attrs
       then pure $ attrs & confusedL .~ False
-      else do
-        dealActivationBoost
-        villainStep vid VillainFlipBoostCards
-        villainStep vid VillainSchemed
-        clearBoosts
-        player <- getActivePlayerId
-        pure attrs {villainActivationPlayer = Just player}
+      else attrs <$ villainStep vid VillainBeginScheme
+  VillainBeginScheme -> do
+    dealActivationBoost
+    villainStep vid VillainFlipBoostCards
+    villainStep vid VillainSchemed
+    clearBoosts
+    player <- getActivePlayerId
+    pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
