@@ -708,6 +708,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.ThorSpec
       Marvel.LogSpec
       Marvel.PublicSpec
+      Marvel.Rules.AreasSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec
