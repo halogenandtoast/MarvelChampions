@@ -306,7 +306,7 @@ relentlessAssault :: CardDef
 relentlessAssault =
   (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
     { cdAbilitySubType = Just Ability.Attack
-    , cdCriteria = MinionExists AnyMinion
+    , cdCriteria = canAttackMinion
     }
 
 uppercut :: CardDef

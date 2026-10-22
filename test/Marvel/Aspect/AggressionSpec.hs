@@ -157,6 +157,18 @@ spec = describe "Aggression" do
         chooseIf (isTargetChoice mercenary)
         villainDamageNow `shouldReturn` 0
 
+    it "a stunned hero may play it with no minion to attack, and the stun is removed" do
+      tg <- testGame ["she-hulk"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        assault <- putInHand p "01053"
+        strength <- putInHand p "01090"
+        changeForm p >> pass
+        resolve [IdentityMessage p IdentityStunned]
+        playWith assault [strength]
+        isStunned p `shouldReturn` False
+
   describe "Uppercut (01054)" do
     it "deals 5 damage to an enemy, only in hero form" do
       tg <- testGame ["she-hulk"]
