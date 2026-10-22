@@ -10,11 +10,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 
@@ -40,12 +39,10 @@ instance HasAbilities BruceBanner where
     ]
 
 instance RunMessage BruceBanner where
-  runMessage msg ae@(BruceBanner a) = case msg of
+  runMessage msg ae@(BruceBanner a) = runQueueT $ case msg of
     -- draw 1 card, then choose and discard 1 card from your hand
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      pushAll
-        [ IdentityMessage ident (DrawCards FromDeck 1)
-        , IdentityMessage ident (DiscardFrom FromHand 1 Nothing)
-        ]
+      drawCards ident 1
+      discardFromHand ident 1
       pure ae
     _ -> BruceBanner <$> runMessage msg a

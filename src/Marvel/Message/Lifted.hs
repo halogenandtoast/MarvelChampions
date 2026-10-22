@@ -14,7 +14,7 @@ import Marvel.Attack (Attack (..))
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
-import Marvel.Card.Types (IsCard (..))
+import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
 import Marvel.Game.Source
@@ -108,6 +108,10 @@ heal character = resolve . Heal (toCharacter character)
 thwartScheme :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
 
+-- | The threat placed on the scheme, past the window for it ('threatPlacement').
+placeThreatPastWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
+placeThreatPastWindow scheme = push . threatPlacement (toScheme scheme)
+
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
 removeThreat you source n = Choice.pushChoice you . RemoveThreat (toSource source) n
@@ -125,6 +129,9 @@ becomeTough ident = push $ IdentityMessage ident IdentityBecomeTough
 -- | The identity's stun is removed, in place of what it would do.
 removeStun :: (ReverseQueue m) => IdentityId -> m ()
 removeStun ident = push $ IdentityMessage ident IdentityRemoveStunned
+
+removeConfused :: (ReverseQueue m) => IdentityId -> m ()
+removeConfused ident = push $ IdentityMessage ident IdentityRemoveConfused
 
 -- | More DEF for the hero's defense under way.
 addDefense :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -144,6 +151,23 @@ instance Readyable AllyId where
 
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
+
+exhaustIdentity :: (ReverseQueue m) => IdentityId -> m ()
+exhaustIdentity ident = push $ IdentityMessage ident X.ExhaustedIdentity
+
+-- | The hero's basic powers, ATK or THW given the bonus, and the defense applied.
+basicAttack, basicThwart :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+basicAttack ident = push . IdentityMessage ident . SideMessage . BasicAttack
+basicThwart ident = push . IdentityMessage ident . SideMessage . BasicThwart
+
+defenseApplied :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
+defenseApplied ident = push . IdentityMessage ident . SideMessage . DefenseApplied . toEnemy
+
+-- | The enemy's attack is defended by the character.
+enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
+enemyDefendedBy enemy character = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
+  EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
 
 enemyAttacks :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
 enemyAttacks enemy ident = push case toEnemy enemy of
@@ -165,6 +189,39 @@ changeToForm ident = push . IdentityMessage ident . ChangedToForm
 
 drawCards :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 drawCards ident = push . IdentityMessage ident . DrawCards FromDeck
+
+discardFromHand :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+discardFromHand ident n = push $ IdentityMessage ident $ DiscardFrom FromHand n Nothing
+
+-- | The player's deck is discarded from until a card matching, the target told which
+-- ('WithDiscardedMatch').
+discardFromDeckUntil :: (ReverseQueue m, IsRef target) => IdentityId -> CardMatcher -> target -> m ()
+discardFromDeckUntil ident matcher = push . IdentityMessage ident . DiscardFromDeckUntil matcher . toTarget
+
+addToHand :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+addToHand ident = push . IdentityMessage ident . AddToHand
+
+placeOnBottomOfDeck :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+placeOnBottomOfDeck ident = push . IdentityMessage ident . PlaceOnBottomOfDeck
+
+shuffleDeck :: (ReverseQueue m) => IdentityId -> m ()
+shuffleDeck ident = push $ IdentityMessage ident ShuffleDeck
+
+-- | The event's "Special" resolved without the card being played.
+resolveEventWithoutPlaying :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+resolveEventWithoutPlaying ident = push . ResolveEventWithoutPlaying ident
+
+focusCards :: (ReverseQueue m) => [Card] -> m ()
+focusCards = push . FocusCards
+
+unfocusCards :: (ReverseQueue m) => m ()
+unfocusCards = push UnfocusCards
+
+removeFromPlay :: (ReverseQueue m, IsRef a) => a -> m ()
+removeFromPlay = push . RemoveFromPlay . toTarget
+
+removeFromGame :: (ReverseQueue m, IsRef a) => a -> m ()
+removeFromGame = push . RemoveFromGame . toTarget
 
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize

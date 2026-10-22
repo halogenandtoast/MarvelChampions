@@ -10,16 +10,14 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Card.Types
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -64,10 +62,8 @@ avengersTowerEffect =
       . (endsL ?~ DisableAtEndOfPhase)
 
 instance RunMessage AvengersTowerEffect where
-  runMessage msg e@(AvengersTowerEffect attrs) = case msg of
+  runMessage msg e@(AvengersTowerEffect attrs) = runQueueT $ case msg of
     IdentityMessage ident (PlayedCard card _) | cardMatch avengerAlly card -> do
-      pushWhenM
-        (effectValidFor attrs (toRef ident))
-        (EffectMessage (effectId attrs) DisableEffect)
+      whenM (effectValidFor attrs (toRef ident)) $ disableEffect (effectId attrs)
       pure e
     _ -> AvengersTowerEffect <$> runMessage msg attrs

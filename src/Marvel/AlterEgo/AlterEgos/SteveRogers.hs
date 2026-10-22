@@ -3,13 +3,11 @@ module Marvel.AlterEgo.AlterEgos.SteveRogers where
 import Marvel.Prelude
 
 import Data.List (find)
-import Data.Maybe (maybeToList)
 
 import Marvel.Ability
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.AlterEgo.Runner
 import Marvel.Card.Def
-import Marvel.Card.PlayerCard
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Deck
@@ -19,12 +17,11 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Identity.Types
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Upgrade.Cards qualified as Cards
@@ -58,15 +55,14 @@ instance HasAbilities SteveRogers where
   getAbilities a = [ability a 1 Setup NoCriteria NoCost $ runAbility a 1]
 
 instance RunMessage SteveRogers where
-  runMessage msg ae@(SteveRogers a) = case msg of
+  runMessage msg ae@(SteveRogers a) = runQueueT $ case msg of
     -- the shield is searched for in the deck and the discard pile, then the deck is
     -- shuffled
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       deck <- project PlayerIdentityDeck ident
       discard <- project PlayerIdentityDiscard ident
-      let shield = find (sameCard Cards.captainAmericasShield . getCardDef) (unDeck deck <> unDiscard discard)
-      pushAll $
-        [IdentityMessage ident (AddToHand card) | card <- maybeToList shield]
-          <> [IdentityMessage ident ShuffleDeck]
+      for_ (find (sameCard Cards.captainAmericasShield . getCardDef) (unDeck deck <> unDiscard discard)) $
+        addToHand ident
+      shuffleDeck ident
       pure ae
     _ -> SteveRogers <$> runMessage msg a
