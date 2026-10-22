@@ -11,6 +11,7 @@ import Marvel.Card.Code (CardCode)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
 import Marvel.Campaign (Campaign)
+import {-# SOURCE #-} Marvel.Question (Choice)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Count
@@ -63,6 +64,7 @@ asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getCampaign :: (HasGame m) => m (Maybe Campaign)
+offerable :: Game -> Choice -> Bool
 getIdentityCode :: (HasGame m) => IdentityId -> m CardCode
 getRemainingHitPoints :: (HasGame m) => IdentityId -> m (Natural, Natural, Natural)
 getCountersOnMainSchemes :: (HasGame m) => m Natural

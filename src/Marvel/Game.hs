@@ -1518,6 +1518,44 @@ newGame player scenario =
 isPermanent :: (HasCardDef a) => a -> Bool
 isPermanent = elem Permanent . cdKeywords . getCardDef
 
+-- | A permanent card is not a valid target for an effect that would make it leave play:
+-- the effect targets another card that fits it instead (RR, Permanent). So whatever
+-- asks, a choice on a permanent card in play that would discard it, remove it from play
+-- or return it to hand is not offered.
+withoutPermanentTargets :: Game -> Question -> Question
+withoutPermanentTargets g = \case
+  QuestionLabel l t q -> QuestionLabel l t (withoutPermanentTargets g q)
+  ChooseOne cs -> ChooseOne (filter (offerable g) cs)
+  ChooseN n cs -> ChooseN n (filter (offerable g) cs)
+  ChooseOneAtATime cs -> ChooseOneAtATime (filter (offerable g) cs)
+  q -> q
+
+-- | The choice is not one that would make a permanent card leave play.
+offerable :: Game -> Choice -> Bool
+offerable g = keep
+ where
+  keep = \case
+    TargetLabel t cs | permanent t -> not (any (removes t) (concatMap runs cs))
+    CardLabel _ c -> keep c
+    _ -> True
+  runs = \case
+    Run msgs -> msgs
+    Label _ cs -> concatMap runs cs
+    TargetLabel _ cs -> concatMap runs cs
+    CardLabel _ c -> runs c
+    _ -> []
+  removes t = \case
+    RemoveFromPlay t' -> t' == t
+    RemoveFromGame t' -> t' == t
+    ReturnToHand t' -> t' == t
+    UpgradeMessage uid DiscardUpgrade -> t == UpgradeRef uid
+    _ -> False
+  permanent = \case
+    UpgradeRef uid -> maybe False isPermanent (lookup uid (gameUpgrades g))
+    SupportRef sid -> maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid (gameSupports g))
+    AllyRef aid -> maybe False isPermanent (lookup aid (gameAllies g))
+    _ -> False
+
 -- | The campaign the game is a scenario of, if it is one.
 getCampaign :: (HasGame m) => m (Maybe Campaign)
 getCampaign = getsGame gameCampaign
@@ -1727,10 +1765,10 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
-            -- nothing is asked when there is nothing to choose
-            Just (Ask _ question) | not (hasChoices question) -> go (n + 1)
-            Just (Ask ident question) -> do
-              withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
+            Just (Ask ident asked) -> case withoutPermanentTargets g asked of
+              -- nothing is asked when there is nothing to choose
+              question | not (hasChoices question) -> go (n + 1)
+              question -> withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
             Just other -> do
               debug other
               before other
@@ -2135,6 +2173,7 @@ gameSelectUpgrade m = do
           && isNothing (upgradeAttachedEnemy a)
           && isNothing (upgradeAttachedSideScheme a)
           && isNothing (upgradeAttachedMainScheme a)
+    UpgradeThatCanLeavePlay -> pure . not . isPermanent
     UpgradeWithHighestCostAmong m' -> \upgrade -> do
       candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gameUpgrades
       let cost = fromMaybe 0 . cdCost . getCardDef

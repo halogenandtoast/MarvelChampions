@@ -3,6 +3,7 @@ module Marvel.Rules.CampaignSpec (spec) where
 import Marvel.Campaign
 import Marvel.Hp (unHp)
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
+import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Obligation.Types (Attrs (obligationOwner))
 import TestImport
 
@@ -152,6 +153,27 @@ spec = describe "The Rise of Red Skull campaign" do
       map toCardCode (unHand a.playerIdentityHand <> unDeck a.playerIdentityDeck) `shouldSatisfy` notElem "04161a"
       uids <- upgradesOf p
       resolve (map (RemoveFromPlay . UpgradeRef) uids)
+      upgradeCodes >>= (`shouldSatisfy` elem "04161a")
+
+  it "a permanent upgrade is not offered to an effect that would discard it" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      basic <- putIntoPlay p "04161a"
+      shooter <- putIntoPlay p "01008"
+      _ <- revealNow p Treacheries.chaosInThePrison
+      choose "discard an upgrade" (isLabel "$label.discardAnUpgradeYouControl")
+      offers (isTargetChoice (upgradeIdOf basic)) `shouldReturn` False
+      offers (isTargetChoice (upgradeIdOf shooter)) `shouldReturn` True
+
+  it "an effect choosing an upgrade to discard has nothing to choose but a permanent one" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      basic <- putIntoPlay p "04161a"
+      _ <- revealNow p Treacheries.electricWhipAttack
+      choose "discard an upgrade" (isLabel "$label.discardAnUpgradeYouControl")
+      offers (isTargetChoice (upgradeIdOf basic)) `shouldReturn` False
       upgradeCodes >>= (`shouldSatisfy` elem "04161a")
 
   it "a Tech upgrade used is crossed out of the campaign log" do

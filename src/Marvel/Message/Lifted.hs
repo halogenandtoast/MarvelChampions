@@ -69,8 +69,10 @@ chooseOneAtATimePrompted you prompt choices = push . Ask you . prompted prompt .
 
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
-chooseOrRunOne you choices =
-  sequence choices >>= \case
+chooseOrRunOne you choices = do
+  g <- getGame
+  -- a choice that would make a permanent card leave play is not one (RR, Permanent)
+  filter (offerable g) <$> sequence choices >>= \case
     [] -> throwM NoChoices
     [choice] -> resolveAs you choice
     choices' -> push $ Ask you $ ChooseOne choices'

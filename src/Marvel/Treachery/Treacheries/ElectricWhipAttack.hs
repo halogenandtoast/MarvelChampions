@@ -31,7 +31,7 @@ instance RunMessage ElectricWhipAttack where
           [ labeled "$label.deal1DamageToYourHeroForEachUpgradeYouControl" $
               damageCharacter identityId attrs (toDamage (fromIntegral $ length upgrades) FromTreachery)
           , labeled "$label.discardAnUpgradeYouControl" $
-              chooseUpgrade identityId (UpgradeControlledBy $ IdentityWithId identityId) attrs
+              chooseUpgrade identityId (UpgradeControlledBy (IdentityWithId identityId) <> UpgradeThatCanLeavePlay) attrs
           ]
         pure t
       _ -> ElectricWhipAttack <$> runMessage msg attrs
@@ -45,7 +45,7 @@ instance RunMessage ElectricWhipAttack where
             <$> select (UndefendedEnemy <> VillainEnemy)
         when undefended $ do
           ident <- getActivePlayerId
-          chooseUpgrade ident (UpgradeControlledBy $ IdentityWithId ident) target
+          chooseUpgrade ident (UpgradeControlledBy (IdentityWithId ident) <> UpgradeThatCanLeavePlay) target
         pure t
       -- turned up as a boost, it hears of the upgrade chosen from the boost area
       ChoseUpgrade upgradeId target
