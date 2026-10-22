@@ -9,8 +9,10 @@ import type { RiverCard } from '../components/River.vue'
 import { dealFrom, intoRiver, riffle } from './dealing'
 import { transitionsOn, withViewTransition } from './useViewTransition'
 
-// how long a card turned up in the river is left to be read
+// how long a card turned up in the river is left to be read, and how quickly it is cleared
+// for the next
 const HOLD_MS = 650
+const CLEAR_MS = 160
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
 // entries are numbered from 1, so a page not reaching it has more before it
@@ -31,6 +33,8 @@ export const useGame = (gameId: string, spectate = false) => {
   const log = shallowRef<LogEntry[]>([])
   // cards the server said were dealt or turned up, shown in the river until the state after
   const river = shallowRef<RiverCard[]>([])
+  // what the last state put in the river is over, cleared for what the server tells of next
+  const riverCleared = ref(false)
   const cards = useCards()
   const hasOlder = ref(false)
   const queue: ServerMessage[] = []
@@ -50,11 +54,31 @@ export const useGame = (gameId: string, spectate = false) => {
       dealing?.lift()
       data.value = next
       river.value = []
+      riverCleared.value = false
       await nextTick()
       dealing?.land()
     })
     dealing?.done()
   }
+
+  // the river emptied, quickly, before the next card comes into it
+  const clearRiver = async () => {
+    const g = data.value?.game
+    const held = river.value.length || (!riverCleared.value && (g?.focusedCards?.length || g?.boostCards?.length || g?.attack))
+    if (!held) return
+    const quick = Object.assign(document.createElement('style'), {
+      textContent: `::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: ${CLEAR_MS}ms !important; }`,
+    })
+    document.head.append(quick)
+    await withViewTransition(() => {
+      river.value = []
+      riverCleared.value = true
+    })
+    quick.remove()
+  }
+  // a boost dealt after cards already turned up, as an attack after a scheme, starts afresh
+  const turnedUp = () =>
+    river.value.some((c) => c.code) || (!riverCleared.value && (data.value?.game?.boostCards ?? []).some((b) => b.code))
 
   // a card into the river: a boost off the encounter deck face down, or a card turned up
   const toRiver = async (card: RiverCard, faceUp: boolean) => {
@@ -78,8 +102,11 @@ export const useGame = (gameId: string, spectate = false) => {
       case 'Shuffled':
         return transitionsOn() ? riffle(message.pile) : undefined
       case 'BoostDealt':
+        if (turnedUp()) await clearRiver()
         return toRiver({ id: message.cardId, code: null }, false)
       case 'Revealing':
+        // an encounter card revealed has the river to itself; a boost turns up beside its fellows
+        if (!message.boost) await clearRiver()
         return toRiver({ id: message.cardId, code: message.code }, true)
       default:
         return
@@ -151,6 +178,7 @@ export const useGame = (gameId: string, spectate = false) => {
     table: computed(() => data.value?.table ?? null),
     log: shallowReadonly(log),
     river: shallowReadonly(river),
+    riverCleared: readonly(riverCleared),
     hasOlder: readonly(hasOlder),
     loadOlder: async (before: number) => {
       const response = await apiFetch(`/api/games/${gameId}/log?before=${before}`).catch(() => null)

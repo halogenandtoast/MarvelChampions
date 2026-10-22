@@ -27,7 +27,7 @@ const { t } = useI18n()
 const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
-const { error, game, data, log, river, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
+const { error, game, data, log, river, riverCleared, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
   useGame(gameId, spectate)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
@@ -68,8 +68,10 @@ const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m)
 // server has told of before the state that follows
 const riverCards = computed<RiverCard[]>(() => {
   const cards = new Map<string, RiverCard>()
-  for (const c of game.value?.focusedCards ?? []) cards.set(c.id, c)
-  for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
+  if (!riverCleared.value) {
+    for (const c of game.value?.focusedCards ?? []) cards.set(c.id, c)
+    for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
+  }
   for (const c of river.value) cards.set(c.id, { ...cards.get(c.id), ...c })
   return [...cards.values()]
 })
@@ -83,12 +85,12 @@ const elsewhere = computed(() => {
 // the enemy attacking, as it stands now
 const attacker = computed<RiverAttacker | null>(() => {
   const id = game.value?.attack?.attacker
-  if (!id) return null
+  if (!id || riverCleared.value) return null
   return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find((e) => e.id === id) ?? null
 })
 const riverLabel = computed(() => {
   const attack = game.value?.attack
-  if (!attack) return null
+  if (!attack || riverCleared.value) return null
   return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
 })
 
