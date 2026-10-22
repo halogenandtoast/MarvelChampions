@@ -9,18 +9,15 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.Boost
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -49,7 +46,7 @@ instance HasAbilities Attacrobatics where
     ]
 
 instance RunMessage Attacrobatics where
-  runMessage msg u@(Attacrobatics attrs) = case msg of
+  runMessage msg u@(Attacrobatics attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 [FlippedBoostCard card _] _ ->
       attackGuard ident u do
         -- the card's icons are added next: they are not
@@ -58,7 +55,6 @@ instance RunMessage Attacrobatics where
           _ -> False
         let icons = boostCount (cdBoostIcons $ getCardDef card)
         villain <- selectJust ActiveVillain
-        pushChoice ident $
-          DamageEnemy (toRef villain) (toSource attrs) (toDamage icons $ FromPlayerAttack ident)
+        dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
         pure u
     _ -> Attacrobatics <$> runMessage msg attrs

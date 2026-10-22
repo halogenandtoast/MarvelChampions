@@ -7,19 +7,13 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Count
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -35,7 +29,7 @@ instance HasAbilities VibraniumSuit where
   getAbilities _ = []
 
 instance RunMessage VibraniumSuit where
-  runMessage msg u@(VibraniumSuit attrs) = case msg of
+  runMessage msg u@(VibraniumSuit attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
       modifiers <- getModifiers attrs
       sustainedDamage <-
@@ -46,15 +40,8 @@ instance RunMessage VibraniumSuit where
         dmg =
           min sustainedDamage $
             if LastSpecial `elem` modifiers then 2 else 1
-      damageMsgs <-
-        choiceMessages (upgradeController attrs) $
-          ChooseDamage
-            (toRef attrs)
-            (toDamage dmg $ FromPlayerAttack ident)
-            (AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger))
-      healMsgs <-
-        choiceMessages (upgradeController attrs) $
-          Heal (IdentityCharacter $ upgradeController attrs) dmg
-      pushAll $ damageMsgs <> healMsgs
+      chooseDamage (upgradeController attrs) attrs (toDamage dmg $ FromPlayerAttack ident) $
+        AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger)
+      heal (upgradeController attrs) dmg
       pure u
     _ -> VibraniumSuit <$> runMessage msg attrs

@@ -6,18 +6,13 @@ module Marvel.Treachery.Treacheries.SonicBoom (
 import Marvel.Prelude
 
 import Data.List qualified as L
-import Marvel.ActiveCost
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
-import Marvel.Message
-import Marvel.Payment
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Treachery.Cards qualified as Cards
@@ -31,7 +26,7 @@ newtype SonicBoom = SonicBoom (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage SonicBoom where
-  runMessage msg t@(SonicBoom attrs) = case msg of
+  runMessage msg t@(SonicBoom attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         resources <- getAvailableResourcesFor identityId Nothing
@@ -44,40 +39,18 @@ instance RunMessage SonicBoom where
             (_, True) -> goPay as (L.delete Wild bs)
             (False, False) -> (a' : as, bs)
           (uncovered, _) = goPay [Energy, Mental, Physical] resources
-        activeCostId <- getRandom
-        chooseOrRunOne
-          identityId
-          ( Label
-              "$label.exhaustEachCharacterYouControl"
-              [ Run $
-                  IdentityMessage identityId ExhaustedIdentity
-                    : map (\a -> AllyMessage a ExhaustedAlly) allies
+        chooseOrRunOne identityId $
+          labeled "$label.exhaustEachCharacterYouControl" (exhaust identityId >> for_ allies exhaust)
+            : [ labeled "$label.spendEnergyMentalPhysicalResources" $
+                  payForTreachery identityId (MultiResourceCost [Just Energy, Just Mental, Just Physical])
+              | null uncovered
               ]
-              : [ Label
-                  "$label.spendEnergyMentalPhysicalResources"
-                  [ Run
-                      [ SetActiveCost $
-                          ActiveCost
-                            activeCostId
-                            identityId
-                            ForTreachery
-                            ( MultiResourceCost
-                                [Just Energy, Just Mental, Just Physical]
-                            )
-                            NoPayment
-                            Nothing
-                            mempty
-                      ]
-                  ]
-                | null uncovered
-                ]
-          )
         pure t
       _ -> SonicBoom <$> runMessage msg attrs
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> pure t
       IdentityMessage identityId (IdentityDamaged _ _) -> do
-        push $ IdentityMessage identityId ExhaustedIdentity
+        exhaust identityId
         pure t
       _ -> SonicBoom <$> runMessage msg attrs
     _ -> SonicBoom <$> runMessage msg attrs

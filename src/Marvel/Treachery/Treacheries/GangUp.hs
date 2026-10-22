@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -22,21 +21,16 @@ newtype GangUp = GangUp (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage GangUp where
-  runMessage msg t@(GangUp attrs) = case msg of
+  runMessage msg t@(GangUp attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            minions <-
-              selectList $
-                MinionEngagedWith $
-                  IdentityWithId
-                    identityId
-            pushAll $
-              VillainMessage villainId (VillainAttacks identityId)
-                : map (`MinionMessage` MinionAttacks identityId) minions
+            minions <- selectList $ MinionEngagedWith $ IdentityWithId identityId
+            enemyAttacks villainId identityId
+            for_ minions (`enemyAttacks` identityId)
             pure t
           else pure . GangUp $ attrs & surgeL .~ True
       _ -> GangUp <$> runMessage msg attrs

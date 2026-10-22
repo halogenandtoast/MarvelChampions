@@ -7,17 +7,15 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
+import Marvel.Attack (sourceEnemy)
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
@@ -49,10 +47,9 @@ instance HasAbilities Counterattack where
 -- | The enemy that attacked takes as much damage, as an attack: guard keeps the villain
 -- from it, so it is not offered then.
 instance RunMessage Counterattack where
-  runMessage msg u@(Counterattack attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 [IdentityTookDamage _ source dmg] _ ->
+  runMessage msg u@(Counterattack attrs) = runQueueT $ case msg of
+    RanAbility ident (isTarget attrs -> True) 1 [IdentityTookDamage _ (sourceEnemy -> Just enemy) dmg] _ ->
       attackGuard ident u do
-        pushChoice ident $
-          DamageEnemy (refocus source) (toSource attrs) (toDamage (damageAmount dmg) (FromPlayerAttack ident))
+        dealDamage enemy attrs (toDamage (damageAmount dmg) (FromPlayerAttack ident))
         pure u
     _ -> Counterattack <$> runMessage msg attrs

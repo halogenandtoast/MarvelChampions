@@ -8,8 +8,7 @@ import Marvel.Entity
 import Marvel.Id hiding (TreacheryId)
 import Marvel.Keyword qualified as Keyword
 import Marvel.Id as X (TreacheryId)
-import Marvel.Message
-import Marvel.Queue
+import Marvel.Message.Lifted
 import Marvel.Ref
 
 data Treachery = forall a. (IsTreachery a) => Treachery a
@@ -128,14 +127,12 @@ instance HasCardDef (Attrs Treachery) where
   getCardDef = treacheryCardDef
 
 instance RunMessage (Attrs Treachery) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       ResolvedTreachery identityId -> do
-        pushAll $
-          RemoveFromPlay (toTarget attrs)
-            : [ Surge identityId
-              | treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)
-              ]
+        removeFromPlay attrs
+        when (treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)) $
+          surge identityId
         pure attrs
       _ -> pure attrs
     _ -> pure attrs

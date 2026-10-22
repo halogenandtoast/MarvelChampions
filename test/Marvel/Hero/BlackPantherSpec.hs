@@ -364,8 +364,6 @@ spec = describe "Black Panther" do
       _ <- stackEncounterDeck [Cards.imminentOverload]
       combat <- encounterCard Cards.ritualCombat
       start [RevealEncounterCard p combat]
-      choose "place threat" \case
-        Label _ [PlaceThreat {}] -> True
-        _ -> False
+      choose "place threat" (isLabelStarting "Place")
       mainSchemeThreatNow `shouldReturn` (threat + 4)
       damageOf p `shouldReturn` 0

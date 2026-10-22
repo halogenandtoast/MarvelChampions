@@ -8,10 +8,8 @@ import Marvel.Prelude
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Trait
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -31,22 +29,17 @@ instance IsTreachery MastersOfMayhem where
   toTreacheryAttrs (MastersOfMayhem (attrs `With` _)) = attrs
 
 instance RunMessage MastersOfMayhem where
-  runMessage msg t@(MastersOfMayhem (attrs `With` meta)) = case msg of
+  runMessage msg t@(MastersOfMayhem (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery _ -> do
         mastersOfEvilMinions <- selectList (MinionWithTrait MastersOfEvil)
         for_ mastersOfEvilMinions $ \minion -> do
           mEngagedWith <- selectOne (IdentityEngagedWith (MinionWithId minion) <> HeroIdentity)
-          case mEngagedWith of
-            Nothing -> pure ()
-            Just engagedWith ->
-              push (MinionMessage minion $ MinionAttacks engagedWith)
+          for_ mEngagedWith $ enemyAttacks minion
         pure t
       CheckTreacheryCondition identityId -> do
         unless (attackMade meta) $
-          push $
-            SearchForAndRevealEncounterCard identityId (CardWithType MinionType <> CardWithTrait MastersOfEvil)
-
+          searchAndRevealEncounterCard identityId (CardWithType MinionType <> CardWithTrait MastersOfEvil)
         pure t
       _ -> MastersOfMayhem . (`With` meta) <$> runMessage msg attrs
     MinionMessage mid MinionAttacked -> do

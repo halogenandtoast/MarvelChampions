@@ -10,12 +10,14 @@ module Marvel.Message.Lifted (
 
 import Marvel.Prelude
 
+import Marvel.ActiveCost.Types
 import Marvel.Attack (Attack (..))
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
 import Marvel.Card.Types (Card, IsCard (..))
+import Marvel.Cost.Types (Cost)
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
 import Marvel.Game.Source
@@ -89,6 +91,13 @@ dealDamageThen enemy source damage body = do
   (before, now, after) <- splitDamage <$> capture (dealDamage enemy source damage)
   rest <- capture body
   pushAll $ before <> now <> rest <> after
+
+-- | Deal the damage and what the body does as one effect: "deal 2 damage and stun it".
+dealDamageAnd :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m () -> m ()
+dealDamageAnd enemy source damage body = do
+  (before, now, after) <- splitDamage <$> capture (dealDamage enemy source damage)
+  also <- capture body
+  pushAll $ before <> [Simultaneously (also <> now)] <> after
 
 -- | Damage to each enemy matching.
 damageAllEnemies :: (ReverseQueue m, IsRef source) => source -> Damage -> EnemyMatcher -> m ()
@@ -175,6 +184,9 @@ removeStun ident = push $ IdentityMessage ident IdentityRemoveStunned
 removeConfused :: (ReverseQueue m) => IdentityId -> m ()
 removeConfused ident = push $ IdentityMessage ident IdentityRemoveConfused
 
+setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
+
 -- | More DEF for the hero's defense under way.
 addDefense :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 addDefense ident = push . IdentityMessage ident . IdentityDefended
@@ -198,8 +210,17 @@ ready = push . readied
 class Exhaustible a where
   exhausted :: a -> Message
 
+instance Exhaustible IdentityId where
+  exhausted ident = IdentityMessage ident Msg.ExhaustedIdentity
+
 instance Exhaustible AllyId where
   exhausted ally = AllyMessage ally Msg.ExhaustedAlly
+
+instance Exhaustible UpgradeId where
+  exhausted upgrade = UpgradeMessage upgrade ExhaustedUpgrade
+
+instance Exhaustible SupportId where
+  exhausted support = SupportMessage support ExhaustedSupport
 
 exhaust :: (ReverseQueue m, Exhaustible a) => a -> m ()
 exhaust = push . exhausted
@@ -210,6 +231,29 @@ allyAttackLands ally enemy = push . AllyMessage ally . AllyAttackLands (toEnemy 
 
 defeatAlly :: (ReverseQueue m) => AllyId -> m ()
 defeatAlly ally = push $ AllyMessage ally AllyDefeated
+
+confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
+confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
+
+stunAlly :: (ReverseQueue m) => AllyId -> m ()
+stunAlly ally = push $ AllyMessage ally AllyStunned
+
+-- | The enemy is given a tough status card.
+enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+enemyBecomesTough enemy = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
+  EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
+
+enemyAttacksAlly :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> AllyId -> m ()
+enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainAttacksAlly ident ally)
+  EnemyMinionId mid -> MinionMessage mid (MinionAttacksAlly ident ally)
+
+villainSchemes :: (ReverseQueue m) => VillainId -> m ()
+villainSchemes vid = push $ VillainMessage vid VillainSchemes
+
+healAllDamage :: (ReverseQueue m) => MinionId -> m ()
+healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
 
 exhaustIdentity :: (ReverseQueue m) => IdentityId -> m ()
 exhaustIdentity ident = push $ IdentityMessage ident X.ExhaustedIdentity
@@ -240,6 +284,10 @@ enemyRetaliates enemy = push . Msg.enemyRetaliates (toEnemy enemy)
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinion minion = pushAll . Msg.engageMinion minion
+
+-- | The identity flips to its other form.
+changeForm :: (ReverseQueue m) => IdentityId -> m ()
+changeForm ident = push $ IdentityMessage ident ChooseOtherForm
 
 changeToForm :: (ReverseQueue m) => IdentityId -> Side -> m ()
 changeToForm ident = push . IdentityMessage ident . ChangedToForm
@@ -372,6 +420,23 @@ focusing cards body = focusCards cards >> body >> unfocusCards
 discardFromDeck :: (ReverseQueue m, IsRef target) => IdentityId -> Natural -> target -> m ()
 discardFromDeck ident n = push . IdentityMessage ident . DiscardFrom FromDeck n . Just . toTarget
 
+-- | Cards from the zone discarded, no one told which.
+discardFrom :: (ReverseQueue m) => IdentityId -> FromZone -> Natural -> m ()
+discardFrom ident zone n = push $ IdentityMessage ident $ DiscardFrom zone n Nothing
+
+-- | The player discards between lo and hi cards from the zone, the target told which
+-- ('WithDiscarded').
+discardFor :: (ReverseQueue m, IsRef target) => IdentityId -> target -> FromZone -> Natural -> Natural -> m ()
+discardFor ident target zone lo = push . IdentityMessage ident . DiscardFor (toTarget target) zone lo
+
+-- | The player chooses an upgrade matching, and the target is told it ('ChoseUpgrade').
+chooseUpgrade :: (ReverseQueue m, IsRef target) => IdentityId -> UpgradeMatcher -> target -> m ()
+chooseUpgrade you matcher = Choice.pushChoice you . ChooseUpgrade matcher . toTarget
+
+-- | The player pays the cost for an encounter card, as a treachery asks.
+payForTreachery :: (ReverseQueue m) => IdentityId -> Cost -> m ()
+payForTreachery ident cost = getRandom >>= \cid -> push $ SetActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty
+
 -- | The top cards of the player's deck are discarded.
 discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 discardTopOfDeck ident n = push $ IdentityMessage ident $ DiscardFrom FromDeck n Nothing
@@ -400,11 +465,64 @@ putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing
 returnToHand :: (ReverseQueue m, IsRef a) => a -> m ()
 returnToHand = push . ReturnToHand . toTarget
 
+discardUpgrade :: (ReverseQueue m) => UpgradeId -> m ()
+discardUpgrade u = push $ UpgradeMessage u DiscardUpgrade
+
+addUpgradeUses :: (ReverseQueue m) => UpgradeId -> Natural -> m ()
+addUpgradeUses u = push . UpgradeMessage u . AddUpgradeUses
+
+-- | The player draws and reveals an encounter card.
+drawAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
+drawAndRevealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
 
 -- | The top cards of the encounter deck are looked at, the target told which
 -- ('SearchFoundCards').
 lookAtTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
 lookAtTopOfEncounterDeck n = push . LookAtTopOfEncounterDeck n . toTarget
+
+-- * The encounter deck
+
+surge :: (ReverseQueue m) => IdentityId -> m ()
+surge = push . Surge
+
+-- | The encounter card gains surge.
+gainSurge :: (ReverseQueue m, IsRef a) => a -> m ()
+gainSurge = push . GainSurge . toTarget
+
+-- | The player reveals the encounter card, its "when revealed" windows answered.
+revealCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+revealCard ident = push . RevealEncounterCard ident
+
+-- | The player draws the top card of the encounter deck and reveals it.
+revealTopOfEncounterDeck :: (ReverseQueue m) => IdentityId -> m ()
+revealTopOfEncounterDeck = push . DrawAndRevealEncounterCard
+
+-- | The top cards of the encounter deck are discarded, the target told which
+-- ('WithDiscarded').
+discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
+discardTopOfEncounterDeckFor n = push . DiscardTopOfEncounterDeck n . Just . toTarget
+
+shuffleIntoEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
+shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
+
+-- | A card matching is found in the encounter deck or discard pile and revealed.
+searchAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
+searchAndRevealEncounterCard ident = push . SearchForAndRevealEncounterCard ident
+
+-- | A card matching is found in the encounter deck or discard pile and put into play.
+searchAndPutIntoPlayEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
+searchAndPutIntoPlayEncounterCard ident = push . SearchForAndPutIntoPlayEncounterCard ident
+
+addAccelerationToken :: (ReverseQueue m) => m ()
+addAccelerationToken = push AddAccelerationToken
+
+-- | Threat placed on each scheme matching.
+placeThreatOnEach :: (ReverseQueue m, IsRef source) => source -> Natural -> SchemeMatcher -> m ()
+placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
+
+-- | The obligation's own step, once the player may have changed form.
+resolveObligation :: (ReverseQueue m) => ObligationId -> IdentityId -> m ()
+resolveObligation oid = push . ObligationMessage oid . ResolveObligation
 
 -- | The cards go on top of the encounter deck, the first on top.
 putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()

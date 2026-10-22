@@ -6,13 +6,10 @@ module Marvel.Treachery.Treacheries.KreeManipulator (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -24,10 +21,10 @@ newtype KreeManipulator = KreeManipulator (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage KreeManipulator where
-  runMessage msg t@(KreeManipulator attrs) = case msg of
+  runMessage msg t@(KreeManipulator attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
-      RevealTreachery identityId -> do
-        pushChoice identityId $ PlaceThreat (toRef attrs) 1 MainScheme
+      RevealTreachery _ -> do
+        placeThreatOnEach attrs 1 MainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     Boost msg' -> case msg' of
@@ -35,9 +32,7 @@ instance RunMessage KreeManipulator where
         undefended <-
           member enemyId
             <$> select (VillainEnemy <> UndefendedEnemy)
-        when undefended $ do
-          identityId <- selectJust You
-          pushChoice identityId $ PlaceThreat (toRef attrs) 1 MainScheme
+        when undefended $ placeThreatOnEach attrs 1 MainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     _ -> KreeManipulator <$> runMessage msg attrs

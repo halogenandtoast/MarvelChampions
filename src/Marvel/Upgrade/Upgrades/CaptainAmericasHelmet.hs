@@ -11,10 +11,9 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -41,12 +40,10 @@ instance HasAbilities CaptainAmericasHelmet where
 
 -- | The defeat is taken off the queue: the hit point dial is set to 1 instead.
 instance RunMessage CaptainAmericasHelmet where
-  runMessage msg a@(CaptainAmericasHelmet attrs) = case msg of
+  runMessage msg a@(CaptainAmericasHelmet attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       cancelMatchingMessage (== IdentityMessage ident IdentityDefeated)
-      pushAll
-        [ IdentityMessage ident (IdentitySetHitPoints 1)
-        , UpgradeMessage (upgradeId attrs) DiscardUpgrade
-        ]
+      setHitPoints ident 1
+      discardUpgrade (upgradeId attrs)
       pure a
     _ -> CaptainAmericasHelmet <$> runMessage msg attrs

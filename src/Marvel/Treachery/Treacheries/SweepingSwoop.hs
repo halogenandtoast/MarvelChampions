@@ -8,10 +8,9 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -23,15 +22,15 @@ newtype SweepingSwoop = SweepingSwoop (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage SweepingSwoop where
-  runMessage msg t@(SweepingSwoop attrs) = case msg of
+  runMessage msg t@(SweepingSwoop attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         vultureInPlay <- selectAny $ MinionIs Cards.vulture
-        push $ IdentityMessage identityId IdentityStunned
+        stunIdentity identityId
         pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
       _ -> SweepingSwoop <$> runMessage msg attrs
     -- [star] Boost: if this activation deals damage to a friendly character, stun it
     Boost (attackDamages -> Just (_, character)) -> do
-      push $ GiveStatus (characterRef character) StunnedStatus
+      giveStatus character StunnedStatus
       pure t
     _ -> SweepingSwoop <$> runMessage msg attrs

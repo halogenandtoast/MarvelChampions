@@ -6,15 +6,11 @@ module Marvel.Obligation.Obligations.EvictionNotice (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 
 evictionNotice :: ObligationCard EvictionNotice
 evictionNotice = obligation EvictionNotice Cards.evictionNotice
@@ -24,45 +20,26 @@ newtype EvictionNotice = EvictionNotice (Attrs Obligation)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage EvictionNotice where
-  runMessage msg o@(EvictionNotice attrs) = case msg of
+  runMessage msg o@(EvictionNotice attrs) = runQueueT $ case msg of
     ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
       RevealObligation identityId -> do
         isHero <- identityMatches HeroIdentity identityId
-        pushAll $
-          [ Ask identityId $
-            ChooseOne
-              [ Label "$label.doNotFlipToAlterEgo" []
-              , Label "$label.changeToB" [ChangeForm]
-              ]
-          | isHero
-          ]
-            <> [ ObligationMessage (obligationId attrs) $
-                  ResolveObligation identityId
-               ]
+        when isHero $
+          chooseOne identityId
+            [ labeled "$label.doNotFlipToAlterEgo" (pure ())
+            , labeled "$label.changeToB" (changeForm identityId)
+            ]
+        resolveObligation (obligationId attrs) identityId
         pure o
       ResolveObligation identityId -> do
-        isUnexhaustedAlterEgo <-
-          identityMatches
-            (AlterEgoIdentity <> UnexhaustedIdentity)
-            identityId
+        isUnexhaustedAlterEgo <- identityMatches (AlterEgoIdentity <> UnexhaustedIdentity) identityId
         chooseOrRunOne identityId $
-          [ Label
-            "$label.exhaustPeterParkerRemoveEvictionNotice"
-            [ Run
-                [ IdentityMessage identityId ExhaustedIdentity
-                , RemoveFromGame (toTarget attrs)
-                ]
-            ]
+          [ labeled "$label.exhaustPeterParkerRemoveEvictionNotice" (exhaust identityId >> removeFromGame attrs)
           | isUnexhaustedAlterEgo
           ]
-            <> [ Label
-                  "$label.discardRandomCardSurgeDiscardObligation"
-                  [ Run
-                      [ IdentityMessage identityId $
-                          DiscardFrom RandomFromHand 1 Nothing
-                      , GainSurge (toTarget attrs)
-                      ]
-                  ]
+            <> [ labeled "$label.discardRandomCardSurgeDiscardObligation" do
+                  discardFrom identityId RandomFromHand 1
+                  gainSurge attrs
                ]
         pure o
       _ -> EvictionNotice <$> runMessage msg attrs

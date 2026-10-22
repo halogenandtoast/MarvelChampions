@@ -9,11 +9,9 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Query
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -33,7 +31,7 @@ instance IsTreachery TitaniasFury where
   toTreacheryAttrs (TitaniasFury (attrs `With` _)) = attrs
 
 instance RunMessage TitaniasFury where
-  runMessage msg t@(TitaniasFury (attrs `With` meta)) = case msg of
+  runMessage msg t@(TitaniasFury (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         -- "your hero": an alter-ego is not attacked
@@ -41,7 +39,7 @@ instance RunMessage TitaniasFury where
         isHero <- identityMatches HeroIdentity identityId
         case mTitania of
           Just titaniaId | isHero -> do
-            push (MinionMessage titaniaId $ MinionAttacks identityId)
+            enemyAttacks titaniaId identityId
             pure t
           _ ->
             pure . TitaniasFury . (`With` meta) $ attrs & surgeL .~ True
@@ -49,13 +47,10 @@ instance RunMessage TitaniasFury where
         if titaniaAttacked meta
           then TitaniasFury . (`With` meta) <$> runMessage msg attrs
           else do
-            mTitania <- selectOne $ MinionIs Cards.titania
-            for_ mTitania $
-              \titania -> push (MinionMessage titania MinionHealAllDamage)
-            TitaniasFury . (`With` meta)
-              <$> runMessage
-                msg
-                (attrs & surgeL .~ True)
+            -- discarded, and its surge had, before Titania heals
+            t' <- TitaniasFury . (`With` meta) <$> runMessage msg (attrs & surgeL .~ True)
+            traverse_ healAllDamage =<< selectOne (MinionIs Cards.titania)
+            pure t'
       _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs
     MinionMessage minionId MinionAttacked -> do
       isTitania <- minionMatches (MinionIs Cards.titania) minionId
@@ -64,7 +59,7 @@ instance RunMessage TitaniasFury where
     Boost msg' -> case msg' of
       RevealedAsBoost target enemyId | isTarget attrs target -> do
         case enemyId of
-          EnemyVillainId villainId -> push (DealBoost $ toTarget villainId)
+          EnemyVillainId villainId -> dealBoost villainId
           EnemyMinionId _ -> pure ()
         pure t
       _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs

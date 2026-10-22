@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Trait
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -24,12 +23,11 @@ newtype Harvest = Harvest (Attrs Treachery)
 
 -- | Only a Persona support that was ready is exhausted "this way".
 instance RunMessage Harvest where
-  runMessage msg t@(Harvest attrs) = case msg of
+  runMessage msg t@(Harvest attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       personas <- selectList $ SupportMatches [SupportWithTrait Persona, UnexhaustedSupport]
       villain <- selectJust ActiveVillain
-      pushAll $
-        map (`SupportMessage` ExhaustedSupport) personas
-          <> [VillainMessage villain $ VillainHealed (fromIntegral $ length personas) | notNull personas]
+      for_ personas exhaust
+      when (notNull personas) $ heal villain (fromIntegral $ length personas)
       pure $ if null personas then Harvest (attrs & surgeL .~ True) else t
     _ -> Harvest <$> runMessage msg attrs

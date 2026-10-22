@@ -7,8 +7,7 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (ObligationId)
 import Marvel.Id as X (ObligationId)
-import Marvel.Message
-import Marvel.Queue
+import Marvel.Message.Lifted
 import Marvel.Ref
 
 data Obligation = forall a. (IsObligation a) => Obligation a
@@ -112,12 +111,11 @@ instance HasCardDef (Attrs Obligation) where
   getCardDef = obligationCardDef
 
 instance RunMessage (Attrs Obligation) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       ResolvedObligation identityId -> do
-        pushAll $
-          RemoveFromPlay (toTarget attrs)
-            : [Surge identityId | obligationSurge attrs]
+        removeFromPlay attrs
+        when (obligationSurge attrs) $ surge identityId
         pure attrs
       _ -> pure attrs
     GainSurge target | isTarget attrs target -> pure $ attrs & surgeL .~ True

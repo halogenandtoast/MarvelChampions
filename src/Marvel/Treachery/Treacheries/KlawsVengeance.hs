@@ -6,15 +6,10 @@ module Marvel.Treachery.Treacheries.KlawsVengeance (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Entity
-import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -26,26 +21,17 @@ newtype KlawsVengeance = KlawsVengeance (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage KlawsVengeance where
-  runMessage msg t@(KlawsVengeance attrs) = case msg of
+  runMessage msg t@(KlawsVengeance attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
             villainId <- selectJust ActiveVillain
-            push $ VillainMessage villainId $ VillainAttacks identityId
-          else
-            push $
-              IdentityMessage identityId $
-                DiscardFrom
-                  RandomFromHand
-                  1
-                  Nothing
+            enemyAttacks villainId identityId
+          else discardFrom identityId RandomFromHand 1
         pure t
       _ -> KlawsVengeance <$> runMessage msg attrs
-    AllyMessage _ (AllyDamaged _ _) -> do
-      player <- getActivePlayerId
-      t <$ pushChoice player (PlaceThreat (toRef attrs) 1 MainScheme)
-    IdentityMessage identityId (IdentityDamaged _ _) -> do
-      t <$ pushChoice identityId (PlaceThreat (toRef attrs) 1 MainScheme)
+    AllyMessage _ (AllyDamaged _ _) -> t <$ placeThreatOnEach attrs 1 MainScheme
+    IdentityMessage _ (IdentityDamaged _ _) -> t <$ placeThreatOnEach attrs 1 MainScheme
     _ -> KlawsVengeance <$> runMessage msg attrs

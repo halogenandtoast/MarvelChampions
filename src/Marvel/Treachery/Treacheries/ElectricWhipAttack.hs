@@ -6,17 +6,12 @@ module Marvel.Treachery.Treacheries.ElectricWhipAttack (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -28,32 +23,21 @@ newtype ElectricWhipAttack = ElectricWhipAttack (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage ElectricWhipAttack where
-  runMessage msg t@(ElectricWhipAttack attrs) = case msg of
+  runMessage msg t@(ElectricWhipAttack attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         upgrades <- selectList (UpgradeControlledBy $ IdentityWithId identityId)
-        push $
-          Ask identityId $
-            ChooseOne
-              [ Label
-                  "$label.deal1DamageToYourHeroForEachUpgradeYouControl"
-                  [ DamageCharacter
-                      (IdentityCharacter identityId)
-                      (toRef attrs)
-                      (toDamage (fromIntegral $ length upgrades) FromTreachery)
-                  ]
-              , Label
-                  "$label.discardAnUpgradeYouControl"
-                  [ ChooseUpgrade
-                      (UpgradeControlledBy $ IdentityWithId identityId)
-                      (toTarget attrs)
-                  ]
-              ]
+        chooseOne identityId
+          [ labeled "$label.deal1DamageToYourHeroForEachUpgradeYouControl" $
+              damageCharacter identityId attrs (toDamage (fromIntegral $ length upgrades) FromTreachery)
+          , labeled "$label.discardAnUpgradeYouControl" $
+              chooseUpgrade identityId (UpgradeControlledBy $ IdentityWithId identityId) attrs
+          ]
         pure t
       _ -> ElectricWhipAttack <$> runMessage msg attrs
     ChoseUpgrade upgradeId target
       | isTarget attrs target ->
-          t <$ push (RemoveFromPlay $ toRef upgradeId)
+          t <$ removeFromPlay upgradeId
     Boost msg' -> case msg' of
       RevealedAsBoost target enemyId | isTarget attrs target -> do
         undefended <-
@@ -61,14 +45,11 @@ instance RunMessage ElectricWhipAttack where
             <$> select (UndefendedEnemy <> VillainEnemy)
         when undefended $ do
           ident <- getActivePlayerId
-          pushChoice ident $
-            ChooseUpgrade
-              (UpgradeControlledBy $ IdentityWithId ident)
-              target
+          chooseUpgrade ident (UpgradeControlledBy $ IdentityWithId ident) target
         pure t
       -- turned up as a boost, it hears of the upgrade chosen from the boost area
       ChoseUpgrade upgradeId target
         | isTarget attrs target ->
-            t <$ push (RemoveFromPlay $ toRef upgradeId)
+            t <$ removeFromPlay upgradeId
       _ -> ElectricWhipAttack <$> runMessage msg attrs
     _ -> ElectricWhipAttack <$> runMessage msg attrs

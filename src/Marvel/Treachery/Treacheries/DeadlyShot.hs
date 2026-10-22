@@ -6,15 +6,11 @@ module Marvel.Treachery.Treacheries.DeadlyShot (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -28,18 +24,14 @@ newtype DeadlyShot = DeadlyShot (Attrs Treachery)
 -- | Discard an upgrade you control, then: as an alter-ego place 1 threat on the main
 -- scheme, as a hero take 1 damage.
 instance RunMessage DeadlyShot where
-  runMessage msg t@(DeadlyShot attrs) = case msg of
+  runMessage msg t@(DeadlyShot attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
       isHero <- identityMatches HeroIdentity identityId
       upgrades <- selectRefs (UpgradeControlledBy $ IdentityWithId identityId)
       mainScheme <- selectJust MainScheme
-      let
-        discard =
-          [Ask identityId $ ChooseOne [TargetLabel u [DiscardTarget u] | u <- upgrades] | notNull upgrades]
-      pushAll $
-        discard
-          <> if isHero
-            then damageIdentity identityId (toSource attrs) (toDamage 1 FromTreachery)
-            else placeThreatOn mainScheme 1
+      chooseOne identityId [targeting u (removeFromPlay u) | u <- upgrades]
+      if isHero
+        then damageCharacter identityId attrs (toDamage 1 FromTreachery)
+        else placeThreat mainScheme 1
       pure t
     _ -> DeadlyShot <$> runMessage msg attrs

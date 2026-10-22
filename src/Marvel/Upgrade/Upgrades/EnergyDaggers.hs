@@ -8,14 +8,13 @@ import Marvel.Prelude
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
@@ -35,7 +34,7 @@ instance HasAbilities EnergyDaggers where
     [ability a 1 Special Never NoCost $ RunAbility (toTarget a) 1]
 
 instance RunMessage EnergyDaggers where
-  runMessage msg u@(EnergyDaggers attrs) = case msg of
+  runMessage msg u@(EnergyDaggers attrs) = runQueueT $ case msg of
     RanAbility ident target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
       villain <- selectJust ActiveVillain
@@ -51,20 +50,12 @@ instance RunMessage EnergyDaggers where
       let
         dmg =
           toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
+      -- the damage is the enemies' own, not an attack's: no window, no bonus
       chooseOne
         ident
-        [ TargetLabel
-          (toRef ident')
-          [ Run $
-              VillainMessage villain (VillainDamaged (toSource attrs) dmg)
-                : map
-                  ( \minionId ->
-                      MinionMessage
-                        minionId
-                        (MinionDamaged (toSource attrs) dmg)
-                  )
-                  (HashMap.findWithDefault [] ident' minionMap)
-          ]
+        [ targeting ident' do
+          damageCharacter villain attrs dmg
+          for_ (HashMap.findWithDefault [] ident' minionMap) \minion -> damageCharacter minion attrs dmg
         | ident' <- players
         ]
       pure u

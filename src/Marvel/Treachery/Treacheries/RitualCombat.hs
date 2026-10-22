@@ -7,15 +7,10 @@ import Marvel.Prelude
 
 import Marvel.Boost (boostCount)
 import Marvel.Card
-import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Question
-import Marvel.Queue
-import Marvel.Ref
+import Marvel.Message.Lifted
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -27,10 +22,10 @@ newtype RitualCombat = RitualCombat (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage RitualCombat where
-  runMessage msg t@(RitualCombat attrs) = case msg of
+  runMessage msg t@(RitualCombat attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
-        push $ DiscardTopOfEncounterDeck 1 (Just $ toTarget attrs)
+        discardTopOfEncounterDeckFor 1 attrs
         pure . RitualCombat $ attrs & resolverL ?~ identityId
       _ -> RitualCombat <$> runMessage msg attrs
     WithDiscarded target _ (onlyEncounterCards -> cards)
@@ -46,16 +41,10 @@ instance RunMessage RitualCombat where
                       cards
               chooseOne
                 ident
-                [ Label
-                    ("Deal " <> tshow x <> " damage to your hero")
-                    [ DamageCharacter
-                        (IdentityCharacter ident)
-                        (toRef attrs)
-                        (toDamage x FromTreachery)
-                    ]
-                , Label
-                    ("Place " <> tshow x <> " threat on the main scheme")
-                    [PlaceThreat (toRef attrs) x MainScheme]
+                [ labeled ("Deal " <> tshow x <> " damage to your hero") $
+                    damageCharacter ident attrs (toDamage x FromTreachery)
+                , labeled ("Place " <> tshow x <> " threat on the main scheme") $
+                    placeThreatOnEach attrs x MainScheme
                 ]
               pure t
             Nothing -> error "no ident set"

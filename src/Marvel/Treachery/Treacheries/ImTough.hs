@@ -8,9 +8,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -22,14 +21,13 @@ newtype ImTough = ImTough (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage ImTough where
-  runMessage msg t@(ImTough attrs) = case msg of
+  runMessage msg t@(ImTough attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery _ -> do
         isTough <- selectAny $ ActiveVillain <> VillainWithToughStatus
         if not isTough
           then do
-            villainId <- selectJust ActiveVillain
-            push $ VillainMessage villainId VillainBecomeTough
+            enemyBecomesTough =<< selectJust ActiveVillain
             pure t
           else pure . ImTough $ attrs & surgeL .~ True
       _ -> ImTough <$> runMessage msg attrs

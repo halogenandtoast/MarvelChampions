@@ -31,6 +31,9 @@ instance HasCardDef Card where
 class IsCard a where
   toCard :: a -> Card
 
+instance IsCard PlayerCard where
+  toCard = PlayerCard
+
 instance IsCard Card where
   toCard = id
 

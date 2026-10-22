@@ -5,17 +5,14 @@ module Marvel.Treachery.Treacheries.ClashOfTheTitans (
 
 import Marvel.Prelude
 
-import Data.Maybe (maybeToList)
 
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -38,7 +35,7 @@ instance IsTreachery ClashOfTheTitans where
 -- | "The enemy with the highest ATK attacks the hero or ally with the highest ATK (first
 -- player decides ties.) If no attack was made this way, this card gains surge."
 instance RunMessage ClashOfTheTitans where
-  runMessage msg t@(ClashOfTheTitans (attrs `With` meta)) = case msg of
+  runMessage msg t@(ClashOfTheTitans (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery _ -> do
         firstPlayer <- selectJust FirstPlayer
@@ -48,19 +45,12 @@ instance RunMessage ClashOfTheTitans where
         controllers <- for players \p -> map (,p) <$> selectList (AllyControlledBy $ IdentityWithId p)
         let
           attackedBy enemy = \case
-            IdentityCharacter p -> Just $ enemyMessage enemy (VillainAttacks p) (MinionAttacks p)
-            AllyCharacter aid -> do
-              p <- headMay [p | (a, p) <- concat controllers, a == aid]
-              Just $ enemyMessage enemy (VillainAttacksAlly p aid) (MinionAttacksAlly p aid)
-            _ -> Nothing
-          -- the first player decides ties
-          pick :: [x] -> (x -> Target) -> (x -> [Message]) -> [Message]
-          pick xs ref f = case xs of
-            [x] -> f x
-            _ -> [Ask firstPlayer $ ChooseOne [TargetLabel (ref x) [Run (f x)] | x <- xs]]
-        pushAll $
-          pick enemies enemyRef \enemy ->
-            pick characters characterRef \character -> maybeToList (attackedBy enemy character)
+            IdentityCharacter p -> enemyAttacks enemy p
+            AllyCharacter aid ->
+              for_ (headMay [p | (a, p) <- concat controllers, a == aid]) \p -> enemyAttacksAlly enemy p aid
+            _ -> pure ()
+        pick firstPlayer enemies enemyRef \enemy ->
+          pick firstPlayer characters characterRef (attackedBy enemy)
         pure t
       ResolvedTreachery _ | not (attackMade meta) ->
         ClashOfTheTitans . (`With` meta) <$> runMessage msg (attrs & surgeL .~ True)
@@ -69,14 +59,9 @@ instance RunMessage ClashOfTheTitans where
     VillainMessage _ VillainAttacked -> pure $ ClashOfTheTitans (attrs `With` Meta True)
     MinionMessage _ MinionAttacked -> pure $ ClashOfTheTitans (attrs `With` Meta True)
     _ -> ClashOfTheTitans . (`With` meta) <$> runMessage msg attrs
-   where
-    enemyMessage enemy villainMsg minionMsg = case enemy of
-      EnemyVillainId vid -> VillainMessage vid villainMsg
-      EnemyMinionId mid -> MinionMessage mid minionMsg
-    enemyRef = \case
-      EnemyVillainId vid -> toRef vid
-      EnemyMinionId mid -> toRef mid
-    characterRef = \case
-      IdentityCharacter p -> toRef p
-      AllyCharacter aid -> toRef aid
-      other -> toRef other
+
+-- | The one, or the first player decides the tie.
+pick :: (ReverseQueue m) => IdentityId -> [x] -> (x -> Target) -> (x -> m ()) -> m ()
+pick firstPlayer xs ref f = case xs of
+  [x] -> f x
+  _ -> chooseOne firstPlayer [targeting (ref x) (f x) | x <- xs]

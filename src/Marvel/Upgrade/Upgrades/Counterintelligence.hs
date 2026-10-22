@@ -11,12 +11,10 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
-import Marvel.Matchers hiding (MainScheme)
 import Marvel.Matchers qualified as Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -43,7 +41,7 @@ instance HasAbilities Counterintelligence where
 
 -- | Prevent 3 of the threat about to be placed.
 instance RunMessage Counterintelligence where
-  runMessage msg u@(Counterintelligence attrs) = case msg of
+  runMessage msg u@(Counterintelligence attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 [ThreatPlaced _ (SchemeMainSchemeId mid) _] _ -> do
       let prevent = \case
             MainSchemeMessage mid' (MainSchemePlaceThreat n) ->
