@@ -35,14 +35,7 @@ instance RunMessage Loki where
       pure l
     WithDiscarded (isTarget attrs -> True) _ (onlyEncounterCards -> cards)
       | any ((== TreacheryType) . cdCardType . getCardDef) cards -> do
-          let
-            mid = minionId attrs
-            defeat = \case
-              MinionMessage mid' MinionDefeated -> mid == mid'
-              CheckWindows [W.Window W.After (W.DefeatedMinion mid' _ _)] -> mid == mid'
-              _ -> False
-          cancelMatchingMessage defeat
-          cancelMatchingMessage defeat
-          push $ MinionMessage mid MinionHealAllDamage
+          cancelMinionDefeat (minionId attrs)
+          push $ MinionMessage (minionId attrs) MinionHealAllDamage
           pure l
     _ -> Loki <$> runMessage msg attrs

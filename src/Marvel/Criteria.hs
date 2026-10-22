@@ -80,6 +80,10 @@ canSpendOn criteria r = maybe True (\only -> r == only || r == Wild) (spendOnly 
 canAttack :: Criteria
 canAttack = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy]
 
+-- | What an attack on a minion needs: a minion, or a stun for the attempt to remove.
+canAttackMinion :: Criteria
+canAttackMinion = AnyCriteria [SelfMatches StunnedIdentity, MinionExists AnyMinion]
+
 -- | What a thwart needs of the player making it.
 abilitySubTypeCriteria :: AbilitySubType -> Criteria
 abilitySubTypeCriteria = \case

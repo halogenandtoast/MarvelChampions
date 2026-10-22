@@ -568,7 +568,7 @@ getOverHere :: CardDef
 getOverHere =
   (event "06014" "Get Over Here!" 0 HeroAction [Attack] [Energy] Aggression)
     { cdAbilitySubType = Just Ability.Attack
-    , cdCriteria = MinionExists AnyMinion
+    , cdCriteria = canAttackMinion
     }
 
 -- | "Exhaust a Weapon upgrade on your hero" is part of its cost.

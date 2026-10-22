@@ -69,6 +69,18 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "valkyrie" (isAbilityOfCard valkyrie)
         minionDamageOf loki `shouldReturn` Just 3
 
+    it "deals 3 when a wild resource is spent as energy" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        loki <- addMinion p Minions.loki
+        valkyrie <- putInHand p "06012"
+        -- The Power of Aggression doubles to two wild resources for an Aggression card
+        playPaying p valkyrie ["01055", "01089"]
+        choose "valkyrie" (isAbilityOfCard valkyrie)
+        minionDamageOf loki `shouldReturn` Just 3
+
   describe "Get Over Here! (06014)" do
     it "deals 1 damage to a minion, and an Aerial hero engages it" do
       tg <- testGame ["thor", "she-hulk"]
@@ -103,6 +115,18 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "Loki" (isTargetChoice (EnemyMinionId loki))
         pass
         engagedWith other `shouldReturn` [loki]
+
+    it "a stunned hero may play it with no minion to attack, and the stun is removed" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        resolve [IdentityMessage p IdentityStunned]
+        getOver <- putInHand p "06014"
+        choose "play" (isPlay getOver)
+        pass
+        isStunned p `shouldReturn` False
 
   describe "Mean Swing (06015)" do
     it "exhausts a Weapon for +3 ATK on the basic attack" do
@@ -153,6 +177,24 @@ spec = describe "The Thor pack's aspect and basic cards" do
         length <$> handOf p `shouldReturn` 3
         (map (.supportUses) <$> supportsWith "06017") `shouldReturn` [0]
 
+    it "gains no glory counter when an ally defeats the minion" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        hall <- inPlay p "06017" ["01088", "01089"]
+        _ <- putIntoPlay p "06002"
+        mercenary <- addMinion p Minions.hydraMercenary
+        pass
+        resolve [MinionMessage mercenary (MinionDamaged GameRef (toDamage 1 FromAbility))]
+        [sifAttrs] <- alliesWith "06002"
+        choose "Lady Sif attacks" (isAllyAttack sifAttrs)
+        chooseIf (isTargetChoice mercenary)
+        offers (isAbilityOfCard hall) `shouldReturn` False
+        pass
+        minionDamageOf mercenary `shouldReturn` Nothing
+        (map (.supportUses) <$> supportsWith "06017") `shouldReturn` [0]
+
   describe "Battle Fury (06018)" do
     it "after your hero attacks and defeats a minion, take 1 damage and discard it to ready" do
       tg <- thor
@@ -189,6 +231,26 @@ spec = describe "The Thor pack's aspect and basic cards" do
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
         pass
         villainDamageNow `shouldReturn` 4
+
+    it "may be triggered after an attack event, as the hero attacked (FAQ)" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        _ <- inPlay p "06009" ["01088"]
+        jarnbjorn <- inPlay p "06019" ["01090"]
+        throw <- putInHand p "06005"
+        payment <- traverse (putInHand p) ["01088", "01089", "01090"]
+        strength <- putInHand p "01090"
+        playWith throw payment
+        vid <- villainIdNow
+        choose "throw at Rhino" (isTargetChoice vid)
+        choose "jarnbjorn" (isAbilityOfCard jarnbjorn)
+        choose "pay" (isPayWith strength)
+        whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        pass
+        villainDamageNow `shouldReturn` 10
 
   describe "Heimdall (06020)" do
     it "looks at the top 3 encounter cards: 1 is discarded and the others go back in the order chosen" do
@@ -280,6 +342,26 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "attack Rhino" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 4
+
+    it "exhausts an ally to add its THW to the hero's basic thwart" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        placeMainThreat 5
+        before <- mainSchemeThreat
+        sif <- putIntoPlay p "06002"
+        teamwork <- putInHand p "06032"
+        _ <- putInHand p "01088"
+        choose "thwart" (isHeroThwart p)
+        choose "teamwork" (isPlay teamwork)
+        whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        chooseIf (isTargetChoice (allyIdOf sif))
+        pass
+        m <- mainSchemeId
+        chooseIf (isTargetChoice m)
+        mainSchemeThreat `shouldReturn` (before - 3)
 
   describe "Second Wind (06033)" do
     it "heals 4 damage, 5 if paid for with a mental resource" do
