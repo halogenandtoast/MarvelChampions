@@ -762,6 +762,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         pure $
           g
             & (entitiesL . villainsL %~ deleteMap vid)
+            & (removedEntitiesL . villainsL %~ insertMap vid v)
             & (entitiesL . sideSchemesL %~ maybe id deleteMap signature)
             & (signatureSchemesL %~ deleteMap vid)
             & (areasL . each %~ leave)

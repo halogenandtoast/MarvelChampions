@@ -5,7 +5,10 @@ module Marvel.Encounter.WreckingCrewSpec (spec) where
 import Control.Monad ((<=<))
 import Data.List (sort)
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson (Value (..))
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
+import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Matchers
 import Marvel.Message.Lifted (signatureSchemeOf)
@@ -244,6 +247,14 @@ spec = describe "The Wrecking Crew" do
       resolve [DiscardedCard (EncounterCard card)]
       pileDiscard <$> getPile (VillainDeckKey t) `shouldReturn` [card]
       encounterDiscard `shouldReturn` []
+      -- and the board shows them, by his name
+      view <- liftIO . publicGame =<< getGame
+      let decks = case view of
+            Object o | Just (Array areas) <- KeyMap.lookup "areas" o, Just (Object a) <- headMay (toList areas), Just (Array ds) <- KeyMap.lookup "decks" a -> toList ds
+            _ -> []
+          named n = [d | Object d <- decks, KeyMap.lookup "name" d == Just (String n), KeyMap.lookup "kind" d == Just (String "villain")]
+      length (named "Thunderball") `shouldBe` 1
+      [KeyMap.lookup "discard" d <&> \case Array xs -> length xs; _ -> 0 | d <- named "Thunderball"] `shouldBe` [Just 1]
 
   it "the mixed setup has the first player choose each villain's version, A or B" do
     (app, _, _) <- dealtGameLogged (ScenarioSetup "07001b" [] Normal) [starter "spider-man"] 1
