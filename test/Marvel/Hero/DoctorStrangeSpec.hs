@@ -7,6 +7,9 @@ import Data.Typeable (cast)
 import Marvel.Hero.Heroes.DoctorStrange (DoctorStrange (..), InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Types (Hero (..))
 import Marvel.Invocation
+import Marvel.Matchers (IdentityMatcher (IdentityWithTrait), identityMatches)
+import Marvel.Trait (Trait (Aerial))
+import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -155,6 +158,19 @@ spec = describe "Doctor Strange" do
     inGame tg do
       stackInvocation p ["09036"]
       offers spellMastery `shouldReturn` False
+
+  it "Counterspell does not cancel an Invocation card's Special, which is resolved, not played" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      _ <- revealNow p Attachments.counterspell
+      resolve []
+      stackInvocation p ["09036"]
+      choose "Spell Mastery" spellMastery
+      length <$> handOf p `shouldReturn` 3
+      getsGame (HashMap.size . gameAttachments) `shouldReturn` 1
 
   it "Winds of Watoomb costs nothing and draws 3 cards" do
     tg <- doctorStrange
@@ -365,7 +381,9 @@ spec = describe "Doctor Strange" do
     inGame tg do
       clearHand p
       changeForm p
+      identityMatches (IdentityWithTrait Aerial) p `shouldReturn` False
       cloak <- putIntoPlay p "09009"
+      identityMatches (IdentityWithTrait Aerial) p `shouldReturn` True
       resolve [IdentityMessage p ExhaustedIdentity]
       choose "the cloak" (isAbilityOfCard cloak)
       isExhaustedNow p `shouldReturn` False
