@@ -77,7 +77,7 @@ const escalation = (scheme: SchemeView) => {
 
       <div v-if="sideSchemes.length" class="side-schemes">
         <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
-          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :attached="scheme.upgrades ?? []" />
+          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" />
         </div>
       </div>
 

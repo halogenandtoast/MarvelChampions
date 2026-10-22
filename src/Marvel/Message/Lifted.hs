@@ -462,6 +462,13 @@ attachedTo enemy attachment = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (AttachedToVillain attachment)
   EnemyMinionId mid -> MinionMessage mid (AttachedToMinion attachment)
 
+-- | The attachment is attached to the player's identity card.
+attachToIdentity :: (ReverseQueue m) => AttachmentId -> IdentityId -> m ()
+attachToIdentity attachment = push . AttachmentMessage attachment . AttachedToIdentity
+
+attachToSideScheme :: (ReverseQueue m) => AttachmentId -> SideSchemeId -> m ()
+attachToSideScheme attachment = push . AttachmentMessage attachment . AttachedToSideScheme
+
 attachToEnvironment :: (ReverseQueue m) => EnvironmentId -> AttachmentId -> m ()
 attachToEnvironment environment = push . EnvironmentMessage environment . AttachedToEnvironment
 

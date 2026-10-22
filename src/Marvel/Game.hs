@@ -1441,6 +1441,7 @@ gameSelectIdentity m = do
       gameValueMatches gameValueMatcher . identityDamage
     IdentityMatchAll xs -> andM . traverse matchFilter xs
     IdentityCanThwart -> fmap (notElem CannotThwart) . getModifiers
+    IdentityCanChangeForm -> fmap (notElem CannotChangeForm) . getModifiers
     FirstPlayer -> \a -> do
       ps <- getPlayers
       pure $ case ps of

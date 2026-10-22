@@ -109,6 +109,7 @@ export interface SchemeView extends CardView {
   crisis: boolean
   upgrades?: UpgradeView[]
   counters?: number
+  attachments?: AttachmentView[]
 }
 
 export type ChoiceKind =

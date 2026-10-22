@@ -48,6 +48,8 @@ instance Entity Attachment where
     , attachmentIdentity :: Maybe IdentityId
     -- ^ the hero it is attached to, if it is
     , attachmentCounters :: Natural
+    , attachmentSideScheme :: Maybe SideSchemeId
+    -- ^ the side scheme it is attached to, if it is
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -119,6 +121,7 @@ attachment f cardDef =
             , attachmentDamage = 0
             , attachmentIdentity = Nothing
             , attachmentCounters = 0
+            , attachmentSideScheme = Nothing
             }
     }
 
@@ -132,7 +135,14 @@ instance RunMessage (Attrs Attachment) where
           AttachedToEnemy enemyId -> do
             attachedTo enemyId (attachmentId attrs)
             pure $ attrs & enemyL ?~ enemyId
+          AttachedToIdentity ident -> pure attrs {attachmentIdentity = Just ident}
+          AttachedToSideScheme sid -> pure attrs {attachmentSideScheme = Just sid}
           _ -> pure attrs
+    -- it leaves play with the card it is attached to
+    RemoveFromPlay target
+      | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs] -> do
+          removeFromPlay attrs
+          pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs

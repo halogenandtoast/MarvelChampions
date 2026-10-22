@@ -5,20 +5,45 @@ module Marvel.Rules.SetMechanicsSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet (singleton)
 import Data.Text qualified as T
-import Marvel.EncounterCard (isPlayerObligation)
+import Marvel.Ability.Types (HasAbilities)
+import Marvel.Attachment.Cards qualified as AttachmentCards
+import Marvel.Attachment.Types (Attachment (..), Attrs (..), IsAttachment, attachment)
 import Marvel.Attack (Attack (..), attack)
+import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Hp
 import Marvel.Keyword (Keyword (Incite, Villainous))
 import Marvel.MainScheme.Types (Field (MainSchemeCounters))
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types (overMinion)
+import Marvel.Modifier (HasModifiersFor (..), Modifier (..))
 import Marvel.Obligation.Obligations.EvictionNotice (EvictionNotice (..), evictionNotice)
 import Marvel.Obligation.Types (Obligation (..), heldCardsL, toObligationAttrs)
 import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
+import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs, toughL)
 import Marvel.Villain.Villains.Rhino (rhino2)
 import TestImport
+
+-- | An encounter attachment, as All Tied Up: the identity it is attached to cannot ready
+-- or change form.
+newtype TiedUp = TiedUp (Attrs Attachment)
+  deriving anyclass (IsAttachment, HasAbilities)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance HasModifiersFor TiedUp where
+  getModifiersFor _ (IdentityRef ident) (TiedUp a) | a.attachmentIdentity == Just ident = pure [CannotReady, CannotChangeForm]
+  getModifiersFor _ _ _ = pure []
+
+instance RunMessage TiedUp where
+  runMessage msg (TiedUp a) = TiedUp <$> runMessage msg a
+
+-- | A new 'TiedUp' in play, attached to nothing yet.
+tiedUp :: GameAppT AttachmentId
+tiedUp = do
+  aid <- getRandom
+  withGame_ $ entitiesL . attachmentsL . at aid ?~ Attachment (buildCard (attachment TiedUp AttachmentCards.armoredRhinoSuit) aid)
+  pure aid
 
 spec :: Spec
 spec = describe "set mechanics" do
@@ -155,3 +180,29 @@ spec = describe "set mechanics" do
       liftIO do
         after `shouldBe` before + 2
         discarded `shouldContain` [boost]
+
+  it "an encounter card attached to an identity keeps it from readying and changing form" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      aid <- tiedUp
+      runNow [AttachmentMessage aid (AttachedToIdentity you)]
+      resolve [IdentityMessage you ExhaustedIdentity, IdentityMessage you ReadiedIdentity]
+      exhausted <- exhaustedNow you
+      canChange <- offers \case
+        UseAbility ab -> ChangeForm `elem` abilityChoices ab
+        _ -> False
+      liftIO $ (exhausted, canChange) `shouldBe` (True, False)
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    text `shouldSatisfy` T.isInfixOf "$log.attachedTo"
+
+  it "an encounter card attached to a side scheme leaves play with it" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      scheme <- encounterCard SideSchemeCards.breakinAndTakin
+      resolve [RevealEncounterCard you scheme]
+      aid <- tiedUp
+      resolve [AttachmentMessage aid (AttachedToSideScheme (sideSchemeOf scheme)), RemoveFromPlay (toTarget $ sideSchemeOf scheme)]
+      attached <- getsGame (HashMap.member aid . gameAttachments)
+      liftIO $ attached `shouldBe` False

@@ -83,6 +83,8 @@ narrationFor = \case
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
+  AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
+  AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
   -- told once, as it is dealt; each character's share is told as it takes it
   AssignIndirectDamage ident _ n [] | n > 0 -> Just do
@@ -256,6 +258,10 @@ damaged target tough n = whenRef target \t ->
     if tough
       then mechanic [ikeyPart "log.toughRemoved" ["target" ~> t]]
       else mechanic [ikeyPart "log.takesDamage" ["target" ~> t, "count" ~> n]]
+
+attachedTo :: (HasGame m) => AttachmentId -> Target -> m [LogEntry]
+attachedTo aid target = whenRef (AttachmentRef aid) \a -> whenRef target \t ->
+  one $ toned Bad $ mechanic [ikeyPart "log.attachedTo" ["card" ~> a, "target" ~> t]]
 
 counted :: (HasGame m) => Text -> Target -> Natural -> m [LogEntry]
 counted key target n = whenRef target \t -> one $ mechanic [ikeyPart key ["target" ~> t, "count" ~> n]]
