@@ -37,9 +37,10 @@ spec = describe "The Thor pack's aspect and basic cards" do
         _ <- addMinion p Minions.hydraMercenary
         _ <- addMinion p Minions.hydraMercenary
         hercules <- putInHand p "06011"
-        _ <- traverse (putInHand p) ["01088", "01089", "01090"]
+        -- each Invulnerability pays 1 resource
+        _ <- traverse (putInHand p) ["06021", "06021", "06021"]
         offers (isPlay hercules) `shouldReturn` False
-        _ <- putInHand p "01088"
+        _ <- putInHand p "06021"
         offers (isPlay hercules) `shouldReturn` True
 
   describe "Valkyrie (06012)" do
@@ -77,8 +78,8 @@ spec = describe "The Thor pack's aspect and basic cards" do
         loki <- addMinion other Minions.loki
         pass
         getOver <- putInHand p "06014"
-        playPaying p getOver ["01089"]
-        choose "Loki" (isTargetChoice loki)
+        choose "play" (isPlay getOver)
+        choose "Loki" (isTargetChoice (EnemyMinionId loki))
         chooseIf (isNamedAbility "\"Have at thee!\"")
         pass
         minionDamageOf loki `shouldReturn` Just 1
@@ -95,8 +96,8 @@ spec = describe "The Thor pack's aspect and basic cards" do
         loki <- addMinion other Minions.loki
         pass
         getOver <- putInHand p "06014"
-        playPaying p getOver ["01089"]
-        choose "Loki" (isTargetChoice loki)
+        choose "play" (isPlay getOver)
+        choose "Loki" (isTargetChoice (EnemyMinionId loki))
         pass
         engagedWith other `shouldReturn` [loki]
 
@@ -141,7 +142,9 @@ spec = describe "The Thor pack's aspect and basic cards" do
         hall <- inPlay p "06017" ["01088", "01089"]
         for_ [1 :: Int .. 3] \_ -> do
           m <- addMinion p Minions.hydraMercenary
-          resolve [MinionMessage m (MinionDamaged (IdentityRef p) (toDamage 3 $ FromPlayerAttack p))]
+          runNow [MinionMessage m (MinionDamaged (IdentityRef p) (toDamage 3 $ FromPlayerAttack p))]
+          choose "glory" (isAbilityOfCard hall)
+          pass
         (map (.supportUses) <$> supportsWith "06017") `shouldReturn` [3]
         choose "draw 3" (isAbilityOfCard hall)
         length <$> handOf p `shouldReturn` 3
@@ -157,6 +160,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         fury <- inPlay p "06018" ["01088"]
         mercenary <- addMinion p Minions.hydraMercenary
         pass
+        resolve [MinionMessage mercenary (MinionDamaged GameRef (toDamage 1 FromAbility))]
         choose "attack" (isHeroAttack p)
         choose "attack the mercenary" (isTargetChoice mercenary)
         choose "battle fury" (isAbilityOfCard fury)
@@ -173,11 +177,12 @@ spec = describe "The Thor pack's aspect and basic cards" do
         changeForm p
         clearHand p
         jarnbjorn <- inPlay p "06019" ["01090"]
-        _ <- putInHand p "01090"
+        strength <- putInHand p "01090"
         choose "attack" (isHeroAttack p)
         vid <- villainIdNow
         choose "attack Rhino" (isTargetChoice vid)
         choose "jarnbjorn" (isAbilityOfCard jarnbjorn)
+        choose "pay" (isPayWith strength)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
         pass
         villainDamageNow `shouldReturn` 4

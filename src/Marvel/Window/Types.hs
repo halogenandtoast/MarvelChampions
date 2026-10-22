@@ -49,6 +49,8 @@ data WindowMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | EncounterCardReveal WindowTiming BasicEncounterCardMatcher
   | RoundEnds
+  | IdentityWouldBeDefeated IdentityMatcher
+  | TurnBegins IdentityMatcher
   | -- | a player matching plays an event matching
     PlaysEvent WindowTiming IdentityMatcher CardMatcher
   | AllyDefeated WindowTiming AllyMatcher
@@ -91,6 +93,8 @@ data WindowType
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
+  | IdentityDefeat IdentityId
+  | TurnBegan IdentityId
   | -- | the player, the event and its card
     EventPlayed IdentityId EventId CardDef
   | DefeatedAlly AllyId

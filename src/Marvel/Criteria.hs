@@ -2,7 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 
-import Marvel.Ability.Types (AbilityType (..))
+import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Matchers.Types
 
@@ -21,9 +21,9 @@ data Criteria
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher
-  | UpgradeExists UpgradeMatcher
   | Never
   | Criteria [Criteria]
+  | UpgradeExists UpgradeMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
   deriving stock (Show, Eq, Generic)
@@ -56,4 +56,10 @@ abilityTypeCriteria = \case
   HeroAction -> InHeroForm
   AlterEgoAction -> InAlterEgoForm
   AlterEgoResource -> InAlterEgoForm
+  _ -> NoCriteria
+
+-- | What a thwart needs of the player making it.
+abilitySubTypeCriteria :: AbilitySubType -> Criteria
+abilitySubTypeCriteria = \case
+  Thwart -> SelfMatches IdentityCanThwart
   _ -> NoCriteria

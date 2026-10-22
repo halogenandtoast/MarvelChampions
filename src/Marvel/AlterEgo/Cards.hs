@@ -55,6 +55,9 @@ tonyStark = alterEgo "01029b" "Tony Stark" [Genius]
 tChalla :: CardDef
 tChalla = alterEgo "01040b" "T'Challa" [King, Wakanda]
 
+steveRogers :: CardDef
+steveRogers = alterEgo "03001b" "Steve Rogers" [Shield, Soldier]
+
 kamalaKhan :: CardDef
 kamalaKhan = alterEgo "05001b" "Kamala Khan" [Inhuman]
 

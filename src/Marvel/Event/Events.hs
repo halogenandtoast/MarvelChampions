@@ -30,6 +30,13 @@ import Marvel.Event.Events.WakandaForeverA as X
 import Marvel.Event.Events.WakandaForeverB as X
 import Marvel.Event.Events.WakandaForeverC as X
 import Marvel.Event.Events.WakandaForeverD as X
+import Marvel.Event.Events.FearlessDetermination as X
+import Marvel.Event.Events.HeroicStrike as X
+import Marvel.Event.Events.ShieldBlock as X
+import Marvel.Event.Events.ShieldToss as X
+import Marvel.Event.Events.AvengersAssemble as X
+import Marvel.Event.Events.StrengthInNumbers as X
+import Marvel.Event.Events.ExpertDefense as X
 import Marvel.Event.Events.BigHands as X
 import Marvel.Event.Events.SneakBy as X
 import Marvel.Event.Events.WiggleRoom as X

@@ -9,8 +9,8 @@ import TestImport
 thor :: IO TestGame
 thor = testGame ["thor"]
 
-minionTough :: MinionId -> GameAppT (Maybe Bool)
-minionTough m = getsGame (fmap ((.minionTough) . toAttrs) . HashMap.lookup m . gameMinions)
+isToughMinion :: MinionId -> GameAppT (Maybe Bool)
+isToughMinion m = getsGame (fmap ((.minionTough) . toAttrs) . HashMap.lookup m . gameMinions)
 
 spec :: Spec
 spec = describe "Thor's nemesis set" do
@@ -54,7 +54,7 @@ spec = describe "Thor's nemesis set" do
       let p = player1 tg
       inGame tg do
         giant <- addMinion p Minions.frostGiant
-        minionTough giant `shouldReturn` Just True
+        isToughMinion giant `shouldReturn` Just True
 
     it "as a boost, stuns the character the villain's attack damages" do
       tg <- thor

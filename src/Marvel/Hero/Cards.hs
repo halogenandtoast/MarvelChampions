@@ -58,6 +58,9 @@ blackPanther = (hero "01040a" "Black Panther" [Avenger, Wakanda])
   { cdKeywords = singleton (Retaliate 1)
   }
 
+captainAmerica :: CardDef
+captainAmerica = hero "03001a" "Captain America" [Avenger, Soldier]
+
 msMarvel :: CardDef
 msMarvel = hero "05001a" "Ms. Marvel" [Champion, Inhuman]
 

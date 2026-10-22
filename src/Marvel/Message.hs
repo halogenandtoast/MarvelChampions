@@ -233,5 +233,8 @@ data Message
   | -- | the top cards of the encounter deck are looked at, staying where they are: the
     -- target is answered with @SearchFoundCards@
     LookAtTopOfEncounterDeck Natural Target
+  | -- | the first card matching in the encounter deck or its discard pile is put into
+    -- play for the player, then the deck is shuffled
+    SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

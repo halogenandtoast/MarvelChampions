@@ -125,6 +125,9 @@ identityNarration ident = \case
     damage <- getsGame $ maybe 0 identityDamage . lookup ident . gamePlayers
     let healed = min n damage
     pure [toned Good $ mechanic [ikeyPart "log.heals" ["target" ~> who, "count" ~> healed]] | healed > 0]
+  IdentitySetHitPoints n -> Just do
+    who <- playerRef' ident
+    one $ toned Good $ mechanic [ikeyPart "log.hitPointsSetTo" ["target" ~> who, "count" ~> n]]
   IdentityDefeated -> Just do
     who <- playerRef' ident
     one $ toned Bad $ mechanic [ikeyPart "log.eliminated" ["player" ~> who]]

@@ -47,6 +47,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard armoredVest
   , SomeUpgradeCard indomitable
   , SomeUpgradeCard tenacity
+  , SomeUpgradeCard captainAmericasHelmet
+  , SomeUpgradeCard captainAmericasShield
+  , SomeUpgradeCard superSoldierSerum
+  , SomeUpgradeCard honoraryAvenger
+  , SomeUpgradeCard enraged
+  , SomeUpgradeCard followed
+  , SomeUpgradeCard enhancedAwareness
   , SomeUpgradeCard biokineticPolymerSuit
   , SomeUpgradeCard embiggen
   , SomeUpgradeCard shrink

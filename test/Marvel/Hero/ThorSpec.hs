@@ -63,11 +63,9 @@ spec = describe "Thor" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        _ <- stackDiscard p ["06009"]
+        [mjolnir] <- stackDiscard p ["06009"]
         choose "worthy" (isNamedAbility "Worthy")
-        choose "take Mjolnir" \case
-          TargetLabel _ _ -> True
-          _ -> False
+        choose "take Mjolnir" (isTargetChoice mjolnir)
         codes <$> handOf p `shouldReturn` ["06009"]
         codes <$> discardOf p >>= (`shouldSatisfy` notElem "06009")
         offers (isNamedAbility "Worthy") `shouldReturn` False
@@ -110,12 +108,10 @@ spec = describe "Thor" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        _ <- stackDiscard p ["06007"]
+        [asgard] <- stackDiscard p ["06007"]
         forAsgard <- putInHand p "06004"
         playPaying p forAsgard ["01088"]
-        choose "take Asgard" \case
-          TargetLabel _ _ -> True
-          _ -> False
+        choose "take Asgard" (isTargetChoice asgard)
         codes <$> handOf p >>= (`shouldSatisfy` elem "06007")
         changeForm p
         another <- putInHand p "06004"
@@ -159,10 +155,10 @@ spec = describe "Thor" do
         sandman <- addMinion p Minions.sandman
         pass
         strike <- putInHand p "06006"
-        playPaying p strike ["01089"]
         energy <- putInHand p "01088"
+        playPaying p strike ["01089"]
         choose "spend energy" (isPayWith energy)
-        choose "done" isFinishPayment
+        whenM (offers isFinishPayment) $ choose "done" isFinishPayment
         pass
         villainDamageNow `shouldReturn` 2
         minionDamageOf sandman `shouldReturn` Just 2
@@ -178,9 +174,8 @@ spec = describe "Thor" do
         sandman <- addMinion p Minions.sandman
         pass
         strike <- putInHand p "06006"
+        energy <- putInHand p "01088"
         playPaying p strike ["01089"]
-        energy <- putInHand p "01090"
-        _ <- putInHand p "01088"
         choose "spend energy" (isPayWith energy)
         whenM (offers isFinishPayment) $ choose "done" isFinishPayment
         pass
@@ -232,8 +227,10 @@ spec = describe "Thor" do
         clearHand p
         _ <- inPlay p "06009" ["01088"]
         _ <- inPlay p "06019" ["01090"]
-        third <- putIntoPlay p "06019"
-        offers (isTargetChoice (upgradeOf third)) `shouldReturn` True
+        shield <- putInHand p "03009"
+        playPaying p shield ["01089"]
+        choose "discard the shield" (isTargetChoice (upgradeOf shield))
+        upgradeCodes >>= (`shouldSatisfy` \cs -> "06009" `elem` cs && "06019" `elem` cs && "03009" `notElem` cs)
 
   describe "Thor's Helmet (06010)" do
     it "gives +5 hit points" do
@@ -261,8 +258,8 @@ spec = describe "Thor" do
       inGame tg do
         _ <- withMjolnir p
         anger <- revealNow p Obligations.odinsAnger
+        -- Thor is not Odinson, so this is all there is
         choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
-        choose "discard Mjolnir" (isLabel "$label.discardMjolnirStunned")
         isStunned p `shouldReturn` True
         upgradeCodes `shouldReturn` []
         codes <$> discardOf p >>= (`shouldSatisfy` elem "06009")
@@ -275,8 +272,8 @@ spec = describe "Thor" do
         clearHand p
         _ <- putInHand p "06009"
         resolve [IdentityMessage p ExhaustedIdentity]
+        -- Odinson is exhausted, so this is all there is
         _ <- revealNow p Obligations.odinsAnger
-        choose "discard Mjolnir" (isLabel "$label.discardMjolnirStunned")
         handOf p `shouldReturn` []
         codes <$> discardOf p >>= (`shouldSatisfy` elem "06009")
         isStunned p `shouldReturn` True

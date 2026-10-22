@@ -28,7 +28,7 @@ instance HasAbilities Hero where
   getAbilities (Hero a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic (SchemeExists ThwartableScheme) ExhaustCost Thwart
+      [ ability a 300 Basic (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
       , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
@@ -120,16 +120,20 @@ instance RunMessage (Attrs Hero) where
           push $ Ask ident $ prompted "$label.chooseSchemeToThwart" $ ChooseOne $ map (thwartChoice a thw) schemes
           pure a
         Defended enemyId -> do
-          def <- getModifiedDefense a
           pushAll
             [ IdentityMessage ident ExhaustedIdentity
-            , IdentityMessage ident $ IdentityDefended def
             , case enemyId of
                 EnemyVillainId vid ->
                   VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
                 EnemyMinionId vid ->
                   MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
+            , CheckWindows [W.Window W.When $ W.HeroDefends ident enemyId]
+            , IdentityMessage ident $ SideMessage $ DefenseApplied enemyId
             ]
+          pure a
+        DefenseApplied _ -> do
+          def <- getModifiedDefense a
+          push $ IdentityMessage ident $ IdentityDefended def
           pure a
         _ -> pure a
     _ -> pure a

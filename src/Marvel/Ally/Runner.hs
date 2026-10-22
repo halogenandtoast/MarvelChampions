@@ -28,7 +28,7 @@ instance HasAbilities Ally where
           x
           300
           Basic
-          (SchemeExists ThwartableScheme)
+          (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart)
           ExhaustCost
           (AllyThwart $ toId x)
       | unThw (allyThwart $ toAllyAttrs a) > 0
@@ -38,7 +38,7 @@ instance HasAbilities Ally where
              301
              Basic
              (EnemyExists AttackableEnemy)
-             ExhaustCost
+             (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]
 
@@ -56,6 +56,7 @@ instance RunMessage (Attrs Ally) where
         else do
           enemies <- selectList AttackableEnemy
           dmg <- getModifiedAttack a
+          consequential <- getModifiedAttackConsequentialDamage a
           pushAll
             $ Ask
                 (allyController a)
@@ -67,12 +68,9 @@ instance RunMessage (Attrs Ally) where
                   ident
                   (AllyDamaged
                     (toSource a)
-                    (toDamage
-                      (allyAttackConsequentialDamage a)
-                      FromConsequential
-                    )
+                    (toDamage consequential FromConsequential)
                   )
-              | allyAttackConsequentialDamage a > 0
+              | consequential > 0
               ]
           pure a
       AllyThwarted -> if allyConfused a
@@ -108,9 +106,10 @@ instance RunMessage (Attrs Ally) where
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyWasAttacked attack' -> do
+        hitPoints <- getModifiedHitPoints a
         let
           overkill = subtractNatural
-            (unHp (allyHitPoints a) - allyDamage a)
+            (subtractNatural (allyDamage a) hitPoints)
             (attackDamage attack')
         when
           (attackOverkill attack' && overkill > 0)
@@ -126,9 +125,10 @@ instance RunMessage (Attrs Ally) where
       AllyDamaged source damage -> if allyTough a && not (damageIgnoresTough damage)
         then pure $ a & toughL .~ False
         else do
+          hitPoints <- getModifiedHitPoints a
           pushAll $
             attackDealtDamage source damage (AllyCharacter $ allyId a)
-              <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= unHp (allyHitPoints a)]
+              <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= hitPoints]
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
         pushAll

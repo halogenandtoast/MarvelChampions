@@ -120,7 +120,12 @@ passesUseLimit x aMap a = case abilityLimit a of
   usedAbilities = HashMap.findWithDefault [] x aMap
 
 passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool
-passesCriteria x a = go (abilityTypeCriteria (abilityType a) <> abilityCriteria a)
+passesCriteria x a =
+  go
+    ( abilityTypeCriteria (abilityType a)
+        <> maybe NoCriteria abilitySubTypeCriteria (abilitySubType a)
+        <> abilityCriteria a
+    )
  where
   go = \case
     IsSelf -> pure $ toSource x == source

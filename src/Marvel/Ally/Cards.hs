@@ -29,6 +29,10 @@ allAllies = fromList $ concatMap
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
+  , agent13SharonCarter
+  , falconSamWilson
+  , squirrelGirlDoreenGreen
+  , wonderManSimonWilliams
   , redDagger
   , novaSamAlexander
   , lockjaw
@@ -160,6 +164,22 @@ mockingbirdBobbiMorse = reprintedAs ["03020"] $
 
 nickFury :: CardDef
 nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+
+agent13SharonCarter :: CardDef
+agent13SharonCarter =
+  identityAlly "03002" ("Agent 13" <:> "Sharon Carter") 3 [Shield] [Mental]
+
+falconSamWilson :: CardDef
+falconSamWilson =
+  ally "03011" ("Falcon" <:> "Sam Wilson") 4 [Aerial, Avenger] [Physical] Leadership
+
+squirrelGirlDoreenGreen :: CardDef
+squirrelGirlDoreenGreen =
+  ally "03013" ("Squirrel Girl" <:> "Doreen Green") 2 [Avenger] [Mental] Leadership
+
+wonderManSimonWilliams :: CardDef
+wonderManSimonWilliams =
+  ally "03014" ("Wonder Man" <:> "Simon Williams") 2 [Avenger] [Physical] Leadership
 
 redDagger :: CardDef
 redDagger = identityAlly "05002" "Red Dagger" 3 [Champion] [Energy]
