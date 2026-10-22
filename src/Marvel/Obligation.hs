@@ -42,6 +42,11 @@ allObligations = fromList $ map
   , SomeObligationCard criminalPast
   , SomeObligationCard uncertainLoyalties
 
+  -- The Rise of Red Skull: an Expert Campaign Set
+  , SomeObligationCard zolasAlgorithm
+  , SomeObligationCard medicalEmergency
+  , SomeObligationCard martialLaw
+  , SomeObligationCard antiHeroPropaganda
   -- The Once and Future Kang
   , SomeObligationCard fearOfKang
 
