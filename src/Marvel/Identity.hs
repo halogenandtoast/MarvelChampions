@@ -981,6 +981,12 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid
+    -- a step for the identity card is for it whichever face is up
+    CardSpecific (IdentityRef ident) _ _ | ident == playerIdentityId attrs -> do
+      sides <- for (playerIdentitySides attrs) \case
+        HeroSide x -> HeroSide <$> runMessage msg x
+        AlterEgoSide x -> AlterEgoSide <$> runMessage msg x
+      pure $ PlayerIdentity attrs {playerIdentitySides = sides}
     _ -> case currentIdentity pid of
       HeroSide x -> do
         newSide <- HeroSide <$> runMessage msg x
