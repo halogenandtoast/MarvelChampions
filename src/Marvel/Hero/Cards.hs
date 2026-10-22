@@ -30,6 +30,8 @@ allHeroCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , hawkeye
+  , spiderWoman
 
   -- The Once and Future Kang
 
@@ -97,3 +99,9 @@ thor = hero "06001a" "Thor" [Asgard, Avenger]
 
 doctorStrange :: CardDef
 doctorStrange = hero "09001a" "Doctor Strange" [Avenger, Mystic]
+
+hawkeye :: CardDef
+hawkeye = hero "04001a" "Hawkeye" [Avenger]
+
+spiderWoman :: CardDef
+spiderWoman = hero "04031a" "Spider-Woman" [Avenger, Spy]

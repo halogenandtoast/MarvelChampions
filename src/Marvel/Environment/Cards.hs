@@ -18,6 +18,8 @@ allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
   [ ultronDrones
   -- The Green Goblin
+  , criminalEnterprise
+  , stateOfMadness
 
   -- The Wrecking Crew
 
@@ -60,6 +62,14 @@ ultronDrones =
     , cdAbilityCost = NoCost
     }
 
+-- The Green Goblin
+
+-- | Put into play by Hostile Takeover's setup, so none is shuffled into the encounter deck.
+criminalEnterprise :: CardDef
+criminalEnterprise = ultronDrones {cdCardCode = "02006a", cdName = "Criminal Enterprise", cdEncounterSet = Just RiskyBusiness}
+
+stateOfMadness :: CardDef
+stateOfMadness = criminalEnterprise {cdCardCode = "02006b", cdName = "State of Madness"}
 -- | Absorbing Man's environments, each with surge and a boost to put it into play.
 absorbingEnvironment :: CardCode -> Name -> Trait -> CardDef
 absorbingEnvironment code name trait =

@@ -38,7 +38,7 @@ instance RunMessage NoneShallPass where
       placeCounters attrs 1
       pure ms'
     -- Forced Interrupt: an environment entering play discards each other one
-    EnvironmentMessage eid EnvironmentEnteredPlay -> do
+    EnvironmentMessage eid EnvironmentEntered -> do
       others <- filter (/= eid) <$> selectList AnyEnvironment
       for_ others removeFromPlay
       pure ms

@@ -19,6 +19,8 @@ data VillainMessage
   | VillainCheckAdditionalBoosts
   | -- | its attack under way gains the keyword: overkill, piercing or ranged
     VillainAttackGains Keyword
+  | -- | all damage from its attack under way is prevented
+    VillainAttackDamagePrevented
   | VillainAttacks IdentityId
   | -- | it attacks, and no boost cards are dealt for the attack
     VillainAttacksWithoutBoost IdentityId

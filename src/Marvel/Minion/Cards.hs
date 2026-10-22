@@ -50,6 +50,12 @@ allMinions =
       , baronMordo
       , abomination
       -- The Green Goblin
+      , hiredGun
+      , privateSecuritySpecialist
+      , goblinKnight
+      , goblinSoldier
+      , goblinThrall
+      , monster
       , scorpion
       , electro
       , tombstone
@@ -57,10 +63,13 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , crossfire
+      , theViper
+      , hydraRegular
       , hydraBomberCrossbones
       , hydraFlameSoldier
       , hydraJetTrooper
-      , hydraRegular
+      , hydraRegularHydraPatrol
       , hydraSoldierHydraPatrol
 
       -- The Once and Future Kang
@@ -305,6 +314,22 @@ baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
 
+crossfire :: CardDef
+crossfire =
+  unique $
+    (minion "04027" "Crossfire" [Mercenary] [Star] HawkeyeNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Piercing]
+      }
+
+theViper :: CardDef
+theViper = unique $ minion "04054" "The Viper" [Elite, Hydra] [Boost, Boost, Boost] SpiderWomanNemesis 1
+
+hydraRegular :: CardDef
+hydraRegular =
+  (minion "04056" "Hydra Regular" [Hydra] [Boost, Boost] SpiderWomanNemesis 2)
+    { cdKeywords = fromList [Incite 1]
+    }
+
 -- | The core set's Hydra Bomber, two of them in the Crossbones set.
 hydraBomberCrossbones :: CardDef
 hydraBomberCrossbones =
@@ -322,10 +347,12 @@ hydraJetTrooper =
     { cdKeywords = singleton Quickstrike
     }
 
-hydraRegular :: CardDef
-hydraRegular =
-  (minion "04152" "Hydra Regular" [Hydra] [Boost, Boost] HydraPatrol 2)
-    { cdKeywords = singleton (Incite 1)
+-- | Spider-Woman's nemesis set's Hydra Regular, two of them in the Hydra Patrol set.
+hydraRegularHydraPatrol :: CardDef
+hydraRegularHydraPatrol =
+  (reprint "04152" hydraRegular)
+    { cdEncounterSet = Just HydraPatrol
+    , cdEncounterSetQuantity = Just 2
     }
 
 -- | The core set's Hydra Soldier, three of them in the Hydra Patrol set.
@@ -338,6 +365,29 @@ hydraSoldierHydraPatrol =
 
 -- The Green Goblin
 
+hiredGun :: CardDef
+hiredGun = minion "02007" "Hired Gun" [Criminal] [Boost, Boost, Star] RiskyBusiness 3
+
+privateSecuritySpecialist :: CardDef
+privateSecuritySpecialist =
+  (minion "02008" "Private Security Specialist" [Mercenary] [Boost, Star] RiskyBusiness 4)
+    { cdKeywords = singleton Guard
+    }
+
+goblinKnight :: CardDef
+goblinKnight = unique $ minion "02022" "Goblin Knight" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
+
+goblinSoldier :: CardDef
+goblinSoldier = minion "02023" "Goblin Soldier" [Goblin] [Star] MutagenFormula 4
+
+goblinThrall :: CardDef
+goblinThrall =
+  (minion "02024" "Goblin Thrall" [Goblin] [Star] MutagenFormula 6)
+    { cdKeywords = singleton Guard
+    }
+
+monster :: CardDef
+monster = unique $ minion "02025" "Monster" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
 scorpion :: CardDef
 scorpion =
   unique $

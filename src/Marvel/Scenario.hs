@@ -32,6 +32,8 @@ allScenarios = fromList $ map
     , SomeScenarioCard klawScenario
     , SomeScenarioCard ultronScenario
     -- The Green Goblin
+    , SomeScenarioCard riskyBusinessScenario
+    , SomeScenarioCard mutagenFormulaScenario
 
     -- The Wrecking Crew
 
@@ -57,6 +59,8 @@ recommendedModulars =
     , ("01113", [EncounterSet.MastersOfEvil])
     , ("01134", [EncounterSet.UnderAttack])
     -- The Green Goblin
+    , ("02001a", [EncounterSet.GoblinGimmicks])
+    , ("02014", [EncounterSet.GoblinGimmicks])
 
     -- The Wrecking Crew
 
@@ -125,6 +129,37 @@ ultronScenario = scenario
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
 
+-- The Green Goblin
+
+newtype RiskyBusinessScenario = RiskyBusinessScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RiskyBusinessScenario where
+  runMessage msg (RiskyBusinessScenario a) = RiskyBusinessScenario <$> runMessage msg a
+
+riskyBusinessScenario :: ScenarioCard RiskyBusinessScenario
+riskyBusinessScenario = scenario
+  RiskyBusinessScenario
+  "02001a"
+  ("02001a", "02002a")
+  ["02004", "02005"]
+  [EncounterSet.RiskyBusiness]
+
+newtype MutagenFormulaScenario = MutagenFormulaScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage MutagenFormulaScenario where
+  runMessage msg (MutagenFormulaScenario a) = MutagenFormulaScenario <$> runMessage msg a
+
+mutagenFormulaScenario :: ScenarioCard MutagenFormulaScenario
+mutagenFormulaScenario = scenario
+  MutagenFormulaScenario
+  "02014"
+  ("02014", "02015")
+  ["02017", "02018"]
+  [EncounterSet.MutagenFormula]
 -- The Rise of Red Skull
 
 newtype CrossbonesScenario = CrossbonesScenario (Attrs Scenario)

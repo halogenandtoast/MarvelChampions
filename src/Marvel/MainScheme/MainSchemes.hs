@@ -8,6 +8,10 @@ import Marvel.MainScheme.MainSchemes.TheCrimsonCowl as X
 import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 
 -- The Green Goblin
+import Marvel.MainScheme.MainSchemes.CorporateAcquisition as X
+import Marvel.MainScheme.MainSchemes.HostileTakeover as X
+import Marvel.MainScheme.MainSchemes.MutagenCloud as X
+import Marvel.MainScheme.MainSchemes.UnleashingTheMutagen as X
 
 -- The Wrecking Crew
 

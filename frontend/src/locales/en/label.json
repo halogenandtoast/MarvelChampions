@@ -92,6 +92,8 @@
   "nextEventCosts3More": "The next event you play costs 3 more resources",
   "assignIndirectDamage": "Assign 1 indirect damage",
   "-- The Green Goblin --": "",
+  "place2InfamyCounters": "Place 2 infamy counters on Criminal Enterprise",
+  "take3Damage": "Take 3 damage",
   "giveTheVillainAFacedownBoostCard": "Give the villain 1 facedown boost card",
   "spendTwoResources": "Spend 2 resources of any type",
   "chooseResourceToDiscard": "Choose a resource to discard",
@@ -101,6 +103,14 @@
   "-- The Wrecking Crew --": "",
 
   "-- The Rise of Red Skull --": "",
+  "chooseDeckToLookAt": "Choose a deck to look at the top card of",
+  "encounterDeck": "The encounter deck",
+  "villainDeck": "The villain deck",
+  "sideSchemeDeck": "The side scheme deck",
+  "exhaustClintBartonRemoveCriminalPast": "Exhaust Clint Barton → remove Criminal Past from the game",
+  "discardHawkeyesBowDiscardObligation": "Discard Hawkeye's Bow from play, and discard this obligation",
+  "exhaustJessicaDrewRemoveUncertainLoyalties": "Exhaust Jessica Drew → remove Uncertain Loyalties from the game",
+  "placeThreeThreatDiscardObligation": "Place 3 threat on the main scheme, and discard this obligation",
   "takeIndirectDamage": "Take the indirect damage",
   "spendAnEnergyResource": "Spend an energy resource",
 

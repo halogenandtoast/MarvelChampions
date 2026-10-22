@@ -110,6 +110,21 @@ allEvents = fromList $ concatMap
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , sonicArrow
+  , explosiveArrow
+  , electricArrow
+  , cableArrow
+  , vibraniumArrow
+  , readyForAction
+  , earthsMightiestHeroes
+  , venomBlast
+  , pheromones
+  , contaminantImmunity
+  , inconspicuous
+  , selfPropelledGlide
+  , pressTheAdvantage
+  , piercingStrike
+  , clearTheArea
 
   -- The Once and Future Kang
 
@@ -342,7 +357,7 @@ getReady = (event "01069" "Get Ready" 0 Action [] [Physical] Leadership)
   }
 
 leadFromTheFront :: CardDef
-leadFromTheFront =
+leadFromTheFront = reprintedAs ["04018"] $
   event "01070" "Lead from the Front" 2 HeroAction [Tactic] [Energy] Leadership
 
 makeTheCall :: CardDef
@@ -684,3 +699,93 @@ foiled = (event "09038" "Foiled!" 0 Interrupt [] [Energy] Justice)
   { -- boost cards are turned faceup only as an enemy attacks or schemes
     cdResponseWindow = Just (BoostCardFlipped When $ NotEnemy AttackingEnemy)
   }
+
+-- | "Exhaust Hawkeye's Bow" is part of an Arrow event's cost: the bow in play and ready.
+arrow :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
+arrow code name cost traits resources =
+  (identityEvent code name cost HeroAction (Arrow : traits) resources)
+    { cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrades.hawkeyesBow)
+    }
+
+arrowAttack :: CardCode -> Name -> Int -> [Resource] -> CardDef
+arrowAttack code name cost resources =
+  (arrow code name cost [Attack] resources)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+sonicArrow :: CardDef
+sonicArrow = arrowAttack "04005" "Sonic Arrow" 2 [Mental]
+
+explosiveArrow :: CardDef
+explosiveArrow = arrow "04006" "Explosive Arrow" 1 [] [Physical]
+
+electricArrow :: CardDef
+electricArrow = arrowAttack "04007" "Electric Arrow" 2 [Energy]
+
+cableArrow :: CardDef
+cableArrow =
+  (arrow "04008" "Cable Arrow" 1 [Thwart] [Physical])
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableSchemeIgnoringCrisis
+    }
+
+vibraniumArrow :: CardDef
+vibraniumArrow = arrowAttack "04009" "Vibranium Arrow" 2 [Energy]
+
+readyForAction :: CardDef
+readyForAction =
+  (event "04017" "Ready for Action" 1 HeroAction [Tactic] [Mental] Leadership)
+    { cdCriteria = AllyExists (AllyControlledBy You)
+    }
+
+-- | "Exhaust an Avenger character you control" is part of its cost.
+earthsMightiestHeroes :: CardDef
+earthsMightiestHeroes =
+  (basicEvent "04022" "Earth's Mightiest Heroes" 0 HeroAction [] [Energy])
+    { cdAbilityCost = ExhaustCharacterWithTraitCost Avenger
+    }
+
+venomBlast :: CardDef
+venomBlast =
+  (event "04035" "Venom Blast" 2 HeroAction [Attack, Superpower] [Energy] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+pheromones :: CardDef
+pheromones = event "04036" "Pheromones" 2 HeroAction [Superpower] [Physical] Leadership
+
+contaminantImmunity :: CardDef
+contaminantImmunity = event "04037" "Contaminant Immunity" 2 HeroAction [Superpower] [Energy] Protection
+
+inconspicuous :: CardDef
+inconspicuous =
+  (event "04038" "Inconspicuous" 1 HeroAction [Skill, Thwart] [Energy] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+selfPropelledGlide :: CardDef
+selfPropelledGlide = identityEvent "04039" "Self-Propelled Glide" 1 HeroAction [Superpower] [Mental]
+
+pressTheAdvantage :: CardDef
+pressTheAdvantage =
+  (event "04043" "Press the Advantage" 1 HeroAction [Attack] [Mental] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+piercingStrike :: CardDef
+piercingStrike =
+  (event "04044" "Piercing Strike" 2 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+clearTheArea :: CardDef
+clearTheArea =
+  (event "04049" "Clear the Area" 1 HeroAction [Thwart] [Mental] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }

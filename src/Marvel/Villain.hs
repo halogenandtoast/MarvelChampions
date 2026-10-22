@@ -12,6 +12,8 @@ import Marvel.Villain.Villains.Rhino
 import Marvel.Villain.Villains.Ultron
 
 -- The Green Goblin
+import Marvel.Villain.Villains.GreenGoblin qualified as Mutagen
+import Marvel.Villain.Villains.NormanOsborn
 
 -- The Wrecking Crew
 
@@ -54,6 +56,15 @@ allVillains = fromList $ map
   , SomeVillainCard ultron2
   , SomeVillainCard ultron3
   -- The Green Goblin
+  , SomeVillainCard normanOsborn1
+  , SomeVillainCard greenGoblin1
+  , SomeVillainCard normanOsborn2
+  , SomeVillainCard greenGoblin2
+  , SomeVillainCard normanOsborn3
+  , SomeVillainCard greenGoblin3
+  , SomeVillainCard Mutagen.greenGoblin1
+  , SomeVillainCard Mutagen.greenGoblin2
+  , SomeVillainCard Mutagen.greenGoblin3
 
   -- The Wrecking Crew
 

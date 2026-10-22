@@ -17,6 +17,8 @@ data Attack = Attack
   , attackRanged :: Bool
   , attackWithoutBoost :: Bool
   -- ^ no boost cards are dealt for it
+  , attackPrevented :: Bool
+  -- ^ "prevent all damage from this attack"
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -54,7 +56,12 @@ attack enemyId characterId dmg =
     , attackPiercing = False
     , attackRanged = False
     , attackWithoutBoost = False
+    , attackPrevented = False
     }
+
+-- | The damage the attack deals: none once all of it is prevented.
+attackDamageDealt :: Attack -> Natural
+attackDamageDealt a = if attackPrevented a then 0 else attackDamage a
 
 -- | "The attack gains overkill, piercing or ranged"; no other keyword is an attack's.
 gainKeyword :: Keyword -> Attack -> Attack

@@ -142,6 +142,7 @@ runMinionMessage msg attrs = case msg of
       _ -> error "Not the main scheme"
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"

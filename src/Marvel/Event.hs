@@ -113,6 +113,21 @@ allEvents = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeEventCard sonicArrow
+  , SomeEventCard explosiveArrow
+  , SomeEventCard electricArrow
+  , SomeEventCard cableArrow
+  , SomeEventCard vibraniumArrow
+  , SomeEventCard readyForAction
+  , SomeEventCard earthsMightiestHeroes
+  , SomeEventCard venomBlast
+  , SomeEventCard pheromones
+  , SomeEventCard contaminantImmunity
+  , SomeEventCard inconspicuous
+  , SomeEventCard selfPropelledGlide
+  , SomeEventCard pressTheAdvantage
+  , SomeEventCard piercingStrike
+  , SomeEventCard clearTheArea
 
   -- The Once and Future Kang
 

@@ -48,6 +48,12 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
   -- The Green Goblin
+  , SomeSideSchemeCard collapsingBridge
+  , SomeSideSchemeCard goblinNation
+  , SomeSideSchemeCard goblinReinforcements
+  , SomeSideSchemeCard oscorpManufacturing
+  , SomeSideSchemeCard overrun
+  , SomeSideSchemeCard payoff
   , SomeSideSchemeCard aMessOfThings
   , SomeSideSchemeCard powerDrain
   , SomeSideSchemeCard runningInterference
@@ -55,6 +61,8 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeSideSchemeCard markedForDeath
+  , SomeSideSchemeCard theVipersAmbition
   , SomeSideSchemeCard crossbonesAssault
   , SomeSideSchemeCard corneredStaff
   , SomeSideSchemeCard avalanche

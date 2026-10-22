@@ -39,6 +39,12 @@ allSideSchemes = fromList $ map
   , openTheDarkDimension
   , totalDestruction
   -- The Green Goblin
+  , collapsingBridge
+  , oscorpManufacturing
+  , payoff
+  , goblinReinforcements
+  , goblinNation
+  , overrun
   , aMessOfThings
   , powerDrain
   , runningInterference
@@ -46,6 +52,8 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , markedForDeath
+  , theVipersAmbition
   , crossbonesAssault
   , corneredStaff
   , avalanche
@@ -219,6 +227,18 @@ openTheDarkDimension =
     { cdAcceleration = 1
     }
 
+markedForDeath :: CardDef
+markedForDeath =
+  (sideScheme "04028" "Marked for Death" [Boost, Boost, Boost] HawkeyeNemesis 1)
+    { cdAcceleration = 1
+    }
+
+theVipersAmbition :: CardDef
+theVipersAmbition =
+  (sideScheme "04055" "The Viper's Ambition" [Boost, Boost] SpiderWomanNemesis 1)
+    { cdHazards = 1
+    }
+
 crossbonesAssault :: CardDef
 crossbonesAssault =
   (sideScheme "04070" "Crossbones' Assault" [Boost, Boost] Crossbones 2)
@@ -242,6 +262,23 @@ hydraPatrol = sideScheme "04154" "Hydra Patrol" [Boost, Boost] HydraPatrol 1
 
 -- The Green Goblin
 
+collapsingBridge :: CardDef
+collapsingBridge = sideScheme "02009" "Collapsing Bridge" [Star] RiskyBusiness 1
+
+oscorpManufacturing :: CardDef
+oscorpManufacturing = (sideScheme "02010" "Oscorp Manufacturing" [Boost, Boost, Boost] RiskyBusiness 2) {cdAcceleration = 1}
+
+payoff :: CardDef
+payoff = (sideScheme "02011" "Payoff" [Boost, Star] RiskyBusiness 2) {cdHazards = 1}
+
+goblinReinforcements :: CardDef
+goblinReinforcements = (sideScheme "02026" "Goblin Reinforcements" [Boost, Boost] MutagenFormula 2) {cdHazards = 1}
+
+goblinNation :: CardDef
+goblinNation = sideScheme "02027" "Goblin Nation" [Star] MutagenFormula 1
+
+overrun :: CardDef
+overrun = (sideScheme "02028" "Overrun" [Boost] MutagenFormula 2) {cdAcceleration = 2}
 aMessOfThings :: CardDef
 aMessOfThings = (sideScheme "02037" "A Mess of Things" [Boost, Boost] AMessOfThings 1) {cdHazards = 1}
 

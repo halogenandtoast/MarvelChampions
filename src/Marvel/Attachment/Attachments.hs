@@ -18,10 +18,12 @@ import Marvel.Attachment.Attachments.GoblinGlider as X
 import Marvel.Attachment.Attachments.PumpkinBombs as X
 import Marvel.Attachment.Attachments.AllTiedUp as X
 import Marvel.Attachment.Attachments.MediaCoverage as X
+import Marvel.Attachment.Attachments.Hysteria as X
 
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Attachment.Attachments.CrossfiresRifle as X
 import Marvel.Attachment.Attachments.CrossbonesMachineGun as X
 import Marvel.Attachment.Attachments.CrossbonesArmor as X
 import Marvel.Attachment.Attachments.LaserRifle as X

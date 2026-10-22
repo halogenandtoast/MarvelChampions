@@ -56,6 +56,12 @@ allTreacheries = fromList $ map
   , thoughtcasting
   , clashOfTheTitans
   -- The Green Goblin
+  , allInADaysWork
+  , madGenius
+  , deathFromAbove
+  , iSeeYou
+  , overconfidence
+  , wickedAmbitions
   , intimidation
   , regenerativeHealing
   , gangUpAMessOfThings
@@ -67,6 +73,8 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , sniperShot
+  , hailHydraSpiderWoman
   , fullAuto
   , hardAsNails
   , raidTheArmory
@@ -250,6 +258,18 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
 
+sniperShot :: CardDef
+sniperShot = treachery "04030" "Sniper Shot" [Boost] HawkeyeNemesis 2
+
+-- | Hail Hydra! as Spider-Woman's nemesis set has it
+hailHydraSpiderWoman :: CardDef
+hailHydraSpiderWoman =
+  (reprint "04057" hailHydra)
+    { cdEncounterSet = Just SpiderWomanNemesis
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = [Boost, Boost]
+    }
+
 fullAuto :: CardDef
 fullAuto = treachery "04067" "Full Auto" [Boost, Boost] Crossbones 2
 
@@ -296,6 +316,23 @@ concussionGrenade = treachery "04151" "Concussion Grenade" [Boost] WeaponMaster 
 
 -- The Green Goblin
 
+allInADaysWork :: CardDef
+allInADaysWork = treachery "02012" "All in a Day's Work" [Star] RiskyBusiness 4
+
+madGenius :: CardDef
+madGenius = treachery "02013" "Mad Genius" [Boost] RiskyBusiness 2
+
+deathFromAbove :: CardDef
+deathFromAbove = treachery "02029" "Death from Above" [Boost] MutagenFormula 2
+
+iSeeYou :: CardDef
+iSeeYou = treachery "02030" "I See You" [Boost, Star] MutagenFormula 1
+
+overconfidence :: CardDef
+overconfidence = treachery "02031" "Overconfidence" [Boost] MutagenFormula 1
+
+wickedAmbitions :: CardDef
+wickedAmbitions = treachery "02032" "Wicked Ambitions" [Boost] MutagenFormula 2
 intimidation :: CardDef
 intimidation = treachery "02035" "Intimidation" [Star, Boost] GoblinGimmicks 2
 

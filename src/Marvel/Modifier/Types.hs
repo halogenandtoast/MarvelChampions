@@ -15,6 +15,8 @@ data Modifier
   | AllyLimitModifier Natural
   | HitPointModifier Natural
   | HandSizeModifier Natural
+  | -- | "your hand size is reduced by N"
+    HandSizeReduction Natural
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
@@ -43,6 +45,8 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | an enemy not given a boost card as it activates
+    NoActivationBoostCard
   | -- | on an identity: each "When Revealed" ability its player reveals resolves once
     -- more for each of these
     ResolveWhenRevealedAgain

@@ -30,6 +30,12 @@ import Marvel.Minion.Minions.BaronMordo as X
 import Marvel.Minion.Minions.Abomination as X
 
 -- The Green Goblin
+import Marvel.Minion.Minions.GoblinKnight as X
+import Marvel.Minion.Minions.GoblinSoldier as X
+import Marvel.Minion.Minions.GoblinThrall as X
+import Marvel.Minion.Minions.HiredGun as X
+import Marvel.Minion.Minions.Monster as X
+import Marvel.Minion.Minions.PrivateSecuritySpecialist as X
 import Marvel.Minion.Minions.Scorpion as X
 import Marvel.Minion.Minions.Electro as X
 import Marvel.Minion.Minions.Tombstone as X
@@ -37,6 +43,8 @@ import Marvel.Minion.Minions.Tombstone as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Minion.Minions.Crossfire as X
+import Marvel.Minion.Minions.TheViper as X
 import Marvel.Minion.Minions.HydraFlameSoldier as X
 import Marvel.Minion.Minions.HydraJetTrooper as X
 import Marvel.Minion.Minions.HydraRegular as X

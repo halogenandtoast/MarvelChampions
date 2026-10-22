@@ -59,6 +59,12 @@ allMinions =
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
       -- The Green Goblin
+      , SomeMinionCard goblinKnight
+      , SomeMinionCard goblinSoldier
+      , SomeMinionCard goblinThrall
+      , SomeMinionCard hiredGun
+      , SomeMinionCard monster
+      , SomeMinionCard privateSecuritySpecialist
       , SomeMinionCard scorpion
       , SomeMinionCard electro
       , SomeMinionCard tombstone
@@ -66,10 +72,13 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeMinionCard crossfire
+      , SomeMinionCard theViper
+      , SomeMinionCard hydraRegular
       , SomeMinionCard (reprintAs Cards.hydraBomberCrossbones hydraBomber)
       , SomeMinionCard hydraFlameSoldier
       , SomeMinionCard hydraJetTrooper
-      , SomeMinionCard hydraRegular
+      , SomeMinionCard (reprintAs Cards.hydraRegularHydraPatrol hydraRegular)
       , SomeMinionCard (reprintAs Cards.hydraSoldierHydraPatrol hydraSoldier)
 
       -- The Once and Future Kang

@@ -116,6 +116,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyThwart = thw
             , allyThwartConsequentialDamage = thwConsequentialDamage
             , allyController = ident
+            , allyOwner = ident
             , allyHitPoints = hp
             , allyExhausted = False
             , allyStunned = False
@@ -167,7 +168,7 @@ instance IsCard (Attrs Ally) where
       MkPlayerCard
         { pcCardId = CardId $ unAllyId (allyId a)
         , pcCardDef = allyCardDef a
-        , pcOwner = Just (allyController a)
+        , pcOwner = Just (allyOwner a)
         , pcController = Just (allyController a)
         }
 
@@ -183,6 +184,8 @@ instance Entity Ally where
     , allyAttack :: Atk
     , allyAttackConsequentialDamage :: Natural
     , allyController :: IdentityId
+    , allyOwner :: IdentityId
+    -- ^ whose deck it came from, and whose discard pile it goes to
     , allyExhausted :: Bool
     , allyCounters :: Natural
     , allyUpgrades :: HashSet UpgradeId

@@ -418,6 +418,12 @@ attackGains enemy k = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
 
+-- | "Prevent all damage from this attack": the enemy's attack under way.
+preventAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+preventAttackDamage enemy = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
+  EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
+
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
 flipVillain vid = do
@@ -553,6 +559,10 @@ removeFromGame = push . RemoveFromGame . toTarget
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize
 
+-- | The cards are shown to the player only while the body runs: "look at".
+lookingAt :: (ReverseQueue m) => IdentityId -> [Card] -> m () -> m ()
+lookingAt ident cards body = push (ShowCardsTo ident cards) >> body >> push (HideCardsFrom ident)
+
 -- | The cards are shown to everyone while the body runs.
 focusing :: (ReverseQueue m) => [Card] -> m () -> m ()
 focusing cards body = focusCards cards >> body >> unfocusCards
@@ -668,11 +678,13 @@ paidCosts = push . PaidCosts
 disableActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
 disableActiveCost = push . DisableActiveCost
 
--- | The card is played, paid for: it enters play and the window after it opens.
+-- | The card is played, paid for: "when you play" is answered, then it enters play and
+-- the window after it opens.
 cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
 cardPlayed ident card payment mWindow =
   pushAll
-    [ IdentityMessage ident (PlayedCard card mWindow)
+    [ CheckWindows [Window When $ W.CardPlayed ident card]
+    , IdentityMessage ident (PlayedCard card mWindow)
     , PutCardIntoPlay ident card payment mWindow
     , CheckWindows [Window After $ W.CardPlayed ident card]
     ]
@@ -950,6 +962,9 @@ upgradeStep u = push . UpgradeMessage u
 -- | A step of the player's own, for their identity to answer.
 identityStep :: (ReverseQueue m) => IdentityId -> IdentityMessage -> m ()
 identityStep ident = push . IdentityMessage ident
+
+supportStep :: (ReverseQueue m) => SupportId -> SupportMessage -> m ()
+supportStep s = push . SupportMessage s
 
 allyStep :: (ReverseQueue m) => AllyId -> AllyMessage -> m ()
 allyStep ally = push . AllyMessage ally

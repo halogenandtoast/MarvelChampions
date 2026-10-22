@@ -39,6 +39,12 @@ import Marvel.Treachery.Treacheries.Thoughtcasting as X
 import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 
 -- The Green Goblin
+import Marvel.Treachery.Treacheries.AllInADaysWork as X
+import Marvel.Treachery.Treacheries.DeathFromAbove as X
+import Marvel.Treachery.Treacheries.ISeeYou as X
+import Marvel.Treachery.Treacheries.MadGenius as X
+import Marvel.Treachery.Treacheries.Overconfidence as X
+import Marvel.Treachery.Treacheries.WickedAmbitions as X
 import Marvel.Treachery.Treacheries.Intimidation as X
 import Marvel.Treachery.Treacheries.RegenerativeHealing as X
 import Marvel.Treachery.Treacheries.TailSweep as X
@@ -49,6 +55,7 @@ import Marvel.Treachery.Treacheries.ShockTherapy as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.SniperShot as X
 import Marvel.Treachery.Treacheries.FullAuto as X
 import Marvel.Treachery.Treacheries.HardAsNails as X
 import Marvel.Treachery.Treacheries.RaidTheArmory as X

@@ -36,10 +36,14 @@ allAttachments =
       , pumpkinBombs
       , allTiedUp
       , mediaCoverage
+      , goblinGliderMutagenFormula
+      , hysteria
+      , pumpkinBombsMutagenFormula
 
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , crossfiresRifle
       , crossbonesMachineGun
       , crossbonesArmor
       , laserRifle
@@ -138,6 +142,8 @@ counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
 
+crossfiresRifle :: CardDef
+crossfiresRifle = (attachment "04029" "Crossfire's Rifle" [Weapon] [Boost, Boost] HawkeyeNemesis 1) {cdUnique = True}
 crossbonesMachineGun :: CardDef
 crossbonesMachineGun =
   unique $ attachment "04064" "Crossbones' Machine Gun" [Weapon] [Boost, Boost, Boost] Crossbones 1
@@ -180,3 +186,14 @@ allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
 
 mediaCoverage :: CardDef
 mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2
+
+goblinGliderMutagenFormula :: CardDef
+goblinGliderMutagenFormula =
+  (reprint "02019" goblinGlider) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
+
+hysteria :: CardDef
+hysteria = attachment "02020" "Hysteria" [Condition] [Boost] MutagenFormula 1
+
+pumpkinBombsMutagenFormula :: CardDef
+pumpkinBombsMutagenFormula =
+  (reprint "02021" pumpkinBombs) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}

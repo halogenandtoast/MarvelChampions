@@ -26,6 +26,12 @@ import Marvel.SideScheme.SideSchemes.OpenTheDarkDimension as X
 import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 
 -- The Green Goblin
+import Marvel.SideScheme.SideSchemes.CollapsingBridge as X
+import Marvel.SideScheme.SideSchemes.GoblinNation as X
+import Marvel.SideScheme.SideSchemes.GoblinReinforcements as X
+import Marvel.SideScheme.SideSchemes.OscorpManufacturing as X
+import Marvel.SideScheme.SideSchemes.Overrun as X
+import Marvel.SideScheme.SideSchemes.Payoff as X
 import Marvel.SideScheme.SideSchemes.AMessOfThings as X
 import Marvel.SideScheme.SideSchemes.PowerDrain as X
 import Marvel.SideScheme.SideSchemes.RunningInterference as X
@@ -33,6 +39,8 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
+import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
 import Marvel.SideScheme.SideSchemes.CrossbonesAssault as X
 import Marvel.SideScheme.SideSchemes.CorneredStaff as X
 import Marvel.SideScheme.SideSchemes.Avalanche as X

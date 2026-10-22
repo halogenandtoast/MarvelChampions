@@ -58,6 +58,8 @@ allSupports = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeSupportCard teamTraining
+  , SomeSupportCard jessicaDrewsApartment
 
   -- The Once and Future Kang
 
