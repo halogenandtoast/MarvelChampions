@@ -26,7 +26,7 @@ import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Message as X hiding (cardSpecific, engageMinion, enemyRetaliates)
+import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase)
@@ -123,7 +123,8 @@ damageAllEnemies source damage matcher = resolve $ DamageAllEnemies matcher (toS
 damageAllCharacters :: (ReverseQueue m, IsRef source) => source -> Damage -> CharacterMatcher -> m ()
 damageAllCharacters source damage matcher = resolve $ DamageAllCharacters matcher (toSource source) damage
 
--- | Damage to the character: an identity's goes through 'damageIdentity'.
+-- | Damage to the character: an identity's goes through 'damageIdentity'; an enemy's
+-- is taken as it is, without the window and bonuses of a player's 'dealDamage'.
 damageCharacter :: (ReverseQueue m, IsCharacter character, IsRef source) => character -> source -> Damage -> m ()
 damageCharacter character source = resolve . DamageCharacter (toCharacter character) (toSource source)
 
@@ -155,26 +156,29 @@ heal character = resolve . Heal (toCharacter character)
 thwartScheme :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
 
--- | The threat placed on the scheme, past the window for it ('threatPlacement').
-placeThreatPastWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
-placeThreatPastWindow scheme = push . threatPlacement (toScheme scheme)
+-- | The threat placed on the scheme without the "would place threat" window
+-- ('threatPlacement'): what an interrupt to that window places in its stead.
+placeThreatWithoutWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
+placeThreatWithoutWindow scheme = push . threatPlacement (toScheme scheme)
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
 removeThreat you source n = resolveAs you . RemoveThreat (toSource source) n
 
--- | Threat a card places on the scheme, past the window for it ('placeThreatOn').
+-- | Threat a card places on the scheme, the "would place threat" window first
+-- ('placeThreatOn').
 placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreat = placeThreatFrom ThreatFromAbility
 
--- | Threat placed on the scheme by what the window says, past the window for it.
+-- | Threat placed on the scheme by what the window says, the window first.
 placeThreatFrom :: (ReverseQueue m, IsScheme scheme) => ThreatSource -> scheme -> Natural -> m ()
 placeThreatFrom from (toScheme -> scheme) n =
   pushAll $ [CheckWindows [Window Would $ W.ThreatPlaced from scheme n] | n > 0] <> [threatPlacement scheme n]
 
--- | Damage to the hero not from an attack, past the window for it ('damageIdentity').
-damageHero :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
-damageHero ident source = pushAll . damageIdentity ident (toSource source)
+-- | Damage to the hero or alter-ego not from an attack, the "would take damage" window
+-- first ('Msg.damageIdentity').
+damageIdentity :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
+damageIdentity ident source = pushAll . Msg.damageIdentity ident (toSource source)
 
 -- | The retaliate damage dealt to the character that attacked.
 retaliate :: (ReverseQueue m, IsRef source) => source -> CharacterId -> Natural -> m ()
@@ -281,9 +285,6 @@ minionSchemes mid = push $ MinionMessage mid MinionSchemes
 
 healAllDamage :: (ReverseQueue m) => MinionId -> m ()
 healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
-
-exhaustIdentity :: (ReverseQueue m) => IdentityId -> m ()
-exhaustIdentity ident = push $ IdentityMessage ident X.ExhaustedIdentity
 
 -- | The hero's basic powers, ATK or THW given the bonus, and the defense applied.
 basicAttack, basicThwart :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -422,7 +423,7 @@ drawCards :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 drawCards ident = push . IdentityMessage ident . DrawCards FromDeck
 
 discardFromHand :: (ReverseQueue m) => IdentityId -> Natural -> m ()
-discardFromHand ident n = push $ IdentityMessage ident $ DiscardFrom FromHand n Nothing
+discardFromHand ident = discardFrom ident FromHand
 
 -- | The player's deck is discarded from until a card matching, the target told which
 -- ('WithDiscardedMatch').
@@ -485,7 +486,7 @@ payForTreachery ident cost = getRandom >>= \cid -> setActiveCost $ ActiveCost ci
 
 -- | The top cards of the player's deck are discarded.
 discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
-discardTopOfDeck ident n = push $ IdentityMessage ident $ DiscardFrom FromDeck n Nothing
+discardTopOfDeck ident = discardFrom ident FromDeck
 
 -- | The card goes to its discard pile.
 discardCard :: (ReverseQueue m, IsCard card) => card -> m ()

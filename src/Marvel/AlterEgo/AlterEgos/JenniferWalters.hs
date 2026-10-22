@@ -55,6 +55,6 @@ getDetails (_ : xs) = getDetails xs
 instance RunMessage JenniferWalters where
   runMessage msg a@(JenniferWalters attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 (getDetails -> (schemeId, n)) _ -> do
-      insteadOf (isThreatPlacement schemeId) $ placeThreatPastWindow schemeId (subtractNatural 1 n)
+      insteadOf (isThreatPlacement schemeId) $ placeThreatWithoutWindow schemeId (subtractNatural 1 n)
       pure a
     _ -> JenniferWalters <$> runMessage msg attrs

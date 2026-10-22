@@ -27,7 +27,7 @@ instance RunMessage GreatResponsibility where
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ (Just (ThreatPlaced _ schemeId n)) -> do
         -- taken as damage from this card: "would take damage" interrupts answer it
-        insteadOf (isThreatPlacement schemeId) $ damageHero identityId attrs (toDamage n FromAbility)
+        insteadOf (isThreatPlacement schemeId) $ damageIdentity identityId attrs (toDamage n FromAbility)
         pure e
       _ -> GreatResponsibility <$> runMessage msg attrs
     _ -> GreatResponsibility <$> runMessage msg attrs

@@ -43,7 +43,7 @@ instance RunMessage HitSquad where
             card : _ -> do
               let n = boostCount $ cdBoostIcons $ getCardDef card
               discardTopOfEncounterDeck 1
-              when (n > 0) $ damageHero p attrs (toDamage n FromTreachery)
+              when (n > 0) $ damageIdentity p attrs (toDamage n FromTreachery)
               cardSpecific attrs "discard" rest
               pure s
     _ -> HitSquad <$> runMessage msg attrs

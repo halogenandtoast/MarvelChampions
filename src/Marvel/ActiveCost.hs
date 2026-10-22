@@ -46,7 +46,7 @@ payCostPart activeCost = go
       discardFor iid (ActiveCostRef acid) FromHand n (fromMaybe inHand m)
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
-        damageHero iid (abilitySource a) (toDamage n FromAbility)
+        damageIdentity iid (abilitySource a) (toDamage n FromAbility)
         paid $ DamagePayment n
       _ -> error "Unhandled"
     HealCost n -> do

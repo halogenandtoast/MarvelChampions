@@ -52,6 +52,6 @@ instance RunMessage Abomination where
       pure e
     WithDiscarded (isTarget attrs -> True) FromDeck (onlyPlayerCards -> cards) -> do
       for_ [ident | card <- cards, cardMatch (CardWithResource Physical) card, Just ident <- [pcOwner card]] \ident ->
-        damageHero ident attrs (toDamage 2 FromAbility)
+        damageIdentity ident attrs (toDamage 2 FromAbility)
       pure e
     _ -> Abomination <$> runMessage msg attrs

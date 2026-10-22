@@ -37,7 +37,7 @@ instance RunMessage UnderAttack where
       for_ players \p ->
         chooseOne p $
           labeled "$label.placeTwoThreatOnUnderAttack" (placeThreat ident 2)
-            : [ labeled "$label.deal3DamageToYourHero" (damageHero p attrs (toDamage 3 FromAbility))
+            : [ labeled "$label.deal3DamageToYourHero" (damageIdentity p attrs (toDamage 3 FromAbility))
               | p `elem` heroes
               ]
       pure s

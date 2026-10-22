@@ -39,7 +39,7 @@ instance RunMessage RageOfUltron where
     AllyMessage _ (AllyDamaged source damage) -> attackDamage source damage >> pure t
     _ -> RageOfUltron <$> runMessage msg attrs
    where
-    discardTop identityId n = when (n > 0) $ discardFrom identityId FromDeck n
+    discardTop identityId n = when (n > 0) $ discardTopOfDeck identityId n
     attackDamage source damage = case (source, treacheryResolver attrs) of
       (VillainRef _, Just identityId) | damageSource damage == FromAttack -> do
         isHero <- identityMatches HeroIdentity identityId

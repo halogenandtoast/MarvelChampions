@@ -98,7 +98,7 @@ instance RunMessage (Attrs Hero) where
             [targeting (schemeTarget scheme) (thwartScheme scheme a thw) | scheme <- schemes]
           pure a
         Defended enemy -> do
-          exhaustIdentity ident
+          exhaust ident
           enemyDefendedBy enemy (IdentityCharacter ident)
           checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
           defenseApplied ident enemy
