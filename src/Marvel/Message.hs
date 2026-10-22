@@ -27,7 +27,7 @@ import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
 import Marvel.Attack (sourceEnemy)
-import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromRetaliate), toDamage)
+import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromOverkill, FromRetaliate), toDamage)
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -38,7 +38,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (DefeatedMinion, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -85,6 +85,26 @@ cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
     CheckTreacheryCondition _ -> Nothing
     ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
   msg -> Just msg
+
+-- | A minion that would be defeated is not ("instead"): its defeat, the damage overkill
+-- would deal past it, and the window after its defeat are cancelled.
+cancelMinionDefeat :: (HasQueue m) => MinionId -> m ()
+cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
+  (pre, _ : rest) -> pre <> cancelAfter (dropOverkill rest)
+  _ -> q
+ where
+  isDefeat = \case
+    MinionMessage mid' MinionDefeated -> mid' == mid
+    _ -> False
+  dropOverkill = \case
+    VillainMessage _ (VillainDamaged _ d) : rest | damageSource d == FromOverkill -> rest
+    rest -> rest
+  cancelAfter rest = case break isAfter rest of
+    (pre, _ : rest') -> pre <> rest'
+    _ -> rest
+  isAfter = \case
+    CheckWindows [Window After (DefeatedMinion mid' _ _)] -> mid' == mid
+    _ -> False
 
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: MinionId -> IdentityId -> [Message]

@@ -64,6 +64,48 @@ spec = describe "Thor's nemesis set" do
         resolve [MinionMessage loki (MinionDamaged GameRef (toDamage 5 FromAbility))]
         minionDamageOf loki `shouldReturn` Nothing
 
+    it "saved from Hammer Throw, takes no overkill to the villain (RR, Overkill)" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        mjolnir <- putIntoPlay p "06009"
+        loki <- addMinion p Minions.loki
+        chooseIf (isNamedAbility "\"Have at thee!\"")
+        pass
+        _ <- stackEncounterDeck [Treacheries.advance]
+        throw <- putInHand p "06005"
+        payment <- traverse (putInHand p) ["01088", "01089", "01090"]
+        playWith throw payment
+        choose "throw at Loki" (isTargetChoice loki)
+        choose "Loki's interrupt" (isAbilityOf loki)
+        pass
+        minionDamageOf loki `shouldReturn` Just 0
+        villainDamageNow `shouldReturn` 0
+        codes <- map toCardCode <$> handOf p
+        codes `shouldSatisfy` elem (toCardCode mjolnir)
+
+    it "defeated by Hammer Throw, the damage past his hit points goes to the villain" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        _ <- putIntoPlay p "06009"
+        loki <- addMinion p Minions.loki
+        chooseIf (isNamedAbility "\"Have at thee!\"")
+        pass
+        _ <- stackEncounterDeck [Minions.hydraMercenary]
+        throw <- putInHand p "06005"
+        payment <- traverse (putInHand p) ["01088", "01089", "01090"]
+        playWith throw payment
+        choose "throw at Loki" (isTargetChoice loki)
+        choose "Loki's interrupt" (isAbilityOf loki)
+        pass
+        minionDamageOf loki `shouldReturn` Nothing
+        villainDamageNow `shouldReturn` 4
+
   describe "Frost Giant (06029)" do
     it "enters play with a tough status card" do
       tg <- thor

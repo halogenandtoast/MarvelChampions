@@ -60,13 +60,7 @@ instance RunMessage BiomechanicalUpgrades where
     -- discarded
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyMinionId mid) -> do
-        let
-          defeat = \case
-            MinionMessage mid' MinionDefeated -> mid == mid'
-            CheckWindows [W.Window W.After (W.DefeatedMinion mid' _ _)] -> mid == mid'
-            _ -> False
-        cancelMatchingMessage defeat
-        cancelMatchingMessage defeat
+        cancelMinionDefeat mid
         pushAll [MinionMessage mid MinionHealAllDamage, RemoveFromPlay (toTarget attrs)]
         pure a
       _ -> pure a
