@@ -103,21 +103,28 @@ instance RunMessage (Attrs Hero) where
           stunned <- identityMatches StunnedIdentity (heroIdentityId a)
           if not stunned
             then do
-              enemies <- selectList AttackableEnemy
-              dmg <- getModifiedAttack a
+              -- what answers the hero making a basic attack comes before its damage
               pushAll
-                [ Ask ident $
-                    prompted "$label.chooseEnemyToAttack" $
-                    ChooseOne $
-                      map
-                        (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
-                        enemies
-                , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
+                [ CheckWindows [W.Window W.When $ W.MadeBasicAttack ident]
+                , IdentityMessage ident $ SideMessage BasicAttack
                 ]
               pure a
             else do
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveStunned
               pure a
+        BasicAttack -> do
+          enemies <- selectList AttackableEnemy
+          dmg <- getModifiedAttack a
+          pushAll
+            [ Ask ident $
+                prompted "$label.chooseEnemyToAttack" $
+                ChooseOne $
+                  map
+                    (damageChoice a (toDamage dmg $ FromPlayerAttack ident))
+                    enemies
+            , CheckWindows [W.Window W.After $ W.MadeBasicAttack ident]
+            ]
+          pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
           if not confused

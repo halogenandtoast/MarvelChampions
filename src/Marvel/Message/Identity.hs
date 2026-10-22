@@ -78,5 +78,7 @@ data SideMessage
   | Defended EnemyId
   | -- | the hero's defense counted, once what answers their defending has
     DefendsAgainst EnemyId
+  | -- | the hero's basic attack, once what answers its being made has
+    BasicAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
