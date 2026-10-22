@@ -191,7 +191,8 @@ data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text,
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId}
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView]}
+  -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver)
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -468,7 +469,7 @@ gameView seesHand g = do
      in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards)
   attachmentView (x :: Attachment) =
     let a = toAttrs x
      in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters

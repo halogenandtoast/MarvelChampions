@@ -82,7 +82,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Attrs (scenarioDecks, scenarioDiscard, scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
+import Marvel.Scenario.Types (Attrs (scenarioDecks, scenarioDiscard, scenarioEncounterDeck), Scenario, deckKeys, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -432,6 +432,10 @@ getDeckKeyFor ident = do
     _ -> EncounterDeckKey
 
 -- | The deck and its discard pile, each top card first.
+-- | Every encounter deck in the game: the encounter deck, then any others.
+getDeckKeys :: (HasGame m) => m [DeckKey]
+getDeckKeys = getsGame $ deckKeys . toAttrs . gameScenario
+
 getPile :: (HasGame m) => DeckKey -> m Pile
 getPile = \case
   EncounterDeckKey -> getsGame \g -> let a = toAttrs (gameScenario g) in Pile (scenarioEncounterDeck a) (scenarioDiscard a)
@@ -555,6 +559,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     CardIdRef _ -> pure g -- Should be handled by Identity
+    -- an ally in play taken out of the game (tucked): what is attached to it discarded
+    AllyRef aid -> do
+      for_ (lookup aid $ gameAllies g) \ally -> do
+        for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+        identityStep (getAllyController ally) (AllyRemoved aid)
+      pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
     IdentityRef iid -> do
@@ -1808,6 +1818,7 @@ gameSelectAlly m = do
     AllyWithId ident' -> pure . (== ident') . toId
     AllyMatches xs -> andM . traverse matchFilter xs
     AllyWithTrait trait -> fmap (member trait) . getTraits
+    AllyIs def -> pure . sameCard def . getCardDef
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
@@ -1940,6 +1951,7 @@ gameSelectEnemy m = do
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
+    ConfusedEnemy -> pure $ Villain.villainConfused (toAttrs e)
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -1960,6 +1972,7 @@ gameSelectEnemy m = do
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
     EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
+    ConfusedEnemy -> pure $ minionConfused (toAttrs e)
   highestAttack = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions

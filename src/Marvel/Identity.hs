@@ -139,7 +139,8 @@ identityDamage = playerIdentityDamage . toAttrs
 getModifiedHandSize :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedHandSize pid = do
   modifiers <- getModifiers pid
-  pure $ foldr applyModifier (unHandSize $ handSize pid) modifiers
+  let raised = foldr applyModifier (unHandSize $ handSize pid) modifiers
+  pure $ subtractNatural (sum [n | HandSizeReduction n <- modifiers]) raised
  where
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
