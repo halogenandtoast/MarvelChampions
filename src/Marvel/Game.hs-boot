@@ -134,6 +134,7 @@ getVillainsInArea :: (HasGame m) => AreaId -> m [VillainId]
 getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
 getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
 getPile :: (HasGame m) => DeckKey -> m Pile
+getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::

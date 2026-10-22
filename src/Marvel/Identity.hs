@@ -651,6 +651,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         choices = case choiceRules of
           DifferentCards ->
             filter ((`notElem` chosenNames) . cdName . pcCardDef) discards
+          AnyCards -> focusedCards
 
       if length cards >= fromIntegral chooseMax
         then withChosen target FromDiscard $ PlayerCard <$> cards

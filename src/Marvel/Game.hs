@@ -433,6 +433,10 @@ getDeckKeyFor ident = do
     _ -> EncounterDeckKey
 
 -- | The deck and its discard pile, each top card first.
+-- | The encounter cards set aside, out of play.
+getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
+getSetAsideEncounterCards = getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
+
 getPile :: (HasGame m) => DeckKey -> m Pile
 getPile = \case
   EncounterDeckKey -> getsGame \g -> let a = toAttrs (gameScenario g) in Pile (scenarioEncounterDeck a) (scenarioDiscard a)
@@ -647,9 +651,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         attachmentRemoved aid
         discardCard attachment
       pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
+    -- discarded, its own cards with it, and no longer engaged
     MinionRef mid -> case lookup mid (gameMinions g) of
       Nothing -> pure g
       Just minion -> do
+        let a = toAttrs minion
+        for_ (minionUpgrades a) removeFromPlay
+        for_ (minionAttachments a) removeFromPlay
+        minionDisengages (minionEngagedIdentity a) mid
         discardCard minion
         pure $
           g
@@ -681,6 +690,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
+        -- its starting threat, then its "When Revealed"
+        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
         mainSchemeStep mainSchemeId RevealMainScheme
         you <- getYou
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
@@ -690,6 +701,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
         setupMainScheme
+        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
         mainSchemeStep mainSchemeId RevealMainScheme
         for_ (HashMap.keys (gameVillains g)) \villainId ->
           checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
@@ -788,6 +800,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             g
               & (boostEntitiesL . minionsL %~ deleteMap (toId minion))
               & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+              & (boostCardsL %~ deleteMap target)
+        _ -> error "messed up somewhere"
+    -- the attachment stays in play, as the card says what it is attached to
+    AttachmentRef aid ->
+      case g ^. boostEntitiesL . attachmentsL . at aid of
+        Just attachment ->
+          pure $
+            g
+              & (boostEntitiesL . attachmentsL %~ deleteMap aid)
+              & (entitiesL . attachmentsL %~ insertMap aid attachment)
               & (boostCardsL %~ deleteMap target)
         _ -> error "messed up somewhere"
     _ -> error "Unhandled"
