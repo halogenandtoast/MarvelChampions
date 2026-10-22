@@ -80,6 +80,10 @@ narrationFor = \case
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
   GiveStatus target s -> Just $ simply (statusKey s) target
   RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
+  PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
+  RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
+  EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
+  RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
   _ -> Nothing
  where
   statusKey = \case
@@ -161,6 +165,7 @@ villainNarration vid = \case
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
+  FlipVillain -> Just $ simply "log.flips" (VillainRef vid)
   VillainStunned _ -> Just $ simply "log.stunned" (VillainRef vid)
   VillainConfused _ -> Just $ simply "log.confused" (VillainRef vid)
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
@@ -248,6 +253,9 @@ damaged target tough n = whenRef target \t ->
       then mechanic [ikeyPart "log.toughRemoved" ["target" ~> t]]
       else mechanic [ikeyPart "log.takesDamage" ["target" ~> t, "count" ~> n]]
 
+counted :: (HasGame m) => Text -> Target -> Natural -> m [LogEntry]
+counted key target n = whenRef target \t -> one $ mechanic [ikeyPart key ["target" ~> t, "count" ~> n]]
+
 healedBy :: (HasGame m) => Target -> Natural -> m [LogEntry]
 healedBy target n = whenRef target \t -> one $ mechanic [ikeyPart "log.heals" ["target" ~> t, "count" ~> n]]
 
@@ -284,6 +292,7 @@ refFor = \case
   MainSchemeRef x -> byId RefMainScheme x gameMainSchemes getCardDef
   TreacheryRef x -> byId RefTreachery x gameTreacheries getCardDef
   AttachmentRef x -> byId RefAttachment x gameAttachments getCardDef
+  EnvironmentRef x -> byId RefEnvironment x gameEnvironments getCardDef
   ObligationRef x -> byId RefObligation x gameObligations getCardDef
   EnemyRef (EnemyVillainId x) -> refFor (VillainRef x)
   EnemyRef (EnemyMinionId x) -> refFor (MinionRef x)

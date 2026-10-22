@@ -63,6 +63,10 @@
   "say": "Say",
   "sayPlaceholder": "Say something to the table",
   "hitPointsSetTo": "{target}'s hit points are set to {count}",
+  "countersPlaced": "{target} gets a counter | {target} gets {count} counters",
+  "countersRemoved": "A counter is removed from {target} | {count} counters are removed from {target}",
+  "flips": "{target} flips",
+  "playerObligationsRemoved": "Each player's obligations are removed from the game",
   "-- The Green Goblin --": "",
 
   "-- The Wrecking Crew --": "",

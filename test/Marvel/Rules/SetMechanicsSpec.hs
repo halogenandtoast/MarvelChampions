@@ -4,6 +4,7 @@ module Marvel.Rules.SetMechanicsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet (singleton)
+import Data.Text qualified as T
 import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Hp
 import Marvel.Keyword (Keyword (Incite))
@@ -70,3 +71,12 @@ spec = describe "set mechanics" do
       resolve [RemoveFromPlay (ObligationRef oid)]
       discard <- discardOf you
       liftIO $ discard `shouldContain` [card]
+
+  it "counters and the removal of players' obligations are told in the log" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- mainSchemeId
+      runNow [PlaceCounters (toTarget mid) 2, RemoveCounters (toTarget mid) 1, RemovePlayerObligationsFromGame]
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    for_ ["$log.countersPlaced", "$log.countersRemoved", "$log.playerObligationsRemoved"] \key ->
+      text `shouldSatisfy` T.isInfixOf key

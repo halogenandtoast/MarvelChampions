@@ -83,7 +83,7 @@ const words = ['thwart', 'attack', 'defense', 'recover', 'scheme', 'threat', 'he
 .log-ref--RefIdentity, .log-ref--RefAlly, .log-ref--RefSupport, .log-ref--RefUpgrade, .log-ref--RefEvent { color: var(--steel-bright); }
 .log-ref--RefVillain, .log-ref--RefMinion { color: #f0959b; }
 .log-ref--RefTreachery, .log-ref--RefAttachment, .log-ref--RefObligation { color: #c3a6e6; }
-.log-ref--RefMainScheme, .log-ref--RefSideScheme { color: #f2c063; }
+.log-ref--RefMainScheme, .log-ref--RefSideScheme, .log-ref--RefEnvironment { color: #f2c063; }
 .log-ref--RefScenario { color: var(--title); }
 
 .log-num { font-variant-numeric: tabular-nums; font-weight: 600; }

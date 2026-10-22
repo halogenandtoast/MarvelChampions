@@ -16,6 +16,7 @@ export type LogRefKind =
   | 'RefObligation'
   | 'RefMainScheme'
   | 'RefSideScheme'
+  | 'RefEnvironment'
   | 'RefScenario'
 
 /** Something in the game, drawn as a chip that previews its card. */
