@@ -24,6 +24,8 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | -- | any one of them
+    AnyCriteria [Criteria]
   | UpgradeExists UpgradeMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
@@ -73,6 +75,11 @@ spendOnly = \case
 -- spent as any type.
 canSpendOn :: Criteria -> Resource -> Bool
 canSpendOn criteria r = maybe True (\only -> r == only || r == Wild) (spendOnly criteria)
+-- | What an attack needs: an enemy to attack, or a stun for the attempt to remove. A
+-- stunned character can attempt an attack with no target ("Stunned").
+canAttack :: Criteria
+canAttack = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy]
+
 -- | What a thwart needs of the player making it.
 abilitySubTypeCriteria :: AbilitySubType -> Criteria
 abilitySubTypeCriteria = \case

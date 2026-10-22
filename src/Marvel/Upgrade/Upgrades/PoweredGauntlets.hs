@@ -36,7 +36,7 @@ instance HasAbilities PoweredGauntlets where
         a
         1
         HeroAction
-        (OwnsThis <> EnemyExists AttackableEnemy)
+        (OwnsThis <> canAttack)
         ExhaustCost
         $ RunAbility (toTarget a) 1
     ]

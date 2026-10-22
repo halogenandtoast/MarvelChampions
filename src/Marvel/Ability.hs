@@ -147,6 +147,7 @@ passesCriteria x a =
         member aid <$> select (UpgradeControlledBy $ IdentityWithId x)
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
+    AnyCriteria xs -> anyM go xs
     MinionExists m -> selectAny m
     CharacterExists m -> selectAny m
     EnemyExists m -> selectAny m
@@ -176,6 +177,7 @@ passesCardCriteria ident card = go
     Unexhausted -> member ident <$> select UnexhaustedIdentity
     Exhausted -> member ident <$> select ExhaustedIdentity
     Criteria xs -> allM go xs
+    AnyCriteria xs -> anyM go xs
     MinionExists m -> selectAny m
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m

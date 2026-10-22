@@ -30,7 +30,7 @@ instance HasAbilities Hero where
    where
     basicAbilities =
       [ ability a 300 Basic (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
-      , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
+      , ability a 301 Basic canAttack ExhaustCost Attack
       ]
 
 getModifiedAttack :: (HasGame m) => Attrs Hero -> m Natural

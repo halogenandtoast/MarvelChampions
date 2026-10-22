@@ -38,7 +38,8 @@ instance HasAbilities Ally where
              x
              301
              Basic
-             (EnemyExists $ AttackableBy $ IdentityWithId $ allyController $ toAllyAttrs a)
+             -- a stunned ally can attempt an attack with no target ("Stunned")
+             (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists $ AttackableBy $ IdentityWithId $ allyController $ toAllyAttrs a)
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]

@@ -262,14 +262,14 @@ repulsorBlast = (identityEvent
                   [Attack, Superpower]
                   [Physical]
                 )
-  { cdCriteria = EnemyExists AttackableEnemy
+  { cdCriteria = canAttack
   , cdAbilitySubType = Just Ability.Attack
   }
 
 supersonicPunch :: CardDef
 supersonicPunch =
   (identityEvent "01032" "Supersonic Punch" 2 HeroAction [Attack] [Energy])
-    { cdCriteria = EnemyExists AttackableEnemy
+    { cdCriteria = canAttack
     , cdAbilitySubType = Just Ability.Attack
     }
 
@@ -379,7 +379,7 @@ fearlessDetermination =
 heroicStrike :: CardDef
 heroicStrike =
   (identityEvent "03004" "Heroic Strike" 3 HeroAction [Attack] [Physical])
-    { cdCriteria = EnemyExists AttackableEnemy
+    { cdCriteria = canAttack
     , cdAbilitySubType = Just Ability.Attack
     }
 
@@ -396,7 +396,7 @@ shieldBlock =
 shieldToss :: CardDef
 shieldToss =
   (identityEvent "03006" "Shield Toss" 0 HeroAction [Attack, Superpower] [Energy])
-    { cdCriteria = EnemyExists AttackableEnemy
+    { cdCriteria = canAttack
     , cdAbilitySubType = Just Ability.Attack
     , cdAbilityCost =
         DiscardHandCardsCost 0 Nothing <> ReturnUpgradeToHandCost (UpgradeIs Upgrade.captainAmericasShield)
@@ -554,7 +554,7 @@ hammerThrow :: CardDef
 hammerThrow =
   (identityEvent "06005" "Hammer Throw" 3 HeroAction [Attack, Superpower] [Energy])
     { cdAbilitySubType = Just Ability.Attack
-    , cdCriteria = EnemyExists AttackableEnemy
+    , cdCriteria = canAttack
     , cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrades.mjolnir)
     }
 
@@ -604,7 +604,7 @@ astralProjection =
 magicBlast :: CardDef
 magicBlast =
   (identityEvent "09004" "Magic Blast" 3 HeroAction [Attack, Spell] [Energy])
-    { cdCriteria = EnemyExists AttackableEnemy
+    { cdCriteria = canAttack
     , cdAbilitySubType = Just Ability.Attack
     }
 
@@ -634,7 +634,7 @@ desperateDefense =
 momentumShift :: CardDef
 momentumShift =
   (event "09016" "Momentum Shift" 2 HeroAction [Attack] [Physical] Protection)
-    { cdCriteria = EnemyExists AttackableEnemy
+    { cdCriteria = canAttack
     , cdAbilitySubType = Just Ability.Attack
     , cdAbilityCost = HealCost 2
     }
