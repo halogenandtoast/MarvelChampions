@@ -446,15 +446,24 @@ instance RunMessage (Attrs Villain) where
 instance IsRef (Attrs Villain) where
   toRef = VillainRef . villainId
 
+-- | The next stage, of the same title: what was on the villain carries over, and an
+-- activation it was defeated during resumes with the new stage, its attack at the new
+-- stage's ATK.
 advanceVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
 advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildCard newVillain villainId
  where
-  update =
-    (confusedL .~ villainConfused)
-      . (stunnedL .~ villainStunned)
-      . (toughL %~ (|| villainTough))
-      . (attachmentsL .~ villainAttachments)
-      . (upgradesL .~ villainUpgrades)
+  update new =
+    new
+      & (confusedL .~ villainConfused)
+      & (stunnedL .~ villainStunned)
+      & (toughL %~ (|| villainTough))
+      & (attachmentsL .~ villainAttachments)
+      & (upgradesL .~ villainUpgrades)
+      & (boostCardsL .~ villainBoostCards)
+      & (boostL .~ villainBoost)
+      & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
+      & \a -> a {villainAttackTarget = villainAttackTarget}
+  restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do
