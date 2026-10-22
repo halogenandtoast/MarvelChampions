@@ -74,6 +74,17 @@ placeThreatOn scheme n =
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
 
+-- | Cancel a treachery's "When Revealed" effects as it is revealed: none of them resolves,
+-- the surge it has or would gain included (surge is a "When Revealed" ability), and it is
+-- discarded as it would be.
+cancelWhenRevealed :: (HasQueue m) => TreacheryId -> m ()
+cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
+  TreacheryMessage tid' msg | tid' == tid -> case msg of
+    RevealTreachery _ -> Nothing
+    CheckTreacheryCondition _ -> Nothing
+    ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
+  msg -> Just msg
+
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: MinionId -> IdentityId -> [Message]
 engageMinion minion ident =
@@ -183,6 +194,7 @@ data Message
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
   | DealEncounterCard IdentityId
+  | RevealDealtEncounterCards
   | GainSurge Target
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId
