@@ -75,6 +75,8 @@
   "-- The Wrecking Crew --": "",
 
   "-- The Rise of Red Skull --": "",
+  "takesNoDamage": "{target} takes no damage",
+  "takesControlOf": "{player} rescues {card} and takes control of it",
   "attackGainsOverkill": "{target}'s attack gains overkill",
   "attackGainsPiercing": "{target}'s attack gains piercing",
   "attackGainsRanged": "{target}'s attack gains ranged",

@@ -32,6 +32,8 @@ const props = withDefaults(
     threat?: number | null
     /** uses or counters on it */
     counters?: number | null
+    /** the cards facedown beneath it, as a Captive ally under Captured by Hydra */
+    held?: number | null
     stunned?: boolean
     confused?: boolean
     tough?: boolean
@@ -44,7 +46,7 @@ const props = withDefaults(
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
   }>(),
-  { morph: true, id: null, code: null, name: '', back: null, damage: 0, threat: null, counters: null, attached: () => [], flag: null, flagIcon: null },
+  { morph: true, id: null, code: null, name: '', back: null, damage: 0, threat: null, counters: null, held: null, attached: () => [], flag: null, flagIcon: null },
 )
 
 const cards = useCards()
@@ -124,6 +126,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
+      <span v-if="held" class="held" :title="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
         <button v-for="chip in chips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
       </div>
@@ -214,6 +217,17 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, 22cqi); }
 .card:not(.landscape) .token.threat { --token-size: max(28px, 34cqi); }
 .token.counters { bottom: 24%; right: 4%; }
+.held {
+  position: absolute;
+  bottom: 4%;
+  left: 4%;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--shadow);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
 
 .card.exhausted .chips { rotate: -90deg; }
 

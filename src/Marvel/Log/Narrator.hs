@@ -30,6 +30,7 @@ import Marvel.Log
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Message
 import Marvel.Minion.Types qualified as Minion
+import Marvel.Modifier
 import Marvel.Name
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Support.Types qualified as Support
@@ -112,6 +113,14 @@ narrationFor = \case
 
 identityNarration :: (HasGame m) => IdentityId -> IdentityMessage -> Maybe (m [LogEntry])
 identityNarration ident = \case
+  -- a card that was nobody's, as a rescued Captive ally, becomes the player's
+  AddToHand card | isJust (pcOwner card) -> Just do
+    unowned <- getsGame \g -> any (any (\c -> pcCardId c == pcCardId card && isNothing (pcOwner c)) . SideScheme.sideSchemeHeldCards . toAttrs) (gameSideSchemes g)
+    if unowned
+      then do
+        who <- playerRef' ident
+        one $ toned Good $ action [ikeyPart "log.takesControlOf" ["player" ~> who, "card" ~> PlayerCard card]]
+      else pure []
   BeginTurn -> Just do
     who <- playerRef' ident
     one $ structure [ikeyPart "log.turn" ["player" ~> who]]
@@ -279,13 +288,16 @@ schemes enemy confused = whenRef enemy \e ->
       then toned Good $ mechanic [ikeyPart "log.confusedInstead" ["enemy" ~> e]]
       else mechanic [ikeyPart "log.schemes" ["enemy" ~> e]]
 
--- | Damage, or the tough status it takes off instead.
+-- | Damage, the tough status it takes off instead, or none at all for a character that
+-- cannot take damage (Red Skull, while The Red House is in play).
 damaged :: (HasGame m) => Target -> Bool -> Natural -> m [LogEntry]
-damaged target tough n = whenRef target \t ->
+damaged target tough n = whenRef target \t -> do
+  prevented <- elem CannotTakeDamage <$> getModifiers target
   one $
-    if tough
-      then mechanic [ikeyPart "log.toughRemoved" ["target" ~> t]]
-      else mechanic [ikeyPart "log.takesDamage" ["target" ~> t, "count" ~> n]]
+    if
+      | prevented -> toned Good $ mechanic [ikeyPart "log.takesNoDamage" ["target" ~> t]]
+      | tough -> mechanic [ikeyPart "log.toughRemoved" ["target" ~> t]]
+      | otherwise -> mechanic [ikeyPart "log.takesDamage" ["target" ~> t, "count" ~> n]]
 
 attachedTo :: (HasGame m) => AttachmentId -> Target -> m [LogEntry]
 attachedTo aid target = whenRef (AttachmentRef aid) \a -> whenRef target \t ->

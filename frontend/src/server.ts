@@ -137,6 +137,8 @@ export interface SchemeView extends CardView {
   upgrades?: UpgradeView[]
   counters?: number
   attachments?: AttachmentView[]
+  /** the cards facedown beneath it */
+  held?: number
 }
 
 export type ChoiceKind =

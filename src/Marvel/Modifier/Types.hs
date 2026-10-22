@@ -50,6 +50,8 @@ data Modifier
 
   | -- | on a scheme: a character thwarting it may use their ATK instead of their THW
     ThwartWithAttack
+  | -- | on a side scheme: it cannot leave play, by defeat, discard or removal
+    CannotLeavePlay
 
   | -- | on an identity: each "When Revealed" ability its player reveals resolves once
     -- more for each of these
