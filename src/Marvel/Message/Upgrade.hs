@@ -15,6 +15,7 @@ data UpgradeMessage
   | SpendUpgradeUse
   | AddUpgradeUses Natural
   | UpgradeAttachedToSideScheme SideSchemeId
+  | UpgradeAttachedToMainScheme MainSchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

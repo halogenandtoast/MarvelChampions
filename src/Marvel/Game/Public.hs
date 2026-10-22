@@ -376,7 +376,7 @@ gameView seesHand g = do
         , allies
         , allyLimit
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
-        , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme
+        , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme && isNothing u.upgradeAttachedMainScheme
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , invocation =
@@ -459,7 +459,7 @@ gameView seesHand g = do
         }
   mainSchemeView (s :: MainScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis []
+     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId)
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
      in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId)

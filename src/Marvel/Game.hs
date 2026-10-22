@@ -90,7 +90,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -491,8 +491,14 @@ runGameMessage msg g@Game {..} = case msg of
                ]
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
+  -- the main scheme leaves the game, each card attached to it discarded
   ReplaceMainScheme cardCode -> do
-    push (AddMainScheme cardCode)
+    pushAll $
+      [ RemoveFromPlay (UpgradeRef uid)
+      | (uid, u) <- HashMap.toList (gameUpgrades g)
+      , isJust (upgradeAttachedMainScheme (toAttrs u))
+      ]
+        <> [AddMainScheme cardCode]
     pure $ g & (entitiesL . mainSchemesL .~ mempty)
   AddVillain cardCode -> do
     villainId <- getRandom
@@ -1650,6 +1656,7 @@ gameSelectUpgrade m = do
           && isNothing (upgradeAttachedAlly a)
           && isNothing (upgradeAttachedEnemy a)
           && isNothing (upgradeAttachedSideScheme a)
+          && isNothing (upgradeAttachedMainScheme a)
     UpgradeWithHighestCostAmong m' -> \upgrade -> do
       candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gameUpgrades
       let cost = fromMaybe 0 . cdCost . getCardDef

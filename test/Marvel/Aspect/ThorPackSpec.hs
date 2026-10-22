@@ -1,6 +1,9 @@
 module Marvel.Aspect.ThorPackSpec (spec) where
 
+import Data.Aeson (Value (..))
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
@@ -231,6 +234,32 @@ spec = describe "The Thor pack's aspect and basic cards" do
         another <- putInHand p "06031"
         _ <- traverse (putInHand p) ["01088", "01089"]
         offers (isPlay another) `shouldReturn` False
+
+    it "is attached to the main scheme, and discarded as that scheme leaves play" do
+      -- Klaw's first main scheme advances to a second
+      tg <- testGameAgainst "01113" ["thor"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        surveillance <- inPlay p "06031" ["01088", "01089"]
+        m <- mainSchemeId
+        map (.upgradeAttachedMainScheme) <$> upgradesWith "06031" `shouldReturn` [Just m]
+        -- shown on the main scheme, not in the player's area
+        view <- liftIO . publicGame =<< getGame
+        let onMainScheme =
+              [ c
+              | Object o <- [view]
+              , Just (Array schemes) <- [KeyMap.lookup "mainSchemes" o]
+              , Object scheme <- toList schemes
+              , Just (Array upgrades) <- [KeyMap.lookup "upgrades" scheme]
+              , Object u <- toList upgrades
+              , Just (String c) <- [KeyMap.lookup "code" u]
+              ]
+        onMainScheme `shouldBe` ["06031"]
+        resolve [MainSchemeMessage m (MainSchemePlaceThreat 99)]
+        mainSchemeId >>= (`shouldSatisfy` (/= m))
+        upgradesWith "06031" `shouldReturn` []
+        discardOf p >>= (`shouldSatisfy` elem surveillance)
 
   describe "Teamwork (06032)" do
     it "exhausts an ally to add its ATK to the hero's basic attack" do
