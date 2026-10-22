@@ -55,4 +55,8 @@ allAllies = fromList $ map
   , SomeAllyCard novaSamAlexander
   , SomeAllyCard lockjaw
   , SomeAllyCard wong
+  , SomeAllyCard brotherVoodooJerichoDrumm
+  , SomeAllyCard clea
+  , SomeAllyCard ironFistDannyRand
+  , SomeAllyCard ironManTonyStark
   ]

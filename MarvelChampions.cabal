@@ -19,11 +19,15 @@ library
       Marvel.Ally.Allies.Agent13SharonCarter
       Marvel.Ally.Allies.BlackCatFeliciaHardy
       Marvel.Ally.Allies.BlackWidowNatashaRomanoff
+      Marvel.Ally.Allies.BrotherVoodooJerichoDrumm
+      Marvel.Ally.Allies.Clea
       Marvel.Ally.Allies.DaredevilMattMurdock
       Marvel.Ally.Allies.FalconSamWilson
       Marvel.Ally.Allies.HawkeyeClintBarton
       Marvel.Ally.Allies.HellcatPatsyWalker
       Marvel.Ally.Allies.HulkBruceBanner
+      Marvel.Ally.Allies.IronFistDannyRand
+      Marvel.Ally.Allies.IronManTonyStark
       Marvel.Ally.Allies.JessicaJones
       Marvel.Ally.Allies.Lockjaw
       Marvel.Ally.Allies.LukeCage
@@ -63,6 +67,7 @@ library
       Marvel.Attachment.Attachments.BiomechanicalUpgrades
       Marvel.Attachment.Attachments.Charge
       Marvel.Attachment.Attachments.ConcussionBlasters
+      Marvel.Attachment.Attachments.Counterspell
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.ProgramTransmitter
@@ -116,11 +121,13 @@ library
       Marvel.Event.Events.CounterPunch
       Marvel.Event.Events.CrimsonBandsOfCyttorak
       Marvel.Event.Events.CrisisInterdiction
+      Marvel.Event.Events.DesperateDefense
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.ExpertDefense
       Marvel.Event.Events.FearlessDetermination
       Marvel.Event.Events.FirstAid
+      Marvel.Event.Events.Foiled
       Marvel.Event.Events.ForJustice
       Marvel.Event.Events.GammaSlam
       Marvel.Event.Events.GetBehindMe
@@ -136,6 +143,7 @@ library
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.MasterOfTheMysticArts
       Marvel.Event.Events.Melee
+      Marvel.Event.Events.MomentumShift
       Marvel.Event.Events.MoraleBoost
       Marvel.Event.Events.MysticalStudies
       Marvel.Event.Events.OneTwoPunch
@@ -147,6 +155,7 @@ library
       Marvel.Event.Events.SevenRingsOfRaggadorr
       Marvel.Event.Events.ShieldBlock
       Marvel.Event.Events.ShieldToss
+      Marvel.Event.Events.SkilledStrike
       Marvel.Event.Events.SneakBy
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.StrengthInNumbers
@@ -159,6 +168,7 @@ library
       Marvel.Event.Events.WakandaForeverB
       Marvel.Event.Events.WakandaForeverC
       Marvel.Event.Events.WakandaForeverD
+      Marvel.Event.Events.Warning
       Marvel.Event.Events.WiggleRoom
       Marvel.Event.Events.WindsOfWatoomb
       Marvel.Event.Types
@@ -227,6 +237,7 @@ library
       Marvel.Minion.Minions
       Marvel.Minion.Minions.AdvancedUltronDrone
       Marvel.Minion.Minions.ArmoredGuard
+      Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Drone
       Marvel.Minion.Minions.EdisonsGiantRobot
@@ -263,6 +274,7 @@ library
       Marvel.Obligation.Obligations.HomeByDawn
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Obligations.ManOutOfTime
+      Marvel.Obligation.Obligations.PhysicalToll
       Marvel.Obligation.Types
       Marvel.Payment
       Marvel.Payment.Types
@@ -294,6 +306,7 @@ library
       Marvel.SideScheme.SideSchemes.ImminentOverload
       Marvel.SideScheme.SideSchemes.InvasiveAI
       Marvel.SideScheme.SideSchemes.LegionsOfHydra
+      Marvel.SideScheme.SideSchemes.OpenTheDarkDimension
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.TheDoomsdayChair
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
@@ -327,6 +340,7 @@ library
       Marvel.Support.Supports.SurveillanceTeam
       Marvel.Support.Supports.TacTeam
       Marvel.Support.Supports.TheGoldenCity
+      Marvel.Support.Supports.TheNightNurse
       Marvel.Support.Supports.TheTriskellion
       Marvel.Support.Types
       Marvel.Trait
@@ -364,6 +378,7 @@ library
       Marvel.Treachery.Treacheries.SwarmAttack
       Marvel.Treachery.Treacheries.SweepingSwoop
       Marvel.Treachery.Treacheries.TheVulturesPlans
+      Marvel.Treachery.Treacheries.Thoughtcasting
       Marvel.Treachery.Treacheries.TitaniasFury
       Marvel.Treachery.Treacheries.UnderFire
       Marvel.Treachery.Treacheries.YonRoggsTreason
@@ -410,6 +425,7 @@ library
       Marvel.Upgrade.Upgrades.Tenacity
       Marvel.Upgrade.Upgrades.TheEyeOfAgamotto
       Marvel.Upgrade.Upgrades.TheSorcererSupreme
+      Marvel.Upgrade.Upgrades.Unflappable
       Marvel.Upgrade.Upgrades.VibraniumSuit
       Marvel.Upgrade.Upgrades.WebbedUp
       Marvel.Upgrade.Upgrades.WebShooter

@@ -65,6 +65,7 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard magicalEnhancements
   , SomeUpgradeCard theEyeOfAgamotto
   , SomeUpgradeCard theSorcererSupreme
+  , SomeUpgradeCard unflappable
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

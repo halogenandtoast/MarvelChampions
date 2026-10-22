@@ -24,3 +24,7 @@ import Marvel.Ally.Allies.RedDagger as X
 import Marvel.Ally.Allies.NovaSamAlexander as X
 import Marvel.Ally.Allies.Lockjaw as X
 import Marvel.Ally.Allies.Wong as X
+import Marvel.Ally.Allies.BrotherVoodooJerichoDrumm as X
+import Marvel.Ally.Allies.Clea as X
+import Marvel.Ally.Allies.IronFistDannyRand as X
+import Marvel.Ally.Allies.IronManTonyStark as X

@@ -76,5 +76,10 @@
   "confusedStatus": "Confused",
   "toughStatus": "Tough",
   "chooseSpellToShuffle": "Choose a Spell card to shuffle into your deck",
-  "drawCard": "Draw 1 card"
+  "drawCard": "Draw 1 card",
+  "chooseHeroToHeal": "Choose a hero to heal",
+  "chooseStatusToDiscard": "Choose a status card to discard",
+  "discardHighestCost": "Discard a card with the highest cost",
+  "exhaustStephenStrangeRemovePhysicalToll": "Exhaust Stephen Strange and remove Physical Toll from the game",
+  "nextEventCosts3More": "The next event you play costs 3 more resources"
 }

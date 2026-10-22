@@ -81,6 +81,11 @@ allEvents = fromList $ map
   , SomeEventCard magicBlast
   , SomeEventCard mysticalStudies
   , SomeEventCard protectiveWard
+  , SomeEventCard desperateDefense
+  , SomeEventCard momentumShift
+  , SomeEventCard warning
+  , SomeEventCard skilledStrike
+  , SomeEventCard foiled
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

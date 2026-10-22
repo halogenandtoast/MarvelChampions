@@ -20,3 +20,4 @@ import Marvel.Support.Supports.AamirKhan as X
 import Marvel.Support.Supports.BrunoCarrelli as X
 import Marvel.Support.Supports.NakiaBahadir as X
 import Marvel.Support.Supports.SanctumSanctorum as X
+import Marvel.Support.Supports.TheNightNurse as X

@@ -55,3 +55,8 @@ import Marvel.Event.Events.AstralProjection as X
 import Marvel.Event.Events.MagicBlast as X
 import Marvel.Event.Events.MysticalStudies as X
 import Marvel.Event.Events.ProtectiveWard as X
+import Marvel.Event.Events.DesperateDefense as X
+import Marvel.Event.Events.MomentumShift as X
+import Marvel.Event.Events.Warning as X
+import Marvel.Event.Events.SkilledStrike as X
+import Marvel.Event.Events.Foiled as X

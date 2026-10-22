@@ -41,3 +41,4 @@ import Marvel.Upgrade.Upgrades.CloakOfLevitation as X
 import Marvel.Upgrade.Upgrades.MagicalEnhancements as X
 import Marvel.Upgrade.Upgrades.TheEyeOfAgamotto as X
 import Marvel.Upgrade.Upgrades.TheSorcererSupreme as X
+import Marvel.Upgrade.Upgrades.Unflappable as X
