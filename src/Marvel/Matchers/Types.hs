@@ -311,7 +311,8 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
 data DamageMatcher
   = AttackFromPlayer IdentityMatcher
   | AttackFromAlly AllyMatcher
-  | -- | damage a player dealt: by attacking, or with a card they control
+  | -- | damage a player dealt: by attacking, or with a card they control other than an
+    -- ally
     DamageByPlayer IdentityMatcher
   | AnyDamage
   deriving stock (Show, Eq, Generic)

@@ -17,7 +17,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Ref (Source)
+import Marvel.Ref (Ref (AllyRef), Source)
 
 identityMatches :: (HasGame m) => IdentityMatcher -> IdentityId -> m Bool
 identityMatches matcher ident = member ident <$> gameSelectIdentity matcher
@@ -86,6 +86,8 @@ damageMatches matcher damage = case matcher of
 -- | Whether damage, dealt by the source given, matches.
 damageMatchesFrom :: (HasGame m) => DamageMatcher -> Damage -> Source -> m Bool
 damageMatchesFrom matcher damage source = case matcher of
+  -- "you" is the identity (RR, "You"): what an ally does is not the player's doing
+  DamageByPlayer _ | AllyRef _ <- source -> pure False
   DamageByPlayer identityMatcher ->
     getSourceController source >>= \case
       Just ident -> identityMatches identityMatcher ident
