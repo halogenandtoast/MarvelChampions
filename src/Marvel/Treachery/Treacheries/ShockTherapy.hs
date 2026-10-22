@@ -30,11 +30,14 @@ instance RunMessage ShockTherapy where
   runMessage msg t@(ShockTherapy attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       players <- getPlayerCount
-      villain <- selectJust ActiveVillain
-      discardTopOfEncounterDeckThen (fromIntegral players) \cards -> do
-        let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (n > 0) $ heal villain n
-      pure t
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure t
+        Just villain -> do
+          discardTopOfEncounterDeckThen (fromIntegral players) \cards -> do
+            let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
+            when (n > 0) $ heal villain n
+          pure t
     -- [star] Boost: discard 3 cards from the encounter deck
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       discardTopOfEncounterDeck 3

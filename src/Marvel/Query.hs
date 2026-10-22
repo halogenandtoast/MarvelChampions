@@ -46,11 +46,11 @@ selectOne matcher = do
     [] -> Nothing
     x : _ -> Just x
 
-selectJust :: (Query m a) => a -> m (QueryElement a)
+selectJust :: (HasCallStack, Show a, Query m a) => a -> m (QueryElement a)
 selectJust matcher = do
   result <- selectOne matcher
   case result of
-    Nothing -> error "Must guarantee a result"
+    Nothing -> error $ "Must guarantee a result: " <> show matcher
     Just x -> pure x
 
 instance (HasGame m) => Query m IdentityMatcher where

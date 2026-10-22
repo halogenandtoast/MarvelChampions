@@ -25,7 +25,7 @@ instance RunMessage Advance where
     TreacheryMessage ident msg' | treacheryId attrs == ident ->
       case msg' of
         RevealTreachery _ -> do
-          villainSchemes =<< selectJust ActiveVillain
+          traverse_ villainSchemes =<< selectOne ActiveVillain
           pure t
         _ -> Advance <$> runMessage msg attrs
     _ -> Advance <$> runMessage msg attrs

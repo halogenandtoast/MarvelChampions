@@ -59,8 +59,7 @@ runMinionMessage msg attrs = case msg of
             checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source]
             defeatMinion (minionId attrs)
             when (overkill > 0 && damageOverkill damage) do
-              villain <- selectJust ActiveVillain
-              damageCharacter villain source (toDamage overkill FromOverkill)
+              traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
             checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
           else pure ()
         pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))

@@ -49,9 +49,12 @@ instance HasAbilities HydraSidearm where
 instance RunMessage HydraSidearm where
   runMessage msg a@(HydraSidearm attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . HydraSidearm $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> HydraSidearm attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . HydraSidearm $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       for_ (attachmentEnemy attrs) (`attackGains` Ranged)
       pure a

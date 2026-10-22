@@ -24,11 +24,14 @@ instance RunMessage HiredGun where
     -- When Revealed: give the villain a facedown boost card, or place 2 infamy counters
     -- on Criminal Enterprise, which cannot be chosen while it is State of Madness
     MinionMessage ident (RevealMinion you) | ident == minionId attrs -> do
-      villain <- selectJust ActiveVillain
-      infamy <- selectAny (EnvironmentIs Environments.criminalEnterprise)
-      chooseOrRunOne you $
-        labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
-          : [labeled "$label.place2InfamyCounters" (void $ placeInfamy 2) | infamy]
-      pure e
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure e
+        Just villain -> do
+          infamy <- selectAny (EnvironmentIs Environments.criminalEnterprise)
+          chooseOrRunOne you $
+            labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
+              : [labeled "$label.place2InfamyCounters" (void $ placeInfamy 2) | infamy]
+          pure e
     Boost (RevealedAsBoost target _) | isTarget attrs target -> e <$ infamyOrMadness 1
     _ -> HiredGun <$> runMessage msg attrs

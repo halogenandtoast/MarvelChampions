@@ -53,9 +53,12 @@ instance RunMessage CrossbonesArmor where
   runMessage msg a@(CrossbonesArmor attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . CrossbonesArmor $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> CrossbonesArmor attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . CrossbonesArmor $ attrs & enemyL ?~ EnemyVillainId villainId
       AttachmentDamaged n -> do
         when (attachmentDamage attrs + n >= 5) $ removeFromPlay a
         pure . CrossbonesArmor $ attrs & damageL +~ n

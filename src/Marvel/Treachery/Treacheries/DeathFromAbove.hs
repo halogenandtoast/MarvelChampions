@@ -39,10 +39,12 @@ instance IsTreachery DeathFromAbove where
 instance RunMessage DeathFromAbove where
   runMessage msg (DeathFromAbove (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      villain <- selectJust ActiveVillain
-      stage <- getVillainStage villain
-      hero <- identityMatches HeroIdentity you
-      if hero then enemyAttacks villain you else villainSchemes villain
-      let m = if hero then AttackModifier stage else SchemeModifier stage
-      pure $ DeathFromAbove (attrs `With` Meta (Just (villain, m)))
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure $ DeathFromAbove (attrs `With` meta)
+        Just villain -> do
+          stage <- getVillainStage villain
+          hero <- identityMatches HeroIdentity you
+          if hero then enemyAttacks villain you else villainSchemes villain
+          let m = if hero then AttackModifier stage else SchemeModifier stage
+          pure $ DeathFromAbove (attrs `With` Meta (Just (villain, m)))
     _ -> DeathFromAbove . (`With` meta) <$> runMessage msg attrs

@@ -27,8 +27,7 @@ instance RunMessage KlawsVengeance where
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
-            villainId <- selectJust ActiveVillain
-            enemyAttacks villainId identityId
+            traverse_ (\villainId -> enemyAttacks villainId identityId) =<< selectOne ActiveVillain
           else discardFrom identityId RandomFromHand 1
         pure t
       _ -> KlawsVengeance <$> runMessage msg attrs

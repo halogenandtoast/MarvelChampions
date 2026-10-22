@@ -36,7 +36,10 @@ instance HasAbilities SpiderWomanJessicaDrew where
 instance RunMessage SpiderWomanJessicaDrew where
   runMessage msg a@(SpiderWomanJessicaDrew attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
-      villain <- selectJust ActiveVillain
-      confuse villain a
-      pure a
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure a
+        Just villain -> do
+          confuse villain a
+          pure a
     _ -> SpiderWomanJessicaDrew <$> runMessage msg attrs

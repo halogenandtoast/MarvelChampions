@@ -27,9 +27,12 @@ instance RunMessage GetBehindMe where
   runMessage msg e@(GetBehindMe attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) -> do
-        villainId <- selectJust ActiveVillain
-        cancelWhenRevealed tid
-        enemyAttacks villainId identityId
-        pure e
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure e
+          Just villainId -> do
+            cancelWhenRevealed tid
+            enemyAttacks villainId identityId
+            pure e
       _ -> GetBehindMe <$> runMessage msg attrs
     _ -> GetBehindMe <$> runMessage msg attrs

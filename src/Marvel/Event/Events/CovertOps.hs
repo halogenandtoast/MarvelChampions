@@ -25,8 +25,11 @@ newtype CovertOps = CovertOps (Attrs Event)
 instance RunMessage CovertOps where
   runMessage msg e@(CovertOps attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
-      villain <- selectJust ActiveVillain
-      removeThreat identityId attrs 4 ThwartableScheme
-      confuse villain attrs
-      pure e
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure e
+        Just villain -> do
+          removeThreat identityId attrs 4 ThwartableScheme
+          confuse villain attrs
+          pure e
     _ -> CovertOps <$> runMessage msg attrs

@@ -24,8 +24,7 @@ instance RunMessage HardToKeepDown where
         damaged <- selectAny $ ActiveVillain <> VillainWithAnyDamage
         if damaged
           then do
-            villainId <- selectJust ActiveVillain
-            heal villainId 4
+            traverse_ (\villainId -> heal villainId 4) =<< selectOne ActiveVillain
             pure t
           else pure . HardToKeepDown $ attrs & surgeL .~ True
       _ -> HardToKeepDown <$> runMessage msg attrs

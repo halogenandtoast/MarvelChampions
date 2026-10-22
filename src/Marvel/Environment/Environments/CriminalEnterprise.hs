@@ -49,7 +49,7 @@ instance RunMessage CriminalEnterprise where
     RemoveCounters target n | target == toRef attrs -> do
       when (n > 0 && environmentCounters attrs > 0 && subtractNatural n (environmentCounters attrs) == 0) do
         flipEnvironment (environmentId attrs)
-        flipVillain =<< selectJust ActiveVillain
+        traverse_ flipVillain =<< selectOne ActiveVillain
       CriminalEnterprise <$> runMessage msg attrs
     _ -> CriminalEnterprise <$> runMessage msg attrs
    where

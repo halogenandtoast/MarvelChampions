@@ -43,7 +43,10 @@ instance HasAbilities CombatKnife where
 instance RunMessage CombatKnife where
   runMessage msg (CombatKnife attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . CombatKnife $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> CombatKnife attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . CombatKnife $ attrs & enemyL ?~ EnemyVillainId villainId
     _ -> CombatKnife <$> runMessage msg attrs

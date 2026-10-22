@@ -26,8 +26,8 @@ instance RunMessage Harvest where
   runMessage msg t@(Harvest attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       personas <- selectList $ SupportMatches [SupportWithTrait Persona, UnexhaustedSupport]
-      villain <- selectJust ActiveVillain
+      villain <- selectOne ActiveVillain
       for_ personas exhaust
-      when (notNull personas) $ heal villain (fromIntegral $ length personas)
+      when (notNull personas) $ for_ villain (`heal` fromIntegral (length personas))
       pure $ if null personas then Harvest (attrs & surgeL .~ True) else t
     _ -> Harvest <$> runMessage msg attrs

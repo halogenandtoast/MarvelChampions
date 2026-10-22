@@ -38,7 +38,6 @@ instance RunMessage TigerShark where
   runMessage msg e@(TigerShark attrs) = runQueueT $ case msg of
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
-        villain <- selectJust ActiveVillain
-        e <$ enemyBecomesTough villain
+        e <$ (traverse_ enemyBecomesTough =<< selectOne ActiveVillain)
       _ -> TigerShark <$> runMessage msg attrs
     _ -> TigerShark <$> runMessage msg attrs

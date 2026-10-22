@@ -38,9 +38,9 @@ instance RunMessage ISeeYou where
     -- When Revealed: Green Goblin attacks you; in alter-ego form, he is given no boost
     -- card for it
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      villain <- selectJust ActiveVillain
+      villain <- selectOne ActiveVillain
       alterEgo <- identityMatches AlterEgoIdentity you
-      enemyAttacks villain you
+      for_ villain (`enemyAttacks` you)
       pure $ ISeeYou (attrs `With` Meta alterEgo)
     -- Boost: +1 boost icon if a Goblin minion is engaged with you
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do

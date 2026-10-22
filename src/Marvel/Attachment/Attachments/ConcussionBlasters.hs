@@ -47,7 +47,10 @@ instance HasAbilities ConcussionBlasters where
 instance RunMessage ConcussionBlasters where
   runMessage msg (ConcussionBlasters attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . ConcussionBlasters $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> ConcussionBlasters attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . ConcussionBlasters $ attrs & enemyL ?~ EnemyVillainId villainId
     _ -> ConcussionBlasters <$> runMessage msg attrs

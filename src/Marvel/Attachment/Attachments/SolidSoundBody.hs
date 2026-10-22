@@ -52,8 +52,11 @@ instance RunMessage SolidSoundBody where
   runMessage msg (SolidSoundBody attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . SolidSoundBody $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> SolidSoundBody attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . SolidSoundBody $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SolidSoundBody <$> runMessage msg attrs
     _ -> SolidSoundBody <$> runMessage msg attrs

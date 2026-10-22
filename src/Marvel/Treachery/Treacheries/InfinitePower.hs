@@ -24,9 +24,12 @@ newtype InfinitePower = InfinitePower (Attrs Treachery)
 instance RunMessage InfinitePower where
   runMessage msg t@(InfinitePower attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      villain <- selectJust ActiveVillain
-      isHero <- identityMatches HeroIdentity you
-      enemyBecomesTough villain
-      if isHero then enemyAttacks villain you else villainSchemes villain
-      pure t
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure t
+        Just villain -> do
+          isHero <- identityMatches HeroIdentity you
+          enemyBecomesTough villain
+          if isHero then enemyAttacks villain you else villainSchemes villain
+          pure t
     _ -> InfinitePower <$> runMessage msg attrs

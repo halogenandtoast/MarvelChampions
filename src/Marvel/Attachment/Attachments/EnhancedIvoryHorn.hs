@@ -47,8 +47,11 @@ instance RunMessage EnhancedIvoryHorn where
   runMessage msg (EnhancedIvoryHorn attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> EnhancedIvoryHorn attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . EnhancedIvoryHorn $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> EnhancedIvoryHorn <$> runMessage msg attrs
     _ -> EnhancedIvoryHorn <$> runMessage msg attrs

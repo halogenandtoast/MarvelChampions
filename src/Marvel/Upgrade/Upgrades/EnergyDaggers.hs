@@ -37,26 +37,29 @@ instance RunMessage EnergyDaggers where
   runMessage msg u@(EnergyDaggers attrs) = runQueueT $ case msg of
     RanAbility ident target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
-      villain <- selectJust ActiveVillain
-      minionMap <-
-        HashMap.fromList
-          <$> traverse
-            ( \iid ->
-                (iid,)
-                  <$> selectList (MinionEngagedWith $ IdentityWithId iid)
-            )
-            players
-      modifiers <- getModifiers attrs
-      let
-        dmg =
-          toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
-      -- dealt as one effect, as any damage to an enemy: its windows open and what adds
-      -- to this card's damage adds to each
-      chooseOne
-        ident
-        [ targeting ident' $
-          dealDamageToEach (toEnemy villain : map toEnemy (HashMap.findWithDefault [] ident' minionMap)) attrs dmg
-        | ident' <- players
-        ]
-      pure u
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure u
+        Just villain -> do
+          minionMap <-
+            HashMap.fromList
+              <$> traverse
+                ( \iid ->
+                    (iid,)
+                      <$> selectList (MinionEngagedWith $ IdentityWithId iid)
+                )
+                players
+          modifiers <- getModifiers attrs
+          let
+            dmg =
+              toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
+          -- dealt as one effect, as any damage to an enemy: its windows open and what adds
+          -- to this card's damage adds to each
+          chooseOne
+            ident
+            [ targeting ident' $
+              dealDamageToEach (toEnemy villain : map toEnemy (HashMap.findWithDefault [] ident' minionMap)) attrs dmg
+            | ident' <- players
+            ]
+          pure u
     _ -> EnergyDaggers <$> runMessage msg attrs

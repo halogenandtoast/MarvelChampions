@@ -25,15 +25,18 @@ instance RunMessage HeartShapedHerb where
   runMessage msg t@(HeartShapedHerb attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
-        villain <- selectJust ActiveVillain
-        minions <- selectList $ MinionEngagedWith $ IdentityWithId identityId
-        enemyBecomesTough villain
-        for_ minions enemyBecomesTough
-        pure t
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure t
+          Just villain -> do
+            minions <- selectList $ MinionEngagedWith $ IdentityWithId identityId
+            enemyBecomesTough villain
+            for_ minions enemyBecomesTough
+            pure t
       _ -> HeartShapedHerb <$> runMessage msg attrs
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do
-        enemyBecomesTough =<< selectJust ActiveVillain
+        traverse_ enemyBecomesTough =<< selectOne ActiveVillain
         pure t
       _ -> pure t
     _ -> HeartShapedHerb <$> runMessage msg attrs

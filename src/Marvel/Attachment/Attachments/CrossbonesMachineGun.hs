@@ -43,11 +43,13 @@ instance HasAbilities CrossbonesMachineGun where
 instance RunMessage CrossbonesMachineGun where
   runMessage msg a@(CrossbonesMachineGun attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      ammo <- fromIntegral <$> fromGameValue (PerPlayer 2)
-      placeCounters attrs ammo
-      pure . CrossbonesMachineGun $ attrs & enemyL ?~ EnemyVillainId villainId
+      selectOne ActiveVillain >>= \case
+        Nothing -> CrossbonesMachineGun attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          ammo <- fromIntegral <$> fromGameValue (PerPlayer 2)
+          placeCounters attrs ammo
+          pure . CrossbonesMachineGun $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility you (isTarget a -> True) 1 _ _ -> do
       discardTopOfEncounterDeckThen 1 \cards -> do
         let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards

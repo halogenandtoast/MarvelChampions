@@ -44,9 +44,12 @@ instance HasAbilities AbsorbingMansBallAndChain where
 instance RunMessage AbsorbingMansBallAndChain where
   runMessage msg a@(AbsorbingMansBallAndChain attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . AbsorbingMansBallAndChain $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> AbsorbingMansBallAndChain attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . AbsorbingMansBallAndChain $ attrs & enemyL ?~ EnemyVillainId villainId
     -- it leaves play for the encounter deck, by way of its discard pile
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       removeFromPlay attrs

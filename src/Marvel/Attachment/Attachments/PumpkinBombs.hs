@@ -42,8 +42,7 @@ instance HasAbilities PumpkinBombs where
 instance RunMessage PumpkinBombs where
   runMessage msg a@(PumpkinBombs attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villain <- selectJust ActiveVillain
-      attachTo ident villain
+      attachToTheVillain attrs
       pure a
     RanAbility _ (isTarget a -> True) 1 [EnemyAttack _ you] _ -> do
       removeFromPlay attrs

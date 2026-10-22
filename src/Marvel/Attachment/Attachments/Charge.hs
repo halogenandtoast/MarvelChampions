@@ -50,9 +50,12 @@ instance RunMessage Charge where
   runMessage msg a@(Charge attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> Charge attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . Charge $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> Charge <$> runMessage msg attrs
     RanAbility _ (isTarget a -> True) 1 _ _ -> case attachmentEnemy attrs of
       Just (EnemyVillainId vid) -> do

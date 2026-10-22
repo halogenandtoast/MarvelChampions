@@ -25,10 +25,13 @@ newtype MindRay = MindRay (Attrs Treachery)
 instance RunMessage MindRay where
   runMessage msg t@(MindRay attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | treacheryId attrs == ident -> do
-      villain <- selectJust ActiveVillain
-      isHero <- identityMatches HeroIdentity you
-      if isHero
-        then enemyAttacks villain you >> stunIdentity you
-        else villainSchemes villain >> confuseIdentity you
-      pure t
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure t
+        Just villain -> do
+          isHero <- identityMatches HeroIdentity you
+          if isHero
+            then enemyAttacks villain you >> stunIdentity you
+            else villainSchemes villain >> confuseIdentity you
+          pure t
     _ -> MindRay <$> runMessage msg attrs

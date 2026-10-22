@@ -44,9 +44,12 @@ instance HasAbilities PowerGauntlets where
 instance RunMessage PowerGauntlets where
   runMessage msg a@(PowerGauntlets attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . PowerGauntlets $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> PowerGauntlets attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . PowerGauntlets $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility you (isTarget a -> True) 1 _ _ -> do
       discardFromHand you 1
       pure a

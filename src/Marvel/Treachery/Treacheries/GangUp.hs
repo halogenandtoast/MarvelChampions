@@ -27,9 +27,10 @@ instance RunMessage GangUp where
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
-            villainId <- selectJust ActiveVillain
+            -- with no villain in play (as between one Kang and the next), the minions
+            villain <- selectOne ActiveVillain
             minions <- selectList $ MinionEngagedWith $ IdentityWithId identityId
-            enemyAttacks villainId identityId
+            for_ villain (`enemyAttacks` identityId)
             for_ minions (`enemyAttacks` identityId)
             pure t
           else pure . GangUp $ attrs & surgeL .~ True

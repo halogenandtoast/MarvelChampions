@@ -36,7 +36,6 @@ instance RunMessage RegenerativeHealing where
         else pure . RegenerativeHealing $ attrs & surgeL .~ True
     -- [star] Boost: the villain heals 2 damage
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
-      villain <- selectJust ActiveVillain
-      heal villain 2
+      traverse_ (\villain -> heal villain 2) =<< selectOne ActiveVillain
       pure t
     _ -> RegenerativeHealing <$> runMessage msg attrs

@@ -43,7 +43,10 @@ instance HasAbilities ExoSuit where
 instance RunMessage ExoSuit where
   runMessage msg (ExoSuit attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . ExoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> ExoSuit attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . ExoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
     _ -> ExoSuit <$> runMessage msg attrs

@@ -39,10 +39,10 @@ instance RunMessage Overconfidence where
   runMessage msg (Overconfidence (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       RevealTreachery you -> do
-        villain <- selectJust ActiveVillain
+        mvillain <- selectOne ActiveVillain
         hero <- identityMatches HeroIdentity you
-        if hero then enemyAttacks villain you else villainSchemes villain
-        pure $ Overconfidence (attrs `With` meta {activating = Just villain})
+        for_ mvillain \villain -> if hero then enemyAttacks villain you else villainSchemes villain
+        pure $ Overconfidence (attrs `With` meta {activating = mvillain})
       CheckTreacheryCondition _ ->
         pure . Overconfidence $ (if placed meta >= 3 then attrs & surgeL .~ True else attrs) `With` meta
       _ -> Overconfidence . (`With` meta) <$> runMessage msg attrs

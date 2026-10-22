@@ -47,9 +47,12 @@ instance RunMessage ArmoredRhinoSuit where
   runMessage msg a@(ArmoredRhinoSuit attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . ArmoredRhinoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> ArmoredRhinoSuit attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . ArmoredRhinoSuit $ attrs & enemyL ?~ EnemyVillainId villainId
       AttachmentDamaged n -> do
         when (attachmentDamage attrs + n >= 5) $ removeFromPlay a
         pure . ArmoredRhinoSuit $ attrs & damageL +~ n

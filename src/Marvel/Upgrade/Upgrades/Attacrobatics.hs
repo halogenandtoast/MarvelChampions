@@ -54,7 +54,10 @@ instance RunMessage Attacrobatics where
           VillainMessage _ (VillainAddBoost _) -> True
           _ -> False
         let icons = boostCount (cdBoostIcons $ getCardDef card)
-        villain <- selectJust ActiveVillain
-        dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
-        pure u
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure u
+          Just villain -> do
+            dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
+            pure u
     _ -> Attacrobatics <$> runMessage msg attrs

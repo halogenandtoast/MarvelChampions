@@ -27,7 +27,7 @@ instance RunMessage ImTough where
         isTough <- selectAny $ ActiveVillain <> VillainWithToughStatus
         if not isTough
           then do
-            enemyBecomesTough =<< selectJust ActiveVillain
+            traverse_ enemyBecomesTough =<< selectOne ActiveVillain
             pure t
           else pure . ImTough $ attrs & surgeL .~ True
       _ -> ImTough <$> runMessage msg attrs

@@ -29,6 +29,6 @@ instance RunMessage SpreadingLies where
       placeThreatOnEach attrs 2 AnyScheme
       pure t
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
-      enemyBecomesTough =<< selectJust ActiveVillain
+      traverse_ enemyBecomesTough =<< selectOne ActiveVillain
       pure t
     _ -> SpreadingLies <$> runMessage msg attrs

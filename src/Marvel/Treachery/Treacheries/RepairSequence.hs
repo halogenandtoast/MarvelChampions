@@ -41,7 +41,10 @@ instance RunMessage RepairSequence where
         else pure . RepairSequence $ attrs & surgeL .~ True
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       drones <- dronesEngagedWith =<< getActivePlayerId
-      villainId <- selectJust ActiveVillain
-      when (drones > 0) $ heal villainId drones
-      pure t
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure t
+        Just villainId -> do
+          when (drones > 0) $ heal villainId drones
+          pure t
     _ -> RepairSequence <$> runMessage msg attrs

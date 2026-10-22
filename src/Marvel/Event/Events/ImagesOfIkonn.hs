@@ -29,9 +29,12 @@ instance RunMessage ImagesOfIkonn where
   runMessage msg e@(ImagesOfIkonn attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        villain <- selectJust ActiveVillain
-        confuse villain attrs
-        removeThreat identityId attrs 4 ThwartableScheme
-        pure e
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure e
+          Just villain -> do
+            confuse villain attrs
+            removeThreat identityId attrs 4 ThwartableScheme
+            pure e
       ResolvedEvent -> e <$ invocationResolved attrs
     _ -> ImagesOfIkonn <$> runMessage msg attrs

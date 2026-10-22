@@ -34,8 +34,7 @@ instance HasAbilities Hysteria where
 instance RunMessage Hysteria where
   runMessage msg a@(Hysteria attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villain <- selectJust ActiveVillain
-      attachTo ident villain
+      attachToTheVillain attrs
       pure a
     -- an attack under way, past a stun
     VillainMessage vid (VillainBeginAttack _) | attachedTo vid -> a <$ dealBoost vid

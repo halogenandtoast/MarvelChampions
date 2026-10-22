@@ -47,9 +47,12 @@ instance RunMessage ProgramTransmitter where
   runMessage msg a@(ProgramTransmitter attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . ProgramTransmitter $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> ProgramTransmitter attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . ProgramTransmitter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> ProgramTransmitter <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       sideSchemes <- selectList AnySideScheme

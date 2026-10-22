@@ -48,13 +48,15 @@ instance HasAbilities RedSkullsLuger where
 instance RunMessage RedSkullsLuger where
   runMessage msg a@(RedSkullsLuger attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villain <- selectJust ActiveVillain
-      attachTo ident villain
+      attachToTheVillain attrs
       pure a
     -- Boost: attach to Red Skull
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
-      villain <- selectJust ActiveVillain
-      putBoostIntoPlay attrs =<< getActivePlayerId
-      attachTo (attachmentId attrs) villain
-      pure a
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure a
+        Just villain -> do
+          putBoostIntoPlay attrs =<< getActivePlayerId
+          attachTo (attachmentId attrs) villain
+          pure a
     _ -> RedSkullsLuger <$> runMessage msg attrs

@@ -29,8 +29,7 @@ newtype MasterStrategist = MasterStrategist (Attrs Attachment)
 instance RunMessage MasterStrategist where
   runMessage msg a@(MasterStrategist attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villain <- selectJust ActiveVillain
-      attachTo ident villain
+      attachToTheVillain attrs
       pure a
     DealBoost target | Just (EnemyVillainId vid) <- attachmentEnemy attrs, target `elem` [VillainRef vid, EnemyRef (EnemyVillainId vid)] -> do
       n <- selectListCount AnySideScheme

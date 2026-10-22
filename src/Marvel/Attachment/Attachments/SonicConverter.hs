@@ -50,9 +50,12 @@ instance RunMessage SonicConverter where
   runMessage msg a@(SonicConverter attrs) = runQueueT $ case msg of
     AttachmentMessage ident msg' | ident == attachmentId attrs -> case msg' of
       RevealAttachment _ -> do
-        villainId <- selectJust ActiveVillain
-        attachedTo villainId ident
-        pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
+        -- with no villain in play to attach to, it is discarded
+        selectOne ActiveVillain >>= \case
+          Nothing -> SonicConverter attrs <$ removeFromPlay attrs
+          Just villainId -> do
+            attachedTo villainId ident
+            pure . SonicConverter $ attrs & enemyL ?~ EnemyVillainId villainId
       _ -> SonicConverter <$> runMessage msg attrs
     -- Forced Response: after Klaw attacks and damages a character, stun that character
     IdentityMessage ident (IdentityDamaged source damage) | byKlawsAttack source damage -> do

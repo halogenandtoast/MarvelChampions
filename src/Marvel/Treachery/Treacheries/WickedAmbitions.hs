@@ -30,7 +30,7 @@ newtype WickedAmbitions = WickedAmbitions (Attrs Treachery)
 instance RunMessage WickedAmbitions where
   runMessage msg t@(WickedAmbitions attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      stage <- getVillainStage =<< selectJust ActiveVillain
+      stage <- maybe (pure 0) getVillainStage =<< selectOne ActiveVillain
       discarded <- take (fromIntegral $ 2 * stage) <$> getEncounterDeck
       discardTopOfEncounterDeck (2 * stage)
       for_ (filter isGoblinMinion discarded) \goblin ->

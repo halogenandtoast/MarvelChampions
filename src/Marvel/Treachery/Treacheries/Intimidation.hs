@@ -28,13 +28,16 @@ newtype Intimidation = Intimidation (Attrs Treachery)
 instance RunMessage Intimidation where
   runMessage msg t@(Intimidation attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      villain <- selectJust ActiveVillain
-      let cost = MultiResourceCost [Nothing, Nothing]
-      canPay <- canAffordCost you (toSource attrs) cost
-      chooseOrRunOne you $
-        labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
-          : [labeled "$label.spendTwoResources" (payForTreachery you cost) | canPay]
-      pure t
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure t
+        Just villain -> do
+          let cost = MultiResourceCost [Nothing, Nothing]
+          canPay <- canAffordCost you (toSource attrs) cost
+          chooseOrRunOne you $
+            labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
+              : [labeled "$label.spendTwoResources" (payForTreachery you cost) | canPay]
+          pure t
     -- [star] Boost: the villain is given another boost card for this activation; a
     -- minion's activation is not the villain's
     Boost (RevealedAsBoost target (EnemyVillainId vid)) | isTarget attrs target -> do

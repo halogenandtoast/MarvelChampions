@@ -44,9 +44,12 @@ instance HasAbilities PhotographicReflexes where
 instance RunMessage PhotographicReflexes where
   runMessage msg a@(PhotographicReflexes attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . PhotographicReflexes $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> PhotographicReflexes attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . PhotographicReflexes $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
       for_ [(vid, p, damageAmount dmg) | W.DamagedVillain vid dmg <- windows, FromPlayerAttack p <- [damageSource dmg]] \(vid, p, n) -> do
         let theDamage = \case

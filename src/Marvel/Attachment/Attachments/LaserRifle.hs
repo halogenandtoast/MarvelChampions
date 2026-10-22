@@ -49,9 +49,12 @@ instance HasAbilities LaserRifle where
 instance RunMessage LaserRifle where
   runMessage msg a@(LaserRifle attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . LaserRifle $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> LaserRifle attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . LaserRifle $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       for_ (attachmentEnemy attrs) (`attackGains` Ranged)
       pure a

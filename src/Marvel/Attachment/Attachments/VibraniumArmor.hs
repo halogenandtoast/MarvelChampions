@@ -42,9 +42,12 @@ instance HasAbilities VibraniumArmor where
 instance RunMessage VibraniumArmor where
   runMessage msg a@(VibraniumArmor attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villainId <- selectJust ActiveVillain
-      attachedTo villainId ident
-      pure . VibraniumArmor $ attrs & enemyL ?~ EnemyVillainId villainId
+      -- with no villain in play to attach to, it is discarded
+      selectOne ActiveVillain >>= \case
+        Nothing -> VibraniumArmor attrs <$ removeFromPlay attrs
+        Just villainId -> do
+          attachedTo villainId ident
+          pure . VibraniumArmor $ attrs & enemyL ?~ EnemyVillainId villainId
     -- Forced Response: after the villain takes damage, give it a tough status card. A
     -- tough villain takes no damage, it only loses the card (the game is read before
     -- this message changes it).

@@ -22,8 +22,11 @@ instance RunMessage HydraExoSoldier where
     -- Boost: give the villain a tough status card and another boost card (one for the
     -- activation under way, which only the villain's is)
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
-      villain <- selectJust ActiveVillain
-      enemyBecomesTough villain
-      when (enemy == EnemyVillainId villain) $ dealBoost villain
-      pure e
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure e
+        Just villain -> do
+          enemyBecomesTough villain
+          when (enemy == EnemyVillainId villain) $ dealBoost villain
+          pure e
     _ -> HydraExoSoldier <$> runMessage msg attrs

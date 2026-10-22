@@ -35,12 +35,18 @@ instance RunMessage TheImmortalKlaw where
   runMessage msg s@(TheImmortalKlaw attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
-        villain <- selectJust ActiveVillain
-        changeVillainHitPoints villain 10
-        pure s
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure s
+          Just villain -> do
+            changeVillainHitPoints villain 10
+            pure s
       DefeatSideScheme -> do
-        villain <- selectJust ActiveVillain
-        changeVillainHitPoints villain (-10)
-        pure s
+        -- with no villain in play (as between one Kang and the next), nothing
+        selectOne ActiveVillain >>= \case
+          Nothing -> pure s
+          Just villain -> do
+            changeVillainHitPoints villain (-10)
+            pure s
       _ -> TheImmortalKlaw <$> runMessage msg attrs
     _ -> TheImmortalKlaw <$> runMessage msg attrs

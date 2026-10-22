@@ -44,7 +44,6 @@ instance HasAbilities RedSkullsRightHook where
 instance RunMessage RedSkullsRightHook where
   runMessage msg a@(RedSkullsRightHook attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
-      villain <- selectJust ActiveVillain
-      attachTo ident villain
+      attachToTheVillain attrs
       pure a
     _ -> RedSkullsRightHook <$> runMessage msg attrs
