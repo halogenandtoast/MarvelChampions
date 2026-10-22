@@ -61,5 +61,7 @@
   "take2Damage": "Take 2 damage",
   "deal3DamageToYourHero": "Deal 3 damage to your hero",
   "askedToDefend": "Defend this attack?",
-  "declineToDefend": "Do not defend"
+  "declineToDefend": "Do not defend",
+  "exhaustNatashaRomanoffRemoveBurnNotice": "Exhaust Natasha Romanoff → remove Burn Notice from the game",
+  "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation"
 }

@@ -30,3 +30,6 @@ import Marvel.Event.Events.WakandaForeverA as X
 import Marvel.Event.Events.WakandaForeverB as X
 import Marvel.Event.Events.WakandaForeverC as X
 import Marvel.Event.Events.WakandaForeverD as X
+import Marvel.Event.Events.CovertOps as X
+import Marvel.Event.Events.DanceOfDeath as X
+import Marvel.Event.Events.StealthStrike as X

@@ -23,3 +23,15 @@ import Marvel.Upgrade.Upgrades.Tenacity as X
 import Marvel.Upgrade.Upgrades.VibraniumSuit as X
 import Marvel.Upgrade.Upgrades.WebbedUp as X
 import Marvel.Upgrade.Upgrades.WebShooter as X
+import Marvel.Upgrade.Upgrades.Attacrobatics as X
+import Marvel.Upgrade.Upgrades.BlackWidowsGauntlet as X
+import Marvel.Upgrade.Upgrades.GrapplingHook as X
+import Marvel.Upgrade.Upgrades.SynthSuit as X
+import Marvel.Upgrade.Upgrades.WidowsBite as X
+import Marvel.Upgrade.Upgrades.Counterintelligence as X
+import Marvel.Upgrade.Upgrades.Spycraft as X
+import Marvel.Upgrade.Upgrades.TargetAcquired as X
+import Marvel.Upgrade.Upgrades.Counterattack as X
+import Marvel.Upgrade.Upgrades.RapidResponse as X
+import Marvel.Upgrade.Upgrades.DefensiveStance as X
+import Marvel.Upgrade.Upgrades.Espionage as X

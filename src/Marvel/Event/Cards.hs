@@ -48,6 +48,9 @@ allEvents = fromList $ concatMap
   , emergency
   , firstAid
   , haymaker
+  , covertOps
+  , danceOfDeath
+  , stealthStrike
   ]
 
 event
@@ -313,5 +316,20 @@ firstAid = (basicEvent "01086" "First Aid" 1 Action [] [Mental])
 
 haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])
+  { cdAbilitySubType = Just Ability.Attack
+  }
+
+covertOps :: CardDef
+covertOps = (identityEvent "08003" "Covert Ops" 3 Action [Thwart] [Mental])
+  { cdAbilitySubType = Just Ability.Thwart
+  }
+
+-- | Not labeled: each of its three attacks is one (see the event).
+danceOfDeath :: CardDef
+danceOfDeath =
+  identityEvent "08004" "Dance of Death" 3 HeroAction [Attack] [Energy]
+
+stealthStrike :: CardDef
+stealthStrike = (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
   { cdAbilitySubType = Just Ability.Attack
   }

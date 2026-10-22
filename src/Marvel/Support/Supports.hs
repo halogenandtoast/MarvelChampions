@@ -13,3 +13,5 @@ import Marvel.Support.Supports.SurveillanceTeam as X
 import Marvel.Support.Supports.TacTeam as X
 import Marvel.Support.Supports.TheGoldenCity as X
 import Marvel.Support.Supports.TheTriskellion as X
+import Marvel.Support.Supports.SafeHouse29 as X
+import Marvel.Support.Supports.Quincarrier as X

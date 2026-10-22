@@ -47,6 +47,18 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard armoredVest
   , SomeUpgradeCard indomitable
   , SomeUpgradeCard tenacity
+  , SomeUpgradeCard attacrobatics
+  , SomeUpgradeCard blackWidowsGauntlet
+  , SomeUpgradeCard grapplingHook
+  , SomeUpgradeCard synthSuit
+  , SomeUpgradeCard widowsBite
+  , SomeUpgradeCard counterintelligence
+  , SomeUpgradeCard spycraft
+  , SomeUpgradeCard targetAcquired
+  , SomeUpgradeCard counterattack
+  , SomeUpgradeCard rapidResponse
+  , SomeUpgradeCard defensiveStance
+  , SomeUpgradeCard espionage
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

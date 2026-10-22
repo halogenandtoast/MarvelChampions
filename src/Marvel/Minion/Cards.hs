@@ -37,6 +37,8 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , taskmaster
+      , hydraMercenaryBlackWidow
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -205,3 +207,17 @@ modok =
     (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+taskmaster :: CardDef
+taskmaster =
+  (minion "08026" "Taskmaster" [Hydra, Elite] [Star] BlackWidowNemesis 1)
+    { cdUnique = True
+    }
+
+-- | Hydra Mercenary in Black Widow's nemesis set.
+hydraMercenaryBlackWidow :: CardDef
+hydraMercenaryBlackWidow =
+  (reprint "08028" hydraMercenary)
+    { cdEncounterSet = Just BlackWidowNemesis
+    , cdEncounterSetQuantity = Just 2
+    }

@@ -29,6 +29,9 @@ allAllies = fromList $ concatMap
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
+  , winterSoldierBuckyBarnes
+  , agentCoulson
+  , quakeDaisyJohnson
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -152,3 +155,14 @@ mockingbirdBobbiMorse = reprintedAs ["03020"] $
 
 nickFury :: CardDef
 nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+
+winterSoldierBuckyBarnes :: CardDef
+winterSoldierBuckyBarnes =
+  identityAlly "08002" ("Winter Soldier" <:> "Bucky Barnes") 4 [Avenger, Spy] [Wild]
+
+agentCoulson :: CardDef
+agentCoulson = ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
+
+quakeDaisyJohnson :: CardDef
+quakeDaisyJohnson =
+  ally "08012" ("Quake" <:> "Daisy Johnson") 2 [Avenger, Shield] [Energy] Justice
