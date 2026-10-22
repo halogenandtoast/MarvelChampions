@@ -335,12 +335,6 @@ discardFromDeck ident n = push . IdentityMessage ident . DiscardFrom FromDeck n 
 discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 discardTopOfDeck ident n = push $ IdentityMessage ident $ DiscardFrom FromDeck n Nothing
 
-addToHand :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
-addToHand ident = push . IdentityMessage ident . AddToHand
-
-removeFromGame :: (ReverseQueue m, IsRef a) => a -> m ()
-removeFromGame = push . RemoveFromGame . toTarget
-
 -- | The card goes to its discard pile.
 discardCard :: (ReverseQueue m, IsCard card) => card -> m ()
 discardCard = push . DiscardedCard . toCard
