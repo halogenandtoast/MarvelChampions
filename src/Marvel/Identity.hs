@@ -362,10 +362,9 @@ identityObligations = concatMap obligationsOf . HashMap.elems . playerIdentitySi
     AlterEgoSide side -> alterEgoObligations (toAttrs side)
     HeroSide _ -> []
 
+-- | The retaliate of the keywords: each instance's are added together.
 toRetaliate :: [Keyword] -> Natural
-toRetaliate [] = 0
-toRetaliate (Retaliate n : _) = n
-toRetaliate (_ : xs) = toRetaliate xs
+toRetaliate ks = sum [n | Retaliate n <- ks]
 
 runIdentityMessage ::
   (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) =>
@@ -772,12 +771,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           playerIdentityEncounterCards
       pure $ PlayerIdentity $ attrs & encounterCardsL .~ mempty
     IdentityWasAttacked attack' -> do
+      modifiers <- getModifiers pid
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamage attack'
-        retaliate = case currentIdentity pid of
-          HeroSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
-          AlterEgoSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
+        retaliate = toRetaliate $ toList (cdKeywords $ getCardDef pid) <> [k | KeywordModifier k <- modifiers]
       -- pushed last to first: the damage, then retaliate (forced, so before any
       -- response), then the window for responses to defending
       when playerIdentityDefended $
