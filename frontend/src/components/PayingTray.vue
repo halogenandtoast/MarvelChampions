@@ -56,7 +56,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
   align-items: center;
   flex: 1 1 0;
   min-width: 0;
-  padding: 12px 16px;
+  padding: 6px 12px;
   border-radius: 14px;
   background: linear-gradient(160deg, rgb(226 163 59 / 0.12), transparent 60%), var(--ink-2);
   border: 1px solid rgb(226 163 59 / 0.4);
@@ -68,7 +68,8 @@ header { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 0 
 h2 { margin: 0 0 4px; font-size: 1.2rem; line-height: 1.05; text-transform: uppercase; }
 .label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
 .resources { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; font-size: 1.5rem; }
-.resources :deep(.game-icon) { padding: 3px; border-radius: 8px; background: var(--ink-0); border: 1px solid var(--line); width: 1.25em; height: 1.25em; }
+/* a resource as the cards print it: its glyph in a tint of the resource's colour, on that colour */
+.resources :deep(.game-icon) { padding: 3px; border-radius: 8px; background: var(--resource, var(--ink-0)); color: var(--resource-tint, rgb(255 255 255 / 0.55)); border: 1px solid rgb(255 255 255 / 0.25); width: 1.25em; height: 1.25em; }
 .paying.covered { border-color: rgb(79 174 106 / 0.6); background: linear-gradient(160deg, rgb(79 174 106 / 0.14), transparent 60%), var(--ink-2); }
 .owed { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 4px 0 0; font-size: 0.75rem; font-weight: 600; color: var(--amber); }
 .owed.done { color: var(--health); }

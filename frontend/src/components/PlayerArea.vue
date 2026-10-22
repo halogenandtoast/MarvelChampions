@@ -38,23 +38,23 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   <section class="player-area" :class="{ active, compact, hero, 'alter-ego': !hero }">
     <div class="identity-column">
       <div class="identity">
-        <BoardCard
-          :id="player.id"
-          :code="player.code"
-          :name="player.name"
-          :exhausted="player.exhausted"
-          :damage="player.damage"
-          :stunned="player.stunned"
-          :confused="player.confused"
-          :tough="player.tough"
-        />
-        <div class="identity-info">
-          <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
+        <div class="body">
           <dl class="stats">
             <div v-for="[stat, value] in stats" :key="stat" :class="`stat-${stat}`"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
             <div><dt>{{ t('game.stats.hand') }}</dt><dd>{{ player.handSize }}</dd></div>
           </dl>
+          <BoardCard
+            :id="player.id"
+            :code="player.code"
+            :name="player.name"
+            :exhausted="player.exhausted"
+            :damage="player.damage"
+            :stunned="player.stunned"
+            :confused="player.confused"
+            :tough="player.tough"
+          />
         </div>
+        <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
       </div>
       <!-- what this player is asked sits beneath them, at the foot of the area -->
       <div v-if="$slots.default" class="asked"><slot /></div>
@@ -64,21 +64,23 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
       <span class="zone-label">{{ t('game.zones.engaged') }}</span>
       <div class="cards">
         <div v-for="minion in minions" :key="minion.id" class="minion">
-          <BoardCard
-            :id="minion.id"
-            :code="minion.code"
-            :name="minion.name"
-            :damage="minion.damage"
-            :stunned="minion.stunned"
-            :confused="minion.confused"
-            :tough="minion.tough"
-            :attached="minionAttached(minion)"
-          />
+          <div class="body">
+            <dl class="stats">
+              <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme }}</dd></div>
+              <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ minion.attack }}</dd></div>
+            </dl>
+            <BoardCard
+              :id="minion.id"
+              :code="minion.code"
+              :name="minion.name"
+              :damage="minion.damage"
+              :stunned="minion.stunned"
+              :confused="minion.confused"
+              :tough="minion.tough"
+              :attached="minionAttached(minion)"
+            />
+          </div>
           <Meter :label="t('game.hp')" :value="Math.max(0, minion.hitPoints - minion.damage)" :max="minion.hitPoints" tone="villain" />
-          <dl class="stats">
-            <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme }}</dd></div>
-            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ minion.attack }}</dd></div>
-          </dl>
         </div>
       </div>
     </div>
@@ -147,12 +149,15 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); }
 /* above the hand that floats over the foot of the board */
 .asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
-.identity { display: flex; flex-direction: column; gap: 8px; width: var(--card-width); }
-.identity-info { display: flex; flex-direction: column; gap: 6px; }
-.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; margin: 0; }
-.stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--ink-0); border: 1px solid var(--line); text-align: center; }
-.stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-faint); }
-.stats dd { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; line-height: 1.05; }
+.identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
+/* a card's stats pinned to its left */
+.body { display: flex; gap: 6px; align-items: flex-start; }
+/* health under the card alone, not its stats */
+.identity > :deep(.meter), .minion > :deep(.meter) { width: var(--card-width); align-self: flex-end; }
+.stats { display: flex; flex-direction: column; gap: 4px; margin: 0; width: 44px; flex: none; }
+.stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--stat-bg, var(--ink-0)); border: 1px solid var(--stat-bg, var(--line)); text-align: center; }
+.stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--stat-label, var(--text-faint)); }
+.stats dd { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; line-height: 1.05; color: var(--stat-fg, inherit); }
 
 .zone {
   position: relative;
@@ -176,7 +181,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   background: rgb(184 50 58 / 0.08);
   border: 1px solid rgb(184 50 58 / 0.25);
 }
-.minion { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
+.minion { display: flex; flex-direction: column; gap: 6px; }
 .zone.engaged .zone-label { color: #e48b91; }
 .zone.allies { flex: 1 1 auto; }
 .ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }

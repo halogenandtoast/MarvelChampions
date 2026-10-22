@@ -97,7 +97,6 @@ const submitImport = async () => {
       <div v-if="error" class="box error"><p>{{ tr(error) }}</p></div>
       <div v-else-if="games && shown.length === 0" class="box empty">
         <p>{{ $t(tab === 'active' ? 'home.noActiveGames' : 'home.noFinishedGames') }}</p>
-        <RouterLink v-if="tab === 'active'" to="/new-game" class="btn primary"><Plus aria-hidden="true" />{{ $t('newGame.title') }}</RouterLink>
       </div>
       <div class="games">
         <GameRow v-for="game in shown" :key="game.id" :game="game" :delete-game="() => removeGame(game)" />

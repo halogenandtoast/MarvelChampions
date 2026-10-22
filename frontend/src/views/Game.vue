@@ -18,7 +18,7 @@ import Lobby from '../components/Lobby.vue'
 import PlayerArea from '../components/PlayerArea.vue'
 import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
-import River, { type RiverCard } from '../components/River.vue'
+import River, { type RiverAttacker, type RiverCard } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import VillainArea from '../components/VillainArea.vue'
 
@@ -79,6 +79,12 @@ const elsewhere = computed(() => {
   const ids = new Set([...(g?.minions ?? []), ...(g?.sideSchemes ?? []), ...(g?.environments ?? [])].map((x) => x.id))
   for (const p of g?.players ?? []) [...(p.hand ?? []), ...(p.supports ?? []), ...(p.upgrades ?? []), ...(p.allies ?? []), ...(p.discard ?? [])].forEach((c) => ids.add(c.id))
   return ids
+})
+// the enemy attacking, as it stands now
+const attacker = computed<RiverAttacker | null>(() => {
+  const id = game.value?.attack?.attacker
+  if (!id) return null
+  return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find((e) => e.id === id) ?? null
 })
 const riverLabel = computed(() => {
   const attack = game.value?.attack
@@ -232,7 +238,7 @@ const resetGame = () => {
             <VillainArea :game="game" />
           </div>
 
-          <River class="river" :cards="riverCards" :label="riverLabel" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" />
           </River>
 
@@ -317,7 +323,7 @@ const resetGame = () => {
 /* the villain's side and the river a quarter of the board each, at least a card high, the
    players' side the rest */
 .board {
-  --row: calc(var(--card-width) / var(--card-aspect) + 26px);
+  --row: calc(var(--card-width) / var(--card-aspect) + 14px);
   display: grid;
   grid-template-rows: minmax(min-content, 25%) minmax(var(--row), 25%) minmax(0, 1fr);
   gap: 12px;

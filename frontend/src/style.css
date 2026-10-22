@@ -323,12 +323,13 @@ select {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
 
-/* a stat box's number in the colour the cards print it */
-.stat-thw dd { color: var(--stat-thw); }
-.stat-sch dd { color: var(--stat-sch); }
-.stat-atk dd { color: var(--stat-atk); }
-.stat-def dd { color: var(--stat-def); }
-.stat-rec dd { color: var(--stat-rec); }
+/* a stat chip filled with a dark shade of its stat's colour, its label and value white on it */
+.stat-thw { --stat-bg: color-mix(in oklab, var(--stat-thw) 62%, black); }
+.stat-sch { --stat-bg: color-mix(in oklab, var(--stat-sch) 62%, black); }
+.stat-atk { --stat-bg: color-mix(in oklab, var(--stat-atk) 62%, black); }
+.stat-def { --stat-bg: color-mix(in oklab, var(--stat-def) 62%, black); }
+.stat-rec { --stat-bg: color-mix(in oklab, var(--stat-rec) 62%, black); }
+:is(.stat-thw, .stat-sch, .stat-atk, .stat-def, .stat-rec) { --stat-fg: #fff; --stat-label: rgb(255 255 255 / 0.8); }
 
 /* Cards morph between zones as the state changes; a card from a deck turns face up. */
 ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.28s; }

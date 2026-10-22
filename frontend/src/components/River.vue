@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Between the villain's side and the players': what is happening now. An encounter card
-// as it is revealed, an attack with its boost cards dealt face down and turned up, a card
+// as it is revealed, an attack with its attacker as it stands and its boost cards dealt
+// face down and turned up, a card
 // being paid for (the default slot). Each is a lane, splitting the river between them; it
 // keeps its height when empty so the board never jumps.
 import { useI18n } from 'vue-i18n'
@@ -14,9 +15,19 @@ export interface RiverCard {
   name?: string | null
 }
 
-const { cards, label = null, elsewhere, shared = false } = defineProps<{
+export interface RiverAttacker {
+  id: string
+  code: string
+  name: string
+  attack: number
+  boostCards?: number
+}
+
+const { cards, label = null, attacker = null, elsewhere, shared = false } = defineProps<{
   cards: readonly RiverCard[]
   label?: string | null
+  /** the enemy attacking, with its attack as modified now */
+  attacker?: RiverAttacker | null
   /** another lane is in the slot */
   shared?: boolean
   /** ids drawn elsewhere on the board too, which must not share a morph */
@@ -31,6 +42,13 @@ const names = useCards()
     <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label }">
       <p class="what">{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
       <div class="cards">
+        <div v-if="attacker" class="attacker">
+          <dl class="stats">
+            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ attacker.attack }}</dd></div>
+            <div v-if="attacker.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ attacker.boostCards }}</dd></div>
+          </dl>
+          <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
+        </div>
         <BoardCard
           v-for="card in cards"
           :id="card.id"
@@ -55,7 +73,7 @@ const names = useCards()
   gap: 16px;
   flex: 1 1 0;
   min-width: 0;
-  padding: 12px 16px;
+  padding: 6px 12px;
   border-radius: 14px;
   background: var(--ink-1);
   border: 1px dashed var(--line);
@@ -74,5 +92,12 @@ const names = useCards()
   text-transform: uppercase;
   color: var(--amber);
 }
-.cards { display: flex; gap: 12px; align-items: center; justify-content: center; min-width: 0; overflow-x: auto; }
+/* stats to the card's left, not under it, so the river stays a card high */
+.attacker { display: flex; gap: 6px; align-items: flex-start; flex: none; }
+.stats { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 44px; }
+.stats div { padding: 4px 0 3px; border-radius: 7px; background: var(--stat-bg, var(--ink-0)); border: 1px solid var(--stat-bg, var(--line)); text-align: center; }
+.stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--stat-label, var(--text-faint)); }
+.stats dd { margin: 0; font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; line-height: 1.05; color: var(--stat-fg, inherit); }
+/* ponytail: no scroll box, so a lit card's ring and glow show; a scroll box crops them. Add one back if a lane ever holds more cards than fit */
+.cards { display: flex; gap: 12px; align-items: center; min-width: 0; }
 </style>
