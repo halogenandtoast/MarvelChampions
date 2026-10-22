@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -21,5 +21,5 @@ newtype UsurpTheThrone = UsurpTheThrone (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage UsurpTheThrone where
-  runMessage msg (UsurpTheThrone attrs) =
+  runMessage msg (UsurpTheThrone attrs) = runQueueT $
     UsurpTheThrone <$> runMessage msg attrs

@@ -10,9 +10,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
-import Marvel.Message
-import Marvel.Question
-import Marvel.Queue
+import Marvel.Message.Lifted
 
 assaultOnNorad :: MainSchemeCard AssaultOnNorad
 assaultOnNorad =
@@ -23,25 +21,24 @@ newtype AssaultOnNorad = AssaultOnNorad (Attrs MainScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage AssaultOnNorad where
-  runMessage msg ms@(AssaultOnNorad attrs) = case msg of
+  runMessage msg ms@(AssaultOnNorad attrs) = runQueueT $ case msg of
     -- 2A: each player puts the top card of their deck into play as a Drone
     MainSchemeMessage ident RevealMainScheme | ident == mainSchemeId attrs -> do
       players <- getPlayers
-      pushAll $ map PutTopOfDeckIntoPlayAsDrone players
+      for_ players putTopOfDeckIntoPlayAsDrone
       pure ms
     -- Forced Response: after threat is placed here in step one of the villain phase, each
-    -- player places 2 more or puts a Drone into play. Pushed first, so it follows the
-    -- threat; should that complete the scheme, threat placed on it goes nowhere.
+    -- player places 2 more or puts a Drone into play: the threat first; should that
+    -- complete the scheme, threat placed on it goes nowhere.
     AccelerateMainScheme -> do
+      ms' <- AssaultOnNorad <$> runMessage msg attrs
       players <- getPlayers
-      pushAll
-        [ Ask p $
-          ChooseOne
-            [ Label "$label.placeTwoThreatOnAssaultOnNorad" [Run $ placeThreatOn (SchemeMainSchemeId $ mainSchemeId attrs) 2]
-            , Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone p]]
-            ]
-        | p <- players
-        ]
-      AssaultOnNorad <$> runMessage msg attrs
-    AdvanceMainScheme -> ms <$ push NextMainScheme
+      for_ players \p ->
+        chooseOne
+          p
+          [ labeled "$label.placeTwoThreatOnAssaultOnNorad" $ placeThreat (mainSchemeId attrs) 2
+          , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone p
+          ]
+      pure ms'
+    AdvanceMainScheme -> ms <$ nextMainScheme
     _ -> AssaultOnNorad <$> runMessage msg attrs

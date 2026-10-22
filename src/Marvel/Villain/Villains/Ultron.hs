@@ -4,7 +4,6 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Attack
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Difficulty
 import Marvel.Entity
@@ -13,11 +12,10 @@ import Marvel.GameValue.Types
 import Marvel.Hp
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
+import Marvel.Question (Choice (RunAbility))
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Stats
@@ -73,17 +71,17 @@ instance HasAbilities Ultron where
     self = EnemyWithId $ EnemyVillainId $ villainId a
 
 instance RunMessage Ultron where
-  runMessage msg e@(Ultron attrs) = case msg of
+  runMessage msg e@(Ultron attrs) = runQueueT $ case msg of
     VillainMessage ident msg' | ident == villainId attrs -> case msg' of
       VillainDefeated -> do
         difficulty <- getDifficulty
         case (difficulty, villainStage attrs) of
           (_, 1) -> do
-            push (VillainMessage ident VillainAdvanced)
+            advanceVillain ident
             pure $ advanceVillainTo ultron2 attrs
           (Normal, 2) -> Ultron <$> runMessage msg attrs
           (Expert, 2) -> do
-            push (VillainMessage ident VillainAdvanced)
+            advanceVillain ident
             pure $ advanceVillainTo ultron3 attrs
           (_, 3) -> Ultron <$> runMessage msg attrs
           (_, _) -> error "Invalid ultron progression"
@@ -99,14 +97,15 @@ instance RunMessage Ultron where
       _ -> Ultron <$> runMessage msg attrs
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       case villainStage attrs of
-        1 ->
+        1 -> do
+          mainScheme <- selectJust MainScheme
           chooseOne
             ident
-            [ Label "$label.placeOneThreatOnMainScheme" [PlaceThreat (toRef attrs) 1 MainScheme]
-            , Label "$label.topCardAsDrone" [Run [PutTopOfDeckIntoPlayAsDrone ident]]
+            [ labeled "$label.placeOneThreatOnMainScheme" $ placeThreat mainScheme 1
+            , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone ident
             ]
-        2 -> push $ PutTopOfDeckIntoPlayAsDrone ident
-        3 -> push $ SearchForAndRevealScheme Cards.ultronsImperative
+        2 -> putTopOfDeckIntoPlayAsDrone ident
+        3 -> searchForAndRevealScheme Cards.ultronsImperative
         _ -> error "Invalid choice"
       pure e
     _ -> Ultron <$> runMessage msg attrs

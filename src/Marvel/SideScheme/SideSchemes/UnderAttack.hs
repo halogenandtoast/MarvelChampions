@@ -13,11 +13,9 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -30,21 +28,17 @@ newtype UnderAttack = UnderAttack (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 instance RunMessage UnderAttack where
-  runMessage msg s@(UnderAttack attrs) = case msg of
+  runMessage msg s@(UnderAttack attrs) = runQueueT $ case msg of
     -- each player places 2 threat here or deals 3 damage to their hero; a player in
     -- alter-ego form has no hero to damage
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
       heroes <- selectList HeroIdentity
-      pushAll
-        [ Ask p . ChooseOne $
-          Label "$label.placeTwoThreatOnUnderAttack" [Run $ placeThreatOn (SchemeSideSchemeId ident) 2]
-            : [ Label
-                "$label.deal3DamageToYourHero"
-                [Run $ damageIdentity p (toSource attrs) (toDamage 3 FromAbility)]
+      for_ players \p ->
+        chooseOne p $
+          labeled "$label.placeTwoThreatOnUnderAttack" (placeThreat ident 2)
+            : [ labeled "$label.deal3DamageToYourHero" (damageHero p attrs (toDamage 3 FromAbility))
               | p `elem` heroes
               ]
-        | p <- players
-        ]
       pure s
     _ -> UnderAttack <$> runMessage msg attrs

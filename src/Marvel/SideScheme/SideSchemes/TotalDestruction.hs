@@ -9,7 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Modifier
 import Marvel.Query
@@ -33,4 +33,4 @@ instance HasModifiersFor TotalDestruction where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage TotalDestruction where
-  runMessage msg (TotalDestruction attrs) = TotalDestruction <$> runMessage msg attrs
+  runMessage msg (TotalDestruction attrs) = runQueueT $ TotalDestruction <$> runMessage msg attrs
