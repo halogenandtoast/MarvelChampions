@@ -50,6 +50,12 @@ allMinions =
       , baronMordo
       , abomination
       -- The Green Goblin
+      , hiredGun
+      , privateSecuritySpecialist
+      , goblinKnight
+      , goblinSoldier
+      , goblinThrall
+      , monster
       , scorpion
       , electro
       , tombstone
@@ -366,6 +372,29 @@ hydraExoSoldier =
 
 -- The Green Goblin
 
+hiredGun :: CardDef
+hiredGun = minion "02007" "Hired Gun" [Criminal] [Boost, Boost, Star] RiskyBusiness 3
+
+privateSecuritySpecialist :: CardDef
+privateSecuritySpecialist =
+  (minion "02008" "Private Security Specialist" [Mercenary] [Boost, Star] RiskyBusiness 4)
+    { cdKeywords = singleton Guard
+    }
+
+goblinKnight :: CardDef
+goblinKnight = unique $ minion "02022" "Goblin Knight" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
+
+goblinSoldier :: CardDef
+goblinSoldier = minion "02023" "Goblin Soldier" [Goblin] [Star] MutagenFormula 4
+
+goblinThrall :: CardDef
+goblinThrall =
+  (minion "02024" "Goblin Thrall" [Goblin] [Star] MutagenFormula 6)
+    { cdKeywords = singleton Guard
+    }
+
+monster :: CardDef
+monster = unique $ minion "02025" "Monster" [Elite, Goblin] [Boost, Boost, Star] MutagenFormula 1
 scorpion :: CardDef
 scorpion =
   unique $

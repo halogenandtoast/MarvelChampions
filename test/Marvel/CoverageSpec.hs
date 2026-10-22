@@ -55,11 +55,13 @@ inScope pack set = case pack of
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
   _ -> True
 
--- | The modular encounter sets implemented ahead of the rest of their pack, by MarvelCDB
+-- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
 -- set code.
 modularSets :: [Text]
 modularSets =
-  [ "goblin_gimmicks"
+  [ "risky_business"
+  , "mutagen_formula"
+  , "goblin_gimmicks"
   , "a_mess_of_things"
   , "power_drain"
   , "running_interference"

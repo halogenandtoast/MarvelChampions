@@ -39,6 +39,12 @@ allSideSchemes = fromList $ map
   , openTheDarkDimension
   , totalDestruction
   -- The Green Goblin
+  , collapsingBridge
+  , oscorpManufacturing
+  , payoff
+  , goblinReinforcements
+  , goblinNation
+  , overrun
   , aMessOfThings
   , powerDrain
   , runningInterference
@@ -280,6 +286,23 @@ massChaos = sideScheme "04144" "Mass Chaos" [] RedSkull 1
 
 -- The Green Goblin
 
+collapsingBridge :: CardDef
+collapsingBridge = sideScheme "02009" "Collapsing Bridge" [Star] RiskyBusiness 1
+
+oscorpManufacturing :: CardDef
+oscorpManufacturing = (sideScheme "02010" "Oscorp Manufacturing" [Boost, Boost, Boost] RiskyBusiness 2) {cdAcceleration = 1}
+
+payoff :: CardDef
+payoff = (sideScheme "02011" "Payoff" [Boost, Star] RiskyBusiness 2) {cdHazards = 1}
+
+goblinReinforcements :: CardDef
+goblinReinforcements = (sideScheme "02026" "Goblin Reinforcements" [Boost, Boost] MutagenFormula 2) {cdHazards = 1}
+
+goblinNation :: CardDef
+goblinNation = sideScheme "02027" "Goblin Nation" [Star] MutagenFormula 1
+
+overrun :: CardDef
+overrun = (sideScheme "02028" "Overrun" [Boost] MutagenFormula 2) {cdAcceleration = 2}
 aMessOfThings :: CardDef
 aMessOfThings = (sideScheme "02037" "A Mess of Things" [Boost, Boost] AMessOfThings 1) {cdHazards = 1}
 

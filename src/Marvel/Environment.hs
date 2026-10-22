@@ -8,6 +8,7 @@ import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
+import Marvel.Environment.Environments.CriminalEnterprise
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -29,6 +30,8 @@ allEnvironments =
   fromList $ map (toFst someEnvironmentCardCode)
     [ SomeEnvironmentCard ultronDrones
     -- The Green Goblin
+    , SomeEnvironmentCard criminalEnterprise
+    , SomeEnvironmentCard stateOfMadness
 
     -- The Wrecking Crew
 

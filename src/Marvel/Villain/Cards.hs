@@ -24,6 +24,15 @@ allVillainCards =
   , ultron2
   , ultron3
   -- The Green Goblin
+  , normanOsborn1
+  , greenGoblin1
+  , normanOsborn2
+  , greenGoblin2
+  , normanOsborn3
+  , greenGoblin3
+  , greenGoblinMutagen1
+  , greenGoblinMutagen2
+  , greenGoblinMutagen3
 
   -- The Wrecking Crew
 
@@ -103,6 +112,35 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+-- The Green Goblin
+
+normanOsborn1 :: CardDef
+normanOsborn1 = villain "02001a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin1 :: CardDef
+greenGoblin1 = villain "02001b" "Green Goblin" [Goblin]
+
+normanOsborn2 :: CardDef
+normanOsborn2 = villain "02002a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin2 :: CardDef
+greenGoblin2 = villain "02002b" "Green Goblin" [Goblin]
+
+normanOsborn3 :: CardDef
+normanOsborn3 = villain "02003a" "Norman Osborn" [Businessman, Genius]
+
+greenGoblin3 :: CardDef
+greenGoblin3 = villain "02003b" "Green Goblin" [Goblin]
+
+greenGoblinMutagen1 :: CardDef
+greenGoblinMutagen1 = villain "02014" "Green Goblin" [Goblin]
+
+greenGoblinMutagen2 :: CardDef
+greenGoblinMutagen2 = villain "02015" "Green Goblin" [Goblin]
+
+greenGoblinMutagen3 :: CardDef
+greenGoblinMutagen3 = villain "02016" "Green Goblin" [Goblin]
 
 -- The Rise of Red Skull
 -- Zola

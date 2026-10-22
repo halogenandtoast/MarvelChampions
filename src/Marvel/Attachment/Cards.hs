@@ -36,6 +36,9 @@ allAttachments =
       , pumpkinBombs
       , allTiedUp
       , mediaCoverage
+      , goblinGliderMutagenFormula
+      , hysteria
+      , pumpkinBombsMutagenFormula
 
       -- The Wrecking Crew
 
@@ -191,6 +194,17 @@ allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
 
 mediaCoverage :: CardDef
 mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2
+
+goblinGliderMutagenFormula :: CardDef
+goblinGliderMutagenFormula =
+  (reprint "02019" goblinGlider) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
+
+hysteria :: CardDef
+hysteria = attachment "02020" "Hysteria" [Condition] [Boost] MutagenFormula 1
+
+pumpkinBombsMutagenFormula :: CardDef
+pumpkinBombsMutagenFormula =
+  (reprint "02021" pumpkinBombs) {cdEncounterSet = Just MutagenFormula, cdEncounterSetQuantity = Just 1}
 
 -- The Rise of Red Skull
 

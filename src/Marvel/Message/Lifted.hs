@@ -972,6 +972,9 @@ obligationStep oid = push . ObligationMessage oid
 attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
 attachmentStep aid = push . AttachmentMessage aid
 
+environmentStep :: (ReverseQueue m) => EnvironmentId -> EnvironmentMessage -> m ()
+environmentStep eid = push . EnvironmentMessage eid
+
 sideSchemeStep :: (ReverseQueue m) => SideSchemeId -> SideSchemeMessage -> m ()
 sideSchemeStep sid = push . SideSchemeMessage sid
 

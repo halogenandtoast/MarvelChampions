@@ -45,6 +45,9 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | an enemy not given a boost card as it activates
+    NoActivationBoostCard
+
   | -- | on a scheme: a character thwarting it may use their ATK instead of their THW
     ThwartWithAttack
 

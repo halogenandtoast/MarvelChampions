@@ -59,6 +59,12 @@ allMinions =
       , SomeMinionCard baronMordo
       , SomeMinionCard abomination
       -- The Green Goblin
+      , SomeMinionCard goblinKnight
+      , SomeMinionCard goblinSoldier
+      , SomeMinionCard goblinThrall
+      , SomeMinionCard hiredGun
+      , SomeMinionCard monster
+      , SomeMinionCard privateSecuritySpecialist
       , SomeMinionCard scorpion
       , SomeMinionCard electro
       , SomeMinionCard tombstone
