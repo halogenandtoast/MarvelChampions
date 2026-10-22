@@ -40,6 +40,12 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Red Skull
+      , redSkullsLuger
+      , redSkullsRightHook
+      , masterStrategist
+      , twistedReality
+
       -- Taskmaster
       , taskmastersSword
       , taskmastersShield
@@ -132,6 +138,23 @@ biomechanicalUpgrades =
 counterspell :: CardDef
 counterspell =
   attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2
+
+-- Red Skull
+
+redSkullsLuger :: CardDef
+redSkullsLuger = unique $ attachment "04132" "Red Skull's Luger" [Weapon] [Star] RedSkull 1
+
+redSkullsRightHook :: CardDef
+redSkullsRightHook = attachment "04133" "Red Skull's Right Hook" [Skill] [Boost, Boost, Boost] RedSkull 2
+
+masterStrategist :: CardDef
+masterStrategist = attachment "04134" "Master Strategist" [Skill] [Boost, Boost] RedSkull 2
+
+twistedReality :: CardDef
+twistedReality =
+  (attachment "04135" "Twisted Reality" [Condition] [Boost, Boost] RedSkull 2)
+    { cdKeywords = singleton (Incite 1)
+    }
 
 -- The Green Goblin
 

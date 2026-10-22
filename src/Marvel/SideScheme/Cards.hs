@@ -46,6 +46,14 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , theRedHouse
+  , theSleeperAwakened
+  , prisonCamps
+  , censorThePast
+  , hydraReinforcements
+  , massChaos
+
   -- Taskmaster
   , capturedByHydra
   , taskmastersTrainingCamp
@@ -216,6 +224,26 @@ openTheDarkDimension =
   (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
     { cdAcceleration = 1
     }
+
+-- Red Skull
+
+theRedHouse :: CardDef
+theRedHouse = sideScheme "04139" "The Red House" [] RedSkull 1
+
+theSleeperAwakened :: CardDef
+theSleeperAwakened = sideScheme "04140" "The Sleeper Awakened" [] RedSkull 1
+
+prisonCamps :: CardDef
+prisonCamps = (sideScheme "04141" "Prison Camps" [] RedSkull 1) {cdAcceleration = 1}
+
+censorThePast :: CardDef
+censorThePast = (sideScheme "04142" "Censor the Past" [] RedSkull 1) {cdAcceleration = 1}
+
+hydraReinforcements :: CardDef
+hydraReinforcements = (sideScheme "04143" "Hydra Reinforcements" [] RedSkull 1) {cdHazards = 1}
+
+massChaos :: CardDef
+massChaos = sideScheme "04144" "Mass Chaos" [] RedSkull 1
 
 -- The Green Goblin
 

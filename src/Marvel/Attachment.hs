@@ -47,6 +47,12 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Red Skull
+      , SomeAttachmentCard redSkullsLuger
+      , SomeAttachmentCard redSkullsRightHook
+      , SomeAttachmentCard masterStrategist
+      , SomeAttachmentCard twistedReality
+
       -- Taskmaster
       , SomeAttachmentCard taskmastersSword
       , SomeAttachmentCard taskmastersShield

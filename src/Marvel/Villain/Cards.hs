@@ -26,6 +26,11 @@ allVillainCards =
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , redSkull1
+  , redSkull2
+  , redSkull3
+
   -- Taskmaster
   , taskmasterVillain1
   , taskmasterVillain2
@@ -91,6 +96,17 @@ ultron2 = villain "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
 ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+
+-- Red Skull
+
+redSkull1 :: CardDef
+redSkull1 = villain "04125" "Red Skull" [Hydra]
+
+redSkull2 :: CardDef
+redSkull2 = villain "04126" "Red Skull" [Hydra]
+
+redSkull3 :: CardDef
+redSkull3 = villain "04127" "Red Skull" [Hydra]
 
 -- The Rise of Red Skull
 

@@ -75,6 +75,11 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeTreacheryCard bitterRival
+  , SomeTreacheryCard spreadingLies
+  , SomeTreacheryCard infinitePower
+
   -- Taskmaster
   , SomeTreacheryCard mimicry
   , SomeTreacheryCard huntedByHydra

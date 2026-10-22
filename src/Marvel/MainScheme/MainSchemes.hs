@@ -12,6 +12,10 @@ import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.MainScheme.MainSchemes.NewWorldHydra as X
+import Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull as X
+
 -- Taskmaster
 import Marvel.MainScheme.MainSchemes.HuntingDownHeroes as X
 

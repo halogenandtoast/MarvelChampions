@@ -55,6 +55,14 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeSideSchemeCard theRedHouse
+  , SomeSideSchemeCard theSleeperAwakened
+  , SomeSideSchemeCard prisonCamps
+  , SomeSideSchemeCard censorThePast
+  , SomeSideSchemeCard hydraReinforcements
+  , SomeSideSchemeCard massChaos
+
   -- Taskmaster
   , SomeSideSchemeCard capturedByHydra
   , SomeSideSchemeCard taskmastersTrainingCamp

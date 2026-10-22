@@ -43,6 +43,9 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | -- | on a scheme: a character thwarting it may use their ATK instead of their THW
+    ThwartWithAttack
+
   | -- | on an identity: each "When Revealed" ability its player reveals resolves once
     -- more for each of these
     ResolveWhenRevealedAgain

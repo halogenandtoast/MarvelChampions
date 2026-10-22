@@ -37,6 +37,10 @@ import Marvel.Minion.Minions.Tombstone as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Minion.Minions.HydraExoSoldier as X
+import Marvel.Minion.Minions.TheSleeper as X
+
 -- Taskmaster
 import Marvel.Minion.Minions.HydraHunter as X
 

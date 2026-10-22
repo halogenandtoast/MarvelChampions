@@ -16,6 +16,9 @@ import Marvel.Villain.Villains.Ultron
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Villain.Villains.RedSkull
+
 -- Taskmaster
 import Marvel.Villain.Villains.Taskmaster
 
@@ -58,6 +61,12 @@ allVillains = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeVillainCard redSkull
+  , SomeVillainCard redSkull1
+  , SomeVillainCard redSkull2
+  , SomeVillainCard redSkull3
+
   -- Taskmaster
   , SomeVillainCard taskmasterVillain
   , SomeVillainCard taskmasterVillain1

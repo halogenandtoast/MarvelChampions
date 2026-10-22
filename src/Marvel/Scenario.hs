@@ -36,6 +36,9 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Red Skull
+    , SomeScenarioCard redSkullScenario
+
     -- Taskmaster
     , SomeScenarioCard taskmasterScenario
 
@@ -61,6 +64,9 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Red Skull
+    , ("04125", [EncounterSet.HydraAssault, EncounterSet.HydraPatrol])
+
     -- Taskmaster: Hydra Patrol is required, Weapon Master the modular
     , ("04093", [EncounterSet.WeaponMaster])
 
@@ -124,6 +130,23 @@ ultronScenario = scenario
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
+
+-- Red Skull
+
+newtype RedSkullScenario = RedSkullScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RedSkullScenario where
+  runMessage msg (RedSkullScenario a) = RedSkullScenario <$> runMessage msg a
+
+redSkullScenario :: ScenarioCard RedSkullScenario
+redSkullScenario = scenario
+  RedSkullScenario
+  "04125"
+  ("04125", "04126")
+  ["04128", "04129"]
+  [EncounterSet.RedSkull]
 
 -- The Rise of Red Skull
 

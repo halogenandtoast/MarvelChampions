@@ -66,6 +66,10 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Red Skull
+      , SomeMinionCard theSleeper
+      , SomeMinionCard hydraExoSoldier
+
       -- Taskmaster
       , SomeMinionCard hydraHunter
 
