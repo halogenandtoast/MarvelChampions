@@ -420,5 +420,8 @@ data Message
   | -- | each player in the area has been defeated, with players left elsewhere: the
     -- scenario says what that does, by default nothing
     AreaDefeated AreaId
+  | -- | the messages are to run at the end of the phase under way: "at the end of the
+    -- phase"
+    AtEndOfPhase [Message]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -988,6 +988,10 @@ gameOver = push . GameOver
 beginPhase :: (ReverseQueue m) => Phase -> m ()
 beginPhase = push . BeginPhase
 
+-- | What the body does, at the end of the phase under way.
+atEndOfPhase :: (ReverseQueue m) => m () -> m ()
+atEndOfPhase body = push . AtEndOfPhase =<< capture body
+
 endPhase :: (ReverseQueue m) => Phase -> m ()
 endPhase = push . EndPhase
 

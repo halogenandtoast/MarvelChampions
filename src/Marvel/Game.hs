@@ -192,6 +192,8 @@ data Game = Game
   -- ^ the game areas, the first the one every game starts with ("Marvel.Area")
   , gameSignatureSchemes :: HashMap VillainId SideSchemeId
   -- ^ each villain's own side scheme, as Wrecker's Day of Reckoning
+  , gameAtEndOfPhase :: [Message]
+  -- ^ what is to happen "at the end of the phase", in the order it was set to
   }
   deriving stock (Show, Eq, Generic)
 
@@ -659,6 +661,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
   BeginPhase phase ->
     pure $ g & phaseL .~ phase & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
+  AtEndOfPhase msgs -> pure $ g & atEndOfPhaseL <>~ msgs
+  -- what was to happen at the end of the phase happens first, as the phase ends
+  EndPhase _ -> do
+    pushAll gameAtEndOfPhase
+    pure $ g & atEndOfPhaseL .~ []
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do
     let order = case gamePlayerOrder of
@@ -1483,6 +1490,7 @@ newGame player scenario =
     , gamePlayedThisRound = []
     , gameAreas = [newArea defaultAreaId [toId player]]
     , gameSignatureSchemes = mempty
+    , gameAtEndOfPhase = []
     }
 
 -- | A game with a seat for each player, in the order given.

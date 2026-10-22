@@ -384,6 +384,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       for_ (concat hazards) dealEncounterCard
       revealDealtEncounterCards
       passFirstPlayer
+      endPhase VillainPhase
       endRound
       pure attrs
     -- each player in turn reveals the cards dealt them, until none remain
