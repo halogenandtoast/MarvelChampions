@@ -27,5 +27,7 @@ data AllyMessage
   | AttachedUpgradeToAlly UpgradeId
   | AllyStunned
   | AllyPaidWith Payment
+  | -- | whose deck it came from, and whose discard pile it goes to
+    AllyOwnedBy IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -273,6 +273,7 @@ instance RunMessage (Attrs Upgrade) where
         pure $ a & usesL -~ 1
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
+      UpgradeOwnedBy owner -> pure a {upgradeOwner = owner}
       UpgradeAttachedToEnemy enemyId -> do
         upgradeAttachedTo enemyId (upgradeId a)
         pure $ a & attachedEnemyL ?~ enemyId

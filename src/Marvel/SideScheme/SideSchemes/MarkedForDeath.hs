@@ -13,6 +13,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
+import Marvel.Hero.Cards qualified as Heroes
 import Marvel.Id
 import Marvel.Identity.Types (Field (..))
 import Marvel.Matchers
@@ -40,7 +41,7 @@ instance RunMessage MarkedForDeath where
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         players <- getPlayers
-        clints <- filterM (\p -> anyM (\t -> identityMatches (IdentityWithTitle t) p) ["Hawkeye", "Clint Barton"]) players
+        clints <- filterM (identityMatches (IdentityIs Heroes.hawkeye)) players
         tucked <- for clints \p -> do
           held <- concat <$> sequence
             [ unHand <$> projectMap PlayerIdentityHand id p

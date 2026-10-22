@@ -31,6 +31,8 @@ data IdentityMatcher
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityWithTitle Text
+  | -- | the player playing as this identity, whichever face is up
+    IdentityIs CardDef
   | IdentityWithId IdentityId
   | IdentityWithTrait Trait
   | AnyIdentity

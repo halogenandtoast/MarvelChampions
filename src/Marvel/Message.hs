@@ -321,6 +321,9 @@ data Message
   | UpgradeRemoved UpgradeId
   | AttachmentRemoved AttachmentId
   | FocusCards [Card]
+  | -- | the cards are shown to the player only: "look at"
+    ShowCardsTo IdentityId [Card]
+  | HideCardsFrom IdentityId
   | UnfocusCards
   | SearchForAndRevealScheme CardDef
   | -- | the first card matching in the encounter deck or its discard pile is revealed

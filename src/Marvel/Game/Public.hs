@@ -361,7 +361,7 @@ gameView seesHand g = do
           ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
-      , focusedCards = map cardView (gameFocusedCards g)
+      , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
       , boostCards =
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]

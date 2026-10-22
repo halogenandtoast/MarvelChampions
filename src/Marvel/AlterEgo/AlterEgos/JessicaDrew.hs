@@ -47,8 +47,7 @@ instance HasAbilities JessicaDrew where
     ]
 
 -- | Each player's deck and each encounter deck with a card in it may be chosen; its top
--- card is shown while she looks. ponytail: shown to the table, the board having no
--- private view.
+-- card is shown to her player alone while she looks (RR "Look at").
 instance RunMessage JessicaDrew where
   runMessage msg ae@(JessicaDrew a) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
@@ -56,7 +55,7 @@ instance RunMessage JessicaDrew where
       playerTops <- for players \p -> (p,) . take 1 <$> projectMap PlayerIdentityDeck unDeck p
       keys <- getDeckKeys
       encounterTops <- for keys \k -> (k,) . take 1 . pileDeck <$> getPile k
-      let look c = focusing [c] $ chooseOne ident [labeled "$label.done" (pure ())]
+      let look c = lookingAt ident [c] $ chooseOne ident [labeled "$label.done" (pure ())]
       chooseOnePrompted ident "$label.chooseDeckToLookAt" $
         [targeting p (look $ PlayerCard c) | (p, [c]) <- playerTops]
           <> [labeled (deckLabel k) (look $ EncounterCard c) | (k, [c]) <- encounterTops]

@@ -134,7 +134,7 @@ instance RunMessage (Attrs Ally) where
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       -- leaving play discards it
       AllyDefeated -> do
-        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)
+        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
         checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
         -- which discards it
         removeFromPlay a
@@ -142,6 +142,7 @@ instance RunMessage (Attrs Ally) where
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
+      AllyOwnedBy owner -> pure a {allyOwner = owner}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     -- "if an ability that says an ally gets +X hit points ceases to be in effect and
