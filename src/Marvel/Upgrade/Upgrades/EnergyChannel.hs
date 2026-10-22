@@ -8,16 +8,14 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Upgrade.Cards qualified as Cards
@@ -40,15 +38,14 @@ instance HasAbilities EnergyChannel where
     ]
 
 instance RunMessage EnergyChannel where
-  runMessage msg u@(EnergyChannel attrs) = case msg of
+  runMessage msg u@(EnergyChannel attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ payment -> do
       energyResources <- count (`elem` [Energy, Wild]) <$> paymentResources payment
-      push $ UpgradeMessage (upgradeId attrs) $ AddUpgradeUses energyResources
+      addUpgradeUses (upgradeId attrs) energyResources
       pure u
     -- an attack: guard keeps the villain safe
     RanAbility ident (isTarget attrs -> True) 2 _ _ -> attackGuard ident u do
       let amount = min 10 (2 * upgradeUses attrs)
-      pushChoice ident $
-        ChooseDamage (toSource attrs) (toDamage amount $ FromPlayerAttack ident) (AttackableBy $ IdentityWithId ident)
+      chooseDamage ident attrs (toDamage amount $ FromPlayerAttack ident) (AttackableBy $ IdentityWithId ident)
       pure u
     _ -> EnergyChannel <$> runMessage msg attrs

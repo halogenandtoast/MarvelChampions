@@ -12,7 +12,7 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
@@ -40,7 +40,7 @@ instance HasAbilities DefensiveStance where
     ]
 
 instance RunMessage DefensiveStance where
-  runMessage msg u@(DefensiveStance attrs) = case msg of
+  runMessage msg u@(DefensiveStance attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       preventDamage ident 3
       pure u

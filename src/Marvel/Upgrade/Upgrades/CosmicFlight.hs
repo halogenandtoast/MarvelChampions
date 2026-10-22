@@ -13,10 +13,9 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Trait
 import Marvel.Upgrade.Cards qualified as Cards
@@ -49,7 +48,7 @@ instance HasAbilities CosmicFlight where
     ]
 
 instance RunMessage CosmicFlight where
-  runMessage msg a@(CosmicFlight attrs) = case msg of
+  runMessage msg a@(CosmicFlight attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       preventDamage ident 3
       pure a

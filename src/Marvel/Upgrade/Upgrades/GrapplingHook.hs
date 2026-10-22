@@ -11,10 +11,9 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -46,9 +45,9 @@ instance HasAbilities GrapplingHook where
 -- | The treachery is discarded instead of resolving: nothing of it resolves, surge
 -- included.
 instance RunMessage GrapplingHook where
-  runMessage msg u@(GrapplingHook attrs) = case msg of
+  runMessage msg u@(GrapplingHook attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ _ card] _ -> do
-      replaceMatchingMessage (const [DiscardedCard (EncounterCard card)]) \case
+      flip insteadOf (discardCard card) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False
       pure u
