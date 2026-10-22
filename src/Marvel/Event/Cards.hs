@@ -48,6 +48,16 @@ allEvents = fromList $ concatMap
   , emergency
   , firstAid
   , haymaker
+  , crushingBlow
+  , hulkSmash
+  , subOrbitalLeap
+  , thunderclap
+  , unstoppableForce
+  , dropKick
+  , toeToToe
+  , youllPayForThat
+  , toTheRescue
+  , inspiringPresence
   ]
 
 event
@@ -315,3 +325,59 @@ haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])
   { cdAbilitySubType = Just Ability.Attack
   }
+
+crushingBlow :: CardDef
+crushingBlow =
+  (identityEvent "10002" "Crushing Blow" 1 HeroAction [Attack] [Physical])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = SpendOnly Physical
+    }
+
+hulkSmash :: CardDef
+hulkSmash =
+  (identityEvent "10003" "Hulk Smash" 3 HeroInterrupt [Superpower] [Physical])
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    }
+
+subOrbitalLeap :: CardDef
+subOrbitalLeap =
+  (identityEvent "10004" "Sub-Orbital Leap" 3 HeroAction [Superpower, Thwart] [Physical])
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+thunderclap :: CardDef
+thunderclap = identityEvent "10005" "Thunderclap" 3 HeroAction [Superpower] [Physical]
+
+unstoppableForce :: CardDef
+unstoppableForce = identityEvent "10006" "Unstoppable Force" 2 HeroAction [] [Physical]
+
+dropKick :: CardDef
+dropKick =
+  (event "10014" "Drop Kick" 3 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+toeToToe :: CardDef
+toeToToe =
+  (event "10015" "Toe to Toe" 1 HeroAction [Attack] [Mental] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    }
+
+youllPayForThat :: CardDef
+youllPayForThat =
+  (event "10016" "\"You'll Pay for That!\"" 1 HeroResponse [Thwart] [Energy] Aggression)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdResponseWindow = Just (EnemyAttacked After VillainEnemy You)
+    }
+
+toTheRescue :: CardDef
+toTheRescue =
+  (basicEvent "10019" "To the Rescue!" 2 HeroAction [Thwart] [Physical])
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+inspiringPresence :: CardDef
+inspiringPresence =
+  (event "10030" "Inspiring Presence" 1 HeroAction [] [Mental] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> AllyExists AnyAlly
+    }

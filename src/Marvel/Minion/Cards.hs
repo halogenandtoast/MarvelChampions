@@ -37,6 +37,7 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , abomination
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -205,3 +206,7 @@ modok =
     (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+abomination :: CardDef
+abomination =
+  unique $ minion "10026" "Abomination" [Elite, Gamma] [Boost, Boost, Boost] HulkNemesis 1

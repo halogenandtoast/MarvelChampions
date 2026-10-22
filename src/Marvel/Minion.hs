@@ -46,6 +46,7 @@ allMinions =
       , SomeMinionCard madameHydra
       , SomeMinionCard hydraSoldier
       , SomeMinionCard modok
+      , SomeMinionCard abomination
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

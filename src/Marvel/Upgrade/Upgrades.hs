@@ -23,3 +23,8 @@ import Marvel.Upgrade.Upgrades.Tenacity as X
 import Marvel.Upgrade.Upgrades.VibraniumSuit as X
 import Marvel.Upgrade.Upgrades.WebbedUp as X
 import Marvel.Upgrade.Upgrades.WebShooter as X
+import Marvel.Upgrade.Upgrades.BoundlessRage as X
+import Marvel.Upgrade.Upgrades.ImmovableObject as X
+import Marvel.Upgrade.Upgrades.MartialProwess as X
+import Marvel.Upgrade.Upgrades.ElectrostaticArmor as X
+import Marvel.Upgrade.Upgrades.Resourceful as X

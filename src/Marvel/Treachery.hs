@@ -56,6 +56,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard exhaustion
   , SomeTreacheryCard masterplan
   , SomeTreacheryCard underFire
+  , SomeTreacheryCard clashOfTheTitans
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

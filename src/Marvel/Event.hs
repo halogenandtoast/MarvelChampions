@@ -56,6 +56,16 @@ allEvents = fromList $ map
   , SomeEventCard emergency
   , SomeEventCard firstAid
   , SomeEventCard haymaker
+  , SomeEventCard crushingBlow
+  , SomeEventCard hulkSmash
+  , SomeEventCard subOrbitalLeap
+  , SomeEventCard thunderclap
+  , SomeEventCard unstoppableForce
+  , SomeEventCard dropKick
+  , SomeEventCard toeToToe
+  , SomeEventCard youllPayForThat
+  , SomeEventCard toTheRescue
+  , SomeEventCard inspiringPresence
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

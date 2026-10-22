@@ -22,6 +22,7 @@ allResources = fromList $ concatMap
   , energy
   , genius
   , strength
+  , limitlessStrength
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -100,3 +101,10 @@ genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021"] $ ba
 
 strength :: CardDef
 strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022"] $ basicResource "01090" "Strength" [] [Physical, Physical]
+
+-- | "Spend this card only in hero form."
+limitlessStrength :: CardDef
+limitlessStrength =
+  (identityResource "10007" "Limitless Strength" [] [Physical, Physical, Physical])
+    { cdCriteria = InHeroForm
+    }

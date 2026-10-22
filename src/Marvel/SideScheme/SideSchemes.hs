@@ -18,3 +18,4 @@ import Marvel.SideScheme.SideSchemes.ThePsycheMagnitron as X
 import Marvel.SideScheme.SideSchemes.UltronsImperative as X
 import Marvel.SideScheme.SideSchemes.UnderAttack as X
 import Marvel.SideScheme.SideSchemes.UsurpTheThrone as X
+import Marvel.SideScheme.SideSchemes.TotalDestruction as X

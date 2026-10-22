@@ -47,6 +47,7 @@ allTreacheries = fromList $ map
   , exhaustion
   , masterplan
   , underFire
+  , clashOfTheTitans
   ]
 
 treachery
@@ -192,3 +193,7 @@ underFire =
   (treachery "01193" "Under Fire" [Boost, Boost, Boost] ExpertSet 1)
     { cdKeywords = singleton Keyword.Surge
     }
+
+clashOfTheTitans :: CardDef
+clashOfTheTitans =
+  treachery "10028" "Clash of the Titans" [Boost, Boost, Boost] HulkNemesis 3

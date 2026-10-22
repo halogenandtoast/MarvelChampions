@@ -26,6 +26,8 @@ allSupports = fromList $ concatMap
   , medTeam
   , avengersMansion
   , helicarrier
+  , bannersLaboratory
+  , beatCop
   ]
 
 support
@@ -124,3 +126,10 @@ avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (Ma
 helicarrier :: CardDef
 helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+
+bannersLaboratory :: CardDef
+bannersLaboratory =
+  unique $ identitySupport "10008" "Banner's Laboratory" 2 [Location] [Mental]
+
+beatCop :: CardDef
+beatCop = support "10029" "Beat Cop" 3 [Persona] [Physical] Justice

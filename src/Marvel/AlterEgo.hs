@@ -29,6 +29,7 @@ allAlterEgos = fromList $ map
   , SomeAlterEgoCard jenniferWalters
   , SomeAlterEgoCard tonyStark
   , SomeAlterEgoCard tChalla
+  , SomeAlterEgoCard bruceBanner
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

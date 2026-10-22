@@ -30,3 +30,13 @@ import Marvel.Event.Events.WakandaForeverA as X
 import Marvel.Event.Events.WakandaForeverB as X
 import Marvel.Event.Events.WakandaForeverC as X
 import Marvel.Event.Events.WakandaForeverD as X
+import Marvel.Event.Events.CrushingBlow as X
+import Marvel.Event.Events.HulkSmash as X
+import Marvel.Event.Events.SubOrbitalLeap as X
+import Marvel.Event.Events.Thunderclap as X
+import Marvel.Event.Events.UnstoppableForce as X
+import Marvel.Event.Events.DropKick as X
+import Marvel.Event.Events.ToeToToe as X
+import Marvel.Event.Events.YoullPayForThat as X
+import Marvel.Event.Events.ToTheRescue as X
+import Marvel.Event.Events.InspiringPresence as X

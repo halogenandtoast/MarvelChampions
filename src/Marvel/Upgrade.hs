@@ -47,6 +47,11 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard armoredVest
   , SomeUpgradeCard indomitable
   , SomeUpgradeCard tenacity
+  , SomeUpgradeCard boundlessRage
+  , SomeUpgradeCard immovableObject
+  , SomeUpgradeCard martialProwess
+  , SomeUpgradeCard electrostaticArmor
+  , SomeUpgradeCard resourceful
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

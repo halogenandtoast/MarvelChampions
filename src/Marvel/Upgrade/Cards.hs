@@ -37,6 +37,11 @@ allUpgrades = fromList $ concatMap
   , armoredVest
   , indomitable
   , tenacity
+  , boundlessRage
+  , immovableObject
+  , martialProwess
+  , electrostaticArmor
+  , resourceful
   ]
 
 upgrade
@@ -178,3 +183,23 @@ indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
+
+boundlessRage :: CardDef
+boundlessRage =
+  (identityUpgrade "10009" "Boundless Rage" 1 [Condition, Gamma] [Physical])
+    { cdCriteria = InHeroForm
+    }
+
+immovableObject :: CardDef
+immovableObject = identityUpgrade "10010" "Immovable Object" 3 [Condition] [Physical]
+
+martialProwess :: CardDef
+martialProwess = limited (MaxPerPlayerUnderAnyControl 1)
+  $ upgrade "10018" "Martial Prowess" 2 [Skill] [Physical] Aggression
+
+electrostaticArmor :: CardDef
+electrostaticArmor = limited (MaxPerPlayerUnderAnyControl 1)
+  $ upgrade "10031" "Electrostatic Armor" 1 [Armor, Tech] [Energy] Protection
+
+resourceful :: CardDef
+resourceful = basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
