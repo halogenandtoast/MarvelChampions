@@ -66,6 +66,11 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeMinionCard (reprintAs Cards.hydraBomberCrossbones hydraBomber)
+      , SomeMinionCard hydraFlameSoldier
+      , SomeMinionCard hydraJetTrooper
+      , SomeMinionCard hydraRegular
+      , SomeMinionCard (reprintAs Cards.hydraSoldierHydraPatrol hydraSoldier)
 
       -- The Once and Future Kang
       , SomeMinionCard ancientWarrior

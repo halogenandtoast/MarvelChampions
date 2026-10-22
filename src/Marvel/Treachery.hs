@@ -75,6 +75,18 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeTreacheryCard fullAuto
+  , SomeTreacheryCard hardAsNails
+  , SomeTreacheryCard raidTheArmory
+  , SomeTreacheryCard stallTactics
+  , SomeTreacheryCard swingingStone
+  , SomeTreacheryCard steelKick
+  , SomeTreacheryCard piercingThorns
+  , SomeTreacheryCard omniMorphDuplication
+  , SomeTreacheryCard icyGrip
+  , SomeTreacheryCard (reprintAs Cards.hailHydraHydraAssault hailHydra)
+  , SomeTreacheryCard weaponMaster
+  , SomeTreacheryCard concussionGrenade
 
   -- The Once and Future Kang
   , SomeTreacheryCard kangsChosen

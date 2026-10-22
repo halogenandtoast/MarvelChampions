@@ -37,6 +37,9 @@ import Marvel.Minion.Minions.Tombstone as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Minion.Minions.HydraFlameSoldier as X
+import Marvel.Minion.Minions.HydraJetTrooper as X
+import Marvel.Minion.Minions.HydraRegular as X
 
 -- The Once and Future Kang
 import Marvel.Minion.Minions.AncientWarrior as X

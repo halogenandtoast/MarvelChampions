@@ -322,7 +322,7 @@ runVillainMessage msg attrs = case msg of
   Msg.VillainConfused _ -> pure $ attrs & confusedL .~ True
   VillainSchemes ->
     if villainConfused attrs
-      then pure $ attrs & confusedL .~ False
+      then pure $ attrs & confusedL .~ False & boostL .~ 0
       else do
         dealBoost attrs
         villainStep vid VillainFlipBoostCards
@@ -336,7 +336,7 @@ runVillainMessage msg attrs = case msg of
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
   VillainAttacks ident ->
     if villainStunned attrs
-      then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
+      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
       else do
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         villainStep vid (VillainBeginAttack ident)
@@ -349,7 +349,8 @@ runVillainMessage msg attrs = case msg of
     attrs' <- runVillainMessage (VillainAttacks ident) attrs
     pure $ attrs' & attackingL . _Just %~ \a -> a {attackWithoutBoost = True}
   VillainBeginAttack ident -> do
-    attack' <- keepingGains (villainAttacking attrs) <$> newAttack ident
+    -- with what its activation already got for itself
+    attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     unless (attackWithoutBoost attack') $ dealBoost attrs
     declareDefense ident vid AnyDefense
@@ -391,6 +392,7 @@ runVillainMessage msg attrs = case msg of
       villainStep vid (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
     villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
+  VillainActivationBonus n -> pure $ attrs & boostL +~ n
   VillainAddBoost n ->
     pure $
       attrs

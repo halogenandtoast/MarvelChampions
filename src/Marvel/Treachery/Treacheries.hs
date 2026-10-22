@@ -49,6 +49,17 @@ import Marvel.Treachery.Treacheries.ShockTherapy as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Treachery.Treacheries.FullAuto as X
+import Marvel.Treachery.Treacheries.HardAsNails as X
+import Marvel.Treachery.Treacheries.RaidTheArmory as X
+import Marvel.Treachery.Treacheries.StallTactics as X
+import Marvel.Treachery.Treacheries.SwingingStone as X
+import Marvel.Treachery.Treacheries.SteelKick as X
+import Marvel.Treachery.Treacheries.PiercingThorns as X
+import Marvel.Treachery.Treacheries.OmniMorphDuplication as X
+import Marvel.Treachery.Treacheries.IcyGrip as X
+import Marvel.Treachery.Treacheries.WeaponMaster as X
+import Marvel.Treachery.Treacheries.ConcussionGrenade as X
 
 -- The Once and Future Kang
 import Marvel.Treachery.Treacheries.KangsChosen as X

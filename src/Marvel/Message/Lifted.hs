@@ -400,6 +400,10 @@ putBoostIntoPlay card = push . PutBoostIntoPlay (toTarget card)
 revealBoost :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
 revealBoost card = push . RevealBoost (toTarget card)
 
+-- | "+n ATK (or SCH) for this activation": for the villain's next activation, which follows.
+activationBonus :: (ReverseQueue m) => VillainId -> Natural -> m ()
+activationBonus vid = push . VillainMessage vid . VillainActivationBonus
+
 -- | More boost icons for the villain's activation.
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
