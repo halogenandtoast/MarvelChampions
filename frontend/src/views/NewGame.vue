@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Check, Swords, UserPlus } from 'lucide-vue-next'
-import { createGame, fetchScenarios, fetchStarterDecks, type DeckChoice } from '../api'
+import { createCampaign, createGame, fetchScenarios, fetchStarterDecks, type DeckChoice } from '../api'
 import { currentUser, updateSettings } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
@@ -13,7 +13,7 @@ import DeckTile from '../components/DeckTile.vue'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
 import { deckFaces, toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
-import type { ScenarioOption, StarterDeck } from '../server'
+import type { CampaignMode, ScenarioOption, StarterDeck } from '../server'
 
 const tr = useServerText()
 const { t } = useI18n()
@@ -173,6 +173,44 @@ const create = async () => {
   }
 }
 
+// A campaign instead of one scenario: its heroes are chosen now and kept to the end, and
+// its overview deals each scenario in turn.
+type Kind = 'scenario' | 'campaign'
+const kind = ref<Kind>('scenario')
+const kindOptions = computed(() => [
+  { value: 'scenario' as Kind, label: t('newGame.singleScenario') },
+  { value: 'campaign' as Kind, label: t('newGame.campaign') },
+])
+const campaignMode = ref<CampaignMode>('StandardCampaign')
+const campaignModeOptions = computed(() => [
+  { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
+  { value: 'ExpertCampaign' as CampaignMode, label: t('campaign.ExpertCampaign') },
+])
+// the villains of The Rise of Red Skull, in order
+const RED_SKULL_CAMPAIGN = ['04058', '04076', '04093', '04109', '04125']
+watch(kind, (k) => {
+  if (k === 'campaign') withFriends.value = false
+})
+const canCreateCampaign = computed(() => !creating.value && used.value.length > 0)
+const createCampaignNow = async () => {
+  if (!canCreateCampaign.value) return
+  creating.value = true
+  error.value = null
+  try {
+    const { id } = await createCampaign({
+      name: gameName.value.trim() || t('campaign.riseOfRedSkull'),
+      mode: campaignMode.value,
+      difficulty: difficulty.value,
+      decks: used.value.map(choice),
+    })
+    await router.push(`/campaigns/${id}`)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : t('newGame.couldNotCreateGame')
+    creating.value = false
+  }
+}
+const submit = () => (kind.value === 'campaign' ? createCampaignNow() : create())
+
 const difficultyOptions = computed(() => [
   { value: 'Normal' as const, label: t('difficulty.Normal') },
   { value: 'Expert' as const, label: t('difficulty.Expert') },
@@ -182,13 +220,29 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
 <template>
   <div class="page-container">
-    <form class="page-content new-game" @submit.prevent="create">
+    <form class="page-content new-game" @submit.prevent="submit">
       <header class="head">
         <h1 class="page-title">{{ $t('newGame.title') }}</h1>
         <RouterLink to="/" class="btn ghost">{{ $t('common.cancel') }}</RouterLink>
       </header>
 
-      <section class="step">
+      <SegmentedToggle v-model="kind" class="kind" :options="kindOptions" :label="$t('newGame.kind')" />
+
+      <section v-if="kind === 'campaign'" class="step">
+        <h2 class="step-title"><span class="n">1</span>{{ $t('newGame.chooseCampaign') }}</h2>
+        <div class="villains" role="radiogroup">
+          <button type="button" role="radio" class="villain campaign-tile selected" aria-checked="true">
+            <span class="campaign-art">
+              <span v-for="code in RED_SKULL_CAMPAIGN" :key="code" class="art portrait" :style="{ backgroundImage: villainArt(code) }" />
+            </span>
+            <span class="villain-name">{{ $t('campaign.riseOfRedSkull') }}</span>
+            <span class="villain-sets">{{ RED_SKULL_CAMPAIGN.map((c) => cards.name(c, c)).join(' · ') }}</span>
+            <Check class="tick" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <section v-if="kind === 'scenario'" class="step">
         <div class="step-head">
           <h2 class="step-title"><span class="n">1</span>{{ $t('newGame.chooseVillain') }}</h2>
           <select v-model="villainFilter" class="input filter" :aria-label="$t('newGame.release')">
@@ -216,7 +270,42 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
         </div>
       </section>
 
-      <section v-if="scenario" class="step two">
+      <section v-if="kind === 'campaign'" class="step two">
+        <div class="col">
+          <h2 class="step-title"><span class="n">2</span>{{ $t('newGame.campaignMode') }}</h2>
+          <SegmentedToggle v-model="campaignMode" :options="campaignModeOptions" :label="$t('newGame.campaignMode')" />
+          <p class="hint">{{ $t('newGame.campaignModeHint') }}</p>
+
+          <h3 class="field-title">{{ $t('newGame.difficulty') }}</h3>
+          <SegmentedToggle v-model="difficulty" :options="difficultyOptions" :label="$t('newGame.difficulty')" />
+          <p class="hint">{{ $t('newGame.scenarioDifficultyHint') }}</p>
+
+          <label class="field">
+            <span class="field-title">{{ $t('newGame.campaignName') }}</span>
+            <input v-model="gameName" class="input" type="text" :placeholder="$t('campaign.riseOfRedSkull')" />
+          </label>
+        </div>
+
+        <div class="col">
+          <h2 class="step-title"><span class="n">3</span>{{ $t('newGame.players') }}</h2>
+          <SegmentedToggle :model-value="String(seatCount)" :options="playerOptions" :label="$t('newGame.players')" @update:model-value="seatCount = Number($event)" />
+          <p class="hint">{{ $t('newGame.campaignHeroes') }}</p>
+          <ol class="seats">
+            <li v-for="(seat, i) in used" :key="i" class="seat">
+              <span class="seat-label">{{ $t('newGame.seat', { n: i + 1 }) }}</span>
+              <button type="button" class="seat-deck" @click="pick(i)">
+                <DeckTile v-if="faceOf(seat)" :face="faceOf(seat)!" />
+                <span v-else class="choose">{{ $t('newGame.chooseDeck') }}</span>
+              </button>
+              <div class="seat-actions">
+                <button type="button" class="btn ghost" @click="pick(i)">{{ $t('newGame.changeDeck') }}</button>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section v-if="kind === 'scenario' && scenario" class="step two">
         <div class="col">
           <h2 class="step-title"><span class="n">2</span>{{ $t('newGame.modulars') }}</h2>
           <div class="filters">
@@ -298,7 +387,15 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
       <p v-if="error" class="error">{{ tr(error) }}</p>
 
-      <div v-if="scenario" class="create">
+      <div v-if="kind === 'campaign'" class="create">
+        <p class="summary">
+          {{ $t('newGame.campaignSummary', { campaign: $t('campaign.riseOfRedSkull'), mode: $t(`campaign.${campaignMode}`), players: $t('newGame.playerCount', seatCount) }) }}
+        </p>
+        <button class="btn primary big" type="submit" :disabled="!canCreateCampaign">
+          <Swords aria-hidden="true" />{{ creating ? $t('newGame.creating') : $t('common.create') }}
+        </button>
+      </div>
+      <div v-else-if="scenario" class="create">
         <p class="summary">
           {{ $t('newGame.summary', { villain: scenarioName(scenario), difficulty: $t(`difficulty.${difficulty}`), players: $t('newGame.playerCount', seatCount) }) }}
         </p>
@@ -331,6 +428,10 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
 <style scoped>
 .new-game { display: grid; gap: 22px; }
+.kind { width: 20rem; max-width: 100%; }
+.campaign-tile { grid-column: span 2; cursor: default; }
+.campaign-art { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; }
+.campaign-art .art { aspect-ratio: 3 / 4; background-size: cover; background-position: center top; }
 .head { display: flex; align-items: center; gap: 12px; }
 .head .page-title { margin: 0 auto 0 0; }
 .step { display: grid; gap: 14px; padding: 20px; border-radius: 16px; background: var(--ink-2); border: 1px solid var(--line); }
