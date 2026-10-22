@@ -10,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.PlayerCard as X
 import Marvel.Event.Cards
+import Marvel.Obligation.Cards (playerDeckObligations)
 import Marvel.Resource.Cards
 import Marvel.Support.Cards
 import Marvel.Upgrade.Cards
@@ -21,4 +22,4 @@ lookupPlayerCard code = case lookup code allPlayerCards of
 
 allPlayerCards :: HashMap CardCode CardDef
 allPlayerCards =
-  allAllies <> allEvents <> allSupports <> allUpgrades <> allResources
+  allAllies <> allEvents <> allSupports <> allUpgrades <> allResources <> playerDeckObligations

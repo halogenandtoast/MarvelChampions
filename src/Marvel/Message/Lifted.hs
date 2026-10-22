@@ -14,6 +14,7 @@ import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
+import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
@@ -81,6 +82,10 @@ targeting a body = TargetLabel (toTarget a) . pure . Run <$> capture body
 -- | A choice by its label (an i18n key under @$label.@), doing what the body does.
 labeled :: (ReverseQueue m) => Text -> m () -> m Choice
 labeled l body = Label l . pure . Run <$> capture body
+
+-- | A choice shown as the card, doing what the body does.
+cardLabeled :: (ReverseQueue m) => CardCode -> m () -> m Choice
+cardLabeled code body = CardLabel code . Run <$> capture body
 
 -- | The card's ability as a choice: what it does is worked out as it is chosen.
 targetingAbility :: (Applicative m, IsRef a) => a -> Natural -> m Choice
@@ -508,8 +513,14 @@ nextMainScheme = push NextMainScheme
 
 -- | The side scheme is defeated, past the window for it, and leaves play.
 defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
-defeatSideScheme sid =
-  pushAll [CheckWindows [Window When $ W.DefeatedSideScheme sid], SideSchemeMessage sid DefeatSideScheme, RemoveFromPlay (toTarget sid)]
+defeatSideScheme sid = do
+  you <- getYou
+  pushAll
+    [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
+    , SideSchemeMessage sid DefeatSideScheme
+    , RemoveFromPlay (toTarget sid)
+    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you]
+    ]
 
 -- | What the side scheme does once what it revealed is done.
 sideSchemeRevealedThen :: (ReverseQueue m) => SideSchemeId -> m ()
@@ -1053,6 +1064,27 @@ addSetupMainScheme = push . AddSetupMainScheme
 -- | The main scheme leaves play for the next one.
 replaceMainScheme :: (ReverseQueue m) => CardCode -> m ()
 replaceMainScheme = push . ReplaceMainScheme
+
+-- * Campaigns
+
+-- | The scenario follows that part of its Campaign Instructions.
+campaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
+campaignStep = push . CampaignStep
+
+-- | Written in the campaign log, in a campaign game; otherwise nothing.
+recordInCampaignLog :: (ReverseQueue m) => CampaignRecord -> m ()
+recordInCampaignLog = push . RecordInCampaignLog
+
+-- | Written in the log for the player, who the log knows by their identity.
+recordForPlayer :: (ReverseQueue m) => IdentityId -> (CardCode -> CampaignRecord) -> m ()
+recordForPlayer ident f = recordInCampaignLog . f =<< getIdentityCode ident
+
+-- | The player's card crossed out of the campaign log: not in their deck again.
+removeFromCampaignLog :: (ReverseQueue m) => IdentityId -> CardCode -> m ()
+removeFromCampaignLog ident code = recordForPlayer ident (`RemoveFromCampaignLog` code)
+
+putObligationIntoPlay :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+putObligationIntoPlay ident = push . PutObligationIntoPlay ident
 
 -- | Each player's obligations out of the encounter deck and the game.
 removePlayerObligationsFromGame :: (ReverseQueue m) => m ()

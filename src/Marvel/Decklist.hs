@@ -7,6 +7,7 @@ module Marvel.Decklist (
   missingCards,
   aspectsBalanced,
   sharedHeroes,
+  campaignDeck,
   starterDecks,
   lookupStarterDeck,
 ) where
@@ -17,6 +18,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.List (find, nub)
 import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
+import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCards, campaignPlayer)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
@@ -80,6 +82,17 @@ loadPlayer d = case checkedDeckList d of
       cardId <- getRandom
       pure $ MkPlayerCard cardId (lookupPlayerCard code) Nothing Nothing
     Right <$> initPlayer (toHeroCardCode d.hero) (Deck cards)
+
+-- | The deck a player brings to a campaign's next game: the one they began it with, the
+-- cards the campaign log adds to it, and without the allies removed from the campaign.
+-- What the campaign adds does not count toward the deck's size.
+campaignDeck :: Campaign -> DeckList -> DeckList
+campaignDeck c d =
+  d
+    { cards =
+        [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved]
+          <> [(code, 1) | Just p <- [campaignPlayer d.hero c], code <- campaignCards p]
+    }
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]

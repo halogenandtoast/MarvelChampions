@@ -296,3 +296,54 @@ export interface StarterDeck {
   hero: string
   aspects: string[]
 }
+
+/** A choice a campaign victory leaves a player, asked as the next game is set up. */
+export type CampaignChoice = 'ChooseTechUpgrade' | 'ChooseBasicUpgrade' | 'MayImproveUpgrade'
+
+/** A column of the campaign log's Player Information. */
+export interface CampaignPlayer {
+  /** the hero face's code */
+  identity: string
+  number: number
+  hitPoints: number | null
+  obligations: string[]
+  techUpgrade: string | null
+  conditionUpgrade: string | null
+  rescuedAllies: string[]
+  pending: CampaignChoice[]
+}
+
+export interface CampaignLog {
+  players: CampaignPlayer[]
+  experimentalWeapons: string[]
+  delayCounters: number | null
+  engagedWithMinions: string[]
+  alliesRemoved: string[]
+}
+
+export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
+
+/** The campaign as the server's Marvel.Campaign has it. */
+export interface Campaign {
+  mode: CampaignMode
+  /** the scenarios in order, by villain code */
+  scenarios: string[]
+  completed: number
+  lost: boolean
+  campaignLog: CampaignLog
+}
+
+/** A campaign as its overview shows it. */
+export interface CampaignView {
+  id: string
+  name: string
+  campaign: Campaign
+  difficulty: 'Normal' | 'Expert'
+  heroes: string[]
+  next: string | null
+  nextName: string | null
+  /** the game of it being played, not yet over */
+  currentGame: string | null
+  won: boolean
+  updatedAt: string
+}

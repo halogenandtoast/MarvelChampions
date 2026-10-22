@@ -24,6 +24,7 @@ import Marvel.Message.Villain as X
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
 import Marvel.Area (AreaId, DeckKey)
+import Marvel.Campaign (CampaignRecord, CampaignStepKind)
 import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
@@ -420,5 +421,13 @@ data Message
   | -- | each player in the area has been defeated, with players left elsewhere: the
     -- scenario says what that does, by default nothing
     AreaDefeated AreaId
+  | -- | a part of the scenario's Campaign Instructions, in a campaign game: the
+    -- scenario says what it does ('Marvel.Campaign.Steps' by default), and may add its own
+    CampaignStep CampaignStepKind
+  | -- | what the game writes in the campaign log it was dealt with
+    RecordInCampaignLog CampaignRecord
+  | -- | an obligation drawn from the player's deck goes into play in their play area,
+    -- as an expert campaign's do
+    PutObligationIntoPlay IdentityId PlayerCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

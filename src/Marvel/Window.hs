@@ -164,6 +164,16 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           sideSchemeMatches sideSchemeMatcher sideSchemeId
     _ -> pure False
+  DefeatsSideScheme identityMatcher -> case windowType w of
+    DefeatedSideSchemeBy _ identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  UsesRecovery identityMatcher -> case windowType w of
+    UsedRecovery identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId
       | windowTiming w == timing ->

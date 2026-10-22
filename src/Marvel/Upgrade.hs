@@ -102,6 +102,19 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard finesse
   , SomeUpgradeCard skilledInvestigator
 
+  -- The Rise of Red Skull: the Hydra Campaign set
+  , SomeUpgradeCard adrenalStims
+  , SomeUpgradeCard tacticalScanner
+  , SomeUpgradeCard emergencyTeleporter
+  , SomeUpgradeCard laserCannon
+  , SomeUpgradeCard basicThwartUpgrade
+  , SomeUpgradeCard improvedThwartUpgrade
+  , SomeUpgradeCard basicAttackUpgrade
+  , SomeUpgradeCard improvedAttackUpgrade
+  , SomeUpgradeCard basicDefenseUpgrade
+  , SomeUpgradeCard improvedDefenseUpgrade
+  , SomeUpgradeCard basicRecoveryUpgrade
+  , SomeUpgradeCard improvedRecoveryUpgrade
   -- The Once and Future Kang
 
   ]

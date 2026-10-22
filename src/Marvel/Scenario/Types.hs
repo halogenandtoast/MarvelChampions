@@ -8,6 +8,7 @@ import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
 import Marvel.Area (discardsTo, emptyPile, isEncounterDeck)
+import Marvel.Campaign.Steps (runCampaignStep)
 import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
@@ -298,6 +299,8 @@ runScenarioMessage msg attrs = case msg of
       if home == EncounterDeckKey || HashMap.member home (scenarioDecks attrs)
         then leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
         else leaves ec attrs
+  -- the Campaign Instructions: a scenario adds its own steps answering this first
+  CampaignStep step -> attrs <$ runCampaignStep step
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
     areas <- getAreas
