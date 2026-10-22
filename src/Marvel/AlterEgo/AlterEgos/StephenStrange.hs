@@ -33,13 +33,13 @@ newtype StephenStrange = StephenStrange (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
--- | He begins the game with an Invocation deck; Natural Talent discards its top card.
--- ponytail: an action is used only on your own turn, so once per turn is once per phase
+-- | He begins the game with an Invocation deck; Natural Talent discards its top card,
+-- once per phase.
 instance HasAbilities StephenStrange where
   getAbilities a@(StephenStrange attrs) =
     [ ability a 1 Setup NoCriteria NoCost $ runAbility a 1
     , label "Natural Talent" $
-        limitedAbility a 2 (PerTurn 1) Action IsSelf NoCost $
+        limitedAbility a 2 (PerPhase 1) Action IsSelf NoCost $
           Run [invocation (alterEgoIdentityId attrs) DiscardTopInvocation]
     ]
 
