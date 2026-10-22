@@ -25,6 +25,15 @@ spec = describe "an encounter deck that empties" do
       encounterDiscardNow `shouldReturn` []
       accelerationTokensNow `shouldReturn` before + 1
 
+  it "a search that finds nothing asks nothing" do
+    tg <- testGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      _ <- setEncounterDeck [Treacheries.advance] [Treacheries.advance]
+      resolve [SearchForAndPutIntoPlayEncounterCard p (CardWithType MinionType)]
+      length <$> scenarioEncounterDeckNow `shouldReturn` 1
+      finished `shouldReturn` False
+
   it "goes on dealing from the new deck" do
     tg <- testGame ["spider-man"]
     let p = player1 tg

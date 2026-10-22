@@ -338,5 +338,5 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
   search ident matcher f = do
     let found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard)
     push ShuffleEncounterDeck
-    chooseOrRunOne ident [TargetLabel (toRef card) [Run [f card]] | card <- found]
+    unless (null found) $ chooseOrRunOne ident [TargetLabel (toRef card) [Run [f card]] | card <- found]
     pure attrs
