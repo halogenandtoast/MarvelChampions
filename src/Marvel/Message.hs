@@ -216,5 +216,8 @@ data Message
   | -- | the cards, taken from wherever they are in the encounter deck, go on top of it,
     -- the first given on top
     PutOnTopOfEncounterDeck [EncounterCard]
+  | -- | the top cards of the encounter deck are looked at, staying where they are: the
+    -- target is answered with @SearchFoundCards@
+    LookAtTopOfEncounterDeck Natural Target
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
