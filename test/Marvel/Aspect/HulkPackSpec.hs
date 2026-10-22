@@ -121,6 +121,34 @@ spec = describe "Hulk pack" do
         damageOf p `shouldReturn` 3
         mainSchemeThreatNow `shouldReturn` (before - 3)
 
+    it "is played by the player whose hero defended, for the damage they took (RR Defend)" do
+      tg <- testGame ["hulk", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+        clearHand p
+        hulksPay <- putInHand p "10016"
+        _ <- putInHand p "01089"
+        clearHand other
+        pay <- putInHand other "10016"
+        genius <- putInHand other "01089"
+        placeMainThreat 5
+        before <- mainSchemeThreatNow
+        _ <- stackEncounterDeck [Minions.hydraMercenary]
+        vid <- villainIdNow
+        runNow [VillainMessage vid (VillainAttacks p)]
+        choose "ask Captain Marvel to defend" (isTargetChoice other)
+        choose "Captain Marvel defends" (isTargetChoice other)
+        offers (isPlay hulksPay) `shouldReturn` False
+        choose "You'll Pay for That!" (isPlay pay)
+        payWith [genius]
+        pass
+        damageOf p `shouldReturn` 0
+        -- Rhino's 2 ATK and the boost icon, less her 1 DEF
+        damageOf other `shouldReturn` 2
+        mainSchemeThreatNow `shouldReturn` (before - 2)
+
     it "is not offered after a minion attacks" do
       tg <- hulk
       let p = player1 tg
