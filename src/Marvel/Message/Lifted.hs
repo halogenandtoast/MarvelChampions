@@ -11,6 +11,7 @@ module Marvel.Message.Lifted (
 import Marvel.Prelude
 
 import Marvel.ActiveCost.Types
+import Marvel.Attack (Attack (..))
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
@@ -29,7 +30,8 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
-import Marvel.Window.Types (Window)
+import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (When, Would))
+import Marvel.Window.Types qualified as W
 
 -- * Questions
 --
@@ -118,6 +120,26 @@ placeThreatPastWindow scheme = push . threatPlacement (toScheme scheme)
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
 removeThreat you source n = Choice.pushChoice you . RemoveThreat (toSource source) n
 
+-- | Threat a card places on the scheme, past the window for it ('placeThreatOn').
+placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
+placeThreat = placeThreatFrom ThreatFromAbility
+
+-- | Threat placed on the scheme by what the window says, past the window for it.
+placeThreatFrom :: (ReverseQueue m, IsScheme scheme) => ThreatSource -> scheme -> Natural -> m ()
+placeThreatFrom from (toScheme -> scheme) n =
+  pushAll $ [CheckWindows [Window Would $ W.ThreatPlaced from scheme n] | n > 0] <> [threatPlacement scheme n]
+
+-- | Damage to the hero not from an attack, past the window for it ('damageIdentity').
+damageHero :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
+damageHero ident source = pushAll . damageIdentity ident (toSource source)
+
+-- | The retaliate damage dealt to the character that attacked.
+retaliate :: (ReverseQueue m, IsRef source) => source -> CharacterId -> Natural -> m ()
+retaliate source attacker = pushAll . retaliateDamage (toSource source) attacker
+
+stunIdentity :: (ReverseQueue m) => IdentityId -> m ()
+stunIdentity ident = push $ IdentityMessage ident IdentityStunned
+
 giveStatus :: (ReverseQueue m, IsCharacter character) => character -> StatusCard -> m ()
 giveStatus character = push . GiveStatus (characterRef $ toCharacter character)
 
@@ -172,9 +194,6 @@ instance ExhaustsAs SupportId where
 
 exhaust :: (ReverseQueue m, ExhaustsAs a) => a -> m ()
 exhaust = push . exhausted
-
-stunIdentity :: (ReverseQueue m) => IdentityId -> m ()
-stunIdentity ident = push $ IdentityMessage ident IdentityStunned
 
 confuseIdentity :: (ReverseQueue m) => IdentityId -> m ()
 confuseIdentity ident = push $ IdentityMessage ident IdentityConfused
@@ -240,6 +259,84 @@ changeForm ident = push $ IdentityMessage ident ChooseOtherForm
 changeToForm :: (ReverseQueue m) => IdentityId -> Side -> m ()
 changeToForm ident = push . IdentityMessage ident . ChangedToForm
 
+-- | The character the attack is against is told it was attacked.
+wasAttacked :: (ReverseQueue m) => Attack -> m ()
+wasAttacked a = push case attackCharacter a of
+  IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
+  AllyCharacter ally -> AllyMessage ally (AllyWasAttacked a)
+  _ -> error "Invalid damage target"
+
+declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
+declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
+
+-- * Villains and schemes
+
+-- | A step of the villain's own, for its runner to answer.
+villainStep :: (ReverseQueue m) => VillainId -> VillainMessage -> m ()
+villainStep vid = push . VillainMessage vid
+
+advanceVillain :: (ReverseQueue m) => VillainId -> m ()
+advanceVillain vid = villainStep vid VillainAdvanced
+
+defeatVillain :: (ReverseQueue m) => VillainId -> m ()
+defeatVillain vid = villainStep vid VillainDefeated
+
+changeVillainHitPoints :: (ReverseQueue m) => VillainId -> Int -> m ()
+changeVillainHitPoints vid = villainStep vid . VillainHitPointsChanged
+
+-- | A boost card dealt facedown to the enemy.
+dealBoost :: (ReverseQueue m, IsRef enemy) => enemy -> m ()
+dealBoost = push . DealBoost . toTarget
+
+revealBoostCard :: (ReverseQueue m, IsEnemy enemy) => EncounterCard -> enemy -> m ()
+revealBoostCard card = push . RevealBoostCard card . toEnemy
+
+clearBoosts :: (ReverseQueue m) => m ()
+clearBoosts = push ClearBoosts
+
+advanceMainScheme :: (ReverseQueue m) => m ()
+advanceMainScheme = push AdvanceMainScheme
+
+nextMainScheme :: (ReverseQueue m) => m ()
+nextMainScheme = push NextMainScheme
+
+-- | The side scheme is defeated, past the window for it, and leaves play.
+defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
+defeatSideScheme sid =
+  pushAll [CheckWindows [Window When $ W.DefeatedSideScheme sid], SideSchemeMessage sid DefeatSideScheme, RemoveFromPlay (toTarget sid)]
+
+-- | What the side scheme does once what it revealed is done.
+sideSchemeRevealedThen :: (ReverseQueue m) => SideSchemeId -> m ()
+sideSchemeRevealedThen sid = push $ SideSchemeMessage sid SideSchemeRevealedThen
+
+searchForAndRevealScheme :: (ReverseQueue m) => CardDef -> m ()
+searchForAndRevealScheme = push . SearchForAndRevealScheme
+
+gameOver :: (ReverseQueue m) => FinishedStatus -> m ()
+gameOver = push . GameOver
+
+-- * Encounter cards
+
+putTopOfDeckIntoPlayAsDrone :: (ReverseQueue m) => IdentityId -> m ()
+putTopOfDeckIntoPlayAsDrone = push . PutTopOfDeckIntoPlayAsDrone
+
+putEncounterCardIntoPlay :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+putEncounterCardIntoPlay ident = push . PutEncounterCardIntoPlay ident
+
+revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+revealEncounterCard ident = push . RevealedEncounterCard ident
+
+shuffleEncounterDeck :: (ReverseQueue m) => m ()
+shuffleEncounterDeck = push ShuffleEncounterDeck
+
+discardTopOfEncounterDeck :: (ReverseQueue m) => Natural -> m ()
+discardTopOfEncounterDeck n = push $ DiscardTopOfEncounterDeck n Nothing
+
+-- | Cards are discarded from the zone until one matches, the target told which
+-- ('WithDiscardedMatch').
+discardUntil :: (ReverseQueue m, IsRef target) => FromZone -> CardMatcher -> target -> m ()
+discardUntil zone matcher = push . DiscardUntil zone matcher . toTarget
+
 -- * Cards
 
 drawCards :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -303,6 +400,10 @@ chooseUpgrade you matcher = Choice.pushChoice you . ChooseUpgrade matcher . toTa
 payForTreachery :: (ReverseQueue m) => IdentityId -> Cost -> m ()
 payForTreachery ident cost = getRandom >>= \cid -> push $ SetActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty
 
+-- | The top cards of the player's deck are discarded.
+discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+discardTopOfDeck ident n = push $ IdentityMessage ident $ DiscardFrom FromDeck n Nothing
+
 -- | The card goes to its discard pile.
 discardCard :: (ReverseQueue m, IsCard card) => card -> m ()
 discardCard = push . DiscardedCard . toCard
@@ -341,8 +442,9 @@ surge = push . Surge
 gainSurge :: (ReverseQueue m, IsRef a) => a -> m ()
 gainSurge = push . GainSurge . toTarget
 
-revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
-revealEncounterCard ident = push . RevealEncounterCard ident
+-- | The player reveals the encounter card, its "when revealed" windows answered.
+revealCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+revealCard ident = push . RevealEncounterCard ident
 
 -- | The player draws the top card of the encounter deck and reveals it.
 revealTopOfEncounterDeck :: (ReverseQueue m) => IdentityId -> m ()
@@ -350,13 +452,8 @@ revealTopOfEncounterDeck = push . DrawAndRevealEncounterCard
 
 -- | The top cards of the encounter deck are discarded, the target told which
 -- ('WithDiscarded').
-discardTopOfEncounterDeck :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
-discardTopOfEncounterDeck n = push . DiscardTopOfEncounterDeck n . Just . toTarget
-
--- | Encounter cards are discarded until one matches, the target told it
--- ('WithDiscardedMatch').
-discardEncounterUntil :: (ReverseQueue m, IsRef target) => CardMatcher -> target -> m ()
-discardEncounterUntil matcher = push . DiscardUntil FromEncounterDeck matcher . toTarget
+discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
+discardTopOfEncounterDeckFor n = push . DiscardTopOfEncounterDeck n . Just . toTarget
 
 shuffleIntoEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
@@ -369,19 +466,8 @@ searchAndRevealEncounterCard ident = push . SearchForAndRevealEncounterCard iden
 searchAndPutIntoPlayEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
 searchAndPutIntoPlayEncounterCard ident = push . SearchForAndPutIntoPlayEncounterCard ident
 
-putTopOfDeckIntoPlayAsDrone :: (ReverseQueue m) => IdentityId -> m ()
-putTopOfDeckIntoPlayAsDrone = push . PutTopOfDeckIntoPlayAsDrone
-
--- | The villain is dealt a boost card.
-dealBoost :: (ReverseQueue m) => VillainId -> m ()
-dealBoost = push . DealBoost . toTarget
-
 addAccelerationToken :: (ReverseQueue m) => m ()
 addAccelerationToken = push AddAccelerationToken
-
--- | Threat a card places on the scheme ('placeThreatOn'), answered as it would be placed.
-placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
-placeThreat scheme = pushAll . placeThreatOn (toScheme scheme)
 
 -- | Threat placed on each scheme matching.
 placeThreatOnEach :: (ReverseQueue m, IsRef source) => source -> Natural -> SchemeMatcher -> m ()
@@ -398,6 +484,10 @@ createEffect def source = push . CreatedEffect def (toSource source)
 
 disableEffect :: (ReverseQueue m) => EffectId -> m ()
 disableEffect eid = push $ EffectMessage eid DisableEffect
+
+-- | The disabled effect leaves the game.
+effectDisabled :: (ReverseQueue m) => EffectId -> m ()
+effectDisabled = push . DisabledEffect
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (ReverseQueue m, IsRef a, ToJSON v) => a -> Text -> v -> m ()

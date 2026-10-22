@@ -9,9 +9,8 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Id
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 
@@ -24,9 +23,9 @@ newtype KillerForHire = KillerForHire (Attrs SideScheme)
 
 -- | When Revealed: place an additional 1 threat per hero here.
 instance RunMessage KillerForHire where
-  runMessage msg s@(KillerForHire attrs) = case msg of
+  runMessage msg s@(KillerForHire attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       n <- fromIntegral <$> fromGameValue (PerPlayer 1)
-      pushAll $ placeThreatOn (SchemeSideSchemeId ident) n
+      placeThreat ident n
       pure s
     _ -> KillerForHire <$> runMessage msg attrs

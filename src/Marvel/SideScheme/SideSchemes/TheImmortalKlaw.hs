@@ -9,10 +9,9 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -33,15 +32,15 @@ instance HasModifiersFor TheImmortalKlaw where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage TheImmortalKlaw where
-  runMessage msg s@(TheImmortalKlaw attrs) = case msg of
+  runMessage msg s@(TheImmortalKlaw attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         villain <- selectJust ActiveVillain
-        push $ VillainMessage villain (VillainHitPointsChanged 10)
+        changeVillainHitPoints villain 10
         pure s
       DefeatSideScheme -> do
         villain <- selectJust ActiveVillain
-        push $ VillainMessage villain (VillainHitPointsChanged (-10))
+        changeVillainHitPoints villain (-10)
         pure s
       _ -> TheImmortalKlaw <$> runMessage msg attrs
     _ -> TheImmortalKlaw <$> runMessage msg attrs

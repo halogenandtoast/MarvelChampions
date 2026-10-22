@@ -9,10 +9,9 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
@@ -27,17 +26,13 @@ newtype TheMastersOfEvil = TheMastersOfEvil (Attrs SideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage TheMastersOfEvil where
-  runMessage msg ss@(TheMastersOfEvil attrs) = case msg of
+  runMessage msg ss@(TheMastersOfEvil attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
-        push $
-          DiscardUntil
-            FromEncounterDeck
-            (CardWithType MinionType <> CardWithTrait MastersOfEvil)
-            (toTarget attrs)
+        discardUntil FromEncounterDeck (CardWithType MinionType <> CardWithTrait MastersOfEvil) attrs
         pure ss
       _ -> TheMastersOfEvil <$> runMessage msg attrs
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
       firstPlayer <- selectJust FirstPlayer
-      ss <$ push (PutEncounterCardIntoPlay firstPlayer card)
+      ss <$ putEncounterCardIntoPlay firstPlayer card
     _ -> TheMastersOfEvil <$> runMessage msg attrs

@@ -20,11 +20,10 @@ import Marvel.Id hiding (VillainId)
 import Marvel.Id as X (VillainId)
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Message hiding (VillainConfused, VillainStunned)
+import Marvel.Message.Lifted hiding (VillainConfused, VillainStunned)
 import Marvel.Message qualified as Msg
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Window qualified as W
@@ -256,15 +255,11 @@ getModifiedKeywords attrs = do
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
 
-runVillainMessage ::
-  (HasQueue m, HasGame m) => VillainMessage -> Attrs Villain -> m (Attrs Villain)
+runVillainMessage :: (ReverseQueue m) => VillainMessage -> Attrs Villain -> m (Attrs Villain)
 runVillainMessage msg attrs = case msg of
   VillainAdvanced -> do
-    pushAll
-      [ VillainMessage (villainId attrs) SetVillainHp
-      , CheckWindows
-          [W.Window W.When $ W.RevealVillain (villainId attrs) W.RevealedFromVillain]
-      ]
+    villainStep vid SetVillainHp
+    checkWindows [W.Window W.When $ W.RevealVillain vid W.RevealedFromVillain]
     pure attrs
   SetVillainHp -> do
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
@@ -273,7 +268,7 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp'
   VillainHitPointsChanged n -> do
     let remaining = unHp (villainHp attrs) + n
-    when (remaining <= 0) $ push $ VillainMessage (villainId attrs) VillainDefeated
+    when (remaining <= 0) $ defeatVillain vid
     pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
@@ -286,7 +281,7 @@ runVillainMessage msg attrs = case msg of
   -- retaliate answers the attack whether or not a tough status card took its damage
   VillainRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    pushAll $ concat [retaliateDamage (toSource attrs) attacker n | Retaliate n <- toList keywords]
+    for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
   VillainDamaged _ damage -> do
     if villainTough attrs && not (damageIgnoresTough damage)
@@ -298,7 +293,7 @@ runVillainMessage msg attrs = case msg of
               (fromIntegral . unHp $ villainHp attrs)
               == 0
           )
-          (push $ VillainMessage (villainId attrs) VillainDefeated)
+          (defeatVillain vid)
         pure $
           attrs
             & hpL
@@ -307,7 +302,7 @@ runVillainMessage msg attrs = case msg of
                 . subtract (fromIntegral $ damageAmount damage)
                 . unHp
   VillainDefeated -> do
-    push (GameOver Won)
+    gameOver Won
     pure attrs
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   Msg.VillainStunned _ -> pure $ attrs & stunnedL .~ True
@@ -316,29 +311,24 @@ runVillainMessage msg attrs = case msg of
     if villainConfused attrs
       then pure $ attrs & confusedL .~ False
       else do
-        pushAll
-          [ DealBoost (toTarget attrs)
-          , VillainMessage (villainId attrs) VillainFlipBoostCards
-          , VillainMessage (villainId attrs) VillainSchemed
-          , ClearBoosts
-          ]
+        dealBoost attrs
+        villainStep vid VillainFlipBoostCards
+        villainStep vid VillainSchemed
+        clearBoosts
         player <- getActivePlayerId
         pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
-    push $ VillainMessage (villainId attrs) (VillainAttacks ident)
+    enemyAttacks vid ident
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
   VillainAttacks ident ->
     if villainStunned attrs
       then pure $ attrs & stunnedL .~ False & \a -> a {villainAttackTarget = Nothing}
       else do
-        pushAll
-          [ CheckWindows
-              [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
-          , VillainMessage (villainId attrs) (VillainBeginAttack ident)
-          , VillainMessage (villainId attrs) VillainEndAttack
-          , ClearBoosts
-          ]
+        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        villainStep vid (VillainBeginAttack ident)
+        villainStep vid VillainEndAttack
+        clearBoosts
         -- the attack is under way from when it is declared, as its would windows open
         atk <- getModifiedAttack attrs
         pure $
@@ -346,14 +336,12 @@ runVillainMessage msg attrs = case msg of
             & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   VillainBeginAttack ident -> do
     atk <- getModifiedAttack attrs
-    pushAll
-      [ CheckWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-      , DealBoost (toTarget attrs)
-      , DeclareDefense ident (toEnemyId attrs) AnyDefense
-      , VillainMessage (villainId attrs) VillainFlipBoostCards
-      , VillainMessage (villainId attrs) VillainAttacked
-      , CheckWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
-      ]
+    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    dealBoost attrs
+    declareDefense ident vid AnyDefense
+    villainStep vid VillainFlipBoostCards
+    villainStep vid VillainAttacked
+    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
       attrs {villainAttackTarget = Nothing}
         & attackingL
@@ -368,20 +356,8 @@ runVillainMessage msg attrs = case msg of
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         sch <- getModifiedScheme attrs
-        let threat = sch + villainBoost attrs
-        pushAll $
-          [ CheckWindows
-              [ W.Window W.Would $
-                  W.ThreatPlaced
-                    W.ThreatFromVillain
-                    (SchemeMainSchemeId mainSchemeId)
-                    threat
-              ]
-          | threat > 0
-          ]
-          <> [ MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
-             , CheckWindows [W.Window W.After $ W.Schemed (villainId attrs)]
-             ]
+        placeThreatFrom W.ThreatFromVillain mainSchemeId (sch + villainBoost attrs)
+        checkWindows [W.Window W.After $ W.Schemed vid]
         pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
       _ -> error "not Main scheme"
   VillainAttacked -> do
@@ -389,12 +365,7 @@ runVillainMessage msg attrs = case msg of
       Nothing -> error "No current attack"
       Just attack' -> do
         attackedYou (attackEnemy attack') (attackCharacter attack')
-        case attackCharacter attack' of
-          IdentityCharacter ident ->
-            push $ IdentityMessage ident $ IdentityWasAttacked attack'
-          AllyCharacter ident ->
-            push $ AllyMessage ident $ AllyWasAttacked attack'
-          _ -> error "Invalid damage target"
+        wasAttacked attack'
     pure $ attrs & boostL .~ 0
   VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
@@ -404,17 +375,11 @@ runVillainMessage msg attrs = case msg of
   -- each boost card is turned face up in turn, and its icons added, which an interrupt
   -- to its turning face up may cancel
   VillainFlipBoostCards -> do
-    let enemy = EnemyVillainId (villainId attrs)
-    pushAll $
-      concatMap
-        ( \card ->
-            [ CheckWindows [W.Window W.When $ W.FlippedBoostCard card enemy]
-            , RevealBoostCard card enemy
-            , VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
-            ]
-        )
-        (villainBoostCards attrs)
-        <> [VillainMessage (villainId attrs) VillainCheckAdditionalBoosts]
+    for_ (villainBoostCards attrs) \card -> do
+      checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
+      revealBoostCard card vid
+      villainStep vid (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+    villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
   VillainAddBoost n ->
     pure $
@@ -422,15 +387,14 @@ runVillainMessage msg attrs = case msg of
         & (boostL +~ n)
         & (attackingL . _Just . attackDamageL +~ n)
   VillainCheckAdditionalBoosts -> do
-    unless
-      (null $ villainBoostCards attrs)
-      (push $ VillainMessage (villainId attrs) VillainFlipBoostCards)
+    unless (null $ villainBoostCards attrs) $ villainStep vid VillainFlipBoostCards
     pure attrs
  where
+  vid = villainId attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
 
 instance RunMessage (Attrs Villain) where
-  runMessage msg attrs = case msg of
+  runMessage msg attrs = runQueueT $ case msg of
     GiveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ True
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
     AttachmentRemoved attachmentId -> do

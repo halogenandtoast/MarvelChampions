@@ -25,7 +25,7 @@ instance RunMessage RitualCombat where
   runMessage msg t@(RitualCombat attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
-        discardTopOfEncounterDeck 1 attrs
+        discardTopOfEncounterDeckFor 1 attrs
         pure . RitualCombat $ attrs & resolverL ?~ identityId
       _ -> RitualCombat <$> runMessage msg attrs
     WithDiscarded target _ (onlyEncounterCards -> cards)

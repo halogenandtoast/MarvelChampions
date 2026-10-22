@@ -10,10 +10,9 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id as X (EffectId)
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 
 data Effect = forall a. (IsEffect a) => Effect a
@@ -133,22 +132,14 @@ effectValidFor e target = case (target, effectMatcher e) of
   _ -> pure False
 
 instance RunMessage (Attrs Effect) where
-  runMessage msg a = case msg of
+  runMessage msg a = runQueueT $ case msg of
     EffectMessage ident msg' | ident == effectId a -> case msg' of
-      DisableEffect -> a <$ push (DisabledEffect $ effectId a)
+      DisableEffect -> a <$ effectDisabled (effectId a)
       _ -> pure a
     -- an effect on an event lasts while the event resolves
     EventMessage eid ResolvedEvent
       | effectMatcher a == EventEntity eid ->
-          a <$ push (EffectMessage (effectId a) DisableEffect)
-    EndPhase _ ->
-      a
-        <$ when
-          (effectEnds a == Just DisableAtEndOfPhase)
-          (push $ EffectMessage (effectId a) DisableEffect)
-    EndRound ->
-      a
-        <$ when
-          (effectEnds a == Just DisableAtEndOfRound)
-          (push $ EffectMessage (effectId a) DisableEffect)
+          a <$ disableEffect (effectId a)
+    EndPhase _ -> a <$ when (effectEnds a == Just DisableAtEndOfPhase) (disableEffect $ effectId a)
+    EndRound -> a <$ when (effectEnds a == Just DisableAtEndOfRound) (disableEffect $ effectId a)
     _ -> pure a

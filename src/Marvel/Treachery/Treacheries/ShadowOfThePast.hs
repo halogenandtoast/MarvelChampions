@@ -47,7 +47,7 @@ instance RunMessage ShadowOfThePast where
       RevealTreachery identityId -> do
         cards <- selectList (NemesisSetFor identityId)
         let (minions, sideSchemes, rest) = partitionNemesisSet cards
-        for_ (minions <> sideSchemes) (revealEncounterCard identityId)
+        for_ (minions <> sideSchemes) (revealCard identityId)
         when (notNull rest) $ shuffleIntoEncounterDeck rest
         -- the nemesis minion did not enter play: it already has
         pure $ if null minions then ShadowOfThePast (attrs & surgeL .~ True) else t
