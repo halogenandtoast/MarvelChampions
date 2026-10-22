@@ -6,6 +6,7 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Game.Public (publicGame)
+import Marvel.MainScheme (lookupMainScheme)
 import Marvel.Modifier (Modifier (RedirectAccelerationTokens))
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Minions
@@ -256,6 +257,22 @@ spec = describe "game areas" do
       resolve [PlaceAccelerationToken ms]
       getAccelerationCountIn there `shouldReturn` before + 1
       getsGame (map areaAccelerationTokens . gameAreas) `shouldReturn` [0, 1]
+
+  it "The Master of Time redirects acceleration tokens only once flipped to 2B" do
+    tg <- testGame ["spider-man", "thor"]
+    let q = player2 tg
+    inGame tg do
+      _ <- splitOff q
+      other <- addMainSchemeFor q "01097"
+      -- 2A, its When Revealed not yet resolved, in the first area
+      mid <- getRandom
+      let master = fromMaybe (error "no Master of Time") (lookupMainScheme "11008" mid)
+      withGame_ $ entitiesL . mainSchemesL %~ insertMap mid master
+      resolve [PlaceAccelerationToken other]
+      getsGame (map areaAccelerationTokens . gameAreas) `shouldReturn` [0, 1]
+      resolve [CardSpecific (MainSchemeRef mid) "flipToB" Null]
+      resolve [PlaceAccelerationToken other]
+      getsGame (map areaAccelerationTokens . gameAreas) `shouldReturn` [1, 1]
 
   it "the side-scheme deck is made again from its discard pile without penalty" do
     tg <- testGame ["spider-man"]
