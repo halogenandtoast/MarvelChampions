@@ -33,4 +33,5 @@ import Marvel.Treachery.Treacheries.UnderFire as X
 import Marvel.Treachery.Treacheries.YonRoggsTreason as X
 import Marvel.Treachery.Treacheries.HailHydra as X
 import Marvel.Treachery.Treacheries.Harvest as X
+import Marvel.Treachery.Treacheries.DeadlyShot as X
 import Marvel.Treachery.Treacheries.Thoughtcasting as X

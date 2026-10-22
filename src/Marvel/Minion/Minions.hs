@@ -23,4 +23,5 @@ import Marvel.Minion.Minions.YonRogg as X
 import Marvel.Minion.Minions.BaronZemo as X
 import Marvel.Minion.Minions.ThomasEdison as X
 import Marvel.Minion.Minions.EdisonsGiantRobot as X
+import Marvel.Minion.Minions.Taskmaster as X
 import Marvel.Minion.Minions.BaronMordo as X

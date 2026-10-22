@@ -61,6 +61,18 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard endurance
   , SomeUpgradeCard enhancedReflexes
   , SomeUpgradeCard downTime
+  , SomeUpgradeCard attacrobatics
+  , SomeUpgradeCard blackWidowsGauntlet
+  , SomeUpgradeCard grapplingHook
+  , SomeUpgradeCard synthSuit
+  , SomeUpgradeCard widowsBite
+  , SomeUpgradeCard counterintelligence
+  , SomeUpgradeCard spycraft
+  , SomeUpgradeCard targetAcquired
+  , SomeUpgradeCard counterattack
+  , SomeUpgradeCard rapidResponse
+  , SomeUpgradeCard defensiveStance
+  , SomeUpgradeCard espionage
   , SomeUpgradeCard cloakOfLevitation
   , SomeUpgradeCard magicalEnhancements
   , SomeUpgradeCard theEyeOfAgamotto

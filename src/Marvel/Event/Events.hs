@@ -45,6 +45,9 @@ import Marvel.Event.Events.Tackle as X
 import Marvel.Event.Events.Melee as X
 import Marvel.Event.Events.ConcussiveBlow as X
 import Marvel.Event.Events.MoraleBoost as X
+import Marvel.Event.Events.CovertOps as X
+import Marvel.Event.Events.DanceOfDeath as X
+import Marvel.Event.Events.StealthStrike as X
 import Marvel.Event.Events.MasterOfTheMysticArts as X
 import Marvel.Event.Events.CrimsonBandsOfCyttorak as X
 import Marvel.Event.Events.ImagesOfIkonn as X

@@ -9,6 +9,7 @@ import Marvel.Id
 import Marvel.Minion.Minions
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
+import Marvel.Minion.Cards qualified as Cards
 
 instance FromJSON Minion where
   parseJSON = withObject "Minion" $ \o -> do
@@ -51,6 +52,8 @@ allMinions =
       , SomeMinionCard (reprintAs Cards.hydraSoldierCaptainAmerica hydraSoldier)
       , SomeMinionCard thomasEdison
       , SomeMinionCard edisonsGiantRobot
+      , SomeMinionCard taskmaster
+      , SomeMinionCard (reprintAs Cards.hydraMercenaryBlackWidow hydraMercenary)
       , SomeMinionCard baronMordo
       ]
 

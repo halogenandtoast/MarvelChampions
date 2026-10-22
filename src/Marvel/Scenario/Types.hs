@@ -261,7 +261,9 @@ instance RunMessage (Attrs Scenario) where
     Surge _ | scenarioReshufflesThisRound >= 3 -> pure attrs
     Surge ident -> do
       let (ecs, deck') = splitAt 1 scenarioEncounterDeck
-      pushAll $ map (RevealEncounterCard ident) ecs
+      pushAll $
+        CheckWindows [W.Window W.Would $ W.SurgeResolves ident]
+          : map (RevealEncounterCard ident) ecs
       when (null deck') (push EmptyScenarioDeck)
       pure $ attrs & encounterDeckL .~ deck'
     DrawAndRevealEncounterCard ident -> do

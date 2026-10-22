@@ -32,6 +32,7 @@ allSideSchemes = fromList $ map
   , theDoomsdayChair
   , hitSquad
   , generationWhy
+  , killerForHire
   , openTheDarkDimension
   ]
 
@@ -169,6 +170,12 @@ generationWhy :: CardDef
 generationWhy =
   (sideScheme "05026" "Generation Why?" [Boost, Boost, Boost] MsMarvelNemesis 1)
     { cdHazards = 1
+    }
+
+killerForHire :: CardDef
+killerForHire =
+  (sideScheme "08027" "Killer for Hire" [Boost, Boost, Boost] BlackWidowNemesis 1)
+    { cdAcceleration = 1
     }
 
 openTheDarkDimension :: CardDef

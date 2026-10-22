@@ -26,6 +26,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
+import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (CardPlayed))
 
 costMessages ::
   ( MonadThrow m
@@ -251,12 +252,11 @@ instance RunMessage ActiveCost where
       cancelMatchingMessage (== (CheckPayment $ activeCostId activeCost))
       case activeCostTarget activeCost of
         ForCard card -> do
-          push $
-            PutCardIntoPlay
-              (activeCostIdentityId activeCost)
-              card
-              (activeCostPayment activeCost)
-              (activeCostWindow activeCost)
+          let ident = activeCostIdentityId activeCost
+          pushAll
+            [ PutCardIntoPlay ident card (activeCostPayment activeCost) (activeCostWindow activeCost)
+            , CheckWindows [Window After $ CardPlayed ident card]
+            ]
         ForAbility ab -> do
           rest <-
             concatMapM

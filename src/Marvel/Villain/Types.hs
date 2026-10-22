@@ -402,8 +402,8 @@ runVillainMessage msg attrs = case msg of
     pushAll $
       concatMap
         ( \card ->
-            CheckWindows [W.Window W.When $ W.FlippedBoostCard card enemy]
-              : [ VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+            [CheckWindows [W.Window W.When $ W.FlippedBoostCard card enemy]]
+              <> [ VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
                  , RevealBoostCard card enemy
                  ]
         )

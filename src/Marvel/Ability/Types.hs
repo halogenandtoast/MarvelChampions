@@ -40,6 +40,7 @@ data Limit
   | PerRound Natural
   | PerWindow Natural
   | NoLimit
+  | PerPhase Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
