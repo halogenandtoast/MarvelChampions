@@ -493,10 +493,6 @@ gainSurge = push . GainSurge . toTarget
 revealCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
 revealCard ident = push . RevealEncounterCard ident
 
--- | The player draws the top card of the encounter deck and reveals it.
-revealTopOfEncounterDeck :: (ReverseQueue m) => IdentityId -> m ()
-revealTopOfEncounterDeck = push . DrawAndRevealEncounterCard
-
 -- | The top cards of the encounter deck are discarded, the target told which
 -- ('WithDiscarded').
 discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
