@@ -50,6 +50,7 @@ data WindowMatcher
   | RoundEnds
   | -- | a player plays an event: not an event's ability resolved without it being played
     PlaysEvent WindowTiming IdentityMatcher
+  | BoostCardFlipped WindowTiming Activation
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -85,5 +86,12 @@ data WindowType
   | EncounterCardRevealed IdentityId EncounterCard
   | RoundEnded
   | EventPlayed IdentityId EventId
+  | -- | a boost card dealt to an enemy turned faceup, before its boost icons count
+    BoostCardTurnedFaceup EnemyId EncounterCard Activation
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
+-- | What an enemy's activation is.
+data Activation = AttackActivation | SchemeActivation
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

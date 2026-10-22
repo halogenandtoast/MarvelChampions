@@ -389,22 +389,27 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToVillain upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
+  -- each card is turned faceup, and its boost icons counted unless something cancels them
   VillainFlipBoostCards -> do
     let
-      boost =
-        foldr
-          ((+) . boostCount . cdBoostIcons . ecCardDef)
-          0
-          (villainBoostCards attrs)
+      enemy = EnemyVillainId (villainId attrs)
+      activation = maybe W.SchemeActivation (const W.AttackActivation) (villainAttacking attrs)
     pushAll $
-      map
-        (`RevealBoostCard` EnemyVillainId (villainId attrs))
+      concatMap
+        ( \c ->
+            [ CheckWindows [W.Window W.When $ W.BoostCardTurnedFaceup enemy c activation]
+            , VillainMessage (villainId attrs) (VillainCountBoostIcons c)
+            , RevealBoostCard c enemy
+            ]
+        )
         (villainBoostCards attrs)
         <> [VillainMessage (villainId attrs) VillainCheckAdditionalBoosts]
+    pure $ attrs & boostCardsL .~ mempty
+  VillainCountBoostIcons c -> do
+    let boost = boostCount . cdBoostIcons $ ecCardDef c
     pure $
       attrs
-        & (boostCardsL .~ mempty)
-        & (boostL .~ boost)
+        & (boostL +~ boost)
         & (attackingL . _Just . attackDamageL +~ boost)
   VillainCheckAdditionalBoosts -> do
     unless

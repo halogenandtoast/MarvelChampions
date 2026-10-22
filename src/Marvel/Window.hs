@@ -170,3 +170,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  BoostCardFlipped timing activation -> case windowType w of
+    BoostCardTurnedFaceup _ _ activation'
+      | windowTiming w == timing -> pure $ activation == activation'
+    _ -> pure False

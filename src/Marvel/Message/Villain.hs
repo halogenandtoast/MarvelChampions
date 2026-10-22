@@ -31,5 +31,7 @@ data VillainMessage
   | VillainAdvanced
   | -- | its hit points (and remaining hit points) go up or down by this much
     VillainHitPointsChanged Int
+  | -- | a boost card turned faceup adds its boost icons to the activation
+    VillainCountBoostIcons EncounterCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
