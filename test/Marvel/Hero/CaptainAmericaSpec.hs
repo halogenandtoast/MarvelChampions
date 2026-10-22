@@ -108,6 +108,40 @@ spec = describe "Captain America" do
         _ <- putInHand p "03003"
         offers (isPlay squirrel) `shouldReturn` False
 
+    it "reduces another player's ally when theirs is the round's first" do
+      tg <- testGame ["spider-man", "captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        -- Spider-Man, with no resource of Peter Parker's to pay with
+        changeForm p
+        -- Squirrel Girl costs 2: 1 card pays for her as the round's first ally
+        squirrel <- putInHand p "03013"
+        payment <- putInHand p "03003"
+        playWith squirrel [payment]
+        pass
+        alliesWith "03013" >>= (`shouldSatisfy` ((== 1) . length))
+        -- the discount is spent: a second ally costs full
+        wonder <- putInHand p "03014"
+        _ <- putInHand p "03003"
+        offers (isPlay wonder) `shouldReturn` False
+
+    it "works again next round" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        squirrel <- putInHand p "03013"
+        payment <- traverse (putInHand p) ["03003", "03003"]
+        changeForm p
+        playWith squirrel payment
+        pass
+        flipTo p B
+        runNow [EndRound]
+        wonder <- putInHand p "03014"
+        _ <- putInHand p "03003"
+        offers (isPlay wonder) `shouldReturn` True
+
     it "does not apply once an ally has been played as Captain America" do
       tg <- testGame ["captain-america"]
       let p = player1 tg

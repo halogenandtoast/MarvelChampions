@@ -40,14 +40,15 @@ newtype SteveRogers = SteveRogers (Attrs AlterEgo)
   deriving anyclass (IsAlterEgo)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
--- | Living Legend: the first ally the player plays each round costs 1 less, if no ally
--- has been played yet, in either form.
+-- | Living Legend: the first ally played each round, by any player, costs 1 less. Only
+-- the round's first: once an ally has been played this round (by anyone, in any form),
+-- no later one is reduced.
 instance HasModifiersFor SteveRogers where
-  getModifiersFor _ (IdentityRef ident) (SteveRogers a) | ident == alterEgoIdentityId a = do
+  getModifiersFor _ (IdentityRef _) _ = do
     played <- getPlayedThisRound
     pure
       [ ResourceCostReductionFor (CardWithType AllyType) 1
-      | not (any (\(p, def) -> p == ident && cdCardType def == AllyType) played)
+      | not (any ((== AllyType) . cdCardType . snd) played)
       ]
   getModifiersFor _ _ _ = pure []
 
