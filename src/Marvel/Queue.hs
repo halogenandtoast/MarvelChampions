@@ -42,6 +42,9 @@ pop = withQueue \case
   [] -> ([], Nothing)
   (x : xs) -> (xs, Just x)
 
+isQueued :: (HasQueue m) => (Message -> Bool) -> m Bool
+isQueued f = withQueue $ \q -> (q, any f q)
+
 cancelMatchingMessage :: (HasQueue m) => (Message -> Bool) -> m ()
 cancelMatchingMessage = replaceMatchingMessage (const [])
 

@@ -8,7 +8,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (sideSchemeHeldCards)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
-import Marvel.Minion.Types (minionStunned)
+import Marvel.Minion.Types (minionAttacking, minionStunned)
 import TestImport
 
 spec :: Spec
@@ -120,6 +120,20 @@ spec = describe "Spider-Man" do
       pass
       mainSchemeThreat `shouldReturn` before
       discardOf p `shouldReturn` [sense, energy]
+
+  it "a treachery cancelled by one Enhanced Spider-Sense is not offered to another" do
+    tg <- testGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      sense <- putInHand p "01004"
+      other <- putInHand p "01004"
+      energy <- putInHand p "01088"
+      _ <- putInHand p "01088"
+      _ <- revealNow p Treacheries.advance
+      playWith sense [energy]
+      offers (isPlay other) `shouldReturn` False
 
   it "Enhanced Spider-Sense cannot be played in alter-ego form" do
     tg <- testGame ["spider-man"]
@@ -400,6 +414,19 @@ spec = describe "Spider-Man" do
       pass
       runNow [MinionMessage (minionOf mercenary) (MinionAttacks p)]
       offers (isAbilityOf p) `shouldReturn` False
+
+  it "a minion's attack is over once it resolves" do
+    tg <- testGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      mercenary <- revealNow p Minions.hydraMercenary
+      pass
+      runNow [MinionMessage (minionOf mercenary) (MinionAttacks p)]
+      choose "take it undefended" isNoDefender
+      damageOf p `shouldReturn` 1
+      attacking <- getsGame (fmap (minionAttacking . toAttrs) . HashMap.lookup (minionOf mercenary) . gameMinions)
+      attacking `shouldBe` Just Nothing
 
   it "Eviction Notice is given to the Peter Parker player, whoever reveals it" do
     tg <- testGame ["captain-marvel", "spider-man"]

@@ -790,10 +790,18 @@ runGameMessage msg g@Game {..} = case msg of
     abilities <- getAbilitiesFor ident
     usedAbilities <- getUsedAbilities
     attrs <- getIdentity ident
+    -- a treachery's reveal is cancelled by taking it off the queue: its window then
+    -- closes, so a second cancel is not offered
+    let open = \case
+          W.Window _ (W.RevealTreachery tid _) -> isQueued \case
+            TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
+            _ -> False
+          _ -> pure True
+    openWindows <- filterM open windows
     playableCards <-
       concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
-        windows
+        openWindows
     let
       -- an ability on an encounter card is anyone's to trigger, so its limit counts
       -- every player's uses: a forced ability used once is not offered to the next
@@ -807,7 +815,7 @@ runGameMessage msg g@Game {..} = case msg of
               [ pure . withinLimit
               , passesCriteria ident
               , passesCanAffordCost ident
-              , \a -> anyM (`abilityInWindow` a) windows
+              , \a -> anyM (`abilityInWindow` a) openWindows
               ]
         )
         abilities

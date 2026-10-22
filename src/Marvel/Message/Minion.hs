@@ -22,6 +22,7 @@ data MinionMessage
   | MinionBeginAttack IdentityId
   | MinionEngagedIdentity IdentityId
   | MinionAttacked
+  | MinionEndAttack
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
   deriving stock (Show, Eq, Generic)

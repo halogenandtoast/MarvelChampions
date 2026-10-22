@@ -121,6 +121,7 @@ runMinionMessage msg attrs = case msg of
           [ CheckWindows
               [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
           , MinionMessage (minionId attrs) (MinionBeginAttack ident)
+          , MinionMessage (minionId attrs) MinionEndAttack
           ]
         pure attrs
   MinionBeginAttack ident -> do
@@ -152,6 +153,7 @@ runMinionMessage msg attrs = case msg of
           ]
         pure attrs
       _ -> error "Not the main scheme"
+  MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"
