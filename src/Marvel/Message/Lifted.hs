@@ -55,6 +55,10 @@ chooseOnePromptedAbout you prompt a choices = push . Ask you . promptedAbout pro
 chooseOneAtATime :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOneAtATime you choices = push . Ask you . ChooseOneAtATime =<< sequence choices
 
+-- | Ask each of the choices in the order the player picks, saying what is being asked.
+chooseOneAtATimePrompted :: (ReverseQueue m) => IdentityId -> Text -> [m Choice] -> m ()
+chooseOneAtATimePrompted you prompt choices = push . Ask you . prompted prompt . ChooseOneAtATime =<< sequence choices
+
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOrRunOne you choices = Choice.chooseOrRunOne you =<< sequence choices
@@ -210,6 +214,12 @@ instance Readyable IdentityId where
 instance Readyable AllyId where
   readied ally = AllyMessage ally ReadiedAlly
 
+instance Readyable SupportId where
+  readied support = SupportMessage support ReadiedSupport
+
+instance Readyable UpgradeId where
+  readied upgrade = UpgradeMessage upgrade ReadiedUpgrade
+
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
 
@@ -259,6 +269,11 @@ enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
 villainSchemes :: (ReverseQueue m) => VillainId -> m ()
 villainSchemes vid = push $ VillainMessage vid VillainSchemes
 
+-- | The minion's activation in the alter-ego's villain phase: a confused one only
+-- loses the confusion, otherwise it schemes ('minionSchemed').
+minionSchemes :: (ReverseQueue m) => MinionId -> m ()
+minionSchemes mid = push $ MinionMessage mid MinionSchemes
+
 healAllDamage :: (ReverseQueue m) => MinionId -> m ()
 healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
 
@@ -291,6 +306,15 @@ enemyRetaliates enemy = push . Msg.enemyRetaliates (toEnemy enemy)
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinion minion = pushAll . Msg.engageMinion minion
+
+-- | The identity is defeated, past the window for it ("would be defeated").
+defeatIdentity :: (ReverseQueue m) => IdentityId -> m ()
+defeatIdentity ident =
+  pushAll [CheckWindows [Window Would $ W.IdentityDefeat ident], IdentityMessage ident IdentityDefeated]
+
+-- | The player's turn is over: what lasts for the turn ends.
+identityEndedTurn :: (ReverseQueue m) => IdentityId -> m ()
+identityEndedTurn = push . IdentityEndedTurn
 
 -- | The identity flips to its other form.
 changeForm :: (ReverseQueue m) => IdentityId -> m ()
@@ -372,6 +396,10 @@ shuffleEncounterDeck = push ShuffleEncounterDeck
 discardTopOfEncounterDeck :: (ReverseQueue m) => Natural -> m ()
 discardTopOfEncounterDeck n = push $ DiscardTopOfEncounterDeck n Nothing
 
+-- | The cards go to the set-aside area.
+setAside :: (ReverseQueue m) => [Card] -> m ()
+setAside = push . SetAside
+
 -- | Cards are discarded from the zone until one matches, the target told which
 -- ('WithDiscardedMatch').
 discardUntil :: (ReverseQueue m, IsRef target) => FromZone -> CardMatcher -> target -> m ()
@@ -442,7 +470,7 @@ chooseUpgrade you matcher = resolveAs you . ChooseUpgrade matcher . toTarget
 
 -- | The player pays the cost for an encounter card, as a treachery asks.
 payForTreachery :: (ReverseQueue m) => IdentityId -> Cost -> m ()
-payForTreachery ident cost = getRandom >>= \cid -> push $ SetActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty
+payForTreachery ident cost = getRandom >>= \cid -> setActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty
 
 -- | The top cards of the player's deck are discarded.
 discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -614,6 +642,14 @@ searchFoundCards target = push . SearchFoundCards (toTarget target)
 
 -- * Paying
 
+-- | The cost is to be paid, as it says.
+setActiveCost :: (ReverseQueue m) => ActiveCost -> m ()
+setActiveCost = push . SetActiveCost
+
+-- | The card is spent on the cost.
+spendCard :: (ReverseQueue m) => ActiveCostId -> PlayerCard -> m ()
+spendCard acid = push . Spent acid
+
 -- | Part of the cost paid.
 paid :: (ReverseQueue m) => Payment -> m ()
 paid = push . Paid
@@ -649,6 +685,10 @@ cardPlayed ident card payment mWindow =
     , PutCardIntoPlay ident card payment mWindow
     , CheckWindows [Window After $ W.CardPlayed ident card]
     ]
+
+-- | The ability on the target resolves, as if triggered in the windows given.
+ranAbility :: (ReverseQueue m) => IdentityId -> Target -> Natural -> [W.WindowType] -> Payment -> m ()
+ranAbility ident target n windows = push . RanAbility ident target n windows
 
 -- | The ability is counted against its limit.
 usedAbility :: (ReverseQueue m) => IdentityId -> Ability -> m ()
