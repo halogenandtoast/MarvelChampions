@@ -82,6 +82,9 @@ modularSets =
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , Temporal
+  , Anachronauts
+  , MasterOfTime
 
   ]
 

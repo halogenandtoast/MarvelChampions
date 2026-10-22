@@ -57,6 +57,9 @@ allSideSchemes = fromList $ map
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , SomeSideSchemeCard timePortal
+  , SomeSideSchemeCard theAnachronauts
+  , SomeSideSchemeCard lightOfCenturiesSphere
 
   ]
 

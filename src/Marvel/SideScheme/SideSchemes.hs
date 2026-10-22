@@ -35,3 +35,6 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Rise of Red Skull
 
 -- The Once and Future Kang
+import Marvel.SideScheme.SideSchemes.TimePortal as X
+import Marvel.SideScheme.SideSchemes.TheAnachronauts as X
+import Marvel.SideScheme.SideSchemes.LightOfCenturiesSphere as X

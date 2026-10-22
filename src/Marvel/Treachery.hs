@@ -77,6 +77,8 @@ allTreacheries = fromList $ map
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , SomeTreacheryCard kangsChosen
+  , SomeTreacheryCard ancientGrudge
 
   ]
 

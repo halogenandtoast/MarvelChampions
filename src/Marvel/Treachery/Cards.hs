@@ -69,6 +69,8 @@ allTreacheries = fromList $ map
   -- The Rise of Red Skull
 
   -- The Once and Future Kang
+  , kangsChosen
+  , ancientGrudge
 
   ]
 
@@ -263,3 +265,14 @@ lightningBolt = treachery "02044" "Lightning Bolt" [Star, Boost] PowerDrain 1
 
 shockTherapy :: CardDef
 shockTherapy = treachery "02045" "Shock Therapy" [Star, Boost] PowerDrain 1
+
+-- The Once and Future Kang
+
+kangsChosen :: CardDef
+kangsChosen =
+  (treachery "11046" "Kang's Chosen" [Boost, Boost] Anachronauts 2)
+    { cdKeywords = singleton (Keyword.Incite 1)
+    }
+
+ancientGrudge :: CardDef
+ancientGrudge = treachery "11051" "Ancient Grudge" [Boost] MasterOfTime 2

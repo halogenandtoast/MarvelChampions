@@ -51,3 +51,5 @@ import Marvel.Treachery.Treacheries.ShockTherapy as X
 -- The Rise of Red Skull
 
 -- The Once and Future Kang
+import Marvel.Treachery.Treacheries.KangsChosen as X
+import Marvel.Treachery.Treacheries.AncientGrudge as X

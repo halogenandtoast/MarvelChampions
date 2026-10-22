@@ -68,6 +68,16 @@ allMinions =
       -- The Rise of Red Skull
 
       -- The Once and Future Kang
+      , SomeMinionCard ancientWarrior
+      , SomeMinionCard chitauriSoldier
+      , SomeMinionCard tyrannosaurusRex
+      , SomeMinionCard apocryphus
+      , SomeMinionCard deathunt9000
+      , SomeMinionCard sirRaston
+      , SomeMinionCard terminatrix
+      , SomeMinionCard wildrun
+      , SomeMinionCard kangMasterOfTime
+      , SomeMinionCard timeDisplacedSoldier
 
       ]
 
