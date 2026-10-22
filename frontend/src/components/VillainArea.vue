@@ -10,6 +10,7 @@ import type { AreaView, DeckView, GameView, SchemeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
+import GameIcon from '../browser/components/GameIcon.vue'
 import TokenStack from './TokenStack.vue'
 
 const { game, area = null } = defineProps<{ game: GameView; area?: AreaView | null }>()
@@ -30,6 +31,8 @@ const environments = computed(() => inArea(game.environments, area?.environments
 const decks = computed(() => area?.decks ?? game.areas?.[0]?.decks ?? [])
 // the acceleration tokens adding threat to this area's main scheme: the first area's
 const tokens = computed(() => area?.accelerationTokens ?? game.accelerationTokens ?? 0)
+// and the acceleration icons on cards in play there
+const icons = computed(() => area?.accelerationIcons ?? game.accelerationIcons ?? 0)
 const deckLabel = (deck: DeckView) => {
   if (deck.kind === 'villain') return t('game.piles.villainDeck', { name: deck.name ?? '' })
   if (deck.kind === 'sideScheme') return t('game.piles.sideSchemeDeck')
@@ -91,7 +94,10 @@ const escalation = (scheme: SchemeView) => {
         <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
-          {{ t('game.perRound', { count: escalation(scheme)! + tokens }) }}
+          {{ t('game.perRound', { count: escalation(scheme)! + tokens + icons }) }}
+          <span v-if="icons" class="icons" :title="t('game.accelerationIcons', icons)">
+            <GameIcon name="acceleration" :label="t('game.accelerationIcons', icons)" /><template v-if="icons > 1">×{{ icons }}</template>
+          </span>
           <TokenStack
             v-if="tokens"
             kind="acceleration"
@@ -162,6 +168,7 @@ const escalation = (scheme: SchemeView) => {
 
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .scheme.main :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
+.escalation .icons { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--crimson-bright); }
 .escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 

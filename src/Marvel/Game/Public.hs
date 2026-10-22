@@ -84,6 +84,7 @@ data GameView = GameView
   , boostCards :: [BoostView]
   -- ^ face down as dealt, then face up once flipped
   , accelerationTokens :: Natural
+  , accelerationIcons :: Natural
   , question :: HashMap IdentityId QuestionView
   , questionVersion :: Int
   , activeCost :: Maybe ActiveCostView
@@ -122,6 +123,8 @@ data AreaView = AreaView
   , decks :: [DeckView]
   , accelerationTokens :: Natural
   -- ^ the acceleration tokens next to its main scheme
+  , accelerationIcons :: Natural
+  -- ^ the acceleration icons in it
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -399,6 +402,7 @@ gameView seesHand g = do
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
       , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g))
+      , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
       , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
       , activeCost
@@ -443,6 +447,7 @@ gameView seesHand g = do
                 <> concat [deckView "named" (Just n) k | first, k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
           , accelerationTokens = areaAccelerationTokens a
+          , accelerationIcons = accelerationIconsIn g aid
           }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
   attachmentsIn ids = [attachmentView a | a <- HashMap.elems (gameAttachments g), toId a `HashSet.member` ids]

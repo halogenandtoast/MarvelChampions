@@ -2755,8 +2755,12 @@ getAccelerationCount = getAccelerationCountIn . areaId =<< getYourArea
 -- (RR, Acceleration Token), and the area's acceleration icons.
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCountIn aid = getsGame \g ->
-  sum [areaAccelerationTokens a | a <- gameAreas g, areaId a == aid]
-    + sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
+  sum [areaAccelerationTokens a | a <- gameAreas g, areaId a == aid] + accelerationIconsIn g aid
+
+-- | The acceleration icons in the area, on its schemes, villains and obligations.
+accelerationIconsIn :: Game -> AreaId -> Natural
+accelerationIconsIn g aid =
+  sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
     -- an obligation in a player's play area, in theirs
     + sum

@@ -14,6 +14,7 @@
   "crisis": "Crisis",
   "perRound": "+{count} threat each villain phase",
   "acceleration": "{count} acceleration",
+  "accelerationIcons": "{n} acceleration icon | {n} acceleration icons",
   "threatOn": "{count} threat",
   "damageOn": "{count} damage",
   "countersOn": "{count} counters",

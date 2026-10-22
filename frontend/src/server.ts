@@ -117,6 +117,8 @@ export interface AreaView {
   decks: DeckView[]
   /** the acceleration tokens adding threat to its main scheme */
   accelerationTokens: number
+  /** the acceleration icons on cards in play, each a threat more each villain phase */
+  accelerationIcons?: number
 }
 
 export interface MinionView extends CardView {
@@ -222,6 +224,8 @@ export interface GameView {
   /** boost cards: face down, without a code, until flipped */
   boostCards?: BoostView[]
   accelerationTokens: number
+  /** the acceleration icons on cards in play, each a threat more each villain phase */
+  accelerationIcons?: number
   question: Record<string, QuestionView>
   questionVersion: number
   activeCost?: ActiveCostView | null
