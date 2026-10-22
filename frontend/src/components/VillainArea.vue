@@ -1,23 +1,37 @@
 <script setup lang="ts">
 // The villain's side of the table: the villain, the main scheme with its threat, the side
-// schemes, and the encounter deck and discard.
+// schemes, and the encounter deck and discard. With several game areas, only what is in the
+// area given; with several villains, the active one marked; a villain's own deck, and any
+// other deck, as piles of their own.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
-import type { GameView, SchemeView } from '../server'
+import type { AreaView, DeckView, GameView, SchemeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
 import TokenStack from './TokenStack.vue'
 
-const { game } = defineProps<{ game: GameView }>()
-const { t } = useI18n()
+const { game, area = null } = defineProps<{ game: GameView; area?: AreaView | null }>()
+const { t, te } = useI18n()
 const cards = useCards()
 
-const villains = computed(() => game.villains ?? [])
-const mainSchemes = computed(() => game.mainSchemes ?? [])
-const sideSchemes = computed(() => game.sideSchemes ?? [])
-const environments = computed(() => game.environments ?? [])
+// what is in the area, or everything when there is no area to narrow to
+const inArea = <T extends { id: string }>(xs: T[] | undefined, ids: string[] | undefined): T[] =>
+  area && ids ? (xs ?? []).filter((x) => ids.includes(x.id)) : (xs ?? [])
+const villains = computed(() => inArea(game.villains, area?.villains))
+const mainSchemes = computed(() => inArea(game.mainSchemes, area?.mainSchemes))
+const sideSchemes = computed(() => inArea(game.sideSchemes, area?.sideSchemes))
+const environments = computed(() => inArea(game.environments, area?.environments))
+const decks = computed(() => area?.decks ?? game.areas?.[0]?.decks ?? [])
+const deckLabel = (deck: DeckView) => {
+  if (deck.kind === 'villain') return t('game.piles.villainDeck', { name: deck.name ?? '' })
+  if (deck.kind === 'sideScheme') return t('game.piles.sideSchemeDeck')
+  const key = `game.piles.named.${deck.name}`
+  return te(key) ? t(key) : (deck.name ?? '')
+}
+const discardLabel = (deck: DeckView) =>
+  deck.kind === 'villain' ? t('game.piles.villainDiscard', { name: deck.name ?? '' }) : t('game.piles.sideSchemeDiscard')
 const heroes = computed(() => Math.max(1, (game.players ?? []).length))
 
 // the threat that completes a scheme, printed per hero unless fixed
@@ -35,7 +49,8 @@ const escalation = (scheme: SchemeView) => {
 
 <template>
   <section class="villain-area" :aria-label="t('game.zones.villain')">
-    <div v-for="villain in villains" :key="villain.id" class="villain">
+    <div v-for="villain in villains" :key="villain.id" class="villain" :class="{ active: villains.length > 1 && villain.active }">
+      <span v-if="villains.length > 1 && villain.active" class="active-flag">{{ t('game.activeVillain') }}</span>
       <div class="body">
         <dl class="stats">
           <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ villain.scheme }}</dd></div>
@@ -91,6 +106,11 @@ const escalation = (scheme: SchemeView) => {
     <div class="encounter-piles">
       <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" pile="deck-encounter" />
       <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
+      <template v-for="deck in decks" :key="`${deck.kind}-${deck.name}`">
+        <Pile :label="deckLabel(deck)" back="encounter" :count="deck.size" />
+        <!-- a named deck's cards are discarded to the encounter discard pile -->
+        <Pile v-if="deck.kind !== 'named'" :label="discardLabel(deck)" :cards="deck.discard" />
+      </template>
     </div>
   </section>
 </template>
@@ -113,7 +133,10 @@ const escalation = (scheme: SchemeView) => {
 }
 /* what is attached to the villain a little smaller than the villain */
 .villain-attached { --card-width: var(--attached-width); }
-.villain { display: flex; flex-direction: column; gap: 8px; flex: none; }
+.villain { position: relative; display: flex; flex-direction: column; gap: 8px; flex: none; }
+/* of several villains, the one that activates */
+.villain.active .body :deep(.card) { outline: 2px solid #d6505a; outline-offset: 3px; }
+.active-flag { position: absolute; z-index: 1; top: -8px; right: 0; padding: 1px 7px; border-radius: 999px; background: #b8323a; color: #fff; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 /* its stats pinned to the card's left */
 .body { display: flex; gap: 6px; align-items: flex-start; }
 /* its health under the card alone */

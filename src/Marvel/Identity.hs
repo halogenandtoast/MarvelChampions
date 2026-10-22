@@ -736,11 +736,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       readies <- notElem CannotReady <$> getModifiers pid
       pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
+    -- the active villain of the player's area, if it has one, then their minions
     VillainAndMinionsActivate -> do
-      villain <- selectJust ActiveVillain
+      villain <- selectOne ActiveVillain
       case currentIdentity pid of
-        HeroSide _ -> enemyAttacks villain playerIdentityId
-        AlterEgoSide _ -> villainSchemes villain
+        HeroSide _ -> for_ villain (`enemyAttacks` playerIdentityId)
+        AlterEgoSide _ -> for_ villain villainSchemes
       identityStep playerIdentityId MinionsActivate
       pure pid
     -- read once the villain has activated: a minion its boost card put into play

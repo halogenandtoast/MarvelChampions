@@ -23,6 +23,7 @@ import Marvel.Message.Villain as X
 
 import Marvel.Ability.Types
 import Marvel.ActiveCost.Types
+import Marvel.Area (AreaId, DeckKey)
 import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
@@ -381,5 +382,28 @@ data Message
   | -- | one effect on several game elements at once, as damage dealt to each of several
     -- enemies: each message is run before anything any of them leads to
     Simultaneously [Message]
+  | -- | a new game area, the players given leaving theirs for it
+    CreateArea AreaId [IdentityId]
+  | MovePlayerToArea IdentityId AreaId
+  | -- | what is in the first area joins the second, and the first is gone
+    CombineAreas AreaId AreaId
+  | -- | the villain is the one that activates in its area, and "the villain" there
+    SetActiveVillain VillainId
+  | -- | the side scheme is the villain's own: the villain schemes onto it, it cannot
+    -- leave play while the villain is in play, and it is removed from the game with him
+    SetSignatureScheme VillainId SideSchemeId
+  | -- | a deck of its own is made from the cards, shuffled: a villain's encounter deck,
+    -- a named deck, the side-scheme deck
+    CreateDeck DeckKey [EncounterCard]
+  | RemoveDeck DeckKey
+  | -- | the encounter-deck message run against the deck given in place of the area's
+    -- encounter deck
+    UsingDeck DeckKey Message
+  | -- | a villain is defeated for good: the scenario says what that does, by default
+    -- the players win with no villain left, and otherwise he leaves play
+    ResolveVillainDefeat VillainId
+  | -- | each player in the area has been defeated, with players left elsewhere: the
+    -- scenario says what that does, by default nothing
+    AreaDefeated AreaId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

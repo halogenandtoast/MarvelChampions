@@ -211,6 +211,8 @@ data SideSchemeMatcher
   | SideSchemeWithId SideSchemeId
   | SideSchemeWithUpgrade UpgradeMatcher
   | NotSideScheme SideSchemeMatcher
+  | -- | the side scheme a villain matching owns, as Wrecker's Day of Reckoning
+    SignatureSchemeOf VillainMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

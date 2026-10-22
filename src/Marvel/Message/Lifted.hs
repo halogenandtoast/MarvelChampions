@@ -12,6 +12,7 @@ import Marvel.Prelude
 
 import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
+import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
@@ -765,6 +766,54 @@ putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
 
 dealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 dealEncounterCard = push . DealEncounterCard
+
+-- * Game areas and their decks
+--
+-- What "the villain", "the main scheme" and "the encounter deck" are is "your" area's
+-- ('getYourArea'); the players cannot target what is in other areas.
+
+-- | A new game area, the players given leaving theirs for it. Its id is new, so several
+-- may be made at once.
+createArea :: (ReverseQueue m) => [IdentityId] -> m AreaId
+createArea players = do
+  aid <- AreaId <$> getRandomR (1, maxBound)
+  push $ CreateArea aid players
+  pure aid
+
+-- | The player joins the area: the minions engaged with them, and the cards they
+-- control, go with them.
+movePlayerToArea :: (ReverseQueue m) => IdentityId -> AreaId -> m ()
+movePlayerToArea ident = push . MovePlayerToArea ident
+
+-- | Everything in the first area joins the second, and the first is gone.
+combineAreas :: (ReverseQueue m) => AreaId -> AreaId -> m ()
+combineAreas from = push . CombineAreas from
+
+-- | The villain becomes his area's active villain.
+setActiveVillain :: (ReverseQueue m) => VillainId -> m ()
+setActiveVillain = push . SetActiveVillain
+
+-- | The side scheme is the villain's own: he schemes onto it, it cannot leave play while
+-- he is in play, and it is removed from the game when he is defeated.
+setSignatureScheme :: (ReverseQueue m) => VillainId -> SideSchemeId -> m ()
+setSignatureScheme vid = push . SetSignatureScheme vid
+
+-- | A deck of its own made from the cards, shuffled, wherever they were.
+createDeck :: (ReverseQueue m) => DeckKey -> [EncounterCard] -> m ()
+createDeck key = push . CreateDeck key
+
+removeDeck :: (ReverseQueue m) => DeckKey -> m ()
+removeDeck = push . RemoveDeck
+
+-- | The body's encounter-deck steps (drawing, dealing, revealing, searching,
+-- discarding, shuffling) against the deck given: @fromDeck (NamedDeckKey
+-- "experimentalWeapons") (drawAndRevealEncounterCard you)@.
+fromDeck :: (ReverseQueue m) => DeckKey -> m () -> m ()
+fromDeck key body = pushAll . map (UsingDeck key) =<< capture body
+
+-- | The villain is defeated for good: the scenario says what follows.
+resolveVillainDefeat :: (ReverseQueue m) => VillainId -> m ()
+resolveVillainDefeat = push . ResolveVillainDefeat
 
 -- * Effects
 

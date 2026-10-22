@@ -2,10 +2,12 @@ module Marvel.Scenario.Types where
 
 import Marvel.Prelude
 
+import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
+import Marvel.Area (discardsTo, emptyPile, isEncounterDeck)
 import Marvel.Card
 import Marvel.Difficulty
 import Marvel.EncounterCard
@@ -13,6 +15,7 @@ import Marvel.EncounterSet
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
+import Marvel.Id (IdentityId)
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Id (EnemyId (..))
@@ -85,6 +88,10 @@ instance Entity Scenario where
     , scenarioSetAsideCards :: [Card]
     , scenarioAccelerationTokens :: Natural
     , scenarioReshufflesThisRound :: Natural
+    , scenarioDecks :: HashMap DeckKey Pile
+    -- ^ the decks besides the encounter deck, each with its discard pile
+    , scenarioCardDecks :: HashMap CardId DeckKey
+    -- ^ the deck a card of another deck than the encounter deck is discarded to
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -133,6 +140,18 @@ accelerationTokensL :: Lens' (Attrs Scenario) Natural
 accelerationTokensL =
   lens scenarioAccelerationTokens $ \m x -> m {scenarioAccelerationTokens = x}
 
+-- | The deck and its discard pile: the encounter deck's are the scenario's own.
+pileL :: DeckKey -> Lens' (Attrs Scenario) Pile
+pileL = \case
+  EncounterDeckKey ->
+    lens (\a -> Pile (scenarioEncounterDeck a) (scenarioDiscard a)) \a (Pile d x) -> a {scenarioEncounterDeck = d, scenarioDiscard = x}
+  key ->
+    lens (fromMaybe emptyPile . HashMap.lookup key . scenarioDecks) \a p -> a {scenarioDecks = HashMap.insert key p (scenarioDecks a)}
+
+-- | Each deck there is, the encounter deck first.
+deckKeys :: Attrs Scenario -> [DeckKey]
+deckKeys a = EncounterDeckKey : HashMap.keys (scenarioDecks a)
+
 mainSchemesL :: Lens' (Attrs Scenario) [CardCode]
 mainSchemesL = lens scenarioMainSchemes $ \m x -> m {scenarioMainSchemes = x}
 
@@ -167,27 +186,35 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
             , scenarioSetAsideCards = mempty
             , scenarioAccelerationTokens = 0
             , scenarioReshufflesThisRound = 0
+            , scenarioDecks = mempty
+            , scenarioCardDecks = mempty
             }
     }
 
--- | However it empties, the encounter deck is made again from the discard pile at once,
--- with an acceleration token; with no discard pile to make it from, the tokens would be
--- placed without end, and the players lose.
+-- | However it empties, an encounter deck is made again from its discard pile at once,
+-- with an acceleration token; with no discard pile to make the encounter deck from, the
+-- tokens would be placed without end, and the players lose. The side-scheme deck is made
+-- again without penalty; a named deck is not made again.
 instance RunMessage (Attrs Scenario) where
   runMessage msg attrs = do
     attrs' <- runQueueT $ runScenarioMessage msg attrs
     -- queued after what the message did, so the game is lost before any of it runs
-    runQueueT case (scenarioEncounterDeck attrs', scenarioDiscard attrs') of
-      ([], []) | notNull (scenarioEncounterDeck attrs) -> attrs' <$ gameOver Lost
-      ([], discard) | notNull discard -> do
+    runQueueT $ foldlM refill attrs' (deckKeys attrs')
+   where
+    refill a key = case a ^. pileL key of
+      Pile [] [] | key == EncounterDeckKey, notNull (scenarioEncounterDeck attrs) -> a <$ gameOver Lost
+      Pile [] discard | notNull discard, not (isNamed key) -> do
         deck' <- shuffleM discard
+        let penalty = if isEncounterDeck key then 1 else 0
         pure $
-          attrs'
-            & (accelerationTokensL +~ 1)
-            & (encounterDeckL .~ deck')
-            & (discardL .~ mempty)
-            & \a -> a {scenarioReshufflesThisRound = scenarioReshufflesThisRound a + 1}
-      _ -> pure attrs'
+          a
+            & (accelerationTokensL +~ penalty)
+            & (pileL key .~ Pile deck' [])
+            & \a' -> a' {scenarioReshufflesThisRound = scenarioReshufflesThisRound a' + penalty}
+      _ -> pure a
+    isNamed = \case
+      NamedDeckKey _ -> True
+      _ -> False
 
 -- | The top card of the encounter deck, which is never empty while its discard pile has
 -- cards: with neither, the players have lost.
@@ -203,9 +230,76 @@ leaves card attrs =
     & (setAsideCardsL %~ filter (/= EncounterCard card))
     & (encounterDeckL %~ filter (/= card))
     & (discardL %~ filter (/= card))
+    & \a -> a {scenarioDecks = HashMap.map (\(Pile d x) -> Pile (filter (/= card) d) (filter (/= card) x)) (scenarioDecks a)}
+
+-- | The encounter-deck messages, and the player whose area's deck they are on when not
+-- "you"'s.
+deckMessage :: Message -> Maybe (Maybe IdentityId)
+deckMessage = \case
+  DealEncounterCard ident -> Just (Just ident)
+  DrawAndRevealEncounterCard ident -> Just (Just ident)
+  SearchForAndRevealEncounterCard ident _ -> Just (Just ident)
+  SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
+  SearchForAndRevealScheme _ -> Just Nothing
+  DealBoost _ -> Just Nothing
+  DiscardTopOfEncounterDeck _ _ -> Just Nothing
+  ShuffleEncounterDeck -> Just Nothing
+  ShuffleIntoEncounterDeck _ -> Just Nothing
+  PutOnTopOfEncounterDeck _ -> Just Nothing
+  LookAtTopOfEncounterDeck _ _ -> Just Nothing
+  DiscardUntil FromEncounterDeck _ _ -> Just Nothing
+  _ -> Nothing
+
+-- | A message drawing from the deck, which a deck other than an encounter deck with
+-- nothing left in it does not do.
+drawsFromDeck :: Message -> Bool
+drawsFromDeck = \case
+  DealEncounterCard _ -> True
+  DrawAndRevealEncounterCard _ -> True
+  DealBoost _ -> True
+  _ -> False
+
+-- | The encounter-deck message run against the deck given: its cards stand in for the
+-- encounter deck's while it runs.
+runOnDeck :: (HasCallStack, ReverseQueue m) => DeckKey -> Message -> Attrs Scenario -> m (Attrs Scenario)
+runOnDeck EncounterDeckKey msg attrs = runDeckMessage EncounterDeckKey msg attrs
+runOnDeck key msg attrs
+  | drawsFromDeck msg && not (isEncounterDeck key) && null (pileDeck pile) = pure attrs
+  | otherwise = do
+      a' <- runDeckMessage key msg (attrs & pileL EncounterDeckKey .~ pile)
+      pure $ a' & pileL key .~ (a' ^. pileL EncounterDeckKey) & pileL EncounterDeckKey .~ (attrs ^. pileL EncounterDeckKey)
+ where
+  pile = attrs ^. pileL key
+
 
 runScenarioMessage :: (HasCallStack, ReverseQueue m) => Message -> Attrs Scenario -> m (Attrs Scenario)
-runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
+runScenarioMessage msg attrs = case msg of
+  UsingDeck key inner -> runOnDeck key inner attrs
+  _ | Just mIdent <- deckMessage msg -> do
+    key <- getDeckKeyFor =<< maybe getYou pure mIdent
+    runOnDeck key msg attrs
+  CreateDeck key cards -> do
+    deck' <- shuffleM cards
+    let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
+    pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
+  RemoveDeck EncounterDeckKey -> pure attrs
+  RemoveDeck key ->
+    pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}
+  -- to the discard pile of its own deck, wherever in the decks it was looked at
+  DiscardedCard (EncounterCard ec) -> do
+    let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
+    pure $ leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
+  -- the last villain defeated, the players win; otherwise he leaves play
+  ResolveVillainDefeat vid -> do
+    areas <- getAreas
+    others <- concatMapM (getVillainsInArea . areaId) areas
+    if any (/= vid) others then removeFromPlay (VillainRef vid) else gameOver Won
+    pure attrs
+  _ -> runDeckMessage EncounterDeckKey msg attrs
+
+-- | What the scenario does, the deck messages against the deck given.
+runDeckMessage :: (HasCallStack, ReverseQueue m) => DeckKey -> Message -> Attrs Scenario -> m (Attrs Scenario)
+runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
         shuffleM
@@ -261,15 +355,21 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
       pure attrs
     AddAccelerationToken -> do
       pure $ attrs & accelerationTokensL +~ 1
+    -- in each area its active villain activates against its players, and its hazard
+    -- icons deal its players more encounter cards
     BeginPhase VillainPhase -> do
       players <- getPlayers
-      hazards <- fromIntegral <$> getHazardCount
+      areas <- getAreas
+      hazards <- for areas \area -> do
+        here <- filterM (fmap ((== areaId area) . areaId) . getAreaOf) players
+        n <- fromIntegral <$> getHazardCountIn (areaId area)
+        pure $ if null here then [] else take n (cycle here)
       accelerateMainScheme
       for_ players \p -> do
         setActivePlayer p
         identityStep p VillainAndMinionsActivate
       for_ players dealEncounterCard
-      for_ (take hazards $ cycle players) dealEncounterCard
+      for_ (concat hazards) dealEncounterCard
       revealDealtEncounterCards
       passFirstPlayer
       endRound
@@ -322,8 +422,6 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
-    -- a card discarded from the encounter deck, as one looked at there, leaves it
-    DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :) & encounterDeckL %~ filter (/= ec)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
     LookAtTopOfEncounterDeck n target -> do
       searchFoundCards target $ EncounterCard <$> take (fromIntegral n) scenarioEncounterDeck
@@ -348,5 +446,6 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
   search ident matcher f = do
     let found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard)
     unless (null found) $ chooseOrRunOne ident [targeting card (f card) | card <- found]
-    shuffleEncounterDeck
+    -- the deck searched
+    if key == EncounterDeckKey then shuffleEncounterDeck else fromDeck key shuffleEncounterDeck
     pure attrs

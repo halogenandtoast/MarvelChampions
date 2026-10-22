@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Control.Monad.IO.Class
 import Control.Monad.Reader (ReaderT)
 import Marvel.Ability.Types
+import Marvel.Area (Area, AreaId, DeckKey, Pile)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
 import Marvel.Card.PlayerCard.Types
@@ -122,7 +123,19 @@ getVillainStage :: (HasGame m) => VillainId -> m Natural
 getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 getHazardCount :: (HasGame m) => m Natural
+getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCount :: (HasGame m) => m Natural
+getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
+-- Areas
+getAreas :: (HasGame m) => m [Area]
+getAreaOf :: (HasGame m) => IdentityId -> m Area
+getAreaOfTarget :: (HasGame m, IsRef a) => a -> m AreaId
+getYourArea :: (HasGame m) => m Area
+inYourArea :: (HasGame m) => Target -> m Bool
+getVillainsInArea :: (HasGame m) => AreaId -> m [VillainId]
+getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
+getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
+getPile :: (HasGame m) => DeckKey -> m Pile
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
 getResourceAbilities ::
