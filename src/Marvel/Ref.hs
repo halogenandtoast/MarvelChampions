@@ -93,3 +93,54 @@ type Target = Ref Target'
 
 toTarget :: (IsRef a) => a -> Target
 toTarget = toRef
+
+-- | An enemy, by any id that names one.
+class IsEnemy a where
+  toEnemy :: a -> EnemyId
+
+instance IsEnemy EnemyId where
+  toEnemy = id
+
+instance IsEnemy VillainId where
+  toEnemy = EnemyVillainId
+
+instance IsEnemy MinionId where
+  toEnemy = EnemyMinionId
+
+-- | The enemy's own ref, a villain's or a minion's.
+enemyRef :: (IsEnemy a) => a -> Target
+enemyRef a = case toEnemy a of
+  EnemyVillainId v -> VillainRef v
+  EnemyMinionId m -> MinionRef m
+
+-- | A character, by any id that names one.
+class IsCharacter a where
+  toCharacter :: a -> CharacterId
+
+instance IsCharacter CharacterId where
+  toCharacter = id
+
+instance IsCharacter IdentityId where
+  toCharacter = IdentityCharacter
+
+instance IsCharacter AllyId where
+  toCharacter = AllyCharacter
+
+instance IsCharacter VillainId where
+  toCharacter = VillainCharacter
+
+instance IsCharacter MinionId where
+  toCharacter = MinionCharacter
+
+-- | A scheme, by any id that names one.
+class IsScheme a where
+  toScheme :: a -> SchemeId
+
+instance IsScheme SchemeId where
+  toScheme = id
+
+instance IsScheme MainSchemeId where
+  toScheme = SchemeMainSchemeId
+
+instance IsScheme SideSchemeId where
+  toScheme = SchemeSideSchemeId

@@ -70,10 +70,20 @@ preventDamage ident n = replaceMatchingMessage prevent \case
 placeThreatOn :: SchemeId -> Natural -> [Message]
 placeThreatOn scheme n =
   [CheckWindows [Window Would $ ThreatPlaced ThreatFromAbility scheme n] | n > 0]
-    <> [ case scheme of
-          SchemeMainSchemeId sid -> MainSchemeMessage sid (MainSchemePlaceThreat n)
-          SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
-       ]
+    <> [threatPlacement scheme n]
+
+-- | The threat placed on the scheme, past the window for it.
+threatPlacement :: SchemeId -> Natural -> Message
+threatPlacement scheme n = case scheme of
+  SchemeMainSchemeId sid -> MainSchemeMessage sid (MainSchemePlaceThreat n)
+  SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
+
+-- | Whether the message places threat on the scheme.
+isThreatPlacement :: SchemeId -> Message -> Bool
+isThreatPlacement scheme = \case
+  MainSchemeMessage sid (MainSchemePlaceThreat _) -> scheme == SchemeMainSchemeId sid
+  SideSchemeMessage sid (SideSchemePlaceThreat _) -> scheme == SchemeSideSchemeId sid
+  _ -> False
 
 -- | Cancel a treachery's "When Revealed" effects as it is revealed: none of them resolves,
 -- the surge it has or would gain included (surge is a "When Revealed" ability), and it is
