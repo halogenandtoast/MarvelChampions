@@ -133,6 +133,7 @@ instance RunMessage (Attrs Ally) where
         pushAll [RemoveFromPlay (toTarget a), DiscardedCard (toCard a)]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
+      AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     _ -> pure a

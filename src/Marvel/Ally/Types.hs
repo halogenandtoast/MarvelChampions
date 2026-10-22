@@ -20,6 +20,7 @@ import Marvel.Game.Source
 import Marvel.Id hiding (AllyId)
 import Marvel.Id qualified as Id
 import Marvel.Message hiding (AllyStunned)
+import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Question hiding (AllyAttack, AllyThwart)
 import Marvel.Window qualified as W
 
@@ -123,6 +124,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyTough = False
             , allyCounters = 0
             , allyUpgrades = mempty
+            , allyPaidWith = NoPayment
             }
     }
 
@@ -230,6 +232,8 @@ instance Entity Ally where
     , allyStunned :: Bool
     , allyConfused :: Bool
     , allyTough :: Bool
+    , allyPaidWith :: Payment
+    -- ^ what was paid to play it, for "if you paid for this card using …"
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)

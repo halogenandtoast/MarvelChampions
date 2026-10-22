@@ -506,7 +506,8 @@ runGameMessage msg g@Game {..} = case msg of
       AllyType -> do
         let ally = createAlly ident card
         pushAll
-          [ IdentityMessage ident (AllyCreated $ toId ally)
+          [ AllyMessage (toId ally) (AllyPaidWith payment)
+          , IdentityMessage ident (AllyCreated $ toId ally)
           , CheckWindows [W.Window After $ W.PlayedAlly (toId ally)]
           ]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
