@@ -7,7 +7,6 @@ import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
 import Marvel.Card
-import Marvel.Choice (chooseOrRunOne)
 import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
@@ -15,13 +14,11 @@ import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Message
-import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards), PlayerIdentity)
+import Marvel.Message.Lifted
+import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards))
 import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Window qualified as W
 import System.Random.Shuffle
@@ -177,9 +174,10 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
 -- placed without end, and the players lose.
 instance RunMessage (Attrs Scenario) where
   runMessage msg attrs = do
-    attrs' <- runScenarioMessage msg attrs
-    case (scenarioEncounterDeck attrs', scenarioDiscard attrs') of
-      ([], []) | notNull (scenarioEncounterDeck attrs) -> attrs' <$ push (GameOver Lost)
+    attrs' <- runQueueT $ runScenarioMessage msg attrs
+    -- queued after what the message did, so the game is lost before any of it runs
+    runQueueT case (scenarioEncounterDeck attrs', scenarioDiscard attrs') of
+      ([], []) | notNull (scenarioEncounterDeck attrs) -> attrs' <$ gameOver Lost
       ([], discard) | notNull discard -> do
         deck' <- shuffleM discard
         pure $
@@ -192,9 +190,9 @@ instance RunMessage (Attrs Scenario) where
 
 -- | The top card of the encounter deck, which is never empty while its discard pile has
 -- cards: with neither, the players have lost.
-drawEncounterCard :: (HasQueue m) => Attrs Scenario -> m ([EncounterCard], Attrs Scenario)
+drawEncounterCard :: (ReverseQueue m) => Attrs Scenario -> m ([EncounterCard], Attrs Scenario)
 drawEncounterCard attrs = case scenarioEncounterDeck attrs of
-  [] -> ([], attrs) <$ push (GameOver Lost)
+  [] -> ([], attrs) <$ gameOver Lost
   card : deck' -> pure ([card], attrs & encounterDeckL .~ deck')
 
 -- | The card leaves the encounter deck, discard pile or set-aside area, wherever it is.
@@ -205,7 +203,7 @@ leaves card attrs =
     & (encounterDeckL %~ filter (/= card))
     & (discardL %~ filter (/= card))
 
-runScenarioMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> Attrs Scenario -> m (Attrs Scenario)
+runScenarioMessage :: (HasCallStack, ReverseQueue m) => Message -> Attrs Scenario -> m (Attrs Scenario)
 runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
@@ -216,9 +214,8 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
         (mainScheme, remainingMainSchemes) = case scenarioMainSchemes of
           [] -> error "No main schemes"
           x : xs -> (x, xs)
-      pushAll $
-        map AddVillain scenarioVillains
-          <> [AddSetupMainScheme mainScheme]
+      for_ scenarioVillains addVillain
+      addSetupMainScheme mainScheme
       pure $
         attrs
           & encounterDeckL
@@ -230,7 +227,7 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
         (mainScheme, remainingMainSchemes) = case scenarioMainSchemes of
           [] -> error "No main schemes"
           x : xs -> (x, xs)
-      push (ReplaceMainScheme mainScheme)
+      replaceMainScheme mainScheme
       pure $ attrs & mainSchemesL .~ remainingMainSchemes
     ShuffleEncounterDeck -> do
       deck' <- shuffleM scenarioEncounterDeck
@@ -244,79 +241,86 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll $
-        concatMap (\p -> [SetActivePlayer p, IdentityMessage p BeginTurn]) players
-          <> [EndPhase PlayerPhase]
+      for_ players \p -> do
+        setActivePlayer p
+        identityStep p BeginTurn
+      endPhase PlayerPhase
       pure attrs
     EndPhase PlayerPhase -> do
       players <- getPlayers
-      pushAll $
-        concatMap
-          (\ident -> [SetActivePlayer ident, IdentityMessage ident DiscardCards, IdentityMessage ident DrawOrDiscardToHandLimit])
-          players
-          <> map (($ ReadyCards) . IdentityMessage) players
-          <> map SetActivePlayer (take 1 players)
-          <> [BeginPhase VillainPhase]
+      for_ players \ident -> do
+        setActivePlayer ident
+        identityStep ident DiscardCards
+        identityStep ident DrawOrDiscardToHandLimit
+      for_ players (`identityStep` ReadyCards)
+      for_ (take 1 players) setActivePlayer
+      beginPhase VillainPhase
       pure attrs
     AddAccelerationToken -> do
       pure $ attrs & accelerationTokensL +~ 1
     BeginPhase VillainPhase -> do
       players <- getPlayers
       hazards <- fromIntegral <$> getHazardCount
-      pushAll $
-        AccelerateMainScheme
-          : concatMap (\p -> [SetActivePlayer p, IdentityMessage p VillainAndMinionsActivate]) players
-            <> map DealEncounterCard players
-            <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
-            <> [RevealDealtEncounterCards, PassFirstPlayer, EndRound]
+      accelerateMainScheme
+      for_ players \p -> do
+        setActivePlayer p
+        identityStep p VillainAndMinionsActivate
+      for_ players dealEncounterCard
+      for_ (take hazards $ cycle players) dealEncounterCard
+      revealDealtEncounterCards
+      passFirstPlayer
+      endRound
       pure attrs
     -- each player in turn reveals the cards dealt them, until none remain
     RevealDealtEncounterCards -> do
       players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getPlayers
-      unless (null players) $
-        pushAll $
-          concatMap (\p -> [SetActivePlayer p, IdentityMessage p RevealEncounterCards]) players
-            <> [RevealDealtEncounterCards]
+      unless (null players) do
+        for_ players \p -> do
+          setActivePlayer p
+          identityStep p RevealEncounterCards
+        revealDealtEncounterCards
       pure attrs
     EndRound -> do
-      pushAll [CheckWindows [W.Window W.When W.RoundEnded], BeginRound]
+      checkWindows [W.Window W.When W.RoundEnded]
+      beginRound
       pure attrs {scenarioReshufflesThisRound = 0}
     BeginRound -> do
-      push (BeginPhase PlayerPhase)
+      beginPhase PlayerPhase
       pure attrs
     DealEncounterCard ident -> do
       (ecs, attrs') <- drawEncounterCard attrs
-      pushAll $ map (IdentityMessage ident . DealtEncounterCard) ecs
+      for_ ecs (identityStep ident . DealtEncounterCard)
       pure attrs'
     -- ponytail: a deck worn down to surge cards would surge forever, so after a few
     -- reshuffles in a round surge stops; a real table would just stop too
     Surge _ | scenarioReshufflesThisRound >= 3 -> pure attrs
     -- the surge keyword: "When Revealed: Deal yourself 1 facedown encounter card"
     Surge ident -> do
-      pushAll [CheckWindows [W.Window W.Would $ W.SurgeResolves ident], DealEncounterCard ident]
+      checkWindows [W.Window W.Would $ W.SurgeResolves ident]
+      dealEncounterCard ident
       pure attrs
     DrawAndRevealEncounterCard ident -> do
       (ecs, attrs') <- drawEncounterCard attrs
-      pushAll $ map (RevealEncounterCard ident) ecs
+      for_ ecs (revealCard ident)
       pure attrs'
     DealBoost target -> do
       (ecs, attrs') <- drawEncounterCard attrs
       case target of
         VillainRef vid ->
-          pushAll $ map (VillainMessage vid . VillainDealtBoost) ecs
+          for_ ecs (villainStep vid . VillainDealtBoost)
         _ -> error "Can not deal boost to target"
       pure attrs'
     -- a deck emptied partway is fulfilled: the new deck is not discarded from
     DiscardTopOfEncounterDeck n mTarget -> do
       let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
-      pushAll [WithDiscarded target FromEncounterDeck (EncounterCard <$> discarded) | Just target <- [mTarget]]
+      for_ mTarget \target -> withDiscarded target FromEncounterDeck (EncounterCard <$> discarded)
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     SetAside cards -> pure $ attrs & setAsideCardsL <>~ cards
     -- a card discarded from the encounter deck, as one looked at there, leaves it
     DiscardedCard (EncounterCard ec) -> pure $ attrs & discardL %~ (ec :) & encounterDeckL %~ filter (/= ec)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
     LookAtTopOfEncounterDeck n target -> do
-      push $ SearchFoundCards target $ EncounterCard <$> take (fromIntegral n) scenarioEncounterDeck
+      searchFoundCards target $ EncounterCard <$> take (fromIntegral n) scenarioEncounterDeck
       pure attrs
     DiscardUntil FromEncounterDeck cardMatcher target -> do
       let
@@ -325,18 +329,18 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
       case remaining of
         [] -> pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
         x : xs -> do
-          push $ WithDiscardedMatch target FromEncounterDeck (EncounterCard x)
+          withDiscardedMatch target FromEncounterDeck (EncounterCard x)
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
-      search ident (CardIs cardDef) (RevealEncounterCard ident)
-    SearchForAndRevealEncounterCard ident matcher -> search ident matcher (RevealEncounterCard ident)
-    SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (PutEncounterCardIntoPlay ident)
+      search ident (CardIs cardDef) (revealCard ident)
+    SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealCard ident)
+    SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (putEncounterCardIntoPlay ident)
     _ -> pure attrs
  where
   -- the searching player chooses one of the cards found, then the deck is shuffled
   search ident matcher f = do
     let found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard)
-    push ShuffleEncounterDeck
-    unless (null found) $ chooseOrRunOne ident [TargetLabel (toRef card) [Run [f card]] | card <- found]
+    unless (null found) $ chooseOrRunOne ident [targeting card (f card) | card <- found]
+    shuffleEncounterDeck
     pure attrs

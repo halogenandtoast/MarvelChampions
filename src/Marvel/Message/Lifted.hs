@@ -13,6 +13,7 @@ import Marvel.Prelude
 import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Attack (Attack (..))
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
@@ -27,6 +28,7 @@ import Marvel.Matchers.Types
 import Marvel.Message as X hiding (cardSpecific, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
+import Marvel.Phase (Phase)
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
@@ -544,6 +546,71 @@ resolveObligation oid = push . ObligationMessage oid . ResolveObligation
 -- | The cards go on top of the encounter deck, the first on top.
 putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
+
+-- * The round
+
+beginPhase :: (ReverseQueue m) => Phase -> m ()
+beginPhase = push . BeginPhase
+
+endPhase :: (ReverseQueue m) => Phase -> m ()
+endPhase = push . EndPhase
+
+beginRound :: (ReverseQueue m) => m ()
+beginRound = push BeginRound
+
+endRound :: (ReverseQueue m) => m ()
+endRound = push EndRound
+
+-- | The player whose turn it is, or who is resolving what comes next.
+setActivePlayer :: (ReverseQueue m) => IdentityId -> m ()
+setActivePlayer = push . SetActivePlayer
+
+-- | The first player token goes to the next player.
+passFirstPlayer :: (ReverseQueue m) => m ()
+passFirstPlayer = push PassFirstPlayer
+
+-- | The villain phase's threat on the main scheme.
+accelerateMainScheme :: (ReverseQueue m) => m ()
+accelerateMainScheme = push AccelerateMainScheme
+
+-- | Each player in turn reveals the encounter cards dealt them.
+revealDealtEncounterCards :: (ReverseQueue m) => m ()
+revealDealtEncounterCards = push RevealDealtEncounterCards
+
+-- | A step of the player's own, for their identity to answer.
+identityStep :: (ReverseQueue m) => IdentityId -> IdentityMessage -> m ()
+identityStep ident = push . IdentityMessage ident
+
+-- * Setup
+
+addVillain :: (ReverseQueue m) => CardCode -> m ()
+addVillain = push . AddVillain
+
+-- | The first main scheme, revealed as the game is set up.
+addSetupMainScheme :: (ReverseQueue m) => CardCode -> m ()
+addSetupMainScheme = push . AddSetupMainScheme
+
+-- | The main scheme leaves play for the next one.
+replaceMainScheme :: (ReverseQueue m) => CardCode -> m ()
+replaceMainScheme = push . ReplaceMainScheme
+
+-- * Telling a card what it asked for
+
+-- | The target is told the cards discarded from the zone.
+withDiscarded :: (ReverseQueue m, IsRef target) => target -> FromZone -> [Card] -> m ()
+withDiscarded target zone = push . WithDiscarded (toTarget target) zone
+
+-- | The target is told the card discarded from the zone matched.
+withDiscardedMatch :: (ReverseQueue m, IsRef target) => target -> FromZone -> Card -> m ()
+withDiscardedMatch target zone = push . WithDiscardedMatch (toTarget target) zone
+
+-- | The target is told the cards chosen from the zone.
+withChosen :: (ReverseQueue m, IsRef target) => target -> FromZone -> [Card] -> m ()
+withChosen target zone = push . WithChosen (toTarget target) zone
+
+-- | The target is told the cards found.
+searchFoundCards :: (ReverseQueue m, IsRef target) => target -> [Card] -> m ()
+searchFoundCards target = push . SearchFoundCards (toTarget target)
 
 -- * Paying
 
