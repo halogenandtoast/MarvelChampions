@@ -3,8 +3,12 @@
 module Marvel.Rules.SetMechanicsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.HashSet (singleton)
 import Marvel.Hp
+import Marvel.Keyword (Keyword (Incite))
 import Marvel.MainScheme.Types (Field (MainSchemeCounters))
+import Marvel.Message.Lifted qualified as Lifted
+import Marvel.Minion.Cards qualified as Cards
 import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs)
 import Marvel.Villain.Villains.Rhino (rhino2)
 import TestImport
@@ -31,3 +35,12 @@ spec = describe "set mechanics" do
         flipped ^. stunnedL `shouldBe` True
         flipped ^. stageL `shouldBe` 1
         toCardCode (getCardDef flipped) `shouldBe` "01095"
+
+  it "incite places its threat on the main scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      before <- mainSchemeThreatNow
+      msgs <- Lifted.runQueueT $ Lifted.capture $ Lifted.incite Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
+      resolve msgs
+      after <- mainSchemeThreatNow
+      liftIO $ after `shouldBe` before + 2

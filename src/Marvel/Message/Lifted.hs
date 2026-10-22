@@ -12,7 +12,7 @@ import Marvel.Prelude
 
 import Marvel.ActiveCost.Types
 import Marvel.Attack (Attack (..))
-import Marvel.Card.Def (CardDef, CardMatcher)
+import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
@@ -28,6 +28,8 @@ import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Query (selectJust)
+import Marvel.Keyword (Keyword (Incite))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (When, Would))
@@ -142,6 +144,12 @@ thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme
 -- | The threat placed on the scheme, past the window for it ('threatPlacement').
 placeThreatPastWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreatPastWindow scheme = push . threatPlacement (toScheme scheme)
+
+-- | Incite X, as the card is revealed: X threat on the main scheme.
+incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
+incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
+  scheme <- selectJust MainScheme
+  placeThreat scheme n
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
