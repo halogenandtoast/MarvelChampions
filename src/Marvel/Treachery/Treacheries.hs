@@ -31,3 +31,4 @@ import Marvel.Treachery.Treacheries.TheVulturesPlans as X
 import Marvel.Treachery.Treacheries.TitaniasFury as X
 import Marvel.Treachery.Treacheries.UnderFire as X
 import Marvel.Treachery.Treacheries.YonRoggsTreason as X
+import Marvel.Treachery.Treacheries.HailHydra as X

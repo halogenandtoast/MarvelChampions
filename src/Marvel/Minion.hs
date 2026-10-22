@@ -7,6 +7,7 @@ import Marvel.Prelude
 import Marvel.Card
 import Marvel.Id
 import Marvel.Minion.Minions
+import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
 
 instance FromJSON Minion where
@@ -46,6 +47,8 @@ allMinions =
       , SomeMinionCard madameHydra
       , SomeMinionCard hydraSoldier
       , SomeMinionCard modok
+      , SomeMinionCard baronZemo
+      , SomeMinionCard (reprintAs Cards.hydraSoldierCaptainAmerica hydraSoldier)
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

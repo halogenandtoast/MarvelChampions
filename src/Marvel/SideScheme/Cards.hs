@@ -30,6 +30,7 @@ allSideSchemes = fromList $ map
   , underAttack
   , legionsOfHydra
   , theDoomsdayChair
+  , hitSquad
   ]
 
 sideScheme
@@ -152,5 +153,11 @@ legionsOfHydra =
 theDoomsdayChair :: CardDef
 theDoomsdayChair =
   (sideScheme "01183" "The Doomsday Chair" [Boost, Boost, Boost] TheDoomsdayChair 2)
+    { cdAcceleration = 1
+    }
+
+hitSquad :: CardDef
+hitSquad =
+  (sideScheme "03027" "Hit Squad" [Boost, Boost, Boost] CaptainAmericaNemesis 1)
     { cdAcceleration = 1
     }
