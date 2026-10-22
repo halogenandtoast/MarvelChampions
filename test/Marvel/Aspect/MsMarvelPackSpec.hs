@@ -2,6 +2,7 @@ module Marvel.Aspect.MsMarvelPackSpec (spec) where
 
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Villain.Types qualified as V
+import Data.Text qualified as T
 import TestImport
 
 msMarvel :: IO TestGame
@@ -68,6 +69,10 @@ spec = describe "Ms. Marvel pack" do
         villainDamageNow `shouldReturn` 2
         -- Rhino's 2 ATK, without the 2 boost
         damageOf p `shouldReturn` 2
+      -- the log tells the card turned up, but no boost added
+      text <- T.concat . map entryText <$> readIORef tg.logged
+      text `shouldSatisfy` T.isInfixOf "$log.boost"
+      text `shouldSatisfy` (not . T.isInfixOf "$log.boostAdded")
 
     it "defeating the villain's stage mid-attack, the attack goes on at the next stage's ATK" do
       tg <- msMarvel
