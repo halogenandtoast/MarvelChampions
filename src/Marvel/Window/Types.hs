@@ -84,6 +84,10 @@ data WindowMatcher
     HeroDefendedWithoutDamage WindowTiming IdentityMatcher
   | -- | a player's turn ends: "when your turn ends"
     TurnEnds WindowTiming IdentityMatcher
+  | -- | "after you defeat a side scheme"
+    DefeatsSideScheme IdentityMatcher
+  | -- | "after you use your REC"
+    UsesRecovery IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -116,6 +120,10 @@ data WindowType
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
   | DefeatedSideScheme SideSchemeId
+  | -- | the side scheme has been defeated, by the player
+    DefeatedSideSchemeBy SideSchemeId IdentityId
+  | -- | the alter-ego has used their REC
+    UsedRecovery IdentityId
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed RevealSource IdentityId EncounterCard
   | RoundEnded

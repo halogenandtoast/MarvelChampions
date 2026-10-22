@@ -62,6 +62,24 @@ MarvelGame sql=marvel_games
   -- | a game with friends is dealt once all of its seats are taken; until then its
   -- current data is null
   seats Int default=1
+  -- | the campaign it is a scenario of, as it was dealt: reset deals it again so
+  campaign Value Maybe
+  createdAt UTCTime
+  updatedAt UTCTime
+  deriving Show
+
+-- | A campaign ("Marvel.Campaign"): its log as of the last game won, the decks its
+-- players began it with (each game's are these and the cards the log adds), and the
+-- game of it being played, if one is.
+MarvelCampaign sql=marvel_campaigns
+  Id UUID default=gen_random_uuid()
+  userId UserId OnDeleteCascade
+  name Text
+  campaign Value
+  decks Value
+  -- | each scenario's difficulty: standard or expert
+  difficulty Value
+  currentGame MarvelGameId Maybe OnDeleteSetNull
   createdAt UTCTime
   updatedAt UTCTime
   deriving Show

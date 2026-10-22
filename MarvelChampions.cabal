@@ -132,6 +132,8 @@ library
       Marvel.Attachment.Types
       Marvel.Attack
       Marvel.Boost
+      Marvel.Campaign
+      Marvel.Campaign.Steps
       Marvel.Card
       Marvel.Card.Builder
       Marvel.Card.Code
@@ -415,6 +417,7 @@ library
       Marvel.Obligation.Obligations.BusinessProblems
       Marvel.Obligation.Obligations.CriminalPast
       Marvel.Obligation.Obligations.EvictionNotice
+      Marvel.Obligation.Obligations.ExpertCampaign
       Marvel.Obligation.Obligations.FamilyEmergency
       Marvel.Obligation.Obligations.FearOfKang
       Marvel.Obligation.Obligations.HomeByDawn
@@ -656,6 +659,7 @@ library
       Marvel.Upgrade.Upgrades.HawkeyesQuiver
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.HonoraryAvenger
+      Marvel.Upgrade.Upgrades.HydraCampaign
       Marvel.Upgrade.Upgrades.ImmovableObject
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
@@ -904,6 +908,7 @@ test-suite MarvelChampions-test
       Marvel.LogSpec
       Marvel.PublicSpec
       Marvel.Rules.AreasSpec
+      Marvel.Rules.CampaignSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
       Marvel.Rules.EliminationSpec

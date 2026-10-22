@@ -31,6 +31,7 @@ import Marvel.Hero
 import Marvel.Hero.Runner
 import Marvel.Identity.Types
 import Marvel.Keyword hiding (Setup)
+import Marvel.Keyword qualified as Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -143,6 +144,7 @@ getModifiedHandSize pid = do
   pure $ subtractNatural (sum [n | HandSizeReduction n <- modifiers]) raised
  where
   applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (HandSizePenalty n) = subtractNatural n
   applyModifier _ = id
 
 getModifiedHp :: (HasGame m) => PlayerIdentity -> m Natural
@@ -461,6 +463,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       shuffleIntoEncounterDeck obligations
       shuffleDeck playerIdentityId
       pure pid
+    -- the setup keyword: "begins the game in play"
+    PutSetupCardsIntoPlay -> do
+      for_ (filter (elem Keyword.Setup . cdKeywords . getCardDef) $ unDeck playerIdentityDeck) (putIntoPlay playerIdentityId)
+      pure pid
     -- draw up to hand size, mulligan any of it, draw again, then the setup abilities
     DealStartingHand -> do
       let setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
@@ -540,12 +546,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         -- and the drawing carries on from it
         when (short > 0 && notNull (unDiscard playerIdentityDiscard)) $
           drawCards playerIdentityId short
+        -- an obligation drawn goes into play in their play area, not drawn again for
+        let (obligations, drawn) = partition ((== ObligationType) . cdCardType . getCardDef) cards
+        for_ obligations (putObligationIntoPlay playerIdentityId)
         pure $
           PlayerIdentity $
             attrs
               & handL
                 %~ Hand
-                  . (<> cards)
+                  . (<> drawn)
                   . unHand
               & deckL
                 .~ Deck deck

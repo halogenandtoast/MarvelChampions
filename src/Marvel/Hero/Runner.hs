@@ -38,6 +38,7 @@ getModifiedAttack attrs = do
   pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
  where
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (AttackPenalty n) = subtractNatural n
   applyModifier _ = id
 
 getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
@@ -46,6 +47,7 @@ getModifiedThwart attrs = do
   pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
  where
   applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (ThwartPenalty n) = subtractNatural n
   applyModifier _ = id
 
 getModifiedDefense :: (HasGame m) => Attrs Hero -> m Natural
@@ -54,6 +56,7 @@ getModifiedDefense attrs = do
   pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
  where
   applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (DefensePenalty n) = subtractNatural n
   applyModifier _ = id
 
 instance RunMessage Hero where

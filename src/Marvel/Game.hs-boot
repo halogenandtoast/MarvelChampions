@@ -10,6 +10,8 @@ import Marvel.Attack (Attack)
 import Marvel.Card.Code (CardCode)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
+import Marvel.Campaign (Campaign)
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Count
 import Marvel.Debug
@@ -60,6 +62,12 @@ getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
+getCampaign :: (HasGame m) => m (Maybe Campaign)
+getIdentityCode :: (HasGame m) => IdentityId -> m CardCode
+getRemainingHitPoints :: (HasGame m) => IdentityId -> m (Natural, Natural, Natural)
+getCountersOnMainSchemes :: (HasGame m) => m Natural
+getSideSchemesInPlay :: (HasGame m) => m [(CardCode, [PlayerCard])]
+getCardsOwnedBy :: (HasGame m) => IdentityId -> m [CardDef]
 abilityCardDef :: Game -> Target -> Maybe CardDef
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
