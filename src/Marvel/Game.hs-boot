@@ -104,6 +104,7 @@ getCurrentPayment :: (HasGame m) => m Payment
 getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
+getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 getHazardCount :: (HasGame m) => m Natural
 getAccelerationCount :: (HasGame m) => m Natural

@@ -326,6 +326,11 @@ getUniqueTitlesInPlay = getsGame \g ->
       <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
       <> concatMap identity (HashMap.elems $ gamePlayers g)
 
+-- | The player the villain's activation under way is against: who resolves its boost
+-- cards, the "you" of their boost abilities.
+getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
+
 -- | How many cards in play have the trait: of every type, each identity one card.
 countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
 countCardsInPlayWithTrait t = do
