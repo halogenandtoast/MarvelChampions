@@ -44,6 +44,8 @@ data WindowMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
   | VillainRevealed WindowTiming VillainMatcher RevealSource
   | VillainDamaged WindowTiming VillainMatcher
+  | -- | damage of the kind matching would be, or was, dealt to a villain matching
+    VillainDamagedBy WindowTiming VillainMatcher DamageMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher

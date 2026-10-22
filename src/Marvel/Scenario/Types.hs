@@ -282,6 +282,8 @@ runScenarioMessage msg attrs = case msg of
     deck' <- shuffleM cards
     let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
     pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
+  -- a card set aside leaves the set-aside area for wherever it goes
+  RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId)
   RemoveDeck EncounterDeckKey -> pure attrs
   RemoveDeck key ->
     pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}

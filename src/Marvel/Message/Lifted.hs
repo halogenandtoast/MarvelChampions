@@ -17,7 +17,7 @@ import Marvel.Attack (Attack (..))
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
-import Marvel.Card.PlayerCard.Types (PlayerCard)
+import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Card.Side (Side)
 import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Cost.Types (Cost)
@@ -515,6 +515,11 @@ discardFromDeckUntil ident matcher = push . IdentityMessage ident . DiscardFromD
 
 addToHand :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 addToHand ident = push . IdentityMessage ident . AddToHand
+
+-- | A player card that was nobody's, as a Captive ally set aside in an encounter set, or
+-- another player's, goes into the player's hand: they own and control it from now on.
+takeControlOf :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+takeControlOf ident card = addToHand ident card {pcOwner = Just ident, pcController = Just ident}
 
 placeOnBottomOfDeck :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 placeOnBottomOfDeck ident = push . IdentityMessage ident . PlaceOnBottomOfDeck

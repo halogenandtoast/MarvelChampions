@@ -432,6 +432,10 @@ getDeckKeyFor ident = do
     Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
     _ -> EncounterDeckKey
 
+-- | The player cards set aside out of play, as an encounter set's Captive allies.
+getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
+getSetAsidePlayerCards = getsGame \g -> [c | PlayerCard c <- scenarioSetAsideCards (toAttrs $ gameScenario g)]
+
 -- | The deck and its discard pile, each top card first.
 getPile :: (HasGame m) => DeckKey -> m Pile
 getPile = \case
