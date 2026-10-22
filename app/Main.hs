@@ -23,7 +23,9 @@ import Data.Time.Clock (addUTCTime, nominalDay)
 import Database.Persist.Postgresql
 import Decks
 import GameLog
+import Marvel.Campaign
 import Marvel.Card.Code (CardCode (..))
+import Marvel.Difficulty (Difficulty (..))
 import Marvel.Card.Def (cdName)
 import Marvel.Card.Def qualified as CardDef
 import Marvel.Decklist
@@ -108,6 +110,9 @@ mkYesod
   /admin AdminR GET
   /import ImportR POST
   /scenarios ScenariosR GET
+  /campaigns CampaignsR GET POST
+  /campaigns/#MarvelCampaignId CampaignR GET DELETE
+  /campaigns/#MarvelCampaignId/continue ContinueCampaignR POST
   /decks DecksR GET POST
   /decks/#MarvelDeckId DeckR GET DELETE
   /starter-decks StarterDecksR GET
@@ -507,13 +512,13 @@ friendSeats gid = do
 
 -- | Deal a new game from a seed and play it up to its first question, with a seat for
 -- each named deck.
-startGame :: ScenarioSetup -> NonEmpty (Text, DeckList) -> Int -> IO (Either Text ((Game, [Message], StdGen), [FrontendMessage]))
-startGame setup players seed = case lookupScenario setup of
+startGame :: ScenarioSetup -> Maybe Campaign -> NonEmpty (Text, DeckList) -> Int -> IO (Either Text ((Game, [Message], StdGen), [FrontendMessage]))
+startGame setup campaign players seed = case lookupScenario setup of
   Nothing -> pure $ Left $ ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode setup.scenarioCode)]
   Just scenario -> case sequence $ evalRand (traverse (\(name, d) -> fmap (setName name) <$> loadPlayer d) players) (mkStdGen seed) of
     Left missing -> pure $ Left $ ikeyWith "error.unknownCards" [textVar "cards" (intercalate ", " (map unCardCode missing))]
     Right seated -> do
-      (app, said) <- appFor (newTable scenario seated) [StartGame] (mkStdGen $ seed + 1)
+      (app, said) <- appFor (newTable scenario seated & campaignL .~ campaign) [StartGame] (mkStdGen $ seed + 1)
       runGameApp app runGame
       Right <$> ((,) <$> currentState app <*> (reverse <$> readIORef said))
 
@@ -547,13 +552,14 @@ postGamesR = do
           , marvelGameAllowSpectators = fromMaybe False new.allowSpectators
           , marvelGameWithFriends = friends
           , marvelGameSeats = seatCount
+          , marvelGameCampaign = Nothing
           , marvelGameCreatedAt = now
           , marvelGameUpdatedAt = now
           }
   gid <- case nonEmpty deckLists of
     Just dealt | not friends -> do
       seed <- maybe (liftIO randomIO) pure new.seed
-      ((g, queue, gen), said) <- either (sendResponseStatus status400) pure =<< liftIO (startGame setup (soloSeats playerName dealt) seed)
+      ((g, queue, gen), said) <- either (sendResponseStatus status400) pure =<< liftIO (startGame setup Nothing (soloSeats playerName dealt) seed)
       runDB do
         gid <- insert $ newGame' (toJSON g) (toJSON queue) gen
         void $ storeLog gid (-1) now said
@@ -613,7 +619,8 @@ postStartR gid = do
 deal :: MarvelGameId -> MarvelGame -> NonEmpty (Text, DeckList) -> Handler ()
 deal gid row players = do
   setup <- decodeOrFail "scenario" row.marvelGameScenario
-  ((g, queue, gen), said) <- either (sendResponseStatus status400) pure =<< liftIO . startGame setup players =<< liftIO randomIO
+  campaign <- traverse (decodeOrFail "campaign") row.marvelGameCampaign
+  ((g, queue, gen), said) <- either (sendResponseStatus status400) pure =<< liftIO . startGame setup campaign players =<< liftIO randomIO
   now <- liftIO getCurrentTime
   (row', entries) <- runDB do
     deleteWhere [MarvelStepGameId ==. gid]
@@ -832,6 +839,163 @@ getScenariosR =
       , "modulars" .= modularSets
       ]
 
+-- * Campaigns
+
+data NewCampaign = NewCampaign
+  { name :: Text
+  , mode :: CampaignMode
+  , difficulty :: Maybe Difficulty
+  -- ^ each scenario's, standard unless expert
+  , decks :: [DeckChoice]
+  -- ^ one per player, the owner playing each
+  }
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
+
+-- | A campaign as its overview shows it: the log as it stands, counting the game just
+-- won, and what is played next.
+data CampaignView = CampaignView
+  { id :: MarvelCampaignId
+  , name :: Text
+  , campaign :: Campaign
+  , difficulty :: Difficulty
+  , heroes :: [CardCode]
+  , next :: Maybe CardCode
+  , nextName :: Maybe Text
+  , currentGame :: Maybe MarvelGameId
+  -- ^ the game of it being played, not yet over
+  , won :: Bool
+  , updatedAt :: UTCTime
+  }
+  deriving stock (Generic)
+  deriving anyclass (ToJSON)
+
+requireOwnedCampaign :: MarvelCampaignId -> Handler MarvelCampaign
+requireOwnedCampaign cid = do
+  userId <- requireUserId
+  row <- runDB $ get404 cid
+  unless (row.marvelCampaignUserId == userId) notFound
+  pure row
+
+-- | The campaign with its game's result written in: the log the game won, or as it was
+-- for a game lost (the scenario played again, no penalty), unless losing lost the
+-- campaign. The game still being played, if it is.
+campaignNow :: MarvelCampaign -> Handler (Campaign, Maybe MarvelGameId)
+campaignNow row = do
+  stored <- decodeOrFail "campaign" row.marvelCampaignCampaign
+  game <- runDB $ traverse (\gid -> fmap (gid,) <$> get gid) row.marvelCampaignCurrentGame
+  case join game of
+    Nothing -> pure (stored, Nothing)
+    Just (gid, g) -> case fromJSON g.marvelGameCurrentData of
+      Success (game' :: Game) -> case gameState game' of
+        Finished Won -> pure (fromMaybe stored (gameCampaign game'), Nothing)
+        Finished Lost -> pure (maybe stored (\c -> if c.lost then c else stored) (gameCampaign game'), Nothing)
+        _ -> pure (stored, Just gid)
+      Error _ -> pure (stored, Just gid)
+
+campaignView :: Entity MarvelCampaign -> Handler CampaignView
+campaignView (Entity cid row) = do
+  (c, current) <- campaignNow row
+  difficulty <- decodeOrFail "difficulty" row.marvelCampaignDifficulty
+  decks <- decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
+  let next = currentScenario c
+  pure
+    CampaignView
+      { id = cid
+      , name = row.marvelCampaignName
+      , campaign = c
+      , difficulty
+      , heroes = map (.hero) decks
+      , next
+      , nextName = fst . villainOf . (\code -> ScenarioSetup code [] difficulty) <$> next
+      , currentGame = current
+      , won = campaignWon c
+      , updatedAt = row.marvelCampaignUpdatedAt
+      }
+
+getCampaignsR :: Handler Value
+getCampaignsR = do
+  userId <- requireUserId
+  rows <- runDB $ selectList [MarvelCampaignUserId ==. userId] [Desc MarvelCampaignUpdatedAt]
+  toJSON <$> traverse campaignView rows
+
+-- | A new campaign, its players' heroes recorded in its log; its first game is dealt
+-- when it is continued.
+postCampaignsR :: Handler Value
+postCampaignsR = do
+  userId <- requireUserId
+  new <- requireCheckJsonBody @_ @NewCampaign
+  when (null new.decks || length new.decks > 4) $ sendResponseStatus status400 (ikey "error.seatCount")
+  deckLists <- traverse (resolveDeck userId) new.decks
+  refuseSharedHeroes deckLists
+  now <- liftIO getCurrentTime
+  cid <-
+    runDB $
+      insert
+        MarvelCampaign
+          { marvelCampaignUserId = userId
+          , marvelCampaignName = new.name
+          , marvelCampaignCampaign = toJSON $ newCampaign new.mode (map (.hero) deckLists)
+          , marvelCampaignDecks = toJSON deckLists
+          , marvelCampaignDifficulty = toJSON (fromMaybe Normal new.difficulty)
+          , marvelCampaignCurrentGame = Nothing
+          , marvelCampaignCreatedAt = now
+          , marvelCampaignUpdatedAt = now
+          }
+  pure $ object ["id" .= cid]
+
+getCampaignR :: MarvelCampaignId -> Handler Value
+getCampaignR cid = do
+  row <- requireOwnedCampaign cid
+  toJSON <$> campaignView (Entity cid row)
+
+deleteCampaignR :: MarvelCampaignId -> Handler ()
+deleteCampaignR cid = requireOwnedCampaign cid >> runDB (delete cid)
+
+-- | Back to the campaign's game being played, or the next scenario dealt from the log:
+-- the decks as the players began them with what the log adds.
+postContinueCampaignR :: MarvelCampaignId -> Handler Value
+postContinueCampaignR cid = do
+  row <- requireOwnedCampaign cid
+  user <- runDB $ get404 row.marvelCampaignUserId
+  (c, current) <- campaignNow row
+  case current of
+    Just gid -> pure $ object ["gameId" .= gid]
+    Nothing -> do
+      code <- maybe (sendResponseStatus status409 (ikey "error.campaignOver")) pure (currentScenario c)
+      difficulty <- decodeOrFail @Difficulty "difficulty" row.marvelCampaignDifficulty
+      decks <- decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
+      setup <- maybe (sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode code)])) pure (recommendedSetup code)
+      dealt <- maybe (sendResponseStatus status400 ("the campaign has no decks" :: Text)) pure (nonEmpty $ map (campaignDeck c) decks)
+      let setup' = ScenarioSetup setup.scenarioCode setup.modulars difficulty
+      ((g, queue, gen), said) <-
+        either (sendResponseStatus status400) pure =<< liftIO . startGame setup' (Just c) (soloSeats user.userUsername dealt) =<< liftIO randomIO
+      now <- liftIO getCurrentTime
+      gid <- runDB do
+        gid <-
+          insert
+            MarvelGame
+              { marvelGameUserId = row.marvelCampaignUserId
+              , marvelGameName = row.marvelCampaignName <> " – " <> fromMaybe (unCardCode code) (fst . villainOf <$> Just setup')
+              , marvelGamePlayerName = user.userUsername
+              , marvelGameCurrentData = toJSON g
+              , marvelGameCurrentQueue = toJSON queue
+              , marvelGameRandomGen = showGen gen
+              , marvelGameStep = 0
+              , marvelGameScenario = toJSON setup'
+              , marvelGameDeck = Just (toJSON $ toList dealt)
+              , marvelGameAllowSpectators = False
+              , marvelGameWithFriends = False
+              , marvelGameSeats = length dealt
+              , marvelGameCampaign = Just (toJSON c)
+              , marvelGameCreatedAt = now
+              , marvelGameUpdatedAt = now
+              }
+        void $ storeLog gid (-1) now said
+        update cid [MarvelCampaignCampaign =. toJSON c, MarvelCampaignCurrentGame =. Just gid, MarvelCampaignUpdatedAt =. now]
+        pure gid
+      pure $ object ["gameId" .= gid]
+
 data UndoTarget = LastAnswer | StartOfPhase | StartOfRound | ToStep Int
   deriving stock (Eq)
 
@@ -999,6 +1163,7 @@ postImportR = do
           , marvelGameAllowSpectators = False
           , marvelGameWithFriends = False
           , marvelGameSeats = length (gameSeats imported)
+          , marvelGameCampaign = Nothing
           , marvelGameCreatedAt = now
           , marvelGameUpdatedAt = now
           }

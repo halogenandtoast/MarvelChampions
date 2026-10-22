@@ -22,5 +22,6 @@
   "badLogin": "That username or password is not right.",
   "noScenario": "Choose a scenario.",
   "noSuchScenario": "No such scenario: {scenario}",
-  "unsupportedExport": "This export comes from an unsupported version."
+  "unsupportedExport": "This export comes from an unsupported version.",
+  "campaignOver": "The campaign is over."
 }
