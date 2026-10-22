@@ -226,6 +226,8 @@ export interface GameView {
   areas?: AreaView[]
   /** the area of the first seat whose hand you see */
   viewerArea?: number | null
+  /** the campaign the game is a scenario of */
+  campaign?: CampaignInfo | null
   [more: string]: unknown
 }
 
@@ -299,6 +301,14 @@ export interface StarterDeck {
   aspects: string[]
 }
 
+/** Which campaign a game is a scenario of, and which of its scenarios (from 1). */
+export interface CampaignInfo {
+  name: string | null
+  mode: CampaignMode
+  scenario: number
+  scenarios: number
+}
+
 /** A choice a campaign victory leaves a player, asked as the next game is set up. */
 export type CampaignChoice = 'ChooseTechUpgrade' | 'ChooseBasicUpgrade' | 'MayImproveUpgrade'
 
@@ -342,6 +352,12 @@ export interface CampaignView {
   campaign: Campaign
   difficulty: 'Normal' | 'Expert'
   heroes: string[]
+  /** its seats, as a game's lobby shows them */
+  table: Table
+  /** with friends, seats still open before its first game */
+  waitingForPlayers: boolean
+  /** for each seat taken, how many cards its deck must gain before it is dealt */
+  deckShort: number[]
   next: string | null
   nextName: string | null
   /** the game of it being played, not yet over */

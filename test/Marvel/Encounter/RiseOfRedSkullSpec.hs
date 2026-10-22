@@ -13,7 +13,11 @@ import Marvel.Keyword (Keyword (Piercing))
 import Marvel.Matchers (EnvironmentMatcher (AnyEnvironment), VillainMatcher (VillainWithTrait))
 import Marvel.Query (selectAny, selectList)
 import Marvel.Trait (Trait (..))
-import Marvel.Villain.Types (getModifiedKeywords)
+import Data.Aeson (Value (Object), parseJSON, toJSON)
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Types (parseEither)
+import Marvel.Attack (attack)
+import Marvel.Villain.Types (Villain (..), attackingL, getModifiedKeywords, overVillainAttrs)
 import TestImport
 
 -- | Answer what is asked, taking no defender, until the turn comes back.
@@ -102,3 +106,31 @@ spec = describe "The Rise of Red Skull" do
       liftIO $ (hadLost, now, hasGained, hasLost, surged) `shouldBe` (True, [toCardCode next], True, False, dealt + 1)
       resolve [AccelerateMainScheme]
       getYourMainSchemeCounters `shouldReturn` 1
+
+  it "Absorbing Man gains whatever trait an environment has" do
+    tg <- testGameAgainst "04076" ["spider-man"]
+    inGame tg do
+      -- the environment in play given a trait none of his scenario's have
+      withGame_ $ entitiesL . environmentsL . each %~ \e -> case toJSON e of
+        Object o
+          | Just (Object def) <- KeyMap.lookup "environmentCardDef" o ->
+              either error id $ parseEither parseJSON $ Object $ KeyMap.insert "environmentCardDef" (Object $ KeyMap.insert "cdTraits" (toJSON [Elite]) def) o
+        _ -> error "no environment"
+      selectAny (VillainWithTrait Elite) `shouldReturn` True
+
+  it "an attack keeps a keyword it gained as it was declared, in the would window, when it begins" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      vid <- villainIdNow
+      resolve [IdentityMessage you IdentityBecomeTough]
+      before <- damageOf you
+      -- the attack declared, as Rhino attacking has it before his would windows, and
+      -- piercing gained there
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(Villain v) -> Villain $ overVillainAttrs (attackingL ?~ attack (EnemyVillainId vid) (IdentityCharacter you) 0) v
+      start [VillainMessage vid (VillainAttackGains Piercing), VillainMessage vid (VillainBeginAttack you), VillainMessage vid VillainEndAttack]
+      undefended
+      tough <- (.playerIdentityTough) <$> playerAttrs you
+      after <- damageOf you
+      liftIO $ (tough, after > before) `shouldBe` (False, True)

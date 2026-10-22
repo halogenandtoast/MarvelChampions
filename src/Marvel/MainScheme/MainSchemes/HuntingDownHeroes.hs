@@ -12,7 +12,7 @@ import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.SideScheme.Cards (allSideSchemes)
+import Marvel.SideScheme.Cards qualified as SideSchemes
 
 huntingDownHeroes :: MainSchemeCard HuntingDownHeroes
 huntingDownHeroes =
@@ -36,9 +36,8 @@ instance RunMessage HuntingDownHeroes where
         pure $ PlayerCard $ MkPlayerCard cardId def Nothing Nothing
       setAside captives
       you <- getYou
-      -- Hydra Patrol is the Hydra Patrol set's (04154)
-      for_ (lookup "04154" allSideSchemes) \hydraPatrol ->
-        searchAndPutIntoPlayEncounterCard you (CardIs hydraPatrol)
+      -- the Hydra Patrol set's: none is found without the set
+      searchAndPutIntoPlayEncounterCard you (CardIs SideSchemes.hydraPatrol)
       pure ms
     -- 1B: "Forced Response: After resolving step one of the villain phase, each player in
     -- hero form must choose to either place 1 threat here or take 1 damage."

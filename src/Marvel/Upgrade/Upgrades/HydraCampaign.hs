@@ -204,7 +204,9 @@ newtype AttackUpgrade = AttackUpgrade (Attrs Upgrade)
 instance HasModifiersFor AttackUpgrade where
   getModifiersFor _ target (AttackUpgrade a) = conditionModifiers [HitPointModifier 1, AttackModifier 1] target a
 
--- | Hero Response: after you defeat a minion.
+-- | Hero Response: after you defeat a minion. "You" is the identity (RR, You, Your: "after
+-- you attack and defeat a minion" does not trigger "when an ally under that player's control
+-- attacks and defeats a minion"), so an ally's defeat of a minion does not count.
 instance HasAbilities AttackUpgrade where
   getAbilities (AttackUpgrade a) = improvedDraw a HeroResponse (EnemyDefeated After MinionEnemy (DamageByPlayer You))
 

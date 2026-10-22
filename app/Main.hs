@@ -24,7 +24,7 @@ import Database.Persist.Postgresql
 import Decks
 import GameLog
 import Marvel.Campaign
-import Marvel.Card.Code (CardCode (..))
+import Marvel.Card.Code (CardCode (..), toHeroCardCode)
 import Marvel.Difficulty (Difficulty (..))
 import Marvel.Card.Def (cdName)
 import Marvel.Card.Def qualified as CardDef
@@ -46,6 +46,7 @@ import Marvel.Name (display)
 import Marvel.Phase
 import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
 import Marvel.Scenario.Types (ScenarioSetup (..))
+import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Villain.Cards (allVillainsMap)
 import Marvel.MainScheme.Cards qualified as MainSchemes
 import Marvel.Card.Code (toBaseCardCode)
@@ -115,6 +116,10 @@ mkYesod
   /campaigns CampaignsR GET POST
   /campaigns/#MarvelCampaignId CampaignR GET DELETE
   /campaigns/#MarvelCampaignId/continue ContinueCampaignR POST
+  /campaigns/#MarvelCampaignId/join JoinCampaignR POST
+  /campaigns/#MarvelCampaignId/leave LeaveCampaignR POST
+  /campaigns/#MarvelCampaignId/start StartCampaignR POST
+  /campaigns/#MarvelCampaignId/seats/#Int CampaignSeatR PUT
   /decks DecksR GET POST
   /decks/#MarvelDeckId DeckR GET DELETE
   /starter-decks StarterDecksR GET
@@ -850,19 +855,27 @@ data NewCampaign = NewCampaign
   , difficulty :: Maybe Difficulty
   -- ^ each scenario's, standard unless expert
   , decks :: [DeckChoice]
-  -- ^ one per player, the owner playing each
+  -- ^ one per seat you take
+  , seats :: Maybe Int
+  -- ^ how many play, at least one per deck; the rest are open for friends, as in a game
   }
   deriving stock (Generic)
   deriving anyclass (FromJSON)
 
 -- | A campaign as its overview shows it: the log as it stands, counting the game just
--- won, and what is played next.
+-- won, who plays it, and what is played next.
 data CampaignView = CampaignView
   { id :: MarvelCampaignId
   , name :: Text
   , campaign :: Campaign
   , difficulty :: Difficulty
   , heroes :: [CardCode]
+  , table :: Table
+  -- ^ its seats, as a game's lobby shows them
+  , waitingForPlayers :: Bool
+  -- ^ with friends, seats still open before its first game
+  , deckShort :: [Int]
+  -- ^ for each seat taken, how many cards its deck must gain to be dealt (rulebook p.12)
   , next :: Maybe CardCode
   , nextName :: Maybe Text
   , currentGame :: Maybe MarvelGameId
@@ -872,6 +885,39 @@ data CampaignView = CampaignView
   }
   deriving stock (Generic)
   deriving anyclass (ToJSON)
+
+-- | The campaign's seats in order: who sits there and the deck they began it with. One
+-- made before campaigns had seats has its owner in a seat for each of its decks.
+campaignSeats :: MarvelCampaignId -> MarvelCampaign -> Handler [(Int, UserId, DeckList)]
+campaignSeats cid row = do
+  seats <- runDB $ selectList [MarvelCampaignSeatCampaignId ==. cid] [Asc MarvelCampaignSeatPosition]
+  if null seats && not row.marvelCampaignWithFriends
+    then zip3 [0 ..] (repeat row.marvelCampaignUserId) <$> decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
+    else for seats \(Entity _ s) -> (s.marvelCampaignSeatPosition,s.marvelCampaignSeatUserId,) <$> decodeOrFail "deck" s.marvelCampaignSeatDeck
+
+-- | Each seat's player by name, numbered when someone sits in several, as at a game.
+seatNames :: [(Int, UserId, DeckList)] -> Handler [(UserId, Text, DeckList)]
+seatNames seats = for (zip [0 :: Int ..] seats) \(n, (_, userId, deck)) -> do
+  name <- maybe "" (.userUsername) <$> runDB (get userId)
+  let theirs = [u | (_, u, _) <- seats, u == userId]
+      before = length [u | (_, u, _) <- take n seats, u == userId]
+  pure (userId, if length theirs > 1 then name <> " (" <> tshow (before + 1) <> ")" else name, deck)
+
+-- | The campaign is waiting for friends to take its open seats: before its first game.
+awaitingCampaignPlayers :: MarvelCampaign -> Campaign -> Int -> Bool
+awaitingCampaignPlayers row c taken =
+  row.marvelCampaignWithFriends && c.completed == 0 && isNothing row.marvelCampaignCurrentGame && taken < row.marvelCampaignSeats
+
+-- | A campaign you play: your own, or one you have a seat in. One with friends still
+-- waiting for players is open to anyone signed in, so its invite link shows its seats.
+requireCampaignMember :: MarvelCampaignId -> Handler MarvelCampaign
+requireCampaignMember cid = do
+  userId <- requireUserId
+  row <- runDB $ get404 cid
+  seats <- campaignSeats cid row
+  c <- decodeOrFail "campaign" row.marvelCampaignCampaign
+  unless (row.marvelCampaignUserId == userId || any (\(_, u, _) -> u == userId) seats || awaitingCampaignPlayers row c (length seats)) notFound
+  pure row
 
 requireOwnedCampaign :: MarvelCampaignId -> Handler MarvelCampaign
 requireOwnedCampaign cid = do
@@ -900,7 +946,10 @@ campaignView :: Entity MarvelCampaign -> Handler CampaignView
 campaignView (Entity cid row) = do
   (c, current) <- campaignNow row
   difficulty <- decodeOrFail "difficulty" row.marvelCampaignDifficulty
-  decks <- decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
+  seats <- campaignSeats cid row
+  seated <- for seats \(position, userId, deck) -> do
+    name <- maybe "" (.userUsername) <$> runDB (get userId)
+    pure $ SeatView position userId name (Just deck.hero)
   let next = currentScenario c
   pure
     CampaignView
@@ -908,7 +957,10 @@ campaignView (Entity cid row) = do
       , name = row.marvelCampaignName
       , campaign = c
       , difficulty
-      , heroes = map (.hero) decks
+      , heroes = [d.hero | (_, _, d) <- seats]
+      , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated}
+      , waitingForPlayers = awaitingCampaignPlayers row c (length seats)
+      , deckShort = [campaignDeckShortBy c d | (_, _, d) <- seats]
       , next
       , nextName = fst . villainOf . (\code -> ScenarioSetup code [] difficulty) <$> next
       , currentGame = current
@@ -916,88 +968,203 @@ campaignView (Entity cid row) = do
       , updatedAt = row.marvelCampaignUpdatedAt
       }
 
+-- | The campaigns you own or have a seat in.
 getCampaignsR :: Handler Value
 getCampaignsR = do
   userId <- requireUserId
-  rows <- runDB $ selectList [MarvelCampaignUserId ==. userId] [Desc MarvelCampaignUpdatedAt]
+  rows <- runDB do
+    seatedIn <- map ((.marvelCampaignSeatCampaignId) . entityVal) <$> selectList [MarvelCampaignSeatUserId ==. userId] []
+    selectList ([MarvelCampaignUserId ==. userId] ||. [MarvelCampaignId <-. seatedIn]) [Desc MarvelCampaignUpdatedAt]
   toJSON <$> traverse campaignView rows
 
--- | A new campaign, its players' heroes recorded in its log; its first game is dealt
--- when it is continued.
+-- | A new campaign, its players' heroes recorded in its log. Alone, its first game is
+-- dealt when it is continued; with seats left open for friends, once they are taken.
 postCampaignsR :: Handler Value
 postCampaignsR = do
   userId <- requireUserId
   new <- requireCheckJsonBody @_ @NewCampaign
-  when (null new.decks || length new.decks > 4) $ sendResponseStatus status400 (ikey "error.seatCount")
   deckLists <- traverse (resolveDeck userId) new.decks
   refuseSharedHeroes deckLists
+  let seatCount = fromMaybe (length deckLists) new.seats
+  when (seatCount < max 1 (length deckLists) || seatCount > 4) $ sendResponseStatus status400 (ikey "error.seatCount")
   now <- liftIO getCurrentTime
-  cid <-
-    runDB $
+  cid <- runDB do
+    cid <-
       insert
         MarvelCampaign
           { marvelCampaignUserId = userId
           , marvelCampaignName = new.name
           , marvelCampaignCampaign = toJSON $ newCampaign new.mode (map (.hero) deckLists)
-          , marvelCampaignDecks = toJSON deckLists
+          , marvelCampaignDecks = toJSON ([] :: [DeckList])
           , marvelCampaignDifficulty = toJSON (fromMaybe Normal new.difficulty)
           , marvelCampaignCurrentGame = Nothing
+          , marvelCampaignWithFriends = seatCount > length deckLists
+          , marvelCampaignSeats = seatCount
           , marvelCampaignCreatedAt = now
           , marvelCampaignUpdatedAt = now
           }
+    for_ (zip [0 ..] deckLists) \(position, deck) -> insert_ $ MarvelCampaignSeat cid position userId (toJSON deck)
+    pure cid
   pure $ object ["id" .= cid]
 
 getCampaignR :: MarvelCampaignId -> Handler Value
 getCampaignR cid = do
-  row <- requireOwnedCampaign cid
+  row <- requireCampaignMember cid
   toJSON <$> campaignView (Entity cid row)
 
 deleteCampaignR :: MarvelCampaignId -> Handler ()
 deleteCampaignR cid = requireOwnedCampaign cid >> runDB (delete cid)
 
--- | Back to the campaign's game being played, or the next scenario dealt from the log:
--- the decks as the players began them with what the log adds.
+-- | The log's players are the seats' heroes, in seat order: while seats are taken and
+-- left before the first game, as the identities are recorded as it is set up.
+reseat :: MarvelCampaignId -> MarvelCampaign -> Handler ()
+reseat cid row = do
+  c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
+  seats <- campaignSeats cid row
+  let log' = (newCampaign c.mode [d.hero | (_, _, d) <- seats]).campaignLog
+  now <- liftIO getCurrentTime
+  runDB $ update cid [MarvelCampaignCampaign =. toJSON c {campaignLog = log'}, MarvelCampaignUpdatedAt =. now]
+
+-- | Take the first open seat of a campaign with friends, bringing a deck, as at a game.
+-- Taking the last one deals its first scenario.
+postJoinCampaignR :: MarvelCampaignId -> Handler Value
+postJoinCampaignR cid = do
+  userId <- requireUserId
+  row <- runDB $ get404 cid
+  c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
+  seats <- campaignSeats cid row
+  unless (awaitingCampaignPlayers row c (length seats)) $ sendResponseStatus status409 (ikey "error.notWaitingForPlayers")
+  joining <- requireCheckJsonBody @_ @JoinGame
+  deckList <- resolveDeck userId joining.deck
+  when (row.marvelCampaignUserId /= userId && any (\(_, u, _) -> u == userId) seats) $ sendResponseStatus status409 (ikey "error.alreadySeated")
+  refuseSharedHeroes (deckList : [d | (_, _, d) <- seats])
+  case [0 .. row.marvelCampaignSeats - 1] \\ [p | (p, _, _) <- seats] of
+    [] -> sendResponseStatus status409 (ikey "error.noFreeSeat")
+    (position : rest) -> do
+      runDB $ insert_ $ MarvelCampaignSeat cid position userId (toJSON deckList)
+      reseat cid row
+      if null rest
+        then (\gid -> object ["gameId" .= gid]) <$> dealCampaignGame cid
+        else pure $ object []
+
+-- | Give up your seats before the campaign's first game.
+postLeaveCampaignR :: MarvelCampaignId -> Handler ()
+postLeaveCampaignR cid = do
+  userId <- requireUserId
+  row <- runDB $ get404 cid
+  c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
+  seats <- campaignSeats cid row
+  unless (awaitingCampaignPlayers row c (length seats)) $ sendResponseStatus status409 (ikey "error.notWaitingForPlayers")
+  runDB $ deleteWhere [MarvelCampaignSeatCampaignId ==. cid, MarvelCampaignSeatUserId ==. userId]
+  reseat cid row
+
+-- | Begin the campaign with the seats taken so far, closing the empty ones, as a game
+-- with friends can be started: its first scenario is dealt.
+postStartCampaignR :: MarvelCampaignId -> Handler Value
+postStartCampaignR cid = do
+  row <- requireOwnedCampaign cid
+  c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
+  seats <- runDB $ selectList [MarvelCampaignSeatCampaignId ==. cid] [Asc MarvelCampaignSeatPosition]
+  unless (awaitingCampaignPlayers row c (length seats)) $ sendResponseStatus status409 (ikey "error.notWaitingForPlayers")
+  when (null seats) $ sendResponseStatus status409 (ikey "error.noSeatTaken")
+  row' <- runDB do
+    -- out of the way first, as positions are unique
+    for_ (zip [0 :: Int ..] seats) \(n, Entity sid _) -> update sid [MarvelCampaignSeatPosition =. -1 - n]
+    for_ (zip [0 :: Int ..] seats) \(n, Entity sid _) -> update sid [MarvelCampaignSeatPosition =. n]
+    updateGet cid [MarvelCampaignSeats =. length seats]
+  reseat cid row'
+  (\gid -> object ["gameId" .= gid]) <$> dealCampaignGame cid
+
+newtype SeatDeck = SeatDeck {deck :: DeckChoice}
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
+
+-- | Change the deck you play a seat with, between the campaign's games: the same hero,
+-- as "players are free to change aspects and alter the contents of their deck" but not
+-- their identity (rulebook p.3). This is how a deck the campaign took allies from is
+-- brought back up to size.
+putCampaignSeatR :: MarvelCampaignId -> Int -> Handler ()
+putCampaignSeatR cid position = do
+  userId <- requireUserId
+  row <- requireCampaignMember cid
+  (_, current) <- campaignNow row
+  when (isJust current) $ sendResponseStatus status409 (ikey "error.campaignGameInProgress")
+  seats <- campaignSeats cid row
+  (_, owner, deck) <- maybe notFound pure $ find (\(p, _, _) -> p == position) seats
+  unless (owner == userId) notFound
+  SeatDeck choice <- requireCheckJsonBody
+  deck' <- resolveDeck userId choice
+  unless (toHeroCardCode deck'.hero == toHeroCardCode deck.hero) $ sendResponseStatus status400 (ikey "error.campaignSameHero")
+  now <- liftIO getCurrentTime
+  runDB do
+    seated <- selectFirst [MarvelCampaignSeatCampaignId ==. cid, MarvelCampaignSeatPosition ==. position] []
+    case seated of
+      Just (Entity sid _) -> update sid [MarvelCampaignSeatDeck =. toJSON deck']
+      -- a campaign from before seats: its decks kept on it
+      Nothing -> update cid [MarvelCampaignDecks =. toJSON [if p == position then deck' else d | (p, _, d) <- seats]]
+    update cid [MarvelCampaignUpdatedAt =. now]
+
+-- | Back to the campaign's game being played, or the next scenario dealt from the log.
 postContinueCampaignR :: MarvelCampaignId -> Handler Value
 postContinueCampaignR cid = do
-  row <- requireOwnedCampaign cid
-  user <- runDB $ get404 row.marvelCampaignUserId
-  (c, current) <- campaignNow row
-  case current of
-    Just gid -> pure $ object ["gameId" .= gid]
-    Nothing -> do
-      code <- maybe (sendResponseStatus status409 (ikey "error.campaignOver")) pure (currentScenario c)
-      difficulty <- decodeOrFail @Difficulty "difficulty" row.marvelCampaignDifficulty
-      decks <- decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
-      setup <- maybe (sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode code)])) pure (recommendedSetup code)
-      dealt <- maybe (sendResponseStatus status400 ("the campaign has no decks" :: Text)) pure (nonEmpty $ map (campaignDeck c) decks)
-      let setup' = ScenarioSetup setup.scenarioCode setup.modulars difficulty
-      ((g, queue, gen), said) <-
-        either (sendResponseStatus status400) pure =<< liftIO . startGame setup' (Just c) (soloSeats user.userUsername dealt) =<< liftIO randomIO
-      now <- liftIO getCurrentTime
-      gid <- runDB do
-        gid <-
-          insert
-            MarvelGame
-              { marvelGameUserId = row.marvelCampaignUserId
-              , marvelGameName = row.marvelCampaignName <> " – " <> fromMaybe (unCardCode code) (fst . villainOf <$> Just setup')
-              , marvelGamePlayerName = user.userUsername
-              , marvelGameCurrentData = toJSON g
-              , marvelGameCurrentQueue = toJSON queue
-              , marvelGameRandomGen = showGen gen
-              , marvelGameStep = 0
-              , marvelGameScenario = toJSON setup'
-              , marvelGameDeck = Just (toJSON $ toList dealt)
-              , marvelGameAllowSpectators = False
-              , marvelGameWithFriends = False
-              , marvelGameSeats = length dealt
-              , marvelGameCampaign = Just (toJSON c)
-              , marvelGameCreatedAt = now
-              , marvelGameUpdatedAt = now
-              }
-        void $ storeLog gid (-1) now said
-        update cid [MarvelCampaignCampaign =. toJSON c, MarvelCampaignCurrentGame =. Just gid, MarvelCampaignUpdatedAt =. now]
-        pure gid
-      pure $ object ["gameId" .= gid]
+  row <- requireCampaignMember cid
+  (_, current) <- campaignNow row
+  gid <- maybe (dealCampaignGame cid) pure current
+  pure $ object ["gameId" .= gid]
+
+-- | Deal the campaign's next scenario: to each seat the deck its player began the
+-- campaign with and the cards the log adds. Each deck must be big enough once the
+-- allies removed from the campaign are out of it: "you must add a card to your deck"
+-- (rulebook p.12).
+dealCampaignGame :: MarvelCampaignId -> Handler MarvelGameId
+dealCampaignGame cid = do
+  row <- runDB $ get404 cid
+  (c, _) <- campaignNow row
+  code <- maybe (sendResponseStatus status409 (ikey "error.campaignOver")) pure (currentScenario c)
+  difficulty <- decodeOrFail @Difficulty "difficulty" row.marvelCampaignDifficulty
+  setup <- maybe (sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode code)])) pure (recommendedSetup code)
+  seats <- campaignSeats cid row
+  when (length seats < row.marvelCampaignSeats) $ sendResponseStatus status409 (ikey "error.notAllSeatsTaken")
+  for_ seats \(_, _, d) -> do
+    let short = campaignDeckShortBy c d
+    when (short > 0) $
+      sendResponseStatus status409 (ikeyWith "error.campaignDeckTooSmall" [textVar "hero" (heroName d.hero), textVar "count" (tshow short)])
+  players <- maybe (sendResponseStatus status400 ("the campaign has no decks" :: Text)) pure . nonEmpty =<< seatNames seats
+  owner <- runDB $ get404 row.marvelCampaignUserId
+  let setup' = ScenarioSetup setup.scenarioCode setup.modulars difficulty
+      named = c {campaignName = Just row.marvelCampaignName}
+      dealt = fmap (\(u, n, d) -> (u, n, campaignDeck c d)) players
+      friends = row.marvelCampaignWithFriends
+  ((g, queue, gen), said) <-
+    either (sendResponseStatus status400) pure =<< liftIO . startGame setup' (Just named) (fmap (\(_, n, d) -> (n, d)) dealt) =<< liftIO randomIO
+  now <- liftIO getCurrentTime
+  runDB do
+    gid <-
+      insert
+        MarvelGame
+          { marvelGameUserId = row.marvelCampaignUserId
+          , marvelGameName = row.marvelCampaignName <> " – " <> fst (villainOf setup')
+          , marvelGamePlayerName = owner.userUsername
+          , marvelGameCurrentData = toJSON g
+          , marvelGameCurrentQueue = toJSON queue
+          , marvelGameRandomGen = showGen gen
+          , marvelGameStep = 0
+          , marvelGameScenario = toJSON setup'
+          , marvelGameDeck = if friends then Nothing else Just (toJSON [d | (_, _, d) <- toList dealt])
+          , marvelGameAllowSpectators = False
+          , marvelGameWithFriends = friends
+          , marvelGameSeats = length dealt
+          , marvelGameCampaign = Just (toJSON named)
+          , marvelGameCreatedAt = now
+          , marvelGameUpdatedAt = now
+          }
+    -- with friends, each plays their own seat of it
+    when friends $ for_ (zip [0 ..] (toList dealt)) \(position, (u, _, d)) -> insert_ $ MarvelSeat gid position u (Just $ toJSON d)
+    void $ storeLog gid (-1) now said
+    update cid [MarvelCampaignCampaign =. toJSON c, MarvelCampaignCurrentGame =. Just gid, MarvelCampaignUpdatedAt =. now]
+    pure gid
+ where
+  heroName code = maybe (unCardCode code) (display . cdName) (HashMap.lookup (toHeroCardCode code) allHeroesMap)
 
 data UndoTarget = LastAnswer | StartOfPhase | StartOfRound | ToStep Int
   deriving stock (Eq)

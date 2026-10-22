@@ -31,12 +31,11 @@ spec = describe "Taskmaster" do
         sort (map (toCardCode . pcCardDef) captives) `shouldBe` ["04097", "04098", "04099", "04100" :: CardCode]
         map pcOwner captives `shouldBe` replicate 4 Nothing
 
-    it "puts Hydra Patrol (04154) into play, once the Hydra Patrol set's cards exist" do
+    it "puts Hydra Patrol into play" do
       tg <- taskmaster ["spider-man"]
       inGame tg do
         codes <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameSideSchemes)
-        -- ponytail: the set is another package's; without it setup puts nothing into play
-        codes `shouldBe` ["04154" | HashMap.member "04154" SideSchemes.allSideSchemes]
+        codes `shouldBe` [toCardCode SideSchemes.hydraPatrol]
 
   describe "Captured by Hydra" do
     it "holds a random Captive ally; the player who defeats it takes the ally into hand, as theirs, and removes the scheme from the game" do

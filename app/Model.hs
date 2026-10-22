@@ -68,20 +68,34 @@ MarvelGame sql=marvel_games
   updatedAt UTCTime
   deriving Show
 
--- | A campaign ("Marvel.Campaign"): its log as of the last game won, the decks its
--- players began it with (each game's are these and the cards the log adds), and the
--- game of it being played, if one is.
+-- | A campaign ("Marvel.Campaign"): its log as of the last game won, and the game of it
+-- being played, if one is. Who plays it, with the decks they began it with, are its
+-- seats; each game's decks are those and the cards the log adds.
 MarvelCampaign sql=marvel_campaigns
   Id UUID default=gen_random_uuid()
   userId UserId OnDeleteCascade
   name Text
   campaign Value
+  -- | the decks of a campaign made before it had seats, its owner playing each
   decks Value
   -- | each scenario's difficulty: standard or expert
   difficulty Value
   currentGame MarvelGameId Maybe OnDeleteSetNull
+  -- | played with friends, a seat each, its games dealt to their seats
+  withFriends Bool default=false
+  seats Int default=1
   createdAt UTCTime
   updatedAt UTCTime
+  deriving Show
+
+-- | Who sits where in a campaign, and the deck they began it with: seat n plays the nth
+-- player of each of its games.
+MarvelCampaignSeat sql=marvel_campaign_seats
+  campaignId MarvelCampaignId OnDeleteCascade
+  position Int
+  userId UserId OnDeleteCascade
+  deck Value
+  UniqueCampaignSeat campaignId position
   deriving Show
 
 -- | Who sits where at a game with friends, and the deck they brought. Seats are dealt

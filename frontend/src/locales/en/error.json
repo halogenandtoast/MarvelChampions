@@ -23,5 +23,9 @@
   "noScenario": "Choose a scenario.",
   "noSuchScenario": "No such scenario: {scenario}",
   "unsupportedExport": "This export comes from an unsupported version.",
-  "campaignOver": "The campaign is over."
+  "campaignOver": "The campaign is over.",
+  "notAllSeatsTaken": "Every seat must be taken before the campaign goes on.",
+  "campaignDeckTooSmall": "{hero}'s deck is {count} short of the 40 cards a deck needs, now that the campaign has taken allies from it: add cards to it (change the deck) before the next scenario.",
+  "campaignGameInProgress": "Decks change between the campaign's games, not during one.",
+  "campaignSameHero": "A player keeps their hero for the whole campaign: choose a deck for the same hero."
 }

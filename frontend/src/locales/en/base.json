@@ -144,6 +144,8 @@
     "campaignModeHint": "The expert campaign keeps each hero's damage from one scenario to the next, and heals it with obligations.",
     "scenarioDifficultyHint": "Each scenario's difficulty: expert adds the expert set and starts the villain a stage later.",
     "campaignHeroes": "Each player keeps their hero for the whole campaign.",
+    "campaignWithFriendsHint": "Leave seats open for friends: the campaign waits on its page until they join with their decks, or you begin it. Each of its games is played a seat each.",
+    "openCampaignSeatHint": "A friend takes it from the campaign's link",
     "campaignName": "Campaign name",
     "campaignSummary": "{campaign} · {mode} · {players}"
   },
@@ -153,6 +155,7 @@
     "ExpertCampaign": "Expert campaign",
     "campaigns": "Campaigns",
     "scenario": "Scenario {n}",
+    "scenarioOf": "Scenario {n} of {total}",
     "progress": "{done} of {total} won",
     "next": "Next",
     "continue": "Play {villain}",
@@ -180,7 +183,11 @@
     "delete": "Delete campaign",
     "confirmDelete": "Delete this campaign? Its games are kept.",
     "couldNotContinue": "Could not deal the next scenario.",
-    "notFound": "No such campaign."
+    "notFound": "No such campaign.",
+    "deckShort": "{count} card short of 40: change this deck before the next scenario | {count} cards short of 40: change this deck before the next scenario",
+    "changeDeck": "Change deck",
+    "changeDeckTitle": "{hero}'s deck for the rest of the campaign",
+    "seatedBy": "played by {name}"
   },
   "settings": {
     "title": "Settings",

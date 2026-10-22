@@ -133,6 +133,8 @@ data UpgradeMatcher
     UpgradeOnIdentity IdentityMatcher
   | -- | of the upgrades matching, those with the highest printed cost
     UpgradeWithHighestCostAmong UpgradeMatcher
+  | -- | one an effect may make leave play: not a permanent one (RR, Permanent)
+    UpgradeThatCanLeavePlay
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

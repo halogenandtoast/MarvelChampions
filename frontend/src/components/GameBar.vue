@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Bug, Download, FlagTriangleRight, Menu, PanelRightClose, PanelRightOpen, Rewind, RotateCcw, Terminal, Undo2, Layers } from 'lucide-vue-next'
 import GameMenu from './GameMenu.vue'
+import type { CampaignInfo } from '../server'
 
 const undoShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘Z' : 'Ctrl+Z'
 
@@ -15,6 +16,8 @@ const { round = null, phase = null } = defineProps<{
   /** whose turn it is, by name */
   turn?: string | null
   name?: string | null
+  /** the campaign this game is a scenario of */
+  campaign?: CampaignInfo | null
 }>()
 const emit = defineEmits<{
   reset: []
@@ -65,6 +68,9 @@ const phases = ['PlayerPhase', 'VillainPhase']
     </div>
 
     <div v-if="round !== null" class="tracker" :aria-label="$t('game.phaseTracker')">
+      <span v-if="campaign" class="campaign" :title="$t(`campaign.${campaign.mode}`)">
+        {{ campaign.name ?? $t('campaign.riseOfRedSkull') }} · {{ $t('campaign.scenarioOf', { n: campaign.scenario, total: campaign.scenarios }) }} · {{ $t(`campaign.${campaign.mode}`) }}
+      </span>
       <span v-if="name" class="game-name">{{ name }}</span>
       <span class="round"><RotateCcw aria-hidden="true" />{{ $t('game.round', { round }) }}</span>
       <ol class="phases">
@@ -105,6 +111,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
   z-index: 50;
 }
 .left, .right { display: flex; align-items: stretch; }
+.campaign { display: flex; align-items: center; padding: 0 10px; color: var(--amber); font-weight: 700; white-space: nowrap; }
 .right { justify-content: flex-end; }
 .game-bar :deep(svg) { width: 15px; height: 15px; }
 .spectating { display: flex; align-items: center; padding: 0 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75em; font-weight: 700; }

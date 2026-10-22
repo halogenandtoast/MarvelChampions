@@ -8,6 +8,7 @@ module Marvel.Decklist (
   aspectsBalanced,
   sharedHeroes,
   campaignDeck,
+  campaignDeckShortBy,
   starterDecks,
   lookupStarterDeck,
 ) where
@@ -25,6 +26,7 @@ import Marvel.Deck
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
+import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Name
 import Marvel.PlayerCard
 
@@ -93,6 +95,23 @@ campaignDeck c d =
         [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved]
           <> [(code, 1) | Just p <- [campaignPlayer d.hero c], code <- campaignCards p]
     }
+
+-- | How many cards the player must add to the deck they began the campaign with, once the
+-- allies removed from the campaign are taken out: "If this causes your deck to fall below
+-- the minimum number of cards, then you must add a card to your deck" (TRORS rulebook
+-- p.12, Zola). The minimum is 40, permanent cards and what the campaign adds not counted
+-- (RR, Deck Customization).
+campaignDeckShortBy :: Campaign -> DeckList -> Int
+campaignDeckShortBy c d = max 0 (40 - counted)
+ where
+  counted =
+    sum
+      [ n
+      | (code, n) <- d.cards
+      , code `notElem` c.campaignLog.alliesRemoved
+      , Just def <- [HashMap.lookup code allPlayerCards]
+      , Permanent `notElem` cdKeywords def
+      ]
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]

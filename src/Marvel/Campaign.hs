@@ -67,6 +67,8 @@ data Campaign = Campaign
   , lost :: Bool
   -- ^ an expert campaign's last scenario lost: Red Skull conquers the world
   , campaignLog :: CampaignLog
+  , campaignName :: Maybe Text
+  -- ^ what its players call it
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -124,6 +126,7 @@ newCampaign mode identities =
     , scenarios = riseOfRedSkull
     , completed = 0
     , lost = False
+    , campaignName = Nothing
     , campaignLog =
         CampaignLog
           { players = zipWith newPlayer [1 ..] (map toHeroCardCode identities)

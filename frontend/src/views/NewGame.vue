@@ -197,10 +197,7 @@ const campaignModeOptions = computed(() => [
 ])
 // the villains of The Rise of Red Skull, in order
 const RED_SKULL_CAMPAIGN = ['04058', '04076', '04093', '04109', '04125']
-watch(kind, (k) => {
-  if (k === 'campaign') withFriends.value = false
-})
-const canCreateCampaign = computed(() => !creating.value && used.value.length > 0)
+const canCreateCampaign = computed(() => !creating.value && (withFriends.value || taking.value.length > 0))
 const createCampaignNow = async () => {
   if (!canCreateCampaign.value) return
   creating.value = true
@@ -210,7 +207,8 @@ const createCampaignNow = async () => {
       name: gameName.value.trim() || t('campaign.riseOfRedSkull'),
       mode: campaignMode.value,
       difficulty: difficulty.value,
-      decks: used.value.map(choice),
+      decks: taking.value.map(choice),
+      seats: seatCount.value,
     })
     await router.push(`/campaigns/${id}`)
   } catch (e) {
@@ -299,15 +297,29 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
           <h2 class="step-title"><span class="n">3</span>{{ $t('newGame.players') }}</h2>
           <SegmentedToggle :model-value="String(seatCount)" :options="playerOptions" :label="$t('newGame.players')" @update:model-value="seatCount = Number($event)" />
           <p class="hint">{{ $t('newGame.campaignHeroes') }}</p>
+          <div class="toggle-row">
+            <label class="switch">
+              <input v-model="withFriends" type="checkbox" role="switch" />
+              <span class="track" aria-hidden="true" />
+              {{ $t('newGame.playWithFriends') }}
+            </label>
+          </div>
+          <p class="hint">{{ $t('newGame.campaignWithFriendsHint') }}</p>
           <ol class="seats">
-            <li v-for="(seat, i) in used" :key="i" class="seat">
+            <li v-for="(seat, i) in used" :key="i" class="seat" :class="{ open: withFriends && seat.open }">
               <span class="seat-label">{{ $t('newGame.seat', { n: i + 1 }) }}</span>
-              <button type="button" class="seat-deck" @click="pick(i)">
+              <template v-if="withFriends && seat.open">
+                <div class="open-seat"><UserPlus aria-hidden="true" /><span>{{ $t('newGame.openSeat') }}<small>{{ $t('newGame.openCampaignSeatHint') }}</small></span></div>
+              </template>
+              <button v-else type="button" class="seat-deck" @click="pick(i)">
                 <DeckTile v-if="faceOf(seat)" :face="faceOf(seat)!" />
                 <span v-else class="choose">{{ $t('newGame.chooseDeck') }}</span>
               </button>
               <div class="seat-actions">
-                <button type="button" class="btn ghost" @click="pick(i)">{{ $t('newGame.changeDeck') }}</button>
+                <button v-if="!(withFriends && seat.open)" type="button" class="btn ghost" @click="pick(i)">{{ $t('newGame.changeDeck') }}</button>
+                <button v-if="withFriends" type="button" class="btn ghost" @click="seat.open = !seat.open">
+                  {{ seat.open ? $t('newGame.takeSeat') : $t('newGame.leaveOpen') }}
+                </button>
               </div>
             </li>
           </ol>

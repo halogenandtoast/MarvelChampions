@@ -68,7 +68,15 @@ narrationFor = \case
       Just c -> Campaign.currentScenario c == Just (toId $ gameScenario g)
       Nothing -> False
     pure [toned Good $ structure [ikeyPart "log.gameOver.won" []] | not pending]
-  CampaignStep step -> Just $ one $ structure [ikeyPart (campaignStepKey step) []]
+  -- a heading for a part of the Campaign Instructions only when it has something to do
+  CampaignStep step -> Just do
+    told <- getsGame \g -> case gameCampaign g of
+      Nothing -> False
+      Just c -> case step of
+        CampaignChoices -> any (notNull . (.pending)) c.campaignLog.players
+        CampaignSetup -> Campaign.scenarioNumber c > 1
+        CampaignVictory -> True
+    pure [structure [ikeyPart (campaignStepKey step) []] | told]
   RecordInCampaignLog r -> campaignNarration r
   GameOver Lost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.lost" []]
   -- * What the players do

@@ -1,12 +1,18 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Check, Play, Trash2 } from 'lucide-vue-next'
-import { continueCampaign, deleteCampaign, fetchCampaign } from '../api'
+import { changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
+import { currentUser } from '../auth'
+import { fetchDecks } from '../browser/lib/api'
+import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { useCards } from '../cards'
+import DeckPicker from '../components/DeckPicker.vue'
+import Lobby from '../components/Lobby.vue'
+import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
-import type { CampaignView } from '../server'
+import type { CampaignView, StarterDeck } from '../server'
 
 // A campaign's overview: its log as the printed one has it, the scenarios won and the
 // one next, and the button that deals it (or goes back to the game of it being played).
@@ -21,9 +27,60 @@ const error = ref<string | null>(null)
 const working = ref(false)
 const id = String(route.params.id)
 
-fetchCampaign(id)
-  .then((v) => (view.value = v))
-  .catch(() => (error.value = t('campaign.notFound')))
+const load = () =>
+  fetchCampaign(id)
+    .then((v) => (view.value = v))
+    .catch(() => (error.value = t('campaign.notFound')))
+void load()
+
+// a campaign with friends gathers its players as a game's lobby does; the last seat
+// taken, or the owner beginning with those taken, deals its first game
+const attempt = async (step: () => Promise<{ gameId?: string } | void>) => {
+  working.value = true
+  error.value = null
+  try {
+    const result = await step()
+    if (result && result.gameId) return void (await router.push(`/games/${result.gameId}`))
+    await load()
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : t('campaign.couldNotContinue')
+    await load()
+  }
+  working.value = false
+}
+const join = (deck: DeckChoice) => attempt(() => joinCampaign(id, deck))
+const leave = () => attempt(() => leaveCampaign(id))
+const begin = () => attempt(() => startCampaign(id))
+
+// the seat each column of the log is played from, and whether it is yours
+const seatOf = (i: number) => view.value?.table.seated[i] ?? null
+const yours = (i: number) => seatOf(i)?.userId === currentUser.value?.id
+const short = (i: number) => view.value?.deckShort[i] ?? 0
+
+// between games, a player may change their deck, keeping their hero (rulebook p.3)
+const decks = ref<DeckSummary[]>([])
+const starters = ref<StarterDeck[]>([])
+onMounted(async () => {
+  starters.value = await fetchStarterDecks().catch(() => [])
+  decks.value = await fetchDecks().catch(() => [])
+})
+const dialog = useTemplateRef<HTMLDialogElement>('dialog')
+const changing = ref<number | null>(null)
+const picking = ref<DeckKey>('starter:spider-man')
+const loaded = ref<{ face: DeckFace; list: DeckList } | null>(null)
+const pickingLoad = ref(false)
+const changeDeck = (i: number) => {
+  changing.value = i
+  loaded.value = null
+  dialog.value?.showModal()
+}
+const useDeck = async () => {
+  const seat = changing.value === null ? null : seatOf(changing.value)
+  if (!seat) return
+  const deck: DeckChoice = picking.value === 'loaded' && loaded.value ? { list: loaded.value.list } : toDeckChoice(picking.value)
+  dialog.value?.close()
+  await attempt(() => changeCampaignDeck(id, seat.position, deck))
+}
 
 const log = computed(() => view.value?.campaign.campaignLog)
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
@@ -71,7 +128,7 @@ const remove = async () => {
           <p class="eyebrow">{{ $t('campaign.riseOfRedSkull') }} · {{ $t(`campaign.${view.campaign.mode}`) }} · {{ $t(`difficulty.${view.difficulty}`) }}</p>
           <h1 class="page-title">{{ view.name }}</h1>
         </div>
-        <button type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
+        <button v-if="view.table.owner === currentUser?.id" type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
       </header>
 
       <ol class="track">
@@ -83,7 +140,9 @@ const remove = async () => {
         </li>
       </ol>
 
-      <div class="next box">
+      <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin" />
+
+      <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
         <p v-if="view.won" class="result good">{{ $t('campaign.won') }}</p>
         <p v-else-if="view.campaign.lost" class="result bad">{{ $t('campaign.lost') }}</p>
@@ -94,11 +153,11 @@ const remove = async () => {
       <section class="box">
         <h2>{{ $t('campaign.playerInformation') }}</h2>
         <div class="players">
-          <article v-for="p in log.players" :key="p.identity" class="player">
+          <article v-for="(p, i) in log.players" :key="p.identity" class="player">
             <header>
               <span class="portrait" :style="{ backgroundImage: art(p.identity) }" />
               <div>
-                <small>{{ $t('campaign.player', { n: p.number }) }}</small>
+                <small>{{ $t('campaign.player', { n: p.number }) }}<template v-if="seatOf(i)"> · {{ $t('campaign.seatedBy', { name: seatOf(i)!.username }) }}</template></small>
                 <strong>{{ name(p.identity) }}</strong>
               </div>
             </header>
@@ -114,6 +173,8 @@ const remove = async () => {
               <dt>{{ $t('campaign.rescuedAllies') }}</dt>
               <dd>{{ names(p.rescuedAllies) }}</dd>
             </dl>
+            <p v-if="short(i) > 0" class="short">{{ $t('campaign.deckShort', short(i)) }}</p>
+            <button v-if="yours(i) && !view.currentGame && !view.waitingForPlayers && view.next" type="button" class="btn ghost" @click="changeDeck(i)">{{ $t('campaign.changeDeck') }}</button>
             <p v-if="p.pending.length" class="pending">{{ $t('campaign.toChoose') }}: {{ p.pending.map((c) => $t(`campaign.${c}`)).join(', ') }}</p>
           </article>
         </div>
@@ -134,6 +195,17 @@ const remove = async () => {
       </section>
     </div>
     <div v-else-if="error" class="page-content"><p class="error">{{ tr(error) }}</p></div>
+
+    <dialog ref="dialog" class="picker-dialog" @close="changing = null" @click="$event.target === dialog && dialog?.close()">
+      <div v-if="changing !== null && seatOf(changing)" class="picker-body">
+        <header>
+          <h2>{{ $t('campaign.changeDeckTitle', { hero: name(seatOf(changing)!.hero) }) }}</h2>
+          <button type="button" class="btn ghost" @click="dialog?.close()">{{ $t('common.close') }}</button>
+        </header>
+        <DeckPicker v-model="picking" v-model:loading="pickingLoad" :decks="decks" :starters="starters" :loaded="loaded?.face ?? null" @load="(face, list) => (loaded = { face, list })" @saved="async () => (decks = await fetchDecks().catch(() => decks))" />
+        <button v-if="!pickingLoad" type="button" class="btn primary big" :disabled="working" @click="useDeck">{{ $t('campaign.changeDeck') }}</button>
+      </div>
+    </dialog>
   </div>
 </template>
 
@@ -172,6 +244,12 @@ dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; m
 dt { color: var(--text-muted); }
 dd { margin: 0; }
 .pending { margin: 0; font-size: 0.8rem; color: var(--amber); }
+.short { margin: 0; font-size: 0.8rem; color: var(--danger); }
+.picker-dialog { width: min(62rem, 100vw - 2rem); max-height: min(48rem, 100dvh - 2rem); padding: 0; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--ink-2); color: var(--text); }
+.picker-dialog::backdrop { background: rgb(0 0 0 / 0.6); }
+.picker-body { display: grid; gap: 14px; padding: 18px; }
+.picker-body header { display: flex; align-items: center; justify-content: space-between; }
+.picker-body h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; }
 .scenario-log { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); }
 .error { margin: 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--danger); color: var(--danger); }
 

@@ -1,8 +1,12 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Area (Pile (..), experimentalWeaponsDeck)
 import Marvel.Campaign
+import Marvel.Game.Public (publicGameFor)
 import Marvel.Hp (unHp)
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards))
+import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Obligation.Types (Attrs (obligationOwner))
 import TestImport
 
@@ -94,6 +98,16 @@ spec = describe "The Rise of Red Skull campaign" do
       codes `shouldSatisfy` notElem "04159a"
       (.conditionUpgrade) <$> spiderManNow `shouldReturn` Just "04159b"
 
+  it "Absorbing Man won: the delay counters are recorded, and each player may choose a Basic upgrade" do
+    tg <- dealScenario ((newCampaign StandardCampaign [spiderMan]) {completed = 1}) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      mid <- mainSchemeId
+      resolve [PlaceCounters (MainSchemeRef mid) 3]
+      resolve [GameOver Won]
+      (.campaignLog.delayCounters) <$> campaignNow `shouldReturn` Just 3
+      (.pending) <$> spiderManNow `shouldReturn` [ChooseBasicUpgrade]
+
   it "Taskmaster won: the Captive allies a player rescued are added to their deck" do
     let c = (newCampaign StandardCampaign [spiderMan]) {completed = 2}
     tg <- dealScenario c [starter "spider-man"]
@@ -114,6 +128,35 @@ spec = describe "The Rise of Red Skull campaign" do
       removed <- (.campaignLog.alliesRemoved) <$> campaignNow
       removed `shouldBe` map toCardCode (concat prison)
       (.pending) <$> spiderManNow `shouldReturn` []
+
+  it "Crossbones won: each Experimental attachment that entered the game is recorded, and shuffled into the next encounter deck" do
+    tg <- dealScenario (newCampaign StandardCampaign [spiderMan]) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      Pile before _ <- getPile experimentalWeaponsDeck
+      resolve [UsingDeck experimentalWeaponsDeck (DrawAndRevealEncounterCard (player1 tg))]
+      Pile after _ <- getPile experimentalWeaponsDeck
+      let entered = [toCardCode w | w <- before, w `notElem` after]
+      length entered `shouldBe` 1
+      resolve [GameOver Won]
+      c <- campaignNow
+      c.campaignLog.experimentalWeapons `shouldBe` entered
+      -- the next scenario's setup finds the card by its code
+      tg2 <- liftIO $ dealScenario c [starter "spider-man"]
+      liftIO $ inGame tg2 do
+        toFirstTurn
+        deck <- scenarioEncounterDeckNow
+        discard <- encounterDiscardNow
+        attached <- getsGame (map (toCardCode . getCardDef) . foldr (:) [] . gameAttachments)
+        any ((`elem` entered) . toCardCode) (deck <> discard) || any (`elem` entered) attached `shouldBe` True
+
+  it "Absorbing Man won: the delay counters placed on None Shall Pass are recorded" do
+    tg <- dealScenario ((newCampaign StandardCampaign [spiderMan]) {completed = 1}) [starter "spider-man"]
+    inGame tg do
+      toFirstTurn
+      resolve [AccelerateMainScheme, AccelerateMainScheme]
+      resolve [GameOver Won]
+      (.campaignLog.delayCounters) <$> campaignNow `shouldReturn` Just 2
 
   it "places threat for Absorbing Man's delay counters as Red Skull is set up" do
     plain <- testGameAgainst "01094" ["spider-man"]
@@ -154,6 +197,39 @@ spec = describe "The Rise of Red Skull campaign" do
       resolve (map (RemoveFromPlay . UpgradeRef) uids)
       upgradeCodes >>= (`shouldSatisfy` elem "04161a")
 
+  it "shows the board which campaign and which of its scenarios the game is" do
+    tg <- dealCampaign ((campaignAt ExpertCampaign 1) {campaignName = Just "Hydra Rising"}) [starter "spider-man"]
+    view <- publicGameFor (const True) =<< inGame tg getGame
+    let at k = \case
+          Object o -> KeyMap.lookup k o
+          _ -> Nothing
+        info f = at f =<< at "campaign" view
+    info "name" `shouldBe` Just (String "Hydra Rising")
+    info "scenario" `shouldBe` Just (Number 2)
+    info "scenarios" `shouldBe` Just (Number 5)
+    info "mode" `shouldBe` Just (String "ExpertCampaign")
+
+  it "a permanent upgrade is not offered to an effect that would discard it" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      basic <- putIntoPlay p "04161a"
+      shooter <- putIntoPlay p "01008"
+      _ <- revealNow p Treacheries.chaosInThePrison
+      choose "discard an upgrade" (isLabel "$label.discardAnUpgradeYouControl")
+      offers (isTargetChoice (upgradeIdOf basic)) `shouldReturn` False
+      offers (isTargetChoice (upgradeIdOf shooter)) `shouldReturn` True
+
+  it "an effect choosing an upgrade to discard has nothing to choose but a permanent one" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      basic <- putIntoPlay p "04161a"
+      _ <- revealNow p Treacheries.electricWhipAttack
+      choose "discard an upgrade" (isLabel "$label.discardAnUpgradeYouControl")
+      offers (isTargetChoice (upgradeIdOf basic)) `shouldReturn` False
+      upgradeCodes >>= (`shouldSatisfy` elem "04161a")
+
   it "a Tech upgrade used is crossed out of the campaign log" do
     let c = recordInLog (RecordTechUpgrade spiderMan "04156") (campaignAt StandardCampaign 1)
     tg <- dealCampaign c [withCard "04156" (starter "spider-man")]
@@ -176,6 +252,15 @@ spec = describe "The Rise of Red Skull campaign" do
         deck = campaignDeck c (starter "spider-man")
     map fst deck.cards `shouldSatisfy` elem "04158"
     map fst deck.cards `shouldSatisfy` notElem "01002"
+
+  it "a deck the campaign took an ally from must be brought back to 40 cards, permanent ones not counted" $ id @(IO ()) do
+    let deck = withCard "04159a" (starter "spider-man")
+        removed = recordInLog (RecordAlliesRemoved ["01002"]) (campaignAt StandardCampaign 4)
+        total = sum [n | (code, n) <- deck.cards, code /= "04159a"]
+        ally = sum [n | (code, n) <- deck.cards, code == "01002"]
+    campaignDeckShortBy (campaignAt StandardCampaign 4) deck `shouldBe` max 0 (40 - total)
+    campaignDeckShortBy removed deck `shouldBe` max 0 (40 - (total - ally))
+    (total - ally < 40) `shouldBe` True
 
   it "an expert campaign's obligation drawn goes into its player's play area" do
     tg <- testGame ["spider-man"]
