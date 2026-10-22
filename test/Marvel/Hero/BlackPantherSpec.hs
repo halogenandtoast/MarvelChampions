@@ -3,6 +3,7 @@ module Marvel.Hero.BlackPantherSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Card.Def (CardDef (cdTraits), cdCardType)
 import Marvel.Card.Types (CardType (UpgradeType))
+import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Obligation.Cards qualified as Cards
@@ -225,6 +226,21 @@ spec = describe "Black Panther" do
       maybeChoose "you" (isTargetChoice p)
       villainDamageNow `shouldReturn` 2
       minionDamages `shouldReturn` [2]
+
+  it "Energy Daggers' damage to the villain opens the window any damage does" do
+    tg <- testGame ["black-panther"]
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      -- Armored Rhino Suit takes the damage Rhino would take
+      suit <- encounterCard Attachments.armoredRhinoSuit
+      resolve [RevealEncounterCard p suit]
+      daggers <- putIntoPlay p "01046"
+      wakandaForever p "01043a" [daggers]
+      maybeChoose "you" (isTargetChoice p)
+      choose "the suit takes it" isAnyAbility
+      villainDamageNow `shouldReturn` 0
 
   it "Killmonger takes no damage from Black Panther upgrades" do
     tg <- testGame ["black-panther"]

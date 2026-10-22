@@ -50,12 +50,12 @@ instance RunMessage EnergyDaggers where
       let
         dmg =
           toDamage (if LastSpecial `elem` modifiers then 2 else 1) FromAbility
-      -- the damage is the enemies' own, not an attack's: no window, no bonus
+      -- dealt as one effect, as any damage to an enemy: its windows open and what adds
+      -- to this card's damage adds to each
       chooseOne
         ident
-        [ targeting ident' do
-          damageCharacter villain attrs dmg
-          for_ (HashMap.findWithDefault [] ident' minionMap) \minion -> damageCharacter minion attrs dmg
+        [ targeting ident' $
+          dealDamageToEach (toEnemy villain : map toEnemy (HashMap.findWithDefault [] ident' minionMap)) attrs dmg
         | ident' <- players
         ]
       pure u
