@@ -1094,9 +1094,10 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       pure $ PlayerIdentity $ attrs & statusL s .~ True
     RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity $ attrs & statusL s .~ False
-    -- an enemy's attack against them begins: none of its damage taken yet
-    VillainMessage _ (VillainBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
-    MinionMessage _ (MinionBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
+    -- an enemy's attack begins: none of its damage taken yet, by the player attacked or
+    -- by one whose hero defends it
+    VillainMessage _ (VillainBeginAttack _) -> attackBegins
+    MinionMessage _ (MinionBeginAttack _) -> attackBegins
     -- a card put into play leaves wherever it was
     PutCardIntoPlay _ card _ _ ->
       pure $

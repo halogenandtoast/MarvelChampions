@@ -3,6 +3,7 @@ module Marvel.Aspect.HulkPackSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Villain.Types qualified as V
+import Marvel.Card.Side (Side (A))
 import TestImport
 
 hulk :: IO TestGame
@@ -120,6 +121,34 @@ spec = describe "Hulk pack" do
         damageOf p `shouldReturn` 3
         mainSchemeThreatNow `shouldReturn` (before - 3)
 
+    it "is played by the player whose hero defended, for the damage they took (RR Defend)" do
+      tg <- testGame ["hulk", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+        clearHand p
+        hulksPay <- putInHand p "10016"
+        _ <- putInHand p "01089"
+        clearHand other
+        pay <- putInHand other "10016"
+        genius <- putInHand other "01089"
+        placeMainThreat 5
+        before <- mainSchemeThreatNow
+        _ <- stackEncounterDeck [Minions.hydraMercenary]
+        vid <- villainIdNow
+        runNow [VillainMessage vid (VillainAttacks p)]
+        choose "ask Captain Marvel to defend" (isTargetChoice other)
+        choose "Captain Marvel defends" (isTargetChoice other)
+        offers (isPlay hulksPay) `shouldReturn` False
+        choose "You'll Pay for That!" (isPlay pay)
+        payWith [genius]
+        pass
+        damageOf p `shouldReturn` 0
+        -- Rhino's 2 ATK and the boost icon, less her 1 DEF
+        damageOf other `shouldReturn` 2
+        mainSchemeThreatNow `shouldReturn` (before - 2)
+
     it "is not offered after a minion attacks" do
       tg <- hulk
       let p = player1 tg
@@ -150,6 +179,20 @@ spec = describe "Hulk pack" do
         vid <- villainIdNow
         choose "Rhino" (isTargetChoice vid)
         villainDamageNow `shouldReturn` 3
+
+    it "is played under any player's control, one per player" do
+      tg <- testGame ["hulk", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        _ <- putIntoPlay p "10018"
+        clearHand p
+        prowess <- putInHand p "10018"
+        strength <- putInHand p "01090"
+        -- Hulk has one, so only Captain Marvel may take this
+        playWith prowess [strength]
+        length <$> upgradesOf p `shouldReturn` 1
+        length <$> upgradesOf other `shouldReturn` 1
 
   describe "To the Rescue! (10019)" do
     it "removes 2 threat" do
@@ -220,6 +263,26 @@ spec = describe "Hulk pack" do
         vid <- villainIdNow
         runNow [VillainMessage vid (VillainAttacks p)]
         choose "defend" isDefend
+        choose "Electrostatic Armor" (isAbilityOfCard armor)
+        pass
+        villainDamageNow `shouldReturn` 1
+
+    it "is played under another player's control, answering that player defending" do
+      tg <- testGame ["hulk", "captain-marvel"]
+      let p = player1 tg
+          other = player2 tg
+      inGame tg do
+        runNow [IdentityMessage p (ChangedToForm A), IdentityMessage other (ChangedToForm A)]
+        clearHand p
+        armor <- putInHand p "10031"
+        energy <- putInHand p "01088"
+        playOn armor other [energy]
+        length <$> upgradesOf other `shouldReturn` 1
+        _ <- stackEncounterDeck [Minions.hydraMercenary]
+        vid <- villainIdNow
+        runNow [VillainMessage vid (VillainAttacks other)]
+        choose "Captain Marvel defends" isDefend
+        fmap fst <$> asked `shouldReturn` Just other
         choose "Electrostatic Armor" (isAbilityOfCard armor)
         pass
         villainDamageNow `shouldReturn` 1
