@@ -174,3 +174,7 @@ windowMatches matcher w source = case matcher of
     BoostCardTurnedFaceup _ _ activation'
       | windowTiming w == timing -> pure $ activation == activation'
     _ -> pure False
+  HeroDefendedWithoutDamage timing identityMatcher -> case windowType w of
+    DefendedWithoutDamage identityId _
+      | windowTiming w == timing -> identityMatches identityMatcher identityId
+    _ -> pure False

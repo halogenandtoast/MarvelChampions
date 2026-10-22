@@ -129,17 +129,23 @@ instance RunMessage (Attrs Hero) where
             else do
               push $ IdentityMessage (heroIdentityId a) IdentityRemoveConfused
               pure a
+        -- the hero exhausts to defend, and what answers their defending comes before
+        -- their defense is counted
         Defended enemyId -> do
-          def <- getModifiedDefense a
           pushAll
             [ IdentityMessage ident ExhaustedIdentity
-            , IdentityMessage ident $ IdentityDefended def
             , case enemyId of
                 EnemyVillainId vid ->
                   VillainMessage vid (VillainDefendedBy $ IdentityCharacter ident)
                 EnemyMinionId vid ->
                   MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
+            , CheckWindows [W.Window W.When $ W.HeroDefends ident enemyId]
+            , IdentityMessage ident $ SideMessage $ DefendsAgainst enemyId
             ]
+          pure a
+        DefendsAgainst _ -> do
+          def <- getModifiedDefense a
+          push $ IdentityMessage ident $ IdentityDefended def
           pure a
         _ -> pure a
     _ -> pure a

@@ -804,12 +804,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- pushed last to first: the damage, then retaliate (forced, so before any
       -- response), then the window for responses to defending
       when playerIdentityDefended $
-        push
-          ( CheckWindows
-              [ W.Window W.After $
-                  W.HeroDefends playerIdentityId (attackEnemy attack')
-              ]
-          )
+        push $ IdentityMessage playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
       when (retaliate > 0) $
         push $
           IdentityMessage
@@ -862,6 +857,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           <> map (RemoveFromPlay . toRef) upgrades
           <> map (DiscardedCard . EncounterCard) playerIdentityEncounterCards
       pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
+    AttackDefended enemy damageBefore -> do
+      push $
+        CheckWindows $
+          W.Window W.After (W.HeroDefends playerIdentityId enemy)
+            : [ W.Window W.After (W.DefendedWithoutDamage playerIdentityId enemy)
+              | playerIdentityDamage <= damageBefore
+              ]
+      pure pid
     IdentityDefended n ->
       pure $ PlayerIdentity $ attrs & damageReductionL +~ n & defendedL .~ True
     IdentityHealed n ->

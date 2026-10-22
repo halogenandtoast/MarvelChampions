@@ -51,6 +51,8 @@ data WindowMatcher
   | -- | a player plays an event: not an event's ability resolved without it being played
     PlaysEvent WindowTiming IdentityMatcher
   | BoostCardFlipped WindowTiming Activation
+  | -- | the hero defended an attack and took no damage from it
+    HeroDefendedWithoutDamage WindowTiming IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -88,6 +90,7 @@ data WindowType
   | EventPlayed IdentityId EventId
   | -- | a boost card dealt to an enemy turned faceup, before its boost icons count
     BoostCardTurnedFaceup EnemyId EncounterCard Activation
+  | DefendedWithoutDamage IdentityId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

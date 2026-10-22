@@ -65,6 +65,9 @@ data IdentityMessage
   | ShuffleIdentityDiscardBackIntoDeck
   | Search SearchSignifier CardMatcher SearchOption ReturnOption
   | IdentityRetaliate Natural EnemyId
+  | -- | the attack the hero defended is done with them: their damage before it, to tell
+    -- whether they took any from it
+    AttackDefended EnemyId Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -73,5 +76,7 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
+  | -- | the hero's defense counted, once what answers their defending has
+    DefendsAgainst EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
