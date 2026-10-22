@@ -7,11 +7,13 @@ import Marvel.Prelude
 
 import Marvel.Payment
 import Marvel.Card.Code
+import Marvel.Choice
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Hand
+import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Message
@@ -34,13 +36,22 @@ newtype ShieldToss = ShieldToss (Attrs Event)
 -- enemies is dealt 4 damage.
 instance RunMessage ShieldToss where
   runMessage msg e@(ShieldToss attrs) = case msg of
-    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
-      enemies <- selectList AttackableEnemy
-      let
-        x = min (length enemies) (length $ paymentDiscards payment)
-        damage = toDamage 4 $ FromPlayerAttack identityId
-      pushWhen (x > 0) $
-        Ask identityId $
-          ChooseN (fromIntegral x) [TargetLabel enemy [DamageEnemy enemy (toSource attrs) damage] | enemy <- map toRef enemies]
+    EventMessage ident (PlayedEvent _ payment _) | ident == eventId attrs -> do
+      pushWhen (notNull $ paymentDiscards payment) $
+        cardSpecific attrs "toss" (length (paymentDiscards payment), [] :: [EnemyId])
+      pure e
+    -- the X enemies are chosen, then dealt their damage at once
+    CardSpecific (isTarget attrs -> True) "toss" (fromJSON -> Success (x :: Int, chosen :: [EnemyId])) -> do
+      let identityId = eventController attrs
+      enemies <- filter (`notElem` chosen) <$> selectList AttackableEnemy
+      if length chosen >= x || null enemies
+        then
+          pushAll . simultaneousDamage
+            =<< traverse
+              (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) (toDamage 4 $ FromPlayerAttack identityId))
+              (reverse chosen)
+        else
+          chooseOne identityId
+            [TargetLabel (toRef enemy) [Run [cardSpecific attrs "toss" (x, enemy : chosen)]] | enemy <- enemies]
       pure e
     _ -> ShieldToss <$> runMessage msg attrs

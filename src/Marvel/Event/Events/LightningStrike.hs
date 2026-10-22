@@ -42,9 +42,10 @@ instance RunMessage LightningStrike where
       villains <- selectList VillainEnemy
       minions <- selectList $ MinionEngagedWith (IdentityWithId identityId)
       let damage = (if aerial then ignoringTough else id) $ toDamage x FromAbility
-      pushAll
-        =<< concatMapM
-          (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) damage)
-          (villains <> map EnemyMinionId minions)
+      when (x > 0) $
+        pushAll . simultaneousDamage
+          =<< traverse
+            (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) damage)
+            (villains <> map EnemyMinionId minions)
       pure e
     _ -> LightningStrike <$> runMessage msg attrs

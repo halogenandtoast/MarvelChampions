@@ -179,6 +179,20 @@ spec = describe "Captain America" do
         villainDamageNow `shouldReturn` 6
         field V.VillainStunned <$> getVillain `shouldReturn` True
 
+    it "is answered as an attack once all of it has resolved: the stun comes first" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        jarnbjorn <- putIntoPlay p "06019"
+        _ <- putInHand p "01090"
+        _ <- inPlay p "03004" ["01090", "03010"]
+        vid <- villainIdNow
+        choose "strike Rhino" (isTargetChoice (EnemyVillainId vid))
+        offers (isAbilityOfCard jarnbjorn) `shouldReturn` True
+        field V.VillainStunned <$> getVillain `shouldReturn` True
+
     it "does not stun when paid otherwise" do
       tg <- testGame ["captain-america"]
       let p = player1 tg

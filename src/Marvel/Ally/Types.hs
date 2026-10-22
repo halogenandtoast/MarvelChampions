@@ -166,27 +166,12 @@ getModifiedThwart attrs = do
   applyModifier _ = id
 
 damageChoice :: Attrs Ally -> Damage -> EnemyId -> Choice
-damageChoice attrs dmg = \case
-  EnemyVillainId vid ->
-    TargetLabel
-      (toRef vid)
-      [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]]
-      , DamageEnemy (toRef vid) (toRef attrs) dmg
-      , Run
-          [ CheckWindows
-              [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyVillainId vid)]
-          ]
-      ]
-  EnemyMinionId vid ->
-    TargetLabel
-      (toRef vid)
-      [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]]
-      , DamageEnemy (toRef vid) (toRef attrs) dmg
-      , Run
-          [ CheckWindows
-              [W.Window W.After $ W.AllyAttack (allyId attrs) (EnemyMinionId vid)]
-          ]
-      ]
+damageChoice attrs dmg enemy =
+  TargetLabel
+    (case enemy of EnemyVillainId vid -> toRef vid; EnemyMinionId mid -> toRef mid)
+    [ Run [CheckWindows [W.Window W.When $ W.AllyAttack (allyId attrs) enemy]]
+    , Run [AllyMessage (allyId attrs) (AllyAttackLands enemy dmg)]
+    ]
 
 thwartChoice :: Attrs Ally -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case

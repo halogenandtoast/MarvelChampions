@@ -119,14 +119,10 @@ choiceMessages ident = \case
   Pay payment -> pure [Paid payment]
   DamageAllEnemies matcher source damage -> do
     enemies <- selectList $ DamageableEnemy <> matcher
-    concatMapM
-      (\e -> choiceMessages ident (DamageEnemy (toRef e) source damage))
-      enemies
+    simultaneousDamage <$> traverse (\e -> choiceMessages ident (DamageEnemy (toRef e) source damage)) enemies
   DamageAllCharacters matcher source damage -> do
     characters <- selectList $ DamageableCharacter <> matcher
-    concatMapM
-      (\c -> choiceMessages ident (DamageCharacter c source damage))
-      characters
+    simultaneousDamage <$> traverse (\c -> choiceMessages ident (DamageCharacter c source damage)) characters
   -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
@@ -142,7 +138,10 @@ choiceMessages ident = \case
         EnemyRef e -> e
         _ -> error "can not damage target"
       attacked = case damageSource damage of
-        FromPlayerAttack attacker -> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
+        -- an event's attack is answered by the event, after all of it if it is labeled one
+        FromPlayerAttack attacker
+          | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy)]
+          | otherwise -> [enemyRetaliates enemy (IdentityCharacter attacker), CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
         _ -> []
     pure $
       ( case enemy of

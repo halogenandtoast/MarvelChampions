@@ -17,6 +17,8 @@ data MinionMessage
   | MinionHealed Natural
   | MinionHealAllDamage
   | MinionAttacks IdentityId
+  | -- | its attack by the character resolved: retaliate answers it
+    MinionRetaliates CharacterId
   | MinionSchemes
   | MinionSchemed
   | MinionBeginAttack IdentityId

@@ -5,6 +5,7 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
+import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
 import Marvel.Damage
 import Marvel.Game.Source
@@ -221,10 +222,11 @@ windowMatches matcher w source = case matcher of
     FlippedBoostCard card _ ->
       pure $ windowTiming w == timing && encounterCardMatches encounterCardMatcher card
     _ -> pure False
-  TookDamage identityMatcher damageSource' -> case windowType w of
-    IdentityTookDamage ident _ damage
-      | windowTiming w == After && damageSource damage == damageSource' ->
-          identityMatches identityMatcher ident
+  TookDamage identityMatcher damageSource' enemyMatcher -> case windowType w of
+    IdentityTookDamage ident from damage
+      | windowTiming w == After && damageSource damage == damageSource'
+      , Just enemy <- sourceEnemy from ->
+          liftA2 (&&) (identityMatches identityMatcher ident) (enemyMatches enemyMatcher enemy)
     _ -> pure False
   AllyWasDefeated timing identityMatcher -> case windowType w of
     AllyCardDefeated ident _ | windowTiming w == timing -> identityMatches identityMatcher ident

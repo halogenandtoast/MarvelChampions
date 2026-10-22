@@ -139,7 +139,8 @@ data EnemyMatcher
   | EnemyWithId EnemyId
   | VillainEnemy
   | MinionEnemy
-  | AttackableEnemy
+  | -- | an enemy a player matching may attack: guard keeps the villain from them
+    AttackableBy IdentityMatcher
   | DamageableEnemy
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher
@@ -162,6 +163,9 @@ instance Semigroup EnemyMatcher where
   EnemyMatches xs <> y = EnemyMatches (xs <> [y])
   x <> EnemyMatches ys = EnemyMatches (x : ys)
   x <> y = EnemyMatches [x, y]
+
+pattern AttackableEnemy :: EnemyMatcher
+pattern AttackableEnemy = AttackableBy You
 
 pattern VillainWithAnyDamage :: VillainMatcher
 pattern VillainWithAnyDamage <-
@@ -307,7 +311,8 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
 data DamageMatcher
   = AttackFromPlayer IdentityMatcher
   | AttackFromAlly AllyMatcher
-  | -- | damage a player dealt: by attacking, or with a card they control
+  | -- | damage a player dealt: by attacking, or with a card they control other than an
+    -- ally
     DamageByPlayer IdentityMatcher
   | AnyDamage
   deriving stock (Show, Eq, Generic)

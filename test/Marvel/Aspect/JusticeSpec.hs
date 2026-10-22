@@ -161,6 +161,22 @@ spec = describe "Justice" do
         [room] <- supportsWith "01063"
         offers (isAbilityOf (supportId room)) `shouldReturn` False
 
+    it "does not answer a minion your ally defeats: \"you\" is your identity" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        putIntoPlay p "01063"
+        _ <- putIntoPlay p "01058"
+        mercenary <- addMinion p Cards.hydraMercenary
+        runNow [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 2 FromAbility))]
+        daredevil <- allyIn "01058"
+        choose "Daredevil attacks" (isAllyAttack daredevil)
+        chooseIf (isTargetChoice mercenary)
+        minionDamageOf mercenary `shouldReturn` Nothing
+        [room] <- supportsWith "01063"
+        offers (isAbilityOf (supportId room)) `shouldReturn` False
+
   describe "Surveillance Team (01064)" do
     it "has 3 uses, each exhausting it to remove 1 threat" do
       tg <- testGame ["spider-man"]

@@ -97,6 +97,29 @@ spec = describe "Ms. Marvel pack" do
         -- Rhino II's 3 ATK, without the 2 boost
         damageOf p `shouldReturn` 3
 
+    it "defeating the villain mid-attack: the next stage resumes the attack with its own ATK" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "05014"
+        energy <- putInHand p "01088"
+        vid <- villainIdNow
+        runNow [VillainMessage vid (VillainDamaged (toSource p) (toDamage 12 FromAbility))]
+        _ <- stackEncounterDeck [Minions.vulture]
+        villainAttacks p
+        choose "no defender" isNoDefender
+        choose "play Preemptive Strike" (isPlay strike)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        pass
+        choose "Rhino II's Breakin' & Takin'" isAnyAbility
+        pass
+        -- Rhino II's 3 ATK, the boost cancelled
+        damageOf p `shouldReturn` 3
+        villainDamageNow `shouldReturn` 0
+
     it "is not played as the villain schemes" do
       tg <- msMarvel
       let p = player1 tg

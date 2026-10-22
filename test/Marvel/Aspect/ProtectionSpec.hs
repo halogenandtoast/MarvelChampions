@@ -1,5 +1,6 @@
 module Marvel.Aspect.ProtectionSpec (spec) where
 
+import Marvel.Attack (attack)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Villain.Types (villainIsTough)
@@ -89,6 +90,35 @@ spec = describe "Protection" do
         choose "play Counter-Punch" (isPlay counter)
         -- Black Panther has 2 ATK
         villainDamageNow `shouldReturn` start + 1 + 2
+
+    it "cannot attack the villain while a guard minion is engaged with you" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        counter <- putInHand p "01077"
+        changeForm p
+        _ <- addMinion p Minions.hydraMercenary
+        toVillainAttack p
+        choose "defend" isDefend
+        resolve []
+        offers (isPlay counter) `shouldReturn` False
+
+    it "is not offered to a hero the attack they defended defeated" do
+      tg <- testGame ["black-panther", "spider-man"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        counter <- putInHand p "01077"
+        changeForm p
+        vid <- villainIdNow
+        hp <- hitPointsOf p
+        start
+          [ IdentityMessage p (IdentityDefended 0)
+          , IdentityMessage p (IdentityWasAttacked (attack (EnemyVillainId vid) (IdentityCharacter p) (hp + 5)))
+          ]
+        resolve []
+        offers (isPlay counter) `shouldReturn` False
 
   describe "Get Behind Me! (01078)" do
     it "cancels a treachery's when revealed effects and the villain attacks you instead" do
