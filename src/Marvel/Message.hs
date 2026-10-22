@@ -213,5 +213,8 @@ data Message
   | -- | a step only one card knows, as ArkhamHorror's @ScenarioSpecific@: the card the
     -- target names reads the key and decodes the value; the engine passes it by
     CardSpecific Target Text Value
+  | -- | the cards, taken from wherever they are in the encounter deck, go on top of it,
+    -- the first given on top
+    PutOnTopOfEncounterDeck [EncounterCard]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
