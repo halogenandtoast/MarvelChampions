@@ -8,6 +8,7 @@ import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
+import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types (Field (PlayerIdentityDamage))
 import Marvel.Message
@@ -48,7 +49,10 @@ instance RunMessage DesperateDefense where
     EventMessage ident (PlayedEvent identityId _ (Just (W.HeroDefends _ _))) | ident == eventId attrs ->
       pure . DesperateDefense $ attrs `With` Meta (Just identityId)
     IdentityMessage ident (AttackDefended _ damageBefore) | defending meta == Just ident -> do
-      damage <- project PlayerIdentityDamage ident
-      pushWhen (damage <= damageBefore) $ IdentityMessage ident ReadiedIdentity
+      -- a hero defeated by the attack is gone
+      alive <- elem ident <$> getPlayers
+      when alive do
+        damage <- project PlayerIdentityDamage ident
+        pushWhen (damage <= damageBefore) $ IdentityMessage ident ReadiedIdentity
       pure . DesperateDefense $ attrs `With` Meta Nothing
     _ -> DesperateDefense . (`With` meta) <$> runMessage msg attrs
