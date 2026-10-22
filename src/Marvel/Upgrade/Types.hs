@@ -194,6 +194,21 @@ thwartGuard u f = do
       pure u
     else f
 
+-- | An attack: a stunned player only removes the stun (the cost is still paid).
+attackGuard ::
+  (HasGame m, HasQueue m, IsUpgrade u) =>
+  IdentityId ->
+  u ->
+  m u ->
+  m u
+attackGuard ident u f = do
+  stunned <- selectAny (IdentityWithId ident <> StunnedIdentity)
+  if stunned
+    then do
+      push (IdentityMessage ident IdentityRemoveStunned)
+      pure u
+    else f
+
 thwartChoice :: Attrs Upgrade -> Natural -> SchemeId -> Choice
 thwartChoice attrs thw = \case
   SchemeMainSchemeId vid ->

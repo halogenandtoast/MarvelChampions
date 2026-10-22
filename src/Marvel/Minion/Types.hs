@@ -282,3 +282,11 @@ getModifiedAttack attrs = do
 
 toEnemyId :: Attrs Minion -> EnemyId
 toEnemyId = EnemyMinionId . minionId
+
+getModifiedScheme :: (HasGame m) => Attrs Minion -> m Natural
+getModifiedScheme attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unSch $ minionScheme attrs) modifiers
+ where
+  applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id

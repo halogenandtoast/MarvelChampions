@@ -36,6 +36,9 @@ allAllies = fromList $ concatMap
   , redDagger
   , novaSamAlexander
   , lockjaw
+  , winterSoldierBuckyBarnes
+  , agentCoulson
+  , quakeDaisyJohnson
   , brawn
   , sentryRobertReynolds
   , sheHulkJenniferWalters
@@ -200,3 +203,14 @@ sentryRobertReynolds =
 sheHulkJenniferWalters :: CardDef
 sheHulkJenniferWalters =
   ally "10013" ("She-Hulk" <:> "Jennifer Walters") 4 [Avenger, Gamma] [Physical] Aggression
+
+winterSoldierBuckyBarnes :: CardDef
+winterSoldierBuckyBarnes =
+  identityAlly "08002" ("Winter Soldier" <:> "Bucky Barnes") 4 [Avenger, Spy] [Wild]
+
+agentCoulson :: CardDef
+agentCoulson = ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
+
+quakeDaisyJohnson :: CardDef
+quakeDaisyJohnson =
+  ally "08012" ("Quake" <:> "Daisy Johnson") 2 [Avenger, Shield] [Energy] Justice

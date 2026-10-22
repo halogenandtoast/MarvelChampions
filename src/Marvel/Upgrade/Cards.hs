@@ -53,6 +53,18 @@ allUpgrades = fromList $ concatMap
   , endurance
   , enhancedReflexes
   , downTime
+  , attacrobatics
+  , blackWidowsGauntlet
+  , grapplingHook
+  , synthSuit
+  , widowsBite
+  , counterintelligence
+  , spycraft
+  , targetAcquired
+  , counterattack
+  , rapidResponse
+  , defensiveStance
+  , espionage
   , boundlessRage
   , immovableObject
   , martialProwess
@@ -276,3 +288,55 @@ electrostaticArmor = limited (MaxPerPlayerUnderAnyControl 1)
 
 resourceful :: CardDef
 resourceful = basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
+
+-- | "Play only if you control a Spy character."
+youControlASpy :: Criteria
+youControlASpy = CharacterExists (CharacterControlledBy You <> CharacterWithTrait Spy)
+
+attacrobatics :: CardDef
+attacrobatics =
+  identityUpgrade "08006" "Attacrobatics" 1 [Attack, Preparation, Skill] [Physical]
+
+blackWidowsGauntlet :: CardDef
+blackWidowsGauntlet =
+  identityUpgrade "08007" "Black Widow's Gauntlet" 1 [Tech] [Physical]
+
+grapplingHook :: CardDef
+grapplingHook =
+  identityUpgrade "08008" "Grappling Hook" 2 [Preparation, Tech] [Mental]
+
+synthSuit :: CardDef
+synthSuit = unique $ identityUpgrade "08009" "Synth-Suit" 3 [Armor, Tech] [Energy]
+
+widowsBite :: CardDef
+widowsBite = identityUpgrade "08010" "Widow's Bite" 1 [Preparation, Tech] [Energy]
+
+counterintelligence :: CardDef
+counterintelligence = limited (MaxPerPlayer 1)
+  $ upgrade "08017" "Counterintelligence" 2 [Preparation, Skill] [Energy] Justice
+
+spycraft :: CardDef
+spycraft = (upgrade "08018" "Spycraft" 1 [Preparation, Skill] [Physical] Justice)
+  { cdCriteria = youControlASpy
+  }
+
+targetAcquired :: CardDef
+targetAcquired = limited (MaxPerPlayer 1)
+  $ basicUpgrade "08024" "Target Acquired" 1 [Preparation, Skill] [Physical]
+
+counterattack :: CardDef
+counterattack = limited (MaxPerPlayer 1)
+  $ upgrade "08030" "Counterattack" 1 [Preparation, Tactic] [Physical] Aggression
+
+rapidResponse :: CardDef
+rapidResponse = limited (MaxPerPlayer 1)
+  $ upgrade "08031" "Rapid Response" 2 [Preparation, Tactic] [Mental] Leadership
+
+defensiveStance :: CardDef
+defensiveStance = limited (MaxPerPlayer 1)
+  $ upgrade "08032" "Defensive Stance" 2 [Preparation, Tactic] [Energy] Protection
+
+espionage :: CardDef
+espionage = (basicUpgrade "08033" "Espionage" 1 [Preparation, Skill] [Physical])
+  { cdCriteria = youControlASpy
+  }

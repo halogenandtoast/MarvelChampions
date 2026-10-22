@@ -64,6 +64,9 @@ allEvents = fromList $ concatMap
   , melee
   , concussiveBlow
   , moraleBoost
+  , covertOps
+  , danceOfDeath
+  , stealthStrike
   , crushingBlow
   , hulkSmash
   , subOrbitalLeap
@@ -414,7 +417,7 @@ preemptiveStrike :: CardDef
 preemptiveStrike =
   (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
     { cdAbilitySubType = Just Ability.Defense
-    , cdResponseWindow = Just (BoostCardFlipped When VillainEnemy)
+    , cdResponseWindow = Just (BoostCardFlipped When (VillainEnemy <> AttackingEnemy))
     }
 
 tackle :: CardDef
@@ -492,3 +495,18 @@ inspiringPresence =
   (event "10030" "Inspiring Presence" 1 HeroAction [] [Mental] Leadership)
     { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> AllyExists AnyAlly
     }
+
+covertOps :: CardDef
+covertOps = (identityEvent "08003" "Covert Ops" 3 Action [Thwart] [Mental])
+  { cdAbilitySubType = Just Ability.Thwart
+  }
+
+-- | Not labeled: each of its three attacks is one (see the event).
+danceOfDeath :: CardDef
+danceOfDeath =
+  identityEvent "08004" "Dance of Death" 3 HeroAction [Attack] [Energy]
+
+stealthStrike :: CardDef
+stealthStrike = (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
+  { cdAbilitySubType = Just Ability.Attack
+  }

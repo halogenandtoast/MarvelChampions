@@ -32,6 +32,7 @@ allSideSchemes = fromList $ map
   , theDoomsdayChair
   , hitSquad
   , generationWhy
+  , killerForHire
   , totalDestruction
   ]
 
@@ -172,4 +173,10 @@ totalDestruction :: CardDef
 totalDestruction =
   (sideScheme "10027" "Total Destruction" [Boost, Boost, Boost] HulkNemesis 1)
     { cdHazards = 1
+    }
+
+killerForHire :: CardDef
+killerForHire =
+  (sideScheme "08027" "Killer for Hire" [Boost, Boost, Boost] BlackWidowNemesis 1)
+    { cdAcceleration = 1
     }

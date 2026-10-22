@@ -131,10 +131,12 @@ instance RunMessage (Attrs Ally) where
             (push $ AllyMessage (allyId a) AllyDefeated)
           pure $ a & damageL +~ damageAmount damage
       AllyDefeated -> do
+        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)
         pushAll
           [ CheckWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
           , -- which discards it
             RemoveFromPlay (toTarget a)
+          , CheckWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
           ]
         pure a
       SpendAllyUse -> pure $ a & countersL -~ 1

@@ -41,6 +41,8 @@ allMinions =
       , hydraSoldierCaptainAmerica
       , thomasEdison
       , edisonsGiantRobot
+      , taskmaster
+      , hydraMercenaryBlackWidow
       , abomination
       ]
 
@@ -237,3 +239,17 @@ edisonsGiantRobot =
 abomination :: CardDef
 abomination =
   unique $ minion "10026" "Abomination" [Elite, Gamma] [Boost, Boost, Boost] HulkNemesis 1
+
+taskmaster :: CardDef
+taskmaster =
+  (minion "08026" "Taskmaster" [Hydra, Elite] [Star] BlackWidowNemesis 1)
+    { cdUnique = True
+    }
+
+-- | Hydra Mercenary in Black Widow's nemesis set.
+hydraMercenaryBlackWidow :: CardDef
+hydraMercenaryBlackWidow =
+  (reprint "08028" hydraMercenary)
+    { cdEncounterSet = Just BlackWidowNemesis
+    , cdEncounterSetQuantity = Just 2
+    }

@@ -45,6 +45,8 @@ allSupports = fromList $ map
   , SomeSupportCard aamirKhan
   , SomeSupportCard brunoCarrelli
   , SomeSupportCard nakiaBahadir
+  , SomeSupportCard safeHouse29
+  , SomeSupportCard quincarrier
   , SomeSupportCard bannersLaboratory
   , SomeSupportCard beatCop
   ]

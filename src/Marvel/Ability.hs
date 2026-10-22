@@ -116,6 +116,7 @@ passesUseLimit x aMap a = case abilityLimit a of
   PerTurn n -> count (== a) usedAbilities < n
   PerRound n -> count (== a) usedAbilities < n
   PerWindow n -> count (== a) usedAbilities < n
+  PerPhase n -> count (== a) usedAbilities < n
  where
   usedAbilities = HashMap.findWithDefault [] x aMap
 

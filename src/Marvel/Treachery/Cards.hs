@@ -49,6 +49,7 @@ allTreacheries = fromList $ map
   , underFire
   , hailHydra
   , harvest
+  , deadlyShot
   , clashOfTheTitans
   ]
 
@@ -205,3 +206,6 @@ harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2
 clashOfTheTitans :: CardDef
 clashOfTheTitans =
   treachery "10028" "Clash of the Titans" [Boost, Boost, Boost] HulkNemesis 3
+
+deadlyShot :: CardDef
+deadlyShot = treachery "08029" "Deadly Shot" [Boost] BlackWidowNemesis 1

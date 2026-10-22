@@ -329,7 +329,7 @@ checkPlayLimits ident c = case cdLimit def of
 
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
-  modifiers <- getModifiers attrs
+  modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
  where
   modifiedCost ms cost' = foldr applyModifier cost' ms
@@ -827,14 +827,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               IdentityDamaged (attackSource attack') (toDamage damage FromAttack)
           ]
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
-    IdentityDamaged _ damage -> do
+    IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
       -- what answers "would be defeated" may take the defeat off the queue
-      when (playerIdentityDamage + damageAmount damage >= modifiedHp) $
-        pushAll
-          [ CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId]
-          , IdentityMessage playerIdentityId IdentityDefeated
-          ]
+      pushAll $
+        [ msg'
+        | playerIdentityDamage + damageAmount damage >= modifiedHp
+        , msg' <- [CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId], IdentityMessage playerIdentityId IdentityDefeated]
+        ]
+          <> [CheckWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage] | damageAmount damage > 0]
       let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
       pure $
         PlayerIdentity $

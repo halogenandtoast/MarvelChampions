@@ -9,6 +9,7 @@ import Marvel.Criteria
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+import Marvel.Matchers
 
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
@@ -32,6 +33,8 @@ allSupports = fromList $ concatMap
   , aamirKhan
   , brunoCarrelli
   , nakiaBahadir
+  , safeHouse29
+  , quincarrier
   , bannersLaboratory
   , beatCop
   ]
@@ -159,3 +162,12 @@ bannersLaboratory =
 
 beatCop :: CardDef
 beatCop = support "10029" "Beat Cop" 3 [Persona] [Physical] Justice
+
+safeHouse29 :: CardDef
+safeHouse29 =
+  unique $ identitySupport "08005" "Safe House #29" 1 [Location, Shield] [Physical]
+
+quincarrier :: CardDef
+quincarrier = (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
+  { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+  }

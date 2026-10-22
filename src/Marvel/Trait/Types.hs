@@ -46,6 +46,7 @@ data Trait
   | Inhuman
   | Bird
   | Robot
+  | Preparation
   | Scientist
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)
