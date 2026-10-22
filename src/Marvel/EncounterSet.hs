@@ -20,6 +20,7 @@ data EncounterSet
   | SheHulkNemesis
   | IronManNemesis
   | BlackPantherNemesis
+  | CaptainAmericaNemesis
   | MsMarvelNemesis
   | BlackWidowNemesis
   deriving stock (Show, Eq, Generic)
@@ -37,6 +38,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "01019" -> SheHulkNemesis
   "01029" -> IronManNemesis
   "01040" -> BlackPantherNemesis
+  "03001" -> CaptainAmericaNemesis
   "05001" -> MsMarvelNemesis
   "08001" -> BlackWidowNemesis
   cCode ->

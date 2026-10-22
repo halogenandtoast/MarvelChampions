@@ -40,11 +40,12 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Vehicle
+  | Title
   | Champion
   | Inhuman
   | Bird
   | Robot
   | Preparation
-  | Vehicle
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

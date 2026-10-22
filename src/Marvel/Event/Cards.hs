@@ -13,6 +13,7 @@ import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
+import Marvel.Upgrade.Cards qualified as Upgrade
 import Marvel.Window
 
 allEvents :: HashMap CardCode CardDef
@@ -48,6 +49,13 @@ allEvents = fromList $ concatMap
   , emergency
   , firstAid
   , haymaker
+  , fearlessDetermination
+  , heroicStrike
+  , shieldBlock
+  , shieldToss
+  , avengersAssemble
+  , strengthInNumbers
+  , expertDefense
   , bigHands
   , sneakBy
   , wiggleRoom
@@ -327,6 +335,53 @@ haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])
   { cdAbilitySubType = Just Ability.Attack
   }
+
+fearlessDetermination :: CardDef
+fearlessDetermination =
+  identityEvent "03003" "Fearless Determination" 0 HeroAction [Superpower] [Mental]
+
+heroicStrike :: CardDef
+heroicStrike =
+  (identityEvent "03004" "Heroic Strike" 3 HeroAction [Attack] [Physical])
+    { cdCriteria = EnemyExists AttackableEnemy
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+-- | Exhausting the shield is part of its cost: it is played only with the shield ready.
+shieldBlock :: CardDef
+shieldBlock =
+  (identityEvent "03005" "Shield Block" 0 Interrupt [Defense] [Mental])
+    { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    , cdAbilitySubType = Just Ability.Defense
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrade.captainAmericasShield <> UnexhaustedUpgrade <> UpgradeControlledBy You)
+    }
+
+-- | Returning the shield is part of its cost: it is played only with the shield in play.
+shieldToss :: CardDef
+shieldToss =
+  (identityEvent "03006" "Shield Toss" 0 HeroAction [Attack, Superpower] [Energy])
+    { cdCriteria =
+        EnemyExists AttackableEnemy
+          <> UpgradeExists (UpgradeIs Upgrade.captainAmericasShield <> UpgradeControlledBy You)
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+avengersAssemble :: CardDef
+avengersAssemble =
+  (event "03015" "Avengers Assemble!" 4 HeroAction [] [Energy] Leadership)
+    { cdLimit = Just (MaxPerRound 1)
+    }
+
+strengthInNumbers :: CardDef
+strengthInNumbers =
+  event "03017" "Strength in Numbers" 0 Action [] [Physical] Leadership
+
+expertDefense :: CardDef
+expertDefense =
+  (event "03033" "Expert Defense" 0 HeroInterrupt [Defense] [Mental] Protection)
+    { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    , cdAbilitySubType = Just Ability.Defense
+    }
 
 bigHands :: CardDef
 bigHands =

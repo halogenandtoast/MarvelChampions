@@ -2,6 +2,7 @@ module Marvel.Modifier.Types where
 
 import Marvel.Prelude
 
+import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Keyword
 import Marvel.Trait.Types
 
@@ -17,6 +18,13 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | the cost of the cards matching is reduced
+    ResourceCostReductionFor CardMatcher Natural
+  | -- | the player cannot thwart: no basic thwart, and no thwart ability, for any card
+    -- they control
+    CannotThwart
+  | -- | more consequential damage after the ally attacks
+    AttackConsequentialDamageModifier Natural
   | -- | on a source: each instance of damage it deals is increased
     DamageDealtModifier Natural
   | -- | on a source: each instance of threat it removes is increased

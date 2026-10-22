@@ -37,6 +37,8 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , baronZemo
+      , hydraSoldierCaptainAmerica
       , thomasEdison
       , edisonsGiantRobot
       , taskmaster
@@ -210,6 +212,21 @@ modok =
     (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+baronZemo :: CardDef
+baronZemo =
+  unique $
+    (minion "03028" "Baron Zemo" [Hydra, Elite] [Boost, Boost] CaptainAmericaNemesis 1)
+      { cdKeywords = singleton Quickstrike
+      }
+
+-- | The core set's Hydra Soldier, two of them in Captain America's nemesis set.
+hydraSoldierCaptainAmerica :: CardDef
+hydraSoldierCaptainAmerica =
+  (reprint "03029" hydraSoldier)
+    { cdEncounterSet = Just CaptainAmericaNemesis
+    , cdEncounterSetQuantity = Just 2
+    }
 
 thomasEdison :: CardDef
 thomasEdison =
