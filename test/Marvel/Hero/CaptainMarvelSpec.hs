@@ -335,6 +335,26 @@ spec = describe "Captain Marvel" do
       handOf p `shouldReturn` [genius]
       getsGame (HashMap.member (minionOf next') . gameMinions) `shouldReturn` True
 
+  it "Energy Channel's discharge is an attack: what answers an attack answers it" do
+    tg <- captainMarvel
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      channel <- inPlay p "01018" []
+      jarnbjorn <- putIntoPlay p "06019"
+      energy <- putInHand p "01088"
+      choose "store energy" (isAbilityOfCard channel)
+      choose "pay with energy" (isPayWith energy)
+      whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
+      _ <- putInHand p "01090"
+      choose "discharge" \case
+        UseAbility ab -> abilitySource ab == UpgradeRef (upgradeOf channel) && abilityIndex ab == 2
+        _ -> False
+      vid <- villainIdNow
+      chooseIf (isTargetChoice (EnemyVillainId vid))
+      offers (isAbilityOfCard jarnbjorn) `shouldReturn` True
+
   it "Energy Channel's discharge is an attack: a stunned hero only loses the stun" do
     tg <- captainMarvel
     let p = player1 tg

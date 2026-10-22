@@ -45,14 +45,10 @@ instance RunMessage EnergyChannel where
       energyResources <- count (`elem` [Energy, Wild]) <$> paymentResources payment
       push $ UpgradeMessage (upgradeId attrs) $ AddUpgradeUses energyResources
       pure u
-    -- an attack: a stunned hero only loses the stun, and guard keeps the villain safe
-    RanAbility ident (isTarget attrs -> True) 2 _ _ -> do
-      stunned <- identityMatches StunnedIdentity ident
-      let amount = min 10 (2 * (upgradeUses attrs))
-      if stunned
-        then push $ IdentityMessage ident IdentityRemoveStunned
-        else
-          pushChoice ident $
-            ChooseDamage (toSource attrs) (toDamage amount FromAbility) AttackableEnemy
+    -- an attack: guard keeps the villain safe
+    RanAbility ident (isTarget attrs -> True) 2 _ _ -> attackGuard ident u do
+      let amount = min 10 (2 * upgradeUses attrs)
+      pushChoice ident $
+        ChooseDamage (toSource attrs) (toDamage amount $ FromPlayerAttack ident) (AttackableBy $ IdentityWithId ident)
       pure u
     _ -> EnergyChannel <$> runMessage msg attrs

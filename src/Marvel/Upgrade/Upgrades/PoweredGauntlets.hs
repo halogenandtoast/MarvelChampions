@@ -43,18 +43,10 @@ instance HasAbilities PoweredGauntlets where
 
 instance RunMessage PoweredGauntlets where
   runMessage msg u@(PoweredGauntlets attrs) = case msg of
-    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      -- an attack: a stunned hero removes the stun instead
-      stunned <- selectAny $ IdentityWithId ident <> StunnedIdentity
-      if stunned
-        then push (IdentityMessage ident IdentityRemoveStunned)
-        else do
-          aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
-          let dmg = if aerial then 2 else 1
-          enemies <- selectList AttackableEnemy
-          chooseOne ident $
-            map
-              (damageChoice attrs (toDamage dmg $ FromPlayerAttack ident))
-              enemies
+    RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
+      aerial <- selectAny (IdentityWithId ident <> IdentityWithTrait Aerial)
+      let dmg = if aerial then 2 else 1
+      enemies <- selectList $ AttackableBy (IdentityWithId ident)
+      chooseOne ident $ map (damageChoice attrs (toDamage dmg $ FromPlayerAttack ident)) enemies
       pure u
     _ -> PoweredGauntlets <$> runMessage msg attrs
