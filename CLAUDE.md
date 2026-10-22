@@ -2,8 +2,10 @@
 
 The Haskell engine is in `src/Marvel`, the API in `app/`, the client in `frontend/`. The
 server and much of the client follow `~/Code/LordOfTheRings`; look up how it does a
-feature before adding one. Rules are in `docs/rules/` (Rules Reference v1.8): check a
-mechanic there before implementing it.
+feature before adding one. Rules are in `docs/rules/` (Rules Reference v1.8, transcribed from
+https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc_rulesreference_v18_compressed.pdf;
+scenario and campaign rules beside it, sources in `docs/rules/README.md`): check a mechanic
+there before implementing it.
 
 ## The engine
 
