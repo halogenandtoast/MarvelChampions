@@ -311,6 +311,18 @@ spec = describe "Thor" do
         exhaustedNow p `shouldReturn` True
         getsGame (HashMap.null . gameObligations) `shouldReturn` True
 
+    it "Thor may flip to Odinson, then exhaust him to remove it from the game" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        _ <- revealNow p Obligations.odinsAnger
+        choose "flip" (isLabel "$label.changeToB")
+        choose "exhaust Odinson" (isLabel "$label.exhaustOdinsonRemoveOdinsAnger")
+        exhaustedNow p `shouldReturn` True
+        isStunned p `shouldReturn` False
+        getsGame (HashMap.null . gameObligations) `shouldReturn` True
+
     it "otherwise Mjolnir is discarded from play and he is stunned" do
       tg <- thor
       let p = player1 tg
