@@ -48,7 +48,7 @@ instance Entity Event where
     , eventCardDef :: CardDef
     , eventController :: IdentityId
     , -- | whom a labeled attack attacked, for the windows after it
-      eventAttacked :: [(IdentityId, EnemyId)]
+      eventAttacked :: [(IdentityId, EnemyId, Bool)]
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -115,18 +115,19 @@ instance RunMessage (Attrs Event) where
     EventMessage ident msg' | ident == eventId e -> case msg' of
       -- what answers a labeled attack follows the whole of it
       ResolvedEvent -> do
-        for_ (eventAttacked e) (uncurry attackResolved)
+        for_ (eventAttacked e) \(attacker, enemy, ranged) -> attackResolved attacker enemy ranged
         discardCard e
         pure e {eventAttacked = []}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
-      EventAttacked attacker enemy
+      EventAttacked attacker enemy ranged
         -- one attack, however many instances of damage it deals the enemy
         | cdAbilitySubType (eventCardDef e) == Just Ability.Attack ->
-            pure e {eventAttacked = eventAttacked e <> [(attacker, enemy) | (attacker, enemy) `notElem` eventAttacked e]}
-        | otherwise -> e <$ attackResolved attacker enemy
+            pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
+        | otherwise -> e <$ attackResolved attacker enemy ranged
       _ -> pure e
      where
-      attackResolved attacker enemy = do
-        enemyRetaliates enemy (IdentityCharacter attacker)
+      -- a ranged attack ignores retaliate
+      attackResolved attacker enemy ranged = do
+        unless ranged $ enemyRetaliates enemy (IdentityCharacter attacker)
         checkWindows [W.Window W.After $ W.IdentityAttack attacker enemy]
     _ -> pure e

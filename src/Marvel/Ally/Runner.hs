@@ -79,7 +79,7 @@ instance RunMessage (Attrs Ally) where
         consequential <- getModifiedAttackConsequentialDamage a
         when stillInPlay do
           dealDamage enemy a dmg
-          enemyRetaliates enemy (AllyCharacter $ allyId a)
+          unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
@@ -108,17 +108,17 @@ instance RunMessage (Attrs Ally) where
           overkill = subtractNatural
             (subtractNatural (allyDamage a) hitPoints)
             (attackDamage attack')
-        damageCharacter ident (attackSource attack') (toDamage (attackDamage attack') FromAttack)
+        damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamage attack'))
         when (attackOverkill attack' && overkill > 0) $
           attackDamageIdentity (allyController a) (attackSource attack') (toDamage overkill FromAttack)
         pure a
-      AllyDamaged source damage -> if allyTough a && not (damageIgnoresTough damage)
+      AllyDamaged source damage -> if allyTough a && preventedByTough damage
         then pure $ a & toughL .~ False
         else do
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
           when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
-          pure $ a & damageL +~ damageAmount damage
+          pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       -- leaving play discards it
       AllyDefeated -> do
         let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)

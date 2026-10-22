@@ -255,7 +255,7 @@ instance HasAbilities PlayerIdentity where
         HeroSide x -> getAbilities x
         AlterEgoSide x -> getAbilities x
      in
-      [limitedAbility a 100 (PerTurn 1) Action IsSelf NoCost ChangeForm]
+      [limitedAbility a 100 (PerTurn 1) Action (IsSelf <> SelfMatches IdentityCanChangeForm) NoCost ChangeForm]
         <> sideAbilities
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
@@ -550,15 +550,22 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ (HashSet.toList playerIdentityAllies) ready
       for_ (HashSet.toList playerIdentitySupports) ready
       for_ (HashSet.toList playerIdentityUpgrades) ready
-      pure $ PlayerIdentity $ attrs & exhaustedL .~ False
+      readies <- notElem CannotReady <$> getModifiers pid
+      pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
+    -- an identity that cannot change form stays as it is, whatever would change it
     ChooseOtherForm -> do
+      canChange <- identityMatches IdentityCanChangeForm playerIdentityId
       let
         otherForms = filter (/= playerIdentitySide) $ HashMap.keys playerIdentitySides
-      chooseOrRunOne playerIdentityId $ map (pure . ChangeToForm) otherForms
+      when canChange $ chooseOrRunOne playerIdentityId $ map (pure . ChangeToForm) otherForms
       pure pid
     ChangedToForm side -> do
-      checkWindows [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
-      pure $ PlayerIdentity $ attrs & sideL .~ side
+      canChange <- identityMatches IdentityCanChangeForm playerIdentityId
+      if canChange
+        then do
+          checkWindows [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
+          pure $ PlayerIdentity $ attrs & sideL .~ side
+        else pure pid
     PlayingCard card mWindow -> do
       targets <- playableTargets pid card
       let payFor = identityStep playerIdentityId . PayForCard card mWindow
@@ -725,7 +732,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             attrs
               & (discardL %~ Discard . (cards <>) . unDiscard)
               & (deckL .~ Deck deck')
-    ReadiedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ False
+    ReadiedIdentity -> do
+      readies <- notElem CannotReady <$> getModifiers pid
+      pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     -- the active villain of the player's area, if it has one, then their minions
     VillainAndMinionsActivate -> do
@@ -756,13 +765,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamage attack'
-        -- each instance of retaliate adds to the others
-        retaliate = sum [n | Retaliate n <- keywords]
+        -- each instance of retaliate adds to the others; a ranged attack ignores it
+        retaliate = if attackRanged attack' then 0 else sum [n | Retaliate n <- keywords]
       -- the damage, then retaliate (forced, so before any response), then the window
       -- for responses to defending
       when (damage > 0) do
-        checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (toDamage damage FromAttack)]
-        attackDamageIdentity playerIdentityId (attackSource attack') (toDamage damage FromAttack)
+        checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
+        attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       when (retaliate > 0) $
         identityStep playerIdentityId (IdentityRetaliate retaliate $ attackEnemy attack')
       when playerIdentityDefended $
@@ -770,7 +779,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
     -- a tough status card prevents all of it, and is discarded instead
     IdentityDamaged _ damage
-      | playerIdentityTough && damageAmount damage > 0 && not (damageIgnoresTough damage) ->
+      | playerIdentityTough && damageAmount damage > 0 && preventedByTough damage ->
           pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
@@ -784,6 +793,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         PlayerIdentity $
           attrs
             & damageL +~ damageAmount damage
+            & toughL %~ (&& not (piercesTough damage))
             & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
     IdentityDefeated -> do
       players <- getPlayers

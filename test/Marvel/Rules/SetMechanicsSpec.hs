@@ -5,18 +5,45 @@ module Marvel.Rules.SetMechanicsSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet (singleton)
 import Data.Text qualified as T
+import Marvel.Ability.Types (HasAbilities)
+import Marvel.Attachment.Cards qualified as AttachmentCards
+import Marvel.Attachment.Types (Attachment (..), Attrs (..), IsAttachment, attachment)
+import Marvel.Attack (Attack (..), attack)
 import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Hp
-import Marvel.Keyword (Keyword (Incite))
+import Marvel.Keyword (Keyword (Incite, Villainous))
 import Marvel.MainScheme.Types (Field (MainSchemeCounters))
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Cards
+import Marvel.Minion.Types (overMinion)
+import Marvel.Modifier (HasModifiersFor (..), Modifier (..))
 import Marvel.Obligation.Obligations.EvictionNotice (EvictionNotice (..), evictionNotice)
 import Marvel.Obligation.Types (Obligation (..), heldCardsL, toObligationAttrs)
 import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
-import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs)
+import Marvel.SideScheme.Cards qualified as SideSchemeCards
+import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs, toughL)
 import Marvel.Villain.Villains.Rhino (rhino2)
 import TestImport
+
+-- | An encounter attachment, as All Tied Up: the identity it is attached to cannot ready
+-- or change form.
+newtype TiedUp = TiedUp (Attrs Attachment)
+  deriving anyclass (IsAttachment, HasAbilities)
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance HasModifiersFor TiedUp where
+  getModifiersFor _ (IdentityRef ident) (TiedUp a) | a.attachmentIdentity == Just ident = pure [CannotReady, CannotChangeForm]
+  getModifiersFor _ _ _ = pure []
+
+instance RunMessage TiedUp where
+  runMessage msg (TiedUp a) = TiedUp <$> runMessage msg a
+
+-- | A new 'TiedUp' in play, attached to nothing yet.
+tiedUp :: GameAppT AttachmentId
+tiedUp = do
+  aid <- getRandom
+  withGame_ $ entitiesL . attachmentsL . at aid ?~ Attachment (buildCard (attachment TiedUp AttachmentCards.armoredRhinoSuit) aid)
+  pure aid
 
 spec :: Spec
 spec = describe "set mechanics" do
@@ -80,3 +107,102 @@ spec = describe "set mechanics" do
     text <- T.concat . map entryText <$> readIORef tg.logged
     for_ ["$log.countersPlaced", "$log.countersRemoved", "$log.playerObligationsRemoved"] \key ->
       text `shouldSatisfy` T.isInfixOf key
+
+  it "a card with incite, revealed, places its threat on the main scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      before <- mainSchemeThreatNow
+      _ <- revealNow (player1 tg) Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
+      after <- mainSchemeThreatNow
+      liftIO $ after `shouldBe` before + 2
+
+  it "indirect damage is divided among the player's characters, none past defeat" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      hellcat <- allyIdOf <$> putIntoPlay you "01020"
+      runNow [AssignIndirectDamage you GameRef 5 []]
+      offered <- offers (isTargetChoice you)
+      liftIO $ offered `shouldBe` True
+      -- Hellcat has 3 hit points: once she is assigned 3, the rest goes to the hero
+      for_ [1 .. 3 :: Int] \_ -> choose "assign to Hellcat" (isTargetChoice hellcat)
+      damage <- damageOf you
+      hellcats <- alliesWith "01020"
+      liftIO $ (damage, length hellcats) `shouldBe` (2, 0)
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    text `shouldSatisfy` T.isInfixOf "$log.takesIndirectDamage"
+
+  it "an enemy's piercing attack discards the tough status card and deals its damage; a ranged one ignores retaliate" do
+    tg <- testGame ["black-panther"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      vid <- villainIdNow
+      resolve [IdentityMessage you IdentityBecomeTough]
+      let blow = (attack (EnemyVillainId vid) (IdentityCharacter you) 3) {attackPiercing = True, attackRanged = True}
+      resolve [IdentityMessage you (IdentityWasAttacked blow)]
+      tough <- (.playerIdentityTough) <$> playerAttrs you
+      damage <- damageOf you
+      villainDamage' <- villainDamageNow
+      liftIO $ (tough, damage, villainDamage') `shouldBe` (False, 3, 0)
+
+  it "a player's piercing attack discards the enemy's tough status card and deals its damage; a ranged one ignores retaliate" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      vid <- villainIdNow
+      resolve [VillainMessage vid VillainBecomeTough, VillainMessage vid (VillainDamaged (toSource you) (withPiercing $ toDamage 2 FromAbility))]
+      tough <- (^. toughL) . toAttrs <$> getVillain
+      villainDamage' <- villainDamageNow
+      liftIO $ (tough, villainDamage') `shouldBe` (False, 2)
+      -- Whiplash has retaliate 1: War Machine takes his consequential damage from each attack, and the retaliate only from the one not ranged
+      warMachine <- allyIdOf <$> putIntoPlay you "01030"
+      whiplash <- addMinion you Cards.whiplash
+      let hit = toDamage 1 (FromAllyAttack warMachine)
+      resolve [AllyMessage warMachine (AllyAttackLands (EnemyMinionId whiplash) (withRanged hit))]
+      afterRanged <- (.allyDamage) <$> allyIn "01030"
+      resolve [AllyMessage warMachine (AllyAttackLands (EnemyMinionId whiplash) hit)]
+      afterPlain <- (.allyDamage) <$> allyIn "01030"
+      liftIO $ (afterRanged, afterPlain) `shouldBe` (1, 3)
+
+  it "a villainous minion is given a boost card as it schemes, its icons added" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      mercenary <- addMinion you Cards.hydraMercenary
+      withGame_ $ entitiesL . minionsL . ix mercenary %~ overMinion \a -> a {minionCardDef = Cards.hydraMercenary {cdKeywords = singleton Villainous}}
+      -- Whiplash has two boost icons; the mercenary schemes for 0
+      [boost] <- stackEncounterDeck [Cards.whiplash]
+      before <- mainSchemeThreatNow
+      resolve [MinionMessage mercenary MinionSchemes]
+      after <- mainSchemeThreatNow
+      discarded <- encounterDiscardNow
+      liftIO do
+        after `shouldBe` before + 2
+        discarded `shouldContain` [boost]
+
+  it "an encounter card attached to an identity keeps it from readying and changing form" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      aid <- tiedUp
+      runNow [AttachmentMessage aid (AttachedToIdentity you)]
+      resolve [IdentityMessage you ExhaustedIdentity, IdentityMessage you ReadiedIdentity]
+      exhausted <- exhaustedNow you
+      canChange <- offers \case
+        UseAbility ab -> ChangeForm `elem` abilityChoices ab
+        _ -> False
+      liftIO $ (exhausted, canChange) `shouldBe` (True, False)
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    text `shouldSatisfy` T.isInfixOf "$log.attachedTo"
+
+  it "an encounter card attached to a side scheme leaves play with it" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      scheme <- encounterCard SideSchemeCards.breakinAndTakin
+      resolve [RevealEncounterCard you scheme]
+      aid <- tiedUp
+      resolve [AttachmentMessage aid (AttachedToSideScheme (sideSchemeOf scheme)), RemoveFromPlay (toTarget $ sideSchemeOf scheme)]
+      attached <- getsGame (HashMap.member aid . gameAttachments)
+      liftIO $ attached `shouldBe` False

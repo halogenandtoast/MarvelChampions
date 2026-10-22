@@ -67,6 +67,8 @@
   "countersRemoved": "A counter is removed from {target} | {count} counters are removed from {target}",
   "flips": "{target} flips",
   "playerObligationsRemoved": "Each player's obligations are removed from the game",
+  "takesIndirectDamage": "{player} takes {count} indirect damage",
+  "attachedTo": "{card} is attached to {target}",
   "-- The Green Goblin --": "",
 
   "-- The Wrecking Crew --": "",

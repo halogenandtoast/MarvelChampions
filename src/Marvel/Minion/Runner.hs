@@ -21,6 +21,7 @@ import Marvel.Stats as X
 
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
+import Marvel.Boost
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Game.Source
@@ -48,7 +49,7 @@ runMinionMessage msg attrs = case msg of
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
       | cannotTakeDamage -> pure attrs
-      | minionTough attrs && not (damageIgnoresTough damage) -> pure $ attrs & toughL .~ False
+      | minionTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
@@ -62,7 +63,7 @@ runMinionMessage msg attrs = case msg of
               damageCharacter villain source (toDamage overkill FromOverkill)
             checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
           else pure ()
-        pure $ attrs & damageL +~ damageAmount damage
+        pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
@@ -92,11 +93,17 @@ runMinionMessage msg attrs = case msg of
     removeFromPlay attrs
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs
+  -- a villainous minion is given a boost card as it uses a basic power (RR, Villainous)
   MinionSchemes ->
     if minionConfused attrs
       then pure $ attrs & confusedL .~ False
       else do
+        villainous <- isVillainous
+        when villainous do
+          dealBoost attrs
+          minionStep (minionId attrs) MinionFlipBoostCards
         minionSchemed (minionId attrs)
+        when villainous clearBoosts
         pure attrs
   -- "attacks an ally": the player who controls it is attacked
   MinionAttacksAlly ident allyId -> do
@@ -109,38 +116,54 @@ runMinionMessage msg attrs = case msg of
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         minionBeginsAttack (minionId attrs) ident
         minionEndsAttack (minionId attrs)
+        whenM isVillainous clearBoosts
         -- the attack is under way from when it is declared, as its would windows open
-        atk <- getModifiedAttack attrs
-        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+        attack' <- newAttack ident
+        pure $ attrs & attackingL ?~ attack'
   MinionBeginAttack ident -> do
-    atk <- getModifiedAttack attrs
+    attack' <- newAttack ident
+    villainous <- isVillainous
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    when villainous $ dealBoost attrs
     declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
+    when villainous $ minionStep (minionId attrs) MinionFlipBoostCards
     minionAttacked (minionId attrs)
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
-      attrs {minionAttackTarget = Nothing}
-        & attackingL
-          ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+      attrs {minionAttackTarget = Nothing} & attackingL ?~ attack'
   MinionSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
       SchemeMainSchemeId mainSchemeId -> do
         threat <- getModifiedScheme attrs
-        placeThreatFrom W.ThreatFromMinion mainSchemeId threat
+        placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
         checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
-        pure attrs
+        pure $ attrs & boostL .~ 0
       _ -> error "Not the main scheme"
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
+  MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"
       Just attack' -> do
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
-    pure attrs
+    pure $ attrs & boostL .~ 0
+  MinionDealtBoost card -> pure $ attrs & boostCardsL %~ (<> [card])
+  -- each boost card is turned faceup in turn, and its icons added; one it is given as
+  -- they are ("give this enemy another boost card") is turned up after them
+  MinionFlipBoostCards -> do
+    for_ (minionBoostCards attrs) \card -> do
+      checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
+      revealBoostCard card (minionId attrs)
+      minionStep (minionId attrs) (MinionAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+    unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
+    pure $ attrs & boostCardsL .~ []
+  MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n
  where
+  isVillainous = elem Villainous <$> getModifiedKeywords attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
+  newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT $ case msg of

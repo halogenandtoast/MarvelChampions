@@ -12,6 +12,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Id
+import Marvel.Keyword (Keyword (Overkill))
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -58,7 +59,7 @@ instance RunMessage Charge where
         flip afterMatching (removeFromPlay a) \case
           VillainMessage vid' VillainEndAttack -> vid == vid'
           _ -> False
-        villainAttackGainsOverkill vid
+        attackGains vid Overkill
         pure a
       _ -> error "Invalid call"
     _ -> Charge <$> runMessage msg attrs

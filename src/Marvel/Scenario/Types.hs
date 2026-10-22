@@ -18,6 +18,7 @@ import Marvel.Game.Source
 import Marvel.Id (IdentityId)
 import Marvel.Matchers
 import Marvel.Message.Lifted
+import Marvel.Id (EnemyId (..))
 import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards))
 import Marvel.Phase
 import Marvel.Projection
@@ -406,8 +407,10 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     DealBoost target -> do
       (ecs, attrs') <- drawEncounterCard attrs
       case target of
-        VillainRef vid ->
-          for_ ecs (villainStep vid . VillainDealtBoost)
+        VillainRef vid -> for_ ecs (villainStep vid . VillainDealtBoost)
+        EnemyRef (EnemyVillainId vid) -> for_ ecs (villainStep vid . VillainDealtBoost)
+        MinionRef mid -> for_ ecs (minionStep mid . MinionDealtBoost)
+        EnemyRef (EnemyMinionId mid) -> for_ ecs (minionStep mid . MinionDealtBoost)
         _ -> error "Can not deal boost to target"
       pure attrs'
     -- a deck emptied partway is fulfilled: the new deck is not discarded from

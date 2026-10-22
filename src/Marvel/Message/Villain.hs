@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
+import Marvel.Keyword (Keyword)
 import Marvel.Ref
 
 data VillainMessage
@@ -16,7 +17,8 @@ data VillainMessage
   | VillainDealtBoost EncounterCard
   | VillainFlipBoostCards
   | VillainCheckAdditionalBoosts
-  | VillainAttackGainOverkill
+  | -- | its attack under way gains the keyword: overkill, piercing or ranged
+    VillainAttackGains Keyword
   | VillainAttacks IdentityId
   | -- | its attack by the character resolved: retaliate answers it
     VillainRetaliates CharacterId

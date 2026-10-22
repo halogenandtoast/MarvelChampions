@@ -2,7 +2,9 @@ module Marvel.Attack where
 
 import Marvel.Prelude
 
+import Marvel.Damage
 import Marvel.Id
+import Marvel.Keyword
 import Marvel.Ref
 
 data Attack = Attack
@@ -11,6 +13,8 @@ data Attack = Attack
   , attackDamage :: Natural
   , attackEnemy :: EnemyId
   , attackDefended :: Bool
+  , attackPiercing :: Bool
+  , attackRanged :: Bool
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -45,4 +49,22 @@ attack enemyId characterId dmg =
     , attackDamage = dmg
     , attackEnemy = enemyId
     , attackDefended = False
+    , attackPiercing = False
+    , attackRanged = False
     }
+
+-- | "The attack gains overkill, piercing or ranged"; no other keyword is an attack's.
+gainKeyword :: Keyword -> Attack -> Attack
+gainKeyword k a = case k of
+  Overkill -> a {attackOverkill = True}
+  Piercing -> a {attackPiercing = True}
+  Ranged -> a {attackRanged = True}
+  _ -> a
+
+-- | The enemy's attack, with what of its keywords are its attacks'.
+attackWith :: [Keyword] -> EnemyId -> CharacterId -> Natural -> Attack
+attackWith keywords enemyId characterId = flip (foldr gainKeyword) keywords . attack enemyId characterId
+
+-- | The attack's damage to the character it is against.
+attackDamageTo :: Attack -> Natural -> Damage
+attackDamageTo a n = (toDamage n FromAttack) {damagePiercing = attackPiercing a}

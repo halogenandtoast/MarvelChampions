@@ -39,5 +39,9 @@ data Modifier
     UpgradeOnThisCostReduction Natural
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
+  | -- | an identity that stays exhausted when it would ready
+    CannotReady
+  | -- | an identity that stays in the form it is in
+    CannotChangeForm
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

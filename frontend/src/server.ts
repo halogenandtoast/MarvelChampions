@@ -122,6 +122,7 @@ export interface MinionView extends CardView {
   stunned: boolean
   confused: boolean
   tough: boolean
+  boostCards: number
   attachments: AttachmentView[]
   upgrades: UpgradeView[]
 }
@@ -131,6 +132,7 @@ export interface SchemeView extends CardView {
   crisis: boolean
   upgrades?: UpgradeView[]
   counters?: number
+  attachments?: AttachmentView[]
 }
 
 export type ChoiceKind =

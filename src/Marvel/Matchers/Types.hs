@@ -41,6 +41,8 @@ data IdentityMatcher
   | IdentityMatchAll [IdentityMatcher]
   | -- | not kept from thwarting (by a 'CannotThwart' modifier)
     IdentityCanThwart
+  | -- | not kept in its form (by a 'CannotChangeForm' modifier)
+    IdentityCanChangeForm
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

@@ -83,7 +83,13 @@ narrationFor = \case
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
+  AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
+  AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
+  -- told once, as it is dealt; each character's share is told as it takes it
+  AssignIndirectDamage ident _ n [] | n > 0 -> Just do
+    who <- playerRef' ident
+    one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
   _ -> Nothing
  where
   statusKey = \case
@@ -161,7 +167,7 @@ villainNarration vid = \case
   VillainSchemes -> Just $ schemes (VillainRef vid) =<< getsGame (maybe False ((.villainConfused) . toAttrs) . lookup vid . gameVillains)
   VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
-    damaged (VillainRef vid) tough (damageAmount dmg)
+    damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
@@ -182,12 +188,13 @@ minionNarration mid = \case
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
-    damaged (MinionRef mid) tough (damageAmount dmg)
+    damaged (MinionRef mid) (tough && preventedByTough dmg) (damageAmount dmg)
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
   MinionDefeated -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
   MinionStunned _ -> Just $ simply "log.stunned" (MinionRef mid)
   MinionConfused _ -> Just $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)
+  MinionAddBoost n | n > 0 -> Just $ whenRef (MinionRef mid) \m -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> m, "count" ~> n]]
   _ -> Nothing
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
@@ -198,7 +205,7 @@ allyNarration aid = \case
     one $ action [ikeyPart "log.allyDefends" ["ally" ~> a, "enemy" ~> e]]
   AllyDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.allyTough) . toAttrs) . lookup aid . gameAllies
-    damaged (AllyRef aid) tough (damageAmount dmg)
+    damaged (AllyRef aid) (tough && preventedByTough dmg) (damageAmount dmg)
   AllyHealed n | n > 0 -> Just $ healedBy (AllyRef aid) n
   AllyDefeated -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.defeated" ["target" ~> a]]
   AllyStunned -> Just $ simply "log.stunned" (AllyRef aid)
@@ -252,6 +259,10 @@ damaged target tough n = whenRef target \t ->
     if tough
       then mechanic [ikeyPart "log.toughRemoved" ["target" ~> t]]
       else mechanic [ikeyPart "log.takesDamage" ["target" ~> t, "count" ~> n]]
+
+attachedTo :: (HasGame m) => AttachmentId -> Target -> m [LogEntry]
+attachedTo aid target = whenRef (AttachmentRef aid) \a -> whenRef target \t ->
+  one $ toned Bad $ mechanic [ikeyPart "log.attachedTo" ["card" ~> a, "target" ~> t]]
 
 counted :: (HasGame m) => Text -> Target -> Natural -> m [LogEntry]
 counted key target n = whenRef target \t -> one $ mechanic [ikeyPart key ["target" ~> t, "count" ~> n]]

@@ -2,8 +2,10 @@ module Marvel.Message.Minion where
 
 import Marvel.Prelude
 
+import Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
+import Marvel.Keyword (Keyword)
 import Marvel.Ref
 
 data MinionMessage
@@ -25,9 +27,16 @@ data MinionMessage
   | MinionEngagedIdentity IdentityId
   | MinionAttacked
   | MinionEndAttack
+  | -- | its attack under way gains the keyword: overkill, piercing or ranged
+    MinionAttackGains Keyword
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
   | -- | it attacks the player's ally, the player being attacked
     MinionAttacksAlly IdentityId AllyId
+  | MinionDealtBoost EncounterCard
+  | -- | its boost cards are turned faceup in turn, then any it is given meanwhile
+    MinionFlipBoostCards
+  | -- | a boost card's icons are added to its activation
+    MinionAddBoost Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
