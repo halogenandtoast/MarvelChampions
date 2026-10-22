@@ -29,16 +29,12 @@ newtype FalconSamWilson = FalconSamWilson (Attrs Ally)
 -- | The top 3 cards of the encounter deck are looked at, and stay where they are: 1
 -- threat is removed for each treachery among them.
 instance RunMessage FalconSamWilson where
-  runMessage msg a@(FalconSamWilson attrs) = case msg of
+  runMessage msg a@(FalconSamWilson attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       top <- take 3 <$> getEncounterDeck
       let treacheries = count ((== TreacheryType) . cdCardType . getCardDef) top
-      pushAll
-        [ FocusCards $ EncounterCard <$> top
-        , Ask ident $
-            ChooseOne
-              [Label "$label.done" $ genericReplicate treacheries $ RemoveThreat (toSource a) 1 ThwartableScheme]
-        , UnfocusCards
-        ]
+      focusing (EncounterCard <$> top) $
+        chooseOne ident
+          [labeled "$label.done" $ sequence_ $ genericReplicate treacheries $ removeThreat ident a 1 ThwartableScheme]
       pure a
     _ -> FalconSamWilson <$> runMessage msg attrs

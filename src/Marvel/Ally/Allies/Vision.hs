@@ -10,7 +10,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
@@ -51,13 +50,13 @@ visionEffect =
   effectWith VisionEffect Cards.vision (endsL ?~ DisableAtEndOfPhase)
 
 instance RunMessage VisionEffect where
-  runMessage msg e@(VisionEffect attrs) = case msg of
+  runMessage msg e@(VisionEffect attrs) = runQueueT $ case msg of
     EffectMessage ident msg' | ident == effectId attrs -> case msg' of
       UsedEffect identityId -> do
         chooseOne
           identityId
-          [ Label "$label.thwartPlusOne" [Run [EffectMessage ident $ EffectChoice 1]]
-          , Label "$label.attackPlusOne" [Run [EffectMessage ident $ EffectChoice 2]]
+          [ labeled "$label.thwartPlusOne" $ effectChoice ident 1
+          , labeled "$label.attackPlusOne" $ effectChoice ident 2
           ]
         pure e
       EffectChoice n -> case n of

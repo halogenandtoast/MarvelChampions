@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner hiding (AllyAttacked)
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -37,39 +36,27 @@ instance HasAbilities HulkBruceBanner where
     ]
 
 instance RunMessage HulkBruceBanner where
-  runMessage msg a@(HulkBruceBanner attrs) = case msg of
+  runMessage msg a@(HulkBruceBanner attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage ident $ DiscardFrom FromDeck 1 (Just $ toRef a)
+      discardFromDeck ident 1 a
       pure a
     WithDiscarded (isTarget a -> True) _ (onlyPlayerCards -> cards) -> do
-      case cards of
-        [] -> pure ()
-        _ -> do
-          let
-            resources =
-              hashNub (concatMap (printedResources . getCardDef) cards)
-            toChoice = \case
-              Physical ->
-                [ Label
-                    "$label.deal2DamageToAnEnemy"
-                    [ ChooseDamage
-                        (toRef a)
-                        (toDamage 2 FromAbility)
-                        AnyEnemy
-                    ]
-                ]
-              Energy ->
-                [ Label
-                    "$label.deal1DamageToEachCharacter"
-                    [ DamageAllCharacters
-                        AnyCharacter
-                        (toRef a)
-                        (toDamage 1 FromAbility)
-                    ]
-                ]
-              Mental -> [Label "$label.discardHulk" [DiscardTarget $ toRef a]]
-              Wild -> toChoice Physical <> toChoice Energy <> toChoice Mental
-            choices = concatMap toChoice resources
-          chooseOneAtATime (controller a) choices
+      let
+        resources =
+          hashNub (concatMap (printedResources . getCardDef) cards)
+        -- each its own step: one chosen sees the game after the one before it
+        toChoice = \case
+          Physical -> [labeled "$label.deal2DamageToAnEnemy" $ cardSpecific a "resource" Physical]
+          Energy -> [labeled "$label.deal1DamageToEachCharacter" $ cardSpecific a "resource" Energy]
+          Mental -> [labeled "$label.discardHulk" $ cardSpecific a "resource" Mental]
+          Wild -> toChoice Physical <> toChoice Energy <> toChoice Mental
+      unless (null cards) $ chooseOneAtATime (controller a) (concatMap toChoice resources)
+      pure a
+    CardSpecific (isTarget a -> True) "resource" (fromJSON -> Success resource) -> do
+      case resource of
+        Physical -> chooseDamage (controller a) a (toDamage 2 FromAbility) AnyEnemy
+        Energy -> damageAllCharacters a (toDamage 1 FromAbility) AnyCharacter
+        Mental -> removeFromPlay a
+        Wild -> pure ()
       pure a
     _ -> HulkBruceBanner <$> runMessage msg attrs

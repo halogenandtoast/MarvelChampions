@@ -144,3 +144,9 @@ instance IsScheme MainSchemeId where
 
 instance IsScheme SideSchemeId where
   toScheme = SchemeSideSchemeId
+
+-- | The scheme's own ref, a main scheme's or a side scheme's.
+schemeRef :: (IsScheme a) => a -> Target
+schemeRef a = case toScheme a of
+  SchemeMainSchemeId m -> MainSchemeRef m
+  SchemeSideSchemeId s -> SideSchemeRef s

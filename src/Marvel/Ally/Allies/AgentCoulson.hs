@@ -33,20 +33,16 @@ instance HasAbilities AgentCoulson where
 -- | Search the deck and the discard pile for a Preparation card, take it, and shuffle
 -- the deck.
 instance RunMessage AgentCoulson where
-  runMessage msg a@(AgentCoulson attrs) = case msg of
+  runMessage msg a@(AgentCoulson attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       deck <- projectMap PlayerIdentityDeck unDeck ident
       discard <- projectMap PlayerIdentityDiscard unDiscard ident
       let found = filter (cardMatch $ CardWithTrait Preparation) (deck <> discard)
-      pushAll
-        [ FocusCards (map PlayerCard found)
-        , Ask ident $
-            ChooseOne $
-              if null found
-                then [Label "$label.noMatchingCardsFound" []]
-                else [TargetLabel (toRef c) [Run [IdentityMessage ident (AddToHand c)]] | c <- found]
-        , UnfocusCards
-        , IdentityMessage ident ShuffleDeck
-        ]
+      focusing (map PlayerCard found) $
+        chooseOne ident $
+          if null found
+            then [labeled "$label.noMatchingCardsFound" (pure ())]
+            else [targeting c $ addToHand ident c | c <- found]
+      shuffleDeck ident
       pure a
     _ -> AgentCoulson <$> runMessage msg attrs

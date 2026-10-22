@@ -36,11 +36,11 @@ relevantCards :: [Card] -> [PlayerCard]
 relevantCards = filter (cardMatch (CardWithResource Mental)) . onlyPlayerCards
 
 instance RunMessage BlackCatFeliciaHardy where
-  runMessage msg x@(BlackCatFeliciaHardy a) = case msg of
+  runMessage msg x@(BlackCatFeliciaHardy a) = runQueueT $ case msg of
     RanAbility ident (isTarget x -> True) 1 _ _ -> do
-      push $ IdentityMessage ident $ DiscardFrom FromDeck 2 (Just $ toTarget x)
+      discardFromDeck ident 2 x
       pure x
     WithDiscarded (isTarget a -> True) _ (relevantCards -> cards) -> do
-      pushAll $ map (controllerMessage x . AddToHand) cards
+      for_ cards $ addToHand (controller x)
       pure x
     _ -> BlackCatFeliciaHardy <$> runMessage msg a
