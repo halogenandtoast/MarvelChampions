@@ -36,7 +36,7 @@ instance RunMessage MadGenius where
         when goblin do
           villain <- selectJust ActiveVillain
           heroes <- selectList (IdentityWithFewestRemainingHitPoints HeroIdentity)
-          chooseOrRunOne you [targeting hero (enemyAttacks villain hero) | hero <- heroes]
+          unless (null heroes) $ chooseOrRunOne you [targeting hero (enemyAttacks villain hero) | hero <- heroes]
         -- (Norman Osborn): the top card of your deck for each infamy counter
         norman <- isNormanOsbornSide
         when norman do
