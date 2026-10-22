@@ -136,6 +136,9 @@ data EnemyMatcher
   | EnemyWithUpgrade UpgradeMatcher
   | EnemyMatches [EnemyMatcher]
   | DefeatedEnemy EnemyMatcher
+  | -- | the enemies whose ATK is the highest of all enemies'
+    EnemyWithHighestAttack
+  | StunnedEnemy
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -226,6 +229,8 @@ data CharacterMatcher
   | DamageableCharacter
   | AnyCharacter
   | CharacterMatches [CharacterMatcher]
+  | -- | of the heroes and allies, those whose ATK is the highest
+    HeroOrAllyWithHighestAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

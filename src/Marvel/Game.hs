@@ -19,6 +19,7 @@ import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
 import Marvel.Ally.Types (allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
+import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
@@ -54,6 +55,7 @@ import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
+import Marvel.Minion.Types qualified as Minion
 import Marvel.Minion.Types (
   Attrs (minionStunned),
   Minion,
@@ -90,6 +92,7 @@ import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
 import Marvel.Upgrade.Types (Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
+import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
   Villain,
   villainAttackDetails,
@@ -1364,6 +1367,12 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  HeroOrAllyWithHighestAttack -> do
+    heroes <- traverse (\p -> (IdentityCharacter (toId p),) <$> getIdentityHeroAttackDamage p) . filter isHero . HashMap.elems =<< getsGame gamePlayers
+    allies <- traverse (\a -> (AllyCharacter (toId a),) <$> Ally.getModifiedAttack (toAttrs a)) . HashMap.elems =<< getsGame gameAllies
+    let characters = heroes <> allies
+        highest = maximum (map snd characters)
+    pure . HashSet.fromList $ [c | not (null characters), (c, atk) <- characters, atk == highest]
   CharacterMatches [] -> pure mempty
   CharacterMatches (x : xs) ->
     foldl' HashSet.intersection
@@ -1574,6 +1583,8 @@ gameSelectEnemy m = do
     EnemyMatches xs -> allM (goVillain e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
+    EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
+    StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -1591,6 +1602,12 @@ gameSelectEnemy m = do
     EnemyMatches xs -> allM (goMinion e) xs
     EnemyWithUpgrade u ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . minionUpgrades $ toAttrs e)
+    EnemyWithHighestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> highestAttack
+    StunnedEnemy -> pure $ minionStunned (toAttrs e)
+  highestAttack = do
+    villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
+    minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
+    pure $ foldl' max 0 (villains <> minions)
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
