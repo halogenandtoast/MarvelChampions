@@ -35,6 +35,7 @@ spec = describe "Ms. Marvel nemesis" do
         deckSizeOf p2 `shouldReturn` (before2 - 2)
         -- 2 per player
         sideSchemeThreat (sideSchemeOf scheme) `shouldReturn` 4
+        getHazardCount `shouldReturn` 1
 
   describe "Thomas Edison (05027)" do
     it "cannot take damage while you are engaged with another minion" do

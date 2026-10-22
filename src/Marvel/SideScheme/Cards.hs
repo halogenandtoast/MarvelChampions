@@ -174,6 +174,9 @@ hitSquad =
 generationWhy :: CardDef
 generationWhy =
   (sideScheme "05026" "Generation Why?" [Boost, Boost, Boost] MsMarvelNemesis 1)
+    { cdHazards = 1
+    }
+
 totalDestruction :: CardDef
 totalDestruction =
   (sideScheme "10027" "Total Destruction" [Boost, Boost, Boost] HulkNemesis 1)
