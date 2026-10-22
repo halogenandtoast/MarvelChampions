@@ -46,6 +46,8 @@ instance Entity PlayerIdentity where
     , playerIdentityTough :: Bool
     , playerIdentityDefeated :: Bool
     , playerIdentityDefended :: Bool
+    , playerIdentityAttackDamageTaken :: Natural
+    -- ^ the damage taken from the latest enemy attack against them
     }
     deriving stock (Show, Eq, Generic)
   data Field PlayerIdentity :: Type -> Type where
@@ -72,6 +74,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityTough :: Field PlayerIdentity Bool
     PlayerIdentityDefeated :: Field PlayerIdentity Bool
     PlayerIdentityDefended :: Field PlayerIdentity Bool
+    PlayerIdentityAttackDamageTaken :: Field PlayerIdentity Natural
   field fld p = let PlayerIdentityAttrs {..} = toAttrs p in case fld of
     PlayerIdentityId -> playerIdentityId
     PlayerIdentityName -> playerIdentityName
@@ -96,5 +99,6 @@ instance Entity PlayerIdentity where
     PlayerIdentityTough -> playerIdentityTough
     PlayerIdentityDefeated -> playerIdentityDefeated
     PlayerIdentityDefended -> playerIdentityDefended
+    PlayerIdentityAttackDamageTaken -> playerIdentityAttackDamageTaken
   toAttrs (PlayerIdentity attrs) = attrs
   toId = playerIdentityId . toAttrs

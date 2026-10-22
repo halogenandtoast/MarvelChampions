@@ -210,6 +210,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityTough = False
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
+      , playerIdentityAttackDamageTaken = 0
       }
  where
   hp = case alterEgoSide of
@@ -807,7 +808,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       when
         (playerIdentityDamage + damageAmount damage >= modifiedHp)
         (push $ IdentityMessage playerIdentityId IdentityDefeated)
-      pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
+      let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
+      pure $
+        PlayerIdentity $
+          attrs
+            & damageL +~ damageAmount damage
+            & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
     IdentityDefeated -> do
       players <- getPlayers
       let
@@ -956,6 +962,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
             & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    -- an enemy's attack against them begins: none of its damage taken yet
+    VillainMessage _ (VillainBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
+    MinionMessage _ (MinionBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
     -- a card played from another player's discard pile (Make the Call) leaves it
     IdentityMessage ident (PlayedCard card _)
       | ident /= playerIdentityId attrs ->
@@ -963,7 +972,12 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid
-    _ -> case currentIdentity pid of
+    _ -> passToSide
+ where
+  attackBegins = do
+    pid' <- passToSide
+    pure $ PlayerIdentity (toAttrs pid') {playerIdentityAttackDamageTaken = 0}
+  passToSide = case currentIdentity pid of
       HeroSide x -> do
         newSide <- HeroSide <$> runMessage msg x
         pure $
