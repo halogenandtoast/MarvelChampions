@@ -26,10 +26,6 @@ instance RunMessage ProtectiveWard where
   runMessage msg e@(ProtectiveWard attrs) = case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) ->
-        do
-          cancelMatchingMessage $ \case
-            TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
-            _ -> False
-          pure e
+        e <$ cancelWhenRevealed tid
       _ -> ProtectiveWard <$> runMessage msg attrs
     _ -> ProtectiveWard <$> runMessage msg attrs

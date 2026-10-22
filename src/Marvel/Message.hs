@@ -74,6 +74,17 @@ placeThreatOn scheme n =
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
 
+-- | Cancel a treachery's "When Revealed" effects as it is revealed: none of them resolves,
+-- the surge it has or would gain included (surge is a "When Revealed" ability), and it is
+-- discarded as it would be.
+cancelWhenRevealed :: (HasQueue m) => TreacheryId -> m ()
+cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
+  TreacheryMessage tid' msg | tid' == tid -> case msg of
+    RevealTreachery _ -> Nothing
+    CheckTreacheryCondition _ -> Nothing
+    ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
+  msg -> Just msg
+
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: MinionId -> IdentityId -> [Message]
 engageMinion minion ident =
@@ -143,6 +154,14 @@ simultaneousMessages = \case
 
 simultaneously :: [Message] -> Message
 simultaneously = Simultaneously
+
+-- | "If this attack deals damage to a character", as a boost ability that lasts the
+-- activation sees it: the attacking enemy and the character, as the attack's damage is
+-- dealt. Damage a boost ability deals is not the attack's.
+attackDamages :: Message -> Maybe (EnemyId, CharacterId)
+attackDamages = \case
+  CheckWindows [Window After (EnemyAttacksAndDamages enemy character)] -> Just (enemy, character)
+  _ -> Nothing
 
 -- | The character's own ref, as status cards are given by.
 characterRef :: CharacterId -> Target
@@ -222,11 +241,11 @@ data Message
   | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
   | CheckWindows [Window]
   | EndCheckWindows
-  | EmptyScenarioDeck
   | DealBoost Target
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
   | DealEncounterCard IdentityId
+  | RevealDealtEncounterCards
   | GainSurge Target
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId

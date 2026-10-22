@@ -23,7 +23,6 @@ import Marvel.Matchers
 import Marvel.Message hiding (VillainConfused, VillainStunned)
 import Marvel.Message qualified as Msg
 import Marvel.Modifier
-import Marvel.Name (title)
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Ref
@@ -103,6 +102,8 @@ instance Entity Villain where
     , villainStage :: Natural
     , villainAttackTarget :: Maybe CharacterId
     -- ^ the character its coming attack is against, when not the player's identity
+    , villainActivationPlayer :: Maybe IdentityId
+    -- ^ the player its activation under way is against, who resolves its boost cards
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -196,6 +197,7 @@ villain f cardDef sch atk startingHp =
             , villainUpgrades = mempty
             , villainStage = 1
             , villainAttackTarget = Nothing
+            , villainActivationPlayer = Nothing
             }
     }
 
@@ -320,7 +322,8 @@ runVillainMessage msg attrs = case msg of
           , VillainMessage (villainId attrs) VillainSchemed
           , ClearBoosts
           ]
-        pure attrs
+        player <- getActivePlayerId
+        pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
     push $ VillainMessage (villainId attrs) (VillainAttacks ident)
@@ -338,7 +341,9 @@ runVillainMessage msg attrs = case msg of
           ]
         -- the attack is under way from when it is declared, as its would windows open
         atk <- getModifiedAttack attrs
-        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+        pure $
+          attrs {villainActivationPlayer = Just ident}
+            & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
   VillainBeginAttack ident -> do
     atk <- getModifiedAttack attrs
     pushAll
@@ -353,7 +358,7 @@ runVillainMessage msg attrs = case msg of
       attrs {villainAttackTarget = Nothing}
         & attackingL
           ?~ attack (toEnemyId attrs) (attackTarget ident) atk
-  VillainEndAttack -> pure $ attrs & attackingL .~ Nothing
+  VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGainOverkill ->
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
   VillainDefendedBy characterId ->
@@ -375,12 +380,11 @@ runVillainMessage msg attrs = case msg of
           , MainSchemeMessage mainSchemeId $ MainSchemePlaceThreat threat
           , CheckWindows [W.Window W.After $ W.Schemed (villainId attrs)]
           ]
-        pure $ attrs & boostL .~ 0
+        pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
       _ -> error "not Main scheme"
   VillainAttacked -> do
     case villainAttacking attrs of
-      -- the villain was defeated mid-attack by a stage of another title: it ended
-      Nothing -> pure ()
+      Nothing -> error "No current attack"
       Just attack' -> case attackCharacter attack' of
         IdentityCharacter ident ->
           push $ IdentityMessage ident $ IdentityWasAttacked attack'
@@ -400,10 +404,10 @@ runVillainMessage msg attrs = case msg of
     pushAll $
       concatMap
         ( \card ->
-            [CheckWindows [W.Window W.When $ W.FlippedBoostCard card enemy]]
-              <> [ VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
-                 , RevealBoostCard card enemy
-                 ]
+            [ CheckWindows [W.Window W.When $ W.FlippedBoostCard card enemy]
+            , RevealBoostCard card enemy
+            , VillainMessage (villainId attrs) (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+            ]
         )
         (villainBoostCards attrs)
         <> [VillainMessage (villainId attrs) VillainCheckAdditionalBoosts]
@@ -437,29 +441,24 @@ instance RunMessage (Attrs Villain) where
 instance IsRef (Attrs Villain) where
   toRef = VillainRef . villainId
 
--- | The next stage, of the same title, takes over what was on the stage defeated, and
--- any activation under way resumes with it, its attack using the new stage's ATK (RR,
--- "Villain Defeat"). A stage of another title takes over nothing, and the activation ends.
+-- | The next stage, of the same title: what was on the villain carries over, and an
+-- activation it was defeated during resumes with the new stage, its attack at the new
+-- stage's ATK.
 advanceVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
-advanceVillainTo newVillain old = overVillainAttrs update next
+advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildCard newVillain villainId
  where
-  next = buildCard newVillain (villainId old)
-  new = toVillainAttrs next
-  sameTitle = title (cdName $ villainCardDef old) == title (cdName $ villainCardDef new)
-  resumed = attackDamageL %~ \d -> subtractNatural (unAtk $ villainAttack old) d + unAtk (villainAttack new)
-  update a
-    | sameTitle =
-        a
-          & (confusedL .~ villainConfused old)
-          . (stunnedL .~ villainStunned old)
-          . (toughL %~ (|| villainTough old))
-          . (attachmentsL .~ villainAttachments old)
-          . (upgradesL .~ villainUpgrades old)
-          . (boostL .~ villainBoost old)
-          . (boostCardsL .~ villainBoostCards old)
-          . (attackingL .~ (resumed <$> villainAttacking old))
-          . (\v -> v {villainAttackTarget = villainAttackTarget old})
-    | otherwise = a
+  update new =
+    new
+      & (confusedL .~ villainConfused)
+      & (stunnedL .~ villainStunned)
+      & (toughL %~ (|| villainTough))
+      & (attachmentsL .~ villainAttachments)
+      & (upgradesL .~ villainUpgrades)
+      & (boostCardsL .~ villainBoostCards)
+      & (boostL .~ villainBoost)
+      & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
+      & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer}
+  restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do

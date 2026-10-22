@@ -19,6 +19,7 @@ import Marvel.Projection
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource.Types
+import Marvel.Trait.Types (Trait)
 import Marvel.Window.Types
 
 class (Monad m) => HasGame m where
@@ -103,6 +104,8 @@ getCurrentPayment :: (HasGame m) => m Payment
 getActiveCost :: (HasGame m) => m (Maybe ActiveCostId)
 getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
+getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 getHazardCount :: (HasGame m) => m Natural
 getAccelerationCount :: (HasGame m) => m Natural
 getAvailablePaymentSources ::

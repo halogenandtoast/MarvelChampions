@@ -30,12 +30,8 @@ instance RunMessage SweepingSwoop where
         push $ IdentityMessage identityId IdentityStunned
         pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
       _ -> SweepingSwoop <$> runMessage msg attrs
-    Boost msg' -> case msg' of
-      AllyMessage aid (AllyDamaged _ _) -> do
-        push $ AllyMessage aid AllyStunned
-        pure t
-      IdentityMessage aid (IdentityDamaged _ _) -> do
-        push $ IdentityMessage aid IdentityStunned
-        pure t
-      _ -> SweepingSwoop <$> runMessage msg attrs
+    -- [star] Boost: if this activation deals damage to a friendly character, stun it
+    Boost (attackDamages -> Just (_, character)) -> do
+      push $ GiveStatus (characterRef character) StunnedStatus
+      pure t
     _ -> SweepingSwoop <$> runMessage msg attrs

@@ -40,8 +40,7 @@ instance RunMessage HitSquad where
         [] -> pure s
         p : rest ->
           getEncounterDeck >>= \case
-            -- the deck is made again from the discard pile first
-            [] -> s <$ pushAll [EmptyScenarioDeck, cardSpecific attrs "discard" players]
+            [] -> s <$ push (cardSpecific attrs "discard" rest)
             card : _ -> do
               let n = boostCount $ cdBoostIcons $ getCardDef card
               pushAll $

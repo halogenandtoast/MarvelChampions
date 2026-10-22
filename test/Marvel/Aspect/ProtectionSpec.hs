@@ -47,6 +47,19 @@ spec = describe "Protection" do
         length <$> scenarioEncounterDeckNow >>= (`shouldSatisfy` (< deckBefore))
         (.allyExhausted) <$> allyIn "01075" `shouldReturn` True
 
+    it "does not answer a card revealed from the encounter discard pile" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        putIntoPlay p "01075"
+        _ <- putInHand p "01089"
+        (_, [mercenary]) <- setEncounterDeck [Cards.advance] [Minions.hydraMercenary]
+        runNow [SearchForAndRevealEncounterCard p (CardWithType MinionType)]
+        -- not stopped to be offered Black Widow: the mercenary is in play
+        (.allyExhausted) <$> allyIn "01075" `shouldReturn` False
+        minionDamageOf (minionOf mercenary) `shouldReturn` Just 0
+
   describe "Luke Cage (01076)" do
     it "enters play with a tough status card" do
       tg <- testGame ["black-panther"]

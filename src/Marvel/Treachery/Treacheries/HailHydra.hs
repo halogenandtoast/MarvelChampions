@@ -7,10 +7,10 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Card.Types
+import Marvel.Id
+import Marvel.Ref
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message
 import Marvel.Query
@@ -22,7 +22,7 @@ import Marvel.Treachery.Types
 hailHydra :: TreacheryCard HailHydra
 hailHydra = treachery (HailHydra . (`With` Meta [])) Cards.hailHydra
 
--- | The players a Hydra minion's attack began against.
+-- | The players attacked by its Hydra minions.
 newtype Meta = Meta {attacked :: [IdentityId]}
   deriving stock (Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -35,22 +35,22 @@ instance IsTreachery HailHydra where
   toTreacheryAttrs (HailHydra (attrs `With` _)) = attrs
 
 -- | Each Hydra minion engaged with a hero attacks them; a stunned one does not, its stun
--- removed instead, and an attack cancelled is not made. Each player whom no attack was
--- made against puts a Hydra minion from the encounter deck or discard pile into play
--- engaged with them.
+-- removed instead. Then each player who was not attacked this way puts a Hydra minion
+-- of their choice from the encounter deck or discard pile into play engaged with them.
 instance RunMessage HailHydra where
   runMessage msg t@(HailHydra (attrs `With` meta)) = case msg of
     TreacheryMessage ident (RevealTreachery _) | treacheryId attrs == ident -> do
       players <- getPlayers
-      attacks <- for players \p -> do
-        isHero <- identityMatches HeroIdentity p
+      heroes <- filterM (identityMatches HeroIdentity) players
+      attacks <- for heroes \p -> do
         minions <- selectList $ MinionEngagedWith (IdentityWithId p) <> MinionWithTrait Hydra
-        pure [MinionMessage m (MinionAttacks p) | isHero, m <- minions]
+        pure [MinionMessage m (MinionAttacks p) | m <- minions]
       pushAll $ concat attacks <> [cardSpecific attrs "search" ()]
       pure t
-    MinionMessage mid (MinionBeginAttack p) -> do
-      hydra <- selectAny (MinionWithId mid <> MinionWithTrait Hydra)
-      pure $ if hydra then HailHydra (attrs `With` Meta (p : attacked meta)) else t
+    MinionMessage mid MinionAttacked -> do
+      hydra <- minionMatches (MinionWithTrait Hydra) mid
+      engaged <- selectList $ IdentityEngagedWith (MinionWithId mid)
+      pure $ if hydra then HailHydra (attrs `With` Meta (attacked meta <> engaged)) else t
     CardSpecific (isTarget attrs -> True) "search" _ -> do
       players <- getPlayers
       pushAll

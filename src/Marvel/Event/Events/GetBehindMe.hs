@@ -30,11 +30,8 @@ instance RunMessage GetBehindMe where
       PlayedEvent identityId _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck)) ->
         do
           villainId <- selectJust ActiveVillain
-          replaceMatchingMessage
-            (const [VillainMessage villainId $ VillainAttacks identityId])
-            $ \case
-              TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
-              _ -> False
+          cancelWhenRevealed tid
+          push $ VillainMessage villainId $ VillainAttacks identityId
           pure e
       _ -> GetBehindMe <$> runMessage msg attrs
     _ -> GetBehindMe <$> runMessage msg attrs

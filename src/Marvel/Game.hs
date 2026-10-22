@@ -81,7 +81,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario
-import Marvel.Scenario.Types (Attrs (scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
+import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck), Scenario, getScenarioDifficulty, scenarioSetAsideCards)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
@@ -90,7 +90,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeOwner), Upgrade, getUpgradeController, getUpgradeUses)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -326,6 +326,36 @@ getUniqueTitlesInPlay = getsGame \g ->
       <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
       <> concatMap identity (HashMap.elems $ gamePlayers g)
 
+-- | The player the villain's activation under way is against: who resolves its boost
+-- cards, the "you" of their boost abilities.
+getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
+getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
+
+-- | How many cards in play have the trait: of every type, each identity one card.
+countCardsInPlayWithTrait :: forall m. (HasGame m) => Trait -> m Natural
+countCardsInPlayWithTrait t = do
+  g <- getGame
+  let printed :: [CardDef] -> Natural
+      printed = count (member t . cdTraits)
+      defs :: (HasCardDef a) => EntityMap a -> [CardDef]
+      defs = map getCardDef . HashMap.elems
+      traited :: (HasTraits a) => EntityMap a -> m Natural
+      traited = fmap (count (member t)) . traverse getTraits . HashMap.elems
+  characters <- sum <$> sequence [traited (gamePlayers g), traited (gameAllies g), traited (gameMinions g)]
+  pure $
+    characters
+      + printed (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
+      + printed
+        ( defs (gameVillains g)
+            <> defs (gameUpgrades g)
+            <> defs (gameAttachments g)
+            <> defs (gameTreacheries g)
+            <> defs (gameObligations g)
+            <> defs (gameSideSchemes g)
+            <> defs (gameMainSchemes g)
+            <> defs (gameEnvironments g)
+        )
+
 getActivePlayer :: (HasGame m) => m PlayerIdentity
 getActivePlayer = getsGame $ \g ->
   case lookup (g ^. activePlayerL) (g ^. entitiesL . playersL) of
@@ -337,6 +367,25 @@ runPreGameMessage msg g = case msg of
   -- pushed before the card answers, so the window follows what the ability does
   RanAbility ident target _ _ _ | Just def <- abilityCardDef g target -> do
     push $ CheckWindows [W.Window After $ W.ResolvedAbility ident def]
+    pure g
+  -- begun before the scenario takes the card from where it was, so where that was is
+  -- known; a card still to be revealed for a player eliminated meanwhile is discarded
+  RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
+    push $ DiscardedCard (EncounterCard card)
+    pure g
+  RevealEncounterCard ident card -> do
+    let
+      scenario = toAttrs (gameScenario g)
+      source
+        | card `elem` scenarioDiscard scenario = W.RevealedFromDiscardPile
+        | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
+        | otherwise = W.RevealedFromEncounterDeck
+    pushAll
+      [ FocusCards [EncounterCard card]
+      , CheckWindows [W.Window When $ W.EncounterCardRevealed source ident card]
+      , UnfocusCards
+      , RevealedEncounterCard ident card
+      ]
     pure g
   CheckWindows windows -> do
     push EndCheckWindows
@@ -491,8 +540,14 @@ runGameMessage msg g@Game {..} = case msg of
                ]
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
+  -- the main scheme leaves the game, each card attached to it discarded
   ReplaceMainScheme cardCode -> do
-    push (AddMainScheme cardCode)
+    pushAll $
+      [ RemoveFromPlay (UpgradeRef uid)
+      | (uid, u) <- HashMap.toList (gameUpgrades g)
+      , isJust (upgradeAttachedMainScheme (toAttrs u))
+      ]
+        <> [AddMainScheme cardCode]
     pure $ g & (entitiesL . mainSchemesL .~ mempty)
   AddVillain cardCode -> do
     villainId <- getRandom
@@ -640,18 +695,6 @@ runGameMessage msg g@Game {..} = case msg of
     pushAll $ map (DiscardedCard . EncounterCard) (HashMap.elems gameBoostCards)
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
-  -- a card still to be revealed for a player eliminated meanwhile is discarded
-  RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
-    push $ DiscardedCard (EncounterCard card)
-    pure g
-  RevealEncounterCard ident card -> do
-    pushAll
-      [ FocusCards [EncounterCard card]
-      , CheckWindows [W.Window When $ W.EncounterCardRevealed ident card]
-      , UnfocusCards
-      , RevealedEncounterCard ident card
-      ]
-    pure g
   RevealedEncounterCard ident card -> do
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
     let surge = [Marvel.Message.Surge ident | Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)]
@@ -704,8 +747,10 @@ runGameMessage msg g@Game {..} = case msg of
             [ toId p | p <- HashMap.elems (gamePlayers g), getCardDef card `elem` identityObligations p
             ]
         case owners of
+          -- "ignore the card's ability, remove it from the game, and reveal an
+          -- additional encounter card": not surge
           [] -> do
-            push $ Marvel.Message.Surge ident
+            push $ DrawAndRevealEncounterCard ident
             pure g
           owner : _ -> do
             -- TODO: FOCUS CARDS SHOULD BE CARDS...
@@ -850,7 +895,7 @@ runGameMessage msg g@Game {..} = case msg of
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
             _ -> False
-          W.Window _ (W.EncounterCardRevealed _ card) -> isQueued \case
+          W.Window _ (W.EncounterCardRevealed _ _ card) -> isQueued \case
             RevealedEncounterCard _ card' -> card' == card
             _ -> False
           W.Window _ (W.IdentityTakeDamage iid _) -> isQueued \case
@@ -1650,6 +1695,7 @@ gameSelectUpgrade m = do
           && isNothing (upgradeAttachedAlly a)
           && isNothing (upgradeAttachedEnemy a)
           && isNothing (upgradeAttachedSideScheme a)
+          && isNothing (upgradeAttachedMainScheme a)
     UpgradeWithHighestCostAmong m' -> \upgrade -> do
       candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gameUpgrades
       let cost = fromMaybe 0 . cdCost . getCardDef

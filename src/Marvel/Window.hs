@@ -177,8 +177,8 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == After ->
           identityMatches identityMatcher identityId
     _ -> pure False
-  EncounterCardReveal timing encounterCardMatcher -> case windowType w of
-    EncounterCardRevealed _ encounterCard
+  EncounterCardRevealedFromDeck timing encounterCardMatcher -> case windowType w of
+    EncounterCardRevealed RevealedFromEncounterDeck _ encounterCard
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
@@ -200,7 +200,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
     _ -> pure False
   EncounterCardRevealedBy timing identityMatcher encounterCardMatcher -> case windowType w of
-    EncounterCardRevealed ident encounterCard
+    EncounterCardRevealed _ ident encounterCard
       | windowTiming w == timing && encounterCardMatches encounterCardMatcher encounterCard ->
           identityMatches identityMatcher ident
     _ -> pure False

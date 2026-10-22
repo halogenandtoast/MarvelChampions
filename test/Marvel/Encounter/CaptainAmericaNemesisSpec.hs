@@ -100,9 +100,11 @@ spec = describe "Captain America's nemesis set" do
         soldier <- addMinion p1 Minions.hydraSoldierCaptainAmerica
         pass
         -- the soldier's attack draws a boost card with no icons
-        _ <- stackEncounterDeck [Treacheries.hailHydra, Minions.hydraBomber]
+        [_, bomber] <- stackEncounterDeck [Treacheries.hailHydra, Minions.hydraBomber]
         before <- getsGame (HashMap.keys . gameMinions)
         _ <- revealNow p1 Treacheries.hailHydra
+        pass
+        choose "the bomber" (isTargetChoice bomber)
         pass
         damageOf p1 `shouldReturn` 2
         new <- getsGame (filter (`notElem` before) . HashMap.keys . gameMinions)
@@ -135,11 +137,39 @@ spec = describe "Captain America's nemesis set" do
       let p = player1 tg
       inGame tg do
         soldier <- addMinion p Minions.hydraSoldierCaptainAmerica
-        _ <- stackEncounterDeck [Minions.hydraBomber]
+        [bomber] <- stackEncounterDeck [Minions.hydraBomber]
+        before <- getsGame (HashMap.keys . gameMinions)
+        _ <- revealNow p Treacheries.hailHydra
+        choose "the bomber" (isTargetChoice bomber)
+        pass
+        damageOf p `shouldReturn` 0
+        new <- getsGame (filter (`notElem` before) . HashMap.keys . gameMinions)
+        length new `shouldBe` 1
+        engagedWith p soldier `shouldReturn` True
+
+    it "a stunned Hydra minion does not attack, so its player was not attacked and searches" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        resolve [IdentityMessage p (ChangedToForm A)]
+        soldier <- addMinion p Minions.hydraSoldierCaptainAmerica
+        pass
+        resolve [GiveStatus (MinionRef soldier) StunnedStatus]
+        _ <- setEncounterDeck [Minions.hydraBomber] [Treacheries.advance]
         before <- getsGame (HashMap.keys . gameMinions)
         _ <- revealNow p Treacheries.hailHydra
         pass
         damageOf p `shouldReturn` 0
         new <- getsGame (filter (`notElem` before) . HashMap.keys . gameMinions)
         length new `shouldBe` 1
-        engagedWith p soldier `shouldReturn` True
+
+    it "the searching player chooses the Hydra minion" do
+      tg <- testGame ["captain-america"]
+      let p = player1 tg
+      inGame tg do
+        ([_, mercenary], _) <- setEncounterDeck [Minions.hydraBomber, Minions.hydraMercenary] [Treacheries.advance]
+        _ <- revealNow p Treacheries.hailHydra
+        choose "the mercenary" (isTargetChoice mercenary)
+        pass
+        getsGame (HashMap.member (minionOf mercenary) . gameMinions) `shouldReturn` True
+        length <$> getsGame (HashMap.keys . gameMinions) `shouldReturn` 1
