@@ -72,8 +72,10 @@ const chips = computed(() => {
   })
 })
 
+// the card previewed, with its status cards beside it; an attached card shows only itself
+const statuses = computed(() => (['stunned', 'confused', 'tough'] as const).filter((s) => props[s]))
 const preview = (element: HTMLElement, touched = false, code = props.code, back = props.back) =>
-  overlay.show({ code, name: title.value, back }, element, !back && cards.landscape(code), touched)
+  overlay.show({ code, name: title.value, back, statuses: code === props.code ? statuses.value : [] }, element, !back && cards.landscape(code), touched)
 
 let lastPointer = 'mouse'
 let pressTimer: ReturnType<typeof setTimeout> | undefined
@@ -118,7 +120,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     >
       <CardFace :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
-      <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" @leave="el && preview(el)" />
+      <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />

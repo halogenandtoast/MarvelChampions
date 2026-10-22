@@ -2,18 +2,21 @@ import { computed, reactive, readonly, ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Back } from '../cards'
 
-/** What the overlay draws: a card by its code, a back, or an image, as a status card. */
+/** What the overlay draws: a card by its code, or a back, with the status cards on it. */
 export interface Preview {
   code: string | null
   name?: string
   back?: Back | null
-  image?: string | null
+  /** stunned, confused, tough: shown beside the card */
+  statuses?: readonly string[]
 }
 
 const OVERLAY_WIDTH = 320
 const CARD_RATIO = 0.716
 const GAP = 10
 const PAD = 10
+// a status card beside the preview, printed landscape
+export const STATUS_WIDTH = 200
 
 interface Placement {
   top: number
@@ -24,6 +27,8 @@ interface Placement {
 
 const card = shallowRef<Preview | null>(null)
 const sideways = ref(false)
+// which side of the preview its status cards go: away from the card hovered
+const side = ref<'left' | 'right'>('right')
 const anchor = shallowRef<HTMLElement | null>(null)
 // shown by a touch rather than a hover: centred, and up until the next touch
 const pinned = ref(false)
@@ -42,21 +47,25 @@ const measure = () => {
   const rect = element.getBoundingClientRect()
   const width = sideways.value ? OVERLAY_WIDTH / CARD_RATIO : OVERLAY_WIDTH
   const height = sideways.value ? OVERLAY_WIDTH : Math.round(OVERLAY_WIDTH / CARD_RATIO)
+  const extra = card.value?.statuses?.length ? STATUS_WIDTH + GAP : 0
 
   if (pinned.value) {
-    // as big as fits, up to the hover size, in the middle of the screen
-    const scale = Math.min(1, (window.innerWidth - 2 * PAD) / width, (window.innerHeight - 2 * PAD) / height)
+    // as big as fits, up to the hover size, in the middle of the screen, statuses and all
+    const scale = Math.min(1, (window.innerWidth - 2 * PAD) / (width + extra), (window.innerHeight - 2 * PAD) / height)
+    side.value = 'right'
     placement.width = width * scale
     placement.height = height * scale
-    placement.left = (window.innerWidth - placement.width) / 2
+    placement.left = (window.innerWidth - placement.width - extra * scale) / 2
     placement.top = (window.innerHeight - placement.height) / 2
     return
   }
 
-  // Prefer the right of the card, flipping to its left when that would run off screen.
+  // Prefer the right of the card, flipping to its left when that would run off screen; the
+  // status cards go on the far side, so they need room too.
   const toTheRight = rect.right + GAP
-  const left =
-    toTheRight + width + PAD >= window.innerWidth ? rect.left - width - GAP : toTheRight
+  const right = toTheRight + width + extra + PAD < window.innerWidth
+  side.value = right ? 'right' : 'left'
+  const left = right ? toTheRight : Math.max(PAD + extra, rect.left - width - GAP)
 
   // Line up with the card, then lift it so the whole card stays inside the viewport.
   const desiredTop = rect.top - 40
@@ -64,7 +73,7 @@ const measure = () => {
   const top = Math.max(PAD, Math.min(desiredTop, maxTop))
 
   placement.top = top
-  placement.left = Math.max(PAD, Math.min(left, window.innerWidth - width - PAD))
+  placement.left = Math.max(PAD, Math.min(left, window.innerWidth - width - PAD - (right ? extra : 0)))
   placement.width = width
   placement.height = height
 }
@@ -110,6 +119,7 @@ const canHover = useMediaQuery('(hover: hover)')
 export const useCardOverlay = () => (listen(), {
   card: readonly(card),
   sideways: readonly(sideways),
+  side: readonly(side),
   placement,
   visible: computed(() => card.value !== null),
   canHover,
