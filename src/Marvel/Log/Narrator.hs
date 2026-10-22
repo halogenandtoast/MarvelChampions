@@ -194,6 +194,7 @@ minionNarration mid = \case
   MinionStunned _ -> Just $ simply "log.stunned" (MinionRef mid)
   MinionConfused _ -> Just $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)
+  MinionAddBoost n | n > 0 -> Just $ whenRef (MinionRef mid) \m -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> m, "count" ~> n]]
   _ -> Nothing
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
