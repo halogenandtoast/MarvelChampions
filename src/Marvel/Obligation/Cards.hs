@@ -8,7 +8,9 @@ import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.EncounterSet (EncounterSet (MasterOfTime))
 import Marvel.Name
+import Marvel.Trait qualified as Trait
 
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
@@ -31,6 +33,7 @@ allObligations = fromList $ map
     -- The Rise of Red Skull
 
     -- The Once and Future Kang
+    , fearOfKang
 
     ]
 
@@ -91,3 +94,14 @@ odinsAnger = obligation "06026" "Odin's Anger" [Boost, Boost]
 
 physicalToll :: CardDef
 physicalToll = obligation "09027" "Physical Toll" [Boost, Boost]
+
+-- The Once and Future Kang
+
+-- | An obligation of an encounter set: the player who reveals it keeps it.
+fearOfKang :: CardDef
+fearOfKang =
+  (obligation "11049" "Fear of Kang" [Boost, Boost])
+    { cdTraits = fromList [Trait.Temporal]
+    , cdEncounterSet = Just MasterOfTime
+    , cdEncounterSetQuantity = Just 2
+    }

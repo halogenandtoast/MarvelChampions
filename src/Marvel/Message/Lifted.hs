@@ -747,6 +747,14 @@ revealEncounterCard ident = push . RevealEncounterCard ident
 discardTopOfEncounterDeckFor :: (ReverseQueue m, IsRef target) => Natural -> target -> m ()
 discardTopOfEncounterDeckFor n = push . DiscardTopOfEncounterDeck n . Just . toTarget
 
+-- | The top cards of the encounter deck are discarded, then the body does what it does
+-- with them: as many as there were, a deck run out partway not refilled.
+discardTopOfEncounterDeckThen :: (ReverseQueue m) => Natural -> ([EncounterCard] -> m ()) -> m ()
+discardTopOfEncounterDeckThen n body = do
+  cards <- take (fromIntegral n) <$> getEncounterDeck
+  discardTopOfEncounterDeck n
+  body cards
+
 shuffleIntoEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
 

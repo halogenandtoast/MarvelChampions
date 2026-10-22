@@ -10,6 +10,8 @@ import Marvel.Keyword qualified as Keyword
 import Marvel.Id as X (TreacheryId)
 import Marvel.Message.Lifted
 import Marvel.Ref
+import Control.Monad (replicateM_)
+import Marvel.Game.Source (whenRevealedTimes)
 
 data Treachery = forall a. (IsTreachery a) => Treachery a
 
@@ -131,8 +133,10 @@ instance RunMessage (Attrs Treachery) where
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
       ResolvedTreachery identityId -> do
         removeFromPlay attrs
-        when (treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)) $
-          surge identityId
+        -- surge is a "When Revealed", resolved again as the card's others are
+        when (treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)) do
+          times <- whenRevealedTimes identityId
+          replicateM_ times (surge identityId)
         pure attrs
       _ -> pure attrs
     _ -> pure attrs

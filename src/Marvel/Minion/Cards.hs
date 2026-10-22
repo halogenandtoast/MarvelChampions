@@ -12,7 +12,7 @@ import Marvel.Criteria
 import Marvel.EncounterSet
 import Marvel.Keyword
 import Marvel.Name
-import Marvel.Trait hiding (MastersOfEvil)
+import Marvel.Trait hiding (MastersOfEvil, Temporal)
 import Marvel.Trait qualified as Trait
 
 allMinions :: HashMap CardCode CardDef
@@ -50,6 +50,9 @@ allMinions =
       , baronMordo
       , abomination
       -- The Green Goblin
+      , scorpion
+      , electro
+      , tombstone
 
       -- The Wrecking Crew
 
@@ -58,6 +61,16 @@ allMinions =
       , hydraHunter
 
       -- The Once and Future Kang
+      , ancientWarrior
+      , chitauriSoldier
+      , tyrannosaurusRex
+      , apocryphus
+      , deathunt9000
+      , sirRaston
+      , terminatrix
+      , wildrun
+      , kangMasterOfTime
+      , timeDisplacedSoldier
 
       ]
 
@@ -288,6 +301,78 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- The Green Goblin
+
+scorpion :: CardDef
+scorpion =
+  unique $
+    (minion "02038" "Scorpion" [] [Boost, Boost] AMessOfThings 1)
+      { cdKeywords = singleton Quickstrike
+      }
+
+electro :: CardDef
+electro = unique $ minion "02042" "Electro" [Criminal] [Star, Boost, Boost] PowerDrain 1
+
+tombstone :: CardDef
+tombstone = unique $ minion "02047" "Tombstone" [Criminal] [Boost, Boost] RunningInterference 1
+
+-- The Once and Future Kang
+
+ancientWarrior :: CardDef
+ancientWarrior =
+  (minion "11030" "Ancient Warrior" [Soldier, Trait.Temporal] [Star] Temporal 3)
+    { cdKeywords = singleton Quickstrike
+    }
+
+chitauriSoldier :: CardDef
+chitauriSoldier = minion "11031" "Chitauri Soldier" [Soldier, Trait.Temporal] [Boost] Temporal 2
+
+tyrannosaurusRex :: CardDef
+tyrannosaurusRex =
+  (minion "11032" "Tyrannosaurus Rex" [Creature, Trait.Temporal] [Boost, Boost, Boost] Temporal 1)
+    { cdKeywords = singleton Toughness
+    }
+
+apocryphus :: CardDef
+apocryphus = unique $ minion "11040" "Apocryphus" [Elite, Trait.Temporal] [Star] Anachronauts 1
+
+deathunt9000 :: CardDef
+deathunt9000 =
+  unique $
+    (minion "11041" "Deathunt 9000" [Elite, Trait.Temporal] [Star] Anachronauts 1)
+      { cdKeywords = fromList [Toughness, Villainous]
+      }
+
+sirRaston :: CardDef
+sirRaston =
+  unique $
+    (minion "11042" "Sir Raston" [Elite, Trait.Temporal] [Star] Anachronauts 1)
+      { cdKeywords = fromList [Guard, Retaliate 1]
+      }
+
+terminatrix :: CardDef
+terminatrix =
+  unique $
+    (minion "11043" "Terminatrix" [Elite, Trait.Temporal] [Star] Anachronauts 1)
+      { cdKeywords = singleton Quickstrike
+      }
+
+wildrun :: CardDef
+wildrun = unique $ minion "11044" "Wildrun" [Elite, Trait.Temporal] [Star] Anachronauts 1
+
+kangMasterOfTime :: CardDef
+kangMasterOfTime =
+  unique $
+    (minion "11047" ("Kang" <:> "Master of Time") [Elite, Trait.Temporal] [Boost, Boost] MasterOfTime 1)
+      { cdKeywords = fromList [Toughness, Villainous]
+      }
+
+timeDisplacedSoldier :: CardDef
+timeDisplacedSoldier =
+  (minion "11048" "Time-Displaced Soldier" [Elite, Trait.Temporal] [Star] MasterOfTime 2)
+    { cdKeywords = fromList [Incite 1, Surge]
+    }
 
 -- The Rise of Red Skull
 

@@ -39,6 +39,12 @@ import Marvel.Treachery.Treacheries.Thoughtcasting as X
 import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 
 -- The Green Goblin
+import Marvel.Treachery.Treacheries.Intimidation as X
+import Marvel.Treachery.Treacheries.RegenerativeHealing as X
+import Marvel.Treachery.Treacheries.TailSweep as X
+import Marvel.Treachery.Treacheries.ElectromagneticPulse as X
+import Marvel.Treachery.Treacheries.LightningBolt as X
+import Marvel.Treachery.Treacheries.ShockTherapy as X
 
 -- The Wrecking Crew
 
@@ -48,3 +54,5 @@ import Marvel.Treachery.Treacheries.HuntedByHydra as X
 import Marvel.Treachery.Treacheries.Mimicry as X
 
 -- The Once and Future Kang
+import Marvel.Treachery.Treacheries.KangsChosen as X
+import Marvel.Treachery.Treacheries.AncientGrudge as X

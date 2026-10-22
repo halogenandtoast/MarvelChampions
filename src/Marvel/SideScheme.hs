@@ -48,6 +48,9 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard openTheDarkDimension
   , SomeSideSchemeCard totalDestruction
   -- The Green Goblin
+  , SomeSideSchemeCard aMessOfThings
+  , SomeSideSchemeCard powerDrain
+  , SomeSideSchemeCard runningInterference
 
   -- The Wrecking Crew
 
@@ -57,6 +60,9 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard taskmastersTrainingCamp
 
   -- The Once and Future Kang
+  , SomeSideSchemeCard timePortal
+  , SomeSideSchemeCard theAnachronauts
+  , SomeSideSchemeCard lightOfCenturiesSphere
 
   ]
 
