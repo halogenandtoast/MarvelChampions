@@ -7,14 +7,20 @@ import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
 import System.Environment (lookupEnv)
 import TestImport
+import Data.HashMap.Strict qualified as HashMap
 
 -- | Answer whatever is asked at random, from a seed, for as many answers as given, or
--- until the game ends. The game must not fail on the way.
-playRandomly :: Int -> Int -> GameAppT Int
-playRandomly seed = go (mkStdGen seed)
+-- until the game ends. The game must not fail on the way. Hastened, a villain in play is
+-- defeated every so many answers, so that a scenario's later stages are played too.
+playRandomly :: Bool -> Int -> Int -> GameAppT Int
+playRandomly hasten seed = go (mkStdGen seed)
  where
   go _ 0 = pure 0
-  go gen n =
+  go gen n = do
+    when (hasten && n `mod` 150 == 0) do
+      vs <- getsGame (HashMap.keys . gameVillains)
+      let (i, _) = randomR (0, max 0 (length vs - 1)) gen
+      for_ (take 1 (drop i vs)) \v -> runNow [VillainMessage v VillainDefeated]
     openQuestion >>= \case
       Nothing -> pure n
       Just (ident, q) -> do
@@ -29,7 +35,7 @@ playRandomly seed = go (mkStdGen seed)
 spec :: Spec
 spec = describe "random play" do
   for_ scenarioCodes \villain ->
-    for_ tables \heroes ->
+    for_ (tables villain) \heroes ->
       for_ [Normal, Expert] \difficulty ->
         it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do
           playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes
@@ -45,7 +51,7 @@ spec = describe "random play" do
    for_ [1 .. seeds :: Int] \seed -> do
       (app, ran) <- dealtGame setup (map starter heroes) seed
       result <- try do
-        _ <- runGameApp app (playRandomly (seed * 31) 2000)
+        _ <- runGameApp app (playRandomly (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame
         evaluate (length (show g))
       case result of
@@ -54,4 +60,9 @@ spec = describe "random play" do
           latest <- readIORef ran
           expectationFailure $ unlines $ ("seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
   heroes = map fst starterDecks
-  tables = map pure heroes <> zipWith (\a b -> [a, b]) heroes (drop 1 heroes) <> [take 4 heroes]
+  -- The Once and Future Kang splits the table into an area a player: played with three
+  -- too
+  tables villain = map pure heroes <> zipWith (\a b -> [a, b]) heroes (drop 1 heroes) <> [take 3 heroes | villain `elem` hastened] <> [take 4 heroes]
+  -- the scenarios whose villains random play hardly defeats, and whose later stages are
+  -- what matters most
+  hastened = ["11001"]
