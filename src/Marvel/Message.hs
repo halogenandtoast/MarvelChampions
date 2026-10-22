@@ -58,6 +58,10 @@ placeThreatOn scheme n =
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
 
+-- | A step of the card's own, for it to answer as @CardSpecific@.
+cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
+cardSpecific a key v = CardSpecific (toTarget a) key (toJSON v)
+
 data FinishedStatus
   = Won
   | Lost
@@ -178,5 +182,8 @@ data Message
   | -- | an encounter card put into play without being revealed: its "When Revealed"
     -- abilities and surge do not resolve
     PutEncounterCardIntoPlay IdentityId EncounterCard
+  | -- | a step only one card knows, as ArkhamHorror's @ScenarioSpecific@: the card the
+    -- target names reads the key and decodes the value; the engine passes it by
+    CardSpecific Target Text Value
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
