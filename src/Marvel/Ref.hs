@@ -132,6 +132,11 @@ instance IsCharacter VillainId where
 instance IsCharacter MinionId where
   toCharacter = MinionCharacter
 
+instance IsCharacter EnemyId where
+  toCharacter = \case
+    EnemyVillainId v -> VillainCharacter v
+    EnemyMinionId m -> MinionCharacter m
+
 -- | A scheme, by any id that names one.
 class IsScheme a where
   toScheme :: a -> SchemeId

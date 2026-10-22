@@ -13,7 +13,6 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue
 import Marvel.Ref
 
 data Upgrade = forall a. (IsUpgrade a) => Upgrade a
@@ -237,13 +236,11 @@ instance RunMessage (Attrs Upgrade) where
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       PlayedUpgrade mTarget -> do
         case mTarget of
-          Just (IdentityRef p) -> push $ UpgradeMessage (upgradeId a) (UpgradeControlledByPlayer p)
-          Just target ->
-            pushAll
-              [ IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a)
-              , UpgradeMessage (upgradeId a) (attachedTo target)
-              ]
-          Nothing -> push $ IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a)
+          Just (IdentityRef p) -> upgradeStep (upgradeId a) (UpgradeControlledByPlayer p)
+          Just target -> do
+            upgradeCreated (upgradeController a) (upgradeId a)
+            upgradeStep (upgradeId a) (attachedTo target)
+          Nothing -> upgradeCreated (upgradeController a) (upgradeId a)
         pure a
        where
         attachedTo = \case
@@ -256,7 +253,7 @@ instance RunMessage (Attrs Upgrade) where
           MainSchemeRef mainSchemeId -> UpgradeAttachedToMainScheme mainSchemeId
           target -> error $ "an upgrade cannot attach to " <> show target
       UpgradeControlledByPlayer p -> do
-        push $ IdentityMessage p $ UpgradeCreated (upgradeId a)
+        upgradeCreated p (upgradeId a)
         pure a {upgradeController = p}
       ReadiedUpgrade -> do
         pure $ a & exhaustedL .~ False
@@ -268,14 +265,10 @@ instance RunMessage (Attrs Upgrade) where
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
       UpgradeAttachedToEnemy enemyId -> do
-        case enemyId of
-          EnemyMinionId minionId ->
-            push (MinionMessage minionId $ AttachedUpgradeToMinion (upgradeId a))
-          EnemyVillainId villainId ->
-            push (VillainMessage villainId $ AttachedUpgradeToVillain (upgradeId a))
+        upgradeAttachedTo enemyId (upgradeId a)
         pure $ a & attachedEnemyL ?~ enemyId
       UpgradeAttachedToAlly allyId -> do
-        push (AllyMessage allyId $ AttachedUpgradeToAlly (upgradeId a))
+        upgradeAttachedTo allyId (upgradeId a)
         pure $ a & attachedAllyL ?~ allyId
       UpgradeAttachedToSideScheme sideSchemeId ->
         pure a {upgradeAttachedSideScheme = Just sideSchemeId}

@@ -471,6 +471,22 @@ discardUpgrade u = push $ UpgradeMessage u DiscardUpgrade
 addUpgradeUses :: (ReverseQueue m) => UpgradeId -> Natural -> m ()
 addUpgradeUses u = push . UpgradeMessage u . AddUpgradeUses
 
+-- | A step of the upgrade's own, for its runner to answer.
+upgradeStep :: (ReverseQueue m) => UpgradeId -> UpgradeMessage -> m ()
+upgradeStep u = push . UpgradeMessage u
+
+-- | The player is told the upgrade has come into play under their control.
+upgradeCreated :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
+upgradeCreated ident = push . IdentityMessage ident . UpgradeCreated
+
+-- | The ally or enemy is told the upgrade is attached to it.
+upgradeAttachedTo :: (ReverseQueue m, IsCharacter character) => character -> UpgradeId -> m ()
+upgradeAttachedTo character u = push case toCharacter character of
+  AllyCharacter ally -> AllyMessage ally (AttachedUpgradeToAlly u)
+  MinionCharacter mid -> MinionMessage mid (AttachedUpgradeToMinion u)
+  VillainCharacter vid -> VillainMessage vid (AttachedUpgradeToVillain u)
+  IdentityCharacter _ -> error "an upgrade on an identity is controlled, not attached"
+
 -- | The player draws and reveals an encounter card.
 drawAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 drawAndRevealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
