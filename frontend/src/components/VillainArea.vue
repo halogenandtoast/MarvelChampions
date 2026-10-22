@@ -28,6 +28,8 @@ const mainSchemes = computed(() => inArea(game.mainSchemes, area?.mainSchemes))
 const sideSchemes = computed(() => inArea(game.sideSchemes, area?.sideSchemes))
 const environments = computed(() => inArea(game.environments, area?.environments))
 const decks = computed(() => area?.decks ?? game.areas?.[0]?.decks ?? [])
+// the acceleration tokens adding threat to this area's main scheme: the first area's
+const tokens = computed(() => area?.accelerationTokens ?? game.accelerationTokens ?? 0)
 const deckLabel = (deck: DeckView) => {
   if (deck.kind === 'villain') return t('game.piles.villainDeck', { name: deck.name ?? '' })
   if (deck.kind === 'sideScheme') return t('game.piles.sideSchemeDeck')
@@ -89,12 +91,12 @@ const escalation = (scheme: SchemeView) => {
         <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
-          {{ t('game.perRound', { count: escalation(scheme)! + (game.accelerationTokens ?? 0) }) }}
+          {{ t('game.perRound', { count: escalation(scheme)! + tokens }) }}
           <TokenStack
-            v-if="game.accelerationTokens"
+            v-if="tokens"
             kind="acceleration"
-            :count="game.accelerationTokens"
-            :title="t('game.acceleration', { count: game.accelerationTokens })"
+            :count="tokens"
+            :title="t('game.acceleration', { count: tokens })"
           />
         </p>
       </div>

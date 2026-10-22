@@ -115,6 +115,8 @@ export interface AreaView {
   sideSchemes: string[]
   environments: string[]
   decks: DeckView[]
+  /** the acceleration tokens adding threat to its main scheme */
+  accelerationTokens: number
 }
 
 export interface MinionView extends CardView {
