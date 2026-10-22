@@ -55,9 +55,11 @@ instance (HasQueue m) => HasQueue (ReaderT Game m)
 instance (HasGame m) => Projection m PlayerIdentity
 
 getPlayers :: (HasGame m) => m [IdentityId]
+getAllPlayers :: (HasGame m) => m [IdentityId]
 getActivePlayerId :: (HasGame m) => m IdentityId
 getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
+inAnyArea :: (HasGame m) => ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 abilityCardDef :: Game -> Target -> Maybe CardDef
@@ -148,6 +150,13 @@ inYourArea :: (HasGame m) => Target -> m Bool
 getVillainsInArea :: (HasGame m) => AreaId -> m [VillainId]
 getActiveVillainIn :: (HasGame m) => AreaId -> m (Maybe VillainId)
 getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
+getMainSchemesIn :: (HasGame m) => AreaId -> m [MainSchemeId]
+getMinionsIn :: (HasGame m) => AreaId -> m [MinionId]
+getObligationsIn :: (HasGame m) => AreaId -> m [ObligationId]
+getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
+getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
+getNemesisMinionOutOfPlay :: (HasGame m) => IdentityId -> m (Maybe EncounterCard)
+getUniqueCardsIn :: (HasGame m) => AreaId -> m [(Target, (Text, [Text]))]
 getPile :: (HasGame m) => DeckKey -> m Pile
 getDeckKeys :: (HasGame m) => m [DeckKey]
 

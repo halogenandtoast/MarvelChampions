@@ -11,6 +11,8 @@ import Marvel.Id as X (AttachmentId)
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
+import Marvel.Matchers.Types (VillainMatcher (ActiveVillain))
+import Marvel.Query (selectOne)
 
 data Attachment = forall a. (IsAttachment a) => Attachment a
 
@@ -127,6 +129,11 @@ attachment f cardDef =
 
 instance IsRef (Attrs Attachment) where
   toRef = AttachmentRef . attachmentId
+
+-- | "Attach to the villain": "your" area's villain, or, with none in play there (as
+-- between one Kang and the next), the card is discarded.
+attachToTheVillain :: (ReverseQueue m) => Attrs Attachment -> m ()
+attachToTheVillain attrs = selectOne ActiveVillain >>= maybe (removeFromPlay attrs) (attachTo (attachmentId attrs))
 
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = runQueueT $ case msg of

@@ -111,7 +111,7 @@ identityUpgrade code name cost traits resources =
 
 basicUpgrade :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 basicUpgrade code name cost traits resources =
-  baseUpgrade code name cost traits resources Nothing
+  baseUpgrade code name cost traits resources (Just Neutral)
 
 baseUpgrade
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef

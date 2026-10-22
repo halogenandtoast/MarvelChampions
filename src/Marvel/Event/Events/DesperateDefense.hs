@@ -49,7 +49,7 @@ instance RunMessage DesperateDefense where
       pure . DesperateDefense $ attrs `With` Meta (Just identityId)
     IdentityMessage ident (AttackDefended _ damageBefore) | defending meta == Just ident -> do
       -- a hero defeated by the attack is gone
-      alive <- elem ident <$> getPlayers
+      alive <- elem ident <$> getAllPlayers
       when alive do
         damage <- project PlayerIdentityDamage ident
         when (damage <= damageBefore) $ ready ident

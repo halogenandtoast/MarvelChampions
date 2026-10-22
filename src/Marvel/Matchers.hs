@@ -20,33 +20,33 @@ import Marvel.Matchers.Types
 import Marvel.Ref (Ref (AllyRef), Source)
 
 identityMatches :: (HasGame m) => IdentityMatcher -> IdentityId -> m Bool
-identityMatches matcher ident = member ident <$> gameSelectIdentity matcher
+identityMatches matcher ident = member ident <$> inAnyArea (gameSelectIdentity matcher)
 
 allyMatches :: (HasGame m) => AllyMatcher -> AllyId -> m Bool
-allyMatches matcher ident = member ident <$> gameSelectAlly matcher
+allyMatches matcher ident = member ident <$> inAnyArea (gameSelectAlly matcher)
 
 upgradeMatches :: (HasGame m) => UpgradeMatcher -> UpgradeId -> m Bool
-upgradeMatches matcher ident = member ident <$> gameSelectUpgrade matcher
+upgradeMatches matcher ident = member ident <$> inAnyArea (gameSelectUpgrade matcher)
 
 enemyMatches :: (HasGame m) => EnemyMatcher -> EnemyId -> m Bool
-enemyMatches matcher ident = member ident <$> gameSelectEnemy matcher
+enemyMatches matcher ident = member ident <$> inAnyArea (gameSelectEnemy matcher)
 
 villainMatches :: (HasGame m) => VillainMatcher -> VillainId -> m Bool
-villainMatches matcher ident = member ident <$> gameSelectVillain matcher
+villainMatches matcher ident = member ident <$> inAnyArea (gameSelectVillain matcher)
 
 treacheryMatches ::
   (HasGame m) => TreacheryMatcher -> TreacheryId -> m Bool
-treacheryMatches matcher ident = member ident <$> gameSelectTreachery matcher
+treacheryMatches matcher ident = member ident <$> inAnyArea (gameSelectTreachery matcher)
 
 schemeMatches :: (HasGame m) => SchemeMatcher -> SchemeId -> m Bool
-schemeMatches matcher ident = member ident <$> gameSelectScheme matcher
+schemeMatches matcher ident = member ident <$> inAnyArea (gameSelectScheme matcher)
 
 sideSchemeMatches ::
   (HasGame m) => SideSchemeMatcher -> SideSchemeId -> m Bool
-sideSchemeMatches matcher ident = member ident <$> gameSelectSideScheme matcher
+sideSchemeMatches matcher ident = member ident <$> inAnyArea (gameSelectSideScheme matcher)
 
 minionMatches :: (HasGame m) => MinionMatcher -> MinionId -> m Bool
-minionMatches matcher ident = member ident <$> gameSelectMinion matcher
+minionMatches matcher ident = member ident <$> inAnyArea (gameSelectMinion matcher)
 
 gameValueMatches :: (HasGame m) => GameValueMatcher -> Natural -> m Bool
 gameValueMatches matcher n = case matcher of
@@ -60,7 +60,7 @@ gameValueMatches matcher n = case matcher of
 
 characterMatches ::
   (HasGame m) => CharacterMatcher -> CharacterId -> m Bool
-characterMatches matcher ident = member ident <$> gameSelectCharacter matcher
+characterMatches matcher ident = member ident <$> inAnyArea (gameSelectCharacter matcher)
 
 encounterCardMatches :: BasicEncounterCardMatcher -> EncounterCard -> Bool
 encounterCardMatches matcher card = case matcher of
@@ -78,6 +78,10 @@ damageMatches matcher damage = case matcher of
     FromAllyAttack ident -> allyMatches allyMatcher ident
     _ -> pure False
   AnyDamage -> pure True
+  AnyAttack -> pure case damageSource damage of
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    _ -> False
   -- who dealt it is known only from its source: see 'damageMatchesFrom'
   DamageByPlayer identityMatcher -> case damageSource damage of
     FromPlayerAttack ident -> identityMatches identityMatcher ident

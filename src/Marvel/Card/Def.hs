@@ -45,6 +45,8 @@ data CardMatcher
   | -- | the card in any of its printings
     CardIs CardDef
   | CardMatchesAny [CardMatcher]
+  | -- | a player card of the hero's own, of no aspect and not basic
+    HeroSpecificCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -71,6 +73,7 @@ cardMatch matcher a = case matcher of
   CardWithPrintedCostAtMost n -> maybe False ((<= n) . fromIntegral) (cdCost def)
   CardIs def' -> sameCard def' def
   CardMatchesAny xs -> any (`cardMatch` a) xs
+  HeroSpecificCard -> isNothing (cdAspect def) && cdCardType def `elem` [AllyType, EventType, ResourceType, SupportType, UpgradeType]
  where
   def = getCardDef a
   isPrintedResource (restriction, _) = restriction == PrintedResource

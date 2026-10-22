@@ -150,7 +150,7 @@ identityEvent code name cost aType traits resources =
 basicEvent
   :: CardCode -> Name -> Int -> AbilityType -> [Trait] -> [Resource] -> CardDef
 basicEvent code name cost aType traits resources =
-  baseEvent code name cost aType traits resources Nothing
+  baseEvent code name cost aType traits resources (Just Neutral)
 
 baseEvent
   :: CardCode

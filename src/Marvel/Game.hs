@@ -15,7 +15,7 @@ import Data.IORef
 import Data.Tuple (swap)
 import Marvel.Frontend
 import System.Random (StdGen, mkStdGen, random, randomR, randomRs, randoms, splitGen)
-import Data.List (find)
+import Data.List (find, partition)
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
@@ -60,6 +60,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
 import Marvel.Minion
 import Marvel.Minion.Types qualified as Minion
+import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types (
   Attrs (minionConfused, minionStunned, minionTough),
   Minion,
@@ -194,6 +195,9 @@ data Game = Game
   -- ^ each villain's own side scheme, as Wrecker's Day of Reckoning
   , gameAtEndOfPhase :: [Message]
   -- ^ what is to happen "at the end of the phase", in the order it was set to
+  , gameAllAreas :: Bool
+  -- ^ whether what is looked at is looked at in every area, as whether a card matches
+  -- is, wherever it is ('inAnyArea')
   }
   deriving stock (Show, Eq, Generic)
 
@@ -316,8 +320,20 @@ currentState app = (,,) <$> readIORef (appGame app) <*> readIORef (appQueue app)
 runGameApp :: (MonadIO m) => GameApp -> GameAppT a -> m a
 runGameApp gameApp = liftIO . flip runReaderT gameApp . unGameAppT
 
+-- | "Each player": the players in "your" game area, in turn order; at a table not
+-- split into areas, every player (TOAFK insert p.7).
 getPlayers :: (HasGame m) => m [IdentityId]
-getPlayers = getsGame gamePlayerOrder
+getPlayers = do
+  you <- getYou
+  getsGame \g -> case gameAreas g of
+    _ : _ : _ | not (gameAllAreas g) ->
+      let here = areaId <$> areaOfTarget g (IdentityRef you)
+       in filter (\p -> (areaId <$> areaOfTarget g (IdentityRef p)) == here) (gamePlayerOrder g)
+    _ -> gamePlayerOrder g
+
+-- | Every player, in turn order, whatever area they are in.
+getAllPlayers :: (HasGame m) => m [IdentityId]
+getAllPlayers = getsGame gamePlayerOrder
 
 getActivePlayerId :: (HasGame m) => m IdentityId
 getActivePlayerId = toId <$> getActivePlayer
@@ -327,22 +343,33 @@ getPlayerCount = length <$> getsGame gamePlayerOrder
 
 -- | Each unique card in play, and each identity, as a title and the subtitles and
 -- alter-ego titles that go with it: a unique card matching one cannot enter play.
+-- | In "your" game area: a unique card in one area places no limitation on the others
+-- (TOAFK insert p.7).
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
-getUniqueTitlesInPlay = getsGame \g ->
+getUniqueTitlesInPlay = map snd <$> (getUniqueCardsIn . areaId =<< getYourArea)
+
+-- | The unique cards in play in the area, by title and its other names: the players'
+-- allies, supports and upgrades, and their identities.
+getUniqueCardsIn :: (HasGame m) => AreaId -> m [(Target, (Text, [Text]))]
+getUniqueCardsIn aid = getsGame \g ->
   let
+    split = case gameAreas g of
+      _ : _ : _ -> True
+      _ -> False
+    here t = not split || (areaId <$> areaOfTarget g t) == Just aid
     named n = (title n, maybe [] pure (subtitle n))
-    unique = map (named . cdName) . filter cdUnique
+    unique xs = [(t, named $ cdName def) | (t, def) <- xs, cdUnique def, here t]
     sideName = \case
       HeroSide h -> title (cdName $ getCardDef h)
       AlterEgoSide a -> title (cdName $ getCardDef a)
-    identity p = case map sideName (HashMap.elems $ playerIdentitySides $ toAttrs p) of
-      [] -> []
-      t : ts -> [(t, ts)]
+    identity (k, p) = case map sideName (HashMap.elems $ playerIdentitySides $ toAttrs p) of
+      t : ts | here (IdentityRef k) -> [(IdentityRef k, (t, ts))]
+      _ -> []
    in
-    unique (map getCardDef $ HashMap.elems $ gameAllies g)
-      <> unique (map (supportCardDef . toAttrs) $ HashMap.elems $ gameSupports g)
-      <> unique (map getCardDef $ HashMap.elems $ gameUpgrades g)
-      <> concatMap identity (HashMap.elems $ gamePlayers g)
+    unique [(AllyRef k, getCardDef a) | (k, a) <- HashMap.toList (gameAllies g)]
+      <> unique [(SupportRef k, supportCardDef (toAttrs s)) | (k, s) <- HashMap.toList (gameSupports g)]
+      <> unique [(UpgradeRef k, getCardDef u) | (k, u) <- HashMap.toList (gameUpgrades g)]
+      <> concatMap identity (HashMap.toList $ gamePlayers g)
 
 -- | Who "you" is: the player 'asYou' names, or else the active player.
 getYou :: (HasGame m) => m IdentityId
@@ -380,6 +407,16 @@ areaOfTarget g = \case
   AllyRef a -> player . getAllyController =<< lookup a (gameAllies g)
   SupportRef s -> player . getSupportController =<< lookup s (gameSupports g)
   UpgradeRef u -> player . getUpgradeController =<< lookup u (gameUpgrades g)
+  -- an obligation is in its player's play area, an attachment where what it is on is
+  ObligationRef o -> player =<< Obligation.obligationOwner . toAttrs =<< lookup o (gameObligations g)
+  AttachmentRef a -> lookup a (gameAttachments g) >>= \x ->
+    let at = toAttrs x
+     in headMay $
+          catMaybes
+            [ areaOfTarget g . EnemyRef =<< Attachment.attachmentEnemy at
+            , player =<< Attachment.attachmentIdentity at
+            , areaOfTarget g . SideSchemeRef =<< Attachment.attachmentSideScheme at
+            ]
   _ -> headMay (gameAreas g)
  where
   listing p = areaListing p (gameAreas g)
@@ -387,6 +424,38 @@ areaOfTarget g = \case
 
 getAreaOfTarget :: (HasGame m, IsRef a) => a -> m AreaId
 getAreaOfTarget a = getsGame \g -> maybe defaultAreaId areaId (areaOfTarget g (toTarget a))
+
+-- | What of the map is in the area, by its key.
+keysInArea :: (HasGame m) => (k -> Target) -> (Game -> HashMap k v) -> AreaId -> m [k]
+keysInArea ref entities aid = getsGame \g -> [k | k <- HashMap.keys (entities g), (areaId <$> areaOfTarget g (ref k)) == Just aid]
+
+-- | In the area, whoever's area "you" are in.
+getMainSchemesIn :: (HasGame m) => AreaId -> m [MainSchemeId]
+getMainSchemesIn = keysInArea MainSchemeRef gameMainSchemes
+
+getMinionsIn :: (HasGame m) => AreaId -> m [MinionId]
+getMinionsIn = keysInArea MinionRef gameMinions
+
+getObligationsIn :: (HasGame m) => AreaId -> m [ObligationId]
+getObligationsIn = keysInArea ObligationRef gameObligations
+
+getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
+getSideSchemesIn = keysInArea SideSchemeRef gameSideSchemes
+
+-- | The player's nemesis minion, out of play: set aside with their nemesis set, or in
+-- the encounter deck or its discard pile.
+getNemesisMinionOutOfPlay :: (HasGame m) => IdentityId -> m (Maybe EncounterCard)
+getNemesisMinionOutOfPlay ident = getsGame \g -> do
+  p <- lookup ident (gamePlayers g)
+  let
+    scenario = toAttrs (gameScenario g)
+    set = getNemesisSet (toCardCode p)
+    cards = onlyEncounterCards (scenarioSetAsideCards scenario) <> scenarioEncounterDeck scenario <> scenarioDiscard scenario
+  headMay [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+
+-- | The card code of the main scheme in play.
+getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
+getMainSchemeCode mid = getsGame (fmap (toCardCode . getCardDef) . lookup mid . gameMainSchemes)
 
 -- | The area the player is in.
 getAreaOf :: (HasGame m) => IdentityId -> m Area
@@ -402,8 +471,13 @@ inYourArea :: (HasGame m) => Target -> m Bool
 inYourArea t = do
   you <- getYou
   getsGame \g -> case gameAreas g of
-    _ : _ : _ -> (areaId <$> areaOfTarget g t) == (areaId <$> areaOfTarget g (IdentityRef you))
+    _ : _ : _ | not (gameAllAreas g) -> (areaId <$> areaOfTarget g t) == (areaId <$> areaOfTarget g (IdentityRef you))
     _ -> True
+
+-- | Looking in every area: whether a game element matches is so wherever it is, as only
+-- what may be chosen or affected is "your" area's.
+inAnyArea :: (HasGame m) => ReaderT Game m a -> m a
+inAnyArea body = getGame >>= runReaderT body . (allAreasL .~ True)
 
 -- | Only those in "your" area: players cannot target game elements in other areas.
 inYourAreaOnly :: (HasGame m) => (a -> Target) -> [a] -> m [a]
@@ -674,6 +748,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
+    -- a villain out of the game leaves play as he would, what is on him discarded
+    VillainRef _ -> g <$ push (RemoveFromPlay target)
+    -- a main scheme out of the game, what is attached to it discarded, leaves its area
+    -- without one until a stage takes its place
+    MainSchemeRef mid -> do
+      for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
+      pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid) & (areasL . each %~ \a -> a {areaMainSchemes = filter (/= mid) (areaMainSchemes a)})
     -- out of the game, not discarded: what is attached to it is discarded
     SideSchemeRef sid -> whenCanLeavePlay g sid do
       for_
@@ -1189,8 +1270,33 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       pure g
     _ -> error "unhandled"
   CreateArea aid players -> pure $ g & areasL %~ (movePlayers players aid . (<> [newArea aid []]))
-  MovePlayerToArea ident aid -> pure $ g & areasL %~ movePlayers [ident] aid
-  CombineAreas from into -> pure $ g & areasL %~ combine from into
+  -- players come together: copies of a unique card are discarded down to one
+  MovePlayerToArea ident aid -> do
+    push $ DiscardDuplicateUniques aid
+    pure $ g & areasL %~ movePlayers [ident] aid
+  CombineAreas from into -> do
+    push $ DiscardDuplicateUniques into
+    pure $ g & areasL %~ combine from into
+  -- "When players combine game areas, they must discard copies of unique cards until
+  -- only one of each remains in that game area. If the players cannot agree which one to
+  -- discard, the first player decides." (TOAFK insert p.7) An identity is never
+  -- discarded: a card sharing its name goes.
+  DiscardDuplicateUniques aid -> do
+    uniques <- getUniqueCardsIn aid
+    first <- selectJust FirstPlayer
+    let
+      groups [] = []
+      groups ((t, n) : rest) =
+        let (same, other) = partition (uniqueMatch n . snd) rest
+         in ((t, n) : same) : groups other
+      isIdentity = \case
+        IdentityRef _ -> True
+        _ -> False
+    for_ [map fst grp | grp@(_ : _ : _) <- groups uniques] \copies ->
+      case filter isIdentity copies of
+        _ : _ -> for_ (filter (not . isIdentity) copies) discardControlled
+        [] -> chooseOnePrompted first "$label.keepUniqueCopy" [targeting kept (for_ (filter (/= kept) copies) discardControlled) | kept <- copies]
+    pure g
   SetActiveVillain vid -> do
     aid <- getAreaOfTarget vid
     pure $ g & overArea aid \a -> a {areaActiveVillain = Just vid}
@@ -1491,6 +1597,7 @@ newGame player scenario =
     , gameAreas = [newArea defaultAreaId [toId player]]
     , gameSignatureSchemes = mempty
     , gameAtEndOfPhase = []
+    , gameAllAreas = False
     }
 
 -- | A game with a seat for each player, in the order given.
@@ -1823,7 +1930,7 @@ gameSelectIdentity m = do
     IdentityCanThwart -> fmap (notElem CannotThwart) . getModifiers
     IdentityCanChangeForm -> fmap (notElem CannotChangeForm) . getModifiers
     FirstPlayer -> \a -> do
-      ps <- getPlayers
+      ps <- getAllPlayers
       pure $ case ps of
         fp : _ -> toId a == fp
         _ -> False

@@ -7,10 +7,19 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (ObligationId)
 import Marvel.Id as X (ObligationId)
-import Marvel.Ability.Types
+import Marvel.Ability
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
+import Marvel.Cost.Types (Cost (NoCost))
+import Marvel.Criteria (Criteria (ExtendedCardExists))
+import Marvel.Game.Source
+import Marvel.Hand
+import Marvel.Identity.Types (Field (PlayerIdentityHand))
+import Marvel.Matchers (ExtendedCardMatcher (BasicCardMatches, InHandOf), IdentityMatcher (You))
+import Marvel.Projection
+import Marvel.Question (Choice (RunAbility))
+import Marvel.Resource.Types (Resource (Wild))
 
 data Obligation = forall a. (IsObligation a) => Obligation a
 
@@ -146,3 +155,23 @@ instance RunMessage (Attrs Obligation) where
       for_ (obligationHeldCards attrs) discardCard
       pure $ attrs & heldCardsL .~ []
     _ -> pure attrs
+
+-- | "Alter-Ego Action: Discard a card matching from your hand → discard this
+-- obligation", as The Once and Future Kang's obligations have: the ability, offered
+-- while there is such a card in your hand.
+discardToDiscardAbility :: Attrs Obligation -> CardMatcher -> [Ability]
+discardToDiscardAbility a matcher = case obligationOwner a of
+  Just _ -> [ability a 1 AlterEgoAction (ExtendedCardExists $ InHandOf You $ BasicCardMatches matcher) NoCost $ RunAbility (toTarget a) 1]
+  Nothing -> []
+
+-- | Its resolution: the player discards the card of their choice, then the obligation.
+discardToDiscard :: (ReverseQueue m) => Attrs Obligation -> IdentityId -> CardMatcher -> m ()
+discardToDiscard a you matcher = do
+  hand <- filter (cardMatch matcher) . unHand <$> project PlayerIdentityHand you
+  unless (null hand) do
+    chooseOne you [targeting c (discardCard c) | c <- hand]
+    removeFromPlay a
+
+-- | "A [resource] resource": a card with the resource's icon, or a wild one.
+withResource :: Resource -> CardMatcher
+withResource r = CardMatchesAny [CardWithResource r, CardWithResource Wild]

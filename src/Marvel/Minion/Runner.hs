@@ -131,15 +131,15 @@ runMinionMessage msg attrs = case msg of
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
       attrs {minionAttackTarget = Nothing} & attackingL ?~ attack'
+  -- onto the main scheme of its area, if there is one there (as between The Once and
+  -- Future Kang's stages)
   MinionSchemed -> do
-    mainScheme <- selectJust MainScheme
-    case mainScheme of
-      SchemeMainSchemeId mainSchemeId -> do
-        threat <- getModifiedScheme attrs
-        placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
-        checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
-        pure $ attrs & boostL .~ 0
-      _ -> error "Not the main scheme"
+    mainScheme <- selectOne MainScheme
+    threat <- getModifiedScheme attrs
+    for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
+      placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
+    checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
+    pure $ attrs & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}

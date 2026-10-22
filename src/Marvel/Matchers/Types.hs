@@ -340,5 +340,7 @@ data DamageMatcher
     -- ally
     DamageByPlayer IdentityMatcher
   | AnyDamage
+  | -- | an attack's, by a player or an ally
+    AnyAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

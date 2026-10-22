@@ -423,5 +423,8 @@ data Message
   | -- | the messages are to run at the end of the phase under way: "at the end of the
     -- phase"
     AtEndOfPhase [Message]
+  | -- | copies of a unique card in the area, as two areas come together, are discarded
+    -- down to one, the first player choosing which stays
+    DiscardDuplicateUniques AreaId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

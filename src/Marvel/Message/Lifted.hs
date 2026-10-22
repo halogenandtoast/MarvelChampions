@@ -209,8 +209,8 @@ placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 -- | Incite X, as the card is revealed: X threat on the main scheme.
 incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
 incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
-  scheme <- selectJust MainScheme
-  placeThreat scheme n
+  scheme <- selectOne MainScheme
+  for_ scheme (`placeThreat` n)
 
 -- * Status cards and counters
 
@@ -918,6 +918,17 @@ highestCostControlled you upgrades supports = do
   us <- if upgrades then selectList (UpgradeControlledBy $ IdentityWithId you) else pure []
   ss <- if supports then selectList (SupportControlledBy $ IdentityWithId you) else pure []
   costed <- for (map UpgradeRef us <> map SupportRef ss) \t ->
+    (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
+  pure $ extremes MostThreat costed
+
+-- | "The highest-cost card you control": of the player's allies, supports and upgrades,
+-- each with the highest printed cost.
+highestCostCardsControlled :: (HasGame m) => IdentityId -> m [Target]
+highestCostCardsControlled you = do
+  as <- selectList (AllyControlledBy $ IdentityWithId you)
+  us <- selectList (UpgradeControlledBy $ IdentityWithId you)
+  ss <- selectList (SupportControlledBy $ IdentityWithId you)
+  costed <- for (map AllyRef as <> map UpgradeRef us <> map SupportRef ss) \t ->
     (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
   pure $ extremes MostThreat costed
 

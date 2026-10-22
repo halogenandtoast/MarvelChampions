@@ -264,6 +264,7 @@ isPlayable attrs c = do
   affordable <- notNull <$> playableTargets attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
+  forbidden <- any (\case CannotPlayCards m -> cardMatch m c; _ -> False) <$> getModifiers (toId attrs)
   matchesUnique <-
     if cdUnique def
       then any (uniqueMatch (title $ cdName def, maybe [] pure (subtitle $ cdName def))) <$> getUniqueTitlesInPlay
@@ -273,6 +274,7 @@ isPlayable attrs c = do
       && passedCriteria
       && passedPlayLimits
       && not matchesUnique
+      && not forbidden
       && isNothing (cdResponseWindow def)
       && (cdCardType def /= ResourceType)
  where
@@ -419,12 +421,19 @@ getChoices attrs = do
             , passesCanAffordCost ident
             , pure . passesTiming ident
             , passesTypeIsRelevant ident
+            , triggerable
             ]
       )
       abilities
   pure $
     map UseAbility validAbilities
       <> map (($ Nothing) . PlayCard) playableCards
+
+-- | An "Alter-Ego Action" a card forbids to be triggered is not.
+triggerable :: (HasGame m) => Ability -> m Bool
+triggerable a
+  | abilityType a == AlterEgoAction = notElem CannotTriggerAlterEgoActions <$> getModifiers (abilitySource a)
+  | otherwise = pure True
 
 getObligations :: (MonadRandom m) => PlayerIdentity -> m [EncounterCard]
 getObligations attrs = case currentIdentity attrs of
@@ -804,7 +813,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             & toughL %~ (&& not (piercesTough damage))
             & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
     IdentityDefeated -> do
-      players <- getPlayers
+      players <- getAllPlayers
       let
         ps = take 1 . drop 1 $ dropWhile (/= playerIdentityId) (cycle players)
       -- the cards they control leave play, and the encounter cards dealt to them are

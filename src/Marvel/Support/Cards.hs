@@ -66,7 +66,7 @@ identitySupport code name cost traits resources =
 
 basicSupport :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 basicSupport code name cost traits resources =
-  baseSupport code name cost traits resources Nothing
+  baseSupport code name cost traits resources (Just Neutral)
 
 baseSupport
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef

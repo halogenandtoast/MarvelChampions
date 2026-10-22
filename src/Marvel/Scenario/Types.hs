@@ -349,14 +349,14 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
     AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
-      players <- getPlayers
+      players <- getAllPlayers
       for_ players \p -> do
         setActivePlayer p
         identityStep p BeginTurn
       endPhase PlayerPhase
       pure attrs
     EndPhase PlayerPhase -> do
-      players <- getPlayers
+      players <- getAllPlayers
       for_ players \ident -> do
         setActivePlayer ident
         identityStep ident DiscardCards
@@ -370,7 +370,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- in each area its active villain activates against its players, and its hazard
     -- icons deal its players more encounter cards
     BeginPhase VillainPhase -> do
-      players <- getPlayers
+      players <- getAllPlayers
       areas <- getAreas
       hazards <- for areas \area -> do
         here <- filterM (fmap ((== areaId area) . areaId) . getAreaOf) players
@@ -389,7 +389,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       pure attrs
     -- each player in turn reveals the cards dealt them, until none remain
     RevealDealtEncounterCards -> do
-      players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getPlayers
+      players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getAllPlayers
       unless (null players) do
         for_ players \p -> do
           setActivePlayer p

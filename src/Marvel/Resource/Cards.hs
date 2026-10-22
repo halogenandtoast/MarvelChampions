@@ -45,7 +45,7 @@ identityResource code name traits resources =
 
 basicResource :: CardCode -> Name -> [Trait] -> [Resource] -> CardDef
 basicResource code name traits resources =
-  baseResource code name traits resources Nothing
+  baseResource code name traits resources (Just Neutral)
 
 baseResource
   :: CardCode -> Name -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef

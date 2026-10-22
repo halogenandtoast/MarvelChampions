@@ -112,7 +112,7 @@ identityAlly code name cost traits resources =
 
 basicAlly :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> CardDef
 basicAlly code name cost traits resources =
-  baseAlly code name cost traits resources Nothing
+  baseAlly code name cost traits resources (Just Neutral)
 
 baseAlly
   :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Maybe Aspect -> CardDef

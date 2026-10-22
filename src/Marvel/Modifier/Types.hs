@@ -63,5 +63,10 @@ data Modifier
     ResolveWhenRevealedAgain
   | -- | on an identity: it cannot attack the characters with this title
     CannotAttackTitled Text
+  | -- | on an identity: its player cannot play the cards matching (Depowered)
+    CannotPlayCards CardMatcher
+  | -- | on a card: its "Alter-Ego Action" abilities cannot be triggered (Corrupted
+    -- Timestream)
+    CannotTriggerAlterEgoActions
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

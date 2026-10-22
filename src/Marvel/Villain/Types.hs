@@ -339,9 +339,9 @@ runVillainMessage msg attrs = case msg of
   -- onto his own side scheme, when he has one, or else the main scheme
   VillainSchemed -> do
     own <- selectOne (SignatureSchemeOf $ VillainWithId vid)
-    scheme <- maybe (selectJust MainScheme) (pure . SchemeSideSchemeId) own
+    scheme <- maybe (selectOne MainScheme) (pure . Just . SchemeSideSchemeId) own
     sch <- getModifiedScheme attrs
-    placeThreatFrom W.ThreatFromVillain scheme (sch + villainBoost attrs)
+    for_ scheme \s -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
     checkWindows [W.Window W.After $ W.Schemed vid]
     pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
   VillainAttacked -> do
