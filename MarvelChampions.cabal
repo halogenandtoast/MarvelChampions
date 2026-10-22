@@ -592,6 +592,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.AggressionSpec
       Marvel.Aspect.BasicSpec
       Marvel.Aspect.CaptainAmericaPackSpec
+      Marvel.Aspect.DoctorStrangePackSpec
       Marvel.Aspect.JusticeSpec
       Marvel.Aspect.LeadershipSpec
       Marvel.Aspect.MsMarvelPackSpec
