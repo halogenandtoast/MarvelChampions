@@ -48,7 +48,7 @@ runMinionMessage msg attrs = case msg of
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
       | cannotTakeDamage -> pure attrs
-      | minionTough attrs && not (damageIgnoresTough damage) -> pure $ attrs & toughL .~ False
+      | minionTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
@@ -62,7 +62,7 @@ runMinionMessage msg attrs = case msg of
               damageCharacter villain source (toDamage overkill FromOverkill)
             checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
           else pure ()
-        pure $ attrs & damageL +~ damageAmount damage
+        pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
@@ -110,18 +110,16 @@ runMinionMessage msg attrs = case msg of
         minionBeginsAttack (minionId attrs) ident
         minionEndsAttack (minionId attrs)
         -- the attack is under way from when it is declared, as its would windows open
-        atk <- getModifiedAttack attrs
-        pure $ attrs & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+        attack' <- newAttack ident
+        pure $ attrs & attackingL ?~ attack'
   MinionBeginAttack ident -> do
-    atk <- getModifiedAttack attrs
+    attack' <- newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
     minionAttacked (minionId attrs)
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
-      attrs {minionAttackTarget = Nothing}
-        & attackingL
-          ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+      attrs {minionAttackTarget = Nothing} & attackingL ?~ attack'
   MinionSchemed -> do
     mainScheme <- selectJust MainScheme
     case mainScheme of
@@ -132,6 +130,7 @@ runMinionMessage msg attrs = case msg of
         pure attrs
       _ -> error "Not the main scheme"
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
+  MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"
@@ -141,6 +140,7 @@ runMinionMessage msg attrs = case msg of
     pure attrs
  where
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
+  newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT $ case msg of

@@ -284,7 +284,7 @@ runVillainMessage msg attrs = case msg of
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
   VillainDamaged _ damage -> do
-    if villainTough attrs && not (damageIgnoresTough damage)
+    if villainTough attrs && preventedByTough damage
       then pure $ attrs & toughL .~ False
       else do
         when
@@ -296,6 +296,7 @@ runVillainMessage msg attrs = case msg of
           (defeatVillain vid)
         pure $
           attrs
+            & toughL %~ (&& not (piercesTough damage))
             & hpL
               %~ HP
                 . max 0
@@ -330,12 +331,10 @@ runVillainMessage msg attrs = case msg of
         villainStep vid VillainEndAttack
         clearBoosts
         -- the attack is under way from when it is declared, as its would windows open
-        atk <- getModifiedAttack attrs
-        pure $
-          attrs {villainActivationPlayer = Just ident}
-            & attackingL ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+        attack' <- newAttack ident
+        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
   VillainBeginAttack ident -> do
-    atk <- getModifiedAttack attrs
+    attack' <- newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     dealBoost attrs
     declareDefense ident vid AnyDefense
@@ -343,12 +342,9 @@ runVillainMessage msg attrs = case msg of
     villainStep vid VillainAttacked
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
-      attrs {villainAttackTarget = Nothing}
-        & attackingL
-          ?~ attack (toEnemyId attrs) (attackTarget ident) atk
+      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
-  VillainAttackGainOverkill ->
-    pure $ attrs & attackingL . _Just . attackOverkillL .~ True
+  VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
   VillainSchemed -> do
@@ -394,6 +390,7 @@ runVillainMessage msg attrs = case msg of
  where
   vid = villainId attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
+  newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of

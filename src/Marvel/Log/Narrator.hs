@@ -165,7 +165,7 @@ villainNarration vid = \case
   VillainSchemes -> Just $ schemes (VillainRef vid) =<< getsGame (maybe False ((.villainConfused) . toAttrs) . lookup vid . gameVillains)
   VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
-    damaged (VillainRef vid) tough (damageAmount dmg)
+    damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
@@ -186,7 +186,7 @@ minionNarration mid = \case
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
-    damaged (MinionRef mid) tough (damageAmount dmg)
+    damaged (MinionRef mid) (tough && preventedByTough dmg) (damageAmount dmg)
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
   MinionDefeated -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
   MinionStunned _ -> Just $ simply "log.stunned" (MinionRef mid)
@@ -202,7 +202,7 @@ allyNarration aid = \case
     one $ action [ikeyPart "log.allyDefends" ["ally" ~> a, "enemy" ~> e]]
   AllyDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.allyTough) . toAttrs) . lookup aid . gameAllies
-    damaged (AllyRef aid) tough (damageAmount dmg)
+    damaged (AllyRef aid) (tough && preventedByTough dmg) (damageAmount dmg)
   AllyHealed n | n > 0 -> Just $ healedBy (AllyRef aid) n
   AllyDefeated -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.defeated" ["target" ~> a]]
   AllyStunned -> Just $ simply "log.stunned" (AllyRef aid)

@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Damage
 import Marvel.Id
+import Marvel.Keyword (Keyword)
 import Marvel.Ref
 
 data MinionMessage
@@ -25,6 +26,8 @@ data MinionMessage
   | MinionEngagedIdentity IdentityId
   | MinionAttacked
   | MinionEndAttack
+  | -- | its attack under way gains the keyword: overkill, piercing or ranged
+    MinionAttackGains Keyword
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
   | -- | it attacks the player's ally, the player being attacked

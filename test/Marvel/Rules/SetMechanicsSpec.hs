@@ -6,6 +6,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet (singleton)
 import Data.Text qualified as T
 import Marvel.EncounterCard (isPlayerObligation)
+import Marvel.Attack (Attack (..), attack)
 import Marvel.Hp
 import Marvel.Keyword (Keyword (Incite))
 import Marvel.MainScheme.Types (Field (MainSchemeCounters))
@@ -14,7 +15,7 @@ import Marvel.Minion.Cards qualified as Cards
 import Marvel.Obligation.Obligations.EvictionNotice (EvictionNotice (..), evictionNotice)
 import Marvel.Obligation.Types (Obligation (..), heldCardsL, toObligationAttrs)
 import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
-import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs)
+import Marvel.Villain.Types (flipVillainTo, hpL, maxHpL, stageL, stunnedL, toVillainAttrs, toughL)
 import Marvel.Villain.Villains.Rhino (rhino2)
 import TestImport
 
@@ -104,3 +105,36 @@ spec = describe "set mechanics" do
       liftIO $ (damage, length hellcats) `shouldBe` (2, 0)
     text <- T.concat . map entryText <$> readIORef tg.logged
     text `shouldSatisfy` T.isInfixOf "$log.takesIndirectDamage"
+
+  it "an enemy's piercing attack discards the tough status card and deals its damage; a ranged one ignores retaliate" do
+    tg <- testGame ["black-panther"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      vid <- villainIdNow
+      resolve [IdentityMessage you IdentityBecomeTough]
+      let blow = (attack (EnemyVillainId vid) (IdentityCharacter you) 3) {attackPiercing = True, attackRanged = True}
+      resolve [IdentityMessage you (IdentityWasAttacked blow)]
+      tough <- (.playerIdentityTough) <$> playerAttrs you
+      damage <- damageOf you
+      villainDamage' <- villainDamageNow
+      liftIO $ (tough, damage, villainDamage') `shouldBe` (False, 3, 0)
+
+  it "a player's piercing attack discards the enemy's tough status card and deals its damage; a ranged one ignores retaliate" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      vid <- villainIdNow
+      resolve [VillainMessage vid VillainBecomeTough, VillainMessage vid (VillainDamaged (toSource you) (withPiercing $ toDamage 2 FromAbility))]
+      tough <- (^. toughL) . toAttrs <$> getVillain
+      villainDamage' <- villainDamageNow
+      liftIO $ (tough, villainDamage') `shouldBe` (False, 2)
+      -- Whiplash has retaliate 1: War Machine takes his consequential damage from each attack, and the retaliate only from the one not ranged
+      warMachine <- allyIdOf <$> putIntoPlay you "01030"
+      whiplash <- addMinion you Cards.whiplash
+      let hit = toDamage 1 (FromAllyAttack warMachine)
+      resolve [AllyMessage warMachine (AllyAttackLands (EnemyMinionId whiplash) (withRanged hit))]
+      afterRanged <- (.allyDamage) <$> allyIn "01030"
+      resolve [AllyMessage warMachine (AllyAttackLands (EnemyMinionId whiplash) hit)]
+      afterPlain <- (.allyDamage) <$> allyIn "01030"
+      liftIO $ (afterRanged, afterPlain) `shouldBe` (1, 3)

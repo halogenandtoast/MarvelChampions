@@ -755,13 +755,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamage attack'
-        -- each instance of retaliate adds to the others
-        retaliate = sum [n | Retaliate n <- keywords]
+        -- each instance of retaliate adds to the others; a ranged attack ignores it
+        retaliate = if attackRanged attack' then 0 else sum [n | Retaliate n <- keywords]
       -- the damage, then retaliate (forced, so before any response), then the window
       -- for responses to defending
       when (damage > 0) do
-        checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (toDamage damage FromAttack)]
-        attackDamageIdentity playerIdentityId (attackSource attack') (toDamage damage FromAttack)
+        checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
+        attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       when (retaliate > 0) $
         identityStep playerIdentityId (IdentityRetaliate retaliate $ attackEnemy attack')
       when playerIdentityDefended $
@@ -769,7 +769,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
     -- a tough status card prevents all of it, and is discarded instead
     IdentityDamaged _ damage
-      | playerIdentityTough && damageAmount damage > 0 && not (damageIgnoresTough damage) ->
+      | playerIdentityTough && damageAmount damage > 0 && preventedByTough damage ->
           pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged source damage -> do
       modifiedHp <- getModifiedHp pid
@@ -783,6 +783,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         PlayerIdentity $
           attrs
             & damageL +~ damageAmount damage
+            & toughL %~ (&& not (piercesTough damage))
             & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
     IdentityDefeated -> do
       players <- getPlayers

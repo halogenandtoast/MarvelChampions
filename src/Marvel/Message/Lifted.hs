@@ -398,8 +398,11 @@ putBoostIntoPlay card = push . PutBoostIntoPlay (toTarget card)
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
 
-villainAttackGainsOverkill :: (ReverseQueue m) => VillainId -> m ()
-villainAttackGainsOverkill vid = push $ VillainMessage vid VillainAttackGainOverkill
+-- | "The attack gains overkill" (piercing, ranged): the enemy's attack under way.
+attackGains :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
+attackGains enemy k = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
+  EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
 
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
