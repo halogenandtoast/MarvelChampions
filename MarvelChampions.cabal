@@ -73,6 +73,7 @@ library
       Marvel.AlterEgo.Cards
       Marvel.AlterEgo.Runner
       Marvel.AlterEgo.Types
+      Marvel.Area
       Marvel.Aspect
       Marvel.Attachment
       Marvel.Attachment.Attachments

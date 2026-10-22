@@ -301,8 +301,10 @@ runVillainMessage msg attrs = case msg of
                 . max 0
                 . subtract (fromIntegral $ damageAmount damage)
                 . unHp
+  -- the last stage defeated: the scenario says what follows, by default the players win
+  -- with no villain left
   VillainDefeated -> do
-    gameOver Won
+    resolveVillainDefeat vid
     pure attrs
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   Msg.VillainStunned _ -> pure $ attrs & stunnedL .~ True
@@ -351,15 +353,14 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & attackingL . _Just . attackOverkillL .~ True
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
+  -- onto his own side scheme, when he has one, or else the main scheme
   VillainSchemed -> do
-    mainScheme <- selectJust MainScheme
-    case mainScheme of
-      SchemeMainSchemeId mainSchemeId -> do
-        sch <- getModifiedScheme attrs
-        placeThreatFrom W.ThreatFromVillain mainSchemeId (sch + villainBoost attrs)
-        checkWindows [W.Window W.After $ W.Schemed vid]
-        pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
-      _ -> error "not Main scheme"
+    own <- selectOne (SignatureSchemeOf $ VillainWithId vid)
+    scheme <- maybe (selectJust MainScheme) (pure . SchemeSideSchemeId) own
+    sch <- getModifiedScheme attrs
+    placeThreatFrom W.ThreatFromVillain scheme (sch + villainBoost attrs)
+    checkWindows [W.Window W.After $ W.Schemed vid]
+    pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
   VillainAttacked -> do
     case villainAttacking attrs of
       Nothing -> error "No current attack"

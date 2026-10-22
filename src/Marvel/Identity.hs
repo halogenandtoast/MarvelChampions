@@ -727,18 +727,19 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               & (deckL .~ Deck deck')
     ReadiedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ False
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
+    -- the active villain of the player's area, if it has one, then their minions
     VillainAndMinionsActivate -> do
-      villain <- selectJust ActiveVillain
+      villain <- selectOne ActiveVillain
       let activateMinions f =
             unless (null playerIdentityMinions) $
               chooseOneAtATimePrompted playerIdentityId "$label.chooseMinionToActivate" $
                 [targeting minionId (f minionId) | minionId <- toList playerIdentityMinions]
       case currentIdentity pid of
         HeroSide _ -> do
-          enemyAttacks villain playerIdentityId
+          for_ villain (`enemyAttacks` playerIdentityId)
           activateMinions \minionId -> enemyAttacks minionId playerIdentityId
         AlterEgoSide _ -> do
-          villainSchemes villain
+          for_ villain villainSchemes
           activateMinions minionSchemes
       pure pid
     DealtEncounterCard ec ->

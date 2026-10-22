@@ -179,7 +179,8 @@ instance RunMessage (Attrs MainScheme) where
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     AccelerateMainScheme -> do
-      acceleration <- getAccelerationCount
+      -- the tokens, and the icons in its own area
+      acceleration <- getAccelerationCountIn =<< getAreaOfTarget (mainSchemeId attrs)
       additionalThreat <- fromIntegral <$> fromGameValue (mainSchemeAcceleration attrs)
       placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + acceleration)
       pure attrs
