@@ -121,7 +121,7 @@ runMinionMessage msg attrs = case msg of
         attack' <- newAttack ident
         pure $ attrs & attackingL ?~ attack'
   MinionBeginAttack ident -> do
-    attack' <- newAttack ident
+    attack' <- keepingGains (minionAttacking attrs) <$> newAttack ident
     villainous <- isVillainous
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     when villainous $ dealBoost attrs

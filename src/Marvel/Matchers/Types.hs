@@ -190,6 +190,8 @@ data VillainMatcher
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
   | VillainWithToughStatus
+  | -- | with the trait, printed or gained
+    VillainWithTrait Trait
   | VillainMatches [VillainMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -271,6 +273,8 @@ data CharacterMatcher
   | CharacterMatches [CharacterMatcher]
   | -- | the identities and allies of the players matching
     CharacterControlledBy IdentityMatcher
+  | -- | the identities of the players matching: "damages you"
+    IdentityCharacters IdentityMatcher
   | CharacterWithTrait Trait
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
@@ -321,11 +325,26 @@ instance Semigroup ExtendedCardMatcher where
   ExtendedCardMatches xs <> y = ExtendedCardMatches $ xs <> [y]
   x <> y = ExtendedCardMatches [x, y]
 
-data AttachmentMatcher = AttachmentWithId AttachmentId | AttachmentIs CardDef
+data AttachmentMatcher
+  = AttachmentWithId AttachmentId
+  | AttachmentIs CardDef
+  | AttachmentWithTrait Trait
+  | -- | attached to the enemy
+    AttachmentOnEnemy EnemyId
+  | AttachmentMatches [AttachmentMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
-data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef
+instance Semigroup AttachmentMatcher where
+  AttachmentMatches xs <> AttachmentMatches ys = AttachmentMatches $ xs <> ys
+  x <> AttachmentMatches ys = AttachmentMatches $ x : ys
+  AttachmentMatches xs <> y = AttachmentMatches $ xs <> [y]
+  x <> y = AttachmentMatches [x, y]
+
+instance Monoid AttachmentMatcher where
+  mempty = AttachmentMatches []
+
+data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef | EnvironmentWithTrait Trait
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

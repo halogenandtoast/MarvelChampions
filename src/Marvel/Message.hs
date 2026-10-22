@@ -306,6 +306,8 @@ data Message
   | DealBoost Target
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
+  | -- | "Boost: reveal this card"
+    RevealBoost Target IdentityId
   | DealEncounterCard IdentityId
   | RevealDealtEncounterCards
   | GainSurge Target

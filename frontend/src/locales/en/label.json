@@ -126,6 +126,8 @@
   "discardHawkeyesBowDiscardObligation": "Discard Hawkeye's Bow from play, and discard this obligation",
   "exhaustJessicaDrewRemoveUncertainLoyalties": "Exhaust Jessica Drew → remove Uncertain Loyalties from the game",
   "placeThreeThreatDiscardObligation": "Place 3 threat on the main scheme, and discard this obligation",
+  "takeIndirectDamage": "Take the indirect damage",
+  "spendAnEnergyResource": "Spend an energy resource",
 
   "thwartWithThw": "Thwart with THW",
   "thwartWithAtk": "Thwart with ATK instead",

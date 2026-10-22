@@ -91,6 +91,9 @@
     "hitPoints": "Recorded in the campaign log: {player} has {count} hit points left",
     "scenarioWon": "The scenario is won and written in the campaign log"
   },
+  "attackGainsOverkill": "{target}'s attack gains overkill",
+  "attackGainsPiercing": "{target}'s attack gains piercing",
+  "attackGainsRanged": "{target}'s attack gains ranged",
 
   "-- The Once and Future Kang --": "",
 

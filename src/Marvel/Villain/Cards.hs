@@ -48,6 +48,12 @@ allVillainCards =
   , bulldozerB
 
   -- The Rise of Red Skull
+  , crossbones1
+  , crossbones2
+  , crossbones3
+  , absorbingMan1
+  , absorbingMan2
+  , absorbingMan3
   -- Zola
   , zola1
   , zola2
@@ -152,6 +158,23 @@ greenGoblinMutagen2 = villain "02015" "Green Goblin" [Goblin]
 
 greenGoblinMutagen3 :: CardDef
 greenGoblinMutagen3 = villain "02016" "Green Goblin" [Goblin]
+crossbones1 :: CardDef
+crossbones1 = villain "04058" "Crossbones" [Hydra, Mercenary]
+
+crossbones2 :: CardDef
+crossbones2 = villain "04059" "Crossbones" [Hydra, Mercenary]
+
+crossbones3 :: CardDef
+crossbones3 = villain "04060" "Crossbones" [Hydra, Mercenary]
+
+absorbingMan1 :: CardDef
+absorbingMan1 = villain "04076" "Absorbing Man" [Brute]
+
+absorbingMan2 :: CardDef
+absorbingMan2 = villain "04077" "Absorbing Man" [Brute]
+
+absorbingMan3 :: CardDef
+absorbingMan3 = villain "04078" "Absorbing Man" [Brute]
 
 -- The Rise of Red Skull
 -- Zola

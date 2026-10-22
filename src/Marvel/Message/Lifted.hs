@@ -408,6 +408,14 @@ clearBoosts = push ClearBoosts
 putBoostIntoPlay :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
 putBoostIntoPlay card = push . PutBoostIntoPlay (toTarget card)
 
+-- | "Boost: reveal this card": the boost card is revealed for the player.
+revealBoost :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
+revealBoost card = push . RevealBoost (toTarget card)
+
+-- | "+n ATK (or SCH) for this activation": for the villain's next activation, which follows.
+activationBonus :: (ReverseQueue m) => VillainId -> Natural -> m ()
+activationBonus vid = push . VillainMessage vid . VillainActivationBonus
+
 -- | More boost icons for the villain's activation.
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
@@ -1122,11 +1130,11 @@ treacheryStep tid = push . TreacheryMessage tid
 obligationStep :: (ReverseQueue m) => ObligationId -> ObligationMessage -> m ()
 obligationStep oid = push . ObligationMessage oid
 
-attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
-attachmentStep aid = push . AttachmentMessage aid
-
 environmentStep :: (ReverseQueue m) => EnvironmentId -> EnvironmentMessage -> m ()
 environmentStep eid = push . EnvironmentMessage eid
+
+attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
+attachmentStep aid = push . AttachmentMessage aid
 
 sideSchemeStep :: (ReverseQueue m) => SideSchemeId -> SideSchemeMessage -> m ()
 sideSchemeStep sid = push . SideSchemeMessage sid

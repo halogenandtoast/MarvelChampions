@@ -17,6 +17,10 @@ import Marvel.MainScheme.MainSchemes.UnleashingTheMutagen as X
 import Marvel.MainScheme.MainSchemes.Breakout as X
 
 -- The Rise of Red Skull
+import Marvel.MainScheme.MainSchemes.AttackOnMountAthena as X
+import Marvel.MainScheme.MainSchemes.TheInfinityStone as X
+import Marvel.MainScheme.MainSchemes.TheGetaway as X
+import Marvel.MainScheme.MainSchemes.NoneShallPass as X
 -- Zola
 import Marvel.MainScheme.MainSchemes.TheIslandOfDrZola as X
 import Marvel.MainScheme.MainSchemes.TheMadDoctor as X

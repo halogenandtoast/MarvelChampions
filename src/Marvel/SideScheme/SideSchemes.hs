@@ -45,6 +45,11 @@ import Marvel.SideScheme.SideSchemes.ClearTheRoad as X
 -- The Rise of Red Skull
 import Marvel.SideScheme.SideSchemes.MarkedForDeath as X
 import Marvel.SideScheme.SideSchemes.TheVipersAmbition as X
+import Marvel.SideScheme.SideSchemes.CrossbonesAssault as X
+import Marvel.SideScheme.SideSchemes.CorneredStaff as X
+import Marvel.SideScheme.SideSchemes.Avalanche as X
+import Marvel.SideScheme.SideSchemes.SuperAbsorbingPower as X
+import Marvel.SideScheme.SideSchemes.HydraPatrol as X
 
 -- Zola
 import Marvel.SideScheme.SideSchemes.HydraPrison as X

@@ -68,6 +68,13 @@ modularSets =
   , "temporal"
   , "anachronauts"
   , "mot"
+  -- The Rise of Red Skull: Crossbones's and Absorbing Man's scenarios and modular sets
+  , "crossbones"
+  , "exper_weapon"
+  , "absorbing_man"
+  , "hydra_assault"
+  , "weap_master"
+  , "hydra_patrol"
   ]
 
 encounterImplemented :: PackCard -> Bool

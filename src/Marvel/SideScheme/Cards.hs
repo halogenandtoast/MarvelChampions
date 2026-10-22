@@ -58,6 +58,11 @@ allSideSchemes = fromList $ map
   -- The Rise of Red Skull
   , markedForDeath
   , theVipersAmbition
+  , crossbonesAssault
+  , corneredStaff
+  , avalanche
+  , superAbsorbingPower
+  , hydraPatrol
 
   -- Zola
   , hydraPrison
@@ -255,6 +260,26 @@ theVipersAmbition =
     { cdHazards = 1
     }
 
+crossbonesAssault :: CardDef
+crossbonesAssault =
+  (sideScheme "04070" "Crossbones' Assault" [Boost, Boost] Crossbones 2)
+    { cdAcceleration = 1
+    }
+
+corneredStaff :: CardDef
+corneredStaff = sideScheme "04071" "Cornered Staff" [Boost, Boost] Crossbones 1
+
+avalanche :: CardDef
+avalanche =
+  (sideScheme "04091" "Avalanche!" [Boost, Boost, Boost] AbsorbingMan 2)
+    { cdAcceleration = 1
+    }
+
+superAbsorbingPower :: CardDef
+superAbsorbingPower = sideScheme "04092" "Super Absorbing Power" [Star] AbsorbingMan 1
+
+hydraPatrol :: CardDef
+hydraPatrol = sideScheme "04154" "Hydra Patrol" [Boost, Boost] HydraPatrol 1
 -- The Rise of Red Skull
 -- Zola
 

@@ -30,6 +30,7 @@ import Marvel.Entity
 import Marvel.Game
 import Marvel.Id
 import Marvel.Identity
+import Marvel.Keyword (Keyword (Overkill, Piercing, Ranged))
 import Marvel.Log
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Message
@@ -235,6 +236,7 @@ villainNarration vid = \case
   -- told as each gets under way, so one an ability replaces (Norman Osborn's attack, Green
   -- Goblin's scheme) is told as what it is replaced with; a stun or confusion as it is spent
   VillainAttacks ident -> Just $ whenM' (villainHas (.villainStunned) vid) $ activation (VillainRef vid) ident "log.attacks" True
+  VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
   VillainBeginAttack ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
   VillainBeginAttackWithoutBoost ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
   VillainSchemes -> Just $ whenM' (villainHas (.villainConfused) vid) $ schemes (VillainRef vid) True
@@ -249,6 +251,7 @@ villainNarration vid = \case
   VillainStunned _ -> Just $ simply "log.stunned" (VillainRef vid)
   VillainConfused _ -> Just $ simply "log.confused" (VillainRef vid)
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
+  VillainAttackGains k -> gains (VillainRef vid) k
   -- told as they are added, so icons cancelled as the card turns up are not
   VillainAddBoost n | n > 0 -> Just $ whenRef (VillainRef vid) \v -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> v, "count" ~> n]]
   _ -> Nothing
@@ -275,7 +278,16 @@ minionNarration mid = \case
   MinionStunned _ -> Just $ simply "log.stunned" (MinionRef mid)
   MinionConfused _ -> Just $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)
+  MinionAttackGains k -> gains (MinionRef mid) k
   MinionAddBoost n | n > 0 -> Just $ whenRef (MinionRef mid) \m -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> m, "count" ~> n]]
+  _ -> Nothing
+
+-- | "The attack gains piercing": told for the keywords an attack can gain.
+gains :: (HasGame m) => Target -> Keyword -> Maybe (m [LogEntry])
+gains enemy = \case
+  Overkill -> Just $ simply "log.attackGainsOverkill" enemy
+  Piercing -> Just $ simply "log.attackGainsPiercing" enemy
+  Ranged -> Just $ simply "log.attackGainsRanged" enemy
   _ -> Nothing
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])

@@ -29,6 +29,10 @@ allMainSchemes =
     , breakout
 
     -- The Rise of Red Skull
+    , attackOnMountAthena
+    , theInfinityStone
+    , theGetaway
+    , noneShallPass
     -- Zola
     , theIslandOfDrZola
     , theMadDoctor
@@ -101,6 +105,17 @@ unleashingTheMutagen = mainScheme "02017" "Unleashing the Mutagen" MutagenFormul
 
 mutagenCloud :: CardDef
 mutagenCloud = mainScheme "02018" "Mutagen Cloud" MutagenFormula
+attackOnMountAthena :: CardDef
+attackOnMountAthena = mainScheme "04061" "Attack on Mount Athena" Crossbones
+
+theInfinityStone :: CardDef
+theInfinityStone = mainScheme "04062" "The Infinity Stone" Crossbones
+
+theGetaway :: CardDef
+theGetaway = mainScheme "04063" "The Getaway" Crossbones
+
+noneShallPass :: CardDef
+noneShallPass = mainScheme "04079" "None Shall Pass" AbsorbingMan
 
 -- The Rise of Red Skull
 -- Zola

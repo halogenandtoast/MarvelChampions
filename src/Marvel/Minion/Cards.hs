@@ -74,6 +74,11 @@ allMinions =
       , crossfire
       , theViper
       , hydraRegular
+      , hydraBomberCrossbones
+      , hydraFlameSoldier
+      , hydraJetTrooper
+      , hydraRegularHydraPatrol
+      , hydraSoldierHydraPatrol
 
       -- Zola
       , ultimateBioServant
@@ -345,6 +350,38 @@ hydraRegular =
     { cdKeywords = fromList [Incite 1]
     }
 
+-- | The core set's Hydra Bomber, two of them in the Crossbones set.
+hydraBomberCrossbones :: CardDef
+hydraBomberCrossbones =
+  (reprint "04066" hydraBomber)
+    { cdEncounterSet = Just Crossbones
+    , cdEncounterSetQuantity = Just 2
+    }
+
+hydraFlameSoldier :: CardDef
+hydraFlameSoldier = minion "04145" "Hydra Flame-Soldier" [Hydra] [Star] HydraAssault 3
+
+hydraJetTrooper :: CardDef
+hydraJetTrooper =
+  (minion "04146" "Hydra Jet-Trooper" [Hydra] [Star] HydraAssault 2)
+    { cdKeywords = singleton Quickstrike
+    }
+
+-- | Spider-Woman's nemesis set's Hydra Regular, two of them in the Hydra Patrol set.
+hydraRegularHydraPatrol :: CardDef
+hydraRegularHydraPatrol =
+  (reprint "04152" hydraRegular)
+    { cdEncounterSet = Just HydraPatrol
+    , cdEncounterSetQuantity = Just 2
+    }
+
+-- | The core set's Hydra Soldier, three of them in the Hydra Patrol set.
+hydraSoldierHydraPatrol :: CardDef
+hydraSoldierHydraPatrol =
+  (reprint "04153" hydraSoldier)
+    { cdEncounterSet = Just HydraPatrol
+    , cdEncounterSetQuantity = Just 3
+    }
 -- The Rise of Red Skull
 -- Zola
 

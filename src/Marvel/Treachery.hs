@@ -111,6 +111,18 @@ allTreacheries = fromList $ map
   -- The Rise of Red Skull
   , SomeTreacheryCard sniperShot
   , SomeTreacheryCard (reprintAs Cards.hailHydraSpiderWoman hailHydra)
+  , SomeTreacheryCard fullAuto
+  , SomeTreacheryCard hardAsNails
+  , SomeTreacheryCard raidTheArmory
+  , SomeTreacheryCard stallTactics
+  , SomeTreacheryCard swingingStone
+  , SomeTreacheryCard steelKick
+  , SomeTreacheryCard piercingThorns
+  , SomeTreacheryCard omniMorphDuplication
+  , SomeTreacheryCard icyGrip
+  , SomeTreacheryCard (reprintAs Cards.hailHydraHydraAssault hailHydra)
+  , SomeTreacheryCard weaponMaster
+  , SomeTreacheryCard concussionGrenade
 
   -- Zola
   , SomeTreacheryCard mindRay

@@ -64,6 +64,15 @@ allAttachments =
 
       -- The Rise of Red Skull
       , SomeAttachmentCard crossfiresRifle
+      , SomeAttachmentCard crossbonesMachineGun
+      , SomeAttachmentCard crossbonesArmor
+      , SomeAttachmentCard laserRifle
+      , SomeAttachmentCard energyShield
+      , SomeAttachmentCard powerGauntlets
+      , SomeAttachmentCard exoSuit
+      , SomeAttachmentCard absorbingMansBallAndChain
+      , SomeAttachmentCard combatKnife
+      , SomeAttachmentCard hydraSidearm
 
       -- Zola
       , SomeAttachmentCard defensiveProgramming
