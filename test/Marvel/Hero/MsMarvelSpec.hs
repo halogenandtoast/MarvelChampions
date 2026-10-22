@@ -378,4 +378,4 @@ spec = describe "Ms. Marvel" do
         _ <- revealNow p Obligations.homeByDawn
         choose "stay" (isLabel "$label.doNotFlipToAlterEgo")
         pass
-        getsGame (HashMap.member (minionOf next) . gameMinions) `shouldReturn` True
+        dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)

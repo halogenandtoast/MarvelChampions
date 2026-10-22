@@ -799,13 +799,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                 ]
       pure pid
     DealtEncounterCard ec ->
-      pure $ PlayerIdentity $ attrs & encounterCardsL %~ (ec :)
-    RevealEncounterCards -> do
-      pushAll $
-        map
-          (RevealEncounterCard playerIdentityId)
-          playerIdentityEncounterCards
-      pure $ PlayerIdentity $ attrs & encounterCardsL .~ mempty
+      pure $ PlayerIdentity $ attrs & encounterCardsL %~ (<> [ec])
+    -- one at a time in the order dealt, a card dealt meanwhile (by surge) joining them
+    RevealEncounterCards -> case playerIdentityEncounterCards of
+      [] -> pure pid
+      ec : rest -> do
+        pushAll [RevealEncounterCard playerIdentityId ec, IdentityMessage playerIdentityId RevealEncounterCards]
+        pure $ PlayerIdentity $ attrs & encounterCardsL .~ rest
     IdentityWasAttacked attack' -> do
       keywords <- getModifiedKeywords pid
       let

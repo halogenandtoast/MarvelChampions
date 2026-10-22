@@ -704,8 +704,10 @@ runGameMessage msg g@Game {..} = case msg of
             [ toId p | p <- HashMap.elems (gamePlayers g), getCardDef card `elem` identityObligations p
             ]
         case owners of
+          -- "ignore the card's ability, remove it from the game, and reveal an
+          -- additional encounter card": not surge
           [] -> do
-            push $ Marvel.Message.Surge ident
+            push $ DrawAndRevealEncounterCard ident
             pure g
           owner : _ -> do
             -- TODO: FOCUS CARDS SHOULD BE CARDS...

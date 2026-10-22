@@ -14,7 +14,9 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message
+import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards), PlayerIdentity)
 import Marvel.Phase
+import Marvel.Projection
 import Marvel.Query
 import Marvel.Queue
 import Marvel.Ref
@@ -192,7 +194,7 @@ drawEncounterCard attrs = case scenarioEncounterDeck attrs of
   [] -> ([], attrs) <$ push (GameOver Lost)
   card : deck' -> pure ([card], attrs & encounterDeckL .~ deck')
 
-runScenarioMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m) => Message -> Attrs Scenario -> m (Attrs Scenario)
+runScenarioMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> Attrs Scenario -> m (Attrs Scenario)
 runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     StartScenario -> do
       encounterCards <-
@@ -254,8 +256,15 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
           : concatMap (\p -> [SetActivePlayer p, IdentityMessage p VillainAndMinionsActivate]) players
             <> map DealEncounterCard players
             <> zipWith ($) (replicate hazards DealEncounterCard) (cycle players)
-            <> concatMap (\p -> [SetActivePlayer p, IdentityMessage p RevealEncounterCards]) players
-            <> [PassFirstPlayer, EndRound]
+            <> [RevealDealtEncounterCards, PassFirstPlayer, EndRound]
+      pure attrs
+    -- each player in turn reveals the cards dealt them, until none remain
+    RevealDealtEncounterCards -> do
+      players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getPlayers
+      unless (null players) $
+        pushAll $
+          concatMap (\p -> [SetActivePlayer p, IdentityMessage p RevealEncounterCards]) players
+            <> [RevealDealtEncounterCards]
       pure attrs
     EndRound -> do
       pushAll [CheckWindows [W.Window W.When W.RoundEnded], BeginRound]
@@ -270,12 +279,10 @@ runScenarioMessage msg attrs@ScenarioAttrs {..} = case msg of
     -- ponytail: a deck worn down to surge cards would surge forever, so after a few
     -- reshuffles in a round surge stops; a real table would just stop too
     Surge _ | scenarioReshufflesThisRound >= 3 -> pure attrs
+    -- the surge keyword: "When Revealed: Deal yourself 1 facedown encounter card"
     Surge ident -> do
-      (ecs, attrs') <- drawEncounterCard attrs
-      pushAll $
-        CheckWindows [W.Window W.Would $ W.SurgeResolves ident]
-          : map (RevealEncounterCard ident) ecs
-      pure attrs'
+      pushAll [CheckWindows [W.Window W.Would $ W.SurgeResolves ident], DealEncounterCard ident]
+      pure attrs
     DrawAndRevealEncounterCard ident -> do
       (ecs, attrs') <- drawEncounterCard attrs
       pushAll $ map (RevealEncounterCard ident) ecs

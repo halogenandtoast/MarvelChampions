@@ -642,3 +642,7 @@ encounterDiscardNow = getsGame (scenarioDiscard . toAttrs . gameScenario)
 
 scenarioEncounterDeckNow :: GameAppT [EncounterCard]
 scenarioEncounterDeckNow = getsGame (scenarioEncounterDeck . toAttrs . gameScenario)
+
+-- | The facedown encounter cards dealt to a player, in the order dealt.
+dealtTo :: IdentityId -> GameAppT [EncounterCard]
+dealtTo p = (.playerIdentityEncounterCards) <$> playerAttrs p
