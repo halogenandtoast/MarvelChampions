@@ -746,11 +746,13 @@ test-suite MarvelChampions-test
       Marvel.Hero.CaptainAmericaSpec
       Marvel.Hero.CaptainMarvelSpec
       Marvel.Hero.DoctorStrangeSpec
+      Marvel.Hero.HawkeyeSpec
       Marvel.Hero.HulkSpec
       Marvel.Hero.IronManSpec
       Marvel.Hero.MsMarvelSpec
       Marvel.Hero.SheHulkSpec
       Marvel.Hero.SpiderManSpec
+      Marvel.Hero.SpiderWomanSpec
       Marvel.Hero.ThorSpec
       Marvel.LogSpec
       Marvel.PublicSpec
