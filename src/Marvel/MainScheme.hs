@@ -32,6 +32,7 @@ allMainSchemes = fromList $ map
   -- The Green Goblin
 
   -- The Wrecking Crew
+  , SomeMainSchemeCard breakout
 
   -- The Rise of Red Skull
 

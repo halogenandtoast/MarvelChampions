@@ -456,3 +456,11 @@ getModifiedScheme attrs = do
  where
   applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
+
+-- | The Wrecking Crew's extreme variant (TWC insert p.7, "Adjustable Difficulty"): each
+-- villain starts as version A with version B under it, and when version A is defeated
+-- version B enters play. Played as the scenario set up by Breakout's A side.
+versionBEnters :: (HasGame m) => Attrs Villain -> m Bool
+versionBEnters attrs
+  | villainStage attrs /= 1 = pure False
+  | otherwise = (== "07001a") <$> getScenarioCode

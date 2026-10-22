@@ -10,6 +10,7 @@ import Marvel.MainScheme.MainSchemes.UndergroundDistribution as X
 -- The Green Goblin
 
 -- The Wrecking Crew
+import Marvel.MainScheme.MainSchemes.Breakout as X
 
 -- The Rise of Red Skull
 

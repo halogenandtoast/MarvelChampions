@@ -14,6 +14,10 @@ import Marvel.Villain.Villains.Ultron
 -- The Green Goblin
 
 -- The Wrecking Crew
+import Marvel.Villain.Villains.Bulldozer
+import Marvel.Villain.Villains.Piledriver
+import Marvel.Villain.Villains.Thunderball
+import Marvel.Villain.Villains.Wrecker
 
 -- The Rise of Red Skull
 
@@ -54,6 +58,14 @@ allVillains = fromList $ map
   -- The Green Goblin
 
   -- The Wrecking Crew
+  , SomeVillainCard wreckerA
+  , SomeVillainCard wreckerB
+  , SomeVillainCard thunderballA
+  , SomeVillainCard thunderballB
+  , SomeVillainCard piledriverA
+  , SomeVillainCard piledriverB
+  , SomeVillainCard bulldozerA
+  , SomeVillainCard bulldozerB
 
   -- The Rise of Red Skull
 

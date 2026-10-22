@@ -45,7 +45,7 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "twc"]
 
 -- | The modular encounter sets implemented ahead of the rest of their pack, by MarvelCDB
 -- set code.

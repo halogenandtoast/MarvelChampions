@@ -35,6 +35,7 @@ import Marvel.Question
 import Marvel.Queue
 import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
+import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (Incite))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
@@ -885,6 +886,42 @@ villainAttacksWithoutBoost vid = push . VillainMessage vid . VillainAttacksWitho
 -- | Threat taken off the side scheme, not by thwarting.
 removeSideSchemeThreat :: (ReverseQueue m) => SideSchemeId -> Natural -> m ()
 removeSideSchemeThreat sid = push . SideSchemeMessage sid . SideSchemeThreatRemoved
+
+-- | Of the upgrades and the supports the player controls, as asked for, those with the
+-- highest printed cost.
+highestCostControlled :: (HasGame m) => IdentityId -> Bool -> Bool -> m [Target]
+highestCostControlled you upgrades supports = do
+  us <- if upgrades then selectList (UpgradeControlledBy $ IdentityWithId you) else pure []
+  ss <- if supports then selectList (SupportControlledBy $ IdentityWithId you) else pure []
+  costed <- for (map UpgradeRef us <> map SupportRef ss) \t ->
+    (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
+  pure $ extremes MostThreat costed
+
+-- | What the body does once the enemy's activation under way is over: after its attack,
+-- or after its scheming. A boost ability that has another activation follow it waits
+-- for this one to end, so the two are not run inside each other.
+afterActivation :: (ReverseQueue m) => EnemyId -> m () -> m ()
+afterActivation enemy body = do
+  attacking <- case enemy of
+    EnemyVillainId v -> isJust <$> getVillainAttack v
+    EnemyMinionId _ -> pure True
+  flip afterMatching body \case
+    VillainMessage vid VillainEndAttack -> attacking && EnemyVillainId vid == enemy
+    VillainMessage vid VillainSchemed -> not attacking && EnemyVillainId vid == enemy
+    MinionMessage mid MinionEndAttack -> EnemyMinionId mid == enemy
+    _ -> False
+
+-- | The villain in play with the title, if he is.
+villainNamed :: (HasGame m) => Text -> m (Maybe VillainId)
+villainNamed name = headMay <$> (filterM named =<< selectList AnyVillain)
+ where
+  named v = getsGame \g -> maybe False ((== name) . display . cdName) (abilityCardDef g (VillainRef v))
+
+-- | The player's upgrade or support goes to its owner's discard pile.
+discardControlled :: (ReverseQueue m) => Target -> m ()
+discardControlled = \case
+  UpgradeRef u -> discardUpgrade u
+  t -> removeFromPlay t
 
 -- * Effects
 

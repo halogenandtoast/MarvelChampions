@@ -5,6 +5,8 @@ module Marvel.Attachment where
 import Marvel.Prelude
 
 import Marvel.Attachment.Attachments
+import Marvel.Attachment.Cards qualified as Cards
+import Marvel.Card.Builder (reprintAs)
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Id
@@ -45,6 +47,17 @@ allAttachments =
       , SomeAttachmentCard mediaCoverage
 
       -- The Wrecking Crew
+      , SomeAttachmentCard heldHostage
+      , SomeAttachmentCard (reprintAs Cards.heldHostageThunderball heldHostage)
+      , SomeAttachmentCard (reprintAs Cards.heldHostagePiledriver heldHostage)
+      , SomeAttachmentCard (reprintAs Cards.heldHostageBulldozer heldHostage)
+      , SomeAttachmentCard magicCrowbar
+      , SomeAttachmentCard wreckersCommand
+      , SomeAttachmentCard ballAndChain
+      , SomeAttachmentCard radioactiveBuildup
+      , SomeAttachmentCard distractingTaunts
+      , SomeAttachmentCard bulldozersHelmet
+      , SomeAttachmentCard rammingSpeed
 
       -- The Rise of Red Skull
 

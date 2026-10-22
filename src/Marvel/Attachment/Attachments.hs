@@ -20,6 +20,14 @@ import Marvel.Attachment.Attachments.AllTiedUp as X
 import Marvel.Attachment.Attachments.MediaCoverage as X
 
 -- The Wrecking Crew
+import Marvel.Attachment.Attachments.HeldHostage as X
+import Marvel.Attachment.Attachments.MagicCrowbar as X
+import Marvel.Attachment.Attachments.WreckersCommand as X
+import Marvel.Attachment.Attachments.BallAndChain as X
+import Marvel.Attachment.Attachments.RadioactiveBuildup as X
+import Marvel.Attachment.Attachments.DistractingTaunts as X
+import Marvel.Attachment.Attachments.BulldozersHelmet as X
+import Marvel.Attachment.Attachments.RammingSpeed as X
 
 -- The Rise of Red Skull
 

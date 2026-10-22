@@ -22,6 +22,7 @@ allMainSchemes =
     -- The Green Goblin
 
     -- The Wrecking Crew
+    , breakout
 
     -- The Rise of Red Skull
 
@@ -72,3 +73,8 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- The Wrecking Crew
+
+breakout :: CardDef
+breakout = mainScheme "07001" "Breakout" Breakout

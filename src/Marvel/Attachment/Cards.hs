@@ -38,6 +38,17 @@ allAttachments =
       , mediaCoverage
 
       -- The Wrecking Crew
+      , heldHostage
+      , heldHostageThunderball
+      , heldHostagePiledriver
+      , heldHostageBulldozer
+      , magicCrowbar
+      , wreckersCommand
+      , ballAndChain
+      , radioactiveBuildup
+      , distractingTaunts
+      , bulldozersHelmet
+      , rammingSpeed
 
       -- The Rise of Red Skull
 
@@ -142,3 +153,39 @@ allTiedUp = attachment "02048" "All Tied Up" [] [] RunningInterference 1
 
 mediaCoverage :: CardDef
 mediaCoverage = attachment "02049" "Media Coverage" [] [Boost] RunningInterference 2
+
+-- The Wrecking Crew
+
+heldHostage :: CardDef
+heldHostage = attachment "07005" "Held Hostage" [] [Boost] Wrecker 1
+
+-- | Held Hostage, one in each of the Wrecking Crew's decks.
+heldHostageThunderball :: CardDef
+heldHostageThunderball = (reprint "07021" heldHostage) {cdEncounterSet = Just Thunderball}
+
+heldHostagePiledriver :: CardDef
+heldHostagePiledriver = (reprint "07036" heldHostage) {cdEncounterSet = Just Piledriver}
+
+heldHostageBulldozer :: CardDef
+heldHostageBulldozer = (reprint "07050" heldHostage) {cdEncounterSet = Just Bulldozer}
+
+magicCrowbar :: CardDef
+magicCrowbar = unique $ attachment "07006" "Magic Crowbar" [] [Boost, Boost, Boost] Wrecker 1
+
+wreckersCommand :: CardDef
+wreckersCommand = unique $ attachment "07007" "Wrecker's Command" [] [Boost] Wrecker 1
+
+ballAndChain :: CardDef
+ballAndChain = unique $ attachment "07020" "Ball and Chain" [Weapon] [Boost, Boost, Boost] Thunderball 1
+
+radioactiveBuildup :: CardDef
+radioactiveBuildup = attachment "07022" "Radioactive Buildup" [Condition] [Boost, Boost, Boost] Thunderball 1
+
+distractingTaunts :: CardDef
+distractingTaunts = attachment "07035" "Distracting Taunts" [] [Boost, Boost] Piledriver 2
+
+bulldozersHelmet :: CardDef
+bulldozersHelmet = unique $ attachment "07049" "Bulldozer's Helmet" [Armor] [Boost, Boost, Boost] Bulldozer 1
+
+rammingSpeed :: CardDef
+rammingSpeed = attachment "07051" "Ramming Speed" [Condition] [Boost, Boost] Bulldozer 2

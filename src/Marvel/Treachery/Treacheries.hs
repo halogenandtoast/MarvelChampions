@@ -47,6 +47,23 @@ import Marvel.Treachery.Treacheries.LightningBolt as X
 import Marvel.Treachery.Treacheries.ShockTherapy as X
 
 -- The Wrecking Crew
+import Marvel.Treachery.Treacheries.BuddySystem as X
+import Marvel.Treachery.Treacheries.BullRush as X
+import Marvel.Treachery.Treacheries.ChaosInThePrison as X
+import Marvel.Treachery.Treacheries.CrowbarToss as X
+import Marvel.Treachery.Treacheries.EnergyProjectiles as X
+import Marvel.Treachery.Treacheries.EscapePlan as X
+import Marvel.Treachery.Treacheries.GetWrecked as X
+import Marvel.Treachery.Treacheries.Headbutt as X
+import Marvel.Treachery.Treacheries.IveBeenWaitingForThis as X
+import Marvel.Treachery.Treacheries.LeadingTheCharge as X
+import Marvel.Treachery.Treacheries.LightningBlast as X
+import Marvel.Treachery.Treacheries.MysticalLink as X
+import Marvel.Treachery.Treacheries.OversizedHands as X
+import Marvel.Treachery.Treacheries.Pummel as X
+import Marvel.Treachery.Treacheries.TacticalProwess as X
+import Marvel.Treachery.Treacheries.UncannyResilience as X
+import Marvel.Treachery.Treacheries.YoureDeadMeat as X
 
 -- The Rise of Red Skull
 

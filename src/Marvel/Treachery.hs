@@ -73,6 +73,33 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard shockTherapy
 
   -- The Wrecking Crew
+  , SomeTreacheryCard buddySystem
+  , SomeTreacheryCard (reprintAs Cards.buddySystemThunderball buddySystem)
+  , SomeTreacheryCard (reprintAs Cards.buddySystemPiledriver buddySystem)
+  , SomeTreacheryCard (reprintAs Cards.buddySystemBulldozer buddySystem)
+  , SomeTreacheryCard chaosInThePrison
+  , SomeTreacheryCard (reprintAs Cards.chaosInThePrisonThunderball chaosInThePrison)
+  , SomeTreacheryCard (reprintAs Cards.chaosInThePrisonBulldozer chaosInThePrison)
+  , SomeTreacheryCard crowbarToss
+  , SomeTreacheryCard getWrecked
+  , SomeTreacheryCard (reprintAs Cards.getWreckedThunderball getWrecked)
+  , SomeTreacheryCard (reprintAs Cards.getWreckedPiledriver getWrecked)
+  , SomeTreacheryCard (reprintAs Cards.getWreckedBulldozer getWrecked)
+  , SomeTreacheryCard iveBeenWaitingForThis
+  , SomeTreacheryCard (reprintAs Cards.iveBeenWaitingForThisThunderball iveBeenWaitingForThis)
+  , SomeTreacheryCard (reprintAs Cards.iveBeenWaitingForThisPiledriver iveBeenWaitingForThis)
+  , SomeTreacheryCard mysticalLink
+  , SomeTreacheryCard youreDeadMeat
+  , SomeTreacheryCard energyProjectiles
+  , SomeTreacheryCard lightningBlast
+  , SomeTreacheryCard tacticalProwess
+  , SomeTreacheryCard oversizedHands
+  , SomeTreacheryCard escapePlan
+  , SomeTreacheryCard pummel
+  , SomeTreacheryCard uncannyResilience
+  , SomeTreacheryCard bullRush
+  , SomeTreacheryCard headbutt
+  , SomeTreacheryCard leadingTheCharge
 
   -- The Rise of Red Skull
 

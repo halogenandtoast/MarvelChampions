@@ -99,6 +99,10 @@
   "spendMentalPhysicalResources": "Spend a mental and a physical resource",
 
   "-- The Wrecking Crew --": "",
+  "breakTie": "They are tied: choose one",
+  "placeThreatForEachUpgrade": "Place 1 threat on the active villain's side scheme for each upgrade you control",
+  "wreckerGetsThreeAttack": "Wrecker gets +3 ATK for this activation",
+  "placeTwoThreatOnHisSideScheme": "Place 2 threat on Wrecker's side scheme",
 
   "-- The Rise of Red Skull --": "",
 

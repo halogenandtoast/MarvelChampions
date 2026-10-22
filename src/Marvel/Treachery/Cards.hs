@@ -65,6 +65,33 @@ allTreacheries = fromList $ map
   , shockTherapy
 
   -- The Wrecking Crew
+  , buddySystem
+  , buddySystemThunderball
+  , buddySystemPiledriver
+  , buddySystemBulldozer
+  , chaosInThePrison
+  , chaosInThePrisonThunderball
+  , chaosInThePrisonBulldozer
+  , crowbarToss
+  , getWrecked
+  , getWreckedThunderball
+  , getWreckedPiledriver
+  , getWreckedBulldozer
+  , iveBeenWaitingForThis
+  , iveBeenWaitingForThisThunderball
+  , iveBeenWaitingForThisPiledriver
+  , mysticalLink
+  , youreDeadMeat
+  , energyProjectiles
+  , lightningBlast
+  , tacticalProwess
+  , oversizedHands
+  , escapePlan
+  , pummel
+  , uncannyResilience
+  , bullRush
+  , headbutt
+  , leadingTheCharge
 
   -- The Rise of Red Skull
 
@@ -276,3 +303,88 @@ kangsChosen =
 
 ancientGrudge :: CardDef
 ancientGrudge = treachery "11051" "Ancient Grudge" [Boost] MasterOfTime 2
+
+-- The Wrecking Crew
+
+-- | The cards shared by the Wrecking Crew's decks are reprints, one per deck.
+
+buddySystem :: CardDef
+buddySystem = treachery "07010" "Buddy System" [Star] Wrecker 1
+
+buddySystemThunderball :: CardDef
+buddySystemThunderball = (reprint "07025" buddySystem) {cdEncounterSet = Just Thunderball}
+
+buddySystemPiledriver :: CardDef
+buddySystemPiledriver = (reprint "07039" buddySystem) {cdEncounterSet = Just Piledriver}
+
+buddySystemBulldozer :: CardDef
+buddySystemBulldozer = (reprint "07054" buddySystem) {cdEncounterSet = Just Bulldozer}
+
+chaosInThePrison :: CardDef
+chaosInThePrison = treachery "07011" "Chaos In the Prison" [Star] Wrecker 1
+
+chaosInThePrisonThunderball :: CardDef
+chaosInThePrisonThunderball = (reprint "07026" chaosInThePrison) {cdEncounterSet = Just Thunderball}
+
+chaosInThePrisonBulldozer :: CardDef
+chaosInThePrisonBulldozer = (reprint "07056" chaosInThePrison) {cdEncounterSet = Just Bulldozer}
+
+crowbarToss :: CardDef
+crowbarToss = treachery "07012" "Crowbar Toss" [Boost] Wrecker 2
+
+getWrecked :: CardDef
+getWrecked = treachery "07013" "Get Wrecked!" [Boost] Wrecker 1
+
+getWreckedThunderball :: CardDef
+getWreckedThunderball = (reprint "07028" getWrecked) {cdEncounterSet = Just Thunderball}
+
+getWreckedPiledriver :: CardDef
+getWreckedPiledriver = (reprint "07040" getWrecked) {cdEncounterSet = Just Piledriver}
+
+getWreckedBulldozer :: CardDef
+getWreckedBulldozer = (reprint "07057" getWrecked) {cdEncounterSet = Just Bulldozer}
+
+iveBeenWaitingForThis :: CardDef
+iveBeenWaitingForThis = treachery "07014" "I've Been Waiting For This!" [Star] Wrecker 1
+
+iveBeenWaitingForThisThunderball :: CardDef
+iveBeenWaitingForThisThunderball = (reprint "07029" iveBeenWaitingForThis) {cdEncounterSet = Just Thunderball}
+
+iveBeenWaitingForThisPiledriver :: CardDef
+iveBeenWaitingForThisPiledriver = (reprint "07041" iveBeenWaitingForThis) {cdEncounterSet = Just Piledriver}
+
+mysticalLink :: CardDef
+mysticalLink = treachery "07015" "Mystical Link" [Star] Wrecker 2
+
+youreDeadMeat :: CardDef
+youreDeadMeat = treachery "07016" "You're Dead Meat!" [Boost, Boost] Wrecker 2
+
+energyProjectiles :: CardDef
+energyProjectiles = treachery "07027" "Energy Projectiles" [Star] Thunderball 2
+
+lightningBlast :: CardDef
+lightningBlast = treachery "07030" "Lightning Blast" [Boost, Boost] Thunderball 2
+
+tacticalProwess :: CardDef
+tacticalProwess = treachery "07031" "Tactical Prowess" [Boost, Boost] Thunderball 2
+
+oversizedHands :: CardDef
+oversizedHands = treachery "07042" "Oversized Hands" [Star] Piledriver 2
+
+escapePlan :: CardDef
+escapePlan = treachery "07043" "Escape Plan" [Star] Piledriver 2
+
+pummel :: CardDef
+pummel = treachery "07044" "Pummel" [Boost, Boost] Piledriver 2
+
+uncannyResilience :: CardDef
+uncannyResilience = treachery "07045" "Uncanny Resilience" [Star] Piledriver 1
+
+bullRush :: CardDef
+bullRush = treachery "07055" "Bull Rush" [Boost] Bulldozer 2
+
+headbutt :: CardDef
+headbutt = treachery "07058" "Headbutt" [Boost] Bulldozer 2
+
+leadingTheCharge :: CardDef
+leadingTheCharge = treachery "07059" "Leading the Charge" [Boost, Boost] Bulldozer 2

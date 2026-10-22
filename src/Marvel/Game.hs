@@ -462,6 +462,32 @@ getVillainAttack vid = getsGame \g -> Villain.villainAttackDetails =<< lookup vi
 getScenarioCode :: (HasGame m) => m CardCode
 getScenarioCode = getsGame (toId . gameScenario)
 
+-- | The villain's ATK, as modified.
+getVillainAttackValue :: (HasGame m) => VillainId -> m Natural
+getVillainAttackValue vid = getsGame (lookup vid . gameVillains) >>= maybe (pure 0) (Villain.getModifiedAttack . toAttrs)
+
+-- | How much of an attack's damage would go past the character's remaining hit points:
+-- the hero's defense taken off first, none past a tough status card.
+getExcessDamage :: (HasGame m) => CharacterId -> Natural -> m Natural
+getExcessDamage character damage = case character of
+  IdentityCharacter ident ->
+    getsGame (lookup ident . gamePlayers) >>= \case
+      Nothing -> pure 0
+      Just p -> do
+        hp <- getModifiedHp p
+        let a = toAttrs p
+            dealt = subtractNatural a.playerIdentityDamageReduction damage
+            remaining = subtractNatural a.playerIdentityDamage hp
+        pure $ if a.playerIdentityTough && dealt > 0 then 0 else subtractNatural remaining dealt
+  AllyCharacter aid ->
+    getsGame (lookup aid . gameAllies) >>= \case
+      Nothing -> pure 0
+      Just ally -> do
+        hp <- Ally.getModifiedHitPoints (toAttrs ally)
+        let remaining = subtractNatural (getAllyDamage ally) hp
+        pure $ if (toAttrs ally).allyTough then 0 else subtractNatural remaining damage
+  _ -> pure 0
+
 -- | How many times a "When Revealed" the player reveals resolves: once, and once more
 -- for each ability that says so (Media Coverage).
 whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
@@ -1480,6 +1506,7 @@ abilityCardDef g = \case
     getCardDef <$> (lookup uid (gameUpgrades g) <|> lookup uid (g ^. removedEntitiesL . upgradesL))
   SupportRef sid -> supportCardDef . toAttrs <$> lookup sid (gameSupports g)
   AllyRef aid -> getCardDef <$> lookup aid (gameAllies g)
+  VillainRef vid -> getCardDef <$> lookup vid (gameVillains g)
   _ -> Nothing
 
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on

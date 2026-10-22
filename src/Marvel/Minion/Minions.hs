@@ -35,6 +35,8 @@ import Marvel.Minion.Minions.Electro as X
 import Marvel.Minion.Minions.Tombstone as X
 
 -- The Wrecking Crew
+import Marvel.Minion.Minions.CorruptPrisonGuard as X
+import Marvel.Minion.Minions.EscapedConvict as X
 
 -- The Rise of Red Skull
 
