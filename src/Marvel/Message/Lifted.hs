@@ -333,6 +333,10 @@ wasAttacked a = push case attackCharacter a of
 declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
 declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
 
+-- | Defenders are asked for again, the players who have declined not asked.
+declareDefenseWithout :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> [IdentityId] -> m ()
+declareDefenseWithout ident enemy priority = push . DeclareDefenseWithout ident (toEnemy enemy) priority
+
 -- * Villains and schemes
 
 -- | A step of the villain's own, for its runner to answer.
@@ -607,11 +611,87 @@ accelerateMainScheme = push AccelerateMainScheme
 revealDealtEncounterCards :: (ReverseQueue m) => m ()
 revealDealtEncounterCards = push RevealDealtEncounterCards
 
+-- * Steps of an element's own
+--
+-- What an element does next that is its own business, for its runner to answer: what
+-- the engine asks of it, not what a card does.
+
 -- | A step of the player's own, for their identity to answer.
 identityStep :: (ReverseQueue m) => IdentityId -> IdentityMessage -> m ()
 identityStep ident = push . IdentityMessage ident
 
+allyStep :: (ReverseQueue m) => AllyId -> AllyMessage -> m ()
+allyStep ally = push . AllyMessage ally
+
+minionStep :: (ReverseQueue m) => MinionId -> MinionMessage -> m ()
+minionStep mid = push . MinionMessage mid
+
+treacheryStep :: (ReverseQueue m) => TreacheryId -> TreacheryMessage -> m ()
+treacheryStep tid = push . TreacheryMessage tid
+
+obligationStep :: (ReverseQueue m) => ObligationId -> ObligationMessage -> m ()
+obligationStep oid = push . ObligationMessage oid
+
+attachmentStep :: (ReverseQueue m) => AttachmentId -> AttachmentMessage -> m ()
+attachmentStep aid = push . AttachmentMessage aid
+
+sideSchemeStep :: (ReverseQueue m) => SideSchemeId -> SideSchemeMessage -> m ()
+sideSchemeStep sid = push . SideSchemeMessage sid
+
+mainSchemeStep :: (ReverseQueue m) => MainSchemeId -> MainSchemeMessage -> m ()
+mainSchemeStep mid = push . MainSchemeMessage mid
+
+eventStep :: (ReverseQueue m) => EventId -> EventMessage -> m ()
+eventStep eid = push . EventMessage eid
+
+effectStep :: (ReverseQueue m) => EffectId -> EffectMessage -> m ()
+effectStep eid = push . EffectMessage eid
+
+-- | The event's effect, unless a stun or confusion takes its place.
+resolveEventEffect :: (ReverseQueue m) => IdentityId -> EventId -> EventMessage -> m ()
+resolveEventEffect ident eid = push . ResolveEventEffect ident . EventMessage eid
+
+-- | Whatever has the upgrade attached is told it has left play.
+upgradeRemoved :: (ReverseQueue m) => UpgradeId -> m ()
+upgradeRemoved = push . UpgradeRemoved
+
+-- | Whatever has the attachment is told it has left play.
+attachmentRemoved :: (ReverseQueue m) => AttachmentId -> m ()
+attachmentRemoved = push . AttachmentRemoved
+
+-- | The boost card turned faceup resolves its boost ability.
+revealedAsBoost :: (ReverseQueue m, IsEnemy enemy) => Target -> enemy -> m ()
+revealedAsBoost target = push . RevealedAsBoost target . toEnemy
+
+-- * Windows
+
+-- | Each player in turn, from the first given, may answer the windows.
+checkWindowsFor :: (ReverseQueue m) => [IdentityId] -> [Window] -> m ()
+checkWindowsFor order = push . CheckWindowsFor order
+
+-- | The windows opened are closed.
+endCheckWindows :: (ReverseQueue m) => m ()
+endCheckWindows = push EndCheckWindows
+
 -- * Setup
+
+startScenario :: (ReverseQueue m) => m ()
+startScenario = push StartScenario
+
+-- | Each player is dealt their starting hand, then the first round begins.
+setupPlayers :: (ReverseQueue m) => m ()
+setupPlayers = push SetupPlayers
+
+-- | The players' order, the first player first.
+setPlayerOrder :: (ReverseQueue m) => [IdentityId] -> m ()
+setPlayerOrder = push . SetPlayerOrder
+
+-- | The main scheme's setup, as the game begins.
+setupMainScheme :: (ReverseQueue m) => m ()
+setupMainScheme = push SetupMainScheme
+
+addMainScheme :: (ReverseQueue m) => CardCode -> m ()
+addMainScheme = push . AddMainScheme
 
 addVillain :: (ReverseQueue m) => CardCode -> m ()
 addVillain = push . AddVillain
@@ -643,6 +723,10 @@ searchFoundCards :: (ReverseQueue m, IsRef target) => target -> [Card] -> m ()
 searchFoundCards target = push . SearchFoundCards (toTarget target)
 
 -- * Paying
+
+-- | The cost is begun on.
+createdActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
+createdActiveCost = push . CreatedActiveCost
 
 -- | The cost is to be paid, as it says.
 setActiveCost :: (ReverseQueue m) => ActiveCost -> m ()

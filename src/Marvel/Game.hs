@@ -25,7 +25,7 @@ import Marvel.Attachment
 import Marvel.Attachment.Types (Attachment)
 import Marvel.Attack
 import Marvel.Card
-import Marvel.Choice
+import Marvel.Choice (choiceMessages)
 import Marvel.Cost
 import Marvel.Count
 import Marvel.Criteria
@@ -52,7 +52,7 @@ import Marvel.MainScheme
 import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
-import Marvel.Message hiding (ExhaustedAlly)
+import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
 import Marvel.Minion
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Minion.Types (
@@ -374,12 +374,12 @@ getActivePlayer = getsGame $ \g ->
     Just p -> p
     Nothing -> error "Missing player"
 
-runPreGameMessage :: (HasQueue m, HasGame m) => Message -> Game -> m Game
-runPreGameMessage msg g = case msg of
+runPreGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
+runPreGameMessage msg g = runQueueT $ case msg of
   -- begun before the scenario takes the card from where it was, so where that was is
   -- known; a card still to be revealed for a player eliminated meanwhile is discarded
   RevealEncounterCard ident card | not (HashMap.member ident (gamePlayers g)) -> do
-    push $ DiscardedCard (EncounterCard card)
+    discardCard card
     pure g
   RevealEncounterCard ident card -> do
     let
@@ -388,15 +388,12 @@ runPreGameMessage msg g = case msg of
         | card `elem` scenarioDiscard scenario = W.RevealedFromDiscardPile
         | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
         | otherwise = W.RevealedFromEncounterDeck
-    pushAll
-      [ FocusCards [EncounterCard card]
-      , CheckWindows [W.Window When $ W.EncounterCardRevealed source ident card]
-      , UnfocusCards
-      , RevealedEncounterCard ident card
-      ]
+    focusing [EncounterCard card] $
+      checkWindows [W.Window When $ W.EncounterCardRevealed source ident card]
+    revealEncounterCardWithoutWindows ident card
     pure g
   CheckWindows windows -> do
-    push EndCheckWindows
+    endCheckWindows
     pure $ g & windowDepthL +~ 1 & windowsL %~ (windows :)
   -- We want to empty the queue for triggering a resolution
   EndCheckWindows ->
@@ -413,36 +410,30 @@ runPreGameMessage msg g = case msg of
           )
   _ -> pure g
 
-runGameMessage ::
-  ( HasGame m
-  , HasQueue m
-  , MonadThrow m
-  , MonadRandom m
-  , Projection m PlayerIdentity
-  ) =>
-  Message ->
-  Game ->
-  m Game
-runGameMessage msg g@Game {..} = case msg of
+runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
+runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- setup, as the rules reference's appendix II has it: a first player, the identities'
   -- obligations and nemesis sets set aside, the scenario, then everyone's hand
   StartGame -> do
+    when (null gamePlayerOrder) $ throwM NoPlayers
+    for_ gamePlayerOrder (`identityStep` SetupIdentity)
+    startScenario
+    setupPlayers
     case gamePlayerOrder of
-      [] -> throwM NoPlayers
-      [_] -> pure ()
-      players@(p : _) ->
+      players@(p : _ : _) ->
         chooseOnePrompted p "$label.chooseFirstPlayer" $
-          [ TargetLabel (IdentityRef first) [Run [SetPlayerOrder (after <> before)]]
+          [ targeting first (setPlayerOrder (after <> before))
           | (n, first) <- zip [0 ..] players
           , let (before, after) = splitAt n players
           ]
-    pushAll $ map (`IdentityMessage` SetupIdentity) gamePlayerOrder <> [StartScenario, SetupPlayers]
+      _ -> pure ()
     pure $ g {gameState = InProgress}
   SetupPlayers -> do
-    pushAll $
-      concatMap (\p -> [SetActivePlayer p, IdentityMessage p DealStartingHand]) gamePlayerOrder
-        <> map SetActivePlayer (take 1 gamePlayerOrder)
-        <> [BeginPhase PlayerPhase]
+    for_ gamePlayerOrder \p -> do
+      setActivePlayer p
+      identityStep p DealStartingHand
+    for_ (take 1 gamePlayerOrder) setActivePlayer
+    beginPhase PlayerPhase
     pure g
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
@@ -460,7 +451,7 @@ runGameMessage msg g@Game {..} = case msg of
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
     IdentityRef iid -> do
-      when (length (g ^. entitiesL . playersL) <= 1) (push $ GameOver Lost)
+      when (length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
       let order = filter (/= iid) gamePlayerOrder
           -- whoever is left takes over from an eliminated active player
           next = case break (== iid) gamePlayerOrder of
@@ -475,106 +466,105 @@ runGameMessage msg g@Game {..} = case msg of
       for_ (lookup aid $ gameAllies g) $ \ally -> do
         let ident = getAllyController ally
         -- what is attached to it is discarded with it
-        pushAll $
-          map (RemoveFromPlay . UpgradeRef) (toList $ allyUpgrades $ toAttrs ally)
-            <> [IdentityMessage ident $ AllyRemoved aid, DiscardedCard $ toCard ally]
+        for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+        identityStep ident $ AllyRemoved aid
+        discardCard ally
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     SupportRef sid -> do
       -- it is discarded, and the cards attached to it facedown with it
-      for_ (lookup sid $ gameSupports g) $ \support ->
-        pushAll $
-          [IdentityMessage (getSupportController support) (SupportRemoved sid), DiscardedCard (toCard $ toAttrs support)]
-            <> map (DiscardedCard . PlayerCard) (supportHeldCards $ toAttrs support)
+      for_ (lookup sid $ gameSupports g) $ \support -> do
+        identityStep (getSupportController support) (SupportRemoved sid)
+        discardCard (toAttrs support)
+        for_ (supportHeldCards $ toAttrs support) discardCard
       pure $ g & (entitiesL . supportsL %~ deleteMap sid)
     UpgradeRef uid -> do
       case (lookup uid $ gameUpgrades g) of
         Nothing -> pure g
         Just upgrade -> do
-          pushAll [UpgradeRemoved uid, DiscardedCard $ toCard upgrade]
+          upgradeRemoved uid
+          discardCard upgrade
           pure $
             g
               & (entitiesL . upgradesL %~ deleteMap uid)
               & (removedEntitiesL . upgradesL %~ insertMap uid upgrade)
     AttachmentRef aid -> do
-      for_ (lookup aid $ gameAttachments g) $ \attachment ->
-        pushAll [AttachmentRemoved aid, DiscardedCard $ toCard attachment]
+      for_ (lookup aid $ gameAttachments g) $ \attachment -> do
+        attachmentRemoved aid
+        discardCard attachment
       pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
     MinionRef mid -> case lookup mid (gameMinions g) of
       Nothing -> pure g
       Just minion -> do
-        push $ DiscardedCard $ toCard minion
+        discardCard minion
         pure $
           g
             & (entitiesL . minionsL %~ deleteMap mid)
             & (removedEntitiesL . minionsL %~ insertMap mid minion)
     TreacheryRef tid -> do
-      for_ (lookup tid $ gameTreacheries g) $
-        \treachery -> push $ DiscardedCard $ toCard treachery
+      for_ (lookup tid $ gameTreacheries g) discardCard
       pure $ g & (entitiesL . treacheriesL %~ deleteMap tid)
     ObligationRef oid -> do
-      for_ (lookup oid $ gameObligations g) $
-        \obligation -> push $ DiscardedCard $ toCard obligation
+      for_ (lookup oid $ gameObligations g) discardCard
       pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     SideSchemeRef sid -> do
-      for_ (lookup sid $ gameSideSchemes g) $
-        \sideScheme -> push $ DiscardedCard $ toCard sideScheme
-      -- what is attached to it is discarded with it
-      pushAll
-        [ RemoveFromPlay (UpgradeRef uid)
+      -- what is attached to it is discarded with it, first
+      for_
+        [ uid
         | (uid, u) <- HashMap.toList (gameUpgrades g)
         , upgradeAttachedSideScheme (toAttrs u) == Just sid
         ]
+        removeFromPlay
+      for_ (lookup sid $ gameSideSchemes g) discardCard
       pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid)
     EnvironmentRef eid -> do
-      for_ (lookup eid $ gameEnvironments g) $
-        \environment -> push $ DiscardedCard $ toCard environment
+      for_ (lookup eid $ gameEnvironments g) discardCard
       pure $ g & (entitiesL . environmentsL %~ deleteMap eid)
     _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
-        push $ MainSchemeMessage mainSchemeId RevealMainScheme
+        mainSchemeStep mainSchemeId RevealMainScheme
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddMainScheme" cardCode
   AddSetupMainScheme cardCode -> do
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
-        pushAll $
-          [SetupMainScheme, MainSchemeMessage mainSchemeId RevealMainScheme]
-            <> [ CheckWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
-               | villainId <- HashMap.keys (gameVillains g)
-               ]
+        setupMainScheme
+        mainSchemeStep mainSchemeId RevealMainScheme
+        for_ (HashMap.keys (gameVillains g)) \villainId ->
+          checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode
   -- the main scheme leaves the game, each card attached to it discarded
   ReplaceMainScheme cardCode -> do
-    pushAll $
-      [ RemoveFromPlay (UpgradeRef uid)
+    for_
+      [ uid
       | (uid, u) <- HashMap.toList (gameUpgrades g)
       , isJust (upgradeAttachedMainScheme (toAttrs u))
       ]
-        <> [AddMainScheme cardCode]
+      removeFromPlay
+    addMainScheme cardCode
     pure $ g & (entitiesL . mainSchemesL .~ mempty)
   AddVillain cardCode -> do
     villainId <- getRandom
     case lookupVillain cardCode villainId of
       Just x -> do
-        push $ VillainMessage villainId SetVillainHp
+        villainStep villainId SetVillainHp
         pure $ g & (entitiesL . villainsL . at villainId ?~ x)
       Nothing -> throwM $ MissingCardCode "AddVillain" cardCode
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ HashMap.insertWith (<>) ident [(a, gameWindowDepth)]
   DisableActiveCost ident -> pure $ g & activeCostL %~ filter ((/= ident) . activeCostId)
   SetActiveCost activeCost -> do
-    push $ CreatedActiveCost (activeCostId activeCost)
+    createdActiveCost (activeCostId activeCost)
     pure $ g & activeCostL %~ (activeCost :)
   CreatedEffect def source matcher -> do
     effectId <- getRandom
     ident <- toId <$> getActivePlayer
     let effect = createEffect effectId (toCardCode def) source matcher
-    push $ EffectMessage effectId (UsedEffect ident)
+    effectStep effectId (UsedEffect ident)
     pure $ g & (entitiesL . effectsL %~ insertMap effectId effect)
   DisabledEffect effectId ->
     pure $ g & (entitiesL . effectsL %~ deleteMap effectId)
@@ -582,56 +572,52 @@ runGameMessage msg g@Game {..} = case msg of
     case cdCardType (getCardDef card) of
       AllyType -> do
         let ally = createAlly ident card
-        pushAll
-          [ AllyMessage (toId ally) (AllyPaidWith payment)
-          , IdentityMessage ident (AllyCreated $ toId ally)
-          , CheckWindows [W.Window After $ W.PlayedAlly (toId ally)]
-          ]
+        allyStep (toId ally) (AllyPaidWith payment)
+        identityStep ident (AllyCreated $ toId ally)
+        checkWindows [W.Window After $ W.PlayedAlly (toId ally)]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
       SupportType -> do
         let support = createSupport ident card
-        pushAll
-          [ IdentityMessage ident (SupportCreated $ toId support)
-          , CheckWindows [W.Window After $ W.PlayedSupport (toId support)]
-          ]
+        identityStep ident (SupportCreated $ toId support)
+        checkWindows [W.Window After $ W.PlayedSupport (toId support)]
         pure $ g & (entitiesL . supportsL %~ insertMap (toId support) support)
       UpgradeType -> do
         let upgrade = createUpgrade ident card
-        push $ UpgradeMessage (toId upgrade) (PlayedUpgrade $ paymentTarget payment)
+        upgradeStep (toId upgrade) (PlayedUpgrade $ paymentTarget payment)
         pure $ g & (entitiesL . upgradesL %~ insertMap (toId upgrade) upgrade)
       EventType -> do
         let
           event = createEvent ident card
-          playEvent = EventMessage (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
           -- "when you play" answers once the cost is paid, before the event resolves;
           -- "after you play", once it has
-          played timing = CheckWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
-        pushAll [played When, ResolveEventEffect ident playEvent, EventMessage (toId event) ResolvedEvent, played After]
+          played timing = checkWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
+        played When
+        resolveEventEffect ident (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
+        eventStep (toId event) ResolvedEvent
+        played After
         pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
   -- the effect of an attack or thwart event is its player's attack or thwart: a stun or
   -- confusion replaces it as it would resolve, its cost paid ("Stunned", "Confused")
-  ResolveEventEffect ident playEvent@(EventMessage eid _) -> do
+  ResolveEventEffect ident (EventMessage eid playEvent) -> do
     let subType = cdAbilitySubType . eventCardDef . toAttrs =<< lookup eid (gameEvents g)
     stunned <- identityMatches StunnedIdentity ident
     confused <- identityMatches ConfusedIdentity ident
-    push $ case subType of
-      Just Ability.Attack | stunned -> IdentityMessage ident IdentityRemoveStunned
-      Just Ability.Thwart | confused -> IdentityMessage ident IdentityRemoveConfused
-      _ -> playEvent
+    case subType of
+      Just Ability.Attack | stunned -> removeStun ident
+      Just Ability.Thwart | confused -> removeConfused ident
+      _ -> eventStep eid playEvent
     pure g
   ResolveEventWithoutPlaying ident card -> do
     let event = createEvent ident card
-    pushAll
-      [ EventMessage (toId event) (PlayedEvent ident NoPayment Nothing)
-      , EventMessage (toId event) ResolvedEvent
-      ]
+    eventStep (toId event) (PlayedEvent ident NoPayment Nothing)
+    eventStep (toId event) ResolvedEvent
     pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutBoostIntoPlay target ident -> case target of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of
         Just minion -> do
-          pushAll $ engageMinion minionId ident
+          engageMinion minionId ident
           pure $
             g
               & (boostEntitiesL . minionsL %~ deleteMap (toId minion))
@@ -643,11 +629,9 @@ runGameMessage msg g@Game {..} = case msg of
     player <- getActivePlayerId
     let
       -- after it is turned faceup, before its boost ability resolves
-      turnedFaceup target =
-        pushAll
-          [ CheckWindows [W.Window After $ W.FlippedBoostCard card enemyId]
-          , RevealedAsBoost target enemyId
-          ]
+      turnedFaceup target = do
+        checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
+        revealedAsBoost target enemyId
     case cdCardType (getCardDef card) of
       TreacheryType -> do
         let treachery = createTreachery card
@@ -695,16 +679,17 @@ runGameMessage msg g@Game {..} = case msg of
             & (boostCardsL . at (toTarget sideScheme) ?~ card)
       _ -> pure g
   ClearBoosts -> do
-    pushAll $ map (DiscardedCard . EncounterCard) (HashMap.elems gameBoostCards)
+    for_ (HashMap.elems gameBoostCards) discardCard
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
   ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
   RevealedEncounterCard ident card -> do
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
-    let surge = [Marvel.Message.Surge ident | Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)]
+    let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (surge ident)
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
-        pushAll $ AttachmentMessage (toId attachment) (RevealAttachment ident) : surge
+        attachmentStep (toId attachment) (RevealAttachment ident)
+        surges
         pure $
           g
             & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
@@ -712,31 +697,22 @@ runGameMessage msg g@Game {..} = case msg of
         let
           minion = createMinion ident card
           isTough = Toughness `member` cdKeywords (getCardDef card)
-        pushAll $
-          [MinionMessage (toId minion) MinionBecomeTough | isTough]
-            <> [ FocusCards [toCard minion]
-               , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
-               , MinionMessage (toId minion) (RevealMinion ident)
-               , UnfocusCards
-               ]
-            <> engageMinion (toId minion) ident
-            <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
-            <> surge
+        when isTough $ enemyBecomesTough (toId minion)
+        focusing [toCard minion] do
+          checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
+          minionStep (toId minion) (RevealMinion ident)
+        engageMinion (toId minion) ident
+        checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+        surges
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
-        pushAll
-          [ FocusCards [toCard treachery]
-          , CheckWindows
-              [ W.Window When $
-                  W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck
-              ]
-          , TreacheryMessage (toId treachery) $ RevealTreachery ident
-          , TreacheryMessage (toId treachery) $ CheckTreacheryCondition ident
-          , UnfocusCards
-          , TreacheryMessage (toId treachery) $ ResolvedTreachery ident
-          ]
+        focusing [toCard treachery] do
+          checkWindows [W.Window When $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck]
+          treacheryStep (toId treachery) $ RevealTreachery ident
+          treacheryStep (toId treachery) $ CheckTreacheryCondition ident
+        treacheryStep (toId treachery) $ ResolvedTreachery ident
         pure $
           g
             & (entitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
@@ -753,25 +729,20 @@ runGameMessage msg g@Game {..} = case msg of
           -- "ignore the card's ability, remove it from the game, and reveal an
           -- additional encounter card": not surge
           [] -> do
-            push $ DrawAndRevealEncounterCard ident
+            drawAndRevealEncounterCard ident
             pure g
           owner : _ -> do
             -- TODO: FOCUS CARDS SHOULD BE CARDS...
-            pushAll
-              [ FocusCards [toCard obligation]
-              , ObligationMessage (toId obligation) $ RevealObligation owner
-              , UnfocusCards
-              , ObligationMessage (toId obligation) $ ResolvedObligation owner
-              ]
+            focusing [toCard obligation] $
+              obligationStep (toId obligation) $ RevealObligation owner
+            obligationStep (toId obligation) $ ResolvedObligation owner
             pure $
               g
                 & (entitiesL . obligationsL %~ insertMap (toId obligation) obligation)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
-        pushAll
-          [ SideSchemeMessage (toId sideScheme) SideSchemePlaceInitialThreat
-          , SideSchemeMessage (toId sideScheme) RevealSideScheme
-          ]
+        sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
+        sideSchemeStep (toId sideScheme) RevealSideScheme
         pure $
           g
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
@@ -784,25 +755,27 @@ runGameMessage msg g@Game {..} = case msg of
       let
         minion = createMinion ident card
         isTough = Toughness `member` cdKeywords (getCardDef card)
-      pushAll $
-        [MinionMessage (toId minion) MinionBecomeTough | isTough]
-          <> engageMinion (toId minion) ident
-          <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
+      when isTough $ enemyBecomesTough (toId minion)
+      engageMinion (toId minion) ident
+      checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
     _ -> do
-      push $ RevealedEncounterCard ident card
+      revealEncounterCardWithoutWindows ident card
       pure g
   PutTopOfDeckIntoPlayAsDrone ident -> case lookup ident (gamePlayers g) of
     Nothing -> pure g
     Just player -> do
       let
         attrs = toAttrs player
-        reshuffle = [IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck, DealEncounterCard ident]
+        reshuffle = do
+          identityStep ident ShuffleIdentityDiscardBackIntoDeck
+          dealEncounterCard ident
       case unDeck (playerIdentityDeck attrs) of
         []
           | null (unDiscard $ playerIdentityDiscard attrs) -> pure g
           | otherwise -> do
-              pushAll $ reshuffle <> [PutTopOfDeckIntoPlayAsDrone ident]
+              reshuffle
+              putTopOfDeckIntoPlayAsDrone ident
               pure g
         card : rest -> do
           let
@@ -810,10 +783,10 @@ runGameMessage msg g@Game {..} = case msg of
             drone =
               overMinion (facedownCardL ?~ card) $
                 lookupMinion "xdrone" ident minionId
-          pushAll $
-            (RemoveFromGame (CardIdRef $ pcCardId card) : engageMinion minionId ident)
-              <> [CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]]
-              <> [msg' | null rest, msg' <- reshuffle]
+          removeFromGame (CardIdRef $ pcCardId card)
+          engageMinion minionId ident
+          checkWindows [W.Window After $ W.MinionEnteredPlay minionId]
+          when (null rest) reshuffle
           pure $ g & (entitiesL . minionsL %~ insertMap minionId drone)
   EndCheckWindows -> pure g
   IdentityEndedTurn ident ->
@@ -837,32 +810,17 @@ runGameMessage msg g@Game {..} = case msg of
     pure $ g & stateL .~ Finished status
   ReturnToHand target -> case target of
     AllyRef aid -> do
-      for_ (lookup aid $ gameAllies g) $ \ally ->
-        pushAll $
-          map
-            (IdentityMessage (getAllyController ally))
-            [ AllyRemoved aid
-            , AddToHand $
-                MkPlayerCard
-                  (CardId $ unAllyId aid)
-                  (getCardDef ally)
-                  (Just $ getAllyController ally)
-                  (Just $ getAllyController ally)
-            ]
+      for_ (lookup aid $ gameAllies g) $ \ally -> do
+        let controller = getAllyController ally
+        identityStep controller (AllyRemoved aid)
+        addToHand controller $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just controller) (Just controller)
       pure $ g & entitiesL . alliesL %~ deleteMap aid
     -- to its owner's hand
     UpgradeRef uid -> do
-      for_ (lookup uid $ gameUpgrades g) $ \upgrade ->
-        pushAll
-          [ UpgradeRemoved uid
-          , IdentityMessage (upgradeOwner $ toAttrs upgrade) $
-              AddToHand $
-                MkPlayerCard
-                  (CardId $ unUpgradeId uid)
-                  (getCardDef upgrade)
-                  (Just $ upgradeOwner $ toAttrs upgrade)
-                  (Just $ upgradeOwner $ toAttrs upgrade)
-          ]
+      for_ (lookup uid $ gameUpgrades g) $ \upgrade -> do
+        let owner = upgradeOwner $ toAttrs upgrade
+        upgradeRemoved uid
+        addToHand owner $ MkPlayerCard (CardId $ unUpgradeId uid) (getCardDef upgrade) (Just owner) (Just owner)
       pure $ g & entitiesL . upgradesL %~ deleteMap uid
     -- a played event goes back from its controller's discard pile, if it is still there
     EventRef eid -> do
@@ -870,7 +828,7 @@ runGameMessage msg g@Game {..} = case msg of
         let controller = eventController (toAttrs event)
         for_ [c | PlayerCard c <- [toCard (toAttrs event)]] \c -> do
           let inDiscard = maybe False (elem c . unDiscard . playerIdentityDiscard . toAttrs) (lookup controller $ gamePlayers g)
-          pushWhen inDiscard $ IdentityMessage controller (AddToHand c)
+          when inDiscard $ addToHand controller c
       pure g
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
@@ -880,12 +838,12 @@ runGameMessage msg g@Game {..} = case msg of
   CheckWindows windows -> do
     active <- getActivePlayerId
     let order = active : filter (/= active) gamePlayerOrder
-    push $ CheckWindowsFor order windows
+    checkWindowsFor order windows
     pure g
   CheckWindowsFor [] _ -> pure g
   -- a player eliminated while the window goes round is no longer asked
   CheckWindowsFor (ident : rest) windows | not (HashMap.member ident (gamePlayers g)) -> do
-    push $ CheckWindowsFor rest windows
+    checkWindowsFor rest windows
     pure g
   CheckWindowsFor (ident : rest) windows -> do
     abilities <- getAbilitiesFor ident
@@ -928,34 +886,21 @@ runGameMessage msg g@Game {..} = case msg of
               ]
         )
         abilities
+    -- after a response the window is open again to everyone
+    again <- Run <$> capture (checkWindows windows)
     let forcedAbiltiies = filter isForcedAbility validAbilities
-        -- after a response the window is open again to everyone
-        again = CheckWindows windows
+        respond a = pure $ UseAbility (a & choicesL <>~ [again])
     case (forcedAbiltiies, validAbilities, playableCards) of
-      ([], [], []) -> push $ CheckWindowsFor rest windows
+      ([], [], []) -> checkWindowsFor rest windows
       ([], as, cs) ->
-        push
-          $ Ask ident
-            . prompted "$label.respond"
-            . ChooseOne
-          $ Label "$label.noResponse" [Run [CheckWindowsFor rest windows]]
-            : map (UseAbility . (choicesL <>~ [Run [again]])) as
-              <> map
-                ( \(c, mwindow) ->
-                    TargetLabel
-                      (toRef c)
-                      [PlayCard c mwindow, Run [again]]
-                )
-                cs
-      (forced, _, _) ->
-        push $
-          Ask ident . prompted "$label.resolveForced" . ChooseOne $
-            map
-              (UseAbility . (choicesL <>~ [Run [again]]))
-              forced
+        chooseOnePrompted ident "$label.respond" $
+          labeled "$label.noResponse" (checkWindowsFor rest windows)
+            : map respond as
+              <> [pure $ TargetLabel (toRef c) [PlayCard c mwindow, again] | (c, mwindow) <- cs]
+      (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
-    push $ DeclareDefenseWithout ident enemyId defensePriority []
+    declareDefenseWithout ident enemyId defensePriority []
     pure g
   -- each player decides for themselves whether a character they control defends (RR
   -- "Defend"): the attacked player first, who may ask another player before deciding;
@@ -970,29 +915,24 @@ runGameMessage msg g@Game {..} = case msg of
     let
       defensesOf owner =
         [ if owner == ident
-          then Defend enemyId
-          else TargetLabel (IdentityRef owner) [Run [IdentityMessage owner (SideMessage (Defended enemyId))]]
+          then pure (Defend enemyId)
+          else targeting owner $ identityStep owner (SideMessage (Defended enemyId))
         | owner `member` identities
         ]
-          <> [AllyDefend a enemyId | (a, Just controller) <- controllers, controller == owner]
-      decline owner = Run [DeclareDefenseWithout ident enemyId defensePriority (owner : declined)]
+          <> [pure (AllyDefend a enemyId) | (a, Just controller) <- controllers, controller == owner]
+      decline owner = declareDefenseWithout ident enemyId defensePriority (owner : declined)
       ask owner =
-        Ask owner
-          . promptedAbout "$label.askedToDefend" enemyId
-          . ChooseOne
-          $ defensesOf owner <> [Label "$label.declineToDefend" [decline owner]]
+        chooseOnePromptedAbout owner "$label.askedToDefend" enemyId $
+          defensesOf owner <> [labeled "$label.declineToDefend" (decline owner)]
       (before, from) = break (== ident) gamePlayerOrder
       others = [o | o <- from <> before, o /= ident, o `notElem` declined, notNull (defensesOf o)]
     if ident `elem` declined
-      then for_ (headMay others) (push . ask)
+      then for_ (headMay others) ask
       else
-        push
-          $ Ask ident
-            . promptedAbout "$label.declareDefender" enemyId
-            . ChooseOne
-          $ Label "$label.noDefender" [decline ident]
+        chooseOnePromptedAbout ident "$label.declareDefender" enemyId $
+          labeled "$label.noDefender" (decline ident)
             : defensesOf ident
-              <> [TargetLabel (IdentityRef o) [Run [ask o]] | o <- others]
+              <> [targeting o (ask o) | o <- others]
     pure g
   _ -> pure g
 
