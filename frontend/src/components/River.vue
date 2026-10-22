@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
+import TokenStack from './TokenStack.vue'
 
 export interface RiverCard {
   id: string
@@ -69,7 +70,10 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
           <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
         </div>
         <div v-if="scheme" class="scheme">
-          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
+          <div class="scheme-card">
+            <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.from" :morph="false" />
+            <TokenStack class="adding" kind="threat" :count="scheme.amount" :title="t('game.threatOn', { count: scheme.amount })" />
+          </div>
           <Meter :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
         </div>
         <BoardCard
@@ -140,6 +144,9 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 }
 /* the meter under the card, as on the board */
 .scheme { display: flex; flex-direction: column; gap: 6px; flex: none; }
+.scheme-card { display: flex; align-items: center; gap: 8px; }
+/* the threat about to go on, beside the card */
+.adding { --token-size: 30px; }
 .scheme :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 /* stats to the card's left, not under it, so the river stays a card high */
 .attacker { display: flex; gap: 6px; align-items: flex-start; flex: none; }
