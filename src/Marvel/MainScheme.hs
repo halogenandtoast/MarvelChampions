@@ -34,6 +34,10 @@ allMainSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeMainSchemeCard attackOnMountAthena
+  , SomeMainSchemeCard theInfinityStone
+  , SomeMainSchemeCard theGetaway
+  , SomeMainSchemeCard noneShallPass
 
   -- The Once and Future Kang
 

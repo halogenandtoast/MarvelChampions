@@ -22,5 +22,14 @@ import Marvel.Attachment.Attachments.MediaCoverage as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Attachment.Attachments.CrossbonesMachineGun as X
+import Marvel.Attachment.Attachments.CrossbonesArmor as X
+import Marvel.Attachment.Attachments.LaserRifle as X
+import Marvel.Attachment.Attachments.EnergyShield as X
+import Marvel.Attachment.Attachments.PowerGauntlets as X
+import Marvel.Attachment.Attachments.ExoSuit as X
+import Marvel.Attachment.Attachments.BallAndChain as X
+import Marvel.Attachment.Attachments.CombatKnife as X
+import Marvel.Attachment.Attachments.HydraSidearm as X
 
 -- The Once and Future Kang

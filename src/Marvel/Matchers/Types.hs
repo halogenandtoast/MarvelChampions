@@ -257,6 +257,8 @@ data CharacterMatcher
   | CharacterMatches [CharacterMatcher]
   | -- | the identities and allies of the players matching
     CharacterControlledBy IdentityMatcher
+  | -- | the identities of the players matching: "damages you"
+    IdentityCharacters IdentityMatcher
   | CharacterWithTrait Trait
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
@@ -324,7 +326,7 @@ instance Semigroup AttachmentMatcher where
 instance Monoid AttachmentMatcher where
   mempty = AttachmentMatches []
 
-data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef
+data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef | EnvironmentWithTrait Trait
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

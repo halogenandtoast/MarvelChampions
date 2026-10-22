@@ -47,6 +47,15 @@ allAttachments =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      , SomeAttachmentCard crossbonesMachineGun
+      , SomeAttachmentCard crossbonesArmor
+      , SomeAttachmentCard laserRifle
+      , SomeAttachmentCard energyShield
+      , SomeAttachmentCard powerGauntlets
+      , SomeAttachmentCard exoSuit
+      , SomeAttachmentCard ballAndChain
+      , SomeAttachmentCard combatKnife
+      , SomeAttachmentCard hydraSidearm
 
       -- The Once and Future Kang
 

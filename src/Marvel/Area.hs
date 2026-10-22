@@ -29,6 +29,10 @@ data DeckKey
   deriving stock (Show, Eq, Ord, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
+-- | The Experimental Weapons deck, set next to the main scheme by Attack on Mount Athena.
+experimentalWeaponsDeck :: DeckKey
+experimentalWeaponsDeck = NamedDeckKey "experimentalWeapons"
+
 -- | Running out of an encounter deck, the encounter deck or a villain's, costs an
 -- acceleration token as its discard pile is shuffled back; the side-scheme deck's is
 -- shuffled back without penalty, and a named deck is not shuffled back at all.

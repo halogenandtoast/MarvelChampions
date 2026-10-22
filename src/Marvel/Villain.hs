@@ -16,6 +16,8 @@ import Marvel.Villain.Villains.Ultron
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.Villain.Villains.Crossbones
+import Marvel.Villain.Villains.AbsorbingMan
 
 -- The Once and Future Kang
 
@@ -56,6 +58,14 @@ allVillains = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeVillainCard crossbones
+  , SomeVillainCard crossbones1
+  , SomeVillainCard crossbones2
+  , SomeVillainCard crossbones3
+  , SomeVillainCard absorbingMan
+  , SomeVillainCard absorbingMan1
+  , SomeVillainCard absorbingMan2
+  , SomeVillainCard absorbingMan3
 
   -- The Once and Future Kang
 

@@ -55,6 +55,7 @@ import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
 import Marvel.MainScheme.Types (MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
@@ -453,6 +454,12 @@ intoAreaOf ident f g = maybe g (\a -> overArea (areaId a) f g) (areaOfTarget g (
 -- cards, the "you" of their boost abilities.
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainActivationPlayer vid = getsGame \g -> Villain.villainActivationPlayer . toAttrs =<< lookup vid (gameVillains g)
+
+-- | The counters on "your" main scheme, as None Shall Pass's delay counters.
+getMainSchemeCounters :: (HasGame m) => m Natural
+getMainSchemeCounters = do
+  schemes <- filterM (inYourArea . MainSchemeRef . toId) . HashMap.elems =<< getsGame gameMainSchemes
+  pure $ sum $ map (MainScheme.mainSchemeCounters . toAttrs) schemes
 
 -- | The villain's ATK, as modified: "Crossbones' ATK".
 getVillainAttack :: (HasGame m) => VillainId -> m Natural
@@ -1746,6 +1753,7 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter AnyIdentity
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  IdentityCharacters identityMatcher -> HashSet.fromList <$> selectMap IdentityCharacter identityMatcher
   CharacterControlledBy identityMatcher -> do
     identities <- selectMap IdentityCharacter identityMatcher
     allies <- selectMap AllyCharacter (AllyControlledBy identityMatcher)
@@ -1976,6 +1984,7 @@ gameSelectEnvironment m = do
   matches e = case m of
     AnyEnvironment -> True
     EnvironmentIs def -> sameCard def (getCardDef e)
+    EnvironmentWithTrait t -> t `member` cdTraits (getCardDef e)
 
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)

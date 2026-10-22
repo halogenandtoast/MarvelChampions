@@ -121,6 +121,7 @@ getDifficulty :: (HasGame m) => m Difficulty
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getVillainActivationPlayer :: (HasGame m) => VillainId -> m (Maybe IdentityId)
 getVillainAttack :: (HasGame m) => VillainId -> m Natural
+getMainSchemeCounters :: (HasGame m) => m Natural
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
 getBoostedPlayer :: (HasGame m) => EnemyId -> m IdentityId
