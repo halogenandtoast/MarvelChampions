@@ -88,6 +88,29 @@ export interface VillainView extends CardView {
   boostCards: number
   attachments: AttachmentView[]
   upgrades: UpgradeView[]
+  /** the active villain of his area: the one that activates */
+  active?: boolean
+}
+
+/** A deck other than the encounter deck: a villain's own, a named one, or the side-scheme deck. */
+export interface DeckView {
+  kind: 'villain' | 'named' | 'sideScheme' | string
+  /** the villain's name, or the named deck's */
+  name: string | null
+  size: number
+  discard: CardView[]
+}
+
+/** A game area: what is in it, by id. A game of one area has one. */
+export interface AreaView {
+  id: number
+  players: string[]
+  villains: string[]
+  activeVillain: string | null
+  mainSchemes: string[]
+  sideSchemes: string[]
+  environments: string[]
+  decks: DeckView[]
 }
 
 export interface MinionView extends CardView {
@@ -190,6 +213,9 @@ export interface GameView {
   question: Record<string, QuestionView>
   questionVersion: number
   activeCost?: ActiveCostView | null
+  areas?: AreaView[]
+  /** the area of the first seat whose hand you see */
+  viewerArea?: number | null
   [more: string]: unknown
 }
 

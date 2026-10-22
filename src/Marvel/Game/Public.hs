@@ -19,6 +19,7 @@ import Data.List qualified as L
 import Marvel.Cost.Types (Cost (..), costResources)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
+import Marvel.Area
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo
@@ -81,7 +82,32 @@ data GameView = GameView
   , questionVersion :: Int
   , activeCost :: Maybe ActiveCostView
   -- ^ what is being paid for, while it is
+  , areas :: [AreaView]
+  -- ^ the game areas, by the ids of what is in each; a game of one area has one
+  , viewerArea :: Maybe AreaId
+  -- ^ the area of the first seat whose hand the viewer sees
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A game area: what is in it, by id, and the decks kept in it besides the encounter
+-- deck.
+data AreaView = AreaView
+  { id :: AreaId
+  , players :: [IdentityId]
+  , villains :: [VillainId]
+  , activeVillain :: Maybe VillainId
+  , mainSchemes :: [Text]
+  , sideSchemes :: [Text]
+  , environments :: [Text]
+  , decks :: [DeckView]
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A deck other than the encounter deck: a villain's own (@villain@, his name), a named
+-- one (@named@, its name) or the side-scheme deck (@sideScheme@).
+data DeckView = DeckView {kind :: Text, name :: Maybe Text, size :: Int, discard :: [CardView]}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -184,6 +210,8 @@ data VillainView = VillainView
   , boostCards :: Int
   , attachments :: [AttachmentView]
   , upgrades :: [UpgradeView]
+  , active :: Bool
+  -- ^ the active villain of his area
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -331,9 +359,31 @@ gameView seesHand g = do
       , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
       , activeCost
+      , areas = map areaView (gameAreas g)
+      , viewerArea = headMay [aid | pid <- gameSeats g, seesHand pid, Just aid <- [areaId <$> areaOfTarget g (IdentityRef pid)]]
       }
  where
   scenario = toAttrs (gameScenario g)
+  areaView a =
+    let aid = areaId a
+        here t = (areaId <$> areaOfTarget g t) == Just aid
+        villainsHere = villainsIn g aid
+        pileView key = maybe [] pure (HashMap.lookup key scenario.scenarioDecks) <&> \(Pile d x) ->
+          (length d, map (cardView . EncounterCard) x)
+        deckView kind name key = [DeckView kind name size discard | (size, discard) <- pileView key]
+     in AreaView
+          { id = aid
+          , players = [pid | pid <- gameSeats g, here (IdentityRef pid)]
+          , villains = villainsHere
+          , activeVillain = activeVillainIn g aid
+          , mainSchemes = [idText k | k <- HashMap.keys (gameMainSchemes g), here (MainSchemeRef k)]
+          , sideSchemes = [idText k | k <- HashMap.keys (gameSideSchemes g), here (SideSchemeRef k)]
+          , environments = [idText k | k <- HashMap.keys (gameEnvironments g), here (EnvironmentRef k)]
+          , decks =
+              concat [deckView "villain" (display . cdName . getCardDef <$> HashMap.lookup v (gameVillains g)) (VillainDeckKey v) | v <- villainsHere]
+                <> concat [deckView "named" (Just n) k | k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
+                <> deckView "sideScheme" Nothing SideSchemeDeckKey
+          }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
   attachmentsIn ids = [attachmentView a | a <- HashMap.elems (gameAttachments g), toId a `HashSet.member` ids]
   playerView p = do
@@ -438,6 +488,7 @@ gameView seesHand g = do
         , boostCards = length a.villainBoostCards
         , attachments = attachmentsIn a.villainAttachments
         , upgrades = upgradesOn \u -> u.upgradeAttachedEnemy == Just (EnemyVillainId a.villainId)
+        , active = any (\area -> activeVillainIn g (areaId area) == Just a.villainId) (gameAreas g)
         }
   minionView (m :: Minion) = do
     let a = toAttrs m

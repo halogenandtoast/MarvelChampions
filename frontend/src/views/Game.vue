@@ -7,7 +7,8 @@ import { currentUser } from '../auth'
 import { exportGame } from '../api'
 import { useGame } from '../composables/useGame'
 import { provideChoices } from '../composables/useChoices'
-import type { ChoiceView, PlayerView } from '../server'
+import type { AreaView, ChoiceView, PlayerView } from '../server'
+import AreaTabs from '../components/AreaTabs.vue'
 import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
 import FileBug from '../components/FileBug.vue'
@@ -64,6 +65,42 @@ watch(answering, (id) => {
 }, { immediate: true })
 const shownSeats = computed(() => (allSeats.value ? players.value : viewed.value ? [viewed.value] : []))
 const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m) => m.engagedWith === player.id || player.engagedMinions?.includes(m.id))
+
+// Game areas, when the players are split into several: the one of the seat you look at
+// first, the others a tab away. One area is drawn as a game always was.
+const areas = computed<AreaView[]>(() => game.value?.areas ?? [])
+const areaOf = (playerId: string | undefined) => areas.value.find((a) => playerId !== undefined && a.players.includes(playerId)) ?? null
+const ownArea = computed(() => areaOf(viewed.value?.id)?.id ?? game.value?.viewerArea ?? areas.value[0]?.id ?? null)
+const pickedArea = ref<number | null>(null)
+watch(() => viewed.value?.id, () => (pickedArea.value = null))
+const splitAreas = computed(() => areas.value.length > 1)
+const shownArea = computed(() => (splitAreas.value ? (areas.value.find((a) => a.id === (pickedArea.value ?? ownArea.value)) ?? null) : null))
+const orderedAreas = computed(() => [...areas.value].sort((a, b) => Number(b.id === ownArea.value) - Number(a.id === ownArea.value)))
+// everything in an area, by id: its villains and schemes, its players and their cards
+const idsIn = (area: AreaView) => {
+  const g = game.value
+  const ids = new Set<string>([...area.villains, ...area.mainSchemes, ...area.sideSchemes, ...area.environments, ...area.players])
+  for (const v of g?.villains ?? []) if (ids.has(v.id)) [...(v.attachments ?? []), ...(v.upgrades ?? [])].forEach((x) => ids.add(x.id))
+  for (const p of g?.players ?? []) {
+    if (!ids.has(p.id)) continue
+    ;[...(p.allies ?? []), ...(p.supports ?? []), ...(p.upgrades ?? []), ...(p.hand ?? []), ...(p.discard ?? [])].forEach((x) => ids.add(x.id))
+    for (const m of minionsOf(p)) [m, ...(m.attachments ?? []), ...(m.upgrades ?? [])].forEach((x) => ids.add(x.id))
+  }
+  return ids
+}
+const litAreas = computed(() =>
+  splitAreas.value ? areas.value.filter((a) => a.id !== shownArea.value?.id && choices.value.some((c) => c.target && idsIn(a).has(c.target))).map((a) => a.id) : [],
+)
+// showing an area shows one of its players too
+const showArea = (id: number) => {
+  pickedArea.value = id
+  const area = areas.value.find((a) => a.id === id)
+  if (area?.players.length && !area.players.includes(viewed.value?.id ?? '')) {
+    viewing.value = area.players[0]
+    allSeats.value = false
+    pickedArea.value = id
+  }
+}
 // what is happening now: cards revealed, boost cards dealt and turned up, and those the
 // server has told of before the state that follows
 const riverCards = computed<RiverCard[]>(() => {
@@ -237,7 +274,8 @@ const resetGame = () => {
 
         <template v-if="game">
           <div class="half villain-half">
-            <VillainArea :game="game" />
+            <AreaTabs v-if="splitAreas" :areas="orderedAreas" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
+            <VillainArea :game="game" :area="shownArea" />
           </div>
 
           <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :elsewhere="elsewhere" :shared="!!game.activeCost">
