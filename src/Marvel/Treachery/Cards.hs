@@ -47,6 +47,7 @@ allTreacheries = fromList $ map
   , exhaustion
   , masterplan
   , underFire
+  , trickster
   ]
 
 treachery
@@ -192,3 +193,6 @@ underFire =
   (treachery "01193" "Under Fire" [Boost, Boost, Boost] ExpertSet 1)
     { cdKeywords = singleton Keyword.Surge
     }
+
+trickster :: CardDef
+trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1

@@ -30,6 +30,7 @@ allSideSchemes = fromList $ map
   , underAttack
   , legionsOfHydra
   , theDoomsdayChair
+  , familyFeud
   ]
 
 sideScheme
@@ -154,3 +155,8 @@ theDoomsdayChair =
   (sideScheme "01183" "The Doomsday Chair" [Boost, Boost, Boost] TheDoomsdayChair 2)
     { cdAcceleration = 1
     }
+
+familyFeud :: CardDef
+familyFeud = (sideScheme "06027" "Family Feud" [Boost, Boost, Boost] ThorNemesis 1)
+  { cdAcceleration = 1
+  }

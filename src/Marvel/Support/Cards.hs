@@ -26,6 +26,8 @@ allSupports = fromList $ concatMap
   , medTeam
   , avengersMansion
   , helicarrier
+  , asgard
+  , hallOfHeroes
   ]
 
 support
@@ -124,3 +126,9 @@ avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (Ma
 helicarrier :: CardDef
 helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+
+asgard :: CardDef
+asgard = unique $ identitySupport "06007" "Asgard" 3 [Asgard, Location] [Mental]
+
+hallOfHeroes :: CardDef
+hallOfHeroes = unique $ support "06017" "Hall of Heroes" 2 [Asgard, Location] [Mental] Aggression

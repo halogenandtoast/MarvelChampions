@@ -1,0 +1,56 @@
+module Marvel.Event.Events.LightningStrike (
+  lightningStrike,
+  LightningStrike (..),
+) where
+
+import Marvel.Prelude
+
+import Marvel.ActiveCost (payForCard)
+import Marvel.Card.Code
+import Marvel.Choice
+import Marvel.Cost.Types
+import Marvel.Damage
+import Marvel.Entity
+import Marvel.Event.Cards qualified as Cards
+import Marvel.Event.Types
+import Marvel.Matchers
+import Marvel.Message
+import Marvel.Modifier
+import Marvel.Payment
+import Marvel.Query
+import Marvel.Question
+import Marvel.Queue
+import Marvel.Ref
+import Marvel.Resource
+import Marvel.Trait
+
+lightningStrike :: EventCard LightningStrike
+lightningStrike = event LightningStrike Cards.lightningStrike
+
+newtype LightningStrike = LightningStrike (Attrs Event)
+  deriving anyclass (IsEvent, HasModifiersFor)
+  deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
+
+-- | Spend X [energy] resources (a wild resource counts) → X damage to the villain and
+-- each minion engaged with you, past tough status cards if you are Aerial. Not an
+-- attack (FAQ errata).
+instance RunMessage LightningStrike where
+  runMessage msg e@(LightningStrike attrs) = case msg of
+    EventMessage ident msg' | ident == eventId attrs -> case msg' of
+      PlayedEvent identityId _ _ -> do
+        payForCard identityId attrs 1 (DynamicResourceCost $ Just Energy)
+        pure e
+      _ -> LightningStrike <$> runMessage msg attrs
+    RanAbility identityId (isTarget attrs -> True) 1 _ payment -> do
+      x <- count (`elem` [Energy, Wild]) <$> paymentResources payment
+      aerial <- selectAny $ IdentityWithId identityId <> IdentityWithTrait Aerial
+      villains <- selectList VillainEnemy
+      minions <- selectList $ MinionEngagedWith (IdentityWithId identityId)
+      let damage = (if aerial then ignoringTough else id) $ toDamage (fromIntegral x) FromAbility
+      when (x > 0) $
+        pushAll
+          =<< concatMapM
+            (\enemy -> choiceMessages identityId $ DamageEnemy (toRef enemy) (toSource attrs) damage)
+            (villains <> map EnemyMinionId minions)
+      pure e
+    _ -> LightningStrike <$> runMessage msg attrs

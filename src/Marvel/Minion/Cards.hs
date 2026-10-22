@@ -37,6 +37,8 @@ allMinions =
       , madameHydra
       , hydraSoldier
       , modok
+      , loki
+      , frostGiant
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -205,3 +207,12 @@ modok =
     (minion "01184" "M.O.D.O.K." [Cyborg, Elite] [Boost, Boost] TheDoomsdayChair 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+loki :: CardDef
+loki = unique $ minion "06028" "Loki" [Trait.Asgard] [Boost, Boost, Boost] ThorNemesis 1
+
+frostGiant :: CardDef
+frostGiant =
+  (minion "06029" "Frost Giant" [Giant] [Star, Boost] ThorNemesis 2)
+    { cdKeywords = singleton Toughness
+    }

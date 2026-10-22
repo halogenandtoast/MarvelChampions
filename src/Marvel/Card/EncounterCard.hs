@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Id
+import Marvel.Ref
 
 data EncounterCard = MkEncounterCard
   { ecCardId :: CardId
@@ -21,3 +22,6 @@ instance HasCardCode EncounterCard where
 
 instance HasCardDef EncounterCard where
   getCardDef = ecCardDef
+
+instance IsRef EncounterCard where
+  toRef = CardIdRef . ecCardId

@@ -29,6 +29,10 @@ allAllies = fromList $ concatMap
   , lukeCage
   , mockingbirdBobbiMorse
   , nickFury
+  , ladySif
+  , hercules
+  , valkyrie
+  , heimdall
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -152,3 +156,15 @@ mockingbirdBobbiMorse = reprintedAs ["03020"] $
 
 nickFury :: CardDef
 nickFury = reprintedAs ["08019"] $ basicAlly "01084" "Nick Fury" 4 [Shield, Spy] [Mental]
+
+ladySif :: CardDef
+ladySif = identityAlly "06002" "Lady Sif" 4 [Asgard] [Wild]
+
+hercules :: CardDef
+hercules = ally "06011" "Hercules" 6 [Avenger, Olympus] [Physical] Aggression
+
+valkyrie :: CardDef
+valkyrie = ally "06012" "Valkyrie" 3 [Asgard, Avenger] [Energy] Aggression
+
+heimdall :: CardDef
+heimdall = basicAlly "06020" "Heimdall" 5 [Asgard] [Mental]
