@@ -40,6 +40,7 @@ data CardMatcher
   | CardWithType CardType
   | CardWithTrait Trait
   | CardMatchesAll [CardMatcher]
+  | CardWithPrintedCostAtMost Natural
   | -- | the card in any of its printings
     CardIs CardDef
   | CardMatchesAny [CardMatcher]
@@ -66,6 +67,7 @@ cardMatch matcher a = case matcher of
   CardWithResource resource ->
     resource `elem` map snd (filter isPrintedResource $ cdResources def)
   CardMatchesAll xs -> all (`cardMatch` a) xs
+  CardWithPrintedCostAtMost n -> maybe False ((<= n) . fromIntegral) (cdCost def)
   CardIs def' -> sameCard def' def
   CardMatchesAny xs -> any (`cardMatch` a) xs
  where
@@ -84,6 +86,10 @@ data InPlayLimit
   | MaxPerAlly Natural
   | -- | "Play under any player's control. Max N per player."
     MaxPerPlayerUnderAnyControl Natural
+  | -- | "Max N per round": copies played this round, by any player
+    MaxPerRound Natural
+  | MaxPerCharacter Natural
+  | MaxPerSideScheme Natural
   | -- | "Play under any player's control.", with no maximum
     UnderAnyControl
   deriving stock (Show, Eq, Generic)
@@ -163,4 +169,6 @@ instance HasCardDef CardDef where
   getCardDef = id
 
 toAdditionalCriteria :: CardDef -> Criteria
-toAdditionalCriteria = maybe NoCriteria abilityTypeCriteria . cdAbilityType
+toAdditionalCriteria def =
+  maybe NoCriteria abilityTypeCriteria (cdAbilityType def)
+    <> maybe NoCriteria abilitySubTypeCriteria (cdAbilitySubType def)

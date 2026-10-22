@@ -297,6 +297,7 @@ isPlayable attrs c = do
     AllyExists m -> selectAny m
     SchemeExists m -> selectAny m
     ExtendedCardExists m -> selectAny (NotCard c <> m)
+    UpgradeExists m -> selectAny m
     PayingFor _ -> pure True
 
 -- \^ this is critical and order matters to avoid infinite recursionl
@@ -334,6 +335,21 @@ checkPlayLimits ident c = case cdLimit def of
       UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
     MaxPerEnemy _ -> error "Unhandled"
+    -- copies played by any player count
+    MaxPerRound n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisRound
+    -- a friendly character without one: an ally, or an identity
+    MaxPerCharacter 1 -> case cdCardType def of
+      UpgradeType ->
+        orM
+          [ selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
+          , anyM (\p -> selectNone $ UpgradeNamed name <> UpgradeOnIdentity (IdentityWithId p)) =<< getPlayers
+          ]
+      _ -> error "Unhandled"
+    MaxPerCharacter _ -> error "Unhandled"
+    MaxPerSideScheme 1 -> case cdCardType def of
+      UpgradeType -> selectAny $ NotSideScheme $ SideSchemeWithUpgrade $ UpgradeNamed name
+      _ -> error "Unhandled"
+    MaxPerSideScheme _ -> error "Unhandled"
  where
   def = getCardDef c
   name = cdName def
@@ -345,6 +361,7 @@ getModifiedCost attrs c = do
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
+    ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
     AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
     _ -> 0
 
@@ -393,10 +410,11 @@ identityObligations = concatMap obligationsOf . HashMap.elems . playerIdentitySi
     AlterEgoSide side -> alterEgoObligations (toAttrs side)
     HeroSide _ -> []
 
-toRetaliate :: [Keyword] -> Natural
-toRetaliate [] = 0
-toRetaliate (Retaliate n : _) = n
-toRetaliate (_ : xs) = toRetaliate xs
+-- | The identity's keywords, with those its modifiers give it.
+getModifiedKeywords :: (HasGame m) => PlayerIdentity -> m [Keyword]
+getModifiedKeywords pid = do
+  modifiers <- getModifiers pid
+  pure $ toList (cdKeywords $ getCardDef pid) <> [k | KeywordModifier k <- modifiers]
 
 runIdentityMessage ::
   (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) =>
@@ -428,6 +446,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     BeginTurn -> do
       takeTurn pid
+      -- before anything else is done in the turn
+      push $ CheckWindows [W.Window W.After $ W.TurnBegan playerIdentityId]
       pure $ PlayerIdentity $ attrs & passedL .~ False
     CheckIfPassed -> do
       unless playerIdentityPassed (takeTurn pid)
@@ -799,12 +819,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           playerIdentityEncounterCards
       pure $ PlayerIdentity $ attrs & encounterCardsL .~ mempty
     IdentityWasAttacked attack' -> do
+      keywords <- getModifiedKeywords pid
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamage attack'
-        retaliate = case currentIdentity pid of
-          HeroSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
-          AlterEgoSide x -> toRetaliate . toList . cdKeywords $ getCardDef x
+        -- each instance of retaliate adds to the others
+        retaliate = sum [n | Retaliate n <- keywords]
       -- pushed last to first: the damage, then retaliate (forced, so before any
       -- response), then the window for responses to defending
       when playerIdentityDefended $
@@ -831,9 +851,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged _ damage -> do
       modifiedHp <- getModifiedHp pid
-      when
-        (playerIdentityDamage + damageAmount damage >= modifiedHp)
-        (push $ IdentityMessage playerIdentityId IdentityDefeated)
+      -- what answers "would be defeated" may take the defeat off the queue
+      when (playerIdentityDamage + damageAmount damage >= modifiedHp) $
+        pushAll
+          [ CheckWindows [W.Window W.Would $ W.IdentityDefeat playerIdentityId]
+          , IdentityMessage playerIdentityId IdentityDefeated
+          ]
       pure $ PlayerIdentity $ attrs & damageL +~ damageAmount damage
     IdentityDefeated -> do
       players <- getPlayers
@@ -873,6 +896,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & damageReductionL +~ n & defendedL .~ True
     IdentityHealed n ->
       pure $ PlayerIdentity $ attrs & damageL %~ subtractNatural n
+    IdentitySetHitPoints n -> do
+      modifiedHp <- getModifiedHp pid
+      pure $ PlayerIdentity $ attrs & damageL .~ subtractNatural n modifiedHp
     IdentityStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ True
     IdentityConfused -> pure $ PlayerIdentity $ attrs & confusedL .~ True
     IdentityRemoveStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ False
@@ -1020,6 +1046,14 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     IdentityMessage ident (PlayedCard card _)
       | ident /= playerIdentityId attrs ->
           pure $ PlayerIdentity $ attrs & (discardL %~ Discard . filter (/= card) . unDiscard)
+    -- a card put into play leaves wherever it was
+    PutCardIntoPlay _ card _ _ ->
+      pure $
+        PlayerIdentity $
+          attrs
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (deckL %~ Deck . filter (/= card) . unDeck)
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid

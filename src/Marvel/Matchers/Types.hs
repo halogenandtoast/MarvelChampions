@@ -39,6 +39,8 @@ data IdentityMatcher
   | You
   | FirstPlayer
   | IdentityMatchAll [IdentityMatcher]
+  | -- | not kept from thwarting (by a 'CannotThwart' modifier)
+    IdentityCanThwart
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -70,6 +72,7 @@ data AllyMatcher
   | AnyAlly
   | NotAlly AllyMatcher
   | AllyMatches [AllyMatcher]
+  | AllyWithTrait Trait
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -118,6 +121,8 @@ data UpgradeMatcher
   | UpgradeWithId UpgradeId
   | UpgradeMatches [UpgradeMatcher]
   | UpgradeOneOf [UpgradeMatcher]
+  | -- | on an identity matching: controlled by it, and attached to nothing else
+    UpgradeOnIdentity IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -188,6 +193,8 @@ data SideSchemeMatcher
   | CrisisSideScheme
   | SideSchemeIs CardDef
   | SideSchemeWithId SideSchemeId
+  | SideSchemeWithUpgrade UpgradeMatcher
+  | NotSideScheme SideSchemeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -259,6 +266,7 @@ data ExtendedCardMatcher
   | TopmostCardInDiscardOf IdentityMatcher CardMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
   | NotCard PlayerCard
+  | InHandOf IdentityMatcher ExtendedCardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

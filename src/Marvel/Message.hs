@@ -208,6 +208,9 @@ data Message
   | -- | a step only one card knows, as ArkhamHorror's @ScenarioSpecific@: the card the
     -- target names reads the key and decodes the value; the engine passes it by
     CardSpecific Target Text Value
+  | -- | the first card matching in the encounter deck or its discard pile is put into
+    -- play for the player, then the deck is shuffled
+    SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher
   | -- | an event's ability resolved for the player without the event being played, as an
     -- Invocation card's "Special": nothing that answers playing an event sees it
     ResolveEventWithoutPlaying IdentityId PlayerCard

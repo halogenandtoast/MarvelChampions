@@ -47,6 +47,7 @@ allTreacheries = fromList $ map
   , exhaustion
   , masterplan
   , underFire
+  , hailHydra
   , harvest
   , thoughtcasting
   ]
@@ -195,6 +196,9 @@ underFire =
   (treachery "01193" "Under Fire" [Boost, Boost, Boost] ExpertSet 1)
     { cdKeywords = singleton Keyword.Surge
     }
+
+hailHydra :: CardDef
+hailHydra = treachery "03030" "Hail Hydra!" [] CaptainAmericaNemesis 1
 
 harvest :: CardDef
 harvest = treachery "05029" "Harvest" [] MsMarvelNemesis 2

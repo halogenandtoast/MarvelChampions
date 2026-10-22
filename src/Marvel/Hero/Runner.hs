@@ -28,7 +28,7 @@ instance HasAbilities Hero where
   getAbilities (Hero a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic (SchemeExists ThwartableScheme) ExhaustCost Thwart
+      [ ability a 300 Basic (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
       , ability a 301 Basic (EnemyExists AttackableEnemy) ExhaustCost Attack
       ]
 
@@ -147,10 +147,10 @@ instance RunMessage (Attrs Hero) where
                 EnemyMinionId vid ->
                   MinionMessage vid (MinionDefendedBy $ IdentityCharacter ident)
             , CheckWindows [W.Window W.When $ W.HeroDefends ident enemyId]
-            , IdentityMessage ident $ SideMessage $ DefendsAgainst enemyId
+            , IdentityMessage ident $ SideMessage $ DefenseApplied enemyId
             ]
           pure a
-        DefendsAgainst _ -> do
+        DefenseApplied _ -> do
           def <- getModifiedDefense a
           push $ IdentityMessage ident $ IdentityDefended def
           pure a

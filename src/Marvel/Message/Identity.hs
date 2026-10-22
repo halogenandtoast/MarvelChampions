@@ -65,6 +65,8 @@ data IdentityMessage
   | ShuffleIdentityDiscardBackIntoDeck
   | Search SearchSignifier CardMatcher SearchOption ReturnOption
   | IdentityRetaliate Natural EnemyId
+  | -- | the hit point dial is set: the damage is what leaves this many hit points
+    IdentitySetHitPoints Natural
   | -- | discard from the top of the deck until a card matching is discarded, which the
     -- target is told of; the deck emptying ends it
     DiscardFromDeckUntil CardMatcher Target
@@ -80,8 +82,8 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
-  | -- | the hero's defense counted, once what answers their defending has
-    DefendsAgainst EnemyId
+  | -- | the defender's DEF is applied, once "when defends" is answered
+    DefenseApplied EnemyId
   | -- | the hero's basic attack, once what answers its being made has
     BasicAttack
   deriving stock (Show, Eq, Generic)

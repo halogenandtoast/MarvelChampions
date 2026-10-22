@@ -14,13 +14,16 @@ import Marvel.Ref as X
 import Marvel.Stats as X
 
 import Data.Typeable
+import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types
+import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id hiding (AllyId)
 import Marvel.Id qualified as Id
 import Marvel.Message hiding (AllyStunned)
 import Marvel.Question hiding (AllyAttack, AllyThwart)
+import Marvel.Trait
 import Marvel.Window qualified as W
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbilities a, RunMessage a) => IsAlly a where
@@ -123,6 +126,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyTough = False
             , allyCounters = 0
             , allyUpgrades = mempty
+            , allyAdditionalAttackCost = NoCost
             }
     }
 
@@ -136,6 +140,20 @@ getModifiedAttack attrs = do
  where
   applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
+
+getModifiedHitPoints :: (HasGame m) => Attrs Ally -> m Natural
+getModifiedHitPoints attrs = do
+  modifiers <- getModifiers attrs
+  pure $ foldr applyModifier (unHp $ allyHitPoints attrs) modifiers
+ where
+  applyModifier (HitPointModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier _ = id
+
+-- | The consequential damage it takes after it attacks.
+getModifiedAttackConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
+getModifiedAttackConsequentialDamage attrs = do
+  modifiers <- getModifiers attrs
+  pure $ allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
 
 getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
@@ -232,6 +250,8 @@ instance Entity Ally where
     , allyStunned :: Bool
     , allyConfused :: Bool
     , allyTough :: Bool
+    , allyAdditionalAttackCost :: Cost
+    -- ^ paid on top of exhausting it, for its basic attack
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -295,6 +315,14 @@ getAllyDamage = allyDamage . toAttrs
 
 instance HasCardDef Ally where
   getCardDef = getCardDef . toAttrs
+
+instance HasTraits Ally where
+  getTraits a = do
+    modifiers <- getModifiers a
+    pure $ foldr applyModifier (cdTraits $ getCardDef a) modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
 
 instance HasModifiersFor Ally where
   getModifiersFor source target (Ally a) = getModifiersFor source target a

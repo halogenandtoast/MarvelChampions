@@ -40,6 +40,8 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Vehicle
+  | Title
   | Champion
   | Inhuman
   | Bird
@@ -48,6 +50,5 @@ data Trait
   | Spell
   | Artifact
   | Invocation
-  | Title
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

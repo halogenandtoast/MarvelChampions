@@ -331,4 +331,15 @@ instance RunMessage (Attrs Scenario) where
             attrs
               & (discardL %~ filter (/= card))
               & (encounterDeckL %~ filter (/= card))
+    SearchForAndPutIntoPlayEncounterCard ident matcher ->
+      case find (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard) of
+        Nothing -> do
+          push ShuffleEncounterDeck
+          pure attrs
+        Just card -> do
+          pushAll [PutEncounterCardIntoPlay ident card, ShuffleEncounterDeck]
+          pure $
+            attrs
+              & (discardL %~ filter (/= card))
+              & (encounterDeckL %~ filter (/= card))
     _ -> pure attrs
