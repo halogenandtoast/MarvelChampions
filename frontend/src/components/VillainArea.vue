@@ -55,14 +55,14 @@ const escalation = (scheme: SchemeView) => {
     </div>
     <!-- what is attached to the villain, as cards beside it -->
     <template v-for="villain in villains" :key="`${villain.id}-attached`">
-      <BoardCard v-for="a in villain.attachments ?? []" :id="a.id" :key="a.id" class="villain-attached" :code="a.code" :name="a.name" :damage="a.damage ?? 0" />
+      <BoardCard v-for="a in villain.attachments ?? []" :id="a.id" :key="a.id" class="villain-attached" :code="a.code" :name="a.name" :damage="a.damage ?? 0" :counters="a.counters || null" />
       <BoardCard v-for="u in villain.upgrades ?? []" :id="u.id" :key="u.id" class="villain-attached" :code="u.code" :name="u.name" :exhausted="u.exhausted" :counters="u.uses ?? null" />
     </template>
 
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
-        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" />
+        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
           {{ t('game.perRound', { count: escalation(scheme)! + (game.accelerationTokens ?? 0) }) }}
@@ -83,7 +83,7 @@ const escalation = (scheme: SchemeView) => {
 
       <div v-if="environments.length" class="side-schemes environments">
         <div v-for="environment in environments" :key="environment.id" class="scheme side">
-          <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" />
+          <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" />
         </div>
       </div>
     </div>

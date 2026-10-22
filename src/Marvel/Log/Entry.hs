@@ -28,6 +28,7 @@ data LogRefKind
   | RefObligation
   | RefMainScheme
   | RefSideScheme
+  | RefEnvironment
   | RefScenario
   deriving stock (Show, Eq, Ord, Generic)
   deriving anyclass (ToJSON, FromJSON)

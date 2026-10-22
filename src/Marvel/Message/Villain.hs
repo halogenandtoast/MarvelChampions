@@ -31,6 +31,9 @@ data VillainMessage
   | AttachedToVillain AttachmentId
   | AttachedUpgradeToVillain UpgradeId
   | VillainAdvanced
+  | -- | it turns to its other face, keeping its damage, status cards, attachments and
+    -- boosts: the villain answers it with @flipVillainTo@
+    FlipVillain
   | -- | its hit points (and remaining hit points) go up or down by this much
     VillainHitPointsChanged Int
   | -- | a boost card's icons are added to the activation

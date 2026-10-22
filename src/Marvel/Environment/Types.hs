@@ -7,6 +7,7 @@ import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Entity
+import Marvel.Environment.Cards qualified as Cards
 import Marvel.Id hiding (EnvironmentId)
 import Marvel.Id as X (EnvironmentId)
 import Marvel.Message
@@ -42,6 +43,7 @@ instance Entity Environment where
     { environmentId :: EnvironmentId
     , environmentCardDef :: CardDef
     , environmentAttachments :: HashSet AttachmentId
+    , environmentCounters :: Natural
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -49,12 +51,14 @@ instance Entity Environment where
     EnvironmentId :: Field Environment EnvironmentId
     EnvironmentCardDef :: Field Environment CardDef
     EnvironmentAttachments :: Field Environment (HashSet AttachmentId)
+    EnvironmentCounters :: Field Environment Natural
   field fld e =
     let EnvironmentAttrs {..} = toAttrs e
      in case fld of
           EnvironmentId -> environmentId
           EnvironmentCardDef -> environmentCardDef
           EnvironmentAttachments -> environmentAttachments
+          EnvironmentCounters -> environmentCounters
   toId = environmentId . toAttrs
   toAttrs (Environment a) = toEnvironmentAttrs a
 
@@ -87,11 +91,14 @@ environment :: (Attrs Environment -> a) -> CardDef -> CardBuilder EnvironmentId 
 environment f cardDef =
   CardBuilder
     { cbCardDef = cardDef
-    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty
+    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0
     }
 
 attachmentsL :: Lens' (Attrs Environment) (HashSet AttachmentId)
 attachmentsL = lens environmentAttachments $ \m x -> m {environmentAttachments = x}
+
+countersL :: Lens' (Attrs Environment) Natural
+countersL = lens environmentCounters $ \m x -> m {environmentCounters = x}
 
 instance IsRef (Attrs Environment) where
   toRef = EnvironmentRef . environmentId
@@ -115,6 +122,12 @@ instance RunMessage (Attrs Environment) where
     EnvironmentMessage ident (AttachedToEnvironment attachmentId)
       | ident == environmentId attrs ->
           pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
+    EnvironmentMessage ident FlipEnvironment | ident == environmentId attrs ->
+      case lookup (flipCardCode $ toCardCode attrs) Cards.allEnvironments of
+        Just def -> pure attrs {environmentCardDef = def}
+        Nothing -> error $ "No other face for environment " <> show (toCardCode attrs)
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs

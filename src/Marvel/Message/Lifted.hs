@@ -14,7 +14,7 @@ import Marvel.Ability.Types (Ability)
 import Marvel.ActiveCost.Types
 import Marvel.Attack (Attack (..))
 import Marvel.Card.Code (CardCode)
-import Marvel.Card.Def (CardDef, CardMatcher)
+import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.Side (Side)
@@ -32,6 +32,8 @@ import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase)
 import Marvel.Question
 import Marvel.Queue
+import Marvel.Query (selectJust)
+import Marvel.Keyword (Keyword (Incite))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
@@ -191,7 +193,13 @@ placeThreatFrom from (toScheme -> scheme) n =
 placeThreatOnEach :: (ReverseQueue m, IsRef source) => source -> Natural -> SchemeMatcher -> m ()
 placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 
--- * Status cards
+-- | Incite X, as the card is revealed: X threat on the main scheme.
+incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
+incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
+  scheme <- selectJust MainScheme
+  placeThreat scheme n
+
+-- * Status cards and counters
 
 stun :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> m ()
 stun enemy = resolve . Stun (EnemyRef $ toEnemy enemy) . toSource
@@ -230,6 +238,13 @@ enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 enemyBecomesTough enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
   EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
+
+-- | Counters placed on, or removed from, an environment, main scheme or attachment.
+placeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
+placeCounters a = push . PlaceCounters (toTarget a)
+
+removeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
+removeCounters a = push . RemoveCounters (toTarget a)
 
 -- * Players and allies
 
@@ -377,6 +392,12 @@ addBoost vid = push . VillainMessage vid . VillainAddBoost
 villainAttackGainsOverkill :: (ReverseQueue m) => VillainId -> m ()
 villainAttackGainsOverkill vid = push $ VillainMessage vid VillainAttackGainOverkill
 
+-- | The villain turns to its other face, then its "When Revealed" is answered.
+flipVillain :: (ReverseQueue m) => VillainId -> m ()
+flipVillain vid = do
+  villainStep vid FlipVillain
+  checkWindows [Window When $ W.RevealVillain vid W.RevealedFromVillain]
+
 -- * Minions
 
 -- | The minion's activation in the alter-ego's villain phase: a confused one only
@@ -412,7 +433,7 @@ minionEndsAttack mid = push $ MinionMessage mid MinionEndAttack
 minionSchemed :: (ReverseQueue m) => MinionId -> m ()
 minionSchemed mid = push $ MinionMessage mid MinionSchemed
 
--- * Attachments
+-- * Attachments and environments
 
 -- | Whatever has the attachment is told it has left play.
 attachmentRemoved :: (ReverseQueue m) => AttachmentId -> m ()
@@ -433,6 +454,10 @@ attachToEnvironment environment = push . EnvironmentMessage environment . Attach
 
 damageAttachment :: (ReverseQueue m) => AttachmentId -> Natural -> m ()
 damageAttachment attachment = push . AttachmentMessage attachment . AttachmentDamaged
+
+-- | The environment turns to its other face.
+flipEnvironment :: (ReverseQueue m) => EnvironmentId -> m ()
+flipEnvironment eid = push $ EnvironmentMessage eid FlipEnvironment
 
 -- * Schemes
 
@@ -815,6 +840,10 @@ addSetupMainScheme = push . AddSetupMainScheme
 -- | The main scheme leaves play for the next one.
 replaceMainScheme :: (ReverseQueue m) => CardCode -> m ()
 replaceMainScheme = push . ReplaceMainScheme
+
+-- | Each player's obligations out of the encounter deck and the game.
+removePlayerObligationsFromGame :: (ReverseQueue m) => m ()
+removePlayerObligationsFromGame = push RemovePlayerObligationsFromGame
 
 -- * Steps of an element's own
 --

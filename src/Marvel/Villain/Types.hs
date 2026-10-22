@@ -389,6 +389,8 @@ runVillainMessage msg attrs = case msg of
   VillainCheckAdditionalBoosts -> do
     unless (null $ villainBoostCards attrs) $ villainStep vid VillainFlipBoostCards
     pure attrs
+  -- a double-sided villain answers this itself, with flipVillainTo
+  FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
@@ -427,6 +429,13 @@ advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildC
       & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
       & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer}
   restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
+
+-- | The villain's other face, as a flip turns it: unlike advancing, its damage and stage
+-- stay as they were, with all else that advancing keeps.
+flipVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
+flipVillainTo newVillain attrs = overVillainAttrs keep $ advanceVillainTo newVillain attrs
+ where
+  keep a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do

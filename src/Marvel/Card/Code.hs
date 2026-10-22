@@ -20,6 +20,13 @@ flipToSide :: Side -> CardCode -> CardCode
 flipToSide side cardCode = CardCode
   $ T.snoc (unCardCode $ toBaseCardCode cardCode) (toCardCodePiece side)
 
+-- | The code of a double-sided card's other face: @a@ and @b@ swap, anything else stays.
+flipCardCode :: CardCode -> CardCode
+flipCardCode cardCode = case T.unsnoc $ unCardCode cardCode of
+  Just (base, 'a') -> CardCode $ T.snoc base 'b'
+  Just (base, 'b') -> CardCode $ T.snoc base 'a'
+  _ -> cardCode
+
 toAlterEgoCardCode :: CardCode -> CardCode
 toAlterEgoCardCode = flipToSide B
 

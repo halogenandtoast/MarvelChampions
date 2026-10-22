@@ -42,6 +42,8 @@ instance Entity Obligation where
     { obligationId :: ObligationId
     , obligationCardDef :: CardDef
     , obligationSurge :: Bool
+    , obligationHeldCards :: [PlayerCard]
+    -- ^ player cards facedown under it, discarded with it
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -49,12 +51,14 @@ instance Entity Obligation where
     ObligationId :: Field Obligation ObligationId
     ObligationCardDef :: Field Obligation CardDef
     ObligationSurge :: Field Obligation Bool
+    ObligationHeldCards :: Field Obligation [PlayerCard]
   field fld o =
     let ObligationAttrs {..} = toAttrs o
      in case fld of
           ObligationId -> obligationId
           ObligationCardDef -> obligationCardDef
           ObligationSurge -> obligationSurge
+          ObligationHeldCards -> obligationHeldCards
   toId = obligationId . toAttrs
   toAttrs (Obligation a) = toObligationAttrs a
 
@@ -80,6 +84,9 @@ type ObligationCard a = CardBuilder ObligationId a
 surgeL :: Lens' (Attrs Obligation) Bool
 surgeL = lens obligationSurge $ \m x -> m {obligationSurge = x}
 
+heldCardsL :: Lens' (Attrs Obligation) [PlayerCard]
+heldCardsL = lens obligationHeldCards $ \m x -> m {obligationHeldCards = x}
+
 instance HasCardCode (Attrs Obligation) where
   toCardCode = toCardCode . obligationCardDef
 
@@ -93,6 +100,7 @@ obligation f cardDef =
             { obligationId = mid
             , obligationCardDef = cardDef
             , obligationSurge = False
+            , obligationHeldCards = []
             }
     }
 
@@ -119,4 +127,8 @@ instance RunMessage (Attrs Obligation) where
         pure attrs
       _ -> pure attrs
     GainSurge target | isTarget attrs target -> pure $ attrs & surgeL .~ True
+    -- the cards under it go to their owners' discard piles as it leaves play
+    RemoveFromPlay target | isTarget attrs target -> do
+      for_ (obligationHeldCards attrs) discardCard
+      pure $ attrs & heldCardsL .~ []
     _ -> pure attrs

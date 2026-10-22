@@ -368,6 +368,13 @@ data Message
     -- card it does not have, or has one taken off it
     GiveStatus Target StatusCard
   | RemoveStatus Target StatusCard
+  | -- | counters on an environment, main scheme or attachment, by its ref: what they
+    -- count is the card's to say
+    PlaceCounters Target Natural
+  | RemoveCounters Target Natural
+  | -- | each player's obligations are taken out of the encounter deck and the game, as a
+    -- setup says
+    RemovePlayerObligationsFromGame
   | -- | one effect on several game elements at once, as damage dealt to each of several
     -- enemies: each message is run before anything any of them leads to
     Simultaneously [Message]

@@ -47,6 +47,7 @@ instance Entity Attachment where
     , attachmentDamage :: Natural
     , attachmentIdentity :: Maybe IdentityId
     -- ^ the hero it is attached to, if it is
+    , attachmentCounters :: Natural
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -55,6 +56,7 @@ instance Entity Attachment where
     AttachmentCardDef :: Field Attachment CardDef
     AttachmentEnemy :: Field Attachment (Maybe EnemyId)
     AttachmentDamage :: Field Attachment Natural
+    AttachmentCounters :: Field Attachment Natural
   field fld a =
     let AttachmentAttrs {..} = toAttrs a
      in case fld of
@@ -62,6 +64,7 @@ instance Entity Attachment where
           AttachmentCardDef -> attachmentCardDef
           AttachmentEnemy -> attachmentEnemy
           AttachmentDamage -> attachmentDamage
+          AttachmentCounters -> attachmentCounters
   toId = attachmentId . toAttrs
   toAttrs (Attachment a) = toAttachmentAttrs a
 
@@ -97,6 +100,9 @@ enemyL = lens attachmentEnemy $ \m x -> m {attachmentEnemy = x}
 damageL :: Lens' (Attrs Attachment) Natural
 damageL = lens attachmentDamage $ \m x -> m {attachmentDamage = x}
 
+countersL :: Lens' (Attrs Attachment) Natural
+countersL = lens attachmentCounters $ \m x -> m {attachmentCounters = x}
+
 instance HasCardCode (Attrs Attachment) where
   toCardCode = toCardCode . attachmentCardDef
 
@@ -112,6 +118,7 @@ attachment f cardDef =
             , attachmentEnemy = Nothing
             , attachmentDamage = 0
             , attachmentIdentity = Nothing
+            , attachmentCounters = 0
             }
     }
 
@@ -126,6 +133,8 @@ instance RunMessage (Attrs Attachment) where
             attachedTo enemyId (attachmentId attrs)
             pure $ attrs & enemyL ?~ enemyId
           _ -> pure attrs
+    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs
 
 instance IsCard (Attrs Attachment) where
