@@ -24,6 +24,9 @@ allMainSchemes =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Red Skull
+    , theRiseOfRedSkull
+    , newWorldHydra
 
     -- The Once and Future Kang
 
@@ -72,3 +75,11 @@ assaultOnNorad = mainScheme "01138" "Assault on NORAD" Ultron
 
 countdownToOblivion :: CardDef
 countdownToOblivion = mainScheme "01139" "Countdown to Oblivion" Ultron
+
+-- Red Skull
+
+theRiseOfRedSkull :: CardDef
+theRiseOfRedSkull = mainScheme "04128" "The Rise of Red Skull" RedSkull
+
+newWorldHydra :: CardDef
+newWorldHydra = mainScheme "04129" "New World Hydra" RedSkull

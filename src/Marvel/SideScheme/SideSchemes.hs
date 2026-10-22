@@ -30,5 +30,12 @@ import Marvel.SideScheme.SideSchemes.TotalDestruction as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.SideScheme.SideSchemes.CensorThePast as X
+import Marvel.SideScheme.SideSchemes.HydraReinforcements as X
+import Marvel.SideScheme.SideSchemes.MassChaos as X
+import Marvel.SideScheme.SideSchemes.PrisonCamps as X
+import Marvel.SideScheme.SideSchemes.TheRedHouse as X
+import Marvel.SideScheme.SideSchemes.TheSleeperAwakened as X
 
 -- The Once and Future Kang

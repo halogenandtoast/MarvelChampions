@@ -54,6 +54,9 @@ allMinions =
       -- The Wrecking Crew
 
       -- The Rise of Red Skull
+      -- Red Skull
+      , theSleeper
+      , hydraExoSoldier
 
       -- The Once and Future Kang
 
@@ -286,3 +289,18 @@ baronMordo :: CardDef
 baronMordo =
   unique $
     minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1
+
+-- Red Skull
+
+theSleeper :: CardDef
+theSleeper =
+  unique $
+    (minion "04130" "The Sleeper" [Elite, Hydra, Robot] [Boost] RedSkull 1)
+      { cdKeywords = fromList [Guard, Retaliate 1, Toughness]
+      }
+
+hydraExoSoldier :: CardDef
+hydraExoSoldier =
+  (minion "04131" "Hydra Exo-Soldier" [Hydra] [Star] RedSkull 3)
+    { cdKeywords = singleton Toughness
+    }

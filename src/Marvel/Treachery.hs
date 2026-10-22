@@ -67,6 +67,10 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeTreacheryCard bitterRival
+  , SomeTreacheryCard spreadingLies
+  , SomeTreacheryCard infinitePower
 
   -- The Once and Future Kang
 

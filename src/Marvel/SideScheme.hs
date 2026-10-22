@@ -52,6 +52,13 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeSideSchemeCard theRedHouse
+  , SomeSideSchemeCard theSleeperAwakened
+  , SomeSideSchemeCard prisonCamps
+  , SomeSideSchemeCard censorThePast
+  , SomeSideSchemeCard hydraReinforcements
+  , SomeSideSchemeCard massChaos
 
   -- The Once and Future Kang
 

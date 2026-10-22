@@ -34,5 +34,8 @@ import Marvel.Minion.Minions.Abomination as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Minion.Minions.HydraExoSoldier as X
+import Marvel.Minion.Minions.TheSleeper as X
 
 -- The Once and Future Kang

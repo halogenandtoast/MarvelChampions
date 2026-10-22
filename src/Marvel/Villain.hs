@@ -16,6 +16,8 @@ import Marvel.Villain.Villains.Ultron
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Villain.Villains.RedSkull
 
 -- The Once and Future Kang
 
@@ -56,6 +58,11 @@ allVillains = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeVillainCard redSkull
+  , SomeVillainCard redSkull1
+  , SomeVillainCard redSkull2
+  , SomeVillainCard redSkull3
 
   -- The Once and Future Kang
 

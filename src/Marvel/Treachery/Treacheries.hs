@@ -43,5 +43,9 @@ import Marvel.Treachery.Treacheries.ClashOfTheTitans as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Treachery.Treacheries.BitterRival as X
+import Marvel.Treachery.Treacheries.InfinitePower as X
+import Marvel.Treachery.Treacheries.SpreadingLies as X
 
 -- The Once and Future Kang

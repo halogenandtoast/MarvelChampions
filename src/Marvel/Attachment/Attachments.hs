@@ -18,5 +18,10 @@ import Marvel.Attachment.Attachments.Counterspell as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+-- Red Skull
+import Marvel.Attachment.Attachments.MasterStrategist as X
+import Marvel.Attachment.Attachments.RedSkullsLuger as X
+import Marvel.Attachment.Attachments.RedSkullsRightHook as X
+import Marvel.Attachment.Attachments.TwistedReality as X
 
 -- The Once and Future Kang

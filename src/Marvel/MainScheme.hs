@@ -34,6 +34,9 @@ allMainSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , SomeMainSchemeCard theRiseOfRedSkull
+  , SomeMainSchemeCard newWorldHydra
 
   -- The Once and Future Kang
 

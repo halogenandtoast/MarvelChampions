@@ -36,6 +36,8 @@ allScenarios = fromList $ map
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Red Skull
+    , SomeScenarioCard redSkullScenario
 
     -- The Once and Future Kang
 
@@ -59,6 +61,8 @@ recommendedModulars =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    -- Red Skull
+    , ("04125", [EncounterSet.HydraAssault, EncounterSet.HydraPatrol])
 
     -- The Once and Future Kang
 
@@ -120,3 +124,20 @@ ultronScenario = scenario
 
 scenarioAccelerationTokens :: Scenario -> Natural
 scenarioAccelerationTokens = Types.scenarioAccelerationTokens . toAttrs
+
+-- Red Skull
+
+newtype RedSkullScenario = RedSkullScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RedSkullScenario where
+  runMessage msg (RedSkullScenario a) = RedSkullScenario <$> runMessage msg a
+
+redSkullScenario :: ScenarioCard RedSkullScenario
+redSkullScenario = scenario
+  RedSkullScenario
+  "04125"
+  ("04125", "04126")
+  ["04128", "04129"]
+  [EncounterSet.RedSkull]

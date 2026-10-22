@@ -60,6 +60,10 @@ allTreacheries = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  -- Red Skull
+  , bitterRival
+  , spreadingLies
+  , infinitePower
 
   -- The Once and Future Kang
 
@@ -228,3 +232,14 @@ trickster = treachery "06030" "Trickster" [Boost] ThorNemesis 1
 
 thoughtcasting :: CardDef
 thoughtcasting = treachery "09031" "Thoughtcasting" [Boost] DoctorStrangeNemesis 1
+
+-- Red Skull
+
+bitterRival :: CardDef
+bitterRival = treachery "04136" "Bitter Rival" [Star] RedSkull 2
+
+spreadingLies :: CardDef
+spreadingLies = treachery "04137" "Spreading Lies" [Boost, Star] RedSkull 2
+
+infinitePower :: CardDef
+infinitePower = treachery "04138" "Infinite Power" [Boost, Boost] RedSkull 2
