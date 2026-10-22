@@ -3,6 +3,7 @@ module Marvel.Criteria where
 import Marvel.Prelude
 
 import Marvel.Ability.Types (AbilityType (..))
+import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Matchers.Types
 
 data Criteria
@@ -22,6 +23,8 @@ data Criteria
   | ExtendedCardExists ExtendedCardMatcher
   | Never
   | Criteria [Criteria]
+  | -- | a resource ability that pays only for a card matching, as "for an event"
+    PayingFor CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -35,6 +38,13 @@ instance Semigroup Criteria where
   Criteria xs <> y = Criteria $ xs <> [y]
   x <> Criteria ys = Criteria $ x : ys
   x <> y = Criteria [x, y]
+
+-- | The cards a resource ability may pay for, if it is limited to some.
+payingForMatchers :: Criteria -> [CardMatcher]
+payingForMatchers = \case
+  PayingFor m -> [m]
+  Criteria cs -> concatMap payingForMatchers cs
+  _ -> []
 
 -- | The form a "Hero …" or "Alter-Ego …" ability is used in.
 abilityTypeCriteria :: AbilityType -> Criteria

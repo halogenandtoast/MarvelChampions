@@ -112,6 +112,7 @@ getResourceAbilities ::
   , Projection m PlayerIdentity
   ) =>
   IdentityId ->
+  Maybe PlayerCard ->
   m [Ability]
 gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural

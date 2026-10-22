@@ -197,5 +197,6 @@
     "mental": "Mental",
     "physical": "Physical",
     "wild": "Wild"
-  }
+  },
+  "facedownCard": "Facedown card"
 }

@@ -83,7 +83,7 @@ import Marvel.Scenario.Types (Scenario, getScenarioDifficulty, scenarioSetAsideC
 import Marvel.SideScheme
 import Marvel.SideScheme.Types (SideScheme, getSideSchemeThreat, isCrisis)
 import Marvel.Support
-import Marvel.Support.Types (Attrs (supportCardDef), Support, getSupportController, getSupportUses)
+import Marvel.Support.Types (Attrs (supportCardDef, supportHeldCards), Support, getSupportController, getSupportUses)
 import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
@@ -410,11 +410,11 @@ runGameMessage msg g@Game {..} = case msg of
           [IdentityMessage ident $ AllyRemoved aid, DiscardedCard $ toCard ally]
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     SupportRef sid -> do
+      -- it is discarded, and the cards attached to it facedown with it
       for_ (lookup sid $ gameSupports g) $ \support ->
-        push $
-          IdentityMessage (getSupportController support) $
-            SupportRemoved
-              sid
+        pushAll $
+          [IdentityMessage (getSupportController support) (SupportRemoved sid), DiscardedCard (toCard $ toAttrs support)]
+            <> map (DiscardedCard . PlayerCard) (supportHeldCards $ toAttrs support)
       pure $ g & (entitiesL . supportsL %~ deleteMap sid)
     UpgradeRef uid -> do
       case (lookup uid $ gameUpgrades g) of
@@ -536,7 +536,10 @@ runGameMessage msg g@Game {..} = case msg of
               then pure (IdentityMessage ident IdentityRemoveConfused)
               else pure playEvent
           _ -> pure playEvent
-        pushAll [playedMessage, EventMessage (toId event) ResolvedEvent]
+        -- "when you play" answers once the cost is paid, before the event resolves;
+        -- "after you play", once it has
+        let played timing = CheckWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
+        pushAll [played When, playedMessage, EventMessage (toId event) ResolvedEvent, played After]
         pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
   PutBoostIntoPlay target ident -> case target of
@@ -771,6 +774,14 @@ runGameMessage msg g@Game {..} = case msg of
                   (Just $ getAllyController ally)
             ]
       pure $ g & entitiesL . alliesL %~ deleteMap aid
+    -- a played event goes back from its controller's discard pile, if it is still there
+    EventRef eid -> do
+      for_ (lookup eid $ gameEvents g) \event -> do
+        let controller = eventController (toAttrs event)
+        for_ [c | PlayerCard c <- [toCard (toAttrs event)]] \c -> do
+          let inDiscard = maybe False (elem c . unDiscard . playerIdentityDiscard . toAttrs) (lookup controller $ gamePlayers g)
+          pushWhen inDiscard $ IdentityMessage controller (AddToHand c)
+      pure g
     _ -> error "unhandled"
   FocusCards cards -> pure $ g & focusedCardsL .~ cards
   UnfocusCards -> pure $ g & focusedCardsL .~ []
@@ -792,9 +803,13 @@ runGameMessage msg g@Game {..} = case msg of
     attrs <- getIdentity ident
     -- a treachery's reveal is cancelled by taking it off the queue: its window then
     -- closes, so a second cancel is not offered
+    -- likewise damage prevented in full: nothing more answers it
     let open = \case
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
+            _ -> False
+          W.Window _ (W.IdentityTakeDamage iid _) -> isQueued \case
+            IdentityMessage iid' (IdentityDamaged _ _) -> iid' == iid
             _ -> False
           _ -> pure True
     openWindows <- filterM open windows
@@ -948,6 +963,7 @@ isWindowPlayable window attrs c = do
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
+    PayingFor _ -> pure True
 
 abilityInWindow :: (HasGame m) => Window -> Ability -> m Bool
 abilityInWindow window a =
@@ -1279,7 +1295,7 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getAvailableResourcesFor ident mc = do
-  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident
+  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident mc
   playerResources <- concatMapM (`resourcesFor` mc) =<< getAvailablePaymentSources ident
   pure $ playerResources <> abilitiesResources
 
@@ -1292,8 +1308,10 @@ getResourceAbilities ::
   , Projection m PlayerIdentity
   ) =>
   IdentityId ->
+  -- | the card being paid for, if a card is
+  Maybe PlayerCard ->
   m [Ability]
-getResourceAbilities ident = do
+getResourceAbilities ident mc = do
   abilities <- getAbilitiesFor ident
   usedAbilities <- getUsedAbilities
   filterM
@@ -1301,11 +1319,14 @@ getResourceAbilities ident = do
         . sequence
           [ pure . passesUseLimit ident usedAbilities
           , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
+          , pure . paysFor
           , passesCanAffordCost ident
           , passesCriteria ident
           ]
     )
     abilities
+ where
+  paysFor a = all (\m -> maybe False (cardMatch m) mc) (payingForMatchers $ abilityCriteria a)
 
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
@@ -1497,6 +1518,9 @@ gameSelectSupport = \case
   SupportMatches xs -> do
     all' <- HashSet.fromList . HashMap.keys <$> getsGame gameSupports
     foldr HashSet.intersection all' <$> traverse gameSelectSupport xs
+  SupportWithTrait t -> do
+    supports <- HashMap.elems <$> getsGame gameSupports
+    pure $ HashSet.fromList $ map toId $ filter (member t . cdTraits . supportCardDef . toAttrs) supports
 
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do

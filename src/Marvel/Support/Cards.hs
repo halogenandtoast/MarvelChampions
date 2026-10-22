@@ -26,6 +26,9 @@ allSupports = fromList $ concatMap
   , medTeam
   , avengersMansion
   , helicarrier
+  , aamirKhan
+  , brunoCarrelli
+  , nakiaBahadir
   ]
 
 support
@@ -64,6 +67,7 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
   }
 
 unique :: CardDef -> CardDef
@@ -124,3 +128,12 @@ avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (Ma
 helicarrier :: CardDef
 helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+
+aamirKhan :: CardDef
+aamirKhan = unique $ identitySupport "05006" "Aamir Khan" 1 [Persona] [Mental]
+
+brunoCarrelli :: CardDef
+brunoCarrelli = unique $ identitySupport "05007" "Bruno Carrelli" 1 [Persona] [Physical]
+
+nakiaBahadir :: CardDef
+nakiaBahadir = unique $ identitySupport "05008" "Nakia Bahadir" 1 [Persona] [Energy]

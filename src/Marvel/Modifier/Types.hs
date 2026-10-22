@@ -17,5 +17,11 @@ data Modifier
   | TraitModifier Trait
   | KeywordModifier Keyword
   | LastSpecial
+  | -- | on a source: each instance of damage it deals is increased
+    DamageDealtModifier Natural
+  | -- | on a source: each instance of threat it removes is increased
+    ThreatRemovedModifier Natural
+  | RecoveryModifier Natural
+  | CannotTakeDamage
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
