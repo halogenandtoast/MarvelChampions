@@ -165,3 +165,11 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
+  EngagesMinion timing identityMatcher minionMatcher -> case windowType w of
+    EngagedMinion ident minionId
+      | windowTiming w == timing ->
+          liftA2
+            (&&)
+            (identityMatches identityMatcher ident)
+            (minionMatches minionMatcher minionId)
+    _ -> pure False

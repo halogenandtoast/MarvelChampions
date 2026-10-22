@@ -548,10 +548,7 @@ runGameMessage msg g@Game {..} = case msg of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of
         Just minion -> do
-          pushAll
-            [ IdentityMessage ident $ MinionEngaged minionId
-            , MinionMessage minionId $ MinionEngagedIdentity ident
-            ]
+          pushAll $ engageMinion minionId ident
           pure $
             g
               & (boostEntitiesL . minionsL %~ deleteMap (toId minion))
@@ -643,10 +640,9 @@ runGameMessage msg g@Game {..} = case msg of
                , CheckWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
                , MinionMessage (toId minion) (RevealMinion ident)
                , UnfocusCards
-               , IdentityMessage ident (MinionEngaged $ toId minion)
-               , MinionMessage (toId minion) (MinionEngagedIdentity ident)
-               , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
                ]
+            <> engageMinion (toId minion) ident
+            <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
             <> surge
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
@@ -710,10 +706,8 @@ runGameMessage msg g@Game {..} = case msg of
         isTough = Toughness `member` cdKeywords (getCardDef card)
       pushAll $
         [MinionMessage (toId minion) MinionBecomeTough | isTough]
-          <> [ IdentityMessage ident (MinionEngaged $ toId minion)
-             , MinionMessage (toId minion) (MinionEngagedIdentity ident)
-             , CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
-             ]
+          <> engageMinion (toId minion) ident
+          <> [CheckWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
     _ -> do
       push $ RevealedEncounterCard ident card
@@ -737,11 +731,8 @@ runGameMessage msg g@Game {..} = case msg of
               overMinion (facedownCardL ?~ card) $
                 lookupMinion "xdrone" ident minionId
           pushAll $
-            [ RemoveFromGame (CardIdRef $ pcCardId card)
-            , IdentityMessage ident (MinionEngaged minionId)
-            , MinionMessage minionId (MinionEngagedIdentity ident)
-            , CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]
-            ]
+            (RemoveFromGame (CardIdRef $ pcCardId card) : engageMinion minionId ident)
+              <> [CheckWindows [W.Window After $ W.MinionEnteredPlay minionId]]
               <> [msg' | null rest, msg' <- reshuffle]
           pure $ g & (entitiesL . minionsL %~ insertMap minionId drone)
   EndCheckWindows -> pure g

@@ -58,6 +58,11 @@ placeThreatOn scheme n =
           SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemePlaceThreat n)
        ]
 
+-- | The minion engages the player, leaving the player it was engaged with.
+engageMinion :: MinionId -> IdentityId -> [Message]
+engageMinion minion ident =
+  [IdentityMessage ident (MinionEngaged minion), MinionMessage minion (MinionEngagedIdentity ident)]
+
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
 cardSpecific a key v = CardSpecific (toTarget a) key (toJSON v)

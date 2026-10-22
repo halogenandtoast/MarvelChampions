@@ -91,11 +91,14 @@ runMinionMessage msg attrs = case msg of
   AttachedUpgradeToMinion upgradeId ->
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
   RevealMinion _ -> pure attrs
+  -- quickstrike, as a forced ability, attacks before the window for engaging opens
   MinionEngagedIdentity ident -> do
     isHero <- identityMatches HeroIdentity ident
-    when
-      (isHero && Quickstrike `member` cdKeywords (getCardDef attrs))
-      (push $ MinionMessage (minionId attrs) $ MinionAttacks ident)
+    let previous = minionEngagedIdentity attrs
+    pushAll $
+      [IdentityMessage previous (MinionDisengaged $ minionId attrs) | previous /= ident]
+        <> [MinionMessage (minionId attrs) $ MinionAttacks ident | isHero && Quickstrike `member` cdKeywords (getCardDef attrs)]
+        <> [CheckWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]]
     pure attrs {minionEngagedIdentity = ident}
   MinionDefeated -> do
     pushAll $

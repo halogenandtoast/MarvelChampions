@@ -833,14 +833,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       case ps of
         [x]
           | x /= playerIdentityId ->
-              pushAll $
-                concatMap
-                  ( \minionId ->
-                      [ IdentityMessage x (MinionEngaged minionId)
-                      , MinionMessage minionId (MinionEngagedIdentity x)
-                      ]
-                  )
-                  (toList playerIdentityMinions)
+              pushAll $ concatMap (`engageMinion` x) (toList playerIdentityMinions)
         _ -> pure ()
       -- the cards they control leave play, and the encounter cards dealt to them are
       -- discarded (rules reference, "Player Elimination")
