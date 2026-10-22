@@ -61,5 +61,7 @@
   "take2Damage": "Take 2 damage",
   "deal3DamageToYourHero": "Deal 3 damage to your hero",
   "askedToDefend": "Defend this attack?",
-  "declineToDefend": "Do not defend"
+  "declineToDefend": "Do not defend",
+  "exhaustSteveRogersRemoveManOutOfTime": "Exhaust Steve Rogers → remove Man Out of Time from the game",
+  "discardHalfYourHandDiscardObligation": "Discard half the cards in your hand, rounded down. Discard this obligation"
 }

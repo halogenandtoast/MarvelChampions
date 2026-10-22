@@ -16,3 +16,7 @@ import Marvel.Ally.Allies.SpiderWomanJessicaDrew as X
 import Marvel.Ally.Allies.TigraGreerGrantNelson as X
 import Marvel.Ally.Allies.Vision as X
 import Marvel.Ally.Allies.WarMachineJamesRhodes as X
+import Marvel.Ally.Allies.Agent13SharonCarter as X
+import Marvel.Ally.Allies.FalconSamWilson as X
+import Marvel.Ally.Allies.SquirrelGirlDoreenGreen as X
+import Marvel.Ally.Allies.WonderManSimonWilliams as X

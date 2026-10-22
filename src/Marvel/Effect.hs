@@ -30,6 +30,9 @@ allEffects =
     , ("01068", SomeCardEffect visionEffect)
     , ("01070", SomeCardEffect leadFromTheFrontEffect)
     , ("01092", SomeCardEffect helicarrierEffect)
+    , ("03003", SomeCardEffect fearlessDeterminationEffect)
+    , ("03015", SomeCardEffect avengersAssembleEffect)
+    , ("03024", SomeCardEffect avengersTowerEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

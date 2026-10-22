@@ -11,7 +11,7 @@ import Marvel.Name
 import Marvel.Trait
 
 allHeroCards :: [CardDef]
-allHeroCards = [spiderMan, captainMarvel, sheHulk, ironMan, blackPanther]
+allHeroCards = [spiderMan, captainMarvel, sheHulk, ironMan, blackPanther, captainAmerica]
 
 allHeroesMap :: HashMap CardCode CardDef
 allHeroesMap = fromList $ map (toFst toCardCode) allHeroCards
@@ -56,3 +56,6 @@ blackPanther :: CardDef
 blackPanther = (hero "01040a" "Black Panther" [Avenger, Wakanda])
   { cdKeywords = singleton (Retaliate 1)
   }
+
+captainAmerica :: CardDef
+captainAmerica = hero "03001a" "Captain America" [Avenger, Soldier]

@@ -23,3 +23,10 @@ import Marvel.Upgrade.Upgrades.Tenacity as X
 import Marvel.Upgrade.Upgrades.VibraniumSuit as X
 import Marvel.Upgrade.Upgrades.WebbedUp as X
 import Marvel.Upgrade.Upgrades.WebShooter as X
+import Marvel.Upgrade.Upgrades.CaptainAmericasHelmet as X
+import Marvel.Upgrade.Upgrades.CaptainAmericasShield as X
+import Marvel.Upgrade.Upgrades.SuperSoldierSerum as X
+import Marvel.Upgrade.Upgrades.HonoraryAvenger as X
+import Marvel.Upgrade.Upgrades.Enraged as X
+import Marvel.Upgrade.Upgrades.Followed as X
+import Marvel.Upgrade.Upgrades.EnhancedAwareness as X

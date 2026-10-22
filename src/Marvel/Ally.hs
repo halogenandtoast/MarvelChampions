@@ -47,4 +47,8 @@ allAllies = fromList $ map
   , SomeAllyCard lukeCage
   , SomeAllyCard mockingbirdBobbiMorse
   , SomeAllyCard nickFury
+  , SomeAllyCard agent13SharonCarter
+  , SomeAllyCard falconSamWilson
+  , SomeAllyCard squirrelGirlDoreenGreen
+  , SomeAllyCard wonderManSimonWilliams
   ]

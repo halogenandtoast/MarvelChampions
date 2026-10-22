@@ -26,6 +26,9 @@ allSupports = fromList $ concatMap
   , medTeam
   , avengersMansion
   , helicarrier
+  , stevesApartment
+  , quinjet
+  , avengersTower
   ]
 
 support
@@ -124,3 +127,14 @@ avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (Ma
 helicarrier :: CardDef
 helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
+
+stevesApartment :: CardDef
+stevesApartment =
+  unique $ identitySupport "03007" "Steve's Apartment" 1 [Location] [Energy]
+
+quinjet :: CardDef
+quinjet = support "03019" "Quinjet" 1 [Avenger, Vehicle] [Energy] Leadership
+
+avengersTower :: CardDef
+avengersTower =
+  unique $ basicSupport "03024" "Avengers Tower" 2 [Avenger, Location] [Mental]

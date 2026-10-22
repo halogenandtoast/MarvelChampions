@@ -40,5 +40,7 @@ data Trait
   | Wakanda
   | Weapon
   | Cyborg
+  | Vehicle
+  | Title
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)
