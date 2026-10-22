@@ -181,6 +181,8 @@ data VillainMatcher
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
   | VillainWithToughStatus
+  | -- | with the trait, printed or gained
+    VillainWithTrait Trait
   | VillainMatches [VillainMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

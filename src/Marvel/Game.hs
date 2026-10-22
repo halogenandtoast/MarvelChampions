@@ -771,7 +771,29 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               & (entitiesL . minionsL %~ insertMap (toId minion) minion)
               & (boostCardsL %~ deleteMap target)
         _ -> error "messed up somewhere"
+    EnvironmentRef eid -> case g ^. boostEntitiesL . environmentsL . at eid of
+      Just environment -> do
+        environmentStep eid EnvironmentEnteredPlay
+        pure $
+          g
+            & (boostEntitiesL . environmentsL %~ deleteMap eid)
+            & environmentIntoPlay ident environment
+            & (boostCardsL %~ deleteMap target)
+      _ -> error "messed up somewhere"
     _ -> error "Unhandled"
+  -- "Boost: reveal this card": it is no longer a boost card, and is revealed for the
+  -- player
+  RevealBoost target ident -> case lookup target gameBoostCards of
+    Just card -> do
+      revealEncounterCard ident card
+      pure $
+        g
+          & (boostCardsL %~ deleteMap target)
+          & (boostEntitiesL . sideSchemesL %~ deleteMap (SideSchemeId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . attachmentsL %~ deleteMap (AttachmentId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . treacheriesL %~ deleteMap (TreacheryId $ unCardId $ ecCardId card))
+          & (boostEntitiesL . minionsL %~ deleteMap (MinionId $ unCardId $ ecCardId card))
+    Nothing -> pure g
   RevealBoostCard card enemyId -> do
     player <- getActivePlayerId
     let
@@ -824,6 +846,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
                   %~ insertMap (toId sideScheme) sideScheme
               )
             & (boostCardsL . at (toTarget sideScheme) ?~ card)
+      EnvironmentType -> do
+        let environment = createEnvironment card
+        turnedFaceup (toTarget environment)
+        pure $
+          g
+            & (boostEntitiesL . environmentsL %~ insertMap (toId environment) environment)
+            & (boostCardsL . at (toTarget environment) ?~ card)
       _ -> pure g
   ClearBoosts -> do
     for_ (HashMap.elems gameBoostCards) discardCard
@@ -917,10 +946,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & intoAreaOf ident (\a -> a {areaSideSchemes = areaSideSchemes a <> [toId sideScheme]})
       EnvironmentType -> do
         let environment = createEnvironment card
-        pure $
-          g
-            & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
-            & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
+        environmentStep (toId environment) EnvironmentEnteredPlay
+        surges
+        pure $ g & environmentIntoPlay ident environment
       _ -> error "Unhandled"
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     MinionType -> do
@@ -931,6 +959,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       engageMinion (toId minion) ident
       checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+    -- put into play, not revealed: no surge
+    EnvironmentType -> do
+      let environment = createEnvironment card
+      environmentStep (toId environment) EnvironmentEnteredPlay
+      pure $ g & environmentIntoPlay ident environment
     _ -> do
       revealEncounterCardWithoutWindows ident card
       pure g
@@ -1258,6 +1291,13 @@ createMinion ident card =
 createAttachment :: EncounterCard -> Attachment
 createAttachment card =
   lookupAttachment (toCardCode card) (AttachmentId $ unCardId $ ecCardId card)
+
+-- | The environment is in play, in the player's area.
+environmentIntoPlay :: IdentityId -> Environment -> Game -> Game
+environmentIntoPlay ident environment g =
+  g
+    & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
+    & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
 
 createEnvironment :: EncounterCard -> Environment
 createEnvironment card =
@@ -1969,6 +2009,7 @@ gameSelectVillain m = do
     VillainWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . villainDamage
     VillainWithToughStatus -> pure . villainIsTough
+    VillainWithTrait trait -> fmap (member trait) . getTraits
     VillainMatches xs -> andM . traverse matchFilter xs
 
 gameSelectMinion :: (HasGame m) => MinionMatcher -> m (HashSet MinionId)

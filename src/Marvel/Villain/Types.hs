@@ -26,6 +26,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Stats
+import Marvel.Trait
 import Marvel.Window qualified as W
 
 data Villain = forall a. (IsVillain a) => Villain a
@@ -247,6 +248,15 @@ statusL = \case
 toEnemyId :: Attrs Villain -> EnemyId
 toEnemyId = EnemyVillainId . villainId
 
+-- | Its printed traits and those it gains, as Absorbing Man gains each environment's.
+instance HasTraits Villain where
+  getTraits v = do
+    modifiers <- getModifiers (VillainRef $ toId v)
+    pure $ foldr applyModifier (cdTraits $ getCardDef v) modifiers
+   where
+    applyModifier (TraitModifier t) = HashSet.insert t
+    applyModifier _ = id
+
 getModifiedKeywords :: (HasGame m) => Attrs Villain -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
@@ -336,7 +346,7 @@ runVillainMessage msg attrs = case msg of
         attack' <- newAttack ident
         pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
   VillainBeginAttack ident -> do
-    attack' <- newAttack ident
+    attack' <- keepingGains (villainAttacking attrs) <$> newAttack ident
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
     dealBoost attrs
     declareDefense ident vid AnyDefense
