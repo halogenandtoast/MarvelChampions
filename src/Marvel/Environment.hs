@@ -8,6 +8,7 @@ import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
+import Marvel.Environment.Environments.AbsorbingMan
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -33,6 +34,10 @@ allEnvironments =
     -- The Wrecking Crew
 
     -- The Rise of Red Skull
+    , SomeEnvironmentCard denseForest
+    , SomeEnvironmentCard snowyHillside
+    , SomeEnvironmentCard rockyOutcrop
+    , SomeEnvironmentCard abandonedFacility
 
     -- The Once and Future Kang
 

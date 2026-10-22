@@ -33,6 +33,11 @@ import Marvel.SideScheme.SideSchemes.RunningInterference as X
 -- The Wrecking Crew
 
 -- The Rise of Red Skull
+import Marvel.SideScheme.SideSchemes.CrossbonesAssault as X
+import Marvel.SideScheme.SideSchemes.CorneredStaff as X
+import Marvel.SideScheme.SideSchemes.Avalanche as X
+import Marvel.SideScheme.SideSchemes.SuperAbsorbingPower as X
+import Marvel.SideScheme.SideSchemes.HydraPatrol as X
 
 -- The Once and Future Kang
 import Marvel.SideScheme.SideSchemes.TimePortal as X

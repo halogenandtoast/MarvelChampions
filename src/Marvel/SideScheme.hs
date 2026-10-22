@@ -55,6 +55,11 @@ allSideSchemes = fromList $ map
   -- The Wrecking Crew
 
   -- The Rise of Red Skull
+  , SomeSideSchemeCard crossbonesAssault
+  , SomeSideSchemeCard corneredStaff
+  , SomeSideSchemeCard avalanche
+  , SomeSideSchemeCard superAbsorbingPower
+  , SomeSideSchemeCard hydraPatrol
 
   -- The Once and Future Kang
   , SomeSideSchemeCard timePortal
