@@ -1479,6 +1479,7 @@ gameSelectAlly m = do
       gameValueMatches gameValueMatcher . getAllyDamage
     AllyWithId ident' -> pure . (== ident') . toId
     AllyMatches xs -> andM . traverse matchFilter xs
+    AllyWithTrait t -> pure . member t . cdTraits . getCardDef
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
@@ -1504,6 +1505,9 @@ gameSelectSupport = \case
   SupportNamed name -> do
     supports <- HashMap.elems <$> getsGame gameSupports
     pure $ HashSet.fromList $ map toId $ filter ((== name) . cdName . supportCardDef . toAttrs) supports
+  SupportWithTrait t -> do
+    supports <- HashMap.elems <$> getsGame gameSupports
+    pure $ HashSet.fromList $ map toId $ filter (member t . cdTraits . supportCardDef . toAttrs) supports
   SupportMatches xs -> do
     all' <- HashSet.fromList . HashMap.keys <$> getsGame gameSupports
     foldr HashSet.intersection all' <$> traverse gameSelectSupport xs
