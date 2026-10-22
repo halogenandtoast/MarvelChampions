@@ -107,6 +107,7 @@ data UpgradeMatcher
   = UpgradeWithUses GameValueMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait
+  | UpgradeWithKeyword Keyword
   | UpgradeIs CardDef
   | UpgradeNamed Name
   | UnexhaustedUpgrade

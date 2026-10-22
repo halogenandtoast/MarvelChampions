@@ -2,6 +2,13 @@ module Marvel.Keyword where
 
 import Marvel.Prelude
 
-data Keyword = Guard | Toughness | Quickstrike | Retaliate Natural | Surge
+data Keyword
+  = Guard
+  | Toughness
+  | Quickstrike
+  | Retaliate Natural
+  | Surge
+  | -- | a player controls no more than two restricted cards
+    Restricted
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

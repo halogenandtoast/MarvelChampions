@@ -573,7 +573,16 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           ]
       pure pid
     UpgradeCreated upgradeId -> do
+      push $ IdentityMessage playerIdentityId CheckRestrictedLimit
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.insert upgradeId
+    CheckRestrictedLimit -> do
+      restricted <- selectList $ UpgradeWithKeyword Restricted <> upgradeControlledBy playerIdentityId
+      when (length restricted > 2) $
+        chooseOnePrompted
+          playerIdentityId
+          "$label.discardARestrictedCard"
+          [TargetLabel (toRef u) [DiscardTarget $ toRef u] | u <- restricted]
+      pure pid
     AllyRemoved allyId -> do
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.delete allyId
     MinionEngaged minionId -> do

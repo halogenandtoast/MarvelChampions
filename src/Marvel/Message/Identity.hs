@@ -23,6 +23,8 @@ data IdentityMessage
   | DiscardedFor Target FromZone Natural Natural [Card]
   | ShuffleDeck
   | CheckAllyLimit
+  | -- | over two restricted cards, one is discarded
+    CheckRestrictedLimit
   | SideMessage SideMessage
   | PlayedCard PlayerCard (Maybe Window)
   | PaidWithCard PlayerCard

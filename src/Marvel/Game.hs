@@ -1509,6 +1509,7 @@ gameSelectUpgrade m = do
     UpgradeWithUses gameValueMatcher ->
       gameValueMatches gameValueMatcher . getUpgradeUses
     UpgradeWithTrait t -> pure . member t . cdTraits . getCardDef
+    UpgradeWithKeyword k -> pure . member k . cdKeywords . getCardDef
     UpgradeControlledBy identityMatcher -> \upgrade -> do
       identities <- select identityMatcher
       pure $ getUpgradeController upgrade `member` identities
