@@ -29,7 +29,9 @@ instance HasAbilities Ally where
           x
           300
           Basic
-          (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart)
+          -- "you cannot thwart" (Baron Zemo) keeps the identity from thwarting, not
+          -- its allies
+          (SchemeExists ThwartableScheme)
           ExhaustCost
           (AllyThwart $ toId x)
       | unThw (allyThwart $ toAllyAttrs a) > 0
@@ -156,6 +158,13 @@ instance RunMessage (Attrs Ally) where
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
+    -- "if an ability that says an ally gets +X hit points ceases to be in effect and
+    -- causes that ally to have damage on it equal to or greater than its hit points,
+    -- that ally is defeated"
+    UpgradeRemoved upgradeId | HashSet.member upgradeId (allyUpgrades a) -> do
+      hitPoints <- getModifiedHitPoints a
+      pushWhen (allyDamage a > 0 && allyDamage a >= hitPoints) $ AllyMessage (allyId a) AllyDefeated
+      pure $ a & upgradesL %~ HashSet.delete upgradeId
     GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a
