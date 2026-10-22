@@ -13,11 +13,10 @@ import Marvel.Discard
 import Marvel.Entity
 import Marvel.Identity.Types (Field (..))
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -45,11 +44,9 @@ instance HasAbilities SafeHouse29 where
     ]
 
 instance RunMessage SafeHouse29 where
-  runMessage msg s@(SafeHouse29 attrs) = case msg of
+  runMessage msg s@(SafeHouse29 attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       cards <- filter (cardMatch preparation) <$> projectMap PlayerIdentityDiscard unDiscard ident
-      push $
-        Ask ident $
-          ChooseOne [TargetLabel (toRef c) [Run [IdentityMessage ident (AddToHand c)]] | c <- cards]
+      chooseOne ident [targeting c (addToHand ident c) | c <- cards]
       pure s
     _ -> SafeHouse29 <$> runMessage msg attrs

@@ -21,10 +21,9 @@ import Marvel.Hero.Cards qualified as Cards
 import Marvel.Hero.Runner
 import Marvel.Identity.Types
 import Marvel.Invocation
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import System.Random.Shuffle (shuffleM)
@@ -95,9 +94,9 @@ instance HasModifiersFor DoctorStrange where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage DoctorStrange where
-  runMessage msg (DoctorStrange (a `With` deck)) = case msg of
+  runMessage msg (DoctorStrange (a `With` deck)) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push $ invocation ident (ResolveTopInvocation False)
+      invoke ident (ResolveTopInvocation False)
       pure $ DoctorStrange (a `With` deck)
     CardSpecific (IdentityRef ident) "invocation" (fromJSON -> Success step)
       | ident == heroIdentityId a -> case step of
@@ -113,7 +112,7 @@ instance RunMessage DoctorStrange where
           ResolveTopInvocation keep -> case invocationDeck deck of
             [] -> settled deck
             top : _ -> do
-              push $ ResolveEventWithoutPlaying ident top
+              resolveEventWithoutPlaying ident top
               settled deck {invocationKeptOnTop = if keep then Just top else Nothing}
           PlaceInInvocationDiscard card
             | invocationKeptOnTop deck == Just card -> settled deck {invocationKeptOnTop = Nothing}
@@ -126,7 +125,7 @@ instance RunMessage DoctorStrange where
           PlaceTopInvocationUnder target -> case invocationDeck deck of
             [] -> settled deck
             top : rest -> do
-              push $ cardSpecific target "invocationUnder" top
+              cardSpecific target "invocationUnder" top
               settled deck {invocationDeck = rest}
           ShuffleIntoInvocationDeck card -> do
             cards <- shuffleM (card : invocationDeck deck)

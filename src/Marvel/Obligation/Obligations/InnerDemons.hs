@@ -30,7 +30,7 @@ instance RunMessage InnerDemons where
         pure o
       ResolveObligation identityId -> do
         isHero <- identityMatches HeroIdentity identityId
-        if isHero then exhaust identityId else discardFrom identityId FromHand 2
+        if isHero then exhaust identityId else discardFromHand identityId 2
         pure o
       _ -> InnerDemons <$> runMessage msg attrs
     _ -> InnerDemons <$> runMessage msg attrs

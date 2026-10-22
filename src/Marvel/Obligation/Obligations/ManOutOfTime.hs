@@ -43,7 +43,7 @@ instance RunMessage ManOutOfTime where
           | isUnexhaustedAlterEgo
           ]
             <> [ labeled "$label.discardHalfYourHandDiscardObligation" $
-                  when (half > 0) $ discardFrom identityId FromHand half
+                  when (half > 0) $ discardFromHand identityId half
                ]
         pure o
       _ -> ManOutOfTime <$> runMessage msg attrs

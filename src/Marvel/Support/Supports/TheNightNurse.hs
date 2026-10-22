@@ -12,11 +12,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -37,22 +36,19 @@ instance HasAbilities TheNightNurse where
 -- | Heal 1 damage from a hero and discard 1 status card from it, of whichever type
 -- (FAQ: a tough status card too).
 instance RunMessage TheNightNurse where
-  runMessage msg s@(TheNightNurse attrs) = case msg of
+  runMessage msg s@(TheNightNurse attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       heroes <- selectList HeroIdentity
-      push $
-        Ask ident $
-          prompted "$label.chooseHeroToHeal" $
-            ChooseOne
-              [ TargetLabel (toRef hero) [Heal (IdentityCharacter hero) 1, Run [cardSpecific attrs "status" hero]]
-              | hero <- heroes
-              ]
+      chooseOnePrompted ident "$label.chooseHeroToHeal"
+        [ targeting hero do
+          heal hero 1
+          cardSpecific attrs "status" hero
+        | hero <- heroes
+        ]
       pure s
     CardSpecific (isTarget attrs -> True) "status" (fromJSON -> Success hero) -> do
       held <- filterM (\st -> member (IdentityCharacter hero) <$> select (CharacterWithStatus st)) [minBound .. maxBound]
-      push $
-        Ask (supportController attrs) $
-          prompted "$label.chooseStatusToDiscard" $
-            ChooseOne [Label (statusLabel st) [Run [RemoveStatus (toRef hero) st]] | st <- held]
+      chooseOnePrompted (supportController attrs) "$label.chooseStatusToDiscard"
+        [labeled (statusLabel st) (removeStatus (hero :: IdentityId) st) | st <- held]
       pure s
     _ -> TheNightNurse <$> runMessage msg attrs

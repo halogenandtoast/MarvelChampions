@@ -15,11 +15,10 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Modifier
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Question
 import Marvel.Trait
 import Marvel.Stats
-import Marvel.Queue
 
 instance HasAbilities AlterEgo where
   getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
@@ -36,11 +35,11 @@ instance RunMessage AlterEgo where
   runMessage msg (AlterEgo a) = AlterEgo <$> runMessage msg a
 
 instance RunMessage (Attrs AlterEgo) where
-  runMessage msg a = case msg of
+  runMessage msg a = runQueueT $ case msg of
     IdentityMessage ident (SideMessage msg') | ident == alterEgoIdentityId a ->
       case msg' of
         Recovered -> do
-          push . IdentityMessage ident . IdentityHealed =<< getModifiedRecovery a
+          heal ident =<< getModifiedRecovery a
           pure a
         _ -> pure a
     _ -> pure a
