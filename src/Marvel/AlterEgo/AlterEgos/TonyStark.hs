@@ -11,11 +11,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 
@@ -41,13 +40,8 @@ instance HasAbilities TonyStark where
     ]
 
 instance RunMessage TonyStark where
-  runMessage msg ae@(TonyStark a) = case msg of
+  runMessage msg ae@(TonyStark a) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage ident $
-        Search
-          (SearchIdentityDeck ident $ TopOfDeck 3)
-          AnyCard
-          SearchDrawOne
-          DiscardRest
+      search ident (SearchIdentityDeck ident $ TopOfDeck 3) AnyCard SearchDrawOne DiscardRest
       pure ae
     _ -> TonyStark <$> runMessage msg a

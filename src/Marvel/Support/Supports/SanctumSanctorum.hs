@@ -12,11 +12,10 @@ import Marvel.Criteria
 import Marvel.Discard
 import Marvel.Entity
 import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -34,17 +33,15 @@ instance HasAbilities SanctumSanctorum where
 
 -- | Shuffle a Spell card from your discard pile into your deck, and draw 1 card.
 instance RunMessage SanctumSanctorum where
-  runMessage msg s@(SanctumSanctorum attrs) = case msg of
+  runMessage msg s@(SanctumSanctorum attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       spells <- filter (cardMatch $ CardWithTrait Spell) <$> projectMap PlayerIdentityDiscard unDiscard ident
-      let draw = IdentityMessage ident (DrawCards FromDeck 1)
-      push $
-        Ask ident $
-          prompted "$label.chooseSpellToShuffle" $
-            ChooseOne $
-              [ TargetLabel (toRef c) [Run [IdentityMessage ident (ShuffleIntoIdentityDeck [c]), draw]]
-              | c <- spells
-              ]
-                <> [Label "$label.drawCard" [Run [draw]] | null spells]
+      chooseOnePrompted ident "$label.chooseSpellToShuffle" $
+        [ targeting c do
+          shuffleIntoDeck ident [c]
+          drawCards ident 1
+        | c <- spells
+        ]
+          <> [labeled "$label.drawCard" (drawCards ident 1) | null spells]
       pure s
     _ -> SanctumSanctorum <$> runMessage msg attrs

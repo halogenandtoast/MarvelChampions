@@ -11,11 +11,10 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Invocation
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 
@@ -44,8 +43,8 @@ instance HasAbilities StephenStrange where
     ]
 
 instance RunMessage StephenStrange where
-  runMessage msg ae@(StephenStrange a) = case msg of
+  runMessage msg ae@(StephenStrange a) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push $ invocation ident SetUpInvocationDeck
+      invoke ident SetUpInvocationDeck
       pure ae
     _ -> StephenStrange <$> runMessage msg a
