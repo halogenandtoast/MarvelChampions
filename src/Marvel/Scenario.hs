@@ -8,6 +8,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Card.Code
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
+import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message.Lifted
@@ -162,6 +163,9 @@ instance RunMessage BreakoutScenario where
           when wasActive $ cardSpecific GameRef "breakoutNextActive" ()
       pure a
     CardSpecific GameRef "breakoutNextActive" _ -> runQueueT $ a <$ moveActiveCounter MostThreat
+    -- the obligations are the encounter deck's only cards: emptied of them, it is not an
+    -- encounter deck run out
+    RemovePlayerObligationsFromGame -> pure $ a & encounterDeckL %~ filter (not . isPlayerObligation)
     _ -> runMessage msg a
 
 scenarioAccelerationTokens :: Scenario -> Natural

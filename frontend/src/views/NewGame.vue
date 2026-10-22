@@ -85,7 +85,13 @@ const setCards = computed(() => {
 const modularName = (set: string) => setCards.value.get(setCode(set))?.setName ?? set
 const modularRelease = (set: string) => releaseOf(null, setCards.value.get(setCode(set)))
 // a villain may have several scenarios, as the Green Goblin has: each is named for its set
-const scenarioName = (option: ScenarioOption) => cards.card(option.code)?.setName ?? option.name
+// a scenario set up by its main scheme's A side is that scenario's extreme variant
+// (The Wrecking Crew: each version A villain over its version B)
+const isExtreme = (option: ScenarioOption) => /a$/.test(option.code) && cards.card(option.code)?.type === 'main_scheme'
+const scenarioName = (option: ScenarioOption) => {
+  const name = cards.card(option.code)?.setName ?? option.name
+  return isExtreme(option) ? t('newGame.extremeVariant', { scenario: name }) : name
+}
 const villainName = (option: ScenarioOption) => cards.name(option.code, option.name)
 
 const byRelease = <T,>(items: T[], release: (item: T) => Release, name: (item: T) => string) =>

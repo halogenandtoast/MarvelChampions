@@ -45,6 +45,8 @@ import Marvel.Phase
 import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
 import Marvel.Scenario.Types (ScenarioSetup (..))
 import Marvel.Villain.Cards (allVillainsMap)
+import Marvel.MainScheme.Cards qualified as MainSchemes
+import Marvel.Card.Code (toBaseCardCode)
 import Model
 import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
@@ -390,7 +392,8 @@ broadcast gid row g entries = do
   atomically $ writeTChan chan $ Updated row table g entries
 
 villainOf :: ScenarioSetup -> (Text, CardCode)
-villainOf setup = (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap), setup.scenarioCode)
+-- a scenario of several villains (Breakout) is set up by, and named for, its main scheme
+villainOf setup = (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes), setup.scenarioCode)
 
 summary :: Entity MarvelGame -> Maybe GameSummary
 summary (Entity gid row) = do

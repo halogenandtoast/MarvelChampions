@@ -93,6 +93,7 @@
   },
   "newGame": {
     "title": "New game",
+    "extremeVariant": "{scenario} (extreme)",
     "villain": "Villain",
     "chooseVillain": "Choose your villain",
     "recommended": "recommended",

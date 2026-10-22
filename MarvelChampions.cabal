@@ -764,6 +764,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.ThorNemesisSpec
       Marvel.Encounter.UltronSpec
       Marvel.Encounter.VillainStagesSpec
+      Marvel.Encounter.WreckingCrewSpec
       Marvel.Hero.BlackPantherSpec
       Marvel.Hero.BlackWidowSpec
       Marvel.Hero.CaptainAmericaSpec

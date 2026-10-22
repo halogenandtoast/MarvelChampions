@@ -33,7 +33,9 @@ newtype Breakout = Breakout (Attrs MainScheme)
 -- players lose.
 instance RunMessage Breakout where
   runMessage msg ms@(Breakout attrs) = runQueueT $ case msg of
+    -- nemesis cards and obligations are not used (TWC insert p.4)
     SetupMainScheme -> do
+      removePlayerObligationsFromGame
       first <- selectJust FirstPlayer
       villains <- selectList AnyVillain
       for_ villains \v -> do
