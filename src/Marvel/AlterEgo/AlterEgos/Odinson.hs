@@ -11,11 +11,10 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Upgrade.Cards qualified as Upgrades
@@ -42,13 +41,8 @@ instance HasAbilities Odinson where
     ]
 
 instance RunMessage Odinson where
-  runMessage msg ae@(Odinson a) = case msg of
+  runMessage msg ae@(Odinson a) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      push . IdentityMessage ident $
-        Search
-          (SearchIdentityDeckAndDiscardPile ident)
-          (CardIs Upgrades.mjolnir)
-          SearchDrawOne
-          ShuffleBackIn
+      search ident (SearchIdentityDeckAndDiscardPile ident) (CardIs Upgrades.mjolnir) SearchDrawOne ShuffleBackIn
       pure ae
     _ -> Odinson <$> runMessage msg a

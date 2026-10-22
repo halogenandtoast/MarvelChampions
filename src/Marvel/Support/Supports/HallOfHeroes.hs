@@ -11,10 +11,9 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
@@ -43,9 +42,9 @@ instance HasAbilities HallOfHeroes where
         ]
 
 instance RunMessage HallOfHeroes where
-  runMessage msg h@(HallOfHeroes attrs) = case msg of
+  runMessage msg h@(HallOfHeroes attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget h -> True) 1 _ _ -> pure . HallOfHeroes $ attrs & usesL +~ 1
     RanAbility ident (isTarget h -> True) 2 _ _ -> do
-      push $ IdentityMessage ident $ DrawCards FromDeck 3
+      drawCards ident 3
       pure h
     _ -> HallOfHeroes <$> runMessage msg attrs

@@ -12,10 +12,9 @@ import Marvel.Hand
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Hero.Runner
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
-import Marvel.Queue
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Trait qualified as Trait
@@ -52,8 +51,8 @@ newtype MsMarvel = MsMarvel (Attrs Hero)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance RunMessage MsMarvel where
-  runMessage msg a@(MsMarvel attrs) = case msg of
+  runMessage msg a@(MsMarvel attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 windows _ -> do
-      pushAll [ReturnToHand (EventRef eid) | W.EventPlayed _ eid _ <- windows]
+      for_ [eid | W.EventPlayed _ eid _ <- windows] \eid -> returnToHand (EventRef eid :: Target)
       pure a
     _ -> MsMarvel <$> runMessage msg attrs

@@ -7,13 +7,12 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Choice
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Matchers
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
@@ -36,12 +35,14 @@ instance HasAbilities BeatCop where
     ]
 
 instance RunMessage BeatCop where
-  runMessage msg c@(BeatCop attrs) = case msg of
+  runMessage msg c@(BeatCop attrs) = runQueueT $ case msg of
     -- "move 1 threat from a scheme to here"
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       schemes <- selectList ThwartableScheme
       chooseOrRunOne ident
-        [ TargetLabel (toRef scheme) [ThwartScheme (toRef scheme) (toSource attrs) 1, Run [cardSpecific attrs "threatMoved" ()]]
+        [ targeting scheme do
+          thwartScheme scheme attrs 1
+          cardSpecific attrs "threatMoved" ()
         | scheme <- schemes
         ]
       pure c

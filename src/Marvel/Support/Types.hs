@@ -11,9 +11,8 @@ import Marvel.Card.Types
 import Marvel.Entity
 import Marvel.Id hiding (SupportId)
 import Marvel.Id as X (SupportId)
-import Marvel.Message
+import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue
 import Marvel.Ref
 
 data Support = forall a. (IsSupport a) => Support a
@@ -162,15 +161,13 @@ instance IsRef (Attrs Support) where
   toRef = SupportRef . supportId
 
 instance RunMessage (Attrs Support) where
-  runMessage msg a = case msg of
+  runMessage msg a = runQueueT $ case msg of
     SupportMessage ident msg' | ident == supportId a -> case msg' of
       ReadiedSupport -> do
         pure $ a & exhaustedL .~ False
       ExhaustedSupport -> do
         pure $ a & exhaustedL .~ True
       SpendSupportUse -> do
-        when
-          (supportUses a == 1 && supportDiscardIfNoUses a)
-          (push $ RemoveFromPlay (toTarget a))
+        when (supportUses a == 1 && supportDiscardIfNoUses a) $ removeFromPlay a
         pure $ a & usesL -~ 1
     _ -> pure a

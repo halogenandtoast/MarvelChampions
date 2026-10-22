@@ -47,7 +47,7 @@ instance HasAbilities GrapplingHook where
 instance RunMessage GrapplingHook where
   runMessage msg u@(GrapplingHook attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ _ card] _ -> do
-      flip insteadOf (discardCard card) \case
+      flip insteadOf (discardCard (EncounterCard card)) \case
         RevealedEncounterCard _ card' -> card' == card
         _ -> False
       pure u
