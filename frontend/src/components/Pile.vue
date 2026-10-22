@@ -16,7 +16,7 @@ const { label, back = null, count = null, cards = null, pile = null } = definePr
   /** face down: a deck */
   back?: Back | null
   count?: number | null
-  /** face up: a discard pile, newest last */
+  /** face up: a discard pile, newest first, as the engine keeps it */
   cards?: readonly CardView[] | null
 }>()
 
@@ -24,7 +24,7 @@ const overlay = useCardOverlay()
 const { byTarget } = useChoices()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const total = computed(() => count ?? cards?.length ?? 0)
-const top = computed(() => (cards?.length ? cards[cards.length - 1] : null))
+const top = computed(() => cards?.[0] ?? null)
 // a choice about a card in it lights the pile, so the player knows to look
 const active = computed(() => (cards ?? []).some((c) => byTarget.value.has(c.id)))
 const open = () => {
@@ -58,7 +58,7 @@ const close = () => dialog.value?.close()
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
       </header>
       <div class="cards">
-        <BoardCard v-for="card in [...(cards ?? [])].reverse()" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
+        <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
       </div>
     </dialog>
   </div>
