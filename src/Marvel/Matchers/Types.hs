@@ -11,6 +11,7 @@ import Marvel.GameValue.Types
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Name
+import Marvel.Status
 import Marvel.Trait.Types
 
 data EntityMatcher
@@ -246,6 +247,7 @@ data CharacterMatcher
   | -- | the identities and allies of the players matching
     CharacterControlledBy IdentityMatcher
   | CharacterWithTrait Trait
+  | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack
   deriving stock (Show, Eq, Generic)

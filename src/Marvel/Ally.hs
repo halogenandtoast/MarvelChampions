@@ -61,6 +61,11 @@ allAllies = fromList $ map
   , SomeAllyCard hercules
   , SomeAllyCard valkyrie
   , SomeAllyCard heimdall
+  , SomeAllyCard wong
+  , SomeAllyCard brotherVoodooJerichoDrumm
+  , SomeAllyCard clea
+  , SomeAllyCard ironFistDannyRand
+  , SomeAllyCard ironManTonyStark
   , SomeAllyCard brawn
   , SomeAllyCard sentryRobertReynolds
   , SomeAllyCard sheHulkJenniferWalters

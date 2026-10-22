@@ -83,6 +83,21 @@ allEvents = fromList $ map
   , SomeEventCard invulnerability
   , SomeEventCard teamwork
   , SomeEventCard secondWind
+  , SomeEventCard masterOfTheMysticArts
+  , SomeEventCard crimsonBandsOfCyttorak
+  , SomeEventCard imagesOfIkonn
+  , SomeEventCard sevenRingsOfRaggadorr
+  , SomeEventCard vaporsOfValtorr
+  , SomeEventCard windsOfWatoomb
+  , SomeEventCard astralProjection
+  , SomeEventCard magicBlast
+  , SomeEventCard mysticalStudies
+  , SomeEventCard protectiveWard
+  , SomeEventCard desperateDefense
+  , SomeEventCard momentumShift
+  , SomeEventCard warning
+  , SomeEventCard skilledStrike
+  , SomeEventCard foiled
   , SomeEventCard crushingBlow
   , SomeEventCard hulkSmash
   , SomeEventCard subOrbitalLeap

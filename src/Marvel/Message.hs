@@ -36,6 +36,7 @@ import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
+import Marvel.Status as X
 import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
@@ -99,6 +100,14 @@ attackDealtDamage source damage character =
   , damageAmount damage > 0
   , Just enemy <- [sourceEnemy source]
   ]
+
+-- | The character's own ref, as status cards are given by.
+characterRef :: CharacterId -> Target
+characterRef = \case
+  IdentityCharacter i -> IdentityRef i
+  AllyCharacter a -> AllyRef a
+  VillainCharacter v -> VillainRef v
+  MinionCharacter m -> MinionRef m
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message
@@ -236,5 +245,12 @@ data Message
   | -- | the first card matching in the encounter deck or its discard pile is put into
     -- play for the player, then the deck is shuffled
     SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher
+  | -- | an event's ability resolved for the player without the event being played, as an
+    -- Invocation card's "Special": nothing that answers playing an event sees it
+    ResolveEventWithoutPlaying IdentityId PlayerCard
+  | -- | a character, by its own ref (identity, ally, villain or minion), is given a status
+    -- card it does not have, or has one taken off it
+    GiveStatus Target StatusCard
+  | RemoveStatus Target StatusCard
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

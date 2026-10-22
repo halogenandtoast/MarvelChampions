@@ -37,6 +37,8 @@ allSupports = fromList $ concatMap
   , quincarrier
   , asgard
   , hallOfHeroes
+  , sanctumSanctorum
+  , theNightNurse
   , bannersLaboratory
   , beatCop
   ]
@@ -179,3 +181,11 @@ asgard = unique $ identitySupport "06007" "Asgard" 3 [Asgard, Location] [Mental]
 
 hallOfHeroes :: CardDef
 hallOfHeroes = unique $ support "06017" "Hall of Heroes" 2 [Asgard, Location] [Mental] Aggression
+
+sanctumSanctorum :: CardDef
+sanctumSanctorum =
+  unique $ identitySupport "09008" "Sanctum Sanctorum" 1 [Location] [Mental]
+
+theNightNurse :: CardDef
+theNightNurse =
+  unique $ support "09019" "The Night Nurse" 1 [Persona] [Mental] Protection

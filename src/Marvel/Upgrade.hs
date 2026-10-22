@@ -80,6 +80,11 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard jarnbjorn
   , SomeUpgradeCard underSurveillance
   , SomeUpgradeCard enhancedPhysique
+  , SomeUpgradeCard cloakOfLevitation
+  , SomeUpgradeCard magicalEnhancements
+  , SomeUpgradeCard theEyeOfAgamotto
+  , SomeUpgradeCard theSorcererSupreme
+  , SomeUpgradeCard unflappable
   , SomeUpgradeCard boundlessRage
   , SomeUpgradeCard immovableObject
   , SomeUpgradeCard martialProwess

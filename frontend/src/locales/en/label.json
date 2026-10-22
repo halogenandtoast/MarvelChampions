@@ -74,4 +74,21 @@
   "chooseCardToDiscard": "Choose a card to discard",
   "chooseNextCardOnTop": "Choose the next card to put on top of the encounter deck",
   "chooseAllyToExhaust": "Choose an ally to exhaust"
+  "discardHighestCostPreparationDiscardObligation": "Discard your Preparation card with the highest cost (if you cannot, this card gains surge), then discard this obligation"
+  "discardAPersonaSupport": "Discard a Persona support"
+  "heal1FromYourIdentity": "Heal 1 damage from your identity",
+  "discardTopInvocation": "Discard the top card of the Invocation deck",
+  "chooseCharacterToGiveTough": "Choose a character to give a tough status card",
+  "chooseStatusToReplace": "Choose a status card to replace",
+  "chooseReplacementStatus": "Choose the status card to replace it with",
+  "stunnedStatus": "Stunned",
+  "confusedStatus": "Confused",
+  "toughStatus": "Tough",
+  "chooseSpellToShuffle": "Choose a Spell card to shuffle into your deck",
+  "drawCard": "Draw 1 card",
+  "chooseHeroToHeal": "Choose a hero to heal",
+  "chooseStatusToDiscard": "Choose a status card to discard",
+  "discardHighestCost": "Discard a card with the highest cost",
+  "exhaustStephenStrangeRemovePhysicalToll": "Exhaust Stephen Strange and remove Physical Toll from the game",
+  "nextEventCosts3More": "The next event you play costs 3 more resources"
 }

@@ -60,6 +60,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard harvest
   , SomeTreacheryCard deadlyShot
   , SomeTreacheryCard trickster
+  , SomeTreacheryCard thoughtcasting
   , SomeTreacheryCard clashOfTheTitans
   ]
 

@@ -72,6 +72,9 @@ data IdentityMessage
     DiscardFromDeckUntil CardMatcher Target
   | PlaceOnBottomOfDeck PlayerCard
   | IdentityBecomeTough
+  | -- | the attack the hero defended is done with them: their damage before it, to tell
+    -- whether they took any from it
+    AttackDefended EnemyId Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

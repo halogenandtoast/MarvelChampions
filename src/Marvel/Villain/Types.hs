@@ -236,6 +236,12 @@ boostCardsL = lens villainBoostCards $ \m x -> m {villainBoostCards = x}
 instance HasCardDef (Attrs Villain) where
   getCardDef = villainCardDef
 
+statusL :: StatusCard -> Lens' (Attrs Villain) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 toEnemyId :: Attrs Villain -> EnemyId
 toEnemyId = EnemyVillainId . villainId
 
@@ -426,6 +432,8 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = case msg of
+    GiveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ True
+    RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
     AttachmentRemoved attachmentId -> do
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
     UpgradeRemoved upgradeId -> do

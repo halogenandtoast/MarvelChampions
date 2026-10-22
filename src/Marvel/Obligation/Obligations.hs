@@ -9,4 +9,5 @@ import Marvel.Obligation.Obligations.ManOutOfTime as X
 import Marvel.Obligation.Obligations.HomeByDawn as X
 import Marvel.Obligation.Obligations.BurnNotice as X
 import Marvel.Obligation.Obligations.OdinsAnger as X
+import Marvel.Obligation.Obligations.PhysicalToll as X
 import Marvel.Obligation.Obligations.InnerDemons as X

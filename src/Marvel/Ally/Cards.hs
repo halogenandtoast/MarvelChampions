@@ -43,6 +43,11 @@ allAllies = fromList $ concatMap
   , hercules
   , valkyrie
   , heimdall
+  , wong
+  , brotherVoodooJerichoDrumm
+  , clea
+  , ironFistDannyRand
+  , ironManTonyStark
   , brawn
   , sentryRobertReynolds
   , sheHulkJenniferWalters
@@ -230,3 +235,21 @@ valkyrie = ally "06012" "Valkyrie" 3 [Asgard, Avenger] [Energy] Aggression
 
 heimdall :: CardDef
 heimdall = basicAlly "06020" "Heimdall" 5 [Asgard] [Mental]
+
+wong :: CardDef
+wong = identityAlly "09002" "Wong" 3 [Mystic] [Wild]
+
+brotherVoodooJerichoDrumm :: CardDef
+brotherVoodooJerichoDrumm =
+  ally "09012" ("Brother Voodoo" <:> "Jericho Drumm") 3 [Avenger, Mystic] [Mental] Protection
+
+clea :: CardDef
+clea = ally "09013" "Clea" 2 [Mystic] [Physical] Protection
+
+ironFistDannyRand :: CardDef
+ironFistDannyRand =
+  ally "09014" ("Iron Fist" <:> "Danny Rand") 4 [Defender] [Physical] Protection
+
+ironManTonyStark :: CardDef
+ironManTonyStark =
+  ally "09039" ("Iron Man" <:> "Tony Stark") 4 [Avenger] [Wild] Leadership

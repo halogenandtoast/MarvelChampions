@@ -33,6 +33,8 @@ data Modifier
   | CannotTakeDamage
   | -- | to the target threat of a scheme
     TargetThreatModifier Natural
+  | -- | the cards matching cost this many more resources to play
+    AdditionalResourceCost CardMatcher Natural
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   deriving stock (Show, Eq, Generic)

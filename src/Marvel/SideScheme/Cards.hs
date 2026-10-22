@@ -34,6 +34,7 @@ allSideSchemes = fromList $ map
   , generationWhy
   , killerForHire
   , familyFeud
+  , openTheDarkDimension
   , totalDestruction
   ]
 
@@ -186,3 +187,9 @@ familyFeud :: CardDef
 familyFeud = (sideScheme "06027" "Family Feud" [Boost, Boost, Boost] ThorNemesis 1)
   { cdAcceleration = 1
   }
+
+openTheDarkDimension :: CardDef
+openTheDarkDimension =
+  (sideScheme "09029" "Open the Dark Dimension" [Boost, Boost, Boost] DoctorStrangeNemesis 1)
+    { cdAcceleration = 1
+    }

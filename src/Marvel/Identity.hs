@@ -112,6 +112,12 @@ damageReductionL :: Lens' (Attrs PlayerIdentity) Natural
 damageReductionL = lens playerIdentityDamageReduction $
   \m x -> m {playerIdentityDamageReduction = x}
 
+statusL :: StatusCard -> Lens' (Attrs PlayerIdentity) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 identityIsStunned :: PlayerIdentity -> Bool
 identityIsStunned = playerIdentityStunned . toAttrs
 
@@ -300,6 +306,7 @@ checkPlayLimits ident c = case cdLimit def of
       flip anyM players \p ->
         (< n) . fromIntegral . length
           <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
+    UnderAnyControl -> pure True
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
@@ -334,12 +341,13 @@ checkPlayLimits ident c = case cdLimit def of
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Int
 getModifiedCost attrs c = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
-  pure $ maybe 0 (modifiedCost modifiers) (cdCost $ getCardDef c)
+  pure $ maybe 0 (max 0 . (+ sum (map change modifiers))) (cdCost $ getCardDef c)
  where
-  modifiedCost ms cost' = foldr applyModifier cost' ms
-  applyModifier (ResourceCostReduction n) = max 0 . subtract (fromIntegral n)
-  applyModifier (ResourceCostReductionFor m n) | cardMatch m c = max 0 . subtract (fromIntegral n)
-  applyModifier _ = id
+  change = \case
+    ResourceCostReduction n -> negate (fromIntegral n)
+    ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
+    AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
+    _ -> 0
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = filterM (isPlayable player) cards
@@ -808,12 +816,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- pushed last to first: the damage, then retaliate (forced, so before any
       -- response), then the window for responses to defending
       when playerIdentityDefended $
-        push
-          ( CheckWindows
-              [ W.Window W.After $
-                  W.HeroDefends playerIdentityId (attackEnemy attack')
-              ]
-          )
+        push $ IdentityMessage playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
       when (retaliate > 0) $
         push $
           IdentityMessage
@@ -870,6 +873,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           <> map (RemoveFromPlay . toRef) upgrades
           <> map (DiscardedCard . EncounterCard) playerIdentityEncounterCards
       pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
+    AttackDefended enemy damageBefore -> do
+      push $
+        CheckWindows $
+          W.Window W.After (W.HeroDefends playerIdentityId enemy)
+            : [ W.Window W.After (W.DefendedWithoutDamage playerIdentityId enemy)
+              | playerIdentityDamage <= damageBefore
+              ]
+      pure pid
     IdentityDefended n ->
       pure $ PlayerIdentity $ attrs & damageReductionL +~ n & defendedL .~ True
     IdentityHealed n ->
@@ -1027,6 +1038,10 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
             & (deckL %~ Deck . filter ((/= cid) . pcCardId) . unDeck)
     UpgradeRemoved upgradeId -> do
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity $ attrs & statusL s .~ True
+    RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity $ attrs & statusL s .~ False
     -- an enemy's attack against them begins: none of its damage taken yet
     VillainMessage _ (VillainBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
     MinionMessage _ (MinionBeginAttack ident) | ident == playerIdentityId attrs -> attackBegins
@@ -1045,6 +1060,12 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid
+    -- a step for the identity card is for it whichever face is up
+    CardSpecific (IdentityRef ident) _ _ | ident == playerIdentityId attrs -> do
+      sides <- for (playerIdentitySides attrs) \case
+        HeroSide x -> HeroSide <$> runMessage msg x
+        AlterEgoSide x -> AlterEgoSide <$> runMessage msg x
+      pure $ PlayerIdentity attrs {playerIdentitySides = sides}
     _ -> passToSide
  where
   attackBegins = do

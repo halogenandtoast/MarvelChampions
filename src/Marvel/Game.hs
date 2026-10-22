@@ -57,7 +57,7 @@ import Marvel.Message hiding (ExhaustedAlly)
 import Marvel.Minion
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Minion.Types (
-  Attrs (minionStunned),
+  Attrs (minionConfused, minionStunned, minionTough),
   Minion,
   facedownCardL,
   overMinion,
@@ -562,6 +562,13 @@ runGameMessage msg g@Game {..} = case msg of
         pushAll [played When, playedMessage, EventMessage (toId event) ResolvedEvent, played After]
         pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
+  ResolveEventWithoutPlaying ident card -> do
+    let event = createEvent ident card
+    pushAll
+      [ EventMessage (toId event) (PlayedEvent ident NoPayment Nothing)
+      , EventMessage (toId event) ResolvedEvent
+      ]
+    pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutBoostIntoPlay target ident -> case target of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of
@@ -1454,6 +1461,21 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter (IdentityWithTrait t)
     allies <- selectMap AllyCharacter (AllyWithTrait t)
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
+  CharacterWithStatus s -> getsGame \g ->
+    let
+      -- each character's stunned, confused and tough
+      has :: (a -> (Bool, Bool, Bool)) -> (a -> CharacterId) -> HashMap k a -> [CharacterId]
+      has statuses f = map f . filter (pick . statuses) . HashMap.elems
+      pick (stunned, confused, tough) = case s of
+        StunnedStatus -> stunned
+        ConfusedStatus -> confused
+        ToughStatus -> tough
+     in
+      HashSet.fromList $
+        has ((\a -> (a.playerIdentityStunned, a.playerIdentityConfused, a.playerIdentityTough)) . toAttrs) (IdentityCharacter . toId) (gamePlayers g)
+          <> has ((\a -> (a.allyStunned, a.allyConfused, a.allyTough)) . toAttrs) (AllyCharacter . toId) (gameAllies g)
+          <> has ((\a -> (a.villainStunned, a.villainConfused, a.villainTough)) . toAttrs) (VillainCharacter . toId) (gameVillains g)
+          <> has ((\a -> (a.minionStunned, a.minionConfused, a.minionTough)) . toAttrs) (MinionCharacter . toId) (gameMinions g)
   HeroOrAllyWithHighestAttack -> do
     heroes <- traverse (\p -> (IdentityCharacter (toId p),) <$> getIdentityHeroAttackDamage p) . filter isHero . HashMap.elems =<< getsGame gamePlayers
     allies <- traverse (\a -> (AllyCharacter (toId a),) <$> Ally.getModifiedAttack (toAttrs a)) . HashMap.elems =<< getsGame gameAllies

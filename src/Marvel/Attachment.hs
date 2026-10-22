@@ -37,6 +37,7 @@ allAttachments =
       , SomeAttachmentCard concussionBlasters
       , SomeAttachmentCard geneticallyEnhanced
       , SomeAttachmentCard biomechanicalUpgrades
+      , SomeAttachmentCard counterspell
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

@@ -9,6 +9,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Damage
+import Marvel.GameValue.Types
 import Marvel.Matchers
 import Marvel.Name
 import Marvel.Resource
@@ -77,6 +78,21 @@ allEvents = fromList $ concatMap
   , invulnerability
   , teamwork
   , secondWind
+  , astralProjection
+  , magicBlast
+  , masterOfTheMysticArts
+  , mysticalStudies
+  , protectiveWard
+  , desperateDefense
+  , momentumShift
+  , warning
+  , crimsonBandsOfCyttorak
+  , imagesOfIkonn
+  , sevenRingsOfRaggadorr
+  , vaporsOfValtorr
+  , windsOfWatoomb
+  , skilledStrike
+  , foiled
   , crushingBlow
   , hulkSmash
   , subOrbitalLeap
@@ -571,3 +587,86 @@ teamwork =
 
 secondWind :: CardDef
 secondWind = event "06033" "Second Wind" 3 Action [] [Mental] Protection
+
+astralProjection :: CardDef
+astralProjection =
+  (identityEvent "09003" "Astral Projection" 2 HeroAction [Spell, Thwart] [Mental])
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+magicBlast :: CardDef
+magicBlast =
+  (identityEvent "09004" "Magic Blast" 3 HeroAction [Attack, Spell] [Energy])
+    { cdCriteria = EnemyExists AttackableEnemy
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+masterOfTheMysticArts :: CardDef
+masterOfTheMysticArts =
+  identityEvent "09005" "Master of the Mystic Arts" 1 HeroAction [] [Mental]
+
+mysticalStudies :: CardDef
+mysticalStudies =
+  identityEvent "09006" "Mystical Studies" 1 AlterEgoAction [] [Physical]
+
+protectiveWard :: CardDef
+protectiveWard =
+  (identityEvent "09007" "Protective Ward" 1 HeroInterrupt [Spell] [Physical])
+    { cdResponseWindow =
+        Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
+    }
+
+desperateDefense :: CardDef
+desperateDefense =
+  (event "09015" "Desperate Defense" 1 HeroInterrupt [Defense] [Energy] Protection)
+    { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    , cdAbilitySubType = Just Ability.Defense
+    }
+
+-- | healing 2 damage from your hero is its cost, so it is paid only in full
+momentumShift :: CardDef
+momentumShift =
+  (event "09016" "Momentum Shift" 2 HeroAction [Attack] [Physical] Protection)
+    { cdCriteria =
+        EnemyExists AttackableEnemy
+          <> SelfMatches (IdentityWithDamage $ AtLeast $ Static 2)
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+-- | as errata'd: no longer a defense, nor a Defense card
+warning :: CardDef
+warning = (basicEvent "09021" "Warning" 0 Interrupt [] [Physical])
+  { cdResponseWindow = Just (WouldTakeDamage HeroIdentity FromAnyDamageSource AnyValue)
+  }
+
+-- | An Invocation card: in Doctor Strange's Invocation deck, never his player deck, its
+-- "Special" resolved without it being played.
+invocation :: CardCode -> Name -> Int -> CardDef
+invocation code name cost = identityEvent code name cost Special [Invocation] []
+
+crimsonBandsOfCyttorak :: CardDef
+crimsonBandsOfCyttorak = invocation "09032" "Crimson Bands of Cyttorak" 2
+
+imagesOfIkonn :: CardDef
+imagesOfIkonn = invocation "09033" "Images of Ikonn" 1
+
+sevenRingsOfRaggadorr :: CardDef
+sevenRingsOfRaggadorr = invocation "09034" "Seven Rings of Raggadorr" 1
+
+vaporsOfValtorr :: CardDef
+vaporsOfValtorr = invocation "09035" "Vapors of Valtorr" 0
+
+windsOfWatoomb :: CardDef
+windsOfWatoomb = invocation "09036" "Winds of Watoomb" 0
+
+skilledStrike :: CardDef
+skilledStrike =
+  (event "09037" "Skilled Strike" 0 Interrupt [Skill] [Physical] Aggression)
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    }
+
+foiled :: CardDef
+foiled = (event "09038" "Foiled!" 0 Interrupt [] [Energy] Justice)
+  { -- boost cards are turned faceup only as an enemy attacks or schemes
+    cdResponseWindow = Just (BoostCardFlipped When $ NotEnemy AttackingEnemy)
+  }

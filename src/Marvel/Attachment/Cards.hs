@@ -28,6 +28,7 @@ allAttachments =
       , vibraniumArmor
       , concussionBlasters
       , biomechanicalUpgrades
+      , counterspell
       ]
 
 attachment ::
@@ -108,3 +109,7 @@ biomechanicalUpgrades =
   (attachment "01185" "Biomechanical Upgrades" [Tech] [Boost] TheDoomsdayChair 3)
     { cdKeywords = singleton Surge
     }
+
+counterspell :: CardDef
+counterspell =
+  attachment "09030" "Counterspell" [Condition, Spell] [Boost] DoctorStrangeNemesis 2

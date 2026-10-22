@@ -247,15 +247,19 @@ instance RunMessage (Attrs Upgrade) where
           open <- flip filterM players \p ->
             (< n) . fromIntegral . length . filter (/= upgradeId a)
               <$> selectList (UpgradeNamed (cdName $ upgradeCardDef a) <> UpgradeControlledBy (IdentityWithId p))
+          underControlOf open
+        Just UnderAnyControl -> underControlOf =<< getPlayers
+        _ ->
+          a
+            <$ push
+              (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
+       where
+        underControlOf open = do
           chooseOrRunOne (upgradeController a)
             [ TargetLabel (IdentityRef p) [Run [UpgradeMessage (upgradeId a) (UpgradeControlledByPlayer p)]]
             | p <- open
             ]
           pure a
-        _ ->
-          a
-            <$ push
-              (IdentityMessage (upgradeController a) $ UpgradeCreated (upgradeId a))
       UpgradeControlledByPlayer p -> do
         push $ IdentityMessage p $ UpgradeCreated (upgradeId a)
         pure a {upgradeController = p}

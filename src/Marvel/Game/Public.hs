@@ -30,6 +30,7 @@ import Marvel.Discard
 import Marvel.Hand
 import Marvel.Entity
 import Marvel.Game
+import Marvel.Hero.Heroes.DoctorStrange (InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Hero.Types qualified as HeroTypes
 import Marvel.Environment.Types qualified as Environment
@@ -128,7 +129,16 @@ data PlayerView = PlayerView
   , upgrades :: [UpgradeView]
   -- ^ on the identity itself
   , engagedMinions :: [MinionId]
+  , attachments :: [AttachmentView]
+  -- ^ encounter cards attached to their hero
+  , invocation :: Maybe InvocationView
+  -- ^ Doctor Strange's Invocation deck
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | An Invocation deck: its top card, always faceup, its size, and its discard pile.
+data InvocationView = InvocationView {top :: Maybe CardView, deckSize :: Int, discard :: [CardView]}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -368,6 +378,13 @@ gameView seesHand g = do
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
         , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme
         , engagedMinions = HashSet.toList a.playerIdentityMinions
+        , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
+        , invocation =
+            invocationDeckOf p <&> \d ->
+              InvocationView
+                (cardView . PlayerCard <$> headMay d.invocationDeck)
+                (length d.invocationDeck)
+                (map (cardView . PlayerCard) d.invocationDiscard)
         }
   allyView (ally :: Ally) = do
     let a = toAttrs ally

@@ -29,6 +29,12 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Window qualified as W
 
+statusL :: StatusCard -> Lens' (Attrs Minion) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 runMinionMessage ::
   (HasQueue m, HasGame m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
@@ -181,6 +187,8 @@ runMinionMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = case msg of
+    GiveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ True
+    RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
     MinionMessage ident msg'
       | ident == minionId attrs ->
           runMinionMessage msg' attrs

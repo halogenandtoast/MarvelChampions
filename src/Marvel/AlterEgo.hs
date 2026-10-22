@@ -33,6 +33,7 @@ allAlterEgos = fromList $ map
   , SomeAlterEgoCard kamalaKhan
   , SomeAlterEgoCard natashaRomanoff
   , SomeAlterEgoCard odinson
+  , SomeAlterEgoCard stephenStrange
   , SomeAlterEgoCard bruceBanner
   ]
 

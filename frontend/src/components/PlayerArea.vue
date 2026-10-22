@@ -30,7 +30,7 @@ const stats = computed(() =>
     ] as const
   ).filter(([, v]) => v !== null && v !== undefined),
 )
-const supports = computed(() => [...(player.supports ?? []), ...(player.upgrades ?? [])])
+const supports = computed(() => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? [])])
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
@@ -131,6 +131,10 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
     <div class="piles">
       <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" :pile="`deck-${player.id}`" />
       <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
+      <template v-if="player.invocation">
+        <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
+        <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
+      </template>
       <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" />
     </div>
   </section>

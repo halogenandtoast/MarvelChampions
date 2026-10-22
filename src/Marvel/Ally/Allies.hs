@@ -30,6 +30,11 @@ import Marvel.Ally.Allies.LadySif as X
 import Marvel.Ally.Allies.Hercules as X
 import Marvel.Ally.Allies.Valkyrie as X
 import Marvel.Ally.Allies.Heimdall as X
+import Marvel.Ally.Allies.Wong as X
+import Marvel.Ally.Allies.BrotherVoodooJerichoDrumm as X
+import Marvel.Ally.Allies.Clea as X
+import Marvel.Ally.Allies.IronFistDannyRand as X
+import Marvel.Ally.Allies.IronManTonyStark as X
 import Marvel.Ally.Allies.Brawn as X
 import Marvel.Ally.Allies.SentryRobertReynolds as X
 import Marvel.Ally.Allies.SheHulkJenniferWalters as X

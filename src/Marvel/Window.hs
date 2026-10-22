@@ -181,6 +181,10 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           pure $ encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
+  HeroDefendedWithoutDamage timing identityMatcher -> case windowType w of
+    DefendedWithoutDamage identityId _
+      | windowTiming w == timing -> identityMatches identityMatcher identityId
+    _ -> pure False
   PlaysEvent timing identityMatcher cardMatcher -> case windowType w of
     EventPlayed ident _ def
       | windowTiming w == timing && cardMatch cardMatcher def ->

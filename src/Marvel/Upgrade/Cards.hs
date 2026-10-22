@@ -72,6 +72,11 @@ allUpgrades = fromList $ concatMap
   , jarnbjorn
   , underSurveillance
   , enhancedPhysique
+  , cloakOfLevitation
+  , magicalEnhancements
+  , theEyeOfAgamotto
+  , unflappable
+  , theSorcererSupreme
   , boundlessRage
   , immovableObject
   , martialProwess
@@ -378,3 +383,25 @@ underSurveillance = limited (MaxPerScheme 1)
 
 enhancedPhysique :: CardDef
 enhancedPhysique = basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
+
+cloakOfLevitation :: CardDef
+cloakOfLevitation =
+  unique $ identityUpgrade "09009" "Cloak of Levitation" 2 [Artifact, Item] [Physical]
+
+magicalEnhancements :: CardDef
+magicalEnhancements = limited UnderAnyControl
+  $ identityUpgrade "09010" "Magical Enhancements" 1 [Condition, Spell] [Energy]
+
+theEyeOfAgamotto :: CardDef
+theEyeOfAgamotto =
+  unique $ identityUpgrade "09011" "The Eye of Agamotto" 2 [Artifact, Item] [Energy]
+
+unflappable :: CardDef
+unflappable = limited (MaxPerPlayerUnderAnyControl 1)
+  $ upgrade "09020" "Unflappable" 1 [Condition] [Mental] Protection
+
+theSorcererSupreme :: CardDef
+theSorcererSupreme =
+  (unique $ basicUpgrade "09026" "The Sorcerer Supreme" 2 [Title] [Mental])
+    { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
+    }

@@ -49,6 +49,8 @@ allSupports = fromList $ map
   , SomeSupportCard quincarrier
   , SomeSupportCard asgard
   , SomeSupportCard hallOfHeroes
+  , SomeSupportCard sanctumSanctorum
+  , SomeSupportCard theNightNurse
   , SomeSupportCard bannersLaboratory
   , SomeSupportCard beatCop
   ]

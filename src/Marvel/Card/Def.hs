@@ -91,6 +91,8 @@ data InPlayLimit
     MaxPerRound Natural
   | MaxPerCharacter Natural
   | MaxPerSideScheme Natural
+  | -- | "Play under any player's control.", with no maximum
+    UnderAnyControl
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

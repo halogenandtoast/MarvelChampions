@@ -50,6 +50,10 @@ data Trait
   | Asgard
   | Giant
   | Olympus
+  | Mystic
+  | Spell
+  | Artifact
+  | Invocation
   | Scientist
   deriving stock (Show, Eq, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON)

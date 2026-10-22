@@ -73,6 +73,8 @@ data WindowMatcher
   | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
   | MakesBasicThwart WindowTiming IdentityMatcher
   | WindowOneOf [WindowMatcher]
+  | -- | the hero defended an attack and took no damage from it
+    HeroDefendedWithoutDamage WindowTiming IdentityMatcher
   | -- | a player's turn ends: "when your turn ends"
     TurnEnds WindowTiming IdentityMatcher
   deriving stock (Show, Eq, Generic)
@@ -129,6 +131,7 @@ data WindowType
     -- engage them
     EngagedMinion IdentityId MinionId
   | MadeBasicThwart IdentityId
+  | DefendedWithoutDamage IdentityId EnemyId
   | TurnEnded IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

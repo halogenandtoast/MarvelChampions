@@ -42,6 +42,12 @@ instance HasAbilities Ally where
              (AllyAttack $ toId x)
          ]
 
+statusL :: StatusCard -> Lens' (Attrs Ally) Bool
+statusL = \case
+  StunnedStatus -> stunnedL
+  ConfusedStatus -> confusedL
+  ToughStatus -> toughL
+
 instance RunMessage (Attrs Ally) where
   runMessage msg a = case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
@@ -130,6 +136,7 @@ instance RunMessage (Attrs Ally) where
             attackDealtDamage source damage (AllyCharacter $ allyId a)
               <> [AllyMessage (allyId a) AllyDefeated | damageAmount damage + allyDamage a >= hitPoints]
           pure $ a & damageL +~ damageAmount damage
+      -- leaving play discards it
       AllyDefeated -> do
         let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyController a) (Just $ allyController a)
         pushAll
@@ -143,4 +150,6 @@ instance RunMessage (Attrs Ally) where
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
+    GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
+    RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a

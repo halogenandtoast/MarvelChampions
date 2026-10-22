@@ -45,6 +45,7 @@ allMinions =
       , hydraMercenaryBlackWidow
       , loki
       , frostGiant
+      , baronMordo
       , abomination
       ]
 
@@ -264,3 +265,8 @@ frostGiant =
   (minion "06029" "Frost Giant" [Giant] [Star, Boost] ThorNemesis 2)
     { cdKeywords = singleton Toughness
     }
+
+baronMordo :: CardDef
+baronMordo =
+  unique $
+    minion "09028" "Baron Mordo" [Elite, Mystic] [Boost, Boost] DoctorStrangeNemesis 1

@@ -56,6 +56,11 @@ import Marvel.Upgrade.Upgrades.BattleFury as X
 import Marvel.Upgrade.Upgrades.Jarnbjorn as X
 import Marvel.Upgrade.Upgrades.UnderSurveillance as X
 import Marvel.Upgrade.Upgrades.EnhancedPhysique as X
+import Marvel.Upgrade.Upgrades.CloakOfLevitation as X
+import Marvel.Upgrade.Upgrades.MagicalEnhancements as X
+import Marvel.Upgrade.Upgrades.TheEyeOfAgamotto as X
+import Marvel.Upgrade.Upgrades.TheSorcererSupreme as X
+import Marvel.Upgrade.Upgrades.Unflappable as X
 import Marvel.Upgrade.Upgrades.BoundlessRage as X
 import Marvel.Upgrade.Upgrades.ImmovableObject as X
 import Marvel.Upgrade.Upgrades.MartialProwess as X
