@@ -31,7 +31,7 @@ import Marvel.Matchers.Types
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
-import Marvel.Phase (Phase)
+import Marvel.Phase (Phase, VillainPhaseStep)
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Count (selectCount)
@@ -1061,6 +1061,10 @@ endPhase = push . EndPhase
 
 beginRound :: (ReverseQueue m) => m ()
 beginRound = push BeginRound
+
+-- | A villain phase step begins, for the log.
+villainPhaseStep :: (ReverseQueue m) => VillainPhaseStep -> m ()
+villainPhaseStep = push . VillainPhaseStep
 
 endRound :: (ReverseQueue m) => m ()
 endRound = push EndRound

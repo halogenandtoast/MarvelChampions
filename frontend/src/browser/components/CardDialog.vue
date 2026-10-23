@@ -152,7 +152,7 @@ function onClick(event: MouseEvent): void {
   padding: 0;
   border: 1px solid var(--c-border-strong);
   border-radius: var(--radius-lg);
-  background: var(--c-bg);
+  background: var(--ink-1);
   color: var(--c-text);
   box-shadow: var(--shadow-lg);
   overflow: hidden;

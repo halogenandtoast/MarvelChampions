@@ -6,6 +6,15 @@
     "villain": "Villain phase"
   },
   "turn": "{player}'s turn",
+  "step": {
+    "endPlayerPhase": "Player phase ends",
+    "placeThreat": "Place threat on main scheme",
+    "enemiesActivate": "Villain and minions activate",
+    "dealEncounterCards": "Deal encounter cards",
+    "revealEncounterCards": "Reveal and resolve encounter cards",
+    "passFirstPlayer": "First player token passes to {player}",
+    "endRound": "End of the round"
+  },
   "gameOver": {
     "won": "The heroes win",
     "lost": "The villain wins"
