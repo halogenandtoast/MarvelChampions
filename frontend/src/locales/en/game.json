@@ -97,7 +97,8 @@
     "AlterEgoAction": "Alter-ego action",
     "Special": "Special",
     "Basic": "Basic power",
-    "Setup": "Setup"
+    "Setup": "Setup",
+    "WhenRevealed": "When revealed"
   },
   "choices": {
     "ability": "Use",

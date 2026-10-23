@@ -219,6 +219,7 @@ passesTypeIsRelevant ident a = case abilityType a of
   AlterEgoAction -> member ident <$> select AlterEgoIdentity
   Special -> pure False
   Setup -> pure False
+  WhenRevealed -> pure False
 
 class PerformAbility a where
   performAbility :: (HasGame m) => a -> Natural -> m ()
@@ -240,6 +241,7 @@ isForcedAbility a = case abilityType a of
   Special -> False
   Basic -> False
   Setup -> False
+  WhenRevealed -> True
 
 defaultAbilityLimit :: AbilityType -> Limit
 defaultAbilityLimit = \case
@@ -258,3 +260,4 @@ defaultAbilityLimit = \case
   Special -> NoLimit
   Basic -> NoLimit
   Setup -> NoLimit
+  WhenRevealed -> PerWindow 1

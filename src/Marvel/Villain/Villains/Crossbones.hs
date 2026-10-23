@@ -54,7 +54,7 @@ instance HasModifiersFor Crossbones where
 instance HasAbilities Crossbones where
   getAbilities (Crossbones a)
     | villainStage a >= 2 =
-        [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) ForcedResponse NoCost $
+        [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) WhenRevealed NoCost $
             RunAbility (toTarget a) 1
         ]
     | otherwise = []

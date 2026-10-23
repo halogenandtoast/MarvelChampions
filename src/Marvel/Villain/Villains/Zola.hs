@@ -43,7 +43,7 @@ zola3 = villainWith Zola Cards.zola3 (Sch 3) (Atk 2) (HP $ PerPlayer 16) (stageL
 instance HasAbilities Zola where
   getAbilities (Zola a)
     | villainStage a >= 2 =
-        [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) ForcedResponse NoCost $
+        [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) WhenRevealed NoCost $
             RunAbility (toTarget a) 1
         ]
     | otherwise = []

@@ -62,7 +62,7 @@ instance HasAbilities Ultron where
           a
           1
           (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain)
-          ForcedResponse
+          WhenRevealed
           NoCost
           $ RunAbility (toTarget a) 1
       ]

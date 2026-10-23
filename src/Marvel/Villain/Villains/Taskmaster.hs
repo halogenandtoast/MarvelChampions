@@ -51,7 +51,7 @@ instance HasAbilities Taskmaster where
             a
             2
             (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain)
-            ForcedResponse
+            WhenRevealed
             NoCost
             (RunAbility (toTarget a) 2)
         | villainStage a >= 2

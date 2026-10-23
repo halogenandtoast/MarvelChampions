@@ -35,7 +35,7 @@ instance HasAbilities GreenGoblin where
   getAbilities (GreenGoblin a) =
     -- "After Green Goblin attacks and damages you, place threat on the main scheme"
     windowAbility a 1 (W.TookDamage You FromAttack self) ForcedResponse NoCost (runAbility a 1)
-      : [ windowAbility a 2 (W.VillainRevealed W.When (VillainWithId $ villainId a) W.RevealedFromVillain) ForcedResponse NoCost $
+      : [ windowAbility a 2 (W.VillainRevealed W.When (VillainWithId $ villainId a) W.RevealedFromVillain) WhenRevealed NoCost $
             runAbility a 2
         | villainStage a > 1
         ]

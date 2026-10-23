@@ -24,7 +24,8 @@ data AbilityType
   | Special
   | Basic
   | Setup
-  -- \| WhenRevealed
+  | -- | a "When Revealed" ability: forced, resolved as its card is revealed
+    WhenRevealed
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

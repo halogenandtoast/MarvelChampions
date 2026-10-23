@@ -1,10 +1,12 @@
 module Marvel.Encounter.VillainStagesSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.Ability.Types (AbilityType (..))
 import Marvel.Card.Code
 import Marvel.Card.Def (getCardDef)
 import Marvel.Damage
 import Marvel.Entity
+import Marvel.Game.Public (ChoiceView (..), describeChoice)
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.Villain.Types (Villain, villainIsTough)
@@ -50,6 +52,15 @@ spec = describe "villain stages" do
       finished >>= liftIO . (`shouldBe` Nothing)
       resolve [defeat v2]
       finished >>= liftIO . (`shouldBe` Just Won)
+
+  it "Rhino II's When Revealed is offered as a When Revealed, not a forced interrupt or response" do
+    app <- rhino Normal
+    runGameApp app do
+      v1 <- theVillain
+      runNow [defeat v1]
+      Just (ident, cs) <- asked
+      -- the client names an ability by the type the view gives it
+      liftIO $ [t | c@(UseAbility _) <- cs, Just t <- [(describeChoice ident c).abilityType]] `shouldBe` [WhenRevealed]
 
   it "expert: the villain starts at Rhino II, whose When Revealed resolves at setup, and Rhino III is the last stage" do
     app <- rhino Expert

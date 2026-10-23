@@ -50,7 +50,7 @@ instance HasModifiersFor AbsorbingMan where
 instance HasAbilities AbsorbingMan where
   getAbilities (AbsorbingMan a) = case villainStage a of
     2 ->
-      [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) ForcedResponse NoCost $
+      [ windowAbility a 1 (VillainRevealed When (VillainWithId $ villainId a) RevealedFromVillain) WhenRevealed NoCost $
           RunAbility (toTarget a) 1
       ]
     -- after he activates against you: he attacks you, or schemes in your activation

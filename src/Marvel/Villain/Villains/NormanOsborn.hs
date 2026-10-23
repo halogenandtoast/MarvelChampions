@@ -53,7 +53,7 @@ isGoblin a = Goblin `member` cdTraits (getCardDef a)
 instance HasAbilities NormanOsborn where
   getAbilities (NormanOsborn a)
     | isGoblin a =
-        [ windowAbility a 3 (W.VillainRevealed W.When (VillainWithId $ villainId a) W.RevealedFromVillain) ForcedResponse NoCost $
+        [ windowAbility a 3 (W.VillainRevealed W.When (VillainWithId $ villainId a) W.RevealedFromVillain) WhenRevealed NoCost $
             runAbility a 3
         ]
     | otherwise =
