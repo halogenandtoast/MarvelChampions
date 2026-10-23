@@ -84,7 +84,9 @@ const style = computed(() => ({
   '--d-stand': `${delays.value.stand}s`,
 }))
 const turnStyle = computed(() => ({ transform: `rotateY(${book.value.turn}deg)` }))
-const leafStyle = computed(() => ({ transform: `translateZ(1px) rotateY(${book.value.leaf}deg)` }))
+// lifted off the page after it is turned, so the lift turns with it: shut on the far side
+// of the spine it lies under the page, as the page was swung over it
+const leafStyle = computed(() => ({ transform: `rotateY(${book.value.leaf}deg) translateZ(1px)` }))
 const pageStyle = computed(() => ({ transform: `rotateY(${book.value.page}deg)` }))
 // open, the spread is centred on the spine and stood up (the other way round seen from
 // the back); shut on the far side of the spine, it slides back into the card's box
