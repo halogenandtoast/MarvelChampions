@@ -21,7 +21,7 @@ spec = describe "Aggression" do
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
         choose "deal 2 damage" (isLabel "$label.deal2DamageToAnEnemy")
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 5
         -- one consequential damage
         (.allyDamage) <$> allyIn "01050" `shouldReturn` 1
@@ -106,10 +106,10 @@ spec = describe "Aggression" do
         mercenary <- addMinion p Cards.hydraMercenary
         resolve [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         choose "play Chase Them Down" (isPlay chase)
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 2)
 
     it "is not offered when an attack does not defeat the enemy" do
@@ -136,7 +136,7 @@ spec = describe "Aggression" do
         changeForm p >> pass
         mercenary <- addMinion p Cards.hydraMercenary
         playWith assault [strength]
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         minionDamageOf mercenary `shouldReturn` Nothing
         -- 3 hit points, so 2 excess damage reaches Rhino
         villainDamageNow `shouldReturn` 2
@@ -154,7 +154,7 @@ spec = describe "Aggression" do
         villain <- getVillain
         playWith assault [energy]
         offers (isTargetChoice (toId villain)) `shouldReturn` False
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         villainDamageNow `shouldReturn` 0
 
     it "a stunned hero may play it with no minion to attack, and the stun is removed" do
@@ -224,7 +224,7 @@ spec = describe "Aggression" do
         for_ [1 :: Int .. 3] \n -> do
           resolve [SupportMessage (supportId team) ReadiedSupport]
           choose "use Tac Team" (isAbilityOf (supportId team))
-          chooseIf (isTargetChoice (toId villain))
+          choose "the target" (isTargetChoice (toId villain))
           villainDamageNow `shouldReturn` fromIntegral (2 * n)
           when (n < 3) do
             -- exhausted: cannot be used again until readied

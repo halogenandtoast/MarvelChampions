@@ -176,6 +176,7 @@ spec = describe "Captain America" do
       before <- mainSchemeThreat
       _ <- inPlay p "03002" ["03003", "03003"]
       choose "use Agent 13" isAnyAbility
+      chooseMainScheme
       pass
       mainSchemeThreat `shouldReturn` (before - 2)
 

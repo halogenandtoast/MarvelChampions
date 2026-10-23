@@ -281,7 +281,7 @@ spec = describe "The Once and Future Kang" do
         changeForm p
         before <- damageOf p
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice (VillainRef k))
+        choose "the target" (isTargetChoice (VillainRef k))
         chooseIf isAnyAbility
         pass
         damageOf p `shouldReturn` before + 1

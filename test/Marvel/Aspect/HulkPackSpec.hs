@@ -32,6 +32,7 @@ spec = describe "Hulk pack" do
         choose "attack with Brawn" (isAllyAttack brawn)
         choose "Rhino" (isTargetChoice vid)
         choose "Brawn's response" (isAbilityOf (allyId brawn))
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 1)
         villainDamageNow `shouldReturn` 1
 
@@ -118,6 +119,7 @@ spec = describe "Hulk pack" do
         choose "pay" (isPayWith genius)
         chooseIf isFinishPayment
         pass
+        chooseMainScheme
         damageOf p `shouldReturn` 3
         mainSchemeThreatNow `shouldReturn` (before - 3)
 
@@ -144,6 +146,7 @@ spec = describe "Hulk pack" do
         choose "You'll Pay for That!" (isPlay pay)
         payWith [genius]
         pass
+        chooseMainScheme
         damageOf p `shouldReturn` 0
         -- Rhino's 2 ATK and the boost icon, less her 1 DEF
         damageOf other `shouldReturn` 2
@@ -203,6 +206,7 @@ spec = describe "Hulk pack" do
         placeMainThreat 4
         before <- mainSchemeThreatNow
         playWith rescue [genius]
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 2)
 
   describe "Beat Cop (10029)" do
@@ -214,12 +218,13 @@ spec = describe "Hulk pack" do
         placeMainThreat 4
         before <- mainSchemeThreatNow
         choose "move threat" (isAbilityOfCard cop)
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 1)
         map (.supportThreat) <$> supportsWith "10029" `shouldReturn` [1]
         runNow [SupportMessage (supportOf cop) ReadiedSupport]
         mercenary <- addMinion p Minions.hydraMercenary
         choose "discard Beat Cop" \c -> isAbilityOfCard cop c && abilityIndexIs 2 c
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         minionDamageOf mercenary `shouldReturn` Just 1
         supportsWith "10029" `shouldReturn` []
         discardOf p >>= (`shouldSatisfy` elem cop)
@@ -234,7 +239,7 @@ spec = describe "Hulk pack" do
         brawn <- allyIn "10011"
         resolve [AllyMessage (allyId brawn) (AllyDamaged GameRef (toDamage 2 FromAbility)), AllyMessage (allyId brawn) ExhaustedAlly]
         playWith presence [genius]
-        chooseIf (isTargetChoice (allyId brawn))
+        choose "the target" (isTargetChoice (allyId brawn))
         brawn' <- allyIn "10011"
         brawn'.allyDamage `shouldBe` 1
         brawn'.allyExhausted `shouldBe` False
@@ -301,6 +306,7 @@ spec = describe "Hulk pack" do
         choose "pay with Resourceful" (isAbilityOfCard resourceful)
         choose "pay" isPayWith'
         chooseIf isFinishPayment
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 2)
         upgradeCodes `shouldReturn` []
         getsGame (HashMap.null . gameUpgrades) `shouldReturn` True

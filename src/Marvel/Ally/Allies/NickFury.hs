@@ -29,7 +29,7 @@ instance HasAbilities NickFury where
             ( "$label.remove2ThreatFromAScheme"
             , RemoveThreat (toSource a) 2 ThwartableScheme
             )
-          , ("$label.draw3Cards", ChooseDrawCards 3 You)
+          , ("$label.draw3Cards", Run [controllerMessage a $ DrawCards FromDeck 3])
           ,
             ( "$label.deal4DamageToAnEnemy"
             , ChooseDamage (toSource a) (toDamage 4 FromAbility) AnyEnemy

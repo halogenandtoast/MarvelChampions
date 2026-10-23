@@ -28,8 +28,7 @@ newtype TheGoldenCity = TheGoldenCity (Attrs Support)
 instance HasAbilities TheGoldenCity where
   getAbilities (TheGoldenCity a) =
     [ ability a 1 AlterEgoAction OwnsThis ExhaustCost $
-        ChooseDrawCards 2 $
-          IdentityWithId (supportController a)
+        Run [IdentityMessage (supportController a) $ DrawCards FromDeck 2]
     ]
 
 instance RunMessage TheGoldenCity where

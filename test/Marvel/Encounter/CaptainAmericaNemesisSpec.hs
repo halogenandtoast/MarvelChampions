@@ -71,6 +71,7 @@ spec = describe "Captain America's nemesis set" do
         agent13 <- putInHand p1 "03002"
         runNow [PutCardIntoPlay p1 agent13 NoPayment Nothing]
         choose "use Agent 13" (isAbilityOfCard agent13)
+        chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 2)
 
   describe "Hydra Soldier (03029)" do

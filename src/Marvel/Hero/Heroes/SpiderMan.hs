@@ -30,7 +30,7 @@ spiderMan =
     (Def 3)
 
 instance HasAbilities SpiderMan where
-  getAbilities a =
+  getAbilities a@(SpiderMan attrs) =
     [ label "Spider-Sense" $
         limitedWindowAbility
           a
@@ -39,7 +39,7 @@ instance HasAbilities SpiderMan where
           Interrupt
           IsSelf
           NoCost
-          (ChooseDrawCards 1 You)
+          (Run [IdentityMessage (heroIdentityId attrs) $ DrawCards FromDeck 1])
     ]
 
 newtype SpiderMan = SpiderMan (Attrs Hero)

@@ -119,6 +119,7 @@ spec = describe "Hulk" do
         [blow] <- asHulk p ["10002"]
         heli <- putIntoPlay p "01092"
         choose "use Helicarrier" (isAbilityOfCard heli)
+        choose "the player" (isTargetChoice p)
         choose "play Crushing Blow" (isPlay blow)
         vid <- villainIdNow
         choose "Rhino" (isTargetChoice vid)
@@ -189,6 +190,7 @@ spec = describe "Hulk" do
         playWith leap [strength]
         whenM (offers isPayWith') $ choose "pay" isPayWith'
         chooseIf isFinishPayment
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 5)
 
     it "removes 3 otherwise" do
@@ -199,6 +201,7 @@ spec = describe "Hulk" do
         placeMainThreat 6
         before <- mainSchemeThreatNow
         playWith leap [strength, genius]
+        chooseMainScheme
         mainSchemeThreatNow `shouldReturn` (before - 3)
 
   describe "Thunderclap (10005)" do
@@ -286,8 +289,10 @@ spec = describe "Hulk" do
         [force] <- asHulk p ["10006"]
         heli <- putIntoPlay p "01092"
         choose "use Helicarrier" (isAbilityOfCard heli)
+        choose "the player" (isTargetChoice p)
         runNow [SupportMessage (supportOf heli) ReadiedSupport]
         choose "use Helicarrier again" (isAbilityOfCard heli)
+        choose "the player" (isTargetChoice p)
         choose "attack" (isHeroAttack p)
         vid <- villainIdNow
         choose "Rhino" (isTargetChoice vid)

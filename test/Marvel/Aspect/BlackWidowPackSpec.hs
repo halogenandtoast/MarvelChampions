@@ -55,10 +55,10 @@ spec = describe "Black Widow's aspect and basic cards" do
         strike <- putInHand p "08013"
         [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
         playWith strike [a, b, c]
-        chooseIf (isTargetChoice (EnemyMinionId mercenary))
+        choose "the target" (isTargetChoice (EnemyMinionId mercenary))
         pass
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         minionDamageOf mercenary `shouldReturn` Nothing
         mainSchemeThreatNow `shouldReturn` (threat - 2)
 
@@ -76,12 +76,12 @@ spec = describe "Black Widow's aspect and basic cards" do
         [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
         strength <- putInHand p "01090"
         playWith strike [a, b, c]
-        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        choose "the target" (isTargetChoice (EnemyMinionId yonRogg))
         -- Yon-Rogg's 5 hit points take 4: Jarnbjorn's 2 defeat him
         choose "Jarnbjorn" (isAbilityOfCard jarnbjorn)
         choose "pay" (isPayWith strength)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
-        chooseIf (isTargetChoice (EnemyMinionId yonRogg))
+        choose "the target" (isTargetChoice (EnemyMinionId yonRogg))
         pass
         minionDamageOf yonRogg `shouldReturn` Nothing
         mainSchemeThreatNow `shouldReturn` threat
@@ -98,7 +98,7 @@ spec = describe "Black Widow's aspect and basic cards" do
         [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
         playWith strike [a, b, c]
         vid <- villainIdNow
-        chooseIf (isTargetChoice (EnemyVillainId vid))
+        choose "the target" (isTargetChoice (EnemyVillainId vid))
         pass
         villainDamageNow `shouldReturn` 4
         mainSchemeThreatNow `shouldReturn` threat
@@ -284,7 +284,7 @@ spec = describe "Black Widow's aspect and basic cards" do
         stance <- putIntoPlay p "08032"
         whiplash <- addMinion p Minions.whiplash
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice whiplash)
+        choose "the target" (isTargetChoice whiplash)
         choose "use Defensive Stance" (isAbilityOfCard stance)
         pass
         damageOf p `shouldReturn` 0

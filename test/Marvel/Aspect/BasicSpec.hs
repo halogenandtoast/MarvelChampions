@@ -40,7 +40,7 @@ spec = describe "Basic" do
         mb <- allyIn "01083"
         choose "use Mockingbird" (isAbilityOf (allyId mb))
         villain <- getVillain
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainStunned . toAttrs <$> getVillain `shouldReturn` True
 
   describe "Nick Fury (01084)" do
@@ -74,7 +74,7 @@ spec = describe "Basic" do
         choose "Nick Fury's forced response" (isAbilityOf (allyId nick))
         choose "deal 4 damage" (isLabel "$label.deal4DamageToAnEnemy")
         villain <- getVillain
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 4
         fury2 <- putInHand p "01084"
         _ <- putInHand p "01090"
@@ -111,7 +111,7 @@ spec = describe "Basic" do
         mb <- allyIn "01083"
         resolve [AllyMessage (allyId mb) (AllyDamaged (toSource p) (toDamage 2 FromAbility))]
         playWith firstAid [genius]
-        chooseIf (isTargetChoice (AllyCharacter (allyId mb)))
+        choose "the target" (isTargetChoice (AllyCharacter (allyId mb)))
         (.allyDamage) <$> allyIn "01083" `shouldReturn` 0
 
   describe "Haymaker (01087)" do
@@ -126,7 +126,9 @@ spec = describe "Basic" do
         changeForm p
         playWith haymaker [energy]
         villain <- getVillain
-        chooseIf (isTargetChoice (toId villain))
+        -- the only enemy is still the player's to pick
+        villainDamageNow `shouldReturn` 0
+        choose "the villain" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 3
 
   describe "Energy, Genius and Strength (01088-01090)" do
@@ -150,12 +152,12 @@ spec = describe "Basic" do
         justice <- putInHand p "01060"
         playWith justice [genius]
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 4)
         haymaker <- putInHand p "01087"
         playWith haymaker [strength]
         villain <- getVillain
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 3
         handOf p `shouldReturn` [energy]
 
@@ -189,12 +191,13 @@ spec = describe "Basic" do
         power <- putInHand p "01079"
         _ <- putInHand p "01087"
         choose "use Helicarrier" (isAbilityOf (supportId heli))
-        -- the only player is chosen
+        -- the only player is still the one to choose
+        choose "the player" (isTargetChoice p)
         changeForm p
         -- Haymaker costs 1 now, so a single resource pays for it
         playWith haymaker [power]
         villain <- getVillain
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 3
         -- only the next card
         [haymaker2] <- handOf p
@@ -213,7 +216,7 @@ spec = describe "Basic" do
         changeForm p
         villain <- getVillain
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         exhaustedNow p `shouldReturn` True
         energy <- putInHand p "01088"
         offers (isAbilityOfType (upgradeId tenacity) HeroAction) `shouldReturn` False

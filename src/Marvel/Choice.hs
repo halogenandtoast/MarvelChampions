@@ -43,15 +43,8 @@ resolveChoice ident = \case
     ChooseAPlayer -> do
       targets <- getPlayers
       let f = CreatedEffect def source . IdentityEntity . IdentityWithId
-      case targets of
-        [] -> throwM NoChoices
-        [x] -> pure [f x]
-        xs ->
-          pure
-            [ Ask ident $
-                ChooseOne
-                  [TargetLabel (toRef x) [Run [f x]] | x <- xs]
-            ]
+      -- a choice is asked even of one: the player picks what their card does
+      pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- targets]]
     TargetMatches entityMatcher -> case entityMatcher of
       IdentityEntity matcher -> do
         targets <- selectList matcher
@@ -167,50 +160,18 @@ resolveChoice ident = \case
   RemoveThreat source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     let f target = ThwartScheme target source n
-    case schemes of
-      [] -> pure []
-      [x] -> choiceMessages ident (f $ toRef x)
-      xs ->
-        pure
-          [ Ask ident $
-              ChooseOne
-                [ TargetLabel target [f target]
-                | x <- xs
-                , let target = toRef x
-                ]
-          ]
+    pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x]]
   PlaceThreat _source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     pure $ concatMap (`placeThreatOn` n) schemes
   ChooseHeal n characterMatcher -> do
     characters <- selectList characterMatcher
     let f character = Heal character n
-    case characters of
-      [] -> pure []
-      [x] -> choiceMessages ident (f x)
-      xs ->
-        pure
-          [ Ask ident $
-              ChooseOne [TargetLabel (toRef x) [f x] | x <- xs]
-          ]
+    pure [Ask ident $ ChooseOne [TargetLabel (characterRef x) [f x] | x <- characters]]
   ChooseDamage source damage enemyMatcher -> do
     enemies <- selectList (enemyMatcher <> DamageableEnemy)
     let f target = DamageEnemy target source damage
-    case enemies of
-      [] -> pure []
-      [x] -> do
-        msgs <- choiceMessages ident (f $ toRef x)
-        pure $ msgs <> [ClearRemoved]
-      xs ->
-        pure
-          [ Ask ident $
-              ChooseOne
-                [ TargetLabel target [f target]
-                | x <- xs
-                , let target = toRef x
-                ]
-          , ClearRemoved
-          ]
+    pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- enemies, let target = enemyRef x], ClearRemoved]
   Stun target source -> case target of
     VillainRef vid -> pure [VillainMessage vid $ VillainStunned source]
     MinionRef mid -> pure [MinionMessage mid $ MinionStunned source]
@@ -280,18 +241,7 @@ resolveChoice ident = \case
   ChooseDrawCards n identityMatcher -> do
     identities <- selectList identityMatcher
     let f iid = Run [IdentityMessage iid (DrawCards FromDeck n)]
-    case identities of
-      [] -> pure []
-      [x] -> choiceMessages ident (f x)
-      xs ->
-        pure
-          [ Ask ident $
-              ChooseOne
-                [ TargetLabel target [f x]
-                | x <- xs
-                , let target = toRef x
-                ]
-          ]
+    pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [f x] | x <- identities]]
   ReturnTargetToHand target -> pure [ReturnToHand target]
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]

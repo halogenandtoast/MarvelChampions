@@ -54,7 +54,7 @@ spec = describe "Hawkeye" do
         payment <- traverse (putInHand p) ["01089", "01089"]
         playWith sonic payment
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         held `shouldReturn` []
         villainDamageNow `shouldReturn` 3
@@ -69,6 +69,7 @@ spec = describe "Hawkeye" do
         bow <- withBow p
         vibranium <- putInHand p "04009"
         playPaying p vibranium ["01088", "01088"]
+        chooseVillain
         pass
         upgradeIsExhausted (upgradeOf bow) `shouldReturn` True
         villainDamageNow `shouldReturn` 6

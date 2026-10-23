@@ -174,7 +174,7 @@ spec = describe "Doctor Strange pack" do
       resolve [IdentityMessage p IdentityStunned]
       nurse <- putIntoPlay p "09019"
       choose "The Night Nurse" (isAbilityOfCard nurse)
-      chooseIf (isTargetChoice p)
+      choose "the target" (isTargetChoice p)
       chooseIf (isLabel "$label.stunnedStatus")
       damageOf p `shouldReturn` 1
       isStunned p `shouldReturn` False
@@ -280,6 +280,7 @@ spec = describe "Doctor Strange pack" do
       -- with nothing to pay, Inspired is played on Iron Man, the one ally it is free on
       inspired <- putInHand p "01074"
       choose "play Inspired" (isPlay inspired)
+      choose "Iron Man" (isTargetChoice (allyId ironMan))
       map (.upgradeAttachedAlly) <$> upgradesWith "01074" `shouldReturn` [Just (allyId ironMan)]
       -- what it is played on is chosen before paying: on Iron Man nothing is paid
       enraged <- putInHand p "03031"

@@ -65,7 +65,6 @@ spec = describe "Ms. Marvel pack" do
         choose "use Nova" (isAbilityOfCard nova)
         choose "pay" (isPayWith energy)
         chooseIf isFinishPayment
-        chooseIf (isTargetChoice mercenary)
         pass
         minionDamageOf mercenary `shouldReturn` Nothing
         damageOf p `shouldReturn` 0
@@ -188,6 +187,7 @@ spec = describe "Ms. Marvel pack" do
         vid <- villainIdNow
         start (damageIdentity p (toSource vid) (toDamage 3 FromAbility))
         choose "use Energy Barrier" (isAbilityOfCard barrier)
+        chooseVillain
         pass
         damageOf p `shouldReturn` 2
         villainDamageNow `shouldReturn` 1
@@ -202,6 +202,7 @@ spec = describe "Ms. Marvel pack" do
         for_ [1 :: Int .. 3] \_ -> do
           start (damageIdentity p (toSource vid) (toDamage 1 FromAbility))
           choose "use Energy Barrier" (isAbilityOfCard barrier)
+          chooseVillain
           pass
         upgradesWith "05017" `shouldReturn` []
         damageOf p `shouldReturn` 0
@@ -331,6 +332,7 @@ spec = describe "Ms. Marvel pack" do
         clearHand p
         boost <- putInHand p "05032"
         playPaying p boost ["01088"]
+        choose "the hero" (isTargetChoice p)
         choose "attack" (isHeroAttack p)
         vid <- villainIdNow
         choose "hit Rhino" (isTargetChoice vid)

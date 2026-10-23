@@ -16,6 +16,14 @@ inPlay p code payment = do
   playWith card cards
   pure card
 
+-- | A card from hand played on the target, paid for with the cards given.
+inPlayOn :: (IsRef a) => IdentityId -> CardCode -> a -> [CardCode] -> GameAppT PlayerCard
+inPlayOn p code target payment = do
+  card <- putInHand p code
+  cards <- traverse (putInHand p) payment
+  playOn card target cards
+  pure card
+
 flipTo :: IdentityId -> Side -> GameAppT ()
 flipTo p side = resolve [IdentityMessage p (ChangedToForm side)]
 
@@ -40,6 +48,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         falcon <- enters p "03011"
         choose "use Falcon" (isAbilityOfCard falcon)
         choose "done looking" (isLabel "$label.done")
+        main <- mainSchemeIdNow
+        for_ [1 :: Int, 2] \_ -> choose "the main scheme" (isTargetChoice main)
         mainSchemeThreat `shouldReturn` (before - 2)
         -- the cards stay where they were
         scenarioEncounterDeckNow `shouldReturn` deck
@@ -253,7 +263,7 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         flipTo p A
         offers (isPlay card) `shouldReturn` True
         -- Captain America is the one character to play it on
-        _ <- inPlay p "03025" []
+        _ <- inPlayOn p "03025" p []
         hitPointsOf p `shouldReturn` 12
         -- no character is left without one
         offers (isPlay card) `shouldReturn` False
@@ -266,8 +276,8 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         clearHand p
         _ <- putIntoPlay p "03002"
         agent <- allyIn "03002"
-        -- Agent 13 is the one ally to play it on
-        _ <- inPlay p "03031" ["03003"]
+        -- Agent 13 is the one ally to play it on, still picked
+        _ <- inPlayOn p "03031" (allyId agent) ["03003"]
         vid <- villainIdNow
         choose "attack" (isAllyAttack agent)
         choose "attack Rhino" (isTargetChoice vid)
@@ -282,7 +292,7 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         clearHand p
         _ <- putIntoPlay p "03002"
         agent <- allyIn "03002"
-        enraged <- inPlay p "03031" ["03003"]
+        enraged <- inPlayOn p "03031" (allyId agent) ["03003"]
         resolve [AllyMessage (allyId agent) AllyDefeated]
         upgradeCodes `shouldReturn` []
         discardOf p >>= (`shouldSatisfy` elem enraged)
@@ -295,11 +305,11 @@ spec = describe "the Captain America pack's Leadership and basic cards" do
         clearHand p
         scheme <- revealNow p SideSchemes.crowdControl
         pass
-        followed <- inPlay p "03032" ["03003"]
+        followed <- inPlayOn p "03032" (sideSchemeOf scheme) ["03003"]
         runNow [SideSchemeMessage (sideSchemeOf scheme) (SideSchemeThwarted GameRef 20)]
         choose "use Followed" (isAbilityOfCard followed)
         vid <- villainIdNow
-        chooseIf (isTargetChoice (EnemyVillainId vid))
+        choose "Rhino" (isTargetChoice vid)
         villainDamageNow `shouldReturn` 4
         upgradeCodes `shouldReturn` []
         discardOf p >>= (`shouldSatisfy` elem followed)

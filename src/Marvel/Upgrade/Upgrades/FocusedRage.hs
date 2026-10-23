@@ -33,7 +33,7 @@ instance HasAbilities FocusedRage where
         HeroAction
         (OwnsThis <> InHeroForm)
         (ExhaustCost <> DamageCost 1)
-        (ChooseDrawCards 1 You)
+        (Run [IdentityMessage (upgradeController a) $ DrawCards FromDeck 1])
     ]
 
 instance RunMessage FocusedRage where

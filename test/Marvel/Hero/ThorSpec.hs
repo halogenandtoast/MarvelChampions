@@ -108,6 +108,7 @@ spec = describe "Thor" do
         choose "play" (isPlay defender)
         pass
         pass
+        chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 3)
         engaged <- (.playerIdentityMinions) <$> playerAttrs p
         toList engaged `shouldBe` [minionOf mercenary]
@@ -125,6 +126,7 @@ spec = describe "Thor" do
         defender <- putInHand p "06003"
         choose "play" (isPlay defender)
         pass
+        chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 3)
         (.playerIdentityMinions) <$> playerAttrs p `shouldReturn` mempty
         -- the emptied deck is made again, and not discarded from

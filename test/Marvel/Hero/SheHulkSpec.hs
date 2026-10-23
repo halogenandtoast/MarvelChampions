@@ -50,6 +50,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       villainDamageNow `shouldReturn` 2
 
   it "Do You Even Lift? does not answer changing to Jennifer Walters" do
@@ -58,6 +59,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       runNow [IdentityMessage p (ChangedToForm B)]
       offers (isNamedAbility "Do You Even Lift?") `shouldReturn` False
 
@@ -107,6 +109,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       clearHand p
       setDamage p 7
       slam <- putInHand p "01021"
@@ -121,6 +124,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       clearHand p
       strength <- inPlay p "01028" ["01089"]
       mercenary <- revealNow p Minions.hydraMercenary
@@ -146,6 +150,7 @@ spec = describe "She-Hulk" do
       choose "play Legal Practice" (isPlay practice)
       for_ junk \c -> choose "discard" (isTargetChoice c)
       choose "done discarding" (isLabel "$label.done")
+      chooseMainScheme
       pass
       mainSchemeThreat `shouldReturn` (before - 3)
       length <$> discardOf p `shouldReturn` 4
@@ -166,6 +171,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       clearHand p
       punch <- putInHand p "01024"
       _ <- putInHand p "01088"
@@ -205,6 +211,7 @@ spec = describe "She-Hulk" do
       choose "use the division" (isAbilityOfCard division)
       choose "pay with genius" (isPayWith genius)
       whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
+      chooseMainScheme
       mainSchemeThreat `shouldReturn` (before - 2)
       _ <- putInHand p "01089"
       offers (isAbilityOfCard division) `shouldReturn` False
@@ -229,6 +236,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       clearHand p
       rage <- inPlay p "01027" ["01088", "01089"]
       choose "use Focused Rage" (isAbilityOfCard rage)
@@ -242,6 +250,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       clearHand p
       strength <- inPlay p "01028" ["01089"]
       choose "attack" isBasicAttack
@@ -259,6 +268,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       _ <- revealNow p Obligations.legalWork
       choose "flip to alter-ego" (isLabel "$label.changeToB")
       choose "exhaust Jennifer Walters" (isLabelStarting "$label.exhaust")
@@ -272,6 +282,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       work <- revealNow p Obligations.legalWork
       choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
       pass
@@ -294,6 +305,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       titania <- revealNow p Minions.titania
       pass
       damageOf p `shouldReturn` 0
@@ -309,6 +321,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       _ <- revealNow p Minions.hydraMercenary
       pass
       titania <- revealNow p Minions.titania
@@ -341,6 +354,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       _ <- revealNow p Minions.titania
       pass
       [next] <- stackEncounterDeck [Minions.hydraMercenary]
@@ -370,6 +384,7 @@ spec = describe "She-Hulk" do
     inGame tg do
       changeForm p
       choose "do you even lift" (isNamedAbility "Do You Even Lift?")
+      chooseVillain
       _ <- stackEncounterDeck [Treacheries.titaniasFury, Treacheries.theVulturesPlans]
       vid <- villainIdNow
       runNow [VillainMessage vid (VillainAttacks p)]

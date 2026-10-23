@@ -204,9 +204,16 @@ isLabel l = \case
 
 isTargetChoice :: (IsRef a) => a -> Choice -> Bool
 isTargetChoice a = \case
-  TargetLabel t _ -> t == toTarget a
+  TargetLabel t _ -> concrete t == concrete (toTarget a)
   CardLabel _ c -> isTargetChoice a c
   _ -> False
+ where
+  -- an enemy, scheme or character is the same target by any of its ids
+  concrete = \case
+    EnemyRef e -> enemyRef e
+    SchemeRef s -> schemeRef s
+    CharacterRef c -> characterRef c
+    t -> t
 
 -- | Paying with a card from hand.
 isPayWith :: PlayerCard -> Choice -> Bool
@@ -681,3 +688,11 @@ scenarioEncounterDeckNow = getsGame (scenarioEncounterDeck . toAttrs . gameScena
 -- | The facedown encounter cards dealt to a player, in the order dealt.
 dealtTo :: IdentityId -> GameAppT [EncounterCard]
 dealtTo p = (.playerIdentityEncounterCards) <$> playerAttrs p
+
+-- | Pick the main scheme, as a player picks the scheme their card thwarts.
+chooseMainScheme :: (HasCallStack) => GameAppT ()
+chooseMainScheme = mainSchemeIdNow >>= \m -> choose "the main scheme" (isTargetChoice m)
+
+-- | Pick the villain, as a player picks the enemy their card damages.
+chooseVillain :: (HasCallStack) => GameAppT ()
+chooseVillain = villainIdNow >>= \v -> choose "the villain" (isTargetChoice v)

@@ -19,10 +19,10 @@ spec = describe "Justice" do
         mid <- mainSchemeId
         villain <- getVillain
         choose "thwart with Daredevil" (isAllyThwart dd)
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 2)
         choose "use Daredevil" (isAbilityOf (allyId dd))
-        chooseIf (isTargetChoice (toId villain))
+        choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 1
         (.allyDamage) <$> allyIn "01058" `shouldReturn` 1
 
@@ -57,7 +57,7 @@ spec = describe "Justice" do
         changeForm p
         playWith forJustice [energy]
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 3)
 
     it "removes 4 threat when paid for with a mental resource" do
@@ -72,7 +72,7 @@ spec = describe "Justice" do
         changeForm p
         playWith forJustice [genius]
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 4)
 
   describe "Great Responsibility (01061)" do
@@ -161,12 +161,12 @@ spec = describe "Justice" do
         mercenary <- addMinion p Cards.hydraMercenary
         resolve [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         minionDamageOf mercenary `shouldReturn` Nothing
         [room] <- supportsWith "01063"
         choose "use Interrogation Room" (isAbilityOf (supportId room))
         mid <- mainSchemeId
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         mainSchemeThreatNow `shouldReturn` (threat - 1)
 
     it "does not answer a minion another player defeats" do
@@ -192,7 +192,7 @@ spec = describe "Justice" do
         runNow [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 2 FromAbility))]
         daredevil <- allyIn "01058"
         choose "Daredevil attacks" (isAllyAttack daredevil)
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         minionDamageOf mercenary `shouldReturn` Nothing
         [room] <- supportsWith "01063"
         offers (isAbilityOf (supportId room)) `shouldReturn` False
@@ -212,7 +212,7 @@ spec = describe "Justice" do
         for_ [1 :: Natural .. 3] \n -> do
           resolve [SupportMessage (supportId team) ReadiedSupport]
           choose "use Surveillance Team" (isAbilityOf (supportId team))
-          chooseIf (isTargetChoice mid)
+          choose "the target" (isTargetChoice mid)
           mainSchemeThreatNow `shouldReturn` (threat - n)
           when (n < 3) $ offers (isAbilityOf (supportId team)) `shouldReturn` False
         supportsWith "01064" `shouldReturn` []
@@ -248,6 +248,6 @@ spec = describe "Justice" do
         changeForm p
         mid <- mainSchemeId
         choose "thwart" (isHeroThwart p)
-        chooseIf (isTargetChoice mid)
+        choose "the target" (isTargetChoice mid)
         -- Spider-Man has 1 THW
         mainSchemeThreatNow `shouldReturn` (threat - 2)

@@ -23,6 +23,14 @@ inPlay p code codes = do
   playPaying p card codes
   pure card
 
+-- | A card from hand played on the target, paying with new copies of the cards given.
+inPlayOn :: (IsRef a) => IdentityId -> CardCode -> a -> [CardCode] -> GameAppT PlayerCard
+inPlayOn p code target codes' = do
+  card <- putInHand p code
+  payment <- traverse (putInHand p) codes'
+  playOn card target payment
+  pure card
+
 codes :: [PlayerCard] -> [CardCode]
 codes = map toCardCode
 
@@ -56,6 +64,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         valkyrie <- putInHand p "06012"
         playPaying p valkyrie ["01089", "01090"]
         choose "valkyrie" (isAbilityOfCard valkyrie)
+        choose "the minion" (isTargetChoice mercenary)
         minionDamageOf mercenary `shouldReturn` Just 2
 
     it "deals 3 instead when paid for with an energy resource" do
@@ -67,6 +76,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         valkyrie <- putInHand p "06012"
         playPaying p valkyrie ["01088", "01089"]
         choose "valkyrie" (isAbilityOfCard valkyrie)
+        choose "the minion" (isTargetChoice loki)
         minionDamageOf loki `shouldReturn` Just 3
 
     it "deals 3 when a wild resource is spent as energy" do
@@ -79,6 +89,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         -- The Power of Aggression doubles to two wild resources for an Aggression card
         playPaying p valkyrie ["01055", "01089"]
         choose "valkyrie" (isAbilityOfCard valkyrie)
+        choose "the minion" (isTargetChoice loki)
         minionDamageOf loki `shouldReturn` Just 3
 
   describe "Get Over Here! (06014)" do
@@ -141,7 +152,6 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "attack" (isHeroAttack p)
         choose "mean swing" (isPlay swing)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
-        chooseIf (isTargetChoice (upgradeOf mjolnir))
         pass
         vid <- villainIdNow
         choose "attack Rhino" (isTargetChoice vid)
@@ -189,7 +199,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         resolve [MinionMessage mercenary (MinionDamaged GameRef (toDamage 1 FromAbility))]
         [sifAttrs] <- alliesWith "06002"
         choose "Lady Sif attacks" (isAllyAttack sifAttrs)
-        chooseIf (isTargetChoice mercenary)
+        choose "the target" (isTargetChoice mercenary)
         offers (isAbilityOfCard hall) `shouldReturn` False
         pass
         minionDamageOf mercenary `shouldReturn` Nothing
@@ -229,6 +239,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "jarnbjorn" (isAbilityOfCard jarnbjorn)
         choose "pay" (isPayWith strength)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        chooseVillain
         pass
         villainDamageNow `shouldReturn` 4
 
@@ -249,6 +260,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "jarnbjorn" (isAbilityOfCard jarnbjorn)
         choose "pay" (isPayWith strength)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
+        chooseVillain
         pass
         villainDamageNow `shouldReturn` 10
 
@@ -288,9 +300,9 @@ spec = describe "The Thor pack's aspect and basic cards" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        _ <- inPlay p "06031" ["01088", "01089"]
-        -- Rhino's first main scheme advances at 7 threat
         m <- mainSchemeId
+        _ <- inPlayOn p "06031" m ["01088", "01089"]
+        -- Rhino's first main scheme advances at 7 threat
         resolve [MainSchemeMessage m (MainSchemeThwarted GameRef 99), MainSchemeMessage m (MainSchemePlaceThreat 10)]
         mainSchemeThreat `shouldReturn` 10
         another <- putInHand p "06031"
@@ -303,8 +315,8 @@ spec = describe "The Thor pack's aspect and basic cards" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        surveillance <- inPlay p "06031" ["01088", "01089"]
         m <- mainSchemeId
+        surveillance <- inPlayOn p "06031" m ["01088", "01089"]
         map (.upgradeAttachedMainScheme) <$> upgradesWith "06031" `shouldReturn` [Just m]
         -- shown on the main scheme, not in the player's area
         view <- liftIO . publicGame =<< getGame
@@ -336,7 +348,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "attack" (isHeroAttack p)
         choose "teamwork" (isPlay teamwork)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
-        chooseIf (isTargetChoice (allyIdOf sif))
+        choose "the target" (isTargetChoice (allyIdOf sif))
         pass
         vid <- villainIdNow
         choose "attack Rhino" (isTargetChoice vid)
@@ -357,10 +369,10 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "thwart" (isHeroThwart p)
         choose "teamwork" (isPlay teamwork)
         whenM (offers isFinishPayment) $ choose "pay" isFinishPayment
-        chooseIf (isTargetChoice (allyIdOf sif))
+        choose "the target" (isTargetChoice (allyIdOf sif))
         pass
         m <- mainSchemeId
-        chooseIf (isTargetChoice m)
+        choose "the target" (isTargetChoice m)
         mainSchemeThreat `shouldReturn` (before - 3)
 
   describe "Second Wind (06033)" do
@@ -372,9 +384,11 @@ spec = describe "The Thor pack's aspect and basic cards" do
         setDamage p 10
         wind <- putInHand p "06033"
         playPaying p wind ["01088", "01090"]
+        choose "heal Thor" (isTargetChoice p)
         damageOf p `shouldReturn` 6
         wind' <- putInHand p "06033"
         playPaying p wind' ["01089", "01090"]
+        choose "heal Thor" (isTargetChoice p)
         damageOf p `shouldReturn` 1
 
   describe "Enhanced Physique (06034)" do

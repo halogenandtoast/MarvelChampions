@@ -40,12 +40,12 @@ spec = describe "Spider-Woman" do
         playWith strike payment
         choose "Superhuman Agility" agility
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 3
         -- her basic attack: 1 ATK, +1
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 5
         resolve [EndRound]
@@ -61,14 +61,14 @@ spec = describe "Spider-Woman" do
         playWith strike payment
         choose "Superhuman Agility" agility
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         -- another Aggression card: the Aggression use is spent
         blast <- putInHand p "04035"
         energy <- putInHand p "01088"
         playWith blast [energy]
         offers agility `shouldReturn` False
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         -- a Justice card has its own
         placeMainThreat 3

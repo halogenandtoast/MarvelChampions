@@ -79,7 +79,7 @@ spec = describe "Leadership" do
         choose "Rhino" (isTargetChoice (toId villain))
         (.allyExhausted) <$> allyIn "01067" `shouldReturn` True
         choose "play Get Ready" (isPlay getReady)
-        chooseIf (isTargetChoice (allyId maria))
+        choose "the target" (isTargetChoice (allyId maria))
         (.allyExhausted) <$> allyIn "01067" `shouldReturn` False
 
   describe "Lead from the Front (01070)" do
@@ -96,7 +96,7 @@ spec = describe "Leadership" do
         changeForm p
         pass
         playWith lead [energy]
-        chooseIf (isTargetChoice p)
+        choose "the target" (isTargetChoice p)
         villain <- getVillain
         choose "attack with Maria Hill" (isAllyAttack maria)
         choose "Rhino" (isTargetChoice (toId villain))
@@ -118,7 +118,7 @@ spec = describe "Leadership" do
         energy <- putInHand p "01088"
         -- Maria Hill, the one ally to call, is chosen as it is played: her cost is paid
         -- with its own
-        playWith call [energy]
+        playOn call (CardIdRef $ pcCardId maria) [energy]
         pass
         [m] <- alliesWith "01067"
         m.allyController `shouldBe` p
@@ -177,8 +177,7 @@ spec = describe "Leadership" do
         putIntoPlay p "01067"
         maria <- allyIn "01067"
         genius <- putInHand p "01089"
-        playWith inspired [genius]
-        chooseIf (isTargetChoice (allyId maria))
+        playOn inspired (allyId maria) [genius]
         [u] <- upgradesWith "01074"
         u.upgradeAttachedAlly `shouldBe` Just (allyId maria)
         -- another copy cannot go on Maria Hill

@@ -95,7 +95,7 @@ spec = describe "Taskmaster" do
         damage <- damageOf p
         vid <- villainIdNow
         choose "attack" (isHeroAttack p)
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         choose "the forced interrupt" isAnyAbility
         pass
         villainDamageNow `shouldReturn` before

@@ -64,6 +64,7 @@ spec = describe "Captain Marvel" do
     inGame tg do
       clearHand p
       choose "commander" (isNamedAbility "Commander")
+      choose "the player" (isTargetChoice p)
       length <$> handOf p `shouldReturn` 1
       offers (isNamedAbility "Commander") `shouldReturn` False
 
@@ -352,7 +353,7 @@ spec = describe "Captain Marvel" do
         UseAbility ab -> abilitySource ab == UpgradeRef (upgradeOf channel) && abilityIndex ab == 2
         _ -> False
       vid <- villainIdNow
-      chooseIf (isTargetChoice (EnemyVillainId vid))
+      choose "the target" (isTargetChoice (EnemyVillainId vid))
       offers (isAbilityOfCard jarnbjorn) `shouldReturn` True
 
   it "Energy Channel's discharge is an attack: a stunned hero only loses the stun" do

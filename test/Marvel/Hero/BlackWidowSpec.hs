@@ -44,7 +44,7 @@ spec = describe "Black Widow" do
       choose "use Widow's Bite" (isAbilityOfCard bite)
       minionDamageOf (minionOf mercenary) `shouldReturn` Just 2
       choose "Widowmaker" isWidowmaker
-      chooseIf (isTargetChoice (EnemyMinionId $ minionOf mercenary))
+      choose "the target" (isTargetChoice (EnemyMinionId $ minionOf mercenary))
       minionDamageOf (minionOf mercenary) `shouldReturn` Nothing
 
   it "Widowmaker is Black Widow's: Natasha Romanoff has it not" do
@@ -155,7 +155,7 @@ spec = describe "Black Widow" do
       [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
       playWith ops [a, b, c]
       mid <- mainSchemeId
-      chooseIf (isTargetChoice mid)
+      choose "the target" (isTargetChoice mid)
       mainSchemeThreatNow `shouldReturn` (threat - 4)
       (V.villainConfused . toAttrs <$> getVillain) `shouldReturn` True
 
@@ -168,6 +168,7 @@ spec = describe "Black Widow" do
       dance <- putInHand p "08004"
       [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
       playWith dance [a, b, c]
+      for_ [1 :: Int .. 3] \_ -> chooseVillain
       villainDamageNow `shouldReturn` 6
 
   it "Dance of Death: a stun prevents only its first attack" do
@@ -180,6 +181,7 @@ spec = describe "Black Widow" do
       dance <- putInHand p "08004"
       [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
       playWith dance [a, b, c]
+      for_ [1 :: Int, 2] \_ -> chooseVillain
       villainDamageNow `shouldReturn` 5
       isStunned p `shouldReturn` False
 
@@ -191,7 +193,7 @@ spec = describe "Black Widow" do
       house <- putIntoPlay p "08005"
       [bite, _] <- stackDiscard p ["08010", "01088"]
       choose "use Safe House #29" (isAbilityOfCard house)
-      chooseIf (isTargetChoice bite)
+      choose "the target" (isTargetChoice bite)
       handOf p `shouldReturn` [bite]
       offers (isAbilityOfCard house) `shouldReturn` False
 
@@ -381,7 +383,7 @@ spec = describe "Black Widow" do
       _ <- putIntoPlay p "08009"
       _ <- revealNow p Obligations.burnNotice
       choose "stay a hero" (isLabel "$label.doNotFlipToAlterEgo")
-      chooseIf (isTargetChoice (upgradeOf hook))
+      choose "the target" (isTargetChoice (upgradeOf hook))
       upgradeCodes >>= (`shouldSatisfy` \us -> "08008" `notElem` us && "08010" `elem` us && "08009" `elem` us)
       encounterDiscardCodes >>= (`shouldSatisfy` elem "08025")
 

@@ -52,11 +52,12 @@ spec = describe "Ms. Marvel" do
         placeMainThreat 5
         sneak <- putInHand p "05004"
         playPaying p sneak ["01089"]
+        chooseMainScheme
         offers (isNamedAbility "Morphogenetics") `shouldReturn` True
         pass
         boost <- putInHand p "05032"
         playPaying p boost ["01088"]
-        chooseIf (isTargetChoice p)
+        choose "the target" (isTargetChoice p)
         offers (isNamedAbility "Morphogenetics") `shouldReturn` False
 
     -- the Ms. Marvel pack's printing is the core set's card, with no trait (MarvelCDB's
@@ -122,6 +123,7 @@ spec = describe "Ms. Marvel" do
         offers isFinishPayment `shouldReturn` False
         choose "pay genius" (isPayWith genius)
         chooseIf isFinishPayment
+        chooseVillain
         villainDamageNow `shouldReturn` 2
         alliesWith "05002" `shouldReturn` []
         map pcCardId <$> handOf p `shouldReturn` [pcCardId dagger]
@@ -165,6 +167,7 @@ spec = describe "Ms. Marvel" do
         before <- mainSchemeThreat
         sneak <- putInHand p "05004"
         playPaying p sneak ["01089"]
+        chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 3)
 
   describe "Wiggle Room (05005)" do
@@ -282,7 +285,7 @@ spec = describe "Ms. Marvel" do
         choose "play Morale Boost" (isPlay boost)
         choose "pay with the suit" (isAbilityOfCard suit)
         chooseIf isFinishPayment
-        chooseIf (isTargetChoice p)
+        choose "the target" (isTargetChoice p)
         upgradeIsExhausted (upgradeIdOf suit) `shouldReturn` True
         codes <$> discardOf p >>= (`shouldSatisfy` elem "05032")
 
@@ -346,6 +349,7 @@ spec = describe "Ms. Marvel" do
         sneak <- putInHand p "05004"
         playPaying p sneak ["01089"]
         choose "shrink" (isAbilityOfCard shrink)
+        chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 5)
 
   describe "Home by Dawn (05025)" do
@@ -379,7 +383,7 @@ spec = describe "Ms. Marvel" do
         choose "stay" (isLabel "$label.doNotFlipToAlterEgo")
         offers (isLabel "$label.exhaustKamalaKhanRemoveHomeByDawn") `shouldReturn` False
         chooseIf (isLabel "$label.discardPersonaSupportDiscardObligation")
-        chooseIf (isTargetChoice (supportIdOf aamir))
+        choose "the target" (isTargetChoice (supportIdOf aamir))
         pass
         supportsWith "05006" `shouldReturn` []
         filter (== "05006") . codes <$> discardOf p `shouldReturn` ["05006"]

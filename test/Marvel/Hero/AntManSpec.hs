@@ -93,7 +93,7 @@ spec = describe "Ant-Man" do
         sideOf p `shouldReturn` C
         choose "Giant Nuisance" (isNamedAbility "Giant Nuisance")
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         villainDamageNow `shouldReturn` 1
         hitPointsOf p `shouldReturn` 12
         handSizeOf p `shouldReturn` 4
@@ -107,7 +107,7 @@ spec = describe "Ant-Man" do
         changeFormTo p A
         choose "Puny Pest" (isNamedAbility "Puny Pest")
         m <- mainSchemeIdNow
-        chooseIf (isTargetChoice m)
+        choose "the target" (isTargetChoice m)
         mainSchemeThreatNow `shouldReturn` before - 1
         handSizeOf p `shouldReturn` 5
 
@@ -253,7 +253,7 @@ spec = describe "Ant-Man" do
         hive <- putInHand p "12004"
         playPaying p hive ["01089", "01089"]
         m <- mainSchemeIdNow
-        chooseIf (isTargetChoice m)
+        choose "the target" (isTargetChoice m)
         pass
         mainSchemeThreatNow `shouldReturn` before - 4
 
@@ -270,7 +270,7 @@ spec = describe "Ant-Man" do
         pass
         choose "Army of Ants" (isAbilityOfCard ants)
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         villainDamageNow `shouldReturn` 1
 
   describe "Pym Particles (12006)" do
@@ -348,7 +348,7 @@ spec = describe "Ant-Man" do
         choose "pay" (isPayWith strength)
         chooseIf isFinishPayment
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         villainIsStunned `shouldReturn` True
         upgradeIsExhausted (upgradeOf gauntlets) `shouldReturn` True
 
@@ -362,7 +362,7 @@ spec = describe "Ant-Man" do
         playPaying p wasp ["01088", "01088", "01088"]
         choose "Wasp" (isAbilityOfCard wasp)
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 2
 
@@ -409,7 +409,7 @@ spec = describe "Ant-Man" do
         ronin <- putIntoPlay p "12013"
         allyAttackOf (allyIdOf ronin) `shouldReturn` 2
         suit <- putInHand p "12018"
-        playWith suit =<< traverse (putInHand p) ["01088"]
+        playOn suit (allyIdOf ronin) =<< traverse (putInHand p) ["01088"]
         pass
         allyAttackOf (allyIdOf ronin) `shouldReturn` 3
         allyHitPointsOf (allyIdOf ronin) `shouldReturn` 5
@@ -467,7 +467,7 @@ spec = describe "Ant-Man" do
         choose "Lay Down the Law" (isPlay law)
         payWith [genius]
         m <- mainSchemeIdNow
-        chooseIf (isTargetChoice m)
+        choose "the target" (isTargetChoice m)
         pass
         mainSchemeThreatNow `shouldReturn` before - 4
 
@@ -506,7 +506,7 @@ spec = describe "Ant-Man" do
         choose "attack" \case
           UseAbility ab -> Attack `elem` abilityChoices ab && abilitySource ab == toSource p
           _ -> False
-        chooseIf (isTargetChoice m)
+        choose "the target" (isTargetChoice m)
         choose "Moment of Triumph" (isPlay triumph)
         payWith []
         pass
@@ -526,7 +526,7 @@ spec = describe "Ant-Man" do
         choose "attack" \case
           UseAbility ab -> Attack `elem` abilityChoices ab && abilitySource ab == toSource p
           _ -> False
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         -- the next stage's forced abilities first, then the window to respond
         let untilOffered n = unless (n == (0 :: Int)) $ whenM (not <$> offers (isPlay triumph)) do
               asked >>= traverse_ \(who, _) -> answerQuestion who 0
@@ -552,7 +552,7 @@ spec = describe "Ant-Man" do
         payWith payment
         pass
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 8
 
@@ -563,14 +563,14 @@ spec = describe "Ant-Man" do
       inGame tg do
         ronin <- putIntoPlay p "12013"
         gloves <- putInHand p "12017"
-        playWith gloves =<< traverse (putInHand p) ["01089"]
+        playOn gloves (allyIdOf ronin) =<< traverse (putInHand p) ["01089"]
         pass
         attacker <- allyOn (allyIdOf ronin)
         choose "Ronin attacks" (isAllyAttack attacker)
         vid <- villainIdNow
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         choose "gloves" (isAbilityOfCard gloves)
-        chooseIf (isTargetChoice vid)
+        choose "the target" (isTargetChoice vid)
         pass
         villainDamageNow `shouldReturn` 4
 
@@ -593,7 +593,7 @@ spec = describe "Ant-Man" do
       inGame tg do
         ronin <- putIntoPlay p "12013"
         suit <- putInHand p "12018"
-        playWith suit =<< traverse (putInHand p) ["01088"]
+        playOn suit (allyIdOf ronin) =<< traverse (putInHand p) ["01088"]
         pass
         allyHitPointsOf (allyIdOf ronin) `shouldReturn` 5
         _ <- revealNow p SideSchemes.techTheft
