@@ -126,7 +126,6 @@
     "allowSpectatorsHint": "List this game on the Watch page so anyone can watch it. Spectators see the table but cannot take any actions.",
     "makeDefault": "Make this my default",
     "defaultSaved": "Saved as your default",
-    "summary": "{villain} · {difficulty} · {players}",
     "playerCount": "{count} player | {count} players",
     "kind": "What to play",
     "singleScenario": "Scenario",
@@ -136,13 +135,20 @@
     "campaignModeHint": "The expert campaign keeps each hero's damage from one scenario to the next, and heals it with obligations.",
     "scenarioDifficultyHint": "Each scenario's difficulty: expert adds the expert set and starts the villain a stage later.",
     "campaignName": "Campaign name",
-    "campaignSummary": "{campaign} · {mode} · {players}",
     "setup": "Settings and players",
     "next": "Next",
     "back": "Back",
     "openLobby": "Open the lobby",
     "playersHint": "In the lobby each seat takes a deck: take them all yourself, or send friends the link to take theirs.",
-    "campaignPlayersHint": "In the lobby each seat takes a deck, its hero kept for the whole campaign: take them all yourself, or send friends the link to take theirs."
+    "campaignPlayersHint": "In the lobby each seat takes a deck, its hero kept for the whole campaign: take them all yourself, or send friends the link to take theirs.",
+    "version": {
+      "title": "Version",
+      "standard": "Standard",
+      "extreme": "Extreme",
+      "mixed": "Choose A or B",
+      "hint": "Standard puts each villain's version A into play, expert its version B. Extreme starts each version A with its version B under it, entering play when it is defeated. Or the players choose version A or B for each villain."
+    },
+    "change": "Change"
   },
   "campaign": {
     "riseOfRedSkull": "The Rise of Red Skull",

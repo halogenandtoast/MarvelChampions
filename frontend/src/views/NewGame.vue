@@ -5,15 +5,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight, Check, Users } from 'lucide-vue-next'
 import { createCampaign, createGame, fetchScenarios } from '../api'
 import { currentUser, updateSettings } from '../auth'
-import { useCards } from '../cards'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
+import SetupBar from '../components/SetupBar.vue'
 import { useServerText } from '../i18n'
+import { baseCode, useScenarios, type Release } from '../scenarios'
 import type { CampaignMode, ScenarioOption } from '../server'
 
 const tr = useServerText()
 const { t } = useI18n()
 const router = useRouter()
-const cards = useCards()
 
 const scenarios = ref<ScenarioOption[]>([])
 const modularSets = ref<string[]>([])
@@ -51,36 +51,7 @@ const choose = (option: ScenarioOption) => {
 const toggleModular = (set: string) => {
   modulars.value = modulars.value.includes(set) ? modulars.value.filter((s) => s !== set) : [...modulars.value, set]
 }
-const villainArt = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
-
-// Releases, scenarios and modular sets are named by the card data, so a new box needs only
-// its cards: a scenario by its villain's card, a modular set by any card in it.
-interface Release { code: string; name: string; order: number }
-const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
-const releaseOf = (code: string | null | undefined, card = cards.card(code)): Release =>
-  card ? { code: card.packCode, name: card.packName ?? card.packCode, order: card.packOrder ?? Infinity } : NO_RELEASE
-// the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
-const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp' }
-const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
-const setCards = computed(() => {
-  const bySet = new Map<string, (typeof cards.store.all)[number]>()
-  for (const c of cards.store.all) if (c.setCode && !bySet.has(c.setCode)) bySet.set(c.setCode, c)
-  return bySet
-})
-const modularName = (set: string) => setCards.value.get(setCode(set))?.setName ?? set
-const modularRelease = (set: string) => releaseOf(null, setCards.value.get(setCode(set)))
-// a villain may have several scenarios, as the Green Goblin has: each is named for its set
-// a scenario set up by its main scheme's A side is that scenario's extreme variant (The
-// Wrecking Crew: each version A villain over its version B); by its B side, the players
-// choose each villain's version
-const variant = (option: ScenarioOption) =>
-  cards.card(option.code)?.type === 'main_scheme' ? (/a$/.test(option.code) ? 'extreme' : /b$/.test(option.code) ? 'mixed' : null) : null
-const scenarioName = (option: ScenarioOption) => {
-  const name = cards.card(option.code)?.setName ?? option.name
-  const v = variant(option)
-  return v === 'extreme' ? t('newGame.extremeVariant', { scenario: name }) : v === 'mixed' ? t('newGame.mixedVariant', { scenario: name }) : name
-}
-const villainName = (option: ScenarioOption) => cards.name(option.code, option.name)
+const { releaseOf, modularName, modularRelease, portraits, art: villainArt, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
 
 const byRelease = <T,>(items: T[], release: (item: T) => Release, name: (item: T) => string) =>
   [...items].sort((a, b) => release(a).order - release(b).order || name(a).localeCompare(name(b)))
@@ -91,7 +62,16 @@ const releasesOf = <T,>(items: T[], release: (item: T) => Release) =>
 const sortedScenarios = computed(() => byRelease(scenarios.value, (o) => releaseOf(o.code), (o) => o.code))
 const scenarioReleases = computed(() => releasesOf(scenarios.value, (o) => releaseOf(o.code)))
 const villainFilter = ref('')
-const shownScenarios = computed(() => sortedScenarios.value.filter((o) => !villainFilter.value || releaseOf(o.code).code === villainFilter.value))
+// a scenario's variants, as Breakout's, share its tile and are chosen among on the next step
+const shownScenarios = computed(() =>
+  sortedScenarios.value.filter(
+    (o, i, all) => (!villainFilter.value || releaseOf(o.code).code === villainFilter.value) && all.findIndex((x) => baseCode(x.code) === baseCode(o.code)) === i,
+  ),
+)
+const versions = computed(() => (scenario.value ? sortedScenarios.value.filter((o) => baseCode(o.code) === baseCode(scenario.value!.code)) : []))
+const versionOptions = computed(() =>
+  versions.value.map((o) => ({ value: o.code, label: t(`newGame.version.${variant(o.code) ?? 'standard'}`) })),
+)
 
 const modularReleases = computed(() => releasesOf(modularSets.value, modularRelease))
 const modularFilter = ref('')
@@ -116,7 +96,7 @@ const makeDefault = async () => {
   savedDefault.value = true
 }
 
-const defaultName = computed(() => (scenario.value ? t('home.versus', { villain: villainName(scenario.value) }) : ''))
+const defaultName = computed(() => (scenario.value ? t('home.versus', { villain: villainName(scenario.value.code) }) : ''))
 const canCreate = computed(() => !!scenario.value && !creating.value)
 
 const create = async () => {
@@ -151,8 +131,6 @@ const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
   { value: 'ExpertCampaign' as CampaignMode, label: t('campaign.ExpertCampaign') },
 ])
-// the villains of The Rise of Red Skull, in order
-const RED_SKULL_CAMPAIGN = ['04058', '04076', '04093', '04109', '04125']
 const canCreateCampaign = computed(() => !creating.value)
 const createCampaignNow = async () => {
   if (!canCreateCampaign.value) return
@@ -195,17 +173,27 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
         </li>
       </ol>
 
+      <SetupBar
+        v-if="step === 2 && (kind === 'campaign' || scenario)"
+        :portraits="kind === 'campaign' ? [] : portraits(scenario!.code)"
+        :name="kind === 'campaign' ? $t('campaign.riseOfRedSkull') : scenarioName(scenario!.code)"
+        :details="
+          (kind === 'campaign' ? [$t(`campaign.${campaignMode}`), $t(`difficulty.${difficulty}`)] : details({ scenarioCode: scenario!.code, modulars, difficulty })).concat(
+            $t('newGame.playerCount', seatCount),
+          )
+        "
+      >
+        <button type="button" class="btn ghost" @click="step = 1">{{ $t('newGame.change') }}</button>
+      </SetupBar>
+
       <template v-if="step === 1">
         <SegmentedToggle v-model="kind" class="kind" :options="kindOptions" :label="$t('newGame.kind')" />
 
         <section v-if="kind === 'campaign'" class="step">
           <div class="villains" role="radiogroup">
             <button type="button" role="radio" class="villain campaign-tile selected" aria-checked="true">
-              <span class="campaign-art">
-                <span v-for="code in RED_SKULL_CAMPAIGN" :key="code" class="art portrait" :style="{ backgroundImage: villainArt(code) }" />
-              </span>
+              <span class="box-art" />
               <span class="villain-name">{{ $t('campaign.riseOfRedSkull') }}</span>
-              <span class="villain-sets">{{ RED_SKULL_CAMPAIGN.map((c) => cards.name(c, c)).join(' · ') }}</span>
               <Check class="tick" aria-hidden="true" />
             </button>
           </div>
@@ -225,16 +213,17 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
               type="button"
               role="radio"
               class="villain"
-              :class="{ selected: scenario?.code === option.code }"
-              :aria-checked="scenario?.code === option.code"
-              @click="choose(option)"
+              :class="{ selected: scenario && baseCode(scenario.code) === baseCode(option.code) }"
+              :aria-checked="!!scenario && baseCode(scenario.code) === baseCode(option.code)"
+              @click="scenario && baseCode(scenario.code) === baseCode(option.code) || choose(option)"
               @dblclick="step = 2"
             >
-              <span class="art portrait" :style="{ backgroundImage: villainArt(option.code) }" />
-              <span class="villain-name">{{ villainName(option) }}</span>
-              <span v-if="scenarioName(option) !== villainName(option)" class="scenario-name">{{ scenarioName(option) }}</span>
-              <span class="villain-sets">{{ releaseOf(option.code).name }} · {{ option.modulars.map(modularName).join(', ') }}</span>
-              <Check v-if="scenario?.code === option.code" class="tick" aria-hidden="true" />
+              <span class="art-strip">
+                <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :style="{ backgroundImage: villainArt(code) }" />
+              </span>
+              <span class="villain-name">{{ tileName(option.code) }}</span>
+              <span v-if="releaseOf(option.code).name !== tileName(option.code)" class="villain-sets">{{ releaseOf(option.code).name }}</span>
+              <Check v-if="scenario && baseCode(scenario.code) === baseCode(option.code)" class="tick" aria-hidden="true" />
             </button>
           </div>
         </section>
@@ -265,6 +254,11 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
       <section v-else-if="scenario" class="step two">
         <div class="col">
+          <template v-if="versions.length > 1">
+            <h3 class="field-title">{{ $t('newGame.version.title') }}</h3>
+            <SegmentedToggle :model-value="scenario.code" :options="versionOptions" :label="$t('newGame.version.title')" @update:model-value="choose(versions.find((v) => v.code === $event)!)" />
+            <p class="hint">{{ $t('newGame.version.hint') }}</p>
+          </template>
           <h3 class="field-title">{{ $t('newGame.modulars') }}</h3>
           <div class="filters">
             <input v-model="modularSearch" class="input" type="search" :placeholder="$t('newGame.searchSets')" :aria-label="$t('newGame.searchSets')" />
@@ -321,14 +315,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
       <div class="create">
         <button v-if="step === 2" type="button" class="btn big back" @click="step = 1"><ArrowLeft aria-hidden="true" />{{ $t('newGame.back') }}</button>
-        <p class="summary">
-          <template v-if="kind === 'campaign'">
-            {{ step === 1 ? $t('campaign.riseOfRedSkull') : $t('newGame.campaignSummary', { campaign: $t('campaign.riseOfRedSkull'), mode: $t(`campaign.${campaignMode}`), players: $t('newGame.playerCount', seatCount) }) }}
-          </template>
-          <template v-else-if="scenario">
-            {{ step === 1 ? scenarioName(scenario) : $t('newGame.summary', { villain: scenarioName(scenario), difficulty: $t(`difficulty.${difficulty}`), players: $t('newGame.playerCount', seatCount) }) }}
-          </template>
-        </p>
+        <p v-if="step === 1" class="summary">{{ kind === 'campaign' ? $t('campaign.riseOfRedSkull') : scenario && scenarioName(scenario.code) }}</p>
         <button v-if="step === 1" class="btn primary big" type="submit" :disabled="kind === 'scenario' && !scenario">
           {{ $t('newGame.next') }}<ArrowRight aria-hidden="true" />
         </button>
@@ -343,9 +330,12 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 <style scoped>
 .new-game { display: grid; gap: 22px; }
 .kind { width: 20rem; max-width: 100%; }
-.campaign-tile { grid-column: span 2; cursor: default; }
-.campaign-art { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; }
-.campaign-art .art { aspect-ratio: 3 / 4; background-size: cover; background-position: center top; }
+.campaign-tile { cursor: default; }
+.box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: url('/images/products/rise-of-red-skull.avif') center / cover; }
+.campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
+.art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
+.art-strip .art { aspect-ratio: auto; height: 100%; }
+.art-strip .art:not(:only-child) { background-size: auto 210%; background-position: 72% 12%; }
 .head { display: flex; align-items: center; gap: 12px; }
 .head .page-title { margin: 0 auto 0 0; }
 .step { display: grid; gap: 14px; padding: 20px; border-radius: 16px; background: var(--ink-2); border: 1px solid var(--line); }
@@ -382,7 +372,6 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .art { position: relative; width: 100%; aspect-ratio: 16 / 10; }
 .art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, var(--ink-3)); }
 .villain-name { margin: -18px 14px 0; position: relative; font-family: var(--font-display); font-size: 1.9rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
-.scenario-name { margin: 2px 14px 0; position: relative; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); }
 .villain-sets { margin: 4px 14px 0; font-size: 0.75rem; color: var(--text-faint); }
 .tick { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: var(--crimson); color: #fff; }
 

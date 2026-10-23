@@ -19,6 +19,9 @@ data FrontendMessage
     BoostDealt {cardId :: CardId}
   | -- | an encounter card turned face up, revealed or flipped as a boost
     Revealing {cardId :: CardId, code :: CardCode, boost :: Bool}
+  | -- | the game as it stands mid-move, so what came before a card dealt into the river is
+    -- seen before it
+    Board {board :: Value}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

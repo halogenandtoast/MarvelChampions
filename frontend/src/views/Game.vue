@@ -4,10 +4,11 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useServerText } from '../i18n'
 import { currentUser } from '../auth'
-import { exportGame } from '../api'
+import { exportGame, fetchScenarios } from '../api'
 import { useGame } from '../composables/useGame'
 import { provideChoices } from '../composables/useChoices'
-import type { AreaView, ChoiceView, PlayerView } from '../server'
+import type { AreaView, ChoiceView, PlayerView, ScenarioOption } from '../server'
+import { useScenarios } from '../scenarios'
 import AreaTabs from '../components/AreaTabs.vue'
 import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
@@ -21,6 +22,7 @@ import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
 import River, { type RiverAttacker, type RiverCard, type RiverScheme } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
+import SetupBar from '../components/SetupBar.vue'
 import VillainArea from '../components/VillainArea.vue'
 
 const route = useRoute()
@@ -251,6 +253,14 @@ const onKeydown = (event: KeyboardEvent) => {
   }
 }
 onMounted(() => document.addEventListener('keydown', onKeydown))
+
+// the lobby says what is to be played, named as the new game page named it
+const scenarioList = ref<ScenarioOption[]>([])
+const chosen = useScenarios(scenarioList)
+const inLobby = computed(() => !!data.value && !started.value && !!table.value?.withFriends)
+watch(inLobby, async (lobby) => {
+  if (lobby && !scenarioList.value.length) scenarioList.value = (await fetchScenarios().catch(() => null))?.scenarios ?? []
+}, { immediate: true })
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 // the scenario's own villain, the first of the first area's; at a split table, the
@@ -289,8 +299,15 @@ const resetGame = () => {
     <CardOverlay />
 
     <div class="layout" :class="{ 'no-side': !showSidebar }">
-      <main class="board">
-        <Lobby v-if="data && !started && table?.withFriends" :table="table" @join="join" @leave="leave" @start="start" />
+      <main class="board" :class="{ waiting: inLobby }">
+        <Lobby v-if="inLobby && table" :table="table" @join="join" @leave="leave" @start="start">
+          <SetupBar
+            v-if="data?.setup"
+            :portraits="chosen.portraits(data.setup.scenarioCode)"
+            :name="chosen.scenarioName(data.setup.scenarioCode)"
+            :details="chosen.details(data.setup).concat(t('newGame.playerCount', table.seats))"
+          />
+        </Lobby>
         <p v-else-if="!data" class="notice">{{ t('game.loading') }}</p>
         <p v-else-if="!game" class="notice">{{ t('game.notDealt') }}</p>
 
@@ -395,7 +412,9 @@ const resetGame = () => {
   padding-right: 2px;
 }
 .board > * { flex: none; }
-.board > .notice, .board > :deep(.lobby) { grid-row: 1 / -1; }
+.board > .notice { grid-row: 1 / -1; }
+/* the lobby is as tall as it needs, the board scrolling it */
+.board.waiting { display: block; }
 .board > .half, .player-half > .half { flex: 1 1 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden auto; }
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }

@@ -16,7 +16,15 @@ import Marvel.Message.Villain
 narrate :: Message -> GameAppT ()
 narrate msg = do
   for_ (narrationFor msg) \build -> traverse_ sendLog =<< build
+  when (intoRiver msg) $ send . Board . toJSON =<< getGame
   traverse_ send (cue msg)
+
+-- | A card dealt into the river, which waits for the board to show what came before it.
+intoRiver :: Message -> Bool
+intoRiver = \case
+  VillainMessage _ (VillainDealtBoost _) -> True
+  RevealEncounterCard {} -> True
+  _ -> False
 
 -- | What the board animates for a message, read before it runs.
 cue :: Message -> Maybe FrontendMessage

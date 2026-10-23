@@ -33,7 +33,7 @@ if [ "${1:-}" = "--restart-api" ]; then
   exit 0
 fi
 
-API_PORT=$(pick_port "${API_PORT:-3000}")
+API_PORT=$(pick_port "${API_PORT:-3020}")
 export API_PORT PORT=$API_PORT
 
 [ -d frontend/node_modules ] || { say web "installing npm deps"; (cd frontend && npm install); }
@@ -86,7 +86,7 @@ while true; do
   if in_use "$API_PORT"; then
     if ! $api_up; then api_up=true; say api "ready on :$API_PORT"; fi
     if [ -z "$web_port" ]; then
-      web_port=$(pick_port "${FRONTEND_PORT:-5173}")
+      web_port=$(pick_port "${FRONTEND_PORT:-5180}")
       say web "starting vite"
       (cd frontend && npx vite --port "$web_port" --strictPort) > >(tag web) 2>&1 &
       web_pid=$!

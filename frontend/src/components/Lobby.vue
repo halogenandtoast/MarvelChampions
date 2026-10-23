@@ -66,6 +66,7 @@ const choice = (): DeckChoice => (deck.value === 'loaded' && loaded.value ? { li
 
 <template>
   <section class="lobby">
+    <slot />
     <header>
       <span class="eyebrow">{{ $t('game.lobby.eyebrow') }}</span>
       <h2>{{ $t('game.lobby.waiting') }}</h2>
@@ -83,7 +84,7 @@ const choice = (): DeckChoice => (deck.value === 'loaded' && loaded.value ? { li
       </li>
     </ol>
 
-    <div class="invite">
+    <div v-if="table.seats > 1" class="invite">
       <span>{{ $t('game.lobby.invite') }}</span>
       <div class="link">
         <input class="input" :value="link" type="text" readonly @focus="($event.target as HTMLInputElement).select()" />
