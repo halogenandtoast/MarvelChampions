@@ -29,7 +29,7 @@ instance RunMessage MoraleBoost where
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
         heroes <- selectList HeroIdentity
-        chooseOrRunOne identityId
+        chooseOne identityId
           [targeting hero $ createEffect Cards.moraleBoost attrs (IdentityEntity $ IdentityWithId hero) | hero <- heroes]
         pure e
       _ -> MoraleBoost <$> runMessage msg attrs

@@ -110,7 +110,7 @@ payCostPart activeCost = go
     ExhaustCharacterWithTraitCost t -> do
       you <- selectList (IdentityWithId iid <> UnexhaustedIdentity <> IdentityWithTrait t)
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid) <> AllyWithTrait t)
-      chooseOrRunOne iid $
+      chooseOne iid $
         [targeting i (exhaust i >> paid (ExhaustedCharacterPayment $ IdentityCharacter i)) | i <- you]
           <> [targeting a (exhaust a >> paid (ExhaustedCharacterPayment $ AllyCharacter a)) | a <- allies]
     DiscardEncounterCardsUntilMinionCost ->

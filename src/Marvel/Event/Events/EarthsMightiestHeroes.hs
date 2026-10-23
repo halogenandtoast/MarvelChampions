@@ -38,6 +38,6 @@ instance RunMessage EarthsMightiestHeroes where
       let readied =
             [targeting (IdentityRef i) (ready i) | i <- heroes, IdentityCharacter i `notElem` exhausted]
               <> [targeting (AllyRef a) (ready a) | a <- allies, AllyCharacter a `notElem` exhausted]
-      unless (null readied) $ chooseOrRunOne you readied
+      unless (null readied) $ chooseOne you readied
       pure e
     _ -> EarthsMightiestHeroes <$> runMessage msg attrs

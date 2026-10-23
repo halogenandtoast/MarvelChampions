@@ -128,6 +128,7 @@ spec = describe "Iron Man" do
       tower <- putIntoPlay p "01034"
       [_, helmet, _] <- stackDiscard p ["01032", "01037", "01036"]
       choose "use Stark Tower" (isAbilityOf (supportIdOf tower))
+      choose "the player" (isTargetChoice p)
       handOf p `shouldReturn` [helmet]
       changeForm p
       offers (isAbilityOf (supportIdOf tower)) `shouldReturn` False

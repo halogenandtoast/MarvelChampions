@@ -53,6 +53,6 @@ instance RunMessage StarkTower where
       players <- getPlayers
       returns <- forMaybeM players \player ->
         fmap (player,) <$> selectOne (TopmostCardInDiscardOf (IdentityWithId player) techUpgrade)
-      chooseOrRunOne ident [targeting player (addToHand player card) | (player, card) <- returns]
+      chooseOne ident [targeting player (addToHand player card) | (player, card) <- returns]
       pure s
     _ -> StarkTower <$> runMessage msg attrs

@@ -39,7 +39,7 @@ instance RunMessage BeatCop where
     -- "move 1 threat from a scheme to here"
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       schemes <- selectList ThwartableScheme
-      chooseOrRunOne ident
+      chooseOne ident
         [ targeting scheme do
           thwartScheme scheme attrs 1
           cardSpecific attrs "threatMoved" ()

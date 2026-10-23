@@ -41,7 +41,10 @@ spec = describe "The Rise of Red Skull" do
         resolve [AllyMessage (allyIdOf knight) ExhaustedAlly]
         heroes <- putInHand p "04022"
         playWith heroes []
-        -- Hawkeye is the one Avenger left ready: he pays, the knight is readied
+        -- Hawkeye is the one Avenger left ready, still picked to pay; the knight is the
+        -- one to ready, still picked
+        choose "Hawkeye pays" (isTargetChoice p)
+        choose "ready the knight" (isTargetChoice (allyIdOf knight))
         exhaustedNow p `shouldReturn` True
         (.allyExhausted) <$> allyIn "04012" `shouldReturn` False
 
