@@ -82,6 +82,7 @@ data AllyMatcher
   | AllyWithTrait Trait
   | -- | the card in any of its printings
     AllyIs CardDef
+  | AllyWithTitle Text
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

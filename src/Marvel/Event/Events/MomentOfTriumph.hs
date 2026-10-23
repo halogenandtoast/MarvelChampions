@@ -28,7 +28,11 @@ newtype MomentOfTriumph = MomentOfTriumph (Attrs Event)
 -- each point of excess damage dealt to that enemy by that attack.
 instance RunMessage MomentOfTriumph where
   runMessage msg e@(MomentOfTriumph attrs) = runQueueT $ case msg of
-    EventMessage ident (PlayedEvent you _ (Just (W.DefeatedMinion _ _ _ excess))) | ident == eventId attrs -> do
+    EventMessage ident (PlayedEvent you _ (Just window)) | ident == eventId attrs -> do
+      let excess = case window of
+            W.DefeatedMinion _ _ _ n -> n
+            W.DefeatedVillain _ _ _ n -> n
+            _ -> 0
       when (excess > 0) $ heal (IdentityCharacter you) excess
       pure e
     _ -> MomentOfTriumph <$> runMessage msg attrs

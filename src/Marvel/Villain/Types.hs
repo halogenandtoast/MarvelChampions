@@ -293,7 +293,7 @@ runVillainMessage msg attrs = case msg of
     keywords <- getModifiedKeywords attrs
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
-  VillainDamaged _ damage -> do
+  VillainDamaged source damage -> do
     cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
     if
       | cannotTakeDamage -> pure attrs
@@ -305,7 +305,11 @@ runVillainMessage msg attrs = case msg of
               (fromIntegral . unHp $ villainHp attrs)
               == 0
           )
-          (defeatVillain vid)
+          do
+            defeatVillain vid
+            -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
+            let excess = subtractNatural (fromIntegral . unHp $ villainHp attrs) (damageAmount damage)
+            checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough damage))

@@ -2317,6 +2317,7 @@ gameSelectAlly m = do
     AllyMatches xs -> andM . traverse matchFilter xs
     AllyWithTrait trait -> fmap (member trait) . getTraits
     AllyIs def -> pure . sameCard def . getCardDef
+    AllyWithTitle t -> pure . (== t) . title . cdName . getCardDef
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 

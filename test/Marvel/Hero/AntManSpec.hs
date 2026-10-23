@@ -7,7 +7,7 @@ import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
 import Marvel.Minion.Types qualified as Minion
-import Marvel.Villain.Types (villainStunned)
+import Marvel.Villain.Types (villainHp, villainStunned)
 import Marvel.Matchers (IdentityMatcher (IdentityCanChangeForm), identityMatches)
 import Marvel.Window qualified as W
 import Marvel.Minion.Cards qualified as Minions
@@ -204,7 +204,12 @@ spec = describe "Ant-Man" do
         inForm p C
         resolve [IdentityMessage p ExhaustedIdentity]
         tactics <- putInHand p "12020"
-        playPaying p tactics ["01089"]
+        genius <- putInHand p "01089"
+        -- Team-Up (Ant-Man and Wasp): Wasp must be in play too
+        offers (isPlay tactics) `shouldReturn` False
+        _ <- putIntoPlay p "12002"
+        pass
+        playWith tactics [genius]
         pass
         sideOf p `shouldReturn` A
         isExhaustedNow p `shouldReturn` False
@@ -506,6 +511,31 @@ spec = describe "Ant-Man" do
         payWith []
         pass
         -- 3 ATK into a minion with 1 hit point left: 2 past it
+        damageOf p `shouldReturn` 3
+
+    it "heals the excess damage of an attack that defeats a villain stage" do
+      tg <- antMan
+      let p = player1 tg
+      inGame tg do
+        inForm p C
+        setDamage p 5
+        vid <- villainIdNow
+        hp <- villainHp . toAttrs <$> getVillain
+        resolve [VillainMessage vid (VillainDamaged GameRef (toDamage (fromIntegral (Hero.unHp hp) - 1) FromAbility))]
+        triumph <- putInHand p "12030"
+        choose "attack" \case
+          UseAbility ab -> Attack `elem` abilityChoices ab && abilitySource ab == toSource p
+          _ -> False
+        chooseIf (isTargetChoice vid)
+        -- the next stage's forced abilities first, then the window to respond
+        let untilOffered n = unless (n == (0 :: Int)) $ whenM (not <$> offers (isPlay triumph)) do
+              asked >>= traverse_ \(who, _) -> answerQuestion who 0
+              untilOffered (n - 1)
+        untilOffered 10
+        choose "Moment of Triumph" (isPlay triumph)
+        payWith []
+        pass
+        -- 3 ATK into a stage with 1 hit point left: 2 past it
         damageOf p `shouldReturn` 3
 
   describe "Team-Building Exercise (12024)" do

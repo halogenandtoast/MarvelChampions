@@ -830,8 +830,18 @@ moxie =
     { cdResponseWindow = Just (IdentityChangedToForm After You)
     }
 
+-- | Team-Up (Ant-Man and Wasp): played only while both are in play, as hero or ally
+-- (Ant-Man rulesheet).
 swarmTactics :: CardDef
-swarmTactics = basicEvent "12020" "Swarm Tactics" 1 HeroAction [Tactic] [Mental]
+swarmTactics =
+  (basicEvent "12020" "Swarm Tactics" 1 HeroAction [Tactic] [Mental])
+    { cdCriteria = teamUp "Ant-Man" "Wasp"
+    }
+
+teamUp :: Text -> Text -> Criteria
+teamUp a b = inPlay a <> inPlay b
+ where
+  inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t), AllyExists (AllyWithTitle t)]
 
 momentOfTriumph :: CardDef
 momentOfTriumph =

@@ -12,6 +12,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | The Wrecking Crew rules insert (MC03) | PDF created 2019-06-11, modified 2023-02-02, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc03_wrecking_crew_rules_insert-compressed.pdf |
 | The Rise of Red Skull rulebook (MC10) | PDF dated 2020-09-23, 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_rules_web.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_campaign-log.pdf) |
 | The Once and Future Kang rules insert (MC11) | PDF created 2020-07-30, modified 2023-02-02, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc11_once_and_future_kang_rules_insert-compressed.pdf |
+| Ant-Man Hero Pack rulesheet (MC12) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc12_ant-man_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
@@ -37,6 +38,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [scenario-wrecking-crew.md](scenario-wrecking-crew.md) | Wrecking Crew pack, Breakout: four villains, the active villain, per-villain encounter decks and signature side schemes, setup, winning, expert/extreme difficulty; scenario card text |
 | [campaign-rise-of-red-skull.md](campaign-rise-of-red-skull.md) | Rise of Red Skull: keywords as printed, campaign mode, campaign log, per-scenario setup/victory steps (Crossbones … Red Skull), Experimental Weapons deck, side-scheme deck, expert campaign (persistent damage, obligations in player decks); campaign card text (Hydra Campaign upgrades, Captive allies, expert obligations) |
 | [scenario-kang.md](scenario-kang.md) | Once and Future Kang: setup, separate game areas (creating, playing in, joining), stage 2B, Kang stages, expert mode, modular sets, clarifications; scenario card text |
+| [hero-ant-man.md](hero-ant-man.md) | Ant-Man pack: the three-sided identity card, Team-Up, form-change clarifications, rulings |
 
 ## Conventions
 

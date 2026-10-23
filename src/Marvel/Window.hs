@@ -123,12 +123,12 @@ windowMatches matcher w source = case matcher of
             (&&)
             (enemyMatches (DefeatedEnemy enemyMatcher) (EnemyMinionId minionId))
             (damageMatchesFrom damageMatcher damage source)
-    DefeatedVillain villainId damage
+    DefeatedVillain villainId damage source _
       | windowTiming w == timing ->
           liftA2
             (&&)
             (enemyMatches enemyMatcher (EnemyVillainId villainId))
-            (damageMatches damageMatcher damage)
+            (damageMatchesFrom damageMatcher damage source)
     _ -> pure False
   MinionEntersPlay timing minionMatcher -> case windowType w of
     MinionEnteredPlay minionId

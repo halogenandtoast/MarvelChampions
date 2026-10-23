@@ -105,7 +105,9 @@ data WindowType
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
-  | DefeatedVillain VillainId Damage
+  | -- | the villain, the damage that defeated its stage, what dealt it, and how much of
+    -- it went past its hit points
+    DefeatedVillain VillainId Damage Source Natural
   | -- | the minion, the damage that defeated it, what dealt it, and how much of it went
     -- past its hit points
     DefeatedMinion MinionId Damage Source Natural
