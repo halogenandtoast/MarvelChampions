@@ -2,12 +2,13 @@ module Marvel.Ally.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
+import Marvel.Cost.Types (Cost (MayOverpay, NoCost))
 
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Matchers.Types (IdentityMatcher (IdentityWithTrait))
 import Marvel.Keyword
 
 import Marvel.EncounterSet qualified as EncounterSet
@@ -81,6 +82,13 @@ allAllies = fromList $ concatMap
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , waspNadiaVanDyne
+  , antManHankPym
+  , giantMan
+  , ronin
+  , stingerCassieLang
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -364,3 +372,27 @@ whiteTigerAngelaDelToro = captiveAlly "04099" ("White Tiger" <:> "Angela Del Tor
 
 elektra :: CardDef
 elektra = captiveAlly "04100" "Elektra"
+
+-- Ant-Man
+
+waspNadiaVanDyne :: CardDef
+waspNadiaVanDyne = identityAlly "12002" ("Wasp" <:> "Nadia Van Dyne") 3 [Aerial, Avenger] [Wild]
+
+-- | Its cost is 0, though more may be paid for its pym counters.
+antManHankPym :: CardDef
+antManHankPym =
+  (ally "12011" ("Ant-Man" <:> "Hank Pym") 0 [Avenger] [Mental] Leadership)
+    { cdAbilityCost = MayOverpay
+    }
+
+giantMan :: CardDef
+giantMan = ally "12012" "Giant-Man" 5 [Avenger, Giant] [Physical] Leadership
+
+ronin :: CardDef
+ronin = ally "12013" "Ronin" 3 [Avenger] [Energy] Leadership
+
+stingerCassieLang :: CardDef
+stingerCassieLang =
+  (ally "12014" ("Stinger" <:> "Cassie Lang") 1 [Avenger] [Energy] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    }

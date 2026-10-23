@@ -105,3 +105,6 @@ import Marvel.Treachery.Treacheries.EnergyBlast as X
 import Marvel.Treachery.Treacheries.ManipulatedTimestream as X
 import Marvel.Treachery.Treacheries.TimeTravelTactics as X
 import Marvel.Treachery.Treacheries.PastMachinations as X
+
+-- Ant-Man
+import Marvel.Treachery.Treacheries.YellowjacketsPlan as X

@@ -128,6 +128,18 @@ allEvents = fromList $ concatMap
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , giantStomp
+  , hiveMind
+  , resize
+  , callForAid
+  , moxie
+  , swarmTactics
+  , momentOfTriumph
+  , layDownTheLaw
+  , musterCourage
+  , assessTheSituation
   ]
 
 event
@@ -386,7 +398,7 @@ emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
   }
 
 firstAid :: CardDef
-firstAid = (basicEvent "01086" "First Aid" 1 Action [] [Mental])
+firstAid = reprintedAs ["12019"] (basicEvent "01086" "First Aid" 1 Action [] [Mental])
   { cdCriteria = CharacterExists CharacterWithAnyDamage
   }
 
@@ -789,3 +801,57 @@ clearTheArea =
     { cdAbilitySubType = Just Ability.Thwart
     , cdCriteria = SchemeExists ThwartableScheme
     }
+
+-- Ant-Man
+
+giantStomp :: CardDef
+giantStomp =
+  (identityEvent "12003" "Giant Stomp" 3 HeroAction [Attack, Giant] [Energy])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = SelfMatches (IdentityWithTrait Giant) <> canAttack
+    }
+
+hiveMind :: CardDef
+hiveMind =
+  (identityEvent "12004" "Hive Mind" 2 HeroAction [Thwart, Tiny] [Physical])
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SelfMatches (IdentityWithTrait Tiny) <> SchemeExists ThwartableScheme
+    }
+
+resize :: CardDef
+resize = identityEvent "12005" "Resize" 0 HeroAction [Superpower] [Physical]
+
+callForAid :: CardDef
+callForAid = event "12015" "Call for Aid" 0 HeroAction [] [Physical] Leadership
+
+moxie :: CardDef
+moxie =
+  (event "12016" "Moxie" 0 HeroResponse [] [Mental] Leadership)
+    { cdResponseWindow = Just (IdentityChangedToForm After You)
+    }
+
+swarmTactics :: CardDef
+swarmTactics = basicEvent "12020" "Swarm Tactics" 1 HeroAction [Tactic] [Mental]
+
+momentOfTriumph :: CardDef
+momentOfTriumph =
+  (event "12030" "Moment of Triumph" 0 HeroResponse [] [Energy] Aggression)
+    { cdResponseWindow = Just (EnemyDefeated After AnyEnemy (AttackFromPlayer You))
+    }
+
+layDownTheLaw :: CardDef
+layDownTheLaw =
+  (event "12031" "Lay Down the Law" 1 HeroResponse [Thwart] [Mental] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdResponseWindow = Just (IdentityChangedToForm After You)
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+musterCourage :: CardDef
+musterCourage =
+  (event "12032" "Muster Courage" 3 HeroAction [] [Physical] Protection)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    }
+
+assessTheSituation :: CardDef
+assessTheSituation = basicEvent "12033" "Assess the Situation" 0 Action [Tactic] [Mental]

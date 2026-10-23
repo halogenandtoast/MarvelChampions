@@ -90,6 +90,9 @@ allSideSchemes = fromList $ map
   , theAnachronauts
   , lightOfCenturiesSphere
 
+
+  -- Ant-Man
+  , techTheft
   ]
 
 sideScheme
@@ -392,3 +395,8 @@ pileItOn = sideScheme "07034" "Pile It On!" [] Piledriver 1
 
 clearTheRoad :: CardDef
 clearTheRoad = sideScheme "07048" "Clear the Road" [] Bulldozer 1
+
+-- Ant-Man
+
+techTheft :: CardDef
+techTheft = sideScheme "12026" "Tech Theft" [Boost, Boost, Boost] AntManNemesis 1

@@ -76,3 +76,6 @@ import Marvel.SideScheme.SideSchemes.CorruptedTimestream as X
 import Marvel.SideScheme.SideSchemes.KangsDominion as X
 import Marvel.SideScheme.SideSchemes.PinnedDown as X
 import Marvel.SideScheme.SideSchemes.Rampage as X
+
+-- Ant-Man
+import Marvel.SideScheme.SideSchemes.TechTheft as X

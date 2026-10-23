@@ -75,3 +75,6 @@ import Marvel.Minion.Minions.Wildrun as X
 import Marvel.Minion.Minions.KangMasterOfTime as X
 import Marvel.Minion.Minions.TimeDisplacedSoldier as X
 import Marvel.Minion.Minions.Macrobots as X
+
+-- Ant-Man
+import Marvel.Minion.Minions.Yellowjacket as X

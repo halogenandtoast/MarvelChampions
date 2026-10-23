@@ -54,6 +54,9 @@ allObligations = fromList $ map
   , SomeObligationCard depowered
   , SomeObligationCard timeTravelHijinks
 
+
+  -- Ant-Man
+  , SomeObligationCard careForCassie
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

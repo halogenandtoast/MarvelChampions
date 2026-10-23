@@ -105,6 +105,9 @@ allMinions =
       , timeDisplacedSoldier
       , macrobots
 
+
+      -- Ant-Man
+      , yellowjacket
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -560,3 +563,8 @@ escapedConvictPiledriver = (reprint "07038" escapedConvict) {cdEncounterSet = Ju
 
 escapedConvictBulldozer :: CardDef
 escapedConvictBulldozer = (reprint "07053" escapedConvict) {cdEncounterSet = Just Bulldozer}
+
+-- Ant-Man
+
+yellowjacket :: CardDef
+yellowjacket = unique $ minion "12027" "Yellowjacket" [Criminal] [Boost, Boost] AntManNemesis 1

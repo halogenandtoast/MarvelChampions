@@ -27,3 +27,6 @@ import Marvel.Obligation.Obligations.Weakened as X
 import Marvel.Obligation.Obligations.StolenMemories as X
 import Marvel.Obligation.Obligations.Depowered as X
 import Marvel.Obligation.Obligations.TimeTravelHijinks as X
+
+-- Ant-Man
+import Marvel.Obligation.Obligations.CareForCassie as X

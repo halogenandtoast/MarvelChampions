@@ -21,3 +21,6 @@ import Marvel.AlterEgo.AlterEgos.ClintBarton as X
 import Marvel.AlterEgo.AlterEgos.JessicaDrew as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.AlterEgo.AlterEgos.ScottLang as X

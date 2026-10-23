@@ -117,6 +117,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard improvedRecoveryUpgrade
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , SomeUpgradeCard antMansHelmet
+  , SomeUpgradeCard giantStrength
+  , SomeUpgradeCard wristGauntlets
+  , SomeUpgradeCard powerGloves
+  , SomeUpgradeCard reinforcedSuit
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

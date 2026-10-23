@@ -95,6 +95,9 @@ allAttachments =
       , SomeAttachmentCard futureWeapon
       , SomeAttachmentCard frozenInTime
 
+
+      -- Ant-Man
+      , SomeAttachmentCard sizeIncrease
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

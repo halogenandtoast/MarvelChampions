@@ -63,6 +63,10 @@ allSupports = fromList $ map
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , SomeSupportCard armyOfAnts
+  , SomeSupportCard teamBuildingExercise
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

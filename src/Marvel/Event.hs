@@ -131,6 +131,18 @@ allEvents = fromList $ map
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , SomeEventCard giantStomp
+  , SomeEventCard hiveMind
+  , SomeEventCard resize
+  , SomeEventCard callForAid
+  , SomeEventCard moxie
+  , SomeEventCard swarmTactics
+  , SomeEventCard momentOfTriumph
+  , SomeEventCard layDownTheLaw
+  , SomeEventCard musterCourage
+  , SomeEventCard assessTheSituation
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

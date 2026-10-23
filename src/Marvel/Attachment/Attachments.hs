@@ -62,3 +62,6 @@ import Marvel.Attachment.Attachments.TaskmastersSword as X
 import Marvel.Attachment.Attachments.TemporalShield as X
 import Marvel.Attachment.Attachments.FutureWeapon as X
 import Marvel.Attachment.Attachments.FrozenInTime as X
+
+-- Ant-Man
+import Marvel.Attachment.Attachments.SizeIncrease as X

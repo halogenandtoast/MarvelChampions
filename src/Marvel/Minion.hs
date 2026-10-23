@@ -114,6 +114,9 @@ allMinions =
       , SomeMinionCard timeDisplacedSoldier
       , SomeMinionCard macrobots
 
+
+      -- Ant-Man
+      , SomeMinionCard yellowjacket
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

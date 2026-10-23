@@ -48,6 +48,13 @@ allEffects =
     , ("04031a", SomeCardEffect spiderWomanEffect)
     , ("04039", SomeCardEffect selfPropelledGlideEffect)
 
+    -- Ant-Man
+    , ("12009", SomeCardEffect giantStrengthEffect)
+    , ("12016", SomeCardEffect moxieEffect)
+    , ("12024", SomeCardEffect teamBuildingExerciseEffect)
+    , ("12025", SomeCardEffect careForCassieEffect)
+    , ("12033", SomeCardEffect assessTheSituationEffect)
+
     -- The Once and Future Kang
 
     ]

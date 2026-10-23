@@ -61,3 +61,10 @@ import Marvel.Ally.Allies.ShangChi as X
 import Marvel.Ally.Allies.WhiteTigerAngelaDelToro as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.Ally.Allies.WaspNadiaVanDyne as X
+import Marvel.Ally.Allies.AntManHankPym as X
+import Marvel.Ally.Allies.GiantMan as X
+import Marvel.Ally.Allies.Ronin as X
+import Marvel.Ally.Allies.StingerCassieLang as X

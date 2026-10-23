@@ -53,6 +53,10 @@ allSupports = fromList $ concatMap
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , armyOfAnts
+  , teamBuildingExercise
   ]
 
 support
@@ -210,3 +214,11 @@ teamTraining =
 
 jessicaDrewsApartment :: CardDef
 jessicaDrewsApartment = unique $ identitySupport "04034" "Jessica Drew's Apartment" 1 [Location] [Physical]
+
+-- Ant-Man
+
+armyOfAnts :: CardDef
+armyOfAnts = identitySupport "12007" "Army of Ants" 1 [Ants, Tiny] [Physical]
+
+teamBuildingExercise :: CardDef
+teamBuildingExercise = basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]

@@ -54,6 +54,10 @@ allHeroes = fromList $ map
 
   -- The Once and Future Kang
 
+  -- Ant-Man
+  , SomeHeroCard antManTiny
+  , SomeHeroCard antManGiant
+
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

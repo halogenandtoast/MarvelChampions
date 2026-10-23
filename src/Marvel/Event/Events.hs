@@ -105,3 +105,15 @@ import Marvel.Event.Events.PiercingStrike as X
 import Marvel.Event.Events.ClearTheArea as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.Event.Events.GiantStomp as X
+import Marvel.Event.Events.HiveMind as X
+import Marvel.Event.Events.Resize as X
+import Marvel.Event.Events.CallForAid as X
+import Marvel.Event.Events.Moxie as X
+import Marvel.Event.Events.SwarmTactics as X
+import Marvel.Event.Events.MomentOfTriumph as X
+import Marvel.Event.Events.LayDownTheLaw as X
+import Marvel.Event.Events.MusterCourage as X
+import Marvel.Event.Events.AssessTheSituation as X

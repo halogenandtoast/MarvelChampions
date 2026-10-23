@@ -92,4 +92,11 @@ allAllies = fromList $ map
 
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , SomeAllyCard waspNadiaVanDyne
+  , SomeAllyCard antManHankPym
+  , SomeAllyCard giantMan
+  , SomeAllyCard ronin
+  , SomeAllyCard stingerCassieLang
   ]

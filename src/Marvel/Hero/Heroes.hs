@@ -21,3 +21,7 @@ import Marvel.Hero.Heroes.Hawkeye as X
 import Marvel.Hero.Heroes.SpiderWoman as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.Hero.Heroes.AntManGiant as X
+import Marvel.Hero.Heroes.AntManTiny as X

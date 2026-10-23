@@ -87,6 +87,9 @@ allAttachments =
       , futureWeapon
       , frozenInTime
 
+
+      -- Ant-Man
+      , sizeIncrease
       ]
 
 attachment ::
@@ -318,3 +321,8 @@ futureWeapon = attachment "11015" "Future Weapon" [Tech, Weapon] [Boost, Boost] 
 
 frozenInTime :: CardDef
 frozenInTime = attachment "11016" "Frozen in Time" [Trait.Temporal] [Star] Kang 1
+
+-- Ant-Man
+
+sizeIncrease :: CardDef
+sizeIncrease = attachment "12028" "Size Increase" [Condition] [] AntManNemesis 2

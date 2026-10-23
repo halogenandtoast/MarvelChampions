@@ -34,6 +34,9 @@ allAlterEgoCards =
 
     -- The Once and Future Kang
 
+    -- Ant-Man
+    , scottLang
+
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -102,3 +105,6 @@ clintBarton = alterEgo "04001b" "Clint Barton" [Shield]
 
 jessicaDrew :: CardDef
 jessicaDrew = alterEgo "04031b" "Jessica Drew" [Shield, Spy]
+
+scottLang :: CardDef
+scottLang = alterEgo "12001b" "Scott Lang" [Civilian]

@@ -37,3 +37,7 @@ import Marvel.Support.Supports.TeamTraining as X
 import Marvel.Support.Supports.JessicaDrewsApartment as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.Support.Supports.ArmyOfAnts as X
+import Marvel.Support.Supports.TeamBuildingExercise as X

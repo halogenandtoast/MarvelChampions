@@ -99,6 +99,9 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard pinnedDown
   , SomeSideSchemeCard rampage
 
+
+  -- Ant-Man
+  , SomeSideSchemeCard techTheft
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

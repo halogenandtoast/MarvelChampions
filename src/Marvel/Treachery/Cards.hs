@@ -136,6 +136,9 @@ allTreacheries = fromList $ map
   , timeTravelTactics
   , pastMachinations
 
+
+  -- Ant-Man
+  , yellowjacketsPlan
   ]
 
 treachery
@@ -543,3 +546,8 @@ headbutt = treachery "07058" "Headbutt" [Boost] Bulldozer 2
 
 leadingTheCharge :: CardDef
 leadingTheCharge = treachery "07059" "Leading the Charge" [Boost, Boost] Bulldozer 2
+
+-- Ant-Man
+
+yellowjacketsPlan :: CardDef
+yellowjacketsPlan = treachery "12029" "Yellowjacket's Plan" [Boost] AntManNemesis 1

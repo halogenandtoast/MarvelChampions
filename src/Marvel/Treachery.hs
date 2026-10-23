@@ -145,6 +145,9 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard timeTravelTactics
   , SomeTreacheryCard pastMachinations
 
+
+  -- Ant-Man
+  , SomeTreacheryCard yellowjacketsPlan
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

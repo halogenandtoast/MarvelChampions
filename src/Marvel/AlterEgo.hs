@@ -45,6 +45,9 @@ allAlterEgos = fromList $ map
 
   -- The Once and Future Kang
 
+  -- Ant-Man
+  , SomeAlterEgoCard scottLang
+
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

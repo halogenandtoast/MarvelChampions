@@ -35,6 +35,10 @@ allHeroCards =
 
   -- The Once and Future Kang
 
+  -- Ant-Man
+  , antManTiny
+  , antManGiant
+
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -105,3 +109,9 @@ hawkeye = hero "04001a" "Hawkeye" [Avenger]
 
 spiderWoman :: CardDef
 spiderWoman = hero "04031a" "Spider-Woman" [Avenger, Spy]
+
+antManTiny :: CardDef
+antManTiny = hero "12001a" "Ant-Man" [Avenger, Tiny]
+
+antManGiant :: CardDef
+antManGiant = hero "12001c" "Ant-Man" [Avenger, Giant]

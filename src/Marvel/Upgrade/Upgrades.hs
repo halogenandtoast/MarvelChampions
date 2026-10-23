@@ -81,3 +81,10 @@ import Marvel.Upgrade.Upgrades.Finesse as X
 import Marvel.Upgrade.Upgrades.SkilledInvestigator as X
 
 -- The Once and Future Kang
+
+-- Ant-Man
+import Marvel.Upgrade.Upgrades.AntMansHelmet as X
+import Marvel.Upgrade.Upgrades.GiantStrength as X
+import Marvel.Upgrade.Upgrades.WristGauntlets as X
+import Marvel.Upgrade.Upgrades.PowerGloves as X
+import Marvel.Upgrade.Upgrades.ReinforcedSuit as X

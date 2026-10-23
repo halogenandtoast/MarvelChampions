@@ -111,6 +111,13 @@ allUpgrades = fromList $ concatMap
   , improvedRecoveryUpgrade
   -- The Once and Future Kang
 
+
+  -- Ant-Man
+  , antMansHelmet
+  , giantStrength
+  , wristGauntlets
+  , powerGloves
+  , reinforcedSuit
   ]
 
 upgrade
@@ -504,3 +511,20 @@ skilledInvestigator :: CardDef
 skilledInvestigator =
   limited (MaxPerPlayerUnderAnyControl 1) $
     upgrade "04047" "Skilled Investigator" 0 [Skill] [Physical] Justice
+
+-- Ant-Man
+
+antMansHelmet :: CardDef
+antMansHelmet = unique $ identityUpgrade "12008" "Ant-Man's Helmet" 3 [Armor, Tech] [Mental]
+
+giantStrength :: CardDef
+giantStrength = identityUpgrade "12009" "Giant Strength" 1 [Condition, Giant] [Energy]
+
+wristGauntlets :: CardDef
+wristGauntlets = identityUpgrade "12010" "Wrist Gauntlets" 1 [Item, Tech] [Mental]
+
+powerGloves :: CardDef
+powerGloves = upgrade "12017" "Power Gloves" 1 [Armor, Tech] [Mental] Leadership
+
+reinforcedSuit :: CardDef
+reinforcedSuit = upgrade "12018" "Reinforced Suit" 1 [Armor, Tech] [Energy] Leadership
