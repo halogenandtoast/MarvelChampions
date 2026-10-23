@@ -45,15 +45,24 @@ const faces = computed(() => [...(loaded ? [loaded] : []), ...deckFaces(starters
 const base = (code: string) => code.replace(/[ab]$/, '')
 const isTaken = (face: DeckFace) => taken.map(base).includes(base(face.hero))
 
+// a deck picked folds the list away to it, so what follows is in reach however many
+// heroes there are; "Change" opens it again
+const picked = ref(false)
+const pick = (key: DeckKey) => {
+  model.value = key
+  picked.value = true
+}
+const pickedFace = computed(() => [...(loaded ? [loaded] : []), ...deckFaces(starters, decks)].find((f) => f.key === model.value) ?? null)
+
 const use = (face: DeckFace, list: DeckList) => {
   emit('load', face, list)
-  model.value = face.key
+  pick(face.key)
   chosenTab.value = 'mine'
   close()
 }
 const saved = (deck: Deck) => {
   emit('saved', deck)
-  model.value = `deck:${deck.id}`
+  pick(`deck:${deck.id}`)
   chosenTab.value = 'mine'
   close()
 }
@@ -63,6 +72,10 @@ watch(model, () => (chosenTab.value = null))
 <template>
   <div class="picker">
     <DeckLoader v-if="pending" :loaded="pending" @use="use" @saved="saved" @cancel="close" />
+    <div v-else-if="picked && pickedFace" class="chosen">
+      <DeckTile :face="pickedFace" selected compact />
+      <button type="button" class="btn" @click="picked = false">{{ $t('newGame.change') }}</button>
+    </div>
     <template v-else>
       <SegmentedToggle :options="tabs" :label="$t('newGame.deck')" :model-value="tab" @update:model-value="chosenTab = $event" />
       <DeckImport v-if="tab === 'mine'" :keep="false" @loaded="look" />
@@ -76,7 +89,7 @@ watch(model, () => (chosenTab.value = null))
           :aria-checked="model === face.key"
           class="pick"
           :disabled="!!face.problem || (isTaken(face) && model !== face.key)"
-          @click="model = face.key"
+          @click="pick(face.key)"
         >
           <DeckTile :face="face" :selected="model === face.key" />
           <span v-if="isTaken(face) && model !== face.key" class="taken">{{ $t('newGame.heroTaken') }}</span>
@@ -94,5 +107,7 @@ watch(model, () => (chosenTab.value = null))
 .pick:disabled { cursor: not-allowed; }
 .pick:disabled :deep(.deck-tile) { opacity: 0.4; }
 .taken { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: var(--ink-0); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.chosen { display: flex; align-items: center; gap: 12px; }
+.chosen :deep(.deck-tile) { flex: 1; }
 .none { margin: 0; color: var(--text-faint); font-size: 0.85rem; }
 </style>

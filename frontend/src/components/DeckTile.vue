@@ -7,7 +7,12 @@ import { heroFace, type DeckFace } from '../deckChoice'
 import { useServerText } from '../i18n'
 import HeroPortrait from './HeroPortrait.vue'
 
-const { face, selected = false } = defineProps<{ face: DeckFace; selected?: boolean }>()
+const { face, selected = false, compact = false } = defineProps<{
+  face: DeckFace
+  selected?: boolean
+  /** a row, its portrait at the side: the deck chosen, with the list folded away */
+  compact?: boolean
+}>()
 const cards = useCards()
 const { t } = useI18n()
 const tr = useServerText()
@@ -15,7 +20,7 @@ const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
 </script>
 
 <template>
-  <span class="deck-tile" :class="{ selected, unplayable: face.problem }" :title="face.problem ? tr(face.problem) : undefined">
+  <span class="deck-tile" :class="{ selected, compact, unplayable: face.problem }" :title="face.problem ? tr(face.problem) : undefined">
     <HeroPortrait class="art" :code="face.hero" :aspects="face.aspects" />
     <span class="text">
       <span class="deck-name">{{ face.name ?? heroName }}</span>
@@ -43,6 +48,10 @@ const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
 .deck-tile.selected { border-color: var(--crimson); box-shadow: 0 0 0 3px rgb(184 50 58 / 0.25); }
 .deck-tile.unplayable { opacity: 0.6; }
 .art { aspect-ratio: 16 / 9; border-radius: 0; }
+.deck-tile.compact { flex-direction: row; align-items: center; }
+.compact .art { width: 112px; flex: none; }
+.compact .deck-name { padding-top: 0; }
+.compact .deck-detail { padding-bottom: 0; }
 .text { display: flex; flex-direction: column; min-width: 0; }
 .deck-name { padding: 8px 10px 0; font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .deck-detail { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; }
