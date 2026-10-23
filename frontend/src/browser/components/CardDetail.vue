@@ -43,6 +43,11 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
     <article class="detail" :data-aspect="shown.faction">
       <div class="art">
         <div v-if="third" class="folding-frame"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
+        <!-- a two-sided card turns over to its other face -->
+        <div v-else-if="other" class="flip" :class="{ 'is-flipped': imageIndex === 1 }">
+          <CardImage class="side" :card="card" eager />
+          <CardImage class="side side--back" :card="other" eager />
+        </div>
         <CardImage v-else :card="shown" eager />
         <div v-if="other" class="faces" role="tablist" :aria-label="$t('browser.card.faces')">
           <button
@@ -103,6 +108,12 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
 .detail { display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .art { position: sticky; top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .folding-frame { position: relative; aspect-ratio: 63 / 88; border-radius: var(--radius-card, 6px); }
+.flip { display: grid; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.55s ease-in-out; }
+.flip.is-flipped { transform: perspective(1600px) rotateY(180deg); }
+/* both faces in the one cell, so the box is the larger of the two */
+.flip > .side { grid-area: 1 / 1; align-self: center; backface-visibility: hidden; }
+.flip > .side--back { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) { .flip { transition: none; } }
 .faces { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0; font-size: var(--text-sm); color: var(--c-text-muted); }
 .name { display: flex; align-items: baseline; gap: 0.3em; margin: 6px 0 0; font-size: 2.2rem; line-height: 1; text-transform: uppercase; }
