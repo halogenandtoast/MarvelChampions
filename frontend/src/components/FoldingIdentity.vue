@@ -30,8 +30,11 @@ const book = ref<Book>(initial(pose.value))
 const step = 0.4
 // a cover swings slower than the book turns or stands, as a hand opens it
 const fold = 0.6
+// how far through the swing a cover is clear of the page under it: before, the two lie too
+// close for the browser to always draw the nearer, so the giant under it is not drawn
+const lifted = 0.12
 // what moves first: the turn, the covers folding, the spread standing up
-const delays = ref({ turn: 0, fold: 0, stand: 0 })
+const delays = ref({ turn: 0, fold: 0, stand: 0, inside: 0 })
 
 // one change at a time: started mid-way through another, a change turns what is still
 // moving (the back of the spread shows); a pose chosen meanwhile is gone to after
@@ -61,7 +64,8 @@ const change = (to: Pose): number => {
       else b.page = 0
     } else if (b.page === 0) b.page = 180
     else b.leaf = 0
-    delays.value = { turn: 0, fold: 0, stand: fold }
+    // the giant shows as soon as the cover has lifted off it
+    delays.value = { turn: 0, fold: 0, stand: fold, inside: lifted * fold }
     book.value = b
     return fold + step
   } else if (!shut(b)) {
@@ -69,12 +73,13 @@ const change = (to: Pose): number => {
     // way the book is turned, the leaf shut on top shows B and the page shut on top A
     if (to === 'front') b.leaf = b.page
     else b.page = b.leaf
-    delays.value = { turn: 0, fold: step, stand: 0 }
+    // and goes just before the cover lands on it
+    delays.value = { turn: 0, fold: step, stand: 0, inside: step + (1 - lifted) * fold }
     book.value = b
     return fold + step
   }
   b.turn = 180 - b.turn
-  delays.value = { turn: 0, fold: 0, stand: 0 }
+  delays.value = { turn: 0, fold: 0, stand: 0, inside: 0 }
   book.value = b
   return step
 }
@@ -84,6 +89,7 @@ const style = computed(() => ({
   '--fold': `${fold}s`,
   '--d-turn': `${delays.value.turn}s`,
   '--d-fold': `${delays.value.fold}s`,
+  '--d-inside': `${delays.value.inside}s`,
   '--d-stand': `${delays.value.stand}s`,
 }))
 const turnStyle = computed(() => ({ transform: `rotateY(${book.value.turn}deg)` }))
@@ -138,10 +144,10 @@ const spreadStyle = computed(() => {
 
 .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: inherit; overflow: hidden; box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
 .face.reverse { transform: rotateY(180deg); }
-/* the giant is drawn only while the book is open: it appears, or goes, as the cover
-   swinging over it is edge-on, half way through the fold. Shut, a cover would lie a
-   pixel above it, and the browser does not always draw the nearer of the two */
-.inside { visibility: hidden; transition: visibility 0s linear calc(var(--d-fold) + var(--fold) / 2); }
+/* the giant is drawn only while the book is open, appearing as the cover lifts off it and
+   going as it lands. Shut, a cover would lie a pixel above it, and the browser does not
+   always draw the nearer of the two */
+.inside { visibility: hidden; transition: visibility 0s linear var(--d-inside); }
 .is-open .inside { visibility: visible; }
 
 /* the giant, turned so its top is on the left page, centred on the spine */
