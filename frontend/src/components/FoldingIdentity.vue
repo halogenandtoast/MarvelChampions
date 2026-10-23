@@ -31,7 +31,26 @@ const step = 0.4
 // what moves first: the turn, the covers folding, the spread standing up
 const delays = ref({ turn: 0, fold: 0, stand: 0 })
 
-watch(pose, (to) => {
+// one change at a time: started mid-way through another, a change turns what is still
+// moving (the back of the spread shows); a pose chosen meanwhile is gone to after
+let shown: Pose = pose.value
+let busy = false
+const advance = () => {
+  const to = pose.value
+  if (to === shown) return
+  shown = to
+  busy = true
+  setTimeout(() => {
+    busy = false
+    advance()
+  }, change(to) * 1000 + 50)
+}
+watch(pose, () => {
+  if (!busy) advance()
+})
+
+// the book changed to the pose, returning how long it takes
+const change = (to: Pose): number => {
   const b = { ...book.value }
   if (to === 'open') {
     // the cover facing you swings open
@@ -41,18 +60,22 @@ watch(pose, (to) => {
     } else if (b.page === 0) b.page = 180
     else b.leaf = 0
     delays.value = { turn: 0, fold: 0, stand: step }
+    book.value = b
+    return 2 * step
   } else if (!shut(b)) {
     // the cover of the side wanted swings shut over the other, which stays put: whichever
     // way the book is turned, the leaf shut on top shows B and the page shut on top A
     if (to === 'front') b.leaf = b.page
     else b.page = b.leaf
     delays.value = { turn: 0, fold: step, stand: 0 }
-  } else {
-    b.turn = 180 - b.turn
-    delays.value = { turn: 0, fold: 0, stand: 0 }
+    book.value = b
+    return 2 * step
   }
+  b.turn = 180 - b.turn
+  delays.value = { turn: 0, fold: 0, stand: 0 }
   book.value = b
-})
+  return step
+}
 
 const style = computed(() => ({
   '--step': `${step}s`,
