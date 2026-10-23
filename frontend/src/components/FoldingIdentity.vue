@@ -7,7 +7,7 @@
 // the cover of the side wanted swings shut over the other; from A to B or back it turns
 // over. So a cover may end up folded either way, which is kept as its angle.
 // It fills its parent, which gives it a card's shape.
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import CardFace from './CardFace.vue'
 
 const { faces, code } = defineProps<{
@@ -40,11 +40,32 @@ const delays = ref({ turn: 0, fold: 0, stand: 0, inside: 0 })
 // moving (the back of the spread shows); a pose chosen meanwhile is gone to after
 let shown: Pose = pose.value
 let busy = false
-const advance = () => {
+
+// a cover over on the far side of the spine is half a turn either way, the same to look
+// at; but it must swing back towards you, so its angle has to be the one on your side:
+// -180 seen from the front, 180 from the back. Turning the book over leaves it on the
+// other, so it is set right, unseen, before it moves again
+const snapping = ref(false)
+const facingYou = (b: Book): Book => {
+  const far = b.turn === 0 ? -180 : 180
+  const side = (a: number) => (a === 0 ? 0 : far)
+  return { ...b, leaf: side(b.leaf), page: side(b.page) }
+}
+const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+const advance = async () => {
   const to = pose.value
   if (to === shown) return
   shown = to
   busy = true
+  const set = facingYou(book.value)
+  if (set.leaf !== book.value.leaf || set.page !== book.value.page) {
+    snapping.value = true
+    book.value = set
+    await nextTick()
+    await frame()
+    snapping.value = false
+  }
   setTimeout(() => {
     busy = false
     advance()
@@ -107,7 +128,7 @@ const spreadStyle = computed(() => {
 </script>
 
 <template>
-  <div class="folding" :class="{ 'is-open': !shut(book) }" :style="style">
+  <div class="folding" :class="{ 'is-open': !shut(book), snapping }" :style="style">
     <div class="turn" :style="turnStyle">
       <div class="spread" :style="spreadStyle">
         <div class="page" :style="pageStyle">
@@ -144,6 +165,7 @@ const spreadStyle = computed(() => {
 
 .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: inherit; overflow: hidden; box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
 .face.reverse { transform: rotateY(180deg); }
+.snapping .leaf, .snapping .page, .snapping .spread { transition: none; }
 /* the giant is drawn only while the book is open, appearing as the cover lifts off it and
    going as it lands. Shut, a cover would lie a pixel above it, and the browser does not
    always draw the nearer of the two */
