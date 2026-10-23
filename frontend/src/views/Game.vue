@@ -422,6 +422,8 @@ const resetGame = () => {
 .board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; }
 .floating-hand { position: absolute; z-index: 0; inset: auto 0 0; pointer-events: none; }
 .floating-hand :deep(.in-hand) { pointer-events: auto; }
+/* beneath what you are asked, but a card pointed at comes in front of it */
+.floating-hand:hover, .floating-hand:focus-within { z-index: 2; }
 .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .notice { margin: auto; color: var(--text-muted); }
 .error { margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgb(214 80 88 / 0.5); background: rgb(214 80 88 / 0.08); color: #f0a4a9; font-size: 0.8rem; overflow-wrap: anywhere; }
