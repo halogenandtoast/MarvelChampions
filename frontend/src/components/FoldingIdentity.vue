@@ -98,16 +98,16 @@ const spreadStyle = computed(() => {
 </script>
 
 <template>
-  <div class="folding" :style="style">
+  <div class="folding" :class="{ 'is-open': !shut(book) }" :style="style">
     <div class="turn" :style="turnStyle">
       <div class="spread" :style="spreadStyle">
         <div class="page" :style="pageStyle">
-          <div class="face"><div class="half right"><CardFace :code="faces[2]" eager /></div></div>
+          <div class="face inside"><div class="half right"><CardFace :code="faces[2]" eager /></div></div>
           <div class="face reverse"><CardFace :code="faces[0]" eager /></div>
         </div>
         <div class="leaf" :style="leafStyle">
           <div class="face"><CardFace :code="faces[1]" eager /></div>
-          <div class="face reverse"><div class="half left"><CardFace :code="faces[2]" eager /></div></div>
+          <div class="face reverse inside"><div class="half left"><CardFace :code="faces[2]" eager /></div></div>
         </div>
       </div>
     </div>
@@ -135,6 +135,11 @@ const spreadStyle = computed(() => {
 
 .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: inherit; overflow: hidden; box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
 .face.reverse { transform: rotateY(180deg); }
+/* the giant is drawn only while the book is open: it appears, or goes, as the cover
+   swinging over it is edge-on, half way through the fold. Shut, a cover would lie a
+   pixel above it, and the browser does not always draw the nearer of the two */
+.inside { visibility: hidden; transition: visibility 0s linear calc(var(--d-fold) + var(--step) / 2); }
+.is-open .inside { visibility: visible; }
 
 /* the giant, turned so its top is on the left page, centred on the spine */
 .half { position: absolute; inset: 0; overflow: hidden; }
@@ -151,6 +156,6 @@ const spreadStyle = computed(() => {
 .half.right :deep(.card-face) { left: calc(-50cqh); }
 
 @media (prefers-reduced-motion: reduce) {
-  .turn, .spread, .leaf, .page { transition: none; }
+  .turn, .spread, .leaf, .page, .inside { transition: none; }
 }
 </style>
