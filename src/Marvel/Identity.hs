@@ -612,12 +612,18 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             Just (MaxPerPlayerUnderAnyControl _) -> True
             Just UnderAnyControl -> True
             _ -> False
+          isMainScheme = \case
+            MainSchemeRef _ -> True
+            SchemeRef (SchemeMainSchemeId _) -> True
+            _ -> False
       case targets of
         -- a card played on something is played on the one the player picks, even of one
         [Nothing] -> payFor Nothing
         -- whose control a card is played under, with only one player to take it, is not
         -- asked (left for the owner to decide)
         [mTarget] | underAnyControl -> payFor mTarget
+        -- "attach to the main scheme": there is only ever one, so nothing to pick
+        [Just t] | isMainScheme t -> payFor (Just t)
         _ -> chooseOnePromptedAbout playerIdentityId "$label.playOn" card [targeting t (payFor (Just t)) | Just t <- targets]
       pure pid
     -- a card played from a discard pile is left there until it is played, so that

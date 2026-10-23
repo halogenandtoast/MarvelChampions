@@ -301,7 +301,8 @@ spec = describe "The Thor pack's aspect and basic cards" do
       inGame tg do
         clearHand p
         m <- mainSchemeId
-        _ <- inPlayOn p "06031" m ["01088", "01089"]
+        -- attached to the main scheme without asking: there is only the one
+        _ <- inPlay p "06031" ["01088", "01089"]
         -- Rhino's first main scheme advances at 7 threat
         resolve [MainSchemeMessage m (MainSchemeThwarted GameRef 99), MainSchemeMessage m (MainSchemePlaceThreat 10)]
         mainSchemeThreat `shouldReturn` 10
@@ -316,7 +317,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
       inGame tg do
         clearHand p
         m <- mainSchemeId
-        surveillance <- inPlayOn p "06031" m ["01088", "01089"]
+        surveillance <- inPlay p "06031" ["01088", "01089"]
         map (.upgradeAttachedMainScheme) <$> upgradesWith "06031" `shouldReturn` [Just m]
         -- shown on the main scheme, not in the player's area
         view <- liftIO . publicGame =<< getGame
