@@ -3,7 +3,7 @@
 // engaged with them, their allies, supports and upgrades, and their deck and discard.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { MinionView, PlayerView } from '../server'
+import type { MinionView, PlayerView, SupportView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
@@ -32,7 +32,7 @@ const stats = computed(() =>
     ] as const
   ).filter(([, v]) => v !== null && v !== undefined),
 )
-const supports = computed(() => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? [])])
+const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? [])])
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
