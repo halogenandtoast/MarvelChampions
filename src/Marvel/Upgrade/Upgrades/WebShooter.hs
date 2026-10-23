@@ -34,7 +34,7 @@ instance HasAbilities WebShooter where
     [ ability
         a
         1
-        Resource
+        HeroResource
         (OwnsThis <> InHeroForm)
         (ExhaustCost <> UseCost)
         (Pay $ ResourcePayment Wild)

@@ -1,6 +1,7 @@
 module Marvel.Hero.SpiderManSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.Ability.Types (AbilityType (..))
 import Marvel.Damage
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
@@ -206,6 +207,9 @@ spec = describe "Spider-Man" do
         -- another Web-Shooter, paid for by the first
         another <- putInHand p "01008"
         choose "play another Web-Shooter" (isPlay another)
+        -- named as printed: a Hero Resource
+        offers (\case UseAbility ab -> isAbilityOfCard shooter (UseAbility ab) && abilityType ab == HeroResource; _ -> False)
+          `shouldReturn` True
         choose "pay with Web-Shooter" (isAbilityOfCard shooter)
         whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
         offers (isAbilityOfCard shooter) `shouldReturn` False -- exhausted
