@@ -59,6 +59,8 @@ const label = useChoiceLabel()
 const el = useTemplateRef<HTMLElement>('el')
 
 const landscape = computed(() => !props.back && cards.landscape(props.code))
+// Ant-Man in Giant form, at his size: a sideways card wide, two tall
+const giant = computed(() => props.faces?.length === 3 && props.code === props.faces[2])
 const title = computed(() => cards.name(props.code, props.name))
 const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : []))
 const active = computed(() => options.value.length > 0)
@@ -107,11 +109,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 </script>
 
 <template>
-  <div class="slot" :class="{ exhausted, landscape, hosting: attached.length }">
+  <div class="slot" :class="{ exhausted, landscape, giant, hosting: attached.length }">
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape, source }"
+      :class="{ active, exhausted, landscape, giant, source }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :title="title"
@@ -170,8 +172,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   flex-direction: column;
   align-items: center;
   width: var(--w);
-  transition: margin 0.2s ease;
+  transition: margin 0.2s ease, width 0.4s ease;
 }
+.slot.giant { width: calc(var(--w) / var(--card-aspect)); }
 .slot.landscape { width: calc(var(--w) / var(--card-aspect)); }
 /* an exhausted card turns sideways, so it takes its height in width */
 .slot.exhausted:not(.landscape) { margin-inline: calc((var(--w) / var(--card-aspect) * 0.9 - var(--w)) / 2); }
@@ -183,11 +186,13 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   border-radius: calc(var(--w) * 0.06);
   background: var(--ink-3);
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.1);
-  transition: transform 0.25s ease, box-shadow 0.15s ease;
+  transition: transform 0.25s ease, box-shadow 0.15s ease, width 0.4s ease, aspect-ratio 0.4s ease;
+  --book-w: var(--w);
   -webkit-touch-callout: none;
   user-select: none;
   container-type: inline-size;
 }
+.card.giant { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
 .card :deep(.card-face) { border-radius: inherit; }
 .card.exhausted { transform: rotate(90deg) scale(0.9); }

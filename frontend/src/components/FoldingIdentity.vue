@@ -118,11 +118,14 @@ const turnStyle = computed(() => ({ transform: `rotateY(${book.value.turn}deg)` 
 // of the spine it lies under the page, as the page was swung over it
 const leafStyle = computed(() => ({ transform: `rotateY(${book.value.leaf}deg) translateZ(1px)` }))
 const pageStyle = computed(() => ({ transform: `rotateY(${book.value.page}deg)` }))
-// open, the spread is centred on the spine and stood up (the other way round seen from
-// the back); shut on the far side of the spine, it slides back into the card's box
+// open, the spread is stood up (the other way round seen from the back) at its true size,
+// one sideways card wide and two tall, its corner on the shut card's; the spine, its
+// middle, is H/2 in and W down. Seen from the back, across is the other way. Shut on the
+// far side of the spine, it slides back into the card's box
 const spreadStyle = computed(() => {
   const b = book.value
-  if (!shut(b)) return { translate: '50% 0', scale: '0.7', rotate: b.turn === 0 ? '90deg' : '-90deg' }
+  const down = 'calc(100cqw - 50cqh)'
+  if (!shut(b)) return b.turn === 0 ? { translate: `50cqh ${down}`, rotate: '90deg' } : { translate: `${down} ${down}`, rotate: '-90deg' }
   return b.leaf === 0 ? {} : { translate: '100% 0' }
 })
 </script>
@@ -146,7 +149,9 @@ const spreadStyle = computed(() => {
 
 <style scoped>
 /* W = 100cqw and H = 100cqh: one card; the spread is 2W by H */
-.folding { --swing: cubic-bezier(0.45, 0, 0.55, 1); position: absolute; inset: 0; container-type: size; perspective: 1600px; border-radius: inherit; }
+/* the shut card's box, at the top left of whatever holds it: --book-w its width, or the
+   holder's, which makes room for the giant itself */
+.folding { --swing: cubic-bezier(0.45, 0, 0.55, 1); position: absolute; top: 0; left: 0; width: var(--book-w, 100%); aspect-ratio: 63 / 88; container-type: size; perspective: 1600px; border-radius: inherit; }
 .turn, .spread, .page, .leaf { position: absolute; inset: 0; transform-style: preserve-3d; border-radius: inherit; }
 .turn { transition: transform var(--step) ease-in-out var(--d-turn); }
 
@@ -158,7 +163,6 @@ const spreadStyle = computed(() => {
     scale var(--fold) var(--swing) var(--d-fold),
     rotate var(--step) ease-in-out var(--d-stand);
 }
-/* ponytail: 0.7 fits the upright giant (H wide, 2W tall) back into a card's box */
 
 .leaf { transform-origin: 0 50%; transition: transform var(--fold) var(--swing) var(--d-fold); }
 .page { transform-origin: 0 50%; transition: transform var(--fold) var(--swing) var(--d-fold); }

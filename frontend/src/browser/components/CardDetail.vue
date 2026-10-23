@@ -50,7 +50,7 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
   <div class="detail-container">
     <article class="detail" :data-aspect="shown.faction">
       <div class="art">
-        <div v-if="third" class="folding-frame"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
+        <div v-if="third" class="folding-frame" :class="{ giant: shown === third }"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
         <!-- a two-sided card turns over to its other face -->
         <div v-else-if="other" class="flip" :class="{ 'is-flipped': imageIndex === 1 }">
           <CardImage class="side" :card="card" eager />
@@ -131,8 +131,11 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
 <style scoped>
 .detail-container { container-type: inline-size; }
 .detail { display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
-.art { position: sticky; top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
-.folding-frame { position: relative; aspect-ratio: 63 / 88; border-radius: var(--radius-card, 6px); }
+.art { position: sticky; top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); container-type: inline-size; }
+/* Ant-Man at true sizes: the giant, a sideways card wide and two tall, fills the column,
+   so the shut card is 63/88 of it */
+.folding-frame { --book-w: 71.59cqi; position: relative; width: 71.59cqi; aspect-ratio: 63 / 88; border-radius: var(--radius-card, 6px); transition: width 0.4s ease, aspect-ratio 0.4s ease; }
+.folding-frame.giant { width: 100cqi; aspect-ratio: 88 / 127; }
 .flip { display: grid; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.4s ease-in-out; }
 .flip.is-flipped { transform: perspective(1600px) rotateY(180deg); }
 /* both faces in the one cell, so the box is the larger of the two */

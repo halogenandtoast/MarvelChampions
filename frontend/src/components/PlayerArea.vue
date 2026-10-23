@@ -20,6 +20,8 @@ const { t } = useI18n()
 
 const openAllySlots = computed(() => Math.max(0, (player.allyLimit ?? 0) - (player.allies?.length ?? 0)))
 const hero = computed(() => player.form === 'hero')
+// Ant-Man in Giant form takes a sideways card's width
+const giant = computed(() => player.faces.length === 3 && player.code === player.faces[2])
 const stats = computed(() =>
   (
     [
@@ -39,7 +41,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 </script>
 
 <template>
-  <section class="player-area" :class="{ active, compact, hero, 'alter-ego': !hero }">
+  <section class="player-area" :class="{ active, compact, hero, giant, 'alter-ego': !hero }">
     <div class="identity-column">
       <div class="identity">
         <div class="body">
@@ -158,7 +160,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   overflow-x: auto;
 }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
-.identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); }
+.identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
+.player-area.giant .identity-column { width: calc(var(--card-width) / var(--card-aspect) + 164px); }
 /* above the hand that floats over the foot of the board */
 .asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
