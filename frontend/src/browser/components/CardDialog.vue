@@ -12,6 +12,7 @@
 import { computed, ref, watch } from 'vue'
 import CardDetail from './CardDetail.vue'
 import type { Card } from '@browser/types/card'
+import { useCardStore } from '@browser/stores/cards'
 
 const { cards, index } = defineProps<{
   /** The current result list, so the arrows can walk it. */
@@ -22,6 +23,7 @@ const { cards, index } = defineProps<{
 
 const emit = defineEmits<{ 'update:index': [value: number]; close: [] }>()
 
+const store = useCardStore()
 const dialog = ref<HTMLDialogElement | null>(null)
 const imageIndex = ref(0)
 
@@ -49,10 +51,10 @@ function step(by: number): void {
 }
 
 function stepImage(by: number): void {
-  const faces = card.value?.linkedTo ? 2 : 1
+  const faces = !card.value?.linkedTo ? 1 : store.thirdFace(card.value) ? 3 : 2
   if (faces < 2) return
   // Wraps: with two faces, either arrow flips the card, which is what the
-  // gesture means here.
+  // gesture means here; a fold-out identity's third face follows the second.
   imageIndex.value = (imageIndex.value + by + faces) % faces
 }
 

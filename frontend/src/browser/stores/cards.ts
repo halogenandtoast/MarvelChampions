@@ -51,8 +51,12 @@ export const useCardStore = defineStore('cards', () => {
   const byCode = computed(() => new Map(all.value.map((c) => [c.code, c])))
   const cardByCode = (code: string | null | undefined): Card | undefined => (code ? byCode.value.get(code) : undefined)
 
-  /** What the browser lists: one entry a card, its other face reached from it. */
-  const cards = computed(() => all.value.filter((c) => !c.duplicateOf && (showHidden.value || !c.hidden)))
+  /** A fold-out identity's third side (Ant-Man's Giant, 12001c beside 12001a), browsed with its A side. */
+  const thirdFace = (card: Card): Card | undefined => (/a$/.test(card.code) ? cardByCode(card.code.replace(/a$/, 'c')) : undefined)
+  const isThirdFace = (card: Card) => /c$/.test(card.code) && byCode.value.has(card.code.replace(/c$/, 'a'))
+
+  /** What the browser lists: one entry a card, its other faces reached from it. */
+  const cards = computed(() => all.value.filter((c) => !c.duplicateOf && (showHidden.value || (!c.hidden && !isThirdFace(c)))))
   const results = computed(() => sortCards(filterCards(cards.value, filters.value), sortField.value, sortDescending.value))
 
   /** Facet values present in the database, with how many cards carry each. */
@@ -91,5 +95,5 @@ export const useCardStore = defineStore('cards', () => {
     else list.splice(i, 1)
   }
 
-  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, results, facets, hasFilters, filterCount, resetFilters, toggle }
+  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, thirdFace, results, facets, hasFilters, filterCount, resetFilters, toggle }
 })

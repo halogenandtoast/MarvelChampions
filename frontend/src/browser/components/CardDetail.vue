@@ -4,6 +4,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CardImage from './CardImage.vue'
+import FoldingIdentity from '../../components/FoldingIdentity.vue'
 import CardStats from './CardStats.vue'
 import CardText from './CardText.vue'
 import { useCardStore } from '@browser/stores/cards'
@@ -13,10 +14,15 @@ const { card } = defineProps<{ card: Card }>()
 const { t } = useI18n()
 const store = useCardStore()
 
-/** Which face is showing: the card, or the card it is linked to. The dialog drives it with the arrows. */
+/** Which face is showing: the card, the card it is linked to, then a fold-out third. The dialog drives it with the arrows. */
 const imageIndex = defineModel<number>('imageIndex', { default: 0 })
 const other = computed(() => store.cardByCode(card.linkedTo))
-const shown = computed(() => (imageIndex.value === 1 && other.value ? other.value : card))
+const third = computed(() => (other.value ? store.thirdFace(card) : undefined))
+const faces = computed(() => [card, other.value, third.value].filter((c): c is Card => !!c))
+const shown = computed(() => faces.value[imageIndex.value] ?? card)
+// two hero forms share a name (Ant-Man): told apart by the trait naming the form, printed last
+const faceName = (face: Card) =>
+  faces.value.filter((f) => f.name === face.name).length > 1 && face.traits?.length ? `${face.name} (${face.traits.at(-1)})` : face.name
 
 const facts = computed(() => {
   const c = shown.value
@@ -36,10 +42,21 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
   <div class="detail-container">
     <article class="detail" :data-aspect="shown.faction">
       <div class="art">
-        <CardImage :card="shown" eager />
+        <div v-if="third" class="folding-frame"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
+        <CardImage v-else :card="shown" eager />
         <div v-if="other" class="faces" role="tablist" :aria-label="$t('browser.card.faces')">
-          <button type="button" class="button" role="tab" :aria-selected="imageIndex === 0" :class="{ 'is-active': imageIndex === 0 }" @click="imageIndex = 0">{{ card.name }}</button>
-          <button type="button" class="button" role="tab" :aria-selected="imageIndex === 1" :class="{ 'is-active': imageIndex === 1 }" @click="imageIndex = 1">{{ other.name }}</button>
+          <button
+            v-for="(face, i) in faces"
+            :key="face.code"
+            type="button"
+            class="button"
+            role="tab"
+            :aria-selected="imageIndex === i"
+            :class="{ 'is-active': imageIndex === i }"
+            @click="imageIndex = i"
+          >
+            {{ faceName(face) }}
+          </button>
         </div>
       </div>
 
@@ -85,6 +102,7 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
 .detail-container { container-type: inline-size; }
 .detail { display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .art { position: sticky; top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.folding-frame { position: relative; aspect-ratio: 63 / 88; border-radius: var(--radius-card, 6px); }
 .faces { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0; font-size: var(--text-sm); color: var(--c-text-muted); }
 .name { display: flex; align-items: baseline; gap: 0.3em; margin: 6px 0 0; font-size: 2.2rem; line-height: 1; text-transform: uppercase; }
