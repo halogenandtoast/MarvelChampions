@@ -38,6 +38,8 @@ User sql=users
   beta Bool default=false
   -- | what "allow spectators" starts as when making a game
   allowSpectatorsByDefault Bool default=false
+  -- | made by "play as guest": no password until they sign up, which keeps this row
+  guest Bool default=false
   createdAt UTCTime
   UniqueUsername username
   UniqueEmail email

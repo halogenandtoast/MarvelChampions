@@ -11,7 +11,9 @@ import Auth
 import BugUpload (uploadBugExport)
 import CardDb (CardDb, loadCardDb)
 import Control.Monad.Logger (runStdoutLoggingT)
-import Control.Monad.Random (evalRand, mkStdGen, randomIO)
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Monad (mfilter)
+import Control.Monad.Random (evalRand, mkStdGen, randomIO, randomRIO)
 import Data.Aeson (Result (..))
 import Data.Aeson.Diff qualified as Diff
 import Data.Char (isAlphaNum)
@@ -124,6 +126,7 @@ mkYesod
   /decks/#MarvelDeckId DeckR GET DELETE
   /starter-decks StarterDecksR GET
   /register RegisterR POST
+  /guest GuestR POST
   /authenticate AuthenticateR POST
   /whoami WhoAmIR GET
   /settings SettingsR PUT
@@ -234,6 +237,7 @@ data UserView = UserView
   , admin :: Bool
   , beta :: Bool
   , allowSpectatorsByDefault :: Bool
+  , guest :: Bool
   }
   deriving stock (Generic)
   deriving anyclass (ToJSON)
@@ -249,7 +253,7 @@ newSession (Entity userId user) = do
   pure $ toJSON $ Session token (userView userId user)
 
 userView :: UserId -> User -> UserView
-userView userId user = UserView userId user.userUsername user.userEmail user.userAdmin user.userBeta user.userAllowSpectatorsByDefault
+userView userId user = UserView userId user.userUsername user.userEmail user.userAdmin user.userBeta user.userAllowSpectatorsByDefault user.userGuest
 
 data Registration = Registration {username :: Text, email :: Text, password :: Text}
   deriving stock (Generic)
@@ -262,13 +266,32 @@ postRegisterR = do
       email = toLower (T.strip reg.email)
   when (null username || null email) $ sendResponseStatus status400 (ikey "error.registrationIncomplete")
   when (length reg.password < 8) $ sendResponseStatus status400 (ikey "error.passwordTooShort")
-  taken <- runDB $ (||) <$> (isJust <$> getBy (UniqueUsername username)) <*> (isJust <$> getBy (UniqueEmail email))
+  -- a guest signing up keeps their games: their row becomes the account
+  guest <- runDB . fmap join . traverse (\uid -> fmap (Entity uid) . mfilter (.userGuest) <$> get uid) =<< lookupUserId
+  let isOther = maybe False ((/= fmap entityKey guest) . Just . entityKey)
+  taken <- runDB $ (||) <$> (isOther <$> getBy (UniqueUsername username)) <*> (isOther <$> getBy (UniqueEmail email))
   when taken $ sendResponseStatus status409 (ikey "error.alreadyRegistered")
   digest <- maybe (error "bcrypt failed") pure =<< liftIO (hashPassword reg.password)
+  case guest of
+    Just (Entity userId _) ->
+      newSession . Entity userId
+        =<< runDB (updateGet userId [UserUsername =. username, UserEmail =. email, UserPasswordDigest =. digest, UserGuest =. False])
+    Nothing -> do
+      now <- liftIO getCurrentTime
+      let user = User {userUsername = username, userEmail = email, userPasswordDigest = digest, userAdmin = False, userBeta = False, userAllowSpectatorsByDefault = False, userGuest = False, userCreatedAt = now}
+      userId <- runDB $ insert user
+      newSession (Entity userId user)
+
+-- | Play without an account: a user with a made-up name and no password.
+postGuestR :: Handler Value
+postGuestR = do
   now <- liftIO getCurrentTime
-  let user = User {userUsername = username, userEmail = email, userPasswordDigest = digest, userAdmin = False, userBeta = False, userAllowSpectatorsByDefault = False, userCreatedAt = now}
-  userId <- runDB $ insert user
-  newSession (Entity userId user)
+  let attempt = do
+        n <- liftIO $ randomRIO (100000, 999999 :: Int)
+        let username = "Guest" <> tshow n
+            user = User {userUsername = username, userEmail = toLower username <> "@guest.invalid", userPasswordDigest = "", userAdmin = False, userBeta = False, userAllowSpectatorsByDefault = False, userGuest = True, userCreatedAt = now}
+        runDB (insertUnique user) >>= maybe attempt (newSession . (`Entity` user))
+  attempt
 
 data Credentials = Credentials {login :: Text, password :: Text}
   deriving stock (Generic)
@@ -281,13 +304,14 @@ postAuthenticateR = do
   let login = T.strip creds.login
   found <- runDB $ maybe (getBy $ UniqueEmail $ toLower login) (pure . Just) =<< getBy (UniqueUsername login)
   case found of
-    Just user | checkPassword (entityVal user).userPasswordDigest creds.password -> newSession user
+    Just user | not (entityVal user).userGuest, checkPassword (entityVal user).userPasswordDigest creds.password -> newSession user
     _ -> sendResponseStatus status401 (ikey "error.badLogin")
 
 getWhoAmIR :: Handler Value
 getWhoAmIR = do
   userId <- requireUserId
-  user <- runDB $ get404 userId
+  -- a swept guest's token outlives them: signed out
+  user <- maybe (sendResponseStatus status401 (ikey "error.signInFirst")) pure =<< runDB (get userId)
   pure $ toJSON $ userView userId user
 
 newtype Settings = Settings {allowSpectatorsByDefault :: Bool}
@@ -1351,12 +1375,26 @@ postImportR = do
     pure gid
   pure $ object ["id" .= gid]
 
+-- | Guests gone a month, with no game of theirs or at their seat played since, are
+-- deleted, and everything of theirs with them.
+sweepGuests :: (MonadIO m) => SqlPersistT m ()
+sweepGuests = do
+  cutoff <- addUTCTime (-30 * nominalDay) <$> liftIO getCurrentTime
+  rawExecute
+    "DELETE FROM users u WHERE u.guest AND u.created_at < ? AND NOT EXISTS \
+    \(SELECT 1 FROM marvel_games g WHERE g.updated_at >= ? AND (g.user_id = u.id \
+    \OR EXISTS (SELECT 1 FROM marvel_seats s WHERE s.game_id = g.id AND s.user_id = u.id)))"
+    [toPersistValue cutoff, toPersistValue cutoff]
+
 main :: IO ()
 main = do
   port <- fromMaybe 3000 . (>>= readMaybe) <$> lookupEnv "PORT"
   database <- fromMaybe "host=localhost dbname=marvelchampions" <$> lookupEnv "DATABASE_URL"
   pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 $ pack database) 10
   runSqlPool (runMigration migrateAll) pool
+  void $ forkIO $ forever do
+    runSqlPool sweepGuests pool
+    threadDelay (24 * 60 * 60 * 1000000)
   channels <- newTVarIO mempty
   jwtSecret <- maybe "development-only-secret-set-JWT_SECRET-in-production" pack <$> lookupEnv "JWT_SECRET"
   -- HS256 signing needs a key of at least 256 bits

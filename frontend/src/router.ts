@@ -26,7 +26,7 @@ export const router = createRouter({
 router.beforeEach((to) => {
   if (to.meta.requiresAuth && !currentUser.value) return { path: '/sign-in', query: { next: to.fullPath } }
   if (to.meta.requiresAdmin && !currentUser.value?.admin) return { path: '/' }
-  if (to.meta.guest && currentUser.value) return { path: '/' }
+  if (to.meta.guest && currentUser.value && !(to.path === '/sign-up' && currentUser.value.guest)) return { path: '/' }
 })
 
 // After a deploy, an open page still asks for the old build's chunks, which are gone.

@@ -7,6 +7,7 @@ export interface User {
   admin: boolean
   beta: boolean
   allowSpectatorsByDefault: boolean
+  guest: boolean
 }
 
 interface Session {
@@ -46,7 +47,8 @@ export const authHeaders = (): Record<string, string> =>
 const post = async (path: string, body: unknown) => {
   const response = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    // a guest signing up keeps their games
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
   if (!response.ok) throw new Error((await response.text()) || response.statusText)
@@ -57,6 +59,8 @@ export const signIn = (login: string, password: string) => post('/api/authentica
 
 export const signUp = (username: string, email: string, password: string) =>
   post('/api/register', { username, email, password })
+
+export const playAsGuest = () => post('/api/guest', {})
 
 export const signOut = () => save(null)
 
@@ -75,5 +79,7 @@ export const updateSettings = async (settings: { allowSpectatorsByDefault: boole
 export const refreshUser = async () => {
   if (!session.value) return
   const response = await fetch('/api/whoami', { headers: authHeaders() }).catch(() => null)
+  // a guest away long enough is swept
+  if (response?.status === 401) return save(null)
   if (response?.ok && session.value) save({ ...session.value, user: (await response.json()) as User })
 }

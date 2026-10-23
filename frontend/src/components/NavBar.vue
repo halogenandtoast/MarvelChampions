@@ -30,6 +30,7 @@ const leave = async () => {
         <span class="avatar">{{ currentUser.username.slice(0, 1).toUpperCase() }}</span>
         {{ currentUser.username }}
         <template #items>
+          <RouterLink v-if="currentUser.guest" to="/sign-up">{{ $t('auth.keepYourGames') }}</RouterLink>
           <RouterLink to="/settings">{{ $t('settings.title') }}</RouterLink>
           <button type="button" @click="leave">{{ $t('auth.signOut') }}</button>
         </template>
