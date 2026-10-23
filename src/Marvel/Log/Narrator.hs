@@ -62,6 +62,18 @@ narrationFor = \case
     n <- getsGame gameRound
     pure [structure [ikeyPart "log.round" ["count" ~> n]], structure [ikeyPart "log.phase.player" []]]
   BeginPhase VillainPhase -> Just $ one $ structure [ikeyPart "log.phase.villain" []]
+  -- the steps of the round (RR, Round Sequence), each a heading within its phase
+  EndPhase PlayerPhase -> Just $ one $ structure [ikeyPart "log.step.endPlayerPhase" []]
+  AccelerateMainScheme -> Just $ one $ structure [ikeyPart "log.step.placeThreat" []]
+  VillainPhaseStep step -> Just $ one $ structure [ikeyPart (villainPhaseStepKey step) []]
+  PassFirstPlayer -> Just do
+    order <- getsGame gamePlayerOrder
+    case drop 1 order <> take 1 order of
+      next : _ -> do
+        who <- playerRef' next
+        one $ structure [ikeyPart "log.step.passFirstPlayer" ["player" ~> who]]
+      [] -> pure []
+  EndRound -> Just $ one $ structure [ikeyPart "log.step.endRound" []]
   -- a campaign game is won once its Victory steps are written in the log: told then
   GameOver Won -> Just do
     pending <- getsGame \g -> case gameCampaign g of
@@ -438,3 +450,8 @@ refFor = \case
   byId :: (HasGame m, ToJSON i, Hashable i) => LogRefKind -> i -> (Game -> HashMap i a) -> (a -> CardDef) -> m (Maybe LogRef)
   byId kind x entities def = fmap (entityRef kind x . def) <$> getsGame (lookup x . entities)
 
+villainPhaseStepKey :: VillainPhaseStep -> Text
+villainPhaseStepKey = \case
+  StepEnemiesActivate -> "log.step.enemiesActivate"
+  StepDealEncounterCards -> "log.step.dealEncounterCards"
+  StepRevealEncounterCards -> "log.step.revealEncounterCards"

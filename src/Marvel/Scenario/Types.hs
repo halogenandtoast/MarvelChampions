@@ -370,11 +370,14 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         n <- fromIntegral <$> getHazardCountIn (areaId area)
         pure $ if null here then [] else take n (cycle here)
       accelerateMainScheme
+      villainPhaseStep StepEnemiesActivate
       for_ players \p -> do
         setActivePlayer p
         identityStep p VillainAndMinionsActivate
+      villainPhaseStep StepDealEncounterCards
       for_ players dealEncounterCard
       for_ (concat hazards) dealEncounterCard
+      villainPhaseStep StepRevealEncounterCards
       revealDealtEncounterCards
       passFirstPlayer
       endPhase VillainPhase

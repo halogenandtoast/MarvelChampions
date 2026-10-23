@@ -246,6 +246,8 @@ data Message
   | BeginPhase Phase
   | EndPhase Phase
   | PassFirstPlayer
+  | -- | a villain phase step begins: does nothing, the log tells it
+    VillainPhaseStep VillainPhaseStep
   | EndRound
   | BeginRound
   | AccelerateMainScheme
