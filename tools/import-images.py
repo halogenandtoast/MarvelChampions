@@ -41,6 +41,11 @@ BACKS = {
     "back-encounter": "MarvelHD/003_Hawkeye_s_Nemesis_Set_BackURL.png",
     "back-villain": "MarvelHD/cropped/347_Rhino_Villain_FaceURL_20.png",  # hidden slot of a villain sheet
 }
+# ponytail: codes whose marvelcdb reference is the wrong card, so matching can't find
+# them; picked by hand (marvelcdb's 12001c.png is Tiny Ant-Man, not Giant)
+OVERRIDES = {
+    "12001c": "MarvelHD/cropped/162_Scott_Lang_FaceURL_3.png",
+}
 
 
 def walk(card):
@@ -294,6 +299,8 @@ def main():
     for code, c in cards.items():
         if c.get("backimagesrc") and c["type_code"] == "main_scheme" and code + "a" in cards and code in manifest:
             manifest[code + "b"] = dict(manifest[code], alias_of=code)
+    for code, src in OVERRIDES.items():
+        manifest[code] = {"source": src, "rotate": 0, "override": True}
     manifest = dict(sorted(manifest.items()))
     MANIFEST.write_text(json.dumps(manifest, indent=1))
 
