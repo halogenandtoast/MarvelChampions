@@ -50,6 +50,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           <BoardCard
             :id="player.id"
             :code="player.code"
+            :faces="player.faces"
             :name="player.name"
             :exhausted="player.exhausted"
             :damage="player.damage"

@@ -7,6 +7,7 @@ import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
 import CardFace from './CardFace.vue'
+import FoldingIdentity from './FoldingIdentity.vue'
 import GameIcon from '../browser/components/GameIcon.vue'
 import ChoiceMenu from './ChoiceMenu.vue'
 import StatusTokens from './StatusTokens.vue'
@@ -43,6 +44,8 @@ const props = withDefaults(
     flag?: string | null
     /** a game icon drawn before the flag's label */
     flagIcon?: string | null
+    /** an identity's sides, A then B then C: three fold out, as Ant-Man's */
+    faces?: string[]
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
   }>(),
@@ -120,7 +123,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       @contextmenu="lastPointer !== 'mouse' && $event.preventDefault()"
       @click="click"
     >
-      <CardFace :code="code" :back="back" :name="name" />
+      <FoldingIdentity v-if="code && faces?.length === 3" :faces="faces" :code="code" />
+      <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />

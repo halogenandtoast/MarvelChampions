@@ -50,6 +50,8 @@ export interface PlayerView {
   form: 'hero' | 'alterEgo' | string
   code: string
   otherCode: string
+  /** Every side of the identity card, A then B then C (Ant-Man's fold-out Giant). */
+  faces: string[]
   hitPoints: number
   damage: number
   exhausted: boolean
