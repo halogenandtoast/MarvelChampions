@@ -2,8 +2,10 @@
 // A three-sided identity card, Ant-Man's: a folded sheet whose front cover is the
 // alter-ego (B), whose back cover is one hero form (A), and whose inside spread is the
 // giant hero form (C), printed sideways across both pages with its top on the left page.
-// Changing to C opens the cover around the left spine, then turns the spread upright;
-// leaving C turns it back and folds it shut, then turns the book over if A is next.
+// Like the card in hand, it never jumps from one side to the other: to C the cover facing
+// you swings open about the spine, then the spread stands up; from C it lies down, then
+// the cover of the side wanted swings shut over the other; from A to B or back it turns
+// over. So a cover may end up folded either way, which is kept as its angle.
 // It fills its parent, which gives it a card's shape.
 import { computed, ref, watch } from 'vue'
 import CardFace from './CardFace.vue'
@@ -18,32 +20,67 @@ const { faces, code } = defineProps<{
 type Pose = 'front' | 'back' | 'open'
 const pose = computed<Pose>(() => (code === faces[2] ? 'open' : code === faces[0] ? 'back' : 'front'))
 
-// each stage waits for the one before it: open = turn over and unfold, then stand up;
-// close = lie down, then fold, then turn over
+// the book turned over (0 or 180), and each cover's angle about the spine: equal when
+// shut, half a turn apart when open
+interface Book { turn: number; leaf: number; page: number }
+const shut = (b: Book) => b.leaf === b.page
+const initial = (p: Pose): Book => ({ turn: p === 'back' ? 180 : 0, leaf: p === 'open' ? -180 : 0, page: 0 })
+const book = ref<Book>(initial(pose.value))
+
 const step = 0.4
+// what moves first: the turn, the covers folding, the spread standing up
 const delays = ref({ turn: 0, fold: 0, stand: 0 })
-watch(pose, (to, from) => {
-  if (to === 'open') delays.value = { turn: 0, fold: 0, stand: step }
-  else if (from === 'open') delays.value = { turn: 2 * step, fold: step, stand: 0 }
-  else delays.value = { turn: 0, fold: 0, stand: 0 }
+
+watch(pose, (to) => {
+  const b = { ...book.value }
+  if (to === 'open') {
+    // the cover facing you swings open
+    if (b.turn === 0) {
+      if (b.leaf === 0) b.leaf = -180
+      else b.page = 0
+    } else if (b.page === 0) b.page = 180
+    else b.leaf = 0
+    delays.value = { turn: 0, fold: 0, stand: step }
+  } else if (!shut(b)) {
+    // the cover of the side wanted swings shut over the other, which stays put: whichever
+    // way the book is turned, the leaf shut on top shows B and the page shut on top A
+    if (to === 'front') b.leaf = b.page
+    else b.page = b.leaf
+    delays.value = { turn: 0, fold: step, stand: 0 }
+  } else {
+    b.turn = 180 - b.turn
+    delays.value = { turn: 0, fold: 0, stand: 0 }
+  }
+  book.value = b
 })
+
 const style = computed(() => ({
   '--step': `${step}s`,
   '--d-turn': `${delays.value.turn}s`,
   '--d-fold': `${delays.value.fold}s`,
   '--d-stand': `${delays.value.stand}s`,
 }))
+const turnStyle = computed(() => ({ transform: `rotateY(${book.value.turn}deg)` }))
+const leafStyle = computed(() => ({ transform: `translateZ(1px) rotateY(${book.value.leaf}deg)` }))
+const pageStyle = computed(() => ({ transform: `rotateY(${book.value.page}deg)` }))
+// open, the spread is centred on the spine and stood up (the other way round seen from
+// the back); shut on the far side of the spine, it slides back into the card's box
+const spreadStyle = computed(() => {
+  const b = book.value
+  if (!shut(b)) return { translate: '50% 0', scale: '0.7', rotate: b.turn === 0 ? '90deg' : '-90deg' }
+  return b.leaf === 0 ? {} : { translate: '100% 0' }
+})
 </script>
 
 <template>
-  <div class="folding" :class="pose" :style="style">
-    <div class="turn">
-      <div class="spread">
-        <div class="page">
+  <div class="folding" :style="style">
+    <div class="turn" :style="turnStyle">
+      <div class="spread" :style="spreadStyle">
+        <div class="page" :style="pageStyle">
           <div class="face"><div class="half right"><CardFace :code="faces[2]" eager /></div></div>
           <div class="face reverse"><CardFace :code="faces[0]" eager /></div>
         </div>
-        <div class="leaf">
+        <div class="leaf" :style="leafStyle">
           <div class="face"><CardFace :code="faces[1]" eager /></div>
           <div class="face reverse"><div class="half left"><CardFace :code="faces[2]" eager /></div></div>
         </div>
@@ -57,7 +94,6 @@ const style = computed(() => ({
 .folding { position: absolute; inset: 0; container-type: size; perspective: 1600px; border-radius: inherit; }
 .turn, .spread, .page, .leaf { position: absolute; inset: 0; transform-style: preserve-3d; border-radius: inherit; }
 .turn { transition: transform var(--step) ease-in-out var(--d-turn); }
-.back .turn { transform: rotateY(180deg); }
 
 /* the spine is the leaf's left edge; standing up turns about the spread's middle */
 .spread {
@@ -68,10 +104,9 @@ const style = computed(() => ({
     rotate var(--step) ease-in-out var(--d-stand);
 }
 /* ponytail: 0.7 fits the upright giant (H wide, 2W tall) back into a card's box */
-.open .spread { translate: 50% 0; scale: 0.7; rotate: 90deg; }
 
-.leaf { transform: translateZ(1px); transform-origin: 0 50%; transition: transform var(--step) ease-in-out var(--d-fold); }
-.open .leaf { transform: translateZ(1px) rotateY(-180deg); }
+.leaf { transform-origin: 0 50%; transition: transform var(--step) ease-in-out var(--d-fold); }
+.page { transform-origin: 0 50%; transition: transform var(--step) ease-in-out var(--d-fold); }
 
 .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: inherit; overflow: hidden; box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
 .face.reverse { transform: rotateY(180deg); }
@@ -91,6 +126,6 @@ const style = computed(() => ({
 .half.right :deep(.card-face) { left: calc(-50cqh); }
 
 @media (prefers-reduced-motion: reduce) {
-  .turn, .spread, .leaf { transition: none; }
+  .turn, .spread, .leaf, .page { transition: none; }
 }
 </style>
