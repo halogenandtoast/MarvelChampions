@@ -19,7 +19,7 @@ import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard (..))
-import Marvel.Card.Side (Side)
+import Marvel.Card.Side (Side (..))
 import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Cost.Types (Cost)
 import Marvel.Choice qualified as Choice
@@ -338,9 +338,20 @@ defeatIdentity ident =
 identityEndedTurn :: (ReverseQueue m) => IdentityId -> m ()
 identityEndedTurn = push . IdentityEndedTurn
 
--- | The identity flips to its other form.
-changeForm :: (ReverseQueue m) => IdentityId -> m ()
-changeForm ident = push $ IdentityMessage ident ChooseOtherForm
+-- | The identity flips: a hero to alter-ego, an alter-ego to a hero form of the player's
+-- choice.
+flipIdentity :: (ReverseQueue m) => IdentityId -> m ()
+flipIdentity ident = do
+  hero <- Matchers.identityMatches HeroIdentity ident
+  if hero then changeToAlterEgo ident else changeToHeroForm ident
+
+changeToAlterEgo :: (ReverseQueue m) => IdentityId -> m ()
+changeToAlterEgo ident = changeToForm ident B
+
+-- | To a hero form other than the one showing: from alter-ego the player picks one, in
+-- one hero form Ant-Man changes to the other ("change to your other hero form").
+changeToHeroForm :: (ReverseQueue m) => IdentityId -> m ()
+changeToHeroForm ident = push $ IdentityMessage ident ChooseHeroForm
 
 changeToForm :: (ReverseQueue m) => IdentityId -> Side -> m ()
 changeToForm ident = push . IdentityMessage ident . ChangedToForm

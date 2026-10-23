@@ -15,7 +15,7 @@ import Data.IORef
 import Data.Tuple (swap)
 import Marvel.Frontend
 import System.Random (StdGen, mkStdGen, random, randomR, randomRs, randoms, splitGen)
-import Data.List (find, partition)
+import Data.List (find, nub, partition)
 import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
@@ -364,12 +364,15 @@ getUniqueCardsIn aid = getsGame \g ->
     here t = not split || (areaId <$> areaOfTarget g t) == Just aid
     named n = (title n, maybe [] pure (subtitle n))
     unique xs = [(t, named $ cdName def) | (t, def) <- xs, cdUnique def, here t]
-    sideName = \case
-      HeroSide h -> title (cdName $ getCardDef h)
-      AlterEgoSide a -> title (cdName $ getCardDef a)
-    identity (k, p) = case map sideName (HashMap.elems $ playerIdentitySides $ toAttrs p) of
-      t : ts | here (IdentityRef k) -> [(IdentityRef k, (t, ts))]
-      _ -> []
+    -- its hero title, and its alter-ego title as the other name: Ant-Man's two hero
+    -- forms share the one title
+    identity (k, p) =
+      let sides = HashMap.elems $ playerIdentitySides $ toAttrs p
+          heroes = nub [title (cdName $ getCardDef h) | HeroSide h <- sides]
+          alterEgos = [title (cdName $ getCardDef a) | AlterEgoSide a <- sides]
+       in case heroes of
+            t : ts | here (IdentityRef k) -> [(IdentityRef k, (t, ts <> alterEgos))]
+            _ -> []
    in
     unique [(AllyRef k, getCardDef a) | (k, a) <- HashMap.toList (gameAllies g)]
       <> unique [(SupportRef k, supportCardDef (toAttrs s)) | (k, s) <- HashMap.toList (gameSupports g)]
@@ -1865,9 +1868,13 @@ initPlayer cardCode deck = do
     mHero = do
       def <- lookup (toHeroCardCode cardCode) allHeroesMap
       lookupHero def ident
+    -- Ant-Man's fold-out card: a second hero form on side C
+    addThirdSide p@(PlayerIdentity a) = case lookup (flipToSide C cardCode) allHeroesMap >>= (`lookupHero` ident) of
+      Just giant -> PlayerIdentity a {playerIdentitySides = HashMap.insert C giant (playerIdentitySides a)}
+      Nothing -> p
   case (mAlterEgo, mHero) of
     (Just alterEgoSide, Just heroSide) ->
-      pure . setDeck deck $ createIdentity ident alterEgoSide heroSide
+      pure . setDeck deck . addThirdSide $ createIdentity ident alterEgoSide heroSide
     _ -> error "stuff"
 
 createPlayer :: (MonadGame env m) => CardCode -> Deck -> m ()
@@ -1926,7 +1933,23 @@ getSourceController source = getsGame \g -> case source of
 
 -- | The abilities in play a player may trigger.
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
-getAbilitiesFor ident = getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
+getAbilitiesFor ident = do
+  abilities <- getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
+  filterM (fmap not . isBlanked . abilitySource) abilities
+
+-- | Whether the card's printed text box is treated as blank (Tech Theft). Only the cards
+-- that can blank another are asked, so a blanked card's own modifiers are not needed.
+isBlanked :: (HasGame m, IsRef a) => a -> m Bool
+isBlanked a = do
+  g <- getGame
+  elem Blank . mconcat
+    <$> sequence
+      [ concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameSideSchemes g)
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEffects g)
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameAttachments g)
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEnvironments g)
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameVillains g)
+      ]
 
 -- | Run messages until the queue empties or someone has to answer a question, saying
 -- nothing: for games played out of sight, such as a look ahead.
@@ -2652,10 +2675,11 @@ getUpgradeHeldCards ident =
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiers a = withDepthGuard 2 $ do
   effects <- HashMap.elems <$> getsGame gameEffects
-  upgrades <- HashMap.elems <$> getsGame gameUpgrades
-  supports <- HashMap.elems <$> getsGame gameSupports
+  -- a card whose text box is blank gives no modifiers
+  upgrades <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameUpgrades
+  supports <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameSupports
   attachments <- HashMap.elems <$> getsGame gameAttachments
-  allies <- HashMap.elems <$> getsGame gameAllies
+  allies <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameAllies
   minions <- HashMap.elems <$> getsGame gameMinions
   events <- HashMap.elems <$> getsGame gameEvents
   players <- HashMap.elems <$> getsGame gamePlayers

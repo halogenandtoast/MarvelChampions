@@ -115,7 +115,7 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
     (pre, _ : rest') -> pre <> rest'
     _ -> rest
   isAfter = \case
-    CheckWindows [Window After (DefeatedMinion mid' _ _)] -> mid' == mid
+    CheckWindows [Window After (DefeatedMinion mid' _ _ _)] -> mid' == mid
     _ -> False
 
 -- | The minion engages the player, leaving the player it was engaged with.

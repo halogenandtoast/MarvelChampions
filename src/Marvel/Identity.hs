@@ -9,7 +9,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
-import Data.List (find, partition)
+import Data.List (find, partition, sortOn)
 import Marvel.Ability
 import Marvel.ActiveCost
 import Marvel.AlterEgo
@@ -245,6 +245,18 @@ lookupAlterEgo cardDef ident =
 lookupHero :: CardDef -> IdentityId -> Maybe PlayerIdentitySide
 lookupHero cardDef ident =
   Just . HeroSide $ lookupHeroByCardCode (toCardCode cardDef) ident
+
+-- | Changing to a form. An identity with more than two (Ant-Man's fold-out card) shows
+-- the face on the choice, as its hero forms share a name.
+formChoice :: PlayerIdentity -> Side -> Choice
+formChoice p side
+  | HashMap.size sides > 2, Just face <- HashMap.lookup side sides = CardLabel (sideCardCode face) (ChangeToForm side)
+  | otherwise = ChangeToForm side
+ where
+  sides = playerIdentitySides (toAttrs p)
+  sideCardCode = \case
+    HeroSide x -> toCardCode x
+    AlterEgoSide x -> toCardCode x
 
 takeTurn :: (ReverseQueue m) => PlayerIdentity -> m ()
 takeTurn attrs = do
@@ -578,7 +590,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       canChange <- identityMatches IdentityCanChangeForm playerIdentityId
       let
         otherForms = filter (/= playerIdentitySide) $ HashMap.keys playerIdentitySides
-      when canChange $ chooseOrRunOne playerIdentityId $ map (pure . ChangeToForm) otherForms
+      when canChange $ chooseOrRunOne playerIdentityId $ map (pure . formChoice pid) otherForms
+      pure pid
+    ChooseHeroForm -> do
+      canChange <- identityMatches IdentityCanChangeForm playerIdentityId
+      let
+        heroForms = [s | (s, HeroSide _) <- HashMap.toList playerIdentitySides, s /= playerIdentitySide]
+      when canChange $ chooseOrRunOne playerIdentityId $ map (pure . formChoice pid) (sortOn show heroForms)
       pure pid
     ChangedToForm side -> do
       canChange <- identityMatches IdentityCanChangeForm playerIdentityId
@@ -626,7 +644,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.insert allyId
     CheckAllyLimit -> do
       limit <- fromIntegral <$> getModifiedAllyLimit pid
-      when (HashSet.size playerIdentityAllies > limit) $
+      counted <- filterM (fmap (notElem NotCountedAgainstAllyLimit) . getModifiers) (toList playerIdentityAllies)
+      when (length counted > limit) $
         chooseOnePrompted
           playerIdentityId
           "$label.discardAnAlly"

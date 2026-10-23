@@ -79,5 +79,9 @@ data Modifier
   | -- | on a card: its "Alter-Ego Action" abilities cannot be triggered (Corrupted
     -- Timestream)
     CannotTriggerAlterEgoActions
+  | -- | on a card: its printed text box is treated as blank (Tech Theft)
+    Blank
+  | -- | on an ally: it does not count against its controller's ally limit (Stinger)
+    NotCountedAgainstAllyLimit
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

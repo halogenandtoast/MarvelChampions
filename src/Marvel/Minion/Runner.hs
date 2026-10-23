@@ -56,11 +56,11 @@ runMinionMessage msg attrs = case msg of
             -- overkill follows the defeat: a minion that is not defeated after all
             -- deals none past it ('cancelMinionDefeat')
             let overkill = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
-            checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source]
+            checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill]
             defeatMinion (minionId attrs)
             when (overkill > 0 && damageOverkill damage) do
               traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
-            checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source]
+            checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill]
           else pure ()
         pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
   -- retaliate answers the attack whether or not a tough status card took its damage

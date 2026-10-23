@@ -84,7 +84,12 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
-data EffectTiming = DisableAtEndOfPhase | DisableAtEndOfRound
+data EffectTiming
+  = DisableAtEndOfPhase
+  | DisableAtEndOfRound
+  | -- | at the end of the turn of the identity it is on: "until the end of this turn", or
+    -- from the villain phase "until your next turn ends"
+    DisableAtEndOfTurn
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -143,4 +148,7 @@ instance RunMessage (Attrs Effect) where
           a <$ disableEffect (effectId a)
     EndPhase _ -> a <$ when (effectEnds a == Just DisableAtEndOfPhase) (disableEffect $ effectId a)
     EndRound -> a <$ when (effectEnds a == Just DisableAtEndOfRound) (disableEffect $ effectId a)
+    IdentityEndedTurn ident | effectEnds a == Just DisableAtEndOfTurn -> do
+      ends <- effectValidFor a (IdentityRef ident)
+      a <$ when ends (disableEffect $ effectId a)
     _ -> pure a

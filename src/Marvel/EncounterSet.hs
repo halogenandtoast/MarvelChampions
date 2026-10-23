@@ -53,6 +53,8 @@ data EncounterSet
   | ExpertCampaign
   | HawkeyeNemesis
   | SpiderWomanNemesis
+  -- Ant-Man
+  | AntManNemesis
   -- The Once and Future Kang
   | Kang
   | ExpertKang
@@ -106,6 +108,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "10001" -> HulkNemesis
   "04001" -> HawkeyeNemesis
   "04031" -> SpiderWomanNemesis
+  "12001" -> AntManNemesis
   cCode ->
     error $
       "No nemesis set for "

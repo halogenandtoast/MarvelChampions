@@ -40,6 +40,9 @@ data Cost
     DiscardEncounterCardsUntilMinionCost
   | -- | the printed resource cost of the card chosen as the card's target
     TargetPrintedCost
+  | -- | nothing more is due, but the payer may go on spending resources: "for each
+    -- resource you overpaid" (Ant-Man, Hank Pym)
+    MayOverpay
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -66,6 +69,7 @@ costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources TargetPrintedCost = []
+costResources MayOverpay = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

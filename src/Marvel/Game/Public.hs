@@ -162,6 +162,8 @@ data PlayerView = PlayerView
   , code :: CardCode
   -- ^ the face showing
   , otherCode :: CardCode
+  , faces :: [CardCode]
+  -- ^ every side of the identity card, A then B then C (Ant-Man's fold-out third)
   , hitPoints :: Natural
   , damage :: Natural
   , exhausted :: Bool
@@ -477,6 +479,7 @@ gameView seesHand g = do
         , form
         , code = toCardCode p
         , otherCode
+        , faces = map sideCode [x | k <- [A, B, C], Just x <- [HashMap.lookup k a.playerIdentitySides]]
         , hitPoints = hp
         , damage = a.playerIdentityDamage
         , exhausted = a.playerIdentityExhausted

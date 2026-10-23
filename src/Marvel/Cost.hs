@@ -72,6 +72,7 @@ canAffordCost identityId source = go
         ]
     DiscardEncounterCardsUntilMinionCost -> pure True
     TargetPrintedCost -> pure True
+    MayOverpay -> pure True
     ExhaustCost -> case source of
       IdentityRef ident -> member ident <$> select UnexhaustedIdentity
       AllyRef ident -> member ident <$> select UnexhaustedAlly

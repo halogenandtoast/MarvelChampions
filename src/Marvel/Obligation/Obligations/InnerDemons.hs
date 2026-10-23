@@ -27,7 +27,7 @@ instance RunMessage InnerDemons where
   runMessage msg o@(InnerDemons attrs) = runQueueT $ case msg of
     ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
       RevealObligation identityId -> do
-        changeForm identityId
+        flipIdentity identityId
         resolveObligation (obligationId attrs) identityId
         pure o
       ResolveObligation identityId -> do

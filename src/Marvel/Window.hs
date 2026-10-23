@@ -112,12 +112,12 @@ windowMatches matcher w source = case matcher of
           villainMatches villainMatcher villainId
     _ -> pure False
   MinionDefeated timing minionMatcher -> case windowType w of
-    DefeatedMinion minionId _ _
+    DefeatedMinion minionId _ _ _
       | windowTiming w == timing ->
           minionMatches minionMatcher minionId
     _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
-    DefeatedMinion minionId damage source
+    DefeatedMinion minionId damage source _
       | windowTiming w == timing ->
           liftA2
             (&&)

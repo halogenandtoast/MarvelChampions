@@ -15,6 +15,9 @@ data IdentityMessage
   | PlayerTurnOption
   | CheckIfPassed
   | ChooseOtherForm
+  | -- | change to a hero form other than the one showing: Ant-Man's other size, or from
+    -- alter-ego the player's pick of their hero forms
+    ChooseHeroForm
   | EndedTurn
   | ChangedToForm Side
   | DrawCards FromZone Natural

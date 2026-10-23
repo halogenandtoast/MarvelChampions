@@ -30,6 +30,7 @@ import Marvel.Question
 import Marvel.Queue (HasQueue)
 import Marvel.Ref
 import Marvel.Resource
+import Marvel.Resource.Resources (afterSpent)
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (ResolvedAbility))
 
 
@@ -120,6 +121,7 @@ payCostPart activeCost = go
     ResourceCost _ -> resourcePayment
     MultiResourceCost _ -> resourcePayment
     DifferentResourcesCost _ -> resourcePayment
+    MayOverpay -> resourcePayment
     Costs xs -> traverse_ go (condenseResourceCosts xs)
   payingFor = case activeCostTarget activeCost of
     ForTreachery -> chooseOnePrompted iid "$label.pay"
@@ -168,6 +170,7 @@ isResourceCost (ResourceCost _) = True
 isResourceCost (MultiResourceCost _) = True
 isResourceCost (DynamicResourceCost _) = True
 isResourceCost (DifferentResourcesCost _) = True
+isResourceCost MayOverpay = True
 isResourceCost (Costs cs) = any isResourceCost cs
 isResourceCost _ = False
 
@@ -270,6 +273,8 @@ instance RunMessage ActiveCost where
         payer = activeCostIdentityId activeCost
         payment = activeCostPayment activeCost <> x
       for_ (reverse $ activeCostSpentCards activeCost) discardCard
+      -- "after you spend this card" (Pym Particles), before what was paid for resolves
+      for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer)
       disableActiveCost ident
       case activeCostTarget activeCost of
         ForCard card -> cardPlayed payer card payment (activeCostWindow activeCost)

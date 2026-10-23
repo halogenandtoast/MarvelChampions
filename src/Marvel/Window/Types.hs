@@ -106,8 +106,9 @@ data WindowType
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
   | DefeatedVillain VillainId Damage
-  | -- | the minion, the damage that defeated it, and what dealt it
-    DefeatedMinion MinionId Damage Source
+  | -- | the minion, the damage that defeated it, what dealt it, and how much of it went
+    -- past its hit points
+    DefeatedMinion MinionId Damage Source Natural
   | MinionEnteredPlay MinionId
   | EnemyAttack EnemyId IdentityId
   | -- | the damage an enemy's attack dealt the character

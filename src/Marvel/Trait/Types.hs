@@ -58,6 +58,9 @@ data Trait
   | Arrow
   | Businessman
   | Captive
+  | Tiny
+  | Ants
+  | Civilian
   | Creature
   | Experimental
   | Goblin
@@ -69,5 +72,5 @@ data Trait
   | Traitor
   | Wood
   | WreckingCrew
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

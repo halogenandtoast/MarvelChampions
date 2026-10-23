@@ -262,10 +262,23 @@ changeForm ident = do
   choose "change form" \case
     UseAbility ab -> ChangeForm `elem` abilityChoices ab && abilitySource ab == toSource ident
     _ -> False
-  -- a hero with a choice of alter-egos is asked which
-  whenM (offers \case ChangeToForm _ -> True; _ -> False) $ choose "pick a form" \case
-    ChangeToForm _ -> True
+  -- a hero with a choice of forms is asked which
+  whenM (offers $ isFormChoice Nothing) $ choose "pick a form" (isFormChoice Nothing)
+
+-- | Change the player's form with the identity's action, to this side: Ant-Man has three.
+changeFormTo :: (HasCallStack) => IdentityId -> Side -> GameAppT ()
+changeFormTo ident side = do
+  choose "change form" \case
+    UseAbility ab -> ChangeForm `elem` abilityChoices ab && abilitySource ab == toSource ident
     _ -> False
+  choose "pick a form" (isFormChoice $ Just side)
+
+-- | A choice of the form to change to, this one or any; Ant-Man's show their face.
+isFormChoice :: Maybe Side -> Choice -> Bool
+isFormChoice side = \case
+  CardLabel _ c -> isFormChoice side c
+  ChangeToForm s -> maybe True (== s) side
+  _ -> False
 
 -- | End the turn, and keep every card at the end of the player phase.
 endTurn :: (HasCallStack) => GameAppT ()

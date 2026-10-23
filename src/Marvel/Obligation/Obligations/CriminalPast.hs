@@ -33,7 +33,7 @@ instance RunMessage CriminalPast where
         when isHero $
           chooseOne identityId
             [ labeled "$label.doNotFlipToAlterEgo" (pure ())
-            , labeled "$label.changeToB" (changeForm identityId)
+            , labeled "$label.changeToB" (changeToAlterEgo identityId)
             ]
         resolveObligation (obligationId attrs) identityId
         pure o
