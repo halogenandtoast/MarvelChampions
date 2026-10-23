@@ -162,13 +162,14 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
 .player-area.giant .identity-column { width: calc(var(--card-width) / var(--card-aspect) + 164px); }
+.player-area.giant .identity > :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 /* above the hand that floats over the foot of the board */
 .asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
 /* a card's stats pinned to its left */
 .body { display: flex; gap: 6px; align-items: flex-start; }
 /* health under the card alone, not its stats */
-.identity > :deep(.meter), .minion > :deep(.meter) { width: var(--card-width); align-self: flex-end; }
+.identity > :deep(.meter), .minion > :deep(.meter) { width: var(--card-width); align-self: flex-end; transition: width 0.4s ease; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; width: 44px; flex: none; }
 .stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--stat-bg, var(--ink-0)); border: 1px solid var(--stat-bg, var(--line)); text-align: center; }
 .stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--stat-label, var(--text-faint)); }
