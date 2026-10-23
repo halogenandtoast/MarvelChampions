@@ -36,7 +36,8 @@ const decks = ref<DeckSummary[]>([])
 const starters = ref<StarterDeck[]>([])
 // a deck's page sends you to a new game to play it: `?deck=<id>` comes along
 const asked = useRoute().query.deck
-const deck = ref<DeckKey>(typeof asked === 'string' && /^\d+$/.test(asked) ? `deck:${asked}` : 'starter:spider-man')
+const deck = ref<DeckKey>(typeof asked === 'string' && /^\d+$/.test(asked) ? `deck:${asked}` : '')
+const preset = ref(!!deck.value)
 const refresh = async () => {
   try {
     decks.value = await fetchDecks()
@@ -49,19 +50,17 @@ onMounted(async () => {
   starters.value = await fetchStarterDecks().catch(() => [])
 })
 
-// start on a starter whose hero nobody has brought
-const base = (code: string) => code.replace(/[ab]$/, '')
-watch([starters, taken], () => {
-  const heroOf = starters.value.find((s) => `starter:${s.key}` === deck.value)?.hero
-  if (!heroOf || !taken.value.map(base).includes(base(heroOf))) return
-  const free = starters.value.find((s) => !taken.value.map(base).includes(base(s.hero)))
-  if (free) deck.value = `starter:${free.key}`
-})
-
 // a deck loaded for this game alone, not kept
 const loaded = ref<{ face: DeckFace; list: DeckList } | null>(null)
 const loading = ref(false)
 const choice = (): DeckChoice => (deck.value === 'loaded' && loaded.value ? { list: loaded.value.list } : toDeckChoice(deck.value))
+const join = () => {
+  emit('join', choice())
+  preset.value = false
+  deck.value = ''
+}
+// a deck picked takes the seat; one sent from a deck's page waits for the button
+watch(deck, () => deck.value && !preset.value && join())
 </script>
 
 <template>
@@ -98,7 +97,7 @@ const choice = (): DeckChoice => (deck.value === 'loaded' && loaded.value ? { li
     <template v-if="!full && (owner || mine === 0)">
       <h3>{{ $t('game.lobby.chooseDeck') }}</h3>
       <DeckPicker v-model="deck" v-model:loading="loading" :decks="decks" :starters="starters" :loaded="loaded?.face" :taken="taken" @load="(face, list) => (loaded = { face, list })" @saved="refresh" />
-      <button v-if="!loading" type="button" class="btn primary big" @click="emit('join', choice())">{{ $t(mine > 0 ? 'game.lobby.takeAnother' : 'game.lobby.join') }}</button>
+      <button v-if="!loading && preset" type="button" class="btn primary big" @click="join">{{ $t(mine > 0 ? 'game.lobby.takeAnother' : 'game.lobby.join') }}</button>
     </template>
     <template v-if="mine > 0">
       <p class="hint">{{ $t('game.lobby.dealtWhenFull') }}</p>

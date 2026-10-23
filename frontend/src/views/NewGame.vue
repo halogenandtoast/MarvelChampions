@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, ArrowRight, Check, Users } from 'lucide-vue-next'
+import { ArrowLeft, Check, Users } from 'lucide-vue-next'
 import { createCampaign, createGame, fetchScenarios } from '../api'
 import { currentUser, updateSettings } from '../auth'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
@@ -38,12 +38,16 @@ onMounted(async () => {
   try {
     const list = await fetchScenarios()
     ;[scenarios.value, modularSets.value] = [list.scenarios, list.modulars]
-    if (!scenario.value && sortedScenarios.value[0]) choose(sortedScenarios.value[0])
   } catch (e) {
     error.value = e instanceof Error ? e.message : t('newGame.couldNotCreateGame')
   }
 })
 
+// a villain picked goes on to its setup; picked again, it keeps what was set
+const pickVillain = (option: ScenarioOption) => {
+  if (!scenario.value || baseCode(scenario.value.code) !== baseCode(option.code)) choose(option)
+  step.value = 2
+}
 const choose = (option: ScenarioOption) => {
   scenario.value = option
   modulars.value = [...option.modulars]
@@ -161,7 +165,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
 <template>
   <div class="page-container">
-    <form class="page-content new-game" @submit.prevent="step === 1 ? (step = 2) : submit()">
+    <form class="page-content new-game" @submit.prevent="step === 2 && submit()">
       <header class="head">
         <h1 class="page-title">{{ $t('newGame.title') }}</h1>
         <RouterLink to="/" class="btn ghost">{{ $t('common.cancel') }}</RouterLink>
@@ -191,7 +195,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
         <section v-if="kind === 'campaign'" class="step">
           <div class="villains" role="radiogroup">
-            <button type="button" role="radio" class="villain campaign-tile selected" aria-checked="true">
+            <button type="button" role="radio" class="villain campaign-tile selected" aria-checked="true" @click="step = 2">
               <span class="box-art" />
               <span class="villain-name">{{ $t('campaign.riseOfRedSkull') }}</span>
               <Check class="tick" aria-hidden="true" />
@@ -215,8 +219,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
               class="villain"
               :class="{ selected: scenario && baseCode(scenario.code) === baseCode(option.code) }"
               :aria-checked="!!scenario && baseCode(scenario.code) === baseCode(option.code)"
-              @click="scenario && baseCode(scenario.code) === baseCode(option.code) || choose(option)"
-              @dblclick="step = 2"
+              @click="pickVillain(option)"
             >
               <span class="art-strip">
                 <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :style="{ backgroundImage: villainArt(code) }" />
@@ -313,13 +316,9 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
       <p v-if="error" class="error">{{ tr(error) }}</p>
 
-      <div class="create">
-        <button v-if="step === 2" type="button" class="btn big back" @click="step = 1"><ArrowLeft aria-hidden="true" />{{ $t('newGame.back') }}</button>
-        <p v-if="step === 1" class="summary">{{ kind === 'campaign' ? $t('campaign.riseOfRedSkull') : scenario && scenarioName(scenario.code) }}</p>
-        <button v-if="step === 1" class="btn primary big" type="submit" :disabled="kind === 'scenario' && !scenario">
-          {{ $t('newGame.next') }}<ArrowRight aria-hidden="true" />
-        </button>
-        <button v-else class="btn primary big" type="submit" :disabled="kind === 'campaign' ? !canCreateCampaign : !canCreate">
+      <div v-if="step === 2" class="create">
+        <button type="button" class="btn big back" @click="step = 1"><ArrowLeft aria-hidden="true" />{{ $t('newGame.back') }}</button>
+        <button class="btn primary big" type="submit" :disabled="kind === 'campaign' ? !canCreateCampaign : !canCreate">
           <Users aria-hidden="true" />{{ creating ? $t('newGame.creating') : $t('newGame.openLobby') }}
         </button>
       </div>
@@ -399,7 +398,6 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
 .error { margin: 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--danger); color: var(--danger); }
 .create { display: flex; align-items: center; justify-content: flex-end; gap: 18px; }
-.summary { margin: 0; color: var(--text-muted); }
 .back { margin-right: auto; }
 .steps { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; padding: 0; list-style: none; }
 .steps li { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); }

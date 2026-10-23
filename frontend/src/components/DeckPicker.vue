@@ -36,7 +36,7 @@ const { t } = useI18n()
 
 type Tab = 'mine' | 'starter'
 const chosenTab = ref<Tab | null>(null)
-const tab = computed<Tab>(() => chosenTab.value ?? (model.value.startsWith('starter:') ? 'starter' : 'mine'))
+const tab = computed<Tab>(() => chosenTab.value ?? (model.value ? (model.value.startsWith('starter:') ? 'starter' : 'mine') : decks.length ? 'mine' : 'starter'))
 const tabs = computed(() => [
   { value: 'starter' as const, label: t('newGame.starterTab'), count: starters.length },
   { value: 'mine' as const, label: t('newGame.myDecks'), count: decks.length },
