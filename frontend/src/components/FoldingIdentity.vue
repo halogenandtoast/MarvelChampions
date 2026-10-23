@@ -20,7 +20,7 @@ const pose = computed<Pose>(() => (code === faces[2] ? 'open' : code === faces[0
 
 // each stage waits for the one before it: open = turn over and unfold, then stand up;
 // close = lie down, then fold, then turn over
-const step = 0.55
+const step = 0.4
 const delays = ref({ turn: 0, fold: 0, stand: 0 })
 watch(pose, (to, from) => {
   if (to === 'open') delays.value = { turn: 0, fold: 0, stand: step }

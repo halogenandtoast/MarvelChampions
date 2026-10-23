@@ -20,9 +20,17 @@ const other = computed(() => store.cardByCode(card.linkedTo))
 const third = computed(() => (other.value ? store.thirdFace(card) : undefined))
 const faces = computed(() => [card, other.value, third.value].filter((c): c is Card => !!c))
 const shown = computed(() => faces.value[imageIndex.value] ?? card)
-// two hero forms share a name (Ant-Man): told apart by the trait naming the form, printed last
-const faceName = (face: Card) =>
-  faces.value.filter((f) => f.name === face.name).length > 1 && face.traits?.length ? `${face.name} (${face.traits.at(-1)})` : face.name
+// faces sharing a name (Ant-Man's two hero forms) are one tab, told apart by the trait
+// naming the form, printed last
+const faceGroups = computed(() => {
+  const groups: { name: string; faces: { card: Card; i: number }[] }[] = []
+  faces.value.forEach((card, i) => {
+    const group = groups.find((g) => g.name === card.name)
+    if (group) group.faces.push({ card, i })
+    else groups.push({ name: card.name, faces: [{ card, i }] })
+  })
+  return groups
+})
 
 const facts = computed(() => {
   const c = shown.value
@@ -50,18 +58,35 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
         </div>
         <CardImage v-else :card="shown" eager />
         <div v-if="other" class="faces" role="tablist" :aria-label="$t('browser.card.faces')">
-          <button
-            v-for="(face, i) in faces"
-            :key="face.code"
-            type="button"
-            class="button"
-            role="tab"
-            :aria-selected="imageIndex === i"
-            :class="{ 'is-active': imageIndex === i }"
-            @click="imageIndex = i"
-          >
-            {{ faceName(face) }}
-          </button>
+          <template v-for="group in faceGroups" :key="group.name">
+            <!-- one hero, two forms (Ant-Man): one name, its forms segmented -->
+            <div v-if="group.faces.length > 1" class="split" :class="{ 'is-active': group.faces.some((f) => f.i === imageIndex) }">
+              <span class="split-name">{{ group.name }}</span>
+              <button
+                v-for="f in group.faces"
+                :key="f.card.code"
+                type="button"
+                class="button"
+                role="tab"
+                :aria-selected="imageIndex === f.i"
+                :class="{ 'is-active': imageIndex === f.i }"
+                @click="imageIndex = f.i"
+              >
+                {{ f.card.traits?.at(-1) ?? f.card.name }}
+              </button>
+            </div>
+            <button
+              v-else
+              type="button"
+              class="button"
+              role="tab"
+              :aria-selected="imageIndex === group.faces[0].i"
+              :class="{ 'is-active': imageIndex === group.faces[0].i }"
+              @click="imageIndex = group.faces[0].i"
+            >
+              {{ group.name }}
+            </button>
+          </template>
         </div>
       </div>
 
@@ -108,12 +133,16 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
 .detail { display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .art { position: sticky; top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .folding-frame { position: relative; aspect-ratio: 63 / 88; border-radius: var(--radius-card, 6px); }
-.flip { display: grid; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.55s ease-in-out; }
+.flip { display: grid; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.4s ease-in-out; }
 .flip.is-flipped { transform: perspective(1600px) rotateY(180deg); }
 /* both faces in the one cell, so the box is the larger of the two */
 .flip > .side { grid-area: 1 / 1; align-self: center; backface-visibility: hidden; }
 .flip > .side--back { transform: rotateY(180deg); }
 @media (prefers-reduced-motion: reduce) { .flip { transition: none; } }
+.split { display: inline-flex; align-items: center; gap: 2px; padding: 2px 2px 2px var(--space-3); border: 1px solid var(--c-border); border-radius: var(--radius); background: var(--c-surface); }
+.split.is-active { border-color: var(--c-accent); }
+.split-name { margin-right: var(--space-1); font-weight: 600; }
+.split .button { padding: 0.25rem 0.5rem; border-color: transparent; font-size: var(--text-sm); }
 .faces { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0; font-size: var(--text-sm); color: var(--c-text-muted); }
 .name { display: flex; align-items: baseline; gap: 0.3em; margin: 6px 0 0; font-size: 2.2rem; line-height: 1; text-transform: uppercase; }
