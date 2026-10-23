@@ -15,9 +15,24 @@ import Marvel.Message.Villain
 
 narrate :: Message -> GameAppT ()
 narrate msg = do
+  when (stepBegins msg) showBoard
   for_ (narrationFor msg) \build -> traverse_ sendLog =<< build
-  when (intoRiver msg) $ send . Board . toJSON =<< getGame
+  when (intoRiver msg) showBoard
   traverse_ send (cue msg)
+ where
+  showBoard = send . Board . toJSON =<< getGame
+
+-- | A step of the round beginning: the board is shown as the step before left it, so each
+-- step is seen on its own whether or not anyone is asked anything during it.
+stepBegins :: Message -> Bool
+stepBegins = \case
+  BeginPhase _ -> True
+  EndPhase _ -> True
+  AccelerateMainScheme -> True
+  VillainPhaseStep _ -> True
+  PassFirstPlayer -> True
+  EndRound -> True
+  _ -> False
 
 -- | A card dealt into the river, which waits for the board to show what came before it.
 intoRiver :: Message -> Bool

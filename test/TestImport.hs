@@ -75,17 +75,23 @@ dealtGameLogged = dealtGameWith id
 -- | The same, the table changed before it is dealt: given a campaign, say.
 dealtGameWith :: (Game -> Game) -> ScenarioSetup -> [DeckList] -> Int -> IO (GameApp, IORef [Text], IORef [LogEntry])
 dealtGameWith f setup decks seed = do
+  logged <- newIORef []
+  (app, ran) <- dealtGameTelling f setup decks seed \case
+    Logged e -> modifyIORef' logged (<> [e])
+    _ -> pure ()
+  pure (app, ran, logged)
+
+-- | The same, what the game tells its clients handed to the function given.
+dealtGameTelling :: (Game -> Game) -> ScenarioSetup -> [DeckList] -> Int -> (FrontendMessage -> IO ()) -> IO (GameApp, IORef [Text])
+dealtGameTelling f setup decks seed tell = do
   scenario <- maybe (error "no such scenario") pure $ lookupScenario setup
   players <- either (error . show) pure . sequence $ evalRand (traverse loadPlayer decks) (mkStdGen seed)
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
   ran <- newIORef []
-  logged <- newIORef []
-  app <- newGameApp (f $ newTable scenario seated) [StartGame] (mkStdGen seed) \case
-    Logged e -> modifyIORef' logged (<> [e])
-    _ -> pure ()
+  app <- newGameApp (f $ newTable scenario seated) [StartGame] (mkStdGen seed) tell
   let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 60 . (tshow m :))}
   runGameApp app' runGame
-  pure (app', ran, logged)
+  pure (app', ran)
  where
   nonEmpty' = \case
     [] -> Nothing
