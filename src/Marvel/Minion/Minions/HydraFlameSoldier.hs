@@ -37,7 +37,7 @@ instance HasAbilities HydraFlameSoldier where
 discardSupport :: (ReverseQueue m) => IdentityId -> m ()
 discardSupport you = do
   supports <- selectList $ SupportControlledBy (IdentityWithId you)
-  unless (null supports) $ chooseOrRunOne you [targeting s (removeFromPlay s) | s <- supports]
+  unless (null supports) $ chooseOne you [targeting s (removeFromPlay s) | s <- supports]
 
 instance RunMessage HydraFlameSoldier where
   runMessage msg e@(HydraFlameSoldier attrs) = runQueueT $ case msg of

@@ -36,7 +36,7 @@ instance RunMessage PiercingThorns where
         supports <- selectList $ SupportControlledBy you'
         upgrades <- selectList $ UpgradeControlledBy you'
         let controlled = map toTarget allies <> map toTarget supports <> map toTarget upgrades
-        unless (null controlled) $ chooseOrRunOne you [targeting c (removeFromPlay c) | c <- controlled]
+        unless (null controlled) $ chooseOne you [targeting c (removeFromPlay c) | c <- controlled]
       pure t
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       stoneOrWood <- orM [selectAny (VillainWithTrait Stone), selectAny (VillainWithTrait Wood)]

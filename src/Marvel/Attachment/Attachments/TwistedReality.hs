@@ -31,7 +31,7 @@ instance RunMessage TwistedReality where
       schemes <- selectList AnySideScheme
       if null schemes
         then removeFromPlay attrs
-        else chooseOrRunOne you [targeting s (attachToSideScheme ident s) | s <- schemes]
+        else chooseOne you [targeting s (attachToSideScheme ident s) | s <- schemes]
       pure a
     SideSchemeMessage sid DefeatSideScheme | attachmentSideScheme attrs == Just sid -> do
       first <- selectJust FirstPlayer

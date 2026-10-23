@@ -43,7 +43,7 @@ instance RunMessage PastMachinations where
         if null obligations
           then cardSpecific attrs "search" (rest, found)
           else
-            chooseOrRunOne p
+            chooseOne p
               [ targeting c do
                   revealEncounterCard p c
                   cardSpecific attrs "search" (rest, titleOf c : found)

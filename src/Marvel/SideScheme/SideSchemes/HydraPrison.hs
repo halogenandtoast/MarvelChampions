@@ -44,7 +44,7 @@ instance RunMessage HydraPrison where
           discard <- projectMap PlayerIdentityDiscard unDiscard p
           let allies = filter (cardMatch $ CardMatchesAny $ map CardIs heroSpecificAllies) (hand <> deck <> discard)
           unless (null allies) $
-            chooseOrRunOne p [targeting c (cardSpecific attrs "imprison" c) | c <- allies]
+            chooseOne p [targeting c (cardSpecific attrs "imprison" c) | c <- allies]
         sideSchemeRevealedThen ident
         pure s
       SideSchemeRevealedThen -> do
