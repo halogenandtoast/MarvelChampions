@@ -28,6 +28,8 @@ const initial = (p: Pose): Book => ({ turn: p === 'back' ? 180 : 0, leaf: p === 
 const book = ref<Book>(initial(pose.value))
 
 const step = 0.4
+// a cover swings slower than the book turns or stands, as a hand opens it
+const fold = 0.6
 // what moves first: the turn, the covers folding, the spread standing up
 const delays = ref({ turn: 0, fold: 0, stand: 0 })
 
@@ -59,9 +61,9 @@ const change = (to: Pose): number => {
       else b.page = 0
     } else if (b.page === 0) b.page = 180
     else b.leaf = 0
-    delays.value = { turn: 0, fold: 0, stand: step }
+    delays.value = { turn: 0, fold: 0, stand: fold }
     book.value = b
-    return 2 * step
+    return fold + step
   } else if (!shut(b)) {
     // the cover of the side wanted swings shut over the other, which stays put: whichever
     // way the book is turned, the leaf shut on top shows B and the page shut on top A
@@ -69,7 +71,7 @@ const change = (to: Pose): number => {
     else b.page = b.leaf
     delays.value = { turn: 0, fold: step, stand: 0 }
     book.value = b
-    return 2 * step
+    return fold + step
   }
   b.turn = 180 - b.turn
   delays.value = { turn: 0, fold: 0, stand: 0 }
@@ -79,6 +81,7 @@ const change = (to: Pose): number => {
 
 const style = computed(() => ({
   '--step': `${step}s`,
+  '--fold': `${fold}s`,
   '--d-turn': `${delays.value.turn}s`,
   '--d-fold': `${delays.value.fold}s`,
   '--d-stand': `${delays.value.stand}s`,
@@ -116,7 +119,7 @@ const spreadStyle = computed(() => {
 
 <style scoped>
 /* W = 100cqw and H = 100cqh: one card; the spread is 2W by H */
-.folding { position: absolute; inset: 0; container-type: size; perspective: 1600px; border-radius: inherit; }
+.folding { --swing: cubic-bezier(0.45, 0, 0.55, 1); position: absolute; inset: 0; container-type: size; perspective: 1600px; border-radius: inherit; }
 .turn, .spread, .page, .leaf { position: absolute; inset: 0; transform-style: preserve-3d; border-radius: inherit; }
 .turn { transition: transform var(--step) ease-in-out var(--d-turn); }
 
@@ -124,21 +127,21 @@ const spreadStyle = computed(() => {
 .spread {
   transform-origin: 0 50%;
   transition:
-    translate var(--step) ease-in-out var(--d-fold),
-    scale var(--step) ease-in-out var(--d-fold),
+    translate var(--fold) var(--swing) var(--d-fold),
+    scale var(--fold) var(--swing) var(--d-fold),
     rotate var(--step) ease-in-out var(--d-stand);
 }
 /* ponytail: 0.7 fits the upright giant (H wide, 2W tall) back into a card's box */
 
-.leaf { transform-origin: 0 50%; transition: transform var(--step) ease-in-out var(--d-fold); }
-.page { transform-origin: 0 50%; transition: transform var(--step) ease-in-out var(--d-fold); }
+.leaf { transform-origin: 0 50%; transition: transform var(--fold) var(--swing) var(--d-fold); }
+.page { transform-origin: 0 50%; transition: transform var(--fold) var(--swing) var(--d-fold); }
 
 .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: inherit; overflow: hidden; box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
 .face.reverse { transform: rotateY(180deg); }
 /* the giant is drawn only while the book is open: it appears, or goes, as the cover
    swinging over it is edge-on, half way through the fold. Shut, a cover would lie a
    pixel above it, and the browser does not always draw the nearer of the two */
-.inside { visibility: hidden; transition: visibility 0s linear calc(var(--d-fold) + var(--step) / 2); }
+.inside { visibility: hidden; transition: visibility 0s linear calc(var(--d-fold) + var(--fold) / 2); }
 .is-open .inside { visibility: visible; }
 
 /* the giant, turned so its top is on the left page, centred on the spine */
