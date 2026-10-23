@@ -143,6 +143,8 @@ data GameData = GameData
   , playerId :: Maybe IdentityId
   , canUndo :: Bool
   , table :: Table
+  , setup :: Value
+  -- ^ the scenario as it was chosen, for the lobby to show before it is dealt
   , log :: Maybe [LogEntry]
   -- ^ the log's latest entries, when the client should take them afresh
   }
@@ -350,9 +352,12 @@ publish :: MarvelGameId -> MarvelGame -> [IdentityId] -> [FrontendMessage] -> Ha
 publish gid row seatOrder said = do
   chan <- gameChannel gid
   table <- tableFor gid row
-  atomically $ for_ said $ writeTChan chan . \case
-    Logged e -> Told table seatOrder e
-    msg -> Said $ encode msg
+  atomically $ for_ said $ traverse_ (writeTChan chan) . \case
+    Logged e -> Just $ Told table seatOrder e
+    Board b -> case fromJSON b of
+      Success g -> Just $ Updated row table (Just g) Nothing
+      Error _ -> Nothing
+    msg -> Just $ Said $ encode msg
 
 -- | The game, nothing while it waits for players.
 storedGame :: MarvelGame -> Handler (Maybe Game)
@@ -381,6 +386,7 @@ gameData viewer row table g entries = do
     (gameActivePlayer <$> g)
     (row.marvelGameStep > 0)
     table
+    row.marvelGameScenario
     (filter (readsEntry $ seesHand table viewer (maybe [] gameSeats g)) <$> entries)
 
 -- | Whether a viewer sees a player's hand: with friends, only their own seat's.

@@ -251,6 +251,8 @@ export interface GameData {
   playerId: string | null
   canUndo: boolean
   table: Table
+  /** the scenario as it was chosen, for the lobby to show before it is dealt */
+  setup: { scenarioCode: string; modulars: string[]; difficulty: 'Normal' | 'Expert' }
   /** The log's latest entries, when the client should take them afresh. */
   log: LogEntry[] | null
 }

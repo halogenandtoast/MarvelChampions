@@ -112,7 +112,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
 }
 .left, .right { display: flex; align-items: stretch; }
 .campaign { display: flex; align-items: center; padding: 0 10px; color: var(--amber); font-weight: 700; white-space: nowrap; }
-.right { justify-content: flex-end; }
+.right { grid-column: -2; justify-content: flex-end; }
 .game-bar :deep(svg) { width: 15px; height: 15px; }
 .spectating { display: flex; align-items: center; padding: 0 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75em; font-weight: 700; }
 .menu-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--menu-section-text); padding: 8px 12px 4px; user-select: none; pointer-events: none; }

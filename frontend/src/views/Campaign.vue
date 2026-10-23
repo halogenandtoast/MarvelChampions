@@ -10,6 +10,7 @@ import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { useCards } from '../cards'
 import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
+import SetupBar from '../components/SetupBar.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
 import type { CampaignView, StarterDeck } from '../server'
@@ -140,7 +141,12 @@ const remove = async () => {
         </li>
       </ol>
 
-      <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin" />
+      <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin">
+        <SetupBar
+          :name="$t('campaign.riseOfRedSkull')"
+          :details="[$t(`campaign.${view.campaign.mode}`), $t(`difficulty.${view.difficulty}`), $t('newGame.playerCount', view.table.seats)]"
+        />
+      </Lobby>
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
