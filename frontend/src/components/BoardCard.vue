@@ -126,6 +126,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       @click="click"
     >
       <FoldingIdentity v-if="code && faces?.length === 3" :faces="faces" :code="code" />
+      <!-- a two-sided identity turns over as it changes form -->
+      <div v-else-if="code && faces?.length === 2" class="flip" :class="{ over: code === faces[1] }">
+        <CardFace :code="faces[0]" eager />
+        <CardFace :code="faces[1]" eager class="reverse" />
+      </div>
       <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stunned="stunned" :confused="confused" :tough="tough" />
@@ -195,6 +200,15 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card.giant { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
 .card :deep(.card-face) { border-radius: inherit; }
+/* nothing behind a card that turns over shows while it is edge on */
+.card:has(> .flip, > .folding) { background: none; }
+.flip { position: absolute; inset: 0; border-radius: inherit; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.4s ease-in-out; }
+.flip.over { transform: perspective(1600px) rotateY(180deg); }
+.flip > :deep(.card-face) { position: absolute; inset: 0; backface-visibility: hidden; }
+.flip > :deep(.reverse) { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) {
+  .flip { transition: none; }
+}
 .card.exhausted { transform: rotate(90deg) scale(0.9); }
 .card.exhausted :deep(.card-face) { filter: brightness(0.82); }
 /* lit, not lifted: a lifted card would spill out of its zone's padding */
