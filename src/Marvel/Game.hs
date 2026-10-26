@@ -1743,6 +1743,7 @@ isPermanent = elem Permanent . cdKeywords . getCardDef
 withoutPermanentTargets :: Game -> Question -> Question
 withoutPermanentTargets g = \case
   QuestionLabel l t q -> QuestionLabel l t (withoutPermanentTargets g q)
+  Searched cs q -> Searched cs (withoutPermanentTargets g q)
   ChooseOne cs -> ChooseOne (filter (offerable g) cs)
   ChooseN n cs -> ChooseN n (filter (offerable g) cs)
   ChooseOneAtATime cs -> ChooseOneAtATime (filter (offerable g) cs)
@@ -2035,6 +2036,7 @@ answerQuestionWith before ident n = do
   answer = \case
     QuestionLabel l t q -> second (fmap (QuestionLabel l t)) <$> answer q
     Read r q -> second (fmap (Read r)) <$> answer q
+    Searched cs q -> second (fmap (Searched cs)) <$> answer q
     ChooseOne qs -> (,Nothing) <$> pick qs
     ChooseN k qs -> do
       msgs <- pick qs

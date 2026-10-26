@@ -454,8 +454,9 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
  where
   -- the searching player chooses one of the cards found, then the deck is shuffled
   search ident matcher f = do
-    let found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) (scenarioEncounterDeck <> scenarioDiscard)
-    unless (null found) $ chooseOrRunOne ident [targeting card (f card) | card <- found]
+    let searched = scenarioEncounterDeck <> scenarioDiscard
+        found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) searched
+    unless (null found) $ chooseOrRunOneSearched ident (map EncounterCard searched) [targeting card (f card) | card <- found]
     -- the deck searched
     if key == EncounterDeckKey then shuffleEncounterDeck else fromDeck key shuffleEncounterDeck
     pure attrs

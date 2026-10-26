@@ -236,7 +236,7 @@ const choose = (index: number) => {
 // a campaign scenario's story and rules, read by everyone before its player goes on
 const reading = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.reading?.length) ?? null)
 // a question answered by picking a card in no play area, as a campaign's Tech upgrade
-const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.choices?.some((c) => c.kind === 'card')) ?? null)
+const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.searched?.length || q?.choices?.some((c) => c.kind === 'card')) ?? null)
 // either pops out over the board; closed, the question box opens it again
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
@@ -320,6 +320,7 @@ const resetGame = () => {
       v-else-if="picking && popOut === 'open'"
       :prompt="picking[1].prompt ?? null"
       :choices="picking[1].choices"
+      :searched="picking[1].searched ?? []"
       :can-choose="answering === picking[0]"
       :waiting-on="playerName[picking[0]] ?? null"
       @choose="choose"

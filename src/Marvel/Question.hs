@@ -26,6 +26,9 @@ data Question
   | -- | text for the players to read before it is answered: the campaign's story and
     -- rules, each section an i18n key
     Read [Text] Question
+  | -- | the cards searched, shown as the question is answered: those not chosen among are
+    -- shown too
+    Searched [Card] Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -37,6 +40,7 @@ hasChoices = \case
   ChoosePlayerOrder (Unsorted xs) _ -> notNull xs
   QuestionLabel _ _ q -> hasChoices q
   Read _ q -> hasChoices q
+  Searched _ q -> hasChoices q
 
 -- | A question with a prompt.
 prompted :: Text -> Question -> Question

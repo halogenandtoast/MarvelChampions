@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // A question answered by picking a card that is in no play area, as a campaign's Tech
-// upgrade is: the cards side by side in the middle of the screen, any other answer
+// upgrade or a card searched for is: the cards side by side (all those searched, the ones
+// that cannot be picked dimmed) in the middle of the screen, any other answer
 // ("no upgrade") as a button beneath. Everyone sees it; the player asked picks.
 import { computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -9,11 +10,12 @@ import { useCards } from '../cards'
 import { useChoiceLabel, useKeyed } from '../composables/useChoices'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
-import type { ChoiceView } from '../server'
+import type { CardView, ChoiceView } from '../server'
 
-const { prompt = null, choices, canChoose, waitingOn = null } = defineProps<{
+const { prompt = null, choices, searched = [], canChoose, waitingOn = null } = defineProps<{
   prompt?: string | null
   choices: ChoiceView[]
+  searched?: CardView[]
   canChoose: boolean
   waitingOn?: string | null
 }>()
@@ -43,8 +45,14 @@ const close = () => { overlay.hide(); emit('close') }
 onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
-const picks = computed(() => choices.filter((c) => c.kind === 'card' && c.code).map((c) => ({ key: c.index, code: c.code!, index: c.index })))
-const others = computed(() => choices.filter((c) => !(c.kind === 'card' && c.code)))
+// a searched card is picked by the choice on it, if any
+const picks = computed(() =>
+  searched.length
+    ? searched.map((s) => ({ key: s.id, code: s.code, index: choices.find((c) => c.target === s.id)?.index ?? null }))
+    : choices.filter((c) => c.kind === 'card' && c.code).map((c) => ({ key: c.index, code: c.code!, index: c.index })),
+)
+const picked = computed(() => new Set(picks.value.map((p) => p.index)))
+const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 </script>
 
 <template>
@@ -55,7 +63,7 @@ const others = computed(() => choices.filter((c) => !(c.kind === 'card' && c.cod
         <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
       </header>
       <div class="cards">
-        <button v-for="c in picks" :key="c.key" type="button" class="card" :disabled="!canChoose" @click="choose(c.index)"
+        <button v-for="c in picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
           @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
           @pointerleave="cancelPress(); overlay.hide()"
           @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
@@ -95,6 +103,7 @@ h2 { margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: va
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
 .card { display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
 .card:disabled { cursor: default; }
+.unmatched .face { filter: grayscale(0.85) brightness(0.6); }
 .face { aspect-ratio: 5 / 7; border-radius: 10px; overflow: hidden; border: 2px solid var(--line); transition: border-color 0.12s, transform 0.12s; }
 .scan { display: block; width: 100%; height: 100%; }
 .face.sideways { position: relative; }

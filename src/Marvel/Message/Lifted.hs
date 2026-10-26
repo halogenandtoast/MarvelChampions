@@ -76,13 +76,20 @@ forcedResponse a body = do
 
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
-chooseOrRunOne you choices = do
+chooseOrRunOne you = chooseOrRunOneAs you id
+
+-- | 'chooseOrRunOne' among cards searched, all of them shown.
+chooseOrRunOneSearched :: (ReverseQueue m) => IdentityId -> [Card] -> [m Choice] -> m ()
+chooseOrRunOneSearched you searched = chooseOrRunOneAs you (Searched searched)
+
+chooseOrRunOneAs :: (ReverseQueue m) => IdentityId -> (Question -> Question) -> [m Choice] -> m ()
+chooseOrRunOneAs you asked choices = do
   g <- getGame
   -- a choice that would make a permanent card leave play is not one (RR, Permanent)
   filter (offerable g) <$> sequence choices >>= \case
     [] -> throwM NoChoices
     [choice] -> resolveAs you choice
-    choices' -> push $ Ask you $ ChooseOne choices'
+    choices' -> push $ Ask you $ asked $ ChooseOne choices'
 
 -- | A choice offered on the game element, doing what the body does.
 targeting :: (ReverseQueue m, IsRef a) => a -> m () -> m Choice

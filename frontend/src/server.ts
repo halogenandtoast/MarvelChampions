@@ -175,6 +175,8 @@ export interface QuestionView {
   choices: ChoiceView[]
   /** `$story.…` keys to read before answering: a campaign scenario's story and rules */
   reading?: string[]
+  /** the cards searched, those not among the choices shown too */
+  searched?: CardView[]
 }
 
 /** A card or ability being paid for, and the resources paid so far. */
