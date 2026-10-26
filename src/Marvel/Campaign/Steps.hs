@@ -34,7 +34,7 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case step of
     for_ (take 1 players) (`readThenContinue` briefing c)
     for_ players \ident -> do
       code <- getIdentityCode ident
-      for_ (campaignPlayer code c) \p -> for_ p.pending (choose ident code p)
+      for_ (campaignPlayer code c) \p -> for_ p.pending (choose InNextGame ident code p)
   CampaignSetup -> unless (scenarioNumber c == 1) (setup c)
   CampaignVictory -> do
     players <- getPlayers
@@ -63,10 +63,16 @@ victoryInstructions c = storyKeys c \v -> [v <> ".victory"] <> expertOnly c ["ex
 expertOnly :: Campaign -> [a] -> [a]
 expertOnly c xs = if isExpertCampaign c then xs else []
 
--- * Choices the last victory left
+-- * Choices a victory leaves
 
-choose :: (ReverseQueue m) => IdentityId -> CardCode -> CampaignPlayer -> CampaignChoice -> m ()
-choose ident code p choice = case choice of
+-- | When a victory's choice is made: as the scenario is won, the card only written in
+-- the log (the next game is dealt with it); or as the next game is set up, by a player
+-- not in the game when it was won, the card shuffled into their deck then.
+data Chosen = AtVictory | InNextGame
+  deriving stock (Eq)
+
+choose :: (ReverseQueue m) => Chosen -> IdentityId -> CardCode -> CampaignPlayer -> CampaignChoice -> m ()
+choose chosen ident code p choice = case choice of
   ChooseTechUpgrade -> do
     cards <- traverse (newCard ident) techUpgrades
     chooseOnePrompted ident "$label.chooseTechUpgrade" [cardLabeled (toCardCode card) (added card RecordTechUpgrade) | card <- cards]
@@ -81,7 +87,8 @@ choose ident code p choice = case choice of
       improved <- newCard ident (flipCardCode basic)
       chooseOnePrompted ident "$label.improveUpgrade"
         [ cardLabeled (toCardCode improved) do
-            for_ (filter ((== basic) . toCardCode) deck) (removeFromGame . CardIdRef . pcCardId)
+            when (chosen == InNextGame) $
+              for_ (filter ((== basic) . toCardCode) deck) (removeFromGame . CardIdRef . pcCardId)
             added improved RecordConditionUpgrade
         , labeled "$label.keepBasicUpgrade" done
         ]
@@ -89,7 +96,7 @@ choose ident code p choice = case choice of
  where
   done = recordInCampaignLog (ResolvedChoice code choice)
   added card record = do
-    shuffleIntoDeck ident [card]
+    when (chosen == InNextGame) $ shuffleIntoDeck ident [card]
     recordInCampaignLog (record code (toCardCode card))
     done
 
@@ -154,12 +161,16 @@ victory c = do
     participants
       | isExpertCampaign c = codes
       | otherwise = map (.identity) c.campaignLog.players
-    each' f = for_ participants (recordInCampaignLog . f)
+    -- each player chooses as it is won; one not in the game then, as the next is set up
+    offer choice code = case (List.lookup code (zip codes survivors), campaignPlayer code c) of
+      (Just ident, Just p) -> choose AtVictory ident code p choice
+      _ -> recordInCampaignLog (RecordChoice code choice)
+    each' choice = for_ participants (offer choice)
   if
-    | scenarioNumber c == 1 -> each' (`RecordChoice` ChooseTechUpgrade)
+    | scenarioNumber c == 1 -> each' ChooseTechUpgrade
     | scenarioNumber c == 2 -> do
         recordInCampaignLog . RecordDelayCounters =<< getCountersOnMainSchemes
-        each' (`RecordChoice` ChooseBasicUpgrade)
+        each' ChooseBasicUpgrade
     -- the Captive allies a player rescued are theirs, wherever they are now
     | scenarioNumber c == 3 -> for_ (zip survivors codes) \(ident, code) -> do
         captives <- filter (member Captive . cdTraits) <$> getCardsOwnedBy ident
@@ -175,7 +186,7 @@ victory c = do
         when (isNothing prison) $ for_ (zip survivors codes) \(ident, code) -> do
           hero <- selectAny $ IdentityWithId ident <> HeroIdentity
           let basic = any (("a" `T.isSuffixOf`) . unCardCode) ((.conditionUpgrade) =<< campaignPlayer code c)
-          when (hero && basic && code `elem` participants) $ recordInCampaignLog (RecordChoice code MayImproveUpgrade)
+          when (hero && basic && code `elem` participants) $ offer MayImproveUpgrade code
     | otherwise -> pure ()
   when (isExpertCampaign c) do
     for_ (zip survivors codes) \(ident, code) -> do

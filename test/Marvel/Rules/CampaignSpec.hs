@@ -36,6 +36,13 @@ dealCampaignUnread c decks = do
   seats <- runGameApp app (getsGame gameSeats)
   pure $ TestGame app ran logged seats
 
+-- | The game won, waiting on the first question its Victory instructions ask.
+win :: GameAppT ()
+win = do
+  withGame_ $ questionL .~ mempty
+  pushAll [GameOver Won]
+  runGameMessages
+
 -- | The sections the open question has the players read, read and gone on from.
 readStory :: GameAppT [Text]
 readStory =
@@ -74,9 +81,7 @@ spec = describe "The Rise of Red Skull campaign" do
     inGame tg do
       readStory `shouldReturn` ["$story.absorbingMan.intro", "$story.absorbingMan.rules", "$story.setup", "$story.expertSetup"]
       toFirstTurn
-      withGame_ $ questionL .~ mempty
-      pushAll [GameOver Won]
-      runGameMessages
+      win
       readStory `shouldReturn` ["$story.absorbingMan.victory", "$story.expertVictory"]
 
   it "brings the campaign's rules with its first scenario" do
@@ -85,14 +90,18 @@ spec = describe "The Rise of Red Skull campaign" do
       readStory
         `shouldReturn` ["$story.crossbones.intro", "$story.campaignMode", "$story.newKeywords", "$story.crossbones.rules", "$story.crossbones.setup"]
 
-  it "writes a win in the campaign log: Crossbones leaves a Tech upgrade to choose" do
+  it "writes a win in the campaign log: Crossbones has each player choose a Tech upgrade as it is won" do
     tg <- dealCampaign (campaignAt StandardCampaign 0) [starter "spider-man"]
     inGame tg do
       toFirstTurn
-      resolve [GameOver Won]
+      win
+      void readStory
+      choose "choose Tactical Scanner" (isCard "04156")
       getsGame gameState `shouldReturn` Finished Won
       (.completed) <$> campaignNow `shouldReturn` 1
-      (.pending) <$> spiderManNow `shouldReturn` [ChooseTechUpgrade]
+      p <- spiderManNow
+      p.techUpgrade `shouldBe` Just "04156"
+      p.pending `shouldBe` []
 
   it "records an expert campaign's remaining hit points with a win" do
     tg <- dealCampaign (campaignAt ExpertCampaign 0) [starter "spider-man"]
@@ -104,7 +113,7 @@ spec = describe "The Rise of Red Skull campaign" do
       resolve [GameOver Won]
       (.hitPoints) <$> spiderManNow `shouldReturn` Just (hp - 3)
 
-  it "asks the choice a win left as the next game is set up, the card earned in play from the start" do
+  it "asks a choice a win left a player not then in the game as the next game is set up, the card earned in play from the start" do
     let c = recordInLog (RecordChoice spiderMan ChooseTechUpgrade) (campaignAt StandardCampaign 1)
     tg <- dealCampaign c [starter "spider-man"]
     inGame tg do
@@ -134,9 +143,11 @@ spec = describe "The Rise of Red Skull campaign" do
       toFirstTurn
       mid <- mainSchemeId
       resolve [PlaceCounters (MainSchemeRef mid) 3]
-      resolve [GameOver Won]
+      win
+      void readStory
+      choose "choose Basic Attack Upgrade" (isCard "04160a")
       (.campaignLog.delayCounters) <$> campaignNow `shouldReturn` Just 3
-      (.pending) <$> spiderManNow `shouldReturn` [ChooseBasicUpgrade]
+      (.conditionUpgrade) <$> spiderManNow `shouldReturn` Just "04160a"
 
   it "Taskmaster won: the Captive allies a player rescued are added to their deck" do
     let c = (newCampaign StandardCampaign [spiderMan]) {completed = 2}

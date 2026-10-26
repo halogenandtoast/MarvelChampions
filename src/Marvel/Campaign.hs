@@ -15,7 +15,8 @@ data CampaignMode = StandardCampaign | ExpertCampaign
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
--- | A choice a victory leaves a player, asked as the next game is set up.
+-- | A choice a victory leaves a player, asked as it is won; of a player not in the
+-- game then, as the next game is set up.
 data CampaignChoice
   = -- | Crossbones: one of the Tech upgrades of the Hydra Campaign set
     ChooseTechUpgrade
