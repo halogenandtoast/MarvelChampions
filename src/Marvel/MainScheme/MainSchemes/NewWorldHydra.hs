@@ -25,7 +25,7 @@ instance RunMessage NewWorldHydra where
     -- Forced Response: after step one of the villain phase
     AccelerateMainScheme -> do
       ms' <- NewWorldHydra <$> runMessage msg attrs
-      revealTopSideScheme
+      forcedResponse (mainSchemeId attrs) revealTopSideScheme
       pure ms'
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> NewWorldHydra <$> runMessage msg attrs

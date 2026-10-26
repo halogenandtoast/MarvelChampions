@@ -43,13 +43,13 @@ instance RunMessage HuntingDownHeroes where
     -- hero form must choose to either place 1 threat here or take 1 damage."
     AccelerateMainScheme -> do
       ms' <- HuntingDownHeroes <$> runMessage msg attrs
-      heroes <- filterM (identityMatches HeroIdentity) =<< getPlayers
-      for_ heroes \p ->
-        chooseOne
-          p
-          [ labeled "$label.placeOneThreatOnMainScheme" $ placeThreat (mainSchemeId attrs) 1
-          , labeled "$label.take1Damage" $ damageIdentity p attrs (toDamage 1 FromAbility)
-          ]
+      forcedResponse (mainSchemeId attrs) do
+        heroes <- filterM (identityMatches HeroIdentity) =<< getPlayers
+        for_ heroes \p ->
+          chooseOnePromptedAbout p "$label.threatHereOrDamage" (mainSchemeId attrs)
+            [ labeled "$label.placeOneThreatOnMainScheme" $ placeThreat (mainSchemeId attrs) 1
+            , labeled "$label.take1Damage" $ damageIdentity p attrs (toDamage 1 FromAbility)
+            ]
       pure ms'
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     _ -> HuntingDownHeroes <$> runMessage msg attrs

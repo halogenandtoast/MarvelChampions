@@ -50,10 +50,11 @@ instance RunMessage Breakout where
       pure ms
     AccelerateMainScheme -> do
       ms' <- Breakout <$> runMessage msg attrs
-      schemes <- selectList AnySideScheme
-      for_ schemes \s -> placeThreat s 1
-      -- once the threat is there
-      cardSpecific attrs "moveActive" ()
+      forcedResponse (mainSchemeId attrs) do
+        schemes <- selectList AnySideScheme
+        for_ schemes \s -> placeThreat s 1
+        -- once the threat is there
+        cardSpecific attrs "moveActive" ()
       pure ms'
     CardSpecific (isTarget attrs -> True) "moveActive" _ -> do
       moveActiveCounter MostThreat

@@ -25,6 +25,7 @@
   "pay": "Pay for this card",
   "readyIdentity": "Ready your identity",
   "resolveForced": "Choose which forced effect resolves first",
+  "resolveForcedResponse": "Resolve the forced response",
   "respond": "Respond?",
   "yourTurn": "Your turn",
   "pass": "Pass",
@@ -148,6 +149,7 @@
   "thwartWithAtk": "Thwart with ATK instead",
 
   "take1Damage": "Take 1 damage",
+  "threatHereOrDamage": "Place 1 threat here or take 1 damage",
 
   "-- The Once and Future Kang --": "",
   "kangPlacesThreat": "Place 1 threat on the main scheme",

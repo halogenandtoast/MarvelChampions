@@ -43,8 +43,9 @@ testCounters :: (ReverseQueue m) => Message -> Attrs MainScheme -> m (Attrs Main
 testCounters msg attrs = case msg of
   AccelerateMainScheme -> do
     attrs' <- runMessage msg attrs
-    placeCounters attrs 1
-    cardSpecific attrs "testCounters" ()
+    forcedResponse (mainSchemeId attrs) do
+      placeCounters attrs 1
+      cardSpecific attrs "testCounters" ()
     pure attrs'
   CardSpecific (isTarget attrs -> True) "testCounters" _ -> do
     when (mainSchemeCounters attrs >= 3) do

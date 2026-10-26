@@ -35,7 +35,7 @@ instance RunMessage NoneShallPass where
     -- [star] Forced Response: after step one of the villain phase, 1 delay counter here
     AccelerateMainScheme -> do
       ms' <- NoneShallPass <$> runMessage msg attrs
-      placeCounters attrs 1
+      forcedResponse (mainSchemeId attrs) $ placeCounters attrs 1
       pure ms'
     -- Forced Interrupt: an environment entering play discards each other one
     EnvironmentMessage eid EnvironmentEntered -> do

@@ -67,6 +67,13 @@ chooseOneAtATime you choices = push . Ask you . ChooseOneAtATime =<< sequence ch
 chooseOneAtATimePrompted :: (ReverseQueue m) => IdentityId -> Text -> [m Choice] -> m ()
 chooseOneAtATimePrompted you prompt choices = push . Ask you . prompted prompt . ChooseOneAtATime =<< sequence choices
 
+-- | A forced response of the card, resolved once the active player clicks it, so each
+-- player sees what is happening.
+forcedResponse :: (ReverseQueue m, IsRef a) => a -> m () -> m ()
+forcedResponse a body = do
+  you <- getYou
+  chooseOnePromptedAbout you "$label.resolveForcedResponse" a [targeting a body]
+
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOrRunOne you choices = do

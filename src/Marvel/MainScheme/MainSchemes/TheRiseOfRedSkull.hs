@@ -48,7 +48,7 @@ instance RunMessage TheRiseOfRedSkull where
     -- Forced Response: after step one of the villain phase
     AccelerateMainScheme -> do
       ms' <- TheRiseOfRedSkull <$> runMessage msg attrs
-      revealTopSideScheme
+      forcedResponse (mainSchemeId attrs) revealTopSideScheme
       pure ms'
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> TheRiseOfRedSkull <$> runMessage msg attrs

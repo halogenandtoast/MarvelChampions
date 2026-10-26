@@ -32,13 +32,14 @@ instance RunMessage AssaultOnNorad where
     -- complete the scheme, threat placed on it goes nowhere.
     AccelerateMainScheme -> do
       ms' <- AssaultOnNorad <$> runMessage msg attrs
-      players <- getPlayers
-      for_ players \p ->
-        chooseOne
-          p
-          [ labeled "$label.placeTwoThreatOnAssaultOnNorad" $ placeThreat (mainSchemeId attrs) 2
-          , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone p
-          ]
+      forcedResponse (mainSchemeId attrs) do
+        players <- getPlayers
+        for_ players \p ->
+          chooseOne
+            p
+            [ labeled "$label.placeTwoThreatOnAssaultOnNorad" $ placeThreat (mainSchemeId attrs) 2
+            , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone p
+            ]
       pure ms'
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> AssaultOnNorad <$> runMessage msg attrs
