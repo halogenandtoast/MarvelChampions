@@ -182,6 +182,8 @@ data PlayerView = PlayerView
   , deckSize :: Int
   , discard :: [CardView]
   , dealtEncounterCards :: Int
+  , dealtCardIds :: [CardId]
+  -- ^ the encounter cards dealt face down, for the board to move each from and to its pile
   , allies :: [AllyView]
   , allyLimit :: Natural
   , supports :: [SupportView]
@@ -498,6 +500,7 @@ gameView seesHand g = do
         , deckSize = length (unDeck a.playerIdentityDeck)
         , discard = map (cardView . PlayerCard) (unDiscard a.playerIdentityDiscard)
         , dealtEncounterCards = length a.playerIdentityEncounterCards
+        , dealtCardIds = map ecCardId a.playerIdentityEncounterCards
         , allies
         , allyLimit
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
@@ -761,10 +764,10 @@ refId = \case
   CardIdRef x -> Just (idText x)
   ActiveCostRef _ -> Nothing
   GameRef -> Nothing
+  EnvironmentRef x -> Just (idText x)
 
 idText :: (ToJSON a) => a -> Text
 idText a = case toJSON a of
-  EnvironmentRef x -> Just (idText x)
   String t -> t
   other -> tshow other
 

@@ -132,15 +132,18 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
       </div>
     </div>
 
-    <div class="piles">
-      <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" :pile="`deck-${player.id}`" />
-      <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
-      <template v-if="player.invocation">
-        <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
-        <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
-      </template>
-      <Pile v-for="u in holders" :key="u.id" :label="u.name" :cards="u.heldCards ?? []" />
-      <Pile v-if="player.dealtEncounterCards" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" />
+    <div class="side">
+      <div class="piles">
+        <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" :pile="`deck-${player.id}`" />
+        <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
+        <template v-if="player.invocation">
+          <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
+          <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
+        </template>
+        <Pile v-for="u in holders" :key="u.id" :label="u.name" :cards="u.heldCards ?? []" />
+      </div>
+      <!-- encounter cards dealt face down, in the corner, above the hand -->
+      <Pile v-if="player.dealtEncounterCards" class="dealt" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" :pile="`dealt-${player.id}`" />
     </div>
   </section>
 </template>
@@ -202,6 +205,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
 .zone.allies { flex: 1 1 auto; }
 .ally { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
 .ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }
-.piles { display: flex; gap: 10px; margin-left: auto; flex: none; padding-top: 18px; }
+.side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; margin-left: auto; flex: none; align-self: stretch; }
+.piles { display: flex; gap: 10px; padding-top: 18px; }
+.dealt { position: relative; z-index: 1; margin-top: auto; }
 .compact { padding: 10px 12px; }
 </style>

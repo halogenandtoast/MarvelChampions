@@ -68,6 +68,8 @@ export interface PlayerView {
   deckSize: number
   discard: CardView[]
   dealtEncounterCards: number
+  /** the encounter cards dealt face down, by id */
+  dealtCardIds?: string[]
   allies: AllyView[]
   allyLimit: number
   supports: SupportView[]

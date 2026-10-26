@@ -25,10 +25,21 @@ interface Move {
 const onScreen = (id: string) => document.querySelector(`[data-card-id="${CSS.escape(id)}"]`) !== null
 const pileAt = (pile: string) => document.querySelector<HTMLElement>(`[data-pile="${pile}"] .stack`)
 
+// where each pile last was, for a card leaving one that is gone once it is empty, as the
+// last encounter card dealt to a player is when it is revealed
+const lastSeen = new Map<string, DOMRect>()
+export const notePiles = () =>
+  document.querySelectorAll<HTMLElement>('[data-pile]').forEach((el) => {
+    const stack = el.querySelector('.stack')
+    if (stack && el.dataset.pile) lastSeen.set(el.dataset.pile, stack.getBoundingClientRect())
+  })
+// a player's encounter cards are dealt from the encounter deck, and show its back
+const encounterBack = (pile: string) => pile.endsWith('-encounter') || pile.startsWith('dealt-')
+
 const ghostFor = (id: string, pile: string, code: string | null, sources: Sources): Move => {
   const faceDown = code === null
   const ghost = Object.assign(document.createElement('img'), {
-    src: faceDown ? BACKS[pile.endsWith('-encounter') ? 'encounter' : 'player'] : (sources(code)[0] ?? ''),
+    src: faceDown ? BACKS[encounterBack(pile) ? 'encounter' : 'player'] : (sources(code)[0] ?? ''),
     alt: '',
   })
   ghost.style.borderRadius = '7px'
@@ -37,9 +48,9 @@ const ghostFor = (id: string, pile: string, code: string | null, sources: Source
 }
 
 const lay = ({ pile, ghost }: Move) => {
-  const at = pileAt(pile)
-  if (!at) return false
-  const { left, top, width, height } = at.getBoundingClientRect()
+  const rect = pileAt(pile)?.getBoundingClientRect() ?? lastSeen.get(pile)
+  if (!rect) return false
+  const { left, top, width, height } = rect
   Object.assign(ghost.style, { position: 'fixed', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, margin: '0', pointerEvents: 'none' })
   document.body.append(ghost)
   return true
@@ -150,11 +161,24 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
     const to = isDiscarded.get(id)
     if (to && !wasDiscarded.has(id)) arriving.push(ghostFor(id, to, code, sources))
   }
+  // dealt face down to a player: off the encounter deck onto their dealt pile
+  const wasDealt = new Set((before.players ?? []).flatMap((p) => p.dealtCardIds ?? []))
+  for (const p of after.players ?? [])
+    for (const id of p.dealtCardIds ?? []) {
+      if (wasDealt.has(id)) continue
+      const dealt = ghostFor(id, 'deck-encounter', null, sources)
+      dealt.faceDown = false
+      leaving.push(dealt)
+      arriving.push(ghostFor(id, `dealt-${p.id}`, null, sources))
+    }
   if (!leaving.length && !arriving.length) return null
 
   const rules: string[] = []
-  arriving.forEach((m, i) => rules.push(...flyRules(morphName(m.id), i * STAGGER_MS)))
-  const dealAt = arriving.length ? STAGGER_MS * 2 : 0
+  // a card dealt to a player both leaves and arrives: it flies once, with the cards dealt
+  const both = new Set(leaving.map((m) => m.id))
+  const discarding = arriving.filter((m) => !both.has(m.id))
+  discarding.forEach((m, i) => rules.push(...flyRules(morphName(m.id), i * STAGGER_MS)))
+  const dealAt = discarding.length ? STAGGER_MS * 2 : 0
   leaving.forEach((m, i) => {
     const delay = dealAt + i * STAGGER_MS
     rules.push(...flyRules(morphName(m.id), delay))
@@ -172,13 +196,14 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   }
 }
 
-/** A card coming into the river: off the encounter deck, or turned up where it lies. */
-export const intoRiver = (id: string, faceUp: boolean, sources: Sources) => {
+/** A card coming into the river: off a pile (the encounter deck, or the cards dealt a
+ * player), or turned up where it lies. */
+export const intoRiver = (id: string, faceUp: boolean, sources: Sources, from = 'deck-encounter') => {
   const name = morphName(id)
   const rules = faceUp ? turnRules(name, 0) : []
   let ghost: Move | null = null
   if (!onScreen(id)) {
-    ghost = ghostFor(id, 'deck-encounter', null, sources)
+    ghost = ghostFor(id, from, null, sources)
     if (!lay(ghost)) ghost = null
     rules.push(...flyRules(name, 0))
   }

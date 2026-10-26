@@ -6,7 +6,7 @@ import type { GameData, GameView, ServerMessage } from '../server'
 import type { LogEntry } from '../gameLog'
 import { useCards } from '../cards'
 import type { RiverCard } from '../components/River.vue'
-import { dealFrom, intoRiver, riffle } from './dealing'
+import { dealFrom, intoRiver, notePiles, riffle } from './dealing'
 import { transitionsOn, withViewTransition } from './useViewTransition'
 
 // how long a card turned up in the river is left to be read, and how quickly it is cleared
@@ -42,7 +42,12 @@ export const useGame = (gameId: string, spectate = false) => {
   let socket: WebSocket | null = null
   let reconnect: number | undefined
 
+  // the pile each encounter card dealt to a player lies on, until it is revealed from it
+  const dealtTo = new Map<string, string>()
+
   const update = async (next: GameData) => {
+    notePiles()
+    for (const p of next.game?.players ?? []) for (const id of p.dealtCardIds ?? []) dealtTo.set(id, `dealt-${p.id}`)
     if (next.log) {
       log.value = next.log
       hasOlder.value = olderThan(next.log)
@@ -82,7 +87,8 @@ export const useGame = (gameId: string, spectate = false) => {
 
   // a card into the river: a boost off the encounter deck face down, or a card turned up
   const toRiver = async (card: RiverCard, faceUp: boolean) => {
-    const moving = transitionsOn() ? intoRiver(card.id, faceUp, cards.sources) : null
+    const moving = transitionsOn() ? intoRiver(card.id, faceUp, cards.sources, dealtTo.get(card.id)) : null
+    dealtTo.delete(card.id)
     await withViewTransition(() => {
       moving?.lift()
       river.value = [...river.value.filter((c) => c.id !== card.id), card]
