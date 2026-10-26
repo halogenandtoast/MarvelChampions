@@ -36,7 +36,7 @@ instance RunMessage WickedAmbitions where
       for_ (filter isGoblinMinion discarded) \goblin ->
         chooseOne
           you
-          [ labeled "$label.take3Damage" $ damageIdentity you attrs (toDamage 3 FromTreachery)
+          [ labeled (countLabel "takeDamage" 3) $ damageIdentity you attrs (toDamage 3 FromTreachery)
           , targeting goblin $ putEncounterCardIntoPlay you goblin
           ]
       pure t

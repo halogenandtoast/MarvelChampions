@@ -42,6 +42,6 @@ instance RunMessage SanctumSanctorum where
           drawCards ident 1
         | c <- spells
         ]
-          <> [labeled "$label.drawCard" (drawCards ident 1) | null spells]
+          <> [labeled (countLabel "drawCards" 1) (drawCards ident 1) | null spells]
       pure s
     _ -> SanctumSanctorum <$> runMessage msg attrs

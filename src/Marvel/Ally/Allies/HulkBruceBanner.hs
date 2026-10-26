@@ -46,8 +46,8 @@ instance RunMessage HulkBruceBanner where
           hashNub (concatMap (printedResources . getCardDef) cards)
         -- each its own step: one chosen sees the game after the one before it
         toChoice = \case
-          Physical -> [labeled "$label.deal2DamageToAnEnemy" $ cardSpecific a "resource" Physical]
-          Energy -> [labeled "$label.deal1DamageToEachCharacter" $ cardSpecific a "resource" Energy]
+          Physical -> [labeled (countLabel "dealDamageToAnEnemy" 2) $ cardSpecific a "resource" Physical]
+          Energy -> [labeled (countLabel "dealDamageToEachCharacter" 1) $ cardSpecific a "resource" Energy]
           Mental -> [labeled "$label.discardHulk" $ cardSpecific a "resource" Mental]
           Wild -> toChoice Physical <> toChoice Energy <> toChoice Mental
       unless (null cards) $ chooseOneAtATime (controller a) (concatMap toChoice resources)

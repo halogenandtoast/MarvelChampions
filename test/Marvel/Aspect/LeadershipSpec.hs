@@ -54,7 +54,7 @@ spec = describe "Leadership" do
           _ -> False
         choose "pay" (isPayWith energy)
         chooseIf isFinishPayment
-        choose "ATK" (isLabel "$label.attackPlusOne")
+        choose "ATK" (isLabel (countLabel "attackPlus" 1))
         offers \case
           UseAbility ab -> abilitySource ab == toSource (allyId vision) && abilityType ab == Action
           _ -> False

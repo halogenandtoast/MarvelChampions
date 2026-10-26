@@ -284,7 +284,7 @@ spec = describe "Ant-Man" do
         ronin <- putInHand p "12013"
         payment <- traverse (putInHand p) ["01088", "01088"]
         playWith ronin (particles : payment)
-        choose "heal" (isLabel "$label.pymParticlesHeal")
+        choose "heal" (isLabel (countLabel "pymParticlesHeal" 2))
         pass
         damageOf p `shouldReturn` 1
         alliesWith "12013" >>= (`shouldSatisfy` (== 1) . length)
@@ -298,7 +298,7 @@ spec = describe "Ant-Man" do
         particles <- putInHand p "12006"
         ants <- putInHand p "12007"
         playWith ants [particles]
-        choose "draw" (isLabel "$label.pymParticlesDraw")
+        choose "draw" (isLabel (countLabel "pymParticlesDraw" 1))
         pass
         map toCardCode <$> handOf p `shouldReturn` ["01089"]
 

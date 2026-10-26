@@ -47,8 +47,8 @@ instance RunMessage HuntingDownHeroes where
         heroes <- filterM (identityMatches HeroIdentity) =<< getPlayers
         for_ heroes \p ->
           chooseOnePromptedAbout p "$label.threatHereOrDamage" (mainSchemeId attrs)
-            [ labeled "$label.placeOneThreatOnMainScheme" $ placeThreat (mainSchemeId attrs) 1
-            , labeled "$label.take1Damage" $ damageIdentity p attrs (toDamage 1 FromAbility)
+            [ labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreat (mainSchemeId attrs) 1
+            , labeled (countLabel "takeDamage" 1) $ damageIdentity p attrs (toDamage 1 FromAbility)
             ]
       pure ms'
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost

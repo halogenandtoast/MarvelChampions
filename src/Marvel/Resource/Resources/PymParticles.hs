@@ -15,6 +15,6 @@ pymParticlesSpent you = do
   tiny <- identityMatches (HeroIdentity <> IdentityWithTrait Tiny) you
   when (giant || tiny) $
     chooseOne you $
-      [labeled "$label.pymParticlesHeal" (heal (IdentityCharacter you) 2) | giant]
-        <> [labeled "$label.pymParticlesDraw" (drawCards you 1) | tiny]
+      [labeled (countLabel "pymParticlesHeal" 2) (heal (IdentityCharacter you) 2) | giant]
+        <> [labeled (countLabel "pymParticlesDraw" 1) (drawCards you 1) | tiny]
         <> [labeled "$label.noResponse" (pure ())]

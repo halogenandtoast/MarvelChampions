@@ -48,7 +48,7 @@ instance RunMessage MysticalLink where
         you <- getBoostedPlayer enemy
         scheme <- signatureSchemeOf v
         chooseOne you $
-          labeled "$label.wreckerGetsThreeAttack" (addBoost v 3)
-            : [labeled "$label.placeTwoThreatOnHisSideScheme" (placeThreat s 2) | s <- maybeToList scheme]
+          labeled (countLabel "wreckerGetsAttack" 3) (addBoost v 3)
+            : [labeled (countLabel "placeThreatOnHisSideScheme" 2) (placeThreat s 2) | s <- maybeToList scheme]
       pure t
     _ -> MysticalLink <$> runMessage msg attrs

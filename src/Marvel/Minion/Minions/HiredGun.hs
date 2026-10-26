@@ -31,7 +31,7 @@ instance RunMessage HiredGun where
           infamy <- selectAny (EnvironmentIs Environments.criminalEnterprise)
           chooseOrRunOne you $
             labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
-              : [labeled "$label.place2InfamyCounters" (void $ placeInfamy 2) | infamy]
+              : [labeled (countLabel "placeInfamyCounters" 2) (void $ placeInfamy 2) | infamy]
           pure e
     Boost (RevealedAsBoost target _) | isTarget attrs target -> e <$ infamyOrMadness 1
     _ -> HiredGun <$> runMessage msg attrs

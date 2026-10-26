@@ -36,7 +36,7 @@ instance RunMessage Intimidation where
           canPay <- canAffordCost you (toSource attrs) cost
           chooseOrRunOne you $
             labeled "$label.giveTheVillainAFacedownBoostCard" (dealBoost villain)
-              : [labeled "$label.spendTwoResources" (payForTreachery you cost) | canPay]
+              : [labeled (countLabel "spendResources" 2) (payForTreachery you cost) | canPay]
           pure t
     -- [star] Boost: the villain is given another boost card for this activation; a
     -- minion's activation is not the villain's

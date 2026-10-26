@@ -302,7 +302,7 @@ spec = describe "Iron Man" do
       whip2 <- encounterCard Cards.electricWhipAttack
       start [RevealEncounterCard p whip2]
       choose "discard an upgrade" \case
-        Label l _ -> l /= "$label.deal1DamageToYourHeroForEachUpgradeYouControl"
+        Label l _ -> l /= (countLabel "dealDamageToYourHeroForEachUpgradeYouControl" 1)
         _ -> False
       choose "discard the armor" (isTargetChoice (upgradeIdOf armor))
       length <$> upgradesOf p `shouldReturn` 1

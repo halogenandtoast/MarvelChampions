@@ -37,7 +37,7 @@ instance RunMessage AssaultOnNorad where
         for_ players \p ->
           chooseOne
             p
-            [ labeled "$label.placeTwoThreatOnAssaultOnNorad" $ placeThreat (mainSchemeId attrs) 2
+            [ labeled (countLabel "placeThreatOnAssaultOnNorad" 2) $ placeThreat (mainSchemeId attrs) 2
             , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone p
             ]
       pure ms'

@@ -44,7 +44,7 @@ instance RunMessage CorruptedTimestream where
       for_ players \p -> do
         hand <- projectMap PlayerIdentityHand unHand p
         chooseOrRunOne p $
-          [labeled "$label.discardRandomCardFromHand" (discardFrom p RandomFromHand 1) | notNull hand]
-            <> [labeled "$label.placeTwoThreatHere" (placeThreat (sideSchemeId attrs) 2)]
+          [labeled (countLabel "discardRandomCardsFromHand" 1) (discardFrom p RandomFromHand 1) | notNull hand]
+            <> [labeled (countLabel "placeThreatOnCorruptedTimestream" 2) (placeThreat (sideSchemeId attrs) 2)]
       pure $ CorruptedTimestream attrs'
     _ -> CorruptedTimestream <$> runMessage msg attrs

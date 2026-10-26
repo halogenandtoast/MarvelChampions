@@ -22,9 +22,9 @@ asHero p = changeForm p >> pass
 exhaustPietro, exhaustCannotReady, take2Indirect, exhaustIdentity, spendPhysicals :: Choice -> Bool
 exhaustPietro = isLabel "$label.exhaustPietroMaximoffRemoveNeedForSpeed"
 exhaustCannotReady = isLabel "$label.exhaustYourIdentityCannotReady"
-take2Indirect = isLabel "$label.take2IndirectDamage"
+take2Indirect = isLabel (countLabel "takeIndirectDamage" 2)
 exhaustIdentity = isLabel "$label.exhaustYourIdentity"
-spendPhysicals = isLabel "$label.spendTwoPhysicalResources"
+spendPhysicals = isLabel (countLabel "spendPhysicalResources" 2)
 
 -- | Try to ready the player's identity, as a card or the ready step would.
 tryReady :: IdentityId -> GameAppT ()

@@ -438,7 +438,7 @@ spec = describe "Doctor Strange" do
       inGame tg do
         clearHand p
         toll <- revealNow p Obligations.physicalToll
-        choose "the next event" (isLabel "$label.nextEventCosts3More")
+        choose "the next event" (isLabel (countLabel "nextEventCostsMore" 3))
         obligationsInPlay `shouldReturn` 1
         studies <- putInHand p "09006"
         -- Warning generates a single resource: 1 and 3 more need four

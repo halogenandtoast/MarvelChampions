@@ -37,7 +37,7 @@ instance RunMessage UncertainLoyalties where
           [ labeled "$label.exhaustJessicaDrewRemoveUncertainLoyalties" (exhaust identityId >> removeFromGame attrs)
           | canExhaust
           ]
-            <> [labeled "$label.placeThreeThreatDiscardObligation" (placeThreat mainScheme 3)]
+            <> [labeled (countLabel "placeThreatDiscardObligation" 3) (placeThreat mainScheme 3)]
         pure o
       _ -> UncertainLoyalties <$> runMessage msg attrs
     _ -> UncertainLoyalties <$> runMessage msg attrs

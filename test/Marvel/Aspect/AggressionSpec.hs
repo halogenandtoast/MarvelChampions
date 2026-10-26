@@ -20,7 +20,7 @@ spec = describe "Aggression" do
         choose "attack with Hulk" (isAllyAttack h)
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
-        choose "deal 2 damage" (isLabel "$label.deal2DamageToAnEnemy")
+        choose "deal 2 damage" (isLabel (countLabel "dealDamageToAnEnemy" 2))
         choose "the target" (isTargetChoice (toId villain))
         villainDamageNow `shouldReturn` 5
         -- one consequential damage
@@ -54,7 +54,7 @@ spec = describe "Aggression" do
         choose "attack with Hulk" (isAllyAttack h)
         choose "attack Rhino" (isTargetChoice (toId villain))
         choose "Hulk's forced response" (isAbilityOf (allyId h))
-        chooseIf (isLabel "$label.deal1DamageToEachCharacter")
+        chooseIf (isLabel (countLabel "dealDamageToEachCharacter" 1))
         villainDamageNow `shouldReturn` 4
         damageOf p `shouldReturn` 1
         -- 1 from the effect, 1 consequential

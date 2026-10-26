@@ -323,9 +323,9 @@ spec = describe "Quicksilver" do
         card <- putInHand p "14004"
         payment <- traverse (putInHand p) ["01088", "01089"]
         playWith card payment
-        choose "deal 2 damage" (isLabel "$label.deal2DamageToAnEnemy")
+        choose "deal 2 damage" (isLabel (countLabel "dealDamageToAnEnemy" 2))
         chooseVillain
-        choose "remove 2 threat" (isLabel "$label.remove2ThreatFromAScheme")
+        choose "remove 2 threat" (isLabel (countLabel "removeThreatFromAScheme" 2))
         chooseMainScheme
         pass
         villainDamageNow `shouldReturn` 2
@@ -339,9 +339,9 @@ spec = describe "Quicksilver" do
         card <- putInHand p "14004"
         payment <- traverse (putInHand p) ["01088", "01089"]
         playWith card payment
-        choose "deal 2 damage" (isLabel "$label.deal2DamageToAnEnemy")
+        choose "deal 2 damage" (isLabel (countLabel "dealDamageToAnEnemy" 2))
         chooseVillain
-        choose "deal 2 damage again" (isLabel "$label.deal2DamageToAnEnemy")
+        choose "deal 2 damage again" (isLabel (countLabel "dealDamageToAnEnemy" 2))
         chooseVillain
         pass
         villainDamageNow `shouldReturn` 4

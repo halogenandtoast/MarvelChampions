@@ -56,7 +56,7 @@ instance RunMessage PhysicalToll where
           [ labeled "$label.exhaustStephenStrangeRemovePhysicalToll" (exhaust identityId >> removeFromGame attrs)
           | isUnexhaustedAlterEgo
           ]
-            <> [ labeled "$label.nextEventCosts3More" do
+            <> [ labeled (countLabel "nextEventCostsMore" 3) do
                   createEffect Cards.physicalToll attrs (IdentityEntity $ IdentityWithId identityId)
                   cardSpecific attrs "lingers" ()
                ]

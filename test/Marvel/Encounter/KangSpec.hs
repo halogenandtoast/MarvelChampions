@@ -244,8 +244,8 @@ spec = describe "The Once and Future Kang" do
         start [VillainMessage k (VillainAttacks p)]
         chooseIf isNoResponse
         chooseIf isAnyAbility
-        offers (isLabel "$label.kangPlacesThreat") `shouldReturn` True
-        choose "+2 ATK" (isLabel "$label.kangGetsAttack")
+        offers (isLabel (countLabel "kangPlacesThreat" 1)) `shouldReturn` True
+        choose "+2 ATK" (isLabel (countLabel "kangGetsAttack" 2))
         fmap attackDamage <$> getVillainAttack k `shouldReturn` Just 4
 
     it "Kang (Immortus) cannot take damage while a minion is in play in his area" do

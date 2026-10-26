@@ -35,7 +35,7 @@ instance RunMessage RunningInterference where
       for_ players \p -> do
         canPay <- canAffordCost p (toSource attrs) cost
         chooseOrRunOne p $
-          labeled "$label.placeTwoThreatOnRunningInterference" (placeThreat ident 2)
+          labeled (countLabel "placeThreatOnRunningInterference" 2) (placeThreat ident 2)
             : [labeled "$label.spendMentalPhysicalResources" (payForTreachery p cost) | canPay]
       pure s
     _ -> RunningInterference <$> runMessage msg attrs

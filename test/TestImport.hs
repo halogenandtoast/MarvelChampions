@@ -36,6 +36,7 @@ import Marvel.Identity.Types as X
 import Marvel.PlayerCard as X (lookupPlayerCard)
 import Marvel.Ref as X
 import Marvel.Resource.Types as X (Resource (..))
+import Marvel.Message.Lifted as X (countLabel)
 import Marvel.Villain.Types as X (Villain, villainDamage)
 import Marvel.Deck as X
 import Marvel.Discard as X

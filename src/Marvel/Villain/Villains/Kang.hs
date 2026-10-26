@@ -72,8 +72,8 @@ instance RunMessage Kang where
       for_ [you | W.EnemyAttack _ you <- windows] \you -> do
         scheme <- selectOne MainScheme
         chooseOne you $
-          [labeled "$label.kangPlacesThreat" (placeThreat s 1) | Just s <- [scheme]]
-            <> [labeled "$label.kangGetsAttack" (cardSpecific attrs "attackGets2" ())]
+          [labeled (countLabel "kangPlacesThreat" 1) (placeThreat s 1) | Just s <- [scheme]]
+            <> [labeled (countLabel "kangGetsAttack" 2) (cardSpecific attrs "attackGets2" ())]
       pure e
     CardSpecific (isTarget attrs -> True) "attackGets2" _ ->
       pure . Kang $ attrs & attackingL . _Just . attackDamageL +~ 2

@@ -28,7 +28,7 @@ instance RunMessage ElectricWhipAttack where
       RevealTreachery identityId -> do
         upgrades <- selectList (UpgradeControlledBy $ IdentityWithId identityId)
         chooseOne identityId
-          [ labeled "$label.deal1DamageToYourHeroForEachUpgradeYouControl" $
+          [ labeled (countLabel "dealDamageToYourHeroForEachUpgradeYouControl" 1) $
               damageCharacter identityId attrs (toDamage (fromIntegral $ length upgrades) FromTreachery)
           , labeled "$label.discardAnUpgradeYouControl" $
               chooseUpgrade identityId (UpgradeControlledBy (IdentityWithId identityId) <> UpgradeThatCanLeavePlay) attrs

@@ -11,6 +11,7 @@ module Marvel.Message.Lifted (
 import Marvel.Prelude
 
 import Marvel.Ability.Types (Ability)
+import Marvel.I18n (ikeyWith, intVar)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
@@ -98,6 +99,11 @@ targeting a body = TargetLabel (toTarget a) . pure . Run <$> capture body
 -- | A choice by its label (an i18n key under @$label.@), doing what the body does.
 labeled :: (ReverseQueue m) => Text -> m () -> m Choice
 labeled l body = Label l . pure . Run <$> capture body
+
+-- | A label with a number in it, "Take {count} damage": its key under @label.@ and the
+-- count, which also picks the plural form ("Draw a card | Draw {count} cards").
+countLabel :: Text -> Natural -> Text
+countLabel key n = ikeyWith ("label." <> key) [intVar "count" (fromIntegral n)]
 
 -- | A choice shown as the card, doing what the body does.
 cardLabeled :: (ReverseQueue m) => CardCode -> m () -> m Choice

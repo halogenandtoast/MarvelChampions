@@ -42,5 +42,5 @@ instance RunMessage DoubleTime where
       enemies <- selectAny DamageableEnemy
       schemes <- selectAny ThwartableScheme
       chooseOne you $
-        [labeled "$label.deal2DamageToAnEnemy" (chooseDamage you attrs (toDamage 2 FromAbility) DamageableEnemy) | enemies]
-          <> [labeled "$label.remove2ThreatFromAScheme" (removeThreat you attrs 2 ThwartableScheme) | schemes]
+        [labeled (countLabel "dealDamageToAnEnemy" 2) (chooseDamage you attrs (toDamage 2 FromAbility) DamageableEnemy) | enemies]
+          <> [labeled (countLabel "removeThreatFromAScheme" 2) (removeThreat you attrs 2 ThwartableScheme) | schemes]

@@ -39,7 +39,7 @@ instance RunMessage Earthquake where
       canPay <- canAffordCost you (toSource attrs) cost
       canExhaust <- identityMatches UnexhaustedIdentity you
       when (canPay || canExhaust) $ chooseOrRunOne you $
-        [labeled "$label.spendTwoPhysicalResources" (payForTreachery you cost) | canPay]
+        [labeled (countLabel "spendPhysicalResources" 2) (payForTreachery you cost) | canPay]
         <> [labeled "$label.exhaustYourIdentity" (exhaust you) | canExhaust]
       pure t
     _ -> Earthquake <$> runMessage msg attrs

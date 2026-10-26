@@ -24,8 +24,8 @@ instance RunMessage HydraBomber where
       RevealMinion identityId -> do
         chooseOne
           identityId
-          [ labeled "$label.take2Damage" $ damageIdentity identityId attrs (toDamage 2 FromAbility)
-          , labeled "$label.placeOneThreatOnMainScheme" $ placeThreatOnEach attrs 1 MainScheme
+          [ labeled (countLabel "takeDamage" 2) $ damageIdentity identityId attrs (toDamage 2 FromAbility)
+          , labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreatOnEach attrs 1 MainScheme
           ]
         pure e
       _ -> HydraBomber <$> runMessage msg attrs

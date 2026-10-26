@@ -36,7 +36,7 @@ instance RunMessage Avalanche where
       for_ players \you -> do
         canPay <- canAffordCost you (toSource attrs) cost
         chooseOrRunOne you $
-          labeled "$label.takeIndirectDamage" (dealIndirectDamage you attrs n)
+          labeled (countLabel "takeIndirectDamage" n) (dealIndirectDamage you attrs n)
             : [labeled "$label.spendAnEnergyResource" (payForTreachery you cost) | canPay]
       pure s
     _ -> Avalanche <$> runMessage msg attrs

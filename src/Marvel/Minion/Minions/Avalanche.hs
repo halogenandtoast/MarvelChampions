@@ -29,7 +29,7 @@ instance RunMessage Avalanche where
       for_ players \p -> do
         canExhaust <- identityMatches UnexhaustedIdentity p
         chooseOrRunOne p $
-          labeled "$label.take2IndirectDamage" (dealIndirectDamage p attrs 2)
+          labeled (countLabel "takeIndirectDamage" 2) (dealIndirectDamage p attrs 2)
             : [labeled "$label.exhaustYourIdentity" (exhaust p) | canExhaust]
       pure e
     _ -> Avalanche <$> runMessage msg attrs

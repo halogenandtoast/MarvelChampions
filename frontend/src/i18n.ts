@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 //
 // `__name` carries the code of the card `name` names, for when card names are translated.
 
-type Translate = (key: string, params: Record<string, unknown>) => string
+type Translate = (key: string, params: Record<string, unknown>, plural: number) => string
 
 const param = /([A-Za-z_][A-Za-z0-9_]*)=(?:i:(-?\d+)|s:"((?:[^"\\]|\\.)*)")/g
 
@@ -19,11 +19,15 @@ export const parseInput = (body: string): { key: string; params: Record<string, 
   return { key: head, params }
 }
 
-/** Server text in the player's language; text that is not a key is shown as it is. */
+/**
+ * Server text in the player's language; text that is not a key is shown as it is. A
+ * `count` variable picks the plural form: "Take {count} damage" with `count=i:1` or
+ * `count=i:3`, written `"one | {count} …"` in the locale where the forms differ.
+ */
 export const handleI18n = (body: string, t: Translate): string => {
   if (!body.startsWith('$')) return body
   const { key, params } = parseInput(body)
-  return t(key, params)
+  return t(key, params, typeof params.count === 'number' ? params.count : 1)
 }
 
 /** Build a key the way the server does, for text the client makes itself. */

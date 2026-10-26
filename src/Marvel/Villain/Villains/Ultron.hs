@@ -101,7 +101,7 @@ instance RunMessage Ultron where
           mainScheme <- selectJust MainScheme
           chooseOne
             ident
-            [ labeled "$label.placeOneThreatOnMainScheme" $ placeThreat mainScheme 1
+            [ labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreat mainScheme 1
             , labeled "$label.topCardAsDrone" $ putTopOfDeckIntoPlayAsDrone ident
             ]
         2 -> putTopOfDeckIntoPlayAsDrone ident

@@ -24,7 +24,7 @@ instance HasAbilities Wong where
   getAbilities (Wong a) =
     [ ability a 1 Action OwnsThis ExhaustCost $
         ChooseOneLabelChoice
-          [ ("$label.heal1FromYourIdentity", Heal (IdentityCharacter you) 1)
+          [ ((countLabel "healYourIdentity" 1), Heal (IdentityCharacter you) 1)
           , ("$label.discardTopInvocation", Run [invocation you DiscardTopInvocation])
           ]
     ]
