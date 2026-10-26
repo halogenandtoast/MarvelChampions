@@ -47,8 +47,17 @@ const ghostFor = (id: string, pile: string, code: string | null, sources: Source
   return { id, pile, faceDown, ghost }
 }
 
+// a card put beneath a scheme lands on it, card sized: `card:` and the scheme's id
+const cardAt = (id: string) => {
+  const r = document.querySelector(`[data-card-id="${CSS.escape(id)}"]`)?.getBoundingClientRect()
+  if (!r) return undefined
+  const height = Math.min(r.height, r.width / 0.716)
+  const width = height * 0.716
+  return { left: r.left + (r.width - width) / 2, top: r.top + (r.height - height) / 2, width, height }
+}
+
 const lay = ({ pile, ghost }: Move) => {
-  const rect = pileAt(pile)?.getBoundingClientRect() ?? lastSeen.get(pile)
+  const rect = pile.startsWith('card:') ? cardAt(pile.slice(5)) : (pileAt(pile)?.getBoundingClientRect() ?? lastSeen.get(pile))
   if (!rect) return false
   const { left, top, width, height } = rect
   Object.assign(ghost.style, { position: 'fixed', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, margin: '0', pointerEvents: 'none' })
@@ -171,6 +180,20 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
       leaving.push(dealt)
       arriving.push(ghostFor(id, `dealt-${p.id}`, null, sources))
     }
+  // put facedown beneath a scheme: from the hand card it was, or else its owner's discard
+  // pile or deck, onto the scheme, where it is gone
+  const heldBy = (view: GameView) =>
+    new Map([...(view.mainSchemes ?? []), ...(view.sideSchemes ?? [])].flatMap((s) => (s.heldCards ?? []).map((h) => [h.id, { scheme: s.id, owner: h.owner }] as const)))
+  const wasHeld = heldBy(before)
+  for (const [id, { scheme, owner }] of heldBy(after)) {
+    if (wasHeld.has(id)) continue
+    if (!onScreen(id)) {
+      const from = ghostFor(id, wasDiscarded.get(id) ?? (owner ? `deck-${owner}` : 'deck-encounter'), null, sources)
+      from.faceDown = false
+      leaving.push(from)
+    }
+    arriving.push(ghostFor(id, `card:${scheme}`, null, sources))
+  }
   if (!leaving.length && !arriving.length) return null
 
   const rules: string[] = []

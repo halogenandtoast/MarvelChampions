@@ -297,7 +297,14 @@ data SchemeView = SchemeView
   -- ^ the encounter cards attached to it
   , held :: Int
   -- ^ the cards facedown beneath it (Captured by Hydra's Captive ally, Hydra Prison's)
+  , heldCards :: [HeldView]
+  -- ^ which, and whose: for the client to fly a card put beneath it there
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A card facedown beneath a scheme: its id and its owner, not what it is.
+data HeldView = HeldView {id :: CardId, owner :: Maybe IdentityId}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -604,10 +611,13 @@ gameView seesHand g = do
         }
   mainSchemeView (s :: MainScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [] (length a.mainSchemeHeldCards)
+     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [] (length a.mainSchemeHeldCards) (map heldView a.mainSchemeHeldCards)
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0 [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards)
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0 [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards)
+
+heldView :: PlayerCard -> HeldView
+heldView c = HeldView (pcCardId c) (pcOwner c)
 
 sideCode :: PlayerIdentitySide -> CardCode
 sideCode = \case

@@ -153,6 +153,8 @@ export interface SchemeView extends CardView {
   attachments?: AttachmentView[]
   /** the cards facedown beneath it */
   held?: number
+  /** which, and whose */
+  heldCards?: { id: string; owner: string | null }[]
 }
 
 export type ChoiceKind =
