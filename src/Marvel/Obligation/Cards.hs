@@ -49,6 +49,9 @@ allObligations = fromList $ map
 
     -- Ant-Man
     , careForCassie
+
+    -- Wasp
+    , redDreams
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -169,3 +172,8 @@ timeTravelHijinks = kangObligation "11021" "Time-Travel Hijinks"
 
 careForCassie :: CardDef
 careForCassie = obligation "12025" "Care for Cassie" [Boost, Boost]
+
+-- Wasp
+
+redDreams :: CardDef
+redDreams = obligation "13026" "Red Dreams" [Boost, Boost]

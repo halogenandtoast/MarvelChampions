@@ -37,6 +37,9 @@ allAlterEgoCards =
     -- Ant-Man
     , scottLang
 
+    -- Wasp
+    , nadiaVanDyne
+
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -108,3 +111,6 @@ jessicaDrew = alterEgo "04031b" "Jessica Drew" [Shield, Spy]
 
 scottLang :: CardDef
 scottLang = alterEgo "12001b" "Scott Lang" [Civilian]
+
+nadiaVanDyne :: CardDef
+nadiaVanDyne = alterEgo "13001b" "Nadia Van Dyne" [Genius]

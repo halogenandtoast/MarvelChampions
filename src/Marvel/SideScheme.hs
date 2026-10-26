@@ -102,6 +102,9 @@ allSideSchemes = fromList $ map
 
   -- Ant-Man
   , SomeSideSchemeCard techTheft
+
+  -- Wasp
+  , SomeSideSchemeCard mothersOrders
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

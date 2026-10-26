@@ -139,6 +139,9 @@ allTreacheries = fromList $ map
 
   -- Ant-Man
   , yellowjacketsPlan
+
+  -- Wasp
+  , beetleMania
   ]
 
 treachery
@@ -551,3 +554,8 @@ leadingTheCharge = treachery "07059" "Leading the Charge" [Boost, Boost] Bulldoz
 
 yellowjacketsPlan :: CardDef
 yellowjacketsPlan = treachery "12029" "Yellowjacket's Plan" [Boost] AntManNemesis 1
+
+-- Wasp
+
+beetleMania :: CardDef
+beetleMania = treachery "13030" "Beetle Mania" [Boost] WaspNemesis 2

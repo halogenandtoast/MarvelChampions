@@ -30,3 +30,6 @@ import Marvel.Obligation.Obligations.TimeTravelHijinks as X
 
 -- Ant-Man
 import Marvel.Obligation.Obligations.CareForCassie as X
+
+-- Wasp
+import Marvel.Obligation.Obligations.RedDreams as X

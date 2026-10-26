@@ -55,6 +55,9 @@ allEffects =
     , ("12025", SomeCardEffect careForCassieEffect)
     , ("12033", SomeCardEffect assessTheSituationEffect)
 
+    -- Wasp
+    , ("13019", SomeCardEffect spiderManMilesMoralesEffect)
+
     -- The Once and Future Kang
 
     ]

@@ -68,3 +68,10 @@ import Marvel.Ally.Allies.AntManHankPym as X
 import Marvel.Ally.Allies.GiantMan as X
 import Marvel.Ally.Allies.Ronin as X
 import Marvel.Ally.Allies.StingerCassieLang as X
+
+-- Wasp
+import Marvel.Ally.Allies.AntManScottLang as X
+import Marvel.Ally.Allies.ThorJaneFoster as X
+import Marvel.Ally.Allies.WaspJanetVanDyne as X
+import Marvel.Ally.Allies.Ironheart as X
+import Marvel.Ally.Allies.SpiderManMilesMorales as X

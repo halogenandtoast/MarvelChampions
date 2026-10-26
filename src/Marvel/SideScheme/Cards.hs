@@ -93,6 +93,9 @@ allSideSchemes = fromList $ map
 
   -- Ant-Man
   , techTheft
+
+  -- Wasp
+  , mothersOrders
   ]
 
 sideScheme
@@ -400,3 +403,8 @@ clearTheRoad = sideScheme "07048" "Clear the Road" [] Bulldozer 1
 
 techTheft :: CardDef
 techTheft = sideScheme "12026" "Tech Theft" [Boost, Boost, Boost] AntManNemesis 1
+
+-- Wasp
+
+mothersOrders :: CardDef
+mothersOrders = sideScheme "13027" "Mother's Orders" [Boost, Boost, Boost] WaspNemesis 1

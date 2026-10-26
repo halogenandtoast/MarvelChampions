@@ -118,6 +118,12 @@ allUpgrades = fromList $ concatMap
   , wristGauntlets
   , powerGloves
   , reinforcedSuit
+
+  -- Wasp
+  , redRoomTraining
+  , bioSyntheticWings
+  , waspsHelmet
+  , lieInWait
   ]
 
 upgrade
@@ -528,3 +534,17 @@ powerGloves = upgrade "12017" "Power Gloves" 1 [Armor, Tech] [Mental] Leadership
 
 reinforcedSuit :: CardDef
 reinforcedSuit = upgrade "12018" "Reinforced Suit" 1 [Armor, Tech] [Energy] Leadership
+
+-- Wasp
+
+redRoomTraining :: CardDef
+redRoomTraining = identityUpgrade "13008" "Red Room Training" 2 [Skill] [Physical]
+
+bioSyntheticWings :: CardDef
+bioSyntheticWings = unique $ identityUpgrade "13009" "Bio-Synthetic Wings" 2 [Item, Tech] [Energy]
+
+waspsHelmet :: CardDef
+waspsHelmet = unique $ identityUpgrade "13010" "Wasp's Helmet" 2 [Armor, Tech] [Physical]
+
+lieInWait :: CardDef
+lieInWait = limited (MaxPerPlayer 1) $ upgrade "13017" "Lie in Wait" 1 [Preparation] [Energy] Aggression

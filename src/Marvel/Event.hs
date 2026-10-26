@@ -143,6 +143,18 @@ allEvents = fromList $ map
   , SomeEventCard layDownTheLaw
   , SomeEventCard musterCourage
   , SomeEventCard assessTheSituation
+
+  -- Wasp
+  , SomeEventCard giantHelp
+  , SomeEventCard pinpointStrike
+  , SomeEventCard rapidGrowth
+  , SomeEventCard waspSting
+  , SomeEventCard intoTheFray
+  , SomeEventCard surpriseAttack
+  , SomeEventCard athleticConditioning
+  , SomeEventCard runningInterference
+  , SomeEventCard allForOne
+  , SomeEventCard perseverance
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

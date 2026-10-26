@@ -117,6 +117,9 @@ allMinions =
 
       -- Ant-Man
       , SomeMinionCard yellowjacket
+
+      -- Wasp
+      , SomeMinionCard beetle
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

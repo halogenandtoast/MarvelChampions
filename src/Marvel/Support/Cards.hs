@@ -57,6 +57,9 @@ allSupports = fromList $ concatMap
   -- Ant-Man
   , armyOfAnts
   , teamBuildingExercise
+
+  -- Wasp
+  , bootCamp
   ]
 
 support
@@ -189,7 +192,7 @@ safeHouse29 =
   unique $ identitySupport "08005" "Safe House #29" 1 [Location, Shield] [Physical]
 
 quincarrier :: CardDef
-quincarrier = (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
+quincarrier = reprintedAs ["13025"] $ (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
   { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
   }
 
@@ -222,3 +225,10 @@ armyOfAnts = identitySupport "12007" "Army of Ants" 1 [Ants, Tiny] [Physical]
 
 teamBuildingExercise :: CardDef
 teamBuildingExercise = basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]
+
+-- Wasp
+
+bootCamp :: CardDef
+bootCamp =
+  limited (MaxPerPlayerUnderAnyControl 1) $
+    support "13016" "Boot Camp" 3 [Location] [Mental] Aggression

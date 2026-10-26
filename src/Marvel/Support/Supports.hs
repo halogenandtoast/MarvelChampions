@@ -41,3 +41,6 @@ import Marvel.Support.Supports.JessicaDrewsApartment as X
 -- Ant-Man
 import Marvel.Support.Supports.ArmyOfAnts as X
 import Marvel.Support.Supports.TeamBuildingExercise as X
+
+-- Wasp
+import Marvel.Support.Supports.BootCamp as X

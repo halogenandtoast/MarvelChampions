@@ -108,3 +108,6 @@ import Marvel.Treachery.Treacheries.PastMachinations as X
 
 -- Ant-Man
 import Marvel.Treachery.Treacheries.YellowjacketsPlan as X
+
+-- Wasp
+import Marvel.Treachery.Treacheries.BeetleMania as X

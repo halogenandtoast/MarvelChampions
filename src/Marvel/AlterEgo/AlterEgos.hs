@@ -24,3 +24,6 @@ import Marvel.AlterEgo.AlterEgos.JessicaDrew as X
 
 -- Ant-Man
 import Marvel.AlterEgo.AlterEgos.ScottLang as X
+
+-- Wasp
+import Marvel.AlterEgo.AlterEgos.NadiaVanDyne as X

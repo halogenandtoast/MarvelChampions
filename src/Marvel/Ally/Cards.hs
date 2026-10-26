@@ -89,6 +89,13 @@ allAllies = fromList $ concatMap
   , giantMan
   , ronin
   , stingerCassieLang
+
+  -- Wasp
+  , antManScottLang
+  , thorJaneFoster
+  , waspJanetVanDyne
+  , ironheart
+  , spiderManMilesMorales
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -108,6 +115,8 @@ heroSpecificAllies =
   , wong
   , mockingbird
   , captainMarvelCarolDanvers
+  , waspNadiaVanDyne
+  , antManScottLang
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -396,3 +405,24 @@ stingerCassieLang =
   (ally "12014" ("Stinger" <:> "Cassie Lang") 1 [Avenger] [Energy] Leadership)
     { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
     }
+
+-- Wasp
+
+antManScottLang :: CardDef
+antManScottLang = identityAlly "13002" ("Ant-Man" <:> "Scott Lang") 4 [Avenger] [Wild]
+
+thorJaneFoster :: CardDef
+thorJaneFoster = ally "13011" ("Thor" <:> "Jane Foster") 4 [Asgard, Avenger] [Energy] Aggression
+
+-- | Its cost is 0, though more may be paid for its pym counters.
+waspJanetVanDyne :: CardDef
+waspJanetVanDyne =
+  (ally "13012" ("Wasp" <:> "Janet Van Dyne") 0 [Aerial, Avenger] [Mental] Aggression)
+    { cdAbilityCost = MayOverpay
+    }
+
+ironheart :: CardDef
+ironheart = basicAlly "13018" "Ironheart" 2 [Champion] [Mental]
+
+spiderManMilesMorales :: CardDef
+spiderManMilesMorales = basicAlly "13019" ("Spider-Man" <:> "Miles Morales") 3 [Champion] [Physical]

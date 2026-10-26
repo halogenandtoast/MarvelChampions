@@ -67,6 +67,9 @@ allSupports = fromList $ map
   -- Ant-Man
   , SomeSupportCard armyOfAnts
   , SomeSupportCard teamBuildingExercise
+
+  -- Wasp
+  , SomeSupportCard bootCamp
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

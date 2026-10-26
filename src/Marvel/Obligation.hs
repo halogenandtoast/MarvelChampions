@@ -57,6 +57,9 @@ allObligations = fromList $ map
 
   -- Ant-Man
   , SomeObligationCard careForCassie
+
+  -- Wasp
+  , SomeObligationCard redDreams
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

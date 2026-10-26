@@ -65,3 +65,6 @@ import Marvel.Attachment.Attachments.FrozenInTime as X
 
 -- Ant-Man
 import Marvel.Attachment.Attachments.SizeIncrease as X
+
+-- Wasp
+import Marvel.Attachment.Attachments.BeetleArmorMkIV as X

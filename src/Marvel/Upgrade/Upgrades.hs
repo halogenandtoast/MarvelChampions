@@ -88,3 +88,9 @@ import Marvel.Upgrade.Upgrades.GiantStrength as X
 import Marvel.Upgrade.Upgrades.WristGauntlets as X
 import Marvel.Upgrade.Upgrades.PowerGloves as X
 import Marvel.Upgrade.Upgrades.ReinforcedSuit as X
+
+-- Wasp
+import Marvel.Upgrade.Upgrades.RedRoomTraining as X
+import Marvel.Upgrade.Upgrades.BioSyntheticWings as X
+import Marvel.Upgrade.Upgrades.WaspsHelmet as X
+import Marvel.Upgrade.Upgrades.LieInWait as X

@@ -78,3 +78,6 @@ import Marvel.Minion.Minions.Macrobots as X
 
 -- Ant-Man
 import Marvel.Minion.Minions.Yellowjacket as X
+
+-- Wasp
+import Marvel.Minion.Minions.Beetle as X

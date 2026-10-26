@@ -36,6 +36,9 @@ allResources = fromList $ concatMap
 
   -- Ant-Man
   , pymParticles
+
+  -- Wasp
+  , thePowerInAllOfUs
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -85,7 +88,7 @@ vibranium :: CardDef
 vibranium = identityResource "01044" "Vibranium" [] [Wild, Wild]
 
 thePowerOfAggression :: CardDef
-thePowerOfAggression = reprintedAs ["06016", "10017"] $
+thePowerOfAggression = reprintedAs ["06016", "10017", "13015"] $
   resource "01055" "The Power of Aggression" [] [Wild] Aggression
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Aggression, Wild)]
@@ -109,13 +112,13 @@ thePowerOfProtection = reprintedAs ["05016", "09017"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021"] $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021"] $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022"] $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022"] $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023"] $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023"] $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -128,4 +131,12 @@ limitlessStrength =
 
 -- | Its "after you spend this card" is 'Marvel.Resource.Resources.afterSpent'.
 pymParticles :: CardDef
-pymParticles = identityResource "12006" "Pym Particles" [] [Wild]
+pymParticles = reprintedAs ["13007"] $ identityResource "12006" "Pym Particles" [] [Wild]
+
+-- Wasp
+
+thePowerInAllOfUs :: CardDef
+thePowerInAllOfUs =
+  basicResource "13024" "The Power in All of Us" [] [Wild]
+    & resourcesL
+    <>~ [(ResourceForCardsMatching $ CardWithAspect Neutral, Wild)]

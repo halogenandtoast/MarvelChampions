@@ -99,4 +99,11 @@ allAllies = fromList $ map
   , SomeAllyCard giantMan
   , SomeAllyCard ronin
   , SomeAllyCard stingerCassieLang
+
+  -- Wasp
+  , SomeAllyCard antManScottLang
+  , SomeAllyCard thorJaneFoster
+  , SomeAllyCard waspJanetVanDyne
+  , SomeAllyCard ironheart
+  , SomeAllyCard spiderManMilesMorales
   ]

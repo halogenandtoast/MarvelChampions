@@ -90,6 +90,9 @@ allAttachments =
 
       -- Ant-Man
       , sizeIncrease
+
+      -- Wasp
+      , beetleArmorMkIV
       ]
 
 attachment ::
@@ -326,3 +329,8 @@ frozenInTime = attachment "11016" "Frozen in Time" [Trait.Temporal] [Star] Kang 
 
 sizeIncrease :: CardDef
 sizeIncrease = attachment "12028" "Size Increase" [Condition] [] AntManNemesis 2
+
+-- Wasp
+
+beetleArmorMkIV :: CardDef
+beetleArmorMkIV = unique $ attachment "13029" "Beetle Armor MK IV" [Armor, Tech] [Boost, Boost] WaspNemesis 1

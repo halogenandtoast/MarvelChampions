@@ -79,3 +79,6 @@ import Marvel.SideScheme.SideSchemes.Rampage as X
 
 -- Ant-Man
 import Marvel.SideScheme.SideSchemes.TechTheft as X
+
+-- Wasp
+import Marvel.SideScheme.SideSchemes.MothersOrders as X

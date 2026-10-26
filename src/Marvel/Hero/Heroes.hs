@@ -25,3 +25,7 @@ import Marvel.Hero.Heroes.SpiderWoman as X
 -- Ant-Man
 import Marvel.Hero.Heroes.AntManGiant as X
 import Marvel.Hero.Heroes.AntManTiny as X
+
+-- Wasp
+import Marvel.Hero.Heroes.WaspTiny as X
+import Marvel.Hero.Heroes.WaspGiant as X

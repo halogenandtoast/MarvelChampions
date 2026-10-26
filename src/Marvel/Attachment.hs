@@ -98,6 +98,9 @@ allAttachments =
 
       -- Ant-Man
       , SomeAttachmentCard sizeIncrease
+
+      -- Wasp
+      , SomeAttachmentCard beetleArmorMkIV
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

@@ -108,6 +108,9 @@ allMinions =
 
       -- Ant-Man
       , yellowjacket
+
+      -- Wasp
+      , beetle
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -568,3 +571,11 @@ escapedConvictBulldozer = (reprint "07053" escapedConvict) {cdEncounterSet = Jus
 
 yellowjacket :: CardDef
 yellowjacket = unique $ minion "12027" "Yellowjacket" [Criminal] [Boost, Boost] AntManNemesis 1
+
+-- Wasp
+
+beetle :: CardDef
+beetle =
+  unique (minion "13028" "Beetle" [Criminal] [Boost, Boost] WaspNemesis 1)
+    { cdKeywords = singleton Guard
+    }

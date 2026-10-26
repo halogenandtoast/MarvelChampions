@@ -117,3 +117,15 @@ import Marvel.Event.Events.MomentOfTriumph as X
 import Marvel.Event.Events.LayDownTheLaw as X
 import Marvel.Event.Events.MusterCourage as X
 import Marvel.Event.Events.AssessTheSituation as X
+
+-- Wasp
+import Marvel.Event.Events.GiantHelp as X
+import Marvel.Event.Events.PinpointStrike as X
+import Marvel.Event.Events.RapidGrowth as X
+import Marvel.Event.Events.WaspSting as X
+import Marvel.Event.Events.IntoTheFray as X
+import Marvel.Event.Events.SurpriseAttack as X
+import Marvel.Event.Events.AthleticConditioning as X
+import Marvel.Event.Events.RunningInterference as X
+import Marvel.Event.Events.AllForOne as X
+import Marvel.Event.Events.Perseverance as X

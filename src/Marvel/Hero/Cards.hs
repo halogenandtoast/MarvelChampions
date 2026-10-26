@@ -39,6 +39,10 @@ allHeroCards =
   , antManTiny
   , antManGiant
 
+  -- Wasp
+  , waspTiny
+  , waspGiant
+
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -115,3 +119,11 @@ antManTiny = hero "12001a" "Ant-Man" [Avenger, Tiny]
 
 antManGiant :: CardDef
 antManGiant = hero "12001c" "Ant-Man" [Avenger, Giant]
+
+-- Wasp
+
+waspTiny :: CardDef
+waspTiny = hero "13001a" "Wasp" [Avenger, Tiny]
+
+waspGiant :: CardDef
+waspGiant = hero "13001c" "Wasp" [Avenger, Giant]

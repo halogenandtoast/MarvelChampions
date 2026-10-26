@@ -140,6 +140,18 @@ allEvents = fromList $ concatMap
   , layDownTheLaw
   , musterCourage
   , assessTheSituation
+
+  -- Wasp
+  , giantHelp
+  , pinpointStrike
+  , rapidGrowth
+  , waspSting
+  , intoTheFray
+  , surpriseAttack
+  , athleticConditioning
+  , runningInterference
+  , allForOne
+  , perseverance
   ]
 
 event
@@ -833,7 +845,7 @@ moxie =
 -- | Team-Up (Ant-Man and Wasp): played only while both are in play, as hero or ally
 -- (Ant-Man rulesheet).
 swarmTactics :: CardDef
-swarmTactics =
+swarmTactics = reprintedAs ["13020"] $
   (basicEvent "12020" "Swarm Tactics" 1 HeroAction [Tactic] [Mental])
     { cdCriteria = teamUp "Ant-Man" "Wasp"
     }
@@ -865,3 +877,72 @@ musterCourage =
 
 assessTheSituation :: CardDef
 assessTheSituation = basicEvent "12033" "Assess the Situation" 0 Action [Tactic] [Mental]
+
+-- Wasp
+
+giantHelp :: CardDef
+giantHelp =
+  (identityEvent "13003" "Giant Help" 2 HeroAction [Thwart] [Mental])
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+pinpointStrike :: CardDef
+pinpointStrike =
+  (identityEvent "13004" "Pinpoint Strike" 3 HeroAction [Attack] [Mental])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+-- | "When you use one of your hero's basic powers (THW, ATK, or DEF)".
+rapidGrowth :: CardDef
+rapidGrowth =
+  (identityEvent "13005" "Rapid Growth" 1 HeroInterrupt [Giant, Superpower] [Energy])
+    { cdResponseWindow = Just (WindowOneOf [MakesBasicThwart When You, MakesBasicAttack When You, HeroDefended When You AnyEnemy])
+    }
+
+-- | Two Hero Actions, one for each hero form: played in either.
+waspSting :: CardDef
+waspSting =
+  (identityEvent "13006" "Wasp Sting" 2 HeroAction [Attack] [Mental])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Giant), SelfMatches (IdentityWithTrait Tiny)] <> canAttack
+    }
+
+intoTheFray :: CardDef
+intoTheFray =
+  (event "13013" "Into the Fray" 3 HeroAction [Attack] [Energy] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttackMinion
+    }
+
+surpriseAttack :: CardDef
+surpriseAttack =
+  (event "13014" "Surprise Attack" 1 HeroResponse [Attack] [Physical] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdResponseWindow = Just (IdentityChangedToForm After You)
+    , cdCriteria = canAttack
+    }
+
+athleticConditioning :: CardDef
+athleticConditioning = basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
+
+runningInterference :: CardDef
+runningInterference =
+  (event "13031" "Running Interference" 2 HeroAction [Thwart] [Physical] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    }
+
+allForOne :: CardDef
+allForOne =
+  (event "13032" "All for One" 2 HeroAction [Attack] [Energy] Leadership)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+perseverance :: CardDef
+perseverance =
+  (event "13033" "Perseverance" 1 HeroResponse [Tactic] [Mental] Protection)
+    { cdResponseWindow = Just (IdentityChangedToForm After You)
+    }

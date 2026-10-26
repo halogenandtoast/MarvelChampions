@@ -124,6 +124,12 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard wristGauntlets
   , SomeUpgradeCard powerGloves
   , SomeUpgradeCard reinforcedSuit
+
+  -- Wasp
+  , SomeUpgradeCard redRoomTraining
+  , SomeUpgradeCard bioSyntheticWings
+  , SomeUpgradeCard waspsHelmet
+  , SomeUpgradeCard lieInWait
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade
