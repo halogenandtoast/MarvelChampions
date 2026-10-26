@@ -115,6 +115,7 @@ questionSize = \case
   ChooseOneAtATime cs -> length cs
   ChoosePlayerOrder (Unsorted xs) _ -> length xs
   QuestionLabel _ _ q -> questionSize q
+  Read _ q -> questionSize q
 
 -- * Card tests
 
@@ -162,6 +163,7 @@ choicesOf = \case
   ChooseOneAtATime cs -> cs
   ChoosePlayerOrder {} -> []
   QuestionLabel _ _ q -> choicesOf q
+  Read _ q -> choicesOf q
 
 -- | Answer the open question with the first choice that matches, failing the test when
 -- there is none.

@@ -30,11 +30,38 @@ runCampaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
 runCampaignStep step = getCampaign >>= traverse_ \c -> case step of
   CampaignChoices -> do
     players <- getPlayers
+    -- first the scenario's story, the rules it brings and its Campaign Instructions
+    for_ (take 1 players) (`readThenContinue` briefing c)
     for_ players \ident -> do
       code <- getIdentityCode ident
       for_ (campaignPlayer code c) \p -> for_ p.pending (choose ident code p)
   CampaignSetup -> unless (scenarioNumber c == 1) (setup c)
-  CampaignVictory -> victory c
+  CampaignVictory -> do
+    players <- getPlayers
+    for_ (take 1 players) (`readThenContinue` victoryInstructions c)
+    victory c
+
+-- * What the players read
+
+-- | Each section an i18n key under @story.@, the scenario's own under its villain.
+storyKeys :: Campaign -> (Text -> [Text]) -> [Text]
+storyKeys c sections = map ("$story." <>) (sections villain)
+ where
+  villain = fromMaybe "redSkull" $ atMay ["crossbones", "absorbingMan", "taskmaster", "zola"] (scenarioNumber c - 1)
+
+-- | As the scenario begins: its story, the rules it brings, its Setup instructions.
+briefing :: Campaign -> [Text]
+briefing c = storyKeys c \v -> case scenarioNumber c of
+  1 -> [v <> ".intro", "campaignMode", "newKeywords"] <> expertOnly c ["expertCampaign"] <> [v <> ".rules", v <> ".setup"]
+  5 -> [v <> ".intro", v <> ".rules", v <> ".setup"] <> expertOnly c ["expertSetup", v <> ".expertSetup"]
+  _ -> [v <> ".intro", v <> ".rules", "setup"] <> expertOnly c ["expertSetup"]
+
+-- | As the scenario is won: its Victory instructions.
+victoryInstructions :: Campaign -> [Text]
+victoryInstructions c = storyKeys c \v -> [v <> ".victory"] <> expertOnly c ["expertVictory" | scenarioNumber c < 5]
+
+expertOnly :: Campaign -> [a] -> [a]
+expertOnly c xs = if isExpertCampaign c then xs else []
 
 -- * Choices the last victory left
 

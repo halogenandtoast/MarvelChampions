@@ -1120,6 +1120,10 @@ replaceMainScheme mid = push . ReplaceMainScheme mid
 campaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
 campaignStep = push . CampaignStep
 
+-- | The player reads the sections (i18n keys: the campaign's story and rules) and goes on.
+readThenContinue :: (ReverseQueue m) => IdentityId -> [Text] -> m ()
+readThenContinue you sections = push . Ask you . Read sections . ChooseOne . pure =<< labeled "$label.continue" (pure ())
+
 -- | Written in the campaign log, in a campaign game; otherwise nothing.
 recordInCampaignLog :: (ReverseQueue m) => CampaignRecord -> m ()
 recordInCampaignLog = push . RecordInCampaignLog

@@ -307,6 +307,8 @@ data QuestionView = QuestionView
   , source :: Maybe Text
   -- ^ the id of the card the question is about
   , choices :: [ChoiceView]
+  , reading :: [Text]
+  -- ^ i18n keys of what to read before answering: a campaign scenario's story and rules
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -606,11 +608,12 @@ cardView c = CardView (toCardId c) (toCardCode c) (display . cdName $ getCardDef
 questionView :: IdentityId -> Question -> QuestionView
 questionView asked = \case
   QuestionLabel l t q -> (questionView asked q) {prompt = Just l, source = refId =<< t}
-  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (described cs)
-  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (described cs)
-  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (described cs)
+  Read r q -> (questionView asked q) {reading = r}
+  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (described cs) []
+  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (described cs) []
+  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (described cs) []
   ChoosePlayerOrder (Unsorted xs) _ ->
-    QuestionView "choosePlayerOrder" Nothing Nothing [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs]
+    QuestionView "choosePlayerOrder" Nothing Nothing [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] []
  where
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
 

@@ -1999,6 +1999,7 @@ answerQuestionWith before ident n = do
   -- what the choice does, and what is left to ask
   answer = \case
     QuestionLabel l t q -> second (fmap (QuestionLabel l t)) <$> answer q
+    Read r q -> second (fmap (Read r)) <$> answer q
     ChooseOne qs -> (,Nothing) <$> pick qs
     ChooseN k qs -> do
       msgs <- pick qs

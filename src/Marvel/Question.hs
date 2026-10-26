@@ -23,6 +23,9 @@ data Question
   | -- | a question with a prompt (an i18n key under @$label.@, or text) and the card
     -- it is about, for the client to say what is being asked
     QuestionLabel Text (Maybe Target) Question
+  | -- | text for the players to read before it is answered: the campaign's story and
+    -- rules, each section an i18n key
+    Read [Text] Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -33,6 +36,7 @@ hasChoices = \case
   ChooseOneAtATime cs -> notNull cs
   ChoosePlayerOrder (Unsorted xs) _ -> notNull xs
   QuestionLabel _ _ q -> hasChoices q
+  Read _ q -> hasChoices q
 
 -- | A question with a prompt.
 prompted :: Text -> Question -> Question

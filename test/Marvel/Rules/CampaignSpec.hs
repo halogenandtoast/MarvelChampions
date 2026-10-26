@@ -23,12 +23,25 @@ campaignAt mode n = c {scenarios = [if i == n then "01094" else code | (i, code)
 rhino :: ScenarioSetup
 rhino = fromMaybe (error "no Rhino") (recommendedSetup "01094")
 
--- | The campaign's next game, dealt and waiting on its first question.
+-- | The campaign's next game, dealt and its story read: waiting on the question after.
 dealCampaign :: Campaign -> [DeckList] -> IO TestGame
 dealCampaign c decks = do
+  tg <- dealCampaignUnread c decks
+  tg <$ inGame tg readStory
+
+-- | The campaign's next game, dealt and waiting on its first question.
+dealCampaignUnread :: Campaign -> [DeckList] -> IO TestGame
+dealCampaignUnread c decks = do
   (app, ran, logged) <- dealtGameWith (campaignL ?~ c) rhino decks 1
   seats <- runGameApp app (getsGame gameSeats)
   pure $ TestGame app ran logged seats
+
+-- | The sections the open question has the players read, read and gone on from.
+readStory :: GameAppT [Text]
+readStory =
+  openQuestion >>= \case
+    Just (ident, Read sections _) -> sections <$ answerQuestion ident 0
+    q -> error $ "nothing to read: " <> show q
 
 -- | The campaign's next game against the box's own scenario at that place.
 dealScenario :: Campaign -> [DeckList] -> IO TestGame
@@ -37,7 +50,8 @@ dealScenario c decks = do
       setup = fromMaybe (error "no such scenario") (recommendedSetup code)
   (app, ran, logged) <- dealtGameWith (campaignL ?~ c) setup decks 1
   seats <- runGameApp app (getsGame gameSeats)
-  pure $ TestGame app ran logged seats
+  let tg = TestGame app ran logged seats
+  tg <$ inGame tg readStory
 
 campaignNow :: GameAppT Campaign
 campaignNow = getsGame (fromMaybe (error "no campaign") . gameCampaign)
@@ -55,6 +69,22 @@ withCard code d = d {cards = d.cards <> [(code, 1)]}
 
 spec :: Spec
 spec = describe "The Rise of Red Skull campaign" do
+  it "has the players read the scenario's story, its rules and Campaign Instructions, and on a win its Victory instructions" do
+    tg <- dealCampaignUnread (campaignAt ExpertCampaign 1) [starter "spider-man"]
+    inGame tg do
+      readStory `shouldReturn` ["$story.absorbingMan.intro", "$story.absorbingMan.rules", "$story.setup", "$story.expertSetup"]
+      toFirstTurn
+      withGame_ $ questionL .~ mempty
+      pushAll [GameOver Won]
+      runGameMessages
+      readStory `shouldReturn` ["$story.absorbingMan.victory", "$story.expertVictory"]
+
+  it "brings the campaign's rules with its first scenario" do
+    tg <- dealCampaignUnread (campaignAt StandardCampaign 0) [starter "spider-man"]
+    inGame tg do
+      readStory
+        `shouldReturn` ["$story.crossbones.intro", "$story.campaignMode", "$story.newKeywords", "$story.crossbones.rules", "$story.crossbones.setup"]
+
   it "writes a win in the campaign log: Crossbones leaves a Tech upgrade to choose" do
     tg <- dealCampaign (campaignAt StandardCampaign 0) [starter "spider-man"]
     inGame tg do
