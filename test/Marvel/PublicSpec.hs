@@ -3,6 +3,7 @@ module Marvel.PublicSpec (spec) where
 import Control.Monad (replicateM_)
 import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
+import Data.Aeson (Result (..), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
@@ -12,6 +13,20 @@ import TestImport
 
 spec :: Spec
 spec = describe "the game as the client sees it" do
+  it "loads stored games from before phase history was tracked" do
+    tg <- testGame ["spider-man"]
+    game <- inGame tg getGame
+    let legacy = case toJSON game of
+          Object o -> Object (KeyMap.delete "playedThisPhase" o)
+          value -> value
+    fromJSON legacy `shouldBe` Success (game {gamePlayedThisPhase = []})
+
+  it "preserves phase history when loading a current stored game" do
+    tg <- testGame ["spider-man"]
+    game <- inGame tg getGame
+    let saved = game {gamePlayedThisPhase = [(player1 tg, lookupPlayerCard "01083")]}
+    fromJSON (toJSON saved) `shouldBe` Success saved
+
   it "shows the villain's boosted ATK for its current attack, then its normal ATK" do
     tg <- testGame ["spider-man"]
     inGame tg do

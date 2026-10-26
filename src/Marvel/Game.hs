@@ -9,6 +9,7 @@ import Marvel.GameValue (fromGameValue)
 import Control.Monad (replicateM_)
 import Control.Monad.Reader
 import Data.Aeson.Diff qualified as Diff
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.IORef
@@ -256,7 +257,10 @@ instance ToJSON Game where
   toJSON = genericToJSON $ aesonOptions $ Just "game"
 
 instance FromJSON Game where
-  parseJSON = genericParseJSON $ aesonOptions $ Just "game"
+  parseJSON = withObject "Game" $ \o ->
+    -- Saves from before phase limits were tracked have no phase history.
+    genericParseJSON (aesonOptions $ Just "game") $
+      Object (KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value])) o)
 
 diff :: Game -> Game -> Diff.Patch
 diff a b = Diff.diff (toJSON a) (toJSON b)
