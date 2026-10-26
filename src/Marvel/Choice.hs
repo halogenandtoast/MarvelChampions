@@ -211,7 +211,7 @@ resolveChoice ident = \case
     IdentityCharacter ident' ->
       pure $ damageIdentity ident' source damage
     AllyCharacter ident' ->
-      pure [AllyMessage ident' $ AllyDamaged source damage]
+      pure $ damageAlly ident' source damage
     VillainCharacter ident' ->
       pure [VillainMessage ident' $ VillainDamaged source damage]
     MinionCharacter ident' ->
@@ -270,10 +270,11 @@ removeThreatFrom thwarting target source n' = do
     _ -> Nothing
   let n = n' + bonus
       side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
+      main mid = MainSchemeMessage mid $ if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n
   pure case target of
-    MainSchemeRef mid -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    MainSchemeRef mid -> [main mid]
     SideSchemeRef sid -> [side sid]
-    SchemeRef (SchemeMainSchemeId mid) -> [MainSchemeMessage mid $ MainSchemeThwarted source n]
+    SchemeRef (SchemeMainSchemeId mid) -> [main mid]
     SchemeRef (SchemeSideSchemeId sid) -> [side sid]
     _ -> error $ "can not thwart target: " <> show target
 

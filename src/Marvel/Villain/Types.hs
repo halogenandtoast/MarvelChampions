@@ -370,13 +370,13 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToVillain upgradeId -> do
     pure $ attrs & upgradesL %~ HashSet.insert upgradeId
-  -- each boost card is turned face up in turn, and its icons added, which an interrupt
-  -- to its turning face up may cancel
+  -- each boost card is turned face up in turn, and its icons counted and added, which
+  -- an interrupt to its turning face up may cancel
   VillainFlipBoostCards -> do
     for_ (villainBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
       revealBoostCard card vid
-      villainStep vid (VillainAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+      countBoostIcons attrs () [card]
     villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
   VillainActivationBonus n -> pure $ attrs & boostL +~ n
@@ -434,6 +434,9 @@ instance RunMessage (Attrs Villain) where
     VillainMessage ident msg'
       | ident == villainId attrs ->
           runVillainMessage msg' attrs
+    WithBoostIcons (VillainRef vid) _ counts | vid == villainId attrs -> do
+      villainStep vid (VillainAddBoost $ sum $ map snd counts)
+      pure attrs
     _ -> pure attrs
 
 instance IsRef (Attrs Villain) where

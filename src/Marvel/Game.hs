@@ -87,6 +87,7 @@ import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
+import Marvel.Boost (boostCount)
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
@@ -1156,6 +1157,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & (boostEntitiesL . environmentsL %~ insertMap (toId environment) environment)
             & (boostCardsL . at (toTarget environment) ?~ card)
       _ -> pure g
+  CountBoostIcons target value cards -> do
+    counts <- for cards \card -> (card,) <$> getBoostIcons card
+    for_ cards \card -> checkWindows [W.Window When $ W.CountingBoostIcons card]
+    push $ WithBoostIcons target value counts
+    pure g
   ClearBoosts -> do
     for_ (HashMap.elems gameBoostCards) discardCard
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
@@ -1864,6 +1870,12 @@ getsGame :: (HasGame m) => (Game -> a) -> m a
 getsGame f = f <$> getGame
 
 -- | The encounter deck, its top card first.
+-- | The boost icons on the encounter card: its own, and those The Next Evolution adds.
+getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
+getBoostIcons card = do
+  extra <- sum . map (\case AdditionalBoostIcons n -> n; _ -> 0) <$> getModifiers GameRef
+  pure $ boostCount (cdBoostIcons $ getCardDef card) + extra
+
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
 getEncounterDeck = fmap pileDeck . getPile =<< getDeckKeyFor =<< getYou
 

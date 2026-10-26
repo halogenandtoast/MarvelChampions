@@ -162,5 +162,8 @@
   "chooseEnemyToStun": "Choose an enemy to stun",
   "healAFriendlyCharacter": "Heal {count} damage from a friendly character",
 
+  "-- Scarlet Witch --": "",
+  "chooseCardForBottomOfDeck": "Choose the next card to place on the bottom of your deck",
+
   "-- end --": ""
 }

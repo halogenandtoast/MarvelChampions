@@ -156,7 +156,7 @@ runMinionMessage msg attrs = case msg of
     for_ (minionBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
       revealBoostCard card (minionId attrs)
-      minionStep (minionId attrs) (MinionAddBoost $ boostCount $ cdBoostIcons $ ecCardDef card)
+      countBoostIcons attrs () [card]
     unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
     pure $ attrs & boostCardsL .~ []
   MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n
@@ -174,4 +174,7 @@ instance RunMessage (Attrs Minion) where
           runMinionMessage msg' attrs
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    WithBoostIcons (MinionRef mid) _ counts | mid == minionId attrs -> do
+      minionStep mid (MinionAddBoost $ sum $ map snd counts)
+      pure attrs
     _ -> pure attrs

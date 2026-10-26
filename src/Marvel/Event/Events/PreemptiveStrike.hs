@@ -30,9 +30,11 @@ instance RunMessage PreemptiveStrike where
   runMessage msg e@(PreemptiveStrike attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (W.FlippedBoostCard card (EnemyVillainId vid))) -> do
-        let cancelled = boostCount (cdBoostIcons $ getCardDef card)
         cancelBoostIcons vid
-        when (cancelled > 0) $ dealDamage vid attrs (toDamage cancelled FromAbility)
+        countBoostIcons attrs vid [card]
         pure e
       _ -> PreemptiveStrike <$> runMessage msg attrs
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success vid) (sum . map snd -> cancelled) -> do
+      when (cancelled > 0) $ dealDamage (vid :: VillainId) attrs (toDamage cancelled FromAbility)
+      pure e
     _ -> PreemptiveStrike <$> runMessage msg attrs

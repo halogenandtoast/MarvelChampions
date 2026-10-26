@@ -77,6 +77,7 @@ getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
+getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)

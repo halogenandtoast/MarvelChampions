@@ -342,6 +342,7 @@ schemeNarration :: (HasGame m) => Target -> MainSchemeMessage -> Maybe (m [LogEn
 schemeNarration target = \case
   MainSchemePlaceThreat n | n > 0 -> Just $ threat target "log.threatPlaced" n Bad
   MainSchemeThwarted _ n | n > 0 -> Just $ threat target "log.threatRemoved" n Good
+  MainSchemeThreatRemoved _ n | n > 0 -> Just $ threat target "log.threatRemoved" n Good
   _ -> Nothing
 
 sideSchemeNarration :: (HasGame m) => SideSchemeId -> SideSchemeMessage -> Maybe (m [LogEntry])

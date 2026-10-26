@@ -42,6 +42,11 @@ data Modifier
     TargetThreatModifier Natural
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural
+  | -- | on a player: the cards they play are played ignoring their resource cost, the
+    -- additional costs on them included (RR "Ignore")
+    IgnoresResourceCost
+  | -- | on the game: each encounter card has this many more boost icons
+    AdditionalBoostIcons Natural
   | -- | on a character: the cost to play each upgrade on it is reduced
     UpgradeOnThisCostReduction Natural
   | -- | a scheme threat cannot be removed from

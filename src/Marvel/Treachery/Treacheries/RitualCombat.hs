@@ -5,7 +5,6 @@ module Marvel.Treachery.Treacheries.RitualCombat (
 
 import Marvel.Prelude
 
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
@@ -30,22 +29,20 @@ instance RunMessage RitualCombat where
       _ -> RitualCombat <$> runMessage msg attrs
     WithDiscarded target _ (onlyEncounterCards -> cards)
       | isTarget attrs target -> do
-          case treacheryResolver attrs of
-            Just ident -> do
-              let
-                x =
-                  -- a boost star is not a boost icon
-                  (+ 1) . sum $
-                    map
-                      (boostCount . cdBoostIcons . getCardDef)
-                      cards
-              chooseOne
-                ident
-                [ labeled ("Deal " <> tshow x <> " damage to your hero") $
-                    damageCharacter ident attrs (toDamage x FromTreachery)
-                , labeled ("Place " <> tshow x <> " threat on the main scheme") $
-                    placeThreatOnEach attrs x MainScheme
-                ]
-              pure t
-            Nothing -> error "no ident set"
+          countBoostIcons attrs () cards
+          pure t
+    WithBoostIcons (isTarget attrs -> True) _ counts -> do
+      case treacheryResolver attrs of
+        Just ident -> do
+          -- a boost star is not a boost icon
+          let x = 1 + sum (map snd counts)
+          chooseOne
+            ident
+            [ labeled ("Deal " <> tshow x <> " damage to your hero") $
+                damageCharacter ident attrs (toDamage x FromTreachery)
+            , labeled ("Place " <> tshow x <> " threat on the main scheme") $
+                placeThreatOnEach attrs x MainScheme
+            ]
+          pure t
+        Nothing -> error "no ident set"
     _ -> RitualCombat <$> runMessage msg attrs

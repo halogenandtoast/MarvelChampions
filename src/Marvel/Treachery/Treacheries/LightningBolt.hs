@@ -5,7 +5,6 @@ module Marvel.Treachery.Treacheries.LightningBolt (
 
 import Marvel.Prelude
 
-import Marvel.Boost (boostCount)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
@@ -26,9 +25,10 @@ newtype LightningBolt = LightningBolt (Attrs Treachery)
 instance RunMessage LightningBolt where
   runMessage msg t@(LightningBolt attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
-      discardTopOfEncounterDeckThen 2 \cards -> do
-        let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (n > 0) $ dealIndirectDamage you attrs n
+      discardTopOfEncounterDeckThen 2 (countBoostIcons attrs you)
+      pure t
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success you) (sum . map snd -> n) -> do
+      when (n > 0) $ dealIndirectDamage you attrs n
       pure t
     -- [star] Boost: discard 3 cards from the encounter deck
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do

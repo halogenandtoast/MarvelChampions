@@ -6,7 +6,6 @@ module Marvel.Minion.Minions.Electro (
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Boost (boostCount)
 import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Matchers
@@ -32,9 +31,10 @@ instance HasAbilities Electro where
 instance RunMessage Electro where
   runMessage msg e@(Electro attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 [EnemyAttack _ you] _ -> do
-      discardTopOfEncounterDeckThen 1 \cards -> do
-        let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (n > 0) $ dealIndirectDamage you attrs n
+      discardTopOfEncounterDeckThen 1 (countBoostIcons attrs you)
+      pure e
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success you) (sum . map snd -> n) -> do
+      when (n > 0) $ dealIndirectDamage you attrs n
       pure e
     -- [star] Boost: discard 3 cards from the encounter deck
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do

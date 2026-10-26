@@ -76,8 +76,10 @@ instance RunMessage Taskmaster where
         Pile deck _ <- getPile key
         for_ (take 1 deck) \top -> do
           discardTopOfEncounterDeck 1
-          let n = boostCount (cdBoostIcons $ getCardDef top)
-          when (n > 0) $ damageIdentity p attrs (toDamage n FromAbility)
+          countBoostIcons attrs p [top]
+      pure e
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success p) (sum . map snd -> n) -> do
+      when (n > 0) $ damageIdentity p attrs (toDamage n FromAbility)
       pure e
     RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
       getPlayers >>= traverse_ dealEncounterCard

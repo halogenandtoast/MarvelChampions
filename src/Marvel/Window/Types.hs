@@ -34,6 +34,10 @@ data ThreatSource
 data WindowMatcher
   = PlayThis WindowTiming
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
+  | -- | an ally matching would take damage
+    AllyWouldTakeDamage AllyMatcher
+  | -- | after a player matching's hero thwarts and removes all threat from a scheme
+    HeroThwartsAllThreat IdentityMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
@@ -72,6 +76,8 @@ data WindowMatcher
     ResolvesAbility WindowTiming IdentityMatcher CardMatcher
   | MinionHasSchemed WindowTiming MinionMatcher
   | BoostCardTurnedFaceup WindowTiming BasicEncounterCardMatcher
+  | -- | the boost icons on an encounter card would be, or are, counted
+    BoostIconsCounted
   | -- | after a player matching takes damage of this kind from an enemy matching
     TookDamage IdentityMatcher DamageSource EnemyMatcher
   | -- | an ally a player matching controls is defeated
@@ -109,6 +115,9 @@ data WindowType
   = PlayedAlly AllyId
   | PlayedSupport SupportId
   | IdentityTakeDamage IdentityId Damage
+  | AllyTakeDamage AllyId Damage
+  | -- | the player's hero thwarted the scheme, removing all its threat
+    ThwartedAllThreat IdentityId SchemeId
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
@@ -146,6 +155,7 @@ data WindowType
     EventPlayed IdentityId EventId CardDef
   | DefeatedAlly AllyId
   | FlippedBoostCard EncounterCard EnemyId
+  | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard
   | -- | the player resolved the ability of a card with this def
     ResolvedAbility IdentityId CardDef

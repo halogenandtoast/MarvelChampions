@@ -5,12 +5,12 @@ module Marvel.Treachery.Treacheries.ShockTherapy (
 
 import Marvel.Prelude
 
-import Marvel.Boost (boostCount)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
+import Marvel.Id (VillainId)
 import Marvel.Message.Lifted
 import Marvel.Query
 import Marvel.Ref
@@ -34,10 +34,11 @@ instance RunMessage ShockTherapy where
       selectOne ActiveVillain >>= \case
         Nothing -> pure t
         Just villain -> do
-          discardTopOfEncounterDeckThen (fromIntegral players) \cards -> do
-            let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-            when (n > 0) $ heal villain n
+          discardTopOfEncounterDeckThen (fromIntegral players) (countBoostIcons attrs villain)
           pure t
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success villain) (sum . map snd -> n) -> do
+      when (n > 0) $ heal (villain :: VillainId) n
+      pure t
     -- [star] Boost: discard 3 cards from the encounter deck
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       discardTopOfEncounterDeck 3

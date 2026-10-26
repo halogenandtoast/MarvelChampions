@@ -856,6 +856,11 @@ discardTopOfEncounterDeckThen n body = do
   discardTopOfEncounterDeck n
   body cards
 
+-- | The boost icons on the cards are counted, the target told the counts
+-- ('WithBoostIcons') with the value.
+countBoostIcons :: (ReverseQueue m, IsRef target, ToJSON v) => target -> v -> [EncounterCard] -> m ()
+countBoostIcons target v = push . CountBoostIcons (toTarget target) (toJSON v)
+
 shuffleIntoEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
 
@@ -1274,11 +1279,55 @@ cancelDamage ident = cancelMatchingMessage \case
   IdentityMessage ident' (IdentityDamaged _ _) -> ident' == ident
   _ -> False
 
--- | The boost icons about to be added to the villain's activation are cancelled.
-cancelBoostIcons :: (HasQueue m) => VillainId -> m ()
-cancelBoostIcons vid = cancelMatchingMessage \case
-  VillainMessage vid' (VillainAddBoost _) -> vid' == vid
+-- | The boost icons about to be counted and added to the enemy's activation are
+-- cancelled.
+cancelBoostIcons :: (HasQueue m, IsEnemy enemy) => enemy -> m ()
+cancelBoostIcons (toEnemy -> enemy) = cancelMatchingMessage \case
+  CountBoostIcons ref _ _ -> isEnemy ref
+  WithBoostIcons ref _ _ -> isEnemy ref
+  VillainMessage vid (VillainAddBoost _) -> enemy == EnemyVillainId vid
+  MinionMessage mid (MinionAddBoost _) -> enemy == EnemyMinionId mid
   _ -> False
+ where
+  isEnemy = \case
+    VillainRef vid -> enemy == EnemyVillainId vid
+    MinionRef mid -> enemy == EnemyMinionId mid
+    _ -> False
+
+-- | The count of the boost icons on the card, as its window answers it ("count ...
+-- instead", "increase or decrease ... for this count"), is changed.
+changeBoostIconCount :: (HasQueue m) => EncounterCard -> (Natural -> Natural) -> m ()
+changeBoostIconCount card f = replaceMatchingMessage change \case
+  WithBoostIcons _ _ counts -> any ((== card) . fst) counts
+  _ -> False
+ where
+  change = \case
+    WithBoostIcons t v counts -> [WithBoostIcons t v [(c, if c == card then f n else n) | (c, n) <- counts]]
+    msg -> [msg]
+
+-- | The window after a hero's thwart took the last threat off the scheme ("after your
+-- hero thwarts and removes all threat from a scheme"): an ally's thwart is not one.
+heroThwartedAllThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()
+heroThwartedAllThreat source scheme before n = case source of
+  AllyRef _ -> pure ()
+  _ | before == 0 || n < before -> pure ()
+  _ -> getSourceController source >>= traverse_ \ident -> checkWindows [Window After $ W.ThwartedAllThreat ident scheme]
+
+-- | The count of the boost icons on the card, as its window has it so far.
+getBoostIconCount :: (HasQueue m) => EncounterCard -> m (Maybe Natural)
+getBoostIconCount card = do
+  withQueue \queue -> (queue, headMay [n | WithBoostIcons _ _ counts <- queue, (c, n) <- counts, c == card])
+
+-- | The ally's attack about to land gets more ATK, as an interrupt to its attacking:
+-- "it gets +3 ATK for that attack".
+raiseAllyAttack :: (HasQueue m) => AllyId -> Natural -> m ()
+raiseAllyAttack aid n = replaceMatchingMessage raise \case
+  AllyMessage aid' (AllyAttackLands _ _) -> aid' == aid
+  _ -> False
+ where
+  raise = \case
+    AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy dmg {damageAmount = damageAmount dmg + n}]
+    msg -> [msg]
 
 -- | The first message queued matching is replaced by what the body does.
 insteadOf :: (ReverseQueue m) => (Message -> Bool) -> m () -> m ()

@@ -62,12 +62,13 @@ characterMatches ::
   (HasGame m) => CharacterMatcher -> CharacterId -> m Bool
 characterMatches matcher ident = member ident <$> inAnyArea (gameSelectCharacter matcher)
 
-encounterCardMatches :: BasicEncounterCardMatcher -> EncounterCard -> Bool
+encounterCardMatches :: (HasGame m) => BasicEncounterCardMatcher -> EncounterCard -> m Bool
 encounterCardMatches matcher card = case matcher of
-  AnyEncounterCard -> True
-  EncounterCardMatching m -> cardMatch m card
-  EncounterCardWithBoostIcons -> boostCount (cdBoostIcons $ getCardDef card) > 0
-  EncounterCardWithBoostAbility -> Star `elem` cdBoostIcons (getCardDef card)
+  AnyEncounterCard -> pure True
+  EncounterCardMatching m -> pure $ cardMatch m card
+  -- with what The Next Evolution adds: having icons is no count of them
+  EncounterCardWithBoostIcons -> (> 0) <$> getBoostIcons card
+  EncounterCardWithBoostAbility -> pure $ Star `elem` cdBoostIcons (getCardDef card)
 
 damageMatches :: (HasGame m) => DamageMatcher -> Damage -> m Bool
 damageMatches matcher damage = case matcher of

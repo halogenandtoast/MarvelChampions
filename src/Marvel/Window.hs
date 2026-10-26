@@ -22,6 +22,12 @@ windowMatches matcher w source = case matcher of
     PlayedSupport supportId ->
       pure $ timing == windowTiming w && source == SupportRef supportId
     _ -> pure False
+  HeroThwartsAllThreat identityMatcher -> case windowType w of
+    ThwartedAllThreat ident _ -> identityMatches identityMatcher ident
+    _ -> pure False
+  AllyWouldTakeDamage allyMatcher -> case windowType w of
+    AllyTakeDamage aid damage | damageAmount damage > 0 -> allyMatches allyMatcher aid
+    _ -> pure False
   WouldTakeDamage identityMatcher damageSource' gameValueMatcher ->
     case windowType w of
       IdentityTakeDamage ident damage
@@ -214,7 +220,7 @@ windowMatches matcher w source = case matcher of
   EncounterCardRevealedFromDeck timing encounterCardMatcher -> case windowType w of
     EncounterCardRevealed RevealedFromEncounterDeck _ encounterCard
       | windowTiming w == timing ->
-          pure $ encounterCardMatches encounterCardMatcher encounterCard
+          encounterCardMatches encounterCardMatcher encounterCard
     _ -> pure False
   HeroDefendedWithoutDamage timing identityMatcher -> case windowType w of
     DefendedWithoutDamage identityId _
@@ -235,8 +241,8 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   EncounterCardRevealedBy timing identityMatcher encounterCardMatcher -> case windowType w of
     EncounterCardRevealed _ ident encounterCard
-      | windowTiming w == timing && encounterCardMatches encounterCardMatcher encounterCard ->
-          identityMatches identityMatcher ident
+      | windowTiming w == timing ->
+          (&&) <$> encounterCardMatches encounterCardMatcher encounterCard <*> identityMatches identityMatcher ident
     _ -> pure False
   PlaysCard timing identityMatcher cardMatcher -> case windowType w of
     CardPlayed ident card
@@ -253,8 +259,10 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing -> minionMatches minionMatcher minionId
     _ -> pure False
   BoostCardTurnedFaceup timing encounterCardMatcher -> case windowType w of
-    FlippedBoostCard card _ ->
-      pure $ windowTiming w == timing && encounterCardMatches encounterCardMatcher card
+    FlippedBoostCard card _ | windowTiming w == timing -> encounterCardMatches encounterCardMatcher card
+    _ -> pure False
+  BoostIconsCounted -> case windowType w of
+    CountingBoostIcons _ -> pure True
     _ -> pure False
   TookDamage identityMatcher damageSource' enemyMatcher -> case windowType w of
     IdentityTookDamage ident from damage

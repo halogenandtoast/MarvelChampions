@@ -5,6 +5,8 @@ import Marvel.Ref
 
 data MainSchemeMessage
   = MainSchemeThwarted Source Natural
+  | -- | threat removed, not by thwarting
+    MainSchemeThreatRemoved Source Natural
   | MainSchemePlaceThreat Natural
   | MainSchemePlaceInitialThreat
   | RevealMainScheme

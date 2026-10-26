@@ -699,6 +699,7 @@ describeChoice asked = \case
     Msg.VillainMessage v (Msg.VillainConfused _) -> Just ("confuse", VillainRef v)
     Msg.MinionMessage m (Msg.MinionConfused _) -> Just ("confuse", MinionRef m)
     Msg.MainSchemeMessage m (Msg.MainSchemeThwarted _ _) -> Just ("thwartScheme", MainSchemeRef m)
+    Msg.MainSchemeMessage m (Msg.MainSchemeThreatRemoved _ _) -> Just ("thwartScheme", MainSchemeRef m)
     Msg.SideSchemeMessage m (Msg.SideSchemeThwarted _ _) -> Just ("thwartScheme", SideSchemeRef m)
     Msg.SideSchemeMessage m (Msg.SideSchemeThreatRemoved _ _) -> Just ("thwartScheme", SideSchemeRef m)
     Msg.RemoveFromPlay t' -> Just ("discard", t')

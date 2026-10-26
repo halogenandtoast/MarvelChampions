@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Modifier
@@ -68,9 +67,11 @@ instance RunMessage ScarletWitchWandaMaximoff where
             pure w
       -- the power is used with what it got, then it is gone
       Just _ -> ScarletWitchWandaMaximoff . (`With` Meta Nothing) <$> runMessage msg attrs
-    CardSpecific (isTarget w -> True) "discard" (fromJSON -> Success isAttack) -> do
-      discardTopOfEncounterDeckThen 1 \cards ->
-        cardSpecific w "power" (Use isAttack (sum $ map (boostCount . cdBoostIcons . getCardDef) cards))
+    CardSpecific (isTarget w -> True) "discard" (fromJSON -> Success (isAttack :: Bool)) -> do
+      discardTopOfEncounterDeckThen 1 (countBoostIcons w isAttack)
+      pure w
+    WithBoostIcons (isTarget w -> True) (fromJSON -> Success (isAttack :: Bool)) (sum . map snd -> n) -> do
+      cardSpecific w "power" (Use isAttack n)
       pure w
     CardSpecific (isTarget w -> True) "power" (fromJSON -> Success use) -> do
       allyStep (allyId attrs) (if attacking use then AllyAttacked else AllyThwarted)

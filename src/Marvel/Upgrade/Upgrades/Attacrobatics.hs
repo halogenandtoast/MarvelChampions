@@ -47,17 +47,18 @@ instance HasAbilities Attacrobatics where
 
 instance RunMessage Attacrobatics where
   runMessage msg u@(Attacrobatics attrs) = runQueueT $ case msg of
-    RanAbility ident (isTarget attrs -> True) 1 [FlippedBoostCard card _] _ ->
+    RanAbility ident (isTarget attrs -> True) 1 [FlippedBoostCard card enemy] _ ->
       attackGuard ident u do
-        -- the card's icons are added next: they are not
-        cancelMatchingMessage \case
-          VillainMessage _ (VillainAddBoost _) -> True
-          _ -> False
-        let icons = boostCount (cdBoostIcons $ getCardDef card)
-        -- with no villain in play (as between one Kang and the next), nothing
-        selectOne ActiveVillain >>= \case
-          Nothing -> pure u
-          Just villain -> do
-            dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
-            pure u
+        -- the card's icons are counted and added next: they are not, but counted for
+        -- the damage
+        cancelBoostIcons enemy
+        countBoostIcons attrs ident [card]
+        pure u
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success ident) (sum . map snd -> icons) -> do
+      -- with no villain in play (as between one Kang and the next), nothing
+      selectOne ActiveVillain >>= \case
+        Nothing -> pure u
+        Just villain -> do
+          dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
+          pure u
     _ -> Attacrobatics <$> runMessage msg attrs

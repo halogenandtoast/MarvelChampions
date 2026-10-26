@@ -38,5 +38,7 @@ data DeckProjection
 data ReturnOption
   = ShuffleBackIn
   | DiscardRest
+  | -- | the rest on the bottom of the deck, in the order the player chooses
+    BottomInAnyOrder
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

@@ -5,7 +5,6 @@ module Marvel.Treachery.Treacheries.FullAuto (
 
 import Marvel.Prelude
 
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -32,9 +31,10 @@ instance RunMessage FullAuto where
       if hero
         then do
           x <- maybe (pure 0) getVillainAttackValue =<< selectOne ActiveVillain
-          discardTopOfEncounterDeckThen x \cards -> do
-            let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-            when (n > 0) $ dealIndirectDamage you attrs n
+          discardTopOfEncounterDeckThen x (countBoostIcons attrs you)
           pure t
         else pure . FullAuto $ attrs & surgeL .~ True
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success you) (sum . map snd -> n) -> do
+      when (n > 0) $ dealIndirectDamage you attrs n
+      pure t
     _ -> FullAuto <$> runMessage msg attrs

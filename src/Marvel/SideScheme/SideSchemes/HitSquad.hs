@@ -6,7 +6,6 @@ module Marvel.SideScheme.SideSchemes.HitSquad (
 import Marvel.Prelude
 
 import Data.Aeson (Result (..), fromJSON)
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
@@ -41,9 +40,11 @@ instance RunMessage HitSquad where
           getEncounterDeck >>= \case
             [] -> s <$ cardSpecific attrs "discard" rest
             card : _ -> do
-              let n = boostCount $ cdBoostIcons $ getCardDef card
               discardTopOfEncounterDeck 1
-              when (n > 0) $ damageIdentity p attrs (toDamage n FromTreachery)
+              countBoostIcons attrs p [card]
               cardSpecific attrs "discard" rest
               pure s
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success p) (sum . map snd -> n) -> do
+      when (n > 0) $ damageIdentity p attrs (toDamage n FromTreachery)
+      pure s
     _ -> HitSquad <$> runMessage msg attrs

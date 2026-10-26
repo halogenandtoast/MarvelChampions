@@ -91,7 +91,7 @@ dealtGameTelling f setup decks seed tell = do
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
   ran <- newIORef []
   app <- newGameApp (f $ newTable scenario seated) [StartGame] (mkStdGen seed) tell
-  let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 60 . (tshow m :))}
+  let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 200 . (tshow m :))}
   runGameApp app' runGame
   pure (app', ran)
  where

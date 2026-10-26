@@ -6,7 +6,6 @@ module Marvel.SideScheme.SideSchemes.PowerDrain (
 import Marvel.Prelude
 
 import Data.Aeson (Result (..))
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -35,9 +34,10 @@ instance RunMessage PowerDrain where
   runMessage msg s@(PowerDrain attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
-      discardTopOfEncounterDeckThen 2 \cards -> do
-        let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (n > 0) $ for_ players \p -> cardSpecific attrs "drain" (p, n)
+      discardTopOfEncounterDeckThen 2 (countBoostIcons attrs players)
+      pure s
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success players) (sum . map snd -> n) -> do
+      when (n > 0) $ for_ (players :: [IdentityId]) \p -> cardSpecific attrs "drain" (p, n)
       pure s
     CardSpecific (isTarget attrs -> True) "drain" (fromJSON -> Success (you :: IdentityId, n :: Natural)) -> do
       cards <- projectMap PlayerIdentityHand (filter (notNull . printedResources . getCardDef) . unHand) you

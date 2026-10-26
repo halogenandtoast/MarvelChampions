@@ -41,7 +41,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (DefeatedMinion, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DefeatedMinion, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -53,6 +53,26 @@ damageIdentity ident source damage =
   [ CheckWindows [Window When $ IdentityTakeDamage ident damage]
   , IdentityMessage ident $ IdentityDamaged source damage
   ]
+
+-- | Damage to an ally: first the window for what answers "when a character would take
+-- damage", then the damage.
+damageAlly :: AllyId -> Source -> Damage -> [Message]
+damageAlly aid source damage =
+  [ CheckWindows [Window When $ AllyTakeDamage aid damage]
+  , AllyMessage aid $ AllyDamaged source damage
+  ]
+
+-- | Prevent some of the damage the ally would take, as an interrupt to "when a character
+-- would take damage" does.
+preventAllyDamage :: (HasQueue m) => AllyId -> Natural -> m ()
+preventAllyDamage aid n = replaceMatchingMessage prevent \case
+  AllyMessage aid' (AllyDamaged _ _) -> aid' == aid
+  _ -> False
+ where
+  prevent = \case
+    AllyMessage a (AllyDamaged source dmg) ->
+      [AllyMessage a $ AllyDamaged source dmg {damageAmount = damageAmount dmg - n} | damageAmount dmg > n]
+    msg -> [msg]
 
 -- | Prevent some of the damage the identity would take, as an interrupt to "when you
 -- would take damage" does: all of it prevented, the damage is not taken at all.
@@ -194,7 +214,7 @@ enemyRetaliates enemy attacker = case enemy of
 retaliateDamage :: Source -> CharacterId -> Natural -> [Message]
 retaliateDamage source attacker n = case attacker of
   IdentityCharacter ident -> damageIdentity ident source (toDamage n FromRetaliate)
-  AllyCharacter aid -> [AllyMessage aid (AllyDamaged source (toDamage n FromRetaliate))]
+  AllyCharacter aid -> damageAlly aid source (toDamage n FromRetaliate)
   _ -> []
 
 -- | The messages a 'Simultaneously' holds, for the queue to look inside it.
@@ -365,6 +385,11 @@ data Message
   | ChoseUpgrade UpgradeId Target
   | DiscardUntil FromZone CardMatcher Target
   | WithDiscardedMatch Target FromZone Card
+  | -- | the boost icons on each card are counted ("Chaos Control"): each card's count is
+    -- its icons, then the window to counting them, whose interrupts change the count
+    -- queued; the target is told the counts with the value it asked with
+    CountBoostIcons Target Value [EncounterCard]
+  | WithBoostIcons Target Value [(EncounterCard, Natural)]
   | -- | setup puts the first main scheme into play: its 1A "Setup", then its 1B "When
     -- Revealed", then the villain's "When Revealed"
     AddSetupMainScheme CardCode

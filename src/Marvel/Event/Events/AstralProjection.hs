@@ -49,8 +49,10 @@ instance RunMessage AstralProjection where
     CardSpecific (isTarget attrs -> True) "scheme" (fromJSON -> Success s) -> do
       lookAtTopOfEncounterDeck 1 attrs
       pure . AstralProjection $ attrs `With` Meta (Just s)
-    SearchFoundCards (isTarget attrs -> True) cards | Just s <- scheme meta -> do
-      let boosts = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
+    SearchFoundCards (isTarget attrs -> True) cards -> do
+      countBoostIcons attrs () [c | EncounterCard c <- cards]
+      pure e
+    WithBoostIcons (isTarget attrs -> True) _ (sum . map snd -> boosts) | Just s <- scheme meta -> do
       thwartScheme s attrs (3 + boosts)
       pure e
     _ -> AstralProjection . (`With` meta) <$> runMessage msg attrs

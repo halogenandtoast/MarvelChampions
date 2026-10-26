@@ -176,7 +176,10 @@ instance RunMessage (Attrs SideScheme) where
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | any (`elem` modifiers) [ThreatCannotBeRemoved, ThreatCannotBeRemovedByThwarting] -> pure attrs
         SideSchemeThreatRemoved _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
-        SideSchemeThwarted source n -> removed source n
+        SideSchemeThwarted source n -> do
+          attrs' <- removed source n
+          heroThwartedAllThreat source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
+          pure attrs'
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
         SideSchemeThreatRemoved source n -> removed source n
         _ -> pure attrs

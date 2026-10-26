@@ -360,8 +360,10 @@ getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -
 getModifiedCost attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
-  pure $
-    maybe 0 (max 0 . (+ sum (map change modifiers <> map changeOn onTarget))) (cdCost $ getCardDef c)
+  pure
+    if IgnoresResourceCost `elem` modifiers
+      then 0
+      else maybe 0 (max 0 . (+ sum (map change modifiers <> map changeOn onTarget))) (cdCost $ getCardDef c)
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
@@ -908,6 +910,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               handleReturnCards = case returnOption of
                 ShuffleBackIn -> shuffleIntoDeck playerIdentityId
                 DiscardRest -> traverse_ discardCard
+                BottomInAnyOrder -> bottomInOrder
+              -- the next card chosen goes under those placed before it
+              bottomInOrder = \case
+                [] -> pure ()
+                [c] -> placeOnBottomOfDeck playerIdentityId c
+                cs ->
+                  chooseOnePrompted playerIdentityId "$label.chooseCardForBottomOfDeck"
+                    [targeting c (placeOnBottomOfDeck playerIdentityId c >> bottomInOrder cs') | (c, cs') <- removeEach cs]
               handleFoundCards =
                 if null foundCards
                   then

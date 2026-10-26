@@ -8,7 +8,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Entity
@@ -51,10 +50,11 @@ instance RunMessage CrossbonesMachineGun where
           placeCounters attrs ammo
           pure . CrossbonesMachineGun $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility you (isTarget a -> True) 1 _ _ -> do
-      discardTopOfEncounterDeckThen 1 \cards -> do
-        let n = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (n > 0) $ dealIndirectDamage you attrs n
+      discardTopOfEncounterDeckThen 1 (countBoostIcons attrs you)
       removeCounters attrs 1
+      pure a
+    WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success you) (sum . map snd -> n) -> do
+      when (n > 0) $ dealIndirectDamage you attrs n
       pure a
     RemoveCounters target n | target == toRef attrs -> do
       when (attachmentCounters attrs <= n) $ removeFromPlay attrs

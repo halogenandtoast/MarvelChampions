@@ -5,7 +5,6 @@ module Marvel.SideScheme.SideSchemes.CorneredStaff (
 
 import Marvel.Prelude
 
-import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Entity
 import Marvel.GameValue
@@ -27,8 +26,9 @@ instance RunMessage CorneredStaff where
   runMessage msg s@(CorneredStaff attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
       n <- fromIntegral <$> fromGameValue (PerPlayer 1)
-      discardTopOfEncounterDeckThen n \cards -> do
-        let icons = sum $ map (boostCount . cdBoostIcons . getCardDef) cards
-        when (icons > 0) $ placeThreat ident icons
+      discardTopOfEncounterDeckThen n (countBoostIcons attrs ())
+      pure s
+    WithBoostIcons (isTarget attrs -> True) _ (sum . map snd -> icons) -> do
+      when (icons > 0) $ placeThreat (sideSchemeId attrs) icons
       pure s
     _ -> CorneredStaff <$> runMessage msg attrs

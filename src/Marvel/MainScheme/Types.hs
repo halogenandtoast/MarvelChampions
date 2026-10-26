@@ -177,7 +177,10 @@ instance RunMessage (Attrs MainScheme) where
           threshold <- getThreshold attrs
           when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
           pure $ attrs & threatL +~ n
-        MainSchemeThwarted _ n -> pure $ attrs & threatL %~ subtractNatural n
+        MainSchemeThwarted source n -> do
+          heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
+          pure $ attrs & threatL %~ subtractNatural n
+        MainSchemeThreatRemoved _ n -> pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
