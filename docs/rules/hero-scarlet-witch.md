@@ -35,6 +35,9 @@ The team-up keyword names two characters. To include a card with the team-up key
 - Magical Suspension's Hero Action is the attached player's only (RR Ability: an attachment saying "your").
 - The Next Evolution starts with 2 [per player] threat.
 - Chaos Magic needs a card in hand that could be played ignoring its cost (RR Target); attack events need an enemy that can be attacked (Browbeat and Swift Retribution, the villain); Recuperation needs damage to heal.
-- Crisis Averted paid without [mental], and Bait and Switch, may be played while a crisis icon is in play: they remove no threat (as the engine's other thwart events).
 - I See You's "+1 boost icon" is added to the activation, not to an encounter card, so it is no count Chaos Control or the Crest can answer.
 - Overkill from an attack on an ally is damage its controller "would take": Magic Shield (and other such interrupts) answer it.
+
+## Open (to revisit)
+
+- Crisis Averted paid without [mental], and Bait and Switch, can be played while a crisis icon is in play and remove no threat, as the engine's other thwart events (Crisis Interdiction) do. Whether a thwart that can remove nothing should be playable at all (RR Target) is unsettled; if not, it is a play restriction for every such event, not just these.
