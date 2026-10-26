@@ -88,6 +88,13 @@ const escalation = (scheme: SchemeView) => {
       <BoardCard v-for="u in villain.upgrades ?? []" :id="u.id" :key="u.id" class="villain-attached" :code="u.code" :name="u.name" :exhausted="u.exhausted" :counters="u.uses ?? null" />
     </template>
 
+    <!-- environments in the middle, between the villain and the schemes -->
+    <div v-if="environments.length" class="environments">
+      <div v-for="environment in environments" :key="environment.id" class="scheme side">
+        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" />
+      </div>
+    </div>
+
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
@@ -110,12 +117,6 @@ const escalation = (scheme: SchemeView) => {
       <div v-if="sideSchemes.length" class="side-schemes">
         <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
           <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" :held="scheme.held || null" />
-        </div>
-      </div>
-
-      <div v-if="environments.length" class="side-schemes environments">
-        <div v-for="environment in environments" :key="environment.id" class="scheme side">
-          <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" />
         </div>
       </div>
     </div>
@@ -172,6 +173,7 @@ const escalation = (scheme: SchemeView) => {
 .escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
+.environments { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-inline: auto; min-width: 0; }
 .schemes { display: flex; gap: 18px; align-items: flex-start; margin-left: auto; min-width: 0; }
 /* several decks wrap onto rows of their own, not over the schemes */
 .encounter-piles { display: flex; flex-wrap: wrap; gap: 14px; flex: 0 1 auto; min-width: 0; padding-top: 4px; }
