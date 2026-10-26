@@ -29,7 +29,7 @@ instance RunMessage ForJustice where
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let
-          usedMental = Mental `elem` resources || Wild `elem` resources
+          usedMental = Mental `elem` resources
           thwart = if usedMental then 4 else 3
         removeThreat identityId attrs thwart ThwartableScheme
         pure e

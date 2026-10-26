@@ -188,6 +188,11 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == After ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  IdentityReadies identityMatcher -> case windowType w of
+    IdentityReadied identityId
+      | windowTiming w == After ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId
       | windowTiming w == timing ->

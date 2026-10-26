@@ -14,7 +14,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.ActiveCost.Types
-import Marvel.Payment (paymentResources)
+import Marvel.Payment (Payment (..), paymentResources, payments)
 import Data.List qualified as L
 import Marvel.Cost.Types (Cost (..), costResources)
 import Marvel.Resource.Types (Resource (..))
@@ -326,6 +326,8 @@ data ActiveCostView = ActiveCostView
   , card :: Maybe CardView
   , source :: Maybe Text
   , paid :: [Resource]
+  , wilds :: [Int]
+  -- ^ which of the paid resources are wild ones, declared as the type shown
   , owed :: [Maybe Resource]
   -- ^ what the paid resources do not yet cover: a resource of that kind, or any
   , anyAmount :: Bool
@@ -379,6 +381,7 @@ gameView seesHand g = do
             ForAbility a -> refId a.abilitySource
             _ -> Nothing
         , paid
+        , wilds = [i | (i, True) <- zip [0 ..] (concatMap wildOrNot (payments c.activeCostPayment))]
         , owed = owedFor (costResources c.activeCostCost) paid
         , anyAmount = dynamic c.activeCostCost
         , spent = map (cardView . PlayerCard) c.activeCostSpentCards
@@ -644,6 +647,8 @@ describeChoice asked = \case
   PlayCard c _ -> (onCard "play" (toCardId c)) {code = Just (toCardCode c)}
   PayWithCard c -> (onCard "pay" (toCardId c)) {code = Just (toCardCode c)}
   FinishPayment -> plain "finishPayment" (Just "$label.finishPayment")
+  -- the nth wild paid: the client puts it on that wild
+  DeclareWild n r -> (plain "declareWild" (Just $ tshow r)) {target = Just (tshow n)}
   ReadyIdentity -> plain "label" (Just "$label.readyIdentity")
   Recover -> plain "recover" (Just "$label.recover")
   Attack -> plain "attack" (Just "$label.attack")
@@ -714,6 +719,13 @@ owedFor cost paid = map Just unmet <> replicate (length generic - length left) N
     | r `elem` have = (missed, L.delete r have)
     | Wild `elem` have = (missed, L.delete Wild have)
     | otherwise = (missed <> [r], have)
+
+-- | The resources a payment is of, each whether it is a wild one.
+wildOrNot :: Payment -> [Bool]
+wildOrNot = \case
+  ResourcePayment _ -> [False]
+  WildPayment _ -> [True]
+  _ -> []
 
 dynamic :: Cost -> Bool
 dynamic = \case

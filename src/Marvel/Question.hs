@@ -12,6 +12,7 @@ import Marvel.Id
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import {-# SOURCE #-} Marvel.Message
 import Marvel.Payment
+import Marvel.Resource.Types (Resource)
 import Marvel.Ref
 import Marvel.Window (Window (..))
 
@@ -72,6 +73,8 @@ data Choice
   | PlayCard PlayerCard (Maybe Window)
   | PayWithCard PlayerCard
   | FinishPayment
+  | -- | declare the nth wild resource paid as this type
+    DeclareWild Natural Resource
   | ReadyIdentity
   | Pay Payment
   | Run [Message]

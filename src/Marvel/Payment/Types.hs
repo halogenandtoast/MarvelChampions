@@ -11,6 +11,9 @@ import Marvel.Resource.Types
 data Payment
   = Payments [Payment]
   | ResourcePayment Resource
+  | -- | a wild resource spent, as the type its payer declared it (RR Wild Resource):
+    -- wild until they say otherwise
+    WildPayment Resource
   | ResourcePaymentFromCard ExtendedCardMatcher
   | DiscardHandCardPayment Card
   | DamagePayment Natural
@@ -48,6 +51,19 @@ payments = \case
   Payments ps -> concatMap payments ps
   NoPayment -> []
   p -> [p]
+
+-- | The types the wild resources paid were declared as, in the order paid.
+paymentWilds :: Payment -> [Resource]
+paymentWilds p = [r | WildPayment r <- payments p]
+
+-- | The nth wild resource paid, declared as this type.
+declareWild :: Natural -> Resource -> Payment -> Payment
+declareWild n r = mconcat . go n . payments
+ where
+  go _ [] = []
+  go 0 (WildPayment _ : ps) = WildPayment r : ps
+  go k (p@(WildPayment _) : ps) = p : go (k - 1) ps
+  go k (p : ps) = p : go k ps
 
 -- | The target chosen as the card was played.
 paymentTarget :: Payment -> Maybe Target

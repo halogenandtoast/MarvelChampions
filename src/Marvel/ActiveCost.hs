@@ -140,15 +140,40 @@ payCostPart activeCost = go
     cards <- filterM (fmap spendable . (`resourcesFor` mcard)) =<< getAvailablePaymentSources iid
     abilities <- filterM (fmap spendable . abilityResources) =<< getResourceAbilities iid mcard
     isPaid <- resourceCostPaid activeCost
+    let
+      wilds = paymentWilds (activeCostPayment activeCost)
+      declares = [DeclareWild n r | (n, was) <- zip [0 ..] wilds, r <- [Energy, Mental, Physical, Wild], r /= was]
     if
       | null cards && null abilities && not isPaid -> abortPayment acid
-      -- nothing left to pay with, and nothing left to pay
-      | null cards && null abilities -> finishPayment acid
+      -- nothing left to pay with, nothing left to pay, and no wild to declare
+      | null cards && null abilities && null wilds -> finishPayment acid
       | otherwise ->
           payingFor $
             map (pure . PayWithCard) cards
               <> map (pure . UseAbility) abilities
+              <> map pure declares
               <> [pure FinishPayment | isPaid]
+
+-- | A wild resource paid is one its payer may declare as a type, as they generate it
+-- (RR Wild Resource): a card's printed resources are read as it is paid with.
+declarable ::
+  ( Projection m PlayerIdentity
+  , HasGame m
+  , HasQueue m
+  , MonadRandom m
+  , MonadThrow m
+  ) =>
+  Payment ->
+  m Payment
+declarable = fmap mconcat . traverse one . payments
+ where
+  one = \case
+    ResourcePayment Wild -> pure $ WildPayment Wild
+    p@(ResourcePaymentFromCard _) -> mconcat . map asPaid <$> paymentResources p
+    p -> pure p
+  asPaid = \case
+    Wild -> WildPayment Wild
+    r -> ResourcePayment r
 
 -- | What is being paid for.
 activeCostSource :: ActiveCost -> Source
@@ -227,10 +252,12 @@ instance RunMessage ActiveCost where
           { activeCostSpentCards = discard : activeCostSpentCards activeCost
           }
     Paid payment -> do
+      payment' <- declarable payment
       pure $
         activeCost
-          { activeCostPayment = activeCostPayment activeCost <> payment
+          { activeCostPayment = activeCostPayment activeCost <> payment'
           }
+    DeclaredWild n r -> pure $ activeCost {activeCostPayment = declareWild n r (activeCostPayment activeCost)}
     CheckPayment ident | ident == activeCostId activeCost -> do
       let resources = resourceCosts (activeCostCost activeCost)
       if resources /= NoCost

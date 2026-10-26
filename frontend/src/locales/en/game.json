@@ -220,7 +220,8 @@
     "needs": "Needs {count} more",
     "covered": "Cost covered",
     "anyAmount": "Pay as much as you like",
-    "anyResource": "Any resource"
+    "anyResource": "Any resource",
+    "declareWild": "Wild resource: spend it as"
   },
   "resources": {
     "energy": "Energy",

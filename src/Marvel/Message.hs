@@ -34,6 +34,7 @@ import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
 import Marvel.Payment.Types
+import Marvel.Resource.Types (Resource)
 import Marvel.Phase
 import Marvel.Projection
 import {-# SOURCE #-} Marvel.Question
@@ -295,6 +296,8 @@ data Message
   | DisableActiveCost ActiveCostId
   | Spent ActiveCostId PlayerCard
   | Paid Payment
+  | -- | the nth wild resource paid toward the active cost is declared as this type
+    DeclaredWild Natural Resource
   | FinishedPayment ActiveCostId
   | -- | one part of the cost is paid, as one more ally exhausted for "exhaust any
     -- number of allies"

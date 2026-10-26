@@ -79,7 +79,7 @@ spec = describe "The Thor pack's aspect and basic cards" do
         choose "the minion" (isTargetChoice loki)
         minionDamageOf loki `shouldReturn` Just 3
 
-    it "deals 3 when a wild resource is spent as energy" do
+    it "deals 3 when a wild resource is declared as energy" do
       tg <- thor
       let p = player1 tg
       inGame tg do
@@ -87,10 +87,30 @@ spec = describe "The Thor pack's aspect and basic cards" do
         loki <- addMinion p Minions.loki
         valkyrie <- putInHand p "06012"
         -- The Power of Aggression doubles to two wild resources for an Aggression card
-        playPaying p valkyrie ["01055", "01089"]
+        payment <- traverse (putInHand p) ["01055", "01089"]
+        playDeclaring valkyrie payment Energy
         choose "valkyrie" (isAbilityOfCard valkyrie)
         choose "the minion" (isTargetChoice loki)
         minionDamageOf loki `shouldReturn` Just 3
+
+    it "deals 2 when the wild resource is declared as another type" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        loki <- addMinion p Minions.loki
+        valkyrie <- putInHand p "06012"
+        payment <- traverse (putInHand p) ["01055", "01089"]
+        choose "play the card" (isPlay valkyrie)
+        for_ payment \c -> choose "pay" (isPayWith c)
+        -- declared as energy, then again as physical: one wild is one type
+        declareWildAs Energy
+        declareWildAs Physical
+        declareWildAs Physical
+        choose "finish paying" isFinishPayment
+        choose "valkyrie" (isAbilityOfCard valkyrie)
+        choose "the minion" (isTargetChoice loki)
+        minionDamageOf loki `shouldReturn` Just 2
 
   describe "Get Over Here! (06014)" do
     it "deals 1 damage to a minion, and an Aerial hero engages it" do

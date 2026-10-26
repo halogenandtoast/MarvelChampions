@@ -30,7 +30,7 @@ instance RunMessage RelentlessAssault where
       PlayedEvent identityId payments _ -> do
         resources <- paymentResources payments
         let
-          usedPhysical = Physical `elem` resources || Wild `elem` resources
+          usedPhysical = Physical `elem` resources
           modifyDamage = if usedPhysical then withOverkill else id
         chooseDamage identityId attrs (modifyDamage $ toDamage 5 $ FromPlayerAttack identityId) MinionEnemy
         pure e

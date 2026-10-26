@@ -336,6 +336,7 @@ checkPlayLimits ident c = case cdLimit def of
     MaxPerScheme _ -> error "Unhandled"
     -- copies played by any player count
     MaxPerRound n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisRound
+    MaxPerPhase n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisPhase
     -- a friendly character without one: an ally, or an identity
     MaxPerCharacter 1 -> case cdCardType def of
       UpgradeType ->
@@ -584,6 +585,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ (HashSet.toList playerIdentitySupports) ready
       for_ (HashSet.toList playerIdentityUpgrades) ready
       readies <- notElem CannotReady <$> getModifiers pid
+      when (readies && playerIdentityExhausted) $
+        checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
       pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
     -- an identity that cannot change form stays as it is, whatever would change it
     ChooseOtherForm -> do
@@ -789,6 +792,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               & (deckL .~ Deck deck')
     ReadiedIdentity -> do
       readies <- notElem CannotReady <$> getModifiers pid
+      when (readies && playerIdentityExhausted) $
+        checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
       pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     -- the active villain of the player's area, if it has one, then their minions

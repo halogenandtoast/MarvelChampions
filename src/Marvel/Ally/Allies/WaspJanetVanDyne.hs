@@ -30,7 +30,7 @@ instance HasModifiersFor WaspJanetVanDyne where
 
 -- | Interrupt: When Wasp enters play, place 1 pym counter on her (to a maximum of 3) for
 -- each [energy] resource you overpaid for Wasp's cost. What was paid beyond her cost is
--- overpaid, the [energy] resources (a wild one counting as one) taken as overpaid before
+-- overpaid, the [energy] resources (a wild one declared as one) taken as overpaid before
 -- the others. Put into play, nothing is paid; with no counters she has no hit points
 -- and is defeated (RR "Hit Points").
 instance RunMessage WaspJanetVanDyne where
@@ -38,7 +38,7 @@ instance RunMessage WaspJanetVanDyne where
     AllyMessage aid (AllyPaidWith payment) | aid == allyId attrs -> do
       resources <- paymentResources payment
       cost <- costOf
-      let energy = length $ filter (`elem` [Energy, Wild]) resources
+      let energy = length $ filter (== Energy) resources
           overpaid = min 3 . fromIntegral . max 0 $ min energy (length resources - cost)
       when (overpaid == 0) $ defeatAlly aid
       WaspJanetVanDyne . (\a -> a {allyCounters = overpaid}) <$> runMessage msg attrs

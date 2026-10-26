@@ -95,6 +95,8 @@ data InPlayLimit
   | MaxPerScheme Natural
   | -- | "Max N per round": copies played this round, by any player
     MaxPerRound Natural
+  | -- | "Max N per phase": copies played this phase, by any player
+    MaxPerPhase Natural
   | MaxPerCharacter Natural
   | MaxPerSideScheme Natural
   | -- | "Play under any player's control.", with no maximum

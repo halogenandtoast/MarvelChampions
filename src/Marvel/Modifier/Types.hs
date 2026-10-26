@@ -90,6 +90,8 @@ data Modifier
   | -- | on a hero: the threat its basic thwart removes may be divided among schemes,
     -- each one thwarted
     DividesBasicThwart
+  | -- | on an enemy: the damage it takes from each attack is reduced
+    AttackDamageReduction Natural
   | -- | on an identity: what its hero must also pay to make a basic attack (Mother's
     -- Orders)
     BasicAttackAdditionalCost Cost

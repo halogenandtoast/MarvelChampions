@@ -114,6 +114,7 @@ resolveChoice ident = \case
     case mcost of
       Just activeCostId -> pure [FinishedPayment activeCostId]
       Nothing -> error "no active cost"
+  DeclareWild n r -> pure [DeclaredWild n r]
   ReadyIdentity -> pure [IdentityMessage ident ReadiedIdentity]
   Pay payment -> pure [Paid payment]
   DamageAllEnemies matcher source damage -> do
@@ -129,8 +130,19 @@ resolveChoice ident = \case
     bonus <- sourceBonus source \case
       DamageDealtModifier n -> Just n
       _ -> Nothing
+    -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
     let
-      damage = damage' {damageAmount = damageAmount damage' + bonus}
+      enemyAsRef = case target of
+        EnemyRef (EnemyVillainId vid) -> VillainRef vid
+        EnemyRef (EnemyMinionId mid) -> MinionRef mid
+        t -> t
+      attackReduction = sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+    reduction <- case damageSource damage' of
+      FromPlayerAttack _ -> attackReduction
+      FromAllyAttack _ -> attackReduction
+      _ -> pure 0
+    let
+      damage = damage' {damageAmount = subtractNatural reduction (damageAmount damage' + bonus)}
       enemy = case target of
         VillainRef vid -> EnemyVillainId vid
         MinionRef mid -> EnemyMinionId mid

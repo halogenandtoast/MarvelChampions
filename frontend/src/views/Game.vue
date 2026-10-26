@@ -228,7 +228,9 @@ const things = computed(() => {
 })
 const boardChoices = computed(() => choices.value.filter((c) => c.target && onBoard.value.has(c.target)))
 // a player's choice is also a button, named for the player, as the first player is chosen
-const buttons = computed(() => choices.value.filter((c) => !c.target || !onBoard.value.has(c.target) || c.kind === 'player'))
+const buttons = computed(() => choices.value.filter((c) => c.kind !== 'declareWild' && (!c.target || !onBoard.value.has(c.target) || c.kind === 'player')))
+// a wild paid is declared as a type on its icon in the paying tray
+const declares = computed(() => choices.value.filter((c) => c.kind === 'declareWild'))
 
 const choose = (index: number) => {
   if (answering.value && game.value) void answer(game.value.questionVersion, index, answering.value)
@@ -350,7 +352,7 @@ const resetGame = () => {
           </div>
 
           <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
-            <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" />
+            <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" :declares="declares" @choose="choose" />
           </River>
 
           <div class="player-half">

@@ -191,6 +191,8 @@ data Game = Game
   , gamePlayedThisRound :: [(IdentityId, CardDef)]
   -- ^ the cards each player has played this round, for "max 1 per round" and "the first
   -- ally played each round"
+  , gamePlayedThisPhase :: [(IdentityId, CardDef)]
+  -- ^ and this phase, for "max 1 per phase"
   , gameAreas :: [Area]
   -- ^ the game areas, the first the one every game starts with ("Marvel.Area")
   , gameSignatureSchemes :: HashMap VillainId SideSchemeId
@@ -777,7 +779,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
   SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
   BeginPhase phase ->
-    pure $ g & phaseL .~ phase & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
+    pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
   AtEndOfPhase msgs -> pure $ g & atEndOfPhaseL <>~ msgs
   -- what was to happen at the end of the phase happens first, as the phase ends
   EndPhase _ -> do
@@ -1335,7 +1337,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           %~ filter
             ((/= PerTurn 1) . abilityLimit . fst)
   IdentityMessage ident (PlayedCard card _) ->
-    pure $ g & playedThisRoundL <>~ [(ident, getCardDef card)]
+    pure $ g & playedThisRoundL <>~ [(ident, getCardDef card)] & playedThisPhaseL <>~ [(ident, getCardDef card)]
   EndRound ->
     pure $
       g
@@ -1724,6 +1726,7 @@ newGame player scenario =
     , gameRound = 1
     , gameSeats = [toId player]
     , gamePlayedThisRound = []
+    , gamePlayedThisPhase = []
     , gameAreas = [newArea defaultAreaId [toId player]]
     , gameSignatureSchemes = mempty
     , gameAtEndOfPhase = []
@@ -1857,6 +1860,9 @@ getEncounterDiscard = fmap pileDiscard . getPile =<< getDeckKeyFor =<< getYou
 -- | The cards played this round, and by whom.
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisRound = getsGame gamePlayedThisRound
+
+getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
+getPlayedThisPhase = getsGame gamePlayedThisPhase
 
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)

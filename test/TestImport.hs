@@ -35,6 +35,7 @@ import Marvel.Hand as X
 import Marvel.Identity.Types as X
 import Marvel.PlayerCard as X (lookupPlayerCard)
 import Marvel.Ref as X
+import Marvel.Resource.Types as X (Resource (..))
 import Marvel.Villain.Types as X (Villain, villainDamage)
 import Marvel.Deck as X
 import Marvel.Discard as X
@@ -234,6 +235,21 @@ isFinishPayment :: Choice -> Bool
 isFinishPayment = \case
   FinishPayment -> True
   _ -> False
+
+-- | Declare the first wild resource paid that is not yet that type as it, while paying.
+declareWildAs :: (HasCallStack) => Resource -> GameAppT ()
+declareWildAs r = choose "declare a wild resource" \case
+  DeclareWild _ r' -> r == r'
+  _ -> False
+
+-- | Play a card from hand, paying with the cards given and declaring a wild resource
+-- among them as the type given.
+playDeclaring :: (HasCallStack) => PlayerCard -> [PlayerCard] -> Resource -> GameAppT ()
+playDeclaring card payment r = do
+  choose "play the card" (isPlay card)
+  for_ payment \p -> choose "pay" (isPayWith p)
+  declareWildAs r
+  choose "finish paying" isFinishPayment
 
 -- | Put a new copy of a card into a player's hand.
 putInHand :: IdentityId -> CardCode -> GameAppT PlayerCard

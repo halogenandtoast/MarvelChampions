@@ -93,6 +93,8 @@ data WindowMatcher
     SideSchemeDefeatedBy SideSchemeMatcher SourceMatcher
   | -- | "after you use your REC"
     UsesRecovery IdentityMatcher
+  | -- | "after you ready <identity>": an exhausted identity matching is readied
+    IdentityReadies IdentityMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -133,6 +135,8 @@ data WindowType
     DefeatedSideSchemeBy SideSchemeId IdentityId (Maybe Source)
   | -- | the alter-ego has used their REC
     UsedRecovery IdentityId
+  | -- | the identity was exhausted and has been readied
+    IdentityReadied IdentityId
   | HeroDefends IdentityId EnemyId
   | EncounterCardRevealed RevealSource IdentityId EncounterCard
   | RoundEnded

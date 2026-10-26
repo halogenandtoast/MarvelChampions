@@ -35,6 +35,6 @@ An attack with the piercing keyword discards any tough status cards from the tar
 - Bio-Synthetic Wings: "Wasp gains the Aerial trait" is the hero, in either form; Nadia Van Dyne does not.
 - G.I.R.L.: "up to 2" allows none, and then the deck is not shuffled.
 - Athletic Conditioning, Into the Fray, Running Interference may be played when they would do nothing (no status card, no main scheme threat removable); nothing in the RR forbids it.
-- Wasp (Janet Van Dyne): what was paid beyond her cost is the overpay, energy and wild resources counted first.
+- Wasp (Janet Van Dyne): what was paid beyond her cost is the overpay, energy resources (a wild one declared as energy) counted first.
 - Beetle shuffled into the encounter deck is not defeated: no "after defeated" window opens for him.
 - A per-instance bonus (Embiggen!, Shrink) applies to each enemy's or scheme's share of a divided effect.

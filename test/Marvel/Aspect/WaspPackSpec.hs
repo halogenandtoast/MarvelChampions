@@ -93,13 +93,14 @@ spec = describe "The Wasp pack's aspect and basic cards" do
         (.allyCounters) <$> allyIn "13012" `shouldReturn` 2
         allyHitPointsNow "13012" `shouldReturn` 2
 
-    it "counts a wild resource as energy" do
+    it "counts a wild resource declared as energy" do
       tg <- wasp
       let p = player1 tg
       inGame tg do
         clearHand p
         jan <- putInHand p "13012"
-        playPaying p jan ["13024", "01089"]
+        payment <- traverse (putInHand p) ["13024", "01089"]
+        playDeclaring jan payment Energy
         pass
         (.allyCounters) <$> allyIn "13012" `shouldReturn` 1
         allyHitPointsNow "13012" `shouldReturn` 1

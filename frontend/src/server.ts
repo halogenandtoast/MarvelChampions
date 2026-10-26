@@ -187,6 +187,8 @@ export interface ActiveCostView {
   /** or the card whose ability is being paid for, by id */
   source: string | null
   paid: string[]
+  /** which of the paid resources are wild ones, shown as the type declared */
+  wilds?: number[]
   /** what the paid resources do not yet cover: a resource of that kind, or null for any */
   owed: (string | null)[]
   /** an X cost, paid as far as the player likes */
