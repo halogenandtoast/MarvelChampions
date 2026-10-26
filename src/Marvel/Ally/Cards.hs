@@ -101,6 +101,11 @@ allAllies = fromList $ concatMap
   , scarletWitchWandaMaximoff
   , multipleMan
   , warlock
+
+  -- Scarlet Witch
+  , quicksilverPietroMaximoff
+  , speedThomasShepherd
+  , wiccanWilliamKaplan
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -123,6 +128,7 @@ heroSpecificAllies =
   , waspNadiaVanDyne
   , antManScottLang
   , scarletWitchWandaMaximoff
+  , quicksilverPietroMaximoff
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -443,3 +449,14 @@ multipleMan = (ally "14012" "Multiple Man" 4 [XFactor] [Mental] Protection) {cdU
 
 warlock :: CardDef
 warlock = ally "14013" "Warlock" 3 [XFactor] [Physical] Protection
+
+-- Scarlet Witch
+
+quicksilverPietroMaximoff :: CardDef
+quicksilverPietroMaximoff = identityAlly "15002" ("Quicksilver" <:> "Pietro Maximoff") 4 [Avenger] [Wild]
+
+speedThomasShepherd :: CardDef
+speedThomasShepherd = ally "15010" ("Speed" <:> "Thomas Shepherd") 4 [Avenger] [Physical] Justice
+
+wiccanWilliamKaplan :: CardDef
+wiccanWilliamKaplan = ally "15011" ("Wiccan" <:> "William Kaplan") 2 [Avenger] [Mental] Justice

@@ -32,3 +32,6 @@ import Marvel.Hero.Heroes.WaspGiant as X
 
 -- Quicksilver
 import Marvel.Hero.Heroes.Quicksilver as X
+
+-- Scarlet Witch
+import Marvel.Hero.Heroes.ScarletWitch as X

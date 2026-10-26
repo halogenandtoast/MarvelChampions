@@ -154,6 +154,9 @@ allTreacheries = fromList $ map
 
   -- Quicksilver
   , SomeTreacheryCard earthquake
+
+  -- Scarlet Witch
+  , SomeTreacheryCard chaosManipulation
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

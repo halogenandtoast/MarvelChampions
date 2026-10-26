@@ -96,6 +96,9 @@ allAttachments =
 
       -- Quicksilver
       , vibrationResistance
+
+      -- Scarlet Witch
+      , magicalSuspension
       ]
 
 attachment ::
@@ -342,3 +345,8 @@ beetleArmorMkIV = unique $ attachment "13029" "Beetle Armor MK IV" [Armor, Tech]
 
 vibrationResistance :: CardDef
 vibrationResistance = attachment "14027" "Vibration Resistance" [Condition] [Boost] QuicksilverNemesis 1
+
+-- Scarlet Witch
+
+magicalSuspension :: CardDef
+magicalSuspension = attachment "15026" "Magical Suspension" [Spell] [Boost, Boost] ScarletWitchNemesis 1

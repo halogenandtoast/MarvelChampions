@@ -123,6 +123,9 @@ allMinions =
 
       -- Quicksilver
       , SomeMinionCard avalanche
+
+      -- Scarlet Witch
+      , SomeMinionCard luminous
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

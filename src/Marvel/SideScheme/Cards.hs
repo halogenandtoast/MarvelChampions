@@ -101,6 +101,9 @@ allSideSchemes = fromList $ map
 
   -- Quicksilver
   , extortionOfSeismicProportion
+
+  -- Scarlet Witch
+  , theNextEvolution
   ]
 
 sideScheme
@@ -421,3 +424,8 @@ extortionOfSeismicProportion =
   (sideScheme "14025" "Extortion of Seismic Proportion" [Boost, Boost, Boost] QuicksilverNemesis 1)
     { cdKeywords = singleton (Incite 1)
     }
+
+-- Scarlet Witch
+
+theNextEvolution :: CardDef
+theNextEvolution = sideScheme "15024" "The Next Evolution" [Boost, Boost] ScarletWitchNemesis 1

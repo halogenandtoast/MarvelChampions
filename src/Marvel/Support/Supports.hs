@@ -47,3 +47,6 @@ import Marvel.Support.Supports.BootCamp as X
 
 -- Quicksilver
 import Marvel.Support.Supports.ServalIndustries as X
+
+-- Scarlet Witch
+import Marvel.Support.Supports.AgathaHarkness as X

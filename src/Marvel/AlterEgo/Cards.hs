@@ -42,6 +42,9 @@ allAlterEgoCards =
 
     -- Quicksilver
     , pietroMaximoff
+
+    -- Scarlet Witch
+    , wandaMaximoff
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -119,3 +122,8 @@ nadiaVanDyne = alterEgo "13001b" "Nadia Van Dyne" [Genius]
 
 pietroMaximoff :: CardDef
 pietroMaximoff = alterEgo "14001b" "Pietro Maximoff" [Civilian]
+
+-- Scarlet Witch
+
+wandaMaximoff :: CardDef
+wandaMaximoff = alterEgo "15001b" "Wanda Maximoff" [Mystic]

@@ -30,3 +30,6 @@ import Marvel.AlterEgo.AlterEgos.NadiaVanDyne as X
 
 -- Quicksilver
 import Marvel.AlterEgo.AlterEgos.PietroMaximoff as X
+
+-- Scarlet Witch
+import Marvel.AlterEgo.AlterEgos.WandaMaximoff as X

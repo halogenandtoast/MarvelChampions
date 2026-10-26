@@ -108,6 +108,9 @@ allSideSchemes = fromList $ map
 
   -- Quicksilver
   , SomeSideSchemeCard extortionOfSeismicProportion
+
+  -- Scarlet Witch
+  , SomeSideSchemeCard theNextEvolution
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

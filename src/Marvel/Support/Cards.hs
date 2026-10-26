@@ -63,6 +63,9 @@ allSupports = fromList $ concatMap
 
   -- Quicksilver
   , servalIndustries
+
+  -- Scarlet Witch
+  , agathaHarkness
   ]
 
 support
@@ -240,3 +243,8 @@ bootCamp =
 
 servalIndustries :: CardDef
 servalIndustries = unique $ identitySupport "14007" "Serval Industries" 1 [Location, XFactor] [Mental]
+
+-- Scarlet Witch
+
+agathaHarkness :: CardDef
+agathaHarkness = unique $ identitySupport "15007" "Agatha Harkness" 1 [Persona] [Mental]

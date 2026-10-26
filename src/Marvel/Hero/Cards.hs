@@ -45,6 +45,9 @@ allHeroCards =
 
   -- Quicksilver
   , quicksilver
+
+  -- Scarlet Witch
+  , scarletWitch
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -134,3 +137,8 @@ waspGiant = hero "13001c" "Wasp" [Avenger, Giant]
 
 quicksilver :: CardDef
 quicksilver = hero "14001a" "Quicksilver" [Avenger]
+
+-- Scarlet Witch
+
+scarletWitch :: CardDef
+scarletWitch = hero "15001a" "Scarlet Witch" [Avenger, Mystic]

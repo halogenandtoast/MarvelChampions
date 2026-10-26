@@ -84,3 +84,6 @@ import Marvel.Minion.Minions.Beetle as X
 
 -- Quicksilver
 import Marvel.Minion.Minions.Avalanche as X
+
+-- Scarlet Witch
+import Marvel.Minion.Minions.Luminous as X

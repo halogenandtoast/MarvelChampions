@@ -135,6 +135,10 @@ allUpgrades = fromList $ concatMap
   , civicDuty
   , bruteForce
   , senseOfJustice
+
+  -- Scarlet Witch
+  , magicShield
+  , scarletWitchsCrest
   ]
 
 upgrade
@@ -260,7 +264,7 @@ combatTraining = reprintedAs ["04041"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = reprintedAs ["04046"] $ limited (MaxPerPlayerUnderAnyControl 1)
+heroicIntuition = reprintedAs ["04046", "15017"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
@@ -588,3 +592,11 @@ bruteForce = upgrade "14029" "Brute Force" 1 [Skill] [Mental] Aggression
 
 senseOfJustice :: CardDef
 senseOfJustice = limited (MaxPerPlayerUnderAnyControl 1) $ upgrade "14030" "Sense of Justice" 2 [Skill] [Mental] Justice
+
+-- Scarlet Witch
+
+magicShield :: CardDef
+magicShield = identityUpgrade "15008" "Magic Shield" 1 [Spell] [Physical]
+
+scarletWitchsCrest :: CardDef
+scarletWitchsCrest = identityUpgrade "15009" "Scarlet Witch's Crest" 2 [Item] [Energy]

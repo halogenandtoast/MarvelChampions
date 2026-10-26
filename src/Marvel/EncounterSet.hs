@@ -59,6 +59,8 @@ data EncounterSet
   | WaspNemesis
   -- Quicksilver
   | QuicksilverNemesis
+  -- Scarlet Witch
+  | ScarletWitchNemesis
   -- The Once and Future Kang
   | Kang
   | ExpertKang
@@ -115,6 +117,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "12001" -> AntManNemesis
   "13001" -> WaspNemesis
   "14001" -> QuicksilverNemesis
+  "15001" -> ScarletWitchNemesis
   cCode ->
     error $
       "No nemesis set for "

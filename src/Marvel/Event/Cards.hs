@@ -163,6 +163,21 @@ allEvents = fromList $ concatMap
   , orderAndChaos
   , unitedWeStand
   , beatEmUp
+
+  -- Scarlet Witch
+  , chaosMagic
+  , hexBolt
+  , molecularDecay
+  , warpReality
+  , crisisAverted
+  , multitasking
+  , swiftRetribution
+  , turnTheTide
+  , spiritualMeditation
+  , browbeat
+  , lastStand
+  , baitAndSwitch
+  , recuperation
   ]
 
 event
@@ -996,7 +1011,7 @@ sideStep =
 
 -- | Team-Up (Quicksilver and Scarlet Witch). Max 1 per deck.
 orderAndChaos :: CardDef
-orderAndChaos =
+orderAndChaos = reprintedAs ["15018"] $
   (basicEvent "14018" "Order and Chaos" 1 HeroInterrupt [] [Physical])
     { cdCriteria = teamUp "Quicksilver" "Scarlet Witch"
     , cdResponseWindow = Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
@@ -1010,3 +1025,91 @@ unitedWeStand =
 
 beatEmUp :: CardDef
 beatEmUp = basicEvent "14032" "Beat 'Em Up" 2 HeroAction [Tactic] [Energy]
+
+-- Scarlet Witch
+
+chaosMagic :: CardDef
+chaosMagic =
+  (identityEvent "15003" "Chaos Magic" 0 HeroAction [Spell, Superpower] [Wild])
+    { -- a card to play (RR Target); not Chaos Magic itself, still in hand as it is checked
+      cdCriteria =
+        ExtendedCardExists $
+          InHandOf You $
+            PlayableIgnoringCostBy You $
+              BasicCardMatches (NotCardMatching $ CardWithTitle "Chaos Magic")
+    }
+
+hexBolt :: CardDef
+hexBolt = identityEvent "15004" "Hex Bolt" 2 HeroAction [Spell, Superpower] [Mental]
+
+molecularDecay :: CardDef
+molecularDecay =
+  (identityEvent "15005" "Molecular Decay" 3 HeroAction [Attack, Spell] [Energy])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+warpReality :: CardDef
+warpReality =
+  (identityEvent "15006" "Warp Reality" 1 HeroInterrupt [Spell, Superpower] [Physical])
+    { cdResponseWindow = Just (EncounterCardRevealedFromDeck When AnyEncounterCard)
+    }
+
+crisisAverted :: CardDef
+crisisAverted =
+  (event "15012" "Crisis Averted" 3 HeroAction [Thwart] [Mental] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+multitasking :: CardDef
+multitasking =
+  (event "15013" "Multitasking" 1 HeroAction [Thwart] [Physical] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+swiftRetribution :: CardDef
+swiftRetribution =
+  (event "15014" "Swift Retribution" 1 HeroAction [Attack] [Mental] Justice)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttackVillain
+    }
+
+turnTheTide :: CardDef
+turnTheTide =
+  (event "15015" "Turn the Tide" 0 HeroResponse [Attack] [Energy] Justice)
+    { cdResponseWindow = Just (HeroThwartsAllThreat You)
+    , cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = canAttack
+    }
+
+spiritualMeditation :: CardDef
+spiritualMeditation =
+  (basicEvent "15019" "Spiritual Meditation" 0 Action [Spell] [Mental])
+    { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
+    }
+
+browbeat :: CardDef
+browbeat =
+  (event "15028" "Browbeat" 2 HeroAction [Attack] [Physical] Aggression)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> canAttackVillain
+    , cdAbilitySubType = Just Ability.Attack
+    }
+
+lastStand :: CardDef
+lastStand =
+  (event "15029" "Last Stand" 0 HeroInterrupt [Tactic] [Mental] Leadership)
+    { cdResponseWindow = Just (AllyAttacked When (AllyControlledBy You) AnyEnemy)
+    }
+
+baitAndSwitch :: CardDef
+baitAndSwitch =
+  (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
+    { cdAbilitySubType = Just Ability.Thwart
+    }
+
+recuperation :: CardDef
+recuperation =
+  (basicEvent "15031" "Recuperation" 2 AlterEgoAction [] [Physical])
+    { cdCriteria = SelfMatches IdentityWithAnyDamage
+    }

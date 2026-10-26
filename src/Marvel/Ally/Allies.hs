@@ -80,3 +80,8 @@ import Marvel.Ally.Allies.SpiderManMilesMorales as X
 import Marvel.Ally.Allies.ScarletWitchWandaMaximoff as X
 import Marvel.Ally.Allies.MultipleMan as X
 import Marvel.Ally.Allies.Warlock as X
+
+-- Scarlet Witch
+import Marvel.Ally.Allies.QuicksilverPietroMaximoff as X
+import Marvel.Ally.Allies.SpeedThomasShepherd as X
+import Marvel.Ally.Allies.WiccanWilliamKaplan as X

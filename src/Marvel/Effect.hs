@@ -57,6 +57,7 @@ allEffects =
     , ("14005", SomeCardEffect maximumVelocityEffect)
     , ("14022", SomeCardEffect adrenalineRushEffect)
     , ("14023", SomeCardEffect civicDutyEffect)
+    , ("15003", SomeCardEffect chaosMagicEffect)
     , ("12033", SomeCardEffect assessTheSituationEffect)
 
     -- Wasp

@@ -140,3 +140,18 @@ import Marvel.Event.Events.SideStep as X
 import Marvel.Event.Events.OrderAndChaos as X
 import Marvel.Event.Events.UnitedWeStand as X
 import Marvel.Event.Events.BeatEmUp as X
+
+-- Scarlet Witch
+import Marvel.Event.Events.ChaosMagic as X
+import Marvel.Event.Events.HexBolt as X
+import Marvel.Event.Events.MolecularDecay as X
+import Marvel.Event.Events.WarpReality as X
+import Marvel.Event.Events.CrisisAverted as X
+import Marvel.Event.Events.Multitasking as X
+import Marvel.Event.Events.SwiftRetribution as X
+import Marvel.Event.Events.TurnTheTide as X
+import Marvel.Event.Events.SpiritualMeditation as X
+import Marvel.Event.Events.Browbeat as X
+import Marvel.Event.Events.LastStand as X
+import Marvel.Event.Events.BaitAndSwitch as X
+import Marvel.Event.Events.Recuperation as X

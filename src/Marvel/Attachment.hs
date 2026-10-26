@@ -104,6 +104,9 @@ allAttachments =
 
       -- Quicksilver
       , SomeAttachmentCard vibrationResistance
+
+      -- Scarlet Witch
+      , SomeAttachmentCard magicalSuspension
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

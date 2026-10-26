@@ -114,6 +114,9 @@ allMinions =
 
       -- Quicksilver
       , avalanche
+
+      -- Scarlet Witch
+      , luminous
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -590,3 +593,8 @@ avalanche =
   unique (minion "14026" "Avalanche" [BrotherhoodOfMutants] [Boost, Boost] QuicksilverNemesis 1)
     { cdKeywords = singleton (Incite 2)
     }
+
+-- Scarlet Witch
+
+luminous :: CardDef
+luminous = unique (minion "15025" "Luminous" [Elite] [Boost, Boost] ScarletWitchNemesis 1)

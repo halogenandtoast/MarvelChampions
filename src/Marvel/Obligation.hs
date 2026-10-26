@@ -63,6 +63,9 @@ allObligations = fromList $ map
 
   -- Quicksilver
   , SomeObligationCard needForSpeed
+
+  -- Scarlet Witch
+  , SomeObligationCard slippingSanity
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

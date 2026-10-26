@@ -85,3 +85,6 @@ import Marvel.SideScheme.SideSchemes.MothersOrders as X
 
 -- Quicksilver
 import Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion as X
+
+-- Scarlet Witch
+import Marvel.SideScheme.SideSchemes.TheNextEvolution as X

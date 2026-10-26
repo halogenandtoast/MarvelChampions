@@ -114,3 +114,6 @@ import Marvel.Treachery.Treacheries.BeetleMania as X
 
 -- Quicksilver
 import Marvel.Treachery.Treacheries.Earthquake as X
+
+-- Scarlet Witch
+import Marvel.Treachery.Treacheries.ChaosManipulation as X

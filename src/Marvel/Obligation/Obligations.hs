@@ -36,3 +36,6 @@ import Marvel.Obligation.Obligations.RedDreams as X
 
 -- Quicksilver
 import Marvel.Obligation.Obligations.NeedForSpeed as X
+
+-- Scarlet Witch
+import Marvel.Obligation.Obligations.SlippingSanity as X

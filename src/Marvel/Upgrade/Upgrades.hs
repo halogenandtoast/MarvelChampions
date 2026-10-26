@@ -105,3 +105,7 @@ import Marvel.Upgrade.Upgrades.AdrenalineRush as X
 import Marvel.Upgrade.Upgrades.CivicDuty as X
 import Marvel.Upgrade.Upgrades.BruteForce as X
 import Marvel.Upgrade.Upgrades.SenseOfJustice as X
+
+-- Scarlet Witch
+import Marvel.Upgrade.Upgrades.MagicShield as X
+import Marvel.Upgrade.Upgrades.ScarletWitchsCrest as X

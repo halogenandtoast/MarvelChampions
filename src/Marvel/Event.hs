@@ -166,6 +166,21 @@ allEvents = fromList $ map
   , SomeEventCard orderAndChaos
   , SomeEventCard unitedWeStand
   , SomeEventCard beatEmUp
+
+  -- Scarlet Witch
+  , SomeEventCard chaosMagic
+  , SomeEventCard hexBolt
+  , SomeEventCard molecularDecay
+  , SomeEventCard warpReality
+  , SomeEventCard crisisAverted
+  , SomeEventCard multitasking
+  , SomeEventCard swiftRetribution
+  , SomeEventCard turnTheTide
+  , SomeEventCard spiritualMeditation
+  , SomeEventCard browbeat
+  , SomeEventCard lastStand
+  , SomeEventCard baitAndSwitch
+  , SomeEventCard recuperation
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

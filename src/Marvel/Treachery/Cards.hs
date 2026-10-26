@@ -145,6 +145,9 @@ allTreacheries = fromList $ map
 
   -- Quicksilver
   , earthquake
+
+  -- Scarlet Witch
+  , chaosManipulation
   ]
 
 treachery
@@ -567,3 +570,8 @@ beetleMania = treachery "13030" "Beetle Mania" [Boost] WaspNemesis 2
 
 earthquake :: CardDef
 earthquake = (treachery "14028" "Earthquake" [Star] QuicksilverNemesis 2) {cdKeywords = singleton (Keyword.Incite 1)}
+
+-- Scarlet Witch
+
+chaosManipulation :: CardDef
+chaosManipulation = treachery "15027" "Chaos Manipulation" [Boost, Boost] ScarletWitchNemesis 1

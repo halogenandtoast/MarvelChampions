@@ -73,6 +73,9 @@ allSupports = fromList $ map
 
   -- Quicksilver
   , SomeSupportCard servalIndustries
+
+  -- Scarlet Witch
+  , SomeSupportCard agathaHarkness
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

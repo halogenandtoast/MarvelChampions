@@ -141,6 +141,10 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard civicDuty
   , SomeUpgradeCard bruteForce
   , SomeUpgradeCard senseOfJustice
+
+  -- Scarlet Witch
+  , SomeUpgradeCard magicShield
+  , SomeUpgradeCard scarletWitchsCrest
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

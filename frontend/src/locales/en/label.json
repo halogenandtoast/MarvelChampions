@@ -164,6 +164,10 @@
 
   "-- Scarlet Witch --": "",
   "chooseCardForBottomOfDeck": "Choose the next card to place on the bottom of your deck",
+  "increaseBoostIcons": "Increase the boost icons on that card by 1",
+  "decreaseBoostIcons": "Decrease the boost icons on that card by 1",
+  "exhaustWandaMaximoffRemoveSlippingSanity": "Exhaust Wanda Maximoff → remove Slipping Sanity from the game",
+  "discardEncounterCardsThreatPerStar": "Discard the top {count} encounter cards: 1 threat on the main scheme for each [star]",
 
   "-- end --": ""
 }

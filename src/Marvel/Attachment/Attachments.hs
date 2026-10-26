@@ -71,3 +71,6 @@ import Marvel.Attachment.Attachments.BeetleArmorMkIV as X
 
 -- Quicksilver
 import Marvel.Attachment.Attachments.VibrationResistance as X
+
+-- Scarlet Witch
+import Marvel.Attachment.Attachments.MagicalSuspension as X

@@ -111,4 +111,9 @@ allAllies = fromList $ map
   , SomeAllyCard scarletWitchWandaMaximoff
   , SomeAllyCard multipleMan
   , SomeAllyCard warlock
+
+  -- Scarlet Witch
+  , SomeAllyCard quicksilverPietroMaximoff
+  , SomeAllyCard speedThomasShepherd
+  , SomeAllyCard wiccanWilliamKaplan
   ]
