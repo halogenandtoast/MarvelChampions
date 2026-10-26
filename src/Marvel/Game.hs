@@ -2049,7 +2049,10 @@ runGameMessagesWith before = go (0 :: Int)
             Just (Ask ident asked) -> case withoutPermanentTargets g asked of
               -- nothing is asked when there is nothing to choose
               question | not (hasChoices question) -> go (n + 1)
-              question -> withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
+              question -> do
+                withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
+                -- a player chosen when there is only the one is chosen for them
+                when (onlyPlayer question) $ answerQuestionWith before ident 0
             Just other -> do
               debug other
               before other
@@ -2062,9 +2065,19 @@ runGameMessagesWith before = go (0 :: Int)
 messageLimit :: Int
 messageLimit = 10000
 
+-- | Whether all the question offers is one player.
+onlyPlayer :: Question -> Bool
+onlyPlayer = \case
+  QuestionLabel _ _ q -> onlyPlayer q
+  Read _ _ -> False
+  Searched _ q -> onlyPlayer q
+  ChooseOne [TargetLabel (IdentityRef _) _] -> True
+  ChoosePlayerOrder (Unsorted [_]) _ -> True
+  _ -> False
+
 -- | Answer the question a player was asked with the choice at the index given, and play
 -- on to the next question.
-answerQuestionWith :: (Message -> GameAppT ()) -> IdentityId -> Int -> GameAppT ()
+answerQuestionWith :: (MonadGame env m) => (Message -> m ()) -> IdentityId -> Int -> m ()
 answerQuestionWith before ident n = do
   g <- getGame
   question <- maybe (throwM NoQuestion) pure $ lookup ident (gameQuestion g)
