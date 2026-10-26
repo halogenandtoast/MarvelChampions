@@ -20,6 +20,9 @@ OUT = ROOT / "frontend" / "public" / "data" / "cards.json"
 API = "https://marvelcdb.com/api/public"
 
 LANDSCAPE = {"main_scheme", "side_scheme", "player_side_scheme"}
+# Open identities occupy two card faces. Archangel reads across the spread;
+# Ant-Man and Wasp turn the spread upright.
+FOLD_OUT_ORIENTATIONS = {"12001c": "portrait", "13001c": "portrait", "42001c": "landscape"}
 
 # MarvelCDB scans filed under the other face's name: its 07001b.png is Breakout's 1A side,
 # and its 07001.png the 1B side. The HD export (frontend/public/images) has them right.
@@ -51,6 +54,7 @@ def traits(s):
 
 def card(c, pack_order):
     t = c["type_code"]
+    orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE else "portrait")
     out = {
         "code": c["code"],
         "name": c["name"],
@@ -114,7 +118,8 @@ def card(c, pack_order):
         "image": c["code"] + ".avif",
         "remoteImage": REMOTE_IMAGE_FIXES.get(c["code"], c.get("imagesrc")),
         "remoteBackImage": c.get("backimagesrc"),
-        "orientation": "landscape" if t in LANDSCAPE else "portrait",
+        "orientation": orientation,
+        "aspectRatio": (126 / 88 if orientation == "landscape" else 88 / 126) if c["code"] in FOLD_OUT_ORIENTATIONS else None,
         "deckRequirements": c.get("deck_requirements"),
         "deckOptions": c.get("deck_options"),
     }

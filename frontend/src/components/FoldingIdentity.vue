@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // A three-sided identity card, Ant-Man's: a folded sheet whose front cover is the
 // alter-ego (B), whose back cover is one hero form (A), and whose inside spread is the
-// giant hero form (C), printed sideways across both pages with its top on the left page.
+// third hero form (C). Giant forms stand upright; Archangel reads across the spread.
 // Like the card in hand, it never jumps from one side to the other: to C the cover facing
 // you swings open about the spine, then the spread stands up; from C it lies down, then
 // the cover of the side wanted swings shut over the other; from A to B or back it turns
@@ -9,6 +9,7 @@
 // It fills its parent, which gives it a card's shape.
 import { computed, nextTick, ref, watch } from 'vue'
 import CardFace from './CardFace.vue'
+import { useCards } from '../cards'
 
 const { faces, code } = defineProps<{
   /** the sides' codes, A then B then C */
@@ -16,6 +17,9 @@ const { faces, code } = defineProps<{
   /** the side showing */
   code: string
 }>()
+
+const cards = useCards()
+const horizontal = computed(() => cards.landscape(faces[2]))
 
 type Pose = 'front' | 'back' | 'open'
 const pose = computed<Pose>(() => (code === faces[2] ? 'open' : code === faces[0] ? 'back' : 'front'))
@@ -78,6 +82,7 @@ watch(pose, () => {
 // the book changed to the pose, returning how long it takes
 const change = (to: Pose): number => {
   const b = { ...book.value }
+  const stand = horizontal.value ? 0 : step
   if (to === 'open') {
     // the cover facing you swings open
     if (b.turn === 0) {
@@ -88,16 +93,16 @@ const change = (to: Pose): number => {
     // the giant shows as soon as the cover has lifted off it
     delays.value = { turn: 0, fold: 0, stand: fold, inside: lifted * fold }
     book.value = b
-    return fold + step
+    return fold + stand
   } else if (!shut(b)) {
     // the cover of the side wanted swings shut over the other, which stays put: whichever
     // way the book is turned, the leaf shut on top shows B and the page shut on top A
     if (to === 'front') b.leaf = b.page
     else b.page = b.leaf
     // and goes just before the cover lands on it
-    delays.value = { turn: 0, fold: step, stand: 0, inside: step + (1 - lifted) * fold }
+    delays.value = { turn: 0, fold: stand, stand: 0, inside: stand + (1 - lifted) * fold }
     book.value = b
-    return fold + step
+    return fold + stand
   }
   b.turn = 180 - b.turn
   delays.value = { turn: 0, fold: 0, stand: 0, inside: 0 }
@@ -124,6 +129,7 @@ const pageStyle = computed(() => ({ transform: `rotateY(${book.value.page}deg)` 
 // far side of the spine, it slides back into the card's box
 const spreadStyle = computed(() => {
   const b = book.value
+  if (!shut(b) && horizontal.value) return { translate: b.turn === 0 ? '100% 0' : '0 0' }
   const down = 'calc(100cqw - 50cqh)'
   if (!shut(b)) return b.turn === 0 ? { translate: `50cqh ${down}`, rotate: '90deg' } : { translate: `${down} ${down}`, rotate: '-90deg' }
   return b.leaf === 0 ? {} : { translate: '100% 0' }
@@ -131,7 +137,7 @@ const spreadStyle = computed(() => {
 </script>
 
 <template>
-  <div class="folding" :class="{ 'is-open': !shut(book), snapping }" :style="style">
+  <div class="folding" :class="{ 'is-open': !shut(book), horizontal, snapping }" :style="style">
     <div class="turn" :style="turnStyle">
       <div class="spread" :style="spreadStyle">
         <div class="page" :style="pageStyle">
@@ -189,6 +195,11 @@ const spreadStyle = computed(() => {
 }
 .half.left :deep(.card-face) { left: calc(100cqw - 50cqh); }
 .half.right :deep(.card-face) { left: calc(-50cqh); }
+
+/* Archangel's art runs left to right across the two upright covers. */
+.horizontal .half :deep(.card-face) { width: 200cqw; height: 100cqh; top: 0; rotate: none; }
+.horizontal .half.left :deep(.card-face) { left: 0; }
+.horizontal .half.right :deep(.card-face) { left: -100cqw; }
 
 @media (prefers-reduced-motion: reduce) {
   .turn, .spread, .leaf, .page, .inside { transition: none; }

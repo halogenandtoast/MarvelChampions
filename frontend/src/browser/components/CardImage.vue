@@ -13,7 +13,7 @@ const { card, eager = false, tight = false } = defineProps<{
 </script>
 
 <template>
-  <div class="frame" :class="{ 'frame--tight': tight }" :data-orientation="card.orientation ?? 'portrait'">
+  <div class="frame" :class="{ 'frame--tight': tight }" :data-orientation="card.orientation ?? 'portrait'" :style="{ aspectRatio: card.aspectRatio }">
     <CardFace :code="card.code" :name="card.name" :eager="eager" />
   </div>
 </template>

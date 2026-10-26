@@ -59,8 +59,7 @@ const label = useChoiceLabel()
 const el = useTemplateRef<HTMLElement>('el')
 
 const landscape = computed(() => !props.back && cards.landscape(props.code))
-// Ant-Man in Giant form, at his size: a sideways card wide, two tall
-const giant = computed(() => props.faces?.length === 3 && props.code === props.faces[2])
+const unfolded = computed(() => props.faces?.length === 3 && props.code === props.faces[2])
 const title = computed(() => cards.name(props.code, props.name))
 const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : []))
 const active = computed(() => options.value.length > 0)
@@ -109,11 +108,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 </script>
 
 <template>
-  <div class="slot" :class="{ exhausted, landscape, giant, hosting: attached.length }">
+  <div class="slot" :class="{ exhausted, landscape, unfolded, hosting: attached.length }">
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape, giant, source }"
+      :class="{ active, exhausted, landscape, unfolded, source }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :title="title"
@@ -177,10 +176,13 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   flex-direction: column;
   align-items: center;
   width: var(--w);
-  transition: margin 0.2s ease, width 0.4s ease;
+  transition: margin 0.2s ease, padding 0.25s ease, width 0.4s ease;
 }
-.slot.giant { width: calc(var(--w) / var(--card-aspect)); }
+.slot.unfolded { width: calc(var(--w) / var(--card-aspect)); }
 .slot.landscape { width: calc(var(--w) / var(--card-aspect)); }
+.slot.unfolded.landscape { width: calc(2 * var(--w)); }
+/* The wide spread grows taller when exhausted; keep its meter below the turned card. */
+.slot.unfolded.landscape.exhausted { padding-block: max(0px, calc((1.8 * var(--w) - var(--w) / var(--card-aspect)) / 2)); }
 /* an exhausted card turns sideways, so it takes its height in width */
 .slot.exhausted:not(.landscape) { margin-inline: calc((var(--w) / var(--card-aspect) * 0.9 - var(--w)) / 2); }
 
@@ -197,8 +199,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   user-select: none;
   container-type: inline-size;
 }
-.card.giant { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
+.card.unfolded { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
+.card.unfolded.landscape { width: calc(2 * var(--w)); aspect-ratio: calc(2 * var(--card-aspect)); }
 .card :deep(.card-face) { border-radius: inherit; }
 /* nothing behind a card that turns over shows while it is edge on */
 .card:has(> .flip, > .folding) { background: none; }

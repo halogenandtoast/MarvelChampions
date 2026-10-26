@@ -1,6 +1,6 @@
 import { computed, reactive, readonly, ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import type { Back } from '../cards'
+import { useCards, type Back } from '../cards'
 
 /** What the overlay draws: a card by its code, or a back, with the status cards on it. */
 export interface Preview {
@@ -27,6 +27,7 @@ interface Placement {
 
 const card = shallowRef<Preview | null>(null)
 const sideways = ref(false)
+const aspectRatio = ref(CARD_RATIO)
 // which side of the preview its status cards go: away from the card hovered
 const side = ref<'left' | 'right'>('right')
 const anchor = shallowRef<HTMLElement | null>(null)
@@ -46,7 +47,7 @@ const measure = () => {
 
   const rect = element.getBoundingClientRect()
   const width = sideways.value ? OVERLAY_WIDTH / CARD_RATIO : OVERLAY_WIDTH
-  const height = sideways.value ? OVERLAY_WIDTH : Math.round(OVERLAY_WIDTH / CARD_RATIO)
+  const height = width / aspectRatio.value
   const extra = card.value?.statuses?.length ? STATUS_WIDTH + GAP : 0
 
   if (pinned.value) {
@@ -126,6 +127,7 @@ export const useCardOverlay = () => (listen(), {
   show: (shown: Preview, element: HTMLElement, rotated = false, touched = false) => {
     card.value = shown
     sideways.value = rotated
+    aspectRatio.value = (!shown.back && useCards().card(shown.code)?.aspectRatio) || (rotated ? 1 / CARD_RATIO : CARD_RATIO)
     anchor.value = element
     pinned.value = touched
     swallowClick = touched && pressing

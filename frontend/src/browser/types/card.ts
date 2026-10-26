@@ -67,6 +67,8 @@ export interface Card {
   remoteImage?: string
   remoteBackImage?: string
   orientation?: Orientation
+  /** Nonstandard printed dimensions, as for an unfolded identity. */
+  aspectRatio?: number
 }
 
 export interface Pack {
