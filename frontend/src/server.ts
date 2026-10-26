@@ -3,6 +3,12 @@
 
 import type { LogEntry } from './gameLog'
 
+/** Cards searched, and where they were (an i18n key) when it was one of several places. */
+export interface SearchedView {
+  place: string | null
+  cards: CardView[]
+}
+
 export interface CardView {
   id: string
   code: string
@@ -175,8 +181,8 @@ export interface QuestionView {
   choices: ChoiceView[]
   /** `$story.…` keys to read before answering: a campaign scenario's story and rules */
   reading?: string[]
-  /** the cards searched, those not among the choices shown too */
-  searched?: CardView[]
+  /** the cards searched, those not among the choices shown too, by where they were */
+  searched?: SearchedView[]
 }
 
 /** A card or ability being paid for, and the resources paid so far. */

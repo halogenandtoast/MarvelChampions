@@ -10,12 +10,12 @@ import { useCards } from '../cards'
 import { useChoiceLabel, useKeyed } from '../composables/useChoices'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
-import type { CardView, ChoiceView } from '../server'
+import type { ChoiceView, SearchedView } from '../server'
 
 const { prompt = null, choices, searched = [], canChoose, waitingOn = null } = defineProps<{
   prompt?: string | null
   choices: ChoiceView[]
-  searched?: CardView[]
+  searched?: SearchedView[]
   canChoose: boolean
   waitingOn?: string | null
 }>()
@@ -45,13 +45,15 @@ const close = () => { overlay.hide(); emit('close') }
 onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
-// a searched card is picked by the choice on it, if any
-const picks = computed(() =>
+type Pick = { key: string | number; code: string; index: number | null }
+// a searched card is picked by the choice on it, if any; searched in several places, the
+// cards are grouped under where they were
+const groups = computed<{ place: string | null; picks: Pick[] }[]>(() =>
   searched.length
-    ? searched.map((s) => ({ key: s.id, code: s.code, index: choices.find((c) => c.target === s.id)?.index ?? null }))
-    : choices.filter((c) => c.kind === 'card' && c.code).map((c) => ({ key: c.index, code: c.code!, index: c.index })),
+    ? searched.map((g) => ({ place: g.place, picks: g.cards.map((s) => ({ key: s.id, code: s.code, index: choices.find((c) => c.target === s.id)?.index ?? null })) }))
+    : [{ place: null, picks: choices.filter((c) => c.kind === 'card' && c.code).map((c) => ({ key: c.index, code: c.code!, index: c.index })) }],
 )
-const picked = computed(() => new Set(picks.value.map((p) => p.index)))
+const picked = computed(() => new Set(groups.value.flatMap((g) => g.picks.map((p) => p.index))))
 const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 </script>
 
@@ -62,16 +64,19 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
         <h2>{{ title }}</h2>
         <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
       </header>
-      <div class="cards">
-        <button v-for="c in picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
-          @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
-          @pointerleave="cancelPress(); overlay.hide()"
-          @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
-          @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
-          <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
-          <span class="name">{{ cards.name(c.code, c.code) }}</span>
-        </button>
-      </div>
+      <section v-for="g in groups" :key="g.place ?? ''" class="group">
+        <h3 v-if="g.place">{{ keyed(g.place) }}</h3>
+        <div class="cards">
+          <button v-for="c in g.picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
+            @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
+            @pointerleave="cancelPress(); overlay.hide()"
+            @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
+            @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
+            <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
+            <span class="name">{{ cards.name(c.code, c.code) }}</span>
+          </button>
+        </div>
+      </section>
       <footer>
         <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="emit('choose', c.index)">{{ label(c) }}</button>
         <p v-if="!canChoose" class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
@@ -100,7 +105,9 @@ h2 { margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: va
 .close { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
 .close:hover { background: var(--hover-tint); color: var(--text); }
 .close svg { width: 20px; height: 20px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.group { display: grid; gap: 8px; }
+h3 { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, 150px); justify-content: center; gap: 14px; }
 .card { display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
 .card:disabled { cursor: default; }
 .unmatched .face { filter: grayscale(0.85) brightness(0.6); }

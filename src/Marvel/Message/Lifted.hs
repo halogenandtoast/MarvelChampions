@@ -75,13 +75,24 @@ forcedResponse a body = do
   you <- getYou
   chooseOnePromptedAbout you "$label.resolveForcedResponse" a [targeting a body]
 
+-- | The revealing player resolves the card's When Revealed by clicking it: what follows
+-- waits for them.
+askToResolveWhenRevealed :: (ReverseQueue m, IsRef a) => IdentityId -> a -> m ()
+askToResolveWhenRevealed you a = chooseOnePromptedAbout you "$label.resolveWhenRevealed" a [targeting a (pure ())]
+
 -- | Ask, unless there is only the one choice: that is made. None is an error.
 chooseOrRunOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
 chooseOrRunOne you = chooseOrRunOneAs you id
 
 -- | 'chooseOrRunOne' among cards searched, all of them shown.
 chooseOrRunOneSearched :: (ReverseQueue m) => IdentityId -> [Card] -> [m Choice] -> m ()
-chooseOrRunOneSearched you searched = chooseOrRunOneAs you (Searched searched)
+chooseOrRunOneSearched you searched = chooseOrRunOneAs you (Searched [(Nothing, searched)])
+
+-- | Ask one of the choices among cards searched in several places, each shown under its
+-- label: "from their deck, discard pile or hand".
+chooseOneSearchedIn :: (ReverseQueue m) => IdentityId -> Text -> [(Text, [Card])] -> [m Choice] -> m ()
+chooseOneSearchedIn you prompt places choices =
+  push . Ask you . prompted prompt . Searched [(Just l, cs) | (l, cs) <- places, notNull cs] . ChooseOne =<< sequence choices
 
 chooseOrRunOneAs :: (ReverseQueue m) => IdentityId -> (Question -> Question) -> [m Choice] -> m ()
 chooseOrRunOneAs you asked choices = do

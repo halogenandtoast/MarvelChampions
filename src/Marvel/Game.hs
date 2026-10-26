@@ -32,6 +32,7 @@ import Marvel.Attack
 import Marvel.Campaign (Campaign, CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
 import Marvel.Card
+import Marvel.Card.WhenRevealed (hasWhenRevealed)
 import Marvel.Choice (choiceMessages)
 import Marvel.Cost
 import Marvel.Damage
@@ -1222,14 +1223,18 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- (Media Coverage); incite and surge are "When Revealed" abilities (RR)
     times <- whenRevealedTimes ident
     let whenRevealed = replicateM_ times
-    -- incite is a "When Revealed": its threat first, then the rest of the card; a
-    -- treachery's after the window as it is revealed, which may cancel it
-    unless (cdCardType (getCardDef card) == TreacheryType) $ whenRevealed (incite card)
+    -- a card with a "When Revealed" waits for the player to resolve it, so each player
+    -- sees what is happening; then incite, its threat first, then the rest of the card (a
+    -- treachery's after the window as it is revealed, which may cancel it)
+    let revealing t = do
+          when (hasWhenRevealed $ toCardCode card) $ askToResolveWhenRevealed ident t
+          whenRevealed (incite card)
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
     let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (whenRevealed $ surge ident)
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
+        revealing (toTarget attachment)
         attachmentStep (toId attachment) (RevealAttachment ident)
         surges
         pure $
@@ -1239,6 +1244,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         let
           minion = createMinion ident card
           isTough = Toughness `member` cdKeywords (getCardDef card)
+        revealing (toTarget minion)
         when isTough $ enemyBecomesTough (toId minion)
         focusing [toCard minion] do
           checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
@@ -1252,6 +1258,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         focusing [toCard treachery] do
           checkWindows [W.Window When $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck]
+          askToResolveWhenRevealed ident treachery
           whenRevealed $ treacheryStep (toId treachery) TreacheryIncite
           whenRevealed $ treacheryStep (toId treachery) $ RevealTreachery ident
           treacheryStep (toId treachery) $ CheckTreacheryCondition ident
@@ -1278,6 +1285,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             drawAndRevealEncounterCard ident
             pure g
           owner : _ -> do
+            whenRevealed (incite card)
             -- TODO: FOCUS CARDS SHOULD BE CARDS...
             focusing [toCard obligation] $
               obligationStep (toId obligation) $ RevealObligation owner
@@ -1287,6 +1295,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
                 & (entitiesL . obligationsL %~ insertMap (toId obligation) obligation)
       SideSchemeType -> do
         let sideScheme = createSideScheme card
+        revealing (toTarget sideScheme)
         sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
         whenRevealed $ sideSchemeStep (toId sideScheme) RevealSideScheme
         pure $
@@ -1295,6 +1304,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & intoAreaOf ident (\a -> a {areaSideSchemes = areaSideSchemes a <> [toId sideScheme]})
       EnvironmentType -> do
         let environment = createEnvironment card
+        revealing (toTarget environment)
         environmentStep (toId environment) EnvironmentEntered
         surges
         pure $ g & environmentIntoPlay ident environment

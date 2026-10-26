@@ -311,9 +311,14 @@ data QuestionView = QuestionView
   , choices :: [ChoiceView]
   , reading :: [Text]
   -- ^ i18n keys of what to read before answering: a campaign scenario's story and rules
-  , searched :: [CardView]
+  , searched :: [SearchedView]
   -- ^ the cards searched, to show beside those that can be chosen
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+-- | Cards searched, and where they were (an i18n key) when it was one of several places.
+data SearchedView = SearchedView {place :: Maybe Text, cards :: [CardView]}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -615,9 +620,13 @@ cardView c = CardView (toCardId c) (toCardCode c) (display . cdName $ getCardDef
 -- | The question as asked of a player.
 questionView :: IdentityId -> Question -> QuestionView
 questionView asked = \case
-  QuestionLabel l t q -> (questionView asked q) {prompt = Just l, source = refId =<< t}
+  QuestionLabel l t q ->
+    let v = questionView asked q
+        -- the choice on the card asked about says what is asked: "When Revealed"
+        named c = if c.kind == "target" && isJust c.target && c.target == (refId =<< t) && isNothing c.label then c {label = Just l} else c
+     in v {prompt = Just l, source = refId =<< t, choices = map named v.choices}
   Read r q -> (questionView asked q) {reading = r}
-  Searched cs q -> (questionView asked q) {searched = map cardView cs}
+  Searched cs q -> (questionView asked q) {searched = [SearchedView l (map cardView xs) | (l, xs) <- cs]}
   ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (described cs) [] []
   ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (described cs) [] []
   ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (described cs) [] []

@@ -42,9 +42,12 @@ instance RunMessage HydraPrison where
           hand <- projectMap PlayerIdentityHand unHand p
           deck <- projectMap PlayerIdentityDeck unDeck p
           discard <- projectMap PlayerIdentityDiscard unDiscard p
-          let allies = filter (cardMatch $ CardMatchesAny $ map CardIs heroSpecificAllies) (hand <> deck <> discard)
-          unless (null allies) $
-            chooseOne p [targeting c (cardSpecific attrs "imprison" c) | c <- allies]
+          let
+            allies = filter (cardMatch $ CardMatchesAny $ map CardIs heroSpecificAllies)
+            places = [("$game.piles.deck", allies deck), ("$game.piles.discard", allies discard), ("$game.hand", allies hand)]
+            found = concatMap snd places
+          unless (null found) $
+            chooseOneSearchedIn p "$label.imprisonAlly" (map (second (map PlayerCard)) places) [targeting c (cardSpecific attrs "imprison" c) | c <- found]
         sideSchemeRevealedThen ident
         pure s
       SideSchemeRevealedThen -> do

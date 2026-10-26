@@ -438,6 +438,14 @@ runNow msgs = do
   withGame_ $ questionL .~ mempty
   pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
   runGame
+  pressWhenRevealed
+
+-- | The player resolves each When Revealed the game waits on, as they would by clicking
+-- the card: a test is about what the card does.
+pressWhenRevealed :: GameAppT ()
+pressWhenRevealed = openQuestion >>= \case
+  Just (ident, QuestionLabel "$label.resolveWhenRevealed" _ _) -> answerQuestion ident 0 >> pressWhenRevealed
+  _ -> pure ()
 
 -- | Set the damage on a player's identity.
 setDamage :: IdentityId -> Natural -> GameAppT ()
@@ -483,6 +491,7 @@ start msgs = do
   withGame_ $ questionL .~ mempty
   pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
   runGameMessages
+  pressWhenRevealed
 
 encounterDiscardCodes :: GameAppT [CardCode]
 encounterDiscardCodes = getsGame (map (toCardCode @EncounterCard) . field ScenarioDiscard . gameScenario)

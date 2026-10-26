@@ -180,6 +180,7 @@ library
       Marvel.Card.PlayerCard.Types
       Marvel.Card.Side
       Marvel.Card.Types
+      Marvel.Card.WhenRevealed
       Marvel.Choice
       Marvel.Cost
       Marvel.Cost.Types

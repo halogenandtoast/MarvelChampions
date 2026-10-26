@@ -113,6 +113,7 @@ isThreatPlacement scheme = \case
 -- discarded as it would be.
 cancelWhenRevealed :: (HasQueue m) => TreacheryId -> m ()
 cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
+  Ask _ q | asksToResolveWhenRevealed (TreacheryRef tid) q -> Nothing
   TreacheryMessage tid' msg | tid' == tid -> case msg of
     RevealTreachery _ -> Nothing
     TreacheryIncite -> Nothing

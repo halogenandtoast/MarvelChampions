@@ -28,8 +28,8 @@ data Question
     -- rules, each section an i18n key
     Read [Text] Question
   | -- | the cards searched, shown as the question is answered: those not chosen among are
-    -- shown too
-    Searched [Card] Question
+    -- shown too. Grouped by where they were (an i18n key), when they were in several places
+    Searched [(Maybe Text, [Card])] Question
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -42,6 +42,12 @@ hasChoices = \case
   QuestionLabel _ _ q -> hasChoices q
   Read _ q -> hasChoices q
   Searched _ q -> hasChoices q
+
+-- | Whether the question asks to resolve the When Revealed of this.
+asksToResolveWhenRevealed :: Target -> Question -> Bool
+asksToResolveWhenRevealed t = \case
+  QuestionLabel "$label.resolveWhenRevealed" (Just t') _ -> t == t'
+  _ -> False
 
 -- | A question with a prompt.
 prompted :: Text -> Question -> Question
