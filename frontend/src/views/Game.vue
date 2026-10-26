@@ -23,6 +23,7 @@ import QuestionZone from '../components/QuestionZone.vue'
 import River, { type RiverAttacker, type RiverCard, type RiverScheme } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import SetupBar from '../components/SetupBar.vue'
+import StoryReading from '../components/StoryReading.vue'
 import VillainArea from '../components/VillainArea.vue'
 
 const route = useRoute()
@@ -227,6 +228,9 @@ const buttons = computed(() => choices.value.filter((c) => !c.target || !onBoard
 const choose = (index: number) => {
   if (answering.value && game.value) void answer(game.value.questionVersion, index, answering.value)
 }
+// a campaign scenario's story and rules, read by everyone before its player goes on
+const reading = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.reading?.length) ?? null)
+
 provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null)
 
 const filingBug = ref(false)
@@ -293,6 +297,13 @@ const resetGame = () => {
       @file-bug="filingBug = true"
       @debug="debugging = true"
       @toggle-sidebar="showSidebar = !showSidebar"
+    />
+    <StoryReading
+      v-if="reading"
+      :sections="reading[1].reading ?? []"
+      :can-continue="answering === reading[0]"
+      :waiting-on="playerName[reading[0]] ?? null"
+      @continue="choose(0)"
     />
     <FileBug :open="filingBug" :game-id="gameId" @close="filingBug = false" />
     <DebugDialog :open="debugging" @close="debugging = false" @send="debug" />

@@ -4,5 +4,6 @@ import browser from './en/browser.json'
 import label from './en/label.json'
 import log from './en/log.json'
 import error from './en/error.json'
+import story from './en/story.json'
 
-export default { ...base, game, browser, label, log, error }
+export default { ...base, game, browser, label, log, error, story }

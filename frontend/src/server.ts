@@ -171,6 +171,8 @@ export interface QuestionView {
   /** The id of the card or entity the question is about. */
   source?: string | null
   choices: ChoiceView[]
+  /** `$story.…` keys to read before answering: a campaign scenario's story and rules */
+  reading?: string[]
 }
 
 /** A card or ability being paid for, and the resources paid so far. */

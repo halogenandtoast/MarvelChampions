@@ -1,0 +1,177 @@
+{
+  "campaignMode": {
+    "title": "Campaign Mode",
+    "text": [
+      "Campaign mode combines all five scenarios in The Rise of Red Skull into one epic experience where the outcome of each game impacts the next scenario. To complete the campaign, the players must win all five scenarios in numerical order, starting with scenario #1 – Crossbones and ending with scenario #5 – Red Skull.",
+      "Each player must use their chosen identity for the entire campaign, but they are free to change aspects and alter the contents of their deck following the deck customization rules between scenarios.",
+      "When the game ends, if the players won, they follow that scenario’s victory instructions. If the players lost, they may reset the scenario and try again with no penalty.",
+      "Cards added to a player’s deck as part of a scenario’s victory instructions must be included in that deck for the rest of the campaign. They do not count toward a player’s minimum or maximum deck size.",
+      "Cards 155–162 are campaign-only player cards: they cannot be included in any deck unless the Campaign Instructions direct the players to add them."
+    ]
+  },
+  "newKeywords": {
+    "title": "New Keywords",
+    "bullets": [
+      "Incite X: When a card with the incite X keyword is revealed, place X threat on the main scheme.",
+      "Permanent: A card with the permanent keyword cannot leave play.",
+      "Piercing: An attack with the piercing keyword discards any tough status cards from the target of the attack before dealing damage.",
+      "Ranged: An attack with the ranged keyword ignores the retaliate keyword.",
+      "Setup: A card with the setup keyword begins the game in play."
+    ]
+  },
+  "expertCampaign": {
+    "title": "Expert Campaign",
+    "text": [
+      "Each player is numbered 1 to 4 in the campaign log. When a player is instructed to add a card from their expert campaign set to their deck, they take it from the set that matches their player number.",
+      "Persistent damage: each player records their remaining hit points after they win a game, which determines their starting hit points for the next scenario (never more than their base hit points). Each scenario’s setup lets a player restore their identity to full hit points by adding an obligation from their expert campaign set to their deck.",
+      "A player defeated in a scenario their teammates go on to win does not take part in its victory steps, but can rejoin for the next scenario by adding an obligation to their deck during setup to restore their identity to full hit points.",
+      "Obligations in player decks: when a player draws an obligation from their deck, they immediately put it into play in their play area and do not draw a card to replace it. Only the player with the obligation in their play area can use its Alter-Ego Action to deal with it."
+    ]
+  },
+  "setup": {
+    "title": "Campaign Instructions: Setup",
+    "bullets": [
+      "Each player searches their deck for all cards with the setup keyword and puts them into play.",
+      "Shuffle each Experimental attachment recorded in the campaign log into the encounter deck."
+    ]
+  },
+  "expertSetup": {
+    "title": "Expert Campaign Only",
+    "bullets": [
+      "Set each player’s hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
+      "Each player may add 1 random obligation from their expert campaign set to their deck to heal their identity to its full hit point value."
+    ]
+  },
+  "expertVictory": {
+    "title": "Expert Campaign Only",
+    "bullets": ["Record each identity’s remaining hit points in the campaign log, as well as any cards added to their deck."]
+  },
+  "crossbones": {
+    "intro": {
+      "title": "Scenario #1 – Crossbones",
+      "text": [
+        "Crossbones is attacking the Project P.E.G.A.S.U.S. facility in the Adirondack mountains with a small army of Hydra troops. The S.H.I.E.L.D. soldiers stationed there fight desperately to protect the facility, but they are being overwhelmed by Hydra’s blitzkrieg assault. They need your help to stop Crossbones from capturing the experimental weapons being developed in the P.E.G.A.S.U.S. labs."
+      ]
+    },
+    "rules": {
+      "title": "Experimental Weapons Deck",
+      "text": [
+        "The setup instructions on Attack on Mount Athena 1A instruct the players to create the Experimental Weapons deck: all four cards in the Experimental Weapons encounter set, shuffled together and set facedown next to the main-scheme deck.",
+        "After a card from the Experimental Weapons deck enters play, it is considered to be part of the encounter deck. When that card is discarded, it is placed in the encounter deck discard pile."
+      ]
+    },
+    "setup": {
+      "title": "Campaign Instructions: Setup",
+      "bullets": ["Each player records their identity in the campaign log. Players cannot switch identities during a campaign."]
+    },
+    "victory": {
+      "title": "Campaign Instructions: Victory",
+      "bullets": [
+        "Each player chooses one of the Tech upgrades from the Hydra Campaign set and adds it to their deck.",
+        "Record the name of each Experimental attachment that entered the game in the campaign log."
+      ]
+    }
+  },
+  "absorbingMan": {
+    "intro": {
+      "title": "Scenario #2 – Absorbing Man",
+      "text": [
+        "The tide of battle turned against Hydra after you arrived to aid the beleaguered S.H.I.E.L.D. soldiers at Project P.E.G.A.S.U.S. Crossbones has been captured, and his army has been defeated, but Madame Hydra escaped the facility with an Infinity Gem. You chase her outside, but you are stopped short by the imposing form of Absorbing Man. The formidable villain has been hired by Red Skull to delay your pursuit. You will have to defeat him before you can recover the Infinity Gem."
+      ]
+    },
+    "rules": {
+      "title": "Rules Clarification",
+      "text": [
+        "Q. When I put an environment card into play at the beginning of the Absorbing Man scenario, do I trigger the surge keyword?",
+        "A. No. The surge keyword only triggers when the card it appears on is revealed. Putting a card into play is not the same as revealing a card."
+      ]
+    },
+    "victory": {
+      "title": "Campaign Instructions: Victory",
+      "bullets": [
+        "Record the number of delay counters on the main scheme in the campaign log.",
+        "Each player may choose one of the “Basic” Condition upgrades in the Campaign set, attach it to their identity, and add it to their deck in the campaign log."
+      ]
+    }
+  },
+  "taskmaster": {
+    "intro": {
+      "title": "Scenario #3 – Taskmaster",
+      "text": [
+        "With Absorbing Man in S.H.I.E.L.D. custody and Madame Hydra in the wind, you are flying back to Avengers Tower to plan your next move when all reality is changed in a flash of yellow light. When you reach New York City, you are shocked to find Avengers Tower emblazoned with the Hydra banner. But before you can process what has happened, an explosion rocks your Quinjet, and you crash-land in the city.",
+        "On the ground, you find that all of New York is under Hydra rule. Anti-hero propaganda is plastered on every corner, and squads of Hydra soldiers patrol the streets. They are led by the notorious Taskmaster, Hydra’s new chief of police. He is going door-to-door hunting down heroes and locking them up. He fired the surface-to-air missile that brought you down, and now he is searching for you."
+      ]
+    },
+    "rules": {
+      "title": "Rules Clarification",
+      "text": [
+        "Q. What happens when I reveal Shadow of the Past and my nemesis minion has the same title as an enemy in play?",
+        "A. Your nemesis minion cannot enter the game in this instance, so it will remain set-aside and does not enter the game. However, you still reveal your nemesis’ side scheme and shuffle the rest of your nemesis’s set into the encounter deck. This will cause Shadow of the Past to gain surge as dictated by the card."
+      ]
+    },
+    "victory": {
+      "title": "Campaign Instructions: Victory",
+      "bullets": ["Each player who rescued one or more allies from the Taskmaster encounter set adds those allies to their deck and records their names in the campaign log."]
+    }
+  },
+  "zola": {
+    "intro": {
+      "title": "Scenario #4 – Zola",
+      "text": [
+        "Having defeated Taskmaster, you learn that Hydra has not only captured New York City but all of the United States. It was the mad scientist, Arnim Zola, who built a machine to harness the power of the Reality Gem and tipped the balance of power in Hydra’s favor. He has created a research station for himself on Ellis Island, and turned the historic port into a nightmarish prison for his unfortunate test subjects. Taskmaster was ordered to bring the heroes he captured there for experimentation. In this upside-down America, you are the only hope the captives have to escape a horrible fate."
+      ]
+    },
+    "rules": {
+      "title": "Rules Clarification",
+      "text": [
+        "Q. What does it mean when a card is removed from the campaign log?",
+        "A. When a card is removed from the campaign log, cross it out of the campaign log. That card is no longer part of the campaign and cannot be included in any deck for the remainder of the campaign.",
+        "Q. If my ally is removed from the campaign at the end of Zola’s scenario, what do I do?",
+        "A. If your ally was removed from the campaign, that ally is removed from your deck for the rest of the campaign. If this causes your deck to fall below the minimum number of cards, then you must add a card to your deck."
+      ]
+    },
+    "victory": {
+      "title": "Campaign Instructions: Victory",
+      "bullets": [
+        "Each player engaged with an enemy records they are engaged with an enemy in the campaign log.",
+        "If the Hydra Prison side scheme is still in play, record the name of each ally underneath it in the campaign log. Those allies cannot be included in any deck for the remainder of the campaign.",
+        "If the Hydra Prison side scheme is not in play, each player in hero form may replace their “Basic” Condition upgrade with its “Improved” side."
+      ]
+    }
+  },
+  "redSkull": {
+    "intro": {
+      "title": "Scenario #5 – Red Skull",
+      "text": [
+        "You have liberated Zola’s island and disarmed the mad doctor, but the Reality Gem still eludes you. You learn from Zola that the Gem resides with the true mastermind behind Hydra’s ascendancy: the brilliant and nefarious Red Skull. The villain has taken up residence in Washington, D.C. and transformed the White House into his personal fortress.",
+        "But Red Skull’s ambition for conquest does not end with the U.S.A. — he plans to bind every nation under Hydra rule with the power of the Reality Gem. His scientists work around the clock to make the necessary modifications to Zola’s machine. Once completed, Red Skull will use the Reality Gem to conquer the whole world. If that happens, nobody will be safe from the types of atrocities you witnessed in Zola’s labs. You cannot allow this to happen. You must defeat Red Skull and use the Reality Gem to set things right again."
+      ]
+    },
+    "rules": {
+      "title": "Side Scheme Deck",
+      "text": [
+        "The Setup instructions on The Rise of Red Skull 1A instruct the players to create the side-scheme deck: each side scheme in the encounter deck, shuffled together into their own deck and set next to the main-scheme deck.",
+        "The side-scheme deck has its own discard pile. When a side scheme is defeated or otherwise discarded, place it in the side-scheme discard pile. If the side-scheme deck is ever empty, shuffle the side-scheme discard pile into the side-scheme deck. There is no penalty for doing this."
+      ]
+    },
+    "setup": {
+      "title": "Campaign Instructions: Setup",
+      "bullets": [
+        "Each player searches their deck for all cards with the setup keyword and puts them into play.",
+        "Shuffle each Experimental attachment recorded in the campaign log into the encounter deck.",
+        "Place X threat counters on the main scheme, where X is the number of delay counters recorded in the campaign log. (Place X per player instead if you are playing an expert campaign.)"
+      ]
+    },
+    "expertSetup": {
+      "title": "Expert Campaign Only",
+      "bullets": [
+        "Each player who was recorded as being engaged with an enemy deals themselves an encounter card.",
+        "If the players lose this game, Red Skull conquers the world and the players lose the campaign."
+      ]
+    },
+    "victory": {
+      "title": "Campaign Instructions: Victory",
+      "bullets": ["Hydra is defeated and the players win the campaign!"]
+    }
+  }
+}
