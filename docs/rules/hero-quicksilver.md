@@ -26,15 +26,16 @@ An attack with the piercing keyword discards any tough status cards from the tar
 - "Exhaust your identity" as one option of a choice (Avalanche, Earthquake, Need for Speed) cannot be chosen while the identity is already exhausted: an exhausted card cannot be exhausted (RR Exhausted), so it is no valid target (RR Target), and an encounter card's option without a valid target cannot be chosen (RR Choose (Option)).
 - Speed Cyclone: X is the number of resources paid, at least 1; it stuns that many different enemies, every enemy if X is more.
 - A wild resource generated for a cost is declared as one type (energy, mental, physical or wild) before the payment is finished, and counts as that type only (RR Wild Resource): one wild is one energy *or* one physical, never both. "If you paid for this card using [energy]" (Side Step) and "spend [physical] [physical]" (Earthquake's boost) count a wild declared as that type. Outside a cost a wild is only a wild.
+- Extortion of Seismic Proportion starts with 2 [per player] threat, has a crisis icon, and incite 1.
+- Order and Chaos also cancels a treachery's incite (RR Incite X: equivalent to a When Revealed ability).
+- Serval Industries shuffles as many as it can, up to 2, of Quicksilver's own cards (his hero set): not Order and Chaos.
+- Pietro Maximoff: "Wanda Maximoff is in play" is the Scarlet Witch ally, or an identity whose face-up title is Wanda Maximoff.
+- Order and Chaos's "Max 1 per deck" is a deck-building limit, not enforced in play.
 
 ## Readings taken in implementation (not yet ruled on)
 
-- Extortion of Seismic Proportion starts with 2 [per player] threat and has a crisis icon (MarvelCDB: base threat not fixed, crisis 1).
 - Scarlet Witch: her interrupt is optional; a star is not a boost icon; she must not be stunned (attack) or confused (thwart) to have "used" the power (as the Quicksilver FAQ).
-- Order and Chaos also cancels a treachery's incite (RR Incite X: equivalent to a When Revealed ability).
 - Multiple Man: each copy put into play by another triggers its own response.
-- Serval Industries shuffles as many as it can, up to 2, cards of Quicksilver's hero set.
-- Pietro Maximoff: "Wanda Maximoff is in play" is the Scarlet Witch ally, or an identity whose face-up title is Wanda Maximoff.
 - Need for Speed with neither option possible (the identity already exhausted, Pietro not ready in alter-ego form): nothing resolves, and the obligation is discarded.
 - Earthquake's boost is resolved by the player the attack is against, else the active player (as Tail Sweep).
 - Speed Cyclone may choose an enemy already stunned.
