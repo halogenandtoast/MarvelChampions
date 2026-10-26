@@ -10,7 +10,6 @@ import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { useCards } from '../cards'
 import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
-import SetupBar from '../components/SetupBar.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
 import type { CampaignView, StarterDeck } from '../server'
@@ -84,6 +83,13 @@ const useDeck = async () => {
 }
 
 const log = computed(() => view.value?.campaign.campaignLog)
+// said once: the campaign's own title only when its players named it something else
+const details = computed(() => {
+  const v = view.value
+  if (!v) return []
+  const title = t('campaign.riseOfRedSkull')
+  return [...(v.name === title ? [] : [title]), t(`campaign.${v.campaign.mode}`), t(`difficulty.${v.difficulty}`), t('newGame.playerCount', v.table.seats)]
+})
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
 const names = (codes: string[]) => (codes.length ? codes.map((c) => name(c)).join(', ') : t('campaign.none'))
 const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
@@ -126,7 +132,7 @@ const remove = async () => {
     <div v-if="view && log" class="page-content campaign">
       <header class="head">
         <div>
-          <p class="eyebrow">{{ $t('campaign.riseOfRedSkull') }} · {{ $t(`campaign.${view.campaign.mode}`) }} · {{ $t(`difficulty.${view.difficulty}`) }}</p>
+          <p class="eyebrow">{{ details.join(' · ') }}</p>
           <h1 class="page-title">{{ view.name }}</h1>
         </div>
         <button v-if="view.table.owner === currentUser?.id" type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
@@ -141,12 +147,7 @@ const remove = async () => {
         </li>
       </ol>
 
-      <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin">
-        <SetupBar
-          :name="$t('campaign.riseOfRedSkull')"
-          :details="[$t(`campaign.${view.campaign.mode}`), $t(`difficulty.${view.difficulty}`), $t('newGame.playerCount', view.table.seats)]"
-        />
-      </Lobby>
+      <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin" />
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
