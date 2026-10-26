@@ -764,6 +764,7 @@ refId = \case
 
 idText :: (ToJSON a) => a -> Text
 idText a = case toJSON a of
+  EnvironmentRef x -> Just (idText x)
   String t -> t
   other -> tshow other
 

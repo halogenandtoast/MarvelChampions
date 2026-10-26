@@ -8,6 +8,9 @@ import Marvel.EncounterSet (modularSets)
 import System.Environment (lookupEnv)
 import TestImport
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson (encode)
+import Data.ByteString.Lazy qualified as BL
+import Marvel.Game.Public (publicGameFor)
 
 -- | Answer whatever is asked at random, from a seed, for as many answers as given, or
 -- until the game ends. The game must not fail on the way. Hastened, a villain in play is
@@ -24,6 +27,9 @@ playRandomly hasten seed = go (mkStdGen seed)
     openQuestion >>= \case
       Nothing -> pure n
       Just (ident, q) -> do
+        -- what the client is sent must be made too, whatever is asked
+        view <- liftIO . publicGameFor (const True) =<< getGame
+        void $ liftIO $ evaluate (BL.length (encode view))
         -- ending the turn is chosen rarely, so that cards get played
         let (roll, gen') = randomR (0 :: Int, 9) gen
             others = [i | (i, c) <- zip [0 ..] (choicesOf q), c /= EndTurn]
