@@ -4,6 +4,7 @@
 // bullets. Everyone at the table reads it; the player asked goes on.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { X } from 'lucide-vue-next'
 import PrimaryButton from './PrimaryButton.vue'
 
 const { sections, canContinue, waitingOn = null } = defineProps<{
@@ -11,7 +12,7 @@ const { sections, canContinue, waitingOn = null } = defineProps<{
   canContinue: boolean
   waitingOn?: string | null
 }>()
-const emit = defineEmits<{ continue: [] }>()
+const emit = defineEmits<{ continue: []; close: [] }>()
 const { t, tm, rt, te } = useI18n()
 
 type Section = { title?: string; text?: string[]; bullets?: string[] }
@@ -28,8 +29,9 @@ const shown = computed(() =>
 </script>
 
 <template>
-  <div class="story-backdrop">
+  <div class="story-backdrop" @click.self="emit('close')">
     <article class="story" role="dialog" aria-modal="true" :aria-label="shown[0]?.title">
+      <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="emit('close')"><X aria-hidden="true" /></button>
       <div class="body">
         <section v-for="(s, i) in shown" :key="s.key" :class="{ lead: i === 0 }">
           <h2>{{ s.title }}</h2>
@@ -58,6 +60,7 @@ const shown = computed(() =>
   background: rgb(0 0 0 / 0.6);
 }
 .story {
+  position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   width: min(44rem, 100%);
@@ -68,6 +71,10 @@ const shown = computed(() =>
   color: var(--text);
   box-shadow: 0 8px 24px var(--shadow);
 }
+.close { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+.close:hover { background: var(--hover-tint); color: var(--text); }
+.close svg { width: 20px; height: 20px; }
+.lead h2 { padding-right: 40px; }
 .body { display: grid; gap: 18px; padding: 20px; overflow-y: auto; }
 section { display: grid; gap: 8px; }
 h2 { margin: 0; font-size: 1.05rem; text-transform: uppercase; color: var(--title); }

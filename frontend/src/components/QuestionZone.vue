@@ -11,7 +11,7 @@ import { useCards } from '../cards'
 import CardFace from './CardFace.vue'
 import type { ChoiceView } from '../server'
 
-const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, outcome = null, things = {} } = defineProps<{
+const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, outcome = null, things = {}, popOut = null } = defineProps<{
   kind?: string | null
   /** what is asked, as the engine says it */
   prompt?: string | null
@@ -25,8 +25,10 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
   outcome?: 'Won' | 'Lost' | null
   /** everything in the game by id, to name and show what a choice is about */
   things?: Record<string, { code: string; name: string }>
+  /** the question is answered in a window over the board: only a button to open it here */
+  popOut?: 'open' | 'closed' | null
 }>()
-const emit = defineEmits<{ choose: [index: number] }>()
+const emit = defineEmits<{ choose: [index: number]; reopen: [] }>()
 const { t, te } = useI18n()
 const label = useChoiceLabel()
 const cards = useCards()
@@ -59,6 +61,15 @@ const tone = (choice: ChoiceView) =>
         <Trophy v-if="outcome === 'Won'" aria-hidden="true" />
         <Skull v-else aria-hidden="true" />
         <span>{{ t(outcome === 'Won' ? 'game.outcome.won' : 'game.outcome.lost') }}</span>
+      </div>
+    </template>
+    <template v-else-if="popOut">
+      <header>
+        <span class="eyebrow">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
+        <h2 v-if="!waitingOn">{{ prompt }}</h2>
+      </header>
+      <div v-if="popOut === 'closed'" class="options">
+        <button type="button" class="go" @click="emit('reopen')">{{ t('game.prompt.showAgain') }}</button>
       </div>
     </template>
     <template v-else-if="buttons.length || onBoard">

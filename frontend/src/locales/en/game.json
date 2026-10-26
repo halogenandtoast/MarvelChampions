@@ -127,7 +127,9 @@
     "yourMove": "Your move",
     "asking": "{name}'s move",
     "orClickHighlighted": "or click the highlighted card | or click a highlighted card",
-    "waiting": "Nothing to decide right now."
+    "waiting": "Nothing to decide right now.",
+    "showAgain": "Show again",
+    "read": "Read before going on"
   },
   "outcome": {
     "won": "The heroes win",

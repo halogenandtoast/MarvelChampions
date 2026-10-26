@@ -24,6 +24,7 @@ import River, { type RiverAttacker, type RiverCard, type RiverScheme } from '../
 import SeatTabs from '../components/SeatTabs.vue'
 import SetupBar from '../components/SetupBar.vue'
 import StoryReading from '../components/StoryReading.vue'
+import CardPick from '../components/CardPick.vue'
 import VillainArea from '../components/VillainArea.vue'
 
 const route = useRoute()
@@ -230,6 +231,11 @@ const choose = (index: number) => {
 }
 // a campaign scenario's story and rules, read by everyone before its player goes on
 const reading = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.reading?.length) ?? null)
+// a question answered by picking a card in no play area, as a campaign's Tech upgrade
+const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.choices?.some((c) => c.kind === 'card')) ?? null)
+// either pops out over the board; closed, the question box opens it again
+const closedAt = ref<number | null>(null)
+const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
 
 provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null)
 
@@ -299,11 +305,21 @@ const resetGame = () => {
       @toggle-sidebar="showSidebar = !showSidebar"
     />
     <StoryReading
-      v-if="reading"
+      v-if="reading && popOut === 'open'"
       :sections="reading[1].reading ?? []"
       :can-continue="answering === reading[0]"
       :waiting-on="playerName[reading[0]] ?? null"
       @continue="choose(0)"
+      @close="closedAt = game?.questionVersion ?? null"
+    />
+    <CardPick
+      v-else-if="picking && popOut === 'open'"
+      :prompt="picking[1].prompt ?? null"
+      :choices="picking[1].choices"
+      :can-choose="answering === picking[0]"
+      :waiting-on="playerName[picking[0]] ?? null"
+      @choose="choose"
+      @close="closedAt = game?.questionVersion ?? null"
     />
     <FileBug :open="filingBug" :game-id="gameId" @close="filingBug = false" />
     <DebugDialog :open="debugging" @close="debugging = false" @send="debug" />
@@ -356,14 +372,16 @@ const resetGame = () => {
                 <template v-if="seat.id === viewed?.id">
                   <QuestionZone
                     :kind="question?.kind ?? null"
-                    :prompt="question?.prompt ?? null"
+                    :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
                     :buttons="buttons"
                     :on-board="boardChoices.length"
                     :asking="answering && mySeats.length > 1 ? playerName[answering] : null"
                     :waiting-on="waitingOn"
                     :outcome="game.outcome"
                     :things="things"
+                    :pop-out="popOut"
                     @choose="choose"
+                    @reopen="closedAt = null"
                   />
                   <RouterLink v-if="game.outcome && table?.campaign" :to="`/campaigns/${table.campaign}`" class="btn primary big">{{ t('game.outcome.toCampaign') }}</RouterLink>
                   <p v-if="error" class="error">
