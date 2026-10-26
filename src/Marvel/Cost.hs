@@ -18,6 +18,8 @@ import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Queue
+import Marvel.Modifier.Types (Modifier (BasicAttackAdditionalCost))
+import Marvel.Question qualified as Q
 import Marvel.Ref
 import Marvel.Resource
 
@@ -31,7 +33,16 @@ passesCanAffordCost ::
   IdentityId ->
   Ability ->
   m Bool
-passesCanAffordCost identityId a = canAffordCost identityId (abilitySource a) (abilityCost a)
+passesCanAffordCost identityId a = canAffordCost identityId (abilitySource a) =<< getAbilityCost a
+
+-- | The ability's cost with what modifiers add to it: "as an additional cost for each
+-- hero to make a basic attack" (Mother's Orders).
+getAbilityCost :: (HasGame m) => Ability -> m Cost
+getAbilityCost a = case abilitySource a of
+  IdentityRef ident | abilityType a == Basic, Q.Attack `elem` abilityChoices a -> do
+    modifiers <- getModifiers ident
+    pure $ abilityCost a <> mconcat [c | BasicAttackAdditionalCost c <- modifiers]
+  _ -> pure $ abilityCost a
 
 -- | Whether the player can pay the cost, besides its resources when it is a card's: a
 -- card being played is not in hand to be discarded for its own cost.

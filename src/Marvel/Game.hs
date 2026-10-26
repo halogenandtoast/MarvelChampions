@@ -1163,6 +1163,38 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       [(c, room)] -> assign c (min n room)
       _ -> chooseOnePrompted ident "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
     pure g
+  -- divided damage (Giant Wasp, Wasp Sting): a point at a time among the enemies
+  -- matching, then each share dealt at once; an attack's attacks each enemy dealt one
+  AssignDividedDamage ident source damage matcher assigned -> do
+    enemies <- selectList (DamageableEnemy <> matcher)
+    let n = damageAmount damage
+        assign e k = push $ AssignDividedDamage ident source damage {damageAmount = n - k} matcher ((e, k) : assigned)
+    case enemies of
+      _ | n == 0 || null enemies ->
+        pushAll . simultaneousDamage
+          =<< traverse
+            (\(e, k) -> capture $ resolveAs ident $ DamageEnemy (enemyRef e) source damage {damageAmount = k})
+            (HashMap.toList $ HashMap.fromListWith (+) assigned)
+      [e] -> assign e n
+      _ -> chooseOnePrompted ident "$label.assignDividedDamage" [targeting (enemyRef e) (assign e 1) | e <- enemies]
+    pure g
+  -- divided threat removal: a point at a time among the schemes matching, none past a
+  -- scheme's threat, then each scheme given a share thwarted (Wasp rulesheet)
+  AssignDividedThreat ident source basic n matcher assigned -> do
+    let given s = sum [k | (s', k) <- assigned, s' == s]
+    schemes <- selectList matcher
+    open <- forMaybeM schemes \s -> do
+      threat <- selectCount SchemeThreat (SchemeWithId s)
+      let room = subtractNatural (given s) threat
+      pure $ guard (room > 0) $> (s, room)
+    let assign s k = push $ AssignDividedThreat ident source basic (n - k) matcher ((s, k) : assigned)
+    case open of
+      _ | n == 0 || null open ->
+        for_ (HashMap.toList $ HashMap.fromListWith (+) assigned) \(s, k) ->
+          resolveAs ident $ (if basic then BasicThwartScheme else ThwartScheme) (schemeRef s) source k
+      [(s, room)] -> assign s (min n room)
+      _ -> chooseOnePrompted ident "$label.assignDividedThreat" [targeting (schemeRef s) (assign s 1) | (s, _) <- open]
+    pure g
   RevealedEncounterCard ident card -> do
     -- each "When Revealed" resolves once, and once more for each ability that says so
     -- (Media Coverage); incite and surge are "When Revealed" abilities (RR)

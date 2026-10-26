@@ -6,6 +6,7 @@ import Marvel.Ability.Types hiding (Attack, Thwart)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Card.Def (CardDef (..))
 import Marvel.ActiveCost.Types
+import Marvel.Cost (getAbilityCost)
 import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
@@ -84,13 +85,14 @@ resolveChoice ident = \case
               ]
   UseAbility a -> do
     activeCostId <- getRandom
+    cost <- getAbilityCost a
     pure
       [ SetActiveCost $
           ActiveCost
             activeCostId
             ident
             (ForAbility a)
-            (abilityCost a)
+            cost
             NoPayment
             Nothing
             mempty

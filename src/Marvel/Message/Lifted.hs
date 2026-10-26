@@ -178,6 +178,12 @@ retaliate source attacker = pushAll . retaliateDamage (toSource source) attacker
 dealIndirectDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
 dealIndirectDamage ident source n = indirectDamageAssigned ident (toSource source) n []
 
+-- | Damage divided among the enemies matching as the player chooses, assigned a point
+-- at a time, then each enemy given a share dealt it as one effect: an attack's damage
+-- attacks each of them (Giant Wasp, Wasp Sting). The damage is the total and its kind.
+dealDividedDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> EnemyMatcher -> m ()
+dealDividedDamage you source damage matcher = push $ AssignDividedDamage you (toSource source) damage matcher []
+
 -- | The indirect damage left to assign, and what has been.
 indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Natural -> [(CharacterId, Natural)] -> m ()
 indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
@@ -198,6 +204,16 @@ basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme 
 -- ('threatPlacement'): what an interrupt to that window places in its stead.
 placeThreatWithoutWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreatWithoutWindow scheme = push . threatPlacement (toScheme scheme)
+
+-- | Threat removed by thwarting, divided among the schemes matching as the player
+-- chooses: assigned a point at a time, none past a scheme's threat, then each scheme
+-- given its share is thwarted (RR, Wasp rulesheet).
+thwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
+thwartDivided you source n matcher = push $ AssignDividedThreat you (toSource source) False n matcher []
+
+-- | The hero's basic thwart divided among the thwartable schemes (Giant Wasp).
+basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
+basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True n ThwartableScheme []
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
@@ -327,7 +343,7 @@ basicAttack ident = push . IdentityMessage ident . SideMessage . BasicAttack
 basicThwart ident = push . IdentityMessage ident . SideMessage . BasicThwart
 
 defenseApplied :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
-defenseApplied ident = push . IdentityMessage ident . SideMessage . DefenseApplied . toEnemy
+defenseApplied ident = push . IdentityMessage ident . SideMessage . DefenseApplied 0 . toEnemy
 
 -- | The identity is defeated, past the window for it ("would be defeated").
 defeatIdentity :: (ReverseQueue m) => IdentityId -> m ()
@@ -536,13 +552,20 @@ nextMainScheme = push . NextMainScheme
 
 -- | The side scheme is defeated, past the window for it, and leaves play.
 defeatSideScheme :: (ReverseQueue m) => SideSchemeId -> m ()
-defeatSideScheme sid = do
+defeatSideScheme sid = defeatSideSchemeWith sid Nothing
+
+-- | The side scheme is defeated by what removed its last threat.
+defeatSideSchemeBy :: (ReverseQueue m, IsRef source) => SideSchemeId -> source -> m ()
+defeatSideSchemeBy sid = defeatSideSchemeWith sid . Just . toSource
+
+defeatSideSchemeWith :: (ReverseQueue m) => SideSchemeId -> Maybe Source -> m ()
+defeatSideSchemeWith sid source = do
   you <- getYou
   pushAll
     [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
     , SideSchemeMessage sid DefeatSideScheme
     , RemoveFromPlay (toTarget sid)
-    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you]
+    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you source]
     ]
 
 -- | What the side scheme does once what it revealed is done.

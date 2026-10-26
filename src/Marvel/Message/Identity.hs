@@ -99,7 +99,7 @@ data SideMessage
     BasicAttack Natural
   | -- | the basic thwart, after the interrupts to making it, and what they add to it
     BasicThwart Natural
-  | -- | the defender's DEF is applied, once "when defends" is answered
-    DefenseApplied EnemyId
+  | -- | the defender's DEF, given the bonus, is applied once "when defends" is answered
+    DefenseApplied Natural EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

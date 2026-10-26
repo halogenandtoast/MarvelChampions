@@ -356,6 +356,16 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
+-- | What did something, by its source.
+data SourceMatcher
+  = -- | the identity itself: its basic powers and its own card's abilities
+    SourceIsIdentity IdentityMatcher
+  | -- | an event a player matching played
+    EventPlayedBy IdentityMatcher
+  | SourceOneOf [SourceMatcher]
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
+
 data DamageMatcher
   = AttackFromPlayer IdentityMatcher
   | AttackFromAlly AllyMatcher

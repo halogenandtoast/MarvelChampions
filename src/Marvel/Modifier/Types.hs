@@ -3,6 +3,7 @@ module Marvel.Modifier.Types where
 import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
+import Marvel.Cost.Types (Cost)
 import Marvel.Id (MainSchemeId)
 import Marvel.Keyword
 import Marvel.Trait.Types
@@ -83,5 +84,14 @@ data Modifier
     Blank
   | -- | on an ally: it does not count against its controller's ally limit (Stinger)
     NotCountedAgainstAllyLimit
+  | -- | on a hero: the damage of its basic attack may be divided among enemies (Giant
+    -- Wasp), each one dealt damage attacked
+    DividesBasicAttack
+  | -- | on a hero: the threat its basic thwart removes may be divided among schemes,
+    -- each one thwarted
+    DividesBasicThwart
+  | -- | on an identity: what its hero must also pay to make a basic attack (Mother's
+    -- Orders)
+    BasicAttackAdditionalCost Cost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

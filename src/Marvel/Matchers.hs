@@ -17,7 +17,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Ref (Ref (AllyRef), Source)
+import Marvel.Ref (Ref (AllyRef, EventRef, IdentityRef), Source)
 
 identityMatches :: (HasGame m) => IdentityMatcher -> IdentityId -> m Bool
 identityMatches matcher ident = member ident <$> inAnyArea (gameSelectIdentity matcher)
@@ -97,6 +97,14 @@ damageMatchesFrom matcher damage source = case matcher of
       Just ident -> identityMatches identityMatcher ident
       Nothing -> damageMatches matcher damage
   _ -> damageMatches matcher damage
+
+-- | Whether the source matches: an event by who played it, while it resolves.
+sourceMatches :: (HasGame m) => SourceMatcher -> Source -> m Bool
+sourceMatches matcher source = case matcher of
+  SourceIsIdentity m | IdentityRef ident <- source -> identityMatches m ident
+  EventPlayedBy m | EventRef _ <- source -> maybe (pure False) (identityMatches m) =<< getSourceController source
+  SourceOneOf ms -> anyM (`sourceMatches` source) ms
+  _ -> pure False
 
 instance (HasGame m) => Count m IdentityMatcher where
   data QueryCount IdentityMatcher = SustainedDamage | HeroAttackDamage

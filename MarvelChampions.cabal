@@ -1002,6 +1002,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.CampaignSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
+      Marvel.Rules.DividedSpec
       Marvel.Rules.EliminationSpec
       Marvel.Rules.EncounterDeckSpec
       Marvel.Rules.PrintingSpec

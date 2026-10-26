@@ -123,15 +123,17 @@ engageMinion :: MinionId -> IdentityId -> [Message]
 engageMinion minion ident =
   [IdentityMessage ident (MinionEngaged minion), MinionMessage minion (MinionEngagedIdentity ident)]
 
--- | Add to the power of the basic attack or thwart the player is making, as an
+-- | Add to the power of the basic attack, thwart or defense the player is making, as an
 -- interrupt to making it.
 addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
 addToBasicPower ident n = replaceMatchingMessage raise \case
   IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
+  IdentityMessage ident' (SideMessage (DefenseApplied _ _)) -> ident == ident'
   _ -> False
  where
   raise = \case
+    IdentityMessage i (SideMessage (DefenseApplied x e)) -> [IdentityMessage i (SideMessage (DefenseApplied (x + n) e))]
     IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
     IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
     other -> [other]
@@ -398,6 +400,12 @@ data Message
   | -- | indirect damage the player has still to assign among the characters they
     -- control, and what they have assigned so far: dealt at once when all is assigned
     AssignIndirectDamage IdentityId Source Natural [(CharacterId, Natural)]
+  | -- | damage the player has still to divide among the enemies matching (the damage
+    -- carrying how much is left), and the shares assigned so far
+    AssignDividedDamage IdentityId Source Damage EnemyMatcher [(EnemyId, Natural)]
+  | -- | threat the player has still to divide among the schemes matching, by a basic
+    -- thwart or not, and the shares assigned so far
+    AssignDividedThreat IdentityId Source Bool Natural SchemeMatcher [(SchemeId, Natural)]
   | -- | one effect on several game elements at once, as damage dealt to each of several
     -- enemies: each message is run before anything any of them leads to
     Simultaneously [Message]

@@ -86,6 +86,11 @@ data WindowMatcher
     TurnEnds WindowTiming IdentityMatcher
   | -- | "after you defeat a side scheme"
     DefeatsSideScheme IdentityMatcher
+  | -- | a minion matching is defeated by damage from a source matching
+    MinionDefeatedBy WindowTiming MinionMatcher SourceMatcher
+  | -- | after a side scheme matching is defeated, its last threat removed by a source
+    -- matching
+    SideSchemeDefeatedBy SideSchemeMatcher SourceMatcher
   | -- | "after you use your REC"
     UsesRecovery IdentityMatcher
   deriving stock (Show, Eq, Generic)
@@ -123,8 +128,9 @@ data WindowType
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
   | DefeatedSideScheme SideSchemeId
-  | -- | the side scheme has been defeated, by the player
-    DefeatedSideSchemeBy SideSchemeId IdentityId
+  | -- | the side scheme has been defeated, by the player, and by what removed its last
+    -- threat when that is known
+    DefeatedSideSchemeBy SideSchemeId IdentityId (Maybe Source)
   | -- | the alter-ego has used their REC
     UsedRecovery IdentityId
   | HeroDefends IdentityId EnemyId

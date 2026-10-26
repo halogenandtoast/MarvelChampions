@@ -14,7 +14,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hero.Types as X
-import Marvel.Keyword (Keyword (Overkill))
+import Marvel.Keyword (Keyword (Overkill, Piercing))
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -79,11 +79,20 @@ instance RunMessage (Attrs Hero) where
         BasicAttack bonus -> do
           enemies <- selectList $ AttackableBy (IdentityWithId ident)
           dmg <- (+ bonus) <$> getModifiedAttack a
-          -- an attack that gains overkill: the hero has it as a keyword while it is made
-          overkill <- elem (KeywordModifier Overkill) <$> getModifiers a
-          let damage = toDamage dmg (FromPlayerAttack ident) & if overkill then withOverkill else id
-          chooseOnePrompted ident "$label.chooseEnemyToAttack"
-            [targeting (enemyRef enemy) (dealDamage enemy a damage) | enemy <- enemies]
+          -- an attack that gains overkill or piercing: the hero has it as a keyword while
+          -- it is made
+          modifiers <- getModifiers a
+          let
+            gains k f = if KeywordModifier k `elem` modifiers then f else id
+            damage = toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
+            -- damage that may be divided among enemies, each of them attacked
+            divided =
+              [ labeled "$label.divideDamage" (dealDividedDamage ident a damage (AttackableBy (IdentityWithId ident)))
+              | DividesBasicAttack `elem` modifiers
+              , length enemies > 1
+              ]
+          chooseOnePrompted ident "$label.chooseEnemyToAttack" $
+            [targeting (enemyRef enemy) (dealDamage enemy a damage) | enemy <- enemies] <> divided
           checkWindows [W.Window W.After $ W.MadeBasicAttack ident]
           pure a
         Thwarted -> do
@@ -109,7 +118,10 @@ instance RunMessage (Attrs Hero) where
                     , labeled "$label.thwartWithAtk" (basicThwartOf scheme a atk)
                     ]
                 else basicThwartOf scheme a thw
-          chooseOnePrompted ident "$label.chooseSchemeToThwart" choices
+          -- threat that may be divided among schemes, each of them thwarted
+          divides <- elem DividesBasicThwart <$> getModifiers a
+          let divided = [labeled "$label.divideThreat" (basicThwartDivided ident a thw) | divides, length schemes > 1]
+          chooseOnePrompted ident "$label.chooseSchemeToThwart" (choices <> divided)
           pure a
         Defended enemy -> do
           exhaust ident
@@ -117,8 +129,8 @@ instance RunMessage (Attrs Hero) where
           checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
           defenseApplied ident enemy
           pure a
-        DefenseApplied _ -> do
-          addDefense ident =<< getModifiedDefense a
+        DefenseApplied bonus _ -> do
+          addDefense ident . (+ bonus) =<< getModifiedDefense a
           pure a
         _ -> pure a
     _ -> pure a

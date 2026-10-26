@@ -165,9 +165,19 @@ windowMatches matcher w source = case matcher of
           sideSchemeMatches sideSchemeMatcher sideSchemeId
     _ -> pure False
   DefeatsSideScheme identityMatcher -> case windowType w of
-    DefeatedSideSchemeBy _ identityId
+    DefeatedSideSchemeBy _ identityId _
       | windowTiming w == After ->
           identityMatches identityMatcher identityId
+    _ -> pure False
+  MinionDefeatedBy timing minionMatcher sourceMatcher -> case windowType w of
+    DefeatedMinion minionId _ source _
+      | windowTiming w == timing ->
+          liftA2 (&&) (minionMatches minionMatcher minionId) (sourceMatches sourceMatcher source)
+    _ -> pure False
+  SideSchemeDefeatedBy sideSchemeMatcher sourceMatcher -> case windowType w of
+    DefeatedSideSchemeBy sideSchemeId _ (Just source)
+      | windowTiming w == After ->
+          liftA2 (&&) (sideSchemeMatches sideSchemeMatcher sideSchemeId) (sourceMatches sourceMatcher source)
     _ -> pure False
   UsesRecovery identityMatcher -> case windowType w of
     UsedRecovery identityId

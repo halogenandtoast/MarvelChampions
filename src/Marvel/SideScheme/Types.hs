@@ -187,6 +187,6 @@ instance RunMessage (Attrs SideScheme) where
           -- a villain's own side scheme is not discarded with no threat on it
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
           let defeated = subtractNatural n (sideSchemeThreat attrs) == 0 && not signature && CannotLeavePlay `notElem` modifiers
-          when defeated $ defeatSideScheme (sideSchemeId attrs)
+          when defeated $ defeatSideSchemeBy (sideSchemeId attrs) source
           defeater <- if defeated then getSourceController source else pure Nothing
           pure $ attrs & threatL %~ subtractNatural n & \a -> a {sideSchemeDefeatedBy = defeater <|> sideSchemeDefeatedBy a}
