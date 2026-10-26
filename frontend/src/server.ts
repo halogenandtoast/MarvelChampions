@@ -247,6 +247,8 @@ export interface Table {
   seats: number
   owner: number
   seated: { position: number; userId: number; username: string; hero?: string | null }[]
+  /** the campaign the game is a scenario of */
+  campaign?: number | null
 }
 
 export interface GameData {
@@ -321,7 +323,7 @@ export interface CampaignInfo {
   scenarios: number
 }
 
-/** A choice a campaign victory leaves a player, asked as the next game is set up. */
+/** A choice a campaign victory leaves a player not in the game as it was won, asked as the next game is set up. */
 export type CampaignChoice = 'ChooseTechUpgrade' | 'ChooseBasicUpgrade' | 'MayImproveUpgrade'
 
 /** A column of the campaign log's Player Information. */

@@ -72,6 +72,8 @@ data Table = Table
   , seats :: Int
   , owner :: UserId
   , seated :: [SeatView]
+  , campaign :: Maybe MarvelCampaignId
+  -- ^ the campaign a game is the current scenario of
   }
   deriving stock (Generic)
   deriving anyclass (ToJSON)
@@ -389,6 +391,7 @@ storedGame row = if awaitingPlayers row then pure Nothing else Just <$> decodeOr
 
 tableFor :: MarvelGameId -> MarvelGame -> Handler Table
 tableFor gid row = do
+  campaign <- runDB $ fmap entityKey <$> selectFirst [MarvelCampaignCurrentGame ==. Just gid] []
   seated <- runDB do
     seats <- selectList [MarvelSeatGameId ==. gid] [Asc MarvelSeatPosition]
     for seats \(Entity _ seat) -> do
@@ -397,7 +400,7 @@ tableFor gid row = do
             Just (Success (d :: DeckList)) -> Just d.hero
             _ -> Nothing
       pure $ SeatView seat.marvelSeatPosition seat.marvelSeatUserId name hero
-  pure Table {withFriends = row.marvelGameWithFriends, seats = row.marvelGameSeats, owner = row.marvelGameUserId, seated}
+  pure Table {withFriends = row.marvelGameWithFriends, seats = row.marvelGameSeats, owner = row.marvelGameUserId, seated, campaign}
 
 -- | The game as a viewer may see it: with friends, only your own seat's hand, and only
 -- the log entries meant for whoever sees it.
@@ -988,7 +991,7 @@ campaignView (Entity cid row) = do
       , campaign = c
       , difficulty
       , heroes = [d.hero | (_, _, d) <- seats]
-      , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated}
+      , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated, campaign = Just cid}
       , waitingForPlayers = awaitingCampaignPlayers row c (length seats)
       , deckShort = [campaignDeckShortBy c d | (_, _, d) <- seats]
       , next

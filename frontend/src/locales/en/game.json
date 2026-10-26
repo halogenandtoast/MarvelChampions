@@ -131,7 +131,8 @@
   },
   "outcome": {
     "won": "The heroes win",
-    "lost": "The villain wins"
+    "lost": "The villain wins",
+    "toCampaign": "Continue the campaign"
   },
   "waitingOn": "Waiting for {name}…",
   "seats": {

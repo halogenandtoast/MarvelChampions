@@ -365,6 +365,7 @@ const resetGame = () => {
                     :things="things"
                     @choose="choose"
                   />
+                  <RouterLink v-if="game.outcome && table?.campaign" :to="`/campaigns/${table.campaign}`" class="btn primary big">{{ t('game.outcome.toCampaign') }}</RouterLink>
                   <p v-if="error" class="error">
                     {{ tr(error) }}
                     <button v-if="!spectate" type="button" class="file-bug-link" @click="filingBug = true">{{ t('game.bar.fileBug') }}</button>
