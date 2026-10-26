@@ -160,6 +160,10 @@ const onBoard = computed(() => {
   }
   add(g.mainSchemes)
   add(g.sideSchemes)
+  for (const e of g.environments ?? []) {
+    ids.add(e.id)
+    add(e.attachments)
+  }
   add(g.encounterDiscard)
   add(riverCards.value)
   for (const p of shownSeats.value) {
