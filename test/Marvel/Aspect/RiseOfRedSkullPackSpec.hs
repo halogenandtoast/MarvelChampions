@@ -29,6 +29,23 @@ spec = describe "The Rise of Red Skull" do
         map pcCardId <$> discardOf p >>= (`shouldSatisfy` elem (pcCardId training))
         map pcCardId <$> discardOf other >>= (`shouldSatisfy` notElem (pcCardId training))
 
+  describe "Skilled Investigator (04047)" do
+    it "after a side scheme is defeated, exhausts to draw 1 card" do
+      tg <- testGame ["spider-woman"]
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        pass
+        clearHand p
+        investigator <- putIntoPlay p "04047"
+        sid <- sideSchemeOf <$> revealNow p SideSchemes.bombScare
+        before <- sideSchemeThreat sid
+        resolve [SideSchemeMessage sid (SideSchemeThwarted GameRef (before - 1))]
+        choose "thwart" (isHeroThwart p)
+        choose "Bomb Scare" (isTargetChoice (SchemeSideSchemeId sid))
+        choose "Skilled Investigator" (isAbilityOfCard investigator)
+        length <$> handOf p `shouldReturn` 1
+
   describe "Earth's Mightiest Heroes (04022)" do
     it "exhausts an Avenger character as its cost, then readies another" do
       tg <- testGame ["hawkeye"]

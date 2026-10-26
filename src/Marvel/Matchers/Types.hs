@@ -222,6 +222,9 @@ data SchemeMatcher
 
 data SideSchemeMatcher
   = AnySideScheme
+  | -- | as it was, among those that have just left play too: what an "after it is
+    -- defeated" window matches
+    LeftPlaySideScheme SideSchemeMatcher
   | CrisisSideScheme
   | SideSchemeIs CardDef
   | SideSchemeWithId SideSchemeId
@@ -234,6 +237,9 @@ data SideSchemeMatcher
 
 data MinionMatcher
   = AnyMinion
+  | -- | as it was, among those that have just left play too: what an "after it is
+    -- defeated" window matches
+    LeftPlayMinion MinionMatcher
   | MinionWithId MinionId
   | MinionWithDamage GameValueMatcher
   | MinionWithTrait Trait

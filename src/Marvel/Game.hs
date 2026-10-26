@@ -938,7 +938,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         ]
         removeFromPlay
       for_ (lookup sid $ gameSideSchemes g) discardCard
-      pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid)
+      pure $
+        g
+          & (entitiesL . sideSchemesL %~ deleteMap sid)
+          & (removedEntitiesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
     EnvironmentRef eid -> do
       for_ (lookup eid $ gameEnvironments g) discardCard
       pure $ g & (entitiesL . environmentsL %~ deleteMap eid)
@@ -2555,13 +2558,15 @@ gameSelectVillain m = do
 gameSelectMinion :: (HasGame m) => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
   minions <- inYourAreaOnly (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
-  -- removedMinions <- toList <$> getsGame (view (removedEntitiesL . minionsL))
-  -- result <- filterM (matchFilter m) (minions <> removedMinions)
-  result <- filterM (matchFilter m) minions
+  removedMinions <- case m of
+    LeftPlayMinion _ -> HashMap.elems <$> getsGame (view (removedEntitiesL . minionsL))
+    _ -> pure []
+  result <- filterM (matchFilter m) (minions <> removedMinions)
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
     AnyMinion -> pure . const True
+    LeftPlayMinion m' -> matchFilter m'
     MinionWithId ident' -> pure . (== ident') . toId
     MinionWithTrait trait -> fmap (member trait) . getTraits
     MinionWithDamage gameValueMatcher ->
@@ -2674,11 +2679,15 @@ gameSelectSideScheme ::
   (HasGame m) => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
   sideSchemes <- inYourAreaOnly (SideSchemeRef . toId) . HashMap.elems =<< getsGame gameSideSchemes
-  result <- filterM (matchFilter m) sideSchemes
+  removedSideSchemes <- case m of
+    LeftPlaySideScheme _ -> HashMap.elems <$> getsGame (view (removedEntitiesL . sideSchemesL))
+    _ -> pure []
+  result <- filterM (matchFilter m) (sideSchemes <> removedSideSchemes)
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter = \case
     AnySideScheme -> pure . const True
+    LeftPlaySideScheme m' -> matchFilter m'
     CrisisSideScheme -> pure . isCrisis
     SideSchemeIs def -> pure . sameCard def . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId

@@ -114,14 +114,14 @@ windowMatches matcher w source = case matcher of
   MinionDefeated timing minionMatcher -> case windowType w of
     DefeatedMinion minionId _ _ _
       | windowTiming w == timing ->
-          minionMatches minionMatcher minionId
+          defeatedMinionMatches timing minionMatcher minionId
     _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
     DefeatedMinion minionId damage source _
       | windowTiming w == timing ->
           liftA2
             (&&)
-            (enemyMatches (DefeatedEnemy enemyMatcher) (EnemyMinionId minionId))
+            (if enemyMatcher `elem` [AnyEnemy, MinionEnemy] then pure True else enemyMatches (DefeatedEnemy enemyMatcher) (EnemyMinionId minionId))
             (damageMatchesFrom damageMatcher damage source)
     DefeatedVillain villainId damage source _
       | windowTiming w == timing ->
@@ -163,6 +163,10 @@ windowMatches matcher w source = case matcher of
     DefeatedSideScheme sideSchemeId
       | windowTiming w == timing ->
           sideSchemeMatches sideSchemeMatcher sideSchemeId
+    -- the window after a side scheme's defeat says by whom: it has left play by then
+    DefeatedSideSchemeBy sideSchemeId _ _
+      | windowTiming w == timing ->
+          defeatedSideSchemeMatches sideSchemeMatcher sideSchemeId
     _ -> pure False
   DefeatsSideScheme identityMatcher -> case windowType w of
     DefeatedSideSchemeBy _ identityId _
@@ -172,12 +176,12 @@ windowMatches matcher w source = case matcher of
   MinionDefeatedBy timing minionMatcher sourceMatcher -> case windowType w of
     DefeatedMinion minionId _ source _
       | windowTiming w == timing ->
-          liftA2 (&&) (minionMatches minionMatcher minionId) (sourceMatches sourceMatcher source)
+          liftA2 (&&) (defeatedMinionMatches timing minionMatcher minionId) (sourceMatches sourceMatcher source)
     _ -> pure False
   SideSchemeDefeatedBy sideSchemeMatcher sourceMatcher -> case windowType w of
     DefeatedSideSchemeBy sideSchemeId _ (Just source)
       | windowTiming w == After ->
-          liftA2 (&&) (sideSchemeMatches sideSchemeMatcher sideSchemeId) (sourceMatches sourceMatcher source)
+          liftA2 (&&) (defeatedSideSchemeMatches sideSchemeMatcher sideSchemeId) (sourceMatches sourceMatcher source)
     _ -> pure False
   UsesRecovery identityMatcher -> case windowType w of
     UsedRecovery identityId
@@ -273,3 +277,20 @@ windowMatches matcher w source = case matcher of
           identityMatches identityMatcher identityId
     _ -> pure False
   WindowOneOf matchers -> anyM (\m -> windowMatches m w source) matchers
+
+-- | After its defeat a minion has left play: it is matched as it was, among those just
+-- removed. Any minion is one without looking, so the match holds once the removed are
+-- cleared (an ability used in the window) or when it was removed from the game.
+-- ponytail: a narrower matcher still needs it among the removed; carry the card in the
+-- window if a card ever asks for one after such a clear.
+defeatedMinionMatches :: (HasGame m) => WindowTiming -> MinionMatcher -> MinionId -> m Bool
+defeatedMinionMatches timing matcher minionId = case matcher of
+  AnyMinion -> pure True
+  _ | timing == After -> minionMatches (LeftPlayMinion matcher) minionId
+  _ -> minionMatches matcher minionId
+
+-- | After its defeat a side scheme has left play: matched as 'defeatedMinionMatches' is.
+defeatedSideSchemeMatches :: (HasGame m) => SideSchemeMatcher -> SideSchemeId -> m Bool
+defeatedSideSchemeMatches matcher sideSchemeId = case matcher of
+  AnySideScheme -> pure True
+  _ -> sideSchemeMatches (LeftPlaySideScheme matcher) sideSchemeId
