@@ -60,6 +60,9 @@ allSupports = fromList $ concatMap
 
   -- Wasp
   , bootCamp
+
+  -- Quicksilver
+  , servalIndustries
   ]
 
 support
@@ -232,3 +235,8 @@ bootCamp :: CardDef
 bootCamp =
   limited (MaxPerPlayerUnderAnyControl 1) $
     support "13016" "Boot Camp" 3 [Location] [Mental] Aggression
+
+-- Quicksilver
+
+servalIndustries :: CardDef
+servalIndustries = unique $ identitySupport "14007" "Serval Industries" 1 [Location, XFactor] [Mental]

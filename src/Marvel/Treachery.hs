@@ -151,6 +151,9 @@ allTreacheries = fromList $ map
 
   -- Wasp
   , SomeTreacheryCard beetleMania
+
+  -- Quicksilver
+  , SomeTreacheryCard earthquake
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

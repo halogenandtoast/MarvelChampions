@@ -62,6 +62,8 @@ allHeroes = fromList $ map
   , SomeHeroCard waspTiny
   , SomeHeroCard waspGiant
 
+  -- Quicksilver
+  , SomeHeroCard quicksilver
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

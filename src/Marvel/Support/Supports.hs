@@ -44,3 +44,6 @@ import Marvel.Support.Supports.TeamBuildingExercise as X
 
 -- Wasp
 import Marvel.Support.Supports.BootCamp as X
+
+-- Quicksilver
+import Marvel.Support.Supports.ServalIndustries as X

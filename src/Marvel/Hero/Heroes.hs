@@ -29,3 +29,6 @@ import Marvel.Hero.Heroes.AntManTiny as X
 -- Wasp
 import Marvel.Hero.Heroes.WaspTiny as X
 import Marvel.Hero.Heroes.WaspGiant as X
+
+-- Quicksilver
+import Marvel.Hero.Heroes.Quicksilver as X

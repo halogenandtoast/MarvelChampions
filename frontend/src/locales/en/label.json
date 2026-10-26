@@ -158,5 +158,14 @@
   "discardRandomCardFromHand": "Discard 1 card at random from your hand",
   "placeTwoThreatHere": "Place 2 threat on Corrupted Timestream",
 
+  "exhaustPietroMaximoffRemoveNeedForSpeed": "Exhaust Pietro Maximoff → remove Need for Speed from the game",
+  "exhaustYourIdentityCannotReady": "Exhaust your identity; you cannot ready it until your next turn ends",
+  "take2IndirectDamage": "Take 2 indirect damage",
+  "exhaustYourIdentity": "Exhaust your identity",
+  "spendTwoPhysicalResources": "Spend 2 physical resources",
+  "scarletWitchDiscardTop": "Discard the top card of the encounter deck: Scarlet Witch gets +1 to this power for each boost icon",
+  "chooseEnemyToStun": "Choose an enemy to stun",
+  "healAFriendlyCharacter": "Heal 1 damage from a friendly character",
+
   "-- end --": ""
 }

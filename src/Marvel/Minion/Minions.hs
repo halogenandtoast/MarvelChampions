@@ -81,3 +81,6 @@ import Marvel.Minion.Minions.Yellowjacket as X
 
 -- Wasp
 import Marvel.Minion.Minions.Beetle as X
+
+-- Quicksilver
+import Marvel.Minion.Minions.Avalanche as X

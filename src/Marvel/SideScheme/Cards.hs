@@ -8,6 +8,8 @@ import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Data.HashSet (singleton)
+import Marvel.Keyword
 import Marvel.EncounterSet
 import Marvel.Name
 
@@ -96,6 +98,9 @@ allSideSchemes = fromList $ map
 
   -- Wasp
   , mothersOrders
+
+  -- Quicksilver
+  , extortionOfSeismicProportion
   ]
 
 sideScheme
@@ -408,3 +413,11 @@ techTheft = sideScheme "12026" "Tech Theft" [Boost, Boost, Boost] AntManNemesis 
 
 mothersOrders :: CardDef
 mothersOrders = sideScheme "13027" "Mother's Orders" [Boost, Boost, Boost] WaspNemesis 1
+
+-- Quicksilver
+
+extortionOfSeismicProportion :: CardDef
+extortionOfSeismicProportion =
+  (sideScheme "14025" "Extortion of Seismic Proportion" [Boost, Boost, Boost] QuicksilverNemesis 1)
+    { cdKeywords = singleton (Incite 1)
+    }

@@ -155,6 +155,17 @@ allEvents = fromList $ map
   , SomeEventCard runningInterference
   , SomeEventCard allForOne
   , SomeEventCard perseverance
+
+  -- Quicksilver
+  , SomeEventCard alwaysBeRunning
+  , SomeEventCard doubleTime
+  , SomeEventCard maximumVelocity
+  , SomeEventCard speedCyclone
+  , SomeEventCard neverBackDown
+  , SomeEventCard sideStep
+  , SomeEventCard orderAndChaos
+  , SomeEventCard unitedWeStand
+  , SomeEventCard beatEmUp
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

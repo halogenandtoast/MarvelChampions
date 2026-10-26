@@ -120,6 +120,9 @@ allMinions =
 
       -- Wasp
       , SomeMinionCard beetle
+
+      -- Quicksilver
+      , SomeMinionCard avalanche
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

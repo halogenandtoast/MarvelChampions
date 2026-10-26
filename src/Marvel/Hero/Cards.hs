@@ -43,6 +43,8 @@ allHeroCards =
   , waspTiny
   , waspGiant
 
+  -- Quicksilver
+  , quicksilver
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -127,3 +129,8 @@ waspTiny = hero "13001a" "Wasp" [Avenger, Tiny]
 
 waspGiant :: CardDef
 waspGiant = hero "13001c" "Wasp" [Avenger, Giant]
+
+-- Quicksilver
+
+quicksilver :: CardDef
+quicksilver = hero "14001a" "Quicksilver" [Avenger]

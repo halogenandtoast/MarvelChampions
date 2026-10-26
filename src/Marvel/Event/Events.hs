@@ -129,3 +129,14 @@ import Marvel.Event.Events.AthleticConditioning as X
 import Marvel.Event.Events.RunningInterference as X
 import Marvel.Event.Events.AllForOne as X
 import Marvel.Event.Events.Perseverance as X
+
+-- Quicksilver
+import Marvel.Event.Events.AlwaysBeRunning as X
+import Marvel.Event.Events.DoubleTime as X
+import Marvel.Event.Events.MaximumVelocity as X
+import Marvel.Event.Events.SpeedCyclone as X
+import Marvel.Event.Events.NeverBackDown as X
+import Marvel.Event.Events.SideStep as X
+import Marvel.Event.Events.OrderAndChaos as X
+import Marvel.Event.Events.UnitedWeStand as X
+import Marvel.Event.Events.BeatEmUp as X

@@ -111,3 +111,6 @@ import Marvel.Treachery.Treacheries.YellowjacketsPlan as X
 
 -- Wasp
 import Marvel.Treachery.Treacheries.BeetleMania as X
+
+-- Quicksilver
+import Marvel.Treachery.Treacheries.Earthquake as X

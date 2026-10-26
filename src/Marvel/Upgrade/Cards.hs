@@ -124,6 +124,17 @@ allUpgrades = fromList $ concatMap
   , bioSyntheticWings
   , waspsHelmet
   , lieInWait
+
+  -- Quicksilver
+  , acceleratedReflex
+  , frictionResistance
+  , hyperPerception
+  , reinforcedSinew
+  , nervesOfSteel
+  , adrenalineRush
+  , civicDuty
+  , bruteForce
+  , senseOfJustice
   ]
 
 upgrade
@@ -259,7 +270,7 @@ inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
   }
 
 armoredVest :: CardDef
-armoredVest = limited (MaxPerPlayerUnderAnyControl 1)
+armoredVest = reprintedAs ["14016"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
@@ -548,3 +559,32 @@ waspsHelmet = unique $ identityUpgrade "13010" "Wasp's Helmet" 2 [Armor, Tech] [
 
 lieInWait :: CardDef
 lieInWait = limited (MaxPerPlayer 1) $ upgrade "13017" "Lie in Wait" 1 [Preparation] [Energy] Aggression
+
+-- Quicksilver
+
+acceleratedReflex :: CardDef
+acceleratedReflex = identityUpgrade "14008" "Accelerated Reflex" 2 [Condition, Superpower] [Energy]
+
+frictionResistance :: CardDef
+frictionResistance = identityUpgrade "14009" "Friction Resistance" 3 [Condition, Superpower] [Physical]
+
+hyperPerception :: CardDef
+hyperPerception = identityUpgrade "14010" "Hyper Perception" 2 [Condition, Superpower] [Mental]
+
+reinforcedSinew :: CardDef
+reinforcedSinew = identityUpgrade "14011" "Reinforced Sinew" 2 [Condition, Superpower] [Physical]
+
+nervesOfSteel :: CardDef
+nervesOfSteel = limited (MaxPerPlayerUnderAnyControl 1) $ upgrade "14017" "Nerves of Steel" 2 [Skill] [Energy] Protection
+
+adrenalineRush :: CardDef
+adrenalineRush = basicUpgrade "14022" "Adrenaline Rush" 1 [Condition] [Energy]
+
+civicDuty :: CardDef
+civicDuty = basicUpgrade "14023" "Civic Duty" 1 [Tactic] [Mental]
+
+bruteForce :: CardDef
+bruteForce = upgrade "14029" "Brute Force" 1 [Skill] [Mental] Aggression
+
+senseOfJustice :: CardDef
+senseOfJustice = limited (MaxPerPlayerUnderAnyControl 1) $ upgrade "14030" "Sense of Justice" 2 [Skill] [Mental] Justice

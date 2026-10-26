@@ -94,3 +94,14 @@ import Marvel.Upgrade.Upgrades.RedRoomTraining as X
 import Marvel.Upgrade.Upgrades.BioSyntheticWings as X
 import Marvel.Upgrade.Upgrades.WaspsHelmet as X
 import Marvel.Upgrade.Upgrades.LieInWait as X
+
+-- Quicksilver
+import Marvel.Upgrade.Upgrades.AcceleratedReflex as X
+import Marvel.Upgrade.Upgrades.FrictionResistance as X
+import Marvel.Upgrade.Upgrades.HyperPerception as X
+import Marvel.Upgrade.Upgrades.ReinforcedSinew as X
+import Marvel.Upgrade.Upgrades.NervesOfSteel as X
+import Marvel.Upgrade.Upgrades.AdrenalineRush as X
+import Marvel.Upgrade.Upgrades.CivicDuty as X
+import Marvel.Upgrade.Upgrades.BruteForce as X
+import Marvel.Upgrade.Upgrades.SenseOfJustice as X

@@ -152,6 +152,17 @@ allEvents = fromList $ concatMap
   , runningInterference
   , allForOne
   , perseverance
+
+  -- Quicksilver
+  , alwaysBeRunning
+  , doubleTime
+  , maximumVelocity
+  , speedCyclone
+  , neverBackDown
+  , sideStep
+  , orderAndChaos
+  , unitedWeStand
+  , beatEmUp
   ]
 
 event
@@ -946,3 +957,56 @@ perseverance =
   (event "13033" "Perseverance" 1 HeroResponse [Tactic] [Mental] Protection)
     { cdResponseWindow = Just (IdentityChangedToForm After You)
     }
+
+-- Quicksilver
+
+alwaysBeRunning :: CardDef
+-- | "Ready Quicksilver": only while he is exhausted (RR Target)
+alwaysBeRunning = (identityEvent "14003" "Always Be Running" 1 HeroAction [Superpower] [Energy]) {cdCriteria = Exhausted}
+
+doubleTime :: CardDef
+doubleTime = identityEvent "14004" "Double Time" 2 HeroAction [Superpower] [Mental]
+
+maximumVelocity :: CardDef
+maximumVelocity =
+  (identityEvent "14005" "Maximum Velocity" 2 HeroAction [Superpower] [Physical])
+    { cdLimit = Just (MaxPerPhase 1)
+    }
+
+-- | Its cost is X.
+speedCyclone :: CardDef
+speedCyclone =
+  (identityEvent "14006" "Speed Cyclone" 0 HeroAction [Superpower] [Energy])
+    { cdAbilityCost = DynamicResourceCost Nothing
+    }
+
+neverBackDown :: CardDef
+neverBackDown =
+  (event "14014" "Never Back Down" 1 HeroInterrupt [Defense] [Physical] Protection)
+    { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    , cdAbilitySubType = Just Ability.Defense
+    }
+
+sideStep :: CardDef
+sideStep =
+  (event "14015" "Side Step" 1 HeroInterrupt [Defense] [Mental] Protection)
+    { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    , cdAbilitySubType = Just Ability.Defense
+    }
+
+-- | Team-Up (Quicksilver and Scarlet Witch). Max 1 per deck.
+orderAndChaos :: CardDef
+orderAndChaos =
+  (basicEvent "14018" "Order and Chaos" 1 HeroInterrupt [] [Physical])
+    { cdCriteria = teamUp "Quicksilver" "Scarlet Witch"
+    , cdResponseWindow = Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
+    }
+
+unitedWeStand :: CardDef
+unitedWeStand =
+  (event "14031" "United We Stand" 0 HeroAction [] [Physical] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    }
+
+beatEmUp :: CardDef
+beatEmUp = basicEvent "14032" "Beat 'Em Up" 2 HeroAction [Tactic] [Energy]

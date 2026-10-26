@@ -72,5 +72,7 @@ data Trait
   | Traitor
   | Wood
   | WreckingCrew
+  | XFactor
+  | BrotherhoodOfMutants
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

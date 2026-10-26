@@ -1258,6 +1258,10 @@ searchFoundCards target = push . SearchFoundCards (toTarget target)
 
 -- * Interrupts: what is on the queue changed
 
+-- | The source of the damage the identity is about to take ("when you would take damage").
+pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
+pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
+
 -- | All of the damage the identity is about to take is cancelled.
 cancelDamage :: (HasQueue m) => IdentityId -> m ()
 cancelDamage ident = cancelMatchingMessage \case

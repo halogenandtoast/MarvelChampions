@@ -111,6 +111,9 @@ allMinions =
 
       -- Wasp
       , beetle
+
+      -- Quicksilver
+      , avalanche
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -578,4 +581,12 @@ beetle :: CardDef
 beetle =
   unique (minion "13028" "Beetle" [Criminal] [Boost, Boost] WaspNemesis 1)
     { cdKeywords = singleton Guard
+    }
+
+-- Quicksilver
+
+avalanche :: CardDef
+avalanche =
+  unique (minion "14026" "Avalanche" [BrotherhoodOfMutants] [Boost, Boost] QuicksilverNemesis 1)
+    { cdKeywords = singleton (Incite 2)
     }

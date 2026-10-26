@@ -93,6 +93,9 @@ allAttachments =
 
       -- Wasp
       , beetleArmorMkIV
+
+      -- Quicksilver
+      , vibrationResistance
       ]
 
 attachment ::
@@ -334,3 +337,8 @@ sizeIncrease = attachment "12028" "Size Increase" [Condition] [] AntManNemesis 2
 
 beetleArmorMkIV :: CardDef
 beetleArmorMkIV = unique $ attachment "13029" "Beetle Armor MK IV" [Armor, Tech] [Boost, Boost] WaspNemesis 1
+
+-- Quicksilver
+
+vibrationResistance :: CardDef
+vibrationResistance = attachment "14027" "Vibration Resistance" [Condition] [Boost] QuicksilverNemesis 1

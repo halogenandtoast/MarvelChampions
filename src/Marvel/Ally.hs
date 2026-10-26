@@ -106,4 +106,9 @@ allAllies = fromList $ map
   , SomeAllyCard waspJanetVanDyne
   , SomeAllyCard ironheart
   , SomeAllyCard spiderManMilesMorales
+
+  -- Quicksilver
+  , SomeAllyCard scarletWitchWandaMaximoff
+  , SomeAllyCard multipleMan
+  , SomeAllyCard warlock
   ]

@@ -68,3 +68,6 @@ import Marvel.Attachment.Attachments.SizeIncrease as X
 
 -- Wasp
 import Marvel.Attachment.Attachments.BeetleArmorMkIV as X
+
+-- Quicksilver
+import Marvel.Attachment.Attachments.VibrationResistance as X

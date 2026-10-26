@@ -75,3 +75,8 @@ import Marvel.Ally.Allies.ThorJaneFoster as X
 import Marvel.Ally.Allies.WaspJanetVanDyne as X
 import Marvel.Ally.Allies.Ironheart as X
 import Marvel.Ally.Allies.SpiderManMilesMorales as X
+
+-- Quicksilver
+import Marvel.Ally.Allies.ScarletWitchWandaMaximoff as X
+import Marvel.Ally.Allies.MultipleMan as X
+import Marvel.Ally.Allies.Warlock as X

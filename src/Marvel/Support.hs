@@ -70,6 +70,9 @@ allSupports = fromList $ map
 
   -- Wasp
   , SomeSupportCard bootCamp
+
+  -- Quicksilver
+  , SomeSupportCard servalIndustries
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

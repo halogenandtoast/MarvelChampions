@@ -130,6 +130,17 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard bioSyntheticWings
   , SomeUpgradeCard waspsHelmet
   , SomeUpgradeCard lieInWait
+
+  -- Quicksilver
+  , SomeUpgradeCard acceleratedReflex
+  , SomeUpgradeCard frictionResistance
+  , SomeUpgradeCard hyperPerception
+  , SomeUpgradeCard reinforcedSinew
+  , SomeUpgradeCard nervesOfSteel
+  , SomeUpgradeCard adrenalineRush
+  , SomeUpgradeCard civicDuty
+  , SomeUpgradeCard bruteForce
+  , SomeUpgradeCard senseOfJustice
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

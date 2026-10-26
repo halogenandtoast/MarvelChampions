@@ -40,6 +40,8 @@ allAlterEgoCards =
     -- Wasp
     , nadiaVanDyne
 
+    -- Quicksilver
+    , pietroMaximoff
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -114,3 +116,6 @@ scottLang = alterEgo "12001b" "Scott Lang" [Civilian]
 
 nadiaVanDyne :: CardDef
 nadiaVanDyne = alterEgo "13001b" "Nadia Van Dyne" [Genius]
+
+pietroMaximoff :: CardDef
+pietroMaximoff = alterEgo "14001b" "Pietro Maximoff" [Civilian]

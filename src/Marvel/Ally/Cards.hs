@@ -96,6 +96,11 @@ allAllies = fromList $ concatMap
   , waspJanetVanDyne
   , ironheart
   , spiderManMilesMorales
+
+  -- Quicksilver
+  , scarletWitchWandaMaximoff
+  , multipleMan
+  , warlock
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -117,6 +122,7 @@ heroSpecificAllies =
   , captainMarvelCarolDanvers
   , waspNadiaVanDyne
   , antManScottLang
+  , scarletWitchWandaMaximoff
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -426,3 +432,14 @@ ironheart = basicAlly "13018" "Ironheart" 2 [Champion] [Mental]
 
 spiderManMilesMorales :: CardDef
 spiderManMilesMorales = basicAlly "13019" ("Spider-Man" <:> "Miles Morales") 3 [Champion] [Physical]
+
+-- Quicksilver
+
+scarletWitchWandaMaximoff :: CardDef
+scarletWitchWandaMaximoff = identityAlly "14002" ("Scarlet Witch" <:> "Wanda Maximoff") 3 [Avenger] [Wild]
+
+multipleMan :: CardDef
+multipleMan = (ally "14012" "Multiple Man" 4 [XFactor] [Mental] Protection) {cdUnique = False}
+
+warlock :: CardDef
+warlock = ally "14013" "Warlock" 3 [XFactor] [Physical] Protection

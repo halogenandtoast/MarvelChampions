@@ -49,11 +49,13 @@ library
       Marvel.Ally.Allies.Mockingbird
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Allies.MoonKnightMarcSpector
+      Marvel.Ally.Allies.MultipleMan
       Marvel.Ally.Allies.NickFury
       Marvel.Ally.Allies.NovaSamAlexander
       Marvel.Ally.Allies.QuakeDaisyJohnson
       Marvel.Ally.Allies.RedDagger
       Marvel.Ally.Allies.Ronin
+      Marvel.Ally.Allies.ScarletWitchWandaMaximoff
       Marvel.Ally.Allies.SentryRobertReynolds
       Marvel.Ally.Allies.ShangChi
       Marvel.Ally.Allies.SheHulkJenniferWalters
@@ -69,6 +71,7 @@ library
       Marvel.Ally.Allies.UsAgentJohnWalker
       Marvel.Ally.Allies.Valkyrie
       Marvel.Ally.Allies.Vision
+      Marvel.Ally.Allies.Warlock
       Marvel.Ally.Allies.WarMachine
       Marvel.Ally.Allies.WarMachineJamesRhodes
       Marvel.Ally.Allies.WaspJanetVanDyne
@@ -92,6 +95,7 @@ library
       Marvel.AlterEgo.AlterEgos.NatashaRomanoff
       Marvel.AlterEgo.AlterEgos.Odinson
       Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.AlterEgos.PietroMaximoff
       Marvel.AlterEgo.AlterEgos.ScottLang
       Marvel.AlterEgo.AlterEgos.StephenStrange
       Marvel.AlterEgo.AlterEgos.SteveRogers
@@ -153,6 +157,7 @@ library
       Marvel.Attachment.Attachments.TwistedReality
       Marvel.Attachment.Attachments.UpgradedDrones
       Marvel.Attachment.Attachments.VibraniumArmor
+      Marvel.Attachment.Attachments.VibrationResistance
       Marvel.Attachment.Attachments.WreckersCommand
       Marvel.Attachment.Cards
       Marvel.Attachment.Types
@@ -196,12 +201,14 @@ library
       Marvel.Event.Cards
       Marvel.Event.Events
       Marvel.Event.Events.AllForOne
+      Marvel.Event.Events.AlwaysBeRunning
       Marvel.Event.Events.AncestralKnowledge
       Marvel.Event.Events.AssessTheSituation
       Marvel.Event.Events.AstralProjection
       Marvel.Event.Events.AthleticConditioning
       Marvel.Event.Events.AvengersAssemble
       Marvel.Event.Events.Backflip
+      Marvel.Event.Events.BeatEmUp
       Marvel.Event.Events.BigHands
       Marvel.Event.Events.CableArrow
       Marvel.Event.Events.CallForAid
@@ -217,6 +224,7 @@ library
       Marvel.Event.Events.DanceOfDeath
       Marvel.Event.Events.DefenderOfTheNineRealms
       Marvel.Event.Events.DesperateDefense
+      Marvel.Event.Events.DoubleTime
       Marvel.Event.Events.DropKick
       Marvel.Event.Events.EarthsMightiestHeroes
       Marvel.Event.Events.ElectricArrow
@@ -254,6 +262,7 @@ library
       Marvel.Event.Events.MagicBlast
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.MasterOfTheMysticArts
+      Marvel.Event.Events.MaximumVelocity
       Marvel.Event.Events.MeanSwing
       Marvel.Event.Events.Melee
       Marvel.Event.Events.MomentOfTriumph
@@ -262,7 +271,9 @@ library
       Marvel.Event.Events.Moxie
       Marvel.Event.Events.MusterCourage
       Marvel.Event.Events.MysticalStudies
+      Marvel.Event.Events.NeverBackDown
       Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.OrderAndChaos
       Marvel.Event.Events.Perseverance
       Marvel.Event.Events.Pheromones
       Marvel.Event.Events.PhotonicBlast
@@ -282,9 +293,11 @@ library
       Marvel.Event.Events.SevenRingsOfRaggadorr
       Marvel.Event.Events.ShieldBlock
       Marvel.Event.Events.ShieldToss
+      Marvel.Event.Events.SideStep
       Marvel.Event.Events.SkilledStrike
       Marvel.Event.Events.SneakBy
       Marvel.Event.Events.SonicArrow
+      Marvel.Event.Events.SpeedCyclone
       Marvel.Event.Events.SplitPersonality
       Marvel.Event.Events.StealthStrike
       Marvel.Event.Events.StrengthInNumbers
@@ -298,6 +311,7 @@ library
       Marvel.Event.Events.Thunderclap
       Marvel.Event.Events.ToeToToe
       Marvel.Event.Events.ToTheRescue
+      Marvel.Event.Events.UnitedWeStand
       Marvel.Event.Events.UnstoppableForce
       Marvel.Event.Events.Uppercut
       Marvel.Event.Events.VaporsOfValtorr
@@ -336,6 +350,7 @@ library
       Marvel.Hero.Heroes.Hulk
       Marvel.Hero.Heroes.IronMan
       Marvel.Hero.Heroes.MsMarvel
+      Marvel.Hero.Heroes.Quicksilver
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.SpiderMan
       Marvel.Hero.Heroes.SpiderWoman
@@ -410,6 +425,7 @@ library
       Marvel.Minion.Minions.AncientWarrior
       Marvel.Minion.Minions.Apocryphus
       Marvel.Minion.Minions.ArmoredGuard
+      Marvel.Minion.Minions.Avalanche
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
@@ -490,6 +506,7 @@ library
       Marvel.Obligation.Obligations.InnerDemons
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Obligations.ManOutOfTime
+      Marvel.Obligation.Obligations.NeedForSpeed
       Marvel.Obligation.Obligations.OdinsAnger
       Marvel.Obligation.Obligations.PhysicalToll
       Marvel.Obligation.Obligations.RedDreams
@@ -533,6 +550,7 @@ library
       Marvel.SideScheme.SideSchemes.DayOfReckoning
       Marvel.SideScheme.SideSchemes.DefenseNetwork
       Marvel.SideScheme.SideSchemes.DroneFactory
+      Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion
       Marvel.SideScheme.SideSchemes.FamilyFeud
       Marvel.SideScheme.SideSchemes.GenerationWhy
       Marvel.SideScheme.SideSchemes.GoblinNation
@@ -610,6 +628,7 @@ library
       Marvel.Support.Supports.Quinjet
       Marvel.Support.Supports.SafeHouse29
       Marvel.Support.Supports.SanctumSanctorum
+      Marvel.Support.Supports.ServalIndustries
       Marvel.Support.Supports.StarkTower
       Marvel.Support.Supports.StevesApartment
       Marvel.Support.Supports.SuperhumanLawDivision
@@ -643,6 +662,7 @@ library
       Marvel.Treachery.Treacheries.CrowbarToss
       Marvel.Treachery.Treacheries.DeadlyShot
       Marvel.Treachery.Treacheries.DeathFromAbove
+      Marvel.Treachery.Treacheries.Earthquake
       Marvel.Treachery.Treacheries.ElectricWhipAttack
       Marvel.Treachery.Treacheries.ElectromagneticBacklash
       Marvel.Treachery.Treacheries.ElectromagneticPulse
@@ -724,6 +744,8 @@ library
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Types
       Marvel.Upgrade.Upgrades
+      Marvel.Upgrade.Upgrades.AcceleratedReflex
+      Marvel.Upgrade.Upgrades.AdrenalineRush
       Marvel.Upgrade.Upgrades.AntMansHelmet
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
@@ -733,9 +755,11 @@ library
       Marvel.Upgrade.Upgrades.BioSyntheticWings
       Marvel.Upgrade.Upgrades.BlackWidowsGauntlet
       Marvel.Upgrade.Upgrades.BoundlessRage
+      Marvel.Upgrade.Upgrades.BruteForce
       Marvel.Upgrade.Upgrades.CaptainAmericasHelmet
       Marvel.Upgrade.Upgrades.CaptainAmericasShield
       Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
+      Marvel.Upgrade.Upgrades.CivicDuty
       Marvel.Upgrade.Upgrades.CloakOfLevitation
       Marvel.Upgrade.Upgrades.CombatTraining
       Marvel.Upgrade.Upgrades.CosmicFlight
@@ -758,6 +782,7 @@ library
       Marvel.Upgrade.Upgrades.Finesse
       Marvel.Upgrade.Upgrades.FocusedRage
       Marvel.Upgrade.Upgrades.Followed
+      Marvel.Upgrade.Upgrades.FrictionResistance
       Marvel.Upgrade.Upgrades.GiantStrength
       Marvel.Upgrade.Upgrades.GodOfThunder
       Marvel.Upgrade.Upgrades.GrapplingHook
@@ -766,6 +791,7 @@ library
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.HonoraryAvenger
       Marvel.Upgrade.Upgrades.HydraCampaign
+      Marvel.Upgrade.Upgrades.HyperPerception
       Marvel.Upgrade.Upgrades.ImmovableObject
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
@@ -776,14 +802,17 @@ library
       Marvel.Upgrade.Upgrades.MarkVHelmet
       Marvel.Upgrade.Upgrades.MartialProwess
       Marvel.Upgrade.Upgrades.Mjolnir
+      Marvel.Upgrade.Upgrades.NervesOfSteel
       Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.PoweredGauntlets
       Marvel.Upgrade.Upgrades.PowerGloves
       Marvel.Upgrade.Upgrades.RapidResponse
       Marvel.Upgrade.Upgrades.RedRoomTraining
+      Marvel.Upgrade.Upgrades.ReinforcedSinew
       Marvel.Upgrade.Upgrades.ReinforcedSuit
       Marvel.Upgrade.Upgrades.Resourceful
       Marvel.Upgrade.Upgrades.RocketBoots
+      Marvel.Upgrade.Upgrades.SenseOfJustice
       Marvel.Upgrade.Upgrades.Shrink
       Marvel.Upgrade.Upgrades.SkilledInvestigator
       Marvel.Upgrade.Upgrades.SkyCycle
@@ -988,6 +1017,8 @@ test-suite MarvelChampions-test
       Marvel.Aspect.LeadershipSpec
       Marvel.Aspect.MsMarvelPackSpec
       Marvel.Aspect.ProtectionSpec
+      Marvel.Aspect.QuicksilverAspectSpec
+      Marvel.Aspect.QuicksilverPackSpec
       Marvel.Aspect.RiseOfRedSkullPackSpec
       Marvel.Aspect.ThorPackSpec
       Marvel.Aspect.WaspPackSpec
@@ -1002,6 +1033,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.ModularsSpec
       Marvel.Encounter.MsMarvelNemesisSpec
+      Marvel.Encounter.QuicksilverNemesisSpec
       Marvel.Encounter.RedSkullSpec
       Marvel.Encounter.RiseOfRedSkullSpec
       Marvel.Encounter.TaskmasterSpec
@@ -1021,6 +1053,8 @@ test-suite MarvelChampions-test
       Marvel.Hero.HulkSpec
       Marvel.Hero.IronManSpec
       Marvel.Hero.MsMarvelSpec
+      Marvel.Hero.QuicksilverSignatureSpec
+      Marvel.Hero.QuicksilverSpec
       Marvel.Hero.SheHulkSpec
       Marvel.Hero.SpiderManSpec
       Marvel.Hero.SpiderWomanSpec

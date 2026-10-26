@@ -27,3 +27,6 @@ import Marvel.AlterEgo.AlterEgos.ScottLang as X
 
 -- Wasp
 import Marvel.AlterEgo.AlterEgos.NadiaVanDyne as X
+
+-- Quicksilver
+import Marvel.AlterEgo.AlterEgos.PietroMaximoff as X

@@ -53,6 +53,10 @@ allEffects =
     , ("12016", SomeCardEffect moxieEffect)
     , ("12024", SomeCardEffect teamBuildingExerciseEffect)
     , ("12025", SomeCardEffect careForCassieEffect)
+    , ("14024", SomeCardEffect needForSpeedEffect)
+    , ("14005", SomeCardEffect maximumVelocityEffect)
+    , ("14022", SomeCardEffect adrenalineRushEffect)
+    , ("14023", SomeCardEffect civicDutyEffect)
     , ("12033", SomeCardEffect assessTheSituationEffect)
 
     -- Wasp

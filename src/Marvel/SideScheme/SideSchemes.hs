@@ -82,3 +82,6 @@ import Marvel.SideScheme.SideSchemes.TechTheft as X
 
 -- Wasp
 import Marvel.SideScheme.SideSchemes.MothersOrders as X
+
+-- Quicksilver
+import Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion as X

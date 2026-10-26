@@ -101,6 +101,9 @@ allAttachments =
 
       -- Wasp
       , SomeAttachmentCard beetleArmorMkIV
+
+      -- Quicksilver
+      , SomeAttachmentCard vibrationResistance
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

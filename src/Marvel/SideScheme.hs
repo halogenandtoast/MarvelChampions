@@ -105,6 +105,9 @@ allSideSchemes = fromList $ map
 
   -- Wasp
   , SomeSideSchemeCard mothersOrders
+
+  -- Quicksilver
+  , SomeSideSchemeCard extortionOfSeismicProportion
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme
