@@ -124,8 +124,12 @@ instance RunMessage (Attrs Ally) where
             (attackDamageDealt attack')
         when (attackDamageDealt attack' > 0) $
           damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
-        when (attackOverkill attack' && overkill > 0) $
-          attackDamageIdentity (allyController a) (attackSource attack') (toDamage overkill FromAttack)
+        -- the excess is the attack's damage to the controller: "when you would take
+        -- damage" answers it, as it does the attack's own
+        when (attackOverkill attack' && overkill > 0) do
+          let excess = toDamage overkill FromAttack
+          checkWindows [W.Window W.When $ W.IdentityTakeDamage (allyController a) excess]
+          attackDamageIdentity (allyController a) (attackSource attack') excess
         -- retaliate, if it is still in play after the attack, and the attack not ranged
         let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
         when (retaliates > 0 && not (attackRanged attack')) $

@@ -2314,6 +2314,11 @@ gameSelectExtendedCard m = do
       -- the cards may be anyone's: only who affords them is narrowed
       inner <- go players cards extendedCardMatcher
       concatMapM (\ident -> filterM (isPlayable ident) inner) players'
+    PlayableIgnoringCostBy identityMatcher extendedCardMatcher -> do
+      identities <- selectList identityMatcher
+      let players' = filter ((`elem` identities) . toId) players
+      inner <- go players cards extendedCardMatcher
+      concatMapM (\ident -> filterM (isPlayableWith True ident) inner) players'
     BasicCardMatches cardMatcher -> do
       pure $ filter (cardMatch cardMatcher) cards
     InDiscardOf identityMatcher extendedCardMatcher -> do

@@ -79,6 +79,7 @@
   "takesIndirectDamage": "{player} takes {count} indirect damage",
   "attachedTo": "{card} is attached to {target}",
   "-- The Green Goblin --": "",
+  "boostIconsCounted": "{card}: no boost icons counted | {card}: 1 boost icon counted | {card}: {count} boost icons counted",
   "encounterCardsDiscarded": "The top card of the encounter deck is discarded | The top {count} cards of the encounter deck are discarded",
 
   "-- The Wrecking Crew --": "",

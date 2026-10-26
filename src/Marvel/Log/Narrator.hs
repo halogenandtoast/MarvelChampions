@@ -143,6 +143,9 @@ narrationFor = \case
       [] -> [mechanic [ikeyPart "log.areaJoinsCentral" ["player" ~> p]] | p <- who]
   RemovePlayerObligationsFromGame -> Just $ one $ mechanic [ikeyPart "log.playerObligationsRemoved" []]
   DiscardTopOfEncounterDeck n _ | n > 0 -> Just $ one $ mechanic [ikeyPart "log.encounterCardsDiscarded" ["count" ~> n]]
+  -- each card's count as the window to counting it left it
+  WithBoostIcons _ _ counts | notNull counts ->
+    Just $ pure [mechanic [ikeyPart "log.boostIconsCounted" ["card" ~> EncounterCard c, "count" ~> n]] | (c, n) <- counts]
   -- told once, as it is dealt; each character's share is told as it takes it
   AssignIndirectDamage ident _ n [] | n > 0 -> Just do
     who <- playerRef' ident

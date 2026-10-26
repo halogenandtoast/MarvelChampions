@@ -317,6 +317,8 @@ data BasicEncounterCardMatcher
 
 data ExtendedCardMatcher
   = AffordableCardBy IdentityMatcher ExtendedCardMatcher
+  | -- | a card the player could play ignoring its resource cost
+    PlayableIgnoringCostBy IdentityMatcher ExtendedCardMatcher
   | BasicCardMatches CardMatcher
   | InDiscardOf IdentityMatcher ExtendedCardMatcher
   | TopmostCardInDiscardOf IdentityMatcher CardMatcher

@@ -274,8 +274,13 @@ instance HasAbilities PlayerIdentity where
         <> sideAbilities
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
-isPlayable attrs c = do
-  affordable <- notNull <$> playableTargets attrs c
+isPlayable = isPlayableWith False
+
+-- | Whether the card can be played, its resource cost ignored if so ("play a card from
+-- your hand, ignoring its resource cost").
+isPlayableWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
+isPlayableWith ignoringCost attrs c = do
+  affordable <- notNull <$> playableTargetsWith ignoringCost attrs c
   passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
   forbidden <- any (\case CannotPlayCards m -> cardMatch m c; _ -> False) <$> getModifiers (toId attrs)
@@ -404,12 +409,21 @@ playableTargets ::
   PlayerIdentity ->
   PlayerCard ->
   m [Maybe Target]
-playableTargets attrs c = do
+playableTargets = playableTargetsWith False
+
+-- | 'playableTargets', the resource cost ignored if so: its other costs still due.
+playableTargetsWith ::
+  (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  Bool ->
+  PlayerIdentity ->
+  PlayerCard ->
+  m [Maybe Target]
+playableTargetsWith ignoringCost attrs c = do
   targets <- maybe [Nothing] (map Just) <$> getPlayTargets (toId attrs) c
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> getAvailableResourcesFor (toId attrs) (Just c)
-    (length resources >= length (costResources cost) &&)
+    ((ignoringCost || length resources >= length (costResources cost)) &&)
       <$> canAffordCost (toId attrs) (toSource c) (otherCosts cost)
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
