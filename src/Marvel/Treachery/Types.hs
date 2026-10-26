@@ -140,6 +140,9 @@ instance HasCardDef (Attrs Treachery) where
 instance RunMessage (Attrs Treachery) where
   runMessage msg attrs = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      TreacheryIncite -> do
+        incite attrs
+        pure attrs
       ResolvedTreachery identityId -> do
         removeFromPlay attrs
         -- surge is a "When Revealed", resolved again as the card's others are

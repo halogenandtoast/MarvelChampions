@@ -6,6 +6,8 @@ import Marvel.Id
 
 data TreacheryMessage
   = RevealTreachery IdentityId
+  | -- | its incite keyword, a "When Revealed" ability, so cancelled with the others
+    TreacheryIncite
   | CheckTreacheryCondition IdentityId
   | ResolvedTreachery IdentityId
   deriving stock (Show, Eq, Generic)

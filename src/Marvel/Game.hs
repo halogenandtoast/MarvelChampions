@@ -1047,6 +1047,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case subType of
       Just Ability.Attack | stunned -> removeStun ident
       Just Ability.Thwart | confused -> removeConfused ident
+      -- a defense-labeled ability makes its player's identity the defender of the enemy
+      -- attack it is used during, if there is none yet: not a basic defense, so no DEF
+      -- (RR "Defend, Defense")
+      Just Ability.Defense -> do
+        attacker <- selectOne (AttackingEnemy <> UndefendedEnemy)
+        for_ attacker \enemy -> enemyDefendedBy enemy (IdentityCharacter ident)
+        eventStep eid playEvent
       _ -> eventStep eid playEvent
     pure g
   ResolveEventWithoutPlaying ident card -> do
@@ -1205,8 +1212,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- (Media Coverage); incite and surge are "When Revealed" abilities (RR)
     times <- whenRevealedTimes ident
     let whenRevealed = replicateM_ times
-    -- incite is a "When Revealed": its threat first, then the rest of the card
-    whenRevealed (incite card)
+    -- incite is a "When Revealed": its threat first, then the rest of the card; a
+    -- treachery's after the window as it is revealed, which may cancel it
+    unless (cdCardType (getCardDef card) == TreacheryType) $ whenRevealed (incite card)
     -- surge is resolved after the rest of the card; treacheries surge as they resolve
     let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (whenRevealed $ surge ident)
     case cdCardType (getCardDef card) of
@@ -1234,6 +1242,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         focusing [toCard treachery] do
           checkWindows [W.Window When $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck]
+          whenRevealed $ treacheryStep (toId treachery) TreacheryIncite
           whenRevealed $ treacheryStep (toId treachery) $ RevealTreachery ident
           treacheryStep (toId treachery) $ CheckTreacheryCondition ident
         treacheryStep (toId treachery) $ ResolvedTreachery ident

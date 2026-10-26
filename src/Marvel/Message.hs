@@ -95,6 +95,7 @@ cancelWhenRevealed :: (HasQueue m) => TreacheryId -> m ()
 cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
   TreacheryMessage tid' msg | tid' == tid -> case msg of
     RevealTreachery _ -> Nothing
+    TreacheryIncite -> Nothing
     CheckTreacheryCondition _ -> Nothing
     ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
   msg -> Just msg

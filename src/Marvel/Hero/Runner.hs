@@ -122,6 +122,7 @@ instance RunMessage (Attrs Hero) where
           divides <- elem DividesBasicThwart <$> getModifiers a
           let divided = [labeled "$label.divideThreat" (basicThwartDivided ident a thw) | divides, length schemes > 1]
           chooseOnePrompted ident "$label.chooseSchemeToThwart" (choices <> divided)
+          checkWindows [W.Window W.After $ W.MadeBasicThwart ident]
           pure a
         Defended enemy -> do
           exhaust ident
