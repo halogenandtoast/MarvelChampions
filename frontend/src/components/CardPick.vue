@@ -2,11 +2,12 @@
 // A question answered by picking a card that is in no play area, as a campaign's Tech
 // upgrade is: the cards side by side in the middle of the screen, any other answer
 // ("no upgrade") as a button beneath. Everyone sees it; the player asked picks.
-import { computed } from 'vue'
+import { computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import { useCards } from '../cards'
 import { useChoiceLabel, useKeyed } from '../composables/useChoices'
+import { useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
 import type { ChoiceView } from '../server'
 
@@ -21,23 +22,46 @@ const { t } = useI18n()
 const cards = useCards()
 const keyed = useKeyed()
 const label = useChoiceLabel()
+const overlay = useCardOverlay()
+const preview = (code: string, element: HTMLElement, touched = false) =>
+  overlay.show({ code, name: cards.name(code, code) }, element, cards.landscape(code), touched)
+let pressTimer: ReturnType<typeof setTimeout> | undefined
+const cancelPress = () => clearTimeout(pressTimer)
+const press = (event: PointerEvent, code: string) => {
+  cancelPress()
+  if (event.pointerType !== 'mouse') {
+    const element = event.currentTarget as HTMLElement
+    pressTimer = setTimeout(() => preview(code, element, true), 400)
+  }
+}
+const choose = (index: number | null) => {
+  if (index === null) return
+  overlay.hide()
+  emit('choose', index)
+}
+const close = () => { overlay.hide(); emit('close') }
+onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
-const picks = computed(() => choices.filter((c) => c.kind === 'card' && c.code))
+const picks = computed(() => choices.filter((c) => c.kind === 'card' && c.code).map((c) => ({ key: c.index, code: c.code!, index: c.index })))
 const others = computed(() => choices.filter((c) => !(c.kind === 'card' && c.code)))
 </script>
 
 <template>
-  <div class="pick-backdrop" @click.self="emit('close')">
+  <div class="pick-backdrop" @click.self="close">
     <article class="pick" role="dialog" aria-modal="true" :aria-label="title">
       <header>
         <h2>{{ title }}</h2>
-        <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="emit('close')"><X aria-hidden="true" /></button>
+        <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
       </header>
       <div class="cards">
-        <button v-for="c in picks" :key="c.index" type="button" class="card" :disabled="!canChoose" @click="emit('choose', c.index)">
-          <span class="face"><CardFace :code="c.code" eager /></span>
-          <span class="name">{{ cards.name(c.code!, c.code!) }}</span>
+        <button v-for="c in picks" :key="c.key" type="button" class="card" :disabled="!canChoose" @click="choose(c.index)"
+          @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
+          @pointerleave="cancelPress(); overlay.hide()"
+          @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
+          @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
+          <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
+          <span class="name">{{ cards.name(c.code, c.code) }}</span>
         </button>
       </div>
       <footer>
@@ -54,7 +78,7 @@ const others = computed(() => choices.filter((c) => !(c.kind === 'card' && c.cod
   display: grid;
   gap: 16px;
   width: min(60rem, 100%);
-  max-height: calc(100dvh - 2rem);
+  max-height: 80vh;
   overflow-y: auto;
   padding: 20px;
   border: 1px solid var(--line-strong);
@@ -72,6 +96,11 @@ h2 { margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: va
 .card { display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
 .card:disabled { cursor: default; }
 .face { aspect-ratio: 5 / 7; border-radius: 10px; overflow: hidden; border: 2px solid var(--line); transition: border-color 0.12s, transform 0.12s; }
+.scan { display: block; width: 100%; height: 100%; }
+.face.sideways { position: relative; }
+.sideways .scan { position: absolute; top: 50%; left: 50%; width: 140%; height: calc(100% * 5 / 7); translate: -50% -50%; rotate: 90deg; }
+.card:not(:disabled) .face { border-color: var(--interactive); box-shadow: 0 0 0 2px var(--interactive), 0 0 16px var(--interactive-glow); }
+.card:not(:disabled):focus-visible .face { outline: 2px solid var(--interactive); outline-offset: 4px; }
 .card:not(:disabled):hover .face { border-color: var(--interactive); transform: translateY(-3px); box-shadow: 0 0 12px var(--interactive-glow); }
 .name { font-size: 0.9rem; font-weight: 700; }
 footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
