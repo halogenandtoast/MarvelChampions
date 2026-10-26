@@ -621,6 +621,8 @@ questionView asked = \case
 -- player asked defends with their own identity.
 describeChoice :: IdentityId -> Choice -> ChoiceView
 describeChoice asked = \case
+  -- a card chosen for what choosing it does: the card itself is all there is to show
+  CardLabel code (Run _) -> (plain "card" Nothing) {code = Just code}
   CardLabel code c -> (describeChoice asked c) {code = Just code}
   Label l _ -> plain "label" (Just l)
   TargetLabel t body -> (on "target" t) {kind = fromMaybe "target" (doneTo t body)}

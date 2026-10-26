@@ -250,6 +250,20 @@ spec = describe "The Rise of Red Skull campaign" do
     info "scenarios" `shouldBe` Just (Number 5)
     info "mode" `shouldBe` Just (String "ExpertCampaign")
 
+  it "shows the board a Tech upgrade to choose as the card alone, not what choosing it does" do
+    tg <- dealCampaign (campaignAt StandardCampaign 0) [starter "spider-man"]
+    inGame tg (toFirstTurn >> win >> void readStory)
+    view <- publicGameFor (const True) =<< inGame tg getGame
+    let at k = \case
+          Object o -> KeyMap.lookup k o
+          _ -> Nothing
+        choices = case at "question" view of
+          Just (Object qs) -> [c | q <- KeyMap.elems qs, Just (Array cs) <- [at "choices" q], c <- toList cs]
+          _ -> []
+    map (at "kind") choices `shouldBe` replicate 4 (Just (String "card"))
+    map (at "label") choices `shouldBe` replicate 4 (Just Null)
+    map (at "code") choices `shouldBe` map (Just . String . unCardCode) techUpgrades
+
   it "a permanent upgrade is not offered to an effect that would discard it" do
     tg <- testGame ["spider-man"]
     inGame tg do
