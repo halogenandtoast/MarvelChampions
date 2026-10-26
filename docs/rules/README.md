@@ -13,6 +13,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | The Rise of Red Skull rulebook (MC10) | PDF dated 2020-09-23, 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_rules_web.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_campaign-log.pdf) |
 | The Once and Future Kang rules insert (MC11) | PDF created 2020-07-30, modified 2023-02-02, 8 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc11_once_and_future_kang_rules_insert-compressed.pdf |
 | Ant-Man Hero Pack rulesheet (MC12) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc12_ant-man_rulesheet.pdf |
+| Scarlet Witch Hero Pack rulesheet (MC15) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc15_scarlet_witch_rulesheet.pdf |
 | Wasp Hero Pack rulesheet (MC13) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc13_wasp_rulesheet.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
@@ -43,6 +44,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-ant-man.md](hero-ant-man.md) | Ant-Man pack: the three-sided identity card, Team-Up, form-change clarifications, rulings |
 | [hero-wasp.md](hero-wasp.md) | Wasp pack: the three-sided identity card, Team-Up, Piercing, divided thwart and attack, rulings |
 | [hero-quicksilver.md](hero-quicksilver.md) | Quicksilver pack: Team-Up, Incite X, Piercing, the Super Speed FAQ, rulings (wild resources declared, exhausting as a target) |
+| [hero-scarlet-witch.md](hero-scarlet-witch.md) | Scarlet Witch pack: Team-Up, counting boost icons, the Hex Bolt and Slipping Sanity FAQ, rulings |
 
 ## Conventions
 
