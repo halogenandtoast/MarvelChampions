@@ -18,6 +18,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Gamora Hero Pack rulesheet (MC18) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc18_gamora_rulesheet.pdf |
 | Drax Hero Pack rulesheet (MC19) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc19_drax_rulesheet.pdf |
 | Star-Lord Hero Pack rulesheet (MC17) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc17_star-lord_rulesheet.pdf |
+| Venom Hero Pack rulesheet (MC20) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc20_venom_rulesheet.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
 
@@ -50,6 +51,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-gamora.md](hero-gamora.md) | Gamora pack: the Skilled Tactician FAQ, starter deck, rulings |
 | [hero-drax.md](hero-drax.md) | Drax pack: Piercing, starter deck, rulings (vengeance counters, Moondragon's minion attack) |
 | [hero-star-lord.md](hero-star-lord.md) | Star-Lord pack: Hinder X, Piercing, Ranged, the Star-Lord, Mister Knife and Dive Bomb FAQ, Cosmo errata, rulings |
+| [hero-venom.md](hero-venom.md) | Venom pack: Patrol, Ranged, the Enraged Symbiote nemesis-minion FAQ, Grasping Tendrils FAQ, starter deck, rulings |
 | [hero-scarlet-witch.md](hero-scarlet-witch.md) | Scarlet Witch pack: Team-Up, counting boost icons, the Hex Bolt and Slipping Sanity FAQ, rulings |
 
 ## Conventions
