@@ -163,6 +163,11 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  MakesBasicAttackAgainst timing identityMatcher enemyMatcher -> case windowType w of
+    MadeBasicAttackAgainst identityId enemyId
+      | windowTiming w == timing ->
+          liftA2 (&&) (identityMatches identityMatcher identityId) (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
   MakesBasicAttack timing identityMatcher -> case windowType w of
     MadeBasicAttack identityId
       | windowTiming w == timing ->

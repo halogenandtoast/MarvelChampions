@@ -108,7 +108,7 @@ sourceMatches matcher source = case matcher of
   _ -> pure False
 
 instance (HasGame m) => Count m IdentityMatcher where
-  data QueryCount IdentityMatcher = SustainedDamage | HeroAttackDamage
+  data QueryCount IdentityMatcher = SustainedDamage | HeroAttackDamage | HeroThwartValue
   selectCount = gameSelectCountIdentity
 
 instance (HasGame m) => Count m SchemeMatcher where

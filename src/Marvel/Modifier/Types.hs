@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
-import Marvel.Id (MainSchemeId)
+import Marvel.Id (IdentityId, MainSchemeId)
 import Marvel.Keyword
 import Marvel.Trait.Types
 
@@ -49,6 +49,9 @@ data Modifier
     AdditionalBoostIcons Natural
   | -- | on a character: the cost to play each upgrade on it is reduced
     UpgradeOnThisCostReduction Natural
+  | -- | on a side scheme: only this player's cards remove threat from it, and no one
+    -- else may thwart it (Sibling Rivalry)
+    ThreatRemovableOnlyBy IdentityId
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   | -- | a scheme threat cannot be removed from by thwarting (Held Hostage)

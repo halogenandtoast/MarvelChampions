@@ -78,22 +78,28 @@ instance RunMessage (Attrs Hero) where
           pure a
         BasicAttack bonus -> do
           enemies <- selectList $ AttackableBy (IdentityWithId ident)
-          dmg <- (+ bonus) <$> getModifiedAttack a
-          -- an attack that gains overkill or piercing: the hero has it as a keyword while
-          -- it is made
+          damage <- attackDamage ident bonus
           modifiers <- getModifiers a
           let
-            gains k f = if KeywordModifier k `elem` modifiers then f else id
-            damage = toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
             -- damage that may be divided among enemies, each of them attacked
             divided =
               [ labeled "$label.divideDamage" (dealDividedDamage ident a damage (AttackableBy (IdentityWithId ident)))
               | DividesBasicAttack `elem` modifiers
               , length enemies > 1
               ]
+          -- the target chosen, the interrupts to attacking it (Godslayer), then the damage
           chooseOnePrompted ident "$label.chooseEnemyToAttack" $
-            [targeting (enemyRef enemy) (dealDamage enemy a damage) | enemy <- enemies] <> divided
+            [ targeting (enemyRef enemy) do
+                checkWindows [W.Window W.When $ W.MadeBasicAttackAgainst ident enemy]
+                basicAttackOn ident enemy bonus
+            | enemy <- enemies
+            ]
+              <> divided
           checkWindows [W.Window W.After $ W.MadeBasicAttack ident]
+          pure a
+        BasicAttackOn enemy bonus -> do
+          damage <- attackDamage ident bonus
+          dealDamage enemy a damage
           pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
@@ -136,6 +142,13 @@ instance RunMessage (Attrs Hero) where
         _ -> pure a
     _ -> pure a
    where
+    -- an attack that gains overkill or piercing: the hero has it as a keyword while it is
+    -- made
+    attackDamage ident bonus = do
+      dmg <- (+ bonus) <$> getModifiedAttack a
+      modifiers <- getModifiers a
+      let gains k f = if KeywordModifier k `elem` modifiers then f else id
+      pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
     -- a scheme's own ref, main or side
     schemeTarget = \case
       SchemeMainSchemeId sid -> toTarget sid

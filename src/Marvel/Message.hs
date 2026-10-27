@@ -151,6 +151,7 @@ engageMinion minion ident =
 addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
 addToBasicPower ident n = replaceMatchingMessage raise \case
   IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
+  IdentityMessage ident' (SideMessage (BasicAttackOn _ _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (DefenseApplied _ _)) -> ident == ident'
   _ -> False
@@ -158,6 +159,7 @@ addToBasicPower ident n = replaceMatchingMessage raise \case
   raise = \case
     IdentityMessage i (SideMessage (DefenseApplied x e)) -> [IdentityMessage i (SideMessage (DefenseApplied (x + n) e))]
     IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
+    IdentityMessage i (SideMessage (BasicAttackOn e x)) -> [IdentityMessage i (SideMessage (BasicAttackOn e (x + n)))]
     IdentityMessage i (SideMessage (BasicThwart x)) -> [IdentityMessage i (SideMessage (BasicThwart (x + n)))]
     other -> [other]
 

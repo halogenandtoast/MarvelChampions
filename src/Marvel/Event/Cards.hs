@@ -229,7 +229,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdKeywords = mempty
   , cdCardType = EventType
   , cdAbilityType = Just aType
-  , cdAbilitySubType = Nothing
+  , cdAbilitySubTypes = []
   , cdUnique = False
   , cdAspect = mAspect
   , cdEncounterSet = Nothing
@@ -237,6 +237,7 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdCriteria = NoCriteria
   , cdResources = map (PrintedResource, ) resources
   , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
   , cdBoostIcons = []
   , cdHazards = 0
   , cdAcceleration = 0
@@ -250,7 +251,7 @@ backflip :: CardDef
 backflip =
   (identityEvent "01003" "Backflip" 0 Interrupt [Defense, Skill] [Physical])
     { cdResponseWindow = Just (WouldTakeDamage You FromAttack AnyValue)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     }
 
 enhancedSpiderSense :: CardDef
@@ -275,7 +276,7 @@ swingingWebKick = (identityEvent
                     [Aerial, Attack, Superpower]
                     [Mental]
                   )
-  { cdAbilitySubType = Just Ability.Attack
+  { cdAbilitySubTypes = [Ability.Attack]
   }
 
 crisisInterdiction :: CardDef
@@ -287,7 +288,7 @@ crisisInterdiction = (identityEvent
                     [Thwart]
                     [Energy]
                   )
-  { cdAbilitySubType = Just Ability.Thwart
+  { cdAbilitySubTypes = [Ability.Thwart]
   }
 
 photonicBlast :: CardDef
@@ -299,14 +300,14 @@ photonicBlast = (identityEvent
                   [Attack, Superpower]
                   [Physical]
                 )
-  { cdAbilitySubType = Just Ability.Attack
+  { cdAbilitySubTypes = [Ability.Attack]
   }
 
 gammaSlam :: CardDef
 gammaSlam =
   (identityEvent "01021" "Gamma Slam" 4 HeroAction [Attack, Superpower] [Mental]
     )
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 groundStomp :: CardDef
@@ -322,7 +323,7 @@ legalPractice = (identityEvent
                   [Skill, Thwart]
                   [Physical]
                 )
-  { cdAbilitySubType = Just Ability.Thwart
+  { cdAbilitySubTypes = [Ability.Thwart]
   , cdAbilityCost = DiscardHandCardsCost 1 (Just 5)
   }
 
@@ -346,14 +347,14 @@ repulsorBlast = (identityEvent
                   [Physical]
                 )
   { cdCriteria = canAttack
-  , cdAbilitySubType = Just Ability.Attack
+  , cdAbilitySubTypes = [Ability.Attack]
   }
 
 supersonicPunch :: CardDef
 supersonicPunch =
   (identityEvent "01032" "Supersonic Punch" 2 HeroAction [Attack] [Energy])
     { cdCriteria = canAttack
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     }
 
 ancestralKnowledge :: CardDef
@@ -379,7 +380,7 @@ wakandaForeverD =
 chaseThemDown :: CardDef
 chaseThemDown = reprintedAs ["06013"] $
   (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists AnyScheme
     , cdResponseWindow = Just $ EnemyDefeated After AnyEnemy $ AttackFromPlayer
       You
@@ -388,21 +389,21 @@ chaseThemDown = reprintedAs ["06013"] $
 relentlessAssault :: CardDef
 relentlessAssault =
   (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackMinion
     }
 
 uppercut :: CardDef
 uppercut =
   (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 forJustice :: CardDef
 forJustice =
   (event "01060" "For Justice!" 2 HeroAction [Thwart] [Energy] Justice)
     { cdCriteria = SchemeExists ThwartableScheme
-    , cdAbilitySubType = Just Ability.Thwart
+    , cdAbilitySubTypes = [Ability.Thwart]
     }
 
 greatResponsibility :: CardDef
@@ -429,7 +430,7 @@ counterPunch :: CardDef
 counterPunch =
   (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
     { cdResponseWindow = Just (HeroDefended After You AttackableEnemy)
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     }
 
 getBehindMe :: CardDef
@@ -442,7 +443,7 @@ getBehindMe = reprintedAs ["05013"] $
 emergency :: CardDef
 emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
   { cdResponseWindow = Just (ThreatWouldBePlaced ThreatFromVillain AnyScheme)
-  , cdAbilitySubType = Just Ability.Thwart
+  , cdAbilitySubTypes = [Ability.Thwart]
   }
 
 firstAid :: CardDef
@@ -452,7 +453,7 @@ firstAid = reprintedAs ["12019"] (basicEvent "01086" "First Aid" 1 Action [] [Me
 
 haymaker :: CardDef
 haymaker = (basicEvent "01087" "Haymaker" 2 HeroAction [Attack] [Energy])
-  { cdAbilitySubType = Just Ability.Attack
+  { cdAbilitySubTypes = [Ability.Attack]
   }
 
 fearlessDetermination :: CardDef
@@ -463,7 +464,7 @@ heroicStrike :: CardDef
 heroicStrike =
   (identityEvent "03004" "Heroic Strike" 3 HeroAction [Attack] [Physical])
     { cdCriteria = canAttack
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     }
 
 -- | Exhausting the shield is part of its cost: it is played only with the shield ready.
@@ -471,7 +472,7 @@ shieldBlock :: CardDef
 shieldBlock =
   (identityEvent "03005" "Shield Block" 0 Interrupt [Defense] [Mental])
     { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     , cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrade.captainAmericasShield)
     }
 
@@ -480,7 +481,7 @@ shieldToss :: CardDef
 shieldToss =
   (identityEvent "03006" "Shield Toss" 0 HeroAction [Attack, Superpower] [Energy])
     { cdCriteria = canAttack
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     , cdAbilityCost =
         DiscardHandCardsCost 0 Nothing <> ReturnUpgradeToHandCost (UpgradeIs Upgrade.captainAmericasShield)
     }
@@ -501,52 +502,52 @@ expertDefense :: CardDef
 expertDefense =
   (event "03033" "Expert Defense" 0 HeroInterrupt [Defense] [Mental] Protection)
     { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     }
 
 bigHands :: CardDef
 bigHands =
   (identityEvent "05003" "Big Hands" 2 HeroAction [Attack, Superpower] [Physical])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 sneakBy :: CardDef
 sneakBy =
   (identityEvent "05004" "Sneak By" 2 HeroAction [Skill, Thwart] [Mental])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
 wiggleRoom :: CardDef
 wiggleRoom =
   (identityEvent "05005" "Wiggle Room" 0 HeroInterrupt [Defense, Superpower] [Energy])
-    { cdAbilitySubType = Just Ability.Defense
+    { cdAbilitySubTypes = [Ability.Defense]
     , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
     }
 
 preemptiveStrike :: CardDef
 preemptiveStrike =
   (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
-    { cdAbilitySubType = Just Ability.Defense
+    { cdAbilitySubTypes = [Ability.Defense]
     , cdResponseWindow = Just (BoostCardFlipped When (VillainEnemy <> AttackingEnemy))
     }
 
 tackle :: CardDef
 tackle =
   (event "05015" "Tackle" 3 HeroAction [Attack] [Physical] Protection)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 melee :: CardDef
 melee =
   (event "05030" "Melee" 3 HeroAction [Attack] [Mental] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 concussiveBlow :: CardDef
 concussiveBlow =
   (event "05031" "Concussive Blow" 3 HeroAction [Attack] [Physical] Justice)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 moraleBoost :: CardDef
@@ -554,7 +555,7 @@ moraleBoost = event "05032" "Morale Boost" 1 HeroAction [] [Energy] Leadership
 crushingBlow :: CardDef
 crushingBlow =
   (identityEvent "10002" "Crushing Blow" 1 HeroAction [Attack] [Physical])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = SpendOnly Physical
     }
 
@@ -567,7 +568,7 @@ hulkSmash =
 subOrbitalLeap :: CardDef
 subOrbitalLeap =
   (identityEvent "10004" "Sub-Orbital Leap" 3 HeroAction [Superpower, Thwart] [Physical])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     }
 
 thunderclap :: CardDef
@@ -579,26 +580,26 @@ unstoppableForce = identityEvent "10006" "Unstoppable Force" 2 HeroAction [] [Ph
 dropKick :: CardDef
 dropKick =
   (event "10014" "Drop Kick" 3 HeroAction [Attack] [Physical] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 toeToToe :: CardDef
 toeToToe =
   (event "10015" "Toe to Toe" 1 HeroAction [Attack] [Mental] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     }
 
 youllPayForThat :: CardDef
 youllPayForThat =
   (event "10016" "\"You'll Pay for That!\"" 1 HeroResponse [Thwart] [Energy] Aggression)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdResponseWindow = Just (EnemyAttacked After VillainEnemy You)
     }
 
 toTheRescue :: CardDef
 toTheRescue =
   (basicEvent "10019" "To the Rescue!" 2 HeroAction [Thwart] [Physical])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     }
 
 inspiringPresence :: CardDef
@@ -609,7 +610,7 @@ inspiringPresence =
 
 covertOps :: CardDef
 covertOps = (identityEvent "08003" "Covert Ops" 3 Action [Thwart] [Mental])
-  { cdAbilitySubType = Just Ability.Thwart
+  { cdAbilitySubTypes = [Ability.Thwart]
   }
 
 -- | Not labeled: each of its three attacks is one (see the event).
@@ -619,13 +620,13 @@ danceOfDeath =
 
 stealthStrike :: CardDef
 stealthStrike = (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
-  { cdAbilitySubType = Just Ability.Attack
+  { cdAbilitySubTypes = [Ability.Attack]
   }
 
 defenderOfTheNineRealms :: CardDef
 defenderOfTheNineRealms =
   (identityEvent "06003" "Defender of the Nine Realms" 0 HeroAction [Thwart] [Physical])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     }
 
@@ -636,7 +637,7 @@ forAsgard = identityEvent "06004" "For Asgard!" 1 AlterEgoAction [] [Physical]
 hammerThrow :: CardDef
 hammerThrow =
   (identityEvent "06005" "Hammer Throw" 3 HeroAction [Attack, Superpower] [Energy])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     , cdAbilityCost = ExhaustUpgradeCost (UpgradeIs Upgrades.mjolnir)
     }
@@ -650,7 +651,7 @@ lightningStrike =
 getOverHere :: CardDef
 getOverHere =
   (event "06014" "Get Over Here!" 0 HeroAction [Attack] [Energy] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackMinion
     }
 
@@ -681,14 +682,14 @@ secondWind = event "06033" "Second Wind" 3 Action [] [Mental] Protection
 astralProjection :: CardDef
 astralProjection =
   (identityEvent "09003" "Astral Projection" 2 HeroAction [Spell, Thwart] [Mental])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     }
 
 magicBlast :: CardDef
 magicBlast =
   (identityEvent "09004" "Magic Blast" 3 HeroAction [Attack, Spell] [Energy])
     { cdCriteria = canAttack
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     }
 
 masterOfTheMysticArts :: CardDef
@@ -710,7 +711,7 @@ desperateDefense :: CardDef
 desperateDefense =
   (event "09015" "Desperate Defense" 1 HeroInterrupt [Defense] [Energy] Protection)
     { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     }
 
 -- | healing 2 damage from your hero is its cost, so it is paid only in full
@@ -718,7 +719,7 @@ momentumShift :: CardDef
 momentumShift =
   (event "09016" "Momentum Shift" 2 HeroAction [Attack] [Physical] Protection)
     { cdCriteria = canAttack
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     , cdAbilityCost = HealCost 2
     }
 
@@ -770,7 +771,7 @@ arrow code name cost traits resources =
 arrowAttack :: CardCode -> Name -> Int -> [Resource] -> CardDef
 arrowAttack code name cost resources =
   (arrow code name cost [Attack] resources)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -786,7 +787,7 @@ electricArrow = arrowAttack "04007" "Electric Arrow" 2 [Energy]
 cableArrow :: CardDef
 cableArrow =
   (arrow "04008" "Cable Arrow" 1 [Thwart] [Physical])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableSchemeIgnoringCrisis
     }
 
@@ -809,7 +810,7 @@ earthsMightiestHeroes =
 venomBlast :: CardDef
 venomBlast =
   (event "04035" "Venom Blast" 2 HeroAction [Attack, Superpower] [Energy] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -822,7 +823,7 @@ contaminantImmunity = event "04037" "Contaminant Immunity" 2 HeroAction [Superpo
 inconspicuous :: CardDef
 inconspicuous =
   (event "04038" "Inconspicuous" 1 HeroAction [Skill, Thwart] [Energy] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
@@ -832,21 +833,21 @@ selfPropelledGlide = identityEvent "04039" "Self-Propelled Glide" 1 HeroAction [
 pressTheAdvantage :: CardDef
 pressTheAdvantage =
   (event "04043" "Press the Advantage" 1 HeroAction [Attack] [Mental] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
 piercingStrike :: CardDef
 piercingStrike =
   (event "04044" "Piercing Strike" 2 HeroAction [Attack] [Physical] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
 clearTheArea :: CardDef
 clearTheArea =
   (event "04049" "Clear the Area" 1 HeroAction [Thwart] [Mental] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
@@ -855,14 +856,14 @@ clearTheArea =
 giantStomp :: CardDef
 giantStomp =
   (identityEvent "12003" "Giant Stomp" 3 HeroAction [Attack, Giant] [Energy])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = SelfMatches (IdentityWithTrait Giant) <> canAttack
     }
 
 hiveMind :: CardDef
 hiveMind =
   (identityEvent "12004" "Hive Mind" 2 HeroAction [Thwart, Tiny] [Physical])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SelfMatches (IdentityWithTrait Tiny) <> SchemeExists ThwartableScheme
     }
 
@@ -900,7 +901,7 @@ momentOfTriumph =
 layDownTheLaw :: CardDef
 layDownTheLaw =
   (event "12031" "Lay Down the Law" 1 HeroResponse [Thwart] [Mental] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdResponseWindow = Just (IdentityChangedToForm After You)
     , cdCriteria = SchemeExists ThwartableScheme
     }
@@ -919,14 +920,14 @@ assessTheSituation = basicEvent "12033" "Assess the Situation" 0 Action [Tactic]
 giantHelp :: CardDef
 giantHelp =
   (identityEvent "13003" "Giant Help" 2 HeroAction [Thwart] [Mental])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
 pinpointStrike :: CardDef
 pinpointStrike =
   (identityEvent "13004" "Pinpoint Strike" 3 HeroAction [Attack] [Mental])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -941,21 +942,21 @@ rapidGrowth =
 waspSting :: CardDef
 waspSting =
   (identityEvent "13006" "Wasp Sting" 2 HeroAction [Attack] [Mental])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Giant), SelfMatches (IdentityWithTrait Tiny)] <> canAttack
     }
 
 intoTheFray :: CardDef
 intoTheFray =
   (event "13013" "Into the Fray" 3 HeroAction [Attack] [Energy] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackMinion
     }
 
 surpriseAttack :: CardDef
 surpriseAttack =
   (event "13014" "Surprise Attack" 1 HeroResponse [Attack] [Physical] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdResponseWindow = Just (IdentityChangedToForm After You)
     , cdCriteria = canAttack
     }
@@ -966,14 +967,14 @@ athleticConditioning = basicEvent "13034" "Athletic Conditioning" 1 HeroAction [
 runningInterference :: CardDef
 runningInterference =
   (event "13031" "Running Interference" 2 HeroAction [Thwart] [Physical] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SelfMatches (IdentityWithTrait Avenger)
     }
 
 allForOne :: CardDef
 allForOne =
   (event "13032" "All for One" 2 HeroAction [Attack] [Energy] Leadership)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -1009,14 +1010,14 @@ neverBackDown :: CardDef
 neverBackDown =
   (event "14014" "Never Back Down" 1 HeroInterrupt [Defense] [Physical] Protection)
     { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     }
 
 sideStep :: CardDef
 sideStep =
   (event "14015" "Side Step" 1 HeroInterrupt [Defense] [Mental] Protection)
     { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
-    , cdAbilitySubType = Just Ability.Defense
+    , cdAbilitySubTypes = [Ability.Defense]
     }
 
 -- | Team-Up (Quicksilver and Scarlet Witch). Max 1 per deck.
@@ -1055,7 +1056,7 @@ hexBolt = identityEvent "15004" "Hex Bolt" 2 HeroAction [Spell, Superpower] [Men
 molecularDecay :: CardDef
 molecularDecay =
   (identityEvent "15005" "Molecular Decay" 3 HeroAction [Attack, Spell] [Energy])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -1068,20 +1069,20 @@ warpReality =
 crisisAverted :: CardDef
 crisisAverted =
   (event "15012" "Crisis Averted" 3 HeroAction [Thwart] [Mental] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     }
 
 multitasking :: CardDef
 multitasking =
   (event "15013" "Multitasking" 1 HeroAction [Thwart] [Physical] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
 swiftRetribution :: CardDef
 swiftRetribution =
   (event "15014" "Swift Retribution" 1 HeroAction [Attack] [Mental] Justice)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackVillain
     }
 
@@ -1089,7 +1090,7 @@ turnTheTide :: CardDef
 turnTheTide =
   (event "15015" "Turn the Tide" 0 HeroResponse [Attack] [Energy] Justice)
     { cdResponseWindow = Just (HeroThwartsAllThreat You)
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
 
@@ -1103,7 +1104,7 @@ browbeat :: CardDef
 browbeat =
   (event "15028" "Browbeat" 2 HeroAction [Attack] [Physical] Aggression)
     { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> canAttackVillain
-    , cdAbilitySubType = Just Ability.Attack
+    , cdAbilitySubTypes = [Ability.Attack]
     }
 
 lastStand :: CardDef
@@ -1115,7 +1116,7 @@ lastStand =
 baitAndSwitch :: CardDef
 baitAndSwitch =
   (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     }
 
 recuperation :: CardDef
@@ -1135,14 +1136,14 @@ daringEscape =
 gutsyMove :: CardDef
 gutsyMove =
   (identityEvent "17004" "Gutsy Move" 2 HeroAction [Thwart] [Mental])
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
 slidingShot :: CardDef
 slidingShot =
   (identityEvent "17005" "Sliding Shot" 3 HeroAction [Attack] [Physical])
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = UpgradeExists (UpgradeIs Upgrades.elementGun <> UpgradeControlledBy You) <> canAttack
     }
 
@@ -1158,14 +1159,14 @@ blazeOfGlory =
 diveBomb :: CardDef
 diveBomb =
   (event "17028" "Dive Bomb" 4 HeroAction [Aerial, Attack] [Physical] Aggression)
-    { cdAbilitySubType = Just Ability.Attack
+    { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> canAttack
     }
 
 agileFlight :: CardDef
 agileFlight =
   (event "17029" "Agile Flight" 3 HeroAction [Aerial, Thwart] [Mental] Justice)
-    { cdAbilitySubType = Just Ability.Thwart
+    { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> SchemeExists ThwartableScheme
     }
 

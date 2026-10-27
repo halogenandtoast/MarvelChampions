@@ -121,7 +121,7 @@ instance RunMessage (Attrs Event) where
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy ranged
         -- one attack, however many instances of damage it deals the enemy
-        | cdAbilitySubType (eventCardDef e) == Just Ability.Attack ->
+        | Ability.Attack `elem` cdAbilitySubTypes (eventCardDef e) ->
             pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
         | otherwise -> e <$ attackResolved attacker enemy ranged
       _ -> pure e

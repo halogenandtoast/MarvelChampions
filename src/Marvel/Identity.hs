@@ -166,6 +166,12 @@ instance HasTraits PlayerIdentity where
     applyModifier (TraitModifier t) = HashSet.insert t
     applyModifier _ = id
 
+-- | The hero's THW; none in alter-ego form.
+getIdentityHeroThwart :: (HasGame m) => PlayerIdentity -> m Natural
+getIdentityHeroThwart attrs = case currentIdentity attrs of
+  AlterEgoSide _ -> pure 0
+  HeroSide x -> getModifiedThwart $ toAttrs x
+
 getIdentityHeroAttackDamage :: (HasGame m) => PlayerIdentity -> m Natural
 getIdentityHeroAttackDamage attrs = case currentIdentity attrs of
   AlterEgoSide _ -> pure 0
@@ -281,7 +287,8 @@ isPlayable = isPlayableWith False
 isPlayableWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
 isPlayableWith ignoringCost attrs c = do
   affordable <- notNull <$> playableTargetsWith ignoringCost attrs c
-  passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
+  -- a card with a window is played as an action only if it says so, under its criteria
+  passedCriteria <- passesCardCriteria ident c (fromMaybe (cdCriteria def) (cdActionCriteria def) <> toAdditionalCriteria def)
   passedPlayLimits <- checkPlayLimits attrs c
   forbidden <- any (\case CannotPlayCards m -> cardMatch m c; _ -> False) <$> getModifiers (toId attrs)
   matchesUnique <-
@@ -294,7 +301,7 @@ isPlayableWith ignoringCost attrs c = do
       && passedPlayLimits
       && not matchesUnique
       && not forbidden
-      && isNothing (cdResponseWindow def)
+      && (isNothing (cdResponseWindow def) || isJust (cdActionCriteria def))
       && (cdCardType def /= ResourceType)
  where
   ident = toId attrs

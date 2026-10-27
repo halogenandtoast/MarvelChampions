@@ -98,6 +98,8 @@ data SideMessage
   | Defended EnemyId
   | -- | the basic attack, after the interrupts to making it, and what they add to it
     BasicAttack Natural
+  | -- | the basic attack's target chosen, after the interrupts to attacking it
+    BasicAttackOn EnemyId Natural
   | -- | the basic thwart, after the interrupts to making it, and what they add to it
     BasicThwart Natural
   | -- | the defender's DEF, given the bonus, is applied once "when defends" is answered

@@ -116,7 +116,8 @@ data CardDef = CardDef
   , cdKeywords :: HashSet Keyword
   , cdCardType :: CardType
   , cdAbilityType :: Maybe AbilityType
-  , cdAbilitySubType :: Maybe AbilitySubType
+  , -- | its labels: "(attack/thwart)" is both (RR Labeled Ability)
+    cdAbilitySubTypes :: [AbilitySubType]
   , cdUnique :: Bool
   , cdAspect :: Maybe Aspect
   , cdCriteria :: Criteria
@@ -125,6 +126,9 @@ data CardDef = CardDef
   , cdEncounterSet :: Maybe EncounterSet
   , cdEncounterSetQuantity :: Maybe Natural
   , cdResponseWindow :: Maybe WindowMatcher
+  , -- | a card played in its window that is also played as an action, under these
+    -- criteria (First Hit)
+    cdActionCriteria :: Maybe Criteria
   , cdHazards :: Natural
   , cdAcceleration :: Natural
   , cdLimit :: Maybe InPlayLimit
@@ -186,4 +190,4 @@ instance HasCardDef CardDef where
 toAdditionalCriteria :: CardDef -> Criteria
 toAdditionalCriteria def =
   maybe NoCriteria abilityTypeCriteria (cdAbilityType def)
-    <> maybe NoCriteria abilitySubTypeCriteria (cdAbilitySubType def)
+    <> foldMap abilitySubTypeCriteria (cdAbilitySubTypes def)

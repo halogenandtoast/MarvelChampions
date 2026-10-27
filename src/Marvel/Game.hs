@@ -367,8 +367,19 @@ getPlayerCount = length <$> getsGame gamePlayerOrder
 -- alter-ego titles that go with it: a unique card matching one cannot enter play.
 -- | In "your" game area: a unique card in one area places no limitation on the others
 -- (TOAFK insert p.7).
+-- | The unique cards a unique player card would match (RR Unique Icon): the players'
+-- cards in your area, and the unique minions and villains in play (the Nebula ally and the
+-- Nebula minion match).
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
-getUniqueTitlesInPlay = map snd <$> (getUniqueCardsIn . areaId =<< getYourArea)
+getUniqueTitlesInPlay = do
+  players <- map snd <$> (getUniqueCardsIn . areaId =<< getYourArea)
+  encounter <- getsGame \g ->
+    [ (title n, maybe [] pure (subtitle n))
+    | def <- map getCardDef (HashMap.elems $ gameMinions g) <> map getCardDef (HashMap.elems $ gameVillains g)
+    , cdUnique def
+    , let n = cdName def
+    ]
+  pure $ players <> encounter
 
 -- | The unique cards in play in the area, by title and its other names: the players'
 -- allies, supports and upgrades, and their identities.
@@ -1066,20 +1077,25 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- the effect of an attack or thwart event is its player's attack or thwart: a stun or
   -- confusion replaces it as it would resolve, its cost paid ("Stunned", "Confused")
   ResolveEventEffect ident (EventMessage eid playEvent) -> do
-    let subType = cdAbilitySubType . eventCardDef . toAttrs =<< lookup eid (gameEvents g)
+    let labels = maybe [] (cdAbilitySubTypes . eventCardDef . toAttrs) (lookup eid (gameEvents g))
     stunned <- identityMatches StunnedIdentity ident
     confused <- identityMatches ConfusedIdentity ident
-    case subType of
-      Just Ability.Attack | stunned -> removeStun ident
-      Just Ability.Thwart | confused -> removeConfused ident
-      -- a defense-labeled ability makes its player's identity the defender of the enemy
-      -- attack it is used during, if there is none yet: not a basic defense, so no DEF
-      -- (RR "Defend, Defense")
-      Just Ability.Defense -> do
-        attacker <- selectOne (AttackingEnemy <> UndefendedEnemy)
-        for_ attacker \enemy -> enemyDefendedBy enemy (IdentityCharacter ident)
+    let stops = Ability.Attack `elem` labels && stunned
+        baffles = Ability.Thwart `elem` labels && confused
+    -- a status that cancels any of its labels cancels the whole of it, and each such
+    -- status is removed (RR Labeled Ability)
+    if stops || baffles
+      then do
+        when stops $ removeStun ident
+        when baffles $ removeConfused ident
+      else do
+        -- a defense-labeled ability makes its player's identity the defender of the enemy
+        -- attack it is used during, if there is none yet: not a basic defense, so no DEF
+        -- (RR "Defend, Defense")
+        when (Ability.Defense `elem` labels) do
+          attacker <- selectOne (AttackingEnemy <> UndefendedEnemy)
+          for_ attacker \enemy -> enemyDefendedBy enemy (IdentityCharacter ident)
         eventStep eid playEvent
-      _ -> eventStep eid playEvent
     pure g
   ResolveEventWithoutPlaying ident card -> do
     let event = createEvent ident card
@@ -1345,6 +1361,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         minion = createMinion ident card
         isTough = Toughness `member` cdKeywords (getCardDef card)
       when isTough $ enemyBecomesTough (toId minion)
+      checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
       engageMinion (toId minion) ident
       checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
@@ -2588,6 +2605,7 @@ gameSelectEnemy m = do
     AnyEnemy -> pure True
     VillainEnemy -> pure True
     MinionEnemy -> pure False
+    UniqueEnemy -> pure $ cdUnique (getCardDef e)
     DamageableEnemy -> pure True
     -- guard keeps the player it is engaged with from attacking "the villain", the
     -- active one (TWC insert p.6); a 'CannotBeAttacked' villain is attacked by no one
@@ -2618,6 +2636,7 @@ gameSelectEnemy m = do
     AnyEnemy -> pure True
     VillainEnemy -> pure False
     MinionEnemy -> pure True
+    UniqueEnemy -> pure $ cdUnique (getCardDef e)
     DamageableEnemy -> pure True
     AttackableBy attacker -> not <$> barredFrom attacker e
     AttackableByAlly aid -> do
@@ -2754,7 +2773,12 @@ gameSelectAnyScheme = \case
   ThwartableSchemeIgnoringCrisis -> thwartable False
  where
   thwartable crisisSideSchemes = do
-    sideSchemes <- filterM (fmap (notElem ThreatCannotBeRemoved) . getModifiers) . HashMap.elems =<< getsGame gameSideSchemes
+    you <- getYou
+    let removable = \case
+          ThreatCannotBeRemoved -> False
+          ThreatRemovableOnlyBy p -> p == you
+          _ -> True
+    sideSchemes <- filterM (fmap (all removable) . getModifiers) . HashMap.elems =<< getsGame gameSideSchemes
     if crisisSideSchemes
       then
         pure $
@@ -2960,6 +2984,7 @@ gameSelectCountIdentity aggregate matcher = do
   case aggregate of
     SustainedDamage -> pure . sum $ map identityDamage identities
     HeroAttackDamage -> sum <$> traverse getIdentityHeroAttackDamage identities
+    HeroThwartValue -> sum <$> traverse getIdentityHeroThwart identities
 
 -- | The allies' modified ATK or THW, summed.
 gameSelectCountAlly ::

@@ -377,6 +377,10 @@ basicAttack, basicThwart :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 basicAttack ident = push . IdentityMessage ident . SideMessage . BasicAttack
 basicThwart ident = push . IdentityMessage ident . SideMessage . BasicThwart
 
+-- | The basic attack's damage dealt to the target chosen, past the interrupts to it.
+basicAttackOn :: (ReverseQueue m) => IdentityId -> EnemyId -> Natural -> m ()
+basicAttackOn ident enemy = push . IdentityMessage ident . SideMessage . BasicAttackOn enemy
+
 defenseApplied :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
 defenseApplied ident = push . IdentityMessage ident . SideMessage . DefenseApplied 0 . toEnemy
 

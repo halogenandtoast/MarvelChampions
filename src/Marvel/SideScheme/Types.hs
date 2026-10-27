@@ -178,15 +178,20 @@ instance RunMessage (Attrs SideScheme) where
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | any (`elem` modifiers) [ThreatCannotBeRemoved, ThreatCannotBeRemovedByThwarting] -> pure attrs
         SideSchemeThreatRemoved _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
-        SideSchemeThwarted source n -> do
+        SideSchemeThwarted source n -> unlessBarred source do
           attrs' <- removed source n
           heroThwartedAllThreat source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
           pure attrs'
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
-        SideSchemeThreatRemoved source n -> removed source n
+        SideSchemeThreatRemoved source n -> unlessBarred source (removed source n)
         _ -> pure attrs
     _ -> pure attrs
    where
+    -- a player's card cannot remove threat it is kept to another player's ('ThreatRemovableOnlyBy')
+    unlessBarred source body = do
+      onlyBy <- (\ms -> [p | ThreatRemovableOnlyBy p <- ms]) <$> getModifiers attrs
+      controller <- getSourceController source
+      if any (\p -> maybe False (/= p) controller) onlyBy then pure attrs else body
     removed source n = do
           modifiers <- getModifiers attrs
           -- a villain's own side scheme is not discarded with no threat on it

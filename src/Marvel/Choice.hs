@@ -168,7 +168,7 @@ resolveChoice ident = \case
   -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
   -- a thwart, as "Hero Action (thwart)"; "remove threat" otherwise is not one
   ThwartScheme target source n' -> do
-    labeled <- getsGame \g -> (cdAbilitySubType =<< abilityCardDef g (toTarget source)) == Just Ability.Thwart
+    labeled <- getsGame \g -> maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
     removeThreatFrom labeled target source n'
   BasicThwartScheme target source n' -> removeThreatFrom True target source n'
   RemoveThreat source n schemeMatcher -> do

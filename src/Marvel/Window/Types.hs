@@ -59,6 +59,8 @@ data WindowMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
+  | -- | a player matching makes a basic attack against an enemy matching, its target chosen
+    MakesBasicAttackAgainst WindowTiming IdentityMatcher EnemyMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | -- | revealed from the encounter deck, by any player
@@ -148,6 +150,7 @@ data WindowType
   | ThreatPlaced ThreatSource SchemeId Natural
   | IdentityChangesForm IdentityId
   | MadeBasicAttack IdentityId
+  | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
   | -- | the side scheme has been defeated, by the player, and by what removed its last
     -- threat when that is known
