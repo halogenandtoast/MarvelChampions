@@ -13,7 +13,7 @@ import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Matchers.Types (VillainMatcher (ActiveVillain))
 import Marvel.Query (selectOne)
-import Marvel.Game.Source (getActivePlayerId)
+import Marvel.Game.Source (getActivePlayerId, getModifiers)
 import Marvel.Keyword (Keyword (Permanent))
 
 data Attachment = forall a. (IsAttachment a) => Attachment a
@@ -150,7 +150,12 @@ isPermanentAttachment = elem Permanent . cdKeywords . attachmentCardDef
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = runQueueT $ case msg of
     AttachmentMessage attachmentId' msg'
-      | attachmentId' == attachmentId attrs -> case msg' of
+      | attachmentId' == attachmentId attrs -> do
+        -- "cannot be unattached" (Superior Tactics): it stays where it is
+        stays <- (attached attrs &&) . elem CannotBeUnattached <$> getModifiers attrs
+        case msg' of
+          AttachedToEnemy enemyId | stays, attachmentEnemy attrs /= Just enemyId -> pure attrs
+          AttachedToIdentity _ | stays -> pure attrs
           -- attached elsewhere already, it moves: what had it is told it has gone
           AttachedToEnemy enemyId -> do
             when (attached attrs) $ attachmentRemoved (attachmentId attrs)

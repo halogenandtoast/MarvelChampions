@@ -3011,7 +3011,7 @@ gameSelectAnyScheme = \case
               (SchemeSideSchemeId . toId)
               (filter ((> 0) . getSideSchemeThreat) sideSchemes)
       else do
-        mainSchemes <- HashMap.elems <$> getsGame gameMainSchemes
+        mainSchemes <- filterM (fmap (all removable) . getModifiers) . HashMap.elems =<< getsGame gameMainSchemes
         pure $
           HashSet.fromList $
             map

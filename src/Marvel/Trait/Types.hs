@@ -82,5 +82,7 @@ data Trait
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone
+  -- Ronan the Accuser
+  | AccuserCorps
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)
