@@ -24,13 +24,14 @@ import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
--- | [star] Boost: another boost card for the villain's activation. Turned up for a
--- minion's activation, there is no activation of the villain's to give it to.
+-- | [star] Boost: another boost card for the villain's activation.
 anotherBoostCard :: (ReverseQueue m) => Attrs Treachery -> Message -> Maybe (m ())
 anotherBoostCard attrs = \case
   Boost (RevealedAsBoost target enemy) | isTarget attrs target -> Just case enemy of
     EnemyVillainId villain -> dealBoost villain
-    EnemyMinionId _ -> pure ()
+    -- turned up for a villainous minion's, it still gives "the villain" its card (RR
+    -- Villainous), facedown on him for his next activation
+    EnemyMinionId _ -> selectOne ActiveVillain >>= traverse_ dealBoost
   _ -> Nothing
 
 onTheHunt :: TreacheryCard OnTheHunt

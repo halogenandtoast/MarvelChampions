@@ -391,6 +391,20 @@ badoonHeadhunter = describe "Badoon Headhunter" do
       -- its 1 SCH and Shocker's 2 boost icons
       liftIO $ after - before `shouldBe` 3
 
+  it "On the Hunt turned up for Badoon Headhunter's activation still gives the villain a boost card, for his next" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      m <- addMinion you MinionCards.badoonHeadhunter
+      _ <- stackEncounterDeck [TreacheryCards.onTheHunt, MinionCards.shocker]
+      before <- villainBoosts
+      threat <- mainSchemeThreatNow
+      resolve [MinionMessage m MinionSchemes]
+      after <- villainBoosts
+      threat' <- mainSchemeThreatNow
+      -- its 1 SCH and On the Hunt's 1 boost icon; Shocker waits on the villain
+      liftIO $ (after - before, threat' - threat) `shouldBe` (1, 2)
+
   it "Headhunter's Henchman surges, and while engaged keeps its player from thwarting the main scheme (patrol)" do
     tg <- testGame ["spider-man", "captain-marvel"]
     let you = player1 tg

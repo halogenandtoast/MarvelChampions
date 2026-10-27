@@ -654,6 +654,17 @@ spacePiratesSpec = describe "Space Pirates" do
       after <- length . villainBoostCards <$> villainAttrs
       liftIO $ after - before `shouldBe` 1
 
+  it "a pirate's boost turned up for a minion's activation gives the villain a boost card, for his next" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      m <- addMinion you MinionCards.headhuntersHenchman
+      card <- encounterCard MinionCards.pirateCommander
+      before <- length . villainBoostCards <$> villainAttrs
+      runNow [RevealBoostCard card (EnemyMinionId m)]
+      after <- length . villainBoostCards <$> villainAttrs
+      liftIO $ after - before `shouldBe` 1
+
   it "Sound the Alarms: each enemy gets +1 ATK; its boost reveals it" do
     tg <- testGame ["spider-man"]
     let you = player1 tg
