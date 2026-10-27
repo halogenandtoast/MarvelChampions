@@ -143,3 +143,13 @@ import Marvel.Upgrade.Upgrades.ThrusterBoots as X
 import Marvel.Upgrade.Upgrades.FollowThrough as X
 import Marvel.Upgrade.Upgrades.HandCannon as X
 import Marvel.Upgrade.Upgrades.BoosterBoots as X
+
+-- The Galaxy's Most Wanted: The Market
+import Marvel.Upgrade.Upgrades.ArmorPlating as X
+import Marvel.Upgrade.Upgrades.HeavyCannon as X
+import Marvel.Upgrade.Upgrades.HyperThrusters as X
+import Marvel.Upgrade.Upgrades.ReactorCore as X
+import Marvel.Upgrade.Upgrades.CargoHold as X
+import Marvel.Upgrade.Upgrades.MountedLaser as X
+import Marvel.Upgrade.Upgrades.NavigationColumn as X
+import Marvel.Upgrade.Upgrades.TargetingScreen as X

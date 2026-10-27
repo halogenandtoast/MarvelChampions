@@ -139,6 +139,18 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted: Nebula, Space Pirates
   , SomeSideSchemeCard lethalIntent
   , SomeSideSchemeCard soundTheAlarms
+
+  -- The Galaxy's Most Wanted: Challenge
+  , SomeSideSchemeCard badoonBlitz
+  , SomeSideSchemeCard badoonBlitzExpert
+  , SomeSideSchemeCard galleryOfSplendor
+  , SomeSideSchemeCard galleryOfSplendorExpert
+  , SomeSideSchemeCard thereIsNoEscape
+  , SomeSideSchemeCard thereIsNoEscapeExpert
+  , SomeSideSchemeCard guerrillaTactics
+  , SomeSideSchemeCard guerrillaTacticsExpert
+  , SomeSideSchemeCard kreeSupremacy
+  , SomeSideSchemeCard kreeSupremacyExpert
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

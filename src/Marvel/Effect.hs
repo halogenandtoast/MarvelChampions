@@ -73,6 +73,10 @@ allEffects =
     -- Groot
     , ("16024", SomeCardEffect deftFocusEffect)
 
+    -- The Galaxy's Most Wanted: The Market
+    , ("16169", SomeCardEffect sureGambleEffect)
+    , ("16165", SomeCardEffect reactorCoreEffect)
+
     -- The Once and Future Kang
 
     ]

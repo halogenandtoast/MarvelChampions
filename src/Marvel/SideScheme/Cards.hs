@@ -136,6 +136,18 @@ allSideSchemes = fromList $ map
   , lethalIntent
   -- Space Pirates
   , soundTheAlarms
+
+  -- The Galaxy's Most Wanted: Challenge
+  , badoonBlitz
+  , badoonBlitzExpert
+  , galleryOfSplendor
+  , galleryOfSplendorExpert
+  , thereIsNoEscape
+  , thereIsNoEscapeExpert
+  , guerrillaTactics
+  , guerrillaTacticsExpert
+  , kreeSupremacy
+  , kreeSupremacyExpert
   ]
 
 sideScheme
@@ -538,3 +550,40 @@ lethalIntent = (sideScheme "16099" "Lethal Intent" [] Nebula 2) {cdHazards = 1}
 
 soundTheAlarms :: CardDef
 soundTheAlarms = sideScheme "16140" "Sound the Alarms" [Star] SpacePirates 1
+
+-- The Galaxy's Most Wanted: Challenge, revealed by the campaign's Setup instructions: the
+-- A side in a standard campaign ("Standard Mode Only"), the B side in an expert one.
+
+-- | Hinder X[per_hero] and Victory 1.
+challengeScheme :: CardCode -> Name -> Int -> CardDef
+challengeScheme code name hinder = (sideScheme code name [] Challenge 1) {cdKeywords = fromList [Hinder (PerPlayer hinder), Victory 1]}
+
+badoonBlitz :: CardDef
+badoonBlitz = challengeScheme "16178a" "Badoon Blitz" 3
+
+badoonBlitzExpert :: CardDef
+badoonBlitzExpert = challengeScheme "16178b" "Badoon Blitz" 4
+
+galleryOfSplendor :: CardDef
+galleryOfSplendor = challengeScheme "16179a" "Gallery of Splendor" 3
+
+galleryOfSplendorExpert :: CardDef
+galleryOfSplendorExpert = challengeScheme "16179b" "Gallery of Splendor" 4
+
+thereIsNoEscape :: CardDef
+thereIsNoEscape = challengeScheme "16180a" "\"There is No Escape\"" 3
+
+thereIsNoEscapeExpert :: CardDef
+thereIsNoEscapeExpert = challengeScheme "16180b" "\"There is No Escape\"" 4
+
+guerrillaTactics :: CardDef
+guerrillaTactics = challengeScheme "16181a" "Guerrilla Tactics" 3
+
+guerrillaTacticsExpert :: CardDef
+guerrillaTacticsExpert = challengeScheme "16181b" "Guerrilla Tactics" 4
+
+kreeSupremacy :: CardDef
+kreeSupremacy = challengeScheme "16182a" "Kree Supremacy" 3
+
+kreeSupremacyExpert :: CardDef
+kreeSupremacyExpert = challengeScheme "16182b" "Kree Supremacy" 4

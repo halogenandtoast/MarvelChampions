@@ -217,5 +217,15 @@
   "doNotRemoveTopCard": "Do not remove the top card of your deck",
   "shootTheThrusters": "Shoot the Thrusters!: exhaust the Milano and spend a resource to remove an evasion counter | Shoot the Thrusters!: exhaust the Milano and spend {count} resources to remove {count} evasion counters",
 
+  "-- The Galaxy's Most Wanted: campaign --": "",
+  "placeOnTopOfDeck": "Place it on top of your deck",
+  "placeOnBottomOfDeck": "Place it on the bottom of your deck",
+  "drawThenDiscard": "Draw a card, then choose and discard a card",
+  "discardIt": "Discard it",
+  "putOnTopOfEncounterDeck": "Put it on top of the encounter deck",
+  "putOnBottomOfEncounterDeck": "Put it on the bottom of the encounter deck",
+  "revealKreeSupremacy": "Reveal Kree Supremacy?",
+  "spendUnitToHeal": "Spend a unit to heal to full hit points",
+
   "-- end --": ""
 }

@@ -194,3 +194,25 @@ import Marvel.Event.Events.IveGotAPlan as X
 import Marvel.Event.Events.Reload as X
 import Marvel.Event.Events.Schadenfreude as X
 import Marvel.Event.Events.LookingForTrouble as X
+
+-- The Galaxy's Most Wanted: The Market
+import Marvel.Event.Events.Brainstorm as X
+import Marvel.Event.Events.ByAnyMeans as X
+import Marvel.Event.Events.ContingencyPlan as X
+import Marvel.Event.Events.InDefiance as X
+import Marvel.Event.Events.CalculateTheOdds as X
+import Marvel.Event.Events.CreativeSolution as X
+import Marvel.Event.Events.Grapple as X
+import Marvel.Event.Events.WingIt as X
+import Marvel.Event.Events.CloseCall as X
+import Marvel.Event.Events.DefyDanger as X
+import Marvel.Event.Events.InHarmsWay as X
+import Marvel.Event.Events.TakeTheFightToThem as X
+import Marvel.Event.Events.ArdentResolve as X
+import Marvel.Event.Events.Onrush as X
+import Marvel.Event.Events.Safeguard as X
+import Marvel.Event.Events.SureGamble as X
+import Marvel.Event.Events.GrandStrategy as X
+import Marvel.Event.Events.PowerUnleashed as X
+import Marvel.Event.Events.TriedAndTrue as X
+import Marvel.Event.Events.TripleThreat as X

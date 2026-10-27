@@ -86,7 +86,8 @@ narrationFor = \case
       Nothing -> False
       Just c -> case step of
         CampaignChoices -> any (notNull . (.pending)) c.campaignLog.players
-        CampaignSetup -> Campaign.scenarioNumber c > 1
+        CampaignSetup -> Campaign.scenarioNumber c > 1 || c.kind == Campaign.GalaxysMostWanted
+        CampaignSetupThen _ -> False
         CampaignVictory -> True
     pure [structure [ikeyPart (campaignStepKey step) []] | told]
   RecordInCampaignLog r -> campaignNarration r
@@ -179,6 +180,7 @@ campaignStepKey = \case
   CampaignChoices -> "log.campaign.choices"
   CampaignSetup -> "log.campaign.setup"
   CampaignVictory -> "log.campaign.victory"
+  CampaignSetupThen _ -> "log.campaign.setup"
 
 -- | What is written in the campaign log, told as it is.
 campaignNarration :: (HasGame m) => CampaignRecord -> Maybe (m [LogEntry])
@@ -200,6 +202,22 @@ campaignNarration = \case
     p <- identityRef who
     one $ notice [ikeyPart "log.campaign.hitPoints" ["player" ~> p, "count" ~> n]]
   RecordScenarioWon -> Just $ one $ toned Good $ structure [ikeyPart "log.campaign.scenarioWon" []]
+  -- The Galaxy's Most Wanted
+  RecordUnits who n -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.units" ["player" ~> p, "count" ~> n]]
+  SpendUnits who n -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.unitsSpent" ["player" ~> p, "count" ~> n]]
+  RecordCollection who codes -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.collection" ["player" ~> p, "card" ~> map card codes]]
+  RecordGalacticArtifacts codes | notNull codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordPowerStoneControl who -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.powerStone" ["player" ~> p]]
+  RecordHeadhunterDefeated _ -> Just $ one $ notice [ikeyPart "log.campaign.headhunterDefeated" []]
+  RecordEvasionCounters n -> Just $ one $ notice [ikeyPart "log.campaign.evasionCounters" ["count" ~> n]]
   _ -> Nothing
  where
   added who code = do

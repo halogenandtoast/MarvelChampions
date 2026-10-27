@@ -428,12 +428,20 @@ data Message
   | -- | the cards, taken from wherever they are in the encounter deck, go on top of it,
     -- the first given on top
     PutOnTopOfEncounterDeck [EncounterCard]
+  | -- | the cards, taken from wherever they are in the encounter deck, go to its bottom,
+    -- the last given bottommost
+    PutOnBottomOfEncounterDeck [EncounterCard]
   | -- | the top cards of the encounter deck are looked at, staying where they are: the
     -- target is answered with @SearchFoundCards@
     LookAtTopOfEncounterDeck Natural Target
   | -- | the first card matching in the encounter deck or its discard pile is put into
     -- play for the player, then the deck is shuffled
     SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher
+  | -- | a card matching is found in the encounter deck or discard pile and dealt to the
+    -- player facedown
+    SearchForAndDealEncounterCard IdentityId CardMatcher
+  | -- | the encounter card, found, is dealt to the player facedown
+    DealFoundEncounterCard IdentityId EncounterCard
   | -- | an event's ability resolved for the player without the event being played, as an
     -- Invocation card's "Special": nothing that answers playing an event sees it
     ResolveEventWithoutPlaying IdentityId PlayerCard

@@ -190,7 +190,21 @@
     "deckShort": "{count} card short of 40: change this deck before the next scenario | {count} cards short of 40: change this deck before the next scenario",
     "changeDeck": "Change deck",
     "changeDeckTitle": "{hero}'s deck for the rest of the campaign",
-    "seatedBy": "played by {name}"
+    "seatedBy": "played by {name}",
+    "RiseOfRedSkull": "The Rise of Red Skull",
+    "GalaxysMostWanted": "The Galaxy's Most Wanted",
+    "galaxyWon": "Ronan the Accuser is defeated: the campaign is won",
+    "galaxyLost": "Ronan the Accuser claims the Power Stone: the campaign is lost",
+    "units": "Unspent units",
+    "marketCards": "Market cards in deck",
+    "collection": "Cards in The Collection",
+    "theMarket": "The Market",
+    "buy": "{card} · a unit | {card} · {count} units",
+    "nothingAffordable": "Not enough units for any card left in The Market.",
+    "galacticArtifacts": "Galactic Artifacts side schemes in the victory display",
+    "powerStoneControl": "Power Stone control",
+    "evasionCounters": "Evasion counters",
+    "headhunterDefeated": "Headhunter defeated?"
   },
   "settings": {
     "title": "Settings",

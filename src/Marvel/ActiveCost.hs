@@ -129,6 +129,7 @@ payCostPart activeCost = go
     DifferentResourcesCost _ -> resourcePayment
     MayOverpay -> resourcePayment
     ExhaustMilanoCost -> exhaustMilano >> paid ExhaustPayment
+    IfControlsMilanoCost c c' -> controlsMilano iid >>= \m -> go (if m then c else c')
     Costs xs -> traverse_ go (condenseResourceCosts xs)
   payingFor = case activeCostTarget activeCost of
     ForTreachery -> chooseOnePrompted iid "$label.pay"

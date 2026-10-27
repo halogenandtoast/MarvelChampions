@@ -173,5 +173,267 @@
       "title": "Campaign Instructions: Victory",
       "bullets": ["Hydra is defeated and the players win the campaign!"]
     }
+  },
+  "galaxy": {
+    "campaignMode": {
+      "title": "Campaign Mode",
+      "text": [
+        "Campaign mode combines all five scenarios in The Galaxy’s Most Wanted expansion into an epic experience where the outcome of each game impacts the next scenario. To complete the campaign, the players must win all five scenarios in numerical order, starting with scenario #1 (Brotherhood of Badoon) and ending with scenario #5 (Ronan the Accuser).",
+        "Each player must use their chosen identity for the entire campaign, but they are free to change aspects and alter the contents of their deck following the deck customization rules between scenarios.",
+        "When the game ends, if the players won, they follow the Victory instructions at the end of that scenario’s section. If the players lost, they may reset the scenario and try again with no penalty.",
+        "Cards #150–177 are the campaign-specific player cards of The Market, and cards #178–187 the campaign-specific encounter cards of the Challenge and Badoon Headhunter sets: they cannot be included in a deck unless players are playing The Galaxy’s Most Wanted campaign."
+      ]
+    },
+    "keywords": {
+      "title": "Important Keywords",
+      "bullets": [
+        "Hinder X: When a card with the hinder X keyword is revealed, place X threat on that card.",
+        "Patrol: While any minions with the patrol keyword are engaged with a player, that player cannot thwart the main scheme.",
+        "Stalwart: A character that has the stalwart keyword cannot be stunned or confused.",
+        "Victory X: When a card with the victory X keyword is defeated, place it in the victory display instead of its owner’s discard pile. The victory display is an out-of-play game area shared by all players.",
+        "Amplify icon: When a boost card is turned faceup during an enemy activation, add one additional boost icon to that card for each amplify icon in play."
+      ]
+    },
+    "market": {
+      "title": "Units and The Market",
+      "text": [
+        "Units are the currency used by the Guardians of the Galaxy. While not strictly the reason the Guardians do what they do, it never hurts to turn a profit, and they’re always looking for the opportunity.",
+        "Between scenarios, players can spend the units recorded in their campaign log to add cards from The Market to their deck: choose a card whose Unit Cost is no more than your unspent units, subtract its Unit Cost from them, and the card is added to your deck. Repeat as you wish.",
+        "Cards added to a player’s deck this way must be included in that player’s deck for the rest of the campaign and do not count toward that player’s minimum or maximum deck size. Only one copy of each card from The Market can be used during a campaign for the players as a group."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Expert Campaign",
+      "text": [
+        "Some Setup and Victory instructions are preceded by Expert Campaign Only. Ignore these instructions unless you are playing an expert campaign.",
+        "Persistent damage: each player records their remaining hit points in the campaign log after they win a game (never more than their base hit points). This determines each player’s starting hit points for the next scenario. The Setup instructions of the last four scenarios let players heal their identity to its printed hit point value by subtracting units.",
+        "Elimination and victory: a player defeated during a scenario their teammates go on to win does not participate in its Victory steps, but can rejoin their teammates for the next scenario, healing their identity to its printed hit point value.",
+        "Deck customization: once a player starts an expert campaign, they cannot add, remove, or change the aspect and/or basic cards in their deck for the remainder of the campaign. Campaign-specific cards can still be added as per the campaign rules."
+      ]
+    },
+    "badoon": {
+      "intro": {
+        "title": "Scenario #1 – Brotherhood of Badoon",
+        "text": [
+          "The Brotherhood of Badoon has mounted a surprise attack against Earth! You and the other Guardians of the Galaxy rush to Earth’s aid, teaming up with the mighty Avengers in the process to beat back the Badoon. However, the Brotherhood of Badoon’s leader, Drang, is a skilled tactician with a fleet of powerful ships and an overwhelming number of soldiers at his side. This won’t be an easy fight."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Instructions: Setup",
+        "bullets": [
+          "Each player records their identity in the campaign log. (Players cannot switch identities during a campaign.)",
+          "Reveal the Badoon Blitz side scheme (use the reverse side for expert mode).",
+          "Shuffle the Badoon Headhunter minion into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "In player order, each player must discard cards from the top of the encounter deck until they discard a minion, then put that minion into play engaged with them."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Instructions: Victory",
+        "bullets": [
+          "Record units in each player’s respective “Unspent Units” box (add these to units you already have):",
+          "Record 1 unit for each player.",
+          "Record a number of units for each player (to a maximum of 3 units) equal to the victory values on encounter cards in the victory display.",
+          "Record 1 unit for each player if there are no minions in play.",
+          "Record 1 unit for each player if the main scheme is on stage 1B (Terrestrial Invasion).",
+          "If Badoon Headhunter is in the victory display, mark the box beside “Scenario #1 – Brotherhood of Badoon” in the “Headhunter Defeated?” section."
+        ]
+      },
+      "expertVictory": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Record each identity’s remaining hit points."
+        ]
+      }
+    },
+    "infiltrate": {
+      "intro": {
+        "title": "Scenario #2 – Infiltrate the Museum",
+        "text": [
+          "Though the Badoon were formidable, the teamwork and coordination between the Avengers and Guardians was enough to quell Drang’s onslaught. After the battle, Gamora is able to extract critical information from Drang about why they attacked Earth by using a few... persuasive... interrogation techniques.",
+          "As it turns out, Taneleer Tivan—better known as the Collector—heard about the Reality Stone on Earth. Already having the Power Stone in his possession, and always looking to expand his collection, he hired the Badoon to steal Earth’s Stone. Deciding it best if the Collector has no Stones at all, you set out toward his museum."
+        ]
+      },
+      "rules": {
+        "title": "The Collection",
+        "text": [
+          "Throughout the course of the Infiltrate the Museum scenario, cards may be added to “The Collection”. The Collection is an out-of-play game area shared by all players and specific to this scenario. Cards in The Collection follow the standard rules for out-of-play cards."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Instructions: Setup",
+        "bullets": [
+          "Reveal the Gallery of Splendor side scheme (use the reverse side for expert mode).",
+          "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if there is at least 1 mark in the “Headhunter Defeated?” section of the campaign log, shuffle the On the Hunt treachery into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Set each player's hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
+          "Each player may subtract 1 unit from their respective “Unspent Units” box in the campaign log to heal their identity to its printed hit point value.",
+          "In player order, each player must choose 1 card from their hand and put it faceup into The Collection."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Instructions: Victory",
+        "bullets": [
+          "Record units in each player’s respective “Unspent Units” box (add these to units you already have):",
+          "Record 1 unit for each player.",
+          "Record a number of units for each player (to a maximum of 3 units) equal to the victory values on encounter cards in the victory display.",
+          "Record 1 unit for each player if there are 1 per player or fewer cards in The Collection.",
+          "Record 1 unit for each player if there is no threat on the main scheme.",
+          "In the “Cards in The Collection” section, record the title of each player card in The Collection.",
+          "If Badoon Headhunter is in the victory display, mark the box beside “Scenario #2 – Infiltrate the Museum” in the “Headhunter Defeated?” section."
+        ]
+      },
+      "expertVictory": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Record each identity’s remaining hit points."
+        ]
+      }
+    },
+    "escape": {
+      "intro": {
+        "title": "Scenario #3 – Escape the Museum",
+        "text": [
+          "So... things didn’t go as planned. The good: you broke into the Collector’s museum; you beat the Collector; you know the Power Stone was here. The bad: an alarm went off as soon as you arrived, alerting the Collector to your presence; after you beat the Collector, he used his Elder God magic to trap you in his collection; also, someone else seems to have stolen the Power Stone.",
+          "Kind of a mixed bag here. On the bright side, whoever took the Power Stone cut the museum’s power as a distraction, giving you enough time to get out of captivity. Maybe, just maybe, you can leverage this luck and escape the museum before the Collector realizes what’s going on."
+        ]
+      },
+      "rules": {
+        "title": "Infinite Hit Points",
+        "text": [
+          "In this scenario, the villain has infinite hit points (∞). A character with infinite hit points cannot be defeated by taking damage. However, damage may still be dealt to that character through attacks and card abilities."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Instructions: Setup",
+        "bullets": [
+          "Reveal the “There Is No Escape” side scheme (use the reverse side for expert mode).",
+          "Each player must search their deck, discard pile, and hand for each of their cards recorded in the “Cards in The Collection” section of the campaign log, then remove those cards from the game. Each player draws up to their hand size.",
+          "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) shuffle the On the Hunt treachery into the encounter deck; (2) shuffle the Dead to Rights treachery into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Set each player's hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
+          "Each player may subtract 1 unit from their respective “Unspent Units” box in the campaign log to heal their identity to its printed hit point value.",
+          "In player order, each player must discard cards from the top of the encounter deck until they discard an attachment, then reveal that card."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Instructions: Victory",
+        "bullets": [
+          "Record units in each player’s respective “Unspent Units” box (add these to units you already have):",
+          "Record 1 unit for each player.",
+          "Record a number of units for each player (to a maximum of 3 units) equal to the victory values on encounter cards in the victory display.",
+          "For every 2 Galactic Artifacts side schemes in the victory display, record 1 unit for each player.",
+          "Record the title of each Galactic Artifacts side scheme in the victory display.",
+          "If Badoon Headhunter is in the victory display, mark the box beside “Scenario #3 – Escape the Museum” in the “Headhunter Defeated?” section."
+        ]
+      },
+      "expertVictory": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Record each identity’s remaining hit points."
+        ]
+      }
+    },
+    "nebula": {
+      "intro": {
+        "title": "Scenario #4 – Nebula",
+        "text": [
+          "As you get out of range of the museum, the Milano’s sensors pick up another speeding ship within your vicinity. Assuming it must be the thief who stole the Stone, you crank up the hyper thrusters and ride the ship’s tail. When you get close, you realize you’re chasing Nebula, daughter of Thanos, and Gamora’s dear sister.",
+          "It would be best if she didn’t have the Power Stone, either."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Instructions: Setup",
+        "bullets": [
+          "Reveal the Guerrilla Tactics side scheme (use the reverse side for expert mode).",
+          "Shuffle each Galactic Artifacts side scheme recorded in the “Galactic Artifacts Side Schemes in the Victory Display” section of the campaign log into the encounter deck. For each: Hujadarian Monarch Egg, place 1 evasion counter on Nebula’s Ship; Magical Teapot, deal the first player 1 facedown encounter card; Philosopher’s Stone, give Nebula 1 facedown boost card; Crystal Ball, give Nebula a tough status card.",
+          "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) shuffle the On the Hunt treachery into the encounter deck; (2) shuffle the Dead to Rights treachery into the encounter deck; (3) shuffle the Headhunter’s Henchman minion into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Set each player's hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
+          "Each player may subtract 1 unit from their respective “Unspent Units” box in the campaign log to heal their identity to its printed hit point value.",
+          "Discard cards from the top of the encounter deck until a Technique attachment is discarded this way, then attach that card to Nebula."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Instructions: Victory",
+        "bullets": [
+          "Record units in each player’s respective “Unspent Units” box (add these to units you already have):",
+          "Record 1 unit for each player.",
+          "Record a number of units for each player (to a maximum of 3 units) equal to the victory values on encounter cards in the victory display.",
+          "Record 1 unit for each player if there are 1 or fewer evasion counters on the Nebula’s Ship environment.",
+          "Record 1 unit for each player if the main scheme is on stage 1B (The Art of Evasion).",
+          "If Badoon Headhunter is in the victory display, mark the box beside “Scenario #4 – Nebula” in the “Headhunter Defeated?” section.",
+          "If the Power Stone is attached to an identity, record that identity’s name in the “Power Stone Control” section.",
+          "Record the number of evasion counters on Nebula’s Ship in the “Evasion Counters” section."
+        ]
+      },
+      "expertVictory": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Record each identity’s remaining hit points."
+        ]
+      }
+    },
+    "ronan": {
+      "intro": {
+        "title": "Scenario #5 – Ronan the Accuser",
+        "text": [
+          "Later, aboard the Milano: Nebula set off the alarm on the Collector’s ship — she needed a distraction to reach the Collector’s vault. What to do with the Stone? Groot and Rocket could use the money; Star-Lord won’t just sell it. Cosmo says that if you bring the Stone to him on Knowhere, he can keep it safe.",
+          "With a sigh of relief, you kick back in your pilot seat and set course for Knowhere. You have the Power Stone and you’ve captured Nebula. After a discussion with the other Guardians, you decide it best to hand both over to the authorities... because it’s the right thing to do.",
+          "The reward money may also be an incentive.",
+          "As Knowhere comes into sight, a massive Kree warship suddenly drops out of hyperspace in front of you, intercepting your course. Ronan the Accuser. He sends a brief transmission through your comms relay—something about standing accused? Yeah, that seems appropriate.",
+          "Then, he attacks."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Instructions: Setup",
+        "bullets": [
+          "(Optional) Reveal the Kree Supremacy side scheme (use the reverse side for expert mode).",
+          "If a player’s identity was recorded in the “Power Stone Control” section of the campaign log, search the encounter deck and discard pile for one copy of the “You Stand Accused!” treachery, then deal that card to that player as a facedown encounter card.",
+          "Search the encounter deck and discard pile for one copy of the Pincer Maneuver side scheme and reveal it. Place X per player additional threat on Pincer Maneuver, where X is equal to 3 minus the recorded number in the Evasion Counters section of the campaign log.",
+          "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) On the Hunt; (2) Dead to Rights; (3) Headhunter’s Henchman; (4) shuffle the Fugitive Recovery side scheme into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Campaign Only",
+        "bullets": [
+          "Set each player's hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
+          "Each player may subtract 1 unit from their respective “Unspent Units” box in the campaign log to heal their identity to its printed hit point value.",
+          "Place an additional 1 per player threat on the main scheme.",
+          "If the players lose this game, Ronan the Accuser claims the Power Stone and the players lose the campaign."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Instructions: Victory",
+        "bullets": [
+          "Ronan the Accuser is defeated and the players win the campaign!"
+        ]
+      }
+    },
+    "conclusion": {
+      "title": "Conclusion: Knowhere",
+      "text": [
+        "“We will be keeping the Stone in our most secure vault. It is being kept safe there.” — Cosmo",
+        "“Thank you, Cosmo. We have a prisoner as well.”",
+        "Gamora: “What were you thinking when you stole the Stone? You know you can’t just sell something like that.” Nebula: “I had to tell my crew something.”",
+        "Nebula: “You know what will happen if our father learns where it is.”"
+      ]
+    }
   }
 }

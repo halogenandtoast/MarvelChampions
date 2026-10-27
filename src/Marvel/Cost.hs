@@ -104,6 +104,7 @@ canAffordCost identityId source = go
     MayOverpay -> pure True
     IdentityCountersCost n -> member identityId <$> select (IdentityWithCounters $ AtLeast $ Static $ fromIntegral n)
     ExhaustMilanoCost -> milanoIsReady
+    IfControlsMilanoCost c c' -> controlsMilano identityId >>= \m -> go (if m then c else c')
     ExhaustCost -> case source of
       IdentityRef ident -> member ident <$> select UnexhaustedIdentity
       AllyRef ident -> member ident <$> select UnexhaustedAlly

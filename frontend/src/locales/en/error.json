@@ -27,5 +27,8 @@
   "notAllSeatsTaken": "Every seat must be taken before the campaign goes on.",
   "campaignDeckTooSmall": "{hero}'s deck is {count} short of the 40 cards a deck needs, now that the campaign has taken allies from it: add cards to it (change the deck) before the next scenario.",
   "campaignGameInProgress": "Decks change between the campaign's games, not during one.",
-  "campaignSameHero": "A player keeps their hero for the whole campaign: choose a deck for the same hero."
+  "campaignSameHero": "A player keeps their hero for the whole campaign: choose a deck for the same hero.",
+  "marketCards": "Cards from The Market are bought with units in The Galaxy's Most Wanted campaign, not put in a deck: {cards}",
+  "cannotBuy": "That card of The Market cannot be bought: it is bought already, or costs more units than are unspent.",
+  "expertCampaignDeck": "In an expert campaign of The Galaxy's Most Wanted, a deck's aspect and basic cards cannot change."
 }

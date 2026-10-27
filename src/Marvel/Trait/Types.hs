@@ -89,5 +89,7 @@ data Trait
   | AccuserCorps
   -- The Galaxy's Most Wanted: Nebula
   | Technique
+  -- The Galaxy's Most Wanted: the campaign's Market cards
+  | MilanoMod
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

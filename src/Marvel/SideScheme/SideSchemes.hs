@@ -112,3 +112,6 @@ import Marvel.SideScheme.SideSchemes.Ronan as X
 -- The Galaxy's Most Wanted: Nebula, Space Pirates
 import Marvel.SideScheme.SideSchemes.LethalIntent as X
 import Marvel.SideScheme.SideSchemes.SoundTheAlarms as X
+
+-- The Galaxy's Most Wanted: Challenge
+import Marvel.SideScheme.SideSchemes.Challenge as X

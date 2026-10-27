@@ -10,6 +10,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.List qualified as List
 import Data.Text qualified as T
 import Marvel.Campaign
+import Marvel.Campaign.GalaxysMostWanted (runGalaxyStep)
 import Marvel.Card
 import Marvel.Deck
 import Marvel.EncounterCard (allEncounterCards, genEncounterCard)
@@ -27,7 +28,7 @@ import Marvel.Trait (Trait (Captive))
 -- | The scenario's part of the Campaign Instructions, in a campaign game: the
 -- instructions of its place in the campaign, 1 (Crossbones) to 5 (Red Skull).
 runCampaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
-runCampaignStep step = getCampaign >>= traverse_ \c -> case step of
+runCampaignStep step = getCampaign >>= traverse_ \c -> if c.kind == GalaxysMostWanted then runGalaxyStep c step else case step of
   CampaignChoices -> do
     players <- getPlayers
     -- first the scenario's story, the rules it brings and its Campaign Instructions
@@ -40,6 +41,7 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case step of
     players <- getPlayers
     for_ (take 1 players) (`readThenContinue` victoryInstructions c)
     victory c
+  CampaignSetupThen _ -> pure ()
 
 -- * What the players read
 

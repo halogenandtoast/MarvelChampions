@@ -54,6 +54,9 @@ data Cost
     IdentityCountersCost Natural
   | -- | "exhaust the Milano", whoever controls it (The Galaxy's Most Wanted)
     ExhaustMilanoCost
+  | -- | the first cost if the payer controls the Milano, the second if not, decided as it is
+    -- paid ("… instead if you control the Milano", The Galaxy's Most Wanted)
+    IfControlsMilanoCost Cost Cost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -86,6 +89,7 @@ costResources TargetPrintedCost = []
 costResources MayOverpay = []
 costResources (IdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
+costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

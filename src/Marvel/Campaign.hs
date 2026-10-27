@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 -- | A campaign: scenarios played one after another, what each game leaves behind kept in
 -- a campaign log ("docs/rules/campaign-rise-of-red-skull.md"). The campaign lives outside
 -- the game: the server keeps it between games, and each game of it is dealt with a copy
@@ -7,6 +8,7 @@ module Marvel.Campaign where
 import Marvel.Prelude
 
 import Data.List (find, nub)
+import Data.List qualified as List
 import Control.Monad (mfilter)
 import Data.Maybe (maybeToList)
 import Marvel.Card.Code
@@ -55,12 +57,60 @@ data CampaignLog = CampaignLog
   -- ^ Scenario 4: the identities of the players engaged with minions
   , alliesRemoved :: [CardCode]
   -- ^ Scenario 4: allies removed from the campaign
+  , galaxy :: GalaxyLog
+  -- ^ The Galaxy's Most Wanted's log ("docs/rules/campaign-galaxys-most-wanted.md")
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+-- | A player's column of The Galaxy's Most Wanted log, besides their identity and
+-- remaining hit points ('CampaignPlayer').
+data GalaxyPlayer = GalaxyPlayer
+  { identity :: CardCode
+  , units :: Natural
+  -- ^ Unspent Units
+  , marketCards :: [CardCode]
+  -- ^ Market Cards in Player's Deck
+  , collection :: [CardCode]
+  -- ^ Cards in The Collection: the player's cards there as Infiltrate the Museum is won
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data GalaxyLog = GalaxyLog
+  { galaxyPlayers :: [GalaxyPlayer]
+  , galacticArtifacts :: [CardCode]
+  -- ^ Scenario 3: Galactic Artifacts side schemes in the victory display
+  , powerStoneControl :: Maybe CardCode
+  -- ^ Scenario 4: the identity the Power Stone is attached to
+  , headhunterDefeated :: [Int]
+  -- ^ Scenarios 1 to 4: those Badoon Headhunter was in the victory display of
+  , evasionCounters :: Maybe Natural
+  -- ^ Scenario 4: evasion counters on Nebula's Ship
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A log saved before The Galaxy's Most Wanted has its section empty.
+instance FromJSON GalaxyLog where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just noGalaxyLog
+
+noGalaxyLog :: GalaxyLog
+noGalaxyLog = GalaxyLog [] [] Nothing [] Nothing
+
+-- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
+
+instance FromJSON CampaignKind where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just RiseOfRedSkull
+
 data Campaign = Campaign
   { mode :: CampaignMode
+  , kind :: CampaignKind
   , scenarios :: [CardCode]
   -- ^ in the order they are played, by the code each is set up with
   , completed :: Int
@@ -77,7 +127,12 @@ data Campaign = Campaign
 -- | Which part of a scenario's Campaign Instructions is being followed: the choices the
 -- last victory left, before setup cards are put into play; its Setup bullets; its
 -- Victory bullets. A scenario answers 'Marvel.Message.CampaignStep' to add its own.
-data CampaignStepKind = CampaignChoices | CampaignSetup | CampaignVictory
+data CampaignStepKind
+  = CampaignChoices
+  | CampaignSetup
+  | CampaignVictory
+  | -- | a later part of the Setup, seeing the game as its earlier parts left it
+    CampaignSetupThen Text
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -98,6 +153,17 @@ data CampaignRecord
   | ResolvedChoice CardCode CampaignChoice
   | -- | the scenario is won: the next one is played next
     RecordScenarioWon
+  | -- | The Galaxy's Most Wanted: units added to the player's Unspent Units
+    RecordUnits CardCode Natural
+  | -- | units subtracted, to heal (expert)
+    SpendUnits CardCode Natural
+  | -- | a card of The Market bought with its unit cost
+    BuyMarketCard CardCode CardCode
+  | RecordCollection CardCode [CardCode]
+  | RecordGalacticArtifacts [CardCode]
+  | RecordPowerStoneControl CardCode
+  | RecordHeadhunterDefeated Int
+  | RecordEvasionCounters Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -105,6 +171,39 @@ data CampaignRecord
 -- Red Skull.
 riseOfRedSkull :: [CardCode]
 riseOfRedSkull = ["04058", "04076", "04093", "04109", "04125"]
+
+-- | The Galaxy's Most Wanted, by its villains: Drang, Collector (Infiltrate the Museum),
+-- Collector (A1, Escape the Museum), Nebula, Ronan the Accuser.
+galaxysMostWanted :: [CardCode]
+galaxysMostWanted = ["16058", "16070", "16080a", "16088", "16103"]
+
+campaignScenarios :: CampaignKind -> [CardCode]
+campaignScenarios = \case
+  RiseOfRedSkull -> riseOfRedSkull
+  GalaxysMostWanted -> galaxysMostWanted
+
+-- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
+marketUnitCosts :: [(CardCode, Natural)]
+marketUnitCosts =
+  [ (CardCode (tshow (16150 + 4 * (cost - 1) + i)), fromIntegral cost)
+  | cost <- [1 .. 7 :: Int]
+  , i <- [0 .. 3]
+  ]
+
+-- | The Market's cards the group has not bought: one copy of each per campaign.
+marketLeft :: Campaign -> [(CardCode, Natural)]
+marketLeft c = [m | m@(code, _) <- marketUnitCosts, code `notElem` concatMap (.marketCards) c.campaignLog.galaxy.galaxyPlayers]
+
+-- | The player can buy the card of The Market: unbought, its unit cost no more than their
+-- Unspent Units.
+canBuy :: CardCode -> CardCode -> Campaign -> Bool
+canBuy ident code c =
+  c.kind == GalaxysMostWanted && case (List.lookup code (marketLeft c), galaxyPlayer ident c) of
+    (Just cost, Just p) -> cost <= p.units
+    _ -> False
+
+galaxyPlayer :: CardCode -> Campaign -> Maybe GalaxyPlayer
+galaxyPlayer ident c = find ((== toHeroCardCode ident) . (.identity)) c.campaignLog.galaxy.galaxyPlayers
 
 -- | The Hydra Campaign set's Tech upgrades: Adrenal Stims, Tactical Scanner, Emergency
 -- Teleporter, Laser Cannon.
@@ -119,12 +218,17 @@ basicUpgrades = ["04159a", "04160a", "04161a", "04162a"]
 expertCampaignObligations :: [CardCode]
 expertCampaignObligations = ["04163", "04164", "04165", "04166"]
 
--- | A new campaign for the identities, numbered in the order given.
+-- | A new Rise of Red Skull campaign for the identities, numbered in the order given.
 newCampaign :: CampaignMode -> [CardCode] -> Campaign
-newCampaign mode identities =
+newCampaign = newCampaignOf RiseOfRedSkull
+
+-- | A new campaign of the box for the identities, numbered in the order given.
+newCampaignOf :: CampaignKind -> CampaignMode -> [CardCode] -> Campaign
+newCampaignOf kind mode identities =
   Campaign
     { mode
-    , scenarios = riseOfRedSkull
+    , kind
+    , scenarios = campaignScenarios kind
     , completed = 0
     , lost = False
     , campaignName = Nothing
@@ -135,6 +239,7 @@ newCampaign mode identities =
           , delayCounters = Nothing
           , engagedWithMinions = []
           , alliesRemoved = []
+          , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           }
     }
  where
@@ -162,6 +267,11 @@ campaignPlayer ident c = find ((== toHeroCardCode ident) . (.identity)) c.campai
 -- | The cards the campaign has added to the player's deck.
 campaignCards :: CampaignPlayer -> [CardCode]
 campaignCards p = maybeToList p.techUpgrade <> maybeToList p.conditionUpgrade <> p.rescuedAllies <> p.obligations
+
+-- | All the campaign adds to the player's deck: its log's cards, and the Market cards
+-- they bought.
+campaignCardsOf :: CardCode -> Campaign -> [CardCode]
+campaignCardsOf ident c = foldMap campaignCards (campaignPlayer ident c) <> foldMap (.marketCards) (galaxyPlayer ident c)
 
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
@@ -191,6 +301,19 @@ recordInLog r c = case r of
   RecordChoice ident choice -> player ident \p -> p {pending = p.pending <> [choice]}
   ResolvedChoice ident choice -> player ident \p -> p {pending = filter (/= choice) p.pending}
   RecordScenarioWon -> c {completed = c.completed + 1}
+  RecordUnits ident n -> galaxyP ident \p -> p {units = p.units + n}
+  SpendUnits ident n -> galaxyP ident \p -> p {units = p.units - min n p.units}
+  BuyMarketCard ident code
+    | canBuy ident code c ->
+        galaxyP ident \p -> p {units = p.units - fromMaybe 0 (List.lookup code marketUnitCosts), marketCards = p.marketCards <> [code]}
+    | otherwise -> c
+  RecordCollection ident codes -> galaxyP ident \p -> p {collection = p.collection <> codes}
+  RecordGalacticArtifacts codes -> galaxyL \g -> g {galacticArtifacts = nub (g.galacticArtifacts <> codes)}
+  RecordPowerStoneControl ident -> galaxyL \g -> g {powerStoneControl = Just (toHeroCardCode ident)}
+  RecordHeadhunterDefeated n -> galaxyL \g -> g {headhunterDefeated = nub (g.headhunterDefeated <> [n])}
+  RecordEvasionCounters n -> galaxyL \g -> g {evasionCounters = Just n}
  where
   logged f = c {campaignLog = f c.campaignLog}
+  galaxyL f = logged \l -> l {galaxy = f l.galaxy}
+  galaxyP ident f = galaxyL \g -> g {galaxyPlayers = [if p.identity == toHeroCardCode ident then f p else p | p <- g.galaxyPlayers]}
   player ident f = logged \l -> l {players = [if p.identity == toHeroCardCode ident then f p else p | p <- l.players]}

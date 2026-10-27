@@ -3,7 +3,7 @@ import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Check, Play, Trash2 } from 'lucide-vue-next'
-import { changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
+import { buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
 import { currentUser } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
@@ -83,11 +83,23 @@ const useDeck = async () => {
 }
 
 const log = computed(() => view.value?.campaign.campaignLog)
+const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
+const expert = computed(() => view.value?.campaign.mode === 'ExpertCampaign')
+const galaxyPlayer = (identity: string) => log.value?.galaxy.galaxyPlayers.find((p) => p.identity === identity) ?? null
+// between games, a player spends their units on The Market's cards (rulebook p.5)
+const between = computed(() => !!view.value && !view.value.currentGame && !view.value.waitingForPlayers && !!view.value.next)
+const shopping = ref<number | null>(null)
+const affordable = (identity: string) => (view.value?.market ?? []).filter(([, cost]) => cost <= (galaxyPlayer(identity)?.units ?? 0))
+const buy = async (i: number, card: string) => {
+  const seat = seatOf(i)
+  if (!seat) return
+  await attempt(() => buyMarketCard(id, seat.position, card).then(() => undefined))
+}
 // said once: the campaign's own title only when its players named it something else
 const details = computed(() => {
   const v = view.value
   if (!v) return []
-  const title = t('campaign.riseOfRedSkull')
+  const title = t(`campaign.${v.campaign.kind ?? 'RiseOfRedSkull'}`)
   return [...(v.name === title ? [] : [title]), t(`campaign.${v.campaign.mode}`), t(`difficulty.${v.difficulty}`), t('newGame.playerCount', v.table.seats)]
 })
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
@@ -151,8 +163,8 @@ const remove = async () => {
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
-        <p v-if="view.won" class="result good">{{ $t('campaign.won') }}</p>
-        <p v-else-if="view.campaign.lost" class="result bad">{{ $t('campaign.lost') }}</p>
+        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : 'campaign.won') }}</p>
+        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : 'campaign.lost') }}</p>
         <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
       </div>
       <p v-if="error" class="error">{{ tr(error) }}</p>
@@ -168,7 +180,17 @@ const remove = async () => {
                 <strong>{{ name(p.identity) }}</strong>
               </div>
             </header>
-            <dl>
+            <dl v-if="galaxy">
+              <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
+              <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
+              <dt>{{ $t('campaign.units') }}</dt>
+              <dd>{{ galaxyPlayer(p.identity)?.units ?? 0 }}</dd>
+              <dt>{{ $t('campaign.marketCards') }}</dt>
+              <dd>{{ names(galaxyPlayer(p.identity)?.marketCards ?? []) }}</dd>
+              <dt>{{ $t('campaign.collection') }}</dt>
+              <dd>{{ names(galaxyPlayer(p.identity)?.collection ?? []) }}</dd>
+            </dl>
+            <dl v-else>
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="view.campaign.mode === 'ExpertCampaign'">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.obligations') }}</dt>
@@ -181,7 +203,16 @@ const remove = async () => {
               <dd>{{ names(p.rescuedAllies) }}</dd>
             </dl>
             <p v-if="short(i) > 0" class="short">{{ $t('campaign.deckShort', short(i)) }}</p>
-            <button v-if="yours(i) && !view.currentGame && !view.waitingForPlayers && view.next" type="button" class="btn ghost" @click="changeDeck(i)">{{ $t('campaign.changeDeck') }}</button>
+            <button v-if="yours(i) && between" type="button" class="btn ghost" @click="changeDeck(i)">{{ $t('campaign.changeDeck') }}</button>
+            <template v-if="galaxy && yours(i) && between">
+              <button type="button" class="btn ghost" :aria-expanded="shopping === i" @click="shopping = shopping === i ? null : i">{{ $t('campaign.theMarket') }}</button>
+              <ul v-if="shopping === i" class="market">
+                <li v-for="[card, cost] in affordable(p.identity)" :key="card">
+                  <button type="button" class="btn ghost" :disabled="working" @click="buy(i, card)">{{ $t('campaign.buy', { card: name(card), count: cost }, cost) }}</button>
+                </li>
+                <li v-if="!affordable(p.identity).length" class="hint">{{ $t('campaign.nothingAffordable') }}</li>
+              </ul>
+            </template>
             <p v-if="p.pending.length" class="pending">{{ $t('campaign.toChoose') }}: {{ p.pending.map((c) => $t(`campaign.${c}`)).join(', ') }}</p>
           </article>
         </div>
@@ -189,7 +220,17 @@ const remove = async () => {
 
       <section class="box">
         <h2>{{ $t('campaign.log') }}</h2>
-        <dl class="scenario-log">
+        <dl v-if="galaxy" class="scenario-log">
+          <dt>{{ $t('campaign.scenario', { n: 3 }) }} · {{ $t('campaign.galacticArtifacts') }}</dt>
+          <dd>{{ names(log.galaxy.galacticArtifacts) }}</dd>
+          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.powerStoneControl') }}</dt>
+          <dd>{{ name(log.galaxy.powerStoneControl) }}</dd>
+          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.evasionCounters') }}</dt>
+          <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
+          <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
+          <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else class="scenario-log">
           <dt>{{ $t('campaign.scenario', { n: 1 }) }} · {{ $t('campaign.experimentalWeapons') }}</dt>
           <dd>{{ names(log.experimentalWeapons) }}</dd>
           <dt>{{ $t('campaign.scenario', { n: 2 }) }} · {{ $t('campaign.delayCounters') }}</dt>
@@ -250,6 +291,8 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
 dt { color: var(--text-muted); }
 dd { margin: 0; }
+.market { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.market .hint { font-size: 0.8rem; color: var(--text-muted); }
 .pending { margin: 0; font-size: 0.8rem; color: var(--amber); }
 .short { margin: 0; font-size: 0.8rem; color: var(--danger); }
 .picker-dialog { width: min(62rem, 100vw - 2rem); max-height: min(48rem, 100dvh - 2rem); padding: 0; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--ink-2); color: var(--text); }
