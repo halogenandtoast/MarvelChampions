@@ -146,9 +146,11 @@ In the campaign log:
   turn.
 - **Protect the Planet's choice**: "deal 3 damage to a minion" is offered only with a minion in play (RR Choose).
 - **Drang (II)'s facedown boost card** is his, turned faceup with his next activation's own.
-- **Drang (III)'s When Revealed**: the cards are discarded together; then each minion among them, in the order
-  discarded, is put into play engaged with the player engaged with the fewest minions as it is put in, the minions put
-  in before it counted. Put into play, it engages (Badoon Assassin attacks, Badoon Grunt deals a card).
+- **Drang (III)'s When Revealed**: "each time a minion is discarded this way": the cards are discarded one at a time,
+  and a minion discarded is put into play engaged with the player engaged with the fewest minions (the minions put in
+  before it counted) before the next card is discarded. Put into play, it engages (Badoon Assassin attacks, Badoon
+  Grunt deals a card, from the top of the deck the discard goes on with). If the discard empties the encounter deck,
+  it is fulfilled and does not go on with the new deck (RR Encounter Deck).
 - **Drang's Spear** attaches to the villain, Drang being the only one; he has stalwart while it is attached, and a
   stun or confuse is not given to him.
 - **Badoon Engineer** "activates against you": its attack or its scheme, it being engaged with you. Stunned or

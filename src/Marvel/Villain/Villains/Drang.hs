@@ -74,8 +74,10 @@ instance RunMessage Drang where
         _ -> Drang <$> runMessage msg attrs
     -- II: with Drang's Spear in play, Drang is given a facedown boost card; otherwise it
     -- is found in the encounter deck or discard pile and revealed, the deck shuffled.
-    -- III: the top 4[per player] encounter cards discarded, each minion among them put
-    -- into play in turn with the player engaged with the fewest minions.
+    -- III: the top 4[per player] encounter cards discarded one by one, each minion put
+    -- into play with the player engaged with the fewest minions as it is discarded,
+    -- before the next is (it may engage and deal a card from the deck first). The deck
+    -- emptied by the discard, it is fulfilled (RR Encounter Deck).
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       first <- selectJust FirstPlayer
       case villainStage attrs of
@@ -86,9 +88,14 @@ instance RunMessage Drang where
             else searchAndRevealEncounterCard first (CardIs Attachments.drangsSpear)
         _ -> do
           n <- fromIntegral <$> fromGameValue (PerPlayer 4)
-          discardTopOfEncounterDeckThen n \cards ->
-            for_ [c | c <- cards, cdCardType (getCardDef c) == MinionType] \c ->
-              cardSpecific attrs "engageFewest" c
+          cardSpecific attrs "discardNext" (n :: Int)
+      pure e
+    CardSpecific (isTarget attrs -> True) "discardNext" (fromJSON -> Success (n :: Int)) | n > 0 -> do
+      deck <- getEncounterDeck
+      discardTopOfEncounterDeckThen 1 \cards ->
+        for_ [c | c <- cards, cdCardType (getCardDef c) == MinionType] \c ->
+          cardSpecific attrs "engageFewest" c
+      when (length deck > 1) $ cardSpecific attrs "discardNext" (n - 1)
       pure e
     CardSpecific (isTarget attrs -> True) "engageFewest" (fromJSON -> Success card) -> do
       players <- getPlayers
