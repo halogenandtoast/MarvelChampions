@@ -78,7 +78,7 @@ data Trait
   | NovaCorps
   | Outlaw
   | Scoundrel
-  | Leviatron
+  | Leviathon
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone

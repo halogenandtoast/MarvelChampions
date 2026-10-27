@@ -7,6 +7,8 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier (Modifier (KeywordModifier))
 import Marvel.PlayerCard (lookupPlayerCard)
 import Marvel.Status (StatusCard (ToughStatus))
+import Marvel.Matchers (AllyMatcher (AllyNamedAs, AllyWithTitle))
+import Marvel.Query (selectAny)
 import TestImport
 
 grootGame :: IO TestGame
@@ -80,6 +82,21 @@ spec = describe "Groot pack" do
         clearHand p
         card <- putIntoPlay p "16012"
         start (damageAlly (allyIdOf card) (toSource p) (toDamage 3 FromAbility))
+        choose "Starhawk" (isAbilityOfCard card)
+        resolve []
+        alliesWith "16012" `shouldReturn` []
+        codesInHand p `shouldReturn` ["16012"]
+
+    it "his attack's 2 consequential damage, as printed, at 2 remaining hit points returns him to your hand" do
+      tg <- grootGame
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        card <- putIntoPlay p "16012"
+        resolve (damageAlly (allyIdOf card) (toSource p) (toDamage 1 FromAbility))
+        starhawk <- allyIn "16012"
+        choose "Starhawk attacks" (isAllyAttack starhawk)
+        chooseIf . isTargetChoice =<< villainIdNow
         choose "Starhawk" (isAbilityOfCard card)
         resolve []
         alliesWith "16012" `shouldReturn` []
@@ -307,6 +324,16 @@ spec = describe "Groot pack" do
         offers (isPlay card) `shouldReturn` False
         _ <- putIntoPlay p "16019"
         offers (isPlay card) `shouldReturn` True
+
+    it "Team-Up counts an ally named by its subtitle as well as its title" do
+      tg <- grootGame
+      let p = player1 tg
+      inGame tg do
+        _ <- putIntoPlay p "16012" -- Starhawk — Stakar Ogord
+        byTitle <- selectAny (AllyWithTitle "Stakar Ogord")
+        bySubtitle <- selectAny (AllyNamedAs "Stakar Ogord")
+        byName <- selectAny (AllyNamedAs "Starhawk")
+        liftIO $ (byTitle, bySubtitle, byName) `shouldBe` (False, True, True)
 
     it "places 2 growth counters on Groot and readies him" do
       tg <- grootGame

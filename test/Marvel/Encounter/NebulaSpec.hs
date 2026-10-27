@@ -138,6 +138,22 @@ shipSpec = describe "Nebula's Ship" do
       after <- getEvasionCounters
       liftIO $ (before, after) `shouldBe` (0, 1)
 
+  it "the counter placed as the villain phase begins counts in that phase's acceleration" do
+    tg <- nebulaGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      clearTechniques
+      _ <- stackEncounterDeck (replicate 4 MinionCards.hydraMercenary)
+      vid <- villainIdNow
+      -- confused, Nebula does not scheme: only the acceleration places threat
+      resolve [VillainMessage vid (VillainConfused (toSource you))]
+      getEvasionCounters `shouldReturn` 0
+      before <- mainSchemeThreatNow
+      endTurn
+      resolve []
+      after <- mainSchemeThreatNow
+      liftIO $ after - before `shouldBe` 1
+
   it "The Art of Evasion accelerates by X per player, X its evasion counters" do
     tg <- nebulaGame ["spider-man", "captain-marvel"]
     inGame tg do
@@ -651,6 +667,17 @@ spacePiratesSpec = describe "Space Pirates" do
       card <- encounterCard MinionCards.pirateLackey
       before <- length . villainBoostCards <$> villainAttrs
       runNow [RevealBoostCard card (EnemyVillainId vid)]
+      after <- length . villainBoostCards <$> villainAttrs
+      liftIO $ after - before `shouldBe` 1
+
+  it "a pirate's boost turned up for a minion's activation gives the villain a boost card, for his next" do
+    tg <- testGame ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      m <- addMinion you MinionCards.headhuntersHenchman
+      card <- encounterCard MinionCards.pirateCommander
+      before <- length . villainBoostCards <$> villainAttrs
+      runNow [RevealBoostCard card (EnemyMinionId m)]
       after <- length . villainBoostCards <$> villainAttrs
       liftIO $ after - before `shouldBe` 1
 

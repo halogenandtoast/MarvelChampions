@@ -293,6 +293,24 @@ grandCollection = describe "The Grand Collection" do
       _ <- putInHand you "01090"
       offers (isMainSchemeAbility m) `shouldReturn` False
 
+  it "Hero Action: once per round per player, each player's own" do
+    tg <- museum ["spider-man", "she-hulk"]
+    let (you, them) = (player1 tg, player2 tg)
+    inGame tg do
+      emptyCollection
+      [cat, flip'] <- collect you ["01002", "01003"]
+      m <- mainSchemeIdNow
+      changeForm you
+      choose "the main scheme's action" (isMainSchemeAbility m)
+      choose "Black Cat" (isTargetChoice (CardIdRef $ pcCardId cat))
+      offers (isMainSchemeAbility m) `shouldReturn` False
+      endTurn
+      changeForm them
+      pass
+      choose "the main scheme's action, the other player's" (isMainSchemeAbility m)
+      choose "the last card" (isTargetChoice (CardIdRef $ pcCardId flip'))
+      collectionNow `shouldReturn` []
+
   it "Hero Action: or spend 2 resources of any type" do
     tg <- museum ["spider-man"]
     let you = player1 tg
@@ -491,6 +509,26 @@ biogramImage = describe "Biogram Image" do
       liftIO $ ids `shouldBe` [CardId (unAttachmentId (Attachment.attachmentId image))]
       attachmentsWith Attachments.biogramImage `shouldReturn` []
 
+  it "a tough Collector's tough status card prevents the damage first: the image stays, no threat" do
+    tg <- museum ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      emptyCollection
+      _ <- revealNow you Attachments.biogramImage
+      vid <- villainIdNow
+      resolve [VillainMessage vid VillainBecomeTough]
+      changeForm you
+      before <- mainSchemeThreatNow
+      choose "attack" (isHeroAttack you)
+      choose "Collector" (isTargetChoice (VillainRef vid))
+      offers isAnyAbility `shouldReturn` False
+      pass
+      villainDamageNow `shouldReturn` 0
+      Villain.villainTough . toAttrs <$> getVillain `shouldReturn` False
+      mainSchemeThreatNow `shouldReturn` before
+      collectionNow `shouldReturn` []
+      length <$> attachmentsWith Attachments.biogramImage `shouldReturn` 1
+
   it "its boost reveals it after the activation" do
     tg <- museum ["spider-man"]
     let you = player1 tg
@@ -503,6 +541,19 @@ biogramImage = describe "Biogram Image" do
 
 galacticArtifacts :: Spec
 galacticArtifacts = describe "Galactic Artifacts" do
+  it "Cloak of Hercules: with enemies tied for the lowest ATK, the first player picks, whoever revealed it" do
+    tg <- rhinoWith [GalacticArtifacts] ["spider-man", "captain-marvel"]
+    let (you, them) = (player1 tg, player2 tg)
+    inGame tg do
+      m1 <- addMinion them Minions.servantBot
+      m2 <- addMinion them Minions.servantBot
+      _ <- revealNow them Attachments.cloakOfHercules
+      (fmap fst <$> asked) `shouldReturn` Just you
+      choose "the second bot" (isTargetChoice (MinionRef m2))
+      cloak <- theAttachment Attachments.cloakOfHercules
+      liftIO $ Attachment.attachmentEnemy cloak `shouldBe` Just (EnemyMinionId m2)
+      liftIO $ m1 `shouldNotBe` m2
+
   it "Cloak of Hercules attaches to the enemy with the lowest ATK, +3 ATK, discarded for [physical][physical][physical]" do
     tg <- rhinoWith [GalacticArtifacts] ["spider-man"]
     let you = player1 tg
@@ -654,6 +705,22 @@ galacticArtifacts = describe "Galactic Artifacts" do
       length <$> alliesWith "01002" `shouldReturn` 1
       -- the reduction is gone once used
       getModifiers (IdentityRef you) >>= (`shouldSatisfy` notElem (ResourceCostReduction 3))
+
+  it "Crystal Ball offers only cards its player may legally play now, not just afford" do
+    tg <- rhinoWith [GalacticArtifacts] ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      _ <- putIntoPlay you "01002"
+      clearHand you
+      cat <- putInHand you "01002" -- unique, one in play
+      backflip <- putInHand you "01003" -- an interrupt
+      kick <- putInHand you "01005" -- a hero action, Peter Parker in alter-ego form
+      may <- putInHand you "01006"
+      ball <- encounterCard SideSchemes.crystalBall
+      runNow [RevealEncounterCard you ball]
+      runNow [SideSchemeMessage (sideSchemeOf ball) (SideSchemeThwarted (IdentityRef you) 10)]
+      offered <- for [cat, backflip, kick, may] (offers . isPlay)
+      liftIO $ offered `shouldBe` [False, False, False, True]
 
 menagerieMedley :: Spec
 menagerieMedley = describe "Menagerie Medley" do

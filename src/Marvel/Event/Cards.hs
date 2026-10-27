@@ -943,7 +943,8 @@ swarmTactics = reprintedAs ["13020"] $
 teamUp :: Text -> Text -> Criteria
 teamUp a b = inPlay a <> inPlay b
  where
-  inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t), AllyExists (AllyWithTitle t)]
+  -- an ally counts by its title or its subtitle (RR Team-Up)
+  inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t), AllyExists (AllyNamedAs t)]
 
 momentOfTriumph :: CardDef
 momentOfTriumph =

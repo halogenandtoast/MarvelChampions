@@ -16,7 +16,7 @@ import Marvel.Matchers
 import Marvel.Window
 
 grootAlly :: AllyCard GrootAlly
-grootAlly = ally GrootAlly Cards.grootAlly (Thw 1, 1) (Atk 2, 1) (HP 6)
+grootAlly = ally GrootAlly Cards.grootAlly (Thw 1, 1) (Atk 2, 2) (HP 6)
 
 newtype GrootAlly = GrootAlly (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)

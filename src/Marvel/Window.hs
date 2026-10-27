@@ -108,10 +108,17 @@ windowMatches matcher w source = case matcher of
             (villainMatches villainMatcher villainId)
             (pure $ timing == windowTiming w)
     _ -> pure False
+  -- "when the villain would take damage": a tough status card's interrupt is first (RR
+  -- Simultaneous Timing Priority), and with it preventing all the damage there is none
+  -- to take, so the damage it prevents is not answered
   VillainDamaged timing villainMatcher -> case windowType w of
-    DamagedVillain villainId _
-      | timing == windowTiming w ->
-          villainMatches villainMatcher villainId
+    DamagedVillain villainId damage
+      | timing == windowTiming w -> do
+          tough <-
+            if timing == When && preventedByTough damage
+              then villainMatches VillainWithToughStatus villainId
+              else pure False
+          (not tough &&) <$> villainMatches villainMatcher villainId
     _ -> pure False
   VillainDamagedBy timing villainMatcher damageMatcher -> case windowType w of
     DamagedVillain villainId damage

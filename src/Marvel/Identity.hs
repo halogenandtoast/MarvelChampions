@@ -459,13 +459,12 @@ getChoices ::
 getChoices attrs = do
   let ident = toId attrs
   abilities <- getAbilitiesFor ident
-  usedAbilities <- getUsedAbilities
   playableCards <- getPlayableCards attrs
   validAbilities <-
     filterM
       ( andM
           . sequence
-            [ pure . passesUseLimit ident usedAbilities
+            [ withinUseLimit ident
             , passesCriteria ident
             , passesCanAffordCost ident
             , pure . passesTiming ident

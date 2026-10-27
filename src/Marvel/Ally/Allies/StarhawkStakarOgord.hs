@@ -15,7 +15,7 @@ import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Window qualified as W
 
 starhawkStakarOgord :: AllyCard StarhawkStakarOgord
-starhawkStakarOgord = ally StarhawkStakarOgord Cards.starhawkStakarOgord (Thw 1, 1) (Atk 2, 1) (HP 3)
+starhawkStakarOgord = ally StarhawkStakarOgord Cards.starhawkStakarOgord (Thw 1, 1) (Atk 2, 2) (HP 3)
 
 newtype StarhawkStakarOgord = StarhawkStakarOgord (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)

@@ -16,7 +16,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Window qualified as W
+import Marvel.Damage (damageAmount)
 
 schadenfreude :: EventCard Schadenfreude
 schadenfreude = event Schadenfreude Cards.schadenfreude
@@ -42,16 +42,18 @@ schadenfreudeEffect :: CardEffect SchadenfreudeEffect
 schadenfreudeEffect =
   effectWith SchadenfreudeEffect Cards.schadenfreude (endsL ?~ DisableAtEndOfTurn)
 
--- | Each enemy damaged is a time (ruling): one heal per 'W.DamagedEnemy' window, which
--- opens only when some damage got past tough. "You" is your identity or a card you
--- control, not an ally ('DamageByPlayer').
+-- | Each enemy damaged is a time (ruling): one heal for each enemy the damage is dealt
+-- to, as it is dealt. Damage prevented is still dealt (RR Prevent), so a tough status
+-- card taking it heals all the same. "You" is your identity or a card you control, not
+-- an ally ('DamageByPlayer').
 instance RunMessage SchadenfreudeEffect where
   runMessage msg e@(SchadenfreudeEffect attrs) = runQueueT $ case msg of
-    CheckWindows ws | IdentityEntity (IdentityWithId you) <- effectMatcher attrs -> do
-      for_ ws \case
-        W.Window W.After (W.DamagedEnemy _ source damage) ->
-          whenM (damageMatchesFrom (DamageByPlayer $ IdentityWithId you) damage source) $
-            heal (IdentityCharacter you) 2
-        _ -> pure ()
-      pure e
+    VillainMessage _ (VillainDamaged source damage) -> e <$ healFor source damage
+    MinionMessage _ (MinionDamaged source damage) -> e <$ healFor source damage
     _ -> SchadenfreudeEffect <$> runMessage msg attrs
+   where
+    healFor source damage = case effectMatcher attrs of
+      IdentityEntity (IdentityWithId you) | damageAmount damage > 0 ->
+        whenM (damageMatchesFrom (DamageByPlayer $ IdentityWithId you) damage source) $
+          heal (IdentityCharacter you) 2
+      _ -> pure ()

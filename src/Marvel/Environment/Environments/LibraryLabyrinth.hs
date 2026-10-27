@@ -43,7 +43,7 @@ isMuseumShip a = toCardCode a == toCardCode Cards.museumShip
 instance HasAbilities LibraryLabyrinth where
   getAbilities (LibraryLabyrinth a)
     | isMuseumShip a = []
-    | otherwise = [limited (PerRound 1) $ ability a 1 HeroAction NoCriteria NoCost $ runAbility a 1]
+    | otherwise = [limited (EachPlayer (PerRound 1)) $ ability a 1 HeroAction NoCriteria NoCost $ runAbility a 1]
 
 -- | Museum Ship, "Hold on to your butts!" — Forced Interrupt: when the villain phase
 -- begins, choose one: exhaust the Milano → assign 2[per hero] indirect damage among

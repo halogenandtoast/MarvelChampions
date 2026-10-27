@@ -28,7 +28,7 @@ newtype TheGrandCollection = TheGrandCollection (Attrs MainScheme)
 -- same card and index), so the one limit holds for both.
 instance IsMainScheme TheGrandCollection where
   mainSchemeAbilities (TheGrandCollection a) =
-    [ limited (PerRound 1) $ ability a 1 HeroAction CollectionHasCards cost (runAbility a 1)
+    [ limited (EachPlayer (PerRound 1)) $ ability a 1 HeroAction CollectionHasCards cost (runAbility a 1)
     | cost <- [ExhaustCost, MultiResourceCost [Nothing, Nothing]]
     ]
 

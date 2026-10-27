@@ -10,8 +10,6 @@ import Marvel.Prelude
 
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query
@@ -67,10 +65,10 @@ instance RunMessage ImpossibleGeometry where
           allies <- selectList $ AllyControlledBy you'
           upgrades <- selectList $ UpgradeControlledBy you'
           supports <- selectList $ SupportControlledBy you'
-          open <- flip filterM supports \s ->
-            getsGame \g -> maybe True (notElem Permanent . cdKeywords) (abilityCardDef g (toTarget s))
-          let controlled = map toTarget allies <> map toTarget upgrades <> map toTarget open
-          unless (null controlled) $ chooseOne you [targeting c (removeFromPlay c) | c <- controlled]
+          -- a permanent one is never offered: the question leaves out a choice that would
+          -- take a permanent card out of play (RR Permanent)
+          let controlled = map toTarget allies <> map toTarget upgrades <> map toTarget supports
+          chooseOne you [targeting c (removeFromPlay c) | c <- controlled]
         else confuseIdentity you
       pure t
     _ -> ImpossibleGeometry <$> runMessage msg attrs

@@ -291,6 +291,32 @@ villainSpec = describe "Drang" do
         lookup (toCardCode MinionCards.badoonWarlord) engaged `shouldBe` Just p2
         lookup (toCardCode MinionCards.badoonEngineer) engaged `shouldBe` Just p1
 
+  it "(III): each minion is put into play as it is discarded, before the next card is: a Badoon Grunt's dealt card comes off the deck between" do
+    tg <- expertGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      let filler = TreacheryCards.hullBreach
+      _ <- stackEncounterDeck ([MinionCards.badoonGrunt, filler, filler, filler, TreacheryCards.powerSiphon] <> replicate 5 filler)
+      dealt <- length <$> dealtTo p
+      defeatDrang p
+      cards <- dealtTo p
+      discard <- encounterDiscardCodes
+      liftIO do
+        length cards `shouldBe` dealt + 1
+        -- the Grunt dealt the card after it, the discard took the next 3, Power Siphon last
+        map toCardCode cards `shouldSatisfy` notElem (toCardCode TreacheryCards.powerSiphon)
+        toCardCode TreacheryCards.powerSiphon `elem` discard `shouldBe` True
+
+  it "(III): the encounter deck emptied by the discard, it is not continued with the new deck" do
+    tg <- expertGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      let filler = TreacheryCards.hullBreach
+      _ <- setEncounterDeck [filler, filler] [MinionCards.badoonWarlord, filler, filler, filler]
+      defeatDrang p
+      minions <- getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameMinions)
+      liftIO $ toCardCode MinionCards.badoonWarlord `elem` minions `shouldBe` False
+
   it "(III): after he attacks or schemes, Charge Up" do
     tg <- expertGame ["spider-man"]
     let p = player1 tg

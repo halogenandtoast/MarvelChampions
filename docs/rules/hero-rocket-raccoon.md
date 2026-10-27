@@ -82,8 +82,9 @@ Vendetta enters play.
   adds counts for the overkill dealt past a minion and for everything counting that excess
   (Into the Fray, Moment of Triumph, "Murdered You!").
 - Schadenfreude: each enemy you deal damage to is a separate "time" — Rocket Launcher hitting
-  the villain and two minions heals 2 three times. Damage a tough status card prevents is not
-  dealt; damage by your allies is not "you".
+  the villain and two minions heals 2 three times. Damage prevented is still dealt (RR Prevent:
+  prevention reduces the damage taken, not the damage dealt), so damage a tough status card
+  prevents heals too; damage by your allies is not "you".
 - Crisis on Halfworld: with upgrades tied for highest cost you choose which to discard. "Exhaust
   your alter-ego" is offered only to a ready alter-ego (RR Choose (Option)).
 - Battery Pack needs a charge counter on itself and another Tech upgrade you control to move it
@@ -92,5 +93,5 @@ Vendetta enters play.
   deck it cannot be used.
 - Rocket Launcher is not an attack (no "(attack)" label): its damage is an ability's, to the
   villain and each minion engaged with the chosen player as one effect.
-- Vendetta's amplify icon is built with the amplify mechanic on another branch; here Vendetta
-  enters play with its threat and does nothing else.
+- Vendetta enters play with its threat; its amplify icon adds one boost icon to each boost card
+  turned faceup for an enemy's activation while it is in play (RR Amplify Icon).

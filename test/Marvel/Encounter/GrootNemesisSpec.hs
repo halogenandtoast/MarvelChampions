@@ -47,6 +47,9 @@ spec = describe "Groot nemesis" do
         damageOf other `shouldReturn` 2
 
   describe "Furnax (16027)" do
+    it "is a Leviathon, as printed" do
+      (map show (toList (cdTraits Minions.furnax)) `shouldBe` ["Leviathon"]) :: IO ()
+
     it "after he attacks, deals 2 indirect damage to each player" do
       tg <- testGame ["spider-man", "spider-man"]
       let p = player1 tg

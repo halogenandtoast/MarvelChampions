@@ -29,7 +29,7 @@ A flora colossus from Planet X, Groot's unique physiology allows him to sprout v
 ## Readings from the rules (no owner ruling asked)
 
 - Growth counters are on Groot's identity card and stay on it whichever face is up. "To a maximum of 10": counters past 10 are not placed.
-- Flora Colossus answers each instance of damage: indirect damage, assigned a point at a time, is prevented a counter a point.
+- Flora Colossus answers each instance of damage. Indirect damage is first assigned, then resolved simultaneously (RR Indirect Damage): the points assigned to Groot are dealt to him as one instance, and Flora Colossus prevents a point of it for each counter removed.
 - Lashing Vines' "after Groot uses a basic power" answers his basic attack, basic thwart and defense; recovering is in alter-ego form, where a Hero Response cannot be used.
 - "We Are Groot": the player picks how many counters to remove (1 to 4, no more than he has, no more than there are friendly characters), then that many different friendly characters (any player's identity or ally) each get a tough status card.
 - Wilt's first option needs a ready alter-ego (RR Choose (Option)); its second removes as many counters as he has, up to 3, and gains surge only if none were removed.

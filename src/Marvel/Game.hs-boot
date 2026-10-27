@@ -78,6 +78,7 @@ getCardsOwnedBy :: (HasGame m) => IdentityId -> m [CardDef]
 abilityCardDef :: Game -> Target -> Maybe CardDef
 cardInPlay :: Game -> Target -> Maybe Card
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
+withinUseLimit :: (HasGame m) => IdentityId -> Ability -> m Bool
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]

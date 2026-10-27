@@ -39,13 +39,15 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Window qualified as W
 
--- | "Attach to the enemy with the lowest ATK" (or highest, lowest SCH): the player who
--- revealed it picks among those tied.
-attachToEnemyWith :: (ReverseQueue m) => EnemyMatcher -> IdentityId -> Attrs Attachment -> m ()
-attachToEnemyWith matcher you attrs =
+-- | "Attach to the enemy with the lowest ATK" (or highest, lowest SCH): the first player
+-- picks among those tied (RR First Player: an encounter card targeting one of several).
+attachToEnemyWith :: (ReverseQueue m) => EnemyMatcher -> Attrs Attachment -> m ()
+attachToEnemyWith matcher attrs =
   selectList matcher >>= \case
     [] -> removeFromPlay attrs
-    enemies -> chooseOrRunOne you [targeting (enemyRef e) (attachTo (attachmentId attrs) e) | e <- enemies]
+    enemies -> do
+      first <- selectJust FirstPlayer
+      chooseOrRunOne first [targeting (enemyRef e) (attachTo (attachmentId attrs) e) | e <- enemies]
 
 -- | The attached enemy's stat, for the modifiers.
 onEnemy :: Attrs Attachment -> Target -> Bool
@@ -113,8 +115,8 @@ instance HasAbilities CloakOfHercules where
 
 instance RunMessage CloakOfHercules where
   runMessage msg a@(CloakOfHercules attrs) = runQueueT $ case msg of
-    AttachmentMessage ident (RevealAttachment you) | ident == attachmentId attrs ->
-      a <$ attachToEnemyWith EnemyWithLowestAttack you attrs
+    AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs ->
+      a <$ attachToEnemyWith EnemyWithLowestAttack attrs
     _ -> CloakOfHercules <$> runMessage msg attrs
 
 obediencePotion :: AttachmentCard ObediencePotion
@@ -164,8 +166,8 @@ instance HasAbilities TheBeyondersBlazer where
 
 instance RunMessage TheBeyondersBlazer where
   runMessage msg a@(TheBeyondersBlazer attrs) = runQueueT $ case msg of
-    AttachmentMessage ident (RevealAttachment you) | ident == attachmentId attrs ->
-      a <$ attachToEnemyWith EnemyWithHighestScheme you attrs
+    AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs ->
+      a <$ attachToEnemyWith EnemyWithHighestScheme attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       selectOne MainScheme >>= traverse_ (`placeThreat` 2)
       removeFromPlay attrs
@@ -217,6 +219,6 @@ instance HasAbilities VandarianPowerWand where
 
 instance RunMessage VandarianPowerWand where
   runMessage msg a@(VandarianPowerWand attrs) = runQueueT $ case msg of
-    AttachmentMessage ident (RevealAttachment you) | ident == attachmentId attrs ->
-      a <$ attachToEnemyWith EnemyWithLowestScheme you attrs
+    AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs ->
+      a <$ attachToEnemyWith EnemyWithLowestScheme attrs
     _ -> VandarianPowerWand <$> runMessage msg attrs

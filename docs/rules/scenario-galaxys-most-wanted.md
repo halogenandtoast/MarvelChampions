@@ -177,6 +177,10 @@ Card text (MarvelCDB):
 - **First Player Action** on an encounter card (Rogue Vessel, Cannonade): an action only the first player may take, in
   their turn. Side and main schemes may now have abilities. A cost that exhausts the Milano and spends resources
   (Rogue Vessel) does not count the Milano's own resource among them.
+- **Limits on encounter cards**: an ability on an encounter card is anyone's, so its limit counts every player's
+  uses ("Limit once per round": once a round for the table). "(Limit once per round per player.)" (The Grand
+  Collection, Library Labyrinth) is a limit of each player's own (`EachPlayer`), whether the ability is an action or
+  a response.
 - **Choose one** on Blind Side, Hull Breach and Power Siphon: an option with no valid target cannot be chosen (RR
   Choose): "exhaust the Milano" only with the Milano in play and ready, the resources only if the player can spend
   them, "stun the first player" only if they are not stunned already, "discard at random from the first player's
@@ -187,9 +191,10 @@ Card text (MarvelCDB):
 - **The Milano for another player.** "Generate a [wild] resource for any player" is resolved by the Milano's
   controller. The engine lets the paying player use it, the first player deemed to agree; under peril the first
   player cannot help, so the player resolving a peril card may use it only if they control it.
-- **"Give the villain 1 additional boost card for this activation"** (On the Hunt, Dead to Rights) turned up for a
-  minion's activation (Badoon Headhunter is villainous) gives nothing: the villain has no activation under way to
-  take it.
+- **"Give the villain 1 additional boost card for this activation"** (On the Hunt, Dead to Rights, Pirate Lackey,
+  Pirate Commander, "You Stand Accused!") turned up for a villainous minion's activation (Badoon Headhunter) still
+  gives the villain a facedown boost card (RR Villainous: a boost ability that refers to "the villain" still applies
+  to the villain). He has no activation under way, so it stays on him and is turned up in his next activation.
 - **Victory X on cards with uses** (RR: "placed in the victory display when its last all-purpose counter is removed")
   is not implemented: no card in the game so far has both.
 - **Stalwart on identities and allies** (gained from player cards in later packs) is not implemented; only villains

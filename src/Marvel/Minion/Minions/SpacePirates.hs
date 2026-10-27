@@ -30,13 +30,14 @@ afterDamagingYou a =
   windowAbility a 1 (EnemyAttackedAndDamaged (EnemyWithId $ EnemyMinionId $ minionId a) (IdentityCharacters AnyIdentity)) ForcedResponse NoCost
     $ RunAbility (toTarget a) 1
 
--- | The boost for the villain's activation; turned up for a minion's, there is none of
--- the villain's to give it to.
+-- | The boost for the villain's activation.
 anotherBoostCard :: (ReverseQueue m) => Attrs Minion -> Message -> Maybe (m ())
 anotherBoostCard attrs = \case
   Boost (RevealedAsBoost target enemy) | isTarget attrs target -> Just case enemy of
     EnemyVillainId villain -> dealBoost villain
-    EnemyMinionId _ -> pure ()
+    -- turned up for a villainous minion's, it still gives "the villain" its card (RR
+    -- Villainous), facedown on him for his next activation
+    EnemyMinionId _ -> selectOne ActiveVillain >>= traverse_ dealBoost
   _ -> Nothing
 
 pirateCommander :: MinionCard PirateCommander

@@ -202,6 +202,14 @@ printed cards.
 - **Indirect damage from an attack** (Starshark): the attack's damage past a hero's defense is assigned among the
   characters the attacked player controls (an ally defending: its controller's), each share dealt as the attack's
   damage; the defending character is the one attacked (RR Indirect Damage).
+- **Biogram Image and a tough Collector**: a tough status card's forced interrupt has priority over other forced
+  interrupts to the same "would take damage" (RR Simultaneous Timing Priority), so it prevents the damage first and
+  Biogram Image has nothing left to answer: it stays attached, and no threat is placed. In the engine, no "when the
+  villain would take damage" interrupt answers damage his tough status card prevents; one to his being attacked
+  (Temporal Shield) still does.
+- **"Attach to the enemy with the lowest ATK"** (Cloak of Hercules; highest SCH, The Beyonder's Blazer; lowest SCH,
+  Vandarian Power Wand): with enemies tied, the first player picks among them, whoever revealed it (RR First Player:
+  an encounter card with several eligible targets).
 
 ## Open rulings
 
