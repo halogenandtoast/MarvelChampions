@@ -24,12 +24,12 @@ import Marvel.Treachery.Treacheries.BadoonHeadhunter (anotherBoostCard)
 import Marvel.Treachery.Types
 
 singleMindedFury :: TreacheryCard SingleMindedFury
-singleMindedFury = treachery (SingleMindedFury . (`With` Meta False)) Cards.singleMindedFury
+singleMindedFury = treachery (SingleMindedFury . (`With` Meta False Nothing)) Cards.singleMindedFury
 
-newtype Meta = Meta {attackMade :: Bool}
-  deriving stock (Generic)
+-- | Whether Ronan attacked as this card told him to, while it resolves.
+data Meta = Meta {attackMade :: Bool, attacker :: Maybe VillainId}
+  deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
-  deriving newtype (Show, Eq)
 
 newtype SingleMindedFury = SingleMindedFury (Attrs Treachery `With` Meta)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
@@ -47,14 +47,15 @@ instance RunMessage SingleMindedFury where
       RevealTreachery _ -> do
         holder <- getPowerStoneHolder
         villain <- selectOne ActiveVillain
-        case (villain, holder) of
-          (Just v, Just (IdentityCharacter p)) -> enemyAttacks v p
-          _ -> pure ()
-        pure t
+        attacker' <- case (villain, holder) of
+          (Just v, Just (IdentityCharacter p)) -> Just v <$ enemyAttacks v p
+          _ -> pure Nothing
+        -- only the attack of Ronan's this reveal makes counts
+        pure $ SingleMindedFury (attrs `With` Meta False attacker')
       ResolvedTreachery _ | not (attackMade meta) ->
         SingleMindedFury . (`With` meta) <$> runMessage msg (attrs & surgeL .~ True)
       _ -> SingleMindedFury . (`With` meta) <$> runMessage msg attrs
-    VillainMessage _ VillainAttacked -> pure $ SingleMindedFury (attrs `With` Meta True)
+    VillainMessage vid VillainAttacked | Just vid == attacker meta -> pure $ SingleMindedFury (attrs `With` meta {attackMade = True})
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       selectOne ActiveVillain >>= traverse_ attachPowerStoneTo
       pure t
