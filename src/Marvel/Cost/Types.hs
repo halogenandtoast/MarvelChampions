@@ -52,6 +52,8 @@ data Cost
   | -- | so many counters removed from the payer's identity card: "remove 1 growth
     -- counter from him" (Groot)
     IdentityCountersCost Natural
+  | -- | "exhaust the Milano", whoever controls it (The Galaxy's Most Wanted)
+    ExhaustMilanoCost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -83,6 +85,7 @@ costResources DealEncounterCardCost = []
 costResources TargetPrintedCost = []
 costResources MayOverpay = []
 costResources (IdentityCountersCost _) = []
+costResources ExhaustMilanoCost = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

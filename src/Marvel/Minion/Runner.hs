@@ -35,6 +35,13 @@ statusL = \case
   ConfusedStatus -> confusedL
   ToughStatus -> toughL
 
+-- | The status card is given, a stunned or confused one not to a stalwart minion (RR
+-- Stalwart).
+statusUnlessStalwart :: (HasGame m) => Attrs Minion -> StatusCard -> m (Attrs Minion)
+statusUnlessStalwart attrs s = do
+  stalwart <- elem Stalwart <$> getModifiedKeywords attrs
+  pure $ if stalwart && s /= ToughStatus then attrs else attrs & statusL s .~ True
+
 runMinionMessage ::
   (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
@@ -75,8 +82,9 @@ runMinionMessage msg attrs = case msg of
     keywords <- getModifiedKeywords attrs
     for_ [n | Retaliate n <- toList keywords] (retaliate attrs attacker)
     pure attrs
-  MinionStunned _ -> pure $ attrs & stunnedL .~ True
-  MinionConfused _ -> pure $ attrs & confusedL .~ True
+  -- a stalwart minion cannot be stunned or confused (RR Stalwart)
+  MinionStunned _ -> statusUnlessStalwart attrs StunnedStatus
+  MinionConfused _ -> statusUnlessStalwart attrs ConfusedStatus
   MinionBecomeTough -> pure $ attrs & toughL .~ True
   MinionDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
@@ -93,10 +101,11 @@ runMinionMessage msg attrs = case msg of
     when (isHero && Quickstrike `member` cdKeywords (getCardDef attrs)) $ enemyAttacks (minionId attrs) ident
     checkWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]
     pure attrs {minionEngagedIdentity = ident}
+  -- with victory X, it and an attachment on it with victory X go to the victory display
   MinionDefeated -> do
     for_ (minionUpgrades attrs) removeFromPlay
-    for_ (minionAttachments attrs) removeFromPlay
-    removeFromPlay attrs
+    for_ (minionAttachments attrs) defeatedLeavesPlay
+    defeatedLeavesPlay attrs
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs
   -- a villainous minion is given a boost card as it uses a basic power (RR, Villainous)
@@ -163,7 +172,7 @@ runMinionMessage msg attrs = case msg of
     for_ (minionBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
       revealBoostCard card (minionId attrs)
-      countBoostIcons attrs () [card]
+      countActivationBoostIcons attrs [card]
     unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
     pure $ attrs & boostCardsL .~ []
   MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n
@@ -174,7 +183,7 @@ runMinionMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT $ case msg of
-    GiveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ True
+    GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
     RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
     MinionMessage ident msg'
       | ident == minionId attrs ->

@@ -118,12 +118,19 @@ narrationFor = \case
   RevealEncounterCard ident card -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
-  GiveStatus target s -> Just $ simply (statusKey s) target
+  GiveStatus target s
+    | s == ToughStatus -> Just $ simply (statusKey s) target
+    | otherwise -> Just $ unlessStalwart target $ simply (statusKey s) target
   RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
   KeptOutByUnique t -> Just $ simply "log.keptOutByUnique" t
+  -- The Galaxy's Most Wanted
+  AddToVictoryDisplay t -> Just $ simply "log.victoryDisplay" t
+  SetPeril (Just ident) -> Just do
+    who <- playerRef' ident
+    one $ notice [ikeyPart "log.peril" ["player" ~> who]]
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   -- put into play attached, not revealed: the card is not in play yet to be named
@@ -286,8 +293,9 @@ villainNarration vid = \case
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
   FlipVillain -> Just $ simply "log.flips" (VillainRef vid)
-  VillainStunned _ -> Just $ simply "log.stunned" (VillainRef vid)
-  VillainConfused _ -> Just $ simply "log.confused" (VillainRef vid)
+  -- a stalwart villain is not stunned or confused: nothing to tell
+  VillainStunned _ -> Just $ unlessStalwart (VillainRef vid) $ simply "log.stunned" (VillainRef vid)
+  VillainConfused _ -> Just $ unlessStalwart (VillainRef vid) $ simply "log.confused" (VillainRef vid)
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
   VillainAttackGains k -> gains (VillainRef vid) k
   -- told as they are added, so icons cancelled as the card turns up are not
@@ -313,8 +321,8 @@ minionNarration mid = \case
     damaged (MinionRef mid) (tough && preventedByTough dmg) (damageAmount dmg)
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
   MinionDefeated -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
-  MinionStunned _ -> Just $ simply "log.stunned" (MinionRef mid)
-  MinionConfused _ -> Just $ simply "log.confused" (MinionRef mid)
+  MinionStunned _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.stunned" (MinionRef mid)
+  MinionConfused _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)
   MinionAttackGains k -> gains (MinionRef mid) k
   MinionAddBoost n | n > 0 -> Just $ whenRef (MinionRef mid) \m -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> m, "count" ~> n]]
@@ -362,6 +370,10 @@ sideSchemeNarration sid = \case
 
 one :: (Applicative m) => LogEntry -> m [LogEntry]
 one = pure . pure
+
+-- | What is told, unless the enemy is stalwart and the status did not take.
+unlessStalwart :: (HasGame m) => Target -> m [LogEntry] -> m [LogEntry]
+unlessStalwart target told = isStalwartEnemy target >>= \stalwart -> if stalwart then pure [] else told
 
 simply :: (HasGame m) => Text -> Target -> m [LogEntry]
 simply key target = whenRef target \t -> one $ mechanic [ikeyPart key ["target" ~> t]]

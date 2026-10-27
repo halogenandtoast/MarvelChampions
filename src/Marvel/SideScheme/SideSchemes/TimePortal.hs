@@ -27,6 +27,6 @@ instance RunMessage TimePortal where
   runMessage msg s@(TimePortal attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
       for_ [ec | EncounterCard ec <- [toCard attrs]] \ec ->
-        afterMatching (== RemoveFromPlay (toTarget attrs)) (shuffleIntoEncounterDeck [ec])
+        afterMatching (== DefeatedLeavesPlay (toTarget attrs)) (shuffleIntoEncounterDeck [ec])
       pure s
     _ -> TimePortal <$> runMessage msg attrs

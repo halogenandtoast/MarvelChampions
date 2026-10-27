@@ -117,6 +117,11 @@ allSideSchemes = fromList $ map
 
   -- Rocket Raccoon
   , vendetta
+
+  -- The Galaxy's Most Wanted: Ship Command
+  , cannonade
+  -- Badoon Headhunter
+  , fugitiveRecovery
   ]
 
 sideScheme
@@ -141,6 +146,7 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdBoostIcons = boostIcons
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdAmplify = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
@@ -466,4 +472,15 @@ blazingInferno = sideScheme "16026" "Blazing Inferno" [Boost, Boost] GrootNemesi
 -- Rocket Raccoon
 
 vendetta :: CardDef
-vendetta = sideScheme "16054" "Vendetta" [Boost, Boost] RocketRaccoonNemesis 1
+vendetta = (sideScheme "16054" "Vendetta" [Boost, Boost] RocketRaccoonNemesis 1) {cdAmplify = 1}
+
+-- The Galaxy's Most Wanted: Ship Command
+
+-- | Hinder 3 per player, one amplify icon.
+cannonade :: CardDef
+cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKeywords = singleton (Hinder (PerPlayer 3)), cdAmplify = 1}
+
+-- Badoon Headhunter
+
+fugitiveRecovery :: CardDef
+fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}

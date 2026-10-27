@@ -100,3 +100,7 @@ import Marvel.SideScheme.SideSchemes.BlazingInferno as X
 
 -- Rocket Raccoon
 import Marvel.SideScheme.SideSchemes.Vendetta as X
+
+-- The Galaxy's Most Wanted
+import Marvel.SideScheme.SideSchemes.Cannonade as X
+import Marvel.SideScheme.SideSchemes.FugitiveRecovery as X

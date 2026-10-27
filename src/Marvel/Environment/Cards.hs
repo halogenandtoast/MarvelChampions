@@ -31,6 +31,8 @@ allEnvironments = fromList $ map (toFst toCardCode)
 
   -- The Once and Future Kang
 
+  -- The Galaxy's Most Wanted: Ship Command
+  , rogueVessel
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -57,6 +59,7 @@ ultronDrones =
     , cdBoostIcons = []
     , cdHazards = 0
     , cdAcceleration = 0
+    , cdAmplify = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
@@ -95,3 +98,17 @@ rockyOutcrop = absorbingEnvironment "04082" "Rocky Outcrop" Stone
 
 abandonedFacility :: CardDef
 abandonedFacility = absorbingEnvironment "04083" "Abandoned Facility" Metal
+
+-- The Galaxy's Most Wanted: Ship Command
+
+rogueVessel :: CardDef
+rogueVessel =
+  ultronDrones
+    { cdCardCode = "16143"
+    , cdName = "Rogue Vessel"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdKeywords = singleton Surge
+    , cdEncounterSet = Just ShipCommand
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = [Boost, Boost]
+    }

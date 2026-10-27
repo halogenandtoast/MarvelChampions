@@ -129,6 +129,10 @@ allMinions =
 
       -- Rocket Raccoon
       , blackjackOHare
+
+      -- The Galaxy's Most Wanted: Badoon Headhunter
+      , badoonHeadhunter
+      , headhuntersHenchman
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -168,6 +172,7 @@ minion code name traits boostIcons encounterSet quantity =
     , cdBoostIcons = boostIcons
     , cdHazards = 0
     , cdAcceleration = 0
+    , cdAmplify = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
@@ -643,3 +648,11 @@ blackjackOHare =
     (minion "16055" "Blackjack O'Hare" [Criminal] [Boost, Boost, Boost] RocketRaccoonNemesis 1)
       { cdKeywords = fromList [Quickstrike, Villainous]
       }
+
+-- The Galaxy's Most Wanted: Badoon Headhunter
+
+badoonHeadhunter :: CardDef
+badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHeadhunter 1) {cdKeywords = fromList [Victory 2, Villainous]}
+
+headhuntersHenchman :: CardDef
+headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}

@@ -14,6 +14,7 @@ import Marvel.Difficulty
 import Marvel.EncounterCard
 import Marvel.EncounterSet
 import Marvel.EncounterSet qualified as EncounterSet
+import Marvel.Keyword qualified as Keyword
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id (IdentityId)
@@ -314,6 +315,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
           [] -> error "No main schemes"
           x : xs -> (x, xs)
       for_ scenarioVillains addVillain
+      putSetupEncounterCardsIntoPlay
       addSetupMainScheme mainScheme
       pure $
         attrs
@@ -445,6 +447,15 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         x : xs -> do
           withDiscardedMatch target FromEncounterDeck (EncounterCard x)
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
+    -- each card with the setup keyword in the encounter deck goes into play, the first
+    -- player putting it there: a support under their control, an attachment as its own
+    -- "attach to" says (RR Appendix II, step 11); a scenario's own Setup comes after
+    PutSetupEncounterCardsIntoPlay -> do
+      let setupCards = filter (elem Keyword.Setup . cdKeywords . getCardDef) scenarioEncounterDeck
+      unless (null setupCards) do
+        first <- selectJust FirstPlayer
+        for_ setupCards (putEncounterCardIntoPlay first)
+      pure attrs
     SearchForAndRevealScheme cardDef -> do
       ident <- selectJust You
       search ident (CardIs cardDef) (revealEncounterCard ident)

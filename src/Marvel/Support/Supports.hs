@@ -62,3 +62,6 @@ import Marvel.Support.Supports.ConditioningRoom as X
 
 -- Groot
 import Marvel.Support.Supports.FertileGround as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Support.Supports.Milano as X

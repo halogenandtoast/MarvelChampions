@@ -129,3 +129,7 @@ import Marvel.Treachery.Treacheries.FanTheFlames as X
 
 -- Rocket Raccoon
 import Marvel.Treachery.Treacheries.PlanetaryInvasion as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Treachery.Treacheries.ShipCommand as X
+import Marvel.Treachery.Treacheries.BadoonHeadhunter as X

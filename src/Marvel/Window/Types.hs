@@ -186,6 +186,8 @@ data WindowType
   | SchemedByMinion MinionId
   | -- | the player took damage from this source
     IdentityTookDamage IdentityId Source Damage
+  | -- | the villain took damage from this source: none a tough status card prevented
+    VillainTookDamage VillainId Source Damage
   | -- | the ally took damage from this source: none a tough status card prevented
     AllyTookDamage AllyId Source Damage
   | -- | the ally, as a card, and its controller

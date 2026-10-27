@@ -138,6 +138,10 @@ allMinions =
 
       -- Rocket Raccoon
       , SomeMinionCard blackjackOHare
+
+      -- The Galaxy's Most Wanted
+      , SomeMinionCard badoonHeadhunter
+      , SomeMinionCard headhuntersHenchman
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

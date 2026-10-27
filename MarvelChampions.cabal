@@ -165,6 +165,7 @@ library
       Marvel.Attachment.Attachments.PainInhibitors
       Marvel.Attachment.Attachments.PhotographicReflexes
       Marvel.Attachment.Attachments.PowerGauntlets
+      Marvel.Attachment.Attachments.PowerStone
       Marvel.Attachment.Attachments.ProgramTransmitter
       Marvel.Attachment.Attachments.PumpkinBombs
       Marvel.Attachment.Attachments.RadioactiveBuildup
@@ -219,6 +220,7 @@ library
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
       Marvel.Environment.Environments.CriminalEnterprise
+      Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
       Marvel.Event
       Marvel.Event.Arrow
@@ -499,6 +501,7 @@ library
       Marvel.Minion.Minions.Apocryphus
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.Avalanche
+      Marvel.Minion.Minions.BadoonHeadhunter
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
@@ -625,6 +628,7 @@ library
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
       Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate
+      Marvel.SideScheme.SideSchemes.Cannonade
       Marvel.SideScheme.SideSchemes.CapturedByHydra
       Marvel.SideScheme.SideSchemes.CensorThePast
       Marvel.SideScheme.SideSchemes.ClearTheRoad
@@ -638,6 +642,7 @@ library
       Marvel.SideScheme.SideSchemes.DroneFactory
       Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion
       Marvel.SideScheme.SideSchemes.FamilyFeud
+      Marvel.SideScheme.SideSchemes.FugitiveRecovery
       Marvel.SideScheme.SideSchemes.GenerationWhy
       Marvel.SideScheme.SideSchemes.GoblinNation
       Marvel.SideScheme.SideSchemes.GoblinReinforcements
@@ -717,6 +722,7 @@ library
       Marvel.Support.Supports.JessicaDrewsApartment
       Marvel.Support.Supports.Knowhere
       Marvel.Support.Supports.MedTeam
+      Marvel.Support.Supports.Milano
       Marvel.Support.Supports.NakiaBahadir
       Marvel.Support.Supports.PepperPotts
       Marvel.Support.Supports.Quincarrier
@@ -746,6 +752,7 @@ library
       Marvel.Treachery.Treacheries.AncientGrudge
       Marvel.Treachery.Treacheries.AndroidEfficiency
       Marvel.Treachery.Treacheries.Assault
+      Marvel.Treachery.Treacheries.BadoonHeadhunter
       Marvel.Treachery.Treacheries.BeetleMania
       Marvel.Treachery.Treacheries.BitterRival
       Marvel.Treachery.Treacheries.BuddySystem
@@ -812,6 +819,7 @@ library
       Marvel.Treachery.Treacheries.RepairSequence
       Marvel.Treachery.Treacheries.RitualCombat
       Marvel.Treachery.Treacheries.ShadowOfThePast
+      Marvel.Treachery.Treacheries.ShipCommand
       Marvel.Treachery.Treacheries.ShockTherapy
       Marvel.Treachery.Treacheries.SniperShot
       Marvel.Treachery.Treacheries.SonicBoom
@@ -1162,6 +1170,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GamoraNemesisSpec
       Marvel.Encounter.GreenGoblinSpec
       Marvel.Encounter.GrootNemesisSpec
@@ -1221,6 +1230,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.DividedSpec
       Marvel.Rules.EliminationSpec
       Marvel.Rules.EncounterDeckSpec
+      Marvel.Rules.GalaxysMostWantedSpec
       Marvel.Rules.PrintingSpec
       Marvel.Rules.RecoverSpec
       Marvel.Rules.SetMechanicsSpec

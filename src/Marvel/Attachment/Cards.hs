@@ -105,6 +105,9 @@ allAttachments =
 
       -- Rocket Raccoon
       , blackjacksBazooka
+
+      -- The Galaxy's Most Wanted: Power Stone
+      , powerStone
       ]
 
 attachment ::
@@ -136,6 +139,7 @@ attachment code name traits boostIcons encounterSet quantity =
     , cdActionCriteria = Nothing
     , cdHazards = 0
     , cdAcceleration = 0
+    , cdAmplify = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
@@ -369,3 +373,9 @@ inABind = attachment "18027" "In a Bind" [Armor, Tech] [Boost] GamoraNemesis 1
 -- | Attach to Blackjack O'Hare, if able; if not, to the villain.
 blackjacksBazooka :: CardDef
 blackjacksBazooka = attachment "16056" "Blackjack's Bazooka" [Tech, Weapon] [Boost, Boost] RocketRaccoonNemesis 1
+
+-- The Galaxy's Most Wanted: Power Stone
+
+-- | Setup. Attach to the villain. Permanent.
+powerStone :: CardDef
+powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] PowerStone 1) {cdKeywords = fromList [Setup, Permanent]}

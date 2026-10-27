@@ -61,6 +61,7 @@
   "piles": {
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",
+    "victoryDisplay": "Victory display",
     "deck": "Deck",
     "discard": "Discard",
     "dealt": "Dealt",

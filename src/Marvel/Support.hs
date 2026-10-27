@@ -88,6 +88,9 @@ allSupports = fromList $ map
 
   -- Groot
   , SomeSupportCard fertileGround
+
+  -- The Galaxy's Most Wanted
+  , SomeSupportCard milano
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

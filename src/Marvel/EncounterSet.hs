@@ -75,6 +75,24 @@ data EncounterSet
   | Temporal
   | Anachronauts
   | MasterOfTime
+  -- The Galaxy's Most Wanted
+  | BrotherhoodOfBadoon
+  | InfiltrateTheMuseum
+  | EscapeTheMuseum
+  | Nebula
+  | Ronan
+  | BadoonHeadhunter
+  | BandOfBadoon
+  | GalacticArtifacts
+  | KreeMilitants
+  | MenagerieMedley
+  | PowerStone
+  | SpacePirates
+  | ShipCommand
+  | -- | the campaign's Challenge side schemes
+    Challenge
+  | -- | the campaign's player cards bought with units
+    TheMarket
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -105,6 +123,10 @@ modularSets =
   , Anachronauts
   , MasterOfTime
 
+  -- The Galaxy's Most Wanted
+  , BadoonHeadhunter
+  , PowerStone
+  , ShipCommand
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

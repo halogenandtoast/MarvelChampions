@@ -113,6 +113,9 @@ allAttachments =
 
       -- Rocket Raccoon
       , SomeAttachmentCard blackjacksBazooka
+
+      -- The Galaxy's Most Wanted
+      , SomeAttachmentCard powerStone
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

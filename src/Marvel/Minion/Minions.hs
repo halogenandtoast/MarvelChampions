@@ -99,3 +99,6 @@ import Marvel.Minion.Minions.Furnax as X
 
 -- Rocket Raccoon
 import Marvel.Minion.Minions.BlackjackOHare as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Minion.Minions.BadoonHeadhunter as X

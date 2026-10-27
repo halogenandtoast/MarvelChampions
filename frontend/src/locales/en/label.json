@@ -194,5 +194,14 @@
   "exhaustRocketRaccoonRemoveCrisisOnHalfworld": "Exhaust Rocket Raccoon → remove Crisis on Halfworld from the game",
   "discardHighestCostUpgradeDiscardObligation": "Discard the highest cost upgrade you control (if none, this card gains surge), then discard this obligation",
 
+  "-- The Galaxy's Most Wanted --": "",
+  "exhaustTheMilano": "Exhaust the Milano",
+  "doNotExhaustTheMilano": "Do not exhaust the Milano",
+  "spendMentalResources": "Spend a mental resource | Spend {count} mental resources",
+  "spendEnergyResources": "Spend an energy resource | Spend {count} energy resources",
+  "stunTheFirstPlayer": "Stun the first player",
+  "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
+  "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
+
   "-- end --": ""
 }

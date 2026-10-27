@@ -32,6 +32,10 @@ data Criteria
   | -- | the card's resource cost is paid with only this type of resource: "you can
     -- only spend [physical] resources to pay for this card"
     SpendOnly Resource
+  | -- | a resource ability its controller resolves for any player paying: "generate a
+    -- [wild] resource for any player" (the Milano); any player may use it, the card's
+    -- controller deemed to agree, unless peril keeps the controller from helping
+    ForAnyPlayer
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -52,6 +56,13 @@ payingForMatchers = \case
   PayingFor m -> [m]
   Criteria cs -> concatMap payingForMatchers cs
   _ -> []
+
+-- | Whether any player may have the ability resolved for them ('ForAnyPlayer').
+forAnyPlayer :: Criteria -> Bool
+forAnyPlayer = \case
+  ForAnyPlayer -> True
+  Criteria cs -> any forAnyPlayer cs
+  _ -> False
 
 -- | The form a "Hero …" or "Alter-Ego …" ability is used in.
 abilityTypeCriteria :: AbilityType -> Criteria

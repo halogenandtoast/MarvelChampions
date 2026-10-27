@@ -160,6 +160,15 @@ allTreacheries = fromList $ map
 
   -- Rocket Raccoon
   , planetaryInvasion
+
+  -- The Galaxy's Most Wanted: Ship Command
+  , blindSide
+  , hullBreach
+  , powerSiphon
+  , specialDelivery
+  -- Badoon Headhunter
+  , onTheHunt
+  , deadToRights
   ]
 
 treachery
@@ -184,6 +193,7 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdBoostIcons = boostIcons
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdAmplify = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
@@ -608,3 +618,28 @@ fanTheFlames = treachery "16028" "Fan the Flames" [Boost] GrootNemesis 3
 
 planetaryInvasion :: CardDef
 planetaryInvasion = treachery "16057" "Planetary Invasion" [Boost] RocketRaccoonNemesis 2
+
+-- The Galaxy's Most Wanted: Ship Command
+
+peril :: CardDef -> CardDef
+peril def = def {cdKeywords = singleton Keyword.Peril}
+
+blindSide :: CardDef
+blindSide = peril $ treachery "16145" "Blind Side" [Boost] ShipCommand 1
+
+hullBreach :: CardDef
+hullBreach = peril $ treachery "16146" "Hull Breach" [Boost, Boost] ShipCommand 1
+
+powerSiphon :: CardDef
+powerSiphon = peril $ treachery "16147" "Power Siphon" [Boost] ShipCommand 1
+
+specialDelivery :: CardDef
+specialDelivery = treachery "16148" "Special Delivery" [] ShipCommand 1
+
+-- Badoon Headhunter
+
+onTheHunt :: CardDef
+onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+deadToRights :: CardDef
+deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}

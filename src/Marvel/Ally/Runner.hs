@@ -33,7 +33,7 @@ instance HasAbilities Ally where
           Basic
           -- "you cannot thwart" (Baron Zemo) keeps the identity from thwarting, not
           -- its allies
-          (SchemeExists ThwartableScheme)
+          (SchemeExists SchemeYouCanThwart)
           ExhaustCost
           (AllyThwart $ toId x)
       | unThw (allyThwart $ toAllyAttrs a) > 0
@@ -97,7 +97,7 @@ instance RunMessage (Attrs Ally) where
       AllyThwarted -> if allyConfused a
         then pure $ a & confusedL .~ False
         else do
-          schemes <- selectList ThwartableScheme
+          schemes <- selectList SchemeYouCanThwart
           thw <- getModifiedThwart a
           atk <- getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows

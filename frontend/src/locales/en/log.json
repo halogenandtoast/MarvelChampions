@@ -111,5 +111,9 @@
   "areaJoins": "{player} joins {other}'s game area",
   "areaJoinsCentral": "{player} joins The Master of Time's game area",
 
+  "-- The Galaxy's Most Wanted --": "",
+  "victoryDisplay": "{target} goes to the victory display",
+  "peril": "Peril: {player} resolves this alone, no one else may help",
+
   "-- end --": ""
 }

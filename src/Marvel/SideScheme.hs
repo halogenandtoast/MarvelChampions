@@ -123,6 +123,10 @@ allSideSchemes = fromList $ map
 
   -- Rocket Raccoon
   , SomeSideSchemeCard vendetta
+
+  -- The Galaxy's Most Wanted
+  , SomeSideSchemeCard cannonade
+  , SomeSideSchemeCard fugitiveRecovery
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

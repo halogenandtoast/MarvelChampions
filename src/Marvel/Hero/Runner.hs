@@ -28,7 +28,7 @@ instance HasAbilities Hero where
   getAbilities (Hero a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic (SchemeExists ThwartableScheme <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
+      [ ability a 300 Basic (SchemeExists SchemeYouCanThwart <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
       , ability a 301 Basic canAttack ExhaustCost Attack
       ]
 
@@ -110,7 +110,7 @@ instance RunMessage (Attrs Hero) where
               basicThwart ident 0
           pure a
         BasicThwart bonus -> do
-          schemes <- selectList ThwartableScheme
+          schemes <- selectList SchemeYouCanThwart
           thw <- (+ bonus) <$> getModifiedThwart a
           atk <- (+ bonus) <$> getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows

@@ -131,6 +131,9 @@ data CardDef = CardDef
     cdActionCriteria :: Maybe Criteria
   , cdHazards :: Natural
   , cdAcceleration :: Natural
+  , -- | its amplify icons: each boost card turned faceup during an enemy activation
+    -- gains a boost icon for each amplify icon in play (RR Amplify Icon)
+    cdAmplify :: Natural
   , cdLimit :: Maybe InPlayLimit
   , -- | the codes the card is also printed under: a reprint, an alternate art
     cdAlternateCardCodes :: [CardCode]

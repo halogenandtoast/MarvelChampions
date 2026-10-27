@@ -71,6 +71,19 @@ spec = describe "Rocket Raccoon nemesis" do
         pass
         sideSchemeThreat (sideSchemeOf scheme) `shouldReturn` 4
 
+    it "its amplify icon adds a boost icon to each boost card turned up for an activation" do
+      tg <- rocket
+      let p = player1 tg
+      inGame tg do
+        _ <- revealNow p SideSchemes.vendetta
+        vid <- villainIdNow
+        _ <- stackEncounterDeck [Minions.hydraMercenary]
+        before <- mainSchemeThreatNow
+        resolve [VillainMessage vid VillainSchemes]
+        after <- mainSchemeThreatNow
+        -- Rhino's 1 SCH, the boost card's 1 icon and the amplify icon's 1
+        liftIO $ after - before `shouldBe` 3
+
   describe "Blackjack O'Hare (16055)" do
     it "attacks the hero as he engages (quickstrike), given a boost card (villainous)" do
       tg <- rocket

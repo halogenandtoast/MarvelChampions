@@ -212,6 +212,11 @@ data Game = Game
   , gameCampaign :: Maybe Campaign
   -- ^ the campaign this game is a scenario of, as it was dealt and as the game writes in
   -- its log ("Marvel.Campaign")
+  , gameVictoryDisplay :: [EncounterCard]
+  -- ^ the victory display: the out-of-play area shared by all players that cards with
+  -- victory X go to as they are defeated (RR Victory Display), the first added first
+  , gamePeril :: Maybe IdentityId
+  -- ^ the player resolving a card with peril: the others cannot help them (RR Peril)
   }
   deriving stock (Show, Eq, Generic)
 
@@ -270,6 +275,7 @@ instance FromJSON Game where
         ( KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playedThisTurn" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
             $ o
         )
 
@@ -362,6 +368,10 @@ getActivePlayerId = toId <$> getActivePlayer
 
 getPlayerCount :: (HasGame m) => m Int
 getPlayerCount = length <$> getsGame gamePlayerOrder
+
+-- | The players who started the scenario, the eliminated among them (RR Per Player Icon).
+getStartingPlayerCount :: (HasGame m) => m Int
+getStartingPlayerCount = getsGame \g -> max (length $ gameSeats g) (length $ gamePlayerOrder g)
 
 -- | Each unique card in play, and each identity, as a title and the subtitles and
 -- alter-ego titles that go with it: a unique card matching one cannot enter play.
@@ -839,6 +849,59 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           [] -> []
           (p : ps) -> ps <> [p]
     pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
+  -- out of play for the victory display, not discarded: what is attached to it is
+  -- discarded as it would be (RR Victory X)
+  AddToVictoryDisplay target -> case target of
+    MinionRef mid -> case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        let a = toAttrs minion
+        for_ (minionUpgrades a) removeFromPlay
+        for_ (minionAttachments a) removeFromPlay
+        minionDisengages (minionEngagedIdentity a) mid
+        pure $
+          g
+            & (entitiesL . minionsL %~ deleteMap mid)
+            & (removedEntitiesL . minionsL %~ insertMap mid minion)
+            & (victoryDisplayL <>~ [ec | EncounterCard ec <- [toCard minion]])
+    SideSchemeRef sid -> case lookup sid (gameSideSchemes g) of
+      Nothing -> pure g
+      Just scheme -> whenCanLeavePlay g sid do
+        for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedSideScheme (toAttrs u) == Just sid] removeFromPlay
+        for_ [aid | (aid, at) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs at) == Just sid] removeFromPlay
+        pure $
+          g
+            & (entitiesL . sideSchemesL %~ deleteMap sid)
+            & (removedEntitiesL . sideSchemesL %~ insertMap sid scheme)
+            & (areasL . each %~ \area -> area {areaSideSchemes = filter (/= sid) (areaSideSchemes area)})
+            & (victoryDisplayL <>~ [ec | EncounterCard ec <- [toCard scheme]])
+    AttachmentRef aid -> case lookup aid (gameAttachments g) of
+      Nothing -> pure g
+      Just at -> do
+        attachmentRemoved aid
+        pure $ g & (entitiesL . attachmentsL %~ deleteMap aid) & (victoryDisplayL <>~ [ec | EncounterCard ec <- [toCard at]])
+    _ -> error $ "Cannot add to the victory display: " <> show target
+  DefeatedLeavesPlay target -> do
+    let def = case target of
+          MinionRef k -> getCardDef <$> lookup k (gameMinions g)
+          SideSchemeRef k -> getCardDef <$> lookup k (gameSideSchemes g)
+          AttachmentRef k -> getCardDef <$> lookup k (gameAttachments g)
+          _ -> Nothing
+        victory = maybe False (any isVictory . cdKeywords) def
+        isVictory = \case
+          Victory _ -> True
+          _ -> False
+    push $ if victory then AddToVictoryDisplay target else RemoveFromPlay target
+    pure g
+  SetPeril who -> pure $ g & perilL .~ who
+  -- each card's icons and one more for each amplify icon in play, counted as
+  -- 'CountBoostIcons' counts them
+  CountActivationBoostIcons target cards -> do
+    amplify <- getAmplifyCount
+    counts <- for cards \card -> (card,) . (+ amplify) <$> getBoostIcons card
+    for_ cards \card -> checkWindows [W.Window When $ W.CountingBoostIcons card]
+    push $ WithBoostIcons target (toJSON ()) counts
+    pure g
   RemoveFromGame target -> case target of
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     -- a villain out of the game leaves play as he would, what is on him discarded
@@ -866,6 +929,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (minionAttachments a) removeFromPlay
         minionDisengages (minionEngagedIdentity a) mid
         pure $ g & (entitiesL . minionsL %~ deleteMap mid)
+    AttachmentRef aid -> do
+      when (HashMap.member aid (gameAttachments g)) $ attachmentRemoved aid
+      pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
     CardIdRef _ -> pure g -- Should be handled by Identity
     -- an ally in play taken out of the game (tucked): what is attached to it discarded
     AllyRef aid -> do
@@ -933,6 +999,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         identityStep ident $ AllyRemoved aid
         discardCard ally
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
+    -- a permanent support does not leave play: the Milano stays for the next first player
+    SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
     SupportRef sid -> do
       -- it is discarded, and the cards attached to it facedown with it
       for_ (lookup sid $ gameSupports g) $ \support -> do
@@ -957,6 +1025,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             g
               & (entitiesL . upgradesL %~ deleteMap uid)
               & (removedEntitiesL . upgradesL %~ insertMap uid upgrade)
+    -- a permanent attachment does not leave play: it attaches anew ('Marvel.Attachment.Types')
+    AttachmentRef aid | maybe False isPermanent (lookup aid $ gameAttachments g) -> pure g
     AttachmentRef aid -> do
       for_ (lookup aid $ gameAttachments g) $ \attachment -> do
         attachmentRemoved aid
@@ -1258,7 +1328,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- scheme's threat, then each scheme given a share thwarted (Wasp rulesheet)
   AssignDividedThreat ident source basic upTo n matcher assigned -> do
     let given s = sum [k | (s', k) <- assigned, s' == s]
-    schemes <- selectList matcher
+        labeledThwart = maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
+    patrolled <- isPatrolled ident
+    -- a thwart, the main scheme not while a minion with patrol is engaged (RR Patrol)
+    let thwartable = \case
+          SchemeMainSchemeId _ -> not (patrolled && (basic || labeledThwart))
+          _ -> True
+    schemes <- filter thwartable <$> selectList matcher
     open <- forMaybeM schemes \s -> do
       threat <- selectCount SchemeThreat (SchemeWithId s)
       let room = subtractNatural (given s) threat
@@ -1317,6 +1393,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
+            peril = Peril `member` cdKeywords (getCardDef card)
+        -- with peril, no one else may help while the player resolves it (RR Peril)
+        when peril $ push (SetPeril (Just ident))
         -- TODO: FOCUS CARDS SHOULD BE CARDS...
         focusing [toCard treachery] do
           checkWindows [W.Window When $ W.RevealTreachery (toId treachery) W.RevealedFromEncounterDeck]
@@ -1325,6 +1404,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           whenRevealed $ treacheryStep (toId treachery) $ RevealTreachery ident
           treacheryStep (toId treachery) $ CheckTreacheryCondition ident
         treacheryStep (toId treachery) $ ResolvedTreachery ident
+        when peril $ push (SetPeril Nothing)
         pure $
           g
             & (entitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
@@ -1361,6 +1441,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         revealing (toTarget sideScheme)
         sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
         whenRevealed $ sideSchemeStep (toId sideScheme) RevealSideScheme
+        surges
         pure $
           g
             & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
@@ -1395,6 +1476,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       let environment = createEnvironment card
       environmentStep (toId environment) EnvironmentEntered
       pure $ g & environmentIntoPlay ident environment
+    -- an encounter support, as the Milano, is put into play under the player's control,
+    -- its card owned by no player
+    SupportType -> do
+      g <$ push (PutCardIntoPlay ident (MkPlayerCard (ecCardId card) (ecCardDef card) Nothing (Just ident)) NoPayment Nothing False)
+    -- attached as its own "attach to" says, not revealed: no "When Revealed" and no surge
+    AttachmentType -> do
+      let attachment = createAttachment card
+      rest <- capture $ attachmentStep (toId attachment) (RevealAttachment ident)
+      push $ EntersPlayUnlessUnique ident False (toTarget attachment) rest
+      pure $ g & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
     _ -> do
       revealEncounterCardWithoutWindows ident card
       pure g
@@ -1569,9 +1660,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             _ -> False
           _ -> pure True
     openWindows <- filterM open windows
-    -- "you" on what is offered is the player it is offered to
+    -- "you" on what is offered is the player it is offered to; while another player
+    -- resolves a card with peril, no card is played (RR Peril)
+    let perilled = maybe False (/= ident) gamePeril
     playableCards <-
-      asYou ident $ concatMapM
+      if perilled then pure [] else asYou ident $ concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         openWindows
     let
@@ -1733,6 +1826,33 @@ instance RunMessage Game where
       >>= traverseOf boostEntitiesL (runMessage (Boost msg))
       >>= traverseOf (activeCostL . ix 0) (\c -> asYou (activeCostIdentityId c) $ runMessage msg c)
       >>= runGameMessage msg
+      >>= stalwartSweep
+
+-- | An enemy that has gained stalwart while stunned or confused has those status cards
+-- removed at once (RR Stalwart): looked for after each message, among the enemies with
+-- one only.
+stalwartSweep :: (HasGame m, HasQueue m) => Game -> m Game
+stalwartSweep g = do
+  let villains = [(VillainRef (toId v), Villain.getModifiedKeywords a, Villain.villainStunned a, Villain.villainConfused a) | v <- HashMap.elems (gameVillains g), let a = toAttrs v, Villain.villainStunned a || Villain.villainConfused a]
+      minions = [(MinionRef (toId m), Minion.getModifiedKeywords a, minionStunned a, minionConfused a) | m <- HashMap.elems (gameMinions g), let a = toAttrs m, minionStunned a || minionConfused a]
+  for_ (villains <> minions) \(ref, keywords, stunned, confused) -> do
+    stalwart <- elem Stalwart <$> runReaderT keywords g
+    when stalwart do
+      when stunned $ push (RemoveStatus ref StunnedStatus)
+      when confused $ push (RemoveStatus ref ConfusedStatus)
+  pure g
+
+-- | Whether the enemy, by its ref, is stalwart: it cannot be stunned or confused.
+isStalwartEnemy :: (HasGame m) => Target -> m Bool
+isStalwartEnemy target = do
+  g <- getGame
+  keywords <- case target of
+    VillainRef v -> maybe (pure []) (Villain.getModifiedKeywords . toAttrs) (lookup v (gameVillains g))
+    MinionRef m -> maybe (pure []) (Minion.getModifiedKeywords . toAttrs) (lookup m (gameMinions g))
+    EnemyRef (EnemyVillainId v) -> maybe (pure []) (Villain.getModifiedKeywords . toAttrs) (lookup v (gameVillains g))
+    EnemyRef (EnemyMinionId m) -> maybe (pure []) (Minion.getModifiedKeywords . toAttrs) (lookup m (gameMinions g))
+    _ -> pure []
+  pure $ Stalwart `elem` keywords
 
 class (Monad m) => HasGame m where
   getGame :: m Game
@@ -1848,6 +1968,8 @@ newGame player scenario =
     , gameAtEndOfPhase = []
     , gameAllAreas = False
     , gameCampaign = Nothing
+    , gameVictoryDisplay = []
+    , gamePeril = Nothing
     }
 
 -- | A card with the permanent keyword cannot leave play. ponytail: none in play can be
@@ -1860,13 +1982,49 @@ isPermanent = elem Permanent . cdKeywords . getCardDef
 -- asks, a choice on a permanent card in play that would discard it, remove it from play
 -- or return it to hand is not offered.
 withoutPermanentTargets :: Game -> Question -> Question
-withoutPermanentTargets g = \case
-  QuestionLabel l t q -> QuestionLabel l t (withoutPermanentTargets g q)
-  Searched cs q -> Searched cs (withoutPermanentTargets g q)
-  ChooseOne cs -> ChooseOne (filter (offerable g) cs)
-  ChooseN n cs -> ChooseN n (filter (offerable g) cs)
-  ChooseOneAtATime cs -> ChooseOneAtATime (filter (offerable g) cs)
+withoutPermanentTargets g = filterChoices (offerable g)
+
+-- | The question with only the choices that pass.
+filterChoices :: (Choice -> Bool) -> Question -> Question
+filterChoices f = \case
+  QuestionLabel l t q -> QuestionLabel l t (filterChoices f q)
+  Searched cs q -> Searched cs (filterChoices f q)
+  ChooseOne cs -> ChooseOne (filter f cs)
+  ChooseN n cs -> ChooseN n (filter f cs)
+  ChooseOneAtATime cs -> ChooseOneAtATime (filter f cs)
   q -> q
+
+-- | A player engaged with a minion with patrol cannot thwart the main scheme (RR Patrol):
+-- a choice that would thwart it is not theirs to make. Removing threat from it otherwise
+-- than by a thwart is not kept from them.
+withoutPatrolledThwarts :: Game -> Bool -> Question -> Question
+withoutPatrolledThwarts g patrolled
+  | patrolled = filterChoices (not . thwartsMain)
+  | otherwise = id
+ where
+  thwartsMain = \case
+    Run msgs -> any thwartMessage msgs
+    Label _ cs -> any thwartsMain cs
+    TargetLabel _ cs -> any thwartsMain cs
+    CardLabel _ c -> thwartsMain c
+    -- a thwart only by a basic thwart or an ability labeled one, as 'resolveChoice' says
+    ThwartScheme t source _ -> isMain t && labeledThwart source
+    BasicThwartScheme t _ _ -> isMain t
+    _ -> False
+  thwartMessage = \case
+    MainSchemeMessage _ (MainSchemeThwarted _ _) -> True
+    _ -> False
+  isMain = \case
+    MainSchemeRef _ -> True
+    SchemeRef (SchemeMainSchemeId _) -> True
+    _ -> False
+  labeledThwart source = maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
+
+-- | Whether a minion with patrol is engaged with the player (RR Patrol).
+isPatrolled :: (HasGame m) => IdentityId -> m Bool
+isPatrolled ident = do
+  engaged <- getsGame $ filter ((== ident) . getMinionEngagedIdentity) . HashMap.elems . gameMinions
+  anyM (fmap (elem Patrol) . Minion.getModifiedKeywords . toAttrs) engaged
 
 -- | The choice is not one that would make a permanent card leave play.
 offerable :: Game -> Choice -> Bool
@@ -2066,6 +2224,8 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
       <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
       <> concatMap getAbilities (HashMap.elems $ gameObligations g)
+      <> concatMap getAbilities (HashMap.elems $ gameSideSchemes g)
+      <> concatMap getAbilities (HashMap.elems $ gameMainSchemes g)
 
 -- | The def of the player card an ability is on: in play, or an upgrade just discarded
 -- to pay for it.
@@ -2082,7 +2242,14 @@ abilityCardDef g = \case
 -- | Who may trigger an ability: the player controlling the card it is on. Abilities on
 -- encounter cards are anyone's.
 abilityController :: Game -> Ability -> Maybe IdentityId
-abilityController g a = case abilitySource a of
+abilityController g a
+  -- "for any player": the card's controller resolves it for whoever pays
+  | forAnyPlayer (abilityCriteria a) = Nothing
+  | otherwise = cardController g a
+
+-- | The player controlling the card an ability is on, if a player does.
+cardController :: Game -> Ability -> Maybe IdentityId
+cardController g a = case abilitySource a of
   IdentityRef ident -> Just ident
   AllyRef aid -> getAllyController <$> lookup aid (gameAllies g)
   SupportRef sid -> getSupportController <$> lookup sid (gameSupports g)
@@ -2107,7 +2274,7 @@ getSourceController source = getsGame \g -> case source of
 -- | The abilities in play a player may trigger.
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getAbilitiesFor ident = do
-  abilities <- getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
+  abilities <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a) (getAbilities g)
   filterM (\a -> if printed a then not <$> isBlanked (abilitySource a) else pure True) abilities
  where
   -- a blank text box leaves the game's own abilities: basic powers and changing form
@@ -2115,6 +2282,12 @@ getAbilitiesFor ident = do
   isIdentity = \case
     IdentityRef _ -> True
     _ -> False
+  -- while a player resolves a card with peril, the others trigger nothing but what is
+  -- forced, and no card another player controls helps them (RR Peril)
+  unhelped g a = case gamePeril g of
+    Just p | p /= ident -> isForcedAbility a
+    Just _ -> maybe True (== ident) (cardController g a)
+    Nothing -> True
 
 -- | Whether the card's printed text box is treated as blank (Tech Theft). Only the cards
 -- that can blank another are asked, so a blanked card's own modifiers are not needed.
@@ -2148,7 +2321,7 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
-            Just (Ask ident asked) -> case withoutPermanentTargets g asked of
+            Just (Ask ident asked) -> isPatrolled ident >>= \patrolled -> case withoutPatrolledThwarts g patrolled (withoutPermanentTargets g asked) of
               -- nothing is asked when there is nothing to choose
               question | not (hasChoices question) -> go (n + 1)
               question -> do
@@ -2815,7 +2988,14 @@ gameSelectAnyScheme = \case
         <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
   ThwartableScheme -> thwartable =<< selectAny CrisisSideScheme
   ThwartableSchemeIgnoringCrisis -> thwartable False
+  SchemeYouCanThwart -> do
+    schemes <- gameSelectAnyScheme ThwartableScheme
+    patrolled <- isPatrolled =<< getYou
+    pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
  where
+  isMain = \case
+    SchemeMainSchemeId _ -> True
+    _ -> False
   thwartable crisisSideSchemes = do
     you <- getYou
     let removable = \case
@@ -2991,6 +3171,73 @@ getHazardCountIn aid = getsGame \g ->
   sum (map (cdHazards . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdHazards . getCardDef) (inArea g aid VillainRef (gameVillains g)))
     + sum (map (cdHazards . getCardDef) (inArea g aid MainSchemeRef (gameMainSchemes g)))
+
+-- | The cards in the victory display, the first added first (RR Victory Display).
+getVictoryDisplay :: (HasGame m) => m [EncounterCard]
+getVictoryDisplay = getsGame gameVictoryDisplay
+
+-- | The victory points in the victory display: each card's X (RR Victory X).
+getVictoryPoints :: (HasGame m) => m Natural
+getVictoryPoints = sum . map victoryValue <$> getVictoryDisplay
+
+-- | A card's X, for victory X, if it has the keyword.
+victoryValue :: (HasCardDef a) => a -> Natural
+victoryValue a = sum [n | Victory n <- toList (cdKeywords $ getCardDef a)]
+
+-- * The Milano and the Power Stone (The Galaxy's Most Wanted)
+
+-- | The Milano support (Ship Command), while it is in play.
+getMilano :: (HasGame m) => m (Maybe SupportId)
+getMilano = getsGame \g -> headMay [toId s | s <- HashMap.elems (gameSupports g), isMilano s]
+
+isMilano :: Support -> Bool
+isMilano = (== "Milano") . title . cdName . supportCardDef . toAttrs
+
+-- | Whether the Milano is in play and ready, so it can be exhausted: "exhaust the Milano"
+-- is a cost and an option only then.
+milanoIsReady :: (HasGame m) => m Bool
+milanoIsReady = getsGame \g -> any (\s -> isMilano s && not (isExhausted s)) (HashMap.elems $ gameSupports g)
+
+-- | Whether the player controls the Milano: the first player does.
+controlsMilano :: (HasGame m) => IdentityId -> m Bool
+controlsMilano ident = getsGame \g -> any (\s -> isMilano s && getSupportController s == ident) (HashMap.elems $ gameSupports g)
+
+-- | The Power Stone attachment (Power Stone), while it is in play.
+getPowerStone :: (HasGame m) => m (Maybe AttachmentId)
+getPowerStone = getsGame \g -> headMay [toId a | a <- HashMap.elems (gameAttachments g), title (cdName $ getCardDef a) == "Power Stone"]
+
+-- | The character an attachment is attached to: an enemy or an identity.
+getAttachedCharacter :: (HasGame m) => AttachmentId -> m (Maybe CharacterId)
+getAttachedCharacter aid = getsGame \g -> do
+  at <- toAttrs <$> lookup aid (gameAttachments g)
+  (enemyCharacter <$> Attachment.attachmentEnemy at) <|> (IdentityCharacter <$> Attachment.attachmentIdentity at)
+ where
+  enemyCharacter = \case
+    EnemyVillainId v -> VillainCharacter v
+    EnemyMinionId m -> MinionCharacter m
+
+-- | The hero or villain the Power Stone is attached to.
+getPowerStoneHolder :: (HasGame m) => m (Maybe CharacterId)
+getPowerStoneHolder = maybe (pure Nothing) getAttachedCharacter =<< getPowerStone
+
+-- | Whether the player controls the Power Stone: it is attached to their identity.
+controlsPowerStone :: (HasGame m) => IdentityId -> m Bool
+controlsPowerStone ident = (== Just (IdentityCharacter ident)) <$> getPowerStoneHolder
+
+-- | The amplify icons in play in "your" area (RR Amplify Icon): on its schemes, villains,
+-- minions, attachments and environments.
+getAmplifyCount :: (HasGame m) => m Natural
+getAmplifyCount = do
+  aid <- areaId <$> getYourArea
+  getsGame \g ->
+    let icons :: (HasCardDef a) => (k -> Target) -> HashMap k a -> Natural
+        icons ref = sum . map (cdAmplify . getCardDef) . inArea g aid ref
+     in icons SideSchemeRef (gameSideSchemes g)
+          + icons MainSchemeRef (gameMainSchemes g)
+          + icons VillainRef (gameVillains g)
+          + icons MinionRef (gameMinions g)
+          + icons AttachmentRef (gameAttachments g)
+          + icons EnvironmentRef (gameEnvironments g)
 
 -- | The cards of the map in the area.
 inArea :: Game -> AreaId -> (k -> Target) -> HashMap k a -> [a]

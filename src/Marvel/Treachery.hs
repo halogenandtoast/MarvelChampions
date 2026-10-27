@@ -169,6 +169,14 @@ allTreacheries = fromList $ map
 
   -- Rocket Raccoon
   , SomeTreacheryCard planetaryInvasion
+
+  -- The Galaxy's Most Wanted
+  , SomeTreacheryCard blindSide
+  , SomeTreacheryCard hullBreach
+  , SomeTreacheryCard powerSiphon
+  , SomeTreacheryCard specialDelivery
+  , SomeTreacheryCard onTheHunt
+  , SomeTreacheryCard deadToRights
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery
