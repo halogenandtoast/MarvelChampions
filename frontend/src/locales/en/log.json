@@ -115,5 +115,8 @@
   "victoryDisplay": "{target} goes to the victory display",
   "peril": "Peril: {player} resolves this alone, no one else may help",
 
+  "-- Infiltrate the Museum --": "",
+  "collection": "{card} goes into The Collection",
+
   "-- end --": ""
 }

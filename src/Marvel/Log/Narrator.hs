@@ -131,6 +131,10 @@ narrationFor = \case
   SetPeril (Just ident) -> Just do
     who <- playerRef' ident
     one $ notice [ikeyPart "log.peril" ["player" ~> who]]
+  -- Infiltrate the Museum: told as it arrives, not as a card in play sets out for it
+  PlaceInCollection card -> Just do
+    g <- getGame
+    if isJust (inPlayRef g card) then pure [] else one $ toned Bad $ mechanic [ikeyPart "log.collection" ["card" ~> card]]
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   -- put into play attached, not revealed: the card is not in play yet to be named
@@ -155,7 +159,7 @@ narrationFor = \case
   WithBoostIcons _ _ counts | notNull counts ->
     Just $ pure [mechanic [ikeyPart "log.boostIconsCounted" ["card" ~> EncounterCard c, "count" ~> n]] | (c, n) <- counts]
   -- told once, as it is dealt; each character's share is told as it takes it
-  AssignIndirectDamage ident _ n [] | n > 0 -> Just do
+  AssignIndirectDamage ident _ (damageAmount -> n) [] | n > 0 -> Just do
     who <- playerRef' ident
     one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
   _ -> Nothing

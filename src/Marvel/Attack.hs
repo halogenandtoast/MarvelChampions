@@ -2,6 +2,8 @@ module Marvel.Attack where
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
+
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Keyword
@@ -17,9 +19,17 @@ data Attack = Attack
   , attackRanged :: Bool
   , attackPrevented :: Bool
   -- ^ "prevent all damage from this attack"
+  , attackIndirect :: Bool
+  -- ^ the attack deals indirect damage (Starshark): its damage, past a hero's defense,
+  -- is assigned among the characters the attacked player controls (RR Indirect Damage)
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass (ToJSON, Hashable)
+
+-- | An attack saved before attacks could deal indirect damage deals direct damage.
+instance FromJSON Attack where
+  parseJSON = withObject "Attack" \o ->
+    genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ existing -> existing) "attackIndirect" (toJSON False) o)
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -54,6 +64,7 @@ attack enemyId characterId dmg =
     , attackPiercing = False
     , attackRanged = False
     , attackPrevented = False
+    , attackIndirect = False
     }
 
 -- | The damage the attack deals: none once all of it is prevented.

@@ -131,11 +131,15 @@ instance RunMessage (Attrs Ally) where
           overkill = subtractNatural
             (subtractNatural (allyDamage a) hitPoints)
             (attackDamageDealt attack')
+        -- an attack dealing indirect damage (Starshark) has it divided among the
+        -- characters the ally's controller controls, overkill having none past it
         when (attackDamageDealt attack' > 0) $
-          damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
+          if attackIndirect attack'
+            then dealIndirectAttackDamage (allyController a) (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
+            else damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
         -- the excess is the attack's damage to the controller: "when you would take
         -- damage" answers it, as it does the attack's own
-        when (attackOverkill attack' && overkill > 0) do
+        when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack')) do
           let excess = toDamage overkill FromAttack
           checkWindows [W.Window W.When $ W.IdentityTakeDamage (allyController a) excess]
           attackDamageIdentity (allyController a) (attackSource attack') excess

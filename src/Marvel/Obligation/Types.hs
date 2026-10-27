@@ -144,10 +144,14 @@ instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       RevealObligation identityId -> pure attrs {obligationOwner = Just identityId}
+      -- resolved, it is discarded as a treachery is, never having entered play (an
+      -- obligation that stays answers this itself): not a card discarded from play
       ResolvedObligation identityId -> do
-        removeFromPlay attrs
+        for_ (obligationHeldCards attrs) discardCard
+        removeFromGame attrs
+        discardCard attrs
         when (obligationSurge attrs) $ surge identityId
-        pure attrs
+        pure $ attrs & heldCardsL .~ []
       _ -> pure attrs
     GainSurge target | isTarget attrs target -> pure $ attrs & surgeL .~ True
     -- the cards under it go to their owners' discard piles as it leaves play

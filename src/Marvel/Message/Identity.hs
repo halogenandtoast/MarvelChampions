@@ -91,6 +91,9 @@ data IdentityMessage
     AttackDefended EnemyId Natural
   | -- | so many counters placed on the identity card, to at most the second number
     PlaceCountersUpTo Natural Natural
+  -- Infiltrate the Museum
+  | -- | the top card of the deck, as it is then, goes faceup into The Collection
+    TopOfDeckIntoCollection
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

@@ -120,6 +120,9 @@ data WindowMatcher
     DealsExcessDamage IdentityMatcher
   | -- | "after <ally> defends against an attack": the attack it defended has resolved
     AllyDefends AllyMatcher
+  -- Infiltrate the Museum
+  | -- | a card would be placed into a discard pile from play
+    CardWouldBeDiscardedFromPlay
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -208,5 +211,8 @@ data WindowType
   | -- | the attack the ally defended against has resolved
     AllyDefendedAgainst AllyId EnemyId
   | TurnEnded IdentityId
+  -- Infiltrate the Museum
+  | -- | the card, a player's or an encounter card, is leaving play for its discard pile
+    WouldBeDiscardedFromPlay (Either PlayerCard EncounterCard)
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
