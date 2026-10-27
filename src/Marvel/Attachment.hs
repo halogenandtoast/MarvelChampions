@@ -110,6 +110,9 @@ allAttachments =
 
       -- Gamora
       , SomeAttachmentCard inABind
+
+      -- Rocket Raccoon
+      , SomeAttachmentCard blackjacksBazooka
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

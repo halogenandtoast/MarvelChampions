@@ -202,6 +202,12 @@ allEvents = fromList $ concatMap
   , hitAndRun
   , pivotalMoment
   , trueGrit
+
+  -- Rocket Raccoon
+  , iveGotAPlan
+  , reload
+  , schadenfreude
+  , lookingForTrouble
   ]
 
 event
@@ -392,7 +398,7 @@ wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
 chaseThemDown :: CardDef
-chaseThemDown = reprintedAs ["06013"] $
+chaseThemDown = reprintedAs ["06013", "16041"] $
   (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists AnyScheme
@@ -401,7 +407,7 @@ chaseThemDown = reprintedAs ["06013"] $
     }
 
 relentlessAssault :: CardDef
-relentlessAssault =
+relentlessAssault = reprintedAs ["16044"] $
   (event "01053" "Relentless Assault" 2 HeroAction [Attack] [Energy] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackMinion
@@ -961,7 +967,7 @@ waspSting =
     }
 
 intoTheFray :: CardDef
-intoTheFray =
+intoTheFray = reprintedAs ["16042"] $
   (event "13013" "Into the Fray" 3 HeroAction [Attack] [Energy] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackMinion
@@ -1274,4 +1280,28 @@ trueGrit =
     { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
     , cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+-- Rocket Raccoon
+
+-- | "After you make a basic thwart (using your THW)".
+iveGotAPlan :: CardDef
+iveGotAPlan =
+  (identityEvent "16030" "I've Got a Plan" 1 HeroResponse [Tactic] [Mental])
+    { cdResponseWindow = Just (MakesBasicThwart After You)
+    }
+
+reload :: CardDef
+reload = identityEvent "16031" "Reload" 1 HeroAction [Skill] [Energy]
+
+schadenfreude :: CardDef
+schadenfreude = identityEvent "16032" "Schadenfreude" 2 HeroAction [] [Physical]
+
+-- | Its cost is discarding encounter cards until a minion, put into play engaged with
+-- you (Defender of the Nine Realms').
+lookingForTrouble :: CardDef
+lookingForTrouble =
+  (event "16043" "Looking for Trouble" 0 HeroAction [Thwart] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     }

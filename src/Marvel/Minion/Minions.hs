@@ -93,3 +93,6 @@ import Marvel.Minion.Minions.MisterKnife as X
 
 -- Gamora
 import Marvel.Minion.Minions.NebulaMinion as X
+
+-- Rocket Raccoon
+import Marvel.Minion.Minions.BlackjackOHare as X

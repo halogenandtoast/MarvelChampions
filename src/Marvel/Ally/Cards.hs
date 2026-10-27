@@ -118,6 +118,10 @@ allAllies = fromList $ concatMap
   , nebulaAlly
   , angelaAldrifOdinsdottir
   , drax
+
+  -- Rocket Raccoon
+  , bug
+  , grootAlly
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -508,5 +512,17 @@ angelaAldrifOdinsdottir = ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [As
 drax :: CardDef
 drax =
   (basicAlly "18019" "Drax" 3 [Guardian] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Rocket Raccoon
+
+bug :: CardDef
+bug = ally "16040" "Bug" 2 [Guardian] [Energy] Aggression
+
+-- | "Play only if your identity has the Guardian trait."
+grootAlly :: CardDef
+grootAlly =
+  (basicAlly "16047" "Groot" 3 [Guardian] [Wild])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }

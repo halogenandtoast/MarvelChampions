@@ -64,6 +64,9 @@ allObligations = fromList $ map
 
     -- Gamora
     , unfulfilledDestiny
+
+    -- Rocket Raccoon
+    , crisisOnHalfworld
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -210,3 +213,8 @@ banishment = obligation "17024" "Banishment" [Boost, Boost]
 
 unfulfilledDestiny :: CardDef
 unfulfilledDestiny = obligation "18024" "Unfulfilled Destiny" [Boost, Boost]
+
+-- Rocket Raccoon
+
+crisisOnHalfworld :: CardDef
+crisisOnHalfworld = obligation "16053" "Crisis on Halfworld" [Boost, Boost]

@@ -306,7 +306,7 @@ instance RunMessage ActiveCost where
         payment = activeCostPayment activeCost <> x
       for_ (reverse $ activeCostSpentCards activeCost) discardCard
       -- "after you spend this card" (Pym Particles), before what was paid for resolves
-      for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer)
+      for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer (activeCostSpentCards activeCost))
       disableActiveCost ident
       case activeCostTarget activeCost of
         ForCard card -> cardPlayed payer card payment (activeCostWindow activeCost)

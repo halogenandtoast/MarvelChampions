@@ -75,6 +75,9 @@ modularSets =
   , "hydra_assault"
   , "weap_master"
   , "hydra_patrol"
+  -- The Galaxy's Most Wanted: Rocket Raccoon's hero and nemesis sets
+  , "rocket"
+  , "rocket_nemesis"
   ]
 
 encounterImplemented :: PackCard -> Bool
@@ -88,6 +91,12 @@ encounterImplemented c = case c.cardType of
   "obligation" -> HashMap.member c.code allObligations
   -- main schemes are kept by their base code, the sides being one card
   "main_scheme" -> HashMap.member (toBaseCardCode c.code) allMainSchemes
+  -- a hero set's own cards
+  "hero" -> HashMap.member c.code allHeroes
+  "alter_ego" -> HashMap.member c.code allAlterEgos
+  "event" -> HashMap.member c.code allEvents
+  "upgrade" -> HashMap.member c.code allUpgrades
+  "resource" -> HashMap.member c.code allPlayerCards
   _ -> True
 
 spec :: Spec

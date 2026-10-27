@@ -128,4 +128,8 @@ allAllies = fromList $ map
   , SomeAllyCard nebulaAlly
   , SomeAllyCard angelaAldrifOdinsdottir
   , SomeAllyCard drax
+
+  -- Rocket Raccoon
+  , SomeAllyCard bug
+  , SomeAllyCard grootAlly
   ]

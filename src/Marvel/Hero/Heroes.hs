@@ -41,3 +41,6 @@ import Marvel.Hero.Heroes.StarLord as X
 
 -- Gamora
 import Marvel.Hero.Heroes.Gamora as X
+
+-- Rocket Raccoon
+import Marvel.Hero.Heroes.RocketRaccoon as X

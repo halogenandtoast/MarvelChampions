@@ -62,6 +62,9 @@ allAlterEgos = fromList $ map
 
   -- Gamora
   , SomeAlterEgoCard gamoraAlterEgo
+
+  -- Rocket Raccoon
+  , SomeAlterEgoCard rocketRaccoonAlterEgo
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

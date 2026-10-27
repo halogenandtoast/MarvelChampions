@@ -132,6 +132,9 @@ allMinions =
 
       -- Gamora
       , SomeMinionCard nebulaMinion
+
+      -- Rocket Raccoon
+      , SomeMinionCard blackjackOHare
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -205,6 +205,12 @@ allEvents = fromList $ map
   , SomeEventCard hitAndRun
   , SomeEventCard pivotalMoment
   , SomeEventCard trueGrit
+
+  -- Rocket Raccoon
+  , SomeEventCard iveGotAPlan
+  , SomeEventCard reload
+  , SomeEventCard schadenfreude
+  , SomeEventCard lookingForTrouble
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

@@ -123,3 +123,6 @@ import Marvel.Treachery.Treacheries.SpartoiCunning as X
 
 -- Gamora
 import Marvel.Treachery.Treacheries.Waylay as X
+
+-- Rocket Raccoon
+import Marvel.Treachery.Treacheries.PlanetaryInvasion as X

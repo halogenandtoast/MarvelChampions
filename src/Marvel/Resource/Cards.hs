@@ -39,6 +39,9 @@ allResources = fromList $ concatMap
 
   -- Wasp
   , thePowerInAllOfUs
+
+  -- Rocket Raccoon
+  , salvage
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -113,13 +116,13 @@ thePowerOfProtection = reprintedAs ["05016", "09017"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021"] $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16049"] $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022"] $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16050"] $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023"] $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16051"] $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -141,3 +144,9 @@ thePowerInAllOfUs =
   basicResource "13024" "The Power in All of Us" [] [Wild]
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Neutral, Wild)]
+
+-- Rocket Raccoon
+
+-- | Its "after you spend this card" is 'Marvel.Resource.Resources.afterSpent'.
+salvage :: CardDef
+salvage = identityResource "16033" "Salvage" [] [Mental, Wild]

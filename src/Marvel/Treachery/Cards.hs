@@ -154,6 +154,9 @@ allTreacheries = fromList $ map
 
   -- Gamora
   , waylay
+
+  -- Rocket Raccoon
+  , planetaryInvasion
   ]
 
 treachery
@@ -592,3 +595,8 @@ spartoiCunning = treachery "17027" "Spartoi Cunning" [Boost] StarLordNemesis 3
 
 waylay :: CardDef
 waylay = treachery "18028" "Waylay" [Boost, Boost] GamoraNemesis 2
+
+-- Rocket Raccoon
+
+planetaryInvasion :: CardDef
+planetaryInvasion = treachery "16057" "Planetary Invasion" [Boost] RocketRaccoonNemesis 2

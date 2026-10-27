@@ -51,6 +51,9 @@ allAlterEgoCards =
 
     -- Gamora
     , gamoraAlterEgo
+
+    -- Rocket Raccoon
+    , rocketRaccoonAlterEgo
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -144,3 +147,8 @@ peterQuill = alterEgo "17001b" "Peter Quill" [Outlaw]
 
 gamoraAlterEgo :: CardDef
 gamoraAlterEgo = alterEgo "18001b" "Gamora" [Outlaw]
+
+-- Rocket Raccoon
+
+rocketRaccoonAlterEgo :: CardDef
+rocketRaccoonAlterEgo = alterEgo "16029b" "Rocket Raccoon" [Genius, Outlaw]

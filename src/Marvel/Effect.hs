@@ -62,6 +62,11 @@ allEffects =
     , ("17001a", SomeCardEffect starLordEffect)
     , ("17015", SomeCardEffect blazeOfGloryEffect)
 
+    -- Rocket Raccoon
+    , ("16030", SomeCardEffect iveGotAPlanEffect)
+    , ("16032", SomeCardEffect schadenfreudeEffect)
+    , ("16046", SomeCardEffect handCannonEffect)
+
     -- Wasp
     , ("13019", SomeCardEffect spiderManMilesMoralesEffect)
 

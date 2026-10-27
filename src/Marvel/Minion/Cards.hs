@@ -123,6 +123,9 @@ allMinions =
 
       -- Gamora
       , nebulaMinion
+
+      -- Rocket Raccoon
+      , blackjackOHare
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -622,4 +625,13 @@ nebulaMinion =
   unique $
     (minion "18026" "Nebula" [Elite, Scoundrel] [Boost, Boost, Boost] GamoraNemesis 1)
       { cdKeywords = singleton (Retaliate 2)
+      }
+
+-- Rocket Raccoon
+
+blackjackOHare :: CardDef
+blackjackOHare =
+  unique $
+    (minion "16055" "Blackjack O'Hare" [Criminal] [Boost, Boost, Boost] RocketRaccoonNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Villainous]
       }

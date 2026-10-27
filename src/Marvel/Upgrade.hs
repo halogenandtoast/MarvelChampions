@@ -159,6 +159,17 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard gamorasSword
   , SomeUpgradeCard godslayer
   , SomeUpgradeCard commsImplant
+
+  -- Rocket Raccoon
+  , SomeUpgradeCard batteryPack
+  , SomeUpgradeCard cyberneticSkeleton
+  , SomeUpgradeCard particleCannon
+  , SomeUpgradeCard rocketLauncher
+  , SomeUpgradeCard rocketsPistol
+  , SomeUpgradeCard thrusterBoots
+  , SomeUpgradeCard followThrough
+  , SomeUpgradeCard handCannon
+  , SomeUpgradeCard boosterBoots
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

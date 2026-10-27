@@ -111,6 +111,9 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , siblingRivalry
+
+  -- Rocket Raccoon
+  , vendetta
   ]
 
 sideScheme
@@ -451,3 +454,8 @@ buddingCrimeSyndicate =
 
 siblingRivalry :: CardDef
 siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] GamoraNemesis 1
+
+-- Rocket Raccoon
+
+vendetta :: CardDef
+vendetta = sideScheme "16054" "Vendetta" [Boost, Boost] RocketRaccoonNemesis 1

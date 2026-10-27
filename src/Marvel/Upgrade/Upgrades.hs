@@ -123,3 +123,14 @@ import Marvel.Upgrade.Upgrades.KeenInstincts as X
 import Marvel.Upgrade.Upgrades.GamorasSword as X
 import Marvel.Upgrade.Upgrades.Godslayer as X
 import Marvel.Upgrade.Upgrades.CommsImplant as X
+
+-- Rocket Raccoon
+import Marvel.Upgrade.Upgrades.BatteryPack as X
+import Marvel.Upgrade.Upgrades.CyberneticSkeleton as X
+import Marvel.Upgrade.Upgrades.ParticleCannon as X
+import Marvel.Upgrade.Upgrades.RocketLauncher as X
+import Marvel.Upgrade.Upgrades.RocketsPistol as X
+import Marvel.Upgrade.Upgrades.ThrusterBoots as X
+import Marvel.Upgrade.Upgrades.FollowThrough as X
+import Marvel.Upgrade.Upgrades.HandCannon as X
+import Marvel.Upgrade.Upgrades.BoosterBoots as X

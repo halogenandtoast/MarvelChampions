@@ -45,3 +45,6 @@ import Marvel.Obligation.Obligations.Banishment as X
 
 -- Gamora
 import Marvel.Obligation.Obligations.UnfulfilledDestiny as X
+
+-- Rocket Raccoon
+import Marvel.Obligation.Obligations.CrisisOnHalfworld as X
