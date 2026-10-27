@@ -34,5 +34,5 @@ instance IsSideScheme Cannonade where
 
 instance RunMessage Cannonade where
   runMessage msg s@(Cannonade attrs) = runQueueT $ case msg of
-    RanAbility _ (isTarget attrs -> True) 1 _ _ -> s <$ thwartScheme (sideSchemeId attrs) attrs 3
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> s <$ removeSideSchemeThreat (sideSchemeId attrs) 3
     _ -> Cannonade <$> runMessage msg attrs
