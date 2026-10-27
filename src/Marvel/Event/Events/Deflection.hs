@@ -31,14 +31,14 @@ instance RunMessage Deflection where
     EventMessage ident (PlayedEvent you _ (Just (W.IdentityTakeDamage hero _))) | ident == eventId attrs -> do
       -- what is left of the damage once other interrupts prevented some; each amount its
       -- own step: preventing edits the queue, which a choice would do as it is asked
-      pending <- pendingDamageTo hero
+      pending <- maybe 0 damageAmount <$> pendingDamage hero
       chooseOne you
         [ labeled (countLabel "preventDamage" n) $ cardSpecific attrs "prevent" (hero, n)
         | n <- [1 .. min 5 pending]
         ]
       pure e
     CardSpecific (isTarget attrs -> True) "prevent" (fromJSON -> Success (hero :: IdentityId, n :: Natural)) -> do
-      prevented <- min n <$> pendingDamageTo hero
+      prevented <- min n . maybe 0 damageAmount <$> pendingDamage hero
       preventDamage hero prevented
       discardTopOfDeck (eventController attrs) prevented
       pure e

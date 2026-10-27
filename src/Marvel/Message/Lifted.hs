@@ -233,12 +233,6 @@ dealDividedDamage you source damage matcher = push $ AssignDividedDamage you (to
 indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Damage -> [(CharacterId, Natural)] -> m ()
 indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
 
--- | The damage the identity is still about to take, as an interrupt to "when you would
--- take damage" sees it once others have prevented some.
-pendingDamageTo :: (HasQueue m) => IdentityId -> m Natural
-pendingDamageTo ident = withQueue \q ->
-  (q, fromMaybe 0 $ headMay [damageAmount dmg | IdentityMessage i (IdentityDamaged _ dmg) <- q, i == ident])
-
 setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 
