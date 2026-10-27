@@ -10,7 +10,7 @@ data Keyword
   | Quickstrike
   | Retaliate Natural
   | Surge
-  | -- | a player controls no more than two restricted cards
+  | -- | a player controls no more than two restricted cards, and those modifiers add
     Restricted
   | Overkill
   | -- | on reveal, place this much threat on the main scheme
@@ -22,5 +22,7 @@ data Keyword
   | Villainous
   | Permanent
   | Setup
+  | -- | on a minion: the player it is engaged with cannot thwart the main scheme
+    Patrol
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

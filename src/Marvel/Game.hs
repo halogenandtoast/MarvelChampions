@@ -496,16 +496,22 @@ getObligationsIn = keysInArea ObligationRef gameObligations
 getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
 getSideSchemesIn = keysInArea SideSchemeRef gameSideSchemes
 
--- | The player's nemesis minion, out of play: set aside with their nemesis set, or in
--- the encounter deck or its discard pile.
-getNemesisMinionOutOfPlay :: (HasGame m) => IdentityId -> m (Maybe EncounterCard)
-getNemesisMinionOutOfPlay ident = getsGame \g -> do
+-- | The player's nemesis minions, out of play: set aside with their nemesis set, or in
+-- the encounter deck or its discard pile. Each copy of a nemesis minion is one (Venom's
+-- Enraged Symbiotes, rulesheet FAQ).
+getNemesisMinionsOutOfPlay :: (HasGame m) => IdentityId -> m [EncounterCard]
+getNemesisMinionsOutOfPlay ident = getsGame \g -> fromMaybe [] do
   p <- lookup ident (gamePlayers g)
   let
     scenario = toAttrs (gameScenario g)
     set = getNemesisSet (toCardCode p)
     cards = onlyEncounterCards (scenarioSetAsideCards scenario) <> scenarioEncounterDeck scenario <> scenarioDiscard scenario
-  headMay [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+  pure [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+
+-- | Whether a patrol minion is engaged with the player: they cannot remove threat from
+-- the main scheme with the cards they control (RR Patrol).
+isPatrolled :: (HasGame m) => IdentityId -> m Bool
+isPatrolled ident = selectAny $ MinionWithKeyword Patrol <> MinionEngagedWith (IdentityWithId ident)
 
 -- | The card code of the main scheme in play.
 getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
@@ -2823,6 +2829,9 @@ gameSelectAnyScheme = \case
         <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
   ThwartableScheme -> thwartable =<< selectAny CrisisSideScheme
   ThwartableSchemeIgnoringCrisis -> thwartable False
+  UnpatrolledMainScheme -> do
+    patrolled <- isPatrolled =<< getYou
+    if patrolled then pure mempty else gameSelectAnyScheme Matchers.MainScheme
  where
   thwartable crisisSideSchemes = do
     you <- getYou
@@ -2831,7 +2840,10 @@ gameSelectAnyScheme = \case
           ThreatRemovableOnlyBy p -> p == you
           _ -> True
     sideSchemes <- filterM (fmap (all removable) . getModifiers) . HashMap.elems =<< getsGame gameSideSchemes
-    if crisisSideSchemes
+    -- patrol: while a patrol minion is engaged with you, the cards you control cannot
+    -- thwart the main scheme
+    patrolled <- isPatrolled you
+    if crisisSideSchemes || patrolled
       then
         pure $
           HashSet.fromList $

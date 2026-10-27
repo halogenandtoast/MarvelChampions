@@ -517,6 +517,20 @@ preventAttackDamage enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
   EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
 
+-- | "Cancel that attack", as a defense, from the window as the enemy initiates it
+-- (Grasping Tendrils): no boost card is dealt and no damage done, and the hero is the one
+-- who defended it (RR FAQ), so what answers "after you defend" may.
+cancelAttackAsDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
+cancelAttackAsDefense ident (toEnemy -> enemy) = flip insteadOf defended \case
+  VillainMessage vid (VillainBeginAttack _) -> enemy == EnemyVillainId vid
+  VillainMessage vid (VillainBeginAttackWithoutBoost _) -> enemy == EnemyVillainId vid
+  MinionMessage mid (MinionBeginAttack _) -> enemy == EnemyMinionId mid
+  _ -> False
+ where
+  defended = do
+    enemyDefendedBy enemy (IdentityCharacter ident)
+    checkWindows [Window After (W.HeroDefends ident enemy), Window After (W.DefendedWithoutDamage ident enemy)]
+
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
 flipVillain vid = do

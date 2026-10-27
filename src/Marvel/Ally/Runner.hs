@@ -172,6 +172,9 @@ instance RunMessage (Attrs Ally) where
       hitPoints <- getModifiedHitPoints a
       when (allyDamage a > 0 && allyDamage a >= hitPoints) $ defeatAlly (allyId a)
       pure $ a & upgradesL %~ HashSet.delete upgradeId
+    -- counters on the ally, the uses its abilities spend (Jack Flag's ammo)
+    PlaceCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL +~ n
+    RemoveCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL %~ subtractNatural n
     GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a

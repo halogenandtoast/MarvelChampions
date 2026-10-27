@@ -14,7 +14,7 @@
   "playOn": "Choose what to play it on",
   "declareDefender": "Declare a defender",
   "discardAnAlly": "Discard an ally: you are over your ally limit",
-  "discardARestrictedCard": "Discard a restricted card: you control more than two",
+  "discardARestrictedCard": "Discard a restricted card: you control more than you may",
   "discardAnyCards": "Discard any cards you do not want",
   "discardToHandSize": "Discard down to your hand size",
   "doneDiscarding": "Done discarding",

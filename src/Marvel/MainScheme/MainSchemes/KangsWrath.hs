@@ -40,7 +40,7 @@ instance RunMessage KangsWrath where
       for_ under (revealEncounterCard first)
       removeDeck kangsDominionDeck
       players <- getPlayers
-      for_ players \p -> traverse_ (putEncounterCardIntoPlay p) =<< getNemesisMinionOutOfPlay p
+      for_ players \p -> traverse_ (putEncounterCardIntoPlay p) =<< getNemesisMinionsOutOfPlay p
       shuffleEncounterDeck
       pure ms
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost

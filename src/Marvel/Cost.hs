@@ -61,7 +61,9 @@ canAffordCost identityId source = go
  where
   go = \case
     NoCost -> pure True
-    DamageCost _ -> pure True
+    -- a tough status card would prevent the damage, so it cannot be paid (RR FAQ, Focused
+    -- Rage)
+    DamageCost _ -> projectP PlayerIdentityTough not identityId
     HealCost n ->
       member identityId
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)

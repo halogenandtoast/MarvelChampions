@@ -224,6 +224,8 @@ data SchemeMatcher
   | ThwartableScheme
   | -- | threat can be removed from it, "ignoring any crisis icons in play"
     ThwartableSchemeIgnoringCrisis
+  | -- | the main scheme, unless a patrol minion is engaged with you (RR Patrol)
+    UnpatrolledMainScheme
   | SchemeWithId SchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

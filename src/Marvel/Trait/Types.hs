@@ -78,5 +78,7 @@ data Trait
   | NovaCorps
   | Outlaw
   | Scoundrel
+  | Symbiote
+  | SpaceKnight
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)
