@@ -405,11 +405,9 @@ spec = describe "The Thor pack's aspect and basic cards" do
         setDamage p 10
         wind <- putInHand p "06033"
         playPaying p wind ["01088", "01090"]
-        choose "heal Thor" (isTargetChoice p)
         damageOf p `shouldReturn` 6
         wind' <- putInHand p "06033"
         playPaying p wind' ["01089", "01090"]
-        choose "heal Thor" (isTargetChoice p)
         damageOf p `shouldReturn` 1
 
   describe "Enhanced Physique (06034)" do

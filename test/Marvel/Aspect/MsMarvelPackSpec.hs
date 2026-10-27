@@ -332,7 +332,6 @@ spec = describe "Ms. Marvel pack" do
         clearHand p
         boost <- putInHand p "05032"
         playPaying p boost ["01088"]
-        choose "the hero" (isTargetChoice p)
         choose "attack" (isHeroAttack p)
         vid <- villainIdNow
         choose "hit Rhino" (isTargetChoice vid)

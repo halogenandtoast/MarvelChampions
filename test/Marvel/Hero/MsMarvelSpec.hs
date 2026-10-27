@@ -57,7 +57,6 @@ spec = describe "Ms. Marvel" do
         pass
         boost <- putInHand p "05032"
         playPaying p boost ["01088"]
-        choose "the target" (isTargetChoice p)
         offers (isNamedAbility "Morphogenetics") `shouldReturn` False
 
     -- the Ms. Marvel pack's printing is the core set's card, with no trait (MarvelCDB's
@@ -285,7 +284,6 @@ spec = describe "Ms. Marvel" do
         choose "play Morale Boost" (isPlay boost)
         choose "pay with the suit" (isAbilityOfCard suit)
         chooseIf isFinishPayment
-        choose "the target" (isTargetChoice p)
         upgradeIsExhausted (upgradeIdOf suit) `shouldReturn` True
         codes <$> discardOf p >>= (`shouldSatisfy` elem "05032")
 

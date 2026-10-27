@@ -64,7 +64,6 @@ spec = describe "Captain Marvel" do
     inGame tg do
       clearHand p
       choose "commander" (isNamedAbility "Commander")
-      choose "the player" (isTargetChoice p)
       length <$> handOf p `shouldReturn` 1
       offers (isNamedAbility "Commander") `shouldReturn` False
 

@@ -189,7 +189,7 @@ choose what p = do
     Nothing -> error $ "nothing was asked when trying to " <> show what
     Just (ident, cs) -> case findIndex' p cs of
       Nothing -> error $ "could not " <> show what <> " among " <> show (map describe cs)
-      Just n -> answerQuestion ident n
+      Just n -> answerQuestion ident n >> pressWhenRevealed
  where
   findIndex' f = fmap fst . headMay . filter (f . snd) . zip [0 ..]
   describe = take 120 . show
@@ -287,7 +287,8 @@ playWith card payment = do
 playOn :: (HasCallStack, IsRef a) => PlayerCard -> a -> [PlayerCard] -> GameAppT ()
 playOn card target payment = do
   choose "play the card" (isPlay card)
-  choose "play it on the target" (isTargetChoice target)
+  -- a lone player as the target is chosen for them
+  chooseIf (isTargetChoice target)
   payWith payment
 
 payWith :: (HasCallStack) => [PlayerCard] -> GameAppT ()
@@ -345,7 +346,7 @@ keepCards =
 pass :: GameAppT ()
 pass =
   asked >>= \case
-    Just (ident, cs) | Just n <- passIndex cs -> answerQuestion ident n >> pass
+    Just (ident, cs) | Just n <- passIndex cs -> answerQuestion ident n >> pressWhenRevealed >> pass
     _ -> pure ()
  where
   passIndex cs = fmap fst $ headMay $ filter (passing . snd) $ zip [0 ..] cs

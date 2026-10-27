@@ -191,8 +191,7 @@ spec = describe "Basic" do
         power <- putInHand p "01079"
         _ <- putInHand p "01087"
         choose "use Helicarrier" (isAbilityOf (supportId heli))
-        -- the only player is still the one to choose
-        choose "the player" (isTargetChoice p)
+        -- the only player is chosen for them
         changeForm p
         -- Haymaker costs 1 now, so a single resource pays for it
         playWith haymaker [power]
