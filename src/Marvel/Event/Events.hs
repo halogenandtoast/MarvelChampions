@@ -165,3 +165,17 @@ import Marvel.Event.Events.BlazeOfGlory as X
 import Marvel.Event.Events.DiveBomb as X
 import Marvel.Event.Events.AgileFlight as X
 import Marvel.Event.Events.EverVigilant as X
+
+-- Gamora
+import Marvel.Event.Events.AcrobaticMove as X
+import Marvel.Event.Events.Crosscounter as X
+import Marvel.Event.Events.SetThePace as X
+import Marvel.Event.Events.DecisiveBlow as X
+import Marvel.Event.Events.ForwardMomentum as X
+import Marvel.Event.Events.Clobber as X
+import Marvel.Event.Events.PlanOfAttack as X
+import Marvel.Event.Events.FirstHit as X
+import Marvel.Event.Events.Impede as X
+import Marvel.Event.Events.HitAndRun as X
+import Marvel.Event.Events.PivotalMoment as X
+import Marvel.Event.Events.TrueGrit as X

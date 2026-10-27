@@ -38,3 +38,6 @@ import Marvel.Hero.Heroes.ScarletWitch as X
 
 -- Star-Lord
 import Marvel.Hero.Heroes.StarLord as X
+
+-- Gamora
+import Marvel.Hero.Heroes.Gamora as X

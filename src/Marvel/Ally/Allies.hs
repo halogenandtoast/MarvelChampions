@@ -92,3 +92,8 @@ import Marvel.Ally.Allies.AdamWarlock as X
 import Marvel.Ally.Allies.BetaRayBill as X
 import Marvel.Ally.Allies.Yondu as X
 import Marvel.Ally.Allies.Cosmo as X
+
+-- Gamora
+import Marvel.Ally.Allies.NebulaAlly as X
+import Marvel.Ally.Allies.AngelaAldrifOdinsdottir as X
+import Marvel.Ally.Allies.Drax as X

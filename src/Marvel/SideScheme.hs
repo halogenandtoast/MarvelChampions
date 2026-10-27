@@ -114,6 +114,9 @@ allSideSchemes = fromList $ map
 
   -- Star-Lord
   , SomeSideSchemeCard buddingCrimeSyndicate
+
+  -- Gamora
+  , SomeSideSchemeCard siblingRivalry
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

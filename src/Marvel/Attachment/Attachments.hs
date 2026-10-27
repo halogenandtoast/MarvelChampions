@@ -74,3 +74,6 @@ import Marvel.Attachment.Attachments.VibrationResistance as X
 
 -- Scarlet Witch
 import Marvel.Attachment.Attachments.MagicalSuspension as X
+
+-- Gamora
+import Marvel.Attachment.Attachments.InABind as X

@@ -147,6 +147,12 @@ allUpgrades = fromList $ concatMap
   , starLordsHelmet
   , laserBlaster
   , pulseGrenade
+
+  -- Gamora
+  , keenInstincts
+  , gamorasSword
+  , godslayer
+  , commsImplant
   ]
 
 upgrade
@@ -269,7 +275,7 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = reprintedAs ["04041"] $ limited (MaxPerPlayerUnderAnyControl 1)
+combatTraining = reprintedAs ["04041", "18017"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
@@ -343,7 +349,7 @@ endurance = limited (MaxPerPlayerUnderAnyControl 1)
   $ basicUpgrade "05023" "Endurance" 1 [Condition] [Energy]
 
 enhancedReflexes :: CardDef
-enhancedReflexes = basicUpgrade "05024" "Enhanced Reflexes" 2 [Condition] [Energy]
+enhancedReflexes = reprintedAs ["18032"] $ basicUpgrade "05024" "Enhanced Reflexes" 2 [Condition] [Energy]
 
 downTime :: CardDef
 downTime = limited (MaxPerPlayerUnderAnyControl 1)
@@ -637,3 +643,28 @@ laserBlaster =
 
 pulseGrenade :: CardDef
 pulseGrenade = basicUpgrade "17023" "Pulse Grenade" 2 [Weapon] [Energy]
+
+-- Gamora
+
+keenInstincts :: CardDef
+keenInstincts = identityUpgrade "18009" "Keen Instincts" 1 [Skill] [Energy]
+
+gamorasSword :: CardDef
+gamorasSword =
+  (unique $ identityUpgrade "18010" "Gamora's Sword" 3 [Weapon] [Physical])
+    { cdKeywords = singleton Restricted
+    }
+
+godslayer :: CardDef
+godslayer =
+  (unique $ upgrade "18018" "Godslayer" 3 [Weapon] [Mental] Aggression)
+    { cdKeywords = singleton Restricted
+    }
+
+-- | Attach to a Guardian ally. Max 1 per ally.
+commsImplant :: CardDef
+commsImplant =
+  (upgrade "18030" "Comms Implant" 1 [Item, Tech] [Mental] Leadership)
+    { cdCriteria = AllyExists (AllyWithTrait Guardian)
+    , cdLimit = Just (MaxPerAlly 1)
+    }

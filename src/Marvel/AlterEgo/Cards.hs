@@ -48,6 +48,9 @@ allAlterEgoCards =
 
     -- Star-Lord
     , peterQuill
+
+    -- Gamora
+    , gamoraAlterEgo
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -136,3 +139,8 @@ wandaMaximoff = alterEgo "15001b" "Wanda Maximoff" [Mystic]
 
 peterQuill :: CardDef
 peterQuill = alterEgo "17001b" "Peter Quill" [Outlaw]
+
+-- Gamora
+
+gamoraAlterEgo :: CardDef
+gamoraAlterEgo = alterEgo "18001b" "Gamora" [Outlaw]

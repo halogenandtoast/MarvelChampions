@@ -36,3 +36,6 @@ import Marvel.AlterEgo.AlterEgos.WandaMaximoff as X
 
 -- Star-Lord
 import Marvel.AlterEgo.AlterEgos.PeterQuill as X
+
+-- Gamora
+import Marvel.AlterEgo.AlterEgos.GamoraAlterEgo as X

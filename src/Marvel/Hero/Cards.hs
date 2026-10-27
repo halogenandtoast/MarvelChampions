@@ -51,6 +51,9 @@ allHeroCards =
 
   -- Star-Lord
   , starLord
+
+  -- Gamora
+  , gamora
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -151,3 +154,8 @@ scarletWitch = hero "15001a" "Scarlet Witch" [Avenger, Mystic]
 
 starLord :: CardDef
 starLord = hero "17001a" "Star-Lord" [Guardian]
+
+-- Gamora
+
+gamora :: CardDef
+gamora = hero "18001a" "Gamora" [Guardian]

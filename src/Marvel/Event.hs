@@ -191,6 +191,20 @@ allEvents = fromList $ map
   , SomeEventCard diveBomb
   , SomeEventCard agileFlight
   , SomeEventCard everVigilant
+
+  -- Gamora
+  , SomeEventCard acrobaticMove
+  , SomeEventCard crosscounter
+  , SomeEventCard setThePace
+  , SomeEventCard decisiveBlow
+  , SomeEventCard forwardMomentum
+  , SomeEventCard clobber
+  , SomeEventCard planOfAttack
+  , SomeEventCard firstHit
+  , SomeEventCard impede
+  , SomeEventCard hitAndRun
+  , SomeEventCard pivotalMoment
+  , SomeEventCard trueGrit
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

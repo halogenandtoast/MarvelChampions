@@ -129,6 +129,9 @@ allMinions =
 
       -- Star-Lord
       , SomeMinionCard misterKnife
+
+      -- Gamora
+      , SomeMinionCard nebulaMinion
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

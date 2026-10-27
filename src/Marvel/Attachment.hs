@@ -107,6 +107,9 @@ allAttachments =
 
       -- Scarlet Witch
       , SomeAttachmentCard magicalSuspension
+
+      -- Gamora
+      , SomeAttachmentCard inABind
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

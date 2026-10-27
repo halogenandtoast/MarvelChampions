@@ -120,3 +120,6 @@ import Marvel.Treachery.Treacheries.ChaosManipulation as X
 
 -- Star-Lord
 import Marvel.Treachery.Treacheries.SpartoiCunning as X
+
+-- Gamora
+import Marvel.Treachery.Treacheries.Waylay as X

@@ -99,6 +99,9 @@ allAttachments =
 
       -- Scarlet Witch
       , magicalSuspension
+
+      -- Gamora
+      , inABind
       ]
 
 attachment ::
@@ -351,3 +354,9 @@ vibrationResistance = attachment "14027" "Vibration Resistance" [Condition] [Boo
 
 magicalSuspension :: CardDef
 magicalSuspension = attachment "15026" "Magical Suspension" [Spell] [Boost, Boost] ScarletWitchNemesis 1
+
+-- Gamora
+
+-- | Attach to Gamora.
+inABind :: CardDef
+inABind = attachment "18027" "In a Bind" [Armor, Tech] [Boost] GamoraNemesis 1

@@ -82,6 +82,9 @@ allSupports = fromList $ map
   , SomeSupportCard targetPractice
   , SomeSupportCard citt
   , SomeSupportCard knowhere
+
+  -- Gamora
+  , SomeSupportCard conditioningRoom
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

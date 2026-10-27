@@ -56,3 +56,6 @@ import Marvel.Support.Supports.BadBoy as X
 import Marvel.Support.Supports.TargetPractice as X
 import Marvel.Support.Supports.Citt as X
 import Marvel.Support.Supports.Knowhere as X
+
+-- Gamora
+import Marvel.Support.Supports.ConditioningRoom as X

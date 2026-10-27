@@ -120,6 +120,9 @@ allMinions =
 
       -- Star-Lord
       , misterKnife
+
+      -- Gamora
+      , nebulaMinion
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -610,4 +613,13 @@ misterKnife =
   unique $
     (minion "17026" "Mister Knife" [Criminal, Elite] [Boost, Boost] StarLordNemesis 1)
       { cdKeywords = singleton (Retaliate 1)
+      }
+
+-- Gamora
+
+nebulaMinion :: CardDef
+nebulaMinion =
+  unique $
+    (minion "18026" "Nebula" [Elite, Scoundrel] [Boost, Boost, Boost] GamoraNemesis 1)
+      { cdKeywords = singleton (Retaliate 2)
       }

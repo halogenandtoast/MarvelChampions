@@ -108,6 +108,9 @@ allSideSchemes = fromList $ map
 
   -- Star-Lord
   , buddingCrimeSyndicate
+
+  -- Gamora
+  , siblingRivalry
   ]
 
 sideScheme
@@ -443,3 +446,8 @@ buddingCrimeSyndicate =
     { cdHazards = 1
     , cdKeywords = singleton (Hinder (PerPlayer 2))
     }
+
+-- Gamora
+
+siblingRivalry :: CardDef
+siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] GamoraNemesis 1

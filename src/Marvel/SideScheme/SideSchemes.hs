@@ -91,3 +91,6 @@ import Marvel.SideScheme.SideSchemes.TheNextEvolution as X
 
 -- Star-Lord
 import Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate as X
+
+-- Gamora
+import Marvel.SideScheme.SideSchemes.SiblingRivalry as X

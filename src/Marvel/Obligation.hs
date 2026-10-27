@@ -69,6 +69,9 @@ allObligations = fromList $ map
 
   -- Star-Lord
   , SomeObligationCard banishment
+
+  -- Gamora
+  , SomeObligationCard unfulfilledDestiny
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

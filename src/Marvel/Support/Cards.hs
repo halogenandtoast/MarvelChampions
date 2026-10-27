@@ -72,6 +72,9 @@ allSupports = fromList $ concatMap
   , targetPractice
   , citt
   , knowhere
+
+  -- Gamora
+  , conditioningRoom
   ]
 
 support
@@ -272,3 +275,8 @@ knowhere =
   (unique $ basicSupport "17022" "Knowhere" 2 [Location] [Energy])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }
+
+-- Gamora
+
+conditioningRoom :: CardDef
+conditioningRoom = identitySupport "18008" "Conditioning Room" 1 [Location] [Mental]

@@ -188,6 +188,20 @@ allEvents = fromList $ concatMap
   , diveBomb
   , agileFlight
   , everVigilant
+
+  -- Gamora
+  , acrobaticMove
+  , crosscounter
+  , setThePace
+  , decisiveBlow
+  , forwardMomentum
+  , clobber
+  , planOfAttack
+  , firstHit
+  , impede
+  , hitAndRun
+  , pivotalMoment
+  , trueGrit
   ]
 
 event
@@ -394,7 +408,7 @@ relentlessAssault =
     }
 
 uppercut :: CardDef
-uppercut =
+uppercut = reprintedAs ["18014"] $
   (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
     }
@@ -1174,4 +1188,90 @@ everVigilant :: CardDef
 everVigilant =
   (event "17030" "Ever Vigilant" 2 HeroAction [Aerial, Skill] [Mental] Protection)
     { cdCriteria = SelfMatches (IdentityWithTrait Aerial)
+    }
+
+-- Gamora
+
+acrobaticMove :: CardDef
+acrobaticMove =
+  (identityEvent "18003" "Acrobatic Move" 0 HeroAction [Attack] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+crosscounter :: CardDef
+crosscounter =
+  (identityEvent "18004" "Crosscounter" 1 HeroInterrupt [Attack, Defense, Thwart] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack, Ability.Defense, Ability.Thwart]
+    , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    }
+
+setThePace :: CardDef
+setThePace =
+  (identityEvent "18005" "Set the Pace" 0 HeroAction [Thwart] [Physical])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+decisiveBlow :: CardDef
+decisiveBlow =
+  (identityEvent "18006" "Decisive Blow" 2 HeroAction [Attack] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+forwardMomentum :: CardDef
+forwardMomentum =
+  (identityEvent "18007" "Forward Momentum" 2 HeroAction [Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+clobber :: CardDef
+clobber =
+  (event "18012" "Clobber" 2 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+planOfAttack :: CardDef
+planOfAttack = event "18013" "Plan of Attack" 0 Action [Tactic] [Mental] Aggression
+
+-- | A Hero Interrupt played when a minion initiates an attack, and a Hero Action played
+-- against the villain.
+firstHit :: CardDef
+firstHit =
+  (event "18015" "First Hit" 1 HeroInterrupt [Attack] [Energy] Protection)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdResponseWindow = Just (EnemyWouldAttack MinionEnemy AnyIdentity)
+    , cdActionCriteria = Just canAttackVillain
+    }
+
+impede :: CardDef
+impede =
+  (event "18016" "Impede" 2 HeroAction [Thwart] [Mental] Justice)
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists MainScheme
+    }
+
+hitAndRun :: CardDef
+hitAndRun =
+  (basicEvent "18020" "Hit and Run" 3 HeroAction [Attack, Thwart] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack, Ability.Thwart]
+    , cdCriteria = canAttack
+    }
+
+pivotalMoment :: CardDef
+pivotalMoment =
+  (event "18029" "Pivotal Moment" 2 HeroAction [Attack] [Physical] Justice)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttackVillain
+    }
+
+trueGrit :: CardDef
+trueGrit =
+  (event "18031" "True Grit" 1 Response [Thwart] [Energy] Protection)
+    { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
+    , cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
     }

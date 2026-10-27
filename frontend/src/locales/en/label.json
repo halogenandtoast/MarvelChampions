@@ -170,6 +170,8 @@
 
   "exhaustPietroMaximoffRemoveNeedForSpeed": "Exhaust Pietro Maximoff → remove Need for Speed from the game",
   "exhaustPeterQuillRemoveBanishment": "Exhaust Peter Quill → remove Banishment from the game",
+  "exhaustGamoraRemoveUnfulfilledDestiny": "Exhaust Gamora → remove Unfulfilled Destiny from the game",
+  "discardEventsFromHand": "Choose and discard an event from your hand | Choose and discard {count} events from your hand",
   "discardElementGunOrThreat": "Discard an Element Gun from play (if you cannot, place 3 threat on the main scheme)",
   "exhaustYourIdentityCannotReady": "Exhaust your identity; you cannot ready it until your next turn ends",
   "takeIndirectDamage": "Take {count} indirect damage",

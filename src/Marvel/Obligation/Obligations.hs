@@ -42,3 +42,6 @@ import Marvel.Obligation.Obligations.SlippingSanity as X
 
 -- Star-Lord
 import Marvel.Obligation.Obligations.Banishment as X
+
+-- Gamora
+import Marvel.Obligation.Obligations.UnfulfilledDestiny as X

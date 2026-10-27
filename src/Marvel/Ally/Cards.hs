@@ -113,6 +113,11 @@ allAllies = fromList $ concatMap
   , betaRayBill
   , yondu
   , cosmo
+
+  -- Gamora
+  , nebulaAlly
+  , angelaAldrifOdinsdottir
+  , drax
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -137,6 +142,7 @@ heroSpecificAllies =
   , scarletWitchWandaMaximoff
   , quicksilverPietroMaximoff
   , novaPrimeRichardRider
+  , nebulaAlly
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -490,3 +496,17 @@ yondu =
 
 cosmo :: CardDef
 cosmo = basicAlly "17020" "Cosmo" 2 [Guardian] [Mental]
+
+-- Gamora
+
+nebulaAlly :: CardDef
+nebulaAlly = identityAlly "18002" "Nebula" 2 [Guardian] [Wild]
+
+angelaAldrifOdinsdottir :: CardDef
+angelaAldrifOdinsdottir = ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [Asgard, Guardian] [Mental] Aggression
+
+drax :: CardDef
+drax =
+  (basicAlly "18019" "Drax" 3 [Guardian] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }

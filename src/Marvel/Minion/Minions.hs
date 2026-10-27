@@ -90,3 +90,6 @@ import Marvel.Minion.Minions.Luminous as X
 
 -- Star-Lord
 import Marvel.Minion.Minions.MisterKnife as X
+
+-- Gamora
+import Marvel.Minion.Minions.NebulaMinion as X

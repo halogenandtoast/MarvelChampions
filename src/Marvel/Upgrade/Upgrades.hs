@@ -117,3 +117,9 @@ import Marvel.Upgrade.Upgrades.LeaderOfTheGuardians as X
 import Marvel.Upgrade.Upgrades.StarLordsHelmet as X
 import Marvel.Upgrade.Upgrades.LaserBlaster as X
 import Marvel.Upgrade.Upgrades.PulseGrenade as X
+
+-- Gamora
+import Marvel.Upgrade.Upgrades.KeenInstincts as X
+import Marvel.Upgrade.Upgrades.GamorasSword as X
+import Marvel.Upgrade.Upgrades.Godslayer as X
+import Marvel.Upgrade.Upgrades.CommsImplant as X

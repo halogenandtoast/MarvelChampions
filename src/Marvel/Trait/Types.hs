@@ -77,5 +77,6 @@ data Trait
   | Guardian
   | NovaCorps
   | Outlaw
+  | Scoundrel
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

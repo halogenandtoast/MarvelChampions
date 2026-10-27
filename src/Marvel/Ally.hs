@@ -123,4 +123,9 @@ allAllies = fromList $ map
   , SomeAllyCard betaRayBill
   , SomeAllyCard yondu
   , SomeAllyCard cosmo
+
+  -- Gamora
+  , SomeAllyCard nebulaAlly
+  , SomeAllyCard angelaAldrifOdinsdottir
+  , SomeAllyCard drax
   ]

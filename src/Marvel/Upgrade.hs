@@ -153,6 +153,12 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard starLordsHelmet
   , SomeUpgradeCard laserBlaster
   , SomeUpgradeCard pulseGrenade
+
+  -- Gamora
+  , SomeUpgradeCard keenInstincts
+  , SomeUpgradeCard gamorasSword
+  , SomeUpgradeCard godslayer
+  , SomeUpgradeCard commsImplant
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

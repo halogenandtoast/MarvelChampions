@@ -160,6 +160,9 @@ allTreacheries = fromList $ map
 
   -- Star-Lord
   , SomeTreacheryCard spartoiCunning
+
+  -- Gamora
+  , SomeTreacheryCard waylay
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery
