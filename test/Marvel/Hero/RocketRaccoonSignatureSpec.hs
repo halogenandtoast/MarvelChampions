@@ -199,7 +199,7 @@ spec = describe "Rocket Raccoon signature cards" do
         villainDamageNow >>= (`shouldSatisfy` (> before))
         damageOf p `shouldReturn` 6
 
-    it "does not heal when tough prevents the damage" do
+    it "heals when tough prevents the damage: prevented, it was still dealt" do
       tg <- rocket
       let p = player1 tg
       inGame tg do
@@ -212,7 +212,7 @@ spec = describe "Rocket Raccoon signature cards" do
         pass
         basicAttackVillain p
         villainDamageNow `shouldReturn` 0
-        damageOf p `shouldReturn` 6
+        damageOf p `shouldReturn` 4
 
     it "ends with the turn" do
       tg <- rocket
