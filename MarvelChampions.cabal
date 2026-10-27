@@ -145,6 +145,7 @@ library
       Marvel.Attachment.Attachments.CrossfiresRifle
       Marvel.Attachment.Attachments.DefensiveProgramming
       Marvel.Attachment.Attachments.DistractingTaunts
+      Marvel.Attachment.Attachments.DrangsSpear
       Marvel.Attachment.Attachments.EnergyShield
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.ExoSuit
@@ -172,6 +173,7 @@ library
       Marvel.Attachment.Attachments.RammingSpeed
       Marvel.Attachment.Attachments.RedSkullsLuger
       Marvel.Attachment.Attachments.RedSkullsRightHook
+      Marvel.Attachment.Attachments.Ronan
       Marvel.Attachment.Attachments.SizeIncrease
       Marvel.Attachment.Attachments.SolidSoundBody
       Marvel.Attachment.Attachments.SonicConverter
@@ -220,7 +222,10 @@ library
       Marvel.Environment
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
+      Marvel.Environment.Environments.BadoonShip
       Marvel.Environment.Environments.CriminalEnterprise
+      Marvel.Environment.Environments.KreeCommandShip
+      Marvel.Environment.Environments.LibraryLabyrinth
       Marvel.Environment.Environments.NebulasShip
       Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
@@ -452,8 +457,10 @@ library
       Marvel.MainScheme.MainSchemes.AssaultOnNorad
       Marvel.MainScheme.MainSchemes.AttackOnMountAthena
       Marvel.MainScheme.MainSchemes.Breakout
+      Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon
       Marvel.MainScheme.MainSchemes.CorporateAcquisition
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
+      Marvel.MainScheme.MainSchemes.EscapeTheMuseum
       Marvel.MainScheme.MainSchemes.HostileTakeover
       Marvel.MainScheme.MainSchemes.HuntingDownHeroes
       Marvel.MainScheme.MainSchemes.KangsArrival
@@ -462,6 +469,7 @@ library
       Marvel.MainScheme.MainSchemes.MutagenCloud
       Marvel.MainScheme.MainSchemes.NewWorldHydra
       Marvel.MainScheme.MainSchemes.NoneShallPass
+      Marvel.MainScheme.MainSchemes.Ronan
       Marvel.MainScheme.MainSchemes.SecretRendezvous
       Marvel.MainScheme.MainSchemes.TheArtOfEvasion
       Marvel.MainScheme.MainSchemes.TheBreakIn
@@ -505,6 +513,7 @@ library
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.Avalanche
       Marvel.Minion.Minions.BadoonHeadhunter
+      Marvel.Minion.Minions.BandOfBadoon
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
@@ -534,6 +543,7 @@ library
       Marvel.Minion.Minions.HydraSoldier
       Marvel.Minion.Minions.KangMasterOfTime
       Marvel.Minion.Minions.Killmonger
+      Marvel.Minion.Minions.KreeMilitants
       Marvel.Minion.Minions.Loki
       Marvel.Minion.Minions.Luminous
       Marvel.Minion.Minions.Macrobots
@@ -631,6 +641,7 @@ library
       Marvel.SideScheme.SideSchemes.BlazingInferno
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.BrotherhoodOfBadoon
       Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate
       Marvel.SideScheme.SideSchemes.Cannonade
       Marvel.SideScheme.SideSchemes.CapturedByHydra
@@ -676,6 +687,7 @@ library
       Marvel.SideScheme.SideSchemes.PowerDrain
       Marvel.SideScheme.SideSchemes.PrisonCamps
       Marvel.SideScheme.SideSchemes.Rampage
+      Marvel.SideScheme.SideSchemes.Ronan
       Marvel.SideScheme.SideSchemes.RunningInterference
       Marvel.SideScheme.SideSchemes.SiblingRivalry
       Marvel.SideScheme.SideSchemes.SoundTheAlarms
@@ -779,6 +791,7 @@ library
       Marvel.Treachery.Treacheries.EnergyBlast
       Marvel.Treachery.Treacheries.EnergyProjectiles
       Marvel.Treachery.Treacheries.EscapePlan
+      Marvel.Treachery.Treacheries.EscapeTheMuseum
       Marvel.Treachery.Treacheries.Exhaustion
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
@@ -826,6 +839,7 @@ library
       Marvel.Treachery.Treacheries.RegenerativeHealing
       Marvel.Treachery.Treacheries.RepairSequence
       Marvel.Treachery.Treacheries.RitualCombat
+      Marvel.Treachery.Treacheries.Ronan
       Marvel.Treachery.Treacheries.ShadowOfThePast
       Marvel.Treachery.Treacheries.ShipCommand
       Marvel.Treachery.Treacheries.ShockTherapy
@@ -985,7 +999,9 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.AbsorbingMan
       Marvel.Villain.Villains.Bulldozer
+      Marvel.Villain.Villains.CollectorEscape
       Marvel.Villain.Villains.Crossbones
+      Marvel.Villain.Villains.Drang
       Marvel.Villain.Villains.GreenGoblin
       Marvel.Villain.Villains.Kang
       Marvel.Villain.Villains.Klaw
@@ -994,6 +1010,7 @@ library
       Marvel.Villain.Villains.Piledriver
       Marvel.Villain.Villains.RedSkull
       Marvel.Villain.Villains.Rhino
+      Marvel.Villain.Villains.Ronan
       Marvel.Villain.Villains.Taskmaster
       Marvel.Villain.Villains.Thunderball
       Marvel.Villain.Villains.Ultron
@@ -1176,9 +1193,11 @@ test-suite MarvelChampions-test
       Marvel.Aspect.WaspPackSpec
       Marvel.CoverageSpec
       Marvel.Encounter.BlackWidowNemesisSpec
+      Marvel.Encounter.BrotherhoodOfBadoonSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GamoraNemesisSpec
       Marvel.Encounter.GreenGoblinSpec
@@ -1193,6 +1212,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.RedSkullSpec
       Marvel.Encounter.RiseOfRedSkullSpec
       Marvel.Encounter.RocketRaccoonNemesisSpec
+      Marvel.Encounter.RonanSpec
       Marvel.Encounter.ScarletWitchNemesisSpec
       Marvel.Encounter.StarLordNemesisSpec
       Marvel.Encounter.TaskmasterSpec
