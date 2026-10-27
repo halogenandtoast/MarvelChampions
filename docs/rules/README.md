@@ -17,6 +17,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Wasp Hero Pack rulesheet (MC13) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc13_wasp_rulesheet.pdf |
 | Gamora Hero Pack rulesheet (MC18) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc18_gamora_rulesheet.pdf |
 | Star-Lord Hero Pack rulesheet (MC17) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc17_star-lord_rulesheet.pdf |
+| The Galaxy's Most Wanted rulebook (MC16) | 24 pages (pp. 6, 7, 9, 11, 13, 16, 17 are images) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc16_galaxys_most_wanted_rules_website-compressed.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
 
@@ -49,6 +50,15 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-gamora.md](hero-gamora.md) | Gamora pack: the Skilled Tactician FAQ, starter deck, rulings |
 | [hero-star-lord.md](hero-star-lord.md) | Star-Lord pack: Hinder X, Piercing, Ranged, the Star-Lord, Mister Knife and Dive Bomb FAQ, Cosmo errata, rulings |
 | [hero-scarlet-witch.md](hero-scarlet-witch.md) | Scarlet Witch pack: Team-Up, counting boost icons, the Hex Bolt and Slipping Sanity FAQ, rulings |
+| [scenario-galaxys-most-wanted.md](scenario-galaxys-most-wanted.md) | The Galaxy's Most Wanted: new keywords (Victory X, Patrol, Stalwart, Peril), the victory display, the amplify icon, the Ship Command, Power Stone and Badoon Headhunter sets, FAQ |
+| [scenario-brotherhood-of-badoon.md](scenario-brotherhood-of-badoon.md) | GMW #1 Brotherhood of Badoon: Drang, Charge Up and the Badoon Ship, Band of Badoon; card text, readings, campaign instructions |
+| [scenario-infiltrate-the-museum.md](scenario-infiltrate-the-museum.md) | GMW #2 Infiltrate the Museum: Collector, The Collection, Galactic Artifacts, Menagerie Medley; card text, readings, campaign instructions |
+| [scenario-escape-the-museum.md](scenario-escape-the-museum.md) | GMW #3 Escape the Museum: Collector A1/B1, infinite hit points, the set-aside Milano; card text, readings, campaign instructions |
+| [scenario-nebula.md](scenario-nebula.md) | GMW #4 Nebula: Techniques, Nebula's Ship and evasion counters, Space Pirates; card text, readings, campaign instructions |
+| [scenario-ronan-the-accuser.md](scenario-ronan-the-accuser.md) | GMW #5 Ronan the Accuser: the Power Stone in play, Kree Militants; card text, readings, campaign instructions |
+| [campaign-galaxys-most-wanted.md](campaign-galaxys-most-wanted.md) | The Galaxy's Most Wanted campaign: campaign log, units and The Market, expert campaign, each scenario's setup/victory steps, Market and Challenge card text, rulings |
+| [hero-groot.md](hero-groot.md) | Groot (GMW): growth counters, Flora Colossus FAQ, Team-Up, starter deck, rulings |
+| [hero-rocket-raccoon.md](hero-rocket-raccoon.md) | Rocket Raccoon (GMW): charge counters FAQ, excess damage, starter deck, rulings |
 
 ## Conventions
 

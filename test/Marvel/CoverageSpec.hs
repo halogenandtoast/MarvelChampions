@@ -53,10 +53,6 @@ packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toa
 inScope :: Text -> Maybe Text -> Bool
 inScope pack set = case pack of
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
-  -- The Galaxy's Most Wanted campaign: The Market's cards
-  "gmw" | set == Just "the_market" -> True
-  -- The Galaxy's Most Wanted: its heroes and their nemesis sets, aspect and basic cards so far
-  "gmw" -> maybe True (`elem` ["groot", "groot_nemesis", "rocket", "rocket_nemesis"]) set
   _ -> True
 
 -- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
