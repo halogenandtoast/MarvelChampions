@@ -98,6 +98,7 @@ payCostPart activeCost = go
     DiscardUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
       oneOf upgrades \u -> discardUpgrade u >> paid (DiscardPayment $ toTarget u)
+    DiscardTopOfDeckCost -> discardTopOfDeck iid 1
     -- one at a time, until the player is done or has exhausted as many as it allows
     ExhaustAlliesCost n m -> do
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))

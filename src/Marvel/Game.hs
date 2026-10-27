@@ -2569,6 +2569,7 @@ gameSelectUpgrade m = do
     UpgradeNamed name -> pure . (== name) . cdName . getCardDef
     UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
     UpgradeOneOf xs -> orM . traverse matchFilter xs
+    NotUpgrade m' -> fmap not . matchFilter m'
     UpgradeOnIdentity identityMatcher -> \upgrade -> do
       identities <- select identityMatcher
       let a = toAttrs upgrade

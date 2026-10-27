@@ -32,6 +32,8 @@ data Cost
     ReturnUpgradeToHandCost UpgradeMatcher
   | -- | discard an upgrade the payer controls, chosen among those matching
     DiscardUpgradeCost UpgradeMatcher
+  | -- | discard the top card of the payer's deck: not payable with an empty deck
+    DiscardTopOfDeckCost
   | -- | exhaust at least so many allies the payer controls, and at most so many (any
     -- number for Nothing)
     ExhaustAlliesCost Natural (Maybe Natural)
@@ -70,6 +72,7 @@ costResources (DiscardRandomHandCardsCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (DiscardUpgradeCost _) = []
+costResources DiscardTopOfDeckCost = []
 costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
