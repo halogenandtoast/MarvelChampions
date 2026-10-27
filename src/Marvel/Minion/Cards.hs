@@ -133,6 +133,13 @@ allMinions =
       -- The Galaxy's Most Wanted: Badoon Headhunter
       , badoonHeadhunter
       , headhuntersHenchman
+
+      -- The Galaxy's Most Wanted: Infiltrate the Museum
+      , monarkStarstalker
+      -- Menagerie Medley
+      , psionicGhost
+      , servantBot
+      , starshark
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -656,3 +663,20 @@ badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHea
 
 headhuntersHenchman :: CardDef
 headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+-- | Printed "Monark Starstalker" (MarvelCDB: "Monarch").
+monarkStarstalker :: CardDef
+monarkStarstalker = unique $ (minion "16075" "Monark Starstalker" [BountyHunter] [Boost, Boost, Boost] InfiltrateTheMuseum 1) {cdKeywords = singleton Villainous}
+
+-- Menagerie Medley
+
+psionicGhost :: CardDef
+psionicGhost = minion "16135" "Psionic Ghost" [Ghost] [Star] MenagerieMedley 4
+
+servantBot :: CardDef
+servantBot = (minion "16136" "Servant Bot" [Robot] [] MenagerieMedley 3) {cdKeywords = fromList [Guard, Patrol]}
+
+starshark :: CardDef
+starshark = (minion "16137" "Starshark" [Creature, Elite] [Star] MenagerieMedley 2) {cdKeywords = singleton Quickstrike}

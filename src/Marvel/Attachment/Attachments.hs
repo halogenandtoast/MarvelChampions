@@ -83,3 +83,6 @@ import Marvel.Attachment.Attachments.BlackjacksBazooka as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Attachment.Attachments.PowerStone as X
+
+-- Infiltrate the Museum, Galactic Artifacts
+import Marvel.Attachment.Attachments.GalacticArtifacts as X

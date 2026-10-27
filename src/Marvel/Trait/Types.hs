@@ -82,5 +82,10 @@ data Trait
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone
+  -- Infiltrate the Museum
+  | Elder
+  | Illusion
+  | BountyHunter
+  | Ghost
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

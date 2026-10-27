@@ -127,6 +127,9 @@ modularSets =
   , BadoonHeadhunter
   , PowerStone
   , ShipCommand
+  -- Infiltrate the Museum
+  , GalacticArtifacts
+  , MenagerieMedley
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

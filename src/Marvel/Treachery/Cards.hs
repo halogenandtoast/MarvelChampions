@@ -169,6 +169,12 @@ allTreacheries = fromList $ map
   -- Badoon Headhunter
   , onTheHunt
   , deadToRights
+
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , inconspicuousBox
+  , viewTheCosmos
+  , stayAwhile
+  , caughtOffGuardMuseum
   ]
 
 treachery
@@ -643,3 +649,18 @@ onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {
 
 deadToRights :: CardDef
 deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+inconspicuousBox :: CardDef
+inconspicuousBox = treachery "16076" "Inconspicuous Box" [Star] InfiltrateTheMuseum 2
+
+viewTheCosmos :: CardDef
+viewTheCosmos = treachery "16077" "View the Cosmos" [Boost, Boost] InfiltrateTheMuseum 2
+
+stayAwhile :: CardDef
+stayAwhile = treachery "16078" "Stay Awhile" [Boost] InfiltrateTheMuseum 2
+
+-- | The core set's Caught Off Guard, again in this set.
+caughtOffGuardMuseum :: CardDef
+caughtOffGuardMuseum = treachery "16079" "Caught Off Guard" [Boost] InfiltrateTheMuseum 1

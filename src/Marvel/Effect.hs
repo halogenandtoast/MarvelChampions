@@ -14,6 +14,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Obligation.Obligations
 import Marvel.Ref
+import Marvel.SideScheme.SideSchemes.GalacticArtifacts (crystalBallEffect)
 import Marvel.Support.Supports
 import Marvel.Upgrade.Upgrades
 
@@ -75,6 +76,8 @@ allEffects =
 
     -- The Once and Future Kang
 
+    -- The Galaxy's Most Wanted: Galactic Artifacts
+    , ("16130", SomeCardEffect crystalBallEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

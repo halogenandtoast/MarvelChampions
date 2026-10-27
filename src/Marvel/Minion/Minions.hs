@@ -102,3 +102,6 @@ import Marvel.Minion.Minions.BlackjackOHare as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Minion.Minions.BadoonHeadhunter as X
+
+-- Infiltrate the Museum, Menagerie Medley
+import Marvel.Minion.Minions.MenagerieMedley as X

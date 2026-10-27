@@ -63,6 +63,8 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard thePresentFutureWar
   , SomeMainSchemeCard kangsWrath
 
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , SomeMainSchemeCard theGrandCollection
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

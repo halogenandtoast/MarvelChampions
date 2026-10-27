@@ -53,6 +53,8 @@ allMainSchemes =
     , thePresentFutureWar
     , kangsWrath
 
+    -- The Galaxy's Most Wanted: Infiltrate the Museum
+    , theGrandCollection
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -177,3 +179,8 @@ thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
 
 kangsWrath :: CardDef
 kangsWrath = mainScheme "11013" "Kang's Wrath" Kang
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+theGrandCollection :: CardDef
+theGrandCollection = mainScheme "16073" "The Grand Collection" InfiltrateTheMuseum

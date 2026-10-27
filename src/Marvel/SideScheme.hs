@@ -127,6 +127,12 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted
   , SomeSideSchemeCard cannonade
   , SomeSideSchemeCard fugitiveRecovery
+
+  -- The Galaxy's Most Wanted: Galactic Artifacts
+  , SomeSideSchemeCard hujahdarianMonarchEgg
+  , SomeSideSchemeCard magicalTeapot
+  , SomeSideSchemeCard philosophersStone
+  , SomeSideSchemeCard crystalBall
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

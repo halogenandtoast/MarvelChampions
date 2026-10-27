@@ -81,6 +81,10 @@ modularSets =
   , "ship_command"
   , "power_stone"
   , "badoon_headhunter"
+  -- Infiltrate the Museum
+  , "infiltrate_the_museum"
+  , "galactic_artifacts"
+  , "menagerie_medley"
   ]
 
 encounterImplemented :: PackCard -> Bool

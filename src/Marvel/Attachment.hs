@@ -116,6 +116,14 @@ allAttachments =
 
       -- The Galaxy's Most Wanted
       , SomeAttachmentCard powerStone
+
+      -- The Galaxy's Most Wanted: Infiltrate the Museum, Galactic Artifacts
+      , SomeAttachmentCard biogramImage
+      , SomeAttachmentCard cloakOfHercules
+      , SomeAttachmentCard obediencePotion
+      , SomeAttachmentCard theBeyondersBlazer
+      , SomeAttachmentCard thePoison
+      , SomeAttachmentCard vandarianPowerWand
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

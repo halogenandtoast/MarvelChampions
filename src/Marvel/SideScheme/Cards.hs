@@ -122,6 +122,12 @@ allSideSchemes = fromList $ map
   , cannonade
   -- Badoon Headhunter
   , fugitiveRecovery
+
+  -- The Galaxy's Most Wanted: Galactic Artifacts
+  , hujahdarianMonarchEgg
+  , magicalTeapot
+  , philosophersStone
+  , crystalBall
   ]
 
 sideScheme
@@ -484,3 +490,21 @@ cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKey
 
 fugitiveRecovery :: CardDef
 fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}
+
+-- The Galaxy's Most Wanted: Galactic Artifacts, each Hinder 2 per player and Victory 0;
+-- the icons are the printed cards' (MarvelCDB misses the teapot's hazard icon)
+
+galacticArtifact :: CardCode -> Name -> CardDef
+galacticArtifact code name = (sideScheme code name [Boost] GalacticArtifacts 1) {cdUnique = True, cdKeywords = fromList [Hinder (PerPlayer 2), Victory 0]}
+
+hujahdarianMonarchEgg :: CardDef
+hujahdarianMonarchEgg = (galacticArtifact "16127" "Hujahdarian Monarch Egg") {cdAcceleration = 1}
+
+magicalTeapot :: CardDef
+magicalTeapot = (galacticArtifact "16128" "Magical Teapot") {cdHazards = 1}
+
+philosophersStone :: CardDef
+philosophersStone = (galacticArtifact "16129" "Philosopher's Stone") {cdAmplify = 1}
+
+crystalBall :: CardDef
+crystalBall = (galacticArtifact "16130" "Crystal Ball") {cdAcceleration = 1}

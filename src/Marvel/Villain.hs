@@ -35,6 +35,8 @@ import Marvel.Villain.Villains.Taskmaster
 
 -- The Once and Future Kang
 import Marvel.Villain.Villains.Kang
+-- Infiltrate the Museum
+import Marvel.Villain.Villains.Collector
 
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
@@ -130,4 +132,9 @@ allVillains = fromList $ map
   , SomeVillainCard kangScarletCenturionExpert
   , SomeVillainCard kang3Expert
 
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , SomeVillainCard collector
+  , SomeVillainCard collector1
+  , SomeVillainCard collector2
+  , SomeVillainCard collector3
   ]

@@ -142,6 +142,12 @@ allMinions =
       -- The Galaxy's Most Wanted
       , SomeMinionCard badoonHeadhunter
       , SomeMinionCard headhuntersHenchman
+
+      -- The Galaxy's Most Wanted: Infiltrate the Museum, Menagerie Medley
+      , SomeMinionCard monarkStarstalker
+      , SomeMinionCard psionicGhost
+      , SomeMinionCard servantBot
+      , SomeMinionCard starshark
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

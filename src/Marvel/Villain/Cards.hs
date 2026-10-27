@@ -83,6 +83,11 @@ allVillainCards =
   , kangScarletCenturionExpert
   , kang3Expert
 
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , collector1
+  , collector2
+  , collector3
+
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -298,3 +303,14 @@ bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
 
 bulldozerB :: CardDef
 bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+collector1 :: CardDef
+collector1 = villain "16070" "Collector" [Elder]
+
+collector2 :: CardDef
+collector2 = villain "16071" "Collector" [Elder]
+
+collector3 :: CardDef
+collector3 = villain "16072" "Collector" [Elder]
