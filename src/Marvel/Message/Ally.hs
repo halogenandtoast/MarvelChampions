@@ -24,6 +24,8 @@ data AllyMessage
   | AllyDamaged Source Damage
   | AllyDefended EnemyId
   | AllyDefeated
+  | -- | defeated by damage from the enemy's attack
+    AllyDefeatedByAttack EnemyId
   | AllyHealed Natural
   | SpendAllyUse
   | AttachedUpgradeToAlly UpgradeId

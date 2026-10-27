@@ -17,6 +17,8 @@ data Attack = Attack
   , attackRanged :: Bool
   , attackPrevented :: Bool
   -- ^ "prevent all damage from this attack"
+  , attackChange :: Int
+  -- ^ "gets +X/-X ATK for that attack", applied after its boost icons
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -54,11 +56,16 @@ attack enemyId characterId dmg =
     , attackPiercing = False
     , attackRanged = False
     , attackPrevented = False
+    , attackChange = 0
     }
+
+-- | The attack's ATK: its damage, boost icons included, and what it gets for this attack.
+attackValue :: Attack -> Natural
+attackValue a = fromIntegral $ max 0 (fromIntegral (attackDamage a) + attackChange a)
 
 -- | The damage the attack deals: none once all of it is prevented.
 attackDamageDealt :: Attack -> Natural
-attackDamageDealt a = if attackPrevented a then 0 else attackDamage a
+attackDamageDealt a = if attackPrevented a then 0 else attackValue a
 
 -- | "The attack gains overkill, piercing or ranged"; no other keyword is an attack's.
 gainKeyword :: Keyword -> Attack -> Attack
@@ -85,4 +92,5 @@ keepingGains (Just old) a =
     { attackOverkill = attackOverkill a || attackOverkill old
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
+    , attackChange = attackChange a + attackChange old
     }

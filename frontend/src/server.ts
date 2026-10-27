@@ -64,6 +64,8 @@ export interface PlayerView {
   stunned: boolean
   confused: boolean
   tough: boolean
+  /** On the identity card (Drax's vengeance). */
+  counters?: number
   thwart: number | null
   attack: number | null
   defense: number | null

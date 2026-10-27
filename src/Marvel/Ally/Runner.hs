@@ -152,17 +152,14 @@ instance RunMessage (Attrs Ally) where
         else do
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
-          when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
+          when (damageAmount damage + allyDamage a >= hitPoints) $
+            case sourceEnemy source of
+              Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
+              _ -> defeatAlly ident
           when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
-      -- leaving play discards it
-      AllyDefeated -> do
-        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
-        checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
-        -- which discards it
-        removeFromPlay a
-        checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
-        pure a
+      AllyDefeated -> defeated Nothing
+      AllyDefeatedByAttack enemy -> defeated (Just enemy)
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AllyOwnedBy owner -> pure a {allyOwner = owner}
@@ -178,3 +175,12 @@ instance RunMessage (Attrs Ally) where
     GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a
+   where
+    -- leaving play discards it
+    defeated byAttack = do
+      let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
+      checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a) byAttack]
+      -- which discards it
+      removeFromPlay a
+      checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
+      pure a

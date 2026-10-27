@@ -125,6 +125,11 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           defeatedMinionMatches timing minionMatcher minionId
     _ -> pure False
+  EnemyTookDamage enemyMatcher damageMatcher -> case windowType w of
+    EnemyTookDamageFrom enemy damage source
+      | windowTiming w == After ->
+          liftA2 (&&) (enemyMatches enemyMatcher enemy) (damageMatchesFrom damageMatcher damage source)
+    _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
     DefeatedMinion minionId damage source _
       | windowTiming w == timing ->
@@ -240,7 +245,11 @@ windowMatches matcher w source = case matcher of
           identityMatches identityMatcher ident
     _ -> pure False
   AllyDefeated timing allyMatcher -> case windowType w of
-    DefeatedAlly allyId
+    DefeatedAlly allyId _
+      | windowTiming w == timing -> allyMatches allyMatcher allyId
+    _ -> pure False
+  AllyDefeatedByAttack timing allyMatcher -> case windowType w of
+    DefeatedAlly allyId (Just _)
       | windowTiming w == timing -> allyMatches allyMatcher allyId
     _ -> pure False
   BoostCardFlipped timing enemyMatcher -> case windowType w of
@@ -283,6 +292,10 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == After && damageSource damage == damageSource'
       , Just enemy <- sourceEnemy from ->
           liftA2 (&&) (identityMatches identityMatcher ident) (enemyMatches enemyMatcher enemy)
+    _ -> pure False
+  AllyTookDamageOf allyMatcher damageSource' -> case windowType w of
+    AllyTookDamage aid _ damage
+      | windowTiming w == After && damageSource damage == damageSource' -> allyMatches allyMatcher aid
     _ -> pure False
   AllyWasDefeated timing identityMatcher -> case windowType w of
     AllyCardDefeated ident _ | windowTiming w == timing -> identityMatches identityMatcher ident

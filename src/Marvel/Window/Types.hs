@@ -57,6 +57,8 @@ data WindowMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
+  | -- | after an enemy matching takes damage of the kind matching
+    EnemyTookDamage EnemyMatcher DamageMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | -- | a player matching makes a basic attack against an enemy matching, its target chosen
@@ -71,6 +73,10 @@ data WindowMatcher
   | -- | a player matching plays an event matching
     PlaysEvent WindowTiming IdentityMatcher CardMatcher
   | AllyDefeated WindowTiming AllyMatcher
+  | -- | an ally matching is defeated by damage from an enemy's attack
+    AllyDefeatedByAttack WindowTiming AllyMatcher
+  | -- | after an ally matching takes damage of this kind
+    AllyTookDamageOf AllyMatcher DamageSource
   | -- | a boost card is turned face up for an enemy's activation
     BoostCardFlipped WindowTiming EnemyMatcher
   | -- | "you reveal": the encounter card is revealed for a player matching
@@ -140,6 +146,8 @@ data WindowType
     -- past its hit points
     DefeatedMinion MinionId Damage Source Natural
   | MinionEnteredPlay MinionId
+  | -- | the enemy took this damage, from this source: none a tough status card prevented
+    EnemyTookDamageFrom EnemyId Damage Source
   | EnemyAttack EnemyId IdentityId
   | -- | the damage an enemy's attack dealt the character
     EnemyAttacksAndDamages EnemyId CharacterId Natural
@@ -166,7 +174,8 @@ data WindowType
   | TurnBegan IdentityId
   | -- | the player, the event and its card
     EventPlayed IdentityId EventId CardDef
-  | DefeatedAlly AllyId
+  | -- | the ally, and the enemy whose attack defeated it
+    DefeatedAlly AllyId (Maybe EnemyId)
   | FlippedBoostCard EncounterCard EnemyId
   | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard

@@ -170,6 +170,8 @@ data PlayerView = PlayerView
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
+  , counters :: Natural
+  -- ^ on the identity card (Drax's vengeance)
   , thwart :: Maybe Natural
   , attack :: Maybe Natural
   , defense :: Maybe Natural
@@ -507,6 +509,7 @@ gameView seesHand g = do
         , stunned = a.playerIdentityStunned
         , confused = a.playerIdentityConfused
         , tough = a.playerIdentityTough
+        , counters = a.playerIdentityCounters
         , thwart = thw
         , attack = atk
         , defense = def
@@ -579,7 +582,7 @@ gameView seesHand g = do
         , hitPoints = unHp a.villainMaxHp
         , damage = Villain.villainDamage v
         , scheme = sch
-        , attack = maybe atk Attack.attackDamage (Villain.villainAttackDetails v)
+        , attack = maybe atk Attack.attackValue (Villain.villainAttackDetails v)
         , stunned = a.villainStunned
         , confused = a.villainConfused
         , tough = a.villainTough
@@ -601,7 +604,7 @@ gameView seesHand g = do
         , hitPoints = hp
         , damage = a.minionDamage
         , scheme = unSch a.minionScheme
-        , attack = maybe atk Attack.attackDamage (Minion.minionAttackDetails m)
+        , attack = maybe atk Attack.attackValue (Minion.minionAttackDetails m)
         , stunned = a.minionStunned
         , confused = a.minionConfused
         , tough = a.minionTough

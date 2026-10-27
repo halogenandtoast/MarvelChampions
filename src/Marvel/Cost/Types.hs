@@ -40,6 +40,8 @@ data Cost
     DiscardEncounterCardsUntilMinionCost
   | -- | "deal yourself 1 facedown encounter card"
     DealEncounterCardCost
+  | -- | "discard the top card of the encounter deck" (Leading Blow), the card paid with
+    DiscardTopEncounterCardCost
   | -- | the printed resource cost of the card chosen as the card's target
     TargetPrintedCost
   | -- | nothing more is due, but the payer may go on spending resources: "for each
@@ -71,6 +73,7 @@ costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources DealEncounterCardCost = []
+costResources DiscardTopEncounterCardCost = []
 costResources TargetPrintedCost = []
 costResources MayOverpay = []
 costResources (DamageCost _) = []

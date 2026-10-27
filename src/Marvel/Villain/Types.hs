@@ -299,6 +299,8 @@ runVillainMessage msg attrs = case msg of
       | cannotTakeDamage -> pure attrs
       | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
           ( subtractNatural
               (damageAmount damage)
@@ -347,6 +349,7 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}

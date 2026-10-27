@@ -225,6 +225,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
       , playerIdentityAttackDamageTaken = 0
+      , playerIdentityCounters = 0
       }
  where
   hp = case alterEgoSide of
@@ -1083,6 +1084,10 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
         when (damage >= modifiedHp) $
           defeatIdentity ident
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    PlaceCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityCounters = playerIdentityCounters attrs + n}
+    RemoveCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityCounters = subtractNatural n (playerIdentityCounters attrs)}
     GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity $ attrs & statusL s .~ True
     RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->

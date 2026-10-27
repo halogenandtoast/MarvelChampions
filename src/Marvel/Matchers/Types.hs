@@ -168,6 +168,9 @@ data EnemyMatcher
   | DefeatedEnemy EnemyMatcher
   | -- | an enemy whose attack is under way
     AttackingEnemy
+  | -- | an enemy whose attack under way is against a character matching, once defenders
+    -- are declared
+    EnemyAttackingCharacter CharacterMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
     EnemyWithHighestAttack
   | StunnedEnemy

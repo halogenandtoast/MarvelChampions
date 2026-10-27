@@ -16,6 +16,8 @@ data Payment
     WildPayment Resource
   | ResourcePaymentFromCard ExtendedCardMatcher
   | DiscardHandCardPayment Card
+  | -- | the top card of the encounter deck, discarded to pay
+    DiscardedEncounterCardPayment Card
   | DamagePayment Natural
   | HealPayment Natural
   | DamageThisPayment Natural
@@ -76,6 +78,10 @@ paymentX p = sum [x | XPayment x <- payments p]
 -- | The cards discarded from hand to pay.
 paymentDiscards :: Payment -> [Card]
 paymentDiscards p = [c | DiscardHandCardPayment c <- payments p]
+
+-- | The encounter cards discarded from the top of the deck to pay.
+paymentEncounterDiscards :: Payment -> [Card]
+paymentEncounterDiscards p = [c | DiscardedEncounterCardPayment c <- payments p]
 
 -- | The allies exhausted to pay.
 paymentExhaustedAllies :: Payment -> [AllyId]

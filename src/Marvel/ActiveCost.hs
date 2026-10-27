@@ -78,6 +78,7 @@ payCostPart activeCost = go
       case target of
         UpgradeRef upgrade -> discardUpgrade upgrade
         SupportRef _ -> removeFromPlay target
+        AllyRef _ -> removeFromPlay target
         _ -> error "Unhandled"
       paid $ DiscardPayment target
     UseCost -> case activeCostTarget activeCost of
@@ -116,6 +117,10 @@ payCostPart activeCost = go
     DiscardEncounterCardsUntilMinionCost ->
       discardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)
     DealEncounterCardCost -> dealEncounterCard iid
+    DiscardTopEncounterCardCost -> do
+      top <- take 1 <$> getEncounterDeck
+      discardTopOfEncounterDeck 1
+      for_ top (paid . DiscardedEncounterCardPayment . EncounterCard)
     -- added to the resources as the card was played
     TargetPrintedCost -> pure ()
     DynamicResourceCost _ -> resourcePayment

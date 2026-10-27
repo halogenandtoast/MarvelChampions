@@ -51,6 +51,8 @@ runMinionMessage msg attrs = case msg of
       | cannotTakeDamage -> pure attrs
       | minionTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         if (damageAmount damage + minionDamage attrs >= hitPoints)
           then do
             -- overkill follows the defeat: a minion that is not defeated after all
@@ -108,6 +110,16 @@ runMinionMessage msg attrs = case msg of
   MinionAttacksAlly ident allyId -> do
     enemyAttacks (minionId attrs) ident
     pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
+  -- a stunned minion discards its stun instead (RR Stun)
+  MinionAttacksEnemy enemy
+    | minionStunned attrs -> pure $ attrs & stunnedL .~ False
+    | otherwise -> do
+        keywords <- getModifiedKeywords attrs
+        atk <- getModifiedAttack attrs
+        let attack' = attackWith keywords (toEnemyId attrs) (MinionCharacter $ minionId attrs) atk
+        dealDamage enemy attrs (attackDamageTo attack' atk)
+        unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
+        pure attrs
   MinionAttacks ident ->
     if minionStunned attrs
       then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
@@ -141,6 +153,7 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  MinionAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   MinionAttacked -> do
     case minionAttacking attrs of

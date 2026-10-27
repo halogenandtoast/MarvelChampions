@@ -83,6 +83,7 @@ canAffordCost identityId source = go
         ]
     DiscardEncounterCardsUntilMinionCost -> pure True
     DealEncounterCardCost -> pure True
+    DiscardTopEncounterCardCost -> pure True
     TargetPrintedCost -> pure True
     MayOverpay -> pure True
     ExhaustCost -> case source of
