@@ -28,7 +28,8 @@ import GameLog
 import Marvel.Campaign
 import Marvel.Card.Code (CardCode (..), toHeroCardCode)
 import Marvel.Difficulty (Difficulty (..))
-import Marvel.Card.Def (cdName)
+import Marvel.Card.Def (cdAspect, cdName)
+import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Card.Def qualified as CardDef
 import Marvel.Decklist
 import Marvel.EncounterSet (modularSets)
@@ -61,6 +62,7 @@ import System.Random (StdGen)
 import System.Random.Internal (StdGen (..))
 import System.Random.SplitMix (seedSMGen', unseedSMGen)
 import Text.Read (readMaybe)
+import Numeric.Natural (Natural)
 import Yesod.Core
 import Yesod.Persist.Core
 import Yesod.WebSockets
@@ -124,6 +126,7 @@ mkYesod
   /campaigns/#MarvelCampaignId/leave LeaveCampaignR POST
   /campaigns/#MarvelCampaignId/start StartCampaignR POST
   /campaigns/#MarvelCampaignId/seats/#Int CampaignSeatR PUT
+  /campaigns/#MarvelCampaignId/seats/#Int/market CampaignMarketR POST
   /decks DecksR GET POST
   /decks/#MarvelDeckId DeckR GET DELETE
   /starter-decks StarterDecksR GET
@@ -512,7 +515,14 @@ newtype JoinGame = JoinGame {deck :: DeckChoice}
   deriving anyclass (FromJSON)
 
 resolveDeck :: UserId -> DeckChoice -> Handler DeckList
-resolveDeck userId = \case
+resolveDeck userId choice = do
+  deckList <- resolveDeckList userId choice
+  case marketCardsIn deckList of
+    [] -> pure deckList
+    market -> sendResponseStatus status400 (ikeyWith "error.marketCards" [textVar "cards" (intercalate ", " (map unCardCode market))])
+
+resolveDeckList :: UserId -> DeckChoice -> Handler DeckList
+resolveDeckList userId = \case
   StarterDeck hero ->
     maybe (sendResponseStatus status400 (ikeyWith "error.noStarterDeck" [textVar "hero" hero])) pure $ lookupStarterDeck hero
   ImportedDeck deckId -> do
@@ -884,6 +894,8 @@ getScenariosR =
 
 data NewCampaign = NewCampaign
   { name :: Text
+  , campaign :: Maybe CampaignKind
+  -- ^ which box's, The Rise of Red Skull's if none is given
   , mode :: CampaignMode
   , difficulty :: Maybe Difficulty
   -- ^ each scenario's, standard unless expert
@@ -909,6 +921,8 @@ data CampaignView = CampaignView
   -- ^ with friends, seats still open before its first game
   , deckShort :: [Int]
   -- ^ for each seat taken, how many cards its deck must gain to be dealt (rulebook p.12)
+  , market :: [(CardCode, Natural)]
+  -- ^ The Galaxy's Most Wanted: the cards of The Market not yet bought, with their unit cost
   , next :: Maybe CardCode
   , nextName :: Maybe Text
   , currentGame :: Maybe MarvelGameId
@@ -970,7 +984,8 @@ campaignNow row = do
     Nothing -> pure (stored, Nothing)
     Just (gid, g) -> case fromJSON g.marvelGameCurrentData of
       Success (game' :: Game) -> case gameState game' of
-        Finished Won -> pure (fromMaybe stored (gameCampaign game'), Nothing)
+        -- unless the log has been written in since, as cards are bought from The Market
+        Finished Won -> pure (maybe stored (\won -> if stored.completed >= won.completed then stored else won) (gameCampaign game'), Nothing)
         Finished Lost -> pure (maybe stored (\c -> if c.lost then c else stored) (gameCampaign game'), Nothing)
         _ -> pure (stored, Just gid)
       Error _ -> pure (stored, Just gid)
@@ -994,6 +1009,7 @@ campaignView (Entity cid row) = do
       , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated, campaign = Just cid}
       , waitingForPlayers = awaitingCampaignPlayers row c (length seats)
       , deckShort = [campaignDeckShortBy c d | (_, _, d) <- seats]
+      , market = if c.kind == GalaxysMostWanted then marketLeft c else []
       , next
       , nextName = fst . villainOf . (\code -> ScenarioSetup code [] difficulty) <$> next
       , currentGame = current
@@ -1027,7 +1043,7 @@ postCampaignsR = do
         MarvelCampaign
           { marvelCampaignUserId = userId
           , marvelCampaignName = new.name
-          , marvelCampaignCampaign = toJSON $ newCampaign new.mode (map (.hero) deckLists)
+          , marvelCampaignCampaign = toJSON $ newCampaignOf (fromMaybe RiseOfRedSkull new.campaign) new.mode (map (.hero) deckLists)
           , marvelCampaignDecks = toJSON ([] :: [DeckList])
           , marvelCampaignDifficulty = toJSON (fromMaybe Normal new.difficulty)
           , marvelCampaignCurrentGame = Nothing
@@ -1054,7 +1070,7 @@ reseat :: MarvelCampaignId -> MarvelCampaign -> Handler ()
 reseat cid row = do
   c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
   seats <- campaignSeats cid row
-  let log' = (newCampaign c.mode [d.hero | (_, _, d) <- seats]).campaignLog
+  let log' = (newCampaignOf c.kind c.mode [d.hero | (_, _, d) <- seats]).campaignLog
   now <- liftIO getCurrentTime
   runDB $ update cid [MarvelCampaignCampaign =. toJSON c {campaignLog = log'}, MarvelCampaignUpdatedAt =. now]
 
@@ -1128,6 +1144,9 @@ putCampaignSeatR cid position = do
   SeatDeck choice <- requireCheckJsonBody
   deck' <- resolveDeck userId choice
   unless (toHeroCardCode deck'.hero == toHeroCardCode deck.hero) $ sendResponseStatus status400 (ikey "error.campaignSameHero")
+  c <- decodeOrFail @Campaign "campaign" row.marvelCampaignCampaign
+  when (c.kind == GalaxysMostWanted && isExpertCampaign c && not (expertDeckKept deck deck')) $
+    sendResponseStatus status400 (ikey "error.expertCampaignDeck")
   now <- liftIO getCurrentTime
   runDB do
     seated <- selectFirst [MarvelCampaignSeatCampaignId ==. cid, MarvelCampaignSeatPosition ==. position] []
@@ -1136,6 +1155,38 @@ putCampaignSeatR cid position = do
       -- a campaign from before seats: its decks kept on it
       Nothing -> update cid [MarvelCampaignDecks =. toJSON [if p == position then deck' else d | (p, _, d) <- seats]]
     update cid [MarvelCampaignUpdatedAt =. now]
+
+-- | The Galaxy's Most Wanted's expert campaign: a player "cannot add, remove, or change the
+-- aspect and/or basic cards in their deck" (rulebook p.5). Their hero's own cards are theirs
+-- by the deck customization rules anyway.
+expertDeckKept :: DeckList -> DeckList -> Bool
+expertDeckKept old new = old.aspects == new.aspects && locked old == locked new
+ where
+  locked d = sort [(code, n) | (code, n) <- d.cards, Just def <- [HashMap.lookup code allPlayerCards], isJust (cdAspect def)]
+
+newtype MarketPurchase = MarketPurchase {card :: CardCode}
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
+
+-- | Between The Galaxy's Most Wanted's scenarios, the seat's player spends units on a card
+-- of The Market: one its unit cost is no more than their Unspent Units, not yet bought by
+-- the group. It is in their deck for the rest of the campaign (rulebook p.5).
+postCampaignMarketR :: MarvelCampaignId -> Int -> Handler Value
+postCampaignMarketR cid position = do
+  userId <- requireUserId
+  row <- requireCampaignMember cid
+  (c, current) <- campaignNow row
+  when (isJust current) $ sendResponseStatus status409 (ikey "error.campaignGameInProgress")
+  when (isNothing (currentScenario c)) $ sendResponseStatus status409 (ikey "error.campaignOver")
+  seats <- campaignSeats cid row
+  (_, owner, deck) <- maybe notFound pure $ find (\(p, _, _) -> p == position) seats
+  unless (owner == userId) notFound
+  MarketPurchase code <- requireCheckJsonBody
+  unless (canBuy deck.hero code c) $ sendResponseStatus status400 (ikey "error.cannotBuy")
+  let c' = recordInLog (BuyMarketCard deck.hero code) c
+  now <- liftIO getCurrentTime
+  runDB $ update cid [MarvelCampaignCampaign =. toJSON c', MarvelCampaignUpdatedAt =. now]
+  toJSON <$> campaignView (Entity cid row {marvelCampaignCampaign = toJSON c'})
 
 -- | Back to the campaign's game being played, or the next scenario dealt from the log.
 postContinueCampaignR :: MarvelCampaignId -> Handler Value
