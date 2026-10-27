@@ -209,6 +209,11 @@ retaliate source attacker = pushAll . retaliateDamage (toSource source) attacker
 dealIndirectDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
 dealIndirectDamage ident source n = indirectDamageAssigned ident (toSource source) n []
 
+-- | Indirect damage dealt among the players: the first player divides it among the
+-- friendly characters in play.
+dealIndirectDamageAmongPlayers :: (ReverseQueue m, IsRef source) => source -> Natural -> m ()
+dealIndirectDamageAmongPlayers source n = push $ AssignIndirectDamageAmongPlayers (toSource source) n []
+
 -- | Damage divided among the enemies matching as the player chooses, assigned a point
 -- at a time, then each enemy given a share dealt it as one effect: an attack's damage
 -- attacks each of them (Giant Wasp, Wasp Sting). The damage is the total and its kind.

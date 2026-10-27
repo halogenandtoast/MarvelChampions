@@ -44,6 +44,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
+import Marvel.Modifier (Modifier (InfiniteHitPoints))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -242,6 +243,8 @@ data VillainView = VillainView
   , name :: Text
   , stage :: Natural
   , hitPoints :: Int
+  , infiniteHitPoints :: Bool
+  -- ^ he has infinite hit points (Escape the Museum): shown as ∞, with no damage
   , damage :: Natural
   , scheme :: Natural
   , attack :: Natural
@@ -576,6 +579,7 @@ gameView seesHand g = do
     let a = toAttrs v
     sch <- Villain.getModifiedScheme a
     atk <- Villain.getModifiedAttack a
+    infinite <- elem InfiniteHitPoints <$> getModifiers a
     pure
       VillainView
         { id = a.villainId
@@ -583,7 +587,8 @@ gameView seesHand g = do
         , name = display (cdName a.villainCardDef)
         , stage = a.villainStage
         , hitPoints = unHp a.villainMaxHp
-        , damage = Villain.villainDamage v
+        , infiniteHitPoints = infinite
+        , damage = if infinite then 0 else Villain.villainDamage v
         , scheme = sch
         , attack = maybe atk Attack.attackDamage (Villain.villainAttackDetails v)
         , stunned = a.villainStunned

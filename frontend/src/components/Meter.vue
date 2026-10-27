@@ -2,9 +2,11 @@
 // A count against a limit, as a bar: a villain's hit points, the threat on a scheme.
 import { computed } from 'vue'
 
-const { label, value, max = null, tone = 'health', invert = false, adding = 0 } = defineProps<{
+const { label, value, max = null, tone = 'health', invert = false, adding = 0, text = null } = defineProps<{
   label: string
   value: number
+  /** shown in place of the count and its limit: ∞ for infinite hit points */
+  text?: string | null
   max?: number | null
   tone?: 'health' | 'threat' | 'villain'
   /** fill by what is gone rather than what is left */
@@ -19,10 +21,11 @@ const reaches = computed(() => !!adding && max !== null && value + adding >= max
 </script>
 
 <template>
-  <div class="meter" :class="[`tone-${tone}`, { reaches }]" role="meter" :aria-label="label" :aria-valuenow="value" :aria-valuemax="max ?? undefined" :title="label">
+  <div class="meter" :class="[`tone-${tone}`, { reaches }]" role="meter" :aria-label="label" :aria-valuenow="value" :aria-valuemax="max ?? undefined" :aria-valuetext="text ?? undefined" :title="label">
     <span v-if="max !== null" class="fill" :style="{ width: `${share}%` }" />
     <span v-if="max !== null && adding" class="pending" :style="{ left: `${share}%`, width: `${pending}%` }" />
-    <span class="value">{{ value }}<b v-if="adding">+{{ adding }}</b><small v-if="max !== null">/{{ max }}</small></span>
+    <span v-if="text !== null" class="value">{{ text }}</span>
+    <span v-else class="value">{{ value }}<b v-if="adding">+{{ adding }}</b><small v-if="max !== null">/{{ max }}</small></span>
   </div>
 </template>
 

@@ -38,6 +38,9 @@ data Modifier
     ThreatRemovedModifier Natural
   | RecoveryModifier Natural
   | CannotTakeDamage
+  | -- | on a character: it has infinite hit points: damage is dealt to it, but it is not
+    -- defeated by it (The Galaxy's Most Wanted, Escape the Museum)
+    InfiniteHitPoints
   | -- | to the target threat of a scheme
     TargetThreatModifier Natural
   | -- | the cards matching cost this many more resources to play

@@ -285,7 +285,8 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp'
   VillainHitPointsChanged n -> do
     let remaining = unHp (villainHp attrs) + n
-    when (remaining <= 0) $ defeatVillain vid
+    infinite <- elem InfiniteHitPoints <$> getModifiers attrs
+    when (remaining <= 0 && not infinite) $ villainStep vid VillainWouldBeDefeated
     pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
@@ -301,13 +302,16 @@ runVillainMessage msg attrs = case msg of
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
   VillainDamaged source damage -> do
-    cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
+    modifiers <- getModifiers attrs
+    let cannotTakeDamage = CannotTakeDamage `elem` modifiers
+        -- infinite hit points: the damage is dealt, but he is not defeated by it
+        infinite = InfiniteHitPoints `elem` modifiers
     if
       | cannotTakeDamage -> pure attrs
       | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
         when
-          ( subtractNatural
+          ( not infinite && subtractNatural
               (damageAmount damage)
               (fromIntegral . unHp $ villainHp attrs)
               == 0
@@ -319,7 +323,7 @@ runVillainMessage msg attrs = case msg of
             hero <- heroAttackBy damage source
             for_ hero \ident ->
               when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
-            defeatVillain vid
+            villainStep vid VillainWouldBeDefeated
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
         when (damageAmount damage > 0) $
@@ -332,13 +336,14 @@ runVillainMessage msg attrs = case msg of
             & hpL
               %~ HP
                 . max 0
-                . subtract (fromIntegral $ damageAmount damage)
+                . subtract (if infinite then 0 else fromIntegral $ damageAmount damage)
                 . unHp
   -- the last stage defeated: the scenario says what follows, by default the players win
   -- with no villain left
   VillainDefeated -> do
     resolveVillainDefeat vid
     pure attrs
+  VillainWouldBeDefeated -> attrs <$ defeatVillain vid
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
   Msg.VillainStunned _ -> statusUnlessStalwart attrs StunnedStatus

@@ -1294,21 +1294,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- controls that can take damage, none past what would defeat it (a tough one too, its
   -- card preventing what it is given), then dealt at once; what cannot be assigned is
   -- ignored
-  AssignIndirectDamage ident source n assigned -> do
-    let given c = sum [k | (c', k) <- assigned, c' == c]
-    identity <- for (maybe [] pure $ lookup ident (gamePlayers g)) \p -> (IdentityCharacter ident,,) <$> getModifiedHp p <*> pure (identityDamage p)
-    allies <- for [a | a <- HashMap.elems (gameAllies g), getAllyController a == ident] \a ->
-      (AllyCharacter (toId a),,) <$> Ally.getModifiedHitPoints (toAttrs a) <*> pure (getAllyDamage a)
-    open <-
-      filterM (fmap (notElem CannotTakeDamage) . getModifiers . characterRef . fst)
-        [(c, room) | (c, hp, damage) <- identity <> allies, let room = subtractNatural (damage + given c) hp, room > 0]
-    let assign c k = indirectDamageAssigned ident source (n - k) ((c, k) : assigned)
-    case open of
-      _ | n == 0 || null open ->
-        pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture $ damageCharacter c source (toDamage k FromAbility)) (HashMap.toList $ HashMap.fromListWith (+) assigned)
-      [(c, room)] -> assign c (min n room)
-      _ -> chooseOnePrompted ident "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
-    pure g
+  AssignIndirectDamage ident source n assigned ->
+    g <$ assignIndirectDamage ident [ident] source n assigned (indirectDamageAssigned ident source)
+  -- among the players: the group's, the first player assigning it
+  AssignIndirectDamageAmongPlayers source n assigned -> do
+    first <- selectJust FirstPlayer
+    players <- getPlayers
+    g <$ assignIndirectDamage first players source n assigned \k as -> push (AssignIndirectDamageAmongPlayers source k as)
+  -- a card set aside from play (Escape the Museum's Milano) leaves it, out of play and
+  -- not discarded: permanent or not; the scenario keeps it set aside
+  SetAside cards -> do
+    let ids = map toCardId cards
+        gone = [s | s <- HashMap.elems (gameSupports g), CardId (unSupportId (toId s)) `elem` ids]
+    for_ gone \s -> identityStep (getSupportController s) (SupportRemoved (toId s))
+    pure $ g & entitiesL . supportsL %~ \m -> foldr (deleteMap . toId) m gone
   -- divided damage (Giant Wasp, Wasp Sting): a point at a time among the enemies
   -- matching, then each share dealt at once; an attack's attacks each enemy dealt one
   AssignDividedDamage ident source damage matcher assigned -> do
@@ -3183,6 +3182,35 @@ getVictoryPoints = sum . map victoryValue <$> getVictoryDisplay
 -- | A card's X, for victory X, if it has the keyword.
 victoryValue :: (HasCardDef a) => a -> Natural
 victoryValue a = sum [n | Victory n <- toList (cdKeywords $ getCardDef a)]
+
+-- | Indirect damage (RR): assigned a point at a time, by the player given, among the
+-- characters the players given control that can take damage, none past what would defeat
+-- it (a tough one too, its card preventing what it is given), then dealt at once; what
+-- cannot be assigned is ignored. The step given goes on with what is left to assign.
+assignIndirectDamage ::
+  (ReverseQueue m) =>
+  IdentityId ->
+  [IdentityId] ->
+  Source ->
+  Natural ->
+  [(CharacterId, Natural)] ->
+  (Natural -> [(CharacterId, Natural)] -> m ()) ->
+  m ()
+assignIndirectDamage chooser idents source n assigned next = do
+  g <- getGame
+  let given c = sum [k | (c', k) <- assigned, c' == c]
+  identity <- for [(i, p) | i <- idents, Just p <- [lookup i (gamePlayers g)]] \(i, p) -> (IdentityCharacter i,,) <$> getModifiedHp p <*> pure (identityDamage p)
+  allies <- for [a | a <- HashMap.elems (gameAllies g), getAllyController a `elem` idents] \a ->
+    (AllyCharacter (toId a),,) <$> Ally.getModifiedHitPoints (toAttrs a) <*> pure (getAllyDamage a)
+  open <-
+    filterM (fmap (notElem CannotTakeDamage) . getModifiers . characterRef . fst)
+      [(c, room) | (c, hp, damage) <- identity <> allies, let room = subtractNatural (damage + given c) hp, room > 0]
+  let assign c k = next (n - k) ((c, k) : assigned)
+  case open of
+    _ | n == 0 || null open ->
+      pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture $ damageCharacter c source (toDamage k FromAbility)) (HashMap.toList $ HashMap.fromListWith (+) assigned)
+    [(c, room)] -> assign c (min n room)
+    _ -> chooseOnePrompted chooser "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
 
 -- * The Milano and the Power Stone (The Galaxy's Most Wanted)
 

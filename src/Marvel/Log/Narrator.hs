@@ -158,6 +158,7 @@ narrationFor = \case
   AssignIndirectDamage ident _ n [] | n > 0 -> Just do
     who <- playerRef' ident
     one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
+  AssignIndirectDamageAmongPlayers _ n [] | n > 0 -> Just $ one $ toned Bad $ mechanic [ikeyPart "log.indirectDamageAmongPlayers" ["count" ~> n]]
   _ -> Nothing
  where
   statusKey = \case

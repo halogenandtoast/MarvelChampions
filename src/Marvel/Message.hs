@@ -41,7 +41,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DefeatedMinion, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -139,6 +139,17 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
     _ -> rest
   isAfter = \case
     CheckWindows [Window After (DefeatedMinion mid' _ _ _)] -> mid' == mid
+    _ -> False
+
+-- | A villain that would be defeated is not ("instead"), as it answers
+-- 'VillainWouldBeDefeated': the window after its defeat is cancelled.
+cancelVillainDefeat :: (HasQueue m) => VillainId -> m ()
+cancelVillainDefeat vid = withQueue_ \q -> case break isAfter q of
+  (pre, _ : rest) -> pre <> rest
+  _ -> q
+ where
+  isAfter = \case
+    CheckWindows [Window After (DefeatedVillain vid' _ _ _)] -> vid' == vid
     _ -> False
 
 -- | The minion engages the player, leaving the player it was engaged with.
@@ -440,6 +451,9 @@ data Message
   | -- | indirect damage the player has still to assign among the characters they
     -- control, and what they have assigned so far: dealt at once when all is assigned
     AssignIndirectDamage IdentityId Source Natural [(CharacterId, Natural)]
+  | -- | indirect damage "among players": the group divides it among the friendly
+    -- characters in play, the first player deciding (RR Indirect Damage)
+    AssignIndirectDamageAmongPlayers Source Natural [(CharacterId, Natural)]
   | -- | damage the player has still to divide among the enemies matching (the damage
     -- carrying how much is left), and the shares assigned so far
     AssignDividedDamage IdentityId Source Damage EnemyMatcher [(EnemyId, Natural)]
