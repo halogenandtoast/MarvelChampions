@@ -100,7 +100,13 @@
     "engaged": "Recorded in the campaign log: {player} is engaged with a minion",
     "removed": "Removed from the campaign: {card}",
     "hitPoints": "Recorded in the campaign log: {player} has {count} hit points left",
-    "scenarioWon": "The scenario is won and written in the campaign log"
+    "scenarioWon": "The scenario is won and written in the campaign log",
+    "units": "Recorded in the campaign log: {player} gains {count} units",
+    "unitsSpent": "{player} spends {count} units from the campaign log",
+    "collection": "Recorded in the campaign log: {player}'s {card} in The Collection",
+    "powerStone": "Recorded in the campaign log: {player} controls the Power Stone",
+    "headhunterDefeated": "Recorded in the campaign log: the Badoon Headhunter is defeated",
+    "evasionCounters": "Recorded in the campaign log: {count} evasion counters"
   },
   "attackGainsOverkill": "{target}'s attack gains overkill",
   "attackGainsPiercing": "{target}'s attack gains piercing",

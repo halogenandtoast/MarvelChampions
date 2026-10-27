@@ -9,6 +9,7 @@ module Marvel.Decklist (
   sharedHeroes,
   campaignDeck,
   campaignDeckShortBy,
+  marketCardsIn,
   starterDecks,
   lookupStarterDeck,
 ) where
@@ -19,10 +20,11 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.List (find, nub)
 import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
-import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCards, campaignPlayer)
+import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
+import Marvel.EncounterSet (EncounterSet (TheMarket))
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
@@ -86,14 +88,14 @@ loadPlayer d = case checkedDeckList d of
     Right <$> initPlayer (toHeroCardCode d.hero) (Deck cards)
 
 -- | The deck a player brings to a campaign's next game: the one they began it with, the
--- cards the campaign log adds to it, and without the allies removed from the campaign.
+-- cards the campaign log adds to it (the Market cards they bought among them), and without the allies removed from the campaign.
 -- What the campaign adds does not count toward the deck's size.
 campaignDeck :: Campaign -> DeckList -> DeckList
 campaignDeck c d =
   d
     { cards =
         [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved]
-          <> [(code, 1) | Just p <- [campaignPlayer d.hero c], code <- campaignCards p]
+          <> [(code, 1) | code <- campaignCardsOf d.hero c]
     }
 
 -- | How many cards the player must add to the deck they began the campaign with, once the
@@ -112,6 +114,12 @@ campaignDeckShortBy c d = max 0 (40 - counted)
       , Just def <- [HashMap.lookup code allPlayerCards]
       , Permanent `notElem` cdKeywords def
       ]
+
+-- | The cards of The Market in the deck: bought with units in The Galaxy's Most Wanted
+-- campaign, they "cannot be included in a deck unless players are playing" it (rulebook
+-- p.4), the campaign adding them to the deck it deals ('campaignDeck').
+marketCardsIn :: DeckList -> [CardCode]
+marketCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def == Just TheMarket]
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]
