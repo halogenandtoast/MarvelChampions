@@ -48,6 +48,8 @@
     "river": "In play now"
   },
   "river": {
+    "stunned": "Stunned: attack canceled",
+    "confused": "Confused: thwart canceled",
     "revealed": "Revealed",
     "attacks": "{attacker} attacks {target}",
     "threat": "{source}: {amount} threat on {scheme}",
@@ -212,6 +214,8 @@
     "label": "{card}"
   },
   "paying": {
+    "stunned": "Stunned will cancel this attack. Costs are still paid.",
+    "confused": "Confused will cancel this thwart. Costs are still paid.",
     "title": "Paying",
     "by": "{name} is paying",
     "paid": "Paid",

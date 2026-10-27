@@ -37,7 +37,8 @@ export interface RiverAttacker {
   boostCards?: number
 }
 
-const { cards, label = null, attacker = null, scheme = null, elsewhere, shared = false } = defineProps<{
+const { cards, label = null, attacker = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+  canceledEvent?: { code: string; statuses: readonly ('stunned' | 'confused')[] } | null
   cards: readonly RiverCard[]
   label?: string | null
   /** the enemy attacking, with its attack as modified now */
@@ -56,12 +57,17 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
-    <div v-if="cards.length || label || !shared" class="lane" :class="{ live: cards.length || label, danger: advances }">
+    <div v-if="cards.length || label || canceledEvent || !shared" class="lane" :class="{ live: cards.length || label || canceledEvent, danger: advances }">
       <div class="what">
         <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
+        <p v-for="status in canceledEvent?.statuses ?? []" :key="status">{{ t(`game.river.${status}`) }}</p>
         <p v-if="advances" class="warn" role="alert"><span aria-hidden="true">▲</span> {{ t('game.river.advances') }}</p>
       </div>
       <div class="cards">
+        <template v-if="canceledEvent">
+          <BoardCard :code="canceledEvent.code" :morph="false" />
+          <img v-for="status in canceledEvent.statuses" :key="status" class="canceled-status" :src="`/images/tokens/${status}.avif`" :alt="t(`game.status.${status}`)" />
+        </template>
         <div v-if="attacker" class="attacker">
           <dl class="stats">
             <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ attacker.attack }}</dd></div>
@@ -93,6 +99,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 
 <style scoped>
 .river { display: flex; gap: 12px; min-height: 0; min-width: 0; }
+.canceled-status { width: var(--card-width); height: auto; border-radius: 8px; }
 .lane {
   display: grid;
   grid-template-columns: minmax(110px, 0.3fr) minmax(0, 1fr);

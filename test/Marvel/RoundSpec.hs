@@ -16,6 +16,25 @@ heading = \case
 
 spec :: Spec
 spec = describe "the round as the board shows it" do
+  for_ [("01053", IdentityStunned, "stunned"), ("01060", IdentityConfused, "confused")] \(code, status, name) ->
+    it ("shows the event and " <> show name <> " status when the event is canceled") do
+      let setup = fromMaybe (error "no setup") (recommendedSetup "01094")
+      told <- newIORef []
+      (app, _) <- dealtGameTelling id setup [starter "she-hulk"] 1 \m -> modifyIORef' told (<> [m])
+      runGameApp app do
+        toFirstTurn
+        p <- getsGame (head . gameSeats)
+        clearHand p
+        event <- putInHand p code
+        strength <- putInHand p "01090"
+        placeMainThreat 6
+        changeForm p >> pass
+        resolve [IdentityMessage p status]
+        liftIO $ writeIORef told []
+        playWith event [strength]
+      said <- readIORef told
+      [(c, ss) | EventCanceled c ss <- said] `shouldBe` [(code, [name])]
+
   it "shows the board as each step of the villain phase begins, every round alike" do
     let setup = fromMaybe (error "no setup") (recommendedSetup "01094")
     told <- newIORef []
