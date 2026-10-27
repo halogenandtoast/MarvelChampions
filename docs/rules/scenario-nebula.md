@@ -201,3 +201,8 @@ implemented by this scenario.
   ("instead"), so the activation is not initiated and the Specials do not resolve.
 - **Lethal Intent's "reveal that card"** is for the active player, the one who revealed Lethal Intent in every way
   it can be revealed in this scenario.
+
+## Rulings (from the project owner, 2026-10-27)
+
+- A stunned Nebula's attack, or a confused Nebula's scheme, does not resolve her Techniques' Specials: the status card replaces the activation.
+- Ruthless counts only threat Nebula's scheme itself places (SCH and boost icons), not threat a boost card's ability places.

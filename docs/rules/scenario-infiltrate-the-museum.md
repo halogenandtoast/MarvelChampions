@@ -230,3 +230,7 @@ printed cards.
   each share.
 - **Caught Off Guard** (both copies) leaves a permanent support out of its choice; with only permanent ones, nothing
   is discarded and it gains surge.
+
+## Rulings (from the project owner, 2026-10-27)
+
+- Inconspicuous Box ("lowest cost card you control") and View the Cosmos ("highest cost card from your hand"): the player whose cards they are breaks ties, not the first player.

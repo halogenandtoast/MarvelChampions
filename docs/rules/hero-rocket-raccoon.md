@@ -95,3 +95,7 @@ Vendetta enters play.
   villain and each minion engaged with the chosen player as one effect.
 - Vendetta enters play with its threat; its amplify icon adds one boost icon to each boost card
   turned faceup for an enemy's activation while it is in play (RR Amplify Icon).
+
+## Rulings (from the project owner, 2026-10-27)
+
+- Schadenfreude heals 2 for each enemy damaged: Rocket Launcher damaging the villain and two minions heals 6.
