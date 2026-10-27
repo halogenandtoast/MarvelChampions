@@ -51,6 +51,9 @@ OVERRIDES = {
     "29003a": "MarvelHD/497_Ironheart_FaceURL.jpg",
     "29003b": "MarvelHD/498_Ironheart_BackURL.jpg",
 }
+# ponytail: side schemes whose marvelcdb reference is a portrait scan, so the match
+# comes out upright; their rotation, picked by hand
+ROTATIONS = {"05026": 90, "11045": 90}
 
 
 def walk(card):
@@ -306,6 +309,9 @@ def main():
             manifest[code + "b"] = dict(manifest[code], alias_of=code)
     for code, src in OVERRIDES.items():
         manifest[code] = {"source": src, "rotate": 0, "override": True}
+    for code, rot in ROTATIONS.items():
+        if code in manifest:
+            manifest[code]["rotate"] = rot
     manifest = dict(sorted(manifest.items()))
     MANIFEST.write_text(json.dumps(manifest, indent=1))
 
