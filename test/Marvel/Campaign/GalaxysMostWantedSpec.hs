@@ -7,7 +7,9 @@ import Marvel.EncounterCard (allEncounterCards)
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Campaign
+import Marvel.Environment.Environments.NebulasShip (getEvasionCounters)
 import Marvel.SideScheme.Cards qualified as SideSchemes
+import Marvel.Villain.Types (villainIsTough)
 import TestImport
 
 groot, rocket :: CardCode
@@ -59,6 +61,26 @@ grootNow = fromMaybe (error "no Groot in the log") . galaxyPlayer groot <$> camp
 
 sideSchemeCodes :: GameAppT [CardCode]
 sideSchemeCodes = map fst <$> getSideSchemesInPlay
+
+-- | The campaign's next game against the box's own scenario at that place, its story read.
+dealReal :: Campaign -> [DeckList] -> IO TestGame
+dealReal c decks = do
+  let code = fromMaybe (error "campaign over") (currentScenario c)
+      setup = fromMaybe (error "no such scenario") (recommendedSetup code)
+  (app, ran, logged) <- dealtGameWith (campaignL ?~ c) setup decks 1
+  seats <- runGameApp app (getsGame gameSeats)
+  let tg = TestGame app ran logged seats
+  tg <$ inGame tg readStory
+
+-- | A Galaxy's Most Wanted campaign for Groot with so many scenarios won.
+realAt :: CampaignMode -> Int -> Campaign
+realAt mode n = (newCampaignOf GalaxysMostWanted mode [groot]) {completed = n}
+
+encounterDef :: CardCode -> CardDef
+encounterDef code = fromMaybe (error "no such card") (lookup code allEncounterCards)
+
+unitsFor :: CardCode -> GameAppT Natural
+unitsFor code = maybe 0 (.units) . galaxyPlayer code <$> campaignNow
 
 withUnits :: CardCode -> Natural -> Campaign -> Campaign
 withUnits ident n = recordInLog (RecordUnits ident n)
@@ -336,6 +358,116 @@ spec = describe "The Galaxy's Most Wanted campaign" do
         sideSchemeThreat (sideSchemeOf card) `shouldReturn` 6
         resolve [SideSchemeMessage (sideSchemeOf card) (SideSchemeThwarted (IdentityRef p) 6)]
         map toCardCode <$> getVictoryDisplay `shouldReturn` ["16179a"]
+
+  describe "against the box's own scenarios" do
+    it "Brotherhood of Badoon: Badoon Blitz against Drang, and won on stage 1B its unit with the rest" do
+      tg <- dealReal (realAt StandardCampaign 0) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        sideSchemeCodes >>= (liftIO . (`shouldContain` ["16178a"]))
+        deck <- map toCardCode <$> scenarioEncounterDeckNow
+        liftIO $ deck `shouldContain` ["16183"]
+        points <- getVictoryPoints
+        noMinions <- null <$> selectList AnyMinion
+        win
+        void readStory
+        -- 1, the victory points to 3, no minions, stage 1B (Terrestrial Invasion)
+        unitsFor groot `shouldReturn` (1 + min 3 points + (if noMinions then 1 else 0) + 1)
+
+    it "Infiltrate the Museum won: a player's card in The Collection recorded, 1 or fewer per player a unit" do
+      tg <- dealReal (realAt StandardCampaign 1) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        let p = player1 tg
+        -- the scenario's own setup puts a card of each deck there
+        already <- getCollection
+        [card] <- stackDeck p ["16002"]
+        runNow [PlaceInCollection (PlayerCard card)]
+        collection <- getCollection
+        points <- getVictoryPoints
+        noThreat <- (== 0) <$> mainSchemeThreatNow
+        win
+        void readStory
+        (.collection) <$> grootNow `shouldReturn` [toCardCode c | PlayerCard c <- collection]
+        liftIO $ length collection `shouldBe` length already + 1
+        unitsFor groot `shouldReturn` (1 + min 3 points + (if length collection <= 1 then 1 else 0) + (if noThreat then 1 else 0))
+
+    it "Infiltrate the Museum: Gallery of Splendor defeated goes to the victory display, not The Collection, and puts the top of each deck there" do
+      tg <- dealReal (realAt StandardCampaign 1) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        let p = player1 tg
+        already <- getCollection
+        [top] <- stackDeck p ["16002"]
+        [sid] <- selectList (SideSchemeIs SideSchemes.galleryOfSplendor)
+        threat <- sideSchemeThreat sid
+        resolve [SideSchemeMessage sid (SideSchemeThwarted (IdentityRef p) threat)]
+        map toCardCode <$> getVictoryDisplay `shouldReturn` ["16179a"]
+        collection <- getCollection
+        liftIO $ [pcCardId c | PlayerCard c <- collection] `shouldBe` [pcCardId c | PlayerCard c <- already] <> [pcCardId top]
+
+    it "Infiltrate the Museum, expert: each player puts a card from their starting hand into The Collection" do
+      tg <- dealReal (realAt ExpertCampaign 1) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        collection <- getCollection
+        liftIO $ [() | PlayerCard c <- collection, pcOwner c == Just (player1 tg)] `shouldBe` [()]
+
+    it "Escape the Museum won: the Galactic Artifacts side schemes in the victory display recorded, a unit for each 2" do
+      tg <- dealReal (realAt StandardCampaign 2) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        artifacts <- traverse (encounterCard . encounterDef) ["16127", "16128"]
+        withGame_ $ victoryDisplayL .~ artifacts
+        win
+        void readStory
+        c <- campaignNow
+        liftIO $ c.campaignLog.galaxy.galacticArtifacts `shouldMatchList` ["16127", "16128"]
+        -- 1, no victory points on the artifacts, 1 for the two of them
+        unitsFor groot `shouldReturn` 2
+
+    it "Nebula: the recorded Galactic Artifacts shuffled in with what each brings" do
+      let c = recordInLog (RecordGalacticArtifacts ["16127", "16128", "16130"]) (realAt StandardCampaign 3)
+      tg <- dealReal c [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        -- the Teapot's encounter card dealt from the deck the artifacts are in: any of them
+        dealt <- map toCardCode <$> dealtTo (player1 tg)
+        deck <- map toCardCode <$> scenarioEncounterDeckNow
+        liftIO $ filter (`elem` ["16127", "16128", "16130"]) (deck <> dealt) `shouldMatchList` ["16127", "16128", "16130"]
+        liftIO $ length dealt `shouldBe` 1
+        villainIsTough <$> getVillain `shouldReturn` True
+      tg' <- dealReal (realAt StandardCampaign 3) [starter "groot"]
+      without <- inGame tg' (toFirstTurn >> getEvasionCounters)
+      inGame tg getEvasionCounters `shouldReturn` (without + 1)
+
+    it "Nebula won: the evasion counters and the Power Stone's holder recorded, a unit for 1 or fewer counters" do
+      tg <- dealReal (realAt StandardCampaign 3) [starter "groot"]
+      inGame tg do
+        toFirstTurn
+        stone <- maybe (error "no Power Stone") pure =<< getPowerStone
+        resolve [AttachmentMessage stone (AttachedToIdentity (player1 tg))]
+        evasion <- getEvasionCounters
+        points <- getVictoryPoints
+        win
+        void readStory
+        g <- (.campaignLog.galaxy) <$> campaignNow
+        liftIO $ (g.powerStoneControl, g.evasionCounters) `shouldBe` (Just groot, Just evasion)
+        -- the main scheme still 1B: The Art of Evasion
+        unitsFor groot `shouldReturn` (1 + min 3 points + (if evasion <= 1 then 1 else 0) + 1)
+
+    it "Ronan: the Power Stone's holder dealt \"You Stand Accused!\", Pincer Maneuver revealed with 3 - evasion counters per player more threat" do
+      let c = recordInLog (RecordEvasionCounters 1) $ recordInLog (RecordPowerStoneControl groot) (realAt StandardCampaign 4)
+      tg <- dealReal c [starter "groot"]
+      inGame tg do
+        choose "no Kree Supremacy" (isLabel "$label.pass")
+        toFirstTurn
+        dealt <- map toCardCode <$> dealtTo (player1 tg)
+        liftIO $ dealt `shouldContain` ["16116"]
+        pincers <- selectList (SideSchemeIs SideSchemes.pincerManeuver)
+        case pincers of
+          [s] -> sideSchemeThreat s `shouldReturn` (3 + 2 + 2)
+          _ -> liftIO $ expectationFailure ("Pincer Maneuvers in play: " <> show (length pincers))
  where
   isCard code = \case
     CardLabel c _ -> c == code

@@ -882,6 +882,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           , let (before, after) = splitAt n players
           ]
       _ -> pure ()
+    -- what the Campaign Instructions do with the starting hands
+    when (isJust gameCampaign) $ campaignStep (CampaignSetupThen "startingHands")
     pure $ g {gameState = InProgress}
   SetupPlayers -> do
     for_ gamePlayerOrder \p -> do

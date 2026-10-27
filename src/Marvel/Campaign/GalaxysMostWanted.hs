@@ -18,12 +18,13 @@ import Marvel.Id
 import Marvel.Identity.Types (Field (..))
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Name (title)
 import Marvel.Projection
 import Marvel.Count
 import Marvel.Query
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as SideSchemes
+import Marvel.Treachery.Cards qualified as Treacheries
+import Marvel.Hand
 import Marvel.Environment.Environments.NebulasShip (getEvasionCounters, placeEvasionCounters)
 import Marvel.Status
 import Marvel.Trait (Trait (Technique))
@@ -35,6 +36,7 @@ runGalaxyStep c = \case
     for_ (take 1 players) (`readThenContinue` briefing c)
   CampaignSetup -> setup c
   CampaignSetupThen "pincerManeuver" -> pincerThreat c
+  CampaignSetupThen "startingHands" -> startingHands c
   CampaignSetupThen _ -> pure ()
   CampaignVictory -> do
     players <- getPlayers
@@ -97,11 +99,15 @@ setup c = do
   when (n == 4) $ for_ (mapMaybe (`HashMap.lookup` allEncounterCards) c.campaignLog.galaxy.galacticArtifacts) \def -> do
     shuffleIntoEncounterDeck . pure =<< genEncounterCard def
     villain <- selectOne ActiveVillain
-    case title (cdName def) of
-      "Hujahdarian Monarch Egg" -> placeEvasionCounters 1
-      "Magical Teapot" -> dealEncounterCard first
-      "Philosopher's Stone" -> for_ villain dealBoost
-      "Crystal Ball" -> for_ villain (`giveStatus` ToughStatus)
+    case cdCardCode def of
+      -- Hujahdarian Monarch Egg
+      "16127" -> placeEvasionCounters 1
+      -- Magical Teapot
+      "16128" -> dealEncounterCard first
+      -- Philosopher's Stone
+      "16129" -> for_ villain dealBoost
+      -- Crystal Ball
+      "16130" -> for_ villain (`giveStatus` ToughStatus)
       _ -> pure ()
   -- Scenario 5: a player recorded in Power Stone Control is dealt "You Stand Accused!",
   -- and Pincer Maneuver is revealed with 3 - (evasion counters) per player more threat
@@ -109,8 +115,8 @@ setup c = do
     for_ c.campaignLog.galaxy.powerStoneControl \code -> do
       codes <- traverse getIdentityCode players
       for_ (List.lookup code (zip codes players)) \ident ->
-        searchAndDealEncounterCard ident (CardWithTitle "\"You Stand Accused!\"")
-    searchAndRevealEncounterCard first (CardWithTitle "Pincer Maneuver")
+        searchAndDealEncounterCard ident (CardIs Treacheries.youStandAccused)
+    searchAndRevealEncounterCard first (CardIs SideSchemes.pincerManeuver)
     campaignStep (CampaignSetupThen "pincerManeuver")
   -- Badoon Headhunter, and what each mark in "Headhunter Defeated?" brings
   headhunters <- traverse genEncounterCard $ mapMaybe (`HashMap.lookup` allEncounterCards) (headhunterCards c)
@@ -158,9 +164,18 @@ setup c = do
 -- the recorded number in the Evasion Counters section."
 pincerThreat :: (ReverseQueue m) => Campaign -> m ()
 pincerThreat c = do
-  pincers <- maybe (pure []) (selectList . SideSchemeIs) (HashMap.lookup "16112" allEncounterCards)
+  pincers <- selectList (SideSchemeIs SideSchemes.pincerManeuver)
   let x = 3 - min 3 (fromMaybe 0 c.campaignLog.galaxy.evasionCounters)
   when (x > 0) $ for_ (take 1 pincers) \s -> placeThreat s =<< perPlayer x
+
+-- | Infiltrate the Museum, expert: "In player order, each player must choose 1 card from
+-- their hand and put it faceup into The Collection", once their starting hands are dealt.
+startingHands :: (ReverseQueue m) => Campaign -> m ()
+startingHands c = when (scenarioNumber c == 2 && isExpertCampaign c) do
+  players <- getPlayers
+  for_ players \p -> do
+    hand <- projectMap PlayerIdentityHand unHand p
+    chooseOnePrompted p "$label.chooseCardForCollection" [targeting card (placeInCollection card) | card <- hand]
 
 -- | X[per_hero]: X for each player who started the scenario.
 perPlayer :: (HasGame m) => Natural -> m Natural
