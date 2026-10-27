@@ -4,6 +4,10 @@ module Marvel.Game.Run (runGame, answerQuestion, runDebug) where
 import Marvel.Prelude
 
 import Marvel.Card
+import Marvel.Ability qualified as Ability
+import Marvel.Entity (toAttrs)
+import Marvel.Event.Types (eventCardDef)
+import Marvel.Matchers
 import Marvel.Frontend
 import Marvel.Game
 import Marvel.Log (idText, sendLog)
@@ -19,6 +23,20 @@ narrate msg = do
   for_ (narrationFor msg) \build -> traverse_ sendLog =<< build
   when (intoRiver msg) showBoard
   traverse_ send (cue msg)
+  -- Show the paid event before its effect is replaced and its status cards removed.
+  case msg of
+    ResolveEventEffect ident (EventMessage eid _) -> do
+      g <- getGame
+      for_ (lookup eid (gameEvents g)) \event -> do
+        let def = eventCardDef (toAttrs event)
+        stunned <- identityMatches StunnedIdentity ident
+        confused <- identityMatches ConfusedIdentity ident
+        let statuses = ["stunned" | stunned && Ability.Attack `elem` cdAbilitySubTypes def]
+              <> ["confused" | confused && Ability.Thwart `elem` cdAbilitySubTypes def]
+        unless (null statuses) do
+          showBoard
+          send $ EventCanceled (toCardCode def) statuses
+    _ -> pure ()
  where
   showBoard = send . Board . toJSON =<< getGame
 

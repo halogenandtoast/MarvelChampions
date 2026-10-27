@@ -193,6 +193,7 @@ export interface QuestionView {
 
 /** A card or ability being paid for, and the resources paid so far. */
 export interface ActiveCostView {
+  canceledBy?: ('stunned' | 'confused')[]
   player: string
   /** the card being played */
   card: CardView | null
@@ -292,6 +293,7 @@ export type ServerMessage =
   | { tag: 'Shuffled'; pile: string }
   | { tag: 'BoostDealt'; cardId: string }
   | { tag: 'Revealing'; cardId: string; code: string; boost: boolean }
+  | { tag: 'EventCanceled'; code: string; statuses: ('stunned' | 'confused')[] }
 
 export interface SeatSummary {
   name: string

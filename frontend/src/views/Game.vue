@@ -32,7 +32,7 @@ const { t } = useI18n()
 const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
-const { error, game, data, log, river, riverCleared, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
+const { error, game, data, log, river, riverCleared, canceledEvent, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
   useGame(gameId, spectate)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
@@ -355,7 +355,7 @@ const resetGame = () => {
             <VillainArea :game="game" :area="shownArea" />
           </div>
 
-          <River class="river" :cards="riverCards" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :cards="riverCards" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" :declares="declares" @choose="choose" />
           </River>
 

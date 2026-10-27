@@ -71,6 +71,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
     <header>
       <span class="eyebrow">{{ player ? $t('game.paying.by', { name: player }) : $t('game.paying.title') }}</span>
       <h2>{{ paying?.name ?? $t('game.paying.title') }}</h2>
+      <p v-for="status in cost.canceledBy ?? []" :key="status" class="status-warning" role="status">{{ $t(`game.paying.${status}`) }}</p>
       <span class="label">{{ $t('game.paying.paid') }}</span>
       <p v-if="cost.paid.length" class="resources">
         <template v-for="(r, i) in cost.paid" :key="i">
@@ -95,6 +96,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       </p>
     </header>
     <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" :morph="!elsewhere.has(paying.id)" />
+    <img v-for="status in cost.canceledBy ?? []" :key="status" class="canceling-status" :src="`/images/tokens/${status}.avif`" :alt="$t(`game.status.${status}`)" />
     <div v-if="cost.spent.length" class="spent">
       <span class="label">{{ $t('game.paying.spent') }}</span>
       <div class="spent-cards">
@@ -125,6 +127,8 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
   border: 1px solid rgb(226 163 59 / 0.4);
   animation: rise 0.25s ease-out;
 }
+.status-warning { margin: 0; max-width: 26ch; color: var(--amber); font-size: 0.8rem; font-weight: 700; }
+.canceling-status { width: calc(var(--card-width) * 0.8); height: auto; border-radius: 8px; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 header { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 0 1 auto; }
 .eyebrow { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }

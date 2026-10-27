@@ -26,8 +26,7 @@ const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
       <span class="deck-name">{{ face.name ?? heroName }}</span>
       <span class="deck-detail">
         <span v-for="aspect in face.aspects" :key="aspect" class="aspect-chip" :data-aspect="aspect">{{ t(`aspects.${aspect}`) }}</span>
-        <span v-if="face.starter" class="kind">{{ t('newGame.starterDeck') }}</span>
-        <span v-else class="kind">{{ heroName }}</span>
+        <span v-if="!face.starter" class="kind">{{ heroName }}</span>
       </span>
     </span>
   </span>

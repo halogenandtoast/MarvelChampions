@@ -13,6 +13,7 @@ import Marvel.Prelude
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types (Ability (..), AbilityType)
+import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
 import Marvel.Payment (Payment (..), paymentResources, payments)
 import Data.List qualified as L
@@ -355,6 +356,7 @@ data ActiveCostView = ActiveCostView
   , anyAmount :: Bool
   -- ^ an X cost, paid as far as the player likes
   , spent :: [CardView]
+  , canceledBy :: [Text]
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -407,6 +409,13 @@ gameView seesHand g = do
         , owed = owedFor (costResources c.activeCostCost) paid
         , anyAmount = dynamic c.activeCostCost
         , spent = map (cardView . PlayerCard) c.activeCostSpentCards
+        , canceledBy = case c.activeCostTarget of
+            ForCard pc | cdCardType (getCardDef pc) == EventType ->
+              let labels = cdAbilitySubTypes (getCardDef pc)
+                  identity = HashMap.lookup c.activeCostIdentityId (gamePlayers g)
+               in ["stunned" | Ability.Attack `elem` labels, maybe False identityIsStunned identity]
+                    <> ["confused" | Ability.Thwart `elem` labels, maybe False identityIsConfused identity]
+            _ -> []
         }
   pure
     GameView

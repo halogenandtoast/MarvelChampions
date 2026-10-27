@@ -35,6 +35,7 @@ export const useGame = (gameId: string, spectate = false) => {
   const river = shallowRef<RiverCard[]>([])
   // what the last state put in the river is over, cleared for what the server tells of next
   const riverCleared = ref(false)
+  const canceledEvent = shallowRef<{ code: string; statuses: ('stunned' | 'confused')[] } | null>(null)
   const cards = useCards()
   const hasOlder = ref(false)
   const queue: ServerMessage[] = []
@@ -60,6 +61,7 @@ export const useGame = (gameId: string, spectate = false) => {
       data.value = next
       river.value = []
       riverCleared.value = false
+      canceledEvent.value = null
       await nextTick()
       dealing?.land()
     })
@@ -69,7 +71,7 @@ export const useGame = (gameId: string, spectate = false) => {
   // the river emptied, quickly, before the next card comes into it
   const clearRiver = async () => {
     const g = data.value?.game
-    const held = river.value.length || (!riverCleared.value && (g?.focusedCards?.length || g?.boostCards?.length || g?.attack))
+    const held = canceledEvent.value || river.value.length || (!riverCleared.value && (g?.focusedCards?.length || g?.boostCards?.length || g?.attack))
     if (!held) return
     const quick = Object.assign(document.createElement('style'), {
       textContent: `::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: ${CLEAR_MS}ms !important; }`,
@@ -78,6 +80,7 @@ export const useGame = (gameId: string, spectate = false) => {
     await withViewTransition(() => {
       river.value = []
       riverCleared.value = true
+      canceledEvent.value = null
     })
     quick.remove()
   }
@@ -100,6 +103,11 @@ export const useGame = (gameId: string, spectate = false) => {
   // Log entries arrive while the server works; the state that follows is applied in order.
   const apply = async (message: ServerMessage) => {
     switch (message.tag) {
+      case 'EventCanceled':
+        await clearRiver()
+        await withViewTransition(() => { canceledEvent.value = message })
+        await sleep(1500)
+        return
       case 'Update':
         return update(message.contents)
       case 'Logged':
@@ -185,6 +193,7 @@ export const useGame = (gameId: string, spectate = false) => {
     log: shallowReadonly(log),
     river: shallowReadonly(river),
     riverCleared: readonly(riverCleared),
+    canceledEvent: readonly(canceledEvent),
     hasOlder: readonly(hasOlder),
     loadOlder: async (before: number) => {
       const response = await apiFetch(`/api/games/${gameId}/log?before=${before}`).catch(() => null)
