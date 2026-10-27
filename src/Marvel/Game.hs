@@ -373,13 +373,31 @@ getPlayerCount = length <$> getsGame gamePlayerOrder
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getUniqueTitlesInPlay = do
   players <- map snd <$> (getUniqueCardsIn . areaId =<< getYourArea)
-  encounter <- getsGame \g ->
-    [ (title n, maybe [] pure (subtitle n))
-    | def <- map getCardDef (HashMap.elems $ gameMinions g) <> map getCardDef (HashMap.elems $ gameVillains g)
-    , cdUnique def
-    , let n = cdName def
-    ]
+  encounter <- getsGame (map snd . uniqueEncounterCardsInPlay)
   pure $ players <> encounter
+
+-- | The unique encounter cards in play: minions, villains and attachments.
+uniqueEncounterCardsInPlay :: Game -> [(Target, (Text, [Text]))]
+uniqueEncounterCardsInPlay g =
+  [ (t, (title n, maybe [] pure (subtitle n)))
+  | (t, def) <-
+      [(MinionRef k, getCardDef m) | (k, m) <- HashMap.toList (gameMinions g)]
+        <> [(VillainRef k, getCardDef v) | (k, v) <- HashMap.toList (gameVillains g)]
+        <> [(AttachmentRef k, getCardDef a) | (k, a) <- HashMap.toList (gameAttachments g)]
+  , cdUnique def
+  , let n = cdName def
+  ]
+
+-- | Whether the unique card entering play (already made, as the target) matches another
+-- card in play: the player's cards in their area, or a unique encounter card.
+matchesUniqueInPlay :: (HasGame m) => IdentityId -> Target -> CardDef -> m Bool
+matchesUniqueInPlay ident self def
+  | not (cdUnique def) = pure False
+  | otherwise = do
+      players <- getUniqueCardsIn . areaId =<< getAreaOf ident
+      encounter <- getsGame uniqueEncounterCardsInPlay
+      let named = (title (cdName def), maybe [] pure (subtitle (cdName def)))
+      pure $ any (uniqueMatch named . snd) [x | x@(t, _) <- players <> encounter, t /= self]
 
 -- | The unique cards in play in the area, by title and its other names: the players'
 -- allies, supports and upgrades, and their identities.
@@ -1273,9 +1291,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     case cdCardType (getCardDef card) of
       AttachmentType -> do
         let attachment = createAttachment card
-        revealing (toTarget attachment)
-        attachmentStep (toId attachment) (RevealAttachment ident)
-        surges
+        rest <- capture do
+          revealing (toTarget attachment)
+          attachmentStep (toId attachment) (RevealAttachment ident)
+          surges
+        push $ EntersPlayUnlessUnique ident True (toTarget attachment) rest
         pure $
           g
             & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
@@ -1283,14 +1303,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         let
           minion = createMinion ident card
           isTough = Toughness `member` cdKeywords (getCardDef card)
-        revealing (toTarget minion)
-        when isTough $ enemyBecomesTough (toId minion)
-        focusing [toCard minion] do
-          checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
-          whenRevealed $ minionStep (toId minion) (RevealMinion ident)
-        engageMinion (toId minion) ident
-        checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
-        surges
+        -- "when it would enter play" (the Nebula minion) comes before a matching unique
+        -- card keeps it out
+        focusing [toCard minion] $ checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
+        rest <- capture do
+          revealing (toTarget minion)
+          when isTough $ enemyBecomesTough (toId minion)
+          focusing [toCard minion] $ whenRevealed $ minionStep (toId minion) (RevealMinion ident)
+          engageMinion (toId minion) ident
+          checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+          surges
+        push $ EntersPlayUnlessUnique ident True (toTarget minion) rest
         pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
       TreacheryType -> do
         let treachery = createTreachery card
@@ -1360,10 +1383,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       let
         minion = createMinion ident card
         isTough = Toughness `member` cdKeywords (getCardDef card)
-      when isTough $ enemyBecomesTough (toId minion)
       checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
-      engageMinion (toId minion) ident
-      checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+      rest <- capture do
+        when isTough $ enemyBecomesTough (toId minion)
+        engageMinion (toId minion) ident
+        checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
+      push $ EntersPlayUnlessUnique ident False (toTarget minion) rest
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
     -- put into play, not revealed: no surge
     EnvironmentType -> do
@@ -1400,6 +1425,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           when (null rest) reshuffle
           pure $ g & (entitiesL . minionsL %~ insertMap minionId drone)
   EndCheckWindows -> pure g
+  EntersPlayUnlessUnique ident revealed target rest -> do
+    let def = case target of
+          MinionRef k -> getCardDef <$> lookup k (gameMinions g)
+          AttachmentRef k -> getCardDef <$> lookup k (gameAttachments g)
+          _ -> Nothing
+    matched <- maybe (pure False) (matchesUniqueInPlay ident target) def
+    if matched
+      then do
+        push $ KeptOutByUnique target
+        removeFromPlay target
+        when revealed $ dealEncounterCard ident
+      else pushAll rest
+    pure g
+  KeptOutByUnique _ -> pure g
   IdentityEndedTurn ident ->
     pure $
       g

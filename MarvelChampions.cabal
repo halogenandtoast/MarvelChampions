@@ -1171,6 +1171,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.RecoverSpec
       Marvel.Rules.SetMechanicsSpec
       Marvel.Rules.SurgeSpec
+      Marvel.Rules.UniqueSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       SpecHook

@@ -75,6 +75,7 @@
   "countersPlaced": "{target} gets a counter | {target} gets {count} counters",
   "countersRemoved": "A counter is removed from {target} | {count} counters are removed from {target}",
   "flips": "{target} flips",
+  "keptOutByUnique": "{target} matches a unique card in play and is discarded",
   "playerObligationsRemoved": "Each player's obligations are removed from the game",
   "takesIndirectDamage": "{player} takes {count} indirect damage",
   "attachedTo": "{card} is attached to {target}",

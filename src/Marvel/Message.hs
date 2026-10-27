@@ -405,6 +405,12 @@ data Message
   | -- | an encounter card put into play without being revealed: its "When Revealed"
     -- abilities and surge do not resolve
     PutEncounterCardIntoPlay IdentityId EncounterCard
+  | -- | the encounter card enters play with what follows, unless a matching unique card is
+    -- in play: then it is discarded instead, and if it was being revealed its player is
+    -- dealt a facedown encounter card (RR Unique Icon)
+    EntersPlayUnlessUnique IdentityId Bool Target [Message]
+  | -- | the card is kept out of play by a matching unique card
+    KeptOutByUnique Target
   | -- | a step only one card knows, as ArkhamHorror's @ScenarioSpecific@: the card the
     -- target names reads the key and decodes the value; the engine passes it by
     CardSpecific Target Text Value

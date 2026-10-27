@@ -123,6 +123,7 @@ narrationFor = \case
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
+  KeptOutByUnique t -> Just $ simply "log.keptOutByUnique" t
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
   -- put into play attached, not revealed: the card is not in play yet to be named
