@@ -78,5 +78,8 @@ data Trait
   | NovaCorps
   | Outlaw
   | Scoundrel
+  -- The Galaxy's Most Wanted
+  | Badoon
+  | InfinityStone
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

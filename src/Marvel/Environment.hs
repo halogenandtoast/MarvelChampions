@@ -10,6 +10,7 @@ import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
 import Marvel.Environment.Environments.AbsorbingMan
 import Marvel.Environment.Environments.CriminalEnterprise
+import Marvel.Environment.Environments.RogueVessel
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -44,6 +45,8 @@ allEnvironments =
 
     -- The Once and Future Kang
 
+    -- The Galaxy's Most Wanted
+    , SomeEnvironmentCard rogueVessel
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

@@ -75,6 +75,10 @@ modularSets =
   , "hydra_assault"
   , "weap_master"
   , "hydra_patrol"
+  -- The Galaxy's Most Wanted
+  , "ship_command"
+  , "power_stone"
+  , "badoon_headhunter"
   ]
 
 encounterImplemented :: PackCard -> Bool
@@ -86,6 +90,8 @@ encounterImplemented c = case c.cardType of
   "side_scheme" -> HashMap.member c.code allSideSchemes
   "environment" -> HashMap.member c.code allEnvironments
   "obligation" -> HashMap.member c.code allObligations
+  -- an encounter set's support, as Ship Command's Milano
+  "support" -> HashMap.member c.code allSupports
   -- main schemes are kept by their base code, the sides being one card
   "main_scheme" -> HashMap.member (toBaseCardCode c.code) allMainSchemes
   _ -> True

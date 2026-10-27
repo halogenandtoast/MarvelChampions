@@ -59,3 +59,6 @@ import Marvel.Support.Supports.Knowhere as X
 
 -- Gamora
 import Marvel.Support.Supports.ConditioningRoom as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Support.Supports.Milano as X

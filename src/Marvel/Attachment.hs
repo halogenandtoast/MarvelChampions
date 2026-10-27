@@ -110,6 +110,9 @@ allAttachments =
 
       -- Gamora
       , SomeAttachmentCard inABind
+
+      -- The Galaxy's Most Wanted
+      , SomeAttachmentCard powerStone
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

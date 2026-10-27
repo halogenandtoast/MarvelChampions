@@ -111,6 +111,11 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , siblingRivalry
+
+  -- The Galaxy's Most Wanted: Ship Command
+  , cannonade
+  -- Badoon Headhunter
+  , fugitiveRecovery
   ]
 
 sideScheme
@@ -452,3 +457,14 @@ buddingCrimeSyndicate =
 
 siblingRivalry :: CardDef
 siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] GamoraNemesis 1
+
+-- The Galaxy's Most Wanted: Ship Command
+
+-- | Hinder 3 per player, one amplify icon.
+cannonade :: CardDef
+cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKeywords = singleton (Hinder (PerPlayer 3)), cdAmplify = 1}
+
+-- Badoon Headhunter
+
+fugitiveRecovery :: CardDef
+fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}

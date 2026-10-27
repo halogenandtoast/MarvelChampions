@@ -16,11 +16,12 @@ import Marvel.Environment.Cards qualified as Environments
 import Marvel.Minion.Cards
 import Marvel.Obligation.Cards
 import Marvel.SideScheme.Cards
+import Marvel.Support.Cards (allEncounterSupports)
 import Marvel.Treachery.Cards
 
 allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
-  allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions <> allObligations <> Environments.allEnvironments
+  allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions <> allObligations <> Environments.allEnvironments <> allEncounterSupports
 
 gatherEncounterSets ::
   (MonadRandom m) => HashSet EncounterSet -> m [EncounterCard]

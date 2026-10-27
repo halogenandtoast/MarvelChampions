@@ -93,3 +93,6 @@ import Marvel.Minion.Minions.MisterKnife as X
 
 -- Gamora
 import Marvel.Minion.Minions.NebulaMinion as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Minion.Minions.BadoonHeadhunter as X

@@ -102,6 +102,9 @@ allAttachments =
 
       -- Gamora
       , inABind
+
+      -- The Galaxy's Most Wanted: Power Stone
+      , powerStone
       ]
 
 attachment ::
@@ -361,3 +364,9 @@ magicalSuspension = attachment "15026" "Magical Suspension" [Spell] [Boost, Boos
 -- | Attach to Gamora.
 inABind :: CardDef
 inABind = attachment "18027" "In a Bind" [Armor, Tech] [Boost] GamoraNemesis 1
+
+-- The Galaxy's Most Wanted: Power Stone
+
+-- | Setup. Attach to the villain. Permanent.
+powerStone :: CardDef
+powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] PowerStone 1) {cdKeywords = fromList [Setup, Permanent]}

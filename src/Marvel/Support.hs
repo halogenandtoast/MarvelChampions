@@ -85,6 +85,9 @@ allSupports = fromList $ map
 
   -- Gamora
   , SomeSupportCard conditioningRoom
+
+  -- The Galaxy's Most Wanted
+  , SomeSupportCard milano
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

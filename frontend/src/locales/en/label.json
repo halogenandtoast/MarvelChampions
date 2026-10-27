@@ -188,5 +188,14 @@
   "exhaustWandaMaximoffRemoveSlippingSanity": "Exhaust Wanda Maximoff → remove Slipping Sanity from the game",
   "discardEncounterCardsThreatPerStar": "Discard the top {count} encounter cards: 1 threat on the main scheme for each [star]",
 
+  "-- The Galaxy's Most Wanted --": "",
+  "exhaustTheMilano": "Exhaust the Milano",
+  "doNotExhaustTheMilano": "Do not exhaust the Milano",
+  "spendMentalResources": "Spend a mental resource | Spend {count} mental resources",
+  "spendEnergyResources": "Spend an energy resource | Spend {count} energy resources",
+  "stunTheFirstPlayer": "Stun the first player",
+  "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
+  "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
+
   "-- end --": ""
 }

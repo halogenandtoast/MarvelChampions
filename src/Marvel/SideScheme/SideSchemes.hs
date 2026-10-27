@@ -94,3 +94,7 @@ import Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate as X
 
 -- Gamora
 import Marvel.SideScheme.SideSchemes.SiblingRivalry as X
+
+-- The Galaxy's Most Wanted
+import Marvel.SideScheme.SideSchemes.Cannonade as X
+import Marvel.SideScheme.SideSchemes.FugitiveRecovery as X

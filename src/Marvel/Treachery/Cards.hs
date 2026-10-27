@@ -154,6 +154,15 @@ allTreacheries = fromList $ map
 
   -- Gamora
   , waylay
+
+  -- The Galaxy's Most Wanted: Ship Command
+  , blindSide
+  , hullBreach
+  , powerSiphon
+  , specialDelivery
+  -- Badoon Headhunter
+  , onTheHunt
+  , deadToRights
   ]
 
 treachery
@@ -593,3 +602,28 @@ spartoiCunning = treachery "17027" "Spartoi Cunning" [Boost] StarLordNemesis 3
 
 waylay :: CardDef
 waylay = treachery "18028" "Waylay" [Boost, Boost] GamoraNemesis 2
+
+-- The Galaxy's Most Wanted: Ship Command
+
+peril :: CardDef -> CardDef
+peril def = def {cdKeywords = singleton Keyword.Peril}
+
+blindSide :: CardDef
+blindSide = peril $ treachery "16145" "Blind Side" [Boost] ShipCommand 1
+
+hullBreach :: CardDef
+hullBreach = peril $ treachery "16146" "Hull Breach" [Boost, Boost] ShipCommand 1
+
+powerSiphon :: CardDef
+powerSiphon = peril $ treachery "16147" "Power Siphon" [Boost] ShipCommand 1
+
+specialDelivery :: CardDef
+specialDelivery = treachery "16148" "Special Delivery" [] ShipCommand 1
+
+-- Badoon Headhunter
+
+onTheHunt :: CardDef
+onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+deadToRights :: CardDef
+deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}

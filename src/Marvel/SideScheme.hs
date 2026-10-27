@@ -117,6 +117,10 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , SomeSideSchemeCard siblingRivalry
+
+  -- The Galaxy's Most Wanted
+  , SomeSideSchemeCard cannonade
+  , SomeSideSchemeCard fugitiveRecovery
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

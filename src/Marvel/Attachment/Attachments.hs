@@ -77,3 +77,6 @@ import Marvel.Attachment.Attachments.MagicalSuspension as X
 
 -- Gamora
 import Marvel.Attachment.Attachments.InABind as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Attachment.Attachments.PowerStone as X

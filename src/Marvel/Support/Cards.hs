@@ -12,6 +12,8 @@ import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
 import Marvel.Matchers
+import Marvel.EncounterSet (EncounterSet (ShipCommand))
+import Marvel.Keyword (Keyword (Permanent, Setup))
 
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
@@ -281,3 +283,20 @@ knowhere =
 
 conditioningRoom :: CardDef
 conditioningRoom = identitySupport "18008" "Conditioning Room" 1 [Location] [Mental]
+
+-- The Galaxy's Most Wanted
+
+-- | The encounter sets' supports: in play under a player's control as their set says,
+-- never in a player's deck.
+allEncounterSupports :: HashMap CardCode CardDef
+allEncounterSupports = fromList $ map (toFst toCardCode) [milano]
+
+-- | Permanent. Setup. The first player controls the Milano (Ship Command).
+milano :: CardDef
+milano =
+  (unique $ baseSupport "16142" "Milano" 0 [Aerial, Vehicle] [] Nothing)
+    { cdCost = Nothing
+    , cdKeywords = fromList [Permanent, Setup]
+    , cdEncounterSet = Just ShipCommand
+    , cdEncounterSetQuantity = Just 1
+    }

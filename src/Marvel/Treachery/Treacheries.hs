@@ -123,3 +123,7 @@ import Marvel.Treachery.Treacheries.SpartoiCunning as X
 
 -- Gamora
 import Marvel.Treachery.Treacheries.Waylay as X
+
+-- The Galaxy's Most Wanted
+import Marvel.Treachery.Treacheries.ShipCommand as X
+import Marvel.Treachery.Treacheries.BadoonHeadhunter as X

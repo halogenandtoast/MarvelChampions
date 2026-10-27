@@ -123,6 +123,10 @@ allMinions =
 
       -- Gamora
       , nebulaMinion
+
+      -- The Galaxy's Most Wanted: Badoon Headhunter
+      , badoonHeadhunter
+      , headhuntersHenchman
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -624,3 +628,11 @@ nebulaMinion =
     (minion "18026" "Nebula" [Elite, Scoundrel] [Boost, Boost, Boost] GamoraNemesis 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+-- The Galaxy's Most Wanted: Badoon Headhunter
+
+badoonHeadhunter :: CardDef
+badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHeadhunter 1) {cdKeywords = fromList [Victory 2, Villainous]}
+
+headhuntersHenchman :: CardDef
+headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}
