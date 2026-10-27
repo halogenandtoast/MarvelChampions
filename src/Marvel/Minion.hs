@@ -142,6 +142,14 @@ allMinions =
       -- The Galaxy's Most Wanted
       , SomeMinionCard badoonHeadhunter
       , SomeMinionCard headhuntersHenchman
+      -- Brotherhood of Badoon
+      , SomeMinionCard badoonEngineer
+      -- Band of Badoon
+      , SomeMinionCard badoonAssassin
+      , SomeMinionCard badoonGrunt
+      , SomeMinionCard badoonLieutenant
+      , SomeMinionCard badoonSentry
+      , SomeMinionCard badoonWarlord
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

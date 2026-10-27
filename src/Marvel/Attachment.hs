@@ -116,6 +116,8 @@ allAttachments =
 
       -- The Galaxy's Most Wanted
       , SomeAttachmentCard powerStone
+      -- Brotherhood of Badoon
+      , SomeAttachmentCard drangsSpear
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

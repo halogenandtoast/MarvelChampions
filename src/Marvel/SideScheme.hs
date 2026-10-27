@@ -127,6 +127,11 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted
   , SomeSideSchemeCard cannonade
   , SomeSideSchemeCard fugitiveRecovery
+  -- Brotherhood of Badoon
+  , SomeSideSchemeCard blockade
+  , SomeSideSchemeCard bombardment
+  , SomeSideSchemeCard oppressiveArmada
+  , SomeSideSchemeCard spatialPositioning
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

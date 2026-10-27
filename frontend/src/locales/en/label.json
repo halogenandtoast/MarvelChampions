@@ -203,5 +203,9 @@
   "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
   "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
 
+  "-- Brotherhood of Badoon --": "",
+  "removeThreatFromThisScheme": "Remove {count} threat from this scheme",
+  "dealDamageToAMinion": "Deal {count} damage to a minion",
+
   "-- end --": ""
 }

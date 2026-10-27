@@ -145,6 +145,7 @@ library
       Marvel.Attachment.Attachments.CrossfiresRifle
       Marvel.Attachment.Attachments.DefensiveProgramming
       Marvel.Attachment.Attachments.DistractingTaunts
+      Marvel.Attachment.Attachments.DrangsSpear
       Marvel.Attachment.Attachments.EnergyShield
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.ExoSuit
@@ -219,6 +220,7 @@ library
       Marvel.Environment
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
+      Marvel.Environment.Environments.BadoonShip
       Marvel.Environment.Environments.CriminalEnterprise
       Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
@@ -450,6 +452,7 @@ library
       Marvel.MainScheme.MainSchemes.AssaultOnNorad
       Marvel.MainScheme.MainSchemes.AttackOnMountAthena
       Marvel.MainScheme.MainSchemes.Breakout
+      Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon
       Marvel.MainScheme.MainSchemes.CorporateAcquisition
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
       Marvel.MainScheme.MainSchemes.HostileTakeover
@@ -502,6 +505,7 @@ library
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.Avalanche
       Marvel.Minion.Minions.BadoonHeadhunter
+      Marvel.Minion.Minions.BandOfBadoon
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
@@ -627,6 +631,7 @@ library
       Marvel.SideScheme.SideSchemes.BlazingInferno
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.BrotherhoodOfBadoon
       Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate
       Marvel.SideScheme.SideSchemes.Cannonade
       Marvel.SideScheme.SideSchemes.CapturedByHydra
@@ -978,6 +983,7 @@ library
       Marvel.Villain.Villains.AbsorbingMan
       Marvel.Villain.Villains.Bulldozer
       Marvel.Villain.Villains.Crossbones
+      Marvel.Villain.Villains.Drang
       Marvel.Villain.Villains.GreenGoblin
       Marvel.Villain.Villains.Kang
       Marvel.Villain.Villains.Klaw
@@ -1167,6 +1173,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.WaspPackSpec
       Marvel.CoverageSpec
       Marvel.Encounter.BlackWidowNemesisSpec
+      Marvel.Encounter.BrotherhoodOfBadoonSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec

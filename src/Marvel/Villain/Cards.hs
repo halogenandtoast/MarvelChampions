@@ -83,6 +83,11 @@ allVillainCards =
   , kangScarletCenturionExpert
   , kang3Expert
 
+  -- The Galaxy's Most Wanted: Brotherhood of Badoon
+  , drang1
+  , drang2
+  , drang3
+
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -298,3 +303,14 @@ bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
 
 bulldozerB :: CardDef
 bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+drang1 :: CardDef
+drang1 = villain "16058" "Drang" [Badoon]
+
+drang2 :: CardDef
+drang2 = villain "16059" "Drang" [Badoon]
+
+drang3 :: CardDef
+drang3 = villain "16060" "Drang" [Badoon]

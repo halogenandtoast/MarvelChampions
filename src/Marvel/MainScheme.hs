@@ -63,6 +63,10 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard thePresentFutureWar
   , SomeMainSchemeCard kangsWrath
 
+  -- The Galaxy's Most Wanted: Brotherhood of Badoon
+  , SomeMainSchemeCard terrestrialInvasion
+  , SomeMainSchemeCard protectThePlanet
+
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

@@ -127,6 +127,8 @@ modularSets =
   , BadoonHeadhunter
   , PowerStone
   , ShipCommand
+  -- Brotherhood of Badoon
+  , BandOfBadoon
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

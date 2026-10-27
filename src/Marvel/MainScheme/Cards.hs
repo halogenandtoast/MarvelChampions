@@ -53,6 +53,10 @@ allMainSchemes =
     , thePresentFutureWar
     , kangsWrath
 
+    -- The Galaxy's Most Wanted: Brotherhood of Badoon
+    , terrestrialInvasion
+    , protectThePlanet
+
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -177,3 +181,11 @@ thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
 
 kangsWrath :: CardDef
 kangsWrath = mainScheme "11013" "Kang's Wrath" Kang
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+terrestrialInvasion :: CardDef
+terrestrialInvasion = mainScheme "16061" "Terrestrial Invasion" BrotherhoodOfBadoon
+
+protectThePlanet :: CardDef
+protectThePlanet = mainScheme "16062" "Protect the Planet" BrotherhoodOfBadoon
