@@ -41,9 +41,10 @@ instance RunMessage HyperThrusters where
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       milano <- controlsMilano you
       schemes <- selectList ThwartableScheme
-      -- ponytail: one scheme after another, not as one effect
-      for_ schemes \scheme -> thwartScheme scheme attrs $ case scheme of
-        SchemeMainSchemeId _ | milano -> 2
-        _ -> 1
+      thwartEach attrs [(scheme, amount) | scheme <- schemes, let amount = if milano && isMain scheme then 2 else 1]
       pure u
     _ -> HyperThrusters <$> runMessage msg attrs
+   where
+    isMain = \case
+      SchemeMainSchemeId _ -> True
+      _ -> False

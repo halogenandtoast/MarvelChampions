@@ -226,6 +226,7 @@
   "putOnBottomOfEncounterDeck": "Put it on the bottom of the encounter deck",
   "revealKreeSupremacy": "Reveal Kree Supremacy?",
   "spendUnitToHeal": "Spend a unit to heal to full hit points",
+  "chooseCardForCollection": "Choose a card from your hand to put into The Collection",
 
   "-- Infiltrate the Museum --": "",
   "topCardIntoTheCollection": "Put the top card of your deck into The Collection",

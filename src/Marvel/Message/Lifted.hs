@@ -241,6 +241,13 @@ setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 thwartScheme :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 thwartScheme scheme source = resolve . ThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
 
+-- | Threat removed from each of the schemes, each its own amount, as one effect: a scheme
+-- left with none is defeated once all of it is removed.
+thwartEach :: (ReverseQueue m, IsScheme scheme, IsRef source) => source -> [(scheme, Natural)] -> m ()
+thwartEach source removed = do
+  msgs <- concat <$> traverse (\(scheme, n) -> capture $ thwartScheme scheme source n) removed
+  unless (null msgs) $ push (Simultaneously msgs)
+
 -- | A hero's or ally's basic thwart of the scheme.
 basicThwartOf :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme scheme) (toSource source)

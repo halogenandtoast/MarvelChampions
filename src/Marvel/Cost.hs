@@ -147,5 +147,13 @@ canAffordCost identityId source = go
         , allM go [x | x <- xs, null (costResources x), x /= ExhaustMilanoCost]
         , pure $ coversResources (concatMap costResources xs) others
         ]
+    -- the deck must have a card for each of its top cards discarded
+    Costs xs
+      | let discards = length (filter (== DiscardTopOfDeckCost) xs)
+      , discards > 1 ->
+          andM
+            [ projectP PlayerIdentityDeck ((>= discards) . length . unDeck) identityId
+            , allM go (filter (/= DiscardTopOfDeckCost) xs)
+            ]
     Costs xs -> allM go xs
   notPlaying c = source /= CardIdRef (pcCardId c)

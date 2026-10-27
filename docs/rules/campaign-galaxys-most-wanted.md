@@ -384,7 +384,9 @@ The A side is **Standard Mode Only**, the B side **Expert Mode Only**; each has 
 - **Kree Supremacy (optional)**: the first player decides for the group whether to reveal it.
 - **"1[per_hero] or fewer cards in The Collection"** counts every card there, the players' and any encounter card's;
   [per_hero] counts the players in the campaign log (the players who started the scenario).
-- **Scenario #2 expert "choose 1 card from their hand"**: hands are dealt after the Campaign Setup; this bullet needs
-  a step after the starting hands (merge-time, with The Collection).
+- **Scenario #2 expert "choose 1 card from their hand"**: hands are dealt after the other Setup bullets, so this one
+  is resolved once the starting hands are dealt (after mulligans and the first player chosen), in player order.
+- **Magical Teapot (scenario #4)**: the first player's facedown encounter card is dealt from the encounter deck the
+  artifacts were just shuffled into, so it may be one of them.
 - **"Stage 1B"** is read as the scenario's first main scheme still in play (Terrestrial Invasion 16061, The Art of
   Evasion 16091).

@@ -24,7 +24,6 @@ import Marvel.Prelude
 import Data.Text qualified as T
 import Marvel.Card
 import Marvel.Damage
-import Marvel.Deck
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -85,12 +84,10 @@ instance RunMessage GalleryOfSplendor where
   runMessage msg (GalleryOfSplendor attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
       players <- getPlayers
-      for_ players \p -> do
-        card <-
-          if isExpertSide attrs
-            then headMay <$> (shuffleM =<< projectMap PlayerIdentityHand unHand p)
-            else headMay <$> projectMap PlayerIdentityDeck unDeck p
-        for_ card placeInCollection
+      for_ players \p ->
+        if isExpertSide attrs
+          then traverse_ placeInCollection . headMay =<< shuffleM =<< projectMap PlayerIdentityHand unHand p
+          else placeTopOfDeckInCollection p
       GalleryOfSplendor <$> runMessage msg attrs
     _ -> GalleryOfSplendor <$> runMessage msg attrs
 
