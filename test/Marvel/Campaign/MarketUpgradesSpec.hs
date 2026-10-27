@@ -201,6 +201,22 @@ reactorCore = describe "Reactor Core (16165)" do
       villainDamageNow `shouldReturn` 8
       costOf p other `shouldReturn` 3
 
+  it "cannot be used with fewer cards in the deck than it discards, but the Milano's 1 is enough" do
+    tg <- withoutMilano
+    let p = player1 tg
+    inGame tg do
+      core <- heroWith tg "16165"
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck (take 1 (unDeck a.playerIdentityDeck))}
+      refreshTurn
+      offers (isAbilityOfCard core) `shouldReturn` False
+    tg' <- withMilano
+    let p' = player1 tg'
+    inGame tg' do
+      core <- heroWith tg' "16165"
+      withGame_ $ entitiesL . playersL . ix p' %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck (take 1 (unDeck a.playerIdentityDeck))}
+      refreshTurn
+      offers (isAbilityOfCard core) `shouldReturn` True
+
   it "discards only the top card when you control the Milano" do
     tg <- withMilano
     let p = player1 tg
