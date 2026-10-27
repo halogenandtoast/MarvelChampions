@@ -185,9 +185,13 @@ choicesOf = \case
 choose :: (HasCallStack) => Text -> (Choice -> Bool) -> GameAppT ()
 choose what p = do
   refreshTurn
+  -- a player who was the only choice was chosen for them, as a player would have
+  autoChosen <- any (p . flip TargetLabel [] . IdentityRef) <$> players
   asked >>= \case
+    Nothing | autoChosen -> pure ()
     Nothing -> error $ "nothing was asked when trying to " <> show what
     Just (ident, cs) -> case findIndex' p cs of
+      Nothing | autoChosen -> pure ()
       Nothing -> error $ "could not " <> show what <> " among " <> show (map describe cs)
       Just n -> answerQuestion ident n
  where
