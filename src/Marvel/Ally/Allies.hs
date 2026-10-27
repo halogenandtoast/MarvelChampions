@@ -97,3 +97,8 @@ import Marvel.Ally.Allies.Cosmo as X
 import Marvel.Ally.Allies.NebulaAlly as X
 import Marvel.Ally.Allies.AngelaAldrifOdinsdottir as X
 import Marvel.Ally.Allies.Drax as X
+-- Drax
+import Marvel.Ally.Allies.Mantis as X
+import Marvel.Ally.Allies.MartyrPhylaVell as X
+import Marvel.Ally.Allies.MoondragonHeatherDouglas as X
+import Marvel.Ally.Allies.GamoraAlly as X

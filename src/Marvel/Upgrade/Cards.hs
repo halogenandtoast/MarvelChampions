@@ -153,6 +153,12 @@ allUpgrades = fromList $ concatMap
   , gamorasSword
   , godslayer
   , commsImplant
+
+  -- Drax
+  , draxsKnife
+  , draxsOtherKnife
+  , dwiTheetMastery
+  , tooStubbornToDie
   ]
 
 upgrade
@@ -293,7 +299,7 @@ armoredVest = reprintedAs ["14016"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
-indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
+indomitable = reprintedAs ["19019"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
@@ -455,7 +461,7 @@ underSurveillance = limited (MaxPerScheme 1)
   $ upgrade "06031" "Under Surveillance" 2 [Condition] [Energy] Justice
 
 enhancedPhysique :: CardDef
-enhancedPhysique = basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
+enhancedPhysique = reprintedAs ["19033"] $ basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
 
 cloakOfLevitation :: CardDef
 cloakOfLevitation =
@@ -668,3 +674,23 @@ commsImplant =
     { cdCriteria = AllyExists (AllyWithTrait Guardian)
     , cdLimit = Just (MaxPerAlly 1)
     }
+
+-- Drax
+
+draxsKnife :: CardDef
+draxsKnife =
+  (unique $ identityUpgrade "19008" "Drax's Knife" 1 [Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+draxsOtherKnife :: CardDef
+draxsOtherKnife =
+  (unique $ identityUpgrade "19009" "Drax's Other Knife" 1 [Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+dwiTheetMastery :: CardDef
+dwiTheetMastery = identityUpgrade "19010" "DWI Theet Mastery" 1 [Skill] [Mental]
+
+tooStubbornToDie :: CardDef
+tooStubbornToDie = identityUpgrade "19011" "Too Stubborn to Die" 2 [Condition] [Mental]

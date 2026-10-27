@@ -64,6 +64,8 @@ allObligations = fromList $ map
 
     -- Gamora
     , unfulfilledDestiny
+    -- Drax
+    , memoriesOfAnotherLife
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -210,3 +212,9 @@ banishment = obligation "17024" "Banishment" [Boost, Boost]
 
 unfulfilledDestiny :: CardDef
 unfulfilledDestiny = obligation "18024" "Unfulfilled Destiny" [Boost, Boost]
+
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+memoriesOfAnotherLife :: CardDef
+memoriesOfAnotherLife = obligation "19025" "Memories of Another Life" [Boost, Boost]

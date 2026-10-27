@@ -154,6 +154,9 @@ allTreacheries = fromList $ map
 
   -- Gamora
   , waylay
+
+  -- Drax
+  , iWillDestroyYou
   ]
 
 treachery
@@ -592,3 +595,9 @@ spartoiCunning = treachery "17027" "Spartoi Cunning" [Boost] StarLordNemesis 3
 
 waylay :: CardDef
 waylay = treachery "18028" "Waylay" [Boost, Boost] GamoraNemesis 2
+
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+iWillDestroyYou :: CardDef
+iWillDestroyYou = treachery "19029" "\"I Will Destroy You!\"" [Boost, Boost] DraxNemesis 2

@@ -41,3 +41,5 @@ import Marvel.Hero.Heroes.StarLord as X
 
 -- Gamora
 import Marvel.Hero.Heroes.Gamora as X
+-- Drax
+import Marvel.Hero.Heroes.Drax as X

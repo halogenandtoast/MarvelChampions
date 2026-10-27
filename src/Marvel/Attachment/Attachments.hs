@@ -77,3 +77,6 @@ import Marvel.Attachment.Attachments.MagicalSuspension as X
 
 -- Gamora
 import Marvel.Attachment.Attachments.InABind as X
+
+-- Drax
+import Marvel.Attachment.Attachments.ChallengeAccepted as X

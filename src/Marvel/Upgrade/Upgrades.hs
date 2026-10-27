@@ -123,3 +123,9 @@ import Marvel.Upgrade.Upgrades.KeenInstincts as X
 import Marvel.Upgrade.Upgrades.GamorasSword as X
 import Marvel.Upgrade.Upgrades.Godslayer as X
 import Marvel.Upgrade.Upgrades.CommsImplant as X
+
+-- Drax
+import Marvel.Upgrade.Upgrades.DraxsKnife as X
+import Marvel.Upgrade.Upgrades.DraxsOtherKnife as X
+import Marvel.Upgrade.Upgrades.DwiTheetMastery as X
+import Marvel.Upgrade.Upgrades.TooStubbornToDie as X

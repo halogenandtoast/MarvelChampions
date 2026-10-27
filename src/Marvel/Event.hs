@@ -205,6 +205,19 @@ allEvents = fromList $ map
   , SomeEventCard hitAndRun
   , SomeEventCard pivotalMoment
   , SomeEventCard trueGrit
+
+  -- Drax
+  , SomeEventCard fightMeCoward
+  , SomeEventCard intimidation
+  , SomeEventCard knifeLeap
+  , SomeEventCard parry
+  , SomeEventCard payback
+  , SomeEventCard deflection
+  , SomeEventCard hardKnocks
+  , SomeEventCard leadingBlow
+  , SomeEventCard subdue
+  , SomeEventCard bringIt
+  , SomeEventCard thinkFast
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

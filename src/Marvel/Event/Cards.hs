@@ -202,6 +202,19 @@ allEvents = fromList $ concatMap
   , hitAndRun
   , pivotalMoment
   , trueGrit
+
+  -- Drax
+  , fightMeCoward
+  , intimidation
+  , knifeLeap
+  , parry
+  , payback
+  , deflection
+  , hardKnocks
+  , leadingBlow
+  , subdue
+  , bringIt
+  , thinkFast
   ]
 
 event
@@ -441,7 +454,7 @@ makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action []
   }
 
 counterPunch :: CardDef
-counterPunch =
+counterPunch = reprintedAs ["19014"] $
   (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
     { cdResponseWindow = Just (HeroDefended After You AttackableEnemy)
     , cdAbilitySubTypes = [Ability.Attack]
@@ -976,7 +989,7 @@ surpriseAttack =
     }
 
 athleticConditioning :: CardDef
-athleticConditioning = basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
+athleticConditioning = reprintedAs ["19021"] $ basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
 
 runningInterference :: CardDef
 runningInterference =
@@ -1274,4 +1287,74 @@ trueGrit =
     { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
     , cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+-- Drax
+
+fightMeCoward :: CardDef
+fightMeCoward = identityEvent "19003" "\"Fight Me, Coward!\"" 0 HeroAction [] [Physical]
+
+intimidation :: CardDef
+intimidation =
+  (identityEvent "19004" "Intimidation" 1 HeroAction [Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+knifeLeap :: CardDef
+knifeLeap =
+  (identityEvent "19005" "Knife Leap" 3 HeroInterrupt [Skill] [Physical])
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    }
+
+parry :: CardDef
+parry =
+  (identityEvent "19006" "Parry" 0 HeroInterrupt [Defense] [Energy])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    }
+
+payback :: CardDef
+payback =
+  (identityEvent "19007" "Payback" 0 HeroResponse [Attack] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdResponseWindow = Just (EnemyAttacked After VillainEnemy You)
+    }
+
+deflection :: CardDef
+deflection =
+  (event "19015" "Deflection" 2 HeroInterrupt [Skill] [Mental] Protection)
+    { cdResponseWindow = Just (WouldTakeDamage AnyIdentity FromAttack AnyValue)
+    }
+
+hardKnocks :: CardDef
+hardKnocks =
+  (event "19016" "Hard Knocks" 3 HeroAction [Attack] [Physical] Protection)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+leadingBlow :: CardDef
+leadingBlow =
+  (event "19017" "Leading Blow" 0 HeroInterrupt [Tactic] [Energy] Protection)
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    , cdAbilityCost = DiscardTopEncounterCardCost
+    }
+
+subdue :: CardDef
+subdue =
+  (event "19018" "Subdue" 1 HeroInterrupt [] [Energy] Protection)
+    { cdResponseWindow = Just (EnemyAttacked When AnyEnemy AnyIdentity)
+    }
+
+bringIt :: CardDef
+bringIt =
+  (event "19030" "\"Bring It!\"" 0 HeroAction [] [Energy] Aggression)
+    { cdLimit = Just (MaxPerPhase 1)
+    }
+
+thinkFast :: CardDef
+thinkFast =
+  (event "19031" "\"Think Fast!\"" 1 HeroAction [] [Energy] Justice)
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }

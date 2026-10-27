@@ -117,6 +117,9 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , SomeSideSchemeCard siblingRivalry
+
+  -- Drax
+  , SomeSideSchemeCard cullTheWeak
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

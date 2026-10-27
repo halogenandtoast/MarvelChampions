@@ -123,6 +123,9 @@ allMinions =
 
       -- Gamora
       , nebulaMinion
+
+      -- Drax
+      , yotatTheDestroyer
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -622,4 +625,14 @@ nebulaMinion =
   unique $
     (minion "18026" "Nebula" [Elite, Scoundrel] [Boost, Boost, Boost] GamoraNemesis 1)
       { cdKeywords = singleton (Retaliate 2)
+      }
+
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+yotatTheDestroyer :: CardDef
+yotatTheDestroyer =
+  unique $
+    (minion "19027" "Yotat the Destroyer" [Brute] [Boost, Boost, Boost] DraxNemesis 1)
+      { cdKeywords = fromList [Guard, Retaliate 1]
       }

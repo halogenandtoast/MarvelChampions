@@ -110,6 +110,9 @@ allAttachments =
 
       -- Gamora
       , SomeAttachmentCard inABind
+
+      -- Drax
+      , SomeAttachmentCard challengeAccepted
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

@@ -159,6 +159,12 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard gamorasSword
   , SomeUpgradeCard godslayer
   , SomeUpgradeCard commsImplant
+
+  -- Drax
+  , SomeUpgradeCard draxsKnife
+  , SomeUpgradeCard draxsOtherKnife
+  , SomeUpgradeCard dwiTheetMastery
+  , SomeUpgradeCard tooStubbornToDie
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

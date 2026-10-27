@@ -59,3 +59,6 @@ import Marvel.Support.Supports.Knowhere as X
 
 -- Gamora
 import Marvel.Support.Supports.ConditioningRoom as X
+
+-- Drax
+import Marvel.Support.Supports.Regroup as X

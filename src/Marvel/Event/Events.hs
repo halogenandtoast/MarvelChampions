@@ -179,3 +179,16 @@ import Marvel.Event.Events.Impede as X
 import Marvel.Event.Events.HitAndRun as X
 import Marvel.Event.Events.PivotalMoment as X
 import Marvel.Event.Events.TrueGrit as X
+
+-- Drax
+import Marvel.Event.Events.FightMeCoward as X
+import Marvel.Event.Events.Intimidation as X
+import Marvel.Event.Events.KnifeLeap as X
+import Marvel.Event.Events.Parry as X
+import Marvel.Event.Events.Payback as X
+import Marvel.Event.Events.Deflection as X
+import Marvel.Event.Events.HardKnocks as X
+import Marvel.Event.Events.LeadingBlow as X
+import Marvel.Event.Events.Subdue as X
+import Marvel.Event.Events.BringIt as X
+import Marvel.Event.Events.ThinkFast as X

@@ -111,6 +111,9 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , siblingRivalry
+
+  -- Drax
+  , cullTheWeak
   ]
 
 sideScheme
@@ -451,3 +454,9 @@ buddingCrimeSyndicate =
 
 siblingRivalry :: CardDef
 siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] GamoraNemesis 1
+
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+cullTheWeak :: CardDef
+cullTheWeak = sideScheme "19026" "Cull the Weak" [Boost, Boost] DraxNemesis 1

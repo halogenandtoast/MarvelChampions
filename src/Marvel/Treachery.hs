@@ -163,6 +163,9 @@ allTreacheries = fromList $ map
 
   -- Gamora
   , SomeTreacheryCard waylay
+
+  -- Drax
+  , SomeTreacheryCard iWillDestroyYou
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

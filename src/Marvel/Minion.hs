@@ -132,6 +132,9 @@ allMinions =
 
       -- Gamora
       , SomeMinionCard nebulaMinion
+
+      -- Drax
+      , SomeMinionCard yotatTheDestroyer
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

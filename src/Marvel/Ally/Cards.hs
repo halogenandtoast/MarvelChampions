@@ -118,6 +118,12 @@ allAllies = fromList $ concatMap
   , nebulaAlly
   , angelaAldrifOdinsdottir
   , drax
+
+  -- Drax
+  , mantis
+  , martyrPhylaVell
+  , moondragonHeatherDouglas
+  , gamoraAlly
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -143,6 +149,7 @@ heroSpecificAllies =
   , quicksilverPietroMaximoff
   , novaPrimeRichardRider
   , nebulaAlly
+  , mantis
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -508,5 +515,22 @@ angelaAldrifOdinsdottir = ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [As
 drax :: CardDef
 drax =
   (basicAlly "18019" "Drax" 3 [Guardian] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Drax
+
+mantis :: CardDef
+mantis = identityAlly "19002" "Mantis" 2 [Guardian] [Wild]
+
+martyrPhylaVell :: CardDef
+martyrPhylaVell = ally "19012" ("Martyr" <:> "Phyla-Vell") 4 [Guardian] [Energy] Protection
+
+moondragonHeatherDouglas :: CardDef
+moondragonHeatherDouglas = ally "19013" ("Moondragon" <:> "Heather Douglas") 3 [Guardian] [Mental] Protection
+
+gamoraAlly :: CardDef
+gamoraAlly =
+  (basicAlly "19020" "Gamora" 3 [Guardian] [Energy])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }

@@ -39,3 +39,5 @@ import Marvel.AlterEgo.AlterEgos.PeterQuill as X
 
 -- Gamora
 import Marvel.AlterEgo.AlterEgos.GamoraAlterEgo as X
+-- Drax
+import Marvel.AlterEgo.AlterEgos.DraxAlterEgo as X

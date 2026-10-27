@@ -102,6 +102,9 @@ allAttachments =
 
       -- Gamora
       , inABind
+
+      -- Drax
+      , challengeAccepted
       ]
 
 attachment ::
@@ -360,3 +363,13 @@ magicalSuspension = attachment "15026" "Magical Suspension" [Spell] [Boost, Boos
 -- | Attach to Gamora.
 inABind :: CardDef
 inABind = attachment "18027" "In a Bind" [Armor, Tech] [Boost] GamoraNemesis 1
+
+-- Drax
+
+-- | Attach to the enemy with the highest ATK.
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+challengeAccepted :: CardDef
+challengeAccepted =
+  (attachment "19028" "Challenge Accepted" [] [Boost] DraxNemesis 1)
+    { cdKeywords = singleton Surge
+    }

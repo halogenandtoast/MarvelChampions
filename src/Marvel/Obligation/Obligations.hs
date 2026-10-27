@@ -45,3 +45,5 @@ import Marvel.Obligation.Obligations.Banishment as X
 
 -- Gamora
 import Marvel.Obligation.Obligations.UnfulfilledDestiny as X
+-- Drax
+import Marvel.Obligation.Obligations.MemoriesOfAnotherLife as X

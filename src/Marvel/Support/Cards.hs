@@ -75,6 +75,9 @@ allSupports = fromList $ concatMap
 
   -- Gamora
   , conditioningRoom
+
+  -- Drax
+  , regroup
   ]
 
 support
@@ -280,3 +283,8 @@ knowhere =
 
 conditioningRoom :: CardDef
 conditioningRoom = identitySupport "18008" "Conditioning Room" 1 [Location] [Mental]
+
+-- Drax
+
+regroup :: CardDef
+regroup = support "19032" "Regroup" 1 [Tactic] [Mental] Leadership

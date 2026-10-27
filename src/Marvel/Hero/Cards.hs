@@ -54,6 +54,9 @@ allHeroCards =
 
   -- Gamora
   , gamora
+
+  -- Drax
+  , drax
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -159,3 +162,8 @@ starLord = hero "17001a" "Star-Lord" [Guardian]
 
 gamora :: CardDef
 gamora = hero "18001a" "Gamora" [Guardian]
+
+-- Drax
+
+drax :: CardDef
+drax = hero "19001a" "Drax" [Guardian]
