@@ -32,11 +32,14 @@ An attack with the ranged keyword ignores the retaliate keyword.
 - Blaze of Glory's end-of-phase damage is dealt to each Guardian character in play (any player's) when the phase ends.
 - Mister Knife counts every treachery the engaged player reveals in the villain phase: if one was revealed before he was in play, none later that phase gains surge. The treachery that brings him out (Shadow of the Past) is that first treachery, and gains nothing (FAQ).
 - Adam Warlock: a discarded card with more than one printed resource resolves each line it matches, in printed order.
+- Pulse Grenade is an attack even when it deals 0 damage (no FAQ says otherwise): retaliate and "after you attack" answer it.
+- C.I.T.T. targets an exhausted Guardian character: it cannot be used without one (RR Target).
+- Smooth Talker needs a card in your hand to swap.
 
 ## Readings from the rules (not asked)
 
 - The pack's starter deck is Leadership: the hero set, Leadership and basic cards #2–#23. Dive Bomb, Agile Flight, Ever Vigilant and Enhanced Awareness (#28–#31) are not in it.
-- "Star-Lord" on Jet Boots and Star-Lord's Helmet is the hero: in alter-ego form Peter Quill is not Aerial and Jet Boots' Hero Interrupt cannot be used.
+- Jet Boots: "Star-Lord gains the Aerial trait" is the hero only ("If a card refers to a hero or alter-ego by title, it refers only to the identity with that title", RR Identity), and its **Hero** Interrupt needs hero form (RR timing: a trigger with "Hero" can only be used in that form). Star-Lord's Helmet says "while you are in hero form".
 - "Facedown encounter cards in front of you" are the encounter cards dealt to you and not yet revealed.
 - A card ability that changes Star-Lord's form (Bad Boy, Banishment) does not count against his one voluntary change (RR Form).
 - Nova Prime and Star-Lord's interrupt answer cards played from hand only, not from a discard pile or held by an upgrade.
