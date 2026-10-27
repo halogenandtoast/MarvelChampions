@@ -207,5 +207,9 @@
   "removeThreatFromThisScheme": "Remove {count} threat from this scheme",
   "dealDamageToAMinion": "Deal {count} damage to a minion",
 
+  "-- Escape the Museum --": "",
+  "exhaustTheMilanoIndirectDamageAmongPlayers": "Exhaust the Milano → {count} indirect damage among the players",
+  "indirectDamageAmongPlayers": "{count} indirect damage among the players",
+
   "-- end --": ""
 }

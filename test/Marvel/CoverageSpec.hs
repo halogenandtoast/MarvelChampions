@@ -84,6 +84,8 @@ modularSets =
   -- Brotherhood of Badoon
   , "brotherhood_of_badoon"
   , "band_of_badoon"
+  -- Escape the Museum
+  , "escape_the_museum"
   ]
 
 encounterImplemented :: PackCard -> Bool

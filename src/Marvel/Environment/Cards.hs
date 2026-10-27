@@ -35,6 +35,10 @@ allEnvironments = fromList $ map (toFst toCardCode)
   , rogueVessel
   -- Brotherhood of Badoon
   , badoonShip
+
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , libraryLabyrinth
+  , museumShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -128,3 +132,20 @@ badoonShip =
     , cdUnique = True
     , cdEncounterSet = Just BrotherhoodOfBadoon
     }
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+-- | Put into play by The Missing Milano's setup, so none is shuffled into the encounter
+-- deck; The Great Escape flips it to Museum Ship.
+libraryLabyrinth :: CardDef
+libraryLabyrinth =
+  ultronDrones
+    { cdCardCode = "16085a"
+    , cdName = "Library Labyrinth"
+    , cdTraits = singleton Location
+    , cdUnique = True
+    , cdEncounterSet = Just EscapeTheMuseum
+    }
+
+museumShip :: CardDef
+museumShip = libraryLabyrinth {cdCardCode = "16085b", cdName = "Museum Ship", cdTraits = fromList [Aerial, Vehicle]}

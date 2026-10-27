@@ -36,6 +36,9 @@ data VillainMessage
   | VillainSchemed
   | VillainHealed Natural
   | VillainDefeated
+  | -- | its hit points are gone: by default it is defeated ('VillainDefeated'); a villain
+    -- that "would be defeated" answers it instead (Collector, Escape the Museum)
+    VillainWouldBeDefeated
   | VillainDefendedBy CharacterId
   | AttachedToVillain AttachmentId
   | AttachedUpgradeToVillain UpgradeId

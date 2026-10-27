@@ -80,7 +80,9 @@ const escalation = (scheme: SchemeView) => {
           :tough="villain.tough"
         />
       </div>
-      <Meter :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :max="villain.hitPoints" tone="villain" />
+      <!-- infinite hit points (Escape the Museum): a full bar, ∞ -->
+      <Meter v-if="villain.infiniteHitPoints" :label="t('game.hp')" :value="1" :max="1" text="∞" tone="villain" />
+      <Meter v-else :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :max="villain.hitPoints" tone="villain" />
     </div>
     <!-- what is attached to the villain, as cards beside it -->
     <template v-for="villain in villains" :key="`${villain.id}-attached`">

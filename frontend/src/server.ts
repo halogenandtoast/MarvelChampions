@@ -95,6 +95,8 @@ export interface PlayerView {
 export interface VillainView extends CardView {
   stage: number
   hitPoints: number
+  /** infinite hit points (Escape the Museum): shown as ∞ */
+  infiniteHitPoints?: boolean
   damage: number
   scheme: number
   attack: number

@@ -67,6 +67,11 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard terrestrialInvasion
   , SomeMainSchemeCard protectThePlanet
 
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , SomeMainSchemeCard theMissingMilano
+  , SomeMainSchemeCard lostInTheMuseum
+  , SomeMainSchemeCard theGreatEscape
+
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

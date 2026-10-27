@@ -222,6 +222,7 @@ library
       Marvel.Environment.Environments.AbsorbingMan
       Marvel.Environment.Environments.BadoonShip
       Marvel.Environment.Environments.CriminalEnterprise
+      Marvel.Environment.Environments.LibraryLabyrinth
       Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
       Marvel.Event
@@ -455,6 +456,7 @@ library
       Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon
       Marvel.MainScheme.MainSchemes.CorporateAcquisition
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
+      Marvel.MainScheme.MainSchemes.EscapeTheMuseum
       Marvel.MainScheme.MainSchemes.HostileTakeover
       Marvel.MainScheme.MainSchemes.HuntingDownHeroes
       Marvel.MainScheme.MainSchemes.KangsArrival
@@ -778,6 +780,7 @@ library
       Marvel.Treachery.Treacheries.EnergyBlast
       Marvel.Treachery.Treacheries.EnergyProjectiles
       Marvel.Treachery.Treacheries.EscapePlan
+      Marvel.Treachery.Treacheries.EscapeTheMuseum
       Marvel.Treachery.Treacheries.Exhaustion
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
@@ -982,6 +985,7 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.AbsorbingMan
       Marvel.Villain.Villains.Bulldozer
+      Marvel.Villain.Villains.CollectorEscape
       Marvel.Villain.Villains.Crossbones
       Marvel.Villain.Villains.Drang
       Marvel.Villain.Villains.GreenGoblin
@@ -1177,6 +1181,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GamoraNemesisSpec
       Marvel.Encounter.GreenGoblinSpec

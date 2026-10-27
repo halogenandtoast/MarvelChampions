@@ -115,5 +115,8 @@
   "victoryDisplay": "{target} goes to the victory display",
   "peril": "Peril: {player} resolves this alone, no one else may help",
 
+  "-- Escape the Museum --": "",
+  "indirectDamageAmongPlayers": "{count} indirect damage is dealt among the players",
+
   "-- end --": ""
 }

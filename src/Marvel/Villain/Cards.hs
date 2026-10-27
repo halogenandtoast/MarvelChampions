@@ -88,6 +88,12 @@ allVillainCards =
   , drang2
   , drang3
 
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , collectorA1
+  , collectorA2
+  , collectorB1
+  , collectorB2
+
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -314,3 +320,18 @@ drang2 = villain "16059" "Drang" [Badoon]
 
 drang3 :: CardDef
 drang3 = villain "16060" "Drang" [Badoon]
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+-- | Collector (A1), Collector (B1) for expert play, each with his Wounded side (A2, B2).
+collectorA1 :: CardDef
+collectorA1 = villain "16080a" "Collector" [Elder]
+
+collectorA2 :: CardDef
+collectorA2 = villain "16080b" "Collector" [Elder, Wounded]
+
+collectorB1 :: CardDef
+collectorB1 = villain "16081a" "Collector" [Elder]
+
+collectorB2 :: CardDef
+collectorB2 = villain "16081b" "Collector" [Elder, Wounded]

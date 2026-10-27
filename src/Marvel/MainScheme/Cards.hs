@@ -57,6 +57,11 @@ allMainSchemes =
     , terrestrialInvasion
     , protectThePlanet
 
+    -- The Galaxy's Most Wanted: Escape the Museum
+    , theMissingMilano
+    , lostInTheMuseum
+    , theGreatEscape
+
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -189,3 +194,14 @@ terrestrialInvasion = mainScheme "16061" "Terrestrial Invasion" BrotherhoodOfBad
 
 protectThePlanet :: CardDef
 protectThePlanet = mainScheme "16062" "Protect the Planet" BrotherhoodOfBadoon
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+theMissingMilano :: CardDef
+theMissingMilano = mainScheme "16082" "The Missing Milano" EscapeTheMuseum
+
+lostInTheMuseum :: CardDef
+lostInTheMuseum = mainScheme "16083" "Lost in the Museum" EscapeTheMuseum
+
+theGreatEscape :: CardDef
+theGreatEscape = mainScheme "16084" "The Great Escape" EscapeTheMuseum
