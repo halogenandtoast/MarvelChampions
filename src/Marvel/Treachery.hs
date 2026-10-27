@@ -185,6 +185,11 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard singleMindedFury
   , SomeTreacheryCard kreePhysiology
   , SomeTreacheryCard youStandAccused
+  -- The Galaxy's Most Wanted: Nebula, Space Pirates
+  , SomeTreacheryCard barrelRoll
+  , SomeTreacheryCard combatReady
+  , SomeTreacheryCard ruthless
+  , SomeTreacheryCard honorAmongThieves
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

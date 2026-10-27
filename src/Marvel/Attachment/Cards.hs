@@ -115,6 +115,13 @@ allAttachments =
       , fanaticism
       -- Kree Militants
       , kreeCombatArmor
+
+      -- The Galaxy's Most Wanted: Nebula
+      , cutthroatAmbition
+      , evasiveManeuvering
+      , unyieldingPersistence
+      , weaponMastery
+      , wideStance
       ]
 
 attachment ::
@@ -407,3 +414,24 @@ fanaticism = (attachment "16110" "Fanaticism" [Condition] [Boost, Boost] Ronan 2
 -- | Attach to the enemy with the highest ATK.
 kreeCombatArmor :: CardDef
 kreeCombatArmor = attachment "16131" "Kree Combat Armor" [Armor] [Boost, Boost] KreeMilitants 1
+
+-- The Galaxy's Most Wanted: Nebula
+
+-- | A Technique: attach to Nebula; its "Special" ability and its [star] boost.
+technique :: CardCode -> Name -> Natural -> CardDef
+technique code name = attachment code name [Technique] [Star] Nebula
+
+cutthroatAmbition :: CardDef
+cutthroatAmbition = technique "16094" "Cutthroat Ambition" 2
+
+evasiveManeuvering :: CardDef
+evasiveManeuvering = technique "16095" "Evasive Maneuvering" 1
+
+unyieldingPersistence :: CardDef
+unyieldingPersistence = technique "16096" "Unyielding Persistence" 1
+
+weaponMastery :: CardDef
+weaponMastery = technique "16097" "Weapon Mastery" 2
+
+wideStance :: CardDef
+wideStance = technique "16098" "Wide Stance" 2

@@ -177,6 +177,13 @@ allTreacheries = fromList $ map
   , singleMindedFury
   , kreePhysiology
   , youStandAccused
+
+  -- The Galaxy's Most Wanted: Nebula
+  , barrelRoll
+  , combatReady
+  , ruthless
+  -- Space Pirates
+  , honorAmongThieves
   ]
 
 treachery
@@ -670,3 +677,19 @@ kreePhysiology = (treachery "16115" "Kree Physiology" [Boost] Ronan 2) {cdKeywor
 
 youStandAccused :: CardDef
 youStandAccused = treachery "16116" "\"You Stand Accused!\"" [Boost, Star] Ronan 3
+
+-- The Galaxy's Most Wanted: Nebula
+
+barrelRoll :: CardDef
+barrelRoll = (treachery "16100" "Barrel Roll" [Boost, Star] Nebula 2) {cdKeywords = fromList [Keyword.Incite 1, Keyword.Surge]}
+
+combatReady :: CardDef
+combatReady = treachery "16101" "Combat Ready" [Boost, Boost] Nebula 2
+
+ruthless :: CardDef
+ruthless = treachery "16102" "Ruthless" [Boost, Boost] Nebula 2
+
+-- Space Pirates
+
+honorAmongThieves :: CardDef
+honorAmongThieves = treachery "16141" "Honor Among Thieves" [Boost, Boost] SpacePirates 2

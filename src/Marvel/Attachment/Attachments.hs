@@ -88,3 +88,5 @@ import Marvel.Attachment.Attachments.DrangsSpear as X
 
 -- Ronan the Accuser
 import Marvel.Attachment.Attachments.Ronan as X
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.Attachment.Attachments.Techniques as X

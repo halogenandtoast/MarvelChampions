@@ -41,6 +41,9 @@ allEnvironments = fromList $ map (toFst toCardCode)
   , museumShip
   -- Ronan the Accuser
   , kreeCommandShip
+
+  -- The Galaxy's Most Wanted: Nebula
+  , nebulasShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -163,4 +166,19 @@ kreeCommandShip =
     , cdUnique = True
     , cdEncounterSet = Just Ronan
     , cdEncounterSetQuantity = Just 1
+    }
+
+-- The Galaxy's Most Wanted: Nebula
+
+-- | Put into play by The Art of Evasion's setup, so none is shuffled into the encounter
+-- deck.
+nebulasShip :: CardDef
+nebulasShip =
+  ultronDrones
+    { cdCardCode = "16093"
+    , cdName = "Nebula's Ship"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdUnique = True
+    , cdEncounterSet = Just Nebula
+    , cdEncounterSetQuantity = Just 0
     }

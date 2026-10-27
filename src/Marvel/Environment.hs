@@ -14,6 +14,8 @@ import Marvel.Environment.Environments.RogueVessel
 import Marvel.Environment.Environments.BadoonShip
 import Marvel.Environment.Environments.LibraryLabyrinth
 import Marvel.Environment.Environments.KreeCommandShip
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.Environment.Environments.NebulasShip
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -58,6 +60,8 @@ allEnvironments =
     , SomeEnvironmentCard museumShip
     -- Ronan the Accuser
     , SomeEnvironmentCard kreeCommandShip
+    -- The Galaxy's Most Wanted: Nebula
+    , SomeEnvironmentCard nebulasShip
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

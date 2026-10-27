@@ -139,3 +139,6 @@ import Marvel.Treachery.Treacheries.EscapeTheMuseum as X
 
 -- Ronan the Accuser
 import Marvel.Treachery.Treacheries.Ronan as X
+-- The Galaxy's Most Wanted: Nebula, Space Pirates
+import Marvel.Treachery.Treacheries.Nebula as X
+import Marvel.Treachery.Treacheries.HonorAmongThieves as X

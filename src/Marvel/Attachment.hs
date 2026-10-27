@@ -122,6 +122,12 @@ allAttachments =
       , SomeAttachmentCard universalWeapon
       , SomeAttachmentCard fanaticism
       , SomeAttachmentCard kreeCombatArmor
+      -- The Galaxy's Most Wanted: Nebula
+      , SomeAttachmentCard cutthroatAmbition
+      , SomeAttachmentCard evasiveManeuvering
+      , SomeAttachmentCard unyieldingPersistence
+      , SomeAttachmentCard weaponMastery
+      , SomeAttachmentCard wideStance
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

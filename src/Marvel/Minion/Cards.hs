@@ -146,6 +146,10 @@ allMinions =
       , kreeCommando
       , kreeLieutenant
       , kreePrivate
+
+      -- The Galaxy's Most Wanted: Space Pirates
+      , pirateCommander
+      , pirateLackey
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -702,3 +706,11 @@ kreeLieutenant = (minion "16133" "Kree Lieutenant" [Kree, Soldier] [Star] KreeMi
 
 kreePrivate :: CardDef
 kreePrivate = (minion "16134" "Kree Private" [Kree, Soldier] [Boost, Star] KreeMilitants 3) {cdKeywords = singleton Quickstrike}
+
+-- The Galaxy's Most Wanted: Space Pirates
+
+pirateCommander :: CardDef
+pirateCommander = (minion "16138" "Pirate Commander" [Criminal] [Boost, Star] SpacePirates 1) {cdKeywords = singleton Quickstrike}
+
+pirateLackey :: CardDef
+pirateLackey = (minion "16139" "Pirate Lackey" [Criminal] [Boost, Star] SpacePirates 4) {cdKeywords = singleton Quickstrike}

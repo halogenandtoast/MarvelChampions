@@ -84,6 +84,8 @@ allScenarios = fromList $ map
 
     -- Ronan the Accuser
     , SomeScenarioCard ronanScenario
+    -- The Galaxy's Most Wanted: Nebula
+    , SomeScenarioCard nebulaScenario
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -128,6 +130,8 @@ recommendedModulars =
 
     -- Ronan the Accuser
     , ("16103", [EncounterSet.KreeMilitants])
+    -- The Galaxy's Most Wanted: Nebula
+    , ("16088", [EncounterSet.SpacePirates])
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
@@ -526,3 +530,23 @@ ronanScenario =
     ("16103", "16104")
     ["16106", "16107"]
     [EncounterSet.Ronan, EncounterSet.PowerStone, EncounterSet.ShipCommand]
+
+-- The Galaxy's Most Wanted: Nebula
+
+newtype NebulaScenario = NebulaScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage NebulaScenario where
+  runMessage msg (NebulaScenario a) = NebulaScenario <$> runMessage msg a
+
+-- | Nebula (TGMW rulebook p.14): Nebula (I) and (II), (II) and (III) for expert; the
+-- Nebula, Power Stone and Ship Command sets, and the Space Pirates modular.
+nebulaScenario :: ScenarioCard NebulaScenario
+nebulaScenario =
+  scenario
+    NebulaScenario
+    "16088"
+    ("16088", "16089")
+    ["16091", "16092"]
+    [EncounterSet.Nebula, EncounterSet.PowerStone, EncounterSet.ShipCommand]

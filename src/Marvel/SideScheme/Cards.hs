@@ -131,6 +131,11 @@ allSideSchemes = fromList $ map
   , cutThePower
   , pincerManeuver
   , superiorTactics
+
+  -- The Galaxy's Most Wanted: Nebula
+  , lethalIntent
+  -- Space Pirates
+  , soundTheAlarms
   ]
 
 sideScheme
@@ -523,3 +528,13 @@ pincerManeuver = (sideScheme "16112" "Pincer Maneuver" [Boost, Boost, Boost] Ron
 
 superiorTactics :: CardDef
 superiorTactics = sideScheme "16113" "Superior Tactics" [Boost, Boost] Ronan 1
+
+-- The Galaxy's Most Wanted: Nebula
+
+lethalIntent :: CardDef
+lethalIntent = (sideScheme "16099" "Lethal Intent" [] Nebula 2) {cdHazards = 1}
+
+-- Space Pirates
+
+soundTheAlarms :: CardDef
+soundTheAlarms = sideScheme "16140" "Sound the Alarms" [Star] SpacePirates 1

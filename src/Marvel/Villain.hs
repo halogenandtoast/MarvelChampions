@@ -45,6 +45,9 @@ import Marvel.Villain.Villains.CollectorEscape
 -- Ronan the Accuser
 import Marvel.Villain.Villains.Ronan
 
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.Villain.Villains.Nebula qualified as Nebula
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -155,4 +158,9 @@ allVillains = fromList $ map
   , SomeVillainCard ronan1
   , SomeVillainCard ronan2
   , SomeVillainCard ronan3
+  -- The Galaxy's Most Wanted: Nebula
+  , SomeVillainCard Nebula.nebula1
+  , SomeVillainCard Nebula.nebula2
+  , SomeVillainCard Nebula.nebula3
+
   ]

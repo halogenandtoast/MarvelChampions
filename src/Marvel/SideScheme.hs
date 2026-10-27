@@ -136,6 +136,9 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard cutThePower
   , SomeSideSchemeCard pincerManeuver
   , SomeSideSchemeCard superiorTactics
+  -- The Galaxy's Most Wanted: Nebula, Space Pirates
+  , SomeSideSchemeCard lethalIntent
+  , SomeSideSchemeCard soundTheAlarms
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

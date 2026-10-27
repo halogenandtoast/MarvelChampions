@@ -131,6 +131,8 @@ modularSets =
   , BandOfBadoon
   -- Ronan the Accuser
   , KreeMilitants
+  -- The Galaxy's Most Wanted: Space Pirates
+  , SpacePirates
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

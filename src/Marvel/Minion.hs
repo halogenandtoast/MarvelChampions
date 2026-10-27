@@ -154,6 +154,9 @@ allMinions =
       , SomeMinionCard kreeCommando
       , SomeMinionCard kreeLieutenant
       , SomeMinionCard kreePrivate
+      -- The Galaxy's Most Wanted: Space Pirates
+      , SomeMinionCard pirateCommander
+      , SomeMinionCard pirateLackey
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

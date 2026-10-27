@@ -65,6 +65,9 @@ allMainSchemes =
     -- Ronan the Accuser
     , interceptionImminent
     , takeWhatIsMine
+    -- The Galaxy's Most Wanted: Nebula
+    , theArtOfEvasion
+    , warpDriveInitiated
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -216,3 +219,11 @@ interceptionImminent = mainScheme "16106" "Interception Imminent" Ronan
 
 takeWhatIsMine :: CardDef
 takeWhatIsMine = mainScheme "16107" "\"Take What Is Mine\"" Ronan
+
+-- The Galaxy's Most Wanted: Nebula
+
+theArtOfEvasion :: CardDef
+theArtOfEvasion = mainScheme "16091" "The Art of Evasion" Nebula
+
+warpDriveInitiated :: CardDef
+warpDriveInitiated = mainScheme "16092" "Warp Drive Initiated" Nebula

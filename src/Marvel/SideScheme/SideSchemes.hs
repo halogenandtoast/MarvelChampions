@@ -109,3 +109,6 @@ import Marvel.SideScheme.SideSchemes.BrotherhoodOfBadoon as X
 
 -- Ronan the Accuser
 import Marvel.SideScheme.SideSchemes.Ronan as X
+-- The Galaxy's Most Wanted: Nebula, Space Pirates
+import Marvel.SideScheme.SideSchemes.LethalIntent as X
+import Marvel.SideScheme.SideSchemes.SoundTheAlarms as X

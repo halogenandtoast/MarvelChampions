@@ -98,6 +98,10 @@ allVillainCards =
   , ronan1
   , ronan2
   , ronan3
+  -- The Galaxy's Most Wanted: Nebula
+  , nebula1
+  , nebula2
+  , nebula3
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -350,3 +354,14 @@ ronan2 = (villain "16104" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords 
 
 ronan3 :: CardDef
 ronan3 = (villain "16105" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = fromList [Retaliate 1, Toughness]}
+
+-- The Galaxy's Most Wanted: Nebula
+
+nebula1 :: CardDef
+nebula1 = villain "16088" "Nebula" [Criminal]
+
+nebula2 :: CardDef
+nebula2 = villain "16089" "Nebula" [Criminal]
+
+nebula3 :: CardDef
+nebula3 = villain "16090" "Nebula" [Criminal]

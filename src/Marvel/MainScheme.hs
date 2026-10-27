@@ -75,6 +75,10 @@ allMainSchemes = fromList $ map
   -- Ronan the Accuser
   , SomeMainSchemeCard interceptionImminent
   , SomeMainSchemeCard takeWhatIsMine
+  -- The Galaxy's Most Wanted: Nebula
+  , SomeMainSchemeCard theArtOfEvasion
+  , SomeMainSchemeCard warpDriveInitiated
+
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

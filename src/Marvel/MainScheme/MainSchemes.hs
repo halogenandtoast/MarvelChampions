@@ -46,3 +46,6 @@ import Marvel.MainScheme.MainSchemes.EscapeTheMuseum as X
 
 -- Ronan the Accuser
 import Marvel.MainScheme.MainSchemes.Ronan as X
+
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.MainScheme.MainSchemes.TheArtOfEvasion as X

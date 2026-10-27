@@ -89,6 +89,9 @@ modularSets =
   -- Ronan the Accuser
   , "ronan"
   , "kree_militant"
+  -- The Galaxy's Most Wanted: Nebula
+  , "nebula"
+  , "space_pirates"
   ]
 
 encounterImplemented :: PackCard -> Bool

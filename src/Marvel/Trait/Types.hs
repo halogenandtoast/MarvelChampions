@@ -87,5 +87,7 @@ data Trait
   | Wounded
   -- Ronan the Accuser
   | AccuserCorps
+  -- The Galaxy's Most Wanted: Nebula
+  | Technique
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)
