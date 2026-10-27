@@ -16,6 +16,7 @@ import Marvel.Matchers (IdentityMatcher (ConfusedIdentity, HeroIdentity, Stunned
 import Marvel.Message.Lifted qualified as Lifted
 
 import Marvel.Support.Cards qualified as Supports
+import Marvel.Upgrade.Cards qualified as UpgradeCards
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
@@ -390,6 +391,18 @@ spec = describe "Escape the Museum" do
         resolve []
         mainSchemeThreatNow `shouldReturn` (before + 1)
         identityMatches ConfusedIdentity you `shouldReturn` True
+
+    it "Impossible Geometry, already confused: a permanent upgrade or ally is not offered either" do
+      tg <- against Normal ["spider-man"]
+      let you = player1 tg
+      inGame tg do
+        nextStage
+        upgrade <- putIntoPlay you (toCardCode UpgradeCards.basicAttackUpgrade)
+        ally <- putIntoPlay you "01002"
+        resolve [IdentityMessage you IdentityConfused]
+        _ <- revealNow you Treacheries.impossibleGeometry
+        offers (isTargetChoice (upgradeIdOf upgrade)) `shouldReturn` False
+        offers (isTargetChoice (allyIdOf ally)) `shouldReturn` True
 
     it "Impossible Geometry, already confused: choose and discard a card you control, not the permanent Milano" do
       tg <- against Normal ["spider-man"]
