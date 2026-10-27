@@ -43,3 +43,6 @@ import Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon as X
 
 -- The Galaxy's Most Wanted: Escape the Museum
 import Marvel.MainScheme.MainSchemes.EscapeTheMuseum as X
+
+-- Ronan the Accuser
+import Marvel.MainScheme.MainSchemes.Ronan as X

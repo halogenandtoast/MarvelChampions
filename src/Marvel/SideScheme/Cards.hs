@@ -127,6 +127,10 @@ allSideSchemes = fromList $ map
   , bombardment
   , oppressiveArmada
   , spatialPositioning
+  -- Ronan the Accuser
+  , cutThePower
+  , pincerManeuver
+  , superiorTactics
   ]
 
 sideScheme
@@ -506,3 +510,16 @@ oppressiveArmada = (sideScheme "16068" "Oppressive Armada" [Boost] BrotherhoodOf
 -- | One amplify icon.
 spatialPositioning :: CardDef
 spatialPositioning = (sideScheme "16069" "Spatial Positioning" [Boost, Boost, Boost] BrotherhoodOfBadoon 1) {cdAmplify = 1}
+
+-- Ronan the Accuser
+
+-- | A crisis icon.
+cutThePower :: CardDef
+cutThePower = sideScheme "16111" "Cut the Power" [Star] Ronan 1
+
+-- | Hinder 2 per player, two acceleration icons.
+pincerManeuver :: CardDef
+pincerManeuver = (sideScheme "16112" "Pincer Maneuver" [Boost, Boost, Boost] Ronan 2) {cdKeywords = singleton (Hinder (PerPlayer 2)), cdAcceleration = 2}
+
+superiorTactics :: CardDef
+superiorTactics = sideScheme "16113" "Superior Tactics" [Boost, Boost] Ronan 1

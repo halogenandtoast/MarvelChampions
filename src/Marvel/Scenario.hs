@@ -82,6 +82,8 @@ allScenarios = fromList $ map
     -- The Galaxy's Most Wanted: Escape the Museum
     , SomeScenarioCard escapeTheMuseumScenario
 
+    -- Ronan the Accuser
+    , SomeScenarioCard ronanScenario
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -124,6 +126,8 @@ recommendedModulars =
     -- The Galaxy's Most Wanted: Escape the Museum
     , ("16080a", [EncounterSet.MenagerieMedley])
 
+    -- Ronan the Accuser
+    , ("16103", [EncounterSet.KreeMilitants])
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
@@ -501,3 +505,24 @@ galacticArtifactsInVictoryDisplay = do
     , cdCardType d == SideSchemeType
     , cdEncounterSet d == Just EncounterSet.GalacticArtifacts
     ]
+
+-- Ronan the Accuser
+
+newtype RonanScenario = RonanScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage RonanScenario where
+  runMessage msg (RonanScenario a) = RonanScenario <$> runMessage msg a
+
+-- | Ronan the Accuser (TGMW rulebook p.18): Ronan (I) and (II), or (II) and (III) for
+-- expert; the Ronan the Accuser, Power Stone and Ship Command sets, and Kree Militants
+-- as the modular set.
+ronanScenario :: ScenarioCard RonanScenario
+ronanScenario =
+  scenario
+    RonanScenario
+    "16103"
+    ("16103", "16104")
+    ["16106", "16107"]
+    [EncounterSet.Ronan, EncounterSet.PowerStone, EncounterSet.ShipCommand]

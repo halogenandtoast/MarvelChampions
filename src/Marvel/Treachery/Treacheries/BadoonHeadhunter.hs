@@ -5,6 +5,7 @@ module Marvel.Treachery.Treacheries.BadoonHeadhunter (
   OnTheHunt (..),
   deadToRights,
   DeadToRights (..),
+  anotherBoostCard,
 ) where
 
 import Marvel.Prelude

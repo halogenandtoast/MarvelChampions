@@ -113,5 +113,8 @@ data Modifier
   | -- | on an identity: what its hero must also pay to make a basic attack (Mother's
     -- Orders)
     BasicAttackAdditionalCost Cost
+  | -- | on an attachment: it cannot be moved from the character it is attached to
+    -- (Superior Tactics)
+    CannotBeUnattached
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

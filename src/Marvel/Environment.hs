@@ -13,6 +13,7 @@ import Marvel.Environment.Environments.CriminalEnterprise
 import Marvel.Environment.Environments.RogueVessel
 import Marvel.Environment.Environments.BadoonShip
 import Marvel.Environment.Environments.LibraryLabyrinth
+import Marvel.Environment.Environments.KreeCommandShip
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -55,6 +56,8 @@ allEnvironments =
     -- The Galaxy's Most Wanted: Escape the Museum
     , SomeEnvironmentCard libraryLabyrinth
     , SomeEnvironmentCard museumShip
+    -- Ronan the Accuser
+    , SomeEnvironmentCard kreeCommandShip
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

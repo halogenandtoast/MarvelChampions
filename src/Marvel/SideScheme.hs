@@ -132,6 +132,10 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard bombardment
   , SomeSideSchemeCard oppressiveArmada
   , SomeSideSchemeCard spatialPositioning
+  -- Ronan the Accuser
+  , SomeSideSchemeCard cutThePower
+  , SomeSideSchemeCard pincerManeuver
+  , SomeSideSchemeCard superiorTactics
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

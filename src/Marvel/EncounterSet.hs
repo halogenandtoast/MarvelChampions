@@ -129,6 +129,8 @@ modularSets =
   , ShipCommand
   -- Brotherhood of Badoon
   , BandOfBadoon
+  -- Ronan the Accuser
+  , KreeMilitants
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

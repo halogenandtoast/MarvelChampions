@@ -110,6 +110,11 @@ allAttachments =
       , powerStone
       -- Brotherhood of Badoon
       , drangsSpear
+      -- Ronan the Accuser
+      , universalWeapon
+      , fanaticism
+      -- Kree Militants
+      , kreeCombatArmor
       ]
 
 attachment ::
@@ -386,3 +391,19 @@ powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] Power
 
 drangsSpear :: CardDef
 drangsSpear = unique $ attachment "16064" "Drang's Spear" [Weapon] [Boost, Boost, Boost] BrotherhoodOfBadoon 1
+
+-- Ronan the Accuser
+
+-- | Attach to Ronan the Accuser.
+universalWeapon :: CardDef
+universalWeapon = unique $ attachment "16109" "Universal Weapon" [Weapon] [Star] Ronan 1
+
+-- | Surge. Attach to Ronan the Accuser. +1 ATK.
+fanaticism :: CardDef
+fanaticism = (attachment "16110" "Fanaticism" [Condition] [Boost, Boost] Ronan 2) {cdKeywords = singleton Surge}
+
+-- Kree Militants
+
+-- | Attach to the enemy with the highest ATK.
+kreeCombatArmor :: CardDef
+kreeCombatArmor = attachment "16131" "Kree Combat Armor" [Armor] [Boost, Boost] KreeMilitants 1

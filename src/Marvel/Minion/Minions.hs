@@ -104,3 +104,6 @@ import Marvel.Minion.Minions.BlackjackOHare as X
 import Marvel.Minion.Minions.BadoonHeadhunter as X
 -- Brotherhood of Badoon, Band of Badoon
 import Marvel.Minion.Minions.BandOfBadoon as X
+
+-- Kree Militants
+import Marvel.Minion.Minions.KreeMilitants as X

@@ -62,6 +62,9 @@ allMainSchemes =
     , lostInTheMuseum
     , theGreatEscape
 
+    -- Ronan the Accuser
+    , interceptionImminent
+    , takeWhatIsMine
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -205,3 +208,11 @@ lostInTheMuseum = mainScheme "16083" "Lost in the Museum" EscapeTheMuseum
 
 theGreatEscape :: CardDef
 theGreatEscape = mainScheme "16084" "The Great Escape" EscapeTheMuseum
+
+-- Ronan the Accuser
+
+interceptionImminent :: CardDef
+interceptionImminent = mainScheme "16106" "Interception Imminent" Ronan
+
+takeWhatIsMine :: CardDef
+takeWhatIsMine = mainScheme "16107" "\"Take What Is Mine\"" Ronan

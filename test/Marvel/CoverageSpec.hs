@@ -86,6 +86,9 @@ modularSets =
   , "band_of_badoon"
   -- Escape the Museum
   , "escape_the_museum"
+  -- Ronan the Accuser
+  , "ronan"
+  , "kree_militant"
   ]
 
 encounterImplemented :: PackCard -> Bool

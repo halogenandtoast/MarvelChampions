@@ -42,6 +42,9 @@ import Marvel.Villain.Villains.Drang
 -- The Galaxy's Most Wanted: Escape the Museum
 import Marvel.Villain.Villains.CollectorEscape
 
+-- Ronan the Accuser
+import Marvel.Villain.Villains.Ronan
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -148,4 +151,8 @@ allVillains = fromList $ map
   , SomeVillainCard collectorB1
   , SomeVillainCard collectorB2
 
+  -- Ronan the Accuser
+  , SomeVillainCard ronan1
+  , SomeVillainCard ronan2
+  , SomeVillainCard ronan3
   ]

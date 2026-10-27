@@ -94,6 +94,10 @@ allVillainCards =
   , collectorB1
   , collectorB2
 
+  -- Ronan the Accuser
+  , ronan1
+  , ronan2
+  , ronan3
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -335,3 +339,14 @@ collectorB1 = villain "16081a" "Collector" [Elder]
 
 collectorB2 :: CardDef
 collectorB2 = villain "16081b" "Collector" [Elder, Wounded]
+
+-- Ronan the Accuser
+
+ronan1 :: CardDef
+ronan1 = (villain "16103" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+
+ronan2 :: CardDef
+ronan2 = (villain "16104" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+
+ronan3 :: CardDef
+ronan3 = (villain "16105" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = fromList [Retaliate 1, Toughness]}

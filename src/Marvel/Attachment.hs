@@ -118,6 +118,10 @@ allAttachments =
       , SomeAttachmentCard powerStone
       -- Brotherhood of Badoon
       , SomeAttachmentCard drangsSpear
+      -- Ronan the Accuser
+      , SomeAttachmentCard universalWeapon
+      , SomeAttachmentCard fanaticism
+      , SomeAttachmentCard kreeCombatArmor
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

@@ -141,6 +141,11 @@ allMinions =
       , badoonLieutenant
       , badoonSentry
       , badoonWarlord
+
+      -- Kree Militants
+      , kreeCommando
+      , kreeLieutenant
+      , kreePrivate
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -686,3 +691,14 @@ badoonSentry = (minion "16120" "Badoon Sentry" [Badoon] [Boost, Star] BandOfBado
 
 badoonWarlord :: CardDef
 badoonWarlord = minion "16121" "Badoon Warlord" [Badoon] [Star] BandOfBadoon 2
+
+-- Kree Militants
+
+kreeCommando :: CardDef
+kreeCommando = (minion "16132" "Kree Commando" [Kree, Soldier] [Boost, Boost, Star] KreeMilitants 3) {cdKeywords = singleton Patrol}
+
+kreeLieutenant :: CardDef
+kreeLieutenant = (minion "16133" "Kree Lieutenant" [Kree, Soldier] [Star] KreeMilitants 2) {cdKeywords = fromList [Guard, Stalwart]}
+
+kreePrivate :: CardDef
+kreePrivate = (minion "16134" "Kree Private" [Kree, Soldier] [Boost, Star] KreeMilitants 3) {cdKeywords = singleton Quickstrike}

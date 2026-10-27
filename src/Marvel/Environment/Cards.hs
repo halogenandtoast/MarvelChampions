@@ -39,6 +39,8 @@ allEnvironments = fromList $ map (toFst toCardCode)
   -- The Galaxy's Most Wanted: Escape the Museum
   , libraryLabyrinth
   , museumShip
+  -- Ronan the Accuser
+  , kreeCommandShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -149,3 +151,16 @@ libraryLabyrinth =
 
 museumShip :: CardDef
 museumShip = libraryLabyrinth {cdCardCode = "16085b", cdName = "Museum Ship", cdTraits = fromList [Aerial, Vehicle]}
+
+-- Ronan the Accuser
+
+kreeCommandShip :: CardDef
+kreeCommandShip =
+  ultronDrones
+    { cdCardCode = "16108"
+    , cdName = "Kree Command Ship"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdUnique = True
+    , cdEncounterSet = Just Ronan
+    , cdEncounterSetQuantity = Just 1
+    }

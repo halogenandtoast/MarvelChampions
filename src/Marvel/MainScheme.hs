@@ -72,6 +72,9 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard lostInTheMuseum
   , SomeMainSchemeCard theGreatEscape
 
+  -- Ronan the Accuser
+  , SomeMainSchemeCard interceptionImminent
+  , SomeMainSchemeCard takeWhatIsMine
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

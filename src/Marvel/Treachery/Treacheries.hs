@@ -136,3 +136,6 @@ import Marvel.Treachery.Treacheries.BadoonHeadhunter as X
 
 -- The Galaxy's Most Wanted: Escape the Museum
 import Marvel.Treachery.Treacheries.EscapeTheMuseum as X
+
+-- Ronan the Accuser
+import Marvel.Treachery.Treacheries.Ronan as X

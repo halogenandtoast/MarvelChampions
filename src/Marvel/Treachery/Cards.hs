@@ -173,6 +173,10 @@ allTreacheries = fromList $ map
   -- The Galaxy's Most Wanted: Escape the Museum
   , iHaveYouNow
   , impossibleGeometry
+  -- Ronan the Accuser
+  , singleMindedFury
+  , kreePhysiology
+  , youStandAccused
   ]
 
 treachery
@@ -655,3 +659,14 @@ iHaveYouNow = treachery "16086" "\"I Have You Now!\"" [Star, Boost] EscapeTheMus
 
 impossibleGeometry :: CardDef
 impossibleGeometry = (treachery "16087" "Impossible Geometry" [Boost] EscapeTheMuseum 3) {cdKeywords = singleton (Keyword.Incite 1)}
+
+-- Ronan the Accuser
+
+singleMindedFury :: CardDef
+singleMindedFury = treachery "16114" "Single-Minded Fury" [Star] Ronan 2
+
+kreePhysiology :: CardDef
+kreePhysiology = (treachery "16115" "Kree Physiology" [Boost] Ronan 2) {cdKeywords = singleton Keyword.Surge}
+
+youStandAccused :: CardDef
+youStandAccused = treachery "16116" "\"You Stand Accused!\"" [Boost, Star] Ronan 3

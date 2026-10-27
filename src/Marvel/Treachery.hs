@@ -181,6 +181,10 @@ allTreacheries = fromList $ map
   -- The Galaxy's Most Wanted: Escape the Museum
   , SomeTreacheryCard iHaveYouNow
   , SomeTreacheryCard impossibleGeometry
+  -- Ronan the Accuser
+  , SomeTreacheryCard singleMindedFury
+  , SomeTreacheryCard kreePhysiology
+  , SomeTreacheryCard youStandAccused
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

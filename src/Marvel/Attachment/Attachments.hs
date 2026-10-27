@@ -85,3 +85,6 @@ import Marvel.Attachment.Attachments.BlackjacksBazooka as X
 import Marvel.Attachment.Attachments.PowerStone as X
 -- Brotherhood of Badoon
 import Marvel.Attachment.Attachments.DrangsSpear as X
+
+-- Ronan the Accuser
+import Marvel.Attachment.Attachments.Ronan as X

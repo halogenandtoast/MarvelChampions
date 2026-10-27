@@ -282,7 +282,9 @@ runVillainMessage msg attrs = case msg of
     hp <- fromGameValue (unHp $ villainStartingHp attrs)
     modifiers <- getModifiers attrs
     let hp' = hp + sum [fromIntegral n | HitPointModifier n <- modifiers]
-    pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp'
+    -- a stage with toughness enters play with a tough status card (RR Toughness)
+    let toughness = Toughness `elem` cdKeywords (getCardDef attrs)
+    pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp' & toughL %~ (|| toughness)
   VillainHitPointsChanged n -> do
     let remaining = unHp (villainHp attrs) + n
     infinite <- elem InfiniteHitPoints <$> getModifiers attrs

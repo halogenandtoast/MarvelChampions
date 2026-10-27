@@ -177,7 +177,8 @@ instance IsCard (Attrs MainScheme) where
 
 instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = runQueueT $ case msg of
-    MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
+    MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
+      locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
       case msg' of
         MainSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)
@@ -186,6 +187,9 @@ instance RunMessage (Attrs MainScheme) where
           threshold <- getThreshold attrs
           when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
           pure $ attrs & threatL +~ n
+        -- a scheme threat cannot be removed from ("Take What Is Mine")
+        MainSchemeThwarted _ _ | locked -> pure attrs
+        MainSchemeThreatRemoved _ _ | locked -> pure attrs
         MainSchemeThwarted source n -> do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n

@@ -150,6 +150,10 @@ allMinions =
       , SomeMinionCard badoonLieutenant
       , SomeMinionCard badoonSentry
       , SomeMinionCard badoonWarlord
+      -- Kree Militants
+      , SomeMinionCard kreeCommando
+      , SomeMinionCard kreeLieutenant
+      , SomeMinionCard kreePrivate
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion
