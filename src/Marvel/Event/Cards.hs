@@ -1388,7 +1388,6 @@ brainstorm :: CardDef
 brainstorm =
   (marketEvent "16150" "Brainstorm" 0 HeroAction [Thwart])
     { cdAbilitySubTypes = [Ability.Thwart]
-    , cdCriteria = SchemeExists ThwartableScheme
     }
 
 byAnyMeans :: CardDef

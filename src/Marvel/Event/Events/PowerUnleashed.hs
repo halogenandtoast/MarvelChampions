@@ -32,7 +32,8 @@ instance RunMessage PowerUnleashed where
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ _ -> do
         -- "the main scheme": no choice, so nothing is asked inside the one effect
-        scheme <- selectOne MainScheme
+        removable <- selectList ThwartableScheme
+        scheme <- headMay . filter (`elem` removable) <$> selectList MainScheme
         let thwart = for_ scheme \s -> thwartScheme s attrs 5
         -- with no villain in play (as between one Kang and the next), only the threat
         selectOne ActiveVillain >>= \case

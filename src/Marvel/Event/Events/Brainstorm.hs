@@ -40,7 +40,9 @@ instance RunMessage Brainstorm where
       deck <- projectMap PlayerIdentityDeck unDeck you
       for_ (headMay deck) \top -> lookingAt you [PlayerCard top] do
         when (cdCardType (getCardDef top) == t) do
-          schemes <- selectList MainScheme
+          -- the main scheme, if you can thwart it (RR Crisis Icon, Patrol)
+          thwartable <- selectList SchemeYouCanThwart
+          schemes <- filter (`elem` thwartable) <$> selectList MainScheme
           for_ (headMay schemes) \s -> thwartScheme s attrs 3
         chooseOne you
           [ labeled "$label.placeOnTopOfDeck" (placeOnTopOfDeck you top)

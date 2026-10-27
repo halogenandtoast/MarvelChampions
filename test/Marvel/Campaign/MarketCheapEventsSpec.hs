@@ -65,6 +65,22 @@ spec = describe "The Market: cheap events" do
         handOf p `shouldReturn` [next]
         lastMay . unDeck . (.playerIdentityDeck) <$> playerAttrs p `shouldReturn` Just energy
 
+    it "thwarts nothing while a patrol minion is engaged with you (RR Patrol)" do
+      tg <- testGame ["captain-marvel"]
+      let p = player1 tg
+      inGame tg do
+        asHero p
+        placeMainThreat 6
+        _ <- addMinion p Minions.headhuntersHenchman
+        threat <- mainSchemeThreatNow
+        _ <- stackDeck p ["01088", "01089"]
+        card <- putInHand p "16150"
+        playWith card []
+        choose "name resource" (isLabel "$label.nameResourceType")
+        pass
+        choose "the bottom" (isLabel "$label.placeOnBottomOfDeck")
+        mainSchemeThreatNow `shouldReturn` threat
+
     it "another type thwarts nothing; on top, it is the card drawn" do
       tg <- testGame ["captain-marvel"]
       let p = player1 tg
