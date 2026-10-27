@@ -2771,6 +2771,7 @@ gameSelectAlly m = do
     AllyWithTrait trait -> fmap (member trait) . getTraits
     AllyIs def -> pure . sameCard def . getCardDef
     AllyWithTitle t -> pure . (== t) . title . cdName . getCardDef
+    AllyNamedAs t -> pure . (\n -> title n == t || subtitle n == Just t) . cdName . getCardDef
     AllyWithRemainingHitPoints n -> \ally -> (== n) . subtractNatural (getAllyDamage ally) <$> Ally.getModifiedHitPoints (toAttrs ally)
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)

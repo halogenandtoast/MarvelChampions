@@ -85,6 +85,8 @@ data AllyMatcher
   | -- | the card in any of its printings
     AllyIs CardDef
   | AllyWithTitle Text
+  | -- | its title or its subtitle the name: a named character (RR Team-Up)
+    AllyNamedAs Text
   | -- | with exactly so many hit points remaining
     AllyWithRemainingHitPoints Natural
   deriving stock (Show, Eq, Generic)
