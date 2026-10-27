@@ -23,15 +23,6 @@ LANDSCAPE = {"main_scheme", "side_scheme", "player_side_scheme"}
 # Open identities occupy two card faces. Archangel reads across the spread;
 # Ant-Man and Wasp turn the spread upright.
 FOLD_OUT_ORIENTATIONS = {"12001c": "portrait", "13001c": "portrait", "42001c": "landscape"}
-# Attachments printed sideways, their text turned to read when tucked under the card they
-# attach to: Jormungand, Hope's Captor, Juggernaut's Helmet, No Longer Worthy, the Executive
-# Board aids, Hypnotic Gaze and its Trances, Intense Focus, Intangible; and Maria Hill's suits.
-SIDEWAYS = {
-    "21189b", "40105a", "40105b", "40122a", "40122b", "45105b", "50181b",
-    "50182b", "50183b", "55007a", "55007b", "55008a", "55008b", "55009a",
-    "55009b", "55010a", "55010b", "55011a", "55011b", "55034a", "55034b",
-    "50035a", "50035b", "57046b",
-}
 
 # MarvelCDB scans filed under the other face's name: its 07001b.png is Breakout's 1A side,
 # and its 07001.png the 1B side. The HD export (frontend/public/images) has them right.
@@ -63,7 +54,7 @@ def traits(s):
 
 def card(c, pack_order):
     t = c["type_code"]
-    orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE or c["code"] in SIDEWAYS else "portrait")
+    orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE else "portrait")
     out = {
         "code": c["code"],
         "name": c["name"],
