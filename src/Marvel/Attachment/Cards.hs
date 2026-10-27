@@ -108,6 +108,8 @@ allAttachments =
 
       -- The Galaxy's Most Wanted: Power Stone
       , powerStone
+      -- Brotherhood of Badoon
+      , drangsSpear
       ]
 
 attachment ::
@@ -379,3 +381,8 @@ blackjacksBazooka = attachment "16056" "Blackjack's Bazooka" [Tech, Weapon] [Boo
 -- | Setup. Attach to the villain. Permanent.
 powerStone :: CardDef
 powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] PowerStone 1) {cdKeywords = fromList [Setup, Permanent]}
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+drangsSpear :: CardDef
+drangsSpear = unique $ attachment "16064" "Drang's Spear" [Weapon] [Boost, Boost, Boost] BrotherhoodOfBadoon 1

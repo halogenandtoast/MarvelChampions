@@ -122,6 +122,11 @@ allSideSchemes = fromList $ map
   , cannonade
   -- Badoon Headhunter
   , fugitiveRecovery
+  -- Brotherhood of Badoon
+  , blockade
+  , bombardment
+  , oppressiveArmada
+  , spatialPositioning
   ]
 
 sideScheme
@@ -484,3 +489,20 @@ cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKey
 
 fugitiveRecovery :: CardDef
 fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+-- | Hinder 2 per player; a crisis icon (the scheme's).
+blockade :: CardDef
+blockade = (sideScheme "16066" "Blockade" [Boost] BrotherhoodOfBadoon 1) {cdKeywords = singleton (Hinder (PerPlayer 2))}
+
+bombardment :: CardDef
+bombardment = sideScheme "16067" "Bombardment" [Boost, Boost] BrotherhoodOfBadoon 1
+
+-- | Hinder 3 per player, a hazard icon.
+oppressiveArmada :: CardDef
+oppressiveArmada = (sideScheme "16068" "Oppressive Armada" [Boost] BrotherhoodOfBadoon 1) {cdKeywords = singleton (Hinder (PerPlayer 3)), cdHazards = 1}
+
+-- | One amplify icon.
+spatialPositioning :: CardDef
+spatialPositioning = (sideScheme "16069" "Spatial Positioning" [Boost, Boost, Boost] BrotherhoodOfBadoon 1) {cdAmplify = 1}

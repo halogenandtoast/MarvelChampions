@@ -37,3 +37,6 @@ import Marvel.MainScheme.MainSchemes.KangsArrival as X
 import Marvel.MainScheme.MainSchemes.TheMasterOfTime as X
 import Marvel.MainScheme.MainSchemes.KangsStageThree as X
 import Marvel.MainScheme.MainSchemes.KangsWrath as X
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+import Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon as X

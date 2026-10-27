@@ -75,6 +75,9 @@ allScenarios = fromList $ map
     -- The Once and Future Kang
     , SomeScenarioCard kangScenario
 
+    -- The Galaxy's Most Wanted: Brotherhood of Badoon
+    , SomeScenarioCard brotherhoodOfBadoonScenario
+
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -110,6 +113,9 @@ recommendedModulars =
 
     -- The Once and Future Kang
     , ("11001", [EncounterSet.Temporal])
+
+    -- The Galaxy's Most Wanted: Brotherhood of Badoon
+    , ("16058", [EncounterSet.BandOfBadoon])
 
     ]
 
@@ -433,3 +439,24 @@ joinAnotherArea aid = do
             cardSpecific GameRef "kangAllJoined" ()
         | (area, target) <- zip choices targets
         ]
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+-- | Brotherhood of Badoon (TGMW rulebook p.8): Drang (I) and (II), (II) and (III) in
+-- expert; Terrestrial Invasion and Protect the Planet; the Brotherhood of Badoon, Ship
+-- Command and standard sets, Band of Badoon the modular.
+newtype BrotherhoodOfBadoonScenario = BrotherhoodOfBadoonScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage BrotherhoodOfBadoonScenario where
+  runMessage msg (BrotherhoodOfBadoonScenario a) = BrotherhoodOfBadoonScenario <$> runMessage msg a
+
+brotherhoodOfBadoonScenario :: ScenarioCard BrotherhoodOfBadoonScenario
+brotherhoodOfBadoonScenario =
+  scenario
+    BrotherhoodOfBadoonScenario
+    "16058"
+    ("16058", "16059")
+    ["16061", "16062"]
+    [EncounterSet.BrotherhoodOfBadoon, EncounterSet.ShipCommand]

@@ -102,3 +102,5 @@ import Marvel.Minion.Minions.BlackjackOHare as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Minion.Minions.BadoonHeadhunter as X
+-- Brotherhood of Badoon, Band of Badoon
+import Marvel.Minion.Minions.BandOfBadoon as X

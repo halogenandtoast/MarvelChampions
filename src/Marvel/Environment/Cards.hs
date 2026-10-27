@@ -33,6 +33,8 @@ allEnvironments = fromList $ map (toFst toCardCode)
 
   -- The Galaxy's Most Wanted: Ship Command
   , rogueVessel
+  -- Brotherhood of Badoon
+  , badoonShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -111,4 +113,18 @@ rogueVessel =
     , cdEncounterSet = Just ShipCommand
     , cdEncounterSetQuantity = Just 1
     , cdBoostIcons = [Boost, Boost]
+    }
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+-- | Put into play by Terrestrial Invasion's setup, so none is shuffled into the encounter
+-- deck.
+badoonShip :: CardDef
+badoonShip =
+  ultronDrones
+    { cdCardCode = "16063"
+    , cdName = "Badoon Ship"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdUnique = True
+    , cdEncounterSet = Just BrotherhoodOfBadoon
     }

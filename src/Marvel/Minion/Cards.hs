@@ -133,6 +133,14 @@ allMinions =
       -- The Galaxy's Most Wanted: Badoon Headhunter
       , badoonHeadhunter
       , headhuntersHenchman
+      -- Brotherhood of Badoon
+      , badoonEngineer
+      -- Band of Badoon
+      , badoonAssassin
+      , badoonGrunt
+      , badoonLieutenant
+      , badoonSentry
+      , badoonWarlord
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -656,3 +664,25 @@ badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHea
 
 headhuntersHenchman :: CardDef
 headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}
+
+-- The Galaxy's Most Wanted: Brotherhood of Badoon
+
+badoonEngineer :: CardDef
+badoonEngineer = minion "16065" "Badoon Engineer" [Badoon] [Star] BrotherhoodOfBadoon 2
+
+-- The Galaxy's Most Wanted: Band of Badoon
+
+badoonAssassin :: CardDef
+badoonAssassin = minion "16117" "Badoon Assassin" [Badoon] [Star] BandOfBadoon 2
+
+badoonGrunt :: CardDef
+badoonGrunt = minion "16118" "Badoon Grunt" [Badoon] [Star] BandOfBadoon 3
+
+badoonLieutenant :: CardDef
+badoonLieutenant = (minion "16119" "Badoon Lieutenant" [Badoon] [Boost, Star] BandOfBadoon 1) {cdKeywords = singleton Patrol}
+
+badoonSentry :: CardDef
+badoonSentry = (minion "16120" "Badoon Sentry" [Badoon] [Boost, Star] BandOfBadoon 2) {cdKeywords = singleton (Retaliate 1)}
+
+badoonWarlord :: CardDef
+badoonWarlord = minion "16121" "Badoon Warlord" [Badoon] [Star] BandOfBadoon 2

@@ -83,3 +83,5 @@ import Marvel.Attachment.Attachments.BlackjacksBazooka as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Attachment.Attachments.PowerStone as X
+-- Brotherhood of Badoon
+import Marvel.Attachment.Attachments.DrangsSpear as X

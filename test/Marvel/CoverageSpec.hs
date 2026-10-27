@@ -81,6 +81,9 @@ modularSets =
   , "ship_command"
   , "power_stone"
   , "badoon_headhunter"
+  -- Brotherhood of Badoon
+  , "brotherhood_of_badoon"
+  , "band_of_badoon"
   ]
 
 encounterImplemented :: PackCard -> Bool

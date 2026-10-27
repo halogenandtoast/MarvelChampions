@@ -492,6 +492,13 @@ activationBonus vid = push . VillainMessage vid . VillainActivationBonus
 addBoost :: (ReverseQueue m) => VillainId -> Natural -> m ()
 addBoost vid = push . VillainMessage vid . VillainAddBoost
 
+-- | More boost icons for the activation of the enemy, villain or minion: "this card gets
+-- +n boost icons for this activation".
+addEnemyBoost :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
+addEnemyBoost enemy n = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainAddBoost n)
+  EnemyMinionId mid -> MinionMessage mid (MinionAddBoost n)
+
 -- | "The attack gains overkill" (piercing, ranged): the enemy's attack under way.
 attackGains :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
 attackGains enemy k = push case toEnemy enemy of
