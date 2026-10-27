@@ -72,6 +72,9 @@ allObligations = fromList $ map
 
   -- Gamora
   , SomeObligationCard unfulfilledDestiny
+
+  -- Groot
+  , SomeObligationCard wilt
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

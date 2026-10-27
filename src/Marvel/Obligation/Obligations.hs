@@ -45,3 +45,6 @@ import Marvel.Obligation.Obligations.Banishment as X
 
 -- Gamora
 import Marvel.Obligation.Obligations.UnfulfilledDestiny as X
+
+-- Groot
+import Marvel.Obligation.Obligations.Wilt as X

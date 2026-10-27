@@ -75,6 +75,9 @@ allSupports = fromList $ concatMap
 
   -- Gamora
   , conditioningRoom
+
+  -- Groot
+  , fertileGround
   ]
 
 support
@@ -280,3 +283,8 @@ knowhere =
 
 conditioningRoom :: CardDef
 conditioningRoom = identitySupport "18008" "Conditioning Room" 1 [Location] [Mental]
+
+-- Groot
+
+fertileGround :: CardDef
+fertileGround = identitySupport "16007" "Fertile Ground" 1 [Location] [Energy]

@@ -202,6 +202,15 @@ allEvents = fromList $ concatMap
   , hitAndRun
   , pivotalMoment
   , trueGrit
+
+  -- Groot
+  , fruition
+  , iAmGroot
+  , iAmGrootExclaim
+  , rootStomp
+  , weAreGroot
+  , fightingFit
+  , floraAndFauna
   ]
 
 event
@@ -723,7 +732,7 @@ protectiveWard =
 
 desperateDefense :: CardDef
 desperateDefense =
-  (event "09015" "Desperate Defense" 1 HeroInterrupt [Defense] [Energy] Protection)
+  reprintedAs ["16013"] $ (event "09015" "Desperate Defense" 1 HeroInterrupt [Defense] [Energy] Protection)
     { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
     , cdAbilitySubTypes = [Ability.Defense]
     }
@@ -1274,4 +1283,47 @@ trueGrit =
     { cdResponseWindow = Just (HeroDefended After You AnyEnemy)
     , cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+-- Groot
+
+fruition :: CardDef
+fruition = identityEvent "16002" "Fruition" 0 Action [Superpower] [Mental]
+
+iAmGroot :: CardDef
+iAmGroot =
+  (identityEvent "16003" "\"I am Groot\"" 3 HeroAction [Superpower, Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+iAmGrootExclaim :: CardDef
+iAmGrootExclaim =
+  (identityEvent "16004" "\"I. AM. GROOT!\"" 2 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+rootStomp :: CardDef
+rootStomp =
+  (identityEvent "16005" "Root Stomp" 2 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+weAreGroot :: CardDef
+weAreGroot = identityEvent "16006" "\"We Are Groot\"" 1 HeroAction [Superpower] [Mental]
+
+fightingFit :: CardDef
+fightingFit =
+  (event "16014" "Fighting Fit" 2 HeroAction [Attack] [Physical] Protection)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttackVillain
+    }
+
+-- | Team-Up (Groot and Rocket Raccoon). Max 1 per deck.
+floraAndFauna :: CardDef
+floraAndFauna = reprintedAs ["16048"] $
+  (basicEvent "16020" "Flora and Fauna" 1 HeroAction [] [Wild])
+    { cdCriteria = teamUp "Groot" "Rocket Raccoon"
     }

@@ -117,6 +117,9 @@ allSideSchemes = fromList $ map
 
   -- Gamora
   , SomeSideSchemeCard siblingRivalry
+
+  -- Groot
+  , SomeSideSchemeCard blazingInferno
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

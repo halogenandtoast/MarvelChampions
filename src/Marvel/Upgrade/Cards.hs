@@ -153,6 +153,15 @@ allUpgrades = fromList $ concatMap
   , gamorasSword
   , godslayer
   , commsImplant
+
+  -- Groot
+  , entanglingVines
+  , lashingVines
+  , vineShield
+  , vineSpikes
+  , dauntless
+  , hardToIgnore
+  , deftFocus
   ]
 
 upgrade
@@ -293,7 +302,7 @@ armoredVest = reprintedAs ["14016"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
-indomitable = upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
+indomitable = reprintedAs ["16018"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
@@ -668,3 +677,26 @@ commsImplant =
     { cdCriteria = AllyExists (AllyWithTrait Guardian)
     , cdLimit = Just (MaxPerAlly 1)
     }
+
+-- Groot
+
+entanglingVines :: CardDef
+entanglingVines = identityUpgrade "16008" "Entangling Vines" 1 [Superpower] [Mental]
+
+lashingVines :: CardDef
+lashingVines = identityUpgrade "16009" "Lashing Vines" 1 [Superpower] [Energy]
+
+vineShield :: CardDef
+vineShield = identityUpgrade "16010" "Vine Shield" 1 [Superpower] [Physical]
+
+vineSpikes :: CardDef
+vineSpikes = identityUpgrade "16011" "Vine Spikes" 1 [Superpower] [Physical]
+
+dauntless :: CardDef
+dauntless = limited (MaxPerPlayerUnderAnyControl 1) $ upgrade "16016" "Dauntless" 1 [Condition] [Energy] Protection
+
+hardToIgnore :: CardDef
+hardToIgnore = upgrade "16017" "Hard to Ignore" 1 [Skill] [Physical] Protection
+
+deftFocus :: CardDef
+deftFocus = limited (MaxPerPlayer 1) $ basicUpgrade "16024" "Deft Focus" 1 [Skill] [Energy]

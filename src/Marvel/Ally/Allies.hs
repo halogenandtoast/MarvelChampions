@@ -97,3 +97,7 @@ import Marvel.Ally.Allies.Cosmo as X
 import Marvel.Ally.Allies.NebulaAlly as X
 import Marvel.Ally.Allies.AngelaAldrifOdinsdottir as X
 import Marvel.Ally.Allies.Drax as X
+
+-- Groot
+import Marvel.Ally.Allies.StarhawkStakarOgord as X
+import Marvel.Ally.Allies.RocketRaccoonAlly as X

@@ -154,6 +154,9 @@ allTreacheries = fromList $ map
 
   -- Gamora
   , waylay
+
+  -- Groot
+  , fanTheFlames
   ]
 
 treachery
@@ -592,3 +595,8 @@ spartoiCunning = treachery "17027" "Spartoi Cunning" [Boost] StarLordNemesis 3
 
 waylay :: CardDef
 waylay = treachery "18028" "Waylay" [Boost, Boost] GamoraNemesis 2
+
+-- Groot
+
+fanTheFlames :: CardDef
+fanTheFlames = treachery "16028" "Fan the Flames" [Boost] GrootNemesis 3

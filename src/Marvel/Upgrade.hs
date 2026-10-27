@@ -159,6 +159,15 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard gamorasSword
   , SomeUpgradeCard godslayer
   , SomeUpgradeCard commsImplant
+
+  -- Groot
+  , SomeUpgradeCard entanglingVines
+  , SomeUpgradeCard lashingVines
+  , SomeUpgradeCard vineShield
+  , SomeUpgradeCard vineSpikes
+  , SomeUpgradeCard dauntless
+  , SomeUpgradeCard hardToIgnore
+  , SomeUpgradeCard deftFocus
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

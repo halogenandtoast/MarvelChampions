@@ -59,3 +59,6 @@ import Marvel.Support.Supports.Knowhere as X
 
 -- Gamora
 import Marvel.Support.Supports.ConditioningRoom as X
+
+-- Groot
+import Marvel.Support.Supports.FertileGround as X

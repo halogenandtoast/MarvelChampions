@@ -179,3 +179,12 @@ import Marvel.Event.Events.Impede as X
 import Marvel.Event.Events.HitAndRun as X
 import Marvel.Event.Events.PivotalMoment as X
 import Marvel.Event.Events.TrueGrit as X
+
+-- Groot
+import Marvel.Event.Events.Fruition as X
+import Marvel.Event.Events.IAmGroot as X
+import Marvel.Event.Events.IAmGrootExclaim as X
+import Marvel.Event.Events.RootStomp as X
+import Marvel.Event.Events.WeAreGroot as X
+import Marvel.Event.Events.FightingFit as X
+import Marvel.Event.Events.FloraAndFauna as X

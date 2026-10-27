@@ -94,3 +94,6 @@ import Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate as X
 
 -- Gamora
 import Marvel.SideScheme.SideSchemes.SiblingRivalry as X
+
+-- Groot
+import Marvel.SideScheme.SideSchemes.BlazingInferno as X

@@ -123,3 +123,12 @@ import Marvel.Upgrade.Upgrades.KeenInstincts as X
 import Marvel.Upgrade.Upgrades.GamorasSword as X
 import Marvel.Upgrade.Upgrades.Godslayer as X
 import Marvel.Upgrade.Upgrades.CommsImplant as X
+
+-- Groot
+import Marvel.Upgrade.Upgrades.EntanglingVines as X
+import Marvel.Upgrade.Upgrades.LashingVines as X
+import Marvel.Upgrade.Upgrades.VineShield as X
+import Marvel.Upgrade.Upgrades.VineSpikes as X
+import Marvel.Upgrade.Upgrades.Dauntless as X
+import Marvel.Upgrade.Upgrades.HardToIgnore as X
+import Marvel.Upgrade.Upgrades.DeftFocus as X

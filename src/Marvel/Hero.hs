@@ -73,6 +73,9 @@ allHeroes = fromList $ map
 
   -- Gamora
   , SomeHeroCard gamora
+
+  -- Groot
+  , SomeHeroCard groot
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

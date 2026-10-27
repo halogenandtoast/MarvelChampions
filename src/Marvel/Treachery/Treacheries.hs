@@ -123,3 +123,6 @@ import Marvel.Treachery.Treacheries.SpartoiCunning as X
 
 -- Gamora
 import Marvel.Treachery.Treacheries.Waylay as X
+
+-- Groot
+import Marvel.Treachery.Treacheries.FanTheFlames as X

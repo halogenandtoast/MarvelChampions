@@ -118,6 +118,10 @@ allAllies = fromList $ concatMap
   , nebulaAlly
   , angelaAldrifOdinsdottir
   , drax
+
+  -- Groot
+  , starhawkStakarOgord
+  , rocketRaccoonAlly
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -508,5 +512,16 @@ angelaAldrifOdinsdottir = ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [As
 drax :: CardDef
 drax =
   (basicAlly "18019" "Drax" 3 [Guardian] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Groot
+
+starhawkStakarOgord :: CardDef
+starhawkStakarOgord = ally "16012" ("Starhawk" <:> "Stakar Ogord") 2 [Aerial, Guardian] [Physical] Protection
+
+rocketRaccoonAlly :: CardDef
+rocketRaccoonAlly =
+  (basicAlly "16019" "Rocket Raccoon" 3 [Guardian] [Wild])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }

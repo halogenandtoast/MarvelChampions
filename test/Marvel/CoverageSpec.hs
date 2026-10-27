@@ -45,7 +45,7 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw"]
 
 -- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
 -- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
@@ -53,6 +53,8 @@ packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toa
 inScope :: Text -> Maybe Text -> Bool
 inScope pack set = case pack of
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
+  -- The Galaxy's Most Wanted: Groot's sets so far
+  "gmw" -> maybe False (`elem` ["groot", "groot_nemesis"]) set
   _ -> True
 
 -- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB

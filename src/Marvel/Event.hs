@@ -205,6 +205,15 @@ allEvents = fromList $ map
   , SomeEventCard hitAndRun
   , SomeEventCard pivotalMoment
   , SomeEventCard trueGrit
+
+  -- Groot
+  , SomeEventCard fruition
+  , SomeEventCard iAmGroot
+  , SomeEventCard iAmGrootExclaim
+  , SomeEventCard rootStomp
+  , SomeEventCard weAreGroot
+  , SomeEventCard fightingFit
+  , SomeEventCard floraAndFauna
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

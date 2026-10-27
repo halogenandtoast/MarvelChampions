@@ -64,6 +64,9 @@ allObligations = fromList $ map
 
     -- Gamora
     , unfulfilledDestiny
+
+    -- Groot
+    , wilt
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -210,3 +213,8 @@ banishment = obligation "17024" "Banishment" [Boost, Boost]
 
 unfulfilledDestiny :: CardDef
 unfulfilledDestiny = obligation "18024" "Unfulfilled Destiny" [Boost, Boost]
+
+-- Groot
+
+wilt :: CardDef
+wilt = obligation "16025" "Wilt" [Boost, Boost]

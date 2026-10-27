@@ -123,6 +123,9 @@ allMinions =
 
       -- Gamora
       , nebulaMinion
+
+      -- Groot
+      , furnax
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -623,3 +626,8 @@ nebulaMinion =
     (minion "18026" "Nebula" [Elite, Scoundrel] [Boost, Boost, Boost] GamoraNemesis 1)
       { cdKeywords = singleton (Retaliate 2)
       }
+
+-- Groot
+
+furnax :: CardDef
+furnax = unique $ minion "16027" "Furnax" [Leviatron] [Boost, Boost, Boost] GrootNemesis 1

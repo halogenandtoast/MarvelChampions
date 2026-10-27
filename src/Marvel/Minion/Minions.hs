@@ -93,3 +93,6 @@ import Marvel.Minion.Minions.MisterKnife as X
 
 -- Gamora
 import Marvel.Minion.Minions.NebulaMinion as X
+
+-- Groot
+import Marvel.Minion.Minions.Furnax as X

@@ -132,6 +132,9 @@ allMinions =
 
       -- Gamora
       , SomeMinionCard nebulaMinion
+
+      -- Groot
+      , SomeMinionCard furnax
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

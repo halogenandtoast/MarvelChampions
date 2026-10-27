@@ -65,6 +65,9 @@ allEffects =
     -- Wasp
     , ("13019", SomeCardEffect spiderManMilesMoralesEffect)
 
+    -- Groot
+    , ("16024", SomeCardEffect deftFocusEffect)
+
     -- The Once and Future Kang
 
     ]

@@ -85,6 +85,9 @@ allSupports = fromList $ map
 
   -- Gamora
   , SomeSupportCard conditioningRoom
+
+  -- Groot
+  , SomeSupportCard fertileGround
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support
