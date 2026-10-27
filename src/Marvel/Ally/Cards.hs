@@ -124,6 +124,10 @@ allAllies = fromList $ concatMap
   , martyrPhylaVell
   , moondragonHeatherDouglas
   , gamoraAlly
+
+  -- Venom
+  , jackFlagJackHarrison
+  , starLordPeterQuill
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -533,4 +537,15 @@ gamoraAlly :: CardDef
 gamoraAlly =
   (basicAlly "19020" "Gamora" 3 [Guardian] [Energy])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Venom
+
+jackFlagJackHarrison :: CardDef
+jackFlagJackHarrison = ally "20011" ("Jack Flag" <:> "Jack Harrison") 4 [Guardian] [Energy] Justice
+
+starLordPeterQuill :: CardDef
+starLordPeterQuill =
+  (basicAlly "20016" ("Star-Lord" <:> "Peter Quill") 2 [Guardian] [Mental])
+    { cdKeywords = fromList [Ranged]
     }

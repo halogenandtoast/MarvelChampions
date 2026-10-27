@@ -135,6 +135,9 @@ allMinions =
 
       -- Drax
       , SomeMinionCard yotatTheDestroyer
+
+      -- Venom
+      , SomeMinionCard enragedSymbiote
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

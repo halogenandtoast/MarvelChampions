@@ -218,6 +218,18 @@ allEvents = fromList $ map
   , SomeEventCard subdue
   , SomeEventCard bringIt
   , SomeEventCard thinkFast
+
+  -- Venom
+  , SomeEventCard behindEnemyLines
+  , SomeEventCard graspingTendrils
+  , SomeEventCard lockedAndLoaded
+  , SomeEventCard runAndGun
+  , SomeEventCard savageAttack
+  , SomeEventCard scareTactic
+  , SomeEventCard makingAnEntrance
+  , SomeEventCard fusillade
+  , SomeEventCard welcomeAboard
+  , SomeEventCard shakeItOff
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

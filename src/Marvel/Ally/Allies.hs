@@ -102,3 +102,6 @@ import Marvel.Ally.Allies.Mantis as X
 import Marvel.Ally.Allies.MartyrPhylaVell as X
 import Marvel.Ally.Allies.MoondragonHeatherDouglas as X
 import Marvel.Ally.Allies.GamoraAlly as X
+-- Venom
+import Marvel.Ally.Allies.JackFlagJackHarrison as X
+import Marvel.Ally.Allies.StarLordPeterQuill as X

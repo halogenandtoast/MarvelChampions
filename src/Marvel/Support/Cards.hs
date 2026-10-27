@@ -78,6 +78,10 @@ allSupports = fromList $ concatMap
 
   -- Drax
   , regroup
+
+  -- Venom
+  , projectRebirth20
+  , crewQuarters
   ]
 
 support
@@ -288,3 +292,11 @@ conditioningRoom = identitySupport "18008" "Conditioning Room" 1 [Location] [Men
 
 regroup :: CardDef
 regroup = support "19032" "Regroup" 1 [Tactic] [Mental] Leadership
+
+-- Venom
+
+projectRebirth20 :: CardDef
+projectRebirth20 = unique $ identitySupport "20007" "Project Rebirth 2.0" 1 [] [Physical]
+
+crewQuarters :: CardDef
+crewQuarters = limited (MaxPerPlayerUnderAnyControl 1) $ basicSupport "20029" "Crew Quarters" 1 [Location] [Mental]

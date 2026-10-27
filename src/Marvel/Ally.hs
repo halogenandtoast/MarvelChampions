@@ -134,4 +134,7 @@ allAllies = fromList $ map
   , SomeAllyCard martyrPhylaVell
   , SomeAllyCard moondragonHeatherDouglas
   , SomeAllyCard gamoraAlly
+  -- Venom
+  , SomeAllyCard jackFlagJackHarrison
+  , SomeAllyCard starLordPeterQuill
   ]

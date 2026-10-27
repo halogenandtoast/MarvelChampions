@@ -120,6 +120,9 @@ allSideSchemes = fromList $ map
 
   -- Drax
   , SomeSideSchemeCard cullTheWeak
+
+  -- Venom
+  , SomeSideSchemeCard klyntarFrenzy
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

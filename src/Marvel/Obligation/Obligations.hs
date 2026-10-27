@@ -47,3 +47,5 @@ import Marvel.Obligation.Obligations.Banishment as X
 import Marvel.Obligation.Obligations.UnfulfilledDestiny as X
 -- Drax
 import Marvel.Obligation.Obligations.MemoriesOfAnotherLife as X
+-- Venom
+import Marvel.Obligation.Obligations.StruggleForControl as X

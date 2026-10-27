@@ -74,6 +74,8 @@ allObligations = fromList $ map
   , SomeObligationCard unfulfilledDestiny
   -- Drax
   , SomeObligationCard memoriesOfAnotherLife
+  -- Venom
+  , SomeObligationCard struggleForControl
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

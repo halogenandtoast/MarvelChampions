@@ -114,6 +114,9 @@ allSideSchemes = fromList $ map
 
   -- Drax
   , cullTheWeak
+
+  -- Venom
+  , klyntarFrenzy
   ]
 
 sideScheme
@@ -460,3 +463,11 @@ siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] Gamo
 -- boost icons from the printed card (MarvelCDB has none for this pack)
 cullTheWeak :: CardDef
 cullTheWeak = sideScheme "19026" "Cull the Weak" [Boost, Boost] DraxNemesis 1
+
+-- Venom
+
+klyntarFrenzy :: CardDef
+klyntarFrenzy =
+  (sideScheme "20024" "Klyntar Frenzy" [Boost, Boost, Boost] VenomNemesis 1)
+    { cdHazards = 1
+    }

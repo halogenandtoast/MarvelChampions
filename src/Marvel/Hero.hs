@@ -75,6 +75,8 @@ allHeroes = fromList $ map
   , SomeHeroCard gamora
   -- Drax
   , SomeHeroCard drax
+  -- Venom
+  , SomeHeroCard venom
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

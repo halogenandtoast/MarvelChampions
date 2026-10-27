@@ -215,6 +215,18 @@ allEvents = fromList $ concatMap
   , subdue
   , bringIt
   , thinkFast
+
+  -- Venom
+  , behindEnemyLines
+  , graspingTendrils
+  , lockedAndLoaded
+  , runAndGun
+  , savageAttack
+  , scareTactic
+  , makingAnEntrance
+  , fusillade
+  , welcomeAboard
+  , shakeItOff
   ]
 
 event
@@ -1264,7 +1276,7 @@ impede :: CardDef
 impede =
   (event "18016" "Impede" 2 HeroAction [Thwart] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
-    , cdCriteria = SchemeExists MainScheme
+    , cdCriteria = SchemeExists UnpatrolledMainScheme
     }
 
 hitAndRun :: CardDef
@@ -1357,4 +1369,67 @@ thinkFast :: CardDef
 thinkFast =
   (event "19031" "\"Think Fast!\"" 1 HeroAction [] [Energy] Justice)
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Venom
+
+behindEnemyLines :: CardDef
+behindEnemyLines =
+  (identityEvent "20002" "Behind Enemy Lines" 2 HeroAction [Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+graspingTendrils :: CardDef
+graspingTendrils =
+  (identityEvent "20003" "Grasping Tendrils" 2 HeroInterrupt [Defense] [Physical])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (EnemyWouldAttack VillainEnemy You)
+    }
+
+lockedAndLoaded :: CardDef
+lockedAndLoaded = identityEvent "20004" "Locked and Loaded" 0 Action [] [Mental]
+
+runAndGun :: CardDef
+runAndGun = identityEvent "20005" "Run and Gun" 3 HeroAction [Skill] [Energy]
+
+savageAttack :: CardDef
+savageAttack =
+  (identityEvent "20006" "Savage Attack" 2 HeroAction [Attack] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+scareTactic :: CardDef
+scareTactic =
+  (event "20012" "Scare Tactic" 1 HeroAction [Attack] [Mental] Justice)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists (AttackableEnemy <> ConfusedEnemy)]
+    }
+
+makingAnEntrance :: CardDef
+makingAnEntrance =
+  (event "20013" "Making an Entrance" 1 HeroInterrupt [Skill] [Physical] Justice)
+    { cdResponseWindow = Just (MakesBasicThwart When You)
+    }
+
+fusillade :: CardDef
+fusillade =
+  (event "20026" "Fusillade" 2 HeroAction [Attack] [Mental] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = ExhaustUpgradeCost (UpgradeWithTrait Weapon)
+    }
+
+welcomeAboard :: CardDef
+welcomeAboard =
+  (event "20027" "\"Welcome Aboard\"" 0 HeroAction [] [Energy] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    , cdLimit = Just (MaxPerRound 1)
+    }
+
+shakeItOff :: CardDef
+shakeItOff =
+  (event "20028" "Shake it Off" 1 HeroResponse [Skill] [Physical] Protection)
+    { cdResponseWindow = Just (EnemyAttackedAndDamaged AnyEnemy (CharacterWithTrait Guardian))
     }

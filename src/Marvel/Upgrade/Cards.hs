@@ -159,6 +159,14 @@ allUpgrades = fromList $ concatMap
   , draxsOtherKnife
   , dwiTheetMastery
   , tooStubbornToDie
+
+  -- Venom
+  , multiGun
+  , spiderSense
+  , venomsPistol
+  , sonicRifle
+  , sideHolster
+  , plasmaPistol
   ]
 
 upgrade
@@ -378,7 +386,7 @@ electrostaticArmor = limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "10031" "Electrostatic Armor" 1 [Armor, Tech] [Energy] Protection
 
 resourceful :: CardDef
-resourceful = basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
+resourceful = reprintedAs ["20020"] $ basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
 
 -- | "Play only if you control a Spy character."
 youControlASpy :: Criteria
@@ -694,3 +702,35 @@ dwiTheetMastery = identityUpgrade "19010" "DWI Theet Mastery" 1 [Skill] [Mental]
 
 tooStubbornToDie :: CardDef
 tooStubbornToDie = identityUpgrade "19011" "Too Stubborn to Die" 2 [Condition] [Mental]
+
+-- Venom
+
+multiGun :: CardDef
+multiGun =
+  (unique $ identityUpgrade "20008" "Multi-Gun" 3 [Tech, Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+spiderSense :: CardDef
+spiderSense = identityUpgrade "20009" "Spider-Sense" 2 [Superpower] [Mental]
+
+venomsPistol :: CardDef
+venomsPistol =
+  (identityUpgrade "20010" "Venom's Pistol" 1 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }
+
+sonicRifle :: CardDef
+sonicRifle =
+  (upgrade "20015" "Sonic Rifle" 3 [Tech, Weapon] [Mental] Justice)
+    { cdKeywords = singleton Restricted
+    }
+
+sideHolster :: CardDef
+sideHolster = limited (MaxPerPlayerUnderAnyControl 1) $ basicUpgrade "20021" "Side Holster" 0 [Item] [Physical]
+
+plasmaPistol :: CardDef
+plasmaPistol =
+  (basicUpgrade "20022" "Plasma Pistol" 2 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }

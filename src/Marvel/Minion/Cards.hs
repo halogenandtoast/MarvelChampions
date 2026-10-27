@@ -126,6 +126,9 @@ allMinions =
 
       -- Drax
       , yotatTheDestroyer
+
+      -- Venom
+      , enragedSymbiote
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -636,3 +639,11 @@ yotatTheDestroyer =
     (minion "19027" "Yotat the Destroyer" [Brute] [Boost, Boost, Boost] DraxNemesis 1)
       { cdKeywords = fromList [Guard, Retaliate 1]
       }
+
+-- Venom
+
+enragedSymbiote :: CardDef
+enragedSymbiote =
+  (minion "20025" "Enraged Symbiote" [Symbiote] [Star] VenomNemesis 4)
+    { cdKeywords = fromList [Guard, Patrol]
+    }

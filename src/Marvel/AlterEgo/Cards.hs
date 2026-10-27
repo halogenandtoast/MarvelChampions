@@ -53,6 +53,8 @@ allAlterEgoCards =
     , gamoraAlterEgo
     -- Drax
     , draxAlterEgo
+    -- Venom
+    , flashThompson
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -151,3 +153,8 @@ gamoraAlterEgo = alterEgo "18001b" "Gamora" [Outlaw]
 
 draxAlterEgo :: CardDef
 draxAlterEgo = alterEgo "19001b" "Drax" [Outlaw]
+
+-- Venom
+
+flashThompson :: CardDef
+flashThompson = alterEgo "20001b" "Flash Thompson" [Soldier]

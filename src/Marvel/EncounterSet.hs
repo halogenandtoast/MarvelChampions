@@ -67,6 +67,8 @@ data EncounterSet
   | GamoraNemesis
   -- Drax
   | DraxNemesis
+  -- Venom
+  | VenomNemesis
   -- The Once and Future Kang
   | Kang
   | ExpertKang
@@ -127,6 +129,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "17001" -> StarLordNemesis
   "18001" -> GamoraNemesis
   "19001" -> DraxNemesis
+  "20001" -> VenomNemesis
   cCode ->
     error $
       "No nemesis set for "

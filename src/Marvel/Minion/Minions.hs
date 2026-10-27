@@ -96,3 +96,6 @@ import Marvel.Minion.Minions.NebulaMinion as X
 
 -- Drax
 import Marvel.Minion.Minions.YotatTheDestroyer as X
+
+-- Venom
+import Marvel.Minion.Minions.EnragedSymbiote as X

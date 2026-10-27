@@ -64,6 +64,8 @@ allEffects =
 
     -- Wasp
     , ("13019", SomeCardEffect spiderManMilesMoralesEffect)
+    , ("20013", SomeCardEffect makingAnEntranceEffect)
+    , ("20027", SomeCardEffect welcomeAboardEffect)
 
     -- The Once and Future Kang
 

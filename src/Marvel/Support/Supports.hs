@@ -62,3 +62,7 @@ import Marvel.Support.Supports.ConditioningRoom as X
 
 -- Drax
 import Marvel.Support.Supports.Regroup as X
+
+-- Venom
+import Marvel.Support.Supports.ProjectRebirth20 as X
+import Marvel.Support.Supports.CrewQuarters as X

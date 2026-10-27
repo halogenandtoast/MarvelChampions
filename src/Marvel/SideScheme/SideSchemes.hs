@@ -97,3 +97,6 @@ import Marvel.SideScheme.SideSchemes.SiblingRivalry as X
 
 -- Drax
 import Marvel.SideScheme.SideSchemes.CullTheWeak as X
+
+-- Venom
+import Marvel.SideScheme.SideSchemes.KlyntarFrenzy as X

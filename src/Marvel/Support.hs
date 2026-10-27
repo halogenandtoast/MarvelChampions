@@ -88,6 +88,10 @@ allSupports = fromList $ map
 
   -- Drax
   , SomeSupportCard regroup
+
+  -- Venom
+  , SomeSupportCard projectRebirth20
+  , SomeSupportCard crewQuarters
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

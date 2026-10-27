@@ -66,6 +66,8 @@ allObligations = fromList $ map
     , unfulfilledDestiny
     -- Drax
     , memoriesOfAnotherLife
+    -- Venom
+    , struggleForControl
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -218,3 +220,8 @@ unfulfilledDestiny = obligation "18024" "Unfulfilled Destiny" [Boost, Boost]
 -- boost icons from the printed card (MarvelCDB has none for this pack)
 memoriesOfAnotherLife :: CardDef
 memoriesOfAnotherLife = obligation "19025" "Memories of Another Life" [Boost, Boost]
+
+-- Venom
+
+struggleForControl :: CardDef
+struggleForControl = obligation "20023" "Struggle for Control" [Boost, Boost]

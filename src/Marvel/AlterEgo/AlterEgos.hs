@@ -41,3 +41,5 @@ import Marvel.AlterEgo.AlterEgos.PeterQuill as X
 import Marvel.AlterEgo.AlterEgos.GamoraAlterEgo as X
 -- Drax
 import Marvel.AlterEgo.AlterEgos.DraxAlterEgo as X
+-- Venom
+import Marvel.AlterEgo.AlterEgos.FlashThompson as X
