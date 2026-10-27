@@ -137,12 +137,17 @@ resolveChoice ident = \case
         EnemyRef (EnemyMinionId mid) -> MinionRef mid
         t -> t
       attackReduction = sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
-    reduction <- case damageSource damage' of
-      FromPlayerAttack _ -> attackReduction
-      FromAllyAttack _ -> attackReduction
-      _ -> pure 0
+      -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
+      attackCap = (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
+      fromAttack = case damageSource damage' of
+        FromPlayerAttack _ -> True
+        FromAllyAttack _ -> True
+        _ -> False
+    reduction <- if fromAttack then attackReduction else pure 0
+    cap <- if fromAttack then attackCap else pure Nothing
     let
-      damage = damage' {damageAmount = subtractNatural reduction (damageAmount damage' + bonus)}
+      reduced = subtractNatural reduction (damageAmount damage' + bonus)
+      damage = damage' {damageAmount = maybe reduced (min reduced) cap}
       enemy = case target of
         VillainRef vid -> EnemyVillainId vid
         MinionRef mid -> EnemyMinionId mid

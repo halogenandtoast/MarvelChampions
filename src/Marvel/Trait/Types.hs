@@ -82,5 +82,7 @@ data Trait
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone
+  -- The Galaxy's Most Wanted: Nebula
+  | Technique
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

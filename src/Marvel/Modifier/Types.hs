@@ -100,6 +100,9 @@ data Modifier
     DividesBasicThwart
   | -- | on an enemy: the damage it takes from each attack is reduced
     AttackDamageReduction Natural
+  | -- | on an enemy: it takes no more than this much damage from a single attack
+    -- (Cutthroat Ambition), after any reduction
+    AttackDamageCap Natural
   | -- | on an identity: an interrupt it can use as it plays a card from hand reduces the
     -- card's cost by this much (Star-Lord), counted toward what it can afford
     MayReduceCostToPlay Natural
