@@ -306,10 +306,17 @@ runVillainMessage msg attrs = case msg of
               == 0
           )
           do
+            let excess = subtractNatural (fromIntegral . unHp $ villainHp attrs) (damageAmount damage)
+            -- "when your hero's attack deals excess damage, increase that amount": it
+            -- raises the excess the window after the defeat counts ('increaseExcessDamage')
+            hero <- heroAttackBy damage source
+            for_ hero \ident ->
+              when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
             defeatVillain vid
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
-            let excess = subtractNatural (fromIntegral . unHp $ villainHp attrs) (damageAmount damage)
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.DamagedEnemy (EnemyVillainId vid) source damage]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough damage))

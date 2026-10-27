@@ -30,6 +30,8 @@ data Cost
     ExhaustUpgradeCost UpgradeMatcher
   | -- | return an upgrade the payer controls, chosen among those matching, to hand
     ReturnUpgradeToHandCost UpgradeMatcher
+  | -- | discard an upgrade the payer controls, chosen among those matching
+    DiscardUpgradeCost UpgradeMatcher
   | -- | exhaust at least so many allies the payer controls, and at most so many (any
     -- number for Nothing)
     ExhaustAlliesCost Natural (Maybe Natural)
@@ -67,6 +69,7 @@ costResources (DiscardHandCardsCost _ _) = []
 costResources (DiscardRandomHandCardsCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
+costResources (DiscardUpgradeCost _) = []
 costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []

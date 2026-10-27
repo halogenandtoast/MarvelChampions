@@ -73,6 +73,7 @@ canAffordCost identityId source = go
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    DiscardUpgradeCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     ExhaustAlliesCost n _ ->
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))

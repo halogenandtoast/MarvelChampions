@@ -111,6 +111,13 @@ data WindowMatcher
     UsesRecovery IdentityMatcher
   | -- | "after you ready <identity>": an exhausted identity matching is readied
     IdentityReadies IdentityMatcher
+  | -- | "when your hero's attack deals any amount of excess damage": before it is counted
+    HeroAttackDealsExcessDamage IdentityMatcher
+  | -- | "after you deal excess damage to an enemy": a player matching dealt damage past
+    -- an enemy's remaining hit points
+    DealsExcessDamage IdentityMatcher
+  | -- | "after <ally> defends against an attack": the attack it defended has resolved
+    AllyDefends AllyMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -188,6 +195,14 @@ data WindowType
     EngagedMinion IdentityId MinionId
   | MadeBasicThwart IdentityId
   | DefendedWithoutDamage IdentityId EnemyId
+  | -- | the player's hero's attack is dealing this much damage past the enemy's
+    -- remaining hit points, which may yet be increased
+    ExcessDamageDealt IdentityId EnemyId Natural
+  | -- | the enemy took this damage, dealt by the source: none a tough status card
+    -- prevented
+    DamagedEnemy EnemyId Source Damage
+  | -- | the attack the ally defended against has resolved
+    AllyDefendedAgainst AllyId EnemyId
   | TurnEnded IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

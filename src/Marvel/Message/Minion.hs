@@ -16,6 +16,9 @@ data MinionMessage
   | MinionConfused Source
   | MinionBecomeTough
   | MinionDefeated
+  | -- | the damage defeats it, with this much past its hit points: past the window in
+    -- which the excess of a hero's attack may be increased
+    MinionDefeatedWithExcess Source Damage Natural
   | MinionHealed Natural
   | MinionHealAllDamage
   | MinionAttacks IdentityId

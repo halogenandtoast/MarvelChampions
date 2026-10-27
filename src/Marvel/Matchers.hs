@@ -99,6 +99,15 @@ damageMatchesFrom matcher damage source = case matcher of
       Nothing -> damageMatches matcher damage
   _ -> damageMatches matcher damage
 
+-- | The player whose hero's attack the damage is: the attack's own, or what its overkill
+-- deals past a minion (RR, Overkill: "considered damage from an attack").
+heroAttackBy :: (HasGame m) => Damage -> Source -> m (Maybe IdentityId)
+heroAttackBy damage source = case damageSource damage of
+  FromPlayerAttack ident -> pure (Just ident)
+  FromOverkill | AllyRef _ <- source -> pure Nothing
+  FromOverkill -> getSourceController source
+  _ -> pure Nothing
+
 -- | Whether the source matches: an event by who played it, while it resolves.
 sourceMatches :: (HasGame m) => SourceMatcher -> Source -> m Bool
 sourceMatches matcher source = case matcher of

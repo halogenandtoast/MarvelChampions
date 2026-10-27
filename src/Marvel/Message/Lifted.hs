@@ -1351,6 +1351,20 @@ raiseAllyAttack aid n = replaceMatchingMessage raise \case
     AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy dmg {damageAmount = damageAmount dmg + n}]
     msg -> [msg]
 
+-- | The excess damage a hero's attack is dealing is more, as an interrupt to it: "increase
+-- that amount by 1". A minion's overkill and the windows after its defeat count it, as
+-- does the window after a villain's.
+increaseExcessDamage :: (HasQueue m) => Natural -> m ()
+increaseExcessDamage n = replaceMatchingMessage raise \case
+  MinionMessage _ MinionDefeatedWithExcess {} -> True
+  CheckWindows [Window After W.DefeatedVillain {}] -> True
+  _ -> False
+ where
+  raise = \case
+    MinionMessage m (MinionDefeatedWithExcess s d k) -> [MinionMessage m $ MinionDefeatedWithExcess s d (k + n)]
+    CheckWindows [Window After (W.DefeatedVillain v d s k)] -> [CheckWindows [Window After $ W.DefeatedVillain v d s (k + n)]]
+    msg -> [msg]
+
 -- | The first message queued matching is replaced by what the body does.
 insteadOf :: (ReverseQueue m) => (Message -> Bool) -> m () -> m ()
 insteadOf matcher body = do
