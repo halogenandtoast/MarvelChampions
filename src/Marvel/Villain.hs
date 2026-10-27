@@ -36,6 +36,9 @@ import Marvel.Villain.Villains.Taskmaster
 -- The Once and Future Kang
 import Marvel.Villain.Villains.Kang
 
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.Villain.Villains.Nebula qualified as Nebula
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -129,5 +132,10 @@ allVillains = fromList $ map
   , SomeVillainCard kangRamaTutExpert
   , SomeVillainCard kangScarletCenturionExpert
   , SomeVillainCard kang3Expert
+
+  -- The Galaxy's Most Wanted: Nebula
+  , SomeVillainCard Nebula.nebula1
+  , SomeVillainCard Nebula.nebula2
+  , SomeVillainCard Nebula.nebula3
 
   ]

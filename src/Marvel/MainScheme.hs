@@ -63,6 +63,10 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard thePresentFutureWar
   , SomeMainSchemeCard kangsWrath
 
+  -- The Galaxy's Most Wanted: Nebula
+  , SomeMainSchemeCard theArtOfEvasion
+  , SomeMainSchemeCard warpDriveInitiated
+
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

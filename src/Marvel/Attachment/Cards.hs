@@ -108,6 +108,13 @@ allAttachments =
 
       -- The Galaxy's Most Wanted: Power Stone
       , powerStone
+
+      -- The Galaxy's Most Wanted: Nebula
+      , cutthroatAmbition
+      , evasiveManeuvering
+      , unyieldingPersistence
+      , weaponMastery
+      , wideStance
       ]
 
 attachment ::
@@ -379,3 +386,24 @@ blackjacksBazooka = attachment "16056" "Blackjack's Bazooka" [Tech, Weapon] [Boo
 -- | Setup. Attach to the villain. Permanent.
 powerStone :: CardDef
 powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] PowerStone 1) {cdKeywords = fromList [Setup, Permanent]}
+
+-- The Galaxy's Most Wanted: Nebula
+
+-- | A Technique: attach to Nebula; its "Special" ability and its [star] boost.
+technique :: CardCode -> Name -> Natural -> CardDef
+technique code name = attachment code name [Technique] [Star] Nebula
+
+cutthroatAmbition :: CardDef
+cutthroatAmbition = technique "16094" "Cutthroat Ambition" 2
+
+evasiveManeuvering :: CardDef
+evasiveManeuvering = technique "16095" "Evasive Maneuvering" 1
+
+unyieldingPersistence :: CardDef
+unyieldingPersistence = technique "16096" "Unyielding Persistence" 1
+
+weaponMastery :: CardDef
+weaponMastery = technique "16097" "Weapon Mastery" 2
+
+wideStance :: CardDef
+wideStance = technique "16098" "Wide Stance" 2

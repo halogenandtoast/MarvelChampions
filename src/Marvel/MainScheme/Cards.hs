@@ -53,6 +53,9 @@ allMainSchemes =
     , thePresentFutureWar
     , kangsWrath
 
+    -- The Galaxy's Most Wanted: Nebula
+    , theArtOfEvasion
+    , warpDriveInitiated
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -177,3 +180,11 @@ thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
 
 kangsWrath :: CardDef
 kangsWrath = mainScheme "11013" "Kang's Wrath" Kang
+
+-- The Galaxy's Most Wanted: Nebula
+
+theArtOfEvasion :: CardDef
+theArtOfEvasion = mainScheme "16091" "The Art of Evasion" Nebula
+
+warpDriveInitiated :: CardDef
+warpDriveInitiated = mainScheme "16092" "Warp Drive Initiated" Nebula

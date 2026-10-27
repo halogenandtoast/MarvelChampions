@@ -83,6 +83,10 @@ allVillainCards =
   , kangScarletCenturionExpert
   , kang3Expert
 
+  -- The Galaxy's Most Wanted: Nebula
+  , nebula1
+  , nebula2
+  , nebula3
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -298,3 +302,14 @@ bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
 
 bulldozerB :: CardDef
 bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
+
+-- The Galaxy's Most Wanted: Nebula
+
+nebula1 :: CardDef
+nebula1 = villain "16088" "Nebula" [Criminal]
+
+nebula2 :: CardDef
+nebula2 = villain "16089" "Nebula" [Criminal]
+
+nebula3 :: CardDef
+nebula3 = villain "16090" "Nebula" [Criminal]

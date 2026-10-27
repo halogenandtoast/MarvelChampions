@@ -133,6 +133,10 @@ allMinions =
       -- The Galaxy's Most Wanted: Badoon Headhunter
       , badoonHeadhunter
       , headhuntersHenchman
+
+      -- The Galaxy's Most Wanted: Space Pirates
+      , pirateCommander
+      , pirateLackey
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -656,3 +660,11 @@ badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHea
 
 headhuntersHenchman :: CardDef
 headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}
+
+-- The Galaxy's Most Wanted: Space Pirates
+
+pirateCommander :: CardDef
+pirateCommander = (minion "16138" "Pirate Commander" [Criminal] [Boost, Star] SpacePirates 1) {cdKeywords = singleton Quickstrike}
+
+pirateLackey :: CardDef
+pirateLackey = (minion "16139" "Pirate Lackey" [Criminal] [Boost, Star] SpacePirates 4) {cdKeywords = singleton Quickstrike}

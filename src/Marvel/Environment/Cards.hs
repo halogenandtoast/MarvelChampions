@@ -33,6 +33,9 @@ allEnvironments = fromList $ map (toFst toCardCode)
 
   -- The Galaxy's Most Wanted: Ship Command
   , rogueVessel
+
+  -- The Galaxy's Most Wanted: Nebula
+  , nebulasShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -111,4 +114,19 @@ rogueVessel =
     , cdEncounterSet = Just ShipCommand
     , cdEncounterSetQuantity = Just 1
     , cdBoostIcons = [Boost, Boost]
+    }
+
+-- The Galaxy's Most Wanted: Nebula
+
+-- | Put into play by The Art of Evasion's setup, so none is shuffled into the encounter
+-- deck.
+nebulasShip :: CardDef
+nebulasShip =
+  ultronDrones
+    { cdCardCode = "16093"
+    , cdName = "Nebula's Ship"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdUnique = True
+    , cdEncounterSet = Just Nebula
+    , cdEncounterSetQuantity = Just 0
     }

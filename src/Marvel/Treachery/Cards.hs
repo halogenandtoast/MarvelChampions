@@ -169,6 +169,13 @@ allTreacheries = fromList $ map
   -- Badoon Headhunter
   , onTheHunt
   , deadToRights
+
+  -- The Galaxy's Most Wanted: Nebula
+  , barrelRoll
+  , combatReady
+  , ruthless
+  -- Space Pirates
+  , honorAmongThieves
   ]
 
 treachery
@@ -643,3 +650,19 @@ onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {
 
 deadToRights :: CardDef
 deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+-- The Galaxy's Most Wanted: Nebula
+
+barrelRoll :: CardDef
+barrelRoll = (treachery "16100" "Barrel Roll" [Boost, Star] Nebula 2) {cdKeywords = fromList [Keyword.Incite 1, Keyword.Surge]}
+
+combatReady :: CardDef
+combatReady = treachery "16101" "Combat Ready" [Boost, Boost] Nebula 2
+
+ruthless :: CardDef
+ruthless = treachery "16102" "Ruthless" [Boost, Boost] Nebula 2
+
+-- Space Pirates
+
+honorAmongThieves :: CardDef
+honorAmongThieves = treachery "16141" "Honor Among Thieves" [Boost, Boost] SpacePirates 2

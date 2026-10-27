@@ -102,3 +102,5 @@ import Marvel.Minion.Minions.BlackjackOHare as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Minion.Minions.BadoonHeadhunter as X
+-- The Galaxy's Most Wanted: Space Pirates
+import Marvel.Minion.Minions.SpacePirates as X

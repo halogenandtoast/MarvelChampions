@@ -127,6 +127,8 @@ modularSets =
   , BadoonHeadhunter
   , PowerStone
   , ShipCommand
+  -- The Galaxy's Most Wanted: Space Pirates
+  , SpacePirates
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

@@ -127,6 +127,9 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted
   , SomeSideSchemeCard cannonade
   , SomeSideSchemeCard fugitiveRecovery
+  -- The Galaxy's Most Wanted: Nebula, Space Pirates
+  , SomeSideSchemeCard lethalIntent
+  , SomeSideSchemeCard soundTheAlarms
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

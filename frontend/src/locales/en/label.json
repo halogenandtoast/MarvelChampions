@@ -203,5 +203,11 @@
   "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
   "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
 
+  "-- The Galaxy's Most Wanted: Nebula --": "",
+  "chooseTechniqueToDiscard": "Choose a Technique attachment to discard",
+  "removeTopCardToDiscardTechnique": "You may remove the top card of your deck from the game to discard a Technique attachment",
+  "doNotRemoveTopCard": "Do not remove the top card of your deck",
+  "shootTheThrusters": "Shoot the Thrusters!: exhaust the Milano and spend a resource to remove an evasion counter | Shoot the Thrusters!: exhaust the Milano and spend {count} resources to remove {count} evasion counters",
+
   "-- end --": ""
 }

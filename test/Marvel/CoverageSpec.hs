@@ -81,6 +81,9 @@ modularSets =
   , "ship_command"
   , "power_stone"
   , "badoon_headhunter"
+  -- The Galaxy's Most Wanted: Nebula
+  , "nebula"
+  , "space_pirates"
   ]
 
 encounterImplemented :: PackCard -> Bool

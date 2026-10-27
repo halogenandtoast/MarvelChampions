@@ -37,3 +37,6 @@ import Marvel.MainScheme.MainSchemes.KangsArrival as X
 import Marvel.MainScheme.MainSchemes.TheMasterOfTime as X
 import Marvel.MainScheme.MainSchemes.KangsStageThree as X
 import Marvel.MainScheme.MainSchemes.KangsWrath as X
+
+-- The Galaxy's Most Wanted: Nebula
+import Marvel.MainScheme.MainSchemes.TheArtOfEvasion as X

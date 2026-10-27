@@ -104,3 +104,6 @@ import Marvel.SideScheme.SideSchemes.Vendetta as X
 -- The Galaxy's Most Wanted
 import Marvel.SideScheme.SideSchemes.Cannonade as X
 import Marvel.SideScheme.SideSchemes.FugitiveRecovery as X
+-- The Galaxy's Most Wanted: Nebula, Space Pirates
+import Marvel.SideScheme.SideSchemes.LethalIntent as X
+import Marvel.SideScheme.SideSchemes.SoundTheAlarms as X

@@ -122,6 +122,11 @@ allSideSchemes = fromList $ map
   , cannonade
   -- Badoon Headhunter
   , fugitiveRecovery
+
+  -- The Galaxy's Most Wanted: Nebula
+  , lethalIntent
+  -- Space Pirates
+  , soundTheAlarms
   ]
 
 sideScheme
@@ -484,3 +489,13 @@ cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKey
 
 fugitiveRecovery :: CardDef
 fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}
+
+-- The Galaxy's Most Wanted: Nebula
+
+lethalIntent :: CardDef
+lethalIntent = (sideScheme "16099" "Lethal Intent" [] Nebula 2) {cdHazards = 1}
+
+-- Space Pirates
+
+soundTheAlarms :: CardDef
+soundTheAlarms = sideScheme "16140" "Sound the Alarms" [Star] SpacePirates 1

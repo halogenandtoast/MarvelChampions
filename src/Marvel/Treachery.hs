@@ -177,6 +177,11 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard specialDelivery
   , SomeTreacheryCard onTheHunt
   , SomeTreacheryCard deadToRights
+  -- The Galaxy's Most Wanted: Nebula, Space Pirates
+  , SomeTreacheryCard barrelRoll
+  , SomeTreacheryCard combatReady
+  , SomeTreacheryCard ruthless
+  , SomeTreacheryCard honorAmongThieves
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery
