@@ -706,6 +706,22 @@ galacticArtifacts = describe "Galactic Artifacts" do
       -- the reduction is gone once used
       getModifiers (IdentityRef you) >>= (`shouldSatisfy` notElem (ResourceCostReduction 3))
 
+  it "Crystal Ball offers only cards its player may legally play now, not just afford" do
+    tg <- rhinoWith [GalacticArtifacts] ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      _ <- putIntoPlay you "01002"
+      clearHand you
+      cat <- putInHand you "01002" -- unique, one in play
+      backflip <- putInHand you "01003" -- an interrupt
+      kick <- putInHand you "01005" -- a hero action, Peter Parker in alter-ego form
+      may <- putInHand you "01006"
+      ball <- encounterCard SideSchemes.crystalBall
+      runNow [RevealEncounterCard you ball]
+      runNow [SideSchemeMessage (sideSchemeOf ball) (SideSchemeThwarted (IdentityRef you) 10)]
+      offered <- for [cat, backflip, kick, may] (offers . isPlay)
+      liftIO $ offered `shouldBe` [False, False, False, True]
+
 menagerieMedley :: Spec
 menagerieMedley = describe "Menagerie Medley" do
   it "Psionic Ghost confuses you; already confused, you take 1 damage" do

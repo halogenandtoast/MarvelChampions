@@ -88,7 +88,8 @@ crystalBall = sideScheme CrystalBall Cards.crystalBall (Static 3)
 
 -- | When Defeated: the player who defeated this scheme may play a card from their hand,
 -- reducing its resource cost by 3. The reduction is an effect on them, gone once they
--- play a card or decline to; the cards offered are those it makes affordable.
+-- play a card or decline to; the cards offered are those they may play now with it
+-- (`AffordableCardBy` is the full play check: timing, criteria, limits, unique).
 newtype CrystalBall = CrystalBall (Attrs SideScheme)
   deriving anyclass (IsSideScheme, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
