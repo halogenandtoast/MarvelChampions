@@ -30,6 +30,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Identity.Types (Field (..))
+import Marvel.Environment.Environments.NebulasShip (placeEvasionCounters)
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
@@ -40,16 +41,6 @@ import System.Random.Shuffle (shuffleM)
 -- | The expert campaign's side.
 isExpertSide :: Attrs SideScheme -> Bool
 isExpertSide = ("b" `T.isSuffixOf`) . unCardCode . toCardCode
-
--- TODO(gmw-merge): the Collector branch's 'placeInCollection' (Marvel.Message.Lifted):
--- the card leaves its zone for The Collection. Until merged, nothing happens.
-placeInCollection :: (ReverseQueue m) => PlayerCard -> m ()
-placeInCollection _ = pure ()
-
--- TODO(gmw-merge): the Nebula branch's 'placeEvasionCounters' (Marvel.Message.Lifted):
--- evasion counters on Nebula's Ship. Until merged, nothing happens.
-placeEvasionCounters :: (ReverseQueue m) => Natural -> m ()
-placeEvasionCounters _ = pure ()
 
 -- * Badoon Blitz (16178)
 

@@ -86,6 +86,8 @@ allScenarios = fromList $ map
     , SomeScenarioCard ronanScenario
     -- The Galaxy's Most Wanted: Nebula
     , SomeScenarioCard nebulaScenario
+    -- The Galaxy's Most Wanted: Infiltrate the Museum
+    , SomeScenarioCard infiltrateTheMuseumScenario
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -132,6 +134,8 @@ recommendedModulars =
     , ("16103", [EncounterSet.KreeMilitants])
     -- The Galaxy's Most Wanted: Nebula
     , ("16088", [EncounterSet.SpacePirates])
+    -- The Galaxy's Most Wanted: Infiltrate the Museum
+    , ("16070", [EncounterSet.MenagerieMedley])
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
@@ -550,3 +554,23 @@ nebulaScenario =
     ("16088", "16089")
     ["16091", "16092"]
     [EncounterSet.Nebula, EncounterSet.PowerStone, EncounterSet.ShipCommand]
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+-- | Collector I and II (II and III in expert mode), The Grand Collection, and the
+-- Infiltrate the Museum and Galactic Artifacts sets (TGMW rulebook p.10): Menagerie
+-- Medley is its modular set, and may be changed.
+newtype InfiltrateTheMuseumScenario = InfiltrateTheMuseumScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage InfiltrateTheMuseumScenario where
+  runMessage msg (InfiltrateTheMuseumScenario a) = InfiltrateTheMuseumScenario <$> runMessage msg a
+
+infiltrateTheMuseumScenario :: ScenarioCard InfiltrateTheMuseumScenario
+infiltrateTheMuseumScenario = scenario
+  InfiltrateTheMuseumScenario
+  "16070"
+  ("16070", "16071")
+  ["16073"]
+  [EncounterSet.InfiltrateTheMuseum, EncounterSet.GalacticArtifacts]

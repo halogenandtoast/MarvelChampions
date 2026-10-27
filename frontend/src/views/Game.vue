@@ -166,6 +166,7 @@ const onBoard = computed(() => {
   }
   add(g.encounterDiscard)
   add(g.victoryDisplay ?? [])
+  add(g.collection ?? [])
   add(riverCards.value)
   for (const p of shownSeats.value) {
     ids.add(p.id)
@@ -221,6 +222,7 @@ const things = computed(() => {
   add(g.sideSchemes)
   add(g.encounterDiscard)
   add(g.victoryDisplay ?? [])
+  add(g.collection ?? [])
   add(g.focusedCards)
   if (g.activeCost) {
     add(g.activeCost.card ? [g.activeCost.card] : [])

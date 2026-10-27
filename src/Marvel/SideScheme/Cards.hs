@@ -148,6 +148,12 @@ allSideSchemes = fromList $ map
   , guerrillaTacticsExpert
   , kreeSupremacy
   , kreeSupremacyExpert
+
+  -- The Galaxy's Most Wanted: Galactic Artifacts
+  , hujahdarianMonarchEgg
+  , magicalTeapot
+  , philosophersStone
+  , crystalBall
   ]
 
 sideScheme
@@ -587,3 +593,21 @@ kreeSupremacy = challengeScheme "16182a" "Kree Supremacy" 3
 
 kreeSupremacyExpert :: CardDef
 kreeSupremacyExpert = challengeScheme "16182b" "Kree Supremacy" 4
+
+-- The Galaxy's Most Wanted: Galactic Artifacts, each Hinder 2 per player and Victory 0;
+-- the icons are the printed cards' (MarvelCDB misses the teapot's hazard icon)
+
+galacticArtifact :: CardCode -> Name -> CardDef
+galacticArtifact code name = (sideScheme code name [Boost] GalacticArtifacts 1) {cdUnique = True, cdKeywords = fromList [Hinder (PerPlayer 2), Victory 0]}
+
+hujahdarianMonarchEgg :: CardDef
+hujahdarianMonarchEgg = (galacticArtifact "16127" "Hujahdarian Monarch Egg") {cdAcceleration = 1}
+
+magicalTeapot :: CardDef
+magicalTeapot = (galacticArtifact "16128" "Magical Teapot") {cdHazards = 1}
+
+philosophersStone :: CardDef
+philosophersStone = (galacticArtifact "16129" "Philosopher's Stone") {cdAmplify = 1}
+
+crystalBall :: CardDef
+crystalBall = (galacticArtifact "16130" "Crystal Ball") {cdAcceleration = 1}

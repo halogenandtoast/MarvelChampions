@@ -122,6 +122,15 @@ allAttachments =
       , unyieldingPersistence
       , weaponMastery
       , wideStance
+
+      -- The Galaxy's Most Wanted: Infiltrate the Museum
+      , biogramImage
+      -- Galactic Artifacts
+      , cloakOfHercules
+      , obediencePotion
+      , theBeyondersBlazer
+      , thePoison
+      , vandarianPowerWand
       ]
 
 attachment ::
@@ -435,3 +444,32 @@ weaponMastery = technique "16097" "Weapon Mastery" 2
 
 wideStance :: CardDef
 wideStance = technique "16098" "Wide Stance" 2
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+-- | Attach to Collector.
+biogramImage :: CardDef
+biogramImage = attachment "16074" "Biogram Image" [Illusion] [Star, Boost] InfiltrateTheMuseum 1
+
+-- Galactic Artifacts: the printed cards' stat icons, hazard and amplify icons and names
+-- (MarvelCDB leaves them out, and names the wand a stone)
+
+-- | Attach to the enemy with the lowest ATK; +3 ATK.
+cloakOfHercules :: CardDef
+cloakOfHercules = unique $ attachment "16122" "Cloak of Hercules" [Artifact] [Boost, Boost] GalacticArtifacts 1
+
+-- | Attach to your identity.
+obediencePotion :: CardDef
+obediencePotion = unique $ attachment "16123" "Obedience Potion" [Artifact] [Boost, Boost] GalacticArtifacts 1
+
+-- | Attach to the enemy with the highest SCH; one amplify icon.
+theBeyondersBlazer :: CardDef
+theBeyondersBlazer = (unique $ attachment "16124" "The Beyonder's Blazer" [Artifact] [Boost, Boost, Boost] GalacticArtifacts 1) {cdAmplify = 1}
+
+-- | Attach to your identity.
+thePoison :: CardDef
+thePoison = unique $ attachment "16125" "The Poison" [Artifact] [Boost, Boost] GalacticArtifacts 1
+
+-- | Attach to the enemy with the lowest SCH; one hazard icon.
+vandarianPowerWand :: CardDef
+vandarianPowerWand = (unique $ attachment "16126" "Vandarian Power Wand" [Artifact] [Boost] GalacticArtifacts 1) {cdHazards = 1}

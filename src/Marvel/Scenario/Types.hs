@@ -356,6 +356,8 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     DealFoundEncounterCard ident card -> do
       identityStep ident (DealtEncounterCard card)
       pure $ leaves card attrs
+    -- into The Collection from the encounter deck or its discard pile
+    PlaceInCollection (EncounterCard card) -> pure $ leaves card attrs
     AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getAllPlayers

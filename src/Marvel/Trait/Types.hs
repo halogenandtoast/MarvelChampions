@@ -91,5 +91,9 @@ data Trait
   | Technique
   -- The Galaxy's Most Wanted: the campaign's Market cards
   | MilanoMod
+  -- Infiltrate the Museum
+  | Illusion
+  | BountyHunter
+  | Ghost
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

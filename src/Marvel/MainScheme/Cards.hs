@@ -68,6 +68,8 @@ allMainSchemes =
     -- The Galaxy's Most Wanted: Nebula
     , theArtOfEvasion
     , warpDriveInitiated
+    -- The Galaxy's Most Wanted: Infiltrate the Museum
+    , theGrandCollection
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -227,3 +229,8 @@ theArtOfEvasion = mainScheme "16091" "The Art of Evasion" Nebula
 
 warpDriveInitiated :: CardDef
 warpDriveInitiated = mainScheme "16092" "Warp Drive Initiated" Nebula
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+theGrandCollection :: CardDef
+theGrandCollection = mainScheme "16073" "The Grand Collection" InfiltrateTheMuseum

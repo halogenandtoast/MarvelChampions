@@ -142,3 +142,6 @@ import Marvel.Treachery.Treacheries.Ronan as X
 -- The Galaxy's Most Wanted: Nebula, Space Pirates
 import Marvel.Treachery.Treacheries.Nebula as X
 import Marvel.Treachery.Treacheries.HonorAmongThieves as X
+
+-- Infiltrate the Museum
+import Marvel.Treachery.Treacheries.InfiltrateTheMuseum as X

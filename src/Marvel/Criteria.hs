@@ -36,6 +36,8 @@ data Criteria
     -- [wild] resource for any player" (the Milano); any player may use it, the card's
     -- controller deemed to agree, unless peril keeps the controller from helping
     ForAnyPlayer
+  | -- | there is a card in The Collection (Infiltrate the Museum)
+    CollectionHasCards
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

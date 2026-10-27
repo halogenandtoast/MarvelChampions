@@ -14,6 +14,7 @@ import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
+import Marvel.Card.Types (Card)
 import Marvel.Count
 import Marvel.Debug
 import Marvel.Difficulty
@@ -75,6 +76,7 @@ getCountersOnMainSchemes :: (HasGame m) => m Natural
 getSideSchemesInPlay :: (HasGame m) => m [(CardCode, [PlayerCard])]
 getCardsOwnedBy :: (HasGame m) => IdentityId -> m [CardDef]
 abilityCardDef :: Game -> Target -> Maybe CardDef
+cardInPlay :: Game -> Target -> Maybe Card
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
@@ -164,6 +166,7 @@ getAmplifyCount :: (HasGame m) => m Natural
 -- The Galaxy's Most Wanted
 getVictoryDisplay :: (HasGame m) => m [EncounterCard]
 getVictoryPoints :: (HasGame m) => m Natural
+getCollection :: (HasGame m) => m [Card]
 getMilano :: (HasGame m) => m (Maybe SupportId)
 milanoIsReady :: (HasGame m) => m Bool
 controlsMilano :: (HasGame m) => IdentityId -> m Bool

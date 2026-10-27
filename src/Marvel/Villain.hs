@@ -35,6 +35,8 @@ import Marvel.Villain.Villains.Taskmaster
 
 -- The Once and Future Kang
 import Marvel.Villain.Villains.Kang
+-- Infiltrate the Museum
+import Marvel.Villain.Villains.Collector
 
 -- The Galaxy's Most Wanted: Brotherhood of Badoon
 import Marvel.Villain.Villains.Drang
@@ -163,4 +165,9 @@ allVillains = fromList $ map
   , SomeVillainCard Nebula.nebula2
   , SomeVillainCard Nebula.nebula3
 
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , SomeVillainCard collector
+  , SomeVillainCard collector1
+  , SomeVillainCard collector2
+  , SomeVillainCard collector3
   ]

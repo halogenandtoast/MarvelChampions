@@ -151,6 +151,12 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard guerrillaTacticsExpert
   , SomeSideSchemeCard kreeSupremacy
   , SomeSideSchemeCard kreeSupremacyExpert
+
+  -- The Galaxy's Most Wanted: Galactic Artifacts
+  , SomeSideSchemeCard hujahdarianMonarchEgg
+  , SomeSideSchemeCard magicalTeapot
+  , SomeSideSchemeCard philosophersStone
+  , SomeSideSchemeCard crystalBall
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

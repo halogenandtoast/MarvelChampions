@@ -217,6 +217,11 @@ data Game = Game
   -- victory X go to as they are defeated (RR Victory Display), the first added first
   , gamePeril :: Maybe IdentityId
   -- ^ the player resolving a card with peril: the others cannot help them (RR Peril)
+  , gameCollection :: [Card]
+  -- ^ The Collection (Infiltrate the Museum): an out-of-play area shared by all players,
+  -- player and encounter cards faceup in it, the first added first
+  , gameCollecting :: [CardId]
+  -- ^ the cards in play on their way into The Collection, leaving play for it
   }
   deriving stock (Show, Eq, Generic)
 
@@ -276,6 +281,8 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playedThisTurn" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))
             $ o
         )
 
@@ -782,6 +789,59 @@ whenCanLeavePlay g sid body = do
   stays <- elem CannotLeavePlay <$> getModifiers (SideSchemeRef sid)
   if stays then pure g else body
 
+-- | A card leaving play for its discard pile: one bound for The Collection goes there
+-- instead, and otherwise "when a card would be placed into a discard pile from play"
+-- is answered first (Collector).
+discardFromPlay :: (ReverseQueue m, IsCard card) => Game -> card -> m ()
+discardFromPlay g c
+  | toCardId card `elem` gameCollecting g = placeInCollection card
+  | otherwise = do
+      checkWindows [W.Window W.Would $ W.WouldBeDiscardedFromPlay either']
+      discardCard card
+ where
+  card = toCard c
+  either' = case card of
+    PlayerCard pc -> Left pc
+    EncounterCard ec -> Right ec
+
+-- | The card a game element in play was made from, by its ref.
+cardInPlay :: Game -> Target -> Maybe Card
+cardInPlay g = \case
+  AllyRef k -> toCard <$> lookup k (gameAllies g)
+  SupportRef k -> toCard . toAttrs <$> lookup k (gameSupports g)
+  UpgradeRef k -> toCard <$> lookup k (gameUpgrades g)
+  MinionRef k -> toCard <$> lookup k (gameMinions g)
+  AttachmentRef k -> toCard <$> lookup k (gameAttachments g)
+  SideSchemeRef k -> toCard <$> lookup k (gameSideSchemes g)
+  EnvironmentRef k -> toCard <$> lookup k (gameEnvironments g)
+  ObligationRef k -> toCard <$> lookup k (gameObligations g)
+  _ -> Nothing
+
+-- | The card in play, by its ref: the entity made from it.
+inPlayRef :: Game -> Card -> Maybe Target
+inPlayRef g card =
+  headMay $
+    catMaybes
+      [ AllyRef k <$ lookup k (gameAllies g)
+      , SupportRef k' <$ lookup k' (gameSupports g)
+      , UpgradeRef k'' <$ lookup k'' (gameUpgrades g)
+      , MinionRef m <$ lookup m (gameMinions g)
+      , AttachmentRef a <$ lookup a (gameAttachments g)
+      , SideSchemeRef s' <$ lookup s' (gameSideSchemes g)
+      , EnvironmentRef e <$ lookup e (gameEnvironments g)
+      , ObligationRef o <$ lookup o (gameObligations g)
+      ]
+ where
+  u = unCardId (toCardId card)
+  k = AllyId u
+  k' = SupportId u
+  k'' = UpgradeId u
+  m = MinionId u
+  a = AttachmentId u
+  s' = SideSchemeId u
+  e = EnvironmentId u
+  o = ObligationId u
+
 runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = runQueueT $ case msg of
   RecordInCampaignLog r -> pure $ g & campaignL %~ fmap (Campaign.recordInLog r)
@@ -849,6 +909,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           [] -> []
           (p : ps) -> ps <> [p]
     pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
+  -- faceup into The Collection: a card in play leaves play for it, by way of
+  -- 'RemoveFromPlay' ('discardFromPlay' sends it on); a card out of play is taken from
+  -- where it is by what holds it (a deck, a hand, a discard pile)
+  PlaceInCollection card -> case inPlayRef g card of
+    Just ref -> do
+      removeFromPlay ref
+      pure $ g & collectingL %~ (toCardId card :)
+    Nothing ->
+      pure $
+        g
+          & (collectingL %~ filter (/= toCardId card))
+          & (collectionL %~ (<> [card]) . filter ((/= toCardId card) . toCardId))
+  -- a card leaving The Collection for its owner's discard pile
+  DiscardedCard card -> pure $ g & collectionL %~ filter ((/= toCardId card) . toCardId)
   -- out of play for the victory display, not discarded: what is attached to it is
   -- discarded as it would be (RR Victory X)
   AddToVictoryDisplay target -> case target of
@@ -997,7 +1071,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         -- what is attached to it is discarded with it
         for_ (allyUpgrades $ toAttrs ally) removeFromPlay
         identityStep ident $ AllyRemoved aid
-        discardCard ally
+        discardFromPlay g ally
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     -- a permanent support does not leave play: the Milano stays for the next first player
     SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
@@ -1005,7 +1079,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       -- it is discarded, and the cards attached to it facedown with it
       for_ (lookup sid $ gameSupports g) $ \support -> do
         identityStep (getSupportController support) (SupportRemoved sid)
-        discardCard (toAttrs support)
+        discardFromPlay g (toAttrs support)
         for_ (supportHeldCards $ toAttrs support) discardCard
       -- kept as removed, so an ability it was discarded to pay for still resolves
       pure $
@@ -1019,7 +1093,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         Just upgrade | isPermanent upgrade -> pure g
         Just upgrade -> do
           upgradeRemoved uid
-          discardCard upgrade
+          discardFromPlay g upgrade
           for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
           pure $
             g
@@ -1030,7 +1104,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     AttachmentRef aid -> do
       for_ (lookup aid $ gameAttachments g) $ \attachment -> do
         attachmentRemoved aid
-        discardCard attachment
+        discardFromPlay g attachment
       pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
     -- discarded, its own cards with it, and no longer engaged
     MinionRef mid -> case lookup mid (gameMinions g) of
@@ -1040,7 +1114,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (minionUpgrades a) removeFromPlay
         for_ (minionAttachments a) removeFromPlay
         minionDisengages (minionEngagedIdentity a) mid
-        discardCard minion
+        discardFromPlay g minion
         pure $
           g
             & (entitiesL . minionsL %~ deleteMap mid)
@@ -1049,7 +1123,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       for_ (lookup tid $ gameTreacheries g) discardCard
       pure $ g & (entitiesL . treacheriesL %~ deleteMap tid)
     ObligationRef oid -> do
-      for_ (lookup oid $ gameObligations g) discardCard
+      for_ (lookup oid $ gameObligations g) (discardFromPlay g)
       pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     -- a villain's own side scheme cannot leave play while he is in play
     SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
@@ -1061,13 +1135,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         , upgradeAttachedSideScheme (toAttrs u) == Just sid
         ]
         removeFromPlay
-      for_ (lookup sid $ gameSideSchemes g) discardCard
+      for_ (lookup sid $ gameSideSchemes g) (discardFromPlay g)
       pure $
         g
           & (entitiesL . sideSchemesL %~ deleteMap sid)
           & (removedEntitiesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
     EnvironmentRef eid -> do
-      for_ (lookup eid $ gameEnvironments g) discardCard
+      for_ (lookup eid $ gameEnvironments g) (discardFromPlay g)
       pure $ g & (entitiesL . environmentsL %~ deleteMap eid)
     _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
@@ -1294,13 +1368,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- controls that can take damage, none past what would defeat it (a tough one too, its
   -- card preventing what it is given), then dealt at once; what cannot be assigned is
   -- ignored
-  AssignIndirectDamage ident source n assigned ->
-    g <$ assignIndirectDamage ident [ident] source n assigned (indirectDamageAssigned ident source)
+  AssignIndirectDamage ident source damage assigned ->
+    g <$ assignIndirectDamage ident [ident] source damage assigned (indirectDamageAssigned ident source)
   -- among the players: the group's, the first player assigning it
   AssignIndirectDamageAmongPlayers source n assigned -> do
     first <- selectJust FirstPlayer
     players <- getPlayers
-    g <$ assignIndirectDamage first players source n assigned \k as -> push (AssignIndirectDamageAmongPlayers source k as)
+    g <$ assignIndirectDamage first players source (toDamage n FromAbility) assigned \d as -> push (AssignIndirectDamageAmongPlayers source (damageAmount d) as)
   -- a card set aside from play (Escape the Museum's Milano) leaves it, out of play and
   -- not discarded: permanent or not; the scenario keeps it set aside
   SetAside cards -> do
@@ -1969,6 +2043,8 @@ newGame player scenario =
     , gameCampaign = Nothing
     , gameVictoryDisplay = []
     , gamePeril = Nothing
+    , gameCollection = []
+    , gameCollecting = []
     }
 
 -- | A card with the permanent keyword cannot leave play. ponytail: none in play can be
@@ -2844,6 +2920,9 @@ gameSelectEnemy m = do
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
     EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
     ConfusedEnemy -> pure $ Villain.villainConfused (toAttrs e)
+    EnemyWithLowestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> (minimum <$> attacks)
+    EnemyWithHighestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (maximum <$> schemes)
+    EnemyWithLowestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (minimum <$> schemes)
   goMinion e = \case
     DefeatedEnemy m' -> goMinion e m'
     EnemyWithId enemyId -> pure $ case enemyId of
@@ -2872,6 +2951,9 @@ gameSelectEnemy m = do
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
     EnemyWithTrait t -> member t <$> getTraits e
     ConfusedEnemy -> pure $ minionConfused (toAttrs e)
+    EnemyWithLowestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> (minimum <$> attacks)
+    EnemyWithHighestScheme -> (==) <$> Minion.getModifiedScheme (toAttrs e) <*> (maximum <$> schemes)
+    EnemyWithLowestScheme -> (==) <$> Minion.getModifiedScheme (toAttrs e) <*> (minimum <$> schemes)
 
   -- a player kept from attacking the enemy's title (Fear of Kang)
   barredFrom attacker e = do
@@ -2881,6 +2963,15 @@ gameSelectEnemy m = do
     villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
     minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
     pure $ foldl' max 0 (villains <> minions)
+  -- every enemy's ATK, and SCH: an enemy is one of them, so neither is empty when asked
+  attacks = do
+    villains <- traverse (Villain.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameVillains
+    minions <- traverse (Minion.getModifiedAttack . toAttrs) . HashMap.elems =<< getsGame gameMinions
+    pure $ villains <> minions
+  schemes = do
+    villains <- traverse (Villain.getModifiedScheme . toAttrs) . HashMap.elems =<< getsGame gameVillains
+    minions <- traverse (Minion.getModifiedScheme . toAttrs) . HashMap.elems =<< getsGame gameMinions
+    pure $ villains <> minions
 
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
@@ -3175,6 +3266,11 @@ getHazardCountIn aid = getsGame \g ->
 getVictoryDisplay :: (HasGame m) => m [EncounterCard]
 getVictoryDisplay = getsGame gameVictoryDisplay
 
+-- | The cards in The Collection (Infiltrate the Museum), the first added first: a player
+-- card's owner is its 'pcOwner'.
+getCollection :: (HasGame m) => m [Card]
+getCollection = getsGame gameCollection
+
 -- | The victory points in the victory display: each card's X (RR Victory X).
 getVictoryPoints :: (HasGame m) => m Natural
 getVictoryPoints = sum . map victoryValue <$> getVictoryDisplay
@@ -3192,23 +3288,24 @@ assignIndirectDamage ::
   IdentityId ->
   [IdentityId] ->
   Source ->
-  Natural ->
+  Damage ->
   [(CharacterId, Natural)] ->
-  (Natural -> [(CharacterId, Natural)] -> m ()) ->
+  (Damage -> [(CharacterId, Natural)] -> m ()) ->
   m ()
-assignIndirectDamage chooser idents source n assigned next = do
+assignIndirectDamage chooser idents source damage assigned next = do
   g <- getGame
-  let given c = sum [k | (c', k) <- assigned, c' == c]
+  let n = damageAmount damage
+      given c = sum [k | (c', k) <- assigned, c' == c]
   identity <- for [(i, p) | i <- idents, Just p <- [lookup i (gamePlayers g)]] \(i, p) -> (IdentityCharacter i,,) <$> getModifiedHp p <*> pure (identityDamage p)
   allies <- for [a | a <- HashMap.elems (gameAllies g), getAllyController a `elem` idents] \a ->
     (AllyCharacter (toId a),,) <$> Ally.getModifiedHitPoints (toAttrs a) <*> pure (getAllyDamage a)
   open <-
     filterM (fmap (notElem CannotTakeDamage) . getModifiers . characterRef . fst)
       [(c, room) | (c, hp, damage) <- identity <> allies, let room = subtractNatural (damage + given c) hp, room > 0]
-  let assign c k = next (n - k) ((c, k) : assigned)
+  let assign c k = next damage {damageAmount = n - k} ((c, k) : assigned)
   case open of
     _ | n == 0 || null open ->
-      pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture $ damageCharacter c source (toDamage k FromAbility)) (HashMap.toList $ HashMap.fromListWith (+) assigned)
+      pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture $ damageCharacter c source damage {damageAmount = k}) (HashMap.toList $ HashMap.fromListWith (+) assigned)
     [(c, room)] -> assign c (min n room)
     _ -> chooseOnePrompted chooser "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
 

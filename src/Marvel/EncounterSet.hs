@@ -133,6 +133,9 @@ modularSets =
   , KreeMilitants
   -- The Galaxy's Most Wanted: Space Pirates
   , SpacePirates
+  -- Infiltrate the Museum
+  , GalacticArtifacts
+  , MenagerieMedley
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

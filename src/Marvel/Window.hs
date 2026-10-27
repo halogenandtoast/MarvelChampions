@@ -225,6 +225,9 @@ windowMatches matcher w source = case matcher of
     AllyDefendedAgainst allyId _
       | windowTiming w == After -> allyMatches allyMatcher allyId
     _ -> pure False
+  CardWouldBeDiscardedFromPlay -> case windowType w of
+    WouldBeDiscardedFromPlay _ -> pure $ windowTiming w == Would
+    _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId
       | windowTiming w == timing ->

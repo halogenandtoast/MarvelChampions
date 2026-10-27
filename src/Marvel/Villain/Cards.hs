@@ -102,6 +102,11 @@ allVillainCards =
   , nebula1
   , nebula2
   , nebula3
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , collector1
+  , collector2
+  , collector3
+
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -365,3 +370,14 @@ nebula2 = villain "16089" "Nebula" [Criminal]
 
 nebula3 :: CardDef
 nebula3 = villain "16090" "Nebula" [Criminal]
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+collector1 :: CardDef
+collector1 = villain "16070" "Collector" [Elder]
+
+collector2 :: CardDef
+collector2 = villain "16071" "Collector" [Elder]
+
+collector3 :: CardDef
+collector3 = villain "16072" "Collector" [Elder]

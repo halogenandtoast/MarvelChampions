@@ -109,3 +109,6 @@ import Marvel.Minion.Minions.BandOfBadoon as X
 import Marvel.Minion.Minions.KreeMilitants as X
 -- The Galaxy's Most Wanted: Space Pirates
 import Marvel.Minion.Minions.SpacePirates as X
+
+-- Infiltrate the Museum, Menagerie Medley
+import Marvel.Minion.Minions.MenagerieMedley as X

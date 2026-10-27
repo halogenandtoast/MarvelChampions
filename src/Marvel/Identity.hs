@@ -871,9 +871,14 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- the damage, then retaliate (forced, so before any response; had as the attack
       -- resolves, RR Retaliate: Dauntless's condition is read then), then the window for
       -- responses to defending; a ranged attack ignores retaliate
-      when (damage > 0) do
-        checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
-        attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
+      -- an attack dealing indirect damage (Starshark): the damage past the defense is
+      -- divided among the characters the player controls, each share taken as it is
+      when (damage > 0) $
+        if attackIndirect attack'
+          then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
+          else do
+            checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
+            attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       unless (attackRanged attack') $
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when playerIdentityDefended $
@@ -926,6 +931,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     PlaceCountersUpTo n cap -> do
       let placed = min n (subtractNatural playerIdentityCounters cap)
       when (placed > 0) $ placeCounters playerIdentityId placed
+      pure pid
+    TopOfDeckIntoCollection -> do
+      for_ (take 1 $ unDeck playerIdentityDeck) placeInCollection
       pure pid
     IdentityHealed n ->
       pure $ PlayerIdentity $ attrs & damageL %~ subtractNatural n
@@ -1072,6 +1080,14 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
               attrs
                 & (discardL %~ Discard . (card :) . unDiscard)
                 & (handL %~ Hand . filter (/= card) . unHand)
+    -- into The Collection from the player's hand, deck or discard pile
+    PlaceInCollection (PlayerCard card) ->
+      pure $
+        PlayerIdentity $
+          attrs
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (deckL %~ Deck . filter (/= card) . unDeck)
     RemoveFromGame (CardIdRef cid) ->
       pure $
         PlayerIdentity $

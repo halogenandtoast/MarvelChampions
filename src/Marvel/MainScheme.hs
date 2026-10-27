@@ -79,6 +79,8 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard theArtOfEvasion
   , SomeMainSchemeCard warpDriveInitiated
 
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , SomeMainSchemeCard theGrandCollection
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

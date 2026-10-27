@@ -180,6 +180,10 @@ data EnemyMatcher
   | StunnedEnemy
   | EnemyWithTrait Trait
   | ConfusedEnemy
+  -- Galactic Artifacts: "attach to the enemy with the lowest ATK" (highest, lowest SCH)
+  | EnemyWithLowestAttack
+  | EnemyWithHighestScheme
+  | EnemyWithLowestScheme
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

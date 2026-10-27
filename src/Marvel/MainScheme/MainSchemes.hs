@@ -49,3 +49,6 @@ import Marvel.MainScheme.MainSchemes.Ronan as X
 
 -- The Galaxy's Most Wanted: Nebula
 import Marvel.MainScheme.MainSchemes.TheArtOfEvasion as X
+
+-- Infiltrate the Museum
+import Marvel.MainScheme.MainSchemes.TheGrandCollection as X

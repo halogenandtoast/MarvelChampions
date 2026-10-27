@@ -211,7 +211,12 @@ retaliate source attacker = pushAll . retaliateDamage (toSource source) attacker
 -- | Indirect damage dealt to the player: they divide it among the characters they
 -- control, each point through 'damageCharacter' (an identity's 'damageIdentity').
 dealIndirectDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
-dealIndirectDamage ident source n = indirectDamageAssigned ident (toSource source) n []
+dealIndirectDamage ident source n = indirectDamageAssigned ident (toSource source) (toDamage n FromAbility) []
+
+-- | An attack's damage dealt as indirect damage (Starshark): divided as 'dealIndirectDamage'
+-- divides it, each share the attack's damage.
+dealIndirectAttackDamage :: (ReverseQueue m) => IdentityId -> Source -> Damage -> m ()
+dealIndirectAttackDamage ident source damage = indirectDamageAssigned ident source damage []
 
 -- | Indirect damage dealt among the players: the first player divides it among the
 -- friendly characters in play.
@@ -225,7 +230,7 @@ dealDividedDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> D
 dealDividedDamage you source damage matcher = push $ AssignDividedDamage you (toSource source) damage matcher []
 
 -- | The indirect damage left to assign, and what has been.
-indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Natural -> [(CharacterId, Natural)] -> m ()
+indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Damage -> [(CharacterId, Natural)] -> m ()
 indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
 
 setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -664,6 +669,27 @@ addToVictoryDisplay = push . AddToVictoryDisplay . toTarget
 -- (RR Victory X), any other for its discard pile.
 defeatedLeavesPlay :: (ReverseQueue m, IsRef a) => a -> m ()
 defeatedLeavesPlay = push . DefeatedLeavesPlay . toTarget
+
+-- * The Collection (Infiltrate the Museum)
+
+-- | The card goes faceup into The Collection, from wherever it is: a deck, a hand, a
+-- discard pile, or play (leaving play for it, not discarded).
+placeInCollection :: (ReverseQueue m, IsCard card) => card -> m ()
+placeInCollection = push . PlaceInCollection . toCard
+
+-- | The card in play, by its ref, goes faceup into The Collection, leaving play for it.
+placeInCollectionFromPlay :: (ReverseQueue m, IsRef a) => a -> m ()
+placeInCollectionFromPlay a = getsGame (`cardInPlay` toTarget a) >>= traverse_ placeInCollection
+
+-- | The top card of the player's deck, as it is when this resolves, goes faceup into
+-- The Collection.
+placeTopOfDeckInCollection :: (ReverseQueue m) => IdentityId -> m ()
+placeTopOfDeckInCollection ident = push $ IdentityMessage ident TopOfDeckIntoCollection
+
+-- | A card leaves The Collection for its owner's discard pile (the encounter discard
+-- pile for an encounter card).
+discardFromCollection :: (ReverseQueue m, IsCard card) => card -> m ()
+discardFromCollection = push . DiscardedCard . toCard
 
 -- * Player cards
 

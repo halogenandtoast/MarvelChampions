@@ -124,5 +124,8 @@
   "-- Escape the Museum --": "",
   "indirectDamageAmongPlayers": "{count} indirect damage is dealt among the players",
 
+  "-- Infiltrate the Museum --": "",
+  "collection": "{card} goes into The Collection",
+
   "-- end --": ""
 }

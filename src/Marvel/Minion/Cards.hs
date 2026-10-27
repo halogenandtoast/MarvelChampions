@@ -150,6 +150,13 @@ allMinions =
       -- The Galaxy's Most Wanted: Space Pirates
       , pirateCommander
       , pirateLackey
+
+      -- The Galaxy's Most Wanted: Infiltrate the Museum
+      , monarkStarstalker
+      -- Menagerie Medley
+      , psionicGhost
+      , servantBot
+      , starshark
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -714,3 +721,20 @@ pirateCommander = (minion "16138" "Pirate Commander" [Criminal] [Boost, Star] Sp
 
 pirateLackey :: CardDef
 pirateLackey = (minion "16139" "Pirate Lackey" [Criminal] [Boost, Star] SpacePirates 4) {cdKeywords = singleton Quickstrike}
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+-- | Printed "Monark Starstalker" (MarvelCDB: "Monarch").
+monarkStarstalker :: CardDef
+monarkStarstalker = unique $ (minion "16075" "Monark Starstalker" [BountyHunter] [Boost, Boost, Boost] InfiltrateTheMuseum 1) {cdKeywords = singleton Villainous}
+
+-- Menagerie Medley
+
+psionicGhost :: CardDef
+psionicGhost = minion "16135" "Psionic Ghost" [Ghost] [Star] MenagerieMedley 4
+
+servantBot :: CardDef
+servantBot = (minion "16136" "Servant Bot" [Robot] [] MenagerieMedley 3) {cdKeywords = fromList [Guard, Patrol]}
+
+starshark :: CardDef
+starshark = (minion "16137" "Starshark" [Creature, Elite] [Star] MenagerieMedley 2) {cdKeywords = singleton Quickstrike}

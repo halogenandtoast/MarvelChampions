@@ -24,21 +24,9 @@ import Marvel.Count
 import Marvel.Query
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as SideSchemes
+import Marvel.Environment.Environments.NebulasShip (getEvasionCounters, placeEvasionCounters)
 import Marvel.Status
 import Marvel.Trait (Trait (Technique))
-
--- TODO(gmw-merge): the Nebula branch's 'placeEvasionCounters' and 'getEvasionCounters'
--- (Marvel.Message.Lifted / Marvel.Game): until merged, there are none.
-placeEvasionCounters :: (ReverseQueue m) => Natural -> m ()
-placeEvasionCounters _ = pure ()
-
-getEvasionCounters :: (Monad m) => m Natural
-getEvasionCounters = pure 0
-
--- TODO(gmw-merge): the Collector branch's 'getCollection' (Marvel.Game): until merged,
--- The Collection is empty.
-getCollection :: (Monad m) => m [PlayerCard]
-getCollection = pure []
 
 runGalaxyStep :: (ReverseQueue m) => Campaign -> CampaignStepKind -> m ()
 runGalaxyStep c = \case
@@ -209,7 +197,7 @@ victory c = do
     for_ participants \code -> recordInCampaignLog (RecordUnits code units)
     -- Infiltrate the Museum: each player's cards in The Collection, by title
     when (n == 2) $ for_ (zip survivors codes) \(ident, code) ->
-      let theirs = [toCardCode card | card <- collection, pcOwner card == Just ident]
+      let theirs = [toCardCode card | PlayerCard card <- collection, pcOwner card == Just ident]
        in unless (null theirs) $ recordInCampaignLog (RecordCollection code theirs)
     when (n == 3 && notNull artifacts) $ recordInCampaignLog (RecordGalacticArtifacts artifacts)
     when (any ((== "16183") . toCardCode) display) $ recordInCampaignLog (RecordHeadhunterDefeated n)

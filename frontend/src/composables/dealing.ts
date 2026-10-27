@@ -133,6 +133,7 @@ const discardsOf = (view: GameView) => {
   const pile = new Map<string, string>()
   for (const c of view.encounterDiscard ?? []) pile.set(c.id, 'discard-encounter')
   for (const c of view.victoryDisplay ?? []) pile.set(c.id, 'victory-display')
+  for (const c of view.collection ?? []) pile.set(c.id, 'collection')
   for (const p of view.players ?? []) for (const c of p.discard ?? []) pile.set(c.id, `discard-${p.id}`)
   return pile
 }

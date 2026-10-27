@@ -151,6 +151,7 @@ library
       Marvel.Attachment.Attachments.ExoSuit
       Marvel.Attachment.Attachments.FrozenInTime
       Marvel.Attachment.Attachments.FutureWeapon
+      Marvel.Attachment.Attachments.GalacticArtifacts
       Marvel.Attachment.Attachments.GeneticallyEnhanced
       Marvel.Attachment.Attachments.GoblinGlider
       Marvel.Attachment.Attachments.HeldHostage
@@ -496,6 +497,7 @@ library
       Marvel.MainScheme.MainSchemes.TheBreakIn
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
       Marvel.MainScheme.MainSchemes.TheGetaway
+      Marvel.MainScheme.MainSchemes.TheGrandCollection
       Marvel.MainScheme.MainSchemes.TheInfinityStone
       Marvel.MainScheme.MainSchemes.TheIslandOfDrZola
       Marvel.MainScheme.MainSchemes.TheMadDoctor
@@ -570,6 +572,7 @@ library
       Marvel.Minion.Minions.Macrobots
       Marvel.Minion.Minions.MadameHydra
       Marvel.Minion.Minions.Melter
+      Marvel.Minion.Minions.MenagerieMedley
       Marvel.Minion.Minions.MisterKnife
       Marvel.Minion.Minions.Modok
       Marvel.Minion.Minions.Monster
@@ -680,6 +683,7 @@ library
       Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion
       Marvel.SideScheme.SideSchemes.FamilyFeud
       Marvel.SideScheme.SideSchemes.FugitiveRecovery
+      Marvel.SideScheme.SideSchemes.GalacticArtifacts
       Marvel.SideScheme.SideSchemes.GenerationWhy
       Marvel.SideScheme.SideSchemes.GoblinNation
       Marvel.SideScheme.SideSchemes.GoblinReinforcements
@@ -831,6 +835,7 @@ library
       Marvel.Treachery.Treacheries.HuntedByHydra
       Marvel.Treachery.Treacheries.IcyGrip
       Marvel.Treachery.Treacheries.ImTough
+      Marvel.Treachery.Treacheries.InfiltrateTheMuseum
       Marvel.Treachery.Treacheries.InfinitePower
       Marvel.Treachery.Treacheries.Intimidation
       Marvel.Treachery.Treacheries.ISeeYou
@@ -1029,6 +1034,7 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.AbsorbingMan
       Marvel.Villain.Villains.Bulldozer
+      Marvel.Villain.Villains.Collector
       Marvel.Villain.Villains.CollectorEscape
       Marvel.Villain.Villains.Crossbones
       Marvel.Villain.Villains.Drang
@@ -1237,6 +1243,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.GreenGoblinSpec
       Marvel.Encounter.GrootNemesisSpec
       Marvel.Encounter.HulkNemesisSpec
+      Marvel.Encounter.InfiltrateTheMuseumSpec
       Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.ModularsSpec

@@ -457,8 +457,10 @@ data Message
     -- setup says
     RemovePlayerObligationsFromGame
   | -- | indirect damage the player has still to assign among the characters they
-    -- control, and what they have assigned so far: dealt at once when all is assigned
-    AssignIndirectDamage IdentityId Source Natural [(CharacterId, Natural)]
+    -- control (the damage carrying how much is left, and its kind: an attack's is
+    -- attack damage), and what they have assigned so far: dealt at once when all is
+    -- assigned
+    AssignIndirectDamage IdentityId Source Damage [(CharacterId, Natural)]
   | -- | indirect damage "among players": the group divides it among the friendly
     -- characters in play, the first player deciding (RR Indirect Damage)
     AssignIndirectDamageAmongPlayers Source Natural [(CharacterId, Natural)]
@@ -530,5 +532,9 @@ data Message
     CountActivationBoostIcons Target [EncounterCard]
   | -- | the encounter cards with the setup keyword go into play (RR Appendix II, step 11)
     PutSetupEncounterCardsIntoPlay
+  -- Infiltrate the Museum
+  | -- | the card goes faceup into The Collection, the shared out-of-play area of the
+    -- scenario, from wherever it is: a card in play leaves play for it, not discarded
+    PlaceInCollection Card
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

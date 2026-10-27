@@ -227,5 +227,10 @@
   "revealKreeSupremacy": "Reveal Kree Supremacy?",
   "spendUnitToHeal": "Spend a unit to heal to full hit points",
 
+  "-- Infiltrate the Museum --": "",
+  "topCardIntoTheCollection": "Put the top card of your deck into The Collection",
+  "highestCostIntoTheCollection": "Put the highest cost card from your hand into The Collection",
+  "discardHighestCostForThreat": "Discard the highest cost card from your hand, then place threat on the main scheme equal to its printed cost",
+
   "-- end --": ""
 }

@@ -161,6 +161,7 @@ passesCriteria x a =
     PayingFor _ -> pure True
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
+    CollectionHasCards -> notNull <$> getCollection
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -192,6 +193,7 @@ passesCardCriteria ident card = go
     SpendOnly _ -> pure True
     PayingFor _ -> pure True
     ForAnyPlayer -> pure True
+    CollectionHasCards -> notNull <$> getCollection
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])

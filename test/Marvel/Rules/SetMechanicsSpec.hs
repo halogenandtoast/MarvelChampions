@@ -121,7 +121,7 @@ spec = describe "set mechanics" do
     let you = player1 tg
     inGame tg do
       hellcat <- allyIdOf <$> putIntoPlay you "01020"
-      runNow [AssignIndirectDamage you GameRef 5 []]
+      runNow [AssignIndirectDamage you GameRef (toDamage 5 FromAbility) []]
       offered <- offers (isTargetChoice you)
       liftIO $ offered `shouldBe` True
       -- Hellcat has 3 hit points: once she is assigned 3, the rest goes to the hero

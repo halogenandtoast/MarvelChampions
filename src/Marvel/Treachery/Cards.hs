@@ -184,6 +184,12 @@ allTreacheries = fromList $ map
   , ruthless
   -- Space Pirates
   , honorAmongThieves
+
+  -- The Galaxy's Most Wanted: Infiltrate the Museum
+  , inconspicuousBox
+  , viewTheCosmos
+  , stayAwhile
+  , caughtOffGuardMuseum
   ]
 
 treachery
@@ -693,3 +699,18 @@ ruthless = treachery "16102" "Ruthless" [Boost, Boost] Nebula 2
 
 honorAmongThieves :: CardDef
 honorAmongThieves = treachery "16141" "Honor Among Thieves" [Boost, Boost] SpacePirates 2
+
+-- The Galaxy's Most Wanted: Infiltrate the Museum
+
+inconspicuousBox :: CardDef
+inconspicuousBox = treachery "16076" "Inconspicuous Box" [Star] InfiltrateTheMuseum 2
+
+viewTheCosmos :: CardDef
+viewTheCosmos = treachery "16077" "View the Cosmos" [Boost, Boost] InfiltrateTheMuseum 2
+
+stayAwhile :: CardDef
+stayAwhile = treachery "16078" "Stay Awhile" [Boost] InfiltrateTheMuseum 2
+
+-- | The core set's Caught Off Guard, again in this set.
+caughtOffGuardMuseum :: CardDef
+caughtOffGuardMuseum = treachery "16079" "Caught Off Guard" [Boost] InfiltrateTheMuseum 1

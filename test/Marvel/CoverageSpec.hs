@@ -96,6 +96,10 @@ modularSets =
   , "space_pirates"
   -- The Galaxy's Most Wanted campaign
   , "challenge"
+  -- Infiltrate the Museum
+  , "infiltrate_the_museum"
+  , "galactic_artifacts"
+  , "menagerie_medley"
   ]
 
 encounterImplemented :: PackCard -> Bool

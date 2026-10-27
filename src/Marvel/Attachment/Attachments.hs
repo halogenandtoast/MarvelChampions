@@ -90,3 +90,6 @@ import Marvel.Attachment.Attachments.DrangsSpear as X
 import Marvel.Attachment.Attachments.Ronan as X
 -- The Galaxy's Most Wanted: Nebula
 import Marvel.Attachment.Attachments.Techniques as X
+
+-- Infiltrate the Museum, Galactic Artifacts
+import Marvel.Attachment.Attachments.GalacticArtifacts as X

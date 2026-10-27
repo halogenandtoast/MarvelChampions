@@ -115,3 +115,6 @@ import Marvel.SideScheme.SideSchemes.SoundTheAlarms as X
 
 -- The Galaxy's Most Wanted: Challenge
 import Marvel.SideScheme.SideSchemes.Challenge as X
+
+-- Galactic Artifacts
+import Marvel.SideScheme.SideSchemes.GalacticArtifacts as X
