@@ -41,16 +41,11 @@ BACKS = {
     "back-encounter": "MarvelHD/003_Hawkeye_s_Nemesis_Set_BackURL.png",
     "back-villain": "MarvelHD/cropped/347_Rhino_Villain_FaceURL_20.png",  # hidden slot of a villain sheet
 }
-# ponytail: codes whose marvelcdb reference is the wrong card, so matching can't find
-# them; picked by hand (marvelcdb's 12001c.png is Tiny Ant-Man, not Giant)
-OVERRIDES = {
-    "12001c": "MarvelHD/cropped/162_Scott_Lang_FaceURL_3.png",
-    # marvelcdb has no scan of Ironheart's Version 2 and 3 identities
-    "29002a": "MarvelHD/495_Ironheart_FaceURL.jpg",
-    "29002b": "MarvelHD/496_Ironheart_BackURL.jpg",
-    "29003a": "MarvelHD/497_Ironheart_FaceURL.jpg",
-    "29003b": "MarvelHD/498_Ironheart_BackURL.jpg",
-}
+# ponytail: codes matching can't find, picked by hand: [source, rotation]. Mostly cards
+# marvelcdb has no scan of (Ironheart's Version 2 and 3, the NeXt Evolution, Age of
+# Apocalypse, Agents of S.H.I.E.L.D., Trickster Takeover and Civil War scenario cards), and
+# a few whose scan is the wrong card (marvelcdb's 12001c.png is Tiny Ant-Man, not Giant)
+OVERRIDES = json.loads((ROOT / "tools" / "image-overrides.json").read_text())
 # ponytail: side schemes whose marvelcdb reference is a portrait scan, so the match
 # comes out upright; their rotation, picked by hand
 ROTATIONS = {"05026": 90, "11045": 90}
@@ -307,8 +302,13 @@ def main():
     for code, c in cards.items():
         if c.get("backimagesrc") and c["type_code"] == "main_scheme" and code + "a" in cards and code in manifest:
             manifest[code + "b"] = dict(manifest[code], alias_of=code)
-    for code, src in OVERRIDES.items():
-        manifest[code] = {"source": src, "rotate": 0, "override": True}
+    for code, (src, rot) in OVERRIDES.items():
+        manifest[code] = {"source": src, "rotate": rot, "override": True}
+    # reprints whose own marvelcdb scan didn't match take the original's image
+    for code, c in cards.items():
+        src = c.get("duplicate_of_code")
+        if code not in manifest and src in manifest:
+            manifest[code] = dict(manifest[src], alias_of=src)
     for code, rot in ROTATIONS.items():
         if code in manifest:
             manifest[code]["rotate"] = rot
