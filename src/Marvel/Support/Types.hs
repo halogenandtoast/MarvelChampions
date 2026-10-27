@@ -174,4 +174,5 @@ instance RunMessage (Attrs Support) where
         when (supportUses a == 1 && supportDiscardIfNoUses a) $ removeFromPlay a
         pure $ a & usesL -~ 1
       SupportOwnedBy owner -> pure a {supportOwner = owner}
+      SupportChangedController new -> pure a {supportController = new}
     _ -> pure a

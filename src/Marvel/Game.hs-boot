@@ -65,6 +65,7 @@ getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 inAnyArea :: (HasGame m) => ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
+getStartingPlayerCount :: (HasGame m) => m Int
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getCampaign :: (HasGame m) => m (Maybe Campaign)
 offerable :: Game -> Choice -> Bool
@@ -159,6 +160,18 @@ getHazardCount :: (HasGame m) => m Natural
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
+getAmplifyCount :: (HasGame m) => m Natural
+-- The Galaxy's Most Wanted
+getVictoryDisplay :: (HasGame m) => m [EncounterCard]
+getVictoryPoints :: (HasGame m) => m Natural
+getMilano :: (HasGame m) => m (Maybe SupportId)
+milanoIsReady :: (HasGame m) => m Bool
+controlsMilano :: (HasGame m) => IdentityId -> m Bool
+getPowerStone :: (HasGame m) => m (Maybe AttachmentId)
+getAttachedCharacter :: (HasGame m) => AttachmentId -> m (Maybe CharacterId)
+getPowerStoneHolder :: (HasGame m) => m (Maybe CharacterId)
+controlsPowerStone :: (HasGame m) => IdentityId -> m Bool
+isStalwartEnemy :: (HasGame m) => Target -> m Bool
 -- Areas
 getAreas :: (HasGame m) => m [Area]
 getAreaOf :: (HasGame m) => IdentityId -> m Area

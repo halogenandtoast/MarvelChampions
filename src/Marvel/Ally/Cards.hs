@@ -179,6 +179,7 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdActionCriteria = Nothing
   , cdHazards = 0
   , cdAcceleration = 0
+  , cdAmplify = 0
   , cdLimit = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False

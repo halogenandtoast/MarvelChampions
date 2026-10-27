@@ -126,6 +126,8 @@ const escalation = (scheme: SchemeView) => {
         <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" pile="deck-encounter" />
         <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
       </template>
+      <!-- the victory display: shared, out of play, the cards with victory X defeated -->
+      <Pile v-if="game.victoryDisplay?.length" :label="t('game.piles.victoryDisplay')" :cards="game.victoryDisplay" pile="victory-display" />
       <template v-for="deck in decks" :key="`${deck.kind}-${deck.name}`">
         <Pile :label="deckLabel(deck)" back="encounter" :count="deck.size" />
         <!-- a named deck's cards are discarded to the encounter discard pile -->

@@ -3,6 +3,7 @@ module Marvel.MainScheme.Types where
 import Marvel.Prelude
 
 import Data.Typeable
+import Marvel.Ability.Types (Ability, HasAbilities (..))
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -103,6 +104,12 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsMainSc
   toMainSchemeAttrs = coerce
   mainSchemeModifiersFor :: (HasGame m) => Source -> Target -> a -> m [Modifier]
   mainSchemeModifiersFor _ _ _ = pure []
+  -- | its abilities, as a "First Player Action" (The Galaxy's Most Wanted): anyone's
+  mainSchemeAbilities :: a -> [Ability]
+  mainSchemeAbilities _ = []
+
+instance HasAbilities MainScheme where
+  getAbilities (MainScheme a) = mainSchemeAbilities a
 
 instance HasModifiersFor MainScheme where
   getModifiersFor source target (MainScheme a) = mainSchemeModifiersFor source target a

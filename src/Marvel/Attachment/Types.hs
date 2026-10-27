@@ -13,6 +13,8 @@ import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Matchers.Types (VillainMatcher (ActiveVillain))
 import Marvel.Query (selectOne)
+import Marvel.Game.Source (getActivePlayerId)
+import Marvel.Keyword (Keyword (Permanent))
 
 data Attachment = forall a. (IsAttachment a) => Attachment a
 
@@ -130,21 +132,41 @@ attachment f cardDef =
 instance IsRef (Attrs Attachment) where
   toRef = AttachmentRef . attachmentId
 
+-- | Whether it is on a character already.
+attached :: Attrs Attachment -> Bool
+attached a = isJust (attachmentEnemy a) || isJust (attachmentIdentity a)
+
 -- | "Attach to the villain": "your" area's villain, or, with none in play there (as
 -- between one Kang and the next), the card is discarded.
+-- A permanent card with no villain to attach to is removed from the game (RR Permanent).
 attachToTheVillain :: (ReverseQueue m) => Attrs Attachment -> m ()
-attachToTheVillain attrs = selectOne ActiveVillain >>= maybe (removeFromPlay attrs) (attachTo (attachmentId attrs))
+attachToTheVillain attrs = selectOne ActiveVillain >>= maybe gone (attachTo (attachmentId attrs))
+ where
+  gone = if isPermanentAttachment attrs then removeFromGame attrs else removeFromPlay attrs
+
+isPermanentAttachment :: Attrs Attachment -> Bool
+isPermanentAttachment = elem Permanent . cdKeywords . attachmentCardDef
 
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = runQueueT $ case msg of
     AttachmentMessage attachmentId' msg'
       | attachmentId' == attachmentId attrs -> case msg' of
+          -- attached elsewhere already, it moves: what had it is told it has gone
           AttachedToEnemy enemyId -> do
+            when (attached attrs) $ attachmentRemoved (attachmentId attrs)
             attachedTo enemyId (attachmentId attrs)
-            pure $ attrs & enemyL ?~ enemyId
-          AttachedToIdentity ident -> pure attrs {attachmentIdentity = Just ident}
+            pure $ attrs & enemyL ?~ enemyId & \a -> a {attachmentIdentity = Nothing}
+          AttachedToIdentity ident -> do
+            when (attached attrs) $ attachmentRemoved (attachmentId attrs)
+            pure attrs {attachmentIdentity = Just ident, attachmentEnemy = Nothing}
           AttachedToSideScheme sid -> pure attrs {attachmentSideScheme = Just sid}
           _ -> pure attrs
+    -- a permanent attachment does not leave play: what it was on gone, it resolves its
+    -- "attach to" text again (RR Permanent), removed from the game with no target
+    RemoveFromPlay target | target == toTarget attrs, isPermanentAttachment attrs -> do
+      you <- getActivePlayerId
+      attachmentStep (attachmentId attrs) (RevealAttachment you)
+      pure attrs
     -- it leaves play with the card it is attached to
     RemoveFromPlay target
       | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs] -> do

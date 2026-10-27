@@ -57,6 +57,7 @@ ultronDrones =
     , cdBoostIcons = []
     , cdHazards = 0
     , cdAcceleration = 0
+    , cdAmplify = 0
     , cdLimit = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False

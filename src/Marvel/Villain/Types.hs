@@ -257,6 +257,13 @@ instance HasTraits Villain where
     applyModifier (TraitModifier t) = HashSet.insert t
     applyModifier _ = id
 
+-- | The status card is given, a stunned or confused one not to a stalwart villain (RR
+-- Stalwart).
+statusUnlessStalwart :: (HasGame m) => Attrs Villain -> StatusCard -> m (Attrs Villain)
+statusUnlessStalwart attrs s = do
+  stalwart <- elem Stalwart <$> getModifiedKeywords attrs
+  pure $ if stalwart && s /= ToughStatus then attrs else attrs & statusL s .~ True
+
 getModifiedKeywords :: (HasGame m) => Attrs Villain -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
@@ -310,6 +317,8 @@ runVillainMessage msg attrs = case msg of
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
             let excess = subtractNatural (fromIntegral . unHp $ villainHp attrs) (damageAmount damage)
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.VillainTookDamage vid source damage]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough damage))
@@ -324,8 +333,9 @@ runVillainMessage msg attrs = case msg of
     resolveVillainDefeat vid
     pure attrs
   VillainBecomeTough -> pure $ attrs & toughL .~ True
-  Msg.VillainStunned _ -> pure $ attrs & stunnedL .~ True
-  Msg.VillainConfused _ -> pure $ attrs & confusedL .~ True
+  -- a stalwart villain cannot be stunned or confused (RR Stalwart)
+  Msg.VillainStunned _ -> statusUnlessStalwart attrs StunnedStatus
+  Msg.VillainConfused _ -> statusUnlessStalwart attrs ConfusedStatus
   VillainSchemes ->
     if villainConfused attrs
       then pure $ attrs & confusedL .~ False & boostL .~ 0
@@ -376,7 +386,7 @@ runVillainMessage msg attrs = case msg of
     for_ (villainBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
       revealBoostCard card vid
-      countBoostIcons attrs () [card]
+      countActivationBoostIcons attrs [card]
     villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
   VillainActivationBonus n -> pure $ attrs & boostL +~ n
@@ -425,7 +435,7 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
-    GiveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ True
+    GiveStatus (VillainRef vid) s | vid == villainId attrs -> statusUnlessStalwart attrs s
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
     AttachmentRemoved attachmentId -> do
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId

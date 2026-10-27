@@ -45,6 +45,8 @@ data Cost
   | -- | nothing more is due, but the payer may go on spending resources: "for each
     -- resource you overpaid" (Ant-Man, Hank Pym)
     MayOverpay
+  | -- | "exhaust the Milano", whoever controls it (The Galaxy's Most Wanted)
+    ExhaustMilanoCost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -73,6 +75,7 @@ costResources DiscardEncounterCardsUntilMinionCost = []
 costResources DealEncounterCardCost = []
 costResources TargetPrintedCost = []
 costResources MayOverpay = []
+costResources ExhaustMilanoCost = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

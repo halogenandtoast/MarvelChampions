@@ -159,6 +159,8 @@ passesCriteria x a =
     UpgradeExists m -> selectAny m
     -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
+    -- peril is checked by 'getAbilitiesFor'
+    ForAnyPlayer -> pure True
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -189,6 +191,7 @@ passesCardCriteria ident card = go
     -- how it is paid for is checked as it is paid
     SpendOnly _ -> pure True
     PayingFor _ -> pure True
+    ForAnyPlayer -> pure True
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])

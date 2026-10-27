@@ -234,6 +234,8 @@ export interface GameView {
   environments?: EnvironmentView[]
   encounterDeckSize: number
   encounterDiscard: CardView[]
+  /** the victory display: cards with victory X, defeated, the first added first */
+  victoryDisplay?: CardView[]
   focusedCards: CardView[]
   /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
   attack?: { attacker: string; target: string } | null

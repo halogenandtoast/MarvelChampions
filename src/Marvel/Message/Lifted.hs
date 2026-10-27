@@ -248,7 +248,7 @@ thwartDividedUpTo you source n matcher = push $ AssignDividedThreat you (toSourc
 
 -- | The hero's basic thwart divided among the thwartable schemes (Giant Wasp).
 basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
-basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True False n ThwartableScheme []
+basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True False n SchemeYouCanThwart []
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
@@ -579,6 +579,26 @@ damageAttachment attachment = push . AttachmentMessage attachment . AttachmentDa
 flipEnvironment :: (ReverseQueue m) => EnvironmentId -> m ()
 flipEnvironment eid = push $ EnvironmentMessage eid FlipEnvironment
 
+-- | The attachment is attached to the character, moving there if it is attached
+-- elsewhere: an ally is not one an attachment goes on.
+attachToCharacter :: (ReverseQueue m, IsCharacter c) => AttachmentId -> c -> m ()
+attachToCharacter aid c = case toCharacter c of
+  IdentityCharacter i -> attachToIdentity aid i
+  VillainCharacter v -> attachTo aid v
+  MinionCharacter m -> attachTo aid m
+  AllyCharacter _ -> pure ()
+
+-- * The Milano and the Power Stone (The Galaxy's Most Wanted)
+
+-- | "Exhaust the Milano": any player may, as a cost or an option, whether or not they
+-- control it (TGMW rulebook FAQ, p.21). Nothing happens with it exhausted or gone.
+exhaustMilano :: (ReverseQueue m) => m ()
+exhaustMilano = getMilano >>= traverse_ exhaust
+
+-- | "Attach the Power Stone to …": it moves to the hero or villain, wherever it was.
+attachPowerStoneTo :: (ReverseQueue m, IsCharacter c) => c -> m ()
+attachPowerStoneTo c = getPowerStone >>= traverse_ (`attachToCharacter` c)
+
 -- * Schemes
 
 -- | The main scheme is completed: what that does is its own to say.
@@ -603,7 +623,7 @@ defeatSideSchemeWith sid source = do
   pushAll
     [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
     , SideSchemeMessage sid DefeatSideScheme
-    , RemoveFromPlay (toTarget sid)
+    , DefeatedLeavesPlay (toTarget sid)
     , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you source]
     ]
 
@@ -613,6 +633,17 @@ sideSchemeRevealedThen sid = push $ SideSchemeMessage sid SideSchemeRevealedThen
 
 searchForAndRevealScheme :: (ReverseQueue m) => CardDef -> m ()
 searchForAndRevealScheme = push . SearchForAndRevealScheme
+
+-- * The victory display
+
+-- | The card leaves play for the victory display, not its discard pile.
+addToVictoryDisplay :: (ReverseQueue m, IsRef a) => a -> m ()
+addToVictoryDisplay = push . AddToVictoryDisplay . toTarget
+
+-- | The card is defeated and leaves play: a card with victory X for the victory display
+-- (RR Victory X), any other for its discard pile.
+defeatedLeavesPlay :: (ReverseQueue m, IsRef a) => a -> m ()
+defeatedLeavesPlay = push . DefeatedLeavesPlay . toTarget
 
 -- * Player cards
 
@@ -882,6 +913,12 @@ discardTopOfEncounterDeckThen n body = do
 -- ('WithBoostIcons') with the value.
 countBoostIcons :: (ReverseQueue m, IsRef target, ToJSON v) => target -> v -> [EncounterCard] -> m ()
 countBoostIcons target v = push . CountBoostIcons (toTarget target) (toJSON v)
+
+-- | The boost cards turned faceup for the enemy's activation have their icons counted,
+-- an amplify icon in play adding one to each (RR Amplify Icon): the enemy is told the
+-- counts ('WithBoostIcons') with no value.
+countActivationBoostIcons :: (ReverseQueue m, IsRef enemy) => enemy -> [EncounterCard] -> m ()
+countActivationBoostIcons enemy = push . CountActivationBoostIcons (toTarget enemy)
 
 shuffleIntoEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
@@ -1159,6 +1196,10 @@ startScenario :: (ReverseQueue m) => m ()
 startScenario = push StartScenario
 
 -- | Each player is dealt their starting hand, then the first round begins.
+-- | The encounter cards with the setup keyword go into play (RR Appendix II, step 11).
+putSetupEncounterCardsIntoPlay :: (ReverseQueue m) => m ()
+putSetupEncounterCardsIntoPlay = push PutSetupEncounterCardsIntoPlay
+
 setupPlayers :: (ReverseQueue m) => m ()
 setupPlayers = push SetupPlayers
 
@@ -1306,6 +1347,7 @@ cancelDamage ident = cancelMatchingMessage \case
 cancelBoostIcons :: (HasQueue m, IsEnemy enemy) => enemy -> m ()
 cancelBoostIcons (toEnemy -> enemy) = cancelMatchingMessage \case
   CountBoostIcons ref _ _ -> isEnemy ref
+  CountActivationBoostIcons ref _ -> isEnemy ref
   WithBoostIcons ref _ _ -> isEnemy ref
   VillainMessage vid (VillainAddBoost _) -> enemy == EnemyVillainId vid
   MinionMessage mid (MinionAddBoost _) -> enemy == EnemyMinionId mid

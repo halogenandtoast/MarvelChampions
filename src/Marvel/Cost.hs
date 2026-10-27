@@ -35,6 +35,20 @@ passesCanAffordCost ::
   m Bool
 passesCanAffordCost identityId a = canAffordCost identityId (abilitySource a) =<< getAbilityCost a
 
+-- | Whether the resources cover those asked for, each of a type or of any ('Nothing'):
+-- a wild resource covers any type.
+coversResources :: [Maybe Resource] -> [Resource] -> Bool
+coversResources mr resources = null uncovered && length remaining >= length anyResources
+ where
+  goPay [] bs = ([], bs)
+  goPay as [] = (as, [])
+  goPay (a' : as) bs = case (a' `elem` bs, Wild `elem` bs) of
+    (True, _) -> goPay as (L.delete a' bs)
+    (_, True) -> goPay as (L.delete Wild bs)
+    (False, False) -> (a' : as, bs)
+  (anyResources, specificResources) = partitionMaybes mr
+  (uncovered, remaining) = goPay specificResources resources
+
 -- | The ability's cost with what modifiers add to it: "as an additional cost for each
 -- hero to make a basic attack" (Mother's Orders).
 getAbilityCost :: (HasGame m) => Ability -> m Cost
@@ -85,6 +99,7 @@ canAffordCost identityId source = go
     DealEncounterCardCost -> pure True
     TargetPrintedCost -> pure True
     MayOverpay -> pure True
+    ExhaustMilanoCost -> milanoIsReady
     ExhaustCost -> case source of
       IdentityRef ident -> member ident <$> select UnexhaustedIdentity
       AllyRef ident -> member ident <$> select UnexhaustedAlly
@@ -110,19 +125,20 @@ canAffordCost identityId source = go
       pure $ case mr of
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
-    MultiResourceCost mr -> do
-      resources <- getAvailableResourcesFor identityId Nothing
-      let
-        goPay [] bs = ([], bs)
-        goPay as [] = (as, [])
-        goPay (a' : as) bs = case (a' `elem` bs, Wild `elem` bs) of
-          (True, _) -> goPay as (L.delete a' bs)
-          (_, True) -> goPay as (L.delete Wild bs)
-          (False, False) -> (a' : as, bs)
-        (anyResources, specificResources) = partitionMaybes mr
-        (uncovered, remaining) = goPay specificResources resources
-      pure $ null uncovered && length remaining >= length anyResources
+    MultiResourceCost mr -> coversResources mr <$> getAvailableResourcesFor identityId Nothing
     DifferentResourcesCost n ->
       coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
+    -- the Milano exhausted to pay, its own resource is not there to spend as well
+    Costs xs | ExhaustMilanoCost `elem` xs -> do
+      milano <- getMilano
+      abilities <- getResourceAbilities identityId Nothing
+      resources <- getAvailableResourcesFor identityId Nothing
+      let milanos = length [a | a <- abilities, Just (abilitySource a) == (SupportRef <$> milano)]
+          others = foldr L.delete resources (replicate milanos Wild)
+      andM
+        [ milanoIsReady
+        , allM go [x | x <- xs, null (costResources x), x /= ExhaustMilanoCost]
+        , pure $ coversResources (concatMap costResources xs) others
+        ]
     Costs xs -> allM go xs
   notPlaying c = source /= CardIdRef (pcCardId c)

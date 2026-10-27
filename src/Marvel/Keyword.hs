@@ -22,5 +22,15 @@ data Keyword
   | Villainous
   | Permanent
   | Setup
+  -- The Galaxy's Most Wanted
+  | -- | defeated, it goes to the victory display, worth this many victory points (RR
+    -- Victory X)
+    Victory Natural
+  | -- | while it is engaged with a player, they cannot thwart the main scheme
+    Patrol
+  | -- | it cannot be stunned or confused
+    Stalwart
+  | -- | while a player resolves it, the others cannot help them
+    Peril
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

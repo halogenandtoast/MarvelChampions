@@ -3,6 +3,7 @@ module Marvel.SideScheme.Types where
 import Marvel.Prelude
 
 import Data.Typeable
+import Marvel.Ability.Types (Ability, HasAbilities (..))
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -102,6 +103,12 @@ class (HasModifiersFor a, Show a, Eq a, ToJSON a, FromJSON a, Typeable a, RunMes
   toSideSchemeAttrs :: a -> Attrs SideScheme
   default toSideSchemeAttrs :: (Coercible a (Attrs SideScheme)) => a -> Attrs SideScheme
   toSideSchemeAttrs = coerce
+  -- | its abilities, as a "First Player Action" (The Galaxy's Most Wanted): anyone's
+  sideSchemeAbilities :: a -> [Ability]
+  sideSchemeAbilities _ = []
+
+instance HasAbilities SideScheme where
+  getAbilities (SideScheme a) = sideSchemeAbilities a
 
 type SideSchemeCard a = CardBuilder SideSchemeId a
 

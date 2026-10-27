@@ -77,6 +77,8 @@ data GameView = GameView
   , environments :: [EnvironmentView]
   , encounterDeckSize :: Int
   , encounterDiscard :: [CardView]
+  , victoryDisplay :: [CardView]
+  -- ^ the cards in the victory display, the first added first
   , focusedCards :: [CardView]
   , attack :: Maybe AttackView
   -- ^ an enemy's attack, while it is made
@@ -420,6 +422,7 @@ gameView seesHand g = do
           ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
+      , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g)
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
       , threat

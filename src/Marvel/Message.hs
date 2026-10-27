@@ -492,5 +492,21 @@ data Message
   | -- | an obligation drawn from the player's deck goes into play in their play area,
     -- as an expert campaign's do
     PutObligationIntoPlay IdentityId PlayerCard
+  -- The Galaxy's Most Wanted
+  | -- | the card leaves play for the victory display instead of its discard pile, what is
+    -- attached to it discarded as it would be (RR Victory X)
+    AddToVictoryDisplay Target
+  | -- | the card is defeated and leaves play: to the victory display if it has victory
+    -- X, its discard pile otherwise
+    DefeatedLeavesPlay Target
+  | -- | the player is resolving a card with peril, or no one is: while one is, the
+    -- others cannot play cards or trigger abilities (RR Peril)
+    SetPeril (Maybe IdentityId)
+  | -- | the boost cards turned faceup for the enemy's activation have their icons
+    -- counted, each gaining one for each amplify icon in play (RR Amplify Icon), as
+    -- 'CountBoostIcons' with no value
+    CountActivationBoostIcons Target [EncounterCard]
+  | -- | the encounter cards with the setup keyword go into play (RR Appendix II, step 11)
+    PutSetupEncounterCardsIntoPlay
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
