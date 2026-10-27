@@ -48,6 +48,8 @@ instance Entity PlayerIdentity where
     , playerIdentityDefended :: Bool
     , playerIdentityAttackDamageTaken :: Natural
     -- ^ the damage taken from the latest enemy attack against them
+    , playerIdentityCounters :: Natural
+    -- ^ on the identity card, whichever face is up: Groot's growth counters
     }
     deriving stock (Show, Eq, Generic)
   data Field PlayerIdentity :: Type -> Type where
@@ -75,6 +77,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityDefeated :: Field PlayerIdentity Bool
     PlayerIdentityDefended :: Field PlayerIdentity Bool
     PlayerIdentityAttackDamageTaken :: Field PlayerIdentity Natural
+    PlayerIdentityCounters :: Field PlayerIdentity Natural
   field fld p = let PlayerIdentityAttrs {..} = toAttrs p in case fld of
     PlayerIdentityId -> playerIdentityId
     PlayerIdentityName -> playerIdentityName
@@ -100,5 +103,6 @@ instance Entity PlayerIdentity where
     PlayerIdentityDefeated -> playerIdentityDefeated
     PlayerIdentityDefended -> playerIdentityDefended
     PlayerIdentityAttackDamageTaken -> playerIdentityAttackDamageTaken
+    PlayerIdentityCounters -> playerIdentityCounters
   toAttrs (PlayerIdentity attrs) = attrs
   toId = playerIdentityId . toAttrs

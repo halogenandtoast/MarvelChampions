@@ -38,6 +38,8 @@ data IdentityMatcher
   | IdentityWithTrait Trait
   | AnyIdentity
   | IdentityWithDamage GameValueMatcher
+  | -- | with so many counters on the identity card (Groot's growth counters)
+    IdentityWithCounters GameValueMatcher
   | IdentityEngagedWith MinionMatcher
   | You
   | FirstPlayer
@@ -83,6 +85,8 @@ data AllyMatcher
   | -- | the card in any of its printings
     AllyIs CardDef
   | AllyWithTitle Text
+  | -- | with exactly so many hit points remaining
+    AllyWithRemainingHitPoints Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -137,6 +141,8 @@ data UpgradeMatcher
     UpgradeWithHighestCostAmong UpgradeMatcher
   | -- | one an effect may make leave play: not a permanent one (RR, Permanent)
     UpgradeThatCanLeavePlay
+  | -- | an upgrade whose card matches
+    UpgradeWithCard CardMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

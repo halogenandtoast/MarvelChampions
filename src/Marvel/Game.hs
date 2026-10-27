@@ -2315,6 +2315,8 @@ gameSelectIdentity m = do
     IdentityIs def -> pure . (== toBaseCardCode (cdCardCode def)) . toBaseCardCode . toCardCode
     IdentityWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . identityDamage
+    IdentityWithCounters gameValueMatcher ->
+      gameValueMatches gameValueMatcher . playerIdentityCounters . toAttrs
     IdentityMatchAll xs -> andM . traverse matchFilter xs
     IdentityCanThwart -> fmap (notElem CannotThwart) . getModifiers
     IdentityCanChangeForm -> fmap (notElem CannotChangeForm) . getModifiers
@@ -2517,6 +2519,7 @@ gameSelectAlly m = do
     AllyWithTrait trait -> fmap (member trait) . getTraits
     AllyIs def -> pure . sameCard def . getCardDef
     AllyWithTitle t -> pure . (== t) . title . cdName . getCardDef
+    AllyWithRemainingHitPoints n -> \ally -> (== n) . subtractNatural (getAllyDamage ally) <$> Ally.getModifiedHitPoints (toAttrs ally)
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
@@ -2566,6 +2569,7 @@ gameSelectUpgrade m = do
       pure $ getUpgradeController upgrade `member` identities
     UpgradeMatches xs -> andM . traverse matchFilter xs
     UpgradeIs def -> pure . sameCard def . getCardDef
+    UpgradeWithCard m -> pure . cardMatch m . getCardDef
     UpgradeNamed name -> pure . (== name) . cdName . getCardDef
     UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
     UpgradeOneOf xs -> orM . traverse matchFilter xs

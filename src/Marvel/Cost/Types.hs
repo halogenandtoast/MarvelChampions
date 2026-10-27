@@ -45,6 +45,9 @@ data Cost
   | -- | nothing more is due, but the payer may go on spending resources: "for each
     -- resource you overpaid" (Ant-Man, Hank Pym)
     MayOverpay
+  | -- | so many counters removed from the payer's identity card: "remove 1 growth
+    -- counter from him" (Groot)
+    IdentityCountersCost Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -73,6 +76,7 @@ costResources DiscardEncounterCardsUntilMinionCost = []
 costResources DealEncounterCardCost = []
 costResources TargetPrintedCost = []
 costResources MayOverpay = []
+costResources (IdentityCountersCost _) = []
 costResources (DamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

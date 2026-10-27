@@ -170,6 +170,8 @@ data PlayerView = PlayerView
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
+  , counters :: Natural
+  -- ^ on the identity card: Groot's growth counters
   , thwart :: Maybe Natural
   , attack :: Maybe Natural
   , defense :: Maybe Natural
@@ -507,6 +509,7 @@ gameView seesHand g = do
         , stunned = a.playerIdentityStunned
         , confused = a.playerIdentityConfused
         , tough = a.playerIdentityTough
+        , counters = a.playerIdentityCounters
         , thwart = thw
         , attack = atk
         , defense = def

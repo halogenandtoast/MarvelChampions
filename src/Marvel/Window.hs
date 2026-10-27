@@ -31,6 +31,9 @@ windowMatches matcher w source = case matcher of
   AllyWouldTakeDamage allyMatcher -> case windowType w of
     AllyTakeDamage aid damage | damageAmount damage > 0 -> allyMatches allyMatcher aid
     _ -> pure False
+  AllyWouldTakeDamageEqualToRemainingHitPoints allyMatcher -> case windowType w of
+    AllyTakeDamage aid damage | damageAmount damage > 0 -> allyMatches (allyMatcher <> AllyWithRemainingHitPoints (damageAmount damage)) aid
+    _ -> pure False
   WouldTakeDamage identityMatcher damageSource' gameValueMatcher ->
     case windowType w of
       IdentityTakeDamage ident damage

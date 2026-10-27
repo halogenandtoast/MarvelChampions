@@ -225,6 +225,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
       , playerIdentityAttackDamageTaken = 0
+      , playerIdentityCounters = 0
       }
  where
   hp = case alterEgoSide of
@@ -864,19 +865,17 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId RevealEncounterCards
         pure $ PlayerIdentity $ attrs & encounterCardsL .~ rest
     IdentityWasAttacked attack' -> do
-      keywords <- getModifiedKeywords pid
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamageDealt attack'
-        -- each instance of retaliate adds to the others; a ranged attack ignores it
-        retaliate = if attackRanged attack' then 0 else sum [n | Retaliate n <- keywords]
-      -- the damage, then retaliate (forced, so before any response), then the window
-      -- for responses to defending
+      -- the damage, then retaliate (forced, so before any response; had as the attack
+      -- resolves, RR Retaliate: Dauntless's condition is read then), then the window for
+      -- responses to defending; a ranged attack ignores retaliate
       when (damage > 0) do
         checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
         attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
-      when (retaliate > 0) $
-        identityStep playerIdentityId (IdentityRetaliate retaliate $ attackEnemy attack')
+      unless (attackRanged attack') $
+        identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when playerIdentityDefended $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
@@ -924,6 +923,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     IdentityDefended n ->
       pure $ PlayerIdentity $ attrs & damageReductionL +~ n & defendedL .~ True
+    PlaceCountersUpTo n cap -> do
+      let placed = min n (subtractNatural playerIdentityCounters cap)
+      when (placed > 0) $ placeCounters playerIdentityId placed
+      pure pid
     IdentityHealed n ->
       pure $ PlayerIdentity $ attrs & damageL %~ subtractNatural n
     IdentitySetHitPoints n -> do
@@ -1017,8 +1020,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             & (handL %~ Hand . filter (/= card) . unHand)
             & (deckL %~ Deck . (card :) . filter (/= card) . unDeck)
     Search _ _ _ _ -> error "Unhandled"
-    IdentityRetaliate n enemyId -> do
-      resolveAs playerIdentityId $ DamageEnemy (enemyRef enemyId) (toSource pid) (toDamage n FromRetaliate)
+    IdentityRetaliate enemyId -> do
+      -- each instance of retaliate adds to the others
+      n <- sum . map (\case Retaliate x -> x; _ -> 0) <$> getModifiedKeywords pid
+      when (n > 0) $
+        resolveAs playerIdentityId $ DamageEnemy (enemyRef enemyId) (toSource pid) (toDamage n FromRetaliate)
       pure pid
     SideMessage _ -> case currentIdentity pid of
       HeroSide x -> do
@@ -1083,6 +1089,10 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
         when (damage >= modifiedHp) $
           defeatIdentity ident
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
+    PlaceCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityCounters = playerIdentityCounters attrs + n}
+    RemoveCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityCounters = subtractNatural n (playerIdentityCounters attrs)}
     GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity $ attrs & statusL s .~ True
     RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->

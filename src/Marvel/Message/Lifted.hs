@@ -321,6 +321,10 @@ placeCounters a = push . PlaceCounters (toTarget a)
 removeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
 removeCounters a = push . RemoveCounters (toTarget a)
 
+-- | Growth counters placed on Groot, "to a maximum of 10".
+placeGrowthCounters :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+placeGrowthCounters ident n = push $ IdentityMessage ident (PlaceCountersUpTo n 10)
+
 -- * Players and allies
 
 -- | More DEF for the hero's defense under way.
@@ -1295,6 +1299,11 @@ searchFoundCards target = push . SearchFoundCards (toTarget target)
 pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
 pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
 
+-- | The damage the identity is about to take ("when you would take damage"), as other
+-- interrupts have left it.
+pendingDamage :: (HasQueue m) => IdentityId -> m (Maybe Damage)
+pendingDamage ident = withQueue \q -> (q, headMay [d | IdentityMessage i (IdentityDamaged _ d) <- q, i == ident])
+
 -- | All of the damage the identity is about to take is cancelled.
 cancelDamage :: (HasQueue m) => IdentityId -> m ()
 cancelDamage ident = cancelMatchingMessage \case
@@ -1349,6 +1358,16 @@ raiseAllyAttack aid n = replaceMatchingMessage raise \case
  where
   raise = \case
     AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy dmg {damageAmount = damageAmount dmg + n}]
+    msg -> [msg]
+
+-- | The ally's attack about to land gains overkill: "that attack gains overkill".
+allyAttackGainsOverkill :: (HasQueue m) => AllyId -> m ()
+allyAttackGainsOverkill aid = replaceMatchingMessage gain \case
+  AllyMessage aid' (AllyAttackLands _ _) -> aid' == aid
+  _ -> False
+ where
+  gain = \case
+    AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy (withOverkill dmg)]
     msg -> [msg]
 
 -- | The first message queued matching is replaced by what the body does.

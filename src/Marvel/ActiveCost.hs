@@ -116,6 +116,7 @@ payCostPart activeCost = go
     DiscardEncounterCardsUntilMinionCost ->
       discardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)
     DealEncounterCardCost -> dealEncounterCard iid
+    IdentityCountersCost n -> removeCounters (IdentityRef iid) n
     -- added to the resources as the card was played
     TargetPrintedCost -> pure ()
     DynamicResourceCost _ -> resourcePayment

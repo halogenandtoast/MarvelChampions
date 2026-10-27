@@ -76,7 +76,8 @@ data IdentityMessage
   | MinionDisengaged MinionId
   | ShuffleIdentityDiscardBackIntoDeck
   | Search SearchSignifier CardMatcher SearchOption ReturnOption
-  | IdentityRetaliate Natural EnemyId
+  | -- | after the attack resolves, the retaliate the identity has then
+    IdentityRetaliate EnemyId
   | -- | the hit point dial is set: the damage is what leaves this many hit points
     IdentitySetHitPoints Natural
   | -- | discard from the top of the deck until a card matching is discarded, which the
@@ -88,6 +89,8 @@ data IdentityMessage
   | -- | the attack the hero defended is done with them: their damage before it, to tell
     -- whether they took any from it
     AttackDefended EnemyId Natural
+  | -- | so many counters placed on the identity card, to at most the second number
+    PlaceCountersUpTo Natural Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

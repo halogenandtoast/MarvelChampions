@@ -39,6 +39,8 @@ data WindowMatcher
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
+  | -- | an ally matching would take damage exactly equal to its remaining hit points
+    AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
   | -- | after a player matching's hero thwarts and removes all threat from a scheme
     HeroThwartsAllThreat IdentityMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
