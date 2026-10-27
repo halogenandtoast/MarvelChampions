@@ -321,6 +321,7 @@ villainNarration vid = \case
   VillainConfused _ -> Just $ unlessStalwart (VillainRef vid) $ simply "log.confused" (VillainRef vid)
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
   VillainAttackGains k -> gains (VillainRef vid) k
+  VillainAttackChanged n | n /= 0 -> Just $ attackChanged (VillainRef vid) n
   -- told as they are added, so icons cancelled as the card turns up are not
   VillainAddBoost n | n > 0 -> Just $ whenRef (VillainRef vid) \v -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> v, "count" ~> n]]
   _ -> Nothing
@@ -338,6 +339,12 @@ minionNarration mid = \case
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.engages" ["minion" ~> m, "player" ~> who]]
   MinionAttacks ident -> Just $ activation (MinionRef mid) ident "log.attacks" =<< getsGame (maybe False ((.minionStunned) . toAttrs) . lookup mid . gameMinions)
+  MinionAttacksEnemy enemy -> Just $ whenRef (MinionRef mid) \m -> do
+    stunned <- getsGame (maybe False ((.minionStunned) . toAttrs) . lookup mid . gameMinions)
+    whenRef (EnemyRef enemy) \e -> one $
+      if stunned
+        then toned Good $ mechanic [ikeyPart "log.stunnedInstead" ["enemy" ~> m]]
+        else mechanic [ikeyPart "log.attacks" ["enemy" ~> m, "player" ~> e]]
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
@@ -348,6 +355,7 @@ minionNarration mid = \case
   MinionConfused _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)
   MinionAttackGains k -> gains (MinionRef mid) k
+  MinionAttackChanged n | n /= 0 -> Just $ attackChanged (MinionRef mid) n
   MinionAddBoost n | n > 0 -> Just $ whenRef (MinionRef mid) \m -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> m, "count" ~> n]]
   _ -> Nothing
 
@@ -359,6 +367,11 @@ gains enemy = \case
   Ranged -> Just $ simply "log.attackGainsRanged" enemy
   _ -> Nothing
 
+-- | "That enemy gets -3 ATK for that attack."
+attackChanged :: (HasGame m) => Target -> Int -> m [LogEntry]
+attackChanged enemy n = whenRef enemy \e ->
+  one $ notice [ikeyPart (if n > 0 then "log.attackRaised" else "log.attackLowered") ["enemy" ~> e, "count" ~> abs n]]
+
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
   AllyAttacked -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyAttacks" ["ally" ~> a]]
@@ -369,6 +382,7 @@ allyNarration aid = \case
     tough <- getsGame $ maybe False ((.allyTough) . toAttrs) . lookup aid . gameAllies
     damaged (AllyRef aid) (tough && preventedByTough dmg) (damageAmount dmg)
   AllyHealed n | n > 0 -> Just $ healedBy (AllyRef aid) n
+  AllyDefeatedByAttack _ -> allyNarration aid AllyDefeated
   AllyDefeated -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.defeated" ["target" ~> a]]
   AllyStunned -> Just $ simply "log.stunned" (AllyRef aid)
   _ -> Nothing

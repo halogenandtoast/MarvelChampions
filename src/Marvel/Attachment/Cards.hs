@@ -131,6 +131,8 @@ allAttachments =
       , theBeyondersBlazer
       , thePoison
       , vandarianPowerWand
+      -- Drax
+      , challengeAccepted
       ]
 
 attachment ::
@@ -473,3 +475,12 @@ thePoison = unique $ attachment "16125" "The Poison" [Artifact] [Boost, Boost] G
 -- | Attach to the enemy with the lowest SCH; one hazard icon.
 vandarianPowerWand :: CardDef
 vandarianPowerWand = (unique $ attachment "16126" "Vandarian Power Wand" [Artifact] [Boost] GalacticArtifacts 1) {cdHazards = 1}
+-- Drax
+
+-- | Attach to the enemy with the highest ATK.
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+challengeAccepted :: CardDef
+challengeAccepted =
+  (attachment "19028" "Challenge Accepted" [] [Boost] DraxNemesis 1)
+    { cdKeywords = singleton Surge
+    }

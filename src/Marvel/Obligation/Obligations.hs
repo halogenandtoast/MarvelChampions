@@ -51,3 +51,7 @@ import Marvel.Obligation.Obligations.Wilt as X
 
 -- Rocket Raccoon
 import Marvel.Obligation.Obligations.CrisisOnHalfworld as X
+-- Drax
+import Marvel.Obligation.Obligations.MemoriesOfAnotherLife as X
+-- Venom
+import Marvel.Obligation.Obligations.StruggleForControl as X

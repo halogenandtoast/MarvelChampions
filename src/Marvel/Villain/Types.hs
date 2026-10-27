@@ -312,6 +312,8 @@ runVillainMessage msg attrs = case msg of
       | cannotTakeDamage -> pure attrs
       | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
           ( not infinite && subtractNatural
               (damageAmount damage)
@@ -328,10 +330,6 @@ runVillainMessage msg attrs = case msg of
             villainStep vid VillainWouldBeDefeated
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
-        when (damageAmount damage > 0) $
-          checkWindows [W.Window W.After $ W.DamagedEnemy (EnemyVillainId vid) source damage]
-        when (damageAmount damage > 0) $
-          checkWindows [W.Window W.After $ W.VillainTookDamage vid source damage]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough damage))
@@ -371,6 +369,7 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   VillainDefendedBy characterId ->
     pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}

@@ -190,6 +190,8 @@ allTreacheries = fromList $ map
   , viewTheCosmos
   , stayAwhile
   , caughtOffGuardMuseum
+  -- Drax
+  , iWillDestroyYou
   ]
 
 treachery
@@ -714,3 +716,8 @@ stayAwhile = treachery "16078" "Stay Awhile" [Boost] InfiltrateTheMuseum 2
 -- | The core set's Caught Off Guard, again in this set.
 caughtOffGuardMuseum :: CardDef
 caughtOffGuardMuseum = treachery "16079" "Caught Off Guard" [Boost] InfiltrateTheMuseum 1
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+iWillDestroyYou :: CardDef
+iWillDestroyYou = treachery "19029" "\"I Will Destroy You!\"" [Boost, Boost] DraxNemesis 2

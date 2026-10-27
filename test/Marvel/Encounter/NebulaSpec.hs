@@ -369,6 +369,8 @@ villainSpec = describe "Nebula" do
       _ <- revealNow you AttachmentCards.weaponMastery
       clearTechniques
       _ <- stackEncounterDeck (replicate 8 MinionCards.hydraMercenary)
+      -- none dealt at setup: whatever the shuffle dealt would be revealed too
+      withGame_ $ entitiesL . playersL . ix you %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityEncounterCards = []}
       endTurn
       resolve []
       clearTechniques

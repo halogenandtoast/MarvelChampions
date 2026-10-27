@@ -189,6 +189,19 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard mountedLaser
   , SomeUpgradeCard navigationColumn
   , SomeUpgradeCard targetingScreen
+  -- Drax
+  , SomeUpgradeCard draxsKnife
+  , SomeUpgradeCard draxsOtherKnife
+  , SomeUpgradeCard dwiTheetMastery
+  , SomeUpgradeCard tooStubbornToDie
+
+  -- Venom
+  , SomeUpgradeCard multiGun
+  , SomeUpgradeCard spiderSense
+  , SomeUpgradeCard venomsPistol
+  , SomeUpgradeCard sonicRifle
+  , SomeUpgradeCard sideHolster
+  , SomeUpgradeCard plasmaPistol
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

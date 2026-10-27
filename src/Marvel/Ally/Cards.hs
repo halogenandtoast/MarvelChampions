@@ -126,6 +126,15 @@ allAllies = fromList $ concatMap
   -- Rocket Raccoon
   , bug
   , grootAlly
+  -- Drax
+  , mantis
+  , martyrPhylaVell
+  , moondragonHeatherDouglas
+  , gamoraAlly
+
+  -- Venom
+  , jackFlagJackHarrison
+  , starLordPeterQuill
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -151,6 +160,7 @@ heroSpecificAllies =
   , quicksilverPietroMaximoff
   , novaPrimeRichardRider
   , nebulaAlly
+  , mantis
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -541,4 +551,32 @@ grootAlly :: CardDef
 grootAlly =
   (basicAlly "16047" "Groot" 3 [Guardian] [Wild])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Drax
+
+mantis :: CardDef
+mantis = identityAlly "19002" "Mantis" 2 [Guardian] [Wild]
+
+martyrPhylaVell :: CardDef
+martyrPhylaVell = ally "19012" ("Martyr" <:> "Phyla-Vell") 4 [Guardian] [Energy] Protection
+
+moondragonHeatherDouglas :: CardDef
+moondragonHeatherDouglas = ally "19013" ("Moondragon" <:> "Heather Douglas") 3 [Guardian] [Mental] Protection
+
+gamoraAlly :: CardDef
+gamoraAlly =
+  (basicAlly "19020" "Gamora" 3 [Guardian] [Energy])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Venom
+
+jackFlagJackHarrison :: CardDef
+jackFlagJackHarrison = ally "20011" ("Jack Flag" <:> "Jack Harrison") 4 [Guardian] [Energy] Justice
+
+starLordPeterQuill :: CardDef
+starLordPeterQuill =
+  (basicAlly "20016" ("Star-Lord" <:> "Peter Quill") 2 [Guardian] [Mental])
+    { cdKeywords = fromList [Ranged]
     }

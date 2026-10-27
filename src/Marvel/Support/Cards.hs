@@ -80,6 +80,12 @@ allSupports = fromList $ concatMap
 
   -- Groot
   , fertileGround
+  -- Drax
+  , regroup
+
+  -- Venom
+  , projectRebirth20
+  , crewQuarters
   ]
 
 support
@@ -308,3 +314,15 @@ milano =
     , cdEncounterSet = Just ShipCommand
     , cdEncounterSetQuantity = Just 1
     }
+-- Drax
+
+regroup :: CardDef
+regroup = support "19032" "Regroup" 1 [Tactic] [Mental] Leadership
+
+-- Venom
+
+projectRebirth20 :: CardDef
+projectRebirth20 = unique $ identitySupport "20007" "Project Rebirth 2.0" 1 [] [Physical]
+
+crewQuarters :: CardDef
+crewQuarters = limited (MaxPerPlayerUnderAnyControl 1) $ basicSupport "20029" "Crew Quarters" 1 [Location] [Mental]

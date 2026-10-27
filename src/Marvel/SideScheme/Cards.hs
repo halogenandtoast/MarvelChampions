@@ -154,6 +154,11 @@ allSideSchemes = fromList $ map
   , magicalTeapot
   , philosophersStone
   , crystalBall
+  -- Drax
+  , cullTheWeak
+
+  -- Venom
+  , klyntarFrenzy
   ]
 
 sideScheme
@@ -611,3 +616,16 @@ philosophersStone = (galacticArtifact "16129" "Philosopher's Stone") {cdAmplify 
 
 crystalBall :: CardDef
 crystalBall = (galacticArtifact "16130" "Crystal Ball") {cdAcceleration = 1}
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+cullTheWeak :: CardDef
+cullTheWeak = sideScheme "19026" "Cull the Weak" [Boost, Boost] DraxNemesis 1
+
+-- Venom
+
+klyntarFrenzy :: CardDef
+klyntarFrenzy =
+  (sideScheme "20024" "Klyntar Frenzy" [Boost, Boost, Boost] VenomNemesis 1)
+    { cdHazards = 1
+    }

@@ -174,7 +174,6 @@ spec = describe "Doctor Strange pack" do
       resolve [IdentityMessage p IdentityStunned]
       nurse <- putIntoPlay p "09019"
       choose "The Night Nurse" (isAbilityOfCard nurse)
-      choose "the target" (isTargetChoice p)
       chooseIf (isLabel "$label.stunnedStatus")
       damageOf p `shouldReturn` 1
       isStunned p `shouldReturn` False

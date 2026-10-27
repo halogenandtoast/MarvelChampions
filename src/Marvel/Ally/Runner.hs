@@ -159,17 +159,14 @@ instance RunMessage (Attrs Ally) where
         else do
           hitPoints <- getModifiedHitPoints a
           attackDealtDamageTo source damage ident
-          when (damageAmount damage + allyDamage a >= hitPoints) $ defeatAlly ident
+          when (damageAmount damage + allyDamage a >= hitPoints) $
+            case sourceEnemy source of
+              Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
+              _ -> defeatAlly ident
           when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
           pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
-      -- leaving play discards it
-      AllyDefeated -> do
-        let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
-        checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a)]
-        -- which discards it
-        removeFromPlay a
-        checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
-        pure a
+      AllyDefeated -> defeated Nothing
+      AllyDefeatedByAttack enemy -> defeated (Just enemy)
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AllyOwnedBy owner -> pure a {allyOwner = owner}
@@ -182,6 +179,18 @@ instance RunMessage (Attrs Ally) where
       hitPoints <- getModifiedHitPoints a
       when (allyDamage a > 0 && allyDamage a >= hitPoints) $ defeatAlly (allyId a)
       pure $ a & upgradesL %~ HashSet.delete upgradeId
+    -- counters on the ally, the uses its abilities spend (Jack Flag's ammo)
+    PlaceCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL +~ n
+    RemoveCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL %~ subtractNatural n
     GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a
+   where
+    -- leaving play discards it
+    defeated byAttack = do
+      let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)
+      checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a) byAttack]
+      -- which discards it
+      removeFromPlay a
+      checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
+      pure a

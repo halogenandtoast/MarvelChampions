@@ -16,8 +16,10 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Scarlet Witch Hero Pack rulesheet (MC15) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc15_scarlet_witch_rulesheet.pdf |
 | Wasp Hero Pack rulesheet (MC13) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc13_wasp_rulesheet.pdf |
 | Gamora Hero Pack rulesheet (MC18) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc18_gamora_rulesheet.pdf |
+| Drax Hero Pack rulesheet (MC19) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc19_drax_rulesheet.pdf |
 | Star-Lord Hero Pack rulesheet (MC17) | 1 page | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc17_star-lord_rulesheet.pdf |
 | The Galaxy's Most Wanted rulebook (MC16) | 24 pages (pp. 6, 7, 9, 11, 13, 16, 17 are images) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc16_galaxys_most_wanted_rules_website-compressed.pdf |
+| Venom Hero Pack rulesheet (MC20) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc20_venom_rulesheet.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
 
@@ -48,7 +50,9 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-wasp.md](hero-wasp.md) | Wasp pack: the three-sided identity card, Team-Up, Piercing, divided thwart and attack, rulings |
 | [hero-quicksilver.md](hero-quicksilver.md) | Quicksilver pack: Team-Up, Incite X, Piercing, the Super Speed FAQ, rulings (wild resources declared, exhausting as a target) |
 | [hero-gamora.md](hero-gamora.md) | Gamora pack: the Skilled Tactician FAQ, starter deck, rulings |
+| [hero-drax.md](hero-drax.md) | Drax pack: Piercing, starter deck, rulings (vengeance counters, Moondragon's minion attack) |
 | [hero-star-lord.md](hero-star-lord.md) | Star-Lord pack: Hinder X, Piercing, Ranged, the Star-Lord, Mister Knife and Dive Bomb FAQ, Cosmo errata, rulings |
+| [hero-venom.md](hero-venom.md) | Venom pack: Patrol, Ranged, the Enraged Symbiote nemesis-minion FAQ, Grasping Tendrils FAQ, starter deck, rulings |
 | [hero-scarlet-witch.md](hero-scarlet-witch.md) | Scarlet Witch pack: Team-Up, counting boost icons, the Hex Bolt and Slipping Sanity FAQ, rulings |
 | [scenario-galaxys-most-wanted.md](scenario-galaxys-most-wanted.md) | The Galaxy's Most Wanted: new keywords (Victory X, Patrol, Stalwart, Peril), the victory display, the amplify icon, the Ship Command, Power Stone and Badoon Headhunter sets, FAQ |
 | [scenario-brotherhood-of-badoon.md](scenario-brotherhood-of-badoon.md) | GMW #1 Brotherhood of Badoon: Drang, Charge Up and the Badoon Ship, Band of Badoon; card text, readings, campaign instructions |

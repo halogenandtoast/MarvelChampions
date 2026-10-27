@@ -70,6 +70,8 @@ allEffects =
 
     -- Wasp
     , ("13019", SomeCardEffect spiderManMilesMoralesEffect)
+    , ("20013", SomeCardEffect makingAnEntranceEffect)
+    , ("20027", SomeCardEffect welcomeAboardEffect)
 
     -- Groot
     , ("16024", SomeCardEffect deftFocusEffect)

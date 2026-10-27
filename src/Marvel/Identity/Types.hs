@@ -49,7 +49,7 @@ instance Entity PlayerIdentity where
     , playerIdentityAttackDamageTaken :: Natural
     -- ^ the damage taken from the latest enemy attack against them
     , playerIdentityCounters :: Natural
-    -- ^ on the identity card, whichever face is up: Groot's growth counters
+    -- ^ on the identity card, whichever face is up: Groot's growth counters, Drax's vengeance
     }
     deriving stock (Show, Eq, Generic)
   data Field PlayerIdentity :: Type -> Type where

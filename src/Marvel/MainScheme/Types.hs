@@ -190,7 +190,9 @@ instance RunMessage (Attrs MainScheme) where
         -- a scheme threat cannot be removed from ("Take What Is Mine")
         MainSchemeThwarted _ _ | locked -> pure attrs
         MainSchemeThreatRemoved _ _ | locked -> pure attrs
-        MainSchemeThwarted source n -> do
+        -- a player a patrol minion is engaged with cannot thwart it with the cards they
+        -- control (RR Patrol); removing threat otherwise is not a thwart
+        MainSchemeThwarted source n -> unlessPatrolled source do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n
         -- "player cards cannot remove threat from the main scheme" while a crisis icon is
@@ -215,6 +217,10 @@ instance RunMessage (Attrs MainScheme) where
       placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + acceleration)
       pure attrs
     _ -> pure attrs
+   where
+    unlessPatrolled source body = do
+      patrolled <- maybe (pure False) isPatrolled =<< getSourceController source
+      if patrolled then pure attrs else body
 
 -- | The threat that advances it: printed, and as modified (Under Surveillance).
 getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural

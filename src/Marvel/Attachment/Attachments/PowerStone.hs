@@ -39,7 +39,7 @@ instance RunMessage PowerStone where
           attachTo (attachmentId attrs) villain
           pure a
     -- a hero's attack on the villain holding it: an ally's is not a hero's
-    CheckWindows [W.Window W.After (W.VillainTookDamage villain _ damage)]
+    CheckWindows [W.Window W.After (W.EnemyTookDamageFrom (EnemyVillainId villain) damage _)]
       | damageAmount damage >= 3
       , attachmentEnemy attrs == Just (EnemyVillainId villain)
       , FromPlayerAttack hero <- damageSource damage -> do

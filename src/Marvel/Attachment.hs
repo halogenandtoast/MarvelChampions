@@ -136,6 +136,8 @@ allAttachments =
       , SomeAttachmentCard theBeyondersBlazer
       , SomeAttachmentCard thePoison
       , SomeAttachmentCard vandarianPowerWand
+      -- Drax
+      , SomeAttachmentCard challengeAccepted
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

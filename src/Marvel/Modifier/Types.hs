@@ -15,6 +15,11 @@ data Modifier
   | SchemeModifier Natural
   | DefenseModifier Natural
   | AllyLimitModifier Natural
+  | -- | on an identity: it can control this many more restricted upgrades (Venom)
+    RestrictedLimitModifier Natural
+  | -- | on an identity: it can control this many more restricted upgrades, each a Weapon
+    -- (Side Holster)
+    RestrictedWeaponLimitModifier Natural
   | HitPointModifier Natural
   | HandSizeModifier Natural
   | -- | "your hand size is reduced by N"

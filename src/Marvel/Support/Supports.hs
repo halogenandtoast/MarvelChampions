@@ -65,3 +65,9 @@ import Marvel.Support.Supports.FertileGround as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Support.Supports.Milano as X
+-- Drax
+import Marvel.Support.Supports.Regroup as X
+
+-- Venom
+import Marvel.Support.Supports.ProjectRebirth20 as X
+import Marvel.Support.Supports.CrewQuarters as X

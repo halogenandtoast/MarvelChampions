@@ -233,6 +233,12 @@ dealDividedDamage you source damage matcher = push $ AssignDividedDamage you (to
 indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Damage -> [(CharacterId, Natural)] -> m ()
 indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
 
+-- | The damage the identity is still about to take, as an interrupt to "when you would
+-- take damage" sees it once others have prevented some.
+pendingDamageTo :: (HasQueue m) => IdentityId -> m Natural
+pendingDamageTo ident = withQueue \q ->
+  (q, fromMaybe 0 $ headMay [damageAmount dmg | IdentityMessage i (IdentityDamaged _ dmg) <- q, i == ident])
+
 setHitPoints :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 setHitPoints ident = push . IdentityMessage ident . IdentitySetHitPoints
 
@@ -335,7 +341,8 @@ enemyBecomesTough enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
   EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
 
--- | Counters placed on, or removed from, an environment, main scheme or attachment.
+-- | Counters placed on, or removed from, an environment, main scheme, attachment or
+-- identity card.
 placeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
 placeCounters a = push . PlaceCounters (toTarget a)
 
@@ -526,11 +533,35 @@ attackGains enemy k = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
 
+-- | "That minion attacks another enemy" (Moondragon).
+minionAttacksEnemy :: (ReverseQueue m, IsEnemy enemy) => MinionId -> enemy -> m ()
+minionAttacksEnemy mid = push . MinionMessage mid . MinionAttacksEnemy . toEnemy
+
+-- | "That enemy gets +X ATK for that attack" (or -X): the enemy's attack under way.
+changeAttack :: (ReverseQueue m, IsEnemy enemy) => enemy -> Int -> m ()
+changeAttack enemy n = push case toEnemy enemy of
+  EnemyVillainId vid -> VillainMessage vid (VillainAttackChanged n)
+  EnemyMinionId mid -> MinionMessage mid (MinionAttackChanged n)
+
 -- | "Prevent all damage from this attack": the enemy's attack under way.
 preventAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 preventAttackDamage enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
   EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
+
+-- | "Cancel that attack", as a defense, from the window as the enemy initiates it
+-- (Grasping Tendrils): no boost card is dealt and no damage done, and the hero is the one
+-- who defended it (RR FAQ), so what answers "after you defend" may.
+cancelAttackAsDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
+cancelAttackAsDefense ident (toEnemy -> enemy) = flip insteadOf defended \case
+  VillainMessage vid (VillainBeginAttack _) -> enemy == EnemyVillainId vid
+  VillainMessage vid (VillainBeginAttackWithoutBoost _) -> enemy == EnemyVillainId vid
+  MinionMessage mid (MinionBeginAttack _) -> enemy == EnemyMinionId mid
+  _ -> False
+ where
+  defended = do
+    enemyDefendedBy enemy (IdentityCharacter ident)
+    checkWindows [Window After (W.HeroDefends ident enemy), Window After (W.DefendedWithoutDamage ident enemy)]
 
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()

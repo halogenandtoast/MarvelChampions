@@ -37,6 +37,7 @@ const placement = reactive<Placement>({ top: 0, left: 0, width: OVERLAY_WIDTH, h
 
 let frame: number | null = null
 let listening = false
+let anchorObserver: MutationObserver | null = null
 // A touch that opens or closes the preview is only for that, so its click is swallowed.
 let pressing = false
 let swallowClick = false
@@ -46,6 +47,10 @@ const measure = () => {
   if (!element) return
 
   const rect = element.getBoundingClientRect()
+  if (!element.isConnected || !rect.width || !rect.height) {
+    hide()
+    return
+  }
   const width = sideways.value ? OVERLAY_WIDTH / CARD_RATIO : OVERLAY_WIDTH
   const height = width / aspectRatio.value
   const extra = card.value?.statuses?.length ? STATUS_WIDTH + GAP : 0
@@ -88,6 +93,9 @@ const schedule = () => {
 }
 
 const hide = () => {
+  anchorObserver?.disconnect()
+  if (frame !== null) cancelAnimationFrame(frame)
+  frame = null
   card.value = null
   anchor.value = null
   pinned.value = false
@@ -132,6 +140,13 @@ export const useCardOverlay = () => (listen(), {
     pinned.value = touched
     swallowClick = touched && pressing
     measure()
+    // Removing a hovered card does not reliably fire pointerleave, especially during
+    // a view transition. Stop previewing it as soon as its anchor leaves the board.
+    anchorObserver ??= new MutationObserver(() => {
+      if (anchor.value && !anchor.value.isConnected) hide()
+    })
+    anchorObserver.disconnect()
+    if (anchor.value) anchorObserver.observe(document.body, { childList: true, subtree: true })
   },
   hide,
 })

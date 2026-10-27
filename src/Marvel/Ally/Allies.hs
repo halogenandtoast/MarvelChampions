@@ -105,3 +105,11 @@ import Marvel.Ally.Allies.RocketRaccoonAlly as X
 -- Rocket Raccoon
 import Marvel.Ally.Allies.Bug as X
 import Marvel.Ally.Allies.GrootAlly as X
+-- Drax
+import Marvel.Ally.Allies.Mantis as X
+import Marvel.Ally.Allies.MartyrPhylaVell as X
+import Marvel.Ally.Allies.MoondragonHeatherDouglas as X
+import Marvel.Ally.Allies.GamoraAlly as X
+-- Venom
+import Marvel.Ally.Allies.JackFlagJackHarrison as X
+import Marvel.Ally.Allies.StarLordPeterQuill as X

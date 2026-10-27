@@ -47,3 +47,7 @@ import Marvel.Hero.Heroes.Groot as X
 
 -- Rocket Raccoon
 import Marvel.Hero.Heroes.RocketRaccoon as X
+-- Drax
+import Marvel.Hero.Heroes.Drax as X
+-- Venom
+import Marvel.Hero.Heroes.Venom as X

@@ -242,6 +242,30 @@ allEvents = fromList $ map
   , SomeEventCard powerUnleashed
   , SomeEventCard triedAndTrue
   , SomeEventCard tripleThreat
+  -- Drax
+  , SomeEventCard fightMeCoward
+  , SomeEventCard intimidation
+  , SomeEventCard knifeLeap
+  , SomeEventCard parry
+  , SomeEventCard payback
+  , SomeEventCard deflection
+  , SomeEventCard hardKnocks
+  , SomeEventCard leadingBlow
+  , SomeEventCard subdue
+  , SomeEventCard bringIt
+  , SomeEventCard thinkFast
+
+  -- Venom
+  , SomeEventCard behindEnemyLines
+  , SomeEventCard graspingTendrils
+  , SomeEventCard lockedAndLoaded
+  , SomeEventCard runAndGun
+  , SomeEventCard savageAttack
+  , SomeEventCard scareTactic
+  , SomeEventCard makingAnEntrance
+  , SomeEventCard fusillade
+  , SomeEventCard welcomeAboard
+  , SomeEventCard shakeItOff
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

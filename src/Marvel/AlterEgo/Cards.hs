@@ -57,6 +57,10 @@ allAlterEgoCards =
 
     -- Rocket Raccoon
     , rocketRaccoonAlterEgo
+    -- Drax
+    , draxAlterEgo
+    -- Venom
+    , flashThompson
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -161,3 +165,12 @@ grootAlterEgo = alterEgo "16001b" "Groot" [Outlaw]
 
 rocketRaccoonAlterEgo :: CardDef
 rocketRaccoonAlterEgo = alterEgo "16029b" "Rocket Raccoon" [Genius, Outlaw]
+-- Drax
+
+draxAlterEgo :: CardDef
+draxAlterEgo = alterEgo "19001b" "Drax" [Outlaw]
+
+-- Venom
+
+flashThompson :: CardDef
+flashThompson = alterEgo "20001b" "Flash Thompson" [Soldier]

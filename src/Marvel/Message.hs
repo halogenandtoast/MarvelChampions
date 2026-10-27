@@ -229,7 +229,9 @@ retaliateDamage :: Source -> CharacterId -> Natural -> [Message]
 retaliateDamage source attacker n = case attacker of
   IdentityCharacter ident -> damageIdentity ident source (toDamage n FromRetaliate)
   AllyCharacter aid -> damageAlly aid source (toDamage n FromRetaliate)
-  _ -> []
+  -- a minion made to attack another enemy (Moondragon)
+  MinionCharacter mid -> [MinionMessage mid (MinionDamaged source (toDamage n FromRetaliate))]
+  VillainCharacter vid -> [VillainMessage vid (VillainDamaged source (toDamage n FromRetaliate))]
 
 -- | The messages a 'Simultaneously' holds, for the queue to look inside it.
 simultaneousMessages :: Message -> Maybe [Message]

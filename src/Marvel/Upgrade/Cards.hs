@@ -184,6 +184,19 @@ allUpgrades = fromList $ concatMap
   , mountedLaser
   , navigationColumn
   , targetingScreen
+  -- Drax
+  , draxsKnife
+  , draxsOtherKnife
+  , dwiTheetMastery
+  , tooStubbornToDie
+
+  -- Venom
+  , multiGun
+  , spiderSense
+  , venomsPistol
+  , sonicRifle
+  , sideHolster
+  , plasmaPistol
   ]
 
 upgrade
@@ -325,7 +338,7 @@ armoredVest = reprintedAs ["14016"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
-indomitable = reprintedAs ["16018"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
+indomitable = reprintedAs ["16018", "19019"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
@@ -404,7 +417,7 @@ electrostaticArmor = limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "10031" "Electrostatic Armor" 1 [Armor, Tech] [Energy] Protection
 
 resourceful :: CardDef
-resourceful = basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
+resourceful = reprintedAs ["20020"] $ basicUpgrade "10032" "Resourceful" 1 [Skill] [Wild]
 
 -- | "Play only if you control a Spy character."
 youControlASpy :: Criteria
@@ -487,7 +500,7 @@ underSurveillance = limited (MaxPerScheme 1)
   $ upgrade "06031" "Under Surveillance" 2 [Condition] [Energy] Justice
 
 enhancedPhysique :: CardDef
-enhancedPhysique = basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
+enhancedPhysique = reprintedAs ["19033"] $ basicUpgrade "06034" "Enhanced Physique" 2 [Condition] [Physical]
 
 cloakOfLevitation :: CardDef
 cloakOfLevitation =
@@ -801,3 +814,54 @@ targetingScreen = marketUpgrade "16173" "Targeting Screen" 2 [MilanoMod, Tech]
 marketUpgrade :: CardCode -> Name -> Int -> [Trait] -> CardDef
 marketUpgrade code name cost traits =
   (baseUpgrade code name cost traits [Wild] Nothing) {cdEncounterSet = Just TheMarket}
+-- Drax
+
+draxsKnife :: CardDef
+draxsKnife =
+  (unique $ identityUpgrade "19008" "Drax's Knife" 1 [Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+draxsOtherKnife :: CardDef
+draxsOtherKnife =
+  (unique $ identityUpgrade "19009" "Drax's Other Knife" 1 [Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+dwiTheetMastery :: CardDef
+dwiTheetMastery = identityUpgrade "19010" "DWI Theet Mastery" 1 [Skill] [Mental]
+
+tooStubbornToDie :: CardDef
+tooStubbornToDie = identityUpgrade "19011" "Too Stubborn to Die" 2 [Condition] [Mental]
+
+-- Venom
+
+multiGun :: CardDef
+multiGun =
+  (unique $ identityUpgrade "20008" "Multi-Gun" 3 [Tech, Weapon] [Wild])
+    { cdKeywords = singleton Restricted
+    }
+
+spiderSense :: CardDef
+spiderSense = identityUpgrade "20009" "Spider-Sense" 2 [Superpower] [Mental]
+
+venomsPistol :: CardDef
+venomsPistol =
+  (identityUpgrade "20010" "Venom's Pistol" 1 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }
+
+sonicRifle :: CardDef
+sonicRifle =
+  (upgrade "20015" "Sonic Rifle" 3 [Tech, Weapon] [Mental] Justice)
+    { cdKeywords = singleton Restricted
+    }
+
+sideHolster :: CardDef
+sideHolster = limited (MaxPerPlayerUnderAnyControl 1) $ basicUpgrade "20021" "Side Holster" 0 [Item] [Physical]
+
+plasmaPistol :: CardDef
+plasmaPistol =
+  (basicUpgrade "20022" "Plasma Pistol" 2 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }

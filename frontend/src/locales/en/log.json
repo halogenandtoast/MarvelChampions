@@ -48,6 +48,8 @@
   "sideSchemeRevealed": "Side scheme revealed: {target}",
   "boost": "Boost: {card}",
   "boostAdded": "{enemy} gets +{count} from boost",
+  "attackRaised": "{enemy} gets +{count} ATK for this attack",
+  "attackLowered": "{enemy} gets -{count} ATK for this attack",
   "reveals": "{player} reveals {card}",
   "engages": "{minion} engages {player}",
   "draws": "{player} draws a card | {player} draws {count} cards",

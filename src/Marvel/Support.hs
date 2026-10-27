@@ -91,6 +91,12 @@ allSupports = fromList $ map
 
   -- The Galaxy's Most Wanted
   , SomeSupportCard milano
+  -- Drax
+  , SomeSupportCard regroup
+
+  -- Venom
+  , SomeSupportCard projectRebirth20
+  , SomeSupportCard crewQuarters
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

@@ -157,6 +157,11 @@ allMinions =
       , psionicGhost
       , servantBot
       , starshark
+      -- Drax
+      , yotatTheDestroyer
+
+      -- Venom
+      , enragedSymbiote
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -738,3 +743,20 @@ servantBot = (minion "16136" "Servant Bot" [Robot] [] MenagerieMedley 3) {cdKeyw
 
 starshark :: CardDef
 starshark = (minion "16137" "Starshark" [Creature, Elite] [Star] MenagerieMedley 2) {cdKeywords = singleton Quickstrike}
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+yotatTheDestroyer :: CardDef
+yotatTheDestroyer =
+  unique $
+    (minion "19027" "Yotat the Destroyer" [Brute] [Boost, Boost, Boost] DraxNemesis 1)
+      { cdKeywords = fromList [Guard, Retaliate 1]
+      }
+
+-- Venom
+
+enragedSymbiote :: CardDef
+enragedSymbiote =
+  (minion "20025" "Enraged Symbiote" [Symbiote] [Star] VenomNemesis 4)
+    { cdKeywords = fromList [Guard, Patrol]
+    }

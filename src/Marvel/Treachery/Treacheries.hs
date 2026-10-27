@@ -145,3 +145,5 @@ import Marvel.Treachery.Treacheries.HonorAmongThieves as X
 
 -- Infiltrate the Museum
 import Marvel.Treachery.Treacheries.InfiltrateTheMuseum as X
+-- Drax
+import Marvel.Treachery.Treacheries.IWillDestroyYou as X

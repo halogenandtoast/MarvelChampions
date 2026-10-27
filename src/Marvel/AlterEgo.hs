@@ -68,6 +68,10 @@ allAlterEgos = fromList $ map
 
   -- Rocket Raccoon
   , SomeAlterEgoCard rocketRaccoonAlterEgo
+  -- Drax
+  , SomeAlterEgoCard draxAlterEgo
+  -- Venom
+  , SomeAlterEgoCard flashThompson
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

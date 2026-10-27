@@ -96,7 +96,6 @@ spec = describe "Leadership" do
         changeForm p
         pass
         playWith lead [energy]
-        choose "the target" (isTargetChoice p)
         villain <- getVillain
         choose "attack with Maria Hill" (isAllyAttack maria)
         choose "Rhino" (isTargetChoice (toId villain))

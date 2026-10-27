@@ -70,6 +70,10 @@ allObligations = fromList $ map
 
     -- Rocket Raccoon
     , crisisOnHalfworld
+    -- Drax
+    , memoriesOfAnotherLife
+    -- Venom
+    , struggleForControl
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -227,3 +231,13 @@ wilt = obligation "16025" "Wilt" [Boost, Boost]
 
 crisisOnHalfworld :: CardDef
 crisisOnHalfworld = obligation "16053" "Crisis on Halfworld" [Boost, Boost]
+-- Drax
+
+-- boost icons from the printed card (MarvelCDB has none for this pack)
+memoriesOfAnotherLife :: CardDef
+memoriesOfAnotherLife = obligation "19025" "Memories of Another Life" [Boost, Boost]
+
+-- Venom
+
+struggleForControl :: CardDef
+struggleForControl = obligation "20023" "Struggle for Control" [Boost, Boost]

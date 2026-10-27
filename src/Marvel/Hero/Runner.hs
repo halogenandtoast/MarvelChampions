@@ -32,32 +32,31 @@ instance HasAbilities Hero where
       , ability a 301 Basic canAttack ExhaustCost Attack
       ]
 
+-- | All the modifiers are added and taken off first, then a value below zero is zero (RR
+-- Modifiers).
+modifiedStat :: Natural -> (Modifier -> Integer) -> [Modifier] -> Natural
+modifiedStat base f modifiers = fromInteger $ max 0 (toInteger base + sum (map f modifiers))
+
 getModifiedAttack :: (HasGame m) => Attrs Hero -> m Natural
-getModifiedAttack attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unAtk $ heroBaseAttack attrs) modifiers
+getModifiedAttack attrs = modifiedStat (unAtk $ heroBaseAttack attrs) change <$> getModifiers attrs
  where
-  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier (AttackPenalty n) = subtractNatural n
-  applyModifier _ = id
+  change (AttackModifier n) = toInteger n
+  change (AttackPenalty n) = negate (toInteger n)
+  change _ = 0
 
 getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
-getModifiedThwart attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unThw $ heroBaseThwart attrs) modifiers
+getModifiedThwart attrs = modifiedStat (unThw $ heroBaseThwart attrs) change <$> getModifiers attrs
  where
-  applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier (ThwartPenalty n) = subtractNatural n
-  applyModifier _ = id
+  change (ThwartModifier n) = toInteger n
+  change (ThwartPenalty n) = negate (toInteger n)
+  change _ = 0
 
 getModifiedDefense :: (HasGame m) => Attrs Hero -> m Natural
-getModifiedDefense attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unDef $ heroBaseDefense attrs) modifiers
+getModifiedDefense attrs = modifiedStat (unDef $ heroBaseDefense attrs) change <$> getModifiers attrs
  where
-  applyModifier (DefenseModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier (DefensePenalty n) = subtractNatural n
-  applyModifier _ = id
+  change (DefenseModifier n) = toInteger n
+  change (DefensePenalty n) = negate (toInteger n)
+  change _ = 0
 
 instance RunMessage Hero where
   runMessage msg (Hero a) = Hero <$> runMessage msg a

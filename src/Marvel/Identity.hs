@@ -710,13 +710,25 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     UpgradeCreated upgradeId -> do
       identityStep playerIdentityId CheckRestrictedLimit
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.insert upgradeId
+    -- two restricted upgrades, and those its modifiers add (any, or Weapons only); over
+    -- that the player discards one they choose, until what remains fits
     CheckRestrictedLimit -> do
-      restricted <- selectList $ UpgradeWithKeyword Restricted <> upgradeControlledBy playerIdentityId
-      when (length restricted > 2) $
-        chooseOnePrompted
-          playerIdentityId
-          "$label.discardARestrictedCard"
-          [targeting u (removeFromPlay u) | u <- restricted]
+      (anyLimit, weaponLimit) <- getModifiedRestrictedLimits pid
+      let restrictedMatcher = UpgradeWithKeyword Restricted <> upgradeControlledBy playerIdentityId
+      restricted <- selectList restrictedMatcher
+      weapons <- selectList $ restrictedMatcher <> UpgradeWithTrait Weapon
+      let others = filter (`notElem` weapons) restricted
+      let
+        discardOf us =
+          chooseOnePrompted
+            playerIdentityId
+            "$label.discardARestrictedCard"
+            [targeting u (removeFromPlay u >> identityStep playerIdentityId CheckRestrictedLimit) | u <- us]
+      -- the Weapon-only slots cannot hold the others
+      if
+        | length others > fromIntegral anyLimit -> discardOf others
+        | length restricted > fromIntegral (anyLimit + weaponLimit) -> discardOf restricted
+        | otherwise -> pure ()
       pure pid
     AllyRemoved allyId -> do
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.delete allyId
@@ -1103,6 +1115,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
         modifiedHp <- getModifiedHp pid
         when (damage >= modifiedHp) $
           defeatIdentity ident
+      -- its restricted limit may have dropped (Side Holster)
+      when (HashSet.member upgradeId (playerIdentityUpgrades attrs) && not (playerIdentityDefeated attrs)) $
+        identityStep ident CheckRestrictedLimit
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
     PlaceCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity attrs {playerIdentityCounters = playerIdentityCounters attrs + n}
@@ -1180,6 +1195,13 @@ instance HasModifiersFor PlayerIdentity where
   getModifiersFor source target a = case currentIdentity a of
     HeroSide x -> getModifiersFor source target x
     AlterEgoSide x -> getModifiersFor source target x
+
+-- | How many restricted upgrades the player can control: any, and besides those, Weapons
+-- only.
+getModifiedRestrictedLimits :: (HasGame m) => PlayerIdentity -> m (Natural, Natural)
+getModifiedRestrictedLimits pid = do
+  modifiers <- getModifiers pid
+  pure (2 + sum [n | RestrictedLimitModifier n <- modifiers], sum [n | RestrictedWeaponLimitModifier n <- modifiers])
 
 getModifiedAllyLimit :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedAllyLimit pid@(PlayerIdentity attrs) = do

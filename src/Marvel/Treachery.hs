@@ -196,6 +196,8 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard viewTheCosmos
   , SomeTreacheryCard stayAwhile
   , SomeTreacheryCard caughtOffGuardMuseum
+  -- Drax
+  , SomeTreacheryCard iWillDestroyYou
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

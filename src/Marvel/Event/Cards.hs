@@ -240,6 +240,30 @@ allEvents = fromList $ concatMap
   , powerUnleashed
   , triedAndTrue
   , tripleThreat
+  -- Drax
+  , fightMeCoward
+  , intimidation
+  , knifeLeap
+  , parry
+  , payback
+  , deflection
+  , hardKnocks
+  , leadingBlow
+  , subdue
+  , bringIt
+  , thinkFast
+
+  -- Venom
+  , behindEnemyLines
+  , graspingTendrils
+  , lockedAndLoaded
+  , runAndGun
+  , savageAttack
+  , scareTactic
+  , makingAnEntrance
+  , fusillade
+  , welcomeAboard
+  , shakeItOff
   ]
 
 event
@@ -480,7 +504,7 @@ makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action []
   }
 
 counterPunch :: CardDef
-counterPunch =
+counterPunch = reprintedAs ["19014"] $
   (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
     { cdResponseWindow = Just (HeroDefended After You AttackableEnemy)
     , cdAbilitySubTypes = [Ability.Attack]
@@ -1016,7 +1040,7 @@ surpriseAttack =
     }
 
 athleticConditioning :: CardDef
-athleticConditioning = basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
+athleticConditioning = reprintedAs ["19021"] $ basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
 
 runningInterference :: CardDef
 runningInterference =
@@ -1291,7 +1315,7 @@ impede :: CardDef
 impede =
   (event "18016" "Impede" 2 HeroAction [Thwart] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
-    , cdCriteria = SchemeExists MainScheme
+    , cdCriteria = SchemeExists UnpatrolledMainScheme
     }
 
 hitAndRun :: CardDef
@@ -1324,6 +1348,14 @@ fruition = identityEvent "16002" "Fruition" 0 Action [Superpower] [Mental]
 iAmGroot :: CardDef
 iAmGroot =
   (identityEvent "16003" "\"I am Groot\"" 3 HeroAction [Superpower, Thwart] [Mental])
+-- Drax
+
+fightMeCoward :: CardDef
+fightMeCoward = identityEvent "19003" "\"Fight Me, Coward!\"" 0 HeroAction [] [Physical]
+
+intimidation :: CardDef
+intimidation =
+  (identityEvent "19004" "Intimidation" 1 HeroAction [Thwart] [Mental])
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
@@ -1432,6 +1464,35 @@ closeCall =
 defyDanger :: CardDef
 defyDanger =
   (marketEvent "16159" "Defy Danger" 1 HeroAction [Attack])
+knifeLeap :: CardDef
+knifeLeap =
+  (identityEvent "19005" "Knife Leap" 3 HeroInterrupt [Skill] [Physical])
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    }
+
+parry :: CardDef
+parry =
+  (identityEvent "19006" "Parry" 0 HeroInterrupt [Defense] [Energy])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    }
+
+payback :: CardDef
+payback =
+  (identityEvent "19007" "Payback" 0 HeroResponse [Attack] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdResponseWindow = Just (EnemyAttacked After VillainEnemy You)
+    }
+
+deflection :: CardDef
+deflection =
+  (event "19015" "Deflection" 2 HeroInterrupt [Skill] [Mental] Protection)
+    { cdResponseWindow = Just (WouldTakeDamage AnyIdentity FromAttack AnyValue)
+    }
+
+hardKnocks :: CardDef
+hardKnocks =
+  (event "19016" "Hard Knocks" 3 HeroAction [Attack] [Physical] Protection)
     { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttack
     }
@@ -1439,6 +1500,36 @@ defyDanger =
 inHarmsWay :: CardDef
 inHarmsWay =
   (marketEvent "16160" "In Harm's Way" 1 HeroAction [Thwart])
+leadingBlow :: CardDef
+leadingBlow =
+  (event "19017" "Leading Blow" 0 HeroInterrupt [Tactic] [Energy] Protection)
+    { cdResponseWindow = Just (MakesBasicAttack When You)
+    , cdAbilityCost = DiscardTopEncounterCardCost
+    }
+
+subdue :: CardDef
+subdue =
+  (event "19018" "Subdue" 1 HeroInterrupt [] [Energy] Protection)
+    { cdResponseWindow = Just (EnemyAttacked When AnyEnemy AnyIdentity)
+    }
+
+bringIt :: CardDef
+bringIt =
+  (event "19030" "\"Bring It!\"" 0 HeroAction [] [Energy] Aggression)
+    { cdLimit = Just (MaxPerPhase 1)
+    }
+
+thinkFast :: CardDef
+thinkFast =
+  (event "19031" "\"Think Fast!\"" 1 HeroAction [] [Energy] Justice)
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Venom
+
+behindEnemyLines :: CardDef
+behindEnemyLines =
+  (identityEvent "20002" "Behind Enemy Lines" 2 HeroAction [Thwart] [Mental])
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists ThwartableScheme
     }
@@ -1487,3 +1578,56 @@ tripleThreat =
 marketEvent :: CardCode -> Name -> Int -> AbilityType -> [Trait] -> CardDef
 marketEvent code name cost aType traits =
   (baseEvent code name cost aType traits [Wild] Nothing) {cdEncounterSet = Just TheMarket}
+graspingTendrils :: CardDef
+graspingTendrils =
+  (identityEvent "20003" "Grasping Tendrils" 2 HeroInterrupt [Defense] [Physical])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (EnemyWouldAttack VillainEnemy You)
+    }
+
+lockedAndLoaded :: CardDef
+lockedAndLoaded = identityEvent "20004" "Locked and Loaded" 0 Action [] [Mental]
+
+runAndGun :: CardDef
+runAndGun = identityEvent "20005" "Run and Gun" 3 HeroAction [Skill] [Energy]
+
+savageAttack :: CardDef
+savageAttack =
+  (identityEvent "20006" "Savage Attack" 2 HeroAction [Attack] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+scareTactic :: CardDef
+scareTactic =
+  (event "20012" "Scare Tactic" 1 HeroAction [Attack] [Mental] Justice)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists (AttackableEnemy <> ConfusedEnemy)]
+    }
+
+makingAnEntrance :: CardDef
+makingAnEntrance =
+  (event "20013" "Making an Entrance" 1 HeroInterrupt [Skill] [Physical] Justice)
+    { cdResponseWindow = Just (MakesBasicThwart When You)
+    }
+
+fusillade :: CardDef
+fusillade =
+  (event "20026" "Fusillade" 2 HeroAction [Attack] [Mental] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = ExhaustUpgradeCost (UpgradeWithTrait Weapon)
+    }
+
+welcomeAboard :: CardDef
+welcomeAboard =
+  (event "20027" "\"Welcome Aboard\"" 0 HeroAction [] [Energy] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    , cdLimit = Just (MaxPerRound 1)
+    }
+
+shakeItOff :: CardDef
+shakeItOff =
+  (event "20028" "Shake it Off" 1 HeroResponse [Skill] [Physical] Protection)
+    { cdResponseWindow = Just (EnemyAttackedAndDamaged AnyEnemy (CharacterWithTrait Guardian))
+    }

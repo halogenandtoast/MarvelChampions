@@ -64,7 +64,7 @@ export interface PlayerView {
   stunned: boolean
   confused: boolean
   tough: boolean
-  /** on the identity card: Groot's growth counters */
+  /** on the identity card: Groot's growth counters, Drax's vengeance */
   counters?: number
   thwart: number | null
   attack: number | null

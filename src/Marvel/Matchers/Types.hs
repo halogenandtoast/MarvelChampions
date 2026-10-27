@@ -177,6 +177,9 @@ data EnemyMatcher
   | DefeatedEnemy EnemyMatcher
   | -- | an enemy whose attack is under way
     AttackingEnemy
+  | -- | an enemy whose attack under way is against a character matching, once defenders
+    -- are declared
+    EnemyAttackingCharacter CharacterMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
     EnemyWithHighestAttack
   | StunnedEnemy
@@ -237,6 +240,8 @@ data SchemeMatcher
   | -- | one "you" can thwart: a thwartable scheme, the main scheme not while a minion
     -- with patrol is engaged with you (RR Patrol)
     SchemeYouCanThwart
+  | -- | the main scheme, unless a patrol minion is engaged with you (RR Patrol)
+    UnpatrolledMainScheme
   | SchemeWithId SchemeId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

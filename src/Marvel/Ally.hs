@@ -136,4 +136,12 @@ allAllies = fromList $ map
   -- Rocket Raccoon
   , SomeAllyCard bug
   , SomeAllyCard grootAlly
+  -- Drax
+  , SomeAllyCard mantis
+  , SomeAllyCard martyrPhylaVell
+  , SomeAllyCard moondragonHeatherDouglas
+  , SomeAllyCard gamoraAlly
+  -- Venom
+  , SomeAllyCard jackFlagJackHarrison
+  , SomeAllyCard starLordPeterQuill
   ]

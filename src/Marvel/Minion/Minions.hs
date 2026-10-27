@@ -112,3 +112,8 @@ import Marvel.Minion.Minions.SpacePirates as X
 
 -- Infiltrate the Museum, Menagerie Medley
 import Marvel.Minion.Minions.MenagerieMedley as X
+-- Drax
+import Marvel.Minion.Minions.YotatTheDestroyer as X
+
+-- Venom
+import Marvel.Minion.Minions.EnragedSymbiote as X

@@ -216,3 +216,27 @@ import Marvel.Event.Events.GrandStrategy as X
 import Marvel.Event.Events.PowerUnleashed as X
 import Marvel.Event.Events.TriedAndTrue as X
 import Marvel.Event.Events.TripleThreat as X
+-- Drax
+import Marvel.Event.Events.FightMeCoward as X
+import Marvel.Event.Events.Intimidation as X
+import Marvel.Event.Events.KnifeLeap as X
+import Marvel.Event.Events.Parry as X
+import Marvel.Event.Events.Payback as X
+import Marvel.Event.Events.Deflection as X
+import Marvel.Event.Events.HardKnocks as X
+import Marvel.Event.Events.LeadingBlow as X
+import Marvel.Event.Events.Subdue as X
+import Marvel.Event.Events.BringIt as X
+import Marvel.Event.Events.ThinkFast as X
+
+-- Venom
+import Marvel.Event.Events.BehindEnemyLines as X
+import Marvel.Event.Events.GraspingTendrils as X
+import Marvel.Event.Events.LockedAndLoaded as X
+import Marvel.Event.Events.RunAndGun as X
+import Marvel.Event.Events.SavageAttack as X
+import Marvel.Event.Events.ScareTactic as X
+import Marvel.Event.Events.MakingAnEntrance as X
+import Marvel.Event.Events.Fusillade as X
+import Marvel.Event.Events.WelcomeAboard as X
+import Marvel.Event.Events.ShakeItOff as X

@@ -93,3 +93,5 @@ import Marvel.Attachment.Attachments.Techniques as X
 
 -- Infiltrate the Museum, Galactic Artifacts
 import Marvel.Attachment.Attachments.GalacticArtifacts as X
+-- Drax
+import Marvel.Attachment.Attachments.ChallengeAccepted as X

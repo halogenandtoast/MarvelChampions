@@ -118,3 +118,8 @@ import Marvel.SideScheme.SideSchemes.Challenge as X
 
 -- Galactic Artifacts
 import Marvel.SideScheme.SideSchemes.GalacticArtifacts as X
+-- Drax
+import Marvel.SideScheme.SideSchemes.CullTheWeak as X
+
+-- Venom
+import Marvel.SideScheme.SideSchemes.KlyntarFrenzy as X

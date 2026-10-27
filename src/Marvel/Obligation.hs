@@ -78,6 +78,10 @@ allObligations = fromList $ map
 
   -- Rocket Raccoon
   , SomeObligationCard crisisOnHalfworld
+  -- Drax
+  , SomeObligationCard memoriesOfAnotherLife
+  -- Venom
+  , SomeObligationCard struggleForControl
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

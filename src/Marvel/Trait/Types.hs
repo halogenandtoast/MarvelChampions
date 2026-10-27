@@ -95,5 +95,7 @@ data Trait
   | Illusion
   | BountyHunter
   | Ghost
+  | Symbiote
+  | SpaceKnight
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

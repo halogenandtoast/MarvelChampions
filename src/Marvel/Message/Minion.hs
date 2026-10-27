@@ -32,12 +32,17 @@ data MinionMessage
   | MinionEndAttack
   | -- | its attack under way gains the keyword: overkill, piercing or ranged
     MinionAttackGains Keyword
+  | -- | the minion gets +X (or -X) ATK for the attack under way
+    MinionAttackChanged Int
   | -- | all damage from its attack under way is prevented
     MinionAttackDamagePrevented
   | AttachedUpgradeToMinion UpgradeId
   | AttachedToMinion AttachmentId
   | -- | it attacks the player's ally, the player being attacked
     MinionAttacksAlly IdentityId AllyId
+  | -- | it attacks another enemy (Moondragon): its ATK as damage, no boost card, the
+    -- enemy's retaliate answering it
+    MinionAttacksEnemy EnemyId
   | MinionDealtBoost EncounterCard
   | -- | its boost cards are turned faceup in turn, then any it is given meanwhile
     MinionFlipBoostCards

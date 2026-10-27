@@ -45,3 +45,7 @@ import Marvel.AlterEgo.AlterEgos.GrootAlterEgo as X
 
 -- Rocket Raccoon
 import Marvel.AlterEgo.AlterEgos.RocketRaccoonAlterEgo as X
+-- Drax
+import Marvel.AlterEgo.AlterEgos.DraxAlterEgo as X
+-- Venom
+import Marvel.AlterEgo.AlterEgos.FlashThompson as X

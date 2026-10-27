@@ -153,3 +153,16 @@ import Marvel.Upgrade.Upgrades.CargoHold as X
 import Marvel.Upgrade.Upgrades.MountedLaser as X
 import Marvel.Upgrade.Upgrades.NavigationColumn as X
 import Marvel.Upgrade.Upgrades.TargetingScreen as X
+-- Drax
+import Marvel.Upgrade.Upgrades.DraxsKnife as X
+import Marvel.Upgrade.Upgrades.DraxsOtherKnife as X
+import Marvel.Upgrade.Upgrades.DwiTheetMastery as X
+import Marvel.Upgrade.Upgrades.TooStubbornToDie as X
+
+-- Venom
+import Marvel.Upgrade.Upgrades.MultiGun as X
+import Marvel.Upgrade.Upgrades.SpiderSense as X
+import Marvel.Upgrade.Upgrades.VenomsPistol as X
+import Marvel.Upgrade.Upgrades.SonicRifle as X
+import Marvel.Upgrade.Upgrades.SideHolster as X
+import Marvel.Upgrade.Upgrades.PlasmaPistol as X

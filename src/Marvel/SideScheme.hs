@@ -157,6 +157,11 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard magicalTeapot
   , SomeSideSchemeCard philosophersStone
   , SomeSideSchemeCard crystalBall
+  -- Drax
+  , SomeSideSchemeCard cullTheWeak
+
+  -- Venom
+  , SomeSideSchemeCard klyntarFrenzy
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

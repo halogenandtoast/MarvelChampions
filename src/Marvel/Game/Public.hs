@@ -177,7 +177,7 @@ data PlayerView = PlayerView
   , confused :: Bool
   , tough :: Bool
   , counters :: Natural
-  -- ^ on the identity card: Groot's growth counters
+  -- ^ on the identity card: Groot's growth counters, Drax's vengeance
   , thwart :: Maybe Natural
   , attack :: Maybe Natural
   , defense :: Maybe Natural
@@ -594,7 +594,7 @@ gameView seesHand g = do
         , infiniteHitPoints = infinite
         , damage = if infinite then 0 else Villain.villainDamage v
         , scheme = sch
-        , attack = maybe atk Attack.attackDamage (Villain.villainAttackDetails v)
+        , attack = maybe atk Attack.attackValue (Villain.villainAttackDetails v)
         , stunned = a.villainStunned
         , confused = a.villainConfused
         , tough = a.villainTough
@@ -616,7 +616,7 @@ gameView seesHand g = do
         , hitPoints = hp
         , damage = a.minionDamage
         , scheme = unSch a.minionScheme
-        , attack = maybe atk Attack.attackDamage (Minion.minionAttackDetails m)
+        , attack = maybe atk Attack.attackValue (Minion.minionAttackDetails m)
         , stunned = a.minionStunned
         , confused = a.minionConfused
         , tough = a.minionTough

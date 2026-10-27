@@ -171,7 +171,6 @@ spec = describe "Protection" do
         for_ [1 :: Natural .. 3] \n -> do
           resolve [SupportMessage (supportId team) ReadiedSupport]
           choose "use Med Team" (isAbilityOf (supportId team))
-          choose "the target" (isTargetChoice (IdentityCharacter p))
           damageOf p `shouldReturn` (7 - 2 * n)
         supportsWith "01080" `shouldReturn` []
 

@@ -10,7 +10,7 @@ data Keyword
   | Quickstrike
   | Retaliate Natural
   | Surge
-  | -- | a player controls no more than two restricted cards
+  | -- | a player controls no more than two restricted cards, and those modifiers add
     Restricted
   | Overkill
   | -- | on reveal, place this much threat on the main scheme

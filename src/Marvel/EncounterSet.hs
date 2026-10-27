@@ -69,6 +69,10 @@ data EncounterSet
   | GrootNemesis
   -- Rocket Raccoon
   | RocketRaccoonNemesis
+  -- Drax
+  | DraxNemesis
+  -- Venom
+  | VenomNemesis
   -- The Once and Future Kang
   | Kang
   | ExpertKang
@@ -161,6 +165,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "18001" -> GamoraNemesis
   "16001" -> GrootNemesis
   "16029" -> RocketRaccoonNemesis
+  "19001" -> DraxNemesis
+  "20001" -> VenomNemesis
   cCode ->
     error $
       "No nemesis set for "

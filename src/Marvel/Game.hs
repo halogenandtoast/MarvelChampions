@@ -513,16 +513,23 @@ getObligationsIn = keysInArea ObligationRef gameObligations
 getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
 getSideSchemesIn = keysInArea SideSchemeRef gameSideSchemes
 
--- | The player's nemesis minion, out of play: set aside with their nemesis set, or in
--- the encounter deck or its discard pile.
-getNemesisMinionOutOfPlay :: (HasGame m) => IdentityId -> m (Maybe EncounterCard)
-getNemesisMinionOutOfPlay ident = getsGame \g -> do
+-- | The player's nemesis minions, out of play: set aside with their nemesis set, or in
+-- the encounter deck or its discard pile. Each copy of a nemesis minion is one (Venom's
+-- Enraged Symbiotes, rulesheet FAQ).
+getNemesisMinionsOutOfPlay :: (HasGame m) => IdentityId -> m [EncounterCard]
+getNemesisMinionsOutOfPlay ident = getsGame \g -> fromMaybe [] do
   p <- lookup ident (gamePlayers g)
   let
     scenario = toAttrs (gameScenario g)
     set = getNemesisSet (toCardCode p)
     cards = onlyEncounterCards (scenarioSetAsideCards scenario) <> scenarioEncounterDeck scenario <> scenarioDiscard scenario
-  headMay [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+  pure [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+
+-- | Whether a patrol minion is engaged with the player: they cannot thwart the main
+-- scheme with the cards they control, by a basic thwart or an ability labeled thwart (RR
+-- Patrol, Thwart); removing threat otherwise is not a thwart.
+isPatrolled :: (HasGame m) => IdentityId -> m Bool
+isPatrolled ident = selectAny $ MinionWithKeyword Patrol <> MinionEngagedWith (IdentityWithId ident)
 
 -- | The card code of the main scheme in play.
 getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
@@ -1015,6 +1022,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (allyUpgrades $ toAttrs ally) removeFromPlay
         identityStep (getAllyController ally) (AllyRemoved aid)
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
+    -- an upgrade out of the game, not discarded: the cards it holds are
+    UpgradeRef uid -> do
+      for_ (lookup uid $ gameUpgrades g) \upgrade -> do
+        upgradeRemoved uid
+        for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
+      pure $ g & (entitiesL . upgradesL %~ deleteMap uid)
     _ -> error "Unhandled"
   RemoveFromPlay target -> case target of
     IdentityRef iid -> do
@@ -1074,7 +1087,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (allyUpgrades $ toAttrs ally) removeFromPlay
         identityStep ident $ AllyRemoved aid
         discardFromPlay g ally
-      pure $ g & (entitiesL . alliesL %~ deleteMap aid)
+      -- kept as removed, so an ability it was discarded to pay for still resolves
+      pure $
+        g
+          & (entitiesL . alliesL %~ deleteMap aid)
+          & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
     -- a permanent support does not leave play: the Milano stays for the next first player
     SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
     SupportRef sid -> do
@@ -1209,7 +1226,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         checkWindows $
           W.Window After (W.AllyEnteredPlay $ toId ally)
             : [W.Window After $ W.PlayedAlly (toId ally) | wasPlayed]
-        pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
+        -- back in play, no longer the copy kept as it was discarded
+        pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally) & (removedEntitiesL . alliesL %~ deleteMap (toId ally))
       SupportType -> do
         -- played under the control of the player it was played on, if any; it stays its
         -- owner's, whose discard pile it goes to (RR Owner)
@@ -2090,12 +2108,6 @@ withoutPatrolledThwarts g patrolled
     _ -> False
   labeledThwart source = maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
 
--- | Whether a minion with patrol is engaged with the player (RR Patrol).
-isPatrolled :: (HasGame m) => IdentityId -> m Bool
-isPatrolled ident = do
-  engaged <- getsGame $ filter ((== ident) . getMinionEngagedIdentity) . HashMap.elems . gameMinions
-  anyM (fmap (elem Patrol) . Minion.getModifiedKeywords . toAttrs) engaged
-
 -- | The choice is not one that would make a permanent card leave play.
 offerable :: Game -> Choice -> Bool
 offerable g = keep
@@ -2316,7 +2328,7 @@ abilityCardDef g = \case
   UpgradeRef uid ->
     getCardDef <$> (lookup uid (gameUpgrades g) <|> lookup uid (g ^. removedEntitiesL . upgradesL))
   SupportRef sid -> supportCardDef . toAttrs <$> (lookup sid (gameSupports g) <|> lookup sid (g ^. removedEntitiesL . supportsL))
-  AllyRef aid -> getCardDef <$> lookup aid (gameAllies g)
+  AllyRef aid -> getCardDef <$> (lookup aid (gameAllies g) <|> lookup aid (g ^. removedEntitiesL . alliesL))
   VillainRef vid -> getCardDef <$> lookup vid (gameVillains g)
   EventRef eid -> eventCardDef . toAttrs <$> lookup eid (gameEvents g)
   _ -> Nothing
@@ -2917,6 +2929,7 @@ gameSelectEnemy m = do
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)
+    EnemyAttackingCharacter cm -> maybe (pure False) (\a -> member (attackCharacter a) <$> gameSelectCharacter cm) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goVillain e) xs
@@ -2948,6 +2961,7 @@ gameSelectEnemy m = do
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)
+    EnemyAttackingCharacter cm -> maybe (pure False) (\a -> member (attackCharacter a) <$> gameSelectCharacter cm) (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goMinion e) xs
@@ -3089,6 +3103,9 @@ gameSelectAnyScheme = \case
     schemes <- gameSelectAnyScheme ThwartableScheme
     patrolled <- isPatrolled =<< getYou
     pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
+  UnpatrolledMainScheme -> do
+    patrolled <- isPatrolled =<< getYou
+    if patrolled then pure mempty else gameSelectAnyScheme Matchers.MainScheme
  where
   isMain = \case
     SchemeMainSchemeId _ -> True
@@ -3192,20 +3209,24 @@ getModifiers a = withDepthGuard 2 $ do
   treacheries <- HashMap.elems <$> getsGame gameTreacheries
   obligations <- HashMap.elems <$> getsGame gameObligations
   -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
-  -- allies only, the one kind so far that does
-  inHand <- case toTarget a of
-    CardIdRef cid -> getsGame \g ->
-      [ createAlly (toId p) c
-      | p <- HashMap.elems (gamePlayers g)
-      , c <- unHand (playerIdentityHand $ toAttrs p)
-      , pcCardId c == cid
-      , cdCardType (getCardDef c) == AllyType
-      ]
-    _ -> pure []
+  -- allies and events only, the kinds so far that do
+  let inHandOf :: (HasGame m) => CardType -> (IdentityId -> PlayerCard -> x) -> m [x]
+      inHandOf cardType create = case toTarget a of
+        CardIdRef cid -> getsGame \g ->
+          [ create (toId p) c
+          | p <- HashMap.elems (gamePlayers g)
+          , c <- unHand (playerIdentityHand $ toAttrs p)
+          , pcCardId c == cid
+          , cdCardType (getCardDef c) == cardType
+          ]
+        _ -> pure []
+  inHand <- inHandOf AllyType createAlly
+  eventsInHand <- inHandOf EventType createEvent
   mconcat
     <$> sequence
       [ concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) inHand
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) eventsInHand
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments

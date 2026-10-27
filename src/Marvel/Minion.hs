@@ -163,6 +163,11 @@ allMinions =
       , SomeMinionCard psionicGhost
       , SomeMinionCard servantBot
       , SomeMinionCard starshark
+      -- Drax
+      , SomeMinionCard yotatTheDestroyer
+
+      -- Venom
+      , SomeMinionCard enragedSymbiote
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion
