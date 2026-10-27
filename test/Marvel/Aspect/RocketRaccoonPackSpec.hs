@@ -330,6 +330,17 @@ spec = describe "Rocket Raccoon pack aspect and basic cards" do
         (.allyDamage) <$> allyIn "16047" `shouldReturn` 1
         damageOf p `shouldReturn` 0
 
+    it "takes 2 consequential damage attacking, as printed" do
+      tg <- rocket
+      let p = player1 tg
+      inGame tg do
+        _ <- putIntoPlay p "16047"
+        groot <- allyIn "16047"
+        choose "Groot attacks" (isAllyAttack groot)
+        chooseIf . isTargetChoice =<< villainIdNow
+        pass
+        (.allyDamage) <$> allyIn "16047" `shouldReturn` 2
+
     it "is not offered when the attack defeats him" do
       tg <- rocket
       let p = player1 tg

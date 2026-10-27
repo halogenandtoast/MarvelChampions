@@ -85,6 +85,21 @@ spec = describe "Groot pack" do
         alliesWith "16012" `shouldReturn` []
         codesInHand p `shouldReturn` ["16012"]
 
+    it "his attack's 2 consequential damage, as printed, at 2 remaining hit points returns him to your hand" do
+      tg <- grootGame
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        card <- putIntoPlay p "16012"
+        resolve (damageAlly (allyIdOf card) (toSource p) (toDamage 1 FromAbility))
+        starhawk <- allyIn "16012"
+        choose "Starhawk attacks" (isAllyAttack starhawk)
+        chooseIf . isTargetChoice =<< villainIdNow
+        choose "Starhawk" (isAbilityOfCard card)
+        resolve []
+        alliesWith "16012" `shouldReturn` []
+        codesInHand p `shouldReturn` ["16012"]
+
     it "counts the damage already on him" do
       tg <- grootGame
       let p = player1 tg
