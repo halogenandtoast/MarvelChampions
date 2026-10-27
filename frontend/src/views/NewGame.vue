@@ -9,7 +9,7 @@ import SegmentedToggle from '../components/SegmentedToggle.vue'
 import SetupBar from '../components/SetupBar.vue'
 import { useServerText } from '../i18n'
 import { baseCode, useScenarios, type Release } from '../scenarios'
-import type { CampaignMode, ScenarioOption } from '../server'
+import type { CampaignKind, CampaignMode, ScenarioOption } from '../server'
 
 const tr = useServerText()
 const { t } = useI18n()
@@ -131,6 +131,10 @@ const kindOptions = computed(() => [
   { value: 'campaign' as Kind, label: t('newGame.campaign') },
 ])
 const campaignMode = ref<CampaignMode>('StandardCampaign')
+// which box's campaign
+const campaignKind = ref<CampaignKind>('RiseOfRedSkull')
+const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted']
+const campaignTitle = computed(() => t(`campaign.${campaignKind.value}`))
 const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
   { value: 'ExpertCampaign' as CampaignMode, label: t('campaign.ExpertCampaign') },
@@ -142,7 +146,8 @@ const createCampaignNow = async () => {
   error.value = null
   try {
     const { id } = await createCampaign({
-      name: gameName.value.trim() || t('campaign.riseOfRedSkull'),
+      name: gameName.value.trim() || campaignTitle.value,
+      campaign: campaignKind.value,
       mode: campaignMode.value,
       difficulty: difficulty.value,
       decks: [],
@@ -180,7 +185,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
       <SetupBar
         v-if="step === 2 && (kind === 'campaign' || scenario)"
         :portraits="kind === 'campaign' ? [] : portraits(scenario!.code)"
-        :name="kind === 'campaign' ? $t('campaign.riseOfRedSkull') : scenarioName(scenario!.code)"
+        :name="kind === 'campaign' ? campaignTitle : scenarioName(scenario!.code)"
         :details="
           (kind === 'campaign' ? [$t(`campaign.${campaignMode}`), $t(`difficulty.${difficulty}`)] : details({ scenarioCode: scenario!.code, modulars, difficulty })).concat(
             $t('newGame.playerCount', seatCount),
@@ -195,10 +200,20 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
         <section v-if="kind === 'campaign'" class="step">
           <div class="villains" role="radiogroup">
-            <button type="button" role="radio" class="villain campaign-tile selected" aria-checked="true" @click="step = 2">
-              <span class="box-art" />
-              <span class="villain-name">{{ $t('campaign.riseOfRedSkull') }}</span>
-              <Check class="tick" aria-hidden="true" />
+            <button
+              v-for="k in campaignKinds"
+              :key="k"
+              type="button"
+              role="radio"
+              class="villain campaign-tile"
+              :class="{ selected: campaignKind === k }"
+              :aria-checked="campaignKind === k"
+              @click="(campaignKind = k), (step = 2)"
+            >
+              <span v-if="k === 'RiseOfRedSkull'" class="box-art" />
+              <span v-else class="box-art galaxy" :style="{ backgroundImage: villainArt('16058') }" />
+              <span class="villain-name">{{ $t(`campaign.${k}`) }}</span>
+              <Check v-if="campaignKind === k" class="tick" aria-hidden="true" />
             </button>
           </div>
         </section>
@@ -250,7 +265,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
           <label class="field">
             <span class="field-title">{{ $t('newGame.campaignName') }}</span>
-            <input v-model="gameName" class="input" type="text" :placeholder="$t('campaign.riseOfRedSkull')" />
+            <input v-model="gameName" class="input" type="text" :placeholder="campaignTitle" />
           </label>
         </div>
       </section>
@@ -329,7 +344,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 <style scoped>
 .new-game { display: grid; gap: 22px; }
 .kind { width: 20rem; max-width: 100%; }
-.campaign-tile { cursor: default; }
+.box-art.galaxy { background-size: cover; background-position: center top; }
 .box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: url('/images/products/rise-of-red-skull.avif') center / cover; }
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }

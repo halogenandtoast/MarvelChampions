@@ -363,13 +363,36 @@ export interface CampaignLog {
   delayCounters: number | null
   engagedWithMinions: string[]
   alliesRemoved: string[]
+  /** The Galaxy's Most Wanted's */
+  galaxy: GalaxyLog
 }
+
+/** A player's column of The Galaxy's Most Wanted's log, besides identity and hit points. */
+export interface GalaxyPlayer {
+  identity: string
+  units: number
+  marketCards: string[]
+  collection: string[]
+}
+
+export interface GalaxyLog {
+  galaxyPlayers: GalaxyPlayer[]
+  galacticArtifacts: string[]
+  powerStoneControl: string | null
+  /** the scenarios (1 to 4) Badoon Headhunter was in the victory display of */
+  headhunterDefeated: number[]
+  evasionCounters: number | null
+}
+
+/** Which box's campaign. */
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 
 /** The campaign as the server's Marvel.Campaign has it. */
 export interface Campaign {
   mode: CampaignMode
+  kind: CampaignKind
   /** the scenarios in order, by villain code */
   scenarios: string[]
   completed: number
@@ -390,6 +413,8 @@ export interface CampaignView {
   waitingForPlayers: boolean
   /** for each seat taken, how many cards its deck must gain before it is dealt */
   deckShort: number[]
+  /** The Galaxy's Most Wanted: The Market's cards not yet bought, with their unit cost */
+  market: [string, number][]
   next: string | null
   nextName: string | null
   /** the game of it being played, not yet over */

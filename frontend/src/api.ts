@@ -1,7 +1,7 @@
 import type { DeckList } from './browser/types/deck'
 import { authHeaders, signOut } from './auth'
 import { router } from './router'
-import type { CampaignMode, CampaignView, GameSummary, ScenarioList, StarterDeck } from './server'
+import type { CampaignKind, CampaignMode, CampaignView, GameSummary, ScenarioList, StarterDeck } from './server'
 
 /** A fetch that signs the request and sends a signed-out user to sign in. */
 export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Response> => {
@@ -79,6 +79,8 @@ export const importGame = async (file: File) =>
 
 export interface NewCampaign {
   name: string
+  /** which box's: The Rise of Red Skull's if none */
+  campaign?: CampaignKind
   mode: CampaignMode
   difficulty: 'Normal' | 'Expert'
   decks: DeckChoice[]
@@ -110,3 +112,7 @@ export const changeCampaignDeck = (id: string, position: number, deck: DeckChoic
   apiFetch(`/api/campaigns/${id}/seats/${position}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deck }) }).then(async (r) => {
     if (!r.ok) throw new Error((await r.text()) || r.statusText)
   })
+
+/** Between The Galaxy's Most Wanted's games, the seat's player spends units on a card of The Market. */
+export const buyMarketCard = (id: string, position: number, card: string) =>
+  post(`/api/campaigns/${id}/seats/${position}/market`, { card }).then((r) => json<CampaignView>(r))
