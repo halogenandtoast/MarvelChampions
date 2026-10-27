@@ -541,6 +541,19 @@ biogramImage = describe "Biogram Image" do
 
 galacticArtifacts :: Spec
 galacticArtifacts = describe "Galactic Artifacts" do
+  it "Cloak of Hercules: with enemies tied for the lowest ATK, the first player picks, whoever revealed it" do
+    tg <- rhinoWith [GalacticArtifacts] ["spider-man", "captain-marvel"]
+    let (you, them) = (player1 tg, player2 tg)
+    inGame tg do
+      m1 <- addMinion them Minions.servantBot
+      m2 <- addMinion them Minions.servantBot
+      _ <- revealNow them Attachments.cloakOfHercules
+      (fmap fst <$> asked) `shouldReturn` Just you
+      choose "the second bot" (isTargetChoice (MinionRef m2))
+      cloak <- theAttachment Attachments.cloakOfHercules
+      liftIO $ Attachment.attachmentEnemy cloak `shouldBe` Just (EnemyMinionId m2)
+      liftIO $ m1 `shouldNotBe` m2
+
   it "Cloak of Hercules attaches to the enemy with the lowest ATK, +3 ATK, discarded for [physical][physical][physical]" do
     tg <- rhinoWith [GalacticArtifacts] ["spider-man"]
     let you = player1 tg

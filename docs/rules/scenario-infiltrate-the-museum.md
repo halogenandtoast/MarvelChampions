@@ -207,6 +207,9 @@ printed cards.
   Biogram Image has nothing left to answer: it stays attached, and no threat is placed. In the engine, no "when the
   villain would take damage" interrupt answers damage his tough status card prevents; one to his being attacked
   (Temporal Shield) still does.
+- **"Attach to the enemy with the lowest ATK"** (Cloak of Hercules; highest SCH, The Beyonder's Blazer; lowest SCH,
+  Vandarian Power Wand): with enemies tied, the first player picks among them, whoever revealed it (RR First Player:
+  an encounter card with several eligible targets).
 
 ## Open rulings
 
