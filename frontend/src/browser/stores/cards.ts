@@ -55,8 +55,13 @@ export const useCardStore = defineStore('cards', () => {
   const thirdFace = (card: Card): Card | undefined => (/a$/.test(card.code) ? cardByCode(card.code.replace(/a$/, 'c')) : undefined)
   const isThirdFace = (card: Card) => /c$/.test(card.code) && byCode.value.has(card.code.replace(/c$/, 'a'))
 
+  /** MarvelCDB's older single record of a double-sided card it also lists as linked A and B sides (Kang's 11007 beside 11007a/11007b). */
+  const isSplitCard = (card: Card) => !/[a-z]$/.test(card.code) && !!cardByCode(`${card.code}a`)?.linkedTo
+
   /** What the browser lists: one entry a card, its other faces reached from it. */
-  const cards = computed(() => all.value.filter((c) => !c.duplicateOf && (showHidden.value || (!c.hidden && !isThirdFace(c)))))
+  const cards = computed(() =>
+    all.value.filter((c) => !c.duplicateOf && !isSplitCard(c) && (showHidden.value || (!c.hidden && !isThirdFace(c)))),
+  )
   const results = computed(() => sortCards(filterCards(cards.value, filters.value), sortField.value, sortDescending.value))
 
   /** Facet values present in the database, with how many cards carry each. */
