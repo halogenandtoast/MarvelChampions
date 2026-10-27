@@ -145,6 +145,14 @@ allUpgrades = fromList $ map
   -- Scarlet Witch
   , SomeUpgradeCard magicShield
   , SomeUpgradeCard scarletWitchsCrest
+
+  -- Star-Lord
+  , SomeUpgradeCard elementGun
+  , SomeUpgradeCard jetBoots
+  , SomeUpgradeCard leaderOfTheGuardians
+  , SomeUpgradeCard starLordsHelmet
+  , SomeUpgradeCard laserBlaster
+  , SomeUpgradeCard pulseGrenade
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

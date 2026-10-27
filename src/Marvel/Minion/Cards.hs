@@ -117,6 +117,9 @@ allMinions =
 
       -- Scarlet Witch
       , luminous
+
+      -- Star-Lord
+      , misterKnife
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -598,3 +601,12 @@ avalanche =
 
 luminous :: CardDef
 luminous = unique (minion "15025" "Luminous" [Elite] [Boost, Boost] ScarletWitchNemesis 1)
+
+-- Star-Lord
+
+misterKnife :: CardDef
+misterKnife =
+  unique $
+    (minion "17026" "Mister Knife" [Criminal, Elite] [Boost, Boost] StarLordNemesis 1)
+      { cdKeywords = singleton (Retaliate 1)
+      }

@@ -35,3 +35,6 @@ import Marvel.Hero.Heroes.Quicksilver as X
 
 -- Scarlet Witch
 import Marvel.Hero.Heroes.ScarletWitch as X
+
+-- Star-Lord
+import Marvel.Hero.Heroes.StarLord as X

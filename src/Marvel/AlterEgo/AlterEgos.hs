@@ -33,3 +33,6 @@ import Marvel.AlterEgo.AlterEgos.PietroMaximoff as X
 
 -- Scarlet Witch
 import Marvel.AlterEgo.AlterEgos.WandaMaximoff as X
+
+-- Star-Lord
+import Marvel.AlterEgo.AlterEgos.PeterQuill as X

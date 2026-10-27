@@ -76,6 +76,12 @@ allSupports = fromList $ map
 
   -- Scarlet Witch
   , SomeSupportCard agathaHarkness
+
+  -- Star-Lord
+  , SomeSupportCard badBoy
+  , SomeSupportCard targetPractice
+  , SomeSupportCard citt
+  , SomeSupportCard knowhere
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

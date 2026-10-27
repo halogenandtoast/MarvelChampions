@@ -111,6 +111,9 @@ allSideSchemes = fromList $ map
 
   -- Scarlet Witch
   , SomeSideSchemeCard theNextEvolution
+
+  -- Star-Lord
+  , SomeSideSchemeCard buddingCrimeSyndicate
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

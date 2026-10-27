@@ -116,4 +116,11 @@ allAllies = fromList $ map
   , SomeAllyCard quicksilverPietroMaximoff
   , SomeAllyCard speedThomasShepherd
   , SomeAllyCard wiccanWilliamKaplan
+
+  -- Star-Lord
+  , SomeAllyCard novaPrimeRichardRider
+  , SomeAllyCard adamWarlock
+  , SomeAllyCard betaRayBill
+  , SomeAllyCard yondu
+  , SomeAllyCard cosmo
   ]

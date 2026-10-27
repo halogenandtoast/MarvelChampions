@@ -117,3 +117,6 @@ import Marvel.Treachery.Treacheries.Earthquake as X
 
 -- Scarlet Witch
 import Marvel.Treachery.Treacheries.ChaosManipulation as X
+
+-- Star-Lord
+import Marvel.Treachery.Treacheries.SpartoiCunning as X

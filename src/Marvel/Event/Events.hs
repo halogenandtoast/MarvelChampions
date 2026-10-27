@@ -155,3 +155,13 @@ import Marvel.Event.Events.Browbeat as X
 import Marvel.Event.Events.LastStand as X
 import Marvel.Event.Events.BaitAndSwitch as X
 import Marvel.Event.Events.Recuperation as X
+
+-- Star-Lord
+import Marvel.Event.Events.DaringEscape as X
+import Marvel.Event.Events.GutsyMove as X
+import Marvel.Event.Events.SlidingShot as X
+import Marvel.Event.Events.AirSupremacy as X
+import Marvel.Event.Events.BlazeOfGlory as X
+import Marvel.Event.Events.DiveBomb as X
+import Marvel.Event.Events.AgileFlight as X
+import Marvel.Event.Events.EverVigilant as X

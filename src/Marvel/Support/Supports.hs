@@ -50,3 +50,9 @@ import Marvel.Support.Supports.ServalIndustries as X
 
 -- Scarlet Witch
 import Marvel.Support.Supports.AgathaHarkness as X
+
+-- Star-Lord
+import Marvel.Support.Supports.BadBoy as X
+import Marvel.Support.Supports.TargetPractice as X
+import Marvel.Support.Supports.Citt as X
+import Marvel.Support.Supports.Knowhere as X

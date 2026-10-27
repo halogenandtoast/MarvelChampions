@@ -39,3 +39,6 @@ import Marvel.Obligation.Obligations.NeedForSpeed as X
 
 -- Scarlet Witch
 import Marvel.Obligation.Obligations.SlippingSanity as X
+
+-- Star-Lord
+import Marvel.Obligation.Obligations.Banishment as X

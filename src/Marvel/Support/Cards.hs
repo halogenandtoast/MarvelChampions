@@ -66,6 +66,12 @@ allSupports = fromList $ concatMap
 
   -- Scarlet Witch
   , agathaHarkness
+
+  -- Star-Lord
+  , badBoy
+  , targetPractice
+  , citt
+  , knowhere
   ]
 
 support
@@ -248,3 +254,20 @@ servalIndustries = unique $ identitySupport "14007" "Serval Industries" 1 [Locat
 
 agathaHarkness :: CardDef
 agathaHarkness = unique $ identitySupport "15007" "Agatha Harkness" 1 [Persona] [Mental]
+
+-- Star-Lord
+
+badBoy :: CardDef
+badBoy = unique $ identitySupport "17006" "Bad Boy" 3 [Vehicle] [Physical]
+
+targetPractice :: CardDef
+targetPractice = support "17017" "Target Practice" 0 [Skill] [Mental] Leadership
+
+citt :: CardDef
+citt = unique $ basicSupport "17021" "C.I.T.T." 2 [Vehicle] [Wild]
+
+knowhere :: CardDef
+knowhere =
+  (unique $ basicSupport "17022" "Knowhere" 2 [Location] [Energy])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }

@@ -100,7 +100,7 @@ thePowerOfJustice = reprintedAs ["08014", "15016"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
 
 thePowerOfLeadership :: CardDef
-thePowerOfLeadership = reprintedAs ["03018", "04019"] $
+thePowerOfLeadership = reprintedAs ["03018", "04019", "17018"] $
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]

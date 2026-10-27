@@ -85,3 +85,10 @@ import Marvel.Ally.Allies.Warlock as X
 import Marvel.Ally.Allies.QuicksilverPietroMaximoff as X
 import Marvel.Ally.Allies.SpeedThomasShepherd as X
 import Marvel.Ally.Allies.WiccanWilliamKaplan as X
+
+-- Star-Lord
+import Marvel.Ally.Allies.NovaPrimeRichardRider as X
+import Marvel.Ally.Allies.AdamWarlock as X
+import Marvel.Ally.Allies.BetaRayBill as X
+import Marvel.Ally.Allies.Yondu as X
+import Marvel.Ally.Allies.Cosmo as X

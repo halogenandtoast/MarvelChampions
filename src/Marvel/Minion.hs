@@ -126,6 +126,9 @@ allMinions =
 
       -- Scarlet Witch
       , SomeMinionCard luminous
+
+      -- Star-Lord
+      , SomeMinionCard misterKnife
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

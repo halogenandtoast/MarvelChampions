@@ -88,3 +88,6 @@ import Marvel.SideScheme.SideSchemes.ExtortionOfSeismicProportion as X
 
 -- Scarlet Witch
 import Marvel.SideScheme.SideSchemes.TheNextEvolution as X
+
+-- Star-Lord
+import Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate as X

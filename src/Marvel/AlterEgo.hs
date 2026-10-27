@@ -56,6 +56,9 @@ allAlterEgos = fromList $ map
 
   -- Scarlet Witch
   , SomeAlterEgoCard wandaMaximoff
+
+  -- Star-Lord
+  , SomeAlterEgoCard peterQuill
   ]
 
 lookupAlterEgoByCardCode :: CardCode -> IdentityId -> AlterEgo

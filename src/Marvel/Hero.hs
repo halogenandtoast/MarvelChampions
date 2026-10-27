@@ -67,6 +67,9 @@ allHeroes = fromList $ map
 
   -- Scarlet Witch
   , SomeHeroCard scarletWitch
+
+  -- Star-Lord
+  , SomeHeroCard starLord
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

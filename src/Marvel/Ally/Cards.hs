@@ -106,6 +106,13 @@ allAllies = fromList $ concatMap
   , quicksilverPietroMaximoff
   , speedThomasShepherd
   , wiccanWilliamKaplan
+
+  -- Star-Lord
+  , novaPrimeRichardRider
+  , adamWarlock
+  , betaRayBill
+  , yondu
+  , cosmo
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -129,6 +136,7 @@ heroSpecificAllies =
   , antManScottLang
   , scarletWitchWandaMaximoff
   , quicksilverPietroMaximoff
+  , novaPrimeRichardRider
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -460,3 +468,24 @@ speedThomasShepherd = ally "15010" ("Speed" <:> "Thomas Shepherd") 4 [Avenger] [
 
 wiccanWilliamKaplan :: CardDef
 wiccanWilliamKaplan = ally "15011" ("Wiccan" <:> "William Kaplan") 2 [Avenger] [Mental] Justice
+
+-- Star-Lord
+
+novaPrimeRichardRider :: CardDef
+novaPrimeRichardRider = identityAlly "17002" ("Nova Prime" <:> "Richard Rider") 5 [Aerial, NovaCorps] [Wild]
+
+adamWarlock :: CardDef
+adamWarlock = ally "17011" "Adam Warlock" 3 [Aerial, Mystic] [Physical] Leadership
+
+betaRayBill :: CardDef
+betaRayBill = ally "17012" "Beta Ray Bill" 5 [Asgard] [Physical] Leadership
+
+-- | "Yondu's attacks gain ranged": his keyword.
+yondu :: CardDef
+yondu =
+  (ally "17013" "Yondu" 4 [Guardian] [Energy] Leadership)
+    { cdKeywords = fromList [Ranged]
+    }
+
+cosmo :: CardDef
+cosmo = basicAlly "17020" "Cosmo" 2 [Guardian] [Mental]

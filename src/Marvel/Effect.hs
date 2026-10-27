@@ -59,6 +59,8 @@ allEffects =
     , ("14023", SomeCardEffect civicDutyEffect)
     , ("15003", SomeCardEffect chaosMagicEffect)
     , ("12033", SomeCardEffect assessTheSituationEffect)
+    , ("17001a", SomeCardEffect starLordEffect)
+    , ("17015", SomeCardEffect blazeOfGloryEffect)
 
     -- Wasp
     , ("13019", SomeCardEffect spiderManMilesMoralesEffect)

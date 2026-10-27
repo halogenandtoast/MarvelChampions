@@ -11,6 +11,7 @@ import Marvel.Criteria
 import Data.HashSet (singleton)
 import Marvel.Keyword
 import Marvel.EncounterSet
+import Marvel.GameValue.Types (GameValue (PerPlayer))
 import Marvel.Name
 
 allSideSchemes :: HashMap CardCode CardDef
@@ -104,6 +105,9 @@ allSideSchemes = fromList $ map
 
   -- Scarlet Witch
   , theNextEvolution
+
+  -- Star-Lord
+  , buddingCrimeSyndicate
   ]
 
 sideScheme
@@ -429,3 +433,12 @@ extortionOfSeismicProportion =
 
 theNextEvolution :: CardDef
 theNextEvolution = sideScheme "15024" "The Next Evolution" [Boost, Boost] ScarletWitchNemesis 1
+
+-- Star-Lord
+
+buddingCrimeSyndicate :: CardDef
+buddingCrimeSyndicate =
+  (sideScheme "17025" "Budding Crime Syndicate" [Boost, Boost, Boost] StarLordNemesis 1)
+    { cdHazards = 1
+    , cdKeywords = singleton (Hinder (PerPlayer 2))
+    }

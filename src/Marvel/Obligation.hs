@@ -66,6 +66,9 @@ allObligations = fromList $ map
 
   -- Scarlet Witch
   , SomeObligationCard slippingSanity
+
+  -- Star-Lord
+  , SomeObligationCard banishment
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

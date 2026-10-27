@@ -74,5 +74,8 @@ data Trait
   | WreckingCrew
   | XFactor
   | BrotherhoodOfMutants
+  | Guardian
+  | NovaCorps
+  | Outlaw
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

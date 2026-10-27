@@ -181,6 +181,16 @@ allEvents = fromList $ map
   , SomeEventCard lastStand
   , SomeEventCard baitAndSwitch
   , SomeEventCard recuperation
+
+  -- Star-Lord
+  , SomeEventCard daringEscape
+  , SomeEventCard gutsyMove
+  , SomeEventCard slidingShot
+  , SomeEventCard airSupremacy
+  , SomeEventCard blazeOfGlory
+  , SomeEventCard diveBomb
+  , SomeEventCard agileFlight
+  , SomeEventCard everVigilant
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

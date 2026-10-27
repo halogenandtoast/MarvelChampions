@@ -109,3 +109,11 @@ import Marvel.Upgrade.Upgrades.SenseOfJustice as X
 -- Scarlet Witch
 import Marvel.Upgrade.Upgrades.MagicShield as X
 import Marvel.Upgrade.Upgrades.ScarletWitchsCrest as X
+
+-- Star-Lord
+import Marvel.Upgrade.Upgrades.ElementGun as X
+import Marvel.Upgrade.Upgrades.JetBoots as X
+import Marvel.Upgrade.Upgrades.LeaderOfTheGuardians as X
+import Marvel.Upgrade.Upgrades.StarLordsHelmet as X
+import Marvel.Upgrade.Upgrades.LaserBlaster as X
+import Marvel.Upgrade.Upgrades.PulseGrenade as X

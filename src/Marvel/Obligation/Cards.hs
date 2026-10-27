@@ -58,6 +58,9 @@ allObligations = fromList $ map
 
     -- Scarlet Witch
     , slippingSanity
+
+    -- Star-Lord
+    , banishment
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -193,3 +196,8 @@ needForSpeed = obligation "14024" "Need for Speed" [Boost, Boost]
 
 slippingSanity :: CardDef
 slippingSanity = obligation "15023" "Slipping Sanity" [Boost, Boost, Boost]
+
+-- Star-Lord
+
+banishment :: CardDef
+banishment = obligation "17024" "Banishment" [Boost, Boost]

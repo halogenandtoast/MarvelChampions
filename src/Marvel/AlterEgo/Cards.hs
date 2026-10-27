@@ -45,6 +45,9 @@ allAlterEgoCards =
 
     -- Scarlet Witch
     , wandaMaximoff
+
+    -- Star-Lord
+    , peterQuill
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -127,3 +130,8 @@ pietroMaximoff = alterEgo "14001b" "Pietro Maximoff" [Civilian]
 
 wandaMaximoff :: CardDef
 wandaMaximoff = alterEgo "15001b" "Wanda Maximoff" [Mystic]
+
+-- Star-Lord
+
+peterQuill :: CardDef
+peterQuill = alterEgo "17001b" "Peter Quill" [Outlaw]

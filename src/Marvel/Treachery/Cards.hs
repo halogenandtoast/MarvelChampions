@@ -148,6 +148,9 @@ allTreacheries = fromList $ map
 
   -- Scarlet Witch
   , chaosManipulation
+
+  -- Star-Lord
+  , spartoiCunning
   ]
 
 treachery
@@ -575,3 +578,8 @@ earthquake = (treachery "14028" "Earthquake" [Star] QuicksilverNemesis 2) {cdKey
 
 chaosManipulation :: CardDef
 chaosManipulation = treachery "15027" "Chaos Manipulation" [Boost, Boost] ScarletWitchNemesis 1
+
+-- Star-Lord
+
+spartoiCunning :: CardDef
+spartoiCunning = treachery "17027" "Spartoi Cunning" [Boost] StarLordNemesis 3

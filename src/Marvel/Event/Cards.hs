@@ -178,6 +178,16 @@ allEvents = fromList $ concatMap
   , lastStand
   , baitAndSwitch
   , recuperation
+
+  -- Star-Lord
+  , daringEscape
+  , gutsyMove
+  , slidingShot
+  , airSupremacy
+  , blazeOfGlory
+  , diveBomb
+  , agileFlight
+  , everVigilant
   ]
 
 event
@@ -402,7 +412,7 @@ greatResponsibility =
     }
 
 getReady :: CardDef
-getReady = (event "01069" "Get Ready" 0 Action [] [Physical] Leadership)
+getReady = reprintedAs ["17016"] $ (event "01069" "Get Ready" 0 Action [] [Physical] Leadership)
   { cdCriteria = AllyExists ExhaustedAlly
   }
 
@@ -1112,4 +1122,55 @@ recuperation :: CardDef
 recuperation =
   (basicEvent "15031" "Recuperation" 2 AlterEgoAction [] [Physical])
     { cdCriteria = SelfMatches IdentityWithAnyDamage
+    }
+
+-- Star-Lord
+
+daringEscape :: CardDef
+daringEscape =
+  (identityEvent "17003" "Daring Escape" 0 HeroAction [] [Energy])
+    { cdAbilityCost = DealEncounterCardCost
+    }
+
+gutsyMove :: CardDef
+gutsyMove =
+  (identityEvent "17004" "Gutsy Move" 2 HeroAction [Thwart] [Mental])
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+slidingShot :: CardDef
+slidingShot =
+  (identityEvent "17005" "Sliding Shot" 3 HeroAction [Attack] [Physical])
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.elementGun <> UpgradeControlledBy You) <> canAttack
+    }
+
+airSupremacy :: CardDef
+airSupremacy = event "17014" "Air Supremacy" 2 HeroAction [Aerial, Tactic] [Physical] Leadership
+
+blazeOfGlory :: CardDef
+blazeOfGlory =
+  (event "17015" "Blaze of Glory" 2 HeroAction [] [Physical] Leadership)
+    { cdLimit = Just (MaxPerRound 1)
+    }
+
+diveBomb :: CardDef
+diveBomb =
+  (event "17028" "Dive Bomb" 4 HeroAction [Aerial, Attack] [Physical] Aggression)
+    { cdAbilitySubType = Just Ability.Attack
+    , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> canAttack
+    }
+
+agileFlight :: CardDef
+agileFlight =
+  (event "17029" "Agile Flight" 3 HeroAction [Aerial, Thwart] [Mental] Justice)
+    { cdAbilitySubType = Just Ability.Thwart
+    , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> SchemeExists ThwartableScheme
+    }
+
+everVigilant :: CardDef
+everVigilant =
+  (event "17030" "Ever Vigilant" 2 HeroAction [Aerial, Skill] [Mental] Protection)
+    { cdCriteria = SelfMatches (IdentityWithTrait Aerial)
     }

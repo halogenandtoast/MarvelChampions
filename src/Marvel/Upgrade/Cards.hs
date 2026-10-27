@@ -139,6 +139,14 @@ allUpgrades = fromList $ concatMap
   -- Scarlet Witch
   , magicShield
   , scarletWitchsCrest
+
+  -- Star-Lord
+  , elementGun
+  , jetBoots
+  , leaderOfTheGuardians
+  , starLordsHelmet
+  , laserBlaster
+  , pulseGrenade
   ]
 
 upgrade
@@ -313,7 +321,7 @@ followed = limited (MaxPerSideScheme 1) $
   upgrade "03032" "Followed" 1 [] [Energy] Justice
 
 enhancedAwareness :: CardDef
-enhancedAwareness =
+enhancedAwareness = reprintedAs ["17031"] $
   basicUpgrade "03034" "Enhanced Awareness" 2 [Condition] [Mental]
 
 biokineticPolymerSuit :: CardDef
@@ -600,3 +608,31 @@ magicShield = identityUpgrade "15008" "Magic Shield" 1 [Spell] [Physical]
 
 scarletWitchsCrest :: CardDef
 scarletWitchsCrest = identityUpgrade "15009" "Scarlet Witch's Crest" 2 [Item] [Energy]
+
+-- Star-Lord
+
+elementGun :: CardDef
+elementGun =
+  (identityUpgrade "17007" "Element Gun" 3 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }
+
+jetBoots :: CardDef
+jetBoots = identityUpgrade "17008" "Jet Boots" 2 [Item, Tech] [Mental]
+
+leaderOfTheGuardians :: CardDef
+leaderOfTheGuardians = unique $ identityUpgrade "17009" "Leader of the Guardians" 3 [Title] [Mental]
+
+starLordsHelmet :: CardDef
+starLordsHelmet = unique $ identityUpgrade "17010" "Star-Lord's Helmet" 1 [Armor, Tech] [Mental]
+
+-- | Attach to a Guardian ally. Max 1 per ally.
+laserBlaster :: CardDef
+laserBlaster =
+  (upgrade "17019" "Laser Blaster" 1 [Tech, Weapon] [Physical] Leadership)
+    { cdCriteria = AllyExists (AllyWithTrait Guardian)
+    , cdLimit = Just (MaxPerAlly 1)
+    }
+
+pulseGrenade :: CardDef
+pulseGrenade = basicUpgrade "17023" "Pulse Grenade" 2 [Weapon] [Energy]

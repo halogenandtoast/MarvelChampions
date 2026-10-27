@@ -157,6 +157,9 @@ allTreacheries = fromList $ map
 
   -- Scarlet Witch
   , SomeTreacheryCard chaosManipulation
+
+  -- Star-Lord
+  , SomeTreacheryCard spartoiCunning
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery
