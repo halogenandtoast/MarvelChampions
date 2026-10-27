@@ -293,6 +293,24 @@ grandCollection = describe "The Grand Collection" do
       _ <- putInHand you "01090"
       offers (isMainSchemeAbility m) `shouldReturn` False
 
+  it "Hero Action: once per round per player, each player's own" do
+    tg <- museum ["spider-man", "she-hulk"]
+    let (you, them) = (player1 tg, player2 tg)
+    inGame tg do
+      emptyCollection
+      [cat, flip'] <- collect you ["01002", "01003"]
+      m <- mainSchemeIdNow
+      changeForm you
+      choose "the main scheme's action" (isMainSchemeAbility m)
+      choose "Black Cat" (isTargetChoice (CardIdRef $ pcCardId cat))
+      offers (isMainSchemeAbility m) `shouldReturn` False
+      endTurn
+      changeForm them
+      pass
+      choose "the main scheme's action, the other player's" (isMainSchemeAbility m)
+      choose "the last card" (isTargetChoice (CardIdRef $ pcCardId flip'))
+      collectionNow `shouldReturn` []
+
   it "Hero Action: or spend 2 resources of any type" do
     tg <- museum ["spider-man"]
     let you = player1 tg

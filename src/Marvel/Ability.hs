@@ -111,7 +111,7 @@ subtype :: AbilitySubType -> Ability -> Ability
 subtype s a = a {abilitySubType = Just s}
 
 passesUseLimit :: IdentityId -> HashMap IdentityId [Ability] -> Ability -> Bool
-passesUseLimit x aMap a = case abilityLimit a of
+passesUseLimit x aMap a = case baseLimit (abilityLimit a) of
   NoLimit -> True
   PerTurn n -> count (== a) usedAbilities < n
   PerRound n -> count (== a) usedAbilities < n

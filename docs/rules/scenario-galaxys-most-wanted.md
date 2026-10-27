@@ -177,6 +177,10 @@ Card text (MarvelCDB):
 - **First Player Action** on an encounter card (Rogue Vessel, Cannonade): an action only the first player may take, in
   their turn. Side and main schemes may now have abilities. A cost that exhausts the Milano and spends resources
   (Rogue Vessel) does not count the Milano's own resource among them.
+- **Limits on encounter cards**: an ability on an encounter card is anyone's, so its limit counts every player's
+  uses ("Limit once per round": once a round for the table). "(Limit once per round per player.)" (The Grand
+  Collection, Library Labyrinth) is a limit of each player's own (`EachPlayer`), whether the ability is an action or
+  a response.
 - **Choose one** on Blind Side, Hull Breach and Power Siphon: an option with no valid target cannot be chosen (RR
   Choose): "exhaust the Milano" only with the Milano in play and ready, the resources only if the player can spend
   them, "stun the first player" only if they are not stunned already, "discard at random from the first player's

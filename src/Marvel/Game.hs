@@ -778,7 +778,7 @@ runPreGameMessage msg g = runQueueT $ case msg of
               . each
               %~ filter
                 ( \(a, d) ->
-                    (abilityLimit a /= PerWindow 1) || d < gameWindowDepth g
+                    (baseLimit (abilityLimit a) /= PerWindow 1) || d < gameWindowDepth g
                 )
           )
   _ -> pure g
@@ -897,7 +897,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     | HashMap.member ident (gamePlayers g) -> pure $ g & activePlayerL .~ ident
     | otherwise -> pure g
   BeginPhase phase ->
-    pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & treacheriesRevealedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
+    pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & treacheriesRevealedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . baseLimit . abilityLimit . fst)
   AtEndOfPhase msgs -> pure $ g & atEndOfPhaseL <>~ msgs
   -- what was to happen at the end of the phase happens first, as the phase ends
   EndPhase _ -> do
@@ -1608,7 +1608,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       g
         & usedAbilitiesL . ix ident
           %~ filter
-            ((/= PerTurn 1) . abilityLimit . fst)
+            ((/= PerTurn 1) . baseLimit . abilityLimit . fst)
   IdentityMessage ident (PlayedCard card _) ->
     pure $
       g
@@ -1623,7 +1623,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         & playedThisRoundL .~ []
         & usedAbilitiesL . each
           %~ filter
-            ((/= PerRound 1) . abilityLimit . fst)
+            ((/= PerRound 1) . baseLimit . abilityLimit . fst)
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
@@ -1716,7 +1716,6 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   CheckWindowsFor (ident : rest) windows -> do
     abilities <- getAbilitiesFor ident
-    usedAbilities <- getUsedAbilities
     attrs <- getIdentity ident
     -- a treachery's reveal, or an encounter card's, is cancelled by taking it off the
     -- queue: its window then closes, so a second cancel is not offered
@@ -1740,17 +1739,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       if perilled then pure [] else asYou ident $ concatMapM
         (\w -> map (,Just w) <$> getWindowPlayableCards w attrs)
         openWindows
-    let
-      -- an ability on an encounter card is anyone's to trigger, so its limit counts
-      -- every player's uses: a forced ability used once is not offered to the next
-      usedByAnyone = HashMap.singleton ident (concat $ HashMap.elems usedAbilities)
-      withinLimit a =
-        passesUseLimit ident (maybe usedByAnyone (const usedAbilities) (abilityController g a)) a
     validAbilities <-
       asYou ident $ filterM
         ( andM
             . sequence
-              [ pure . withinLimit
+              [ withinUseLimit ident
               , passesCriteria ident
               , passesCanAffordCost ident
               , \a -> anyM (`abilityInWindow` a) openWindows
@@ -2231,6 +2224,18 @@ getPhase = getsGame gamePhase
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)
 
+-- | Whether a player may use an ability again under its limit. An ability on an
+-- encounter card is anyone's to trigger, so its limit counts every player's uses (a
+-- forced ability used once is not offered to the next), unless it is a limit per player.
+withinUseLimit :: (HasGame m) => IdentityId -> Ability -> m Bool
+withinUseLimit ident a = getsGame \g -> do
+  let used = HashMap.map (map fst) (gameUsedAbilities g)
+      pooled = isNothing (abilityController g a) && not (perPlayer (abilityLimit a))
+      perPlayer = \case
+        EachPlayer _ -> True
+        _ -> False
+  passesUseLimit ident (if pooled then HashMap.singleton ident (concat $ HashMap.elems used) else used) a
+
 class
   ( MonadCatch m
   , MonadThrow m
@@ -2513,11 +2518,10 @@ getResourceAbilities ::
   m [Ability]
 getResourceAbilities ident mc = asYou ident do
   abilities <- getAbilitiesFor ident
-  usedAbilities <- getUsedAbilities
   filterM
     ( andM
         . sequence
-          [ pure . passesUseLimit ident usedAbilities
+          [ withinUseLimit ident
           , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
           , pure . paysFor
           , passesCanAffordCost ident

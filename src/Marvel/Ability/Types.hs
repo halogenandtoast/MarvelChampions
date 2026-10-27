@@ -42,8 +42,17 @@ data Limit
   | PerWindow Natural
   | NoLimit
   | PerPhase Natural
+  | -- | "(Limit ... per player.)": each player has the limit of their own, on a card
+    -- anyone may trigger
+    EachPlayer Limit
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+-- | A limit's period and count, whether it is each player's or the card's.
+baseLimit :: Limit -> Limit
+baseLimit = \case
+  EachPlayer l -> baseLimit l
+  l -> l
 
 data AbilityTiming = DuringOwnTurn
   deriving stock (Show, Eq, Generic)

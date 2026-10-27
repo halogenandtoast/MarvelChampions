@@ -19,6 +19,7 @@ import Marvel.Support.Cards qualified as Supports
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
+import Marvel.Ability.Types (Limit (..))
 import TestImport
 
 escape :: CardCode
@@ -266,6 +267,38 @@ spec = describe "Escape the Museum" do
         mainSchemeThreatNow `shouldReturn` (before - 5)
         (length <$> dealtTo you) `shouldReturn` (dealt + 1)
         offers (isAbilityOf env) `shouldReturn` False
+
+    it "once a round for each player: the next player may use it too" do
+      tg <- against Normal ["spider-man", "she-hulk"]
+      let (you, them) = (player1 tg, player2 tg)
+      inGame tg do
+        asHero you
+        pass
+        env <- environmentIdNow
+        choose "This way?" (isAbilityOf env)
+        offers (isAbilityOf env) `shouldReturn` False
+        endTurn
+        asHero them
+        pass
+        placeMainThreat 5
+        before <- mainSchemeThreatNow
+        dealt <- length <$> dealtTo them
+        choose "This way?, the other player" (isAbilityOf env)
+        mainSchemeThreatNow `shouldReturn` (before - 5)
+        (length <$> dealtTo them) `shouldReturn` (dealt + 1)
+        offers (isAbilityOf env) `shouldReturn` False
+
+    it "its limit is each player's; a plain limit on an encounter card would be the table's" do
+      tg <- against Normal ["spider-man", "she-hulk"]
+      let (you, them) = (player1 tg, player2 tg)
+      inGame tg do
+        env <- environmentIdNow
+        labyrinth <- fromMaybe (error "no ability") . headMay . filter ((== toSource env) . abilitySource) <$> getAbilitiesFor you
+        let plain = labyrinth {abilityLimit = PerRound 1}
+        resolve [UsedAbility you labyrinth]
+        withinUseLimit you labyrinth `shouldReturn` False
+        withinUseLimit them labyrinth `shouldReturn` True
+        withinUseLimit them plain `shouldReturn` False
 
     it "is no alter-ego action" do
       tg <- against Normal ["spider-man"]
