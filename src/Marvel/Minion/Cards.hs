@@ -662,7 +662,7 @@ nebulaMinion =
 -- Groot
 
 furnax :: CardDef
-furnax = unique $ minion "16027" "Furnax" [Leviatron] [Boost, Boost, Boost] GrootNemesis 1
+furnax = unique $ minion "16027" "Furnax" [Leviathon] [Boost, Boost, Boost] GrootNemesis 1
 
 -- Rocket Raccoon
 
