@@ -82,5 +82,8 @@ data Trait
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone
+  -- Escape the Museum
+  | Elder
+  | Wounded
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

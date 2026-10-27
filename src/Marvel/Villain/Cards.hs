@@ -83,6 +83,12 @@ allVillainCards =
   , kangScarletCenturionExpert
   , kang3Expert
 
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , collectorA1
+  , collectorA2
+  , collectorB1
+  , collectorB2
+
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -298,3 +304,18 @@ bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
 
 bulldozerB :: CardDef
 bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+-- | Collector (A1), Collector (B1) for expert play, each with his Wounded side (A2, B2).
+collectorA1 :: CardDef
+collectorA1 = villain "16080a" "Collector" [Elder]
+
+collectorA2 :: CardDef
+collectorA2 = villain "16080b" "Collector" [Elder, Wounded]
+
+collectorB1 :: CardDef
+collectorB1 = villain "16081a" "Collector" [Elder]
+
+collectorB2 :: CardDef
+collectorB2 = villain "16081b" "Collector" [Elder, Wounded]

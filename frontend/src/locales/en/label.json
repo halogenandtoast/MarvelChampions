@@ -203,5 +203,9 @@
   "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
   "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
 
+  "-- Escape the Museum --": "",
+  "exhaustTheMilanoIndirectDamageAmongPlayers": "Exhaust the Milano → {count} indirect damage among the players",
+  "indirectDamageAmongPlayers": "{count} indirect damage among the players",
+
   "-- end --": ""
 }

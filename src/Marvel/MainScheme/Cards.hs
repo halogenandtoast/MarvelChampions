@@ -53,6 +53,11 @@ allMainSchemes =
     , thePresentFutureWar
     , kangsWrath
 
+    -- The Galaxy's Most Wanted: Escape the Museum
+    , theMissingMilano
+    , lostInTheMuseum
+    , theGreatEscape
+
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -177,3 +182,14 @@ thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
 
 kangsWrath :: CardDef
 kangsWrath = mainScheme "11013" "Kang's Wrath" Kang
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+theMissingMilano :: CardDef
+theMissingMilano = mainScheme "16082" "The Missing Milano" EscapeTheMuseum
+
+lostInTheMuseum :: CardDef
+lostInTheMuseum = mainScheme "16083" "Lost in the Museum" EscapeTheMuseum
+
+theGreatEscape :: CardDef
+theGreatEscape = mainScheme "16084" "The Great Escape" EscapeTheMuseum

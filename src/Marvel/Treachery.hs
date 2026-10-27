@@ -177,6 +177,10 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard specialDelivery
   , SomeTreacheryCard onTheHunt
   , SomeTreacheryCard deadToRights
+
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , SomeTreacheryCard iHaveYouNow
+  , SomeTreacheryCard impossibleGeometry
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

@@ -81,6 +81,8 @@ modularSets =
   , "ship_command"
   , "power_stone"
   , "badoon_headhunter"
+  -- Escape the Museum
+  , "escape_the_museum"
   ]
 
 encounterImplemented :: PackCard -> Bool

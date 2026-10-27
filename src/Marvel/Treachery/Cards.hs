@@ -169,6 +169,10 @@ allTreacheries = fromList $ map
   -- Badoon Headhunter
   , onTheHunt
   , deadToRights
+
+  -- The Galaxy's Most Wanted: Escape the Museum
+  , iHaveYouNow
+  , impossibleGeometry
   ]
 
 treachery
@@ -643,3 +647,11 @@ onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {
 
 deadToRights :: CardDef
 deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+iHaveYouNow :: CardDef
+iHaveYouNow = treachery "16086" "\"I Have You Now!\"" [Star, Boost] EscapeTheMuseum 3
+
+impossibleGeometry :: CardDef
+impossibleGeometry = (treachery "16087" "Impossible Geometry" [Boost] EscapeTheMuseum 3) {cdKeywords = singleton (Keyword.Incite 1)}

@@ -32,6 +32,7 @@ import Marvel.Matchers (IdentityMatcher (FirstPlayer))
 import Marvel.Query (selectJust)
 import Marvel.Card (Card (EncounterCard))
 import Marvel.Id (MainSchemeId)
+import Marvel.Name (Name (..))
 
 instance FromJSON Scenario where
   parseJSON = withObject "Scenario" $ \o -> do
@@ -75,6 +76,9 @@ allScenarios = fromList $ map
     -- The Once and Future Kang
     , SomeScenarioCard kangScenario
 
+    -- The Galaxy's Most Wanted: Escape the Museum
+    , SomeScenarioCard escapeTheMuseumScenario
+
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -110,6 +114,9 @@ recommendedModulars =
 
     -- The Once and Future Kang
     , ("11001", [EncounterSet.Temporal])
+
+    -- The Galaxy's Most Wanted: Escape the Museum
+    , ("16080a", [EncounterSet.MenagerieMedley])
 
     ]
 
@@ -433,3 +440,37 @@ joinAnotherArea aid = do
             cardSpecific GameRef "kangAllJoined" ()
         | (area, target) <- zip choices targets
         ]
+
+-- The Galaxy's Most Wanted: Escape the Museum
+
+-- | Escape the Museum (TGMW rulebook pp.11-12): Collector (A1), or (B1) for expert play;
+-- the Escape the Museum, Galactic Artifacts and Ship Command sets, with Menagerie Medley
+-- its modular set. The Missing Milano's setup sets the Ship Command set aside.
+newtype EscapeTheMuseumScenario = EscapeTheMuseumScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage EscapeTheMuseumScenario where
+  runMessage msg (EscapeTheMuseumScenario a) = EscapeTheMuseumScenario <$> runMessage msg a
+
+escapeTheMuseumScenario :: ScenarioCard EscapeTheMuseumScenario
+escapeTheMuseumScenario =
+  scenario
+    EscapeTheMuseumScenario
+    "16080a"
+    ("16080a", "16081a")
+    ["16082", "16083", "16084"]
+    [EncounterSet.EscapeTheMuseum, EncounterSet.GalacticArtifacts, EncounterSet.ShipCommand]
+
+-- | For the campaign log (Escape the Museum's Victory): the titles of the Galactic
+-- Artifacts side schemes in the victory display.
+galacticArtifactsInVictoryDisplay :: (HasGame m) => m [Text]
+galacticArtifactsInVictoryDisplay = do
+  cards <- getVictoryDisplay
+  pure
+    [ title (cdName d)
+    | c <- cards
+    , let d = getCardDef c
+    , cdCardType d == SideSchemeType
+    , cdEncounterSet d == Just EncounterSet.GalacticArtifacts
+    ]
