@@ -133,3 +133,6 @@ import Marvel.Treachery.Treacheries.PlanetaryInvasion as X
 -- The Galaxy's Most Wanted
 import Marvel.Treachery.Treacheries.ShipCommand as X
 import Marvel.Treachery.Treacheries.BadoonHeadhunter as X
+
+-- Ronan the Accuser
+import Marvel.Treachery.Treacheries.Ronan as X

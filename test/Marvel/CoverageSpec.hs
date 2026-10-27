@@ -81,6 +81,9 @@ modularSets =
   , "ship_command"
   , "power_stone"
   , "badoon_headhunter"
+  -- Ronan the Accuser
+  , "ronan"
+  , "kree_militant"
   ]
 
 encounterImplemented :: PackCard -> Bool

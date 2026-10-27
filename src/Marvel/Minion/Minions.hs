@@ -102,3 +102,6 @@ import Marvel.Minion.Minions.BlackjackOHare as X
 
 -- The Galaxy's Most Wanted
 import Marvel.Minion.Minions.BadoonHeadhunter as X
+
+-- Kree Militants
+import Marvel.Minion.Minions.KreeMilitants as X

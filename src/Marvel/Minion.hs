@@ -142,6 +142,10 @@ allMinions =
       -- The Galaxy's Most Wanted
       , SomeMinionCard badoonHeadhunter
       , SomeMinionCard headhuntersHenchman
+      -- Kree Militants
+      , SomeMinionCard kreeCommando
+      , SomeMinionCard kreeLieutenant
+      , SomeMinionCard kreePrivate
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -172,6 +172,7 @@ library
       Marvel.Attachment.Attachments.RammingSpeed
       Marvel.Attachment.Attachments.RedSkullsLuger
       Marvel.Attachment.Attachments.RedSkullsRightHook
+      Marvel.Attachment.Attachments.Ronan
       Marvel.Attachment.Attachments.SizeIncrease
       Marvel.Attachment.Attachments.SolidSoundBody
       Marvel.Attachment.Attachments.SonicConverter
@@ -220,6 +221,7 @@ library
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
       Marvel.Environment.Environments.CriminalEnterprise
+      Marvel.Environment.Environments.KreeCommandShip
       Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
       Marvel.Event
@@ -460,6 +462,7 @@ library
       Marvel.MainScheme.MainSchemes.MutagenCloud
       Marvel.MainScheme.MainSchemes.NewWorldHydra
       Marvel.MainScheme.MainSchemes.NoneShallPass
+      Marvel.MainScheme.MainSchemes.Ronan
       Marvel.MainScheme.MainSchemes.SecretRendezvous
       Marvel.MainScheme.MainSchemes.TheBreakIn
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
@@ -531,6 +534,7 @@ library
       Marvel.Minion.Minions.HydraSoldier
       Marvel.Minion.Minions.KangMasterOfTime
       Marvel.Minion.Minions.Killmonger
+      Marvel.Minion.Minions.KreeMilitants
       Marvel.Minion.Minions.Loki
       Marvel.Minion.Minions.Luminous
       Marvel.Minion.Minions.Macrobots
@@ -671,6 +675,7 @@ library
       Marvel.SideScheme.SideSchemes.PowerDrain
       Marvel.SideScheme.SideSchemes.PrisonCamps
       Marvel.SideScheme.SideSchemes.Rampage
+      Marvel.SideScheme.SideSchemes.Ronan
       Marvel.SideScheme.SideSchemes.RunningInterference
       Marvel.SideScheme.SideSchemes.SiblingRivalry
       Marvel.SideScheme.SideSchemes.SuperAbsorbingPower
@@ -818,6 +823,7 @@ library
       Marvel.Treachery.Treacheries.RegenerativeHealing
       Marvel.Treachery.Treacheries.RepairSequence
       Marvel.Treachery.Treacheries.RitualCombat
+      Marvel.Treachery.Treacheries.Ronan
       Marvel.Treachery.Treacheries.ShadowOfThePast
       Marvel.Treachery.Treacheries.ShipCommand
       Marvel.Treachery.Treacheries.ShockTherapy
@@ -985,6 +991,7 @@ library
       Marvel.Villain.Villains.Piledriver
       Marvel.Villain.Villains.RedSkull
       Marvel.Villain.Villains.Rhino
+      Marvel.Villain.Villains.Ronan
       Marvel.Villain.Villains.Taskmaster
       Marvel.Villain.Villains.Thunderball
       Marvel.Villain.Villains.Ultron
@@ -1183,6 +1190,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.RedSkullSpec
       Marvel.Encounter.RiseOfRedSkullSpec
       Marvel.Encounter.RocketRaccoonNemesisSpec
+      Marvel.Encounter.RonanSpec
       Marvel.Encounter.ScarletWitchNemesisSpec
       Marvel.Encounter.StarLordNemesisSpec
       Marvel.Encounter.TaskmasterSpec

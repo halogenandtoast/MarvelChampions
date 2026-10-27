@@ -33,6 +33,8 @@ allEnvironments = fromList $ map (toFst toCardCode)
 
   -- The Galaxy's Most Wanted: Ship Command
   , rogueVessel
+  -- Ronan the Accuser
+  , kreeCommandShip
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -111,4 +113,17 @@ rogueVessel =
     , cdEncounterSet = Just ShipCommand
     , cdEncounterSetQuantity = Just 1
     , cdBoostIcons = [Boost, Boost]
+    }
+
+-- Ronan the Accuser
+
+kreeCommandShip :: CardDef
+kreeCommandShip =
+  ultronDrones
+    { cdCardCode = "16108"
+    , cdName = "Kree Command Ship"
+    , cdTraits = fromList [Aerial, Vehicle]
+    , cdUnique = True
+    , cdEncounterSet = Just Ronan
+    , cdEncounterSetQuantity = Just 1
     }

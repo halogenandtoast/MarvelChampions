@@ -116,6 +116,10 @@ allAttachments =
 
       -- The Galaxy's Most Wanted
       , SomeAttachmentCard powerStone
+      -- Ronan the Accuser
+      , SomeAttachmentCard universalWeapon
+      , SomeAttachmentCard fanaticism
+      , SomeAttachmentCard kreeCombatArmor
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

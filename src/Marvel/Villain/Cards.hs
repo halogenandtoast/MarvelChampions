@@ -83,6 +83,10 @@ allVillainCards =
   , kangScarletCenturionExpert
   , kang3Expert
 
+  -- Ronan the Accuser
+  , ronan1
+  , ronan2
+  , ronan3
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -298,3 +302,14 @@ bulldozerA = wreckingCrewVillain "07046" "Bulldozer" Bulldozer
 
 bulldozerB :: CardDef
 bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
+
+-- Ronan the Accuser
+
+ronan1 :: CardDef
+ronan1 = (villain "16103" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+
+ronan2 :: CardDef
+ronan2 = (villain "16104" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+
+ronan3 :: CardDef
+ronan3 = (villain "16105" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = fromList [Retaliate 1, Toughness]}

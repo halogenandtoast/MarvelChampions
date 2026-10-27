@@ -133,6 +133,11 @@ allMinions =
       -- The Galaxy's Most Wanted: Badoon Headhunter
       , badoonHeadhunter
       , headhuntersHenchman
+
+      -- Kree Militants
+      , kreeCommando
+      , kreeLieutenant
+      , kreePrivate
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -656,3 +661,14 @@ badoonHeadhunter = (minion "16183" "Badoon Headhunter" [Badoon] [Star] BadoonHea
 
 headhuntersHenchman :: CardDef
 headhuntersHenchman = (minion "16186" "Headhunter's Henchman" [Badoon] [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Patrol]}
+
+-- Kree Militants
+
+kreeCommando :: CardDef
+kreeCommando = (minion "16132" "Kree Commando" [Kree, Soldier] [Boost, Boost, Star] KreeMilitants 3) {cdKeywords = singleton Patrol}
+
+kreeLieutenant :: CardDef
+kreeLieutenant = (minion "16133" "Kree Lieutenant" [Kree, Soldier] [Star] KreeMilitants 2) {cdKeywords = fromList [Guard, Stalwart]}
+
+kreePrivate :: CardDef
+kreePrivate = (minion "16134" "Kree Private" [Kree, Soldier] [Boost, Star] KreeMilitants 3) {cdKeywords = singleton Quickstrike}

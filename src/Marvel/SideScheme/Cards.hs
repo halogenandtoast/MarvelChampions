@@ -122,6 +122,10 @@ allSideSchemes = fromList $ map
   , cannonade
   -- Badoon Headhunter
   , fugitiveRecovery
+  -- Ronan the Accuser
+  , cutThePower
+  , pincerManeuver
+  , superiorTactics
   ]
 
 sideScheme
@@ -484,3 +488,16 @@ cannonade = (sideScheme "16144" "Cannonade" [Boost, Boost] ShipCommand 1) {cdKey
 
 fugitiveRecovery :: CardDef
 fugitiveRecovery = (sideScheme "16187" "Fugitive Recovery" [Boost, Boost, Boost] BadoonHeadhunter 1) {cdKeywords = fromList [Surge, Hinder (PerPlayer 3)]}
+
+-- Ronan the Accuser
+
+-- | A crisis icon.
+cutThePower :: CardDef
+cutThePower = sideScheme "16111" "Cut the Power" [Star] Ronan 1
+
+-- | Hinder 2 per player, two acceleration icons.
+pincerManeuver :: CardDef
+pincerManeuver = (sideScheme "16112" "Pincer Maneuver" [Boost, Boost, Boost] Ronan 2) {cdKeywords = singleton (Hinder (PerPlayer 2)), cdAcceleration = 2}
+
+superiorTactics :: CardDef
+superiorTactics = sideScheme "16113" "Superior Tactics" [Boost, Boost] Ronan 1

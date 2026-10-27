@@ -127,6 +127,10 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted
   , SomeSideSchemeCard cannonade
   , SomeSideSchemeCard fugitiveRecovery
+  -- Ronan the Accuser
+  , SomeSideSchemeCard cutThePower
+  , SomeSideSchemeCard pincerManeuver
+  , SomeSideSchemeCard superiorTactics
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

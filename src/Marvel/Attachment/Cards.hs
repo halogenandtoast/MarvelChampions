@@ -108,6 +108,11 @@ allAttachments =
 
       -- The Galaxy's Most Wanted: Power Stone
       , powerStone
+      -- Ronan the Accuser
+      , universalWeapon
+      , fanaticism
+      -- Kree Militants
+      , kreeCombatArmor
       ]
 
 attachment ::
@@ -379,3 +384,19 @@ blackjacksBazooka = attachment "16056" "Blackjack's Bazooka" [Tech, Weapon] [Boo
 -- | Setup. Attach to the villain. Permanent.
 powerStone :: CardDef
 powerStone = (unique $ attachment "16149" "Power Stone" [InfinityStone] [] PowerStone 1) {cdKeywords = fromList [Setup, Permanent]}
+
+-- Ronan the Accuser
+
+-- | Attach to Ronan the Accuser.
+universalWeapon :: CardDef
+universalWeapon = unique $ attachment "16109" "Universal Weapon" [Weapon] [Star] Ronan 1
+
+-- | Surge. Attach to Ronan the Accuser. +1 ATK.
+fanaticism :: CardDef
+fanaticism = (attachment "16110" "Fanaticism" [Condition] [Boost, Boost] Ronan 2) {cdKeywords = singleton Surge}
+
+-- Kree Militants
+
+-- | Attach to the enemy with the highest ATK.
+kreeCombatArmor :: CardDef
+kreeCombatArmor = attachment "16131" "Kree Combat Armor" [Armor] [Boost, Boost] KreeMilitants 1

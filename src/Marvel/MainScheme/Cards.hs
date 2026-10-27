@@ -53,6 +53,9 @@ allMainSchemes =
     , thePresentFutureWar
     , kangsWrath
 
+    -- Ronan the Accuser
+    , interceptionImminent
+    , takeWhatIsMine
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -177,3 +180,11 @@ thePresentFutureWar = mainScheme "11012" "The Present Future War" Kang
 
 kangsWrath :: CardDef
 kangsWrath = mainScheme "11013" "Kang's Wrath" Kang
+
+-- Ronan the Accuser
+
+interceptionImminent :: CardDef
+interceptionImminent = mainScheme "16106" "Interception Imminent" Ronan
+
+takeWhatIsMine :: CardDef
+takeWhatIsMine = mainScheme "16107" "\"Take What Is Mine\"" Ronan

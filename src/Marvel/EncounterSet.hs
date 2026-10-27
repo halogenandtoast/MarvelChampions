@@ -127,6 +127,8 @@ modularSets =
   , BadoonHeadhunter
   , PowerStone
   , ShipCommand
+  -- Ronan the Accuser
+  , KreeMilitants
   ]
 
 getNemesisSet :: CardCode -> EncounterSet

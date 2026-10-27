@@ -63,6 +63,9 @@ allMainSchemes = fromList $ map
   , SomeMainSchemeCard thePresentFutureWar
   , SomeMainSchemeCard kangsWrath
 
+  -- Ronan the Accuser
+  , SomeMainSchemeCard interceptionImminent
+  , SomeMainSchemeCard takeWhatIsMine
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

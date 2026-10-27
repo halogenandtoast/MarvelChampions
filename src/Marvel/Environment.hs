@@ -11,6 +11,7 @@ import Marvel.Environment.Types
 import Marvel.Environment.Environments.AbsorbingMan
 import Marvel.Environment.Environments.CriminalEnterprise
 import Marvel.Environment.Environments.RogueVessel
+import Marvel.Environment.Environments.KreeCommandShip
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -47,6 +48,8 @@ allEnvironments =
 
     -- The Galaxy's Most Wanted
     , SomeEnvironmentCard rogueVessel
+    -- Ronan the Accuser
+    , SomeEnvironmentCard kreeCommandShip
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

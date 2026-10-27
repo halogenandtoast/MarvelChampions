@@ -177,6 +177,10 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard specialDelivery
   , SomeTreacheryCard onTheHunt
   , SomeTreacheryCard deadToRights
+  -- Ronan the Accuser
+  , SomeTreacheryCard singleMindedFury
+  , SomeTreacheryCard kreePhysiology
+  , SomeTreacheryCard youStandAccused
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

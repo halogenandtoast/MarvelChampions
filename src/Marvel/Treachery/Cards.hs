@@ -169,6 +169,10 @@ allTreacheries = fromList $ map
   -- Badoon Headhunter
   , onTheHunt
   , deadToRights
+  -- Ronan the Accuser
+  , singleMindedFury
+  , kreePhysiology
+  , youStandAccused
   ]
 
 treachery
@@ -643,3 +647,14 @@ onTheHunt = (treachery "16184" "On the Hunt" [Boost, Star] BadoonHeadhunter 1) {
 
 deadToRights :: CardDef
 deadToRights = (treachery "16185" "Dead to Rights" [Boost, Star] BadoonHeadhunter 1) {cdKeywords = singleton Keyword.Surge}
+
+-- Ronan the Accuser
+
+singleMindedFury :: CardDef
+singleMindedFury = treachery "16114" "Single-Minded Fury" [Star] Ronan 2
+
+kreePhysiology :: CardDef
+kreePhysiology = (treachery "16115" "Kree Physiology" [Boost] Ronan 2) {cdKeywords = singleton Keyword.Surge}
+
+youStandAccused :: CardDef
+youStandAccused = treachery "16116" "\"You Stand Accused!\"" [Boost, Star] Ronan 3

@@ -37,3 +37,6 @@ import Marvel.MainScheme.MainSchemes.KangsArrival as X
 import Marvel.MainScheme.MainSchemes.TheMasterOfTime as X
 import Marvel.MainScheme.MainSchemes.KangsStageThree as X
 import Marvel.MainScheme.MainSchemes.KangsWrath as X
+
+-- Ronan the Accuser
+import Marvel.MainScheme.MainSchemes.Ronan as X

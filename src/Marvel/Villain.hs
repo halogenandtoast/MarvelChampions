@@ -36,6 +36,9 @@ import Marvel.Villain.Villains.Taskmaster
 -- The Once and Future Kang
 import Marvel.Villain.Villains.Kang
 
+-- Ronan the Accuser
+import Marvel.Villain.Villains.Ronan
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -130,4 +133,8 @@ allVillains = fromList $ map
   , SomeVillainCard kangScarletCenturionExpert
   , SomeVillainCard kang3Expert
 
+  -- Ronan the Accuser
+  , SomeVillainCard ronan1
+  , SomeVillainCard ronan2
+  , SomeVillainCard ronan3
   ]
