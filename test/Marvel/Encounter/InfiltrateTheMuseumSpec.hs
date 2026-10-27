@@ -509,6 +509,26 @@ biogramImage = describe "Biogram Image" do
       liftIO $ ids `shouldBe` [CardId (unAttachmentId (Attachment.attachmentId image))]
       attachmentsWith Attachments.biogramImage `shouldReturn` []
 
+  it "a tough Collector's tough status card prevents the damage first: the image stays, no threat" do
+    tg <- museum ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      emptyCollection
+      _ <- revealNow you Attachments.biogramImage
+      vid <- villainIdNow
+      resolve [VillainMessage vid VillainBecomeTough]
+      changeForm you
+      before <- mainSchemeThreatNow
+      choose "attack" (isHeroAttack you)
+      choose "Collector" (isTargetChoice (VillainRef vid))
+      offers isAnyAbility `shouldReturn` False
+      pass
+      villainDamageNow `shouldReturn` 0
+      Villain.villainTough . toAttrs <$> getVillain `shouldReturn` False
+      mainSchemeThreatNow `shouldReturn` before
+      collectionNow `shouldReturn` []
+      length <$> attachmentsWith Attachments.biogramImage `shouldReturn` 1
+
   it "its boost reveals it after the activation" do
     tg <- museum ["spider-man"]
     let you = player1 tg
