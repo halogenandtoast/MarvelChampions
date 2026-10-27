@@ -33,7 +33,7 @@ RR v1.8 Appendix IV, Grasping Tendrils (#3): cancelling an attack with it counts
 - Grasping Tendrils cancels the villain's attack as it is initiated, before boost cards are dealt. The hero is the defender of that attack (RR FAQ), so "after you defend" responses can trigger; no damage is dealt.
 - Restricted limits stack: 2, +1 restricted upgrade from Venom / Flash Thompson, +1 restricted Weapon upgrade from Side Holster (for the player who controls it). A non-Weapon restricted card can't use the Side Holster's slot. Over the limit, the player chooses restricted cards to discard until what remains fits.
 
-## Encounter card values (MarvelCDB)
+## Encounter card values (MarvelCDB, checked against the printed cards)
 
 - Klyntar Frenzy: starting threat 2 per player, 1 hazard icon, 3 boost icons.
 - Struggle for Control: 2 boost icons. Enraged Symbiote: a [star] boost icon only.
