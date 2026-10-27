@@ -11,6 +11,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Damage
+import Marvel.EncounterSet (EncounterSet (TheMarket))
 import Marvel.GameValue.Types
 import Marvel.Matchers
 import Marvel.Name
@@ -217,6 +218,28 @@ allEvents = fromList $ concatMap
   , reload
   , schadenfreude
   , lookingForTrouble
+
+  -- The Galaxy's Most Wanted: The Market
+  , brainstorm
+  , byAnyMeans
+  , contingencyPlan
+  , inDefiance
+  , calculateTheOdds
+  , creativeSolution
+  , grapple
+  , wingIt
+  , closeCall
+  , defyDanger
+  , inHarmsWay
+  , takeTheFightToThem
+  , ardentResolve
+  , onrush
+  , safeguard
+  , sureGamble
+  , grandStrategy
+  , powerUnleashed
+  , triedAndTrue
+  , tripleThreat
   ]
 
 event
@@ -1358,3 +1381,109 @@ lookingForTrouble =
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     }
+
+-- The Galaxy's Most Wanted: The Market (unit costs in Marvel.Campaign.marketUnitCosts)
+
+brainstorm :: CardDef
+brainstorm =
+  (marketEvent "16150" "Brainstorm" 0 HeroAction [Thwart])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+byAnyMeans :: CardDef
+byAnyMeans =
+  (marketEvent "16151" "By Any Means" 0 HeroAction [Attack])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttackVillain
+    }
+
+contingencyPlan :: CardDef
+contingencyPlan =
+  (marketEvent "16152" "Contingency Plan" 0 HeroAction [Attack])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+inDefiance :: CardDef
+inDefiance =
+  (marketEvent "16153" "In Defiance" 0 HeroInterrupt [])
+    { cdResponseWindow = Just (WouldTakeDamage AnyIdentity FromAttack AnyValue)
+    }
+
+calculateTheOdds :: CardDef
+calculateTheOdds = marketEvent "16154" "Calculate the Odds" 0 HeroAction []
+
+creativeSolution :: CardDef
+creativeSolution = marketEvent "16155" "Creative Solution" 0 HeroAction []
+
+grapple :: CardDef
+grapple = marketEvent "16156" "Grapple" 0 HeroAction []
+
+wingIt :: CardDef
+wingIt = marketEvent "16157" "Wing It" 0 HeroAction []
+
+closeCall :: CardDef
+closeCall =
+  (marketEvent "16158" "Close Call" 0 HeroInterrupt [])
+    { cdResponseWindow = Just (BoostCardFlipped When AnyEnemy)
+    }
+
+defyDanger :: CardDef
+defyDanger =
+  (marketEvent "16159" "Defy Danger" 1 HeroAction [Attack])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+inHarmsWay :: CardDef
+inHarmsWay =
+  (marketEvent "16160" "In Harm's Way" 1 HeroAction [Thwart])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+takeTheFightToThem :: CardDef
+takeTheFightToThem = marketEvent "16161" "Take the Fight to Them" 0 HeroAction []
+
+ardentResolve :: CardDef
+ardentResolve = marketEvent "16166" "Ardent Resolve" 0 HeroAction []
+
+onrush :: CardDef
+onrush =
+  (marketEvent "16167" "Onrush" 0 HeroInterrupt [])
+    { cdResponseWindow = Just (EncounterCardRevealedFromDeck When AnyEncounterCard)
+    }
+
+safeguard :: CardDef
+safeguard = marketEvent "16168" "Safeguard" 0 HeroAction []
+
+sureGamble :: CardDef
+sureGamble = marketEvent "16169" "Sure Gamble" 0 HeroAction []
+
+grandStrategy :: CardDef
+grandStrategy = marketEvent "16174" "Grand Strategy" 0 HeroAction []
+
+powerUnleashed :: CardDef
+powerUnleashed = marketEvent "16175" "Power Unleashed" 0 HeroAction []
+
+triedAndTrue :: CardDef
+triedAndTrue = marketEvent "16176" "Tried and True" 0 HeroAction []
+
+tripleThreat :: CardDef
+tripleThreat =
+  (marketEvent "16177" "Triple Threat" 0 HeroAction [])
+    { -- readying is its only effect: an exhausted character to ready (RR Target); enemies
+      -- never exhaust, so only friendly ones can be
+      cdCriteria =
+        AnyCriteria
+          [ CharacterExists (IdentityCharacters ExhaustedIdentity)
+          , AllyExists ExhaustedAlly
+          ]
+    }
+
+-- | A card of The Market: of no aspect and not basic, bought with units in The Galaxy's
+-- Most Wanted campaign (rulebook p.5); its deckbuilding classification is its set.
+marketEvent :: CardCode -> Name -> Int -> AbilityType -> [Trait] -> CardDef
+marketEvent code name cost aType traits =
+  (baseEvent code name cost aType traits [Wild] Nothing) {cdEncounterSet = Just TheMarket}

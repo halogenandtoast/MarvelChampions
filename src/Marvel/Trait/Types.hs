@@ -82,5 +82,8 @@ data Trait
   -- The Galaxy's Most Wanted
   | Badoon
   | InfinityStone
+  -- The Galaxy's Most Wanted: the campaign's Market cards, Nebula's Technique attachments
+  | MilanoMod
+  | Technique
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

@@ -179,6 +179,16 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard followThrough
   , SomeUpgradeCard handCannon
   , SomeUpgradeCard boosterBoots
+
+  -- The Galaxy's Most Wanted: The Market
+  , SomeUpgradeCard armorPlating
+  , SomeUpgradeCard heavyCannon
+  , SomeUpgradeCard hyperThrusters
+  , SomeUpgradeCard reactorCore
+  , SomeUpgradeCard cargoHold
+  , SomeUpgradeCard mountedLaser
+  , SomeUpgradeCard navigationColumn
+  , SomeUpgradeCard targetingScreen
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

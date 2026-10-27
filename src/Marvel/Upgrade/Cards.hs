@@ -9,6 +9,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Data.HashSet (singleton)
 import Marvel.Criteria
+import Marvel.EncounterSet (EncounterSet (TheMarket))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Name
@@ -173,6 +174,16 @@ allUpgrades = fromList $ concatMap
   , followThrough
   , handCannon
   , boosterBoots
+
+  -- The Galaxy's Most Wanted: The Market
+  , armorPlating
+  , heavyCannon
+  , hyperThrusters
+  , reactorCore
+  , cargoHold
+  , mountedLaser
+  , navigationColumn
+  , targetingScreen
   ]
 
 upgrade
@@ -759,3 +770,34 @@ boosterBoots =
     (basicUpgrade "16052" "Booster Boots" 1 [Armor, Tech] [Mental])
       { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
       }
+
+-- The Galaxy's Most Wanted: The Market (unit costs in Marvel.Campaign.marketUnitCosts)
+
+armorPlating :: CardDef
+armorPlating = marketUpgrade "16162" "Armor Plating" 0 [Armor, MilanoMod]
+
+heavyCannon :: CardDef
+heavyCannon = marketUpgrade "16163" "Heavy Cannon" 0 [MilanoMod, Weapon]
+
+hyperThrusters :: CardDef
+hyperThrusters = marketUpgrade "16164" "Hyper Thrusters" 1 [MilanoMod, Tech]
+
+reactorCore :: CardDef
+reactorCore = marketUpgrade "16165" "Reactor Core" 1 [MilanoMod, Tech]
+
+cargoHold :: CardDef
+cargoHold = marketUpgrade "16170" "Cargo Hold" 0 [Location, MilanoMod]
+
+mountedLaser :: CardDef
+mountedLaser = marketUpgrade "16171" "Mounted Laser" 1 [MilanoMod, Weapon]
+
+navigationColumn :: CardDef
+navigationColumn = marketUpgrade "16172" "Navigation Column" 2 [MilanoMod, Tech]
+
+targetingScreen :: CardDef
+targetingScreen = marketUpgrade "16173" "Targeting Screen" 2 [MilanoMod, Tech]
+
+-- | A card of The Market, as 'Marvel.Event.Cards.marketEvent'.
+marketUpgrade :: CardCode -> Name -> Int -> [Trait] -> CardDef
+marketUpgrade code name cost traits =
+  (baseUpgrade code name cost traits [Wild] Nothing) {cdEncounterSet = Just TheMarket}

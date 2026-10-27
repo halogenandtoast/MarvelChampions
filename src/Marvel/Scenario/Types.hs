@@ -234,12 +234,14 @@ deckMessage = \case
   DrawAndRevealEncounterCard ident -> Just (Just ident)
   SearchForAndRevealEncounterCard ident _ -> Just (Just ident)
   SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
+  SearchForAndDealEncounterCard ident _ -> Just (Just ident)
   SearchForAndRevealScheme _ -> Just Nothing
   DealBoost _ -> Just Nothing
   DiscardTopOfEncounterDeck _ _ -> Just Nothing
   ShuffleEncounterDeck -> Just Nothing
   ShuffleIntoEncounterDeck _ -> Just Nothing
   PutOnTopOfEncounterDeck _ -> Just Nothing
+  PutOnBottomOfEncounterDeck _ -> Just Nothing
   LookAtTopOfEncounterDeck _ _ -> Just Nothing
   DiscardUntil FromEncounterDeck _ _ -> Just Nothing
   _ -> Nothing
@@ -344,6 +346,16 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
+    -- an expert Setup of The Galaxy's Most Wanted's campaign has encounter cards discarded
+    -- until one: for a player, a minion put into play engaged with them or an attachment
+    -- revealed; for the villain, an attachment attached to him
+    WithDiscardedMatch (IdentityRef ident) FromEncounterDeck (EncounterCard card)
+      | cdCardType (getCardDef card) == MinionType -> attrs <$ putEncounterCardIntoPlay ident card
+      | otherwise -> attrs <$ revealEncounterCard ident card
+    WithDiscardedMatch (VillainRef vid) FromEncounterDeck (EncounterCard card) -> attrs <$ attachEncounterCard card vid
+    DealFoundEncounterCard ident card -> do
+      identityStep ident (DealtEncounterCard card)
+      pure $ leaves card attrs
     AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getAllPlayers
@@ -435,6 +447,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     SetAside cards -> pure $ foldr leaves attrs [ec | EncounterCard ec <- cards] & setAsideCardsL <>~ cards
     RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
+    PutOnBottomOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (<> cards) . filter (`notElem` cards)
     LookAtTopOfEncounterDeck n target -> do
       searchFoundCards target $ EncounterCard <$> take (fromIntegral n) scenarioEncounterDeck
       pure attrs
@@ -461,6 +474,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       search ident (CardIs cardDef) (revealEncounterCard ident)
     SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealEncounterCard ident)
     SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (putEncounterCardIntoPlay ident)
+    SearchForAndDealEncounterCard ident matcher -> search ident matcher (dealFoundEncounterCard ident)
     _ -> pure attrs
  where
   -- the searching player chooses one of the cards found, then the deck is shuffled

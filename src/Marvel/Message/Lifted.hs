@@ -156,6 +156,10 @@ dealDamageToEach :: (ReverseQueue m, IsEnemy enemy, IsRef source) => [enemy] -> 
 dealDamageToEach enemies source damage =
   pushAll . simultaneousDamage =<< traverse (\enemy -> capture $ dealDamage enemy source damage) enemies
 
+-- | Damage dealt to each of the enemies, each its own amount, as one effect ('simultaneousDamage').
+dealDamagesToEach :: (ReverseQueue m, IsEnemy enemy, IsRef source) => source -> [(enemy, Damage)] -> m ()
+dealDamagesToEach source dealt = pushAll . simultaneousDamage =<< traverse (\(enemy, damage) -> capture $ dealDamage enemy source damage) dealt
+
 -- | Deal the damage, then what the body does: before anything that answers the damage,
 -- as the window after the attack or retaliate.
 dealDamageThen :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m () -> m ()
@@ -698,6 +702,10 @@ removeFromGame = push . RemoveFromGame . toTarget
 drawToPrintedHandSize :: (ReverseQueue m) => IdentityId -> m ()
 drawToPrintedHandSize ident = push $ IdentityMessage ident DrawToPrintedHandSize
 
+-- | Draw up to the hand size as modified, as at the end of the player phase.
+drawToHandSize :: (ReverseQueue m) => IdentityId -> m ()
+drawToHandSize ident = push $ IdentityMessage ident DrawToHandLimit
+
 -- | The cards are shown to the player only while the body runs: "look at".
 lookingAt :: (ReverseQueue m) => IdentityId -> [Card] -> m () -> m ()
 lookingAt ident cards body = push (ShowCardsTo ident cards) >> body >> push (HideCardsFrom ident)
@@ -931,6 +939,15 @@ shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
 searchAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
 searchAndRevealEncounterCard ident = push . SearchForAndRevealEncounterCard ident
 
+-- | A card matching is found in the encounter deck or discard pile and dealt to the
+-- player facedown.
+searchAndDealEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
+searchAndDealEncounterCard ident = push . SearchForAndDealEncounterCard ident
+
+-- | The encounter card found is dealt to the player facedown, out of where it was.
+dealFoundEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
+dealFoundEncounterCard ident = push . DealFoundEncounterCard ident
+
 -- | A card matching is found in the encounter deck or discard pile and put into play.
 searchAndPutIntoPlayEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
 searchAndPutIntoPlayEncounterCard ident = push . SearchForAndPutIntoPlayEncounterCard ident
@@ -951,6 +968,10 @@ resolveObligation oid = push . ObligationMessage oid . ResolveObligation
 -- | The cards go on top of the encounter deck, the first on top.
 putOnTopOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
 putOnTopOfEncounterDeck = push . PutOnTopOfEncounterDeck
+
+-- | The cards go to the bottom of the encounter deck, the last given bottommost.
+putOnBottomOfEncounterDeck :: (ReverseQueue m) => [EncounterCard] -> m ()
+putOnBottomOfEncounterDeck = push . PutOnBottomOfEncounterDeck
 
 dealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 dealEncounterCard = push . DealEncounterCard

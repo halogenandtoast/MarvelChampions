@@ -220,6 +220,28 @@ allEvents = fromList $ map
   , SomeEventCard reload
   , SomeEventCard schadenfreude
   , SomeEventCard lookingForTrouble
+
+  -- The Galaxy's Most Wanted: The Market
+  , SomeEventCard brainstorm
+  , SomeEventCard byAnyMeans
+  , SomeEventCard contingencyPlan
+  , SomeEventCard inDefiance
+  , SomeEventCard calculateTheOdds
+  , SomeEventCard creativeSolution
+  , SomeEventCard grapple
+  , SomeEventCard wingIt
+  , SomeEventCard closeCall
+  , SomeEventCard defyDanger
+  , SomeEventCard inHarmsWay
+  , SomeEventCard takeTheFightToThem
+  , SomeEventCard ardentResolve
+  , SomeEventCard onrush
+  , SomeEventCard safeguard
+  , SomeEventCard sureGamble
+  , SomeEventCard grandStrategy
+  , SomeEventCard powerUnleashed
+  , SomeEventCard triedAndTrue
+  , SomeEventCard tripleThreat
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

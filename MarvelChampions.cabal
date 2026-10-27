@@ -188,6 +188,7 @@ library
       Marvel.Attack
       Marvel.Boost
       Marvel.Campaign
+      Marvel.Campaign.GalaxysMostWanted
       Marvel.Campaign.Steps
       Marvel.Card
       Marvel.Card.Builder
@@ -232,6 +233,7 @@ library
       Marvel.Event.Events.AllForOne
       Marvel.Event.Events.AlwaysBeRunning
       Marvel.Event.Events.AncestralKnowledge
+      Marvel.Event.Events.ArdentResolve
       Marvel.Event.Events.AssessTheSituation
       Marvel.Event.Events.AstralProjection
       Marvel.Event.Events.AthleticConditioning
@@ -241,17 +243,23 @@ library
       Marvel.Event.Events.BeatEmUp
       Marvel.Event.Events.BigHands
       Marvel.Event.Events.BlazeOfGlory
+      Marvel.Event.Events.Brainstorm
       Marvel.Event.Events.Browbeat
+      Marvel.Event.Events.ByAnyMeans
       Marvel.Event.Events.CableArrow
+      Marvel.Event.Events.CalculateTheOdds
       Marvel.Event.Events.CallForAid
       Marvel.Event.Events.ChaosMagic
       Marvel.Event.Events.ChaseThemDown
       Marvel.Event.Events.ClearTheArea
       Marvel.Event.Events.Clobber
+      Marvel.Event.Events.CloseCall
       Marvel.Event.Events.ConcussiveBlow
       Marvel.Event.Events.ContaminantImmunity
+      Marvel.Event.Events.ContingencyPlan
       Marvel.Event.Events.CounterPunch
       Marvel.Event.Events.CovertOps
+      Marvel.Event.Events.CreativeSolution
       Marvel.Event.Events.CrimsonBandsOfCyttorak
       Marvel.Event.Events.CrisisAverted
       Marvel.Event.Events.CrisisInterdiction
@@ -261,6 +269,7 @@ library
       Marvel.Event.Events.DaringEscape
       Marvel.Event.Events.DecisiveBlow
       Marvel.Event.Events.DefenderOfTheNineRealms
+      Marvel.Event.Events.DefyDanger
       Marvel.Event.Events.DesperateDefense
       Marvel.Event.Events.DiveBomb
       Marvel.Event.Events.DoubleTime
@@ -288,6 +297,8 @@ library
       Marvel.Event.Events.GetReady
       Marvel.Event.Events.GiantHelp
       Marvel.Event.Events.GiantStomp
+      Marvel.Event.Events.GrandStrategy
+      Marvel.Event.Events.Grapple
       Marvel.Event.Events.GreatResponsibility
       Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.GutsyMove
@@ -303,6 +314,8 @@ library
       Marvel.Event.Events.ImagesOfIkonn
       Marvel.Event.Events.Impede
       Marvel.Event.Events.Inconspicuous
+      Marvel.Event.Events.InDefiance
+      Marvel.Event.Events.InHarmsWay
       Marvel.Event.Events.InspiringPresence
       Marvel.Event.Events.IntoTheFray
       Marvel.Event.Events.Invulnerability
@@ -329,6 +342,7 @@ library
       Marvel.Event.Events.MysticalStudies
       Marvel.Event.Events.NeverBackDown
       Marvel.Event.Events.OneTwoPunch
+      Marvel.Event.Events.Onrush
       Marvel.Event.Events.OrderAndChaos
       Marvel.Event.Events.Perseverance
       Marvel.Event.Events.Pheromones
@@ -337,6 +351,7 @@ library
       Marvel.Event.Events.PinpointStrike
       Marvel.Event.Events.PivotalMoment
       Marvel.Event.Events.PlanOfAttack
+      Marvel.Event.Events.PowerUnleashed
       Marvel.Event.Events.PreemptiveStrike
       Marvel.Event.Events.PressTheAdvantage
       Marvel.Event.Events.ProtectiveWard
@@ -349,6 +364,7 @@ library
       Marvel.Event.Events.Resize
       Marvel.Event.Events.RootStomp
       Marvel.Event.Events.RunningInterference
+      Marvel.Event.Events.Safeguard
       Marvel.Event.Events.Schadenfreude
       Marvel.Event.Events.SecondWind
       Marvel.Event.Events.SelfPropelledGlide
@@ -368,15 +384,19 @@ library
       Marvel.Event.Events.StrengthInNumbers
       Marvel.Event.Events.SubOrbitalLeap
       Marvel.Event.Events.SupersonicPunch
+      Marvel.Event.Events.SureGamble
       Marvel.Event.Events.SurpriseAttack
       Marvel.Event.Events.SwarmTactics
       Marvel.Event.Events.SwiftRetribution
       Marvel.Event.Events.SwingingWebKick
       Marvel.Event.Events.Tackle
+      Marvel.Event.Events.TakeTheFightToThem
       Marvel.Event.Events.Teamwork
       Marvel.Event.Events.Thunderclap
       Marvel.Event.Events.ToeToToe
       Marvel.Event.Events.ToTheRescue
+      Marvel.Event.Events.TriedAndTrue
+      Marvel.Event.Events.TripleThreat
       Marvel.Event.Events.TrueGrit
       Marvel.Event.Events.TurnTheTide
       Marvel.Event.Events.UnitedWeStand
@@ -395,6 +415,7 @@ library
       Marvel.Event.Events.WeAreGroot
       Marvel.Event.Events.WiggleRoom
       Marvel.Event.Events.WindsOfWatoomb
+      Marvel.Event.Events.WingIt
       Marvel.Event.Events.YoullPayForThat
       Marvel.Event.Types
       Marvel.Exception
@@ -631,6 +652,7 @@ library
       Marvel.SideScheme.SideSchemes.Cannonade
       Marvel.SideScheme.SideSchemes.CapturedByHydra
       Marvel.SideScheme.SideSchemes.CensorThePast
+      Marvel.SideScheme.SideSchemes.Challenge
       Marvel.SideScheme.SideSchemes.ClearTheRoad
       Marvel.SideScheme.SideSchemes.CollapsingBridge
       Marvel.SideScheme.SideSchemes.CorneredStaff
@@ -858,6 +880,7 @@ library
       Marvel.Upgrade.Upgrades.AntMansHelmet
       Marvel.Upgrade.Upgrades.ArcReactor
       Marvel.Upgrade.Upgrades.ArmoredVest
+      Marvel.Upgrade.Upgrades.ArmorPlating
       Marvel.Upgrade.Upgrades.Attacrobatics
       Marvel.Upgrade.Upgrades.BatteryPack
       Marvel.Upgrade.Upgrades.BattleFury
@@ -870,6 +893,7 @@ library
       Marvel.Upgrade.Upgrades.CaptainAmericasHelmet
       Marvel.Upgrade.Upgrades.CaptainAmericasShield
       Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
+      Marvel.Upgrade.Upgrades.CargoHold
       Marvel.Upgrade.Upgrades.CivicDuty
       Marvel.Upgrade.Upgrades.CloakOfLevitation
       Marvel.Upgrade.Upgrades.CombatTraining
@@ -910,10 +934,12 @@ library
       Marvel.Upgrade.Upgrades.HardToIgnore
       Marvel.Upgrade.Upgrades.HawkeyesBow
       Marvel.Upgrade.Upgrades.HawkeyesQuiver
+      Marvel.Upgrade.Upgrades.HeavyCannon
       Marvel.Upgrade.Upgrades.HeroicIntuition
       Marvel.Upgrade.Upgrades.HonoraryAvenger
       Marvel.Upgrade.Upgrades.HydraCampaign
       Marvel.Upgrade.Upgrades.HyperPerception
+      Marvel.Upgrade.Upgrades.HyperThrusters
       Marvel.Upgrade.Upgrades.ImmovableObject
       Marvel.Upgrade.Upgrades.Indomitable
       Marvel.Upgrade.Upgrades.Inspired
@@ -930,6 +956,8 @@ library
       Marvel.Upgrade.Upgrades.MarkVHelmet
       Marvel.Upgrade.Upgrades.MartialProwess
       Marvel.Upgrade.Upgrades.Mjolnir
+      Marvel.Upgrade.Upgrades.MountedLaser
+      Marvel.Upgrade.Upgrades.NavigationColumn
       Marvel.Upgrade.Upgrades.NervesOfSteel
       Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.ParticleCannon
@@ -937,6 +965,7 @@ library
       Marvel.Upgrade.Upgrades.PowerGloves
       Marvel.Upgrade.Upgrades.PulseGrenade
       Marvel.Upgrade.Upgrades.RapidResponse
+      Marvel.Upgrade.Upgrades.ReactorCore
       Marvel.Upgrade.Upgrades.RedRoomTraining
       Marvel.Upgrade.Upgrades.ReinforcedSinew
       Marvel.Upgrade.Upgrades.ReinforcedSuit
@@ -957,6 +986,7 @@ library
       Marvel.Upgrade.Upgrades.SynthSuit
       Marvel.Upgrade.Upgrades.TacticalGenius
       Marvel.Upgrade.Upgrades.TargetAcquired
+      Marvel.Upgrade.Upgrades.TargetingScreen
       Marvel.Upgrade.Upgrades.Tenacity
       Marvel.Upgrade.Upgrades.TheEyeOfAgamotto
       Marvel.Upgrade.Upgrades.TheSorcererSupreme
@@ -1165,6 +1195,10 @@ test-suite MarvelChampions-test
       Marvel.Aspect.StarLordPackSpec
       Marvel.Aspect.ThorPackSpec
       Marvel.Aspect.WaspPackSpec
+      Marvel.Campaign.GalaxysMostWantedSpec
+      Marvel.Campaign.MarketCheapEventsSpec
+      Marvel.Campaign.MarketDearEventsSpec
+      Marvel.Campaign.MarketUpgradesSpec
       Marvel.CoverageSpec
       Marvel.Encounter.BlackWidowNemesisSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
