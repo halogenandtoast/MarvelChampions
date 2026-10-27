@@ -7,6 +7,7 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
+import Marvel.Keyword (Keyword (Hinder))
 import Marvel.Id hiding (SideSchemeId)
 import Marvel.Id as X (SideSchemeId)
 import Marvel.Matchers.Types (SideSchemeMatcher (SignatureSchemeOf), VillainMatcher (AnyVillain))
@@ -172,7 +173,8 @@ instance RunMessage (Attrs SideScheme) where
       case msg' of
         SideSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
-          pure $ attrs & threatL .~ n
+          hinder <- sum <$> traverse fromGameValue [x | Hinder x <- toList $ cdKeywords $ getCardDef attrs]
+          pure $ attrs & threatL .~ n + fromIntegral hinder
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
         SideSchemeThwarted _ _ | any (`elem` modifiers) [ThreatCannotBeRemoved, ThreatCannotBeRemovedByThwarting] -> pure attrs
         SideSchemeThreatRemoved _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs

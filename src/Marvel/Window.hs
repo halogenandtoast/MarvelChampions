@@ -249,6 +249,9 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing && cardMatch cardMatcher card ->
           identityMatches identityMatcher ident
     _ -> pure False
+  PlaysCardFromHand identityMatcher cardMatcher -> case windowType w of
+    PlayingCardFromHand ident card | cardMatch cardMatcher card -> identityMatches identityMatcher ident
+    _ -> pure False
   ResolvesAbility timing identityMatcher cardMatcher -> case windowType w of
     ResolvedAbility ident def
       | windowTiming w == timing && cardMatch cardMatcher def ->

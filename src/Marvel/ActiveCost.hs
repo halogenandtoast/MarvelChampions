@@ -115,6 +115,7 @@ payCostPart activeCost = go
           <> [targeting a (exhaust a >> paid (ExhaustedCharacterPayment $ AllyCharacter a)) | a <- allies]
     DiscardEncounterCardsUntilMinionCost ->
       discardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)
+    DealEncounterCardCost -> dealEncounterCard iid
     -- added to the resources as the card was played
     TargetPrintedCost -> pure ()
     DynamicResourceCost _ -> resourcePayment

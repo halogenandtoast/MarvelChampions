@@ -72,6 +72,9 @@ data WindowMatcher
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
     PlaysCard WindowTiming IdentityMatcher CardMatcher
+  | -- | "when you play a card from your hand": a player matching is about to pay for a
+    -- card matching, from their hand, that costs resources
+    PlaysCardFromHand IdentityMatcher CardMatcher
   | -- | a player matching resolves the ability of a card matching
     ResolvesAbility WindowTiming IdentityMatcher CardMatcher
   | MinionHasSchemed WindowTiming MinionMatcher
@@ -157,6 +160,8 @@ data WindowType
   | FlippedBoostCard EncounterCard EnemyId
   | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard
+  | -- | the player is about to pay for the card from their hand
+    PlayingCardFromHand IdentityId PlayerCard
   | -- | the player resolved the ability of a card with this def
     ResolvedAbility IdentityId CardDef
   | SchemedByMinion MinionId

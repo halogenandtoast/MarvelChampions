@@ -2,6 +2,8 @@ module Marvel.Keyword where
 
 import Marvel.Prelude
 
+import Marvel.GameValue.Types (GameValue)
+
 data Keyword
   = Guard
   | Toughness
@@ -13,6 +15,8 @@ data Keyword
   | Overkill
   | -- | on reveal, place this much threat on the main scheme
     Incite Natural
+  | -- | enters play with this much more threat (RR Hinder X)
+    Hinder GameValue
   | Piercing
   | Ranged
   | Villainous

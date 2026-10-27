@@ -38,6 +38,8 @@ data Cost
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
     DiscardEncounterCardsUntilMinionCost
+  | -- | "deal yourself 1 facedown encounter card"
+    DealEncounterCardCost
   | -- | the printed resource cost of the card chosen as the card's target
     TargetPrintedCost
   | -- | nothing more is due, but the payer may go on spending resources: "for each
@@ -68,6 +70,7 @@ costResources (ReturnUpgradeToHandCost _) = []
 costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
+costResources DealEncounterCardCost = []
 costResources TargetPrintedCost = []
 costResources MayOverpay = []
 costResources (DamageCost _) = []

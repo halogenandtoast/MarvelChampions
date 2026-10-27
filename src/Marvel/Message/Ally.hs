@@ -16,6 +16,8 @@ data AllyMessage
     -- in play to take it
     AllyAttackLands EnemyId Damage
   | AllyThwarted
+  | -- | the thwart done: its consequential damage, as the ally is then
+    AllyThwartConsequential
   | AllyWasAttacked Attack
   | -- | retaliate's damage to the enemy that attacked it
     AllyRetaliates EnemyId Natural

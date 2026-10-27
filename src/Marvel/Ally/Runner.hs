@@ -67,9 +67,14 @@ instance RunMessage (Attrs Ally) where
         then pure $ a & stunnedL .~ False
         else do
           enemies <- selectList $ AttackableBy $ IdentityWithId $ allyController a
-          -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally
-          let keywords = cdKeywords (allyCardDef a)
-              gains = [withPiercing | Piercing `member` keywords] <> [withRanged | Ranged `member` keywords]
+          -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally, or
+          -- one it gains ("its attacks gain overkill")
+          modifiers <- getModifiers a
+          let keywords = toList (cdKeywords $ allyCardDef a) <> [k | KeywordModifier k <- modifiers]
+              gains =
+                [withPiercing | Piercing `elem` keywords]
+                  <> [withRanged | Ranged `elem` keywords]
+                  <> [withOverkill | Overkill `elem` keywords]
           dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
           chooseOne (allyController a)
             [ targeting (enemyRef enemy) do
@@ -99,6 +104,7 @@ instance RunMessage (Attrs Ally) where
           choices <- for schemes \scheme -> do
             withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
             let thwartWith n = do
+                  checkWindows [W.Window W.When $ W.AllyThwart (allyId a) scheme]
                   basicThwartOf scheme a n
                   checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
             pure $ targeting (schemeRef scheme) $
@@ -108,9 +114,12 @@ instance RunMessage (Attrs Ally) where
                     [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
                 else thwartWith thw
           chooseOne (allyController a) choices
-          when (allyThwartConsequentialDamage a > 0) $
-            damageCharacter ident a (toDamage (allyThwartConsequentialDamage a) FromConsequential)
+          allyStep ident AllyThwartConsequential
           pure a
+      AllyThwartConsequential -> do
+        consequential <- getModifiedThwartConsequentialDamage a
+        when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
+        pure a
       AllyDefended enemyId -> do
         exhaust ident
         enemyDefendedBy enemyId (AllyCharacter ident)

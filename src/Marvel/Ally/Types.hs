@@ -152,7 +152,15 @@ getModifiedHitPoints attrs = do
 getModifiedAttackConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttackConsequentialDamage attrs = do
   modifiers <- getModifiers attrs
-  pure $ allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
+  pure $
+    if NoConsequentialDamage `elem` modifiers
+      then 0
+      else allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
+
+getModifiedThwartConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
+getModifiedThwartConsequentialDamage attrs = do
+  modifiers <- getModifiers attrs
+  pure $ if NoConsequentialDamage `elem` modifiers then 0 else allyThwartConsequentialDamage attrs
 
 getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do

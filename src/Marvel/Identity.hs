@@ -423,8 +423,18 @@ playableTargetsWith ignoringCost attrs c = do
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> getAvailableResourcesFor (toId attrs) (Just c)
-    ((ignoringCost || length resources >= length (costResources cost)) &&)
+    reduction <- mayReduceCostToPlay attrs c mTarget
+    ((ignoringCost || length resources + reduction >= length (costResources cost)) &&)
       <$> canAffordCost (toId attrs) (toSource c) (otherCosts cost)
+
+-- | How much less a card from hand could cost through an interrupt as it is played
+-- ('MayReduceCostToPlay'), no more than its resource cost.
+mayReduceCostToPlay :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m Int
+mayReduceCostToPlay attrs c mTarget
+  | c `notElem` unHand (playerIdentityHand $ toAttrs attrs) = pure 0
+  | otherwise = do
+      reductions <- sum . map fromIntegral . (\ms -> [n | MayReduceCostToPlay n <- ms]) <$> getModifiers attrs
+      min reductions <$> getModifiedCost attrs c mTarget
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = do
@@ -626,7 +636,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         else pure pid
     PlayingCard card mWindow -> do
       targets <- playableTargets pid card
-      let payFor = identityStep playerIdentityId . PayForCard card mWindow
+      -- "when you play a card from your hand" is answered before its cost is worked out
+      let fromHand = card `elem` unHand playerIdentityHand
+          payFor mTarget = do
+            costly <- (> 0) <$> getModifiedCost pid card mTarget
+            when (fromHand && costly) $
+              checkWindows [W.Window W.When $ W.PlayingCardFromHand playerIdentityId card]
+            identityStep playerIdentityId $ PayForCard card mWindow mTarget
           underAnyControl = case cdLimit (getCardDef card) of
             Just (MaxPerPlayerUnderAnyControl _) -> True
             Just UnderAnyControl -> True

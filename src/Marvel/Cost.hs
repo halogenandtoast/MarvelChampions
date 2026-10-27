@@ -82,6 +82,7 @@ canAffordCost identityId source = go
         , selectAny (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId) <> AllyWithTrait t)
         ]
     DiscardEncounterCardsUntilMinionCost -> pure True
+    DealEncounterCardCost -> pure True
     TargetPrintedCost -> pure True
     MayOverpay -> pure True
     ExhaustCost -> case source of

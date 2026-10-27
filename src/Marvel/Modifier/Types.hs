@@ -97,6 +97,11 @@ data Modifier
     DividesBasicThwart
   | -- | on an enemy: the damage it takes from each attack is reduced
     AttackDamageReduction Natural
+  | -- | on an identity: an interrupt it can use as it plays a card from hand reduces the
+    -- card's cost by this much (Star-Lord), counted toward what it can afford
+    MayReduceCostToPlay Natural
+  | -- | on an ally: it takes no consequential damage
+    NoConsequentialDamage
   | -- | on an identity: what its hero must also pay to make a basic attack (Mother's
     -- Orders)
     BasicAttackAdditionalCost Cost
