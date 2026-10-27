@@ -45,6 +45,11 @@ BACKS = {
 # them; picked by hand (marvelcdb's 12001c.png is Tiny Ant-Man, not Giant)
 OVERRIDES = {
     "12001c": "MarvelHD/cropped/162_Scott_Lang_FaceURL_3.png",
+    # marvelcdb has no scan of Ironheart's Version 2 and 3 identities
+    "29002a": "MarvelHD/495_Ironheart_FaceURL.jpg",
+    "29002b": "MarvelHD/496_Ironheart_BackURL.jpg",
+    "29003a": "MarvelHD/497_Ironheart_FaceURL.jpg",
+    "29003b": "MarvelHD/498_Ironheart_BackURL.jpg",
 }
 
 
