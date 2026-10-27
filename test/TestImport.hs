@@ -185,9 +185,13 @@ choicesOf = \case
 choose :: (HasCallStack) => Text -> (Choice -> Bool) -> GameAppT ()
 choose what p = do
   refreshTurn
+  -- a player who was the only choice was chosen for them, as a player would have
+  autoChosen <- any (p . flip TargetLabel [] . IdentityRef) <$> players
   asked >>= \case
+    Nothing | autoChosen -> pure ()
     Nothing -> error $ "nothing was asked when trying to " <> show what
     Just (ident, cs) -> case findIndex' p cs of
+      Nothing | autoChosen -> pure ()
       Nothing -> error $ "could not " <> show what <> " among " <> show (map describe cs)
       Just n -> answerQuestion ident n
  where
@@ -198,10 +202,11 @@ choose what p = do
 offers :: (Choice -> Bool) -> GameAppT Bool
 offers p = refreshTurn >> maybe False (any p . snd) <$> asked
 
--- | Ask the turn question afresh, as a test may have changed the game under it.
+-- | Ask the turn question afresh, as a test may have changed the game under it. A When
+-- Revealed the game waits on is resolved first, as the player would click it.
 refreshTurn :: GameAppT ()
 refreshTurn =
-  openQuestion >>= \case
+  pressWhenRevealed >> openQuestion >>= \case
     Just (ident, QuestionLabel "$label.yourTurn" _ _) -> do
       withGame_ $ questionL .~ mempty
       push $ IdentityMessage ident PlayerTurnOption
@@ -344,7 +349,7 @@ keepCards =
 -- | Decline responses and defending until something else is asked.
 pass :: GameAppT ()
 pass =
-  asked >>= \case
+  pressWhenRevealed >> asked >>= \case
     Just (ident, cs) | Just n <- passIndex cs -> answerQuestion ident n >> pass
     _ -> pure ()
  where
