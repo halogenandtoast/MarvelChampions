@@ -22,7 +22,7 @@ newtype Heimdall = Heimdall (Attrs Ally)
 
 instance HasAbilities Heimdall where
   getAbilities a =
-    [limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $ runAbility a 1]
+    [limitedWindowAbility a 1 EntersPlayThis Response OwnsThis NoCost $ runAbility a 1]
 
 -- | Look at the top 3 cards of the encounter deck, discard 1 of them, and put the
 -- others back in the order chosen, the first chosen on top.

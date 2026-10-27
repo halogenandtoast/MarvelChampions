@@ -69,7 +69,7 @@ spec = describe "Captain America's nemesis set" do
         -- removing threat is not thwarting
         before <- mainSchemeThreat
         agent13 <- putInHand p1 "03002"
-        runNow [PutCardIntoPlay p1 agent13 NoPayment Nothing]
+        runNow [PutCardIntoPlay p1 agent13 NoPayment Nothing True]
         choose "use Agent 13" (isAbilityOfCard agent13)
         chooseMainScheme
         mainSchemeThreat `shouldReturn` (before - 2)

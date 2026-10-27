@@ -22,6 +22,9 @@ windowMatches matcher w source = case matcher of
     PlayedSupport supportId ->
       pure $ timing == windowTiming w && source == SupportRef supportId
     _ -> pure False
+  EntersPlayThis -> case windowType w of
+    AllyEnteredPlay allyId -> pure $ source == AllyRef allyId
+    _ -> pure False
   HeroThwartsAllThreat identityMatcher -> case windowType w of
     ThwartedAllThreat ident _ -> identityMatches identityMatcher ident
     _ -> pure False
@@ -248,6 +251,9 @@ windowMatches matcher w source = case matcher of
     CardPlayed ident card
       | windowTiming w == timing && cardMatch cardMatcher card ->
           identityMatches identityMatcher ident
+    _ -> pure False
+  PlaysAlly allyMatcher -> case windowType w of
+    PlayedAlly aid | windowTiming w == After -> allyMatches allyMatcher aid
     _ -> pure False
   PlaysCardFromHand identityMatcher cardMatcher -> case windowType w of
     PlayingCardFromHand ident card | cardMatch cardMatcher card -> identityMatches identityMatcher ident

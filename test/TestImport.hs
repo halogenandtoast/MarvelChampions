@@ -42,6 +42,7 @@ import Marvel.Deck as X
 import Marvel.Discard as X
 import Marvel.Log as X (LogEntry, entryText)
 import System.Random (mkStdGen)
+import Control.Exception (SomeException, displayException, evaluate, throwIO, try)
 import Test.Hspec as X hiding (shouldBe, shouldReturn, shouldSatisfy)
 import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldReturn, shouldSatisfy)
 import Control.Monad.IO.Class as X (liftIO)
@@ -91,8 +92,18 @@ dealtGameTelling f setup decks seed tell = do
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
   ran <- newIORef []
   app <- newGameApp (f $ newTable scenario seated) [StartGame] (mkStdGen seed) tell
-  let app' = app {appDebugLogger = Just $ DebugLogger \m -> modifyIORef' ran (take 200 . (tshow m :))}
-  runGameApp app' runGame
+  -- a message whose show throws is kept as that error, so a crash's trail can be shown
+  let keep :: (Show a) => a -> IO ()
+      keep m = do
+        shown <- try (evaluate (force' (tshow m)))
+        modifyIORef' ran (take 200 . (either (\(e :: SomeException) -> "<unshowable: " <> T.pack (displayException e) <> ">") id shown :))
+      force' t = T.length t `seq` t
+  let app' = app {appDebugLogger = Just $ DebugLogger keep}
+  -- a crash while dealing says what ran up to it, latest last
+  dealt <- try (runGameApp app' runGame)
+  for_ (either Just (const Nothing) dealt) \(err :: SomeException) -> do
+    latest <- readIORef ran
+    throwIO $ userError $ unlines $ ("dealing: " <> displayException err) : map T.unpack (reverse latest)
   pure (app', ran)
  where
   nonEmpty' = \case
@@ -405,7 +416,7 @@ putIntoPlay :: IdentityId -> CardCode -> GameAppT PlayerCard
 putIntoPlay ident code = do
   cardId <- getRandom
   let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
-  resolve [PutCardIntoPlay ident card NoPayment Nothing]
+  resolve [PutCardIntoPlay ident card NoPayment Nothing True]
   pure card
 
 upgradeIdOf :: PlayerCard -> UpgradeId

@@ -151,4 +151,5 @@ instance RunMessage (Attrs Treachery) where
           replicateM_ times (surge identityId)
         pure attrs
       _ -> pure attrs
+    GainSurge target | target == TreacheryRef (treacheryId attrs) -> pure $ attrs & surgeL .~ True
     _ -> pure attrs

@@ -83,6 +83,7 @@ data IdentityMessage
     -- target is told of; the deck emptying ends it
     DiscardFromDeckUntil CardMatcher Target
   | PlaceOnBottomOfDeck PlayerCard
+  | PlaceOnTopOfDeck PlayerCard
   | IdentityBecomeTough
   | -- | the attack the hero defended is done with them: their damage before it, to tell
     -- whether they took any from it

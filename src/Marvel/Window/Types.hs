@@ -32,7 +32,10 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = PlayThis WindowTiming
+  = -- | "after you play <this card>": played, not only put into play
+    PlayThis WindowTiming
+  | -- | "after <this ally> enters play": played or put into play
+    EntersPlayThis
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
@@ -72,6 +75,8 @@ data WindowMatcher
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
     PlaysCard WindowTiming IdentityMatcher CardMatcher
+  | -- | after a player plays an ally matching, as it is in play (traits it gains count)
+    PlaysAlly AllyMatcher
   | -- | "when you play a card from your hand": a player matching is about to pay for a
     -- card matching, from their hand, that costs resources
     PlaysCardFromHand IdentityMatcher CardMatcher
@@ -116,6 +121,8 @@ data Window = Window
 
 data WindowType
   = PlayedAlly AllyId
+  | -- | the ally entered play, played or put into play
+    AllyEnteredPlay AllyId
   | PlayedSupport SupportId
   | IdentityTakeDamage IdentityId Damage
   | AllyTakeDamage AllyId Damage

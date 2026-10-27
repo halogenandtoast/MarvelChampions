@@ -26,7 +26,7 @@ newtype WaspNadiaVanDyne = WaspNadiaVanDyne (Attrs Ally)
 -- hero form or remove 2 threat from a scheme if you are in Tiny hero form.
 instance HasAbilities WaspNadiaVanDyne where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) HeroResponse (OwnsThis <> AnyCriteria [giant, tiny]) NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis HeroResponse (OwnsThis <> AnyCriteria [giant, tiny]) NoCost $
         runAbility a 1
     ]
    where

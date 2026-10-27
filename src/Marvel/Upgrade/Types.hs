@@ -289,5 +289,5 @@ instance RunMessage (Attrs Upgrade) where
         removeFromPlay a
         pure a
     -- a held card played leaves it
-    PutCardIntoPlay _ card _ _ -> pure $ a & heldCardsL %~ filter (/= card)
+    PutCardIntoPlay _ card _ _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     _ -> pure a

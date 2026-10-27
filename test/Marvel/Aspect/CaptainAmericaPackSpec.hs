@@ -31,7 +31,7 @@ flipTo p side = resolve [IdentityMessage p (ChangedToForm side)]
 enters :: IdentityId -> CardCode -> GameAppT PlayerCard
 enters p code = do
   card <- putInHand p code
-  runNow [PutCardIntoPlay p card NoPayment Nothing]
+  runNow [PutCardIntoPlay p card NoPayment Nothing True]
   pure card
 
 spec :: Spec

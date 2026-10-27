@@ -32,7 +32,7 @@ instance RunMessage SlippingSanity where
   runMessage msg o@(SlippingSanity attrs) = runQueueT $ case msg of
     ObligationMessage ident msg' | obligationId attrs == ident -> case msg' of
       RevealObligation identityId -> do
-        isHero <- identityMatches HeroIdentity identityId
+        isHero <- identityMatches (HeroIdentity <> IdentityCanChangeForm) identityId
         when isHero $
           chooseOne identityId
             [ labeled "$label.doNotFlipToAlterEgo" (pure ())

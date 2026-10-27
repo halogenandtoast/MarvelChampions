@@ -23,7 +23,7 @@ newtype LadySif = LadySif (Attrs Ally)
 
 instance HasAbilities LadySif where
   getAbilities a =
-    [limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $ runAbility a 1]
+    [limitedWindowAbility a 1 EntersPlayThis Response OwnsThis NoCost $ runAbility a 1]
 
 -- | "Ready Thor or Odinson": the player whose identity it is, whoever controls her.
 instance RunMessage LadySif where

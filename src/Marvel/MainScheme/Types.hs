@@ -9,7 +9,9 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
+import Marvel.Matchers.Types (SideSchemeMatcher (CrisisSideScheme))
 import Marvel.Message.Lifted
+import Marvel.Query (selectAny)
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -180,7 +182,18 @@ instance RunMessage (Attrs MainScheme) where
         MainSchemeThwarted source n -> do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n
-        MainSchemeThreatRemoved _ n -> pure $ attrs & threatL %~ subtractNatural n
+        -- "player cards cannot remove threat from the main scheme" while a crisis icon is
+        -- in play (RR Crisis Icon); a thwart is already kept off it
+        MainSchemeThreatRemoved source n -> do
+          crisis <- selectAny CrisisSideScheme
+          let playerCard = case source of
+                IdentityRef _ -> True
+                AllyRef _ -> True
+                EventRef _ -> True
+                SupportRef _ -> True
+                UpgradeRef _ -> True
+                _ -> False
+          pure $ if crisis && playerCard then attrs else attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n

@@ -22,7 +22,7 @@ newtype BrotherVoodooJerichoDrumm = BrotherVoodooJerichoDrumm (Attrs Ally)
 
 instance HasAbilities BrotherVoodooJerichoDrumm where
   getAbilities a =
-    [limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $ runAbility a 1]
+    [limitedWindowAbility a 1 EntersPlayThis Response OwnsThis NoCost $ runAbility a 1]
 
 -- | After he enters play, search the top 5 cards of your deck for an event card and add
 -- it to your hand. Shuffle your deck.

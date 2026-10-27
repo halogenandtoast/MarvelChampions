@@ -329,7 +329,9 @@ data Message
     PaidCosts ActiveCostId
   | -- | the cost cannot be paid after all: what was spent goes back to hand
     AbortPayment ActiveCostId
-  | PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window)
+  | -- | the card enters play under the player: played (True), opening the windows after
+    -- it is played, or only put into play (False)
+    PutCardIntoPlay IdentityId PlayerCard Payment (Maybe Window) Bool
   | -- | the effect of an event its player played, which a stun or confusion replaces as
     -- it would resolve and a cancel cancels
     ResolveEventEffect IdentityId Message
@@ -434,8 +436,8 @@ data Message
     -- carrying how much is left), and the shares assigned so far
     AssignDividedDamage IdentityId Source Damage EnemyMatcher [(EnemyId, Natural)]
   | -- | threat the player has still to divide among the schemes matching, by a basic
-    -- thwart or not, and the shares assigned so far
-    AssignDividedThreat IdentityId Source Bool Natural SchemeMatcher [(SchemeId, Natural)]
+    -- thwart or not, whether they may stop short ("up to"), and the shares assigned so far
+    AssignDividedThreat IdentityId Source Bool Bool Natural SchemeMatcher [(SchemeId, Natural)]
   | -- | one effect on several game elements at once, as damage dealt to each of several
     -- enemies: each message is run before anything any of them leads to
     Simultaneously [Message]

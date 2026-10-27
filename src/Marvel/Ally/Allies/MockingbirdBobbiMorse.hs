@@ -22,7 +22,7 @@ mockingbirdBobbiMorse =
 
 instance HasAbilities MockingbirdBobbiMorse where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response OwnsThis NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis Response OwnsThis NoCost $
         runAbility a 1
     ]
 

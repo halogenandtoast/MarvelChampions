@@ -15,7 +15,7 @@ agent13SharonCarter = ally Agent13SharonCarter Cards.agent13SharonCarter (Thw 2,
 
 instance HasAbilities Agent13SharonCarter where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response (OwnsThis <> SchemeExists ThwartableScheme) NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis Response (OwnsThis <> SchemeExists ThwartableScheme) NoCost $
         RemoveThreat (toSource a) 2 ThwartableScheme
     ]
 

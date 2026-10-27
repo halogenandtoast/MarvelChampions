@@ -22,6 +22,7 @@ import Marvel.Identity.Types
 import Marvel.Matchers.Types
 import Marvel.Modifier.Types
 import Marvel.Payment.Types
+import Marvel.Phase (Phase)
 import Marvel.Projection
 import Marvel.Queue
 import Marvel.Ref
@@ -76,6 +77,8 @@ abilityCardDef :: Game -> Target -> Maybe CardDef
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
+getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
+getPhase :: (HasGame m) => m Phase
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
 getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]

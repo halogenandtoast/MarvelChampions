@@ -98,7 +98,7 @@ spec = describe "divided damage and threat, and the Wasp pack's mechanics" do
       let side = SchemeSideSchemeId scheme
       before <- sideSchemeThreat scheme
       mainBefore <- mainSchemeThreatNow
-      runNow [AssignDividedThreat p (IdentityRef p) True (before + 1) ThwartableScheme []]
+      runNow [AssignDividedThreat p (IdentityRef p) True False (before + 1) ThwartableScheme []]
       replicateM_ (fromIntegral before) $ choose "the side scheme" (isTargetChoice side)
       -- the side scheme is out of threat: the rest goes to the main scheme, unasked
       mainSchemeThreatNow `shouldReturn` (mainBefore - 1)

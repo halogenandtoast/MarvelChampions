@@ -1002,6 +1002,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             & (discardL %~ Discard . filter (/= card) . unDiscard)
             & (handL %~ Hand . filter (/= card) . unHand)
             & (deckL %~ Deck . (<> [card]) . filter (/= card) . unDeck)
+    PlaceOnTopOfDeck card ->
+      pure $
+        PlayerIdentity $
+          attrs
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (deckL %~ Deck . (card :) . filter (/= card) . unDeck)
     Search _ _ _ _ -> error "Unhandled"
     IdentityRetaliate n enemyId -> do
       resolveAs playerIdentityId $ DamageEnemy (enemyRef enemyId) (toSource pid) (toDamage n FromRetaliate)
@@ -1078,7 +1085,7 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     VillainMessage _ (VillainBeginAttack _) -> attackBegins
     MinionMessage _ (MinionBeginAttack _) -> attackBegins
     -- a card put into play leaves wherever it was
-    PutCardIntoPlay _ card _ _ ->
+    PutCardIntoPlay _ card _ _ _ ->
       pure $
         PlayerIdentity $
           attrs

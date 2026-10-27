@@ -23,7 +23,7 @@ newtype SentryRobertReynolds = SentryRobertReynolds (Attrs Ally)
 -- encounter card."
 instance HasAbilities SentryRobertReynolds where
   getAbilities (SentryRobertReynolds a) =
-    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis ForcedResponse OwnsThis NoCost $
         Run [DealEncounterCard $ allyController a]
     ]
 

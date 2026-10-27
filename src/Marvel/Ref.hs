@@ -39,6 +39,9 @@ class IsRef a where
 instance IsRef VillainId where
   toRef = VillainRef
 
+instance IsRef TreacheryId where
+  toRef = TreacheryRef
+
 instance IsRef MinionId where
   toRef = MinionRef
 

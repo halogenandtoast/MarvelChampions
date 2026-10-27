@@ -23,7 +23,7 @@ newtype NickFury = NickFury (Attrs Ally)
 
 instance HasAbilities NickFury where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) ForcedResponse OwnsThis NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis ForcedResponse OwnsThis NoCost $
         ChooseOneLabelChoice
           [
             ( (countLabel "removeThreatFromAScheme" 2)

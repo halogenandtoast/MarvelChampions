@@ -195,6 +195,8 @@ data Game = Game
   -- ^ the cards each player has played this round, for "max 1 per round" and "the first
   -- ally played each round"
   , gamePlayedThisPhase :: [(IdentityId, CardDef)]
+  , -- | each treachery revealed this phase from the encounter deck, and for whom, in order
+    gameTreacheriesRevealedThisPhase :: [(IdentityId, TreacheryId)]
   -- ^ and this phase, for "max 1 per phase"
   , gameAreas :: [Area]
   -- ^ the game areas, the first the one every game starts with ("Marvel.Area")
@@ -262,7 +264,11 @@ instance FromJSON Game where
   parseJSON = withObject "Game" $ \o ->
     -- Saves from before phase limits were tracked have no phase history.
     genericParseJSON (aesonOptions $ Just "game") $
-      Object (KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value])) o)
+      Object
+        ( KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
+            $ o
+        )
 
 diff :: Game -> Game -> Diff.Patch
 diff a b = Diff.diff (toJSON a) (toJSON b)
@@ -783,9 +789,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     beginPhase PlayerPhase
     pure g
   SetPlayerOrder xs -> pure $ g {gamePlayerOrder = xs, gameActivePlayer = fromMaybe gameActivePlayer (headMay xs)}
-  SetActivePlayer ident -> pure $ g & activePlayerL .~ ident
+  -- a player eliminated after their turn was queued (damage at the end of a phase) is
+  -- passed over
+  SetActivePlayer ident
+    | HashMap.member ident (gamePlayers g) -> pure $ g & activePlayerL .~ ident
+    | otherwise -> pure g
   BeginPhase phase ->
-    pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
+    pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & treacheriesRevealedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . abilityLimit . fst)
   AtEndOfPhase msgs -> pure $ g & atEndOfPhaseL <>~ msgs
   -- what was to happen at the end of the phase happens first, as the phase ends
   EndPhase _ -> do
@@ -897,7 +907,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         identityStep (getSupportController support) (SupportRemoved sid)
         discardCard (toAttrs support)
         for_ (supportHeldCards $ toAttrs support) discardCard
-      pure $ g & (entitiesL . supportsL %~ deleteMap sid)
+      -- kept as removed, so an ability it was discarded to pay for still resolves
+      pure $
+        g
+          & (entitiesL . supportsL %~ deleteMap sid)
+          & (removedEntitiesL . supportsL %~ maybe id (insertMap sid) (lookup sid $ gameSupports g))
     UpgradeRef uid -> do
       case (lookup uid $ gameUpgrades g) of
         Nothing -> pure g
@@ -1006,7 +1020,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & (entitiesL . effectsL %~ insertMap effectId effect)
   DisabledEffect effectId ->
     pure $ g & (entitiesL . effectsL %~ deleteMap effectId)
-  PutCardIntoPlay ident card payment mWindow -> do
+  PutCardIntoPlay ident card payment mWindow wasPlayed -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
         let ally = createAlly ident card
@@ -1014,7 +1028,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         allyStep (toId ally) (AllyPaidWith payment)
         when (Toughness `member` cdKeywords (getCardDef card)) $ push $ GiveStatus (AllyRef $ toId ally) ToughStatus
         identityStep ident (AllyCreated $ toId ally)
-        checkWindows [W.Window After $ W.PlayedAlly (toId ally)]
+        checkWindows $
+          W.Window After (W.AllyEnteredPlay $ toId ally)
+            : [W.Window After $ W.PlayedAlly (toId ally) | wasPlayed]
         pure $ g & (entitiesL . alliesL %~ insertMap (toId ally) ally)
       SupportType -> do
         -- played under the control of the player it was played on, if any; it stays its
@@ -1025,7 +1041,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             support = createSupport controller card
         supportStep (toId support) (SupportOwnedBy $ fromMaybe ident $ pcOwner card)
         identityStep controller (SupportCreated $ toId support)
-        checkWindows [W.Window After $ W.PlayedSupport (toId support)]
+        when wasPlayed $ checkWindows [W.Window After $ W.PlayedSupport (toId support)]
         pure $ g & (entitiesL . supportsL %~ insertMap (toId support) support)
       UpgradeType -> do
         let upgrade = createUpgrade ident card
@@ -1203,20 +1219,24 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   -- divided threat removal: a point at a time among the schemes matching, none past a
   -- scheme's threat, then each scheme given a share thwarted (Wasp rulesheet)
-  AssignDividedThreat ident source basic n matcher assigned -> do
+  AssignDividedThreat ident source basic upTo n matcher assigned -> do
     let given s = sum [k | (s', k) <- assigned, s' == s]
     schemes <- selectList matcher
     open <- forMaybeM schemes \s -> do
       threat <- selectCount SchemeThreat (SchemeWithId s)
       let room = subtractNatural (given s) threat
       pure $ guard (room > 0) $> (s, room)
-    let assign s k = push $ AssignDividedThreat ident source basic (n - k) matcher ((s, k) : assigned)
+    let assign s k = push $ AssignDividedThreat ident source basic upTo (n - k) matcher ((s, k) : assigned)
+        done = AssignDividedThreat ident source basic upTo 0 matcher assigned
     case open of
       _ | n == 0 || null open ->
         for_ (HashMap.toList $ HashMap.fromListWith (+) assigned) \(s, k) ->
           resolveAs ident $ (if basic then BasicThwartScheme else ThwartScheme) (schemeRef s) source k
-      [(s, room)] -> assign s (min n room)
-      _ -> chooseOnePrompted ident "$label.assignDividedThreat" [targeting (schemeRef s) (assign s 1) | (s, _) <- open]
+      [(s, room)] | not upTo -> assign s (min n room)
+      _ ->
+        chooseOnePrompted ident "$label.assignDividedThreat" $
+          [targeting (schemeRef s) (assign s 1) | (s, _) <- open]
+            <> [labeled "$label.done" (push done) | upTo]
     pure g
   RevealedEncounterCard ident card -> do
     -- each "When Revealed" resolves once, and once more for each ability that says so
@@ -1266,6 +1286,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         pure $
           g
             & (entitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
+            & treacheriesRevealedThisPhaseL <>~ [(ident, toId treachery)]
       ObligationType -> do
         let
           obligation = createObligation card
@@ -1756,6 +1777,7 @@ newGame player scenario =
     , gameSeats = [toId player]
     , gamePlayedThisRound = []
     , gamePlayedThisPhase = []
+    , gameTreacheriesRevealedThisPhase = []
     , gameAreas = [newArea defaultAreaId [toId player]]
     , gameSignatureSchemes = mempty
     , gameAtEndOfPhase = []
@@ -1899,6 +1921,12 @@ getPlayedThisRound = getsGame gamePlayedThisRound
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase = getsGame gamePlayedThisPhase
 
+getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
+getTreacheriesRevealedThisPhase = getsGame gameTreacheriesRevealedThisPhase
+
+getPhase :: (HasGame m) => m Phase
+getPhase = getsGame gamePhase
+
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)
 
@@ -1977,7 +2005,7 @@ abilityCardDef :: Game -> Target -> Maybe CardDef
 abilityCardDef g = \case
   UpgradeRef uid ->
     getCardDef <$> (lookup uid (gameUpgrades g) <|> lookup uid (g ^. removedEntitiesL . upgradesL))
-  SupportRef sid -> supportCardDef . toAttrs <$> lookup sid (gameSupports g)
+  SupportRef sid -> supportCardDef . toAttrs <$> (lookup sid (gameSupports g) <|> lookup sid (g ^. removedEntitiesL . supportsL))
   AllyRef aid -> getCardDef <$> lookup aid (gameAllies g)
   VillainRef vid -> getCardDef <$> lookup vid (gameVillains g)
   EventRef eid -> eventCardDef . toAttrs <$> lookup eid (gameEvents g)

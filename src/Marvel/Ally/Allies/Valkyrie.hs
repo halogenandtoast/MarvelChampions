@@ -24,7 +24,7 @@ newtype Valkyrie = Valkyrie (Attrs Ally)
 
 instance HasAbilities Valkyrie where
   getAbilities a =
-    [ limitedWindowAbility a 1 (PlayThis After) Response (OwnsThis <> MinionExists AnyMinion) NoCost $
+    [ limitedWindowAbility a 1 EntersPlayThis Response (OwnsThis <> MinionExists AnyMinion) NoCost $
         runAbility a 1
     ]
 

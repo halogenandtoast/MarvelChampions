@@ -405,7 +405,7 @@ spec = describe "Captain America" do
         [a, _] <- traverse (putIntoPlay p) ["03009", "03009"]
         length <$> upgradesOf p `shouldReturn` 2
         c <- putInHand p "03009"
-        runNow [PutCardIntoPlay p c NoPayment Nothing]
+        runNow [PutCardIntoPlay p c NoPayment Nothing True]
         choose "discard a restricted card" (isTargetChoice (upgradeIdOf a))
         length <$> upgradesOf p `shouldReturn` 2
         discardOf p >>= (`shouldSatisfy` elem a)

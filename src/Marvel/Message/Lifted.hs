@@ -240,11 +240,15 @@ placeThreatWithoutWindow scheme = push . threatPlacement (toScheme scheme)
 -- chooses: assigned a point at a time, none past a scheme's threat, then each scheme
 -- given its share is thwarted (RR, Wasp rulesheet).
 thwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-thwartDivided you source n matcher = push $ AssignDividedThreat you (toSource source) False n matcher []
+thwartDivided you source n matcher = push $ AssignDividedThreat you (toSource source) False False n matcher []
+
+-- | 'thwartDivided', "a total of up to" n: the player may stop short.
+thwartDividedUpTo :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
+thwartDividedUpTo you source n matcher = push $ AssignDividedThreat you (toSource source) False True n matcher []
 
 -- | The hero's basic thwart divided among the thwartable schemes (Giant Wasp).
 basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
-basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True n ThwartableScheme []
+basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True False n ThwartableScheme []
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
@@ -630,6 +634,9 @@ takeControlOf ident card = addToHand ident card {pcOwner = Just ident, pcControl
 placeOnBottomOfDeck :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 placeOnBottomOfDeck ident = push . IdentityMessage ident . PlaceOnBottomOfDeck
 
+placeOnTopOfDeck :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+placeOnTopOfDeck ident = push . IdentityMessage ident . PlaceOnTopOfDeck
+
 shuffleDeck :: (ReverseQueue m) => IdentityId -> m ()
 shuffleDeck ident = push $ IdentityMessage ident ShuffleDeck
 
@@ -697,7 +704,7 @@ search ident signifier matcher option = push . IdentityMessage ident . Search si
 
 -- | The card is put into play under the player's control, not played.
 putIntoPlay :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
-putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing
+putIntoPlay ident card = push $ PutCardIntoPlay ident card NoPayment Nothing False
 
 returnToHand :: (ReverseQueue m, IsRef a) => a -> m ()
 returnToHand = push . ReturnToHand . toTarget
@@ -778,7 +785,7 @@ cardPlayed ident card payment mWindow =
   pushAll
     [ CheckWindows [Window When $ W.CardPlayed ident card]
     , IdentityMessage ident (PlayedCard card mWindow)
-    , PutCardIntoPlay ident card payment mWindow
+    , PutCardIntoPlay ident card payment mWindow True
     , CheckWindows [Window After $ W.CardPlayed ident card]
     ]
 
