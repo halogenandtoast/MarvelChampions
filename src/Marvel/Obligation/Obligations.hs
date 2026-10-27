@@ -48,3 +48,6 @@ import Marvel.Obligation.Obligations.UnfulfilledDestiny as X
 
 -- Groot
 import Marvel.Obligation.Obligations.Wilt as X
+
+-- Rocket Raccoon
+import Marvel.Obligation.Obligations.CrisisOnHalfworld as X

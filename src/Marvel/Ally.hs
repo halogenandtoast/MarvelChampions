@@ -132,4 +132,8 @@ allAllies = fromList $ map
   -- Groot
   , SomeAllyCard starhawkStakarOgord
   , SomeAllyCard rocketRaccoonAlly
+
+  -- Rocket Raccoon
+  , SomeAllyCard bug
+  , SomeAllyCard grootAlly
   ]

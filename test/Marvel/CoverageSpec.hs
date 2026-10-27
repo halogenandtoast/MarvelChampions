@@ -53,8 +53,8 @@ packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toa
 inScope :: Text -> Maybe Text -> Bool
 inScope pack set = case pack of
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
-  -- The Galaxy's Most Wanted: Groot's sets so far
-  "gmw" -> maybe False (`elem` ["groot", "groot_nemesis"]) set
+  -- The Galaxy's Most Wanted: its heroes and their nemesis sets, aspect and basic cards so far
+  "gmw" -> maybe True (`elem` ["groot", "groot_nemesis", "rocket", "rocket_nemesis"]) set
   _ -> True
 
 -- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
@@ -90,6 +90,12 @@ encounterImplemented c = case c.cardType of
   "obligation" -> HashMap.member c.code allObligations
   -- main schemes are kept by their base code, the sides being one card
   "main_scheme" -> HashMap.member (toBaseCardCode c.code) allMainSchemes
+  -- a hero set's own cards
+  "hero" -> HashMap.member c.code allHeroes
+  "alter_ego" -> HashMap.member c.code allAlterEgos
+  "event" -> HashMap.member c.code allEvents
+  "upgrade" -> HashMap.member c.code allUpgrades
+  "resource" -> HashMap.member c.code allPlayerCards
   _ -> True
 
 spec :: Spec

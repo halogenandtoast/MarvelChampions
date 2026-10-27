@@ -126,6 +126,9 @@ allMinions =
 
       -- Groot
       , furnax
+
+      -- Rocket Raccoon
+      , blackjackOHare
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -631,3 +634,12 @@ nebulaMinion =
 
 furnax :: CardDef
 furnax = unique $ minion "16027" "Furnax" [Leviatron] [Boost, Boost, Boost] GrootNemesis 1
+
+-- Rocket Raccoon
+
+blackjackOHare :: CardDef
+blackjackOHare =
+  unique $
+    (minion "16055" "Blackjack O'Hare" [Criminal] [Boost, Boost, Boost] RocketRaccoonNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Villainous]
+      }

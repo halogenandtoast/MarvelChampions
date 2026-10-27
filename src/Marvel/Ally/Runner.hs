@@ -143,6 +143,9 @@ instance RunMessage (Attrs Ally) where
         let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
         when (retaliates > 0 && not (attackRanged attack')) $
           allyStep ident (AllyRetaliates (attackEnemy attack') retaliates)
+        -- "after <ally> defends against an attack": the attack has resolved
+        when (attackDefended attack') $
+          checkWindows [W.Window W.After $ W.AllyDefendedAgainst ident (attackEnemy attack')]
         pure a
       AllyRetaliates enemy n -> do
         dealDamage enemy a (toDamage n FromRetaliate)

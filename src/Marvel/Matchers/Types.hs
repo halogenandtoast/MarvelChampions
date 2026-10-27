@@ -135,6 +135,7 @@ data UpgradeMatcher
   | UpgradeWithId UpgradeId
   | UpgradeMatches [UpgradeMatcher]
   | UpgradeOneOf [UpgradeMatcher]
+  | NotUpgrade UpgradeMatcher
   | -- | on an identity matching: controlled by it, and attached to nothing else
     UpgradeOnIdentity IdentityMatcher
   | -- | of the upgrades matching, those with the highest printed cost

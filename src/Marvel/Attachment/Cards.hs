@@ -102,6 +102,9 @@ allAttachments =
 
       -- Gamora
       , inABind
+
+      -- Rocket Raccoon
+      , blackjacksBazooka
       ]
 
 attachment ::
@@ -360,3 +363,9 @@ magicalSuspension = attachment "15026" "Magical Suspension" [Spell] [Boost, Boos
 -- | Attach to Gamora.
 inABind :: CardDef
 inABind = attachment "18027" "In a Bind" [Armor, Tech] [Boost] GamoraNemesis 1
+
+-- Rocket Raccoon
+
+-- | Attach to Blackjack O'Hare, if able; if not, to the villain.
+blackjacksBazooka :: CardDef
+blackjacksBazooka = attachment "16056" "Blackjack's Bazooka" [Tech, Weapon] [Boost, Boost] RocketRaccoonNemesis 1

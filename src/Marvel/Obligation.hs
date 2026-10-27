@@ -75,6 +75,9 @@ allObligations = fromList $ map
 
   -- Groot
   , SomeObligationCard wilt
+
+  -- Rocket Raccoon
+  , SomeObligationCard crisisOnHalfworld
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

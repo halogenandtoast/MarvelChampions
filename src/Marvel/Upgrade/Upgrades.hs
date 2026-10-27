@@ -132,3 +132,14 @@ import Marvel.Upgrade.Upgrades.VineSpikes as X
 import Marvel.Upgrade.Upgrades.Dauntless as X
 import Marvel.Upgrade.Upgrades.HardToIgnore as X
 import Marvel.Upgrade.Upgrades.DeftFocus as X
+
+-- Rocket Raccoon
+import Marvel.Upgrade.Upgrades.BatteryPack as X
+import Marvel.Upgrade.Upgrades.CyberneticSkeleton as X
+import Marvel.Upgrade.Upgrades.ParticleCannon as X
+import Marvel.Upgrade.Upgrades.RocketLauncher as X
+import Marvel.Upgrade.Upgrades.RocketsPistol as X
+import Marvel.Upgrade.Upgrades.ThrusterBoots as X
+import Marvel.Upgrade.Upgrades.FollowThrough as X
+import Marvel.Upgrade.Upgrades.HandCannon as X
+import Marvel.Upgrade.Upgrades.BoosterBoots as X

@@ -157,6 +157,9 @@ allTreacheries = fromList $ map
 
   -- Groot
   , fanTheFlames
+
+  -- Rocket Raccoon
+  , planetaryInvasion
   ]
 
 treachery
@@ -600,3 +603,8 @@ waylay = treachery "18028" "Waylay" [Boost, Boost] GamoraNemesis 2
 
 fanTheFlames :: CardDef
 fanTheFlames = treachery "16028" "Fan the Flames" [Boost] GrootNemesis 3
+
+-- Rocket Raccoon
+
+planetaryInvasion :: CardDef
+planetaryInvasion = treachery "16057" "Planetary Invasion" [Boost] RocketRaccoonNemesis 2

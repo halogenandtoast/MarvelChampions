@@ -11,6 +11,7 @@ import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Cost.Types
 import Marvel.Game.Source
 import Marvel.GameValue
+import Marvel.Deck
 import Marvel.Hand
 import Marvel.Id
 import Marvel.Identity.Types
@@ -73,6 +74,8 @@ canAffordCost identityId source = go
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    DiscardUpgradeCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    DiscardTopOfDeckCost -> projectP PlayerIdentityDeck (not . null . unDeck) identityId
     ExhaustAlliesCost n _ ->
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))

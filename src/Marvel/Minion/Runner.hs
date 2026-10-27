@@ -51,18 +51,25 @@ runMinionMessage msg attrs = case msg of
       | cannotTakeDamage -> pure attrs
       | minionTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
-        if (damageAmount damage + minionDamage attrs >= hitPoints)
-          then do
-            -- overkill follows the defeat: a minion that is not defeated after all
-            -- deals none past it ('cancelMinionDefeat')
-            let overkill = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
-            checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill]
-            defeatMinion (minionId attrs)
-            when (overkill > 0 && damageOverkill damage) do
-              traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
-            checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill]
-          else pure ()
+        when (damageAmount damage + minionDamage attrs >= hitPoints) do
+          let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
+          -- "when your hero's attack deals excess damage, increase that amount"
+          hero <- heroAttackBy damage source
+          for_ hero \ident ->
+            when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (toEnemyId attrs) excess]
+          minionStep (minionId attrs) (MinionDefeatedWithExcess source damage excess)
+        when (damageAmount damage > 0) $
+          checkWindows [W.Window W.After $ W.DamagedEnemy (toEnemyId attrs) source damage]
         pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
+  MinionDefeatedWithExcess source damage overkill -> do
+    -- overkill follows the defeat: a minion that is not defeated after all deals none
+    -- past it ('cancelMinionDefeat')
+    checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill]
+    defeatMinion (minionId attrs)
+    when (overkill > 0 && damageOverkill damage) do
+      traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
+    checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill]
+    pure attrs
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs

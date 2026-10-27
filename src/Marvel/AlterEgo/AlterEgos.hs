@@ -42,3 +42,6 @@ import Marvel.AlterEgo.AlterEgos.GamoraAlterEgo as X
 
 -- Groot
 import Marvel.AlterEgo.AlterEgos.GrootAlterEgo as X
+
+-- Rocket Raccoon
+import Marvel.AlterEgo.AlterEgos.RocketRaccoonAlterEgo as X

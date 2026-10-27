@@ -188,3 +188,9 @@ import Marvel.Event.Events.RootStomp as X
 import Marvel.Event.Events.WeAreGroot as X
 import Marvel.Event.Events.FightingFit as X
 import Marvel.Event.Events.FloraAndFauna as X
+
+-- Rocket Raccoon
+import Marvel.Event.Events.IveGotAPlan as X
+import Marvel.Event.Events.Reload as X
+import Marvel.Event.Events.Schadenfreude as X
+import Marvel.Event.Events.LookingForTrouble as X

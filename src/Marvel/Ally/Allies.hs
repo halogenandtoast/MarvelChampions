@@ -101,3 +101,7 @@ import Marvel.Ally.Allies.Drax as X
 -- Groot
 import Marvel.Ally.Allies.StarhawkStakarOgord as X
 import Marvel.Ally.Allies.RocketRaccoonAlly as X
+
+-- Rocket Raccoon
+import Marvel.Ally.Allies.Bug as X
+import Marvel.Ally.Allies.GrootAlly as X

@@ -57,6 +57,9 @@ allHeroCards =
 
   -- Groot
   , groot
+
+  -- Rocket Raccoon
+  , rocketRaccoon
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -167,3 +170,8 @@ gamora = hero "18001a" "Gamora" [Guardian]
 
 groot :: CardDef
 groot = hero "16001a" "Groot" [Guardian]
+
+-- Rocket Raccoon
+
+rocketRaccoon :: CardDef
+rocketRaccoon = hero "16029a" "Rocket Raccoon" [Guardian]

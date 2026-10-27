@@ -168,6 +168,17 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard dauntless
   , SomeUpgradeCard hardToIgnore
   , SomeUpgradeCard deftFocus
+
+  -- Rocket Raccoon
+  , SomeUpgradeCard batteryPack
+  , SomeUpgradeCard cyberneticSkeleton
+  , SomeUpgradeCard particleCannon
+  , SomeUpgradeCard rocketLauncher
+  , SomeUpgradeCard rocketsPistol
+  , SomeUpgradeCard thrusterBoots
+  , SomeUpgradeCard followThrough
+  , SomeUpgradeCard handCannon
+  , SomeUpgradeCard boosterBoots
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

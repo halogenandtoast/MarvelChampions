@@ -162,6 +162,17 @@ allUpgrades = fromList $ concatMap
   , dauntless
   , hardToIgnore
   , deftFocus
+
+  -- Rocket Raccoon
+  , batteryPack
+  , cyberneticSkeleton
+  , particleCannon
+  , rocketLauncher
+  , rocketsPistol
+  , thrusterBoots
+  , followThrough
+  , handCannon
+  , boosterBoots
   ]
 
 upgrade
@@ -700,3 +711,50 @@ hardToIgnore = upgrade "16017" "Hard to Ignore" 1 [Skill] [Physical] Protection
 
 deftFocus :: CardDef
 deftFocus = limited (MaxPerPlayer 1) $ basicUpgrade "16024" "Deft Focus" 1 [Skill] [Energy]
+
+-- Rocket Raccoon
+
+batteryPack :: CardDef
+batteryPack = identityUpgrade "16034" "Battery Pack" 1 [Item, Tech] [Energy]
+
+cyberneticSkeleton :: CardDef
+cyberneticSkeleton = identityUpgrade "16035" "Cybernetic Skeleton" 2 [Tech] [Energy]
+
+particleCannon :: CardDef
+particleCannon =
+  (identityUpgrade "16036" "Particle Cannon" 3 [Tech, Weapon] [Mental])
+    { cdKeywords = singleton Restricted
+    }
+
+rocketLauncher :: CardDef
+rocketLauncher =
+  (identityUpgrade "16037" "Rocket Launcher" 3 [Tech, Weapon] [Physical])
+    { cdKeywords = singleton Restricted
+    }
+
+rocketsPistol :: CardDef
+rocketsPistol =
+  (identityUpgrade "16038" "Rocket's Pistol" 1 [Tech, Weapon] [Energy])
+    { cdKeywords = singleton Restricted
+    }
+
+thrusterBoots :: CardDef
+thrusterBoots = identityUpgrade "16039" "Thruster Boots" 1 [Armor, Tech] [Mental]
+
+followThrough :: CardDef
+followThrough = upgrade "16045" "Follow Through" 2 [Skill] [Mental] Aggression
+
+-- | Its uses (3 charge counters) are its attrs'.
+handCannon :: CardDef
+handCannon =
+  (upgrade "16046" "Hand Cannon" 2 [Tech, Weapon] [Physical] Aggression)
+    { cdKeywords = singleton Restricted
+    }
+
+-- | "Play only if your identity has the Guardian trait. Max 1 per player."
+boosterBoots :: CardDef
+boosterBoots =
+  limited (MaxPerPlayer 1) $
+    (basicUpgrade "16052" "Booster Boots" 1 [Armor, Tech] [Mental])
+      { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+      }

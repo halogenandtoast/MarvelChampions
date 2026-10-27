@@ -114,6 +114,9 @@ allSideSchemes = fromList $ map
 
   -- Groot
   , blazingInferno
+
+  -- Rocket Raccoon
+  , vendetta
   ]
 
 sideScheme
@@ -459,3 +462,8 @@ siblingRivalry = sideScheme "18025" "Sibling Rivalry" [Boost, Boost, Boost] Gamo
 
 blazingInferno :: CardDef
 blazingInferno = sideScheme "16026" "Blazing Inferno" [Boost, Boost] GrootNemesis 1
+
+-- Rocket Raccoon
+
+vendetta :: CardDef
+vendetta = sideScheme "16054" "Vendetta" [Boost, Boost] RocketRaccoonNemesis 1

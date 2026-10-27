@@ -97,3 +97,6 @@ import Marvel.SideScheme.SideSchemes.SiblingRivalry as X
 
 -- Groot
 import Marvel.SideScheme.SideSchemes.BlazingInferno as X
+
+-- Rocket Raccoon
+import Marvel.SideScheme.SideSchemes.Vendetta as X

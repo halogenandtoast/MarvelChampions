@@ -210,6 +210,21 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == After ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  HeroAttackDealsExcessDamage identityMatcher -> case windowType w of
+    ExcessDamageDealt identityId _ n
+      | windowTiming w == When && n > 0 ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  DealsExcessDamage identityMatcher -> case windowType w of
+    DefeatedMinion _ damage source n
+      | windowTiming w == After && n > 0 -> damageMatchesFrom (DamageByPlayer identityMatcher) damage source
+    DefeatedVillain _ damage source n
+      | windowTiming w == After && n > 0 -> damageMatchesFrom (DamageByPlayer identityMatcher) damage source
+    _ -> pure False
+  AllyDefends allyMatcher -> case windowType w of
+    AllyDefendedAgainst allyId _
+      | windowTiming w == After -> allyMatches allyMatcher allyId
+    _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId
       | windowTiming w == timing ->

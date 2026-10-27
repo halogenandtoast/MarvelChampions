@@ -122,6 +122,10 @@ allAllies = fromList $ concatMap
   -- Groot
   , starhawkStakarOgord
   , rocketRaccoonAlly
+
+  -- Rocket Raccoon
+  , bug
+  , grootAlly
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -523,5 +527,17 @@ starhawkStakarOgord = ally "16012" ("Starhawk" <:> "Stakar Ogord") 2 [Aerial, Gu
 rocketRaccoonAlly :: CardDef
 rocketRaccoonAlly =
   (basicAlly "16019" "Rocket Raccoon" 3 [Guardian] [Wild])
+    { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- Rocket Raccoon
+
+bug :: CardDef
+bug = ally "16040" "Bug" 2 [Guardian] [Energy] Aggression
+
+-- | "Play only if your identity has the Guardian trait."
+grootAlly :: CardDef
+grootAlly =
+  (basicAlly "16047" "Groot" 3 [Guardian] [Wild])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }

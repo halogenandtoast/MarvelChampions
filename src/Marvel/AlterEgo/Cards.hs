@@ -54,6 +54,9 @@ allAlterEgoCards =
 
     -- Groot
     , grootAlterEgo
+
+    -- Rocket Raccoon
+    , rocketRaccoonAlterEgo
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -152,3 +155,8 @@ gamoraAlterEgo = alterEgo "18001b" "Gamora" [Outlaw]
 
 grootAlterEgo :: CardDef
 grootAlterEgo = alterEgo "16001b" "Groot" [Outlaw]
+
+-- Rocket Raccoon
+
+rocketRaccoonAlterEgo :: CardDef
+rocketRaccoonAlterEgo = alterEgo "16029b" "Rocket Raccoon" [Genius, Outlaw]

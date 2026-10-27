@@ -120,6 +120,9 @@ allSideSchemes = fromList $ map
 
   -- Groot
   , SomeSideSchemeCard blazingInferno
+
+  -- Rocket Raccoon
+  , SomeSideSchemeCard vendetta
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

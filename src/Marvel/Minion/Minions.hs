@@ -96,3 +96,6 @@ import Marvel.Minion.Minions.NebulaMinion as X
 
 -- Groot
 import Marvel.Minion.Minions.Furnax as X
+
+-- Rocket Raccoon
+import Marvel.Minion.Minions.BlackjackOHare as X

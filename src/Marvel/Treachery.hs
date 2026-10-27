@@ -166,6 +166,9 @@ allTreacheries = fromList $ map
 
   -- Groot
   , SomeTreacheryCard fanTheFlames
+
+  -- Rocket Raccoon
+  , SomeTreacheryCard planetaryInvasion
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

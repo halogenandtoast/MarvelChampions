@@ -190,5 +190,9 @@
   "exhaustWandaMaximoffRemoveSlippingSanity": "Exhaust Wanda Maximoff → remove Slipping Sanity from the game",
   "discardEncounterCardsThreatPerStar": "Discard the top {count} encounter cards: 1 threat on the main scheme for each [star]",
 
+  "-- rocket-raccoon --": "",
+  "exhaustRocketRaccoonRemoveCrisisOnHalfworld": "Exhaust Rocket Raccoon → remove Crisis on Halfworld from the game",
+  "discardHighestCostUpgradeDiscardObligation": "Discard the highest cost upgrade you control (if none, this card gains surge), then discard this obligation",
+
   "-- end --": ""
 }

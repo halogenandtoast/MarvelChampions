@@ -135,6 +135,9 @@ allMinions =
 
       -- Groot
       , SomeMinionCard furnax
+
+      -- Rocket Raccoon
+      , SomeMinionCard blackjackOHare
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -67,6 +67,9 @@ allObligations = fromList $ map
 
     -- Groot
     , wilt
+
+    -- Rocket Raccoon
+    , crisisOnHalfworld
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -218,3 +221,8 @@ unfulfilledDestiny = obligation "18024" "Unfulfilled Destiny" [Boost, Boost]
 
 wilt :: CardDef
 wilt = obligation "16025" "Wilt" [Boost, Boost]
+
+-- Rocket Raccoon
+
+crisisOnHalfworld :: CardDef
+crisisOnHalfworld = obligation "16053" "Crisis on Halfworld" [Boost, Boost]

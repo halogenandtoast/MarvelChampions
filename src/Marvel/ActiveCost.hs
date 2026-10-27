@@ -95,6 +95,10 @@ payCostPart activeCost = go
     ReturnUpgradeToHandCost matcher -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
       oneOf upgrades returnToHand
+    DiscardUpgradeCost matcher -> do
+      upgrades <- selectList (matcher <> upgradeControlledBy iid)
+      oneOf upgrades \u -> discardUpgrade u >> paid (DiscardPayment $ toTarget u)
+    DiscardTopOfDeckCost -> discardTopOfDeck iid 1
     -- one at a time, until the player is done or has exhausted as many as it allows
     ExhaustAlliesCost n m -> do
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
@@ -303,7 +307,7 @@ instance RunMessage ActiveCost where
         payment = activeCostPayment activeCost <> x
       for_ (reverse $ activeCostSpentCards activeCost) discardCard
       -- "after you spend this card" (Pym Particles), before what was paid for resolves
-      for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer)
+      for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer (activeCostSpentCards activeCost))
       disableActiveCost ident
       case activeCostTarget activeCost of
         ForCard card -> cardPlayed payer card payment (activeCostWindow activeCost)
