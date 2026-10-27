@@ -145,6 +145,7 @@ library
       Marvel.Attachment.Attachments.CrossfiresRifle
       Marvel.Attachment.Attachments.DefensiveProgramming
       Marvel.Attachment.Attachments.DistractingTaunts
+      Marvel.Attachment.Attachments.DrangsSpear
       Marvel.Attachment.Attachments.EnergyShield
       Marvel.Attachment.Attachments.EnhancedIvoryHorn
       Marvel.Attachment.Attachments.ExoSuit
@@ -220,8 +221,10 @@ library
       Marvel.Environment
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
+      Marvel.Environment.Environments.BadoonShip
       Marvel.Environment.Environments.CriminalEnterprise
       Marvel.Environment.Environments.KreeCommandShip
+      Marvel.Environment.Environments.LibraryLabyrinth
       Marvel.Environment.Environments.RogueVessel
       Marvel.Environment.Types
       Marvel.Event
@@ -452,8 +455,10 @@ library
       Marvel.MainScheme.MainSchemes.AssaultOnNorad
       Marvel.MainScheme.MainSchemes.AttackOnMountAthena
       Marvel.MainScheme.MainSchemes.Breakout
+      Marvel.MainScheme.MainSchemes.BrotherhoodOfBadoon
       Marvel.MainScheme.MainSchemes.CorporateAcquisition
       Marvel.MainScheme.MainSchemes.CountdownToOblivion
+      Marvel.MainScheme.MainSchemes.EscapeTheMuseum
       Marvel.MainScheme.MainSchemes.HostileTakeover
       Marvel.MainScheme.MainSchemes.HuntingDownHeroes
       Marvel.MainScheme.MainSchemes.KangsArrival
@@ -505,6 +510,7 @@ library
       Marvel.Minion.Minions.ArmoredGuard
       Marvel.Minion.Minions.Avalanche
       Marvel.Minion.Minions.BadoonHeadhunter
+      Marvel.Minion.Minions.BandOfBadoon
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
@@ -631,6 +637,7 @@ library
       Marvel.SideScheme.SideSchemes.BlazingInferno
       Marvel.SideScheme.SideSchemes.BombScare
       Marvel.SideScheme.SideSchemes.BreakinAndTakin
+      Marvel.SideScheme.SideSchemes.BrotherhoodOfBadoon
       Marvel.SideScheme.SideSchemes.BuddingCrimeSyndicate
       Marvel.SideScheme.SideSchemes.Cannonade
       Marvel.SideScheme.SideSchemes.CapturedByHydra
@@ -778,6 +785,7 @@ library
       Marvel.Treachery.Treacheries.EnergyBlast
       Marvel.Treachery.Treacheries.EnergyProjectiles
       Marvel.Treachery.Treacheries.EscapePlan
+      Marvel.Treachery.Treacheries.EscapeTheMuseum
       Marvel.Treachery.Treacheries.Exhaustion
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
@@ -983,7 +991,9 @@ library
       Marvel.Villain.Types
       Marvel.Villain.Villains.AbsorbingMan
       Marvel.Villain.Villains.Bulldozer
+      Marvel.Villain.Villains.CollectorEscape
       Marvel.Villain.Villains.Crossbones
+      Marvel.Villain.Villains.Drang
       Marvel.Villain.Villains.GreenGoblin
       Marvel.Villain.Villains.Kang
       Marvel.Villain.Villains.Klaw
@@ -1174,9 +1184,11 @@ test-suite MarvelChampions-test
       Marvel.Aspect.WaspPackSpec
       Marvel.CoverageSpec
       Marvel.Encounter.BlackWidowNemesisSpec
+      Marvel.Encounter.BrotherhoodOfBadoonSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.DoctorStrangeNemesisSpec
+      Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GamoraNemesisSpec
       Marvel.Encounter.GreenGoblinSpec
