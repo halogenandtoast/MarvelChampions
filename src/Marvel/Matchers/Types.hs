@@ -153,6 +153,9 @@ data EnemyMatcher
   | MinionEnemy
   | -- | an enemy a player matching may attack: guard keeps the villain from them
     AttackableBy IdentityMatcher
+  | -- | an enemy the ally may attack: as its controller may, and no minion for an ally
+    -- that cannot attack minions (Drax)
+    AttackableByAlly AllyId
   | DamageableEnemy
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher

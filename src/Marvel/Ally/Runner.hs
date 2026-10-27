@@ -43,7 +43,7 @@ instance HasAbilities Ally where
              301
              Basic
              -- a stunned ally can attempt an attack with no target ("Stunned")
-             (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists $ AttackableBy $ IdentityWithId $ allyController $ toAllyAttrs a)
+             (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists $ AttackableByAlly $ toId x)
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]
@@ -66,7 +66,7 @@ instance RunMessage (Attrs Ally) where
       AllyAttacked -> if allyStunned a
         then pure $ a & stunnedL .~ False
         else do
-          enemies <- selectList $ AttackableBy $ IdentityWithId $ allyController a
+          enemies <- selectList $ AttackableByAlly $ allyId a
           -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally, or
           -- one it gains ("its attacks gain overkill")
           modifiers <- getModifiers a

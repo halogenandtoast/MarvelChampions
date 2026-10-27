@@ -77,6 +77,7 @@ abilityCardDef :: Game -> Target -> Maybe CardDef
 getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
+getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]
 getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
 getPhase :: (HasGame m) => m Phase
 getEncounterDeck :: (HasGame m) => m [EncounterCard]

@@ -195,6 +195,8 @@ data Game = Game
   -- ^ the cards each player has played this round, for "max 1 per round" and "the first
   -- ally played each round"
   , gamePlayedThisPhase :: [(IdentityId, CardDef)]
+  , -- | the cards played since the current player's turn began
+    gamePlayedThisTurn :: [(IdentityId, CardDef)]
   , -- | each treachery revealed this phase from the encounter deck, and for whom, in order
     gameTreacheriesRevealedThisPhase :: [(IdentityId, TreacheryId)]
   -- ^ and this phase, for "max 1 per phase"
@@ -267,6 +269,7 @@ instance FromJSON Game where
       Object
         ( KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "playedThisTurn" (toJSON ([] :: [Value]))
             $ o
         )
 
@@ -1387,7 +1390,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           %~ filter
             ((/= PerTurn 1) . abilityLimit . fst)
   IdentityMessage ident (PlayedCard card _) ->
-    pure $ g & playedThisRoundL <>~ [(ident, getCardDef card)] & playedThisPhaseL <>~ [(ident, getCardDef card)]
+    pure $
+      g
+        & playedThisRoundL <>~ [(ident, getCardDef card)]
+        & playedThisPhaseL <>~ [(ident, getCardDef card)]
+        & playedThisTurnL <>~ [(ident, getCardDef card)]
+  IdentityMessage _ BeginTurn -> pure $ g & playedThisTurnL .~ []
   EndRound ->
     pure $
       g
@@ -1777,6 +1785,7 @@ newGame player scenario =
     , gameSeats = [toId player]
     , gamePlayedThisRound = []
     , gamePlayedThisPhase = []
+    , gamePlayedThisTurn = []
     , gameTreacheriesRevealedThisPhase = []
     , gameAreas = [newArea defaultAreaId [toId player]]
     , gameSignatureSchemes = mempty
@@ -1921,6 +1930,9 @@ getPlayedThisRound = getsGame gamePlayedThisRound
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase = getsGame gamePlayedThisPhase
 
+getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]
+getPlayedThisTurn = getsGame gamePlayedThisTurn
+
 getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
 getTreacheriesRevealedThisPhase = getsGame gameTreacheriesRevealedThisPhase
 
@@ -2040,7 +2052,13 @@ getSourceController source = getsGame \g -> case source of
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getAbilitiesFor ident = do
   abilities <- getsGame \g -> filter (maybe True (== ident) . abilityController g) (getAbilities g)
-  filterM (fmap not . isBlanked . abilitySource) abilities
+  filterM (\a -> if printed a then not <$> isBlanked (abilitySource a) else pure True) abilities
+ where
+  -- a blank text box leaves the game's own abilities: basic powers and changing form
+  printed a = abilityType a /= Basic && not (isIdentity (abilitySource a) && abilityIndex a == 100)
+  isIdentity = \case
+    IdentityRef _ -> True
+    _ -> False
 
 -- | Whether the card's printed text box is treated as blank (Tech Theft). Only the cards
 -- that can blank another are asked, so a blanked card's own modifiers are not needed.
@@ -2561,6 +2579,9 @@ gameSelectEnemy m = do
     _ -> False
   goVillain e = \case
     DefeatedEnemy m' -> goVillain e m'
+    AttackableByAlly aid -> do
+      controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
+      maybe (pure False) (goVillain e . AttackableBy . IdentityWithId) controller
     EnemyWithId enemyId -> pure $ case enemyId of
       EnemyVillainId villainId -> toId e == villainId
       EnemyMinionId _ -> False
@@ -2599,6 +2620,10 @@ gameSelectEnemy m = do
     MinionEnemy -> pure True
     DamageableEnemy -> pure True
     AttackableBy attacker -> not <$> barredFrom attacker e
+    AttackableByAlly aid -> do
+      allowed <- notElem CannotAttackMinions <$> getModifiers (AllyRef aid)
+      controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
+      maybe (pure False) (\c -> (allowed &&) <$> goMinion e (AttackableBy $ IdentityWithId c)) controller
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)
