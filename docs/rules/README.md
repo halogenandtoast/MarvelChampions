@@ -21,7 +21,8 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | The Galaxy's Most Wanted rulebook (MC16) | 24 pages (pp. 6, 7, 9, 11, 13, 16, 17 are images) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc16_galaxys_most_wanted_rules_website-compressed.pdf |
 | Venom Hero Pack rulesheet (MC20) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc20_venom_rulesheet.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
-| MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk}.json |
+| The Mad Titan's Shadow rulebook (MC21) | PDF created 2021-02-04, modified 2021-11-12, 28 pages (scenario pages with card art are partly images) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed-campaign_log.pdf) |
+| MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
 https://www.fantasyflightgames.com/en/news/2026/7/23/mission-updates/). The PDFs are not committed.
@@ -62,6 +63,14 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [scenario-ronan-the-accuser.md](scenario-ronan-the-accuser.md) | GMW #5 Ronan the Accuser: the Power Stone in play, Kree Militants; card text, readings, campaign instructions |
 | [campaign-galaxys-most-wanted.md](campaign-galaxys-most-wanted.md) | The Galaxy's Most Wanted campaign: campaign log, units and The Market, expert campaign, each scenario's setup/victory steps, Market and Challenge card text, rulings |
 | [hero-groot.md](hero-groot.md) | Groot (GMW): growth counters, Flora Colossus FAQ, Team-Up, starter deck, rulings |
+| [scenario-ebony-maw.md](scenario-ebony-maw.md) | MTS #1 Ebony Maw: Spell environments and invocation counters, Black Order and Armies of Titan; the box's keyword page and amplify icon; card text, readings |
+| [scenario-tower-defense.md](scenario-tower-defense.md) | MTS #2 Tower Defense: two main schemes, two villains and Focused Defense, Avengers Tower, modular difficulty; card text, readings |
+| [scenario-thanos.md](scenario-thanos.md) | MTS #3 Thanos: the Infinity Gauntlet and Infinity Stone deck, Children of Thanos; card text, readings |
+| [scenario-hela.md](scenario-hela.md) | MTS #4 Hela: Mystic and Wounded sides, Odin captive, the Hel side-scheme chain, Legions of Hel, Frost Giants; card text, readings |
+| [scenario-loki.md](scenario-loki.md) | MTS #5 Loki: five Lokis, advancing and swapping at random, the victory condition, Enchantress; card text, readings |
+| [campaign-mad-titans-shadow.md](campaign-mad-titans-shadow.md) | The Mad Titan's Shadow campaign: campaign log and pool, each scenario's setup/victory steps, expert campaign, campaign card text, rulings |
+| [hero-spectrum.md](hero-spectrum.md) | Spectrum (MTS): additional forms and energy form upgrades, starter deck, Leadership and basic cards, rulings |
+| [hero-adam-warlock.md](hero-adam-warlock.md) | Adam Warlock (MTS): Avatar of Life deck-building, Cosmic Entity events, starter deck, rulings |
 | [hero-rocket-raccoon.md](hero-rocket-raccoon.md) | Rocket Raccoon (GMW): charge counters FAQ, excess damage, starter deck, rulings |
 
 ## Conventions
