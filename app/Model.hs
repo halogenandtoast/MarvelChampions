@@ -66,6 +66,8 @@ MarvelGame sql=marvel_games
   seats Int default=1
   -- | the campaign it is a scenario of, as it was dealt: reset deals it again so
   campaign Value Maybe
+  -- | The owning campaign; deleting it removes all its scenario games and their logs.
+  campaignId MarvelCampaignId Maybe OnDeleteCascade
   createdAt UTCTime
   updatedAt UTCTime
   deriving Show

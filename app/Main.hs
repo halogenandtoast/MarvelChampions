@@ -604,6 +604,7 @@ postGamesR = do
           , marvelGameWithFriends = friends
           , marvelGameSeats = seatCount
           , marvelGameCampaign = Nothing
+          , marvelGameCampaignId = Nothing
           , marvelGameCreatedAt = now
           , marvelGameUpdatedAt = now
           }
@@ -1239,6 +1240,7 @@ dealCampaignGame cid = do
           , marvelGameWithFriends = friends
           , marvelGameSeats = length dealt
           , marvelGameCampaign = Just (toJSON named)
+          , marvelGameCampaignId = Just cid
           , marvelGameCreatedAt = now
           , marvelGameUpdatedAt = now
           }
@@ -1418,6 +1420,7 @@ postImportR = do
           , marvelGameWithFriends = False
           , marvelGameSeats = length (gameSeats imported)
           , marvelGameCampaign = Nothing
+          , marvelGameCampaignId = Nothing
           , marvelGameCreatedAt = now
           , marvelGameUpdatedAt = now
           }
@@ -1445,7 +1448,16 @@ main = do
   port <- fromMaybe 3000 . (>>= readMaybe) <$> lookupEnv "PORT"
   database <- fromMaybe "host=localhost dbname=marvelchampions" <$> lookupEnv "DATABASE_URL"
   pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 $ pack database) 10
-  runSqlPool (runMigration migrateAll) pool
+  runSqlPool
+    (do
+      runMigration migrateAll
+      -- Before games tracked their campaign, only its current-game reference identifies
+      -- an existing scenario unambiguously. Names and campaign snapshots are not unique.
+      rawExecute
+        "UPDATE marvel_games AS g SET campaign_id = c.id FROM marvel_campaigns AS c WHERE c.current_game = g.id AND g.campaign_id IS NULL"
+        []
+    )
+    pool
   void $ forkIO $ forever do
     runSqlPool sweepGuests pool
     threadDelay (24 * 60 * 60 * 1000000)
