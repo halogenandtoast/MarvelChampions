@@ -1,5 +1,6 @@
--- | A deck list as a player brings it to the table: a hero and the cards with them, by
--- MarvelCDB code, and the starter decks of the core set.
+{- | A deck list as a player brings it to the table: a hero and the cards with them, by
+MarvelCDB code, and the starter decks of the core set.
+-}
 module Marvel.Decklist (
   DeckList (..),
   loadPlayer,
@@ -41,8 +42,9 @@ data DeckList = DeckList
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
--- | The cards of a deck the engine cannot play: an identity it does not know, or player
--- cards it has no definition for.
+{- | The cards of a deck the engine cannot play: an identity it does not know, or player
+cards it has no definition for.
+-}
 missingCards :: DeckList -> [CardCode]
 missingCards d =
   [d.hero | not knownIdentity] <> nub [c | (c, _) <- d.cards, not (HashMap.member c allPlayerCards)]
@@ -51,9 +53,10 @@ missingCards d =
     HashMap.member (toHeroCardCode d.hero) allHeroesMap
       && HashMap.member (toAlterEgoCardCode d.hero) allAlterEgosMap
 
--- | Jessica Drew's Double Agent: her deck is built with two aspects, as many cards of
--- each (FAQ, Jessica Drew #31B), her own identity-specific cards aside. Any other deck
--- passes.
+{- | Jessica Drew's Double Agent: her deck is built with two aspects, as many cards of
+each (FAQ, Jessica Drew #31B), her own identity-specific cards aside. Any other deck
+passes.
+-}
 aspectsBalanced :: DeckList -> Bool
 aspectsBalanced d = case lookup (toBaseCardCode d.hero) doubleAgents of
   Nothing -> True
@@ -87,9 +90,10 @@ loadPlayer d = case checkedDeckList d of
       pure $ MkPlayerCard cardId (lookupPlayerCard code) Nothing Nothing
     Right <$> initPlayer (toHeroCardCode d.hero) (Deck cards)
 
--- | The deck a player brings to a campaign's next game: the one they began it with, the
--- cards the campaign log adds to it (the Market cards they bought among them), and without the allies removed from the campaign.
--- What the campaign adds does not count toward the deck's size.
+{- | The deck a player brings to a campaign's next game: the one they began it with, the
+cards the campaign log adds to it (the Market cards they bought among them), and without the allies removed from the campaign.
+What the campaign adds does not count toward the deck's size.
+-}
 campaignDeck :: Campaign -> DeckList -> DeckList
 campaignDeck c d =
   d
@@ -98,11 +102,12 @@ campaignDeck c d =
           <> [(code, 1) | code <- campaignCardsOf d.hero c]
     }
 
--- | How many cards the player must add to the deck they began the campaign with, once the
--- allies removed from the campaign are taken out: "If this causes your deck to fall below
--- the minimum number of cards, then you must add a card to your deck" (TRORS rulebook
--- p.12, Zola). The minimum is 40, permanent cards and what the campaign adds not counted
--- (RR, Deck Customization).
+{- | How many cards the player must add to the deck they began the campaign with, once the
+allies removed from the campaign are taken out: "If this causes your deck to fall below
+the minimum number of cards, then you must add a card to your deck" (TRORS rulebook
+p.12, Zola). The minimum is 40, permanent cards and what the campaign adds not counted
+(RR, Deck Customization).
+-}
 campaignDeckShortBy :: Campaign -> DeckList -> Int
 campaignDeckShortBy c d = max 0 (40 - counted)
  where
@@ -115,9 +120,10 @@ campaignDeckShortBy c d = max 0 (40 - counted)
       , Permanent `notElem` cdKeywords def
       ]
 
--- | The cards of The Market in the deck: bought with units in The Galaxy's Most Wanted
--- campaign, they "cannot be included in a deck unless players are playing" it (rulebook
--- p.4), the campaign adding them to the deck it deals ('campaignDeck').
+{- | The cards of The Market in the deck: bought with units in The Galaxy's Most Wanted
+campaign, they "cannot be included in a deck unless players are playing" it (rulebook
+p.4), the campaign adding them to the deck it deals ('campaignDeck').
+-}
 marketCardsIn :: DeckList -> [CardCode]
 marketCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def == Just TheMarket]
 
@@ -129,8 +135,9 @@ sharedHeroes ds =
   counts = HashMap.fromListWith (+) [(heroTitle d, 1) | d <- ds]
   heroTitle d = maybe (unCardCode d.hero) (display . cdName) $ lookup (toHeroCardCode d.hero) allHeroesMap
 
--- | The core set's five starter decks, by the hero's name in lower case, as MarvelCDB
--- lists them (decklists 1 to 5), and the hero packs' decks.
+{- | The core set's five starter decks, by the hero's name in lower case, as MarvelCDB
+lists them (decklists 1 to 5), and the hero packs' decks.
+-}
 starterDecks :: [(Text, DeckList)]
 starterDecks =
   [ ("spider-man", starter "01001a" "justice" $ ["01002", "01003", "01003", "01004", "01004", "01005", "01005", "01005", "01006", "01007", "01007", "01008", "01008", "01009", "01009"] <> ["01058", "01059", "01060", "01060", "01061", "01061", "01062", "01062", "01063", "01063", "01064", "01064", "01065", "01065"])
@@ -150,39 +157,38 @@ starterDecks =
     ("doctor-strange", DeckList "09001a" ["protection"] $ tally $ ["09002", "09003", "09003", "09004", "09004", "09005", "09005", "09006", "09007", "09007", "09008", "09009", "09010", "09010", "09011"] <> ["09012", "09013", "09014", "09015", "09015", "09015", "09016", "09016", "09016", "09017", "09017", "09018", "09018", "09019", "09020", "09020", "09020"] <> ["09021", "09021", "09021", "09022", "09023", "09024", "09025", "09026"])
   , -- the Hulk pack's own deck: its signature cards, Aggression and basic cards
     ("hulk", DeckList "10001a" ["aggression"] (tally $ ["10002", "10002", "10003", "10003", "10004", "10004", "10005", "10005", "10006", "10006", "10007", "10007", "10008", "10009", "10010"] <> ["10011", "10012", "10013", "10014", "10014", "10014", "10015", "10015", "10015", "10016", "10016", "10016", "10017", "10017", "10018", "10018", "10018"] <> ["10019", "10019", "10019", "10020", "10021", "10022", "10023", "10024"]))
-  -- The Green Goblin
+  , -- The Green Goblin
 
-  -- The Wrecking Crew
+    -- The Wrecking Crew
 
-  -- The Rise of Red Skull
-  , -- the Rise of Red Skull box's: his signature, Leadership and basic cards
+    -- The Rise of Red Skull
+    -- the Rise of Red Skull box's: his signature, Leadership and basic cards
     ("hawkeye", DeckList "04001a" ["leadership"] $ tally ["04002", "04003", "04004", "04005", "04005", "04006", "04006", "04007", "04007", "04008", "04008", "04009", "04009", "04010", "04010", "04011", "04012", "04013", "04014", "04015", "04015", "04015", "04016", "04016", "04016", "04017", "04017", "04017", "04018", "04018", "04019", "04019", "04020", "04021", "04022", "04022", "04022", "04023", "04024", "04025"])
   , -- two aspects, as many cards of each (Double Agent)
     ("spider-woman", DeckList "04031a" ["aggression", "justice"] $ tally ["04032", "04033", "04033", "04034", "04035", "04035", "04036", "04036", "04037", "04037", "04038", "04038", "04039", "04039", "04039", "04040", "04041", "04041", "04042", "04042", "04043", "04043", "04043", "04044", "04044", "04044", "04045", "04046", "04046", "04047", "04047", "04047", "04048", "04048", "04049", "04049", "04049", "04050", "04051", "04052"])
+  , -- The Once and Future Kang
 
-  -- The Once and Future Kang
-
-  -- Ant-Man: his signature, Leadership and basic cards
-  , ("ant-man", DeckList "12001a" ["leadership"] $ tally ["12002", "12003", "12003", "12004", "12005", "12005", "12006", "12006", "12007", "12007", "12007", "12008", "12009", "12009", "12010", "12011", "12012", "12013", "12014", "12015", "12015", "12015", "12016", "12016", "12016", "12017", "12017", "12017", "12018", "12018", "12018", "12019", "12019", "12020", "12021", "12022", "12023", "12024", "12024", "12024"])
-  -- Wasp: her signature, Aggression and basic cards
-  , ("wasp", DeckList "13001a" ["aggression"] $ tally ["13002", "13003", "13003", "13004", "13004", "13004", "13005", "13005", "13006", "13006", "13007", "13007", "13008", "13009", "13010", "13011", "13012", "13013", "13013", "13013", "13014", "13014", "13014", "13015", "13015", "13016", "13016", "13016", "13017", "13017", "13017", "13018", "13019", "13020", "13021", "13022", "13023", "13024", "13024", "13025"])
-  -- Quicksilver: his signature, Protection and basic cards
-  , ("quicksilver", DeckList "14001a" ["protection"] $ tally ["14002", "14003", "14003", "14003", "14003", "14004", "14004", "14005", "14005", "14006", "14007", "14008", "14009", "14010", "14011", "14012", "14012", "14012", "14013", "14014", "14014", "14014", "14015", "14015", "14015", "14016", "14016", "14017", "14017", "14017", "14018", "14019", "14020", "14021", "14022", "14022", "14022", "14023", "14023", "14023"])
-  -- Scarlet Witch: her signature, Justice and basic cards
-  , ("scarlet-witch", DeckList "15001a" ["justice"] $ tally ["15002", "15003", "15004", "15004", "15004", "15004", "15005", "15005", "15005", "15006", "15007", "15008", "15008", "15008", "15009", "15010", "15011", "15012", "15012", "15012", "15013", "15013", "15013", "15014", "15014", "15014", "15015", "15015", "15015", "15016", "15016", "15017", "15017", "15018", "15019", "15019", "15019", "15020", "15021", "15022"])
-  -- Star-Lord: his signature, Leadership and basic cards
-  , ("star-lord", DeckList "17001a" ["leadership"] $ tally ["17002", "17003", "17003", "17003", "17004", "17004", "17005", "17005", "17005", "17006", "17007", "17007", "17008", "17009", "17010", "17011", "17012", "17013", "17014", "17014", "17014", "17015", "17015", "17015", "17016", "17016", "17017", "17017", "17017", "17018", "17018", "17019", "17019", "17019", "17020", "17021", "17022", "17023", "17023", "17023"])
-  -- Gamora: her signature, Aggression and basic cards, and Justice and Protection events (Skilled Tactician)
-  , ("gamora", DeckList "18001a" ["aggression"] $ tally ["18002", "18003", "18003", "18004", "18004", "18005", "18005", "18006", "18006", "18007", "18007", "18008", "18009", "18009", "18010", "18011", "18012", "18012", "18012", "18013", "18013", "18013", "18014", "18014", "18015", "18015", "18015", "18016", "18016", "18016", "18017", "18017", "18018", "18019", "18020", "18020", "18020", "18021", "18022", "18023"])
-  -- Groot: his signature, Protection and basic cards
-  , ("groot", DeckList "16001a" ["protection"] $ tally ["16002", "16002", "16003", "16003", "16004", "16004", "16005", "16005", "16005", "16006", "16007", "16008", "16009", "16010", "16011", "16012", "16013", "16013", "16013", "16014", "16014", "16014", "16015", "16015", "16016", "16016", "16016", "16017", "16017", "16017", "16018", "16018", "16019", "16020", "16021", "16022", "16023", "16024", "16024", "16024"])
-  -- Rocket Raccoon: his signature, Aggression and basic cards; Flora and Fauna (16048) is
-  -- the Groot pack's card, added with it
-  , ("rocket-raccoon", DeckList "16029a" ["aggression"] $ tally ["16030", "16030", "16031", "16031", "16032", "16033", "16033", "16034", "16034", "16035", "16036", "16037", "16038", "16038", "16039", "16040", "16041", "16041", "16042", "16042", "16042", "16043", "16043", "16043", "16044", "16044", "16045", "16045", "16045", "16046", "16046", "16046", "16047", "16048", "16049", "16050", "16051", "16052", "16052", "16052"])
-  -- Drax: his signature, Protection and basic cards
-  , ("drax", DeckList "19001a" ["protection"] $ tally ["19002", "19003", "19003", "19004", "19004", "19005", "19005", "19006", "19006", "19007", "19007", "19008", "19009", "19010", "19011", "19012", "19013", "19014", "19014", "19015", "19015", "19015", "19016", "19016", "19016", "19017", "19017", "19017", "19018", "19018", "19018", "19019", "19019", "19020", "19021", "19021", "19021", "19022", "19023", "19024"])
-  -- Venom: his signature, Justice and basic cards
-  , ("venom", DeckList "20001a" ["justice"] $ tally ["20002", "20002", "20003", "20003", "20004", "20005", "20005", "20005", "20006", "20006", "20007", "20008", "20009", "20010", "20010", "20011", "20012", "20012", "20012", "20013", "20013", "20013", "20014", "20014", "20015", "20015", "20015", "20016", "20017", "20018", "20019", "20020", "20020", "20020", "20021", "20021", "20021", "20022", "20022", "20022"])
+    -- Ant-Man: his signature, Leadership and basic cards
+    ("ant-man", DeckList "12001a" ["leadership"] $ tally ["12002", "12003", "12003", "12004", "12005", "12005", "12006", "12006", "12007", "12007", "12007", "12008", "12009", "12009", "12010", "12011", "12012", "12013", "12014", "12015", "12015", "12015", "12016", "12016", "12016", "12017", "12017", "12017", "12018", "12018", "12018", "12019", "12019", "12020", "12021", "12022", "12023", "12024", "12024", "12024"])
+  , -- Wasp: her signature, Aggression and basic cards
+    ("wasp", DeckList "13001a" ["aggression"] $ tally ["13002", "13003", "13003", "13004", "13004", "13004", "13005", "13005", "13006", "13006", "13007", "13007", "13008", "13009", "13010", "13011", "13012", "13013", "13013", "13013", "13014", "13014", "13014", "13015", "13015", "13016", "13016", "13016", "13017", "13017", "13017", "13018", "13019", "13020", "13021", "13022", "13023", "13024", "13024", "13025"])
+  , -- Quicksilver: his signature, Protection and basic cards
+    ("quicksilver", DeckList "14001a" ["protection"] $ tally ["14002", "14003", "14003", "14003", "14003", "14004", "14004", "14005", "14005", "14006", "14007", "14008", "14009", "14010", "14011", "14012", "14012", "14012", "14013", "14014", "14014", "14014", "14015", "14015", "14015", "14016", "14016", "14017", "14017", "14017", "14018", "14019", "14020", "14021", "14022", "14022", "14022", "14023", "14023", "14023"])
+  , -- Scarlet Witch: her signature, Justice and basic cards
+    ("scarlet-witch", DeckList "15001a" ["justice"] $ tally ["15002", "15003", "15004", "15004", "15004", "15004", "15005", "15005", "15005", "15006", "15007", "15008", "15008", "15008", "15009", "15010", "15011", "15012", "15012", "15012", "15013", "15013", "15013", "15014", "15014", "15014", "15015", "15015", "15015", "15016", "15016", "15017", "15017", "15018", "15019", "15019", "15019", "15020", "15021", "15022"])
+  , -- Groot: his signature, Protection and basic cards
+    ("groot", DeckList "16001a" ["protection"] $ tally ["16002", "16002", "16003", "16003", "16004", "16004", "16005", "16005", "16005", "16006", "16007", "16008", "16009", "16010", "16011", "16012", "16013", "16013", "16013", "16014", "16014", "16014", "16015", "16015", "16016", "16016", "16016", "16017", "16017", "16017", "16018", "16018", "16019", "16020", "16021", "16022", "16023", "16024", "16024", "16024"])
+  , -- Rocket Raccoon: his signature, Aggression and basic cards; Flora and Fauna (16048) is
+    -- the Groot pack's card, added with it
+    ("rocket-raccoon", DeckList "16029a" ["aggression"] $ tally ["16030", "16030", "16031", "16031", "16032", "16033", "16033", "16034", "16034", "16035", "16036", "16037", "16038", "16038", "16039", "16040", "16041", "16041", "16042", "16042", "16042", "16043", "16043", "16043", "16044", "16044", "16045", "16045", "16045", "16046", "16046", "16046", "16047", "16048", "16049", "16050", "16051", "16052", "16052", "16052"])
+  , -- Star-Lord: his signature, Leadership and basic cards
+    ("star-lord", DeckList "17001a" ["leadership"] $ tally ["17002", "17003", "17003", "17003", "17004", "17004", "17005", "17005", "17005", "17006", "17007", "17007", "17008", "17009", "17010", "17011", "17012", "17013", "17014", "17014", "17014", "17015", "17015", "17015", "17016", "17016", "17017", "17017", "17017", "17018", "17018", "17019", "17019", "17019", "17020", "17021", "17022", "17023", "17023", "17023"])
+  , -- Gamora: her signature, Aggression and basic cards, and Justice and Protection events (Skilled Tactician)
+    ("gamora", DeckList "18001a" ["aggression"] $ tally ["18002", "18003", "18003", "18004", "18004", "18005", "18005", "18006", "18006", "18007", "18007", "18008", "18009", "18009", "18010", "18011", "18012", "18012", "18012", "18013", "18013", "18013", "18014", "18014", "18015", "18015", "18015", "18016", "18016", "18016", "18017", "18017", "18018", "18019", "18020", "18020", "18020", "18021", "18022", "18023"])
+  , -- Drax: his signature, Protection and basic cards
+    ("drax", DeckList "19001a" ["protection"] $ tally ["19002", "19003", "19003", "19004", "19004", "19005", "19005", "19006", "19006", "19007", "19007", "19008", "19009", "19010", "19011", "19012", "19013", "19014", "19014", "19015", "19015", "19015", "19016", "19016", "19016", "19017", "19017", "19017", "19018", "19018", "19018", "19019", "19019", "19020", "19021", "19021", "19021", "19022", "19023", "19024"])
+  , -- Venom: his signature, Justice and basic cards
+    ("venom", DeckList "20001a" ["justice"] $ tally ["20002", "20002", "20003", "20003", "20004", "20005", "20005", "20005", "20006", "20006", "20007", "20008", "20009", "20010", "20010", "20011", "20012", "20012", "20012", "20013", "20013", "20013", "20014", "20014", "20015", "20015", "20015", "20016", "20017", "20018", "20019", "20020", "20020", "20020", "20021", "20021", "20021", "20022", "20022", "20022"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))
