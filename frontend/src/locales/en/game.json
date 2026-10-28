@@ -45,6 +45,7 @@
     "engaged": "Engaged",
     "allies": "Allies",
     "supports": "Supports & upgrades",
+    "environments": "Environments",
     "river": "In play now"
   },
   "river": {
@@ -64,6 +65,7 @@
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",
     "victoryDisplay": "Victory display",
+    "victoryCondition": "Victory display: {count} of {condition} defeated",
     "collection": "The Collection",
     "deck": "Deck",
     "discard": "Discard",
@@ -74,6 +76,8 @@
     "villainDiscard": "{name}'s discard",
     "sideSchemeDeck": "Side schemes",
     "sideSchemeDiscard": "Side-scheme discard",
+    "infinityStoneDeck": "Infinity Stones",
+    "infinityStoneDiscard": "Infinity Stone discard",
     "named": {
       "experimentalWeapons": "Experimental Weapons",
       "kangsDominion": "Under Kang's Wrath (4A)"

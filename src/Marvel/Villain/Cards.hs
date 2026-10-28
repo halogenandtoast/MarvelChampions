@@ -107,6 +107,36 @@ allVillainCards =
   , collector2
   , collector3
 
+  -- The Mad Titan's Shadow: Ebony Maw
+  , ebonyMaw1
+  , ebonyMaw2
+  , ebonyMaw3
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , proximaMidnight1
+  , proximaMidnight2
+  , proximaMidnight3
+  , corvusGlaive1
+  , corvusGlaive2
+  , corvusGlaive3
+
+  -- The Mad Titan's Shadow: Thanos
+  , thanos1
+  , thanos2
+  , thanos3
+
+  -- The Mad Titan's Shadow: Hela (one card, Mystic and Wounded sides)
+  , helaA1
+  , helaA2
+  , helaB1
+  , helaB2
+
+  -- The Mad Titan's Shadow: Loki
+  , loki1
+  , loki2
+  , loki3
+  , loki4
+  , loki5
   ]
 
 allVillainsMap :: HashMap CardCode CardDef
@@ -381,3 +411,78 @@ collector2 = villain "16071" "Collector" [Elder]
 
 collector3 :: CardDef
 collector3 = villain "16072" "Collector" [Elder]
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+ebonyMaw1 :: CardDef
+ebonyMaw1 = villain "21071" "Ebony Maw" [BlackOrder, Mystic]
+
+ebonyMaw2 :: CardDef
+ebonyMaw2 = villain "21072" "Ebony Maw" [BlackOrder, Mystic]
+
+ebonyMaw3 :: CardDef
+ebonyMaw3 = villain "21073" "Ebony Maw" [BlackOrder, Mystic]
+
+-- The Mad Titan's Shadow: Tower Defense
+
+proximaMidnight1 :: CardDef
+proximaMidnight1 = villain "21092" "Proxima Midnight" [BlackOrder]
+
+proximaMidnight2 :: CardDef
+proximaMidnight2 = villain "21093" "Proxima Midnight" [BlackOrder]
+
+proximaMidnight3 :: CardDef
+proximaMidnight3 = villain "21094" "Proxima Midnight" [BlackOrder]
+
+corvusGlaive1 :: CardDef
+corvusGlaive1 = villain "21095" "Corvus Glaive" [BlackOrder]
+
+corvusGlaive2 :: CardDef
+corvusGlaive2 = villain "21096" "Corvus Glaive" [BlackOrder]
+
+corvusGlaive3 :: CardDef
+corvusGlaive3 = villain "21097" "Corvus Glaive" [BlackOrder]
+
+-- The Mad Titan's Shadow: Thanos
+
+thanos1 :: CardDef
+thanos1 = (villain "21111" "Thanos" [BlackOrder, Titan]) {cdKeywords = singleton Stalwart}
+
+thanos2 :: CardDef
+thanos2 = (villain "21112" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
+
+thanos3 :: CardDef
+thanos3 = (villain "21113" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
+
+-- The Mad Titan's Shadow: Loki
+-- five versions of one stage I, each with victory 1 (MTS rulebook p.24)
+
+loki1 :: CardDef
+loki1 = (villain "21160" "Loki" [Asgard, Mystic]) {cdKeywords = singleton (Victory 1)}
+
+loki2 :: CardDef
+loki2 = (villain "21161" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Retaliate 1, Victory 1]}
+
+loki3 :: CardDef
+loki3 = (villain "21162" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
+
+loki4 :: CardDef
+loki4 = (villain "21163" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
+
+-- | "[star] Loki's attacks gain piercing": the keyword on his card.
+loki5 :: CardDef
+loki5 = (villain "21164" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Piercing, Victory 1]}
+
+-- The Mad Titan's Shadow: Hela
+
+helaA1 :: CardDef
+helaA1 = villain "21136a" "Hela" [Asgard, Mystic]
+
+helaA2 :: CardDef
+helaA2 = villain "21136b" "Hela" [Asgard, Wounded]
+
+helaB1 :: CardDef
+helaB1 = villain "21137a" "Hela" [Asgard, Mystic]
+
+helaB2 :: CardDef
+helaB2 = villain "21137b" "Hela" [Asgard, Wounded]

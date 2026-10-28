@@ -114,16 +114,25 @@ windowMatches matcher w source = case matcher of
   VillainDamaged timing villainMatcher -> case windowType w of
     DamagedVillain villainId damage
       | timing == windowTiming w -> do
-          tough <-
-            if timing == When && preventedByTough damage
-              then villainMatches VillainWithToughStatus villainId
-              else pure False
-          (not tough &&) <$> villainMatches villainMatcher villainId
+          would <- if timing == When then wouldTakeDamage villainId damage else pure True
+          (would &&) <$> villainMatches villainMatcher villainId
+    _ -> pure False
+  VillainWouldTakeDamage villainMatcher damageMatcher -> case windowType w of
+    DamagedVillain villainId damage
+      | windowTiming w == When -> do
+          would <- wouldTakeDamage villainId damage
+          if would then liftA2 (&&) (villainMatches villainMatcher villainId) (damageMatches damageMatcher damage) else pure False
     _ -> pure False
   VillainDamagedBy timing villainMatcher damageMatcher -> case windowType w of
     DamagedVillain villainId damage
       | timing == windowTiming w ->
           liftA2 (&&) (villainMatches villainMatcher villainId) (damageMatches damageMatcher damage)
+    _ -> pure False
+  VillainWasSwapped timing villainMatcher -> case windowType w of
+    VillainSwapped villainId | timing == windowTiming w -> villainMatches villainMatcher villainId
+    _ -> pure False
+  VillainIsDefeated timing villainMatcher -> case windowType w of
+    VillainDefeat villainId | timing == windowTiming w -> villainMatches villainMatcher villainId
     _ -> pure False
   VillainSchemed timing villainMatcher -> case windowType w of
     Schemed villainId
@@ -168,6 +177,11 @@ windowMatches matcher w source = case matcher of
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
     _ -> pure False
+  PlayerDeckResets timing identityMatcher -> case windowType w of
+    PlayerDeckReset identityId
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
   TurnEnds timing identityMatcher -> case windowType w of
     TurnEnded identityId
       | windowTiming w == timing ->
@@ -177,6 +191,19 @@ windowMatches matcher w source = case matcher of
     IdentityChangesForm identityId
       | windowTiming w == timing ->
           identityMatches identityMatcher identityId
+    _ -> pure False
+  IdentityChangedAnyForm timing identityMatcher -> case windowType w of
+    IdentityChangesForm identityId
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    EnergyFormChanged identityId _
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
+    _ -> pure False
+  EnergyFormChangedTo timing upgradeMatcher -> case windowType w of
+    EnergyFormChanged _ upgradeId
+      | windowTiming w == timing ->
+          upgradeMatches upgradeMatcher upgradeId
     _ -> pure False
   MakesBasicAttackAgainst timing identityMatcher enemyMatcher -> case windowType w of
     MadeBasicAttackAgainst identityId enemyId
@@ -280,6 +307,10 @@ windowMatches matcher w source = case matcher of
     DefeatedAlly allyId (Just _)
       | windowTiming w == timing -> allyMatches allyMatcher allyId
     _ -> pure False
+  AllyDefeatedByAttackOf timing enemyMatcher -> case windowType w of
+    DefeatedAlly _ (Just enemyId)
+      | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
+    _ -> pure False
   BoostCardFlipped timing enemyMatcher -> case windowType w of
     FlippedBoostCard _ enemyId
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
@@ -296,6 +327,9 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   PlaysAlly allyMatcher -> case windowType w of
     PlayedAlly aid | windowTiming w == After -> allyMatches allyMatcher aid
+    _ -> pure False
+  PlayedFromHand identityMatcher cardMatcher -> case windowType w of
+    PlayedCardFromHand ident card | windowTiming w == After && cardMatch cardMatcher card -> identityMatches identityMatcher ident
     _ -> pure False
   PlaysCardFromHand identityMatcher cardMatcher -> case windowType w of
     PlayingCardFromHand ident card | cardMatch cardMatcher card -> identityMatches identityMatcher ident
@@ -362,3 +396,12 @@ defeatedSideSchemeMatches :: (HasGame m) => SideSchemeMatcher -> SideSchemeId ->
 defeatedSideSchemeMatches matcher sideSchemeId = case matcher of
   AnySideScheme -> pure True
   _ -> sideSchemeMatches (LeftPlaySideScheme matcher) sideSchemeId
+
+-- | Whether the villain would take the damage his "when dealt damage" window is for: some
+-- (none is opened with damage he cannot take, as 0), and not all of it prevented by his
+-- tough status card, whose interrupt is first (RR Simultaneous Timing Priority).
+wouldTakeDamage :: (HasGame m) => VillainId -> Damage -> m Bool
+wouldTakeDamage villainId damage
+  | damageAmount damage == 0 = pure False
+  | preventedByTough damage = not <$> villainMatches VillainWithToughStatus villainId
+  | otherwise = pure True

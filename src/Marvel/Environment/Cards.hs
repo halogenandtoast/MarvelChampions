@@ -44,6 +44,24 @@ allEnvironments = fromList $ map (toFst toCardCode)
 
   -- The Galaxy's Most Wanted: Nebula
   , nebulasShip
+
+  -- The Mad Titan's Shadow: Ebony Maw
+  , fireball
+  , manipulation
+  , pacification
+  , rubblestorm
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , avengersTowerStronghold
+  , avengersTowerDamaged
+
+  -- The Mad Titan's Shadow: Infinity Gauntlet
+  , mindStone
+  , infinityPowerStone
+  , realityStone
+  , soulStone
+  , spaceStone
+  , timeStone
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -182,3 +200,82 @@ nebulasShip =
     , cdEncounterSet = Just Nebula
     , cdEncounterSetQuantity = Just 0
     }
+
+-- The Mad Titan's Shadow: Tower Defense
+
+-- | Put into play by The Armies of Thanos (2A), so none is shuffled into the encounter
+-- deck. "A unique, double-sided environment card" (MTS rulebook p.11).
+avengersTowerStronghold :: CardDef
+avengersTowerStronghold =
+  ultronDrones
+    { cdCardCode = "21100a"
+    , cdName = "Avengers Tower"
+    , cdTraits = singleton Stronghold
+    , cdUnique = True
+    , cdEncounterSet = Just TowerDefense
+    , cdEncounterSetQuantity = Just 0
+    }
+
+avengersTowerDamaged :: CardDef
+avengersTowerDamaged = avengersTowerStronghold {cdCardCode = "21100b", cdTraits = singleton Damaged}
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+-- | Ebony Maw's Spells: surge, boost 2, two of each.
+spell :: CardCode -> Name -> CardDef
+spell code name =
+  ultronDrones
+    { cdCardCode = code
+    , cdName = name
+    , cdTraits = singleton Spell
+    , cdKeywords = singleton Surge
+    , cdEncounterSet = Just EbonyMaw
+    , cdEncounterSetQuantity = Just 2
+    , cdBoostIcons = [Boost, Boost]
+    }
+
+fireball :: CardDef
+fireball = spell "21076" "Fireball"
+
+manipulation :: CardDef
+manipulation = spell "21077" "Manipulation"
+
+pacification :: CardDef
+pacification = spell "21078" "Pacification"
+
+rubblestorm :: CardDef
+rubblestorm = spell "21079" "Rubblestorm"
+
+-- The Mad Titan's Shadow: Infinity Gauntlet
+
+-- | An Infinity Stone: set aside as the Infinity Stone deck by the Infinity Gauntlet, so
+-- none is in the encounter deck once it is attached.
+infinityStone :: CardCode -> Name -> Natural -> CardDef
+infinityStone code name boosts =
+  ultronDrones
+    { cdCardCode = code
+    , cdName = name
+    , cdTraits = singleton InfinityStone
+    , cdEncounterSet = Just InfinityGauntlet
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = replicate (fromIntegral boosts) Boost
+    }
+
+mindStone :: CardDef
+mindStone = infinityStone "21130" "Mind Stone" 2
+
+-- | The other Power Stone (16149) is The Galaxy's Most Wanted's attachment.
+infinityPowerStone :: CardDef
+infinityPowerStone = infinityStone "21131" "Power Stone" 3
+
+realityStone :: CardDef
+realityStone = infinityStone "21132" "Reality Stone" 3
+
+soulStone :: CardDef
+soulStone = infinityStone "21133" "Soul Stone" 1
+
+spaceStone :: CardDef
+spaceStone = infinityStone "21134" "Space Stone" 2
+
+timeStone :: CardDef
+timeStone = infinityStone "21135" "Time Stone" 4

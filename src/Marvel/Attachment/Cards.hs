@@ -133,6 +133,42 @@ allAttachments =
       , vandarianPowerWand
       -- Drax
       , challengeAccepted
+      -- Spectrum
+      , sapPower
+
+      -- The Mad Titan's Shadow: Ebony Maw
+      , abjuration
+      , restrained
+
+      -- The Mad Titan's Shadow: Tower Defense
+      , focusedDefense
+      , proximasSpear
+      , corvussGlaive
+      , directAssault
+
+      -- The Mad Titan's Shadow: Thanos
+      , thanossArmor
+      , thanossHelmet
+      , masterOfTheStones
+      -- Infinity Gauntlet
+      , infinityGauntlet
+      -- The Mad Titan's Shadow: Loki
+      , lokisStaff
+      , lokisCrown
+      , lokisCape
+      , masterOfIllusions
+
+      -- The Mad Titan's Shadow: Hela
+      , nightsword
+      , helasCrown
+      , helasCloak
+      -- Legions of Hel
+      , fallenWarrior
+      -- Frost Giants
+      , frozen
+      -- Enchantress
+      , beguiled
+      , seduced
       ]
 
 attachment ::
@@ -484,3 +520,95 @@ challengeAccepted =
   (attachment "19028" "Challenge Accepted" [] [Boost] DraxNemesis 1)
     { cdKeywords = singleton Surge
     }
+
+-- Spectrum
+
+sapPower :: CardDef
+sapPower = attachment "21029" "Sap Power" [] [Boost, Boost] SpectrumNemesis 2
+
+-- The Mad Titan's Shadow: Tower Defense
+
+-- | Permanent. Put into play by The Armies of Thanos (2A), so none is shuffled into the
+-- encounter deck.
+focusedDefense :: CardDef
+focusedDefense = (attachment "21101" "Focused Defense" [] [] TowerDefense 0) {cdKeywords = singleton Permanent}
+
+proximasSpear :: CardDef
+proximasSpear = unique $ attachment "21103" "Proxima's Spear" [Weapon] [Boost, Boost, Boost] TowerDefense 1
+
+corvussGlaive :: CardDef
+corvussGlaive = unique $ attachment "21104" "Corvus's Glaive" [Weapon] [Boost, Boost, Boost] TowerDefense 1
+
+directAssault :: CardDef
+directAssault = attachment "21105" "Direct Assault" [Tactic] [Boost, Boost] TowerDefense 2
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+abjuration :: CardDef
+abjuration = attachment "21082" "Abjuration" [] [Boost, Boost, Boost] EbonyMaw 1
+
+restrained :: CardDef
+restrained = attachment "21083" "Restrained" [] [Boost, Boost] EbonyMaw 1
+
+-- The Mad Titan's Shadow: Thanos
+
+-- | Attach to Thanos.
+thanossArmor :: CardDef
+thanossArmor = unique $ attachment "21117" "Thanos's Armor" [Armor] [Boost, Boost, Boost] Thanos 1
+
+-- | Attach to Thanos.
+thanossHelmet :: CardDef
+thanossHelmet = unique $ attachment "21118" "Thanos's Helmet" [Armor] [Boost, Boost, Boost] Thanos 1
+
+-- | Attach to Thanos: +1 ATK, +1 SCH.
+masterOfTheStones :: CardDef
+masterOfTheStones = attachment "21119" "Master of the Stones" [] [Boost] Thanos 2
+
+-- Infinity Gauntlet
+
+-- | Permanent. Setup. Attach to the villain (errata): +1 ATK, +1 SCH.
+infinityGauntlet :: CardDef
+infinityGauntlet = (unique $ attachment "21129" "Infinity Gauntlet" [Artifact, Weapon] [] InfinityGauntlet 1) {cdKeywords = fromList [Permanent, Setup]}
+
+-- The Mad Titan's Shadow: Loki
+
+lokisStaff :: CardDef
+lokisStaff = unique $ attachment "21170" "Loki's Staff" [Weapon] [Star] Loki 1
+
+lokisCrown :: CardDef
+lokisCrown = unique $ attachment "21171" "Loki's Crown" [Item] [Star] Loki 1
+
+lokisCape :: CardDef
+lokisCape = unique $ attachment "21172" "Loki's Cape" [Armor] [Boost, Boost] Loki 1
+
+masterOfIllusions :: CardDef
+masterOfIllusions = attachment "21173" "Master of Illusions" [Condition] [Boost] Loki 1
+
+-- The Mad Titan's Shadow: Hela
+
+nightsword :: CardDef
+nightsword = unique $ attachment "21146" "Nightsword" [Weapon] [Star] Hela 1
+
+helasCrown :: CardDef
+helasCrown = unique $ attachment "21147" "Hela's Crown" [Item] [Star] Hela 1
+
+helasCloak :: CardDef
+helasCloak = unique $ attachment "21148" "Hela's Cloak" [Armor] [Star] Hela 1
+
+-- Legions of Hel
+
+fallenWarrior :: CardDef
+fallenWarrior = attachment "21153" "Fallen Warrior" [Condition] [Boost, Boost] LegionsOfHel 2
+
+-- Frost Giants
+
+frozen :: CardDef
+frozen = attachment "21158" "Frozen" [Condition] [Boost, Boost] FrostGiants 2
+
+-- Enchantress
+
+beguiled :: CardDef
+beguiled = attachment "21178" "Beguiled" [Condition] [Boost] Enchantress 2
+
+seduced :: CardDef
+seduced = attachment "21179" "Seduced" [Condition] [Boost, Boost] Enchantress 2

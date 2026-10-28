@@ -30,7 +30,7 @@ instance RunMessage SniperShot where
       if isHero
         then damageIdentity identityId attrs (toDamage 3 FromTreachery)
         else do
-          mainScheme <- selectJust MainScheme
-          placeThreat mainScheme 3
+          mainSchemes <- selectList MainScheme
+          for_ mainSchemes (`placeThreat` 3)
       pure t
     _ -> SniperShot <$> runMessage msg attrs

@@ -11,6 +11,16 @@ import Marvel.Ref
 data AllyMessage
   = ExhaustedAlly
   | ReadiedAlly
+  | -- | another player takes control of it, in their play area (Odin following the
+    -- first player)
+    AllyChangedController IdentityId
+  | -- | the damage on it set, as it was a minion's (back from being one)
+    AllySetDamage Natural
+  | -- | it is flipped to its other face (Odin, Captive to King): the same card in play,
+    -- its damage, status cards, counters, upgrades and attachments kept (RR Flip)
+    FlipAlly
+  | -- | readied by the game or an encounter card, not a player card (Unnatural Storm)
+    ReadiedAllyByGame
   | AllyAttacked
   | -- | the interrupts to the attack resolved: the damage lands, if the enemy is still
     -- in play to take it

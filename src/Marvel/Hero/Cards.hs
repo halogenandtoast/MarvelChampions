@@ -65,6 +65,12 @@ allHeroCards =
 
   -- Venom
   , venom
+
+  -- Spectrum
+  , spectrum
+
+  -- Adam Warlock
+  , adamWarlockHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -190,3 +196,15 @@ drax = hero "19001a" "Drax" [Guardian]
 
 venom :: CardDef
 venom = hero "20001a" "Venom" [Guardian, SpaceKnight]
+
+-- Spectrum
+
+-- | Unique, as printed (MarvelCDB has her not unique).
+spectrum :: CardDef
+spectrum = hero "21001a" "Spectrum" [Aerial, Avenger]
+
+-- Adam Warlock
+
+-- | Not the ally of the same name (17011).
+adamWarlockHero :: CardDef
+adamWarlockHero = hero "21031a" "Adam Warlock" [Guardian, Mystic]

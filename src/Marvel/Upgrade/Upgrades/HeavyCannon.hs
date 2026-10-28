@@ -42,11 +42,13 @@ instance RunMessage HeavyCannon where
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       milano <- controlsMilano you
       enemies <- selectList DamageableEnemy
-      -- "the villain": the active one, when there are several
-      active <- selectOne ActiveVillain
-      let amount = \case
-            EnemyVillainId v | milano, Just v == active -> 2
-            _ -> 1
-      dealDamagesToEach attrs [(enemy, toDamage (amount enemy) FromAbility) | enemy <- enemies]
+      -- "the villain": the active one, or the one you choose where you may; asked only
+      -- when it matters, with the Milano
+      let deal active = do
+            let amount = \case
+                  EnemyVillainId v | Just v == active -> 2
+                  _ -> 1
+            dealDamagesToEach attrs [(enemy, toDamage (amount enemy) FromAbility) | enemy <- enemies]
+      if milano then withTheVillainIfAny you deal else deal Nothing
       pure u
     _ -> HeavyCannon <$> runMessage msg attrs

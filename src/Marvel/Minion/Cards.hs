@@ -162,6 +162,40 @@ allMinions =
 
       -- Venom
       , enragedSymbiote
+
+      -- Spectrum
+      , radioactiveManNemesis
+
+      -- Adam Warlock
+      , theMagus
+      , zealotOfTruth
+
+      -- The Mad Titan's Shadow: Black Order
+      , blackDwarf
+      , supergiant
+      -- Armies of Titan
+      , blackOrderInfantry
+      , outrider
+
+      -- The Mad Titan's Shadow: Tower Defense
+      , blackOrderBesieger
+
+      -- The Mad Titan's Shadow: Children of Thanos
+      , corvusGlaiveMinion
+      , proximaMidnightMinion
+      , ebonyMawMinion
+
+      -- The Mad Titan's Shadow: Hela
+      , garm
+      , skurge
+      , nidhogg
+      -- Legions of Hel
+      , draugr
+      -- Frost Giants
+      , laufey
+      , frostGiantFrostGiants
+      -- Enchantress
+      , enchantress
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -170,6 +204,7 @@ allSpecialMinions =
     map
       (toFst toCardCode)
       [ drone
+      , allyMinion
       ]
 
 minion ::
@@ -353,7 +388,7 @@ hydraSoldierCaptainAmerica =
 -- | The nemesis minions named so on their cards, in nemesis sets with more than one
 -- minion.
 designatedNemesisMinions :: [CardDef]
-designatedNemesisMinions = [baronZemo, thomasEdison, loki, taskmaster]
+designatedNemesisMinions = [baronZemo, thomasEdison, loki, taskmaster, theMagus]
 
 -- | Whether the card is its nemesis set's nemesis minion: the one the set names, or its
 -- only minion.
@@ -760,3 +795,89 @@ enragedSymbiote =
   (minion "20025" "Enraged Symbiote" [Symbiote] [Star] VenomNemesis 4)
     { cdKeywords = fromList [Guard, Patrol]
     }
+
+-- Spectrum
+
+-- | Spectrum's nemesis minion, not the Masters of Evil one (01129).
+radioactiveManNemesis :: CardDef
+radioactiveManNemesis = unique $ minion "21027" "Radioactive Man" [Elite, Genius] [Star] SpectrumNemesis 1
+
+-- Adam Warlock
+
+theMagus :: CardDef
+theMagus =
+  unique $
+    (minion "21067" "The Magus" [Elite, Mystic] [Boost, Boost] AdamWarlockNemesis 1)
+      { cdKeywords = fromList [Quickstrike, Toughness]
+      }
+
+zealotOfTruth :: CardDef
+zealotOfTruth = minion "21069" "Zealot of Truth" [Mystic] [Star] AdamWarlockNemesis 2
+
+-- The Mad Titan's Shadow: Tower Defense
+
+blackOrderBesieger :: CardDef
+blackOrderBesieger = minion "21102" "Black Order Besieger" [BlackOrder] [Boost] TowerDefense 4
+
+-- The Mad Titan's Shadow: Black Order
+
+blackDwarf :: CardDef
+blackDwarf = unique $ minion "21085" "Black Dwarf" [BlackOrder, Elite] [Boost, Boost, Boost] BlackOrderSet 1
+
+supergiant :: CardDef
+supergiant = unique $ (minion "21086" "Supergiant" [BlackOrder, Elite] [Boost, Boost] BlackOrderSet 1) {cdKeywords = singleton Quickstrike}
+
+-- Armies of Titan
+
+blackOrderInfantry :: CardDef
+blackOrderInfantry = (minion "21089" "Black Order Infantry" [BlackOrder] [Star] ArmiesOfTitan 2) {cdKeywords = singleton Guard}
+
+outrider :: CardDef
+outrider = minion "21090" "Outrider" [BlackOrder] [Star] ArmiesOfTitan 2
+
+-- The Mad Titan's Shadow: Children of Thanos (the villains of the same names are Tower
+-- Defense's and Ebony Maw's)
+
+corvusGlaiveMinion :: CardDef
+corvusGlaiveMinion = unique $ (minion "21125" "Corvus Glaive" [BlackOrder, Elite] [Star] ChildrenOfThanos 1) {cdKeywords = fromList [Retaliate 1, Toughness]}
+
+proximaMidnightMinion :: CardDef
+proximaMidnightMinion = unique $ minion "21126" "Proxima Midnight" [BlackOrder, Elite] [Star] ChildrenOfThanos 1
+
+ebonyMawMinion :: CardDef
+ebonyMawMinion = unique $ (minion "21127" "Ebony Maw" [BlackOrder, Elite] [Boost, Star] ChildrenOfThanos 1) {cdKeywords = singleton Villainous}
+
+-- The Mad Titan's Shadow: Hela
+
+garm :: CardDef
+garm = unique $ (minion "21143" "Garm" [Creature, Elite] [Boost, Boost] Hela 1) {cdKeywords = fromList [Toughness, Victory 2]}
+
+skurge :: CardDef
+skurge = unique $ (minion "21144" "Skurge" [Asgard, Elite] [Boost, Boost, Boost] Hela 1) {cdKeywords = fromList [Toughness, Victory 3]}
+
+nidhogg :: CardDef
+nidhogg = unique $ (minion "21145" "Nidhogg" [Creature, Elite] [Boost, Boost, Boost, Boost] Hela 1) {cdKeywords = fromList [Toughness, Victory 4]}
+
+-- Legions of Hel
+
+draugr :: CardDef
+draugr = (minion "21152" "Draugr" [Undead] [Boost] LegionsOfHel 2) {cdKeywords = singleton Guard}
+
+-- | An ally treated as a minion with a blank text box (Fallen Warrior, Beguiled): the
+-- entity it is, its card the ally's.
+allyMinion :: CardDef
+allyMinion = minion "xallyminion" "Ally" [] [] LegionsOfHel 0
+
+-- Frost Giants
+
+laufey :: CardDef
+laufey = unique $ (minion "21156" "Laufey" [Elite, Giant] [Boost, Boost, Boost, Boost] FrostGiants 1) {cdKeywords = singleton Toughness}
+
+-- | The same card as Thor's nemesis set's Frost Giant.
+frostGiantFrostGiants :: CardDef
+frostGiantFrostGiants = (reprint "21157" frostGiant) {cdEncounterSet = Just FrostGiants, cdEncounterSetQuantity = Just 2}
+
+-- Enchantress
+
+enchantress :: CardDef
+enchantress = unique $ minion "21177" "Enchantress" [Asgard, Elite] [Boost, Boost] Enchantress 1

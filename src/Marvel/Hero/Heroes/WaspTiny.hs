@@ -54,8 +54,7 @@ newtype WaspTiny = WaspTiny (Attrs Hero)
 
 instance RunMessage WaspTiny where
   runMessage msg h@(WaspTiny attrs) = runQueueT $ case msg of
-    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      villains <- selectList VillainEnemy
-      dealDamageToEach villains attrs (toDamage 1 FromAbility)
+    RanAbility you (isTarget attrs -> True) 1 _ _ -> do
+      withTheVillain you \villain -> dealDamage villain attrs (toDamage 1 FromAbility)
       pure h
     _ -> WaspTiny <$> runMessage msg attrs

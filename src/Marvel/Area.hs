@@ -26,6 +26,9 @@ data DeckKey
   | VillainDeckKey VillainId
   | NamedDeckKey Text
   | SideSchemeDeckKey
+  | -- | the Infinity Gauntlet's six stones, facedown beside the villain, with a discard
+    -- pile of their own, shuffled back without penalty (MTS rulebook p.16)
+    InfinityStoneDeckKey
   deriving stock (Show, Eq, Ord, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 

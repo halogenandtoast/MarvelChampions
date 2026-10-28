@@ -49,3 +49,7 @@ import Marvel.AlterEgo.AlterEgos.RocketRaccoonAlterEgo as X
 import Marvel.AlterEgo.AlterEgos.DraxAlterEgo as X
 -- Venom
 import Marvel.AlterEgo.AlterEgos.FlashThompson as X
+-- Spectrum
+import Marvel.AlterEgo.AlterEgos.MonicaRambeau as X
+-- Adam Warlock
+import Marvel.AlterEgo.AlterEgos.AdamWarlock as X

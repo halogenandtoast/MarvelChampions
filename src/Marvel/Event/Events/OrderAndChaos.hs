@@ -28,9 +28,9 @@ newtype OrderAndChaos = OrderAndChaos (Attrs Event)
 -- effects (its incite too, RR Incite X), then deal 2 damage to the villain.
 instance RunMessage OrderAndChaos where
   runMessage msg e@(OrderAndChaos attrs) = runQueueT $ case msg of
-    EventMessage ident (PlayedEvent _ _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck))) | ident == eventId attrs -> do
+    EventMessage ident (PlayedEvent you _ (Just (W.RevealTreachery tid W.RevealedFromEncounterDeck))) | ident == eventId attrs -> do
       cancelWhenRevealed tid
       -- with no villain in play (as between one Kang and the next), no damage
-      selectOne ActiveVillain >>= traverse_ \villain -> dealDamage villain attrs (toDamage 2 FromAbility)
+      withTheVillain you \villain -> dealDamage villain attrs (toDamage 2 FromAbility)
       pure e
     _ -> OrderAndChaos <$> runMessage msg attrs

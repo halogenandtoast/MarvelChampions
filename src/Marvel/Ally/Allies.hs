@@ -113,3 +113,19 @@ import Marvel.Ally.Allies.GamoraAlly as X
 -- Venom
 import Marvel.Ally.Allies.JackFlagJackHarrison as X
 import Marvel.Ally.Allies.StarLordPeterQuill as X
+-- Spectrum
+import Marvel.Ally.Allies.BlueMarvelAdamBrashear as X
+import Marvel.Ally.Allies.CaptainAmericaSteveRogers as X
+import Marvel.Ally.Allies.PowerManVictorAlvarez as X
+import Marvel.Ally.Allies.WhiteTigerAvaAyala as X
+import Marvel.Ally.Allies.Kaluu as X
+import Marvel.Ally.Allies.BladeEricBrooks as X
+-- Adam Warlock
+import Marvel.Ally.Allies.PipTheTroll as X
+import Marvel.Ally.Allies.MarvelBoyNohVarr as X
+import Marvel.Ally.Allies.QuasarWendellVaughn as X
+import Marvel.Ally.Allies.MajorVictoryVanceAstro as X
+import Marvel.Ally.Allies.Charlie27 as X
+import Marvel.Ally.Allies.MartinexTNaga as X
+-- The Mad Titan's Shadow: Hela
+import Marvel.Ally.Allies.Odin as X

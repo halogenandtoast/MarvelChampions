@@ -35,11 +35,11 @@ instance RunMessage Thoughtcasting where
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
       hand <- projectMap PlayerIdentityHand unHand identityId
       hero <- member identityId <$> select HeroIdentity
-      mainScheme <- selectJust MainScheme
+      mainSchemes <- selectList MainScheme
       let highest = maximum (0 : map printedCost hand)
           consequence c
             | hero = damageCharacter identityId attrs (toDamage (printedCost c) FromTreachery)
-            | otherwise = placeThreat mainScheme (printedCost c)
+            | otherwise = for_ mainSchemes (`placeThreat` printedCost c)
       chooseOnePrompted identityId "$label.discardHighestCost"
         [ targeting c (discardCard c >> consequence c)
         | c <- hand

@@ -86,6 +86,12 @@ allSupports = fromList $ concatMap
   -- Venom
   , projectRebirth20
   , crewQuarters
+
+  -- Spectrum
+  , mightyAvengers
+
+  -- Adam Warlock
+  , soulWorld
   ]
 
 support
@@ -182,7 +188,7 @@ medTeam :: CardDef
 medTeam = reprintedAs ["09018"] $ support "01080" "Med Team" 3 [Shield] [Energy] Protection
 
 avengersMansion :: CardDef
-avengersMansion = reprintedAs ["05022", "06025", "09025", "10023"] $ limited (MaxPerPlayer 1)
+avengersMansion = reprintedAs ["05022", "06025", "09025", "10023", "21021"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01091" "Avengers Mansion" 4 [Avenger, Location] [Mental]
 
 helicarrier :: CardDef
@@ -197,7 +203,7 @@ quinjet :: CardDef
 quinjet = support "03019" "Quinjet" 1 [Avenger, Vehicle] [Energy] Leadership
 
 avengersTower :: CardDef
-avengersTower = reprintedAs ["04021"] $
+avengersTower = reprintedAs ["04021", "21020"] $
   unique $ basicSupport "03024" "Avengers Tower" 2 [Avenger, Location] [Mental]
 
 aamirKhan :: CardDef
@@ -326,3 +332,13 @@ projectRebirth20 = unique $ identitySupport "20007" "Project Rebirth 2.0" 1 [] [
 
 crewQuarters :: CardDef
 crewQuarters = limited (MaxPerPlayerUnderAnyControl 1) $ basicSupport "20029" "Crew Quarters" 1 [Location] [Mental]
+
+-- Spectrum
+
+mightyAvengers :: CardDef
+mightyAvengers = limited (MaxTraitPerPlayerUnderAnyControl Team 1) $ support "21015" "Mighty Avengers" 3 [Team] [Energy] Leadership
+
+-- Adam Warlock
+
+soulWorld :: CardDef
+soulWorld = unique $ identitySupport "21033" "Soul World" 1 [Location] [Mental]

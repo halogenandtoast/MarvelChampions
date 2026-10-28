@@ -16,6 +16,7 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
+import Marvel.Deck
 import Marvel.Discard
 import Marvel.Hand
 import Marvel.Game.Source
@@ -31,7 +32,7 @@ import Marvel.Queue (HasQueue)
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Resource.Resources (afterSpent)
-import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (ResolvedAbility))
+import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility))
 
 
 -- | Pay this part of the cost. Resources are paid first, so a cost that cannot be paid
@@ -101,6 +102,16 @@ payCostPart activeCost = go
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
       oneOf upgrades \u -> discardUpgrade u >> paid (DiscardPayment $ toTarget u)
     DiscardTopOfDeckCost -> discardTopOfDeck iid 1
+    -- the cards discarded are paid with ('paymentDiscards'); none discarded, none paid
+    DiscardTopOfDeckCardsCost lo hi -> do
+      inDeck <- projectMap PlayerIdentityDeck (fromIntegral . length . unDeck) iid
+      chooseOnePromptedAbout iid "$label.discardFromTopOfDeck" (activeCostSource activeCost)
+        [ labeled (countLabel "discardTopOfDeck" k) (when (k > 0) $ discardFromDeck iid k (ActiveCostRef acid))
+        | k <- [lo .. min hi inDeck]
+        ]
+    DiscardTopOfDeckForDamageCost -> do
+      n <- pendingDamageAmount iid
+      when (n > 0) $ discardFromDeck iid n (ActiveCostRef acid)
     -- one at a time, until the player is done or has exhausted as many as it allows
     ExhaustAlliesCost n m -> do
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
@@ -113,6 +124,16 @@ payCostPart activeCost = go
                   payCost acid (ExhaustAlliesCost (subtractNatural 1 n) (subtract 1 <$> m))
                | a <- allies
                ]
+    ExhaustAlliesMatchingCost matcher n -> do
+      allies <- selectList (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
+      when (n > 0) $
+        chooseOnePromptedAbout iid "$label.chooseAllyToExhaust" (activeCostSource activeCost) $
+          [ targeting a do
+              exhaust a
+              paid (ExhaustedAllyPayment a)
+              payCost acid (ExhaustAlliesMatchingCost matcher (n - 1))
+          | a <- allies
+          ]
     ExhaustCharacterWithTraitCost t -> do
       you <- selectList (IdentityWithId iid <> UnexhaustedIdentity <> IdentityWithTrait t)
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid) <> AllyWithTrait t)
@@ -123,6 +144,13 @@ payCostPart activeCost = go
       discardUntil FromEncounterDeck (CardWithType MinionType) (ActiveCostRef acid)
     DealEncounterCardCost -> dealEncounterCard iid
     IdentityCountersCost n -> removeCounters (IdentityRef iid) n
+    CountersFromThisCost n -> do
+      let source = activeCostSource activeCost
+      most <- getCountersOn source
+      chooseOne iid
+        [ labeled (countLabel "discardCounters" k) (removeCounters source k >> paid (CountersPayment k))
+        | k <- [max 1 n .. most]
+        ]
     DiscardTopEncounterCardCost -> do
       top <- take 1 <$> getEncounterDeck
       discardTopOfEncounterDeck 1
@@ -134,6 +162,7 @@ payCostPart activeCost = go
     MultiResourceCost _ -> resourcePayment
     DifferentResourcesCost _ -> resourcePayment
     MayOverpay -> resourcePayment
+    ResourcesFromHandCost _ -> resourcePayment
     ExhaustMilanoCost -> exhaustMilano >> paid ExhaustPayment
     IfControlsMilanoCost c c' -> controlsMilano iid >>= \m -> go (if m then c else c')
     Costs xs -> traverse_ go (condenseResourceCosts xs)
@@ -151,8 +180,15 @@ payCostPart activeCost = go
         ForCard card -> Just card
         _ -> Nothing
       spendable = any (canSpendOn $ maybe NoCriteria (cdCriteria . getCardDef) mcard)
-    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) =<< getAvailablePaymentSources iid
-    abilities <- filterM (fmap spendable . abilityResources) =<< getResourceAbilities iid mcard
+    -- a card's ability used from hand (Pip the Troll) is not paid for with that card
+    let notTheSource c = activeCostSource activeCost /= CardIdRef (pcCardId c)
+    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getAvailablePaymentSources iid
+    -- "from your hand": the cards in it, none of the resource abilities in play
+    let fromHandOnly = notNull [() | ResourcesFromHandCost _ <- flattenCosts (activeCostCost activeCost)]
+    abilities <-
+      if fromHandOnly
+        then pure []
+        else filterM (fmap spendable . abilityResources) =<< getResourceAbilities iid mcard
     isPaid <- resourceCostPaid activeCost
     let
       wilds = paymentWilds (activeCostPayment activeCost)
@@ -210,6 +246,7 @@ isResourceCost (MultiResourceCost _) = True
 isResourceCost (DynamicResourceCost _) = True
 isResourceCost (DifferentResourcesCost _) = True
 isResourceCost MayOverpay = True
+isResourceCost (ResourcesFromHandCost _) = True
 isResourceCost (Costs cs) = any isResourceCost cs
 isResourceCost _ = False
 
@@ -249,7 +286,32 @@ spentX activeCost = case [r | DynamicResourceCost r <- flattenCosts (activeCostC
     pure $ XPayment $ min ofType (fromIntegral $ max 0 $ length resources - rest)
 
 instance RunMessage ActiveCost where
-  runMessage msg activeCost = runQueueT $ case msg of
+  runMessage msg activeCost
+    -- a payer defeated while paying (Venom's Symbiotic Bond paid with his last hit
+    -- point) pays nothing more, and gets nothing back: the cost is dropped
+    | costStep = do
+        alive <- identityMatches (IdentityWithId payer) payer
+        if alive
+          then runActiveCost msg activeCost
+          else runQueueT (activeCost <$ disableActiveCost acid)
+    | otherwise = runActiveCost msg activeCost
+   where
+    payer = activeCostIdentityId activeCost
+    acid = activeCostId activeCost
+    costStep = case msg of
+      CheckPayment i -> i == acid
+      AbortPayment i -> i == acid
+      FinishedPayment i -> i == acid
+      PaidCosts i -> i == acid
+      PayCost i _ -> i == acid
+      _ -> False
+
+runActiveCost ::
+  (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
+  Message ->
+  ActiveCost ->
+  m ActiveCost
+runActiveCost msg activeCost = runQueueT $ case msg of
     CreatedActiveCost ident | ident == activeCostId activeCost -> do
       checkPayment ident
       pure activeCost
@@ -318,11 +380,21 @@ instance RunMessage ActiveCost where
       for_ (reverse $ activeCostSpentCards activeCost) (afterSpent payer (activeCostSpentCards activeCost))
       disableActiveCost ident
       case activeCostTarget activeCost of
-        ForCard card -> cardPlayed payer card payment (activeCostWindow activeCost)
+        ForCard card -> do
+          -- one played from a discard pile, or held by an upgrade, is still there
+          held <- getUpgradeHeldCards payer
+          inDiscard <- projectP PlayerIdentityDiscard (elem card . unDiscard) payer
+          cardPlayed payer card payment (activeCostWindow activeCost)
+          when (card `notElem` held && not inDiscard) $
+            checkWindows [Window After $ PlayedCardFromHand payer card]
         ForAbility ab -> do
           usedAbility payer ab
           for_ (abilityChoices ab) (resolveAs payer)
-          def <- getsGame \g -> abilityCardDef g (refocus $ abilitySource ab)
+          -- an identity's printed ability, not its basic powers or changing form ("after
+          -- you resolve Adam Warlock's Battle Mage")
+          def <- getsGame \g -> case abilitySource ab of
+            IdentityRef _ | abilityType ab == Basic || abilityIndex ab == 100 -> Nothing
+            source -> abilityCardDef g (refocus source)
           -- whatever the ability does, the window after it resolves follows
           for_ def \d -> checkWindows [Window After $ ResolvedAbility payer d]
         ForTreachery -> pure ()

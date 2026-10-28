@@ -54,6 +54,10 @@ instance Entity Attachment where
     , attachmentCounters :: Natural
     , attachmentSideScheme :: Maybe SideSchemeId
     -- ^ the side scheme it is attached to, if it is
+    , attachmentMainScheme :: Maybe MainSchemeId
+    -- ^ the main scheme it is attached to, if it is (Focused Defense)
+    , attachmentAlly :: Maybe AllyId
+    -- ^ the ally it is attached to, if it is (Restrained)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -63,6 +67,7 @@ instance Entity Attachment where
     AttachmentEnemy :: Field Attachment (Maybe EnemyId)
     AttachmentDamage :: Field Attachment Natural
     AttachmentCounters :: Field Attachment Natural
+    AttachmentAlly :: Field Attachment (Maybe AllyId)
   field fld a =
     let AttachmentAttrs {..} = toAttrs a
      in case fld of
@@ -71,6 +76,7 @@ instance Entity Attachment where
           AttachmentEnemy -> attachmentEnemy
           AttachmentDamage -> attachmentDamage
           AttachmentCounters -> attachmentCounters
+          AttachmentAlly -> attachmentAlly
   toId = attachmentId . toAttrs
   toAttrs (Attachment a) = toAttachmentAttrs a
 
@@ -126,6 +132,8 @@ attachment f cardDef =
             , attachmentIdentity = Nothing
             , attachmentCounters = 0
             , attachmentSideScheme = Nothing
+            , attachmentMainScheme = Nothing
+            , attachmentAlly = Nothing
             }
     }
 
@@ -134,7 +142,7 @@ instance IsRef (Attrs Attachment) where
 
 -- | Whether it is on a character already.
 attached :: Attrs Attachment -> Bool
-attached a = isJust (attachmentEnemy a) || isJust (attachmentIdentity a)
+attached a = isJust (attachmentEnemy a) || isJust (attachmentIdentity a) || isJust (attachmentAlly a)
 
 -- | "Attach to the villain": "your" area's villain, or, with none in play there (as
 -- between one Kang and the next), the card is discarded.
@@ -156,15 +164,26 @@ instance RunMessage (Attrs Attachment) where
         case msg' of
           AttachedToEnemy enemyId | stays, attachmentEnemy attrs /= Just enemyId -> pure attrs
           AttachedToIdentity _ | stays -> pure attrs
+          AttachedToAlly _ | stays -> pure attrs
           -- attached elsewhere already, it moves: what had it is told it has gone
           AttachedToEnemy enemyId -> do
             when (attached attrs) $ attachmentRemoved (attachmentId attrs)
             attachedTo enemyId (attachmentId attrs)
-            pure $ attrs & enemyL ?~ enemyId & \a -> a {attachmentIdentity = Nothing}
+            pure $ attrs & enemyL ?~ enemyId & \a -> a {attachmentIdentity = Nothing, attachmentAlly = Nothing}
           AttachedToIdentity ident -> do
             when (attached attrs) $ attachmentRemoved (attachmentId attrs)
-            pure attrs {attachmentIdentity = Just ident, attachmentEnemy = Nothing}
+            pure attrs {attachmentIdentity = Just ident, attachmentEnemy = Nothing, attachmentAlly = Nothing}
+          AttachedToAlly ally -> do
+            -- "cannot have (encounter) cards attached" (Odin): it cannot attach there,
+            -- so it is discarded
+            modifiers <- getModifiers (AllyRef ally)
+            if any (`elem` modifiers) [CannotHaveAttachedCards, CannotHaveAttachedEncounterCards]
+              then attrs <$ removeFromPlay attrs
+              else do
+                when (attached attrs) $ attachmentRemoved (attachmentId attrs)
+                pure attrs {attachmentAlly = Just ally, attachmentIdentity = Nothing, attachmentEnemy = Nothing}
           AttachedToSideScheme sid -> pure attrs {attachmentSideScheme = Just sid}
+          AttachedToMainScheme mid -> pure attrs {attachmentMainScheme = Just mid}
           _ -> pure attrs
     -- a permanent attachment does not leave play: what it was on gone, it resolves its
     -- "attach to" text again (RR Permanent), removed from the game with no target
@@ -174,9 +193,17 @@ instance RunMessage (Attrs Attachment) where
       pure attrs
     -- it leaves play with the card it is attached to
     RemoveFromPlay target
-      | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs] -> do
+      | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs, toTarget <$> attachmentMainScheme attrs, toTarget <$> attachmentAlly attrs] -> do
           removeFromPlay attrs
           pure attrs
+    -- an ally leaving play any other way (returned to hand, taken out of the game) has
+    -- what is attached to it discarded
+    RemoveFromGame target | Just target == (toTarget <$> attachmentAlly attrs) -> do
+      removeFromPlay attrs
+      pure attrs
+    ReturnToHand target | Just target == (toTarget <$> attachmentAlly attrs) -> do
+      removeFromPlay attrs
+      pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs

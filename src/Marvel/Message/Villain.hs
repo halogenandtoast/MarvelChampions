@@ -26,6 +26,9 @@ data VillainMessage
   | VillainAttacks IdentityId
   | -- | it attacks the player, the attack given no boost card (Escaped Convict)
     VillainAttacksWithoutBoost IdentityId
+  | -- | it attacks the player, the attack gaining the keywords as it is declared
+    -- (Avatar of Death: overkill and piercing)
+    VillainAttacksGaining IdentityId [Keyword]
   | -- | its attack by the character resolved: retaliate answers it
     VillainRetaliates CharacterId
   | VillainBeginAttack IdentityId
@@ -33,6 +36,12 @@ data VillainMessage
   | VillainEndAttack
   | VillainAttacked
   | VillainSchemes
+  | -- | its coming scheme is against this player, not the active player's: a card one
+    -- reveals outside their activation (Avatar of Death)
+    VillainSchemesAgainst IdentityId
+  | -- | that scheme is over, however it went (replaced, cancelled, confused): the player
+    -- it was against is forgotten
+    VillainSchemeAgainstEnded
   | -- | its scheme under way, past a confusion: what a replaced scheme never reaches
     VillainBeginScheme
   | VillainSchemed
@@ -57,5 +66,8 @@ data VillainMessage
     VillainActivationBonus Natural
   | -- | it attacks the player's ally, the player being attacked
     VillainAttacksAlly IdentityId AllyId
+  | -- | all damage to him from the attack the source makes is prevented, until that
+    -- attack ends (Master of Illusions)
+    VillainPreventAttackDamage Source
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

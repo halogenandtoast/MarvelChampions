@@ -51,3 +51,7 @@ import Marvel.Hero.Heroes.RocketRaccoon as X
 import Marvel.Hero.Heroes.Drax as X
 -- Venom
 import Marvel.Hero.Heroes.Venom as X
+-- Spectrum
+import Marvel.Hero.Heroes.Spectrum as X
+-- Adam Warlock
+import Marvel.Hero.Heroes.AdamWarlock as X

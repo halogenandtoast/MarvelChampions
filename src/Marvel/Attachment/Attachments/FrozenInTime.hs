@@ -11,6 +11,7 @@ import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
+import Marvel.Matchers (IdentityMatcher (HeroIdentity), identityMatches)
 import Marvel.Identity.Types (Field (PlayerIdentityExhausted))
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -46,8 +47,14 @@ instance RunMessage FrozenInTime where
     -- ready, and the card is discarded instead
     IdentityMessage ident step
       | Just ident == attachmentIdentity attrs
-      , step `elem` [ReadyCards, ReadiedIdentity] -> do
+      , step `elem` [ReadyCards, ReadiedIdentity, ReadiedIdentityByGame] -> do
           exhausted <- project PlayerIdentityExhausted ident
-          when exhausted $ removeFromPlay attrs
+          -- a player card that cannot ready the hero (Unnatural Storm) is no "would
+          -- ready": the card stays
+          blocked <-
+            if step == ReadiedIdentity
+              then (&&) <$> (elem CannotBeReadiedByPlayerCards <$> getModifiers (IdentityRef ident)) <*> identityMatches HeroIdentity ident
+              else pure False
+          when (exhausted && not blocked) $ removeFromPlay attrs
           pure a
     _ -> FrozenInTime <$> runMessage msg attrs

@@ -7,6 +7,7 @@ module Marvel.Decklist (
   checkedDeckList,
   missingCards,
   aspectsBalanced,
+  deckBuildingError,
   sharedHeroes,
   campaignDeck,
   campaignDeckShortBy,
@@ -21,6 +22,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.List (find, nub)
 import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
+import Marvel.Aspect (Aspect (..))
 import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -73,6 +75,26 @@ aspectsBalanced d = case lookup (toBaseCardCode d.hero) doubleAgents of
       , Just def <- [HashMap.lookup c allPlayerCards]
       , (T.toLower . tshow <$> cdAspect def) == Just (T.toLower aspect)
       ]
+
+{- | Why the deck breaks its identity's deck-building rule, as an i18n key: Jessica
+Drew's Double Agent ('aspectsBalanced'), or Adam Warlock's Avatar of Life — as many
+cards of each of the four aspects (at least one of each), and no more than one copy
+of any card not his own, two printings of a card counted as one card. A deck from
+MarvelCDB names no aspects for him; the cards say them.
+-}
+deckBuildingError :: DeckList -> Maybe Text
+deckBuildingError d
+  | not (aspectsBalanced d) = Just "error.unbalancedAspects"
+  | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
+  | otherwise = Nothing
+ where
+  defs = [(def, n) | (c, n) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards]]
+  ofAspect a = sum [n | (def, n) <- defs, cdAspect def == Just a]
+  perAspect = map ofAspect [Aggression, Justice, Leadership, Protection]
+  -- his own cards are those of his hero set: no aspect, not basic
+  notHisOwn def = isJust (cdAspect def)
+  copies = HashMap.fromListWith (+) [(canonicalCardCode def, n) | (def, n) <- defs, notHisOwn def]
+  avatarOfLife = all (> 0) perAspect && length (nub perAspect) == 1 && all (<= 1) (HashMap.elems copies)
 
 -- | The deck, if the engine can play it.
 checkedDeckList :: DeckList -> Either [CardCode] DeckList
@@ -189,6 +211,11 @@ starterDecks =
     ("drax", DeckList "19001a" ["protection"] $ tally ["19002", "19003", "19003", "19004", "19004", "19005", "19005", "19006", "19006", "19007", "19007", "19008", "19009", "19010", "19011", "19012", "19013", "19014", "19014", "19015", "19015", "19015", "19016", "19016", "19016", "19017", "19017", "19017", "19018", "19018", "19018", "19019", "19019", "19020", "19021", "19021", "19021", "19022", "19023", "19024"])
   , -- Venom: his signature, Justice and basic cards
     ("venom", DeckList "20001a" ["justice"] $ tally ["20002", "20002", "20003", "20003", "20004", "20005", "20005", "20005", "20006", "20006", "20007", "20008", "20009", "20010", "20010", "20011", "20012", "20012", "20012", "20013", "20013", "20013", "20014", "20014", "20015", "20015", "20015", "20016", "20017", "20018", "20019", "20020", "20020", "20020", "20021", "20021", "20021", "20022", "20022", "20022"])
+  , -- Spectrum: her signature, Leadership and basic cards; 40 and the 3 Permanent energy forms
+    ("spectrum", DeckList "21001a" ["leadership"] $ tally ["21002", "21003", "21004", "21005", "21006", "21006", "21007", "21007", "21007", "21008", "21008", "21008", "21009", "21009", "21009", "21010", "21010", "21010", "21011", "21012", "21013", "21014", "21015", "21015", "21015", "21016", "21016", "21016", "21017", "21017", "21017", "21018", "21018", "21018", "21019", "21020", "21021", "21022", "21022", "21022", "21023", "21024", "21025"])
+  , -- Adam Warlock: his signature cards, six of each aspect and a basic card (MTS
+    -- rulebook p.3)
+    ("adam-warlock", DeckList "21031a" ["aggression", "justice", "leadership", "protection"] $ tally ["21032", "21033", "21034", "21035", "21036", "21036", "21037", "21037", "21038", "21038", "21038", "21039", "21039", "21040", "21040", "21041", "21042", "21043", "21044", "21045", "21046", "21047", "21048", "21049", "21050", "21051", "21052", "21053", "21054", "21055", "21056", "21057", "21058", "21059", "21060", "21061", "21062", "21063", "21064", "21065"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

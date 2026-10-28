@@ -29,8 +29,8 @@ newtype BeatEmUp = BeatEmUp (Attrs Event)
 instance RunMessage BeatEmUp where
   runMessage msg e@(BeatEmUp attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
-      villains <- selectList ActiveVillain
       minions <- selectList $ MinionEngagedWith (IdentityWithId you)
-      dealDamageToEach (map EnemyVillainId villains <> map EnemyMinionId minions) attrs (toDamage 1 FromAbility)
+      withTheVillainIfAny you \villain ->
+        dealDamageToEach (maybe [] (pure . EnemyVillainId) villain <> map EnemyMinionId minions) attrs (toDamage 1 FromAbility)
       pure e
     _ -> BeatEmUp <$> runMessage msg attrs

@@ -89,7 +89,7 @@ instance RunMessage BiogramImage where
         pending <- isQueued damaged
         when pending do
           placeInCollection attrs
-          insteadOf damaged $ selectOne MainScheme >>= traverse_ (`placeThreat` n)
+          insteadOf damaged $ selectList MainScheme >>= traverse_ (`placeThreat` n)
       pure a
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       you <- getBoostedPlayer enemy
@@ -169,7 +169,7 @@ instance RunMessage TheBeyondersBlazer where
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs ->
       a <$ attachToEnemyWith EnemyWithHighestScheme attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      selectOne MainScheme >>= traverse_ (`placeThreat` 2)
+      selectList MainScheme >>= traverse_ (`placeThreat` 2)
       removeFromPlay attrs
       pure a
     _ -> TheBeyondersBlazer <$> runMessage msg attrs

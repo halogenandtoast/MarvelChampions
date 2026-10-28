@@ -24,6 +24,8 @@ data Attack = Attack
   -- is assigned among the characters the attacked player controls (RR Indirect Damage)
   , attackChange :: Int
   -- ^ "gets +X/-X ATK for that attack", applied after its boost icons
+  , attackTarget :: Maybe CharacterId
+  -- ^ the character it was against before a defender was declared
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, Hashable)
@@ -52,6 +54,10 @@ attackCharacterL = lens attackCharacter $ \m x -> m {attackCharacter = x}
 attackOverkillL :: Lens' Attack Bool
 attackOverkillL = lens attackOverkill $ \m x -> m {attackOverkill = x}
 
+-- | Defended by the character: the attack is against it now, and was against its target.
+defendedBy :: CharacterId -> Attack -> Attack
+defendedBy c a = a {attackCharacter = c, attackDefended = True, attackTarget = attackTarget a <|> Just (attackCharacter a)}
+
 attackDamageL :: Lens' Attack Natural
 attackDamageL = lens attackDamage $ \m x -> m {attackDamage = x}
 
@@ -68,6 +74,7 @@ attack enemyId characterId dmg =
     , attackPrevented = False
     , attackIndirect = False
     , attackChange = 0
+    , attackTarget = Nothing
     }
 
 -- | The attack's ATK: its damage, boost icons included, and what it gets for this attack.

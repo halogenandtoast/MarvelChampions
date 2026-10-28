@@ -139,6 +139,10 @@ allSideSchemes = fromList $ map
   -- The Galaxy's Most Wanted: Nebula, Space Pirates
   , SomeSideSchemeCard lethalIntent
   , SomeSideSchemeCard soundTheAlarms
+  -- The Mad Titan's Shadow: Ebony Maw, Black Order, Armies of Titan
+  , SomeSideSchemeCard reactorOverload
+  , SomeSideSchemeCard theBlackOrder
+  , SomeSideSchemeCard landingCraft
 
   -- The Galaxy's Most Wanted: Challenge
   , SomeSideSchemeCard badoonBlitz
@@ -162,6 +166,33 @@ allSideSchemes = fromList $ map
 
   -- Venom
   , SomeSideSchemeCard klyntarFrenzy
+
+  -- Spectrum
+  , SomeSideSchemeCard reactorMeltdown
+
+  -- Adam Warlock
+  , SomeSideSchemeCard universalChurchOfTruth
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , SomeSideSchemeCard cityUnderAttack
+
+  -- The Mad Titan's Shadow: Thanos, Children of Thanos
+  , SomeSideSchemeCard sanctuary
+  , SomeSideSchemeCard theTitansThrone
+  , SomeSideSchemeCard tribute
+
+  -- The Mad Titan's Shadow: Loki
+  , SomeSideSchemeCard casketOfAncientWinters
+  , SomeSideSchemeCard warInAsgard
+  , SomeSideSchemeCard madnessOnMidgard
+  , SomeSideSchemeCard openTheBifrost
+
+  -- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants
+  , SomeSideSchemeCard gnipahellir
+  , SomeSideSchemeCard hallOfNastrond
+  , SomeSideSchemeCard gjallerbru
+  , SomeSideSchemeCard legionsOfHelScheme
+  , SomeSideSchemeCard unnaturalStorm
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

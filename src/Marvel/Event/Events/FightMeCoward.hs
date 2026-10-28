@@ -28,6 +28,6 @@ instance RunMessage FightMeCoward where
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
       ready you
       drawCards you 1
-      traverse_ (`enemyAttacks` you) =<< selectOne ActiveVillain
+      withTheVillain you (`enemyAttacks` you)
       pure e
     _ -> FightMeCoward <$> runMessage msg attrs

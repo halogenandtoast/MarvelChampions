@@ -57,8 +57,15 @@ statusL = \case
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
     AllyMessage ident msg' | ident == allyId a -> case msg' of
+      -- "attached character cannot ready" (Restrained)
+      -- "allies cannot be readied by player card effects" (Unnatural Storm)
       ReadiedAlly -> do
-        pure $ a & exhaustedL .~ False
+        modifiers <- getModifiers a
+        let readies = CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
+        pure $ a & exhaustedL %~ (&& not readies)
+      ReadiedAllyByGame -> do
+        readies <- notElem CannotReady <$> getModifiers a
+        pure $ a & exhaustedL %~ (&& not readies)
       ExhaustedAlly -> do
         pure $ a & exhaustedL .~ True
       AllyStunned -> do
@@ -170,6 +177,10 @@ instance RunMessage (Attrs Ally) where
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AllyOwnedBy owner -> pure a {allyOwner = owner}
+      AllyChangedController new -> pure a {allyController = new}
+      AllySetDamage n -> pure $ a & damageL .~ n
+      -- the game replaces it with its other face ('FlipAlly' in "Marvel.Game")
+      FlipAlly -> pure a
       AttachedUpgradeToAlly upgradeId ->
         pure $ a & upgradesL %~ HashSet.insert upgradeId
     -- "if an ability that says an ally gets +X hit points ceases to be in effect and
@@ -183,9 +194,25 @@ instance RunMessage (Attrs Ally) where
     PlaceCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL +~ n
     RemoveCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL %~ subtractNatural n
     GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
+    -- "the first player gains control of <this ally>" (Odin): it follows the first
+    -- player token as it passes, or as the first player is chosen or eliminated
+    PassFirstPlayer -> followFirstPlayer
+    SetPlayerOrder _ -> followFirstPlayer
+    RemoveFromPlay (IdentityRef _) -> followFirstPlayer
+    CardSpecific (isTarget a -> True) "followFirstPlayer" _ -> do
+      selectOne FirstPlayer >>= traverse_ \first -> when (first /= allyController a) do
+        identityStep (allyController a) (AllyRemoved $ allyId a)
+        identityStep first (AllyCreated $ allyId a)
+        allyStep (allyId a) (AllyChangedController first)
+      pure a
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
     _ -> pure a
    where
+    -- once the game has seen to the player order
+    followFirstPlayer = do
+      follows <- elem ControlledByFirstPlayer <$> getModifiers a
+      when follows $ cardSpecific a "followFirstPlayer" ()
+      pure a
     -- leaving play discards it
     defeated byAttack = do
       let card = MkPlayerCard (CardId $ unAllyId $ allyId a) (allyCardDef a) (Just $ allyOwner a) (Just $ allyController a)

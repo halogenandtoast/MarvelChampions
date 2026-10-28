@@ -46,6 +46,8 @@ data IdentityMatcher
   | IdentityMatchAll [IdentityMatcher]
   | -- | not kept from thwarting (by a 'CannotThwart' modifier)
     IdentityCanThwart
+  | -- | not kept from basic attacks (by a 'CannotBasicAttack' modifier, Seduced)
+    IdentityCanBasicAttack
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm
   | -- | of the identities matching, those with the fewest hit points remaining
@@ -89,6 +91,9 @@ data AllyMatcher
     AllyNamedAs Text
   | -- | with exactly so many hit points remaining
     AllyWithRemainingHitPoints Natural
+  | -- | with a trait its controller's identity has in its current form ("allies you
+    -- control that share a trait with your hero", Mass Attack)
+    AllySharingTraitWithController
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -146,6 +151,8 @@ data UpgradeMatcher
     UpgradeThatCanLeavePlay
   | -- | an upgrade whose card matches
     UpgradeWithCard CardMatcher
+  | -- | facedown: out of play for its text (Spectrum's energy forms)
+    FacedownUpgrade
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -315,6 +322,9 @@ data CharacterMatcher
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack
+  | -- | of the heroes and of the allies an encounter card can attach to (not one that
+    -- cannot have cards attached, as Odin), those with the highest ATK (Restrained)
+    AttachableHeroOrAllyWithHighestAttack
   | -- | of the heroes and allies, those with the fewest hit points remaining
     HeroOrAllyWithFewestRemainingHitPoints
   deriving stock (Show, Eq, Generic)
@@ -382,7 +392,12 @@ instance Semigroup AttachmentMatcher where
 instance Monoid AttachmentMatcher where
   mempty = AttachmentMatches []
 
-data EnvironmentMatcher = AnyEnvironment | EnvironmentIs CardDef | EnvironmentWithTrait Trait
+data EnvironmentMatcher
+  = AnyEnvironment
+  | EnvironmentIs CardDef
+  | EnvironmentWithTrait Trait
+  | -- | in the player's play area (Ebony Maw's Spells)
+    EnvironmentInPlayAreaOf IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -409,5 +424,8 @@ data DamageMatcher
   | AnyDamage
   | -- | an attack's, by a player or an ally
     AnyAttack
+  | -- | "damage from an attack": an attack's, or what its overkill deals past a minion
+    -- (RR Overkill; Master of Illusions)
+    DamageFromAnAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

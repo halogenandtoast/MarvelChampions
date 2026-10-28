@@ -48,7 +48,7 @@ instance RunMessage Banishment where
           ]
             <> [ labeled "$label.discardElementGunOrThreat" $
                   if null guns
-                    then selectOne MainScheme >>= \m -> for_ m \scheme -> placeThreat scheme 3
+                    then selectList MainScheme >>= traverse_ (`placeThreat` 3)
                     else chooseOne identityId [targeting gun (discardUpgrade gun) | gun <- guns]
                ]
         pure o

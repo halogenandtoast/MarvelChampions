@@ -32,5 +32,8 @@ data Keyword
     Stalwart
   | -- | while a player resolves it, the others cannot help them
     Peril
+  -- Spectrum
+  | -- | an energy form upgrade: an additional form, faceup while it is the one she is in
+    EnergyForm
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

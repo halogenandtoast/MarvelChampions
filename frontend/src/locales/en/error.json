@@ -13,6 +13,7 @@
   "noHero": "That deck has no hero.",
   "unknownCards": "This deck has cards the game does not know yet: {cards}",
   "unbalancedAspects": "Jessica Drew's deck must be built with two aspects, with as many cards of each.",
+  "avatarOfLife": "Adam Warlock's deck must have as many cards of each of the four aspects, and only one copy of any card that is not his own.",
   "noSuchDeck": "No such deck.",
   "noStarterDeck": "No {hero} starter deck.",
   "signInFirst": "Sign in first.",

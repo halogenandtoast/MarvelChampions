@@ -202,6 +202,19 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard sonicRifle
   , SomeUpgradeCard sideHolster
   , SomeUpgradeCard plasmaPistol
+
+  -- Spectrum
+  , SomeUpgradeCard gamma
+  , SomeUpgradeCard photon
+  , SomeUpgradeCard pulsar
+  , SomeUpgradeCard energyDuplication
+  , SomeUpgradeCard readyToRumble
+
+  -- Adam Warlock
+  , SomeUpgradeCard karmicStaff
+  , SomeUpgradeCard warlocksCape
+  , SomeUpgradeCard cosmicWard
+  , SomeUpgradeCard mysticSenses
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

@@ -135,6 +135,26 @@ allAllies = fromList $ concatMap
   -- Venom
   , jackFlagJackHarrison
   , starLordPeterQuill
+
+  -- Spectrum
+  , blueMarvelAdamBrashear
+  , captainAmericaSteveRogers
+  , powerManVictorAlvarez
+  , whiteTigerAvaAyala
+  , kaluu
+  , bladeEricBrooks
+
+  -- Adam Warlock
+  , pipTheTroll
+  , marvelBoyNohVarr
+  , quasarWendellVaughn
+  , majorVictoryVanceAstro
+  , charlie27
+  , martinexTNaga
+
+  -- The Mad Titan's Shadow: Hela
+  , odinCaptive
+  , odinKing
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -161,6 +181,8 @@ heroSpecificAllies =
   , novaPrimeRichardRider
   , nebulaAlly
   , mantis
+  , blueMarvelAdamBrashear
+  , pipTheTroll
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -580,3 +602,64 @@ starLordPeterQuill =
   (basicAlly "20016" ("Star-Lord" <:> "Peter Quill") 2 [Guardian] [Mental])
     { cdKeywords = fromList [Ranged]
     }
+
+-- Spectrum
+
+blueMarvelAdamBrashear :: CardDef
+blueMarvelAdamBrashear = identityAlly "21005" ("Blue Marvel" <:> "Adam Brashear") 3 [Aerial, Avenger] [Wild]
+
+captainAmericaSteveRogers :: CardDef
+captainAmericaSteveRogers =
+  (ally "21011" ("Captain America" <:> "Steve Rogers") 6 [Avenger] [Physical] Leadership)
+    { cdKeywords = fromList [Toughness]
+    }
+
+powerManVictorAlvarez :: CardDef
+powerManVictorAlvarez = ally "21012" ("Power Man" <:> "Victor Alvarez") 3 [Avenger] [Mental] Leadership
+
+whiteTigerAvaAyala :: CardDef
+whiteTigerAvaAyala = ally "21013" ("White Tiger" <:> "Ava Ayala") 3 [Avenger] [Energy] Leadership
+
+kaluu :: CardDef
+kaluu = ally "21014" "Kaluu" 2 [Avenger, Mystic] [Energy] Leadership
+
+bladeEricBrooks :: CardDef
+bladeEricBrooks = basicAlly "21019" ("Blade" <:> "Eric Brooks") 1 [Avenger, Vampire] [Physical]
+
+-- Adam Warlock
+
+pipTheTroll :: CardDef
+pipTheTroll =
+  (identityAlly "21032" "Pip the Troll" 2 [Mystic] [Wild])
+    { cdKeywords = fromList [Toughness]
+    }
+
+marvelBoyNohVarr :: CardDef
+marvelBoyNohVarr = ally "21041" ("Marvel Boy" <:> "Noh-Varr") 2 [Guardian, Kree] [Physical] Aggression
+
+quasarWendellVaughn :: CardDef
+quasarWendellVaughn = ally "21047" ("Quasar" <:> "Wendell Vaughn") 3 [Aerial, Guardian] [Energy] Justice
+
+majorVictoryVanceAstro :: CardDef
+majorVictoryVanceAstro = ally "21053" ("Major Victory" <:> "Vance Astro") 2 [Guardian] [Mental] Leadership
+
+charlie27 :: CardDef
+charlie27 =
+  (ally "21059" "Charlie-27" 4 [Guardian] [Physical] Protection)
+    { cdKeywords = fromList [Retaliate 1, Toughness]
+    }
+
+martinexTNaga :: CardDef
+martinexTNaga = basicAlly "21065" ("Martinex" <:> "T'Naga") 3 [Guardian] [Energy]
+
+-- The Mad Titan's Shadow: Hela
+
+-- | Odin's two sides, the scenario's player card: attached to Odin's Torment, Captive
+-- side faceup, until Hall of Nastrond is defeated.
+odinCaptive :: CardDef
+odinCaptive =
+  (basicAlly "21139a" ("Odin" <:> "All-Father") 0 [Asgard, Captive] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 1}
+
+odinKing :: CardDef
+odinKing =
+  (basicAlly "21139b" ("Odin" <:> "All-Father") 0 [Asgard, King] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 1}

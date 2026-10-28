@@ -21,7 +21,7 @@ import Marvel.Ability.Types (Ability (..), AbilityType (..))
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
-import Marvel.Area (Area (..))
+import Marvel.Area (Area (..), DeckKey (InfinityStoneDeckKey), Pile (..))
 import Marvel.Card
 import Marvel.EncounterCard (allEncounterCards)
 import Marvel.PlayerCard (allPlayerCards)
@@ -106,6 +106,13 @@ narrationFor = \case
   VillainMessage vid msg -> villainNarration vid msg
   MinionMessage mid msg -> minionNarration mid msg
   AllyMessage aid msg -> allyNarration aid msg
+  -- an energy form turned faceup is the form its player changes to (Spectrum)
+  UpgradeMessage uid FlipUpgradeFaceUp -> Just $ whenRef (UpgradeRef uid) \form ->
+    getSourceController (UpgradeRef uid) >>= \case
+      Just p -> do
+        who <- playerRef' p
+        one $ action [ikeyPart "log.changesToEnergyForm" ["player" ~> who, "form" ~> form]]
+      Nothing -> pure []
   -- * Schemes
   MainSchemeMessage sid msg -> schemeNarration (MainSchemeRef sid) msg
   SideSchemeMessage sid msg -> sideSchemeNarration sid msg
@@ -123,12 +130,24 @@ narrationFor = \case
     | s == ToughStatus -> Just $ simply (statusKey s) target
     | otherwise -> Just $ unlessStalwart target $ simply (statusKey s) target
   RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
+  -- a player's event into the encounter deck (a Cosmic Entity, Adam Warlock): played
+  -- openly, so named
+  ShuffleIntoEncounterDeck cards
+    | events@(_ : _) <- [c | c <- cards, cdCardType (getCardDef c) == EventType] ->
+        Just $ concatMapM (\c -> one $ mechanic [ikeyPart "log.shuffledIntoEncounterDeck" ["card" ~> EncounterCard c]]) events
+  -- an Infinity Stone put into play from its deck (The Mad Titan's Shadow)
+  UsingDeck InfinityStoneDeckKey (PutTopOfEncounterDeckIntoPlay _) -> Just do
+    top <- take 1 . pileDeck <$> getPile InfinityStoneDeckKey
+    concatMapM (\c -> one $ toned Bad $ mechanic [ikeyPart "log.infinityStoneIntoPlay" ["card" ~> EncounterCard c]]) top
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
   KeptOutByUnique t -> Just $ simply "log.keptOutByUnique" t
   -- The Galaxy's Most Wanted
   AddToVictoryDisplay t -> Just $ simply "log.victoryDisplay" t
+  -- Loki
+  AddCardToVictoryDisplay card -> Just $ one $ mechanic [ikeyPart "log.victoryDisplay" ["target" ~> EncounterCard card]]
+  ReplaceVillain vid _ Swapped -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainSwapped" ["villain" ~> v]]
   SetPeril (Just ident) -> Just do
     who <- playerRef' ident
     one $ notice [ikeyPart "log.peril" ["player" ~> who]]
@@ -138,6 +157,17 @@ narrationFor = \case
     if isJust (inPlayRef g card) then pure [] else one $ toned Bad $ mechanic [ikeyPart "log.collection" ["card" ~> card]]
   AttachmentMessage aid (AttachedToIdentity ident) -> Just $ attachedTo aid (IdentityRef ident)
   AttachmentMessage aid (AttachedToSideScheme sid) -> Just $ attachedTo aid (SideSchemeRef sid)
+  -- Tower Defense
+  AttachmentMessage aid (AttachedToMainScheme mid) -> Just $ attachedTo aid (MainSchemeRef mid)
+  EnvironmentMessage eid (EnvironmentDamaged n) | n > 0 -> Just $ counted "log.takesDamage" (EnvironmentRef eid) n
+  -- Ebony Maw
+  AttachmentMessage aid (AttachedToAlly ally) -> Just $ attachedTo aid (AllyRef ally)
+  EnvironmentMessage eid (EnvironmentOwnedBy ident) -> Just $ whenRef (EnvironmentRef eid) \e -> do
+    who <- playerRef' ident
+    one $ toned Bad $ mechanic [ikeyPart "log.inPlayAreaOf" ["card" ~> e, "player" ~> who]]
+  DiscardUntilIntoPlay ident _ -> Just do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.discardsUntilIntoPlay" ["player" ~> who]]
   -- put into play attached, not revealed: the card is not in play yet to be named
   AttachEncounterCard card enemy -> Just $ whenRef (EnemyRef enemy) \t ->
     one $ toned Bad $ mechanic [ikeyPart "log.attachedTo" ["card" ~> EncounterCard card, "target" ~> t]]
@@ -164,6 +194,12 @@ narrationFor = \case
     who <- playerRef' ident
     one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
   AssignIndirectDamageAmongPlayers _ n [] | n > 0 -> Just $ one $ toned Bad $ mechanic [ikeyPart "log.indirectDamageAmongPlayers" ["count" ~> n]]
+  -- Hela, Enchantress: an ally treated as a minion, and back
+  PutAllyIntoPlayAsMinion ident card -> Just do
+    who <- playerRef' ident
+    one $ toned Bad $ mechanic [ikeyPart "log.allyIntoPlayAsMinion" ["card" ~> PlayerCard card, "player" ~> who]]
+  AllyBecomesMinion aid -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.allyBecomesMinion" ["ally" ~> a]]
+  MinionBecomesAlly mid -> Just $ whenRef (MinionRef mid) \m -> one $ mechanic [ikeyPart "log.minionBecomesAlly" ["ally" ~> m]]
   _ -> Nothing
  where
   statusKey = \case
@@ -305,13 +341,18 @@ villainNarration vid = \case
   -- Goblin's scheme) is told as what it is replaced with; a stun or confusion as it is spent
   VillainAttacks ident -> Just $ whenM' (villainHas (.villainStunned) vid) $ activation (VillainRef vid) ident "log.attacks" True
   VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
+  VillainAttacksGaining ident _ -> villainNarration vid (VillainAttacks ident)
   VillainBeginAttack ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
   VillainBeginAttackWithoutBoost ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
   VillainSchemes -> Just $ whenM' (villainHas (.villainConfused) vid) $ schemes (VillainRef vid) True
   VillainBeginScheme -> Just $ schemes (VillainRef vid) False
-  VillainDamaged _ dmg | damageAmount dmg > 0 -> Just do
+  VillainDamaged source dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
-    damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
+    -- none from a player card (Sanctuary)
+    shielded <- cannotTakeDamageFrom (VillainRef vid) source
+    if shielded
+      then whenRef (VillainRef vid) \t -> one $ toned Good $ mechanic [ikeyPart "log.takesNoDamage" ["target" ~> t]]
+      else damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
@@ -385,6 +426,11 @@ allyNarration aid = \case
   AllyDefeatedByAttack _ -> allyNarration aid AllyDefeated
   AllyDefeated -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.defeated" ["target" ~> a]]
   AllyStunned -> Just $ simply "log.stunned" (AllyRef aid)
+  FlipAlly -> Just $ simply "log.flips" (AllyRef aid)
+  -- Hela: Odin following the first player
+  AllyChangedController ident -> Just $ whenRef (AllyRef aid) \a -> do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.allyChangedController" ["ally" ~> a, "player" ~> who]]
   _ -> Nothing
 
 schemeNarration :: (HasGame m) => Target -> MainSchemeMessage -> Maybe (m [LogEntry])

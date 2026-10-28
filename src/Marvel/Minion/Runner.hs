@@ -86,8 +86,7 @@ runMinionMessage msg attrs = case msg of
   MinionStunned _ -> statusUnlessStalwart attrs StunnedStatus
   MinionConfused _ -> statusUnlessStalwart attrs ConfusedStatus
   MinionBecomeTough -> pure $ attrs & toughL .~ True
-  MinionDefendedBy characterId ->
-    pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
+  MinionDefendedBy characterId -> pure $ attrs & attackingL . _Just %~ defendedBy characterId
   AttachedToMinion attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToMinion upgradeId ->
@@ -157,9 +156,11 @@ runMinionMessage msg attrs = case msg of
     pure $
       attrs {minionAttackTarget = Nothing} & attackingL ?~ attack'
   -- onto the main scheme of its area, if there is one there (as between The Once and
-  -- Future Kang's stages)
+  -- Future Kang's stages): of two, the active villain's own, which Focused Defense is on
+  -- (Tower Defense, RR v1.8 p.67 errata)
   MinionSchemed -> do
-    mainScheme <- selectOne MainScheme
+    paired <- maybe (pure Nothing) getPairedMainScheme =<< selectOne ActiveVillain
+    mainScheme <- maybe (selectOne MainScheme) (pure . Just . SchemeMainSchemeId) paired
     threat <- getModifiedScheme attrs
     for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
       placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
@@ -172,10 +173,11 @@ runMinionMessage msg attrs = case msg of
   MinionAttacked -> do
     case minionAttacking attrs of
       Nothing -> error "No current attack"
-      Just attack' -> do
+      Just attack0 -> do
+        attack' <- undefendedIfDefenderGone attack0
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
-    pure $ attrs & boostL .~ 0
+        pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
   MinionDealtBoost card -> pure $ attrs & boostCardsL %~ (<> [card])
   -- each boost card is turned faceup in turn, and its icons added; one it is given as
   -- they are ("give this enemy another boost card") is turned up after them
@@ -205,3 +207,32 @@ instance RunMessage (Attrs Minion) where
       minionStep mid (MinionAddBoost $ sum $ map snd counts)
       pure attrs
     _ -> pure attrs
+
+-- Hela
+
+-- | "<this minion> engages the first player" (Garm, Skurge, Nidhogg): a constant
+-- ability. Engaged with anyone else, it engages the first player; it follows the first
+-- player token as it passes, or as the first player is chosen or eliminated. A card's
+-- handler calls it on each message before falling through.
+engagesFirstPlayer :: (ReverseQueue m) => Message -> Attrs Minion -> m ()
+engagesFirstPlayer msg attrs = case msg of
+  MinionMessage mid (MinionEngagedIdentity _) | mid == minionId attrs -> follow
+  PassFirstPlayer -> follow
+  SetPlayerOrder _ -> follow
+  RemoveFromPlay (IdentityRef _) -> follow
+  CardSpecific (isTarget attrs -> True) "engageFirstPlayer" _ -> do
+    let mid = minionId attrs
+    inPlay <- selectAny (MinionWithId mid)
+    engaged <- selectAny (MinionWithId mid <> MinionEngagedWith FirstPlayer)
+    when (inPlay && not engaged) $ selectOne FirstPlayer >>= traverse_ (engageMinion mid)
+  _ -> pure ()
+ where
+  -- once the game has seen to the engagement or the player order
+  follow = cardSpecific attrs "engageFirstPlayer" ()
+
+-- | Hit points printed per player: these many more for each player past the first
+-- (RR Per Player Icon: the players who started the scenario).
+perPlayerHitPoints :: (HasGame m) => Attrs Minion -> Natural -> m [Modifier]
+perPlayerHitPoints _ n = do
+  players <- getStartingPlayerCount
+  pure [HitPointModifier (n * fromIntegral (players - 1)) | players > 1]

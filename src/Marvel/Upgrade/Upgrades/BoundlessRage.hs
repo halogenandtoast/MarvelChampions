@@ -38,7 +38,7 @@ instance HasAbilities BoundlessRage where
     [ limitedWindowAbility
         a
         1
-        (IdentityChangedToForm After $ IdentityWithId $ upgradeController a)
+        (IdentityChangedAnyForm After $ IdentityWithId $ upgradeController a)
         ForcedResponse
         OwnsThis
         NoCost

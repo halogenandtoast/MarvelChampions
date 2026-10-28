@@ -74,6 +74,10 @@ allObligations = fromList $ map
     , memoriesOfAnotherLife
     -- Venom
     , struggleForControl
+    -- Spectrum
+    , lossOfControl
+    -- Adam Warlock
+    , regenerationCycle
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -241,3 +245,13 @@ memoriesOfAnotherLife = obligation "19025" "Memories of Another Life" [Boost, Bo
 
 struggleForControl :: CardDef
 struggleForControl = obligation "20023" "Struggle for Control" [Boost, Boost]
+
+-- Spectrum
+
+lossOfControl :: CardDef
+lossOfControl = obligation "21026" "Loss of Control" [Boost, Boost]
+
+-- Adam Warlock
+
+regenerationCycle :: CardDef
+regenerationCycle = obligation "21066" "Regeneration Cycle" [Boost, Boost]

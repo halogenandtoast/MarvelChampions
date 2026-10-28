@@ -81,6 +81,8 @@ data GameView = GameView
   , encounterDiscard :: [CardView]
   , victoryDisplay :: [CardView]
   -- ^ the cards in the victory display, the first added first
+  , victoryCondition :: Maybe Natural
+  -- ^ how many of the villain's versions in the victory display win the game (Loki)
   , collection :: [CardView]
   -- ^ The Collection (Infiltrate the Museum): its player and encounter cards, faceup,
   -- the first added first
@@ -228,6 +230,8 @@ data AllyView = AllyView
   , tough :: Bool
   , counters :: Natural
   , upgrades :: [UpgradeView]
+  , attachments :: [AttachmentView]
+  -- ^ encounter cards attached to it (Restrained)
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -236,8 +240,9 @@ data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text,
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView]}
-  -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver)
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool}
+  -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver); facedown,
+  -- a Spectrum energy form she is not in (its owner's, not secret)
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -283,7 +288,7 @@ data MinionView = MinionView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural}
+data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural, owner :: Maybe IdentityId, damage :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -310,6 +315,9 @@ data SchemeView = SchemeView
   -- ^ the cards facedown beneath it (Captured by Hydra's Captive ally, Hydra Prison's)
   , heldCards :: [HeldView]
   -- ^ which, and whose: for the client to fly a card put beneath it there
+  , attachedCards :: [CardView]
+  -- ^ the player cards attached to it faceup (Odin on Odin's Torment): a main scheme's
+  -- held cards
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -433,13 +441,14 @@ gameView seesHand g = do
       , sideSchemes = map sideSchemeView (HashMap.elems $ gameSideSchemes g)
       , minions
       , environments =
-          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters
+          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters a.environmentOwner a.environmentDamage
           | e <- HashMap.elems (gameEnvironments g)
           , let a = toAttrs e
           ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g)
+      , victoryCondition = scenario.scenarioVictoryCondition
       , collection = map cardView (gameCollection g)
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
@@ -493,6 +502,8 @@ gameView seesHand g = do
                 -- a named deck is the scenario's, by the first area's main scheme
                 <> concat [deckView "named" (Just n) k | first, k@(NamedDeckKey n) <- HashMap.keys scenario.scenarioDecks]
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
+                -- the Infinity Gauntlet's stones, beside the villain (The Mad Titan's Shadow)
+                <> concat [deckView "infinityStones" Nothing InfinityStoneDeckKey | first]
           , accelerationTokens = areaAccelerationTokens a
           , accelerationIcons = accelerationIconsIn g aid
           }
@@ -578,13 +589,14 @@ gameView seesHand g = do
         , tough = a.allyTough
         , counters = a.allyCounters
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
+        , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
         }
   supportView (s :: Support) =
     let a = toAttrs s
      in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards)
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown
   attachmentView (x :: Attachment) =
     let a = toAttrs x
      in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters
@@ -640,10 +652,10 @@ gameView seesHand g = do
           QuestionLabel "$label.setupMainScheme" (Just target) _ -> target == toTarget a.mainSchemeId
           _ -> False) (HashMap.elems $ gameQuestion g)
         face = if awaitingSetup then CardCode (unCardCode code <> "a") else code
-     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [] (length a.mainSchemeHeldCards) (map heldView a.mainSchemeHeldCards)
+     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards)
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0 [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards)
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0 [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) []
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)

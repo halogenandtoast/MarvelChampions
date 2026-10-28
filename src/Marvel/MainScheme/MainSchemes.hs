@@ -52,3 +52,18 @@ import Marvel.MainScheme.MainSchemes.TheArtOfEvasion as X
 
 -- Infiltrate the Museum
 import Marvel.MainScheme.MainSchemes.TheGrandCollection as X
+
+-- The Mad Titan's Shadow: Ebony Maw
+import Marvel.MainScheme.MainSchemes.EbonyMaw as X
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.MainScheme.MainSchemes.TowerDefense as X
+
+-- The Mad Titan's Shadow: Thanos
+import Marvel.MainScheme.MainSchemes.Thanos as X
+
+-- The Mad Titan's Shadow: Loki
+import Marvel.MainScheme.MainSchemes.Loki as X
+
+-- The Mad Titan's Shadow: Hela
+import Marvel.MainScheme.MainSchemes.Hela as X

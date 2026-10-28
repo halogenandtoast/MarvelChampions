@@ -27,8 +27,9 @@ newtype ByAnyMeans = ByAnyMeans (Attrs Event)
 instance RunMessage ByAnyMeans where
   runMessage msg e@(ByAnyMeans attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
+      -- of two main schemes, the one you choose (Tower Defense, MTS rulebook p.10)
       schemes <- selectList MainScheme
-      for_ (headMay schemes) (`placeThreat` 2)
+      unless (null schemes) $ chooseOrRunOne you [targeting (schemeRef s) (placeThreat s 2) | s <- schemes]
       chooseDamage you attrs (toDamage 3 $ FromPlayerAttack you) (VillainEnemy <> AttackableEnemy)
       drawCards you 1
       pure e

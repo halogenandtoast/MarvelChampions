@@ -13,7 +13,8 @@ import Marvel.Minion.Cards qualified as Cards
 
 instance FromJSON Minion where
   parseJSON = withObject "Minion" $ \o -> do
-    cardDef <- o .: "minionCardDef"
+    -- an ally treated as a minion shows the ally's card: its entity is the original's
+    cardDef <- o .: "minionOriginalCardDef"
     withMinionCardCode (cdCardCode cardDef) $
       \(_ :: MinionCard a) -> Minion <$> parseJSON @a (Object o)
 
@@ -168,6 +169,37 @@ allMinions =
 
       -- Venom
       , SomeMinionCard enragedSymbiote
+
+      -- Spectrum
+      , SomeMinionCard radioactiveManNemesis
+
+      -- Adam Warlock
+      , SomeMinionCard theMagus
+      , SomeMinionCard zealotOfTruth
+
+      -- The Mad Titan's Shadow: Black Order, Armies of Titan
+      , SomeMinionCard blackDwarf
+      , SomeMinionCard supergiant
+      , SomeMinionCard blackOrderInfantry
+      , SomeMinionCard outrider
+
+      -- The Mad Titan's Shadow: Tower Defense
+      , SomeMinionCard blackOrderBesieger
+
+      -- The Mad Titan's Shadow: Children of Thanos
+      , SomeMinionCard corvusGlaiveMinion
+      , SomeMinionCard proximaMidnightMinion
+      , SomeMinionCard ebonyMawMinion
+
+      -- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants, Enchantress
+      , SomeMinionCard allyMinion
+      , SomeMinionCard garm
+      , SomeMinionCard skurge
+      , SomeMinionCard nidhogg
+      , SomeMinionCard draugr
+      , SomeMinionCard laufey
+      , SomeMinionCard (reprintAs Cards.frostGiantFrostGiants frostGiant)
+      , SomeMinionCard enchantress
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

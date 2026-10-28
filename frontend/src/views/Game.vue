@@ -69,6 +69,8 @@ watch(answering, (id) => {
 }, { immediate: true })
 const shownSeats = computed(() => (allSeats.value ? players.value : viewed.value ? [viewed.value] : []))
 const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m) => m.engagedWith === player.id || player.engagedMinions?.includes(m.id))
+// the environments in a player's play area (Ebony Maw's Spells)
+const environmentsOf = (player: PlayerView) => (game.value?.environments ?? []).filter((e) => e.owner === player.id)
 
 // Game areas, when the players are split into several: the one of the seat you look at
 // first, the others a tab away. One area is drawn as a game always was.
@@ -161,6 +163,7 @@ const onBoard = computed(() => {
   add(g.mainSchemes)
   add(g.sideSchemes)
   for (const e of g.environments ?? []) {
+    if (e.owner && !shownSeats.value.some((p) => p.id === e.owner)) continue
     ids.add(e.id)
     add(e.attachments)
   }
@@ -171,7 +174,7 @@ const onBoard = computed(() => {
   for (const p of shownSeats.value) {
     ids.add(p.id)
     add(p.allies)
-    p.allies?.forEach((a) => add(a.upgrades))
+    p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
     add(p.supports)
     add(p.upgrades)
     add(p.attachments)
@@ -202,7 +205,7 @@ const things = computed(() => {
     add(p.hand)
     add(p.discard)
     add(p.allies)
-    p.allies?.forEach((a) => add(a.upgrades))
+    p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
     add(p.supports)
     add(p.upgrades)
     add(p.attachments)
@@ -377,6 +380,7 @@ const resetGame = () => {
                 :key="seat.id"
                 :player="seat"
                 :minions="minionsOf(seat)"
+                :environments="environmentsOf(seat)"
                 :active="seat.id === active && players.length > 1"
                 :compact="allSeats && players.length > 1"
               >

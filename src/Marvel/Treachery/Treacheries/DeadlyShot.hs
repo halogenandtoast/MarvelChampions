@@ -28,10 +28,10 @@ instance RunMessage DeadlyShot where
     TreacheryMessage ident (RevealTreachery identityId) | ident == treacheryId attrs -> do
       isHero <- identityMatches HeroIdentity identityId
       upgrades <- selectRefs (UpgradeControlledBy $ IdentityWithId identityId)
-      mainScheme <- selectJust MainScheme
+      mainSchemes <- selectList MainScheme
       chooseOne identityId [targeting u (removeFromPlay u) | u <- upgrades]
       if isHero
         then damageCharacter identityId attrs (toDamage 1 FromTreachery)
-        else placeThreat mainScheme 1
+        else for_ mainSchemes (`placeThreat` 1)
       pure t
     _ -> DeadlyShot <$> runMessage msg attrs

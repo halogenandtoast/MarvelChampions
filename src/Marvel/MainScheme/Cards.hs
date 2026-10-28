@@ -70,6 +70,22 @@ allMainSchemes =
     , warpDriveInitiated
     -- The Galaxy's Most Wanted: Infiltrate the Museum
     , theGrandCollection
+
+    -- The Mad Titan's Shadow: Ebony Maw
+    , attackOnKnowhere
+    , thePowerStoneScheme
+
+    -- The Mad Titan's Shadow: Tower Defense
+    , underSiege
+    , theArmiesOfThanos
+
+    -- The Mad Titan's Shadow: Thanos
+    , theInfinityStones
+    , balanceTheScales
+    -- The Mad Titan's Shadow: Loki
+    , allHailKingLoki
+    -- The Mad Titan's Shadow: Hela
+    , odinsTorment
     ]
 
 mainScheme :: CardCode -> Name -> EncounterSet -> CardDef
@@ -234,3 +250,37 @@ warpDriveInitiated = mainScheme "16092" "Warp Drive Initiated" Nebula
 
 theGrandCollection :: CardDef
 theGrandCollection = mainScheme "16073" "The Grand Collection" InfiltrateTheMuseum
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+attackOnKnowhere :: CardDef
+attackOnKnowhere = mainScheme "21074" "Attack on Knowhere" EbonyMaw
+
+thePowerStoneScheme :: CardDef
+thePowerStoneScheme = mainScheme "21075" "The Power Stone" EbonyMaw
+
+-- The Mad Titan's Shadow: Tower Defense
+
+underSiege :: CardDef
+underSiege = mainScheme "21098" "Under Siege" TowerDefense
+
+theArmiesOfThanos :: CardDef
+theArmiesOfThanos = mainScheme "21099" "The Armies of Thanos" TowerDefense
+
+-- The Mad Titan's Shadow: Thanos
+
+theInfinityStones :: CardDef
+theInfinityStones = mainScheme "21114" "The Infinity Stones" Thanos
+
+balanceTheScales :: CardDef
+balanceTheScales = mainScheme "21115" "Balance the Scales" Thanos
+
+-- The Mad Titan's Shadow: Loki
+
+allHailKingLoki :: CardDef
+allHailKingLoki = mainScheme "21165" "All Hail King Loki" Loki
+
+-- The Mad Titan's Shadow: Hela
+
+odinsTorment :: CardDef
+odinsTorment = mainScheme "21138" "Odin's Torment" Hela

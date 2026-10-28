@@ -127,9 +127,13 @@ resolveChoice ident = \case
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
     -- each instance of damage the source deals may be increased, as by Embiggen!
-    bonus <- sourceBonus source \case
-      DamageDealtModifier n -> Just n
-      _ -> Nothing
+    -- (excess damage carried on by overkill has had it already)
+    bonus <-
+      if damageSource damage' == FromOverkill
+        then pure 0
+        else sourceBonus source \case
+          DamageDealtModifier n -> Just n
+          _ -> Nothing
     -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
     let
       enemyAsRef = case target of
@@ -143,7 +147,9 @@ resolveChoice ident = \case
         FromPlayerAttack _ -> True
         FromAllyAttack _ -> True
         _ -> False
-    reduction <- if fromAttack then attackReduction else pure 0
+    -- "reduce any amount of damage it would take by 1" (Thanos's Armor), from any source
+    anyReduction <- sum . mapMaybe (\case DamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+    reduction <- (+ anyReduction) <$> if fromAttack then attackReduction else pure 0
     cap <- if fromAttack then attackCap else pure Nothing
     let
       reduced = subtractNatural reduction (damageAmount damage' + bonus)
@@ -161,10 +167,17 @@ resolveChoice ident = \case
               [enemyRetaliates enemy (IdentityCharacter attacker) | not (damageRanged damage)]
                 <> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
         _ -> []
+    -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
+    -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
+    -- "would take damage" does not answer it, though "when he is attacked" does
+    cannot <- case enemy of
+      EnemyVillainId vid -> (||) <$> cannotTakeDamageFrom (VillainRef vid) source <*> villainPreventsAttackDamage vid source damage
+      EnemyMinionId _ -> pure False
+    let windowDamage = if cannot then damage {damageAmount = 0} else damage
     pure $
       ( case enemy of
           EnemyVillainId vid ->
-            [ CheckWindows [Window When $ W.DamagedVillain vid damage]
+            [ CheckWindows [Window When $ W.DamagedVillain vid windowDamage]
             , VillainMessage vid $ VillainDamaged source damage
             ]
           EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
@@ -217,10 +230,10 @@ resolveChoice ident = \case
       pure $ damageIdentity ident' source damage
     AllyCharacter ident' ->
       pure $ damageAlly ident' source damage
-    VillainCharacter ident' ->
-      pure [VillainMessage ident' $ VillainDamaged source damage]
-    MinionCharacter ident' ->
-      pure [MinionMessage ident' $ MinionDamaged source damage]
+    -- every damage to an enemy goes one way: its reductions (Thanos's Armor) and its
+    -- "would take damage" window
+    VillainCharacter ident' -> choiceMessages ident (DamageEnemy (VillainRef ident') source damage)
+    MinionCharacter ident' -> choiceMessages ident (DamageEnemy (MinionRef ident') source damage)
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->

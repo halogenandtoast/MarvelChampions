@@ -71,3 +71,9 @@ import Marvel.Support.Supports.Regroup as X
 -- Venom
 import Marvel.Support.Supports.ProjectRebirth20 as X
 import Marvel.Support.Supports.CrewQuarters as X
+
+-- Spectrum
+import Marvel.Support.Supports.MightyAvengers as X
+
+-- Adam Warlock
+import Marvel.Support.Supports.SoulWorld as X

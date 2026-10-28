@@ -32,6 +32,8 @@ data Payment
     XPayment Natural
   | -- | the target chosen as the card was played, before its cost was paid
     TargetPayment Target
+  | -- | so many counters discarded from the card to pay
+    CountersPayment Natural
   | NoPayment
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

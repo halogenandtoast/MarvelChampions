@@ -3,7 +3,7 @@ module Marvel.Cost.Types where
 import Marvel.Prelude
 
 import Data.List (nub)
-import {-# SOURCE #-} Marvel.Matchers.Types (UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, UpgradeMatcher)
 import Marvel.Ref
 import Marvel.Resource.Types
 import Marvel.Trait.Types (Trait)
@@ -34,9 +34,24 @@ data Cost
     DiscardUpgradeCost UpgradeMatcher
   | -- | discard the top card of the payer's deck: not payable with an empty deck
     DiscardTopOfDeckCost
+  | -- | discard between so many cards from the top of the payer's deck and so many (as
+    -- many as it holds), the payer choosing how many: "discard up to 4 cards from the
+    -- top of your deck" (Adam Warlock's Karmic Blast). The cards are paid with.
+    DiscardTopOfDeckCardsCost Natural Natural
+  | -- | discard as many cards from the top of the payer's deck as the damage they are
+    -- about to take: "discard that many cards" (Shield Spell); not payable with fewer
+    DiscardTopOfDeckForDamageCost
   | -- | exhaust at least so many allies the payer controls, and at most so many (any
     -- number for Nothing)
     ExhaustAlliesCost Natural (Maybe Natural)
+  | -- | exhaust exactly so many allies the payer controls matching (Mass Attack)
+    ExhaustAlliesMatchingCost AllyMatcher Natural
+  | -- | "discard any number of counters from <this card>": at least so many, the payer
+    -- choosing how many, paid as 'CountersPayment' (Power Man)
+    CountersFromThisCost Natural
+  | -- | the resources of the cost spent only from cards in the payer's hand: "spend a
+    -- [physical] resource from your hand" (Blade, Sanctuary)
+    ResourcesFromHandCost Cost
   | -- | exhaust a character the payer controls with the trait: their identity or an ally
     ExhaustCharacterWithTraitCost Trait
   | -- | discard encounter cards until a minion is discarded, and put it into play
@@ -83,7 +98,12 @@ costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (DiscardUpgradeCost _) = []
 costResources DiscardTopOfDeckCost = []
+costResources (DiscardTopOfDeckCardsCost _ _) = []
+costResources DiscardTopOfDeckForDamageCost = []
 costResources (ExhaustAlliesCost _ _) = []
+costResources (ExhaustAlliesMatchingCost _ _) = []
+costResources (ResourcesFromHandCost c) = costResources c
+costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources DealEncounterCardCost = []

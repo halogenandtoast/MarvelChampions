@@ -315,6 +315,14 @@ uniqueMatch (t1, s1) (t2, s2) =
     || any (`elem` (t2 : s2)) s1
     || any (`elem` (t1 : s1)) s2
 
+-- | The supports and upgrades with the trait the player controls ("Max 1 Team per
+-- player").
+controlledWithTrait :: (HasGame m) => Trait -> IdentityId -> m Natural
+controlledWithTrait t p = do
+  supports <- selectListCount (SupportMatches [SupportWithTrait t, SupportControlledBy $ IdentityWithId p])
+  upgrades <- fromIntegral . length <$> selectList (UpgradeWithTrait t <> upgradeControlledBy p)
+  pure $ supports + upgrades
+
 checkPlayLimits :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 checkPlayLimits ident c = case cdLimit def of
   Nothing -> pure True
@@ -331,6 +339,7 @@ checkPlayLimits ident c = case cdLimit def of
         SupportType -> (< n) <$> selectListCount (SupportMatches [SupportNamed name, SupportControlledBy $ IdentityWithId p])
         _ -> (< n) . fromIntegral . length <$> selectList (UpgradeNamed name <> upgradeControlledBy p)
     UnderAnyControl -> pure True
+    MaxTraitPerPlayerUnderAnyControl t n -> anyM (fmap (< n) . controlledWithTrait t) =<< getPlayers
     MaxPerAlly 1 -> case cdCardType def of
       UpgradeType -> selectAny $ NotAlly $ AllyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
@@ -512,8 +521,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       nemesisSetCards <- gatherEncounterSet nemesisSet
       setAside (EncounterCard <$> nemesisSetCards)
       shuffleIntoEncounterDeck obligations
+      -- permanent cards are set aside before setup, for other cards to put into play
+      -- (RR Permanent); those with setup begin the game in play instead
+      let (permanent, deck) = partition (\c -> let ks = cdKeywords (getCardDef c) in Permanent `elem` ks && Keyword.Setup `notElem` ks) (unDeck playerIdentityDeck)
+      setAside (PlayerCard <$> permanent)
       shuffleDeck playerIdentityId
-      pure pid
+      pure $ PlayerIdentity $ attrs & deckL .~ Deck deck
     -- the setup keyword: "begins the game in play"
     PutSetupCardsIntoPlay -> do
       for_ (filter (elem Keyword.Setup . cdKeywords . getCardDef) $ unDeck playerIdentityDeck) (putIntoPlay playerIdentityId)
@@ -540,6 +553,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     EndedTurn -> do
       checkWindows [W.Window W.When $ W.TurnEnded playerIdentityId]
       identityEndedTurn playerIdentityId
+      -- "after your turn ends" (Sap Power)
+      checkWindows [W.Window W.After $ W.TurnEnded playerIdentityId]
       pure $ PlayerIdentity $ attrs & passedL .~ True
     ShuffleDeck -> do
       deck <- shuffleM (unDeck $ attrs ^. deckL)
@@ -610,7 +625,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               & deckL
                 .~ Deck deck
     ReadyCards -> do
-      for_ (HashSet.toList playerIdentityAllies) ready
+      for_ (HashSet.toList playerIdentityAllies) readyByGame
       for_ (HashSet.toList playerIdentitySupports) ready
       for_ (HashSet.toList playerIdentityUpgrades) ready
       readies <- notElem CannotReady <$> getModifiers pid
@@ -648,6 +663,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             identityStep playerIdentityId $ PayForCard card mWindow mTarget
           underAnyControl = case cdLimit (getCardDef card) of
             Just (MaxPerPlayerUnderAnyControl _) -> True
+            Just (MaxTraitPerPlayerUnderAnyControl _ _) -> True
             Just UnderAnyControl -> True
             _ -> False
           isMainScheme = \case
@@ -701,7 +717,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         chooseOnePrompted
           playerIdentityId
           "$label.discardAnAlly"
-          [targeting aid (removeFromPlay aid) | aid <- toList playerIdentityAllies]
+          -- one not counted against the limit (Odin) does not bring them within it
+          [targeting aid (removeFromPlay aid) | aid <- counted]
       pure pid
     UpgradeCreated upgradeId -> do
       identityStep playerIdentityId CheckRestrictedLimit
@@ -837,7 +854,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             attrs
               & (discardL %~ Discard . (cards <>) . unDiscard)
               & (deckL .~ Deck deck')
+    -- "heroes cannot be readied by player card effects" (Unnatural Storm)
     ReadiedIdentity -> do
+      storm <- elem CannotBeReadiedByPlayerCards <$> getModifiers pid
+      if storm && isHero pid then pure pid else runIdentityMessage ReadiedIdentityByGame pid
+    ReadiedIdentityByGame -> do
       readies <- notElem CannotReady <$> getModifiers pid
       when (readies && playerIdentityExhausted) $
         checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
@@ -917,10 +938,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- discarded (rules reference, "Player Elimination"); their minions engage the
       -- next player; then they leave the game
       upgrades <- selectList (UpgradeControlledBy $ IdentityWithId playerIdentityId)
-      for_ (toList playerIdentityAllies) removeFromPlay
+      -- an ally the first player controls goes with the first player token instead,
+      -- passed first (RR Player Elimination, step 1: Odin)
+      allies <- filterM (fmap (notElem ControlledByFirstPlayer) . getModifiers) (toList playerIdentityAllies)
+      for_ allies removeFromPlay
       for_ (toList playerIdentitySupports) removeFromPlay
       for_ upgrades removeFromPlay
       for_ playerIdentityEncounterCards discardCard
+      -- and the encounter cards in their play area (Ebony Maw's Spells)
+      traverse_ removeFromPlay =<< selectList (EnvironmentInPlayAreaOf playerIdentityId)
       case ps of
         [x] | x /= playerIdentityId -> for_ (toList playerIdentityMinions) (`engageMinion` x)
         _ -> pure ()
@@ -1070,8 +1096,7 @@ instance RunMessage PlayerIdentity where
     let a = toAttrs pid'
     -- queued after what the message did, so the deck is made again before any of it runs
     runQueueT $ when (null (unDeck a.playerIdentityDeck) && notNull (unDiscard a.playerIdentityDiscard) && not a.playerIdentitySearching) do
-      identityStep a.playerIdentityId ShuffleIdentityDiscardBackIntoDeck
-      dealEncounterCard a.playerIdentityId
+      resetDeck a.playerIdentityId
     pure pid'
 
 runPlayerMessage ::

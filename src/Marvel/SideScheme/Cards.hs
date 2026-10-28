@@ -137,6 +137,13 @@ allSideSchemes = fromList $ map
   -- Space Pirates
   , soundTheAlarms
 
+  -- The Mad Titan's Shadow: Ebony Maw
+  , reactorOverload
+  -- Black Order
+  , theBlackOrder
+  -- Armies of Titan
+  , landingCraft
+
   -- The Galaxy's Most Wanted: Challenge
   , badoonBlitz
   , badoonBlitzExpert
@@ -159,6 +166,35 @@ allSideSchemes = fromList $ map
 
   -- Venom
   , klyntarFrenzy
+
+  -- Spectrum
+  , reactorMeltdown
+
+  -- Adam Warlock
+  , universalChurchOfTruth
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , cityUnderAttack
+
+  -- The Mad Titan's Shadow: Thanos
+  , sanctuary
+  , theTitansThrone
+  -- Children of Thanos
+  , tribute
+  -- The Mad Titan's Shadow: Loki
+  , casketOfAncientWinters
+  , warInAsgard
+  , madnessOnMidgard
+  , openTheBifrost
+
+  -- The Mad Titan's Shadow: Hela
+  , gnipahellir
+  , hallOfNastrond
+  , gjallerbru
+  -- Legions of Hel
+  , legionsOfHel
+  -- Frost Giants
+  , unnaturalStorm
   ]
 
 sideScheme
@@ -629,3 +665,93 @@ klyntarFrenzy =
   (sideScheme "20024" "Klyntar Frenzy" [Boost, Boost, Boost] VenomNemesis 1)
     { cdHazards = 1
     }
+
+-- Spectrum
+
+-- | A crisis icon (the scheme's).
+reactorMeltdown :: CardDef
+reactorMeltdown = sideScheme "21028" "Reactor Meltdown" [Boost, Boost, Boost] SpectrumNemesis 1
+
+-- Adam Warlock
+
+-- | An acceleration icon; a [star] boost ("Boost: Reveal this card").
+universalChurchOfTruth :: CardDef
+universalChurchOfTruth = (sideScheme "21068" "Universal Church of Truth" [Star] AdamWarlockNemesis 1) {cdAcceleration = 1}
+
+-- The Mad Titan's Shadow: Tower Defense
+
+-- | Hinder 1 per player; a crisis icon (the scheme's).
+cityUnderAttack :: CardDef
+cityUnderAttack = (sideScheme "21110" "City Under Attack" [Boost, Boost] TowerDefense 2) {cdKeywords = singleton (Hinder (PerPlayer 1))}
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+-- | A crisis icon (the scheme's).
+reactorOverload :: CardDef
+reactorOverload = sideScheme "21084" "Reactor Overload" [Boost, Boost, Boost] EbonyMaw 2
+
+-- Black Order
+
+theBlackOrder :: CardDef
+theBlackOrder = (sideScheme "21087" "The Black Order" [Boost, Boost] BlackOrderSet 1) {cdHazards = 1}
+
+-- Armies of Titan
+
+landingCraft :: CardDef
+landingCraft = (sideScheme "21091" "Landing Craft" [Boost, Boost] ArmiesOfTitan 2) {cdAcceleration = 1}
+
+-- The Mad Titan's Shadow: Thanos
+
+-- | Hinder 1 per player, Victory 1; revealed by The Infinity Stones (1B).
+sanctuary :: CardDef
+sanctuary = (sideScheme "21116" "Sanctuary" [Boost, Boost, Boost] Thanos 1) {cdKeywords = fromList [Hinder (PerPlayer 1), Victory 1]}
+
+-- | One amplify icon.
+theTitansThrone :: CardDef
+theTitansThrone = (sideScheme "21124" "The Titan's Throne" [Boost, Boost] Thanos 1) {cdAmplify = 1}
+
+-- Children of Thanos
+
+-- | A crisis icon (the scheme's).
+tribute :: CardDef
+tribute = sideScheme "21128" "Tribute" [Boost, Boost] ChildrenOfThanos 2
+
+-- The Mad Titan's Shadow: Loki
+-- each Hinder 1 per player
+
+lokiScheme :: CardCode -> Name -> [BoostIcon] -> CardDef
+lokiScheme code name boosts = (sideScheme code name boosts Loki 1) {cdKeywords = singleton (Hinder (PerPlayer 1))}
+
+casketOfAncientWinters :: CardDef
+casketOfAncientWinters = lokiScheme "21166" "Casket of Ancient Winters" [Boost, Boost, Boost]
+
+warInAsgard :: CardDef
+warInAsgard = lokiScheme "21167" "War in Asgard" [Boost]
+
+madnessOnMidgard :: CardDef
+madnessOnMidgard = lokiScheme "21168" "Madness on Midgard" [Boost, Boost]
+
+openTheBifrost :: CardDef
+openTheBifrost = lokiScheme "21169" "Open the Bifrost" [Boost, Boost, Boost, Boost]
+
+-- The Mad Titan's Shadow: Hela: the road through Hel, each set aside until the one
+-- before it is defeated
+
+gnipahellir :: CardDef
+gnipahellir = (sideScheme "21140" "Gnipahellir" [Boost, Boost] Hela 1) {cdKeywords = fromList [Hinder (PerPlayer 1), Victory 2], cdAcceleration = 1}
+
+hallOfNastrond :: CardDef
+hallOfNastrond = (sideScheme "21141" "Hall of Nastrond" [Boost, Boost, Boost, Boost] Hela 1) {cdKeywords = fromList [Hinder (PerPlayer 1), Victory 4], cdHazards = 1}
+
+gjallerbru :: CardDef
+gjallerbru = (sideScheme "21142" "Gjallerbru" [Boost, Boost, Boost] Hela 1) {cdKeywords = fromList [Hinder (PerPlayer 1), Victory 3], cdAmplify = 1}
+
+-- Legions of Hel
+
+legionsOfHel :: CardDef
+legionsOfHel = sideScheme "21155" "Legions of Hel" [Boost, Boost] LegionsOfHel 2
+
+-- Frost Giants
+
+unnaturalStorm :: CardDef
+unnaturalStorm = sideScheme "21159" "Unnatural Storm" [Boost, Boost] FrostGiants 1

@@ -58,6 +58,8 @@ instance Entity Upgrade where
     , upgradeHeldCards :: [PlayerCard]
     -- ^ cards attached faceup to it, its controller may play as if in hand (Hawkeye's
     -- Quiver); discarded as it leaves play
+    , upgradeFaceDown :: Bool
+    -- ^ facedown, out of play for its text (Spectrum's energy forms)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -73,6 +75,7 @@ instance Entity Upgrade where
     UpgradeUses :: Field Upgrade Natural
     UpgradeDiscardIfNoUses :: Field Upgrade Bool
     UpgradeHeldCards :: Field Upgrade [PlayerCard]
+    UpgradeFaceDown :: Field Upgrade Bool
   field fld u =
     let UpgradeAttrs {..} = toAttrs u
      in case fld of
@@ -87,6 +90,7 @@ instance Entity Upgrade where
           UpgradeUses -> upgradeUses
           UpgradeDiscardIfNoUses -> upgradeDiscardIfNoUses
           UpgradeHeldCards -> upgradeHeldCards
+          UpgradeFaceDown -> upgradeFaceDown
   toId = upgradeId . toAttrs
   toAttrs (Upgrade a) = toUpgradeAttrs a
 
@@ -192,6 +196,7 @@ upgrade f cardDef =
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
             , upgradeHeldCards = []
+            , upgradeFaceDown = False
             }
     }
 
@@ -274,6 +279,8 @@ instance RunMessage (Attrs Upgrade) where
       ExhaustedUpgrade -> do
         pure $ a & exhaustedL .~ True
       UpgradeOwnedBy owner -> pure a {upgradeOwner = owner}
+      FlipUpgradeFaceUp -> pure a {upgradeFaceDown = False}
+      FlipUpgradeFaceDown -> pure a {upgradeFaceDown = True}
       UpgradeAttachedToEnemy enemyId -> do
         upgradeAttachedTo enemyId (upgradeId a)
         pure $ a & attachedEnemyL ?~ enemyId

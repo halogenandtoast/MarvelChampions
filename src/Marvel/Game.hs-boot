@@ -7,6 +7,7 @@ import Control.Monad.Reader (ReaderT)
 import Marvel.Ability.Types
 import Marvel.Area (Area, AreaId, DeckKey, Pile)
 import Marvel.Attack (Attack)
+import Marvel.Damage (Damage)
 import Marvel.Card.Code (CardCode)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef)
@@ -89,6 +90,8 @@ getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
+isPlayerCardSource :: (HasGame m) => Source -> m Bool
+cannotTakeDamageFrom :: (HasGame m) => Target -> Source -> m Bool
 -- Matchers
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
@@ -153,12 +156,16 @@ getCountersOn :: (HasGame m, IsRef a) => a -> m Natural
 getVillainAttack :: (HasGame m) => VillainId -> m (Maybe Attack)
 getScenarioCode :: (HasGame m) => m CardCode
 getVillainAttackValue :: (HasGame m) => VillainId -> m Natural
+getVillainSchemeValue :: (HasGame m) => VillainId -> m Natural
+getPairedMainScheme :: (HasGame m) => VillainId -> m (Maybe MainSchemeId)
 getExcessDamage :: (HasGame m) => CharacterId -> Natural -> m Natural
 countCardsInPlayWithTrait :: (HasGame m) => Trait -> m Natural
 whenRevealedTimes :: (HasGame m) => IdentityId -> m Int
 getBoostedPlayer :: (HasGame m) => EnemyId -> m IdentityId
 countObligationsOf :: (HasGame m) => IdentityId -> m Natural
 getVillainStage :: (HasGame m) => VillainId -> m Natural
+villainPreventsAttackDamage :: (HasGame m) => VillainId -> Source -> Damage -> m Bool
+getVillainHitPoints :: (HasGame m) => VillainId -> m Natural
 getEnemyPrintedHitPoints :: (HasGame m) => EnemyId -> m Natural
 getHazardCount :: (HasGame m) => m Natural
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
@@ -204,6 +211,8 @@ getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
 getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
 getAvailablePaymentSources ::
   (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
+-- Adam Warlock
+pendingDamageAmount :: (HasQueue m) => IdentityId -> m Natural
 getResourceAbilities ::
   ( MonadThrow m
   , MonadRandom m
@@ -221,3 +230,6 @@ gameSelectCountIdentity ::
   (HasGame m) => QueryCount IdentityMatcher -> IdentityMatcher -> m Natural
 gameSelectCountAlly ::
   (HasGame m) => QueryCount AllyMatcher -> AllyMatcher -> m Natural
+-- Hela
+sideSchemesInVictoryDisplay :: (HasGame m) => m Natural
+getMainSchemeHeldCards :: (HasGame m) => MainSchemeId -> m [PlayerCard]

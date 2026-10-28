@@ -266,6 +266,26 @@ allEvents = fromList $ map
   , SomeEventCard fusillade
   , SomeEventCard welcomeAboard
   , SomeEventCard shakeItOff
+
+  -- Spectrum
+  , SomeEventCard gammaBlast
+  , SomeEventCard photonSpeed
+  , SomeEventCard pulsarShield
+  , SomeEventCard speedOfLight
+  , SomeEventCard massAttack
+
+  -- Adam Warlock
+  , SomeEventCard karmicBlast
+  , SomeEventCard cosmicAwareness
+  , SomeEventCard quantumMagic
+  , SomeEventCard inBetweener
+  , SomeEventCard magicAttack
+  , SomeEventCard livingTribunal
+  , SomeEventCard zoneOfSilence
+  , SomeEventCard eternity
+  , SomeEventCard summoningSpell
+  , SomeEventCard theGardener
+  , SomeEventCard shieldSpell
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

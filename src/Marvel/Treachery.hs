@@ -198,6 +198,37 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard caughtOffGuardMuseum
   -- Drax
   , SomeTreacheryCard iWillDestroyYou
+  -- Spectrum
+  , SomeTreacheryCard radioactiveBlast
+  -- Adam Warlock
+  , SomeTreacheryCard cosmicInquisition
+  -- The Mad Titan's Shadow: Ebony Maw, Black Order
+  , SomeTreacheryCard agentOfThanos
+  , SomeTreacheryCard channelingTrance
+  , SomeTreacheryCard bloodToSpare
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , SomeTreacheryCard proximasPower
+  , SomeTreacheryCard corvussCunning
+  , SomeTreacheryCard boundByBlood
+  , SomeTreacheryCard rainFire
+
+  -- The Mad Titan's Shadow: Thanos
+  , SomeTreacheryCard avatarOfDeath
+  , SomeTreacheryCard deviantSyndrome
+  , SomeTreacheryCard iAmInevitable
+  , SomeTreacheryCard theMadTitan
+
+  -- The Mad Titan's Shadow: Loki
+  , SomeTreacheryCard deviousSorcery
+  , SomeTreacheryCard infiniteMischief
+  , SomeTreacheryCard theTrickster
+
+  -- The Mad Titan's Shadow: Hela, Legions of Hel
+  , SomeTreacheryCard helasDomain
+  , SomeTreacheryCard theQueenOfHel
+  , SomeTreacheryCard theWastesOfNiffleheim
+  , SomeTreacheryCard noPlaceForTheLiving
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

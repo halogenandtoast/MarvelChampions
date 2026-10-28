@@ -97,5 +97,16 @@ data Trait
   | Ghost
   | Symbiote
   | SpaceKnight
+  -- The Mad Titan's Shadow
+  | BlackOrder
+  | Titan
+  | Stronghold
+  | Damaged
+  | Undead
+  | Enthralled
+  | Team
+  | Vampire
+  | CosmicEntity
+  | Dragon
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

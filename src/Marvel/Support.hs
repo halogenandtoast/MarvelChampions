@@ -97,6 +97,12 @@ allSupports = fromList $ map
   -- Venom
   , SomeSupportCard projectRebirth20
   , SomeSupportCard crewQuarters
+
+  -- Spectrum
+  , SomeSupportCard mightyAvengers
+
+  -- Adam Warlock
+  , SomeSupportCard soulWorld
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

@@ -87,6 +87,8 @@ cardMatch matcher a = case matcher of
 data ResourceRestriction
   = PrintedResource
   | ResourceForCardsMatching CardMatcher
+  | -- | one for each ally its owner controls, to this maximum (Band Together): not printed
+    ForEachAllyControlled Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -105,6 +107,9 @@ data InPlayLimit
   | MaxPerSideScheme Natural
   | -- | "Play under any player's control.", with no maximum
     UnderAnyControl
+  | -- | "Play under any player's control. Max N <Trait> per player." (Mighty Avengers):
+    -- cards with the trait, supports and upgrades, a player controls
+    MaxTraitPerPlayerUnderAnyControl Trait Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

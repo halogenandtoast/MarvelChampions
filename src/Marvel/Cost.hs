@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.List qualified as L
 import Marvel.Ability
+import Marvel.Card.PlayerCard ()
 import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Cost.Types
 import Marvel.Game.Source
@@ -92,9 +93,19 @@ canAffordCost identityId source = go
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     DiscardUpgradeCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     DiscardTopOfDeckCost -> projectP PlayerIdentityDeck (not . null . unDeck) identityId
+    -- "up to": as few as the deck holds, down to the least the cost asks
+    DiscardTopOfDeckCardsCost lo _ -> projectP PlayerIdentityDeck ((>= lo) . fromIntegral . length . unDeck) identityId
+    DiscardTopOfDeckForDamageCost -> do
+      n <- pendingDamageAmount identityId
+      projectP PlayerIdentityDeck ((>= n) . fromIntegral . length . unDeck) identityId
     ExhaustAlliesCost n _ ->
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
+    CountersFromThisCost n -> (>= n) <$> getCountersOn source
+    ResourcesFromHandCost c ->
+      coversResources (costResources c) <$> (concatMapM (`resourcesFor` Nothing) =<< getAvailablePaymentSources identityId)
+    ExhaustAlliesMatchingCost matcher n ->
+      (>= n) <$> selectListCount (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     ExhaustCharacterWithTraitCost t ->
       orM
         [ selectAny (IdentityWithId identityId <> UnexhaustedIdentity <> IdentityWithTrait t)
@@ -126,16 +137,16 @@ canAffordCost identityId source = go
       AllyRef ident -> member ident <$> select AllyWithAnyUses
       _ -> error "Unhandled"
     ResourceCost mr -> do
-      resources <- getAvailableResourcesFor identityId Nothing
+      resources <- availableResources
       pure $ case mr of
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
     DynamicResourceCost mr -> do
-      resources <- getAvailableResourcesFor identityId Nothing
+      resources <- availableResources
       pure $ case mr of
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
-    MultiResourceCost mr -> coversResources mr <$> getAvailableResourcesFor identityId Nothing
+    MultiResourceCost mr -> coversResources mr <$> availableResources
     DifferentResourcesCost n ->
       coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
     -- the Milano exhausted to pay, its own resource is not there to spend as well
@@ -160,3 +171,11 @@ canAffordCost identityId source = go
             ]
     Costs xs -> allM go xs
   notPlaying c = source /= CardIdRef (pcCardId c)
+  -- a card's ability used from its owner's hand (Pip the Troll) is not paid for with
+  -- that card
+  availableResources = case source of
+    CardIdRef _ -> do
+      abilities <- concatMapM abilityResources =<< getResourceAbilities identityId Nothing
+      cards <- filter notPlaying <$> getAvailablePaymentSources identityId
+      (<> abilities) <$> concatMapM (`resourcesFor` Nothing) cards
+    _ -> getAvailableResourcesFor identityId Nothing

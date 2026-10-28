@@ -42,6 +42,15 @@ allResources = fromList $ concatMap
 
   -- Rocket Raccoon
   , salvage
+
+  -- Spectrum
+  , bandTogether
+
+  -- Adam Warlock
+  , audacity
+  , determination
+  , innovation
+  , preservation
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -117,13 +126,13 @@ thePowerOfProtection = reprintedAs ["05016", "09017", "16015"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017"] $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023"] $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018"] $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024"] $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019"] $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025"] $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -151,3 +160,24 @@ thePowerInAllOfUs =
 -- | Its "after you spend this card" is 'Marvel.Resource.Resources.afterSpent'.
 salvage :: CardDef
 salvage = identityResource "16033" "Salvage" [] [Mental, Wild]
+
+-- Spectrum
+
+-- | "This card generates [wild] for each ally you control (to a maximum of 3)": no printed
+-- resource.
+bandTogether :: CardDef
+bandTogether = resource "21018" "Band Together" [] [] Leadership & resourcesL .~ [(ForEachAllyControlled 3, Wild)]
+
+-- Adam Warlock (each Max 1 per deck)
+
+audacity :: CardDef
+audacity = resource "21046" "Audacity" [] [Wild] Aggression
+
+determination :: CardDef
+determination = resource "21052" "Determination" [] [Wild] Justice
+
+innovation :: CardDef
+innovation = resource "21058" "Innovation" [] [Wild] Leadership
+
+preservation :: CardDef
+preservation = resource "21064" "Preservation" [] [Wild] Protection

@@ -166,3 +166,16 @@ import Marvel.Upgrade.Upgrades.VenomsPistol as X
 import Marvel.Upgrade.Upgrades.SonicRifle as X
 import Marvel.Upgrade.Upgrades.SideHolster as X
 import Marvel.Upgrade.Upgrades.PlasmaPistol as X
+
+-- Spectrum
+import Marvel.Upgrade.Upgrades.Gamma as X
+import Marvel.Upgrade.Upgrades.Photon as X
+import Marvel.Upgrade.Upgrades.Pulsar as X
+import Marvel.Upgrade.Upgrades.EnergyDuplication as X
+import Marvel.Upgrade.Upgrades.ReadyToRumble as X
+
+-- Adam Warlock
+import Marvel.Upgrade.Upgrades.KarmicStaff as X
+import Marvel.Upgrade.Upgrades.WarlocksCape as X
+import Marvel.Upgrade.Upgrades.CosmicWard as X
+import Marvel.Upgrade.Upgrades.MysticSenses as X

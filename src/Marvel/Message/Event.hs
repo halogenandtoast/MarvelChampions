@@ -11,5 +11,8 @@ data EventMessage
   | ResolvedEvent
   | -- | the event's damage attacked the enemy for the player, ranged or not
     EventAttacked IdentityId EnemyId Bool
+  | -- | the event, shuffled into the encounter deck, was revealed for the player (a
+    -- Cosmic Entity): its "When Revealed" resolves
+    RevealedEvent IdentityId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

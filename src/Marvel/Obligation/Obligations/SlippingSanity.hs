@@ -49,8 +49,8 @@ instance RunMessage SlippingSanity where
             <> [ labeled (countLabel "discardEncounterCardsThreatPerStar" 5) $
                   discardTopOfEncounterDeckThen 5 \cards -> do
                     let stars = count (== Star) $ concatMap (cdBoostIcons . getCardDef) cards
-                    mainScheme <- selectOne MainScheme
-                    for_ mainScheme \scheme -> placeThreat scheme stars
+                    mainSchemes <- selectList MainScheme
+                    for_ mainSchemes \scheme -> placeThreat scheme stars
                ]
         pure o
       _ -> SlippingSanity <$> runMessage msg attrs

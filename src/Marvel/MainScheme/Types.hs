@@ -55,6 +55,9 @@ instance Entity MainScheme where
     , mainSchemeCrisis :: Bool
     , mainSchemeHeldCards :: [PlayerCard]
     , mainSchemeCounters :: Natural
+    , mainSchemeVillain :: Maybe Text
+    -- ^ the title of the villain whose own scheme it is ("Proxima Midnight's Scheme"),
+    -- who schemes onto it alone (Tower Defense)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -158,6 +161,7 @@ mainScheme f cardDef threshold initialThreat acceleration =
             , mainSchemeCrisis = False
             , mainSchemeHeldCards = []
             , mainSchemeCounters = 0
+            , mainSchemeVillain = Nothing
             }
     }
 

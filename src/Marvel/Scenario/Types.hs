@@ -17,7 +17,8 @@ import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Keyword qualified as Keyword
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id (IdentityId)
+import Marvel.Id (IdentityId, VillainId (..))
+import Marvel.Name (Name (..))
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Id (EnemyId (..))
@@ -93,6 +94,9 @@ instance Entity Scenario where
     -- ^ the decks besides the encounter deck, each with its discard pile
     , scenarioCardDecks :: HashMap CardId DeckKey
     -- ^ the deck a card of another deck than the encounter deck is discarded to
+    , scenarioVictoryCondition :: Maybe Natural
+    -- ^ how many of the villain's versions in the victory display win the game, when the
+    -- players choose it (Loki)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -182,6 +186,7 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
             , scenarioReshufflesThisRound = 0
             , scenarioDecks = mempty
             , scenarioCardDecks = mempty
+            , scenarioVictoryCondition = Nothing
             }
     }
 
@@ -195,7 +200,13 @@ instance RunMessage (Attrs Scenario) where
     -- queued after what the message did, so the game is lost before any of it runs
     runQueueT $ foldlM refill attrs' (deckKeys attrs')
    where
-    refill a key = case a ^. pileL key of
+    refill a key = do
+      -- the Infinity Stone deck runs out as its last card leaves it, before it is made
+      -- again (Thanos's Forced Response)
+      when (key == InfinityStoneDeckKey && notNull (pileDeck $ attrs ^. pileL key) && null (pileDeck $ a ^. pileL key)) $
+        checkWindows [W.Window W.After W.InfinityStoneDeckRanOut]
+      refill' a key
+    refill' a key = case a ^. pileL key of
       Pile [] [] | key == EncounterDeckKey, notNull (scenarioEncounterDeck attrs) -> a <$ gameOver Lost
       Pile [] discard | notNull discard, not (isNamed key) -> do
         deck' <- shuffleM discard
@@ -226,6 +237,11 @@ leaves card attrs =
     & (discardL %~ filter (/= card))
     & \a -> a {scenarioDecks = HashMap.map (\(Pile d x) -> Pile (filter (/= card) d) (filter (/= card) x)) (scenarioDecks a)}
 
+-- | The villain card in play, as a card out of play: set aside, or in the victory
+-- display.
+villainAsCard :: VillainId -> CardDef -> EncounterCard
+villainAsCard vid = MkEncounterCard (CardId $ coerce vid)
+
 -- | The encounter-deck messages, and the player whose area's deck they are on when not
 -- "you"'s.
 deckMessage :: Message -> Maybe (Maybe IdentityId)
@@ -234,6 +250,8 @@ deckMessage = \case
   DrawAndRevealEncounterCard ident -> Just (Just ident)
   SearchForAndRevealEncounterCard ident _ -> Just (Just ident)
   SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
+  SearchEverywhereAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
+  DiscardUntilIntoPlay ident _ -> Just (Just ident)
   SearchForAndDealEncounterCard ident _ -> Just (Just ident)
   SearchForAndRevealScheme _ -> Just Nothing
   DealBoost _ -> Just Nothing
@@ -244,6 +262,8 @@ deckMessage = \case
   PutOnBottomOfEncounterDeck _ -> Just Nothing
   LookAtTopOfEncounterDeck _ _ -> Just Nothing
   DiscardUntil FromEncounterDeck _ _ -> Just Nothing
+  PutTopOfEncounterDeckIntoPlay ident -> Just (Just ident)
+  ShuffleEncounterDiscardIntoDeck -> Just Nothing
   _ -> Nothing
 
 -- | A message drawing from the deck, which a deck other than an encounter deck with
@@ -253,6 +273,7 @@ drawsFromDeck = \case
   DealEncounterCard _ -> True
   DrawAndRevealEncounterCard _ -> True
   DealBoost _ -> True
+  PutTopOfEncounterDeckIntoPlay _ -> True
   _ -> False
 
 -- | The encounter-deck message run against the deck given: its cards stand in for the
@@ -296,6 +317,18 @@ runScenarioMessage msg attrs = case msg of
         else leaves ec attrs
   -- the Campaign Instructions: a scenario adds its own steps answering this first
   CampaignStep step -> attrs <$ runCampaignStep step
+  -- a set-aside villain card of his title, at random, takes his place; the one swapped
+  -- out is set aside in its stead (MTS rulebook p.24, "Swapping Loki")
+  SwapVillain vid -> do
+    mdef <- getsGame (`abilityCardDef` VillainRef vid)
+    let sameTitle c = cdCardType (getCardDef c) == VillainType && Just (title $ cdName $ getCardDef c) == (title . cdName <$> mdef)
+        candidates = [ec | EncounterCard ec <- scenarioSetAsideCards attrs, sameTitle ec]
+    shuffled <- shuffleM candidates
+    case (mdef, shuffled) of
+      (Just def, pick : _) -> do
+        replaceVillain vid (toCardCode pick) Swapped
+        pure $ leaves pick attrs & setAsideCardsL <>~ [EncounterCard (villainAsCard vid def)]
+      _ -> pure attrs
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
     areas <- getAreas
@@ -431,6 +464,13 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       (ecs, attrs') <- drawEncounterCard attrs
       for_ ecs (revealEncounterCard ident)
       pure attrs'
+    PutTopOfEncounterDeckIntoPlay ident -> do
+      (ecs, attrs') <- drawEncounterCard attrs
+      for_ ecs (putEncounterCardIntoPlay ident)
+      pure attrs'
+    ShuffleEncounterDiscardIntoDeck -> do
+      deck' <- shuffleM (scenarioEncounterDeck <> scenarioDiscard)
+      pure $ attrs & encounterDeckL .~ deck' & discardL .~ []
     DealBoost target -> do
       (ecs, attrs') <- drawEncounterCard attrs
       case target of
@@ -462,6 +502,10 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         x : xs -> do
           withDiscardedMatch target FromEncounterDeck (EncounterCard x)
           pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
+    DiscardUntilIntoPlay ident cardMatcher -> do
+      let (discarded, remaining) = break (cardMatch cardMatcher) scenarioEncounterDeck
+      for_ (take 1 remaining) (putEncounterCardIntoPlay ident)
+      pure $ attrs & encounterDeckL .~ drop 1 remaining & discardL %~ (reverse discarded <>)
     -- each card with the setup keyword in the encounter deck goes into play, the first
     -- player putting it there: a support under their control, an attachment as its own
     -- "attach to" says (RR Appendix II, step 11); a scenario's own Setup comes after
@@ -476,12 +520,15 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       search ident (CardIs cardDef) (revealEncounterCard ident)
     SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealEncounterCard ident)
     SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (putEncounterCardIntoPlay ident)
+    SearchEverywhereAndPutIntoPlayEncounterCard ident matcher ->
+      searchIn ([ec | EncounterCard ec <- scenarioSetAsideCards]) ident matcher (putEncounterCardIntoPlay ident)
     SearchForAndDealEncounterCard ident matcher -> search ident matcher (dealFoundEncounterCard ident)
     _ -> pure attrs
  where
   -- the searching player chooses one of the cards found, then the deck is shuffled
-  search ident matcher f = do
-    let searched = scenarioEncounterDeck <> scenarioDiscard
+  search = searchIn []
+  searchIn others ident matcher f = do
+    let searched = scenarioEncounterDeck <> scenarioDiscard <> others
         found = List.nubBy ((==) `on` toCardCode) $ filter (cardMatch matcher) searched
     unless (null found) $ chooseOrRunOneSearched ident (map EncounterCard searched) [targeting card (f card) | card <- found]
     -- the deck searched

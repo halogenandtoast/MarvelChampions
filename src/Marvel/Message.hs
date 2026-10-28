@@ -41,7 +41,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -131,7 +131,10 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
   isDefeat = \case
     MinionMessage mid' MinionDefeated -> mid' == mid
     _ -> False
+  -- the excess on to the villain, its "would take damage" window first when it opens
   dropOverkill = \case
+    CheckWindows [Window When (DamagedVillain _ d)] : VillainMessage _ (VillainDamaged _ d') : rest
+      | damageSource d == FromOverkill, damageSource d' == FromOverkill -> rest
     VillainMessage _ (VillainDamaged _ d) : rest | damageSource d == FromOverkill -> rest
     rest -> rest
   cancelAfter rest = case break isAfter rest of
@@ -415,6 +418,18 @@ data Message
   | -- | the top card of the player's deck is put into play facedown, engaged with them,
     -- as a Drone minion
     PutTopOfDeckIntoPlayAsDrone IdentityId
+  -- Hela (and Enchantress)
+  | -- | the ally card is put into play as a minion with a blank text box, engaged with
+    -- the player (Fallen Warrior), out of where it was; unless a matching unique card in
+    -- play keeps it out (RR Unique)
+    PutAllyIntoPlayAsMinion IdentityId PlayerCard
+  | -- | the ally in play is treated as a minion engaged with its controller (Beguiled):
+    -- it does not leave play; its damage and status cards stay, what is attached to it
+    -- is discarded
+    AllyBecomesMinion AllyId
+  | -- | the minion an ally was treated as is that ally again, under its owner's control,
+    -- its damage kept (its Fallen Warrior or Beguiled gone first)
+    MinionBecomesAlly MinionId
   | -- | an encounter card put into play without being revealed: its "When Revealed"
     -- abilities and surge do not resolve
     PutEncounterCardIntoPlay IdentityId EncounterCard
@@ -439,6 +454,13 @@ data Message
   | -- | the first card matching in the encounter deck or its discard pile is put into
     -- play for the player, then the deck is shuffled
     SearchForAndPutIntoPlayEncounterCard IdentityId CardMatcher
+  | -- | as 'SearchForAndPutIntoPlayEncounterCard', the set-aside area searched too
+    -- ("search the encounter deck, discard pile, and set-aside area", Enchantress)
+    SearchEverywhereAndPutIntoPlayEncounterCard IdentityId CardMatcher
+  | -- | cards are discarded from the top of the encounter deck until one matches, which
+    -- is put into play for the player (Ebony Maw's Spells); a deck run out first is
+    -- fulfilled, nothing put into play
+    DiscardUntilIntoPlay IdentityId CardMatcher
   | -- | a card matching is found in the encounter deck or discard pile and dealt to the
     -- player facedown
     SearchForAndDealEncounterCard IdentityId CardMatcher
@@ -492,6 +514,12 @@ data Message
   | -- | the encounter-deck message run against the deck given in place of the area's
     -- encounter deck
     UsingDeck DeckKey Message
+  | -- | the top card of the encounter deck (or the deck given by 'UsingDeck') is put into
+    -- play for the player, not revealed: an Infinity Stone (The Mad Titan's Shadow)
+    PutTopOfEncounterDeckIntoPlay IdentityId
+  | -- | the encounter deck's discard pile (or that of the deck given by 'UsingDeck') is
+    -- shuffled back into it
+    ShuffleEncounterDiscardIntoDeck
   | -- | a villain is defeated for good: the scenario says what that does, by default
     -- the players win with no villain left, and otherwise he leaves play
     ResolveVillainDefeat VillainId
@@ -538,5 +566,22 @@ data Message
   | -- | the card goes faceup into The Collection, the shared out-of-play area of the
     -- scenario, from wherever it is: a card in play leaves play for it, not discarded
     PlaceInCollection Card
+  -- The Mad Titan's Shadow: Loki
+  | -- | "swap <the villain> with a random set-aside <villain>": the scenario picks one of
+    -- the same title set aside, and the villain is replaced by it ('ReplaceVillain');
+    -- with none, nothing (RR "Swap": it cannot be completed)
+    SwapVillain VillainId
+  | -- | the villain card in play is replaced by the one given, the same villain id:
+    -- what was on him carries over ('Marvel.Villain.Types.carryOver'); swapped, his hit
+    -- point dial stays, advanced, the new one enters play at its own hit points
+    ReplaceVillain VillainId CardCode ReplaceKind
+  | -- | a card out of play goes straight to the victory display (a defeated villain)
+    AddCardToVictoryDisplay EncounterCard
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+-- | How a villain card is replaced: swapped (RR "Swap", the hit point dial kept) or
+-- advanced to (it enters play as a next stage would).
+data ReplaceKind = Swapped | Advanced
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

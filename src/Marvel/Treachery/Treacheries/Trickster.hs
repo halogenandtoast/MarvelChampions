@@ -31,7 +31,7 @@ instance RunMessage Trickster where
         pure t
       _ -> Trickster <$> runMessage msg attrs
     WithDiscarded (isTarget attrs -> True) _ cards -> do
-      mainScheme <- selectJust MainScheme
-      placeThreat mainScheme $ fromIntegral $ length $ nub $ map (cdCardType . getCardDef) cards
+      mainSchemes <- selectList MainScheme
+      for_ mainSchemes (`placeThreat` fromIntegral (length $ nub $ map (cdCardType . getCardDef) cards))
       pure t
     _ -> Trickster <$> runMessage msg attrs

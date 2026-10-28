@@ -240,3 +240,20 @@ import Marvel.Event.Events.MakingAnEntrance as X
 import Marvel.Event.Events.Fusillade as X
 import Marvel.Event.Events.WelcomeAboard as X
 import Marvel.Event.Events.ShakeItOff as X
+
+-- Spectrum
+import Marvel.Event.Events.GammaBlast as X
+import Marvel.Event.Events.PhotonSpeed as X
+import Marvel.Event.Events.PulsarShield as X
+import Marvel.Event.Events.SpeedOfLight as X
+import Marvel.Event.Events.MassAttack as X
+
+-- Adam Warlock
+import Marvel.Event.Events.KarmicBlast as X
+import Marvel.Event.Events.CosmicAwareness as X
+import Marvel.Event.Events.QuantumMagic as X
+import Marvel.Event.Events.CosmicEntities as X
+import Marvel.Event.Events.MagicAttack as X
+import Marvel.Event.Events.ZoneOfSilence as X
+import Marvel.Event.Events.SummoningSpell as X
+import Marvel.Event.Events.ShieldSpell as X

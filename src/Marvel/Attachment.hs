@@ -138,6 +138,34 @@ allAttachments =
       , SomeAttachmentCard vandarianPowerWand
       -- Drax
       , SomeAttachmentCard challengeAccepted
+      -- Spectrum
+      , SomeAttachmentCard sapPower
+      -- The Mad Titan's Shadow: Tower Defense
+      , SomeAttachmentCard focusedDefense
+      , SomeAttachmentCard proximasSpear
+      , SomeAttachmentCard corvussGlaive
+      , SomeAttachmentCard directAssault
+      -- The Mad Titan's Shadow: Ebony Maw
+      , SomeAttachmentCard abjuration
+      , SomeAttachmentCard restrained
+      -- The Mad Titan's Shadow: Thanos, Infinity Gauntlet
+      , SomeAttachmentCard thanossArmor
+      , SomeAttachmentCard thanossHelmet
+      , SomeAttachmentCard masterOfTheStones
+      , SomeAttachmentCard infinityGauntlet
+      -- The Mad Titan's Shadow: Loki
+      , SomeAttachmentCard lokisStaff
+      , SomeAttachmentCard lokisCrown
+      , SomeAttachmentCard lokisCape
+      , SomeAttachmentCard masterOfIllusions
+      -- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants, Enchantress
+      , SomeAttachmentCard nightsword
+      , SomeAttachmentCard helasCrown
+      , SomeAttachmentCard helasCloak
+      , SomeAttachmentCard fallenWarrior
+      , SomeAttachmentCard frozen
+      , SomeAttachmentCard beguiled
+      , SomeAttachmentCard seduced
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

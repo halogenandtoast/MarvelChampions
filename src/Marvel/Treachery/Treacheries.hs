@@ -147,3 +147,25 @@ import Marvel.Treachery.Treacheries.HonorAmongThieves as X
 import Marvel.Treachery.Treacheries.InfiltrateTheMuseum as X
 -- Drax
 import Marvel.Treachery.Treacheries.IWillDestroyYou as X
+
+-- Spectrum
+import Marvel.Treachery.Treacheries.RadioactiveBlast as X
+
+-- Adam Warlock
+import Marvel.Treachery.Treacheries.CosmicInquisition as X
+
+-- The Mad Titan's Shadow: Ebony Maw, Black Order
+import Marvel.Treachery.Treacheries.EbonyMaw as X
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.Treachery.Treacheries.TowerDefense as X
+
+-- The Mad Titan's Shadow: Thanos
+import Marvel.Treachery.Treacheries.Thanos as X
+
+-- The Mad Titan's Shadow: Loki
+import Marvel.Treachery.Treacheries.Loki as X
+
+-- The Mad Titan's Shadow: Hela, Legions of Hel
+import Marvel.Treachery.Treacheries.Hela as X
+import Marvel.Treachery.Treacheries.LegionsOfHel as X

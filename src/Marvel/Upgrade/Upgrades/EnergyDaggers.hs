@@ -38,9 +38,7 @@ instance RunMessage EnergyDaggers where
     RanAbility ident target 1 _ _ | isTarget attrs target -> do
       players <- getPlayers
       -- with no villain in play (as between one Kang and the next), nothing
-      selectOne ActiveVillain >>= \case
-        Nothing -> pure u
-        Just villain -> do
+      withTheVillain ident \villain -> do
           minionMap <-
             HashMap.fromList
               <$> traverse
@@ -61,5 +59,5 @@ instance RunMessage EnergyDaggers where
               dealDamageToEach (toEnemy villain : map toEnemy (HashMap.findWithDefault [] ident' minionMap)) attrs dmg
             | ident' <- players
             ]
-          pure u
+      pure u
     _ -> EnergyDaggers <$> runMessage msg attrs

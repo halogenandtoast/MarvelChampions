@@ -117,3 +117,25 @@ import Marvel.Minion.Minions.YotatTheDestroyer as X
 
 -- Venom
 import Marvel.Minion.Minions.EnragedSymbiote as X
+
+-- Spectrum
+import Marvel.Minion.Minions.RadioactiveManNemesis as X
+
+-- Adam Warlock
+import Marvel.Minion.Minions.AdamWarlockNemesis as X
+
+-- The Mad Titan's Shadow: Black Order, Armies of Titan
+import Marvel.Minion.Minions.BlackOrder as X
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.Minion.Minions.BlackOrderBesieger as X
+
+-- The Mad Titan's Shadow: Children of Thanos
+import Marvel.Minion.Minions.ChildrenOfThanos as X
+
+-- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants, Enchantress
+import Marvel.Minion.Minions.AllyMinion as X
+import Marvel.Minion.Minions.Enchantress as X
+import Marvel.Minion.Minions.FrostGiants as X
+import Marvel.Minion.Minions.Hela as X
+import Marvel.Minion.Minions.LegionsOfHel as X

@@ -144,4 +144,21 @@ allAllies = fromList $ map
   -- Venom
   , SomeAllyCard jackFlagJackHarrison
   , SomeAllyCard starLordPeterQuill
+  -- Spectrum
+  , SomeAllyCard blueMarvelAdamBrashear
+  , SomeAllyCard captainAmericaSteveRogers
+  , SomeAllyCard powerManVictorAlvarez
+  , SomeAllyCard whiteTigerAvaAyala
+  , SomeAllyCard kaluu
+  , SomeAllyCard bladeEricBrooks
+  -- Adam Warlock
+  , SomeAllyCard pipTheTroll
+  , SomeAllyCard marvelBoyNohVarr
+  , SomeAllyCard quasarWendellVaughn
+  , SomeAllyCard majorVictoryVanceAstro
+  , SomeAllyCard charlie27
+  , SomeAllyCard martinexTNaga
+  -- The Mad Titan's Shadow: Hela
+  , SomeAllyCard odinCaptive
+  , SomeAllyCard odinKing
   ]

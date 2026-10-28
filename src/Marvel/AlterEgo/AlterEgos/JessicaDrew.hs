@@ -67,3 +67,4 @@ instance RunMessage JessicaDrew where
       VillainDeckKey _ -> "$label.villainDeck"
       NamedDeckKey t -> t
       SideSchemeDeckKey -> "$label.sideSchemeDeck"
+      InfinityStoneDeckKey -> "$label.infinityStoneDeck"

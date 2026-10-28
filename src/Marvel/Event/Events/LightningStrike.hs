@@ -34,9 +34,9 @@ instance RunMessage LightningStrike where
     EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
       let x = paymentX payment
       aerial <- selectAny $ IdentityWithId identityId <> IdentityWithTrait Aerial
-      villains <- selectList VillainEnemy
       minions <- selectList $ MinionEngagedWith (IdentityWithId identityId)
       let damage = (if aerial then ignoringTough else id) $ toDamage x FromAbility
-      when (x > 0) $ dealDamageToEach (villains <> map EnemyMinionId minions) attrs damage
+      when (x > 0) $ withTheVillainIfAny identityId \villain ->
+        dealDamageToEach (maybe [] (pure . EnemyVillainId) villain <> map EnemyMinionId minions) attrs damage
       pure e
     _ -> LightningStrike <$> runMessage msg attrs

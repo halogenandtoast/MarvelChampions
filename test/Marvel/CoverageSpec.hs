@@ -45,7 +45,7 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm"]
+packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts"]
 
 -- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
 -- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
@@ -53,6 +53,9 @@ packs = ["core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toa
 inScope :: Text -> Maybe Text -> Bool
 inScope pack set = case pack of
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
+  -- The Mad Titan's Shadow: the player side so far, its heroes, their nemesis sets and
+  -- the set-less aspect and basic cards
+  "mts" -> maybe True (`elem` ["spectrum", "spectrum_nemesis", "warlock", "warlock_nemesis"]) set
   _ -> True
 
 -- | The encounter sets (scenarios' and modular) implemented ahead of the rest of their pack, by MarvelCDB
@@ -96,6 +99,23 @@ modularSets =
   , "infiltrate_the_museum"
   , "galactic_artifacts"
   , "menagerie_medley"
+  -- The Mad Titan's Shadow: Ebony Maw
+  , "ebony_maw"
+  , "black_order"
+  , "armies_of_titan"
+  -- The Mad Titan's Shadow: Tower Defense
+  , "tower_defense"
+  -- The Mad Titan's Shadow: Thanos
+  , "thanos"
+  , "children_of_thanos"
+  , "infinity_gauntlet"
+  -- The Mad Titan's Shadow: Loki
+  , "loki"
+  -- The Mad Titan's Shadow: Hela, and the Enchantress set
+  , "hela"
+  , "legions_of_hel"
+  , "frost_giants"
+  , "enchantress"
   ]
 
 encounterImplemented :: PackCard -> Bool
@@ -105,7 +125,9 @@ encounterImplemented c = case c.cardType of
   "treachery" -> HashMap.member c.code allTreacheries
   "attachment" -> HashMap.member c.code allAttachments
   "side_scheme" -> HashMap.member c.code allSideSchemes
-  "environment" -> HashMap.member c.code allEnvironments
+  -- a double-sided one by its sides, MarvelCDB keeping an older record of one side by
+  -- the base code (Avengers Tower, 21100)
+  "environment" -> any (`HashMap.member` allEnvironments) [c.code, CardCode (unCardCode c.code <> "a")]
   "obligation" -> HashMap.member c.code allObligations
   -- an encounter set's support, as Ship Command's Milano
   "support" -> HashMap.member c.code allSupports
@@ -117,6 +139,8 @@ encounterImplemented c = case c.cardType of
   "event" -> HashMap.member c.code allEvents
   "upgrade" -> HashMap.member c.code allUpgrades
   "resource" -> HashMap.member c.code allPlayerCards
+  -- a scenario's player card, as Hela's Odin
+  "ally" -> HashMap.member c.code allAllies
   _ -> True
 
 spec :: Spec

@@ -16,6 +16,12 @@ import Marvel.Environment.Environments.LibraryLabyrinth
 import Marvel.Environment.Environments.KreeCommandShip
 -- The Galaxy's Most Wanted: Nebula
 import Marvel.Environment.Environments.NebulasShip
+-- The Mad Titan's Shadow: Ebony Maw
+import Marvel.Environment.Environments.EbonyMawSpells
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.Environment.Environments.AvengersTower
+-- The Mad Titan's Shadow: Infinity Gauntlet
+import Marvel.Environment.Environments.InfinityStones
 import Marvel.Id
 import Marvel.Message
 import Marvel.Modifier
@@ -62,6 +68,21 @@ allEnvironments =
     , SomeEnvironmentCard kreeCommandShip
     -- The Galaxy's Most Wanted: Nebula
     , SomeEnvironmentCard nebulasShip
+    -- The Mad Titan's Shadow: Ebony Maw
+    , SomeEnvironmentCard fireball
+    , SomeEnvironmentCard manipulation
+    , SomeEnvironmentCard pacification
+    , SomeEnvironmentCard rubblestorm
+    -- The Mad Titan's Shadow: Tower Defense
+    , SomeEnvironmentCard avengersTowerStronghold
+    , SomeEnvironmentCard avengersTowerDamaged
+    -- The Mad Titan's Shadow: Infinity Gauntlet
+    , SomeEnvironmentCard mindStone
+    , SomeEnvironmentCard infinityPowerStone
+    , SomeEnvironmentCard realityStone
+    , SomeEnvironmentCard soulStone
+    , SomeEnvironmentCard spaceStone
+    , SomeEnvironmentCard timeStone
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

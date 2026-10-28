@@ -93,6 +93,22 @@ data EncounterSet
   | PowerStone
   | SpacePirates
   | ShipCommand
+  -- The Mad Titan's Shadow
+  | EbonyMaw
+  | TowerDefense
+  | Thanos
+  | Hela
+  | Loki
+  | BlackOrderSet
+  | ArmiesOfTitan
+  | ChildrenOfThanos
+  | InfinityGauntlet
+  | LegionsOfHel
+  | FrostGiants
+  | Enchantress
+  | MadTitansShadowCampaign
+  | SpectrumNemesis
+  | AdamWarlockNemesis
   | -- | the campaign's Challenge side schemes
     Challenge
   | -- | the campaign's player cards bought with units
@@ -140,6 +156,14 @@ modularSets =
   -- Infiltrate the Museum
   , GalacticArtifacts
   , MenagerieMedley
+  -- The Mad Titan's Shadow
+  , BlackOrderSet
+  , ArmiesOfTitan
+  , ChildrenOfThanos
+  , InfinityGauntlet
+  , LegionsOfHel
+  , FrostGiants
+  , Enchantress
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -167,6 +191,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "16029" -> RocketRaccoonNemesis
   "19001" -> DraxNemesis
   "20001" -> VenomNemesis
+  "21001" -> SpectrumNemesis
+  "21031" -> AdamWarlockNemesis
   cCode ->
     error $
       "No nemesis set for "

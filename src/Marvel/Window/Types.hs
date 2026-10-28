@@ -55,6 +55,9 @@ data WindowMatcher
   | VillainDamaged WindowTiming VillainMatcher
   | -- | damage of the kind matching would be, or was, dealt to a villain matching
     VillainDamagedBy WindowTiming VillainMatcher DamageMatcher
+  | -- | "when <the villain> would take damage" of the kind matching: damage he can take,
+    -- not all of it prevented by his tough status card
+    VillainWouldTakeDamage VillainMatcher DamageMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
@@ -62,6 +65,11 @@ data WindowMatcher
   | -- | after an enemy matching takes damage of the kind matching
     EnemyTookDamage EnemyMatcher DamageMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
+  | -- | "after you change form": a flip, or a change of an additional form (Spectrum's
+    -- energy forms, MTS rulebook p.2)
+    IdentityChangedAnyForm WindowTiming IdentityMatcher
+  | -- | "after you change to this form": an energy form matching turned faceup
+    EnergyFormChangedTo WindowTiming UpgradeMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | -- | a player matching makes a basic attack against an enemy matching, its target chosen
     MakesBasicAttackAgainst WindowTiming IdentityMatcher EnemyMatcher
@@ -77,6 +85,8 @@ data WindowMatcher
   | AllyDefeated WindowTiming AllyMatcher
   | -- | an ally matching is defeated by damage from an enemy's attack
     AllyDefeatedByAttack WindowTiming AllyMatcher
+  | -- | an ally is defeated by damage from the attack of an enemy matching (Direct Assault)
+    AllyDefeatedByAttackOf WindowTiming EnemyMatcher
   | -- | after an ally matching takes damage of this kind
     AllyTookDamageOf AllyMatcher DamageSource
   | -- | a boost card is turned face up for an enemy's activation
@@ -90,6 +100,8 @@ data WindowMatcher
   | -- | "when you play a card from your hand": a player matching is about to pay for a
     -- card matching, from their hand, that costs resources
     PlaysCardFromHand IdentityMatcher CardMatcher
+  | -- | "after you play <card> from your hand" (White Tiger): played, from hand
+    PlayedFromHand IdentityMatcher CardMatcher
   | -- | a player matching resolves the ability of a card matching
     ResolvesAbility WindowTiming IdentityMatcher CardMatcher
   | MinionHasSchemed WindowTiming MinionMatcher
@@ -129,6 +141,16 @@ data WindowMatcher
   -- Infiltrate the Museum
   | -- | a card would be placed into a discard pile from play
     CardWouldBeDiscardedFromPlay
+  -- Adam Warlock
+  | -- | "after your deck runs out of cards" (Soul World), "after a player resets their
+    -- deck" (Universal Church of Truth)
+    PlayerDeckResets WindowTiming IdentityMatcher
+  -- The Mad Titan's Shadow: Loki
+  | -- | "after Loki is swapped with a set-aside Loki villain"
+    VillainWasSwapped WindowTiming VillainMatcher
+  | -- | "when <the villain> is defeated": his When Defeated and "when defeated" forced
+    -- interrupts, before his defeat resolves
+    VillainIsDefeated WindowTiming VillainMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -169,6 +191,8 @@ data WindowType
   | AllyAttack AllyId EnemyId
   | ThreatPlaced ThreatSource SchemeId Natural
   | IdentityChangesForm IdentityId
+  | -- | the identity changed to the energy form of this upgrade, turned faceup
+    EnergyFormChanged IdentityId UpgradeId
   | MadeBasicAttack IdentityId
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
@@ -191,6 +215,8 @@ data WindowType
   | FlippedBoostCard EncounterCard EnemyId
   | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard
+  | -- | the player played the card from their hand, its cost paid
+    PlayedCardFromHand IdentityId PlayerCard
   | -- | the player is about to pay for the card from their hand
     PlayingCardFromHand IdentityId PlayerCard
   | -- | the player resolved the ability of a card with this def
@@ -218,5 +244,22 @@ data WindowType
   -- Infiltrate the Museum
   | -- | the card, a player's or an encounter card, is leaving play for its discard pile
     WouldBeDiscardedFromPlay (Either PlayerCard EncounterCard)
+  -- The Mad Titan's Shadow: Thanos
+  | -- | the enemy's activation against the player: its attack, or its scheme in their
+    -- alter-ego's activation; When as it begins, After once it has fully resolved, its
+    -- boost cards discarded. A stunned attack or confused scheme is none (RR Activation)
+    EnemyActivation EnemyId IdentityId
+  | -- | the Infinity Stone deck's last card has left it, before its discard pile is
+    -- shuffled back
+    InfinityStoneDeckRanOut
+  -- Adam Warlock
+  | -- | the player's deck ran out and was made again from their discard pile, their
+    -- facedown encounter card dealt (RR Player Deck)
+    PlayerDeckReset IdentityId
+  -- The Mad Titan's Shadow: Loki
+  | -- | the villain card was swapped with a set-aside one of his title
+    VillainSwapped VillainId
+  | -- | the villain is being defeated, his defeat not yet resolved
+    VillainDefeat VillainId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

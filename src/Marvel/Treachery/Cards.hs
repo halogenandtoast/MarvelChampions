@@ -192,6 +192,40 @@ allTreacheries = fromList $ map
   , caughtOffGuardMuseum
   -- Drax
   , iWillDestroyYou
+  -- Spectrum
+  , radioactiveBlast
+
+  -- Adam Warlock
+  , cosmicInquisition
+
+  -- The Mad Titan's Shadow: Ebony Maw
+  , agentOfThanos
+  , channelingTrance
+  -- Black Order
+  , bloodToSpare
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , proximasPower
+  , corvussCunning
+  , boundByBlood
+  , rainFire
+
+  -- The Mad Titan's Shadow: Thanos
+  , avatarOfDeath
+  , deviantSyndrome
+  , iAmInevitable
+  , theMadTitan
+  -- The Mad Titan's Shadow: Loki
+  , deviousSorcery
+  , infiniteMischief
+  , theTrickster
+
+  -- The Mad Titan's Shadow: Hela
+  , helasDomain
+  , theQueenOfHel
+  , theWastesOfNiffleheim
+  -- Legions of Hel
+  , noPlaceForTheLiving
   ]
 
 treachery
@@ -721,3 +755,84 @@ caughtOffGuardMuseum = treachery "16079" "Caught Off Guard" [Boost] InfiltrateTh
 -- boost icons from the printed card (MarvelCDB has none for this pack)
 iWillDestroyYou :: CardDef
 iWillDestroyYou = treachery "19029" "\"I Will Destroy You!\"" [Boost, Boost] DraxNemesis 2
+
+-- Spectrum
+
+radioactiveBlast :: CardDef
+radioactiveBlast = treachery "21030" "Radioactive Blast" [Boost] SpectrumNemesis 1
+
+-- Adam Warlock
+
+cosmicInquisition :: CardDef
+cosmicInquisition =
+  (treachery "21070" "Cosmic Inquisition" [Boost, Boost] AdamWarlockNemesis 1)
+    { cdKeywords = singleton (Keyword.Incite 2)
+    }
+
+-- The Mad Titan's Shadow: Tower Defense
+
+proximasPower :: CardDef
+proximasPower = treachery "21106" "Proxima's Power" [Star] TowerDefense 2
+
+corvussCunning :: CardDef
+corvussCunning = treachery "21107" "Corvus's Cunning" [Star] TowerDefense 2
+
+boundByBlood :: CardDef
+boundByBlood = treachery "21108" "Bound by Blood" [Star] TowerDefense 1
+
+rainFire :: CardDef
+rainFire = treachery "21109" "Rain Fire" [Boost, Star] TowerDefense 2
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+agentOfThanos :: CardDef
+agentOfThanos = treachery "21080" "Agent of Thanos" [Boost] EbonyMaw 2
+
+channelingTrance :: CardDef
+channelingTrance = treachery "21081" "Channeling Trance" [Boost] EbonyMaw 3
+
+-- Black Order
+
+bloodToSpare :: CardDef
+bloodToSpare = treachery "21088" "Blood to Spare" [Boost] BlackOrderSet 1
+
+-- The Mad Titan's Shadow: Thanos
+
+avatarOfDeath :: CardDef
+avatarOfDeath = treachery "21120" "Avatar of Death" [Boost] Thanos 2
+
+deviantSyndrome :: CardDef
+deviantSyndrome = (treachery "21121" "Deviant Syndrome" [Star] Thanos 2) {cdKeywords = singleton (Keyword.Incite 1)}
+
+iAmInevitable :: CardDef
+iAmInevitable = treachery "21122" "\"I Am Inevitable\"" [Star] Thanos 2
+
+theMadTitan :: CardDef
+theMadTitan = treachery "21123" "The Mad Titan" [Star] Thanos 2
+
+-- The Mad Titan's Shadow: Loki
+
+deviousSorcery :: CardDef
+deviousSorcery = treachery "21174" "Devious Sorcery" [Boost, Boost] Loki 2
+
+infiniteMischief :: CardDef
+infiniteMischief = treachery "21175" "Infinite Mischief" [Star] Loki 2
+
+theTrickster :: CardDef
+theTrickster = treachery "21176" "The Trickster" [Star] Loki 3
+
+-- The Mad Titan's Shadow: Hela
+
+helasDomain :: CardDef
+helasDomain = treachery "21149" "Hela's Domain" [Boost, Star] Hela 2
+
+theQueenOfHel :: CardDef
+theQueenOfHel = treachery "21150" "The Queen of Hel" [Boost] Hela 2
+
+theWastesOfNiffleheim :: CardDef
+theWastesOfNiffleheim = treachery "21151" "The Wastes of Niffleheim" [Star] Hela 2
+
+-- Legions of Hel
+
+noPlaceForTheLiving :: CardDef
+noPlaceForTheLiving = treachery "21154" "No Place for the Living" [Boost] LegionsOfHel 1

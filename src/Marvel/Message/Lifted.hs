@@ -18,6 +18,7 @@ import Marvel.Attack (Attack (..))
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
+import Marvel.Card.Id (CardId (..))
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Card.Side (Side (..))
@@ -29,6 +30,7 @@ import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
+import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -39,7 +41,7 @@ import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
-import Marvel.Keyword (Keyword (Incite))
+import Marvel.Keyword (Keyword (EnergyForm, Incite, Permanent))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
@@ -289,11 +291,12 @@ placeThreatFrom from (toScheme -> scheme) n =
 placeThreatOnEach :: (ReverseQueue m, IsRef source) => source -> Natural -> SchemeMatcher -> m ()
 placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 
--- | Incite X, as the card is revealed: X threat on the main scheme.
+-- | Incite X, as the card is revealed: X threat on the main scheme, each of them where
+-- there are two (Tower Defense, MTS rulebook p.10).
 incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
 incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
-  scheme <- selectOne MainScheme
-  for_ scheme (`placeThreat` n)
+  schemes <- selectList MainScheme
+  for_ schemes (`placeThreat` n)
 
 -- * Status cards and counters
 
@@ -356,12 +359,17 @@ addDefense ident = push . IdentityMessage ident . IdentityDefended
 -- | What can be readied.
 class Readyable a where
   readied :: a -> Message
+  -- | readied by the game or an encounter card, not a player card's ability
+  readiedByGame :: a -> Message
+  readiedByGame = readied
 
 instance Readyable IdentityId where
   readied ident = IdentityMessage ident ReadiedIdentity
+  readiedByGame ident = IdentityMessage ident ReadiedIdentityByGame
 
 instance Readyable AllyId where
   readied ally = AllyMessage ally ReadiedAlly
+  readiedByGame ally = AllyMessage ally ReadiedAllyByGame
 
 instance Readyable SupportId where
   readied support = SupportMessage support ReadiedSupport
@@ -371,6 +379,11 @@ instance Readyable UpgradeId where
 
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
+
+-- | Ready it as the game or an encounter card does: "cannot be readied by player card
+-- effects" (Unnatural Storm) does not stop it.
+readyByGame :: (ReverseQueue m, Readyable a) => a -> m ()
+readyByGame = push . readiedByGame
 
 -- | What can be exhausted.
 class Exhaustible a where
@@ -437,6 +450,57 @@ changeToHeroForm ident = push $ IdentityMessage ident ChooseHeroForm
 changeToForm :: (ReverseQueue m) => IdentityId -> Side -> m ()
 changeToForm ident = push . IdentityMessage ident . ChangedToForm
 
+-- * Additional forms
+--
+-- Spectrum's energy forms are upgrades in play, the one she is in faceup (MTS rulebook
+-- p.2). Changing one is changing form for what answers it, not the once-a-turn flip.
+
+-- | The energy form the player is in: their faceup energy form upgrade.
+faceupEnergyForm :: (ReverseQueue m) => IdentityId -> m (Maybe UpgradeId)
+faceupEnergyForm ident =
+  headMay <$> selectList (UpgradeWithKeyword EnergyForm <> UpgradeControlledBy (IdentityWithId ident) <> NotUpgrade FacedownUpgrade)
+
+-- | Whether the player is in the energy form of this card.
+isInEnergyForm :: (ReverseQueue m) => IdentityId -> CardDef -> m Bool
+isInEnergyForm ident def =
+  notNull <$> selectList (UpgradeIs def <> UpgradeControlledBy (IdentityWithId ident) <> NotUpgrade FacedownUpgrade)
+
+-- | Monica Rambeau's Setup: the player's set-aside energy forms into play, facedown.
+putEnergyFormsIntoPlay :: (ReverseQueue m) => IdentityId -> m ()
+putEnergyFormsIntoPlay ident = do
+  cards <- filter (\c -> EnergyForm `elem` cdKeywords (getCardDef c) && pcOwner c == Just ident) <$> getSetAsidePlayerCards
+  for_ cards \c -> do
+    removeFromGame (CardIdRef $ pcCardId c)
+    putIntoPlay ident c
+    upgradeStep (UpgradeId $ unCardId $ pcCardId c) FlipUpgradeFaceDown
+
+-- | "Change energy forms": one facedown turned faceup, the faceup one facedown (R1).
+changeEnergyForm :: (ReverseQueue m) => IdentityId -> m ()
+changeEnergyForm ident = do
+  stuck <- elem CannotChangeEnergyForm <$> getModifiers (IdentityRef ident)
+  facedown <- selectList (UpgradeWithKeyword EnergyForm <> UpgradeControlledBy (IdentityWithId ident) <> FacedownUpgrade)
+  unless stuck $ chooseOne ident [targeting (UpgradeRef u) (flipToEnergyForm ident u) | u <- facedown]
+
+-- | "Change to <this> energy form": nothing changes if she is in it already (R2).
+changeToEnergyForm :: (ReverseQueue m) => IdentityId -> CardDef -> m ()
+changeToEnergyForm ident def = do
+  stuck <- elem CannotChangeEnergyForm <$> getModifiers (IdentityRef ident)
+  forms <- selectList (UpgradeIs def <> UpgradeControlledBy (IdentityWithId ident) <> FacedownUpgrade)
+  unless stuck $ for_ (headMay forms) (flipToEnergyForm ident)
+
+-- | The energy form turned faceup, the one she was in facedown, and the window after
+-- she changes form.
+flipToEnergyForm :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
+flipToEnergyForm ident u = do
+  current <- faceupEnergyForm ident
+  for_ current (`upgradeStep` FlipUpgradeFaceDown)
+  upgradeStep u FlipUpgradeFaceUp
+  checkWindows [Window After $ W.EnergyFormChanged ident u]
+
+-- | Power Down: every energy form facedown, which is not a change of form (R3).
+turnEnergyFormsFacedown :: (ReverseQueue m) => IdentityId -> m ()
+turnEnergyFormsFacedown ident = faceupEnergyForm ident >>= traverse_ (`upgradeStep` FlipUpgradeFaceDown)
+
 -- * Attacks and defense
 
 enemyAttacksAlly :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> AllyId -> m ()
@@ -455,11 +519,29 @@ enemyAttacks enemy ident = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttacks ident)
   EnemyMinionId mid -> MinionMessage mid (MinionAttacks ident)
 
+-- | The villain attacks the player, the attack gaining the keywords as it is declared
+-- (Avatar of Death: "that attack gains overkill and piercing").
+-- ponytail: a minion's attack gains none, no card asks one to
+enemyAttacksGaining :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> [Keyword] -> m ()
+enemyAttacksGaining enemy ident keywords = case toEnemy enemy of
+  EnemyVillainId vid -> push $ VillainMessage vid (VillainAttacksGaining ident keywords)
+  e -> enemyAttacks e ident
+
 -- | The enemy's retaliate against the character that attacked it.
 enemyRetaliates :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
 enemyRetaliates enemy = push . Msg.enemyRetaliates (toEnemy enemy)
 
 -- | The character the attack is against is told it was attacked.
+-- | "If a defending ally is defeated before damage from the attack is dealt (such as
+-- through a Boost ability), the attack is considered undefended" (RR Defend): against
+-- the character it targeted.
+undefendedIfDefenderGone :: (HasGame m) => Attack -> m Attack
+undefendedIfDefenderGone a = case attackCharacter a of
+  AllyCharacter ally | attackDefended a -> do
+    here <- notNull <$> selectList (AllyWithId ally)
+    pure $ if here then a else a {attackDefended = False, attackCharacter = fromMaybe (attackCharacter a) (attackTarget a)}
+  _ -> pure a
+
 wasAttacked :: (ReverseQueue m) => Attack -> m ()
 wasAttacked a = push case attackCharacter a of
   IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
@@ -478,11 +560,47 @@ declareDefenseWithout ident enemy priority = push . DeclareDefenseWithout ident 
 villainSchemes :: (ReverseQueue m) => VillainId -> m ()
 villainSchemes vid = push $ VillainMessage vid VillainSchemes
 
+-- | The villain schemes, the activation against the player given rather than the active
+-- player: a card they reveal outside their activation (Avatar of Death).
+villainSchemesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
+villainSchemesAgainst vid = push . VillainMessage vid . VillainSchemesAgainst
+
 advanceVillain :: (ReverseQueue m) => VillainId -> m ()
 advanceVillain vid = villainStep vid VillainAdvanced
 
 defeatVillain :: (ReverseQueue m) => VillainId -> m ()
 defeatVillain vid = villainStep vid VillainDefeated
+
+-- | "Swap <him> with a random set-aside <villain>" ('SwapVillain').
+swapVillain :: (ReverseQueue m) => VillainId -> m ()
+swapVillain = push . SwapVillain
+
+-- | The villain card is replaced by the one given ('ReplaceVillain').
+replaceVillain :: (ReverseQueue m) => VillainId -> CardCode -> ReplaceKind -> m ()
+replaceVillain vid code = push . ReplaceVillain vid code
+
+-- | "<The villain> activates against you": he attacks a hero, and schemes against an
+-- alter-ego.
+villainActivatesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
+villainActivatesAgainst vid you = do
+  hero <- Matchers.identityMatches HeroIdentity you
+  if hero then enemyAttacks vid you else villainSchemes vid
+
+-- | "The villain" of a card a player plays or an ability they trigger: the active
+-- villain, or the villain of their area they choose while a card says so (Focused
+-- Defense, MTS rulebook p.11).
+withTheVillain :: (ReverseQueue m) => IdentityId -> (VillainId -> m ()) -> m ()
+withTheVillain you = withTheVillainIfAny you . traverse_
+
+-- | 'withTheVillain', the body also run, with none, when no villain is in play (as
+-- between one Kang and the next).
+withTheVillainIfAny :: (ReverseQueue m) => IdentityId -> (Maybe VillainId -> m ()) -> m ()
+withTheVillainIfAny you body = do
+  choose <- elem PlayersChooseTheVillain <$> getModifiers GameRef
+  villains <- selectList AnyVillain
+  case villains of
+    _ : _ : _ | choose -> chooseOnePrompted you "$label.chooseTheVillain" [targeting (VillainRef v) (body $ Just v) | v <- villains]
+    _ -> body =<< selectOne ActiveVillain
 
 changeVillainHitPoints :: (ReverseQueue m) => VillainId -> Int -> m ()
 changeVillainHitPoints vid = villainStep vid . VillainHitPointsChanged
@@ -598,6 +716,34 @@ minionEndsAttack mid = push $ MinionMessage mid MinionEndAttack
 minionSchemed :: (ReverseQueue m) => MinionId -> m ()
 minionSchemed mid = push $ MinionMessage mid MinionSchemed
 
+-- | The ally is flipped to its other face (RR Flip).
+flipAlly :: (ReverseQueue m) => AllyId -> m ()
+flipAlly aid = push $ AllyMessage aid FlipAlly
+
+-- | The ally card is put into play as a minion engaged with the player (Fallen
+-- Warrior), its id the card's; a matching unique card in play keeps it out.
+putAllyIntoPlayAsMinion :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+putAllyIntoPlayAsMinion ident = push . PutAllyIntoPlayAsMinion ident
+
+-- | The ally in play is treated as a minion engaged with its controller (Beguiled),
+-- its id the ally's.
+allyBecomesMinion :: (ReverseQueue m) => AllyId -> m ()
+allyBecomesMinion = push . AllyBecomesMinion
+
+-- | The minion an ally was treated as is its owner's ally again.
+minionBecomesAlly :: (ReverseQueue m) => MinionId -> m ()
+minionBecomesAlly = push . MinionBecomesAlly
+
+-- | Whether the minion is about to leave play: its defeat, discard or removal queued
+-- (its attachments leave first as it is defeated).
+minionLeavingPlay :: (HasQueue m) => MinionId -> m Bool
+minionLeavingPlay mid = isQueued \case
+  DefeatedLeavesPlay t -> t == MinionRef mid
+  RemoveFromPlay t -> t == MinionRef mid
+  RemoveFromGame t -> t == MinionRef mid
+  AddToVictoryDisplay t -> t == MinionRef mid
+  _ -> False
+
 -- * Attachments and environments
 
 -- | Whatever has the attachment is told it has left play.
@@ -623,8 +769,19 @@ attachEncounterCard card = push . AttachEncounterCard card . toEnemy
 attachToIdentity :: (ReverseQueue m) => AttachmentId -> IdentityId -> m ()
 attachToIdentity attachment = push . AttachmentMessage attachment . AttachedToIdentity
 
+-- | The attachment is attached to the player's ally.
+attachToAlly :: (ReverseQueue m) => AttachmentId -> AllyId -> m ()
+attachToAlly attachment = push . AttachmentMessage attachment . AttachedToAlly
+
 attachToSideScheme :: (ReverseQueue m) => AttachmentId -> SideSchemeId -> m ()
 attachToSideScheme attachment = push . AttachmentMessage attachment . AttachedToSideScheme
+
+attachToMainScheme :: (ReverseQueue m) => AttachmentId -> MainSchemeId -> m ()
+attachToMainScheme attachment = push . AttachmentMessage attachment . AttachedToMainScheme
+
+-- | Damage placed on the environment (Avengers Tower).
+damageEnvironment :: (ReverseQueue m) => EnvironmentId -> Natural -> m ()
+damageEnvironment eid = push . EnvironmentMessage eid . EnvironmentDamaged
 
 attachToEnvironment :: (ReverseQueue m) => EnvironmentId -> AttachmentId -> m ()
 attachToEnvironment environment = push . EnvironmentMessage environment . AttachedToEnvironment
@@ -637,13 +794,13 @@ flipEnvironment :: (ReverseQueue m) => EnvironmentId -> m ()
 flipEnvironment eid = push $ EnvironmentMessage eid FlipEnvironment
 
 -- | The attachment is attached to the character, moving there if it is attached
--- elsewhere: an ally is not one an attachment goes on.
+-- elsewhere.
 attachToCharacter :: (ReverseQueue m, IsCharacter c) => AttachmentId -> c -> m ()
 attachToCharacter aid c = case toCharacter c of
   IdentityCharacter i -> attachToIdentity aid i
   VillainCharacter v -> attachTo aid v
   MinionCharacter m -> attachTo aid m
-  AllyCharacter _ -> pure ()
+  AllyCharacter a -> attachToAlly aid a
 
 -- * The Milano and the Power Stone (The Galaxy's Most Wanted)
 
@@ -702,6 +859,10 @@ addToVictoryDisplay = push . AddToVictoryDisplay . toTarget
 defeatedLeavesPlay :: (ReverseQueue m, IsRef a) => a -> m ()
 defeatedLeavesPlay = push . DefeatedLeavesPlay . toTarget
 
+-- | A card out of play goes to the victory display (a defeated villain).
+addCardToVictoryDisplay :: (ReverseQueue m) => EncounterCard -> m ()
+addCardToVictoryDisplay = push . AddCardToVictoryDisplay
+
 -- * The Collection (Infiltrate the Museum)
 
 -- | The card goes faceup into The Collection, from wherever it is: a deck, a hand, a
@@ -752,6 +913,19 @@ placeOnTopOfDeck ident = push . IdentityMessage ident . PlaceOnTopOfDeck
 
 shuffleDeck :: (ReverseQueue m) => IdentityId -> m ()
 shuffleDeck ident = push $ IdentityMessage ident ShuffleDeck
+
+-- | The player shuffles their discard pile into their deck (Balance the Scales).
+shuffleDiscardIntoDeck :: (ReverseQueue m) => IdentityId -> m ()
+shuffleDiscardIntoDeck ident = identityStep ident ShuffleIdentityDiscardBackIntoDeck
+
+-- | The player's empty deck is made again from their discard pile, and they deal
+-- themself a facedown encounter card (RR Player Deck); then the window after they reset
+-- their deck.
+resetDeck :: (ReverseQueue m) => IdentityId -> m ()
+resetDeck ident = do
+  identityStep ident ShuffleIdentityDiscardBackIntoDeck
+  dealEncounterCard ident
+  checkWindows [Window After $ W.PlayerDeckReset ident]
 
 -- | The event's "Special" resolved without the card being played.
 resolveEventWithoutPlaying :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
@@ -958,6 +1132,11 @@ setAside = push . SetAside
 discardUntil :: (ReverseQueue m, IsRef target) => FromZone -> CardMatcher -> target -> m ()
 discardUntil zone matcher = push . DiscardUntil zone matcher . toTarget
 
+-- | "Discard cards from the top of the encounter deck until a … is discarded, and put it
+-- into play" for the player ('DiscardUntilIntoPlay').
+discardUntilIntoPlay :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
+discardUntilIntoPlay ident = push . DiscardUntilIntoPlay ident
+
 -- | The player draws and reveals an encounter card.
 drawAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 drawAndRevealEncounterCard ident = push $ DrawAndRevealEncounterCard ident
@@ -1009,6 +1188,11 @@ shuffleIntoEncounterDeck = push . ShuffleIntoEncounterDeck
 searchAndRevealEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
 searchAndRevealEncounterCard ident = push . SearchForAndRevealEncounterCard ident
 
+-- | A card matching is found in the encounter deck, discard pile or set-aside area and
+-- put into play for the player (an attachment attached as its own text says).
+searchEverywhereAndPutIntoPlayEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
+searchEverywhereAndPutIntoPlayEncounterCard ident = push . SearchEverywhereAndPutIntoPlayEncounterCard ident
+
 -- | A card matching is found in the encounter deck or discard pile and dealt to the
 -- player facedown.
 searchAndDealEncounterCard :: (ReverseQueue m) => IdentityId -> CardMatcher -> m ()
@@ -1045,6 +1229,31 @@ putOnBottomOfEncounterDeck = push . PutOnBottomOfEncounterDeck
 
 dealEncounterCard :: (ReverseQueue m) => IdentityId -> m ()
 dealEncounterCard = push . DealEncounterCard
+
+-- * The Infinity Stone deck (The Mad Titan's Shadow)
+--
+-- The Infinity Gauntlet's six stones: a deck of their own ('InfinityStoneDeckKey') with
+-- its own discard pile, shuffled back without penalty as it empties.
+
+-- | The top stone is put into play for the player, not revealed.
+putTopInfinityStoneIntoPlay :: (ReverseQueue m) => IdentityId -> m ()
+putTopInfinityStoneIntoPlay you = fromDeck InfinityStoneDeckKey (push $ PutTopOfEncounterDeckIntoPlay you)
+
+-- | The player reveals the top stone.
+revealTopInfinityStone :: (ReverseQueue m) => IdentityId -> m ()
+revealTopInfinityStone you = fromDeck InfinityStoneDeckKey (drawAndRevealEncounterCard you)
+
+-- | The stone discard pile is shuffled into the stone deck.
+shuffleStoneDiscardIntoDeck :: (ReverseQueue m) => m ()
+shuffleStoneDiscardIntoDeck = fromDeck InfinityStoneDeckKey (push ShuffleEncounterDiscardIntoDeck)
+
+-- | The top stones are discarded to the stone discard pile, then the body does what it
+-- does with them: as many as there were.
+discardTopInfinityStoneThen :: (ReverseQueue m) => Natural -> ([EncounterCard] -> m ()) -> m ()
+discardTopInfinityStoneThen n body = do
+  cards <- take (fromIntegral n) . pileDeck <$> getPile InfinityStoneDeckKey
+  fromDeck InfinityStoneDeckKey (discardTopOfEncounterDeck n)
+  body cards
 
 -- * Game areas and their decks
 --
@@ -1173,8 +1382,9 @@ highestCostCardsControlled you = do
   as <- selectList (AllyControlledBy $ IdentityWithId you)
   us <- selectList (UpgradeControlledBy $ IdentityWithId you)
   ss <- selectList (SupportControlledBy $ IdentityWithId you)
-  costed <- for (map AllyRef as <> map UpgradeRef us <> map SupportRef ss) \t ->
-    (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
+  defs <- for (map AllyRef as <> map UpgradeRef us <> map SupportRef ss) \t -> (t,) <$> getsGame (`abilityCardDef` t)
+  -- a permanent card cannot be discarded, so another that fits is chosen (RR Permanent)
+  let costed = [(t, fromIntegral . max 0 . fromMaybe 0 $ cdCost =<< d) | (t, d) <- defs, maybe True ((Permanent `notElem`) . cdKeywords) d]
   pure $ extremes MostThreat costed
 
 -- | The villain's activation the body initiates during the enemy's activation under way:
@@ -1212,6 +1422,14 @@ discardControlled :: (ReverseQueue m) => Target -> m ()
 discardControlled = \case
   UpgradeRef u -> discardUpgrade u
   t -> removeFromPlay t
+
+-- | "Discard an ally, upgrade or support you control": the player chooses one of the
+-- cards given to discard. A permanent card cannot leave play, so is not offered; with
+-- none left, nothing is asked.
+chooseAndDiscardControlled :: (ReverseQueue m) => IdentityId -> [Target] -> m ()
+chooseAndDiscardControlled you cards = do
+  discardable <- filterM (\t -> getsGame \g -> maybe True (notElem Permanent . cdKeywords) (abilityCardDef g t)) cards
+  chooseOne you [targeting c (discardControlled c) | c <- discardable]
 
 -- * Effects
 

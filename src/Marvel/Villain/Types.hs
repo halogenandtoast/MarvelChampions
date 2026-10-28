@@ -104,6 +104,9 @@ instance Entity Villain where
     -- ^ the character its coming attack is against, when not the player's identity
     , villainActivationPlayer :: Maybe IdentityId
     -- ^ the player its activation under way is against, who resolves its boost cards
+    , villainPreventedAttack :: Maybe Source
+    -- ^ the attack under way, by what makes it, all of whose damage to him is prevented
+    -- until it ends (Master of Illusions)
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -198,6 +201,7 @@ villain f cardDef sch atk startingHp =
             , villainStage = 1
             , villainAttackTarget = Nothing
             , villainActivationPlayer = Nothing
+            , villainPreventedAttack = Nothing
             }
     }
 
@@ -282,8 +286,9 @@ runVillainMessage msg attrs = case msg of
     pure $ attrs & hpL .~ HP hp' & maxHpL .~ HP hp' & toughL %~ (|| toughness)
   VillainHitPointsChanged n -> do
     let remaining = unHp (villainHp attrs) + n
-    infinite <- elem InfiniteHitPoints <$> getModifiers attrs
-    when (remaining <= 0 && not infinite) $ villainStep vid VillainWouldBeDefeated
+    modifiers <- getModifiers attrs
+    let unbeaten = InfiniteHitPoints `elem` modifiers || CannotBeDefeated `elem` modifiers
+    when (remaining <= 0 && not unbeaten) $ villainStep vid VillainWouldBeDefeated
     pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
@@ -300,17 +305,22 @@ runVillainMessage msg attrs = case msg of
     pure attrs
   VillainDamaged source damage -> do
     modifiers <- getModifiers attrs
-    let cannotTakeDamage = CannotTakeDamage `elem` modifiers
-        -- infinite hit points: the damage is dealt, but he is not defeated by it
+    -- none at all (The Red House), or none from a player card (Sanctuary)
+    cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
+    let -- infinite hit points: the damage is dealt, but he is not defeated by it
         infinite = InfiniteHitPoints `elem` modifiers
+        -- "cannot be defeated" (Tower Defense): the damage is dealt, to 0 hit points, but
+        -- he is not defeated, nor is any of it excess
+        held = CannotBeDefeated `elem` modifiers
     if
       | cannotTakeDamage -> pure attrs
+      | preventedAttackDamage attrs source damage -> pure attrs
       | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
       | otherwise -> do
         when (damageAmount damage > 0) $
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
-          ( not infinite && subtractNatural
+          ( not infinite && not held && subtractNatural
               (damageAmount damage)
               (fromIntegral . unHp $ villainHp attrs)
               == 0
@@ -340,38 +350,52 @@ runVillainMessage msg attrs = case msg of
     pure attrs
   VillainWouldBeDefeated -> attrs <$ defeatVillain vid
   VillainBecomeTough -> pure $ attrs & toughL .~ True
+  VillainPreventAttackDamage source -> pure attrs {villainPreventedAttack = Just source}
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
   Msg.VillainStunned _ -> statusUnlessStalwart attrs StunnedStatus
   Msg.VillainConfused _ -> statusUnlessStalwart attrs ConfusedStatus
   VillainSchemes ->
     if villainConfused attrs
-      then pure $ attrs & confusedL .~ False & boostL .~ 0
+      then pure $ attrs {villainActivationPlayer = Nothing} & confusedL .~ False & boostL .~ 0
       else attrs <$ villainStep vid VillainBeginScheme
+  -- queued after the scheme, everything it leads to runs before the player is forgotten,
+  -- whether the scheme resolved, was replaced or was cancelled
+  VillainSchemesAgainst ident -> do
+    villainStep vid VillainSchemes
+    villainStep vid VillainSchemeAgainstEnded
+    pure attrs {villainActivationPlayer = Just ident}
+  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing}
   VillainBeginScheme -> do
+    -- against the player it was said to be against, or the active player
+    player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
+    -- the scheme is his activation against the player whose alter-ego activates him
+    checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
     dealActivationBoost
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainSchemed
     clearBoosts
-    player <- getActivePlayerId
+    checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
-  VillainAttacks ident -> attacks (VillainBeginAttack ident) ident
-  VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident
+  VillainAttacks ident -> attacks (VillainBeginAttack ident) ident []
+  VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident []
+  VillainAttacksGaining ident keywords -> attacks (VillainBeginAttack ident) ident keywords
   VillainBeginAttack ident -> beginAttack True ident
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
-  VillainDefendedBy characterId ->
-    pure $ attrs & attackingL . _Just %~ \a -> a {attackCharacter = characterId, attackDefended = True}
-  -- onto his own side scheme, when he has one, or else the main scheme
+  VillainDefendedBy characterId -> pure $ attrs & attackingL . _Just %~ defendedBy characterId
+  -- onto his own side scheme, when he has one, or his own main scheme (Tower Defense),
+  -- or else the main scheme
   VillainSchemed -> do
     own <- selectOne (SignatureSchemeOf $ VillainWithId vid)
-    scheme <- maybe (selectOne MainScheme) (pure . Just . SchemeSideSchemeId) own
+    paired <- getPairedMainScheme vid
+    scheme <- maybe (selectOne MainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
     sch <- getModifiedScheme attrs
     for_ scheme \s -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
     checkWindows [W.Window W.After $ W.Schemed vid]
@@ -379,10 +403,11 @@ runVillainMessage msg attrs = case msg of
   VillainAttacked -> do
     case villainAttacking attrs of
       Nothing -> error "No current attack"
-      Just attack' -> do
+      Just attack0 -> do
+        attack' <- undefendedIfDefenderGone attack0
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
-    pure $ attrs & boostL .~ 0
+        pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
   VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
@@ -410,16 +435,20 @@ runVillainMessage msg attrs = case msg of
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
-  attacks begin ident =
+  attacks begin ident keywords =
     if villainStunned attrs
       then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
       else do
+        -- the attack is his activation against the player, from start to end
+        checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         villainStep vid begin
         villainStep vid VillainEndAttack
         clearBoosts
-        -- the attack is under way from when it is declared, as its would windows open
-        attack' <- newAttack ident
+        checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) ident]
+        -- the attack is under way from when it is declared, as its would windows open,
+        -- with the keywords it gains as it is declared
+        attack' <- flip (foldr gainKeyword) keywords <$> newAttack ident
         pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
   -- an attack "that does not get a boost card" is dealt none
   beginAttack boosted ident = do
@@ -452,10 +481,29 @@ instance RunMessage (Attrs Villain) where
     VillainMessage ident msg'
       | ident == villainId attrs ->
           runVillainMessage msg' attrs
+    -- the attack whose damage he is spared has ended
+    CheckWindows ws | isJust (villainPreventedAttack attrs), any attackEnded ws -> pure attrs {villainPreventedAttack = Nothing}
     WithBoostIcons (VillainRef vid) _ counts | vid == villainId attrs -> do
       villainStep vid (VillainAddBoost $ sum $ map snd counts)
       pure attrs
     _ -> pure attrs
+
+-- | The window after an attack by a player or an ally: the attack has ended.
+attackEnded :: W.Window -> Bool
+attackEnded = \case
+  W.Window W.After (W.IdentityAttack _ _) -> True
+  W.Window W.After (W.AllyAttack _ _) -> True
+  _ -> False
+
+-- | The damage is the attack's whose damage to him is prevented ('villainPreventedAttack'):
+-- by what makes it, an attack's own or its overkill (RR Overkill: damage from an attack).
+preventedAttackDamage :: Attrs Villain -> Source -> Damage -> Bool
+preventedAttackDamage attrs source damage =
+  villainPreventedAttack attrs == Just source && case damageSource damage of
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    FromOverkill -> True
+    _ -> False
 
 instance IsRef (Attrs Villain) where
   toRef = VillainRef . villainId
@@ -464,7 +512,13 @@ instance IsRef (Attrs Villain) where
 -- activation it was defeated during resumes with the new stage, its attack at the new
 -- stage's ATK.
 advanceVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
-advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildCard newVillain villainId
+advanceVillainTo newVillain old = overVillainAttrs (carryOver old) $ buildCard newVillain (villainId old)
+
+-- | What carries over from the villain card to the next of his title (an advance, a
+-- flip, a swap): status cards, attachments, upgrades, boosts and an activation under
+-- way, its attack at the new card's ATK.
+carryOver :: Attrs Villain -> Attrs Villain -> Attrs Villain
+carryOver VillainAttrs {..} = update
  where
   update new =
     new
@@ -476,15 +530,18 @@ advanceVillainTo newVillain VillainAttrs {..} = overVillainAttrs update $ buildC
       & (boostCardsL .~ villainBoostCards)
       & (boostL .~ villainBoost)
       & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
-      & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer}
+      & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer, villainPreventedAttack = villainPreventedAttack}
   restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
 
 -- | The villain's other face, as a flip turns it: unlike advancing, its damage and stage
 -- stay as they were, with all else that advancing keeps.
 flipVillainTo :: (IsVillain a) => VillainCard a -> Attrs Villain -> a
-flipVillainTo newVillain attrs = overVillainAttrs keep $ advanceVillainTo newVillain attrs
- where
-  keep a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
+flipVillainTo newVillain attrs = overVillainAttrs (keepDial attrs) $ advanceVillainTo newVillain attrs
+
+-- | The hit point dial, stage and tough status card of the villain card replaced, kept
+-- by the one replacing it (a flip, a swap).
+keepDial :: Attrs Villain -> Attrs Villain -> Attrs Villain
+keepDial attrs a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do

@@ -14,6 +14,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Count
+import Marvel.Query (selectList)
 import Marvel.Ref
 
 pivotalMoment :: EventCard PivotalMoment
@@ -28,7 +29,10 @@ newtype PivotalMoment = PivotalMoment (Attrs Event)
 instance RunMessage PivotalMoment where
   runMessage msg e@(PivotalMoment attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
-      threat <- selectCount SchemeThreat MainScheme
-      chooseDamage you attrs (toDamage (if threat == 0 then 5 else 2) $ FromPlayerAttack you) (VillainEnemy <> AttackableEnemy)
+      -- of two main schemes, the one you choose: one with no threat, if there is one
+      -- (Tower Defense, MTS rulebook p.10)
+      schemes <- selectList MainScheme
+      clear <- anyM (fmap (== 0) . selectCount SchemeThreat . SchemeWithId) schemes
+      chooseDamage you attrs (toDamage (if null schemes || clear then 5 else 2) $ FromPlayerAttack you) (VillainEnemy <> AttackableEnemy)
       pure e
     _ -> PivotalMoment <$> runMessage msg attrs

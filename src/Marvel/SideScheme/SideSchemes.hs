@@ -123,3 +123,24 @@ import Marvel.SideScheme.SideSchemes.CullTheWeak as X
 
 -- Venom
 import Marvel.SideScheme.SideSchemes.KlyntarFrenzy as X
+
+-- Spectrum
+import Marvel.SideScheme.SideSchemes.ReactorMeltdown as X
+
+-- Adam Warlock
+import Marvel.SideScheme.SideSchemes.UniversalChurchOfTruth as X
+
+-- The Mad Titan's Shadow: Ebony Maw, Black Order, Armies of Titan
+import Marvel.SideScheme.SideSchemes.EbonyMaw as X
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.SideScheme.SideSchemes.CityUnderAttack as X
+
+-- The Mad Titan's Shadow: Thanos, Children of Thanos
+import Marvel.SideScheme.SideSchemes.Thanos as X
+
+-- The Mad Titan's Shadow: Loki
+import Marvel.SideScheme.SideSchemes.Loki as X
+
+-- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants
+import Marvel.SideScheme.SideSchemes.Hela as X

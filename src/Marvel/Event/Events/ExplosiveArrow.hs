@@ -30,11 +30,10 @@ instance RunMessage ExplosiveArrow where
   runMessage msg e@(ExplosiveArrow attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
       players <- getPlayers
-      villains <- selectList ActiveVillain
-      chooseOne identityId
+      withTheVillainIfAny identityId \villain -> chooseOne identityId
         [ targeting p do
             minions <- selectList $ MinionEngagedWith (IdentityWithId p)
-            dealDamageToEach (map EnemyVillainId villains <> map EnemyMinionId minions) attrs (toDamage 3 FromAbility)
+            dealDamageToEach (maybe [] (pure . EnemyVillainId) villain <> map EnemyMinionId minions) attrs (toDamage 3 FromAbility)
         | p <- players
         ]
       pure e

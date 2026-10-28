@@ -44,6 +44,10 @@ instance Entity Environment where
     , environmentCardDef :: CardDef
     , environmentAttachments :: HashSet AttachmentId
     , environmentCounters :: Natural
+    , environmentDamage :: Natural
+    -- ^ the damage on it (Tower Defense's Avengers Tower)
+    , environmentOwner :: Maybe IdentityId
+    -- ^ the player in whose play area it is (Ebony Maw's Spells); otherwise the villain's
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -52,6 +56,8 @@ instance Entity Environment where
     EnvironmentCardDef :: Field Environment CardDef
     EnvironmentAttachments :: Field Environment (HashSet AttachmentId)
     EnvironmentCounters :: Field Environment Natural
+    EnvironmentDamage :: Field Environment Natural
+    EnvironmentOwner :: Field Environment (Maybe IdentityId)
   field fld e =
     let EnvironmentAttrs {..} = toAttrs e
      in case fld of
@@ -59,6 +65,8 @@ instance Entity Environment where
           EnvironmentCardDef -> environmentCardDef
           EnvironmentAttachments -> environmentAttachments
           EnvironmentCounters -> environmentCounters
+          EnvironmentDamage -> environmentDamage
+          EnvironmentOwner -> environmentOwner
   toId = environmentId . toAttrs
   toAttrs (Environment a) = toEnvironmentAttrs a
 
@@ -91,7 +99,7 @@ environment :: (Attrs Environment -> a) -> CardDef -> CardBuilder EnvironmentId 
 environment f cardDef =
   CardBuilder
     { cbCardDef = cardDef
-    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0
+    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0 0 Nothing
     }
 
 attachmentsL :: Lens' (Attrs Environment) (HashSet AttachmentId)
@@ -128,6 +136,10 @@ instance RunMessage (Attrs Environment) where
         Nothing -> error $ "No other face for environment " <> show (toCardCode attrs)
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    EnvironmentMessage ident (EnvironmentDamaged n) | ident == environmentId attrs ->
+      pure attrs {environmentDamage = environmentDamage attrs + n}
+    EnvironmentMessage ident (EnvironmentOwnedBy owner) | ident == environmentId attrs ->
+      pure attrs {environmentOwner = Just owner}
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs

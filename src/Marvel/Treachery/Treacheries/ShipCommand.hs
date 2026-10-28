@@ -43,7 +43,9 @@ chooseMilanoOr you spendLabel resource canBefall befall befallLabel = do
   payable <- canAffordCost you (toSource you) cost
   first <- selectJust FirstPlayer
   befalls <- canBefall first
-  chooseOrRunOne you $
+  -- none of the three possible (the Milano exhausted, the resources not there, the first
+  -- player already stunned): nothing happens
+  when (ready || payable || befalls) $ chooseOrRunOne you $
     [labeled "$label.exhaustTheMilano" exhaustMilano | ready]
       <> [labeled (countLabel spendLabel 2) (payForTreachery you cost) | payable]
       <> [labeled befallLabel (befall first) | befalls]

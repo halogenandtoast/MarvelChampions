@@ -145,9 +145,9 @@ instance RunMessage LaserCannon where
   runMessage msg u@(LaserCannon a) = runQueueT $ case msg of
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       let you = upgradeController a
-      villains <- selectList VillainEnemy
       minions <- selectList $ MinionEngagedWith (IdentityWithId you)
-      techUsed a $ dealDamageToEach (villains <> map EnemyMinionId minions) a (toDamage 5 FromAbility)
+      withTheVillainIfAny you \villain ->
+        techUsed a $ dealDamageToEach (maybe [] (pure . EnemyVillainId) villain <> map EnemyMinionId minions) a (toDamage 5 FromAbility)
       pure u
     _ -> LaserCannon <$> runMessage msg a
 

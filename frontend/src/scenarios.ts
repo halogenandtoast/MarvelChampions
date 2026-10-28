@@ -13,7 +13,10 @@ const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
-const SCENARIO_VILLAINS: Record<string, string[]> = { '07001': ['07002', '07017', '07032', '07046'] }
+const SCENARIO_VILLAINS: Record<string, string[]> = {
+  '07001': ['07002', '07017', '07032', '07046'],
+  '21160': ['21160', '21161', '21162', '21163', '21164'],
+}
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')
 

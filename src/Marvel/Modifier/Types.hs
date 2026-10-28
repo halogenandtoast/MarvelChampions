@@ -43,6 +43,12 @@ data Modifier
     ThreatRemovedModifier Natural
   | RecoveryModifier Natural
   | CannotTakeDamage
+  | -- | on a character: it takes no damage from a player card, or from an effect one
+    -- created (Sanctuary, errata)
+    CannotTakeDamageFromPlayerCards
+  | -- | on an enemy: each amount of damage it would take, from any source, is reduced
+    -- (Thanos's Armor)
+    DamageReduction Natural
   | -- | on a character: it has infinite hit points: damage is dealt to it, but it is not
     -- defeated by it (The Galaxy's Most Wanted, Escape the Museum)
     InfiniteHitPoints
@@ -124,5 +130,33 @@ data Modifier
   | -- | on an attachment: it cannot be moved from the character it is attached to
     -- (Superior Tactics)
     CannotBeUnattached
+  -- Tower Defense
+  | -- | on the game: "the villain" of a card a player plays or an ability they trigger is
+    -- the villain they choose (Focused Defense; MTS rulebook p.11)
+    PlayersChooseTheVillain
+  | -- | on the game: the unique rule does not apply to the cards with this title
+    -- (Avengers Tower, Stronghold)
+    UniqueRuleDoesNotApply Text
+  | -- | on a villain: damage takes him to 0 hit points at most, but he is not defeated
+    -- by it ("cannot be defeated while …", Proxima Midnight and Corvus Glaive)
+    CannotBeDefeated
+  -- Spectrum
+  | -- | on an identity: its energy form does not change (Loss of Control); turning
+    -- them all facedown is not changing it
+    CannotChangeEnergyForm
+  -- Hela (and Enchantress)
+  | -- | on an ally: no card may be attached to it, no upgrade played on it (Odin, Captive)
+    CannotHaveAttachedCards
+  | -- | on an ally: no encounter card may be attached to it (Odin, King)
+    CannotHaveAttachedEncounterCards
+  | -- | on an ally: the first player controls it, and it follows the first player token
+    -- (Odin)
+    ControlledByFirstPlayer
+  | -- | on a hero or an ally: a player card's ability does not ready it; the ready phase
+    -- and encounter cards still do (Unnatural Storm)
+    CannotBeReadiedByPlayerCards
+  | -- | on an identity: it cannot make basic attacks, nor attempt one to remove a stun
+    -- (Seduced)
+    CannotBasicAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

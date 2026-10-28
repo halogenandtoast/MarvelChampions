@@ -20,6 +20,9 @@ data UpgradeMessage
   | AddUpgradeUses Natural
   | UpgradeAttachedToSideScheme SideSchemeId
   | UpgradeAttachedToMainScheme MainSchemeId
+  | -- | an energy form turned faceup: the form its identity is in
+    FlipUpgradeFaceUp
+  | FlipUpgradeFaceDown
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

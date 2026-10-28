@@ -82,6 +82,10 @@ allObligations = fromList $ map
   , SomeObligationCard memoriesOfAnotherLife
   -- Venom
   , SomeObligationCard struggleForControl
+  -- Spectrum
+  , SomeObligationCard lossOfControl
+  -- Adam Warlock
+  , SomeObligationCard regenerationCycle
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

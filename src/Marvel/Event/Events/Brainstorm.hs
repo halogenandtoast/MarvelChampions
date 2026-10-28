@@ -43,7 +43,8 @@ instance RunMessage Brainstorm where
           -- the main scheme, if you can thwart it (RR Crisis Icon, Patrol)
           thwartable <- selectList SchemeYouCanThwart
           schemes <- filter (`elem` thwartable) <$> selectList MainScheme
-          for_ (headMay schemes) \s -> thwartScheme s attrs 3
+          -- of two, the one you choose (Tower Defense, MTS rulebook p.10)
+          unless (null schemes) $ chooseOrRunOne you [targeting (schemeRef s) (thwartScheme s attrs 3) | s <- schemes]
         chooseOne you
           [ labeled "$label.placeOnTopOfDeck" (placeOnTopOfDeck you top)
           , labeled "$label.placeOnBottomOfDeck" (placeOnBottomOfDeck you top)

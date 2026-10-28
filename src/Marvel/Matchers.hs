@@ -83,6 +83,11 @@ damageMatches matcher damage = case matcher of
     FromPlayerAttack _ -> True
     FromAllyAttack _ -> True
     _ -> False
+  DamageFromAnAttack -> pure case damageSource damage of
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    FromOverkill -> True
+    _ -> False
   -- who dealt it is known only from its source: see 'damageMatchesFrom'
   DamageByPlayer identityMatcher -> case damageSource damage of
     FromPlayerAttack ident -> identityMatches identityMatcher ident

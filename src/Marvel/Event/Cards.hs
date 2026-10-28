@@ -264,6 +264,26 @@ allEvents = fromList $ concatMap
   , fusillade
   , welcomeAboard
   , shakeItOff
+
+  -- Spectrum
+  , gammaBlast
+  , photonSpeed
+  , pulsarShield
+  , speedOfLight
+  , massAttack
+
+  -- Adam Warlock
+  , karmicBlast
+  , cosmicAwareness
+  , quantumMagic
+  , inBetweener
+  , magicAttack
+  , livingTribunal
+  , zoneOfSilence
+  , eternity
+  , summoningSpell
+  , theGardener
+  , shieldSpell
   ]
 
 event
@@ -471,13 +491,13 @@ relentlessAssault = reprintedAs ["16044"] $
     }
 
 uppercut :: CardDef
-uppercut = reprintedAs ["18014"] $
+uppercut = reprintedAs ["18014", "21044"] $
   (event "01054" "Uppercut" 3 HeroAction [Attack] [Physical] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
     }
 
 forJustice :: CardDef
-forJustice =
+forJustice = reprintedAs ["21049"] $
   (event "01060" "For Justice!" 2 HeroAction [Thwart] [Energy] Justice)
     { cdCriteria = SchemeExists ThwartableScheme
     , cdAbilitySubTypes = [Ability.Thwart]
@@ -499,12 +519,12 @@ leadFromTheFront = reprintedAs ["04018"] $
   event "01070" "Lead from the Front" 2 HeroAction [Tactic] [Energy] Leadership
 
 makeTheCall :: CardDef
-makeTheCall = reprintedAs ["03016"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
+makeTheCall = reprintedAs ["03016", "21056"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
   { cdAbilityCost = TargetPrintedCost
   }
 
 counterPunch :: CardDef
-counterPunch = reprintedAs ["19014"] $
+counterPunch = reprintedAs ["19014", "21062"] $
   (event "01077" "Counter-Punch" 0 Response [Attack] [Physical] Protection)
     { cdResponseWindow = Just (HeroDefended After You AttackableEnemy)
     , cdAbilitySubTypes = [Ability.Attack]
@@ -952,8 +972,8 @@ callForAid = event "12015" "Call for Aid" 0 HeroAction [] [Physical] Leadership
 
 moxie :: CardDef
 moxie =
-  (event "12016" "Moxie" 0 HeroResponse [] [Mental] Leadership)
-    { cdResponseWindow = Just (IdentityChangedToForm After You)
+  reprintedAs ["21017"] $ (event "12016" "Moxie" 0 HeroResponse [] [Mental] Leadership)
+    { cdResponseWindow = Just (IdentityChangedAnyForm After You)
     }
 
 -- | Team-Up (Ant-Man and Wasp): played only while both are in play, as hero or ally
@@ -980,7 +1000,7 @@ layDownTheLaw :: CardDef
 layDownTheLaw =
   (event "12031" "Lay Down the Law" 1 HeroResponse [Thwart] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
-    , cdResponseWindow = Just (IdentityChangedToForm After You)
+    , cdResponseWindow = Just (IdentityChangedAnyForm After You)
     , cdCriteria = SchemeExists ThwartableScheme
     }
 
@@ -1035,7 +1055,7 @@ surpriseAttack :: CardDef
 surpriseAttack =
   (event "13014" "Surprise Attack" 1 HeroResponse [Attack] [Physical] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
-    , cdResponseWindow = Just (IdentityChangedToForm After You)
+    , cdResponseWindow = Just (IdentityChangedAnyForm After You)
     , cdCriteria = canAttack
     }
 
@@ -1059,7 +1079,7 @@ allForOne =
 perseverance :: CardDef
 perseverance =
   (event "13033" "Perseverance" 1 HeroResponse [Tactic] [Mental] Protection)
-    { cdResponseWindow = Just (IdentityChangedToForm After You)
+    { cdResponseWindow = Just (IdentityChangedAnyForm After You)
     }
 
 -- Quicksilver
@@ -1630,4 +1650,119 @@ shakeItOff :: CardDef
 shakeItOff =
   (event "20028" "Shake it Off" 1 HeroResponse [Skill] [Physical] Protection)
     { cdResponseWindow = Just (EnemyAttackedAndDamaged AnyEnemy (CharacterWithTrait Guardian))
+    }
+
+-- Spectrum
+
+gammaBlast :: CardDef
+gammaBlast =
+  (identityEvent "21007" "Gamma Blast" 3 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+photonSpeed :: CardDef
+photonSpeed =
+  (identityEvent "21008" "Photon Speed" 2 HeroAction [Thwart, Superpower] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableSchemeIgnoringCrisis
+    }
+
+pulsarShield :: CardDef
+pulsarShield =
+  (identityEvent "21009" "Pulsar Shield" 1 HeroInterrupt [Defense, Superpower] [Energy])
+    { cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    , cdAbilitySubTypes = [Ability.Defense]
+    }
+
+speedOfLight :: CardDef
+speedOfLight = identityEvent "21010" "Speed of Light" 0 HeroAction [Superpower] [Wild]
+
+-- | "Exhaust 3 allies you control that share a Trait with your hero": each shares one
+-- (R12).
+massAttack :: CardDef
+massAttack =
+  (event "21016" "Mass Attack" 3 HeroAction [Attack] [Physical] Leadership)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = ExhaustAlliesMatchingCost AllySharingTraitWithController 3
+    }
+
+-- Adam Warlock
+
+-- | "Discard up to 4 cards from the top of your deck" is part of its cost.
+karmicBlast :: CardDef
+karmicBlast =
+  (identityEvent "21038" "Karmic Blast" 2 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = DiscardTopOfDeckCardsCost 0 4
+    }
+
+cosmicAwareness :: CardDef
+cosmicAwareness =
+  (identityEvent "21039" "Cosmic Awareness" 2 HeroAction [Thwart, Superpower] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme
+    , cdAbilityCost = DiscardTopOfDeckCardsCost 0 4
+    }
+
+-- | Its target, a card in your discard pile, must be there (RR Target).
+quantumMagic :: CardDef
+quantumMagic =
+  (identityEvent "21040" "Quantum Magic" 1 Action [Spell] [Energy])
+    { cdCriteria = ExtendedCardExists (InDiscardOf You (BasicCardMatches AnyCard))
+    }
+
+-- | A Cosmic Entity: shuffled into the encounter deck when played, its "When Revealed"
+-- resolved by whoever reveals it.
+cosmicEntity :: CardCode -> Name -> Resource -> Aspect -> CardDef
+cosmicEntity code name r aspect = (event code name 2 Action [CosmicEntity] [r] aspect) {cdUnique = True}
+
+inBetweener :: CardDef
+inBetweener = cosmicEntity "21042" "In-Betweener" Mental Aggression
+
+-- | Max 1 per deck.
+magicAttack :: CardDef
+magicAttack =
+  (event "21043" "Magic Attack" 1 HeroAction [Attack, Spell] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack <> SelfMatches (IdentityWithTrait Mystic)
+    , cdAbilityCost = DiscardTopOfDeckCardsCost 0 5
+    }
+
+livingTribunal :: CardDef
+livingTribunal = cosmicEntity "21048" "Living Tribunal" Mental Justice
+
+-- | Max 1 per deck.
+zoneOfSilence :: CardDef
+zoneOfSilence =
+  (event "21050" "Zone of Silence" 1 HeroAction [Spell, Thwart] [Mental] Justice)
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = SchemeExists ThwartableScheme <> SelfMatches (IdentityWithTrait Mystic)
+    , cdAbilityCost = DiscardTopOfDeckCardsCost 0 4
+    }
+
+eternity :: CardDef
+eternity = cosmicEntity "21054" "Eternity" Energy Leadership
+
+-- | Max 1 per deck.
+summoningSpell :: CardDef
+summoningSpell =
+  (event "21055" "Summoning Spell" 2 HeroAction [Spell] [Mental] Leadership)
+    { cdCriteria = SelfMatches (IdentityWithTrait Mystic)
+    }
+
+theGardener :: CardDef
+theGardener = cosmicEntity "21060" "The Gardener" Physical Protection
+
+-- | Max 1 per deck. Its cost is the deck's top cards, as many as the damage: a deck with
+-- fewer cannot pay it (R17).
+shieldSpell :: CardDef
+shieldSpell =
+  (event "21061" "Shield Spell" 0 HeroInterrupt [Defense, Spell] [Energy] Protection)
+    { cdResponseWindow = Just (WouldTakeDamage You FromAttack AnyValue)
+    , cdAbilitySubTypes = [Ability.Defense]
+    , cdCriteria = SelfMatches (IdentityWithTrait Mystic)
+    , cdAbilityCost = DiscardTopOfDeckForDamageCost
     }

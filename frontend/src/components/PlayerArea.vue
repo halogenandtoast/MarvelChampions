@@ -3,15 +3,17 @@
 // engaged with them, their allies, supports and upgrades, and their deck and discard.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { MinionView, PlayerView, SupportView } from '../server'
+import type { EnvironmentView, MinionView, PlayerView, SupportView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
 import { useCards } from '../cards'
 
-const { player, minions = [], active = false, compact = false } = defineProps<{
+const { player, minions = [], environments = [], active = false, compact = false } = defineProps<{
   player: PlayerView
   minions?: MinionView[]
+  /** the environments in their play area (Ebony Maw's Spells) */
+  environments?: EnvironmentView[]
   /** whose turn it is */
   active?: boolean
   /** one of several shown at once: smaller */
@@ -95,6 +97,21 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
       </div>
     </div>
 
+    <div v-if="environments.length" class="zone environments">
+      <span class="zone-label">{{ t('game.zones.environments') }}</span>
+      <div class="cards">
+        <BoardCard
+          v-for="environment in environments"
+          :id="environment.id"
+          :key="environment.id"
+          :code="environment.code"
+          :name="environment.name"
+          :attached="environment.attachments ?? []"
+          :counters="environment.counters || null"
+        />
+      </div>
+    </div>
+
     <div class="zone allies">
       <span class="zone-label">{{ t('game.zones.allies') }}</span>
       <div class="cards">
@@ -109,7 +126,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
             :stunned="ally.stunned"
             :confused="ally.confused"
             :tough="ally.tough"
-            :attached="ally.upgrades ?? []"
+            :attached="[...(ally.upgrades ?? []), ...(ally.attachments ?? [])]"
           />
           <Meter :label="t('game.hp')" :value="Math.max(0, ally.hitPoints - ally.damage)" :max="ally.hitPoints" />
         </div>
@@ -131,6 +148,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
           :counters="card.uses ?? null"
           :threat="card.threat || null"
           :attached="facedown(card)"
+          :flag="card.facedown ? t('game.facedownCard') : null"
+          :class="{ 'facedown-upgrade': card.facedown }"
         />
       </div>
     </div>
@@ -191,6 +210,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
   min-width: 0;
   flex: 0 1 auto;
 }
+/* an energy form she is not in: turned down, still hers to read */
+.facedown-upgrade { opacity: 0.55; filter: grayscale(0.6); }
 .zone-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .cards { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 .zone.empty .cards {

@@ -50,6 +50,21 @@ import Marvel.Villain.Villains.Ronan
 -- The Galaxy's Most Wanted: Nebula
 import Marvel.Villain.Villains.Nebula qualified as Nebula
 
+-- The Mad Titan's Shadow: Ebony Maw
+import Marvel.Villain.Villains.EbonyMaw qualified as EbonyMaw
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.Villain.Villains.TowerDefense qualified as TowerDefense
+
+-- The Mad Titan's Shadow: Thanos
+import Marvel.Villain.Villains.Thanos qualified as Thanos
+
+-- The Mad Titan's Shadow: Hela
+import Marvel.Villain.Villains.Hela qualified as Hela
+
+-- The Mad Titan's Shadow: Loki
+import Marvel.Villain.Villains.Loki qualified as Loki
+
 instance FromJSON Villain where
   parseJSON = withObject "Villain" $ \o -> do
     cardDef <- o .: "villainCardDef"
@@ -170,4 +185,33 @@ allVillains = fromList $ map
   , SomeVillainCard collector1
   , SomeVillainCard collector2
   , SomeVillainCard collector3
+
+  -- The Mad Titan's Shadow: Ebony Maw
+  , SomeVillainCard EbonyMaw.ebonyMaw1
+  , SomeVillainCard EbonyMaw.ebonyMaw2
+  , SomeVillainCard EbonyMaw.ebonyMaw3
+
+  -- The Mad Titan's Shadow: Tower Defense
+  , SomeVillainCard TowerDefense.proximaMidnight1
+  , SomeVillainCard TowerDefense.proximaMidnight2
+  , SomeVillainCard TowerDefense.proximaMidnight3
+  , SomeVillainCard TowerDefense.corvusGlaive1
+  , SomeVillainCard TowerDefense.corvusGlaive2
+  , SomeVillainCard TowerDefense.corvusGlaive3
+
+  -- The Mad Titan's Shadow: Thanos
+  , SomeVillainCard Thanos.thanos1
+  , SomeVillainCard Thanos.thanos2
+  , SomeVillainCard Thanos.thanos3
+  -- The Mad Titan's Shadow: Hela
+  , SomeVillainCard Hela.helaA1
+  , SomeVillainCard Hela.helaA2
+  , SomeVillainCard Hela.helaB1
+  , SomeVillainCard Hela.helaB2
+  -- The Mad Titan's Shadow: Loki
+  , SomeVillainCard Loki.loki1
+  , SomeVillainCard Loki.loki2
+  , SomeVillainCard Loki.loki3
+  , SomeVillainCard Loki.loki4
+  , SomeVillainCard Loki.loki5
   ]

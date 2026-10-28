@@ -56,9 +56,6 @@ instance RunMessage Attacrobatics where
         pure u
     WithBoostIcons (isTarget attrs -> True) (fromJSON -> Success ident) (sum . map snd -> icons) -> do
       -- with no villain in play (as between one Kang and the next), nothing
-      selectOne ActiveVillain >>= \case
-        Nothing -> pure u
-        Just villain -> do
-          dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
-          pure u
+      withTheVillain ident \villain -> dealDamage villain attrs (toDamage icons $ FromPlayerAttack ident)
+      pure u
     _ -> Attacrobatics <$> runMessage msg attrs

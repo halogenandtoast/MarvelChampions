@@ -29,7 +29,7 @@ instance HasAbilities Hero where
    where
     basicAbilities =
       [ ability a 300 Basic (SchemeExists SchemeYouCanThwart <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
-      , ability a 301 Basic canAttack ExhaustCost Attack
+      , ability a 301 Basic (canAttack <> SelfMatches IdentityCanBasicAttack) ExhaustCost Attack
       ]
 
 -- | All the modifiers are added and taken off first, then a value below zero is zero (RR
@@ -91,6 +91,8 @@ instance RunMessage (Attrs Hero) where
             [ targeting (enemyRef enemy) do
                 checkWindows [W.Window W.When $ W.MadeBasicAttackAgainst ident enemy]
                 basicAttackOn ident enemy bonus
+                -- "after a hero makes a basic attack against <enemy>" (Thanos's Armor)
+                checkWindows [W.Window W.After $ W.MadeBasicAttackAgainst ident enemy]
             | enemy <- enemies
             ]
               <> divided

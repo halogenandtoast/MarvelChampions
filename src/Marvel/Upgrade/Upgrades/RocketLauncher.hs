@@ -41,11 +41,10 @@ instance RunMessage RocketLauncher where
   runMessage msg u@(RocketLauncher attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       players <- getPlayers
-      villains <- selectList ActiveVillain
-      chooseOne ident
+      withTheVillainIfAny ident \villain -> chooseOne ident
         [ targeting p do
             minions <- selectList $ MinionEngagedWith (IdentityWithId p)
-            dealDamageToEach (map EnemyVillainId villains <> map EnemyMinionId minions) attrs (toDamage 2 FromAbility)
+            dealDamageToEach (maybe [] (pure . EnemyVillainId) villain <> map EnemyMinionId minions) attrs (toDamage 2 FromAbility)
         | p <- players
         ]
       pure u

@@ -9,6 +9,7 @@ import Marvel.Message.Lifted
 import Marvel.Resource.Cards qualified as Cards
 import Marvel.Resource.Resources.PymParticles
 import Marvel.Resource.Resources.Salvage
+import Marvel.Resource.Resources.AdamWarlock
 
 -- | What a resource card does after it is spent: "after you spend this card". The cards
 -- spent with it are on their way to the discard pile.
@@ -16,4 +17,9 @@ afterSpent :: (ReverseQueue m) => IdentityId -> [PlayerCard] -> PlayerCard -> m 
 afterSpent you spent card
   | getCardDef card `sameCard` Cards.pymParticles = pymParticlesSpent you
   | getCardDef card `sameCard` Cards.salvage = salvageSpent you spent
+  -- Adam Warlock
+  | getCardDef card `sameCard` Cards.audacity = audacitySpent you
+  | getCardDef card `sameCard` Cards.determination = determinationSpent you
+  | getCardDef card `sameCard` Cards.innovation = innovationSpent you
+  | getCardDef card `sameCard` Cards.preservation = preservationSpent you
   | otherwise = pure ()

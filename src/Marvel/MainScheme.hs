@@ -81,6 +81,19 @@ allMainSchemes = fromList $ map
 
   -- The Galaxy's Most Wanted: Infiltrate the Museum
   , SomeMainSchemeCard theGrandCollection
+  -- The Mad Titan's Shadow: Ebony Maw
+  , SomeMainSchemeCard attackOnKnowhere
+  , SomeMainSchemeCard thePowerStoneScheme
+  -- The Mad Titan's Shadow: Tower Defense
+  , SomeMainSchemeCard underSiege
+  , SomeMainSchemeCard theArmiesOfThanos
+  -- The Mad Titan's Shadow: Thanos
+  , SomeMainSchemeCard theInfinityStones
+  , SomeMainSchemeCard balanceTheScales
+  -- The Mad Titan's Shadow: Loki
+  , SomeMainSchemeCard allHailKingLoki
+  -- The Mad Titan's Shadow: Hela
+  , SomeMainSchemeCard odinsTorment
   ]
 
 lookupMainScheme :: CardCode -> MainSchemeId -> Maybe MainScheme

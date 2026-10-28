@@ -22,6 +22,8 @@ export interface UpgradeView extends CardView {
   controller?: string
   /** the cards attached faceup to it, played from there (Hawkeye's Quiver) */
   heldCards?: CardView[]
+  /** a Spectrum energy form she is not in */
+  facedown?: boolean
 }
 
 export interface SupportView extends CardView {
@@ -48,6 +50,8 @@ export interface AllyView extends CardView {
   tough: boolean
   counters?: number
   upgrades?: UpgradeView[]
+  /** encounter cards attached to it (Restrained) */
+  attachments?: AttachmentView[]
 }
 
 export interface PlayerView {
@@ -112,7 +116,7 @@ export interface VillainView extends CardView {
 
 /** A deck other than the encounter deck: a villain's own, a named one, or the side-scheme deck. */
 export interface DeckView {
-  kind: 'villain' | 'named' | 'sideScheme' | string
+  kind: 'villain' | 'named' | 'sideScheme' | 'infinityStones' | string
   /** the villain's name, or the named deck's */
   name: string | null
   size: number
@@ -159,6 +163,8 @@ export interface SchemeView extends CardView {
   held?: number
   /** which, and whose */
   heldCards?: { id: string; owner: string | null }[]
+  /** the player cards attached to it faceup (Odin on Odin's Torment) */
+  attachedCards?: CardView[]
 }
 
 export type ChoiceKind =
@@ -215,6 +221,10 @@ export interface EnvironmentView {
   name: string
   attachments?: { id: string; code: string; name: string; damage?: number; counters?: number }[]
   counters?: number
+  /** the player in whose play area it is (Ebony Maw's Spells); none: the villain's */
+  owner?: string | null
+  /** the damage on it (Tower Defense's Avengers Tower) */
+  damage?: number
 }
 
 export interface BoostView {
@@ -241,6 +251,8 @@ export interface GameView {
   encounterDiscard: CardView[]
   /** the victory display: cards with victory X, defeated, the first added first */
   victoryDisplay?: CardView[]
+  /** how many villains in the victory display win the game, when the players chose it (Loki) */
+  victoryCondition?: number | null
   /** The Collection (Infiltrate the Museum): player and encounter cards, faceup, the first added first */
   collection?: CardView[]
   focusedCards: CardView[]

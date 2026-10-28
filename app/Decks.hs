@@ -31,7 +31,7 @@ import Data.Text qualified as T
 import Database.Persist
 import Database.Persist.Sql (SqlBackend, fromSqlKey)
 import Marvel.Card.Code (CardCode (..))
-import Marvel.Decklist (DeckList (..), aspectsBalanced, missingCards)
+import Marvel.Decklist (DeckList (..), deckBuildingError, missingCards)
 import Marvel.I18n (ikey, ikeyWith, textVar)
 import Model
 import Network.HTTP.Client (Manager, httpLbs, parseRequest, requestHeaders, responseBody, responseStatus)
@@ -372,7 +372,7 @@ deckListFor db userId key =
 -- | The deck as the engine deals it: the identity out of the cards, the rest as they are.
 listFrom :: CardDb -> Text -> [Text] -> [(Text, Int)] -> Either Text DeckList
 listFrom db hero aspects slots = case missingCards deckList of
-  [] | not (aspectsBalanced deckList) -> Left $ ikey "error.unbalancedAspects"
+  [] | Just err <- deckBuildingError deckList -> Left $ ikey err
   [] -> Right deckList
   missing -> Left $ ikeyWith "error.unknownCards" [textVar "cards" (intercalate ", " [fromMaybe c (cardName c db) | CardCode c <- missing])]
  where

@@ -76,6 +76,13 @@ allEffects =
     -- Groot
     , ("16024", SomeCardEffect deftFocusEffect)
 
+    -- Spectrum
+    , ("21009", SomeCardEffect pulsarShieldEffect)
+    , ("21012", SomeCardEffect powerManVictorAlvarezEffect)
+
+    -- Adam Warlock
+    , ("21031a", SomeCardEffect adamWarlockEffect)
+
     -- The Galaxy's Most Wanted: The Market
     , ("16169", SomeCardEffect sureGambleEffect)
     , ("16165", SomeCardEffect reactorCoreEffect)

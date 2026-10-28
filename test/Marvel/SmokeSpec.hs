@@ -79,4 +79,4 @@ spec = do
      in [from (i * 7) 1, from (i * 7 + 1) 2, from (i * 7 + 3) 4] <> [from (i * 7 + 2) 3 | villain `elem` hastened]
   -- the scenarios whose villains random play hardly defeats, and whose later stages are
   -- what matters most
-  hastened = ["11001"]
+  hastened = ["11001", "21160"]

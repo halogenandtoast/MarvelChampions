@@ -47,7 +47,7 @@ newtype HujahdarianMonarchEgg = HujahdarianMonarchEgg (Attrs SideScheme)
 instance RunMessage HujahdarianMonarchEgg where
   runMessage msg (HujahdarianMonarchEgg attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
-      whenDefeatedMay attrs "$label.readyIdentity" ready
+      whenDefeatedMay attrs "$label.readyIdentity" readyByGame
       HujahdarianMonarchEgg <$> runMessage msg attrs
     _ -> HujahdarianMonarchEgg <$> runMessage msg attrs
 

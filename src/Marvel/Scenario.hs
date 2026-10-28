@@ -33,6 +33,9 @@ import Marvel.Query (selectJust)
 import Marvel.Card (Card (EncounterCard))
 import Marvel.Id (MainSchemeId)
 import Marvel.Name (Name (..))
+import Marvel.EncounterCard (genEncounterCard)
+import Marvel.Villain.Cards qualified as VillainCards
+import System.Random.Shuffle (shuffleM)
 
 instance FromJSON Scenario where
   parseJSON = withObject "Scenario" $ \o -> do
@@ -88,6 +91,16 @@ allScenarios = fromList $ map
     , SomeScenarioCard nebulaScenario
     -- The Galaxy's Most Wanted: Infiltrate the Museum
     , SomeScenarioCard infiltrateTheMuseumScenario
+    -- The Mad Titan's Shadow: Ebony Maw
+    , SomeScenarioCard ebonyMawScenario
+    -- The Mad Titan's Shadow: Tower Defense
+    , SomeScenarioCard towerDefenseScenario
+    -- The Mad Titan's Shadow: Thanos
+    , SomeScenarioCard thanosScenario
+    -- The Mad Titan's Shadow: Loki
+    , SomeScenarioCard lokiScenario
+    -- The Mad Titan's Shadow: Hela
+    , SomeScenarioCard helaScenario
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -136,6 +149,16 @@ recommendedModulars =
     , ("16088", [EncounterSet.SpacePirates])
     -- The Galaxy's Most Wanted: Infiltrate the Museum
     , ("16070", [EncounterSet.MenagerieMedley])
+    -- The Mad Titan's Shadow: Ebony Maw
+    , ("21071", [EncounterSet.BlackOrderSet, EncounterSet.ArmiesOfTitan])
+    -- The Mad Titan's Shadow: Tower Defense
+    , ("21098", [EncounterSet.ArmiesOfTitan])
+    -- The Mad Titan's Shadow: Thanos
+    , ("21111", [EncounterSet.BlackOrderSet, EncounterSet.ChildrenOfThanos])
+    -- The Mad Titan's Shadow: Loki
+    , ("21160", [EncounterSet.Enchantress, EncounterSet.FrostGiants])
+    -- The Mad Titan's Shadow: Hela
+    , ("21136a", [EncounterSet.LegionsOfHel, EncounterSet.FrostGiants])
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
@@ -574,3 +597,144 @@ infiltrateTheMuseumScenario = scenario
   ("16070", "16071")
   ["16073"]
   [EncounterSet.InfiltrateTheMuseum, EncounterSet.GalacticArtifacts]
+
+-- The Mad Titan's Shadow: Ebony Maw
+
+newtype EbonyMawScenario = EbonyMawScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage EbonyMawScenario where
+  runMessage msg (EbonyMawScenario a) = EbonyMawScenario <$> runMessage msg a
+
+-- | Ebony Maw (MTS rulebook p.6): Ebony Maw (I) and (II), (II) and (III) for expert;
+-- Attack on Knowhere and The Power Stone; the Ebony Maw set, with Black Order and
+-- Armies of Titan as its modular sets.
+ebonyMawScenario :: ScenarioCard EbonyMawScenario
+ebonyMawScenario =
+  scenario
+    EbonyMawScenario
+    "21071"
+    ("21071", "21072")
+    ["21074", "21075"]
+    [EncounterSet.EbonyMaw]
+
+-- The Mad Titan's Shadow: Tower Defense
+
+-- | Tower Defense (MTS rulebook p.10): Proxima Midnight and Corvus Glaive, (I) and (II),
+-- or (II) and (III) for expert, both in play from the start, Proxima first; Under Siege,
+-- which reveals The Armies of Thanos beside it; the Tower Defense set, with Armies of
+-- Titan the modular. Set up by Under Siege's code, as Breakout is by its own.
+newtype TowerDefenseScenario = TowerDefenseScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage TowerDefenseScenario where
+  runMessage msg (TowerDefenseScenario a) = TowerDefenseScenario <$> runMessage msg a
+
+towerDefenseScenario :: ScenarioCard TowerDefenseScenario
+towerDefenseScenario =
+  ScenarioCard "21098" \setup ->
+    let TowerDefenseScenario a = buildScenario (scenario TowerDefenseScenario "21098" ("21092", "21093") ["21098"] [EncounterSet.TowerDefense]) setup
+        expert = setup.difficulty == Expert
+     in TowerDefenseScenario a {Types.scenarioVillains = if expert then ["21093", "21096"] else ["21092", "21095"]}
+
+-- The Mad Titan's Shadow: Thanos
+
+newtype ThanosScenario = ThanosScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage ThanosScenario where
+  runMessage msg (ThanosScenario a) = ThanosScenario <$> runMessage msg a
+
+-- | Thanos (MTS rulebook p.16): Thanos (I) and (II), (II) and (III) for expert; the
+-- Thanos and Infinity Gauntlet sets, with Black Order and Children of Thanos as the
+-- modular sets. 1A has no setup of its own: the Infinity Gauntlet's Setup keyword makes
+-- the stone deck, and 1B's When Revealed the rest.
+thanosScenario :: ScenarioCard ThanosScenario
+thanosScenario =
+  scenario
+    ThanosScenario
+    "21111"
+    ("21111", "21112")
+    ["21114", "21115"]
+    [EncounterSet.Thanos, EncounterSet.InfinityGauntlet]
+
+-- The Mad Titan's Shadow: Loki
+
+newtype LokiScenario = LokiScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+-- | Loki (MTS rulebook p.24): five versions of Loki (I), one at random in play and the
+-- others set aside; All Hail King Loki; the Loki and Infinity Gauntlet sets, with
+-- Enchantress and Frost Giants the modular sets. No expert villain: the expert set only.
+lokiScenario :: ScenarioCard LokiScenario
+lokiScenario = scenario LokiScenario "21160" ("21160", "21160") ["21165"] [EncounterSet.Loki, EncounterSet.InfinityGauntlet]
+
+-- | The versions of Loki, the villain deck.
+lokiVersions :: [CardDef]
+lokiVersions = [VillainCards.loki1, VillainCards.loki2, VillainCards.loki3, VillainCards.loki4, VillainCards.loki5]
+
+isLokiVillain :: EncounterCard -> Bool
+isLokiVillain c = cdCardType (getCardDef c) == VillainType && title (cdName (getCardDef c)) == "Loki"
+
+-- | The first player chooses the victory condition, the Lokis in the victory display that
+-- win the game (1 rookie, 2 standard, 3 expert, 4 heroic, MTS rulebook p.24), as the
+-- scenario starts. Then one Loki at random is the villain, the others set aside, and
+-- setup goes on as any scenario's (the Infinity Gauntlet attaching to him).
+--
+-- Loki defeated (1B's Forced Interrupt and his victory 1): he goes to the victory
+-- display; with as many Lokis there as the victory condition, the players win;
+-- otherwise a random set-aside Loki takes his place, with all that was on him, at his
+-- own hit points.
+instance RunMessage LokiScenario where
+  runMessage msg (LokiScenario a) = LokiScenario <$> case msg of
+    StartScenario -> runQueueT do
+      first <- selectJust FirstPlayer
+      chooseOnePrompted first "$label.chooseLokiVictoryCondition"
+        [ labeled (countLabel "lokiVictoryCondition" n) do
+            cardSpecific GameRef "lokiVictoryCondition" n
+            cardSpecific GameRef "lokiSetup" ()
+        | n <- [1 .. 4 :: Natural]
+        ]
+      pure a
+    CardSpecific GameRef "lokiVictoryCondition" (fromJSON -> Success (n :: Natural)) ->
+      pure a {Types.scenarioVictoryCondition = Just n}
+    CardSpecific GameRef "lokiSetup" _ -> do
+      cards <- shuffleM =<< traverse genEncounterCard lokiVersions
+      case cards of
+        [] -> pure a
+        villain : rest ->
+          runMessage StartScenario $
+            a {Types.scenarioVillains = [toCardCode villain]} & setAsideCardsL <>~ map EncounterCard rest
+    ResolveVillainDefeat vid -> runQueueT do
+      mdef <- getsGame (`abilityCardDef` VillainRef vid)
+      case mdef of
+        Nothing -> pure a
+        Just def -> do
+          addCardToVictoryDisplay (villainAsCard vid def)
+          lokis <- (+ 1) . length . filter isLokiVillain <$> getVictoryDisplay
+          setAside' <- shuffleM [ec | EncounterCard ec <- scenarioSetAsideCards a, isLokiVillain ec]
+          case setAside' of
+            next : _ | fromIntegral lokis < fromMaybe 2 (Types.scenarioVictoryCondition a) -> do
+              replaceVillain vid (toCardCode next) Advanced
+              pure $ a & setAsideCardsL %~ filter (/= EncounterCard next)
+            _ -> a <$ gameOver Won
+    _ -> runMessage msg a
+
+-- The Mad Titan's Shadow: Hela
+
+newtype HelaScenario = HelaScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage HelaScenario where
+  runMessage msg (HelaScenario a) = HelaScenario <$> runMessage msg a
+
+-- | Hela (MTS rulebook p.20): Hela (A), (B) for expert, one card of two sides; Odin's
+-- Torment; the Hela set, with Legions of Hel and Frost Giants the modular sets. Hela
+-- defeated with Odin rescued is the players' win, as any last stage's defeat.
+helaScenario :: ScenarioCard HelaScenario
+helaScenario = scenario HelaScenario "21136a" ("21136a", "21137a") ["21138"] [EncounterSet.Hela]

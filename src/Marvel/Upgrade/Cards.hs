@@ -197,6 +197,19 @@ allUpgrades = fromList $ concatMap
   , sonicRifle
   , sideHolster
   , plasmaPistol
+
+  -- Spectrum
+  , gamma
+  , photon
+  , pulsar
+  , energyDuplication
+  , readyToRumble
+
+  -- Adam Warlock
+  , karmicStaff
+  , warlocksCape
+  , cosmicWard
+  , mysticSenses
   ]
 
 upgrade
@@ -320,21 +333,21 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = reprintedAs ["04041", "18017"] $ limited (MaxPerPlayerUnderAnyControl 1)
+combatTraining = reprintedAs ["04041", "18017", "21045"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = reprintedAs ["04046", "15017"] $ limited (MaxPerPlayerUnderAnyControl 1)
+heroicIntuition = reprintedAs ["04046", "15017", "21051"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
-inspired = (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
+inspired = reprintedAs ["21057"] $ (upgrade "01074" "Inspired" 1 [Condition] [Physical] Leadership)
   { cdCriteria = AllyExists AnyAlly
   , cdLimit = Just (MaxPerAlly 1)
   }
 
 armoredVest :: CardDef
-armoredVest = reprintedAs ["14016"] $ limited (MaxPerPlayerUnderAnyControl 1)
+armoredVest = reprintedAs ["14016", "21063"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
@@ -865,3 +878,40 @@ plasmaPistol =
   (basicUpgrade "20022" "Plasma Pistol" 2 [Tech, Weapon] [Energy])
     { cdKeywords = singleton Restricted
     }
+
+-- Spectrum
+
+-- | An energy form: Permanent, set aside before setup and put into play facedown by
+-- Monica Rambeau's Setup; faceup, it is the form Spectrum is in.
+energyForm :: CardCode -> Name -> Resource -> CardDef
+energyForm code name r =
+  (identityUpgrade code name 0 [] [r]) {cdCost = Nothing, cdKeywords = fromList [EnergyForm, Permanent]}
+
+gamma :: CardDef
+gamma = energyForm "21002" "Gamma" Physical
+
+photon :: CardDef
+photon = energyForm "21003" "Photon" Mental
+
+pulsar :: CardDef
+pulsar = energyForm "21004" "Pulsar" Energy
+
+energyDuplication :: CardDef
+energyDuplication = identityUpgrade "21006" "Energy Duplication" 2 [Superpower] [Wild]
+
+readyToRumble :: CardDef
+readyToRumble = limited (MaxPerPlayerUnderAnyControl 1) $ basicUpgrade "21022" "Ready to Rumble" 1 [Condition] [Energy]
+
+-- Adam Warlock
+
+karmicStaff :: CardDef
+karmicStaff = unique $ identityUpgrade "21034" "Karmic Staff" 2 [Artifact, Item] [Energy]
+
+warlocksCape :: CardDef
+warlocksCape = unique $ identityUpgrade "21035" "Warlock's Cape" 2 [Item] [Physical]
+
+cosmicWard :: CardDef
+cosmicWard = identityUpgrade "21036" "Cosmic Ward" 1 [Spell] [Energy]
+
+mysticSenses :: CardDef
+mysticSenses = identityUpgrade "21037" "Mystic Senses" 2 [Condition, Superpower] [Mental]

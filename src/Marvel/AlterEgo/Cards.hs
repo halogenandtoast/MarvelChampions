@@ -61,6 +61,10 @@ allAlterEgoCards =
     , draxAlterEgo
     -- Venom
     , flashThompson
+    -- Spectrum
+    , monicaRambeau
+    -- Adam Warlock
+    , adamWarlockAlterEgo
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -174,3 +178,13 @@ draxAlterEgo = alterEgo "19001b" "Drax" [Outlaw]
 
 flashThompson :: CardDef
 flashThompson = alterEgo "20001b" "Flash Thompson" [Soldier]
+
+-- Spectrum
+
+monicaRambeau :: CardDef
+monicaRambeau = alterEgo "21001b" "Monica Rambeau" [Civilian]
+
+-- Adam Warlock
+
+adamWarlockAlterEgo :: CardDef
+adamWarlockAlterEgo = alterEgo "21031b" "Adam Warlock" [Mystic]

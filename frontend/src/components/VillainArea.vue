@@ -27,8 +27,17 @@ const villains = computed(() => {
 })
 const mainSchemes = computed(() => inArea(game.mainSchemes, area?.mainSchemes))
 const sideSchemes = computed(() => inArea(game.sideSchemes, area?.sideSchemes))
-const environments = computed(() => inArea(game.environments, area?.environments))
+// a Spell in a player's play area is drawn there
+const environments = computed(() => inArea(game.environments?.filter((e) => !e.owner), area?.environments))
 const decks = computed(() => area?.decks ?? game.areas?.[0]?.decks ?? [])
+const victoryLabel = computed(() =>
+  game.victoryCondition
+    ? t('game.piles.victoryCondition', {
+        count: (game.victoryDisplay ?? []).filter((c) => cards.card(c.code)?.type === 'villain').length,
+        condition: game.victoryCondition,
+      })
+    : t('game.piles.victoryDisplay'),
+)
 // the acceleration tokens adding threat to this area's main scheme: the first area's
 const tokens = computed(() => area?.accelerationTokens ?? game.accelerationTokens ?? 0)
 // and the acceleration icons on cards in play there
@@ -36,11 +45,15 @@ const icons = computed(() => area?.accelerationIcons ?? game.accelerationIcons ?
 const deckLabel = (deck: DeckView) => {
   if (deck.kind === 'villain') return t('game.piles.villainDeck', { name: deck.name ?? '' })
   if (deck.kind === 'sideScheme') return t('game.piles.sideSchemeDeck')
+  if (deck.kind === 'infinityStones') return t('game.piles.infinityStoneDeck')
   const key = `game.piles.named.${deck.name}`
   return te(key) ? t(key) : (deck.name ?? '')
 }
-const discardLabel = (deck: DeckView) =>
-  deck.kind === 'villain' ? t('game.piles.villainDiscard', { name: deck.name ?? '' }) : t('game.piles.sideSchemeDiscard')
+const discardLabel = (deck: DeckView) => {
+  if (deck.kind === 'villain') return t('game.piles.villainDiscard', { name: deck.name ?? '' })
+  if (deck.kind === 'infinityStones') return t('game.piles.infinityStoneDiscard')
+  return t('game.piles.sideSchemeDiscard')
+}
 // with villains' own decks the encounter deck is not used (The Wrecking Crew): shown only
 // should a card end up in it
 const encounterUnused = computed(
@@ -93,14 +106,14 @@ const escalation = (scheme: SchemeView) => {
     <!-- environments in the middle, between the villain and the schemes -->
     <div v-if="environments.length" class="environments">
       <div v-for="environment in environments" :key="environment.id" class="scheme side">
-        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" />
+        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" :damage="environment.damage ?? 0" />
       </div>
     </div>
 
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
-        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :held="scheme.held || null" />
+        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
           {{ t('game.perRound', { count: escalation(scheme)! + tokens + icons }) }}
@@ -129,7 +142,8 @@ const escalation = (scheme: SchemeView) => {
         <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
       </template>
       <!-- the victory display: shared, out of play, the cards with victory X defeated -->
-      <Pile v-if="game.victoryDisplay?.length" :label="t('game.piles.victoryDisplay')" :cards="game.victoryDisplay" pile="victory-display" />
+      <!-- a scenario won by villains in it (Loki) counts them against its victory condition -->
+      <Pile v-if="game.victoryDisplay?.length || game.victoryCondition" :label="victoryLabel" :cards="game.victoryDisplay ?? []" pile="victory-display" />
       <!-- The Collection (Infiltrate the Museum): shared, out of play, its cards faceup -->
       <Pile v-if="game.collection?.length" :label="t('game.piles.collection')" :cards="game.collection" pile="collection" />
       <template v-for="deck in decks" :key="`${deck.kind}-${deck.name}`">

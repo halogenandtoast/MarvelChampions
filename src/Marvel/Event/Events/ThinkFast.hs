@@ -28,6 +28,6 @@ instance RunMessage ThinkFast where
   runMessage msg e@(ThinkFast attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
       damageIdentity you attrs (toDamage 1 FromAbility)
-      traverse_ (`confuse` attrs) =<< selectOne ActiveVillain
+      withTheVillain you (`confuse` attrs)
       pure e
     _ -> ThinkFast <$> runMessage msg attrs

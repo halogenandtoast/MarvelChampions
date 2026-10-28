@@ -95,3 +95,25 @@ import Marvel.Attachment.Attachments.Techniques as X
 import Marvel.Attachment.Attachments.GalacticArtifacts as X
 -- Drax
 import Marvel.Attachment.Attachments.ChallengeAccepted as X
+
+-- Spectrum
+import Marvel.Attachment.Attachments.SapPower as X
+
+-- The Mad Titan's Shadow: Ebony Maw
+import Marvel.Attachment.Attachments.EbonyMaw as X
+
+-- The Mad Titan's Shadow: Tower Defense
+import Marvel.Attachment.Attachments.TowerDefense as X
+
+-- The Mad Titan's Shadow: Thanos, Infinity Gauntlet
+import Marvel.Attachment.Attachments.Thanos as X
+import Marvel.Attachment.Attachments.InfinityGauntlet as X
+
+-- The Mad Titan's Shadow: Loki
+import Marvel.Attachment.Attachments.Loki as X
+
+-- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants, Enchantress
+import Marvel.Attachment.Attachments.Enchantress as X
+import Marvel.Attachment.Attachments.FrostGiants as X
+import Marvel.Attachment.Attachments.Hela as X
+import Marvel.Attachment.Attachments.LegionsOfHel as X

@@ -30,15 +30,20 @@ newtype PowerUnleashed = PowerUnleashed (Attrs Event)
 instance RunMessage PowerUnleashed where
   runMessage msg e@(PowerUnleashed attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
-      PlayedEvent _ _ _ -> do
-        -- "the main scheme": no choice, so nothing is asked inside the one effect
+      PlayedEvent you _ _ -> do
+        -- "the villain" and "the main scheme" you choose where there are two (Tower
+        -- Defense, MTS rulebook pp.10-11), chosen first, so nothing is asked inside the
+        -- one effect
         removable <- selectList ThwartableScheme
-        scheme <- headMay . filter (`elem` removable) <$> selectList MainScheme
-        let thwart = for_ scheme \s -> thwartScheme s attrs 5
+        schemes <- filter (`elem` removable) <$> selectList MainScheme
+        let withScheme k = case schemes of
+              _ : _ : _ -> chooseOne you [targeting (schemeRef s) (k $ thwartScheme s attrs 5) | s <- schemes]
+              _ -> k $ for_ (headMay schemes) \s -> thwartScheme s attrs 5
         -- with no villain in play (as between one Kang and the next), only the threat
-        selectOne ActiveVillain >>= \case
-          Nothing -> thwart
-          Just villain -> dealDamageAnd villain attrs (toDamage 5 FromAbility) thwart
+        villain <- selectAny ActiveVillain
+        if villain
+          then withTheVillain you \v -> withScheme (dealDamageAnd v attrs (toDamage 5 FromAbility))
+          else withScheme id
         pure e
       ResolvedEvent -> do
         removeFromGame (CardIdRef . CardId . unEventId $ eventId attrs)

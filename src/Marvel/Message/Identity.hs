@@ -47,6 +47,8 @@ data IdentityMessage
   | DiscardFrom FromZone Natural (Maybe Target)
   | ExhaustedIdentity
   | ReadiedIdentity
+  | -- | readied by the game or an encounter card, not a player card (Unnatural Storm)
+    ReadiedIdentityByGame
   | DrawOrDiscardToHandLimit
   | DrawToHandLimit
   | -- | the hand size printed on the identity, without what modifies it

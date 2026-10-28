@@ -55,3 +55,7 @@ import Marvel.Obligation.Obligations.CrisisOnHalfworld as X
 import Marvel.Obligation.Obligations.MemoriesOfAnotherLife as X
 -- Venom
 import Marvel.Obligation.Obligations.StruggleForControl as X
+-- Spectrum
+import Marvel.Obligation.Obligations.LossOfControl as X
+-- Adam Warlock
+import Marvel.Obligation.Obligations.RegenerationCycle as X

@@ -28,7 +28,7 @@ newtype BaitAndSwitch = BaitAndSwitch (Attrs Event)
 instance RunMessage BaitAndSwitch where
   runMessage msg e@(BaitAndSwitch attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
-      traverse_ (`enemyAttacks` you) =<< selectOne ActiveVillain
+      withTheVillain you (`enemyAttacks` you)
       cardSpecific attrs "thwart" you
       pure e
     -- its own step, after the attack
