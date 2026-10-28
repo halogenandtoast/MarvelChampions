@@ -305,6 +305,16 @@ spec = describe "The Mad Titan's Shadow campaign set" do
           hand `shouldNotContain` [pcCardId shock]
           discard `shouldNotContain` [pcCardId shock]
 
+    it "is never offered as a card to play, in either form" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        shock <- putInHand p "21185"
+        _ <- putInHand p "01089"
+        offers (isPlay shock) `shouldReturn` False
+        asHero p
+        offers (isPlay shock) `shouldReturn` False
+
     it "is not offered in hero form" do
       tg <- testGame ["spider-man"]
       let p = player1 tg

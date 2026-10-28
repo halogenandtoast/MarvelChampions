@@ -299,7 +299,8 @@ isPlayableWith ignoringCost attrs c = do
       && not matchesUnique
       && not forbidden
       && (isNothing (cdResponseWindow def) || isJust (cdActionCriteria def))
-      && (cdCardType def /= ResourceType)
+      -- only these are played: not a resource, nor an obligation held in hand (System Shock)
+      && (cdCardType def `elem` [AllyType, EventType, SupportType, UpgradeType])
  where
   ident = toId attrs
   def = getCardDef c
