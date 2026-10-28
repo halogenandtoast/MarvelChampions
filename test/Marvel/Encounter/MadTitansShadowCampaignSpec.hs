@@ -443,9 +443,9 @@ spec = describe "The Mad Titan's Shadow campaign set" do
         getNemesisMinionsOutOfPlay p `shouldReturn` drop 1 nemesis
         engaged <- selectList (MinionEngagedWith (IdentityWithId p))
         liftIO $ length engaged `shouldBe` 1
-        -- surge: I'm Tough, the one card left, revealed after it
-        encounterDeckSize `shouldReturn` 0
-        encounterDiscardCodes >>= (liftIO . (`shouldContain` ["01105"]))
+        -- surge: the one card left, I'm Tough, dealt to you facedown (the emptied deck
+        -- is then made again from the discard pile)
+        map toCardCode <$> dealtTo p >>= (liftIO . (`shouldContain` ["01105"]))
 
   describe "Open the Dungeons (21189a), Jormungand (21189b) and the Captive allies" do
     it "defeated: each player in turn chooses a set-aside Captive ally into play under their control; it flips to Jormungand on Loki, +4 per player hit points" do
