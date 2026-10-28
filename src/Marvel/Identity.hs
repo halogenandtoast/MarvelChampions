@@ -157,14 +157,10 @@ getModifiedHp pid@(PlayerIdentity attrs) = do
 
 instance HasTraits PlayerIdentity where
   getTraits pIdentity = do
-    modifiers <- getModifiers pIdentity
     traits <- case currentIdentity pIdentity of
       HeroSide x -> getTraits x
       AlterEgoSide x -> getTraits x
-    pure $ foldr applyModifier traits modifiers
-   where
-    applyModifier (TraitModifier t) = HashSet.insert t
-    applyModifier _ = id
+    (traits <>) <$> getGainedTraits pIdentity
 
 -- | The hero's THW; none in alter-ego form.
 getIdentityHeroThwart :: (HasGame m) => PlayerIdentity -> m Natural

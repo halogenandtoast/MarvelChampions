@@ -269,12 +269,7 @@ instance HasCardDef Ally where
   getCardDef = getCardDef . toAttrs
 
 instance HasTraits Ally where
-  getTraits a = do
-    modifiers <- getModifiers a
-    pure $ foldr applyModifier (cdTraits $ getCardDef a) modifiers
-   where
-    applyModifier (TraitModifier t) = HashSet.insert t
-    applyModifier _ = id
+  getTraits a = (cdTraits (getCardDef a) <>) <$> getGainedTraits a
 
 instance HasModifiersFor Ally where
   getModifiersFor source target (Ally a) = getModifiersFor source target a

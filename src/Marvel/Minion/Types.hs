@@ -148,13 +148,7 @@ instance HasModifiersFor Minion where
   getModifiersFor source target (Minion a) = getModifiersFor source target a
 
 instance HasTraits Minion where
-  getTraits m = do
-    modifiers <- getModifiers m
-    let traits = cdTraits $ getCardDef m
-    pure $ foldr applyModifier traits modifiers
-   where
-    applyModifier (TraitModifier t) = HashSet.insert t
-    applyModifier _ = id
+  getTraits m = (cdTraits (getCardDef m) <>) <$> getGainedTraits m
 
 instance IsRef Minion where
   toRef = MinionRef . toId

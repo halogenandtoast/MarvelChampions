@@ -250,12 +250,7 @@ toEnemyId = EnemyVillainId . villainId
 
 -- | Its printed traits and those it gains, as Absorbing Man gains each environment's.
 instance HasTraits Villain where
-  getTraits v = do
-    modifiers <- getModifiers (VillainRef $ toId v)
-    pure $ foldr applyModifier (cdTraits $ getCardDef v) modifiers
-   where
-    applyModifier (TraitModifier t) = HashSet.insert t
-    applyModifier _ = id
+  getTraits v = (cdTraits (getCardDef v) <>) <$> getGainedTraits (VillainRef $ toId v)
 
 -- | The status card is given, a stunned or confused one not to a stalwart villain (RR
 -- Stalwart).

@@ -14,6 +14,8 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.IORef
 import Data.Tuple (swap)
+import Data.Bifunctor (first)
+import Data.Functor.Identity (runIdentity)
 import Marvel.Frontend
 import System.Random (StdGen, mkStdGen, random, randomR, randomRs, randoms, splitGen)
 import Data.List (find, nub, partition)
@@ -222,8 +224,27 @@ data Game = Game
   -- player and encounter cards faceup in it, the first added first
   , gameCollecting :: [CardId]
   -- ^ the cards in play on their way into The Collection, leaving play for it
+  , gameGainedTraits :: GainedTraits
+  -- ^ the traits each character gains, worked out for the game as it stands
+  -- ('refreshTraits')
   }
   deriving stock (Show, Eq, Generic)
+
+-- | The traits each character gains from modifiers, or 'Nothing' until they are worked
+-- out. Derived from the rest of the game, so it is never saved and never compared.
+newtype GainedTraits = GainedTraits (Maybe (HashMap Target (HashSet Trait)))
+
+instance Show GainedTraits where
+  show _ = "GainedTraits"
+
+instance Eq GainedTraits where
+  _ == _ = True
+
+instance ToJSON GainedTraits where
+  toJSON _ = Null
+
+instance FromJSON GainedTraits where
+  parseJSON _ = pure $ GainedTraits Nothing
 
 makeLensesWith suffixedFields ''Game
 
@@ -283,6 +304,7 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))
+            . KeyMap.insert "gainedTraits" Null
             $ o
         )
 
@@ -1922,7 +1944,7 @@ stalwartSweep g = do
   let villains = [(VillainRef (toId v), Villain.getModifiedKeywords a, Villain.villainStunned a, Villain.villainConfused a) | v <- HashMap.elems (gameVillains g), let a = toAttrs v, Villain.villainStunned a || Villain.villainConfused a]
       minions = [(MinionRef (toId m), Minion.getModifiedKeywords a, minionStunned a, minionConfused a) | m <- HashMap.elems (gameMinions g), let a = toAttrs m, minionStunned a || minionConfused a]
   for_ (villains <> minions) \(ref, keywords, stunned, confused) -> do
-    stalwart <- elem Stalwart <$> runReaderT keywords g
+    stalwart <- elem Stalwart <$> runReaderT keywords (refreshTraits g)
     when stalwart do
       when stunned $ push (RemoveStatus ref StunnedStatus)
       when confused $ push (RemoveStatus ref ConfusedStatus)
@@ -2058,6 +2080,7 @@ newGame player scenario =
     , gamePeril = Nothing
     , gameCollection = []
     , gameCollecting = []
+    , gameGainedTraits = GainedTraits Nothing
     }
 
 -- | A card with the permanent keyword cannot leave play. ponytail: none in play can be
@@ -2195,7 +2218,7 @@ addPlayer player =
 withGame :: (MonadGame env m) => (Game -> (Game, a)) -> m a
 withGame f = do
   gameRef <- getGameRef
-  liftIO $ atomicModifyIORef' gameRef f
+  liftIO $ atomicModifyIORef' gameRef (first refreshTraits . f)
 
 withGame_ :: (MonadGame env m) => (Game -> Game) -> m ()
 withGame_ f = withGame ((,()) . f)
@@ -3190,6 +3213,46 @@ delve g = g {gameDepth = gameDepth g + 1}
 getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getUpgradeHeldCards ident =
   getsGame \g -> [c | u <- HashMap.elems (gameUpgrades g), getUpgradeController u == ident, c <- upgradeHeldCards (toAttrs u)]
+
+-- | The traits the character gains (a card can gain a trait, RR Traits): from those
+-- worked out for the game, or, for a character they were not worked out for (an ally
+-- looked at in hand), from its modifiers.
+getGainedTraits :: (HasGame m, IsRef a) => a -> m (HashSet Trait)
+getGainedTraits a =
+  getsGame gameGainedTraits >>= \case
+    GainedTraits (Just layer) | Just gained <- HashMap.lookup (toTarget a) layer -> pure gained
+    _ -> traitsGainedFrom <$> getModifiers a
+
+traitsGainedFrom :: [Modifier] -> HashSet Trait
+traitsGainedFrom ms = HashSet.fromList [t | TraitModifier t <- ms]
+
+-- | Work out the traits each character gains, once for the game as it stands, so that
+-- asking a trait never runs every modifier again: Blaze of Glory's "each Guardian
+-- character" asked each character's traits, each of which ran Blaze of Glory, and so
+-- on. Lazy, so a game state no trait is asked of costs nothing.
+--
+-- A card that grants a trait can ask a trait itself (Ant-Man's Scott Lang gains Giant
+-- while you are Giant), so this is a fixpoint: start with nothing gained, grant each
+-- trait against what is known, until nothing more is gained. ponytail: modifiers only
+-- ever add a trait, so it settles; a "loses a trait" modifier would need layers.
+refreshTraits :: Game -> Game
+refreshTraits g = blank {gameGainedTraits = GainedTraits (Just $ go (0 :: Int) none)}
+ where
+  -- the old traits dropped first, so this game does not hold on to the one before
+  !blank = g {gameGainedTraits = GainedTraits Nothing}
+  characters =
+    map IdentityRef (HashMap.keys $ gamePlayers g)
+      <> map AllyRef (HashMap.keys $ gameAllies g)
+      <> map MinionRef (HashMap.keys $ gameMinions g)
+      <> map VillainRef (HashMap.keys $ gameVillains g)
+  none = HashMap.fromList [(c, mempty) | c <- characters]
+  -- wherever the character is, whoever looks
+  grant known =
+    runIdentity . runReaderT (HashMap.fromList <$> for characters \c -> (c,) . traitsGainedFrom <$> getModifiers c) $
+      blank {gameGainedTraits = GainedTraits (Just known), gameAllAreas = True}
+  go n known
+    | n > 20 = error "the traits characters gain do not settle"
+    | otherwise = let next = grant known in if next == known then known else go (n + 1) next
 
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiers a = withDepthGuard 2 $ do

@@ -72,6 +72,24 @@ spec = describe "Star-Lord" do
         asHero p
         isGuardianAlly bill `shouldReturn` True
 
+    it "an ally who is a Guardian through him gets Blaze of Glory's +2 ATK" do
+      tg <- starLordGame
+      let p = player1 tg
+      inGame tg do
+        asHero p
+        -- Maria Hill is not a Guardian printed
+        putIntoPlay p "01067"
+        maria <- allyIn "01067"
+        blaze <- putInHand p "17015"
+        energy <- putInHand p "01088"
+        choose "play Blaze of Glory" (isPlay blaze)
+        -- "What could go wrong?" is offered as it is played
+        pass
+        payWith [energy]
+        choose "attack with Maria Hill" (isAllyAttack maria)
+        chooseVillain
+        villainDamageNow `shouldReturn` 3
+
   describe "Star-Lord (17001a): \"What could go wrong?\"" do
     it "plays a 4-cost card for 1 resource, dealing him a facedown encounter card" do
       tg <- starLordGame
