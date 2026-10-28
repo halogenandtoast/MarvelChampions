@@ -3,6 +3,8 @@
 module Marvel.Encounter.BrotherhoodOfBadoonSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as AttachmentCards
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.EncounterSet (EncounterSet (BandOfBadoon))
@@ -102,6 +104,36 @@ spec = describe "Brotherhood of Badoon" do
 
 scenarioSpec :: Spec
 scenarioSpec = describe "the scenario" do
+  it "waits on side A for Setup, then puts the ship into play and starts side B with its initial threat" do
+    (app, _) <- dealtGameBeforeSetup id (ScenarioSetup "16058" [BandOfBadoon] Normal) [starter "spider-man"] 1 (const $ pure ())
+    runGameApp app do
+      let shownSchemeCodes = do
+            view <- liftIO . publicGame =<< getGame
+            pure [code | Object o <- [view], Just (Array schemes) <- [KeyMap.lookup "mainSchemes" o], Object scheme <- toList schemes, Just (String code) <- [KeyMap.lookup "code" scheme]]
+      shownSchemeCodes `shouldReturn` ["16061a"]
+      schemeId <- mainSchemeIdNow
+      view <- liftIO . publicGame =<< getGame
+      let setupButtons =
+            [ (KeyMap.lookup "label" choice, KeyMap.lookup "target" choice)
+            | Object o <- [view]
+            , Just (Object questions) <- [KeyMap.lookup "question" o]
+            , Object question <- KeyMap.elems questions
+            , Just (Array choices) <- [KeyMap.lookup "choices" question]
+            , Object choice <- toList choices
+            ]
+      setupButtons `shouldBe` [(Just $ String "$label.setupMainScheme", Just $ toJSON schemeId)]
+      shipsBefore <- getsGame (HashMap.size . gameEnvironments)
+      threatBefore <- mainSchemeThreatNow
+      asked >>= \case
+        Just (you, [TargetLabel (MainSchemeRef _) _]) -> do
+          liftIO $ (shipsBefore, threatBefore) `shouldBe` (0, 0)
+          answerQuestion you 0
+        other -> error $ "expected the setup button, got " <> show other
+      _ <- badoonShip
+      threatAfter <- mainSchemeThreatNow
+      shownSchemeCodes `shouldReturn` ["16061"]
+      liftIO $ threatAfter `shouldBe` 2
+
   it "sets up Drang (I), Terrestrial Invasion with 2 threat per player, the Badoon Ship and the Milano" do
     tg <- drangGame ["spider-man", "captain-marvel"]
     inGame tg do

@@ -47,7 +47,7 @@ win = do
 readStory :: GameAppT [Text]
 readStory =
   openQuestion >>= \case
-    Just (ident, Read sections _) -> sections <$ answerQuestion ident 0
+    Just (ident, Read sections _) -> sections <$ (answerQuestion ident 0 >> pressMainSchemeSetup)
     q -> error $ "nothing to read: " <> show q
 
 -- | The campaign's next game against the box's own scenario at that place.

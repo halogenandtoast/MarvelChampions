@@ -87,6 +87,13 @@ dealtGameWith f setup decks seed = do
 -- | The same, what the game tells its clients handed to the function given.
 dealtGameTelling :: (Game -> Game) -> ScenarioSetup -> [DeckList] -> Int -> (FrontendMessage -> IO ()) -> IO (GameApp, IORef [Text])
 dealtGameTelling f setup decks seed tell = do
+  result@(app, _) <- dealtGameBeforeSetup f setup decks seed tell
+  runGameApp app pressMainSchemeSetup
+  pure result
+
+-- | Stop at the setup button so tests can play setup itself.
+dealtGameBeforeSetup :: (Game -> Game) -> ScenarioSetup -> [DeckList] -> Int -> (FrontendMessage -> IO ()) -> IO (GameApp, IORef [Text])
+dealtGameBeforeSetup f setup decks seed tell = do
   scenario <- maybe (error "no such scenario") pure $ lookupScenario setup
   players <- either (error . show) pure . sequence $ evalRand (traverse loadPlayer decks) (mkStdGen seed)
   seated <- maybe (error "no decks") pure $ nonEmpty' [setName ("player " <> tshow n) p | (n, p) <- zip [1 :: Int ..] players]
@@ -455,6 +462,12 @@ runNow msgs = do
   pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
   runGame
   pressWhenRevealed
+
+-- | Deal through the explicit setup button before a test plays its starting hand.
+pressMainSchemeSetup :: GameAppT ()
+pressMainSchemeSetup = openQuestion >>= \case
+  Just (ident, QuestionLabel "$label.setupMainScheme" _ _) -> answerQuestion ident 0 >> pressMainSchemeSetup
+  _ -> pure ()
 
 -- | The player resolves each When Revealed the game waits on, as they would by clicking
 -- the card: a test is about what the card does.

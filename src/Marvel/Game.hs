@@ -1192,11 +1192,15 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     mainSchemeId <- getRandom
     case lookupMainScheme cardCode mainSchemeId of
       Just x -> do
-        setupMainScheme
-        mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
-        mainSchemeStep mainSchemeId RevealMainScheme
-        for_ (HashMap.keys (gameVillains g)) \villainId ->
-          checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
+        first <- selectJust FirstPlayer
+        chooseOnePromptedAbout first "$label.setupMainScheme" mainSchemeId
+          [ targeting mainSchemeId do
+              setupMainScheme
+              mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
+              mainSchemeStep mainSchemeId RevealMainScheme
+              for_ (HashMap.keys (gameVillains g)) \villainId ->
+                checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
+          ]
         you <- getYou
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})
       Nothing -> throwM $ MissingCardCode "AddSetupMainScheme" cardCode

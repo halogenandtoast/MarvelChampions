@@ -13,9 +13,9 @@ export type Back = keyof typeof BACKS
 /** A main scheme is set up from its A side and played on its B side, which the engine
  * names by the bare code: show that side. */
 export const faceCode = (code: string, cardByCode: (code: string) => Card | undefined): string => {
-  const card = cardByCode(code)
+  const card = cardByCode(code) ?? cardByCode(`${code}a`)
   if (card?.type === 'main_scheme' && !/[a-z]$/.test(code) && cardByCode(`${code}b`)) return `${code}b`
-  if (!card && cardByCode(`${code}a`)) return `${code}a`
+  if (!cardByCode(code) && cardByCode(`${code}a`)) return `${code}a`
   return code
 }
 

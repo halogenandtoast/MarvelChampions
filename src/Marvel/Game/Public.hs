@@ -635,7 +635,12 @@ gameView seesHand g = do
         }
   mainSchemeView (s :: MainScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.mainSchemeId) (toCardCode a.mainSchemeCardDef) (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [] (length a.mainSchemeHeldCards) (map heldView a.mainSchemeHeldCards)
+        code = toCardCode a.mainSchemeCardDef
+        awaitingSetup = any (\case
+          QuestionLabel "$label.setupMainScheme" (Just target) _ -> target == toTarget a.mainSchemeId
+          _ -> False) (HashMap.elems $ gameQuestion g)
+        face = if awaitingSetup then CardCode (unCardCode code <> "a") else code
+     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [] (length a.mainSchemeHeldCards) (map heldView a.mainSchemeHeldCards)
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
      in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) 0 [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards)
@@ -657,7 +662,12 @@ questionView asked = \case
   QuestionLabel l t q ->
     let v = questionView asked q
         -- the choice on the card asked about says what is asked: "When Revealed"
-        named c = if c.kind == "target" && isJust c.target && c.target == (refId =<< t) && isNothing c.label then c {label = Just l} else c
+        named c
+          -- A saved setup prompt belongs on its scheme too, including prompts saved
+          -- before setup choices targeted the card.
+          | l == "$label.setupMainScheme", isJust t = c {kind = "target", target = refId =<< t, label = Just l}
+          | c.kind == "target" && isJust c.target && c.target == (refId =<< t) && isNothing c.label = c {label = Just l}
+          | otherwise = c
      in v {prompt = Just l, source = refId =<< t, choices = map named v.choices}
   Read r q -> (questionView asked q) {reading = r}
   Searched cs q -> (questionView asked q) {searched = [SearchedView l (map cardView xs) | (l, xs) <- cs]}
