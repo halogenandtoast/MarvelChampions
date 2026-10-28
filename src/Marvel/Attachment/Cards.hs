@@ -169,6 +169,9 @@ allAttachments =
       -- Enchantress
       , beguiled
       , seduced
+
+      -- The Mad Titan's Shadow: the campaign set
+      , jormungand
       ]
 
 attachment ::
@@ -612,3 +615,9 @@ beguiled = attachment "21178" "Beguiled" [Condition] [Boost] Enchantress 2
 
 seduced :: CardDef
 seduced = attachment "21179" "Seduced" [Condition] [Boost, Boost] Enchantress 2
+
+-- The Mad Titan's Shadow: the campaign set
+
+-- | Open the Dungeons' other side.
+jormungand :: CardDef
+jormungand = unique $ attachment "21189b" "Jormungand" [Dragon] [] MadTitansShadowCampaign 1

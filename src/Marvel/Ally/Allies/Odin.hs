@@ -12,7 +12,6 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Id (unAllyId)
 import Marvel.Trait (Trait (King))
 
 odinCaptive :: AllyCard Odin
@@ -30,28 +29,27 @@ isKing a = King `member` cdTraits (allyCardDef a)
 
 -- | In play he is not attached to the main scheme, so the Captive side's gained text
 -- applies: the first player gains control of Odin; he cannot have cards attached (King:
--- encounter cards) and does not count against the ally limit.
+-- encounter cards) and does not count against the ally limit. King: Forced Interrupt:
+-- when Odin leaves play, remove him from the game (he never reaches a discard pile).
 instance HasModifiersFor Odin where
   getModifiersFor _ (AllyRef aid) (Odin a)
     | aid == allyId a =
-        pure
-          [ NotCountedAgainstAllyLimit
-          , ControlledByFirstPlayer
-          , if isKing a then CannotHaveAttachedEncounterCards else CannotHaveAttachedCards
-          ]
+        pure $
+          [NotCountedAgainstAllyLimit, ControlledByFirstPlayer]
+            <> if isKing a
+              then [CannotHaveAttachedEncounterCards, RemovedFromGameInsteadOfLeavingPlay]
+              else [CannotHaveAttachedCards]
   getModifiersFor _ _ _ = pure []
 
--- | Captive: if Odin leaves play, the players lose the game. King: Forced Interrupt:
--- when Odin leaves play, remove him from the game (his card out of where it went).
+-- | Captive: if Odin leaves play (defeated, discarded, returned to hand or removed from
+-- the game), the players lose the game.
 instance RunMessage Odin where
   runMessage msg (Odin attrs) = runQueueT $ case msg of
-    RemoveFromPlay (AllyRef aid) | aid == allyId attrs -> leaves
-    ReturnToHand (AllyRef aid) | aid == allyId attrs -> leaves
+    RemoveFromPlay (AllyRef aid) | aid == allyId attrs, not (isKing attrs) -> leaves
+    ReturnToHand (AllyRef aid) | aid == allyId attrs, not (isKing attrs) -> leaves
     RemoveFromGame (AllyRef aid) | aid == allyId attrs, not (isKing attrs) -> leaves
     _ -> Odin <$> runMessage msg attrs
    where
     leaves = do
-      if isKing attrs
-        then removeFromGame (CardIdRef $ CardId $ unAllyId $ allyId attrs)
-        else gameOver Lost
+      gameOver Lost
       Odin <$> runMessage msg attrs

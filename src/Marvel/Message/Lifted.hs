@@ -571,6 +571,10 @@ advanceVillain vid = villainStep vid VillainAdvanced
 defeatVillain :: (ReverseQueue m) => VillainId -> m ()
 defeatVillain vid = villainStep vid VillainDefeated
 
+-- | The ability of the source has resolved all it does ('AbilityResolved').
+abilityResolved :: (ReverseQueue m) => Source -> m ()
+abilityResolved = push . AbilityResolved
+
 -- | "Swap <him> with a random set-aside <villain>" ('SwapVillain').
 swapVillain :: (ReverseQueue m) => VillainId -> m ()
 swapVillain = push . SwapVillain
@@ -584,7 +588,7 @@ replaceVillain vid code = push . ReplaceVillain vid code
 villainActivatesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
 villainActivatesAgainst vid you = do
   hero <- Matchers.identityMatches HeroIdentity you
-  if hero then enemyAttacks vid you else villainSchemes vid
+  if hero then enemyAttacks vid you else villainSchemesAgainst vid you
 
 -- | "The villain" of a card a player plays or an ability they trigger: the active
 -- villain, or the villain of their area they choose while a card says so (Focused

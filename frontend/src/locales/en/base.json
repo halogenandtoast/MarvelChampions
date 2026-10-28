@@ -206,7 +206,21 @@
     "galacticArtifacts": "Galactic Artifacts side schemes in the victory display",
     "powerStoneControl": "Power Stone control",
     "evasionCounters": "Evasion counters",
-    "headhunterDefeated": "Headhunter defeated?"
+    "headhunterDefeated": "Headhunter defeated?",
+    "MadTitansShadow": "The Mad Titan's Shadow",
+    "titanWon": "Loki is defeated: the campaign is won",
+    "titanLost": "Loki rules over all the universe: the campaign is lost",
+    "titanMarks": {
+      "CosmoInPool": "Cosmo was added to the campaign pool",
+      "SecurityBreachInPool": "Security Breach was added to the campaign pool",
+      "ShawarmaInPool": "Shawarma was added to the campaign pool",
+      "BlackSwanInPool": "Black Swan was added to the campaign pool",
+      "AvengersTowerDamaged": "Avengers Tower has the Damaged trait",
+      "SystemShockInPool": "System Shock was added to the campaign pool",
+      "InfinityStones1BCompleted": "The Infinity Stones 1B was completed",
+      "NornStoneInPool": "Norn Stone was added to the campaign pool",
+      "OdinInPool": "Odin was added to the campaign pool"
+    }
   },
   "settings": {
     "title": "Settings",

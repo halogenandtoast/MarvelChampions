@@ -237,11 +237,6 @@ leaves card attrs =
     & (discardL %~ filter (/= card))
     & \a -> a {scenarioDecks = HashMap.map (\(Pile d x) -> Pile (filter (/= card) d) (filter (/= card) x)) (scenarioDecks a)}
 
--- | The villain card in play, as a card out of play: set aside, or in the victory
--- display.
-villainAsCard :: VillainId -> CardDef -> EncounterCard
-villainAsCard vid = MkEncounterCard (CardId $ coerce vid)
-
 -- | The encounter-deck messages, and the player whose area's deck they are on when not
 -- "you"'s.
 deckMessage :: Message -> Maybe (Maybe IdentityId)
@@ -327,7 +322,9 @@ runScenarioMessage msg attrs = case msg of
     case (mdef, shuffled) of
       (Just def, pick : _) -> do
         replaceVillain vid (toCardCode pick) Swapped
-        pure $ leaves pick attrs & setAsideCardsL <>~ [EncounterCard (villainAsCard vid def)]
+        -- a card of its own out of play: the villain id stays with the card in play
+        out <- genEncounterCard def
+        pure $ leaves pick attrs & setAsideCardsL <>~ [EncounterCard out]
       _ -> pure attrs
   -- the last villain defeated, the players win; otherwise he leaves play
   ResolveVillainDefeat vid -> do
@@ -481,6 +478,8 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         _ -> error "Can not deal boost to target"
       pure attrs'
     -- a deck emptied partway is fulfilled: the new deck is not discarded from
+    -- never empty here while its discard pile has cards: an encounter deck is made again
+    -- as it empties (the refill after each message)
     DiscardTopOfEncounterDeck n mTarget -> do
       let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
       for_ mTarget \target -> withDiscarded target FromEncounterDeck (EncounterCard <$> discarded)

@@ -145,6 +145,9 @@ data WindowMatcher
   | -- | "after your deck runs out of cards" (Soul World), "after a player resets their
     -- deck" (Universal Church of Truth)
     PlayerDeckResets WindowTiming IdentityMatcher
+  | -- | "after <enemy> activates against you": its attack or scheme against a player
+    -- matching, from start to end, whether it resolved or was cancelled (The Magus)
+    EnemyActivates WindowTiming EnemyMatcher IdentityMatcher
   -- The Mad Titan's Shadow: Loki
   | -- | "after Loki is swapped with a set-aside Loki villain"
     VillainWasSwapped WindowTiming VillainMatcher

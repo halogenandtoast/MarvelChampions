@@ -308,18 +308,38 @@ stage 1) and Balance the Scales (21115, stage 2), Odin — All-Father (21139a *C
   0; the pool's checkboxes are the group's, not a player's.
 - Campaign-only cards: a deck brought to any table with a card of the `mts_campaign` set in it is refused.
 
-## Open rulings
+## Rulings (from the project owner, 2026-10-28)
 
-Proposed readings, not yet settled:
+The project owner's ruling, then the readings adopted with the campaign:
 
-- **System Shock drawn from a deck**: RR *Obligation* puts an obligation drawn from a player deck into the play
-  area, where its text does nothing; proposed: it stays in hand (its text only works there).
-- **First player at campaign setup** (Cosmo, Black Swan): RR picks the first player at setup step 3, before campaign
-  setup; proposed: the engine asks for the first player before scenario setup too.
-- **A flipped side scheme's threat** (Defensive Protocols, Retrieve Odin's Armor): proposed: its starting threat and
-  hinder are placed as if it were put into play (RR *Flip* alone would leave it at 0 threat).
+- **System Shock drawn from a deck** stays in its player's hand (its text only works there), rather than going into
+  the play area as RR *Obligation* has an obligation drawn from a player deck. It cannot be chosen to discard from
+  there (to hand size, by a card's "discard a card", or paying a cost that discards cards from hand); a random
+  discard (Security Breach's random card) still takes it.
+- **First player at campaign setup**: in a campaign game the first player is chosen before the scenario is set up
+  (RR Appendix II step 3), so Cosmo, Black Swan and Odin go to the one chosen; outside a campaign the question stays
+  where it was.
+- **A flipped side scheme's other side** enters play as that card would be put into play: a side scheme with its
+  starting threat and hinder (Defensive Protocols, Retrieve Odin's Armor), an ally under the first player's control
+  (Cosmo), a minion engaged with the first player (Black Swan), an attachment attached as it says (Jormungand). The
+  side scheme itself is removed from the game, so it reaches no victory display.
+- **"Was defeated"** (Secure the Landing Pad, Save the Shawarma Place, Find the Norn Stones): the A side is no longer
+  in play when the scenario is won.
+- **"1B was completed"**: the scenario's second main scheme (The Power Stone 21075, Balance the Scales 21115) is in
+  play when it is won.
 - **"Discards the top half of their deck"**: rounded down, counted after Shawarma and System Shock are shuffled in.
-- **Tower Defense's expert heal** ("one of the main schemes"): the player chooses which.
-- **Scenario #3's tower damage** comes after the expert heal (printed order) and is not an attack.
-- **Open the Dungeons**: each player in player order chooses among the Captive allies still set aside.
-- **Jormungand**: attaches to the Loki in play and leaves with him, so the next Loki does not keep it.
+- **Tower Defense's expert heal** ("one of the main schemes"): the player chooses which; a player recorded at 0
+  hit points places the token (choosing the scheme only there) and is healed, unasked.
+- **Scenario #3's tower damage** comes after the expert heal (printed order), for every campaign, and is not an
+  attack (it is dealt through the "would take damage" path).
+- **Open the Dungeons**: each player in player order chooses among the campaign set's Captive allies still set
+  aside; a Captive whose title one of their unique cards in play already has is not offered.
+- **Jormungand** attaches to the Loki in play, raising his hit points (and their maximum) by 4 per player as it
+  attaches; it is removed from the game as that Loki is defeated, his dial untouched, so the next Loki does not
+  keep it.
+- **Cosmo and Odin King** are owned by whoever controls them; leaving play they are removed from the game.
+- **Black Swan "engages the first player"** is constant, as Garm's is: she moves to each new first player as the
+  token passes, and her "after Black Swan engages you" discard answers each move.
+- **Norn Stone in scenario #5** is put into play by the instructions, not added to decks.
+- **Campaign-only cards** (the `mts_campaign` set) are refused in any deck brought to a table: the campaign adds
+  them itself as its instructions say.

@@ -25,23 +25,19 @@ newtype TheMagus = TheMagus (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | [star] Forced Response: After The Magus activates against you (attacks you, or
--- schemes while engaged with you), discard the top 5 cards of your deck.
+-- | [star] Forced Response: After The Magus activates against you (its attack on you or
+-- its scheme while engaged with you, resolved or cancelled; stunned or confused it does
+-- not activate), discard the top 5 cards of your deck.
 instance HasAbilities TheMagus where
   getAbilities (TheMagus a) =
-    [ windowAbility a 1 (EnemyAttacked After (EnemyWithId $ EnemyMinionId $ minionId a) AnyIdentity) ForcedResponse NoCost
+    [ windowAbility a 1 (EnemyActivates After (EnemyWithId $ EnemyMinionId $ minionId a) You) ForcedResponse NoCost
         $ RunAbility (toTarget a) 1
-    , windowAbility a 2 (MinionHasSchemed After (MinionWithId $ minionId a)) ForcedResponse NoCost
-        $ RunAbility (toTarget a) 2
     ]
 
 instance RunMessage TheMagus where
   runMessage msg e@(TheMagus attrs) = runQueueT $ case msg of
-    RanAbility _ (isTarget attrs -> True) 1 [EnemyAttack _ you] _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 [EnemyActivation _ you] _ -> do
       discardTopOfDeck you 5
-      pure e
-    RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
-      discardTopOfDeck (minionEngagedIdentity attrs) 5
       pure e
     _ -> TheMagus <$> runMessage msg attrs
 

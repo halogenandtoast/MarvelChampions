@@ -196,6 +196,9 @@ allMinions =
       , frostGiantFrostGiants
       -- Enchantress
       , enchantress
+
+      -- The Mad Titan's Shadow: the campaign set
+      , blackSwan
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -881,3 +884,9 @@ frostGiantFrostGiants = (reprint "21157" frostGiant) {cdEncounterSet = Just Fros
 
 enchantress :: CardDef
 enchantress = unique $ minion "21177" "Enchantress" [Asgard, Elite] [Boost, Boost] Enchantress 1
+
+-- The Mad Titan's Shadow: the campaign set
+
+-- | Save the Shawarma Place's other side.
+blackSwan :: CardDef
+blackSwan = unique $ (minion "21182b" "Black Swan" [BlackOrder, Elite] [] MadTitansShadowCampaign 1) {cdKeywords = fromList [Toughness, Victory 2]}

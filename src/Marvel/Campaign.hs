@@ -59,6 +59,8 @@ data CampaignLog = CampaignLog
   -- ^ Scenario 4: allies removed from the campaign
   , galaxy :: GalaxyLog
   -- ^ The Galaxy's Most Wanted's log ("docs/rules/campaign-galaxys-most-wanted.md")
+  , titan :: TitanLog
+  -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -99,8 +101,41 @@ instance FromJSON GalaxyLog where
 noGalaxyLog :: GalaxyLog
 noGalaxyLog = GalaxyLog [] [] Nothing [] Nothing
 
+-- | The Mad Titan's Shadow's log: its nine checkboxes, the campaign pool and what the
+-- scenarios record (rulebook p.28), each player's identity and remaining hit points being
+-- 'CampaignPlayer''s.
+data TitanMark
+  = -- | Scenario 1
+    CosmoInPool
+  | SecurityBreachInPool
+  | -- | Scenario 2
+    ShawarmaInPool
+  | BlackSwanInPool
+  | AvengersTowerDamaged
+  | -- | Scenario 3
+    SystemShockInPool
+  | InfinityStones1BCompleted
+  | -- | Scenario 4
+    NornStoneInPool
+  | OdinInPool
+  deriving stock (Show, Eq, Generic, Enum, Bounded)
+  deriving anyclass (ToJSON, FromJSON)
+
+newtype TitanLog = TitanLog {marks :: [TitanMark]}
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
+
+-- | A log saved before The Mad Titan's Shadow has its section empty.
+instance FromJSON TitanLog where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just (TitanLog [])
+
+-- | Whether the log has the box checked.
+hasMark :: TitanMark -> Campaign -> Bool
+hasMark m c = m `elem` c.campaignLog.titan.marks
+
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -164,6 +199,8 @@ data CampaignRecord
   | RecordPowerStoneControl CardCode
   | RecordHeadhunterDefeated Int
   | RecordEvasionCounters Natural
+  | -- | The Mad Titan's Shadow: a box of its log checked
+    RecordTitanMark TitanMark
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -177,10 +214,15 @@ riseOfRedSkull = ["04058", "04076", "04093", "04109", "04125"]
 galaxysMostWanted :: [CardCode]
 galaxysMostWanted = ["16058", "16070", "16080a", "16088", "16103"]
 
+-- | The Mad Titan's Shadow: Ebony Maw, Tower Defense, Thanos, Hela, Loki.
+madTitansShadow :: [CardCode]
+madTitansShadow = ["21071", "21098", "21111", "21136a", "21160"]
+
 campaignScenarios :: CampaignKind -> [CardCode]
 campaignScenarios = \case
   RiseOfRedSkull -> riseOfRedSkull
   GalaxysMostWanted -> galaxysMostWanted
+  MadTitansShadow -> madTitansShadow
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -240,6 +282,7 @@ newCampaignOf kind mode identities =
           , engagedWithMinions = []
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
+          , titan = TitanLog []
           }
     }
  where
@@ -312,6 +355,7 @@ recordInLog r c = case r of
   RecordPowerStoneControl ident -> galaxyL \g -> g {powerStoneControl = Just (toHeroCardCode ident)}
   RecordHeadhunterDefeated n -> galaxyL \g -> g {headhunterDefeated = nub (g.headhunterDefeated <> [n])}
   RecordEvasionCounters n -> galaxyL \g -> g {evasionCounters = Just n}
+  RecordTitanMark m -> logged \l -> l {titan = TitanLog (nub (l.titan.marks <> [m]))}
  where
   logged f = c {campaignLog = f c.campaignLog}
   galaxyL f = logged \l -> l {galaxy = f l.galaxy}

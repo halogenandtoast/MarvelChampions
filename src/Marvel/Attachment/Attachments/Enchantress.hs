@@ -53,8 +53,11 @@ instance RunMessage Beguiled where
       let highest = maximum (map snd costed)
           tied = [aid | (aid, c) <- costed, c == highest]
           enthrall aid = do
+            let mid = MinionId $ unAllyId aid
             allyBecomesMinion aid
-            attachTo ident (EnemyMinionId $ MinionId $ unAllyId aid)
+            attachTo ident (EnemyMinionId mid)
+            -- at its printed hit points, its damage may defeat it (RR Hit Points)
+            minionStep mid MinionCheckHitPoints
       if null allies
         then do
           surge you

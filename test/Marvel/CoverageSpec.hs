@@ -116,6 +116,8 @@ modularSets =
   , "legions_of_hel"
   , "frost_giants"
   , "enchantress"
+  -- The Mad Titan's Shadow campaign
+  , "mts_campaign"
   ]
 
 encounterImplemented :: PackCard -> Bool

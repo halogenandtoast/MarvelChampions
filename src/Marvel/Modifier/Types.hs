@@ -46,8 +46,8 @@ data Modifier
   | -- | on a character: it takes no damage from a player card, or from an effect one
     -- created (Sanctuary, errata)
     CannotTakeDamageFromPlayerCards
-  | -- | on an enemy: each amount of damage it would take, from any source, is reduced
-    -- (Thanos's Armor)
+  | -- | on a villain: each amount of damage it would take, from any source, is reduced,
+    -- after a tough status card has prevented what it does (Thanos's Armor)
     DamageReduction Natural
   | -- | on a character: it has infinite hit points: damage is dealt to it, but it is not
     -- defeated by it (The Galaxy's Most Wanted, Escape the Museum)
@@ -152,11 +152,17 @@ data Modifier
   | -- | on an ally: the first player controls it, and it follows the first player token
     -- (Odin)
     ControlledByFirstPlayer
+  -- The Mad Titan's Shadow campaign
+  | -- | on an ally: its basic thwart ignores any crisis icons in play (Fandral)
+    BasicThwartIgnoresCrisis
   | -- | on a hero or an ally: a player card's ability does not ready it; the ready phase
     -- and encounter cards still do (Unnatural Storm)
     CannotBeReadiedByPlayerCards
   | -- | on an identity: it cannot make basic attacks, nor attempt one to remove a stun
     -- (Seduced)
     CannotBasicAttack
+  | -- | on an ally: leaving play, it is removed from the game instead, never discarded or
+    -- returned to hand (Odin, King)
+    RemovedFromGameInsteadOfLeavingPlay
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

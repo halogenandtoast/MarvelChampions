@@ -130,5 +130,6 @@ instance (HasGame m) => Count m SchemeMatcher where
   selectCount = gameSelectCountScheme
 
 instance (HasGame m) => Count m AllyMatcher where
-  data QueryCount AllyMatcher = AllyAttackValue | AllyThwartValue
+  -- AllyDamageValue: the damage on them (Retrieve Odin's Armor heals all of Odin's)
+  data QueryCount AllyMatcher = AllyAttackValue | AllyThwartValue | AllyDamageValue
   selectCount = gameSelectCountAlly

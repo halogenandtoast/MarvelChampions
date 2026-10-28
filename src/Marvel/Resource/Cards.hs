@@ -8,6 +8,7 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
@@ -51,6 +52,9 @@ allResources = fromList $ concatMap
   , determination
   , innovation
   , preservation
+
+  -- The Mad Titan's Shadow: the campaign set
+  , shawarma
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -181,3 +185,14 @@ innovation = resource "21058" "Innovation" [] [Wild] Leadership
 
 preservation :: CardDef
 preservation = resource "21064" "Preservation" [] [Wild] Protection
+
+-- The Mad Titan's Shadow: the campaign set
+
+-- | Basic, and campaign-only: printed "Max 1 per deck", though no deck brought to a table
+-- may hold it; the campaign shuffles one copy into each player's deck.
+shawarma :: CardDef
+shawarma =
+  (basicResource "21183" "Shawarma" [] [Energy, Physical, Mental])
+    { cdEncounterSet = Just EncounterSet.MadTitansShadowCampaign
+    , cdEncounterSetQuantity = Just 4
+    }

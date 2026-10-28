@@ -315,6 +315,13 @@ recommendations above, not ruled otherwise):
 - **Hela's Domain's boost** places its 2 threat once for the attack.
 - **No Place for the Living** with nothing controlled: the damage option, at 0; a permanent card is not one to
   discard. Each player chooses in player order.
+- **Game areas** (two-area play): Unnatural Storm exhausts and keeps from readying only the heroes and allies of its
+  own area; Legions of Hel counts the Undead minions of its area; a guardian (Garm, Skurge, Nidhogg) locks its side
+  scheme only from its area; Beguiled picks among the revealing player's area's allies.
+- **"Discard each attachment from Hela"** (Odin's Torment): every card attached to her, a player's upgrade too.
+- **King Odin leaving play** is removed from the game instead: he never reaches a discard pile or a hand.
+- **An ally treated as a minion** keeps its status cards both ways; Beguiled's minion at its printed hit points with
+  as much damage is defeated (RR Hit Points).
 - **Unnatural Storm** stops a player card's readying of a hero (hero form) or an ally; the ready phase and encounter
   cards still ready them. **Frozen** stops all readying of its identity.
 - **"Cannot have cards attached"** is checked for every encounter card attaching to an ally: one that would attach to

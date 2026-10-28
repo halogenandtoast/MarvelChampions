@@ -9,7 +9,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Data.HashSet (singleton)
 import Marvel.Criteria
-import Marvel.EncounterSet (EncounterSet (TheMarket))
+import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, TheMarket))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Name
@@ -210,6 +210,10 @@ allUpgrades = fromList $ concatMap
   , warlocksCape
   , cosmicWard
   , mysticSenses
+
+  -- The Mad Titan's Shadow: the campaign set
+  , nornStoneSetup
+  , nornStone
   ]
 
 upgrade
@@ -915,3 +919,20 @@ cosmicWard = identityUpgrade "21036" "Cosmic Ward" 1 [Spell] [Energy]
 
 mysticSenses :: CardDef
 mysticSenses = identityUpgrade "21037" "Mystic Senses" 2 [Condition, Superpower] [Mental]
+
+-- The Mad Titan's Shadow: the campaign set
+
+-- | Its Setup side: Permanent and Setup, flipping to its other side.
+nornStoneSetup :: CardDef
+nornStoneSetup = (nornStoneFace "21187a") {cdKeywords = fromList [Permanent, Setup]}
+
+nornStone :: CardDef
+nornStone = nornStoneFace "21187b"
+
+nornStoneFace :: CardCode -> CardDef
+nornStoneFace code =
+  (basicUpgrade code "Norn Stone" 0 [Asgard, Artifact] [])
+    { cdKeywords = singleton Permanent
+    , cdEncounterSet = Just MadTitansShadowCampaign
+    , cdEncounterSetQuantity = Just 4
+    }

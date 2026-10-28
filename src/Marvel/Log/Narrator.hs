@@ -86,7 +86,7 @@ narrationFor = \case
       Nothing -> False
       Just c -> case step of
         CampaignChoices -> any (notNull . (.pending)) c.campaignLog.players
-        CampaignSetup -> Campaign.scenarioNumber c > 1 || c.kind == Campaign.GalaxysMostWanted
+        CampaignSetup -> Campaign.scenarioNumber c > 1 || c.kind /= Campaign.RiseOfRedSkull
         CampaignSetupThen _ -> False
         CampaignVictory -> True
     pure [structure [ikeyPart (campaignStepKey step) []] | told]
@@ -258,6 +258,8 @@ campaignNarration = \case
     one $ notice [ikeyPart "log.campaign.powerStone" ["player" ~> p]]
   RecordHeadhunterDefeated _ -> Just $ one $ notice [ikeyPart "log.campaign.headhunterDefeated" []]
   RecordEvasionCounters n -> Just $ one $ notice [ikeyPart "log.campaign.evasionCounters" ["count" ~> n]]
+  -- The Mad Titan's Shadow
+  RecordTitanMark m -> Just $ one $ notice [ikeyPart ("log.campaign.titanMark." <> tshow m) []]
   _ -> Nothing
  where
   added who code = do
@@ -352,7 +354,10 @@ villainNarration vid = \case
     shielded <- cannotTakeDamageFrom (VillainRef vid) source
     if shielded
       then whenRef (VillainRef vid) \t -> one $ toned Good $ mechanic [ikeyPart "log.takesNoDamage" ["target" ~> t]]
-      else damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount dmg)
+      else do
+        -- what gets past a tough status card is reduced (Thanos's Armor)
+        reduced <- damageAmount . (`Villain.reducedDamage` dmg) <$> getModifiers (VillainRef vid)
+        damaged (VillainRef vid) (tough && preventedByTough dmg) reduced
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]

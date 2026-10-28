@@ -117,3 +117,6 @@ import Marvel.Attachment.Attachments.Enchantress as X
 import Marvel.Attachment.Attachments.FrostGiants as X
 import Marvel.Attachment.Attachments.Hela as X
 import Marvel.Attachment.Attachments.LegionsOfHel as X
+
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Attachment.Attachments.MadTitansShadowCampaign as X

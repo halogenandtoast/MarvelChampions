@@ -169,3 +169,6 @@ import Marvel.Treachery.Treacheries.Loki as X
 -- The Mad Titan's Shadow: Hela, Legions of Hel
 import Marvel.Treachery.Treacheries.Hela as X
 import Marvel.Treachery.Treacheries.LegionsOfHel as X
+
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Treachery.Treacheries.MadTitansShadowCampaign as X

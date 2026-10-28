@@ -383,6 +383,24 @@ export interface CampaignLog {
   alliesRemoved: string[]
   /** The Galaxy's Most Wanted's */
   galaxy: GalaxyLog
+  /** The Mad Titan's Shadow's */
+  titan: TitanLog
+}
+
+/** A box of The Mad Titan's Shadow's log: the campaign pool and what the scenarios record. */
+export type TitanMark =
+  | 'CosmoInPool'
+  | 'SecurityBreachInPool'
+  | 'ShawarmaInPool'
+  | 'BlackSwanInPool'
+  | 'AvengersTowerDamaged'
+  | 'SystemShockInPool'
+  | 'InfinityStones1BCompleted'
+  | 'NornStoneInPool'
+  | 'OdinInPool'
+
+export interface TitanLog {
+  marks: TitanMark[]
 }
 
 /** A player's column of The Galaxy's Most Wanted's log, besides identity and hit points. */
@@ -403,7 +421,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

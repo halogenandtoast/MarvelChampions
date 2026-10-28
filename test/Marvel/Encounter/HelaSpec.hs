@@ -264,8 +264,14 @@ villainSpec = describe "Hela (villain)" do
     let p = player1 tg
     inGame tg do
       _ <- rescueOdin p
-      vid <- villainIdNow
-      resolve [VillainMessage vid VillainWouldBeDefeated]
+      asHero p
+      -- down to 1 hit point, then the hero's basic attack
+      v <- villainAttrs
+      let vid = Villain.villainId v
+      resolve [VillainMessage vid (VillainDamaged (toSource p) (toDamage (fromIntegral (unHp $ Villain.villainHp v) - 1) FromAbility))]
+      choose "attack Hela" (isHeroAttack p)
+      chooseIf (isTargetChoice vid)
+      settle
       finished `shouldReturn` Just Won
 
 odinSpec :: Spec
@@ -654,7 +660,7 @@ legionsOfHelSpec = describe "Legions of Hel (modular set)" do
         fw `shouldBe` True
         ally `shouldBe` []
 
-  it "Fallen Warrior leaving play first: the minion is its owner's ally again, its damage kept" do
+  it "Fallen Warrior leaving play first: the minion is its owner's ally again, its damage and status cards kept" do
     tg <- hela ["spider-man"]
     let p = player1 tg
     inGame tg do
@@ -662,13 +668,13 @@ legionsOfHelSpec = describe "Legions of Hel (modular set)" do
       _ <- revealNow p AttachmentCards.fallenWarrior
       pass
       let mid = MinionId $ unCardId $ pcCardId maria
-      resolve [MinionMessage mid (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
+      resolve [MinionMessage mid (MinionDamaged (toSource p) (toDamage 1 FromAbility)), GiveStatus (MinionRef mid) StunnedStatus]
       [fw] <- attachmentsOf AttachmentCards.fallenWarrior
       resolve [RemoveFromPlay (AttachmentRef $ Attachment.attachmentId fw)]
       ally <- allyIn "01067"
       gone <- minionAttrs mid
       liftIO do
-        (allyController ally, allyDamage ally) `shouldBe` (p, 1)
+        (allyController ally, allyDamage ally, allyStunned ally) `shouldBe` (p, 1, True)
         isNothing gone `shouldBe` True
 
   it "Fallen Warrior with no ally in the deck: it is discarded, nothing attached" do
@@ -819,9 +825,17 @@ frostGiantsSpec = describe "Frost Giants (modular set)" do
       asHero p
       _ <- revealNow p SideSchemeCards.unnaturalStorm
       pass
+      tenacity <- putIntoPlay p "01093"
+      pass
       _ <- revealNow p AttachmentCards.frozenInTime
       pass
-      resolve [IdentityMessage p ExhaustedIdentity, IdentityMessage p ReadiedIdentity]
+      -- Tenacity, a player card, would ready the hero: the storm keeps it from it
+      resolve [IdentityMessage p ExhaustedIdentity]
+      clearHand p
+      strength <- putInHand p "01090"
+      choose "use Tenacity" (isAbilityOfCard tenacity)
+      payWith [strength]
+      settle
       stays <- length <$> attachmentsOf AttachmentCards.frozenInTime
       resolve [IdentityMessage p ReadyCards]
       gone <- inDiscard AttachmentCards.frozenInTime
@@ -838,10 +852,23 @@ frostGiantsSpec = describe "Frost Giants (modular set)" do
       _ <- putIntoPlay p "01067"
       pass
       maria <- allyIn "01067"
+      tenacity <- putIntoPlay p "01093"
+      pass
       _ <- revealNow p SideSchemeCards.unnaturalStorm
       pass
       exhaustedAlly <- allyExhausted <$> allyIn "01067"
-      resolve [IdentityMessage p ExhaustedIdentity, IdentityMessage p ReadiedIdentity, AllyMessage (allyId maria) ReadiedAlly]
+      clearHand p
+      -- Get Ready, an event, readies an ally: not Maria Hill
+      getReady <- putInHand p "01069"
+      choose "play Get Ready" (isPlay getReady)
+      chooseIf (isTargetChoice (allyId maria))
+      settle
+      -- Tenacity readies the hero: not under the storm
+      resolve [IdentityMessage p ExhaustedIdentity]
+      strength <- putInHand p "01090"
+      choose "use Tenacity" (isAbilityOfCard tenacity)
+      payWith [strength]
+      settle
       heroStays <- isExhaustedNow p
       allyStays <- allyExhausted <$> allyIn "01067"
       resolve [IdentityMessage p ReadyCards]

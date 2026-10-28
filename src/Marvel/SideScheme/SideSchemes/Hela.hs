@@ -45,12 +45,20 @@ dealEachOtherPlayer = do
   first <- selectJust FirstPlayer
   traverse_ dealEncounterCard . filter (/= first) =<< getPlayers
 
--- | "Threat cannot be removed from <this scheme>" while its guardian is in play.
+-- | The cards matching in the side scheme's own game area (nothing in one area affects
+-- another).
+inAreaOf :: (HasGame m, IsRef a) => Attrs SideScheme -> [a] -> m [a]
+inAreaOf a xs = do
+  here <- getAreaOfTarget (SideSchemeRef $ sideSchemeId a)
+  filterM (fmap (== here) . getAreaOfTarget) xs
+
+-- | "Threat cannot be removed from <this scheme>" while its guardian is in play, in its
+-- area.
 guardedBy :: (HasGame m) => CardDef -> Attrs SideScheme -> Target -> m [Modifier]
 guardedBy guardian a = \case
   SideSchemeRef sid | sid == sideSchemeId a -> do
-    guarded <- inAnyArea $ selectAny (MinionIs guardian)
-    pure [ThreatCannotBeRemoved | guarded]
+    guards <- inAreaOf a . map MinionRef =<< inAnyArea (selectList (MinionIs guardian))
+    pure [ThreatCannotBeRemoved | notNull guards]
   _ -> pure []
 
 -- | 2 threat. Hinder 1[per hero], victory 2, an acceleration icon (its card's).
@@ -134,7 +142,7 @@ newtype LegionsOfHelScheme = LegionsOfHelScheme (Attrs SideScheme)
 instance RunMessage LegionsOfHelScheme where
   runMessage msg s@(LegionsOfHelScheme attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
-      undead <- length <$> inAnyArea (selectList (MinionWithTrait Undead))
+      undead <- length <$> (inAreaOf attrs . map MinionRef =<< inAnyArea (selectList (MinionWithTrait Undead)))
       if undead == 0
         then surge =<< getYou
         else placeThreat ident (2 * fromIntegral undead)
@@ -149,17 +157,19 @@ newtype UnnaturalStorm = UnnaturalStorm (Attrs SideScheme)
   deriving anyclass (IsSideScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
--- | Heroes and allies cannot be readied by player card effects.
+-- | Heroes and allies cannot be readied by player card effects: those of its area.
 instance HasModifiersFor UnnaturalStorm where
-  getModifiersFor _ target (UnnaturalStorm _) = pure case target of
-    IdentityRef _ -> [CannotBeReadiedByPlayerCards]
-    AllyRef _ -> [CannotBeReadiedByPlayerCards]
-    _ -> []
+  getModifiersFor _ target (UnnaturalStorm a) = case target of
+    IdentityRef _ -> inArea
+    AllyRef _ -> inArea
+    _ -> pure []
+   where
+    inArea = (\xs -> [CannotBeReadiedByPlayerCards | notNull xs]) <$> inAreaOf a [target]
 
 -- | When Revealed: exhaust each ally in play.
 instance RunMessage UnnaturalStorm where
   runMessage msg s@(UnnaturalStorm attrs) = runQueueT $ case msg of
     SideSchemeMessage ident RevealSideScheme | ident == sideSchemeId attrs -> do
-      traverse_ exhaust =<< inAnyArea (selectList AnyAlly)
+      traverse_ exhaust =<< inAreaOf attrs =<< inAnyArea (selectList AnyAlly)
       pure s
     _ -> UnnaturalStorm <$> runMessage msg attrs

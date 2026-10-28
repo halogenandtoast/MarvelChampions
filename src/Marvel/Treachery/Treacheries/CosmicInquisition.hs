@@ -35,8 +35,9 @@ instance RunMessage CosmicInquisition where
       aside <- filter (cardMatch (CardIs church)) <$> getSetAsideEncounterCards
       if
         | inPlay -> discardTopOfDeck you 10
-        | card : _ <- aside -> revealEncounterCard you card >> shuffleEncounterDeck
-        -- the search shuffles the deck
+        | card : _ <- aside -> revealEncounterCard you card
         | otherwise -> searchAndRevealEncounterCard you (CardIs church)
+      -- its own sentence: whichever way it went
+      shuffleEncounterDeck
       pure t
     _ -> CosmicInquisition <$> runMessage msg attrs

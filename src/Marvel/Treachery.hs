@@ -229,6 +229,9 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard theQueenOfHel
   , SomeTreacheryCard theWastesOfNiffleheim
   , SomeTreacheryCard noPlaceForTheLiving
+
+  -- The Mad Titan's Shadow: the campaign set
+  , SomeTreacheryCard summonedBack
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

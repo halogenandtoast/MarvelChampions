@@ -215,6 +215,10 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard warlocksCape
   , SomeUpgradeCard cosmicWard
   , SomeUpgradeCard mysticSenses
+
+  -- The Mad Titan's Shadow: the campaign set
+  , SomeUpgradeCard nornStoneSetup
+  , SomeUpgradeCard nornStone
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

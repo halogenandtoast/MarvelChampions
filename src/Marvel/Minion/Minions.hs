@@ -139,3 +139,6 @@ import Marvel.Minion.Minions.Enchantress as X
 import Marvel.Minion.Minions.FrostGiants as X
 import Marvel.Minion.Minions.Hela as X
 import Marvel.Minion.Minions.LegionsOfHel as X
+
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Minion.Minions.MadTitansShadowCampaign as X

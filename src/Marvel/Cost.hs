@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Data.List qualified as L
 import Marvel.Ability
 import Marvel.Card.PlayerCard ()
-import Marvel.Card.PlayerCard.Types (PlayerCard (..))
+import Marvel.Card.PlayerCard.Types (PlayerCard (..), staysInHand)
 import Marvel.Cost.Types
 import Marvel.Game.Source
 import Marvel.GameValue
@@ -88,7 +88,7 @@ canAffordCost identityId source = go
     DiscardRandomHandCardsCost n ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . unHand) identityId
     DiscardHandCardsCost n _ ->
-      projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter notPlaying . unHand) identityId
+      projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter (\c -> notPlaying c && not (staysInHand c)) . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     DiscardUpgradeCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)

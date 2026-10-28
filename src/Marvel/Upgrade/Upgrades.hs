@@ -179,3 +179,6 @@ import Marvel.Upgrade.Upgrades.KarmicStaff as X
 import Marvel.Upgrade.Upgrades.WarlocksCape as X
 import Marvel.Upgrade.Upgrades.CosmicWard as X
 import Marvel.Upgrade.Upgrades.MysticSenses as X
+
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Upgrade.Upgrades.NornStone as X

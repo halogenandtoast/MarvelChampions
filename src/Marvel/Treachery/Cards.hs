@@ -226,6 +226,9 @@ allTreacheries = fromList $ map
   , theWastesOfNiffleheim
   -- Legions of Hel
   , noPlaceForTheLiving
+
+  -- The Mad Titan's Shadow: the campaign set
+  , summonedBack
   ]
 
 treachery
@@ -836,3 +839,8 @@ theWastesOfNiffleheim = treachery "21151" "The Wastes of Niffleheim" [Star] Hela
 
 noPlaceForTheLiving :: CardDef
 noPlaceForTheLiving = treachery "21154" "No Place for the Living" [Boost] LegionsOfHel 1
+
+-- The Mad Titan's Shadow: the campaign set
+
+summonedBack :: CardDef
+summonedBack = (treachery "21188" "Summoned Back" [Boost, Boost, Boost] MadTitansShadowCampaign 1) {cdKeywords = fromList [Keyword.Peril, Keyword.Surge]}

@@ -177,6 +177,11 @@ windowMatches matcher w source = case matcher of
   RoundEnds -> case windowType w of
     RoundEnded -> pure True
     _ -> pure False
+  EnemyActivates timing enemyMatcher identityMatcher -> case windowType w of
+    EnemyActivation enemyId identityId
+      | windowTiming w == timing ->
+          liftA2 (&&) (enemyMatches enemyMatcher enemyId) (identityMatches identityMatcher identityId)
+    _ -> pure False
   PlayerDeckResets timing identityMatcher -> case windowType w of
     PlayerDeckReset identityId
       | windowTiming w == timing ->

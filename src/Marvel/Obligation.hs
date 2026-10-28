@@ -86,6 +86,8 @@ allObligations = fromList $ map
   , SomeObligationCard lossOfControl
   -- Adam Warlock
   , SomeObligationCard regenerationCycle
+  -- The Mad Titan's Shadow: the campaign set
+  , SomeObligationCard systemShock
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

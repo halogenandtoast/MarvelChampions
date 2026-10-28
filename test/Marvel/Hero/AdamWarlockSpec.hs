@@ -247,6 +247,21 @@ spec = describe "Adam Warlock" do
         map upgradeExhausted <$> upgradesWith "21035" `shouldReturn` [True]
 
   describe "Mystic Senses (21037)" do
+    it "after Battle Mage discards an aspect card, draws 1 card" do
+      tg <- warlock
+      let p = player1 tg
+      inGame tg do
+        asWarlock p
+        senses <- putIntoPlay p "21037"
+        _ <- stackDeck p [energy]
+        card <- putInHand p "21044"
+        battleMage card
+        vid <- villainIdNow
+        chooseIf (isTargetChoice vid)
+        villainDamageNow `shouldReturn` 2
+        choose "Mystic Senses" (isAbilityOfCard senses)
+        map toCardCode <$> handOf p `shouldReturn` ["01088"]
+
     it "does not answer a basic attack" do
       tg <- warlock
       let p = player1 tg

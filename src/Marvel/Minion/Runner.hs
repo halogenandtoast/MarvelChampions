@@ -47,6 +47,10 @@ runMinionMessage ::
 runMinionMessage msg attrs = case msg of
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n
+  MinionCheckHitPoints -> do
+    hitPoints <- getModifiedHitPoints attrs
+    when (minionDamage attrs >= hitPoints) $ defeatMinion (minionId attrs)
+    pure attrs
   MinionHealAllDamage -> do
     pure $ attrs & damageL .~ 0
   MinionDamaged source damage -> do
@@ -113,11 +117,15 @@ runMinionMessage msg attrs = case msg of
       then pure $ attrs & confusedL .~ False
       else do
         villainous <- isVillainous
+        -- the scheme is its activation against the player it is engaged with
+        let activation timing = checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (minionEngagedIdentity attrs)]
+        activation W.When
         when villainous do
           dealBoost attrs
           minionStep (minionId attrs) MinionFlipBoostCards
         minionSchemed (minionId attrs)
         when villainous clearBoosts
+        activation W.After
         pure attrs
   -- "attacks an ally": the player who controls it is attacked
   MinionAttacksAlly ident allyId -> do
@@ -137,10 +145,14 @@ runMinionMessage msg attrs = case msg of
     if minionStunned attrs
       then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
+        -- the attack is its activation against the player, from start to end, whether
+        -- the attack resolves or is cancelled (a stunned minion does not activate)
+        checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
         minionBeginsAttack (minionId attrs) ident
         minionEndsAttack (minionId attrs)
         whenM isVillainous clearBoosts
+        checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) ident]
         -- the attack is under way from when it is declared, as its would windows open
         attack' <- newAttack ident
         pure $ attrs & attackingL ?~ attack'

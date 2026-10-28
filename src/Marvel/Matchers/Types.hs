@@ -247,6 +247,8 @@ data SchemeMatcher
   | -- | one "you" can thwart: a thwartable scheme, the main scheme not while a minion
     -- with patrol is engaged with you (RR Patrol)
     SchemeYouCanThwart
+  | -- | as 'SchemeYouCanThwart', ignoring any crisis icons in play (Fandral's basic thwart)
+    SchemeYouCanThwartIgnoringCrisis
   | -- | the main scheme, unless a patrol minion is engaged with you (RR Patrol)
     UnpatrolledMainScheme
   | SchemeWithId SchemeId

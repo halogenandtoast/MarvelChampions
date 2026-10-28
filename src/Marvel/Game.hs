@@ -824,8 +824,11 @@ runPreGameMessage msg g = runQueueT $ case msg of
         | card `elem` (scenarioDiscard scenario <> concatMap pileDiscard (HashMap.elems $ scenarioDecks scenario)) = W.RevealedFromDiscardPile
         | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
         | otherwise = W.RevealedFromEncounterDeck
-    focusing [EncounterCard card] $
-      checkWindows [W.Window When $ W.EncounterCardRevealed source ident card]
+    -- a player's event shuffled in (a Cosmic Entity) cannot be cancelled: no window for
+    -- "when revealed" to cancel it
+    unless (cdCardType (getCardDef card) == EventType) $
+      focusing [EncounterCard card] $
+        checkWindows [W.Window When $ W.EncounterCardRevealed source ident card]
     revealEncounterCardWithoutWindows ident card
     pure g
   CheckWindows windows -> do
@@ -934,17 +937,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- the choices the last victory left are cards for the decks, so first
     when (isJust gameCampaign) $ campaignStep CampaignChoices
     for_ gamePlayerOrder (`identityStep` PutSetupCardsIntoPlay)
+    let chooseFirstPlayer = case gamePlayerOrder of
+          players@(p : _ : _) ->
+            chooseOnePrompted p "$label.chooseFirstPlayer" $
+              [ targeting first (setPlayerOrder (after <> before))
+              | (n, first) <- zip [0 ..] players
+              , let (before, after) = splitAt n players
+              ]
+          _ -> pure ()
+    -- a campaign game's first player is chosen before the scenario is set up (RR
+    -- Appendix II, step 3): its Campaign Instructions put cards into play for them (The
+    -- Mad Titan's Shadow's Cosmo and Black Swan)
+    when (isJust gameCampaign) chooseFirstPlayer
     startScenario
     when (isJust gameCampaign) $ campaignStep CampaignSetup
     setupPlayers
-    case gamePlayerOrder of
-      players@(p : _ : _) ->
-        chooseOnePrompted p "$label.chooseFirstPlayer" $
-          [ targeting first (setPlayerOrder (after <> before))
-          | (n, first) <- zip [0 ..] players
-          , let (before, after) = splitAt n players
-          ]
-      _ -> pure ()
+    unless (isJust gameCampaign) chooseFirstPlayer
     -- what the Campaign Instructions do with the starting hands
     when (isJust gameCampaign) $ campaignStep (CampaignSetupThen "startingHands")
     pure $ g {gameState = InProgress}
@@ -1140,17 +1148,19 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             & (signatureSchemesL %~ deleteMap vid)
             & (areasL . each %~ leave)
     AllyRef aid -> do
-      for_ (lookup aid $ gameAllies g) $ \ally -> do
-        let ident = getAllyController ally
-        -- what is attached to it is discarded with it
-        for_ (allyUpgrades $ toAttrs ally) removeFromPlay
-        identityStep ident $ AllyRemoved aid
-        discardFromPlay g ally
-      -- kept as removed, so an ability it was discarded to pay for still resolves
-      pure $
-        g
-          & (entitiesL . alliesL %~ deleteMap aid)
-          & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
+      removed <- elem RemovedFromGameInsteadOfLeavingPlay <$> getModifiers target
+      if removed then g <$ push (RemoveFromGame target) else do
+        for_ (lookup aid $ gameAllies g) $ \ally -> do
+          let ident = getAllyController ally
+          -- what is attached to it is discarded with it
+          for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+          identityStep ident $ AllyRemoved aid
+          discardFromPlay g ally
+        -- kept as removed, so an ability it was discarded to pay for still resolves
+        pure $
+          g
+            & (entitiesL . alliesL %~ deleteMap aid)
+            & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
     -- a permanent support does not leave play: the Milano stays for the next first player
     SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
     SupportRef sid -> do
@@ -1750,6 +1760,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       minionDisengages (minionEngagedIdentity a) mid
       allyStep aid (AllyOwnedBy owner)
       allyStep aid (AllySetDamage $ Minion.minionDamage a)
+      for_ [(Minion.minionStunned a, StunnedStatus), (Minion.minionConfused a, ConfusedStatus), (Minion.minionTough a, ToughStatus)] \(on, s) ->
+        when on $ push $ GiveStatus (AllyRef aid) s
       identityStep owner (AllyCreated aid)
       pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
     _ -> pure g
@@ -1795,12 +1807,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   ReturnToHand target -> case target of
     -- to its owner's hand
     AllyRef aid -> do
-      for_ (lookup aid $ gameAllies g) $ \ally -> do
-        let controller = getAllyController ally
-            owner = allyOwner (toAttrs ally)
-        identityStep controller (AllyRemoved aid)
-        addToHand owner $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
-      pure $ g & entitiesL . alliesL %~ deleteMap aid
+      removed <- elem RemovedFromGameInsteadOfLeavingPlay <$> getModifiers target
+      if removed then g <$ push (RemoveFromGame target) else do
+        for_ (lookup aid $ gameAllies g) $ \ally -> do
+          let controller = getAllyController ally
+              owner = allyOwner (toAttrs ally)
+          identityStep controller (AllyRemoved aid)
+          addToHand owner $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
+        pure $ g & entitiesL . alliesL %~ deleteMap aid
     -- to its owner's hand
     UpgradeRef uid | maybe False isPermanent (lookup uid $ gameUpgrades g) -> pure g
     UpgradeRef uid -> do
@@ -2067,6 +2081,7 @@ runHandCardMessage msg g = case msg of
   RanAbility _ (CardIdRef cid) _ _ _ -> do
     for_ (handCard g cid) \(owner, c) -> case cdCardType (getCardDef c) of
       AllyType -> void $ asYou owner $ runMessage msg (createAlly owner c)
+      ObligationType -> void $ asYou owner $ runMessage msg (handObligation c)
       _ -> pure ()
     pure g
   _ -> pure g
@@ -2529,12 +2544,18 @@ handCard g cid =
 
 -- | The abilities a card has while it is in its owner's hand ("While Pip the Troll is in
 -- your hand, he gains ..."): those of the card, built as it would be in play, that are
--- sourced on the card itself ('CardIdRef'). ponytail: allies and events, the kinds so
--- far that have one.
+-- sourced on the card itself ('CardIdRef'). ponytail: allies and obligations, the kinds
+-- so far that have one.
 handCardAbilities :: IdentityId -> PlayerCard -> [Ability]
 handCardAbilities ident c = filter isHandAbility $ case cdCardType (getCardDef c) of
   AllyType -> getAbilities (createAlly ident c)
+  -- System Shock: "while this card is in your hand, it gains ..."
+  ObligationType -> getAbilities (handObligation c)
   _ -> []
+
+-- | An obligation in a player's hand, built as it would be in play to give its abilities.
+handObligation :: PlayerCard -> Obligation
+handObligation c = lookupObligation (toCardCode c) (ObligationId $ unCardId $ pcCardId c)
 
 -- | An ability sourced on a card id is one the card has in hand, not in play.
 isHandAbility :: Ability -> Bool
@@ -3358,6 +3379,10 @@ gameSelectAnyScheme = \case
     schemes <- gameSelectAnyScheme ThwartableScheme
     patrolled <- isPatrolled =<< getYou
     pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
+  SchemeYouCanThwartIgnoringCrisis -> do
+    schemes <- gameSelectAnyScheme ThwartableSchemeIgnoringCrisis
+    patrolled <- isPatrolled =<< getYou
+    pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
   UnpatrolledMainScheme -> do
     patrolled <- isPatrolled =<< getYou
     if patrolled then pure mempty else gameSelectAnyScheme Matchers.MainScheme
@@ -3765,3 +3790,4 @@ gameSelectCountAlly aggregate matcher = do
   sum <$> for allies \ally -> case aggregate of
     AllyAttackValue -> Ally.getModifiedAttack (toAttrs ally)
     AllyThwartValue -> Ally.getModifiedThwart (toAttrs ally)
+    AllyDamageValue -> pure (getAllyDamage ally)

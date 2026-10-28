@@ -10,6 +10,9 @@ import Marvel.Ref
 
 data MinionMessage
   = RevealMinion IdentityId
+  | -- | defeated if its damage is as much as its hit points: as an ally treated as a
+    -- minion comes to its printed hit points (Beguiled; RR Hit Points)
+    MinionCheckHitPoints
   | MinionDefendedBy CharacterId
   | MinionDamaged Source Damage
   | MinionStunned Source

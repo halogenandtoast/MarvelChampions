@@ -59,6 +59,7 @@ library
       Marvel.Ally.Allies.LadySif
       Marvel.Ally.Allies.Lockjaw
       Marvel.Ally.Allies.LukeCage
+      Marvel.Ally.Allies.MadTitansShadowCampaign
       Marvel.Ally.Allies.MajorVictoryVanceAstro
       Marvel.Ally.Allies.Mantis
       Marvel.Ally.Allies.MariaHill
@@ -191,6 +192,7 @@ library
       Marvel.Attachment.Attachments.LaserRifle
       Marvel.Attachment.Attachments.LegionsOfHel
       Marvel.Attachment.Attachments.Loki
+      Marvel.Attachment.Attachments.MadTitansShadowCampaign
       Marvel.Attachment.Attachments.MagicalSuspension
       Marvel.Attachment.Attachments.MagicCrowbar
       Marvel.Attachment.Attachments.MasterStrategist
@@ -228,6 +230,7 @@ library
       Marvel.Boost
       Marvel.Campaign
       Marvel.Campaign.GalaxysMostWanted
+      Marvel.Campaign.MadTitansShadow
       Marvel.Campaign.Steps
       Marvel.Card
       Marvel.Card.Builder
@@ -662,6 +665,7 @@ library
       Marvel.Minion.Minions.Luminous
       Marvel.Minion.Minions.Macrobots
       Marvel.Minion.Minions.MadameHydra
+      Marvel.Minion.Minions.MadTitansShadowCampaign
       Marvel.Minion.Minions.Melter
       Marvel.Minion.Minions.MenagerieMedley
       Marvel.Minion.Minions.MisterKnife
@@ -730,6 +734,7 @@ library
       Marvel.Obligation.Obligations.SlippingSanity
       Marvel.Obligation.Obligations.StolenMemories
       Marvel.Obligation.Obligations.StruggleForControl
+      Marvel.Obligation.Obligations.SystemShock
       Marvel.Obligation.Obligations.TimeTravelHijinks
       Marvel.Obligation.Obligations.UncertainLoyalties
       Marvel.Obligation.Obligations.UnfulfilledDestiny
@@ -804,6 +809,7 @@ library
       Marvel.SideScheme.SideSchemes.LethalIntent
       Marvel.SideScheme.SideSchemes.LightOfCenturiesSphere
       Marvel.SideScheme.SideSchemes.Loki
+      Marvel.SideScheme.SideSchemes.MadTitansShadowCampaign
       Marvel.SideScheme.SideSchemes.MarkedForDeath
       Marvel.SideScheme.SideSchemes.MassChaos
       Marvel.SideScheme.SideSchemes.MothersOrders
@@ -965,6 +971,7 @@ library
       Marvel.Treachery.Treacheries.LightningBolt
       Marvel.Treachery.Treacheries.Loki
       Marvel.Treachery.Treacheries.MadGenius
+      Marvel.Treachery.Treacheries.MadTitansShadowCampaign
       Marvel.Treachery.Treacheries.ManipulatedTimestream
       Marvel.Treachery.Treacheries.Masterplan
       Marvel.Treachery.Treacheries.MastersOfMayhem
@@ -1116,6 +1123,7 @@ library
       Marvel.Upgrade.Upgrades.MysticSenses
       Marvel.Upgrade.Upgrades.NavigationColumn
       Marvel.Upgrade.Upgrades.NervesOfSteel
+      Marvel.Upgrade.Upgrades.NornStone
       Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.ParticleCannon
       Marvel.Upgrade.Upgrades.Photon
@@ -1377,6 +1385,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.VenomPackSpec
       Marvel.Aspect.WaspPackSpec
       Marvel.Campaign.GalaxysMostWantedSpec
+      Marvel.Campaign.MadTitansShadowSpec
       Marvel.Campaign.MarketCheapEventsSpec
       Marvel.Campaign.MarketDearEventsSpec
       Marvel.Campaign.MarketUpgradesSpec
@@ -1401,6 +1410,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.LokiSpec
+      Marvel.Encounter.MadTitansShadowCampaignSpec
       Marvel.Encounter.ModularsSpec
       Marvel.Encounter.MsMarvelNemesisSpec
       Marvel.Encounter.NebulaSpec

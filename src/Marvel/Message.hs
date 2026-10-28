@@ -577,6 +577,9 @@ data Message
     ReplaceVillain VillainId CardCode ReplaceKind
   | -- | a card out of play goes straight to the victory display (a defeated villain)
     AddCardToVictoryDisplay EncounterCard
+  | -- | the ability of the source, paid for, has resolved all it does: an attack it made
+    -- has ended (Master of Illusions' prevention lasts until then)
+    AbilityResolved Source
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

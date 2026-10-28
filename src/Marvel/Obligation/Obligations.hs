@@ -59,3 +59,5 @@ import Marvel.Obligation.Obligations.StruggleForControl as X
 import Marvel.Obligation.Obligations.LossOfControl as X
 -- Adam Warlock
 import Marvel.Obligation.Obligations.RegenerationCycle as X
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Obligation.Obligations.SystemShock as X

@@ -2,6 +2,7 @@ module Marvel.SideScheme.Types where
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types (Ability, HasAbilities (..))
 import Marvel.Card
@@ -55,9 +56,11 @@ instance Entity SideScheme where
     , sideSchemeHeldCards :: [PlayerCard]
     , sideSchemeDefeatedBy :: Maybe IdentityId
     -- ^ the player whose thwarting removed its last threat: "the player who defeated it"
+    , sideSchemeCounters :: Natural
+    -- ^ counters on it (Defensive Protocols' crash counters)
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field SideScheme :: Type -> Type where
     SideSchemeId :: Field SideScheme SideSchemeId
     SideSchemeCardDef :: Field SideScheme CardDef
@@ -65,6 +68,7 @@ instance Entity SideScheme where
     SideSchemeInitialThreat :: Field SideScheme GameValue
     SideSchemeCrisis :: Field SideScheme Bool
     SideSchemeHeldCards :: Field SideScheme [PlayerCard]
+    SideSchemeCounters :: Field SideScheme Natural
   field fld s =
     let SideSchemeAttrs {..} = toAttrs s
      in case fld of
@@ -74,6 +78,7 @@ instance Entity SideScheme where
           SideSchemeInitialThreat -> sideSchemeInitialThreat
           SideSchemeCrisis -> sideSchemeCrisis
           SideSchemeHeldCards -> sideSchemeHeldCards
+          SideSchemeCounters -> sideSchemeCounters
   toId = sideSchemeId . toAttrs
   toAttrs (SideScheme a) = toSideSchemeAttrs a
 
@@ -151,6 +156,7 @@ sideScheme f cardDef initialThreat =
             , sideSchemeCrisis = False
             , sideSchemeHeldCards = []
             , sideSchemeDefeatedBy = Nothing
+            , sideSchemeCounters = 0
             }
     }
 
@@ -173,8 +179,18 @@ instance IsCard (Attrs SideScheme) where
         , ecCardDef = getCardDef a
         }
 
+-- | A side scheme saved before it could hold counters has none.
+instance FromJSON (Attrs SideScheme) where
+  parseJSON = withObject "SideSchemeAttrs" \o ->
+    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.singleton "sideSchemeCounters" (Number 0))))
+
+countersL :: Lens' (Attrs SideScheme) Natural
+countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
+
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
       modifiers <- getModifiers attrs
       case msg' of

@@ -144,3 +144,6 @@ import Marvel.SideScheme.SideSchemes.Loki as X
 
 -- The Mad Titan's Shadow: Hela, Legions of Hel, Frost Giants
 import Marvel.SideScheme.SideSchemes.Hela as X
+
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.SideScheme.SideSchemes.MadTitansShadowCampaign as X

@@ -133,11 +133,11 @@ instance HasAbilities MasterOfIllusions where
 instance RunMessage MasterOfIllusions where
   runMessage msg a@(MasterOfIllusions attrs) = runQueueT $ case msg of
     _ | Just body <- attachToLoki attrs msg -> a <$ body
-    RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
-      for_ [vid | W.DamagedVillain vid _ <- windows] \vid -> do
-        top <- take 1 <$> getEncounterDeck
-        discardTopOfEncounterDeck 1
-        when (any (cardMatch $ CardWithType TreacheryType) top) do
+    -- the top card discarded, from a deck made again first if it was empty
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> a <$ discardTopOfEncounterDeckFor 1 attrs
+    WithDiscarded (isTarget attrs -> True) _ cards
+      | Just (EnemyVillainId vid) <- attachmentEnemy attrs
+      , any (cardMatch $ CardWithType TreacheryType) cards -> do
           let damaged = \case
                 VillainMessage vid' (VillainDamaged _ _) -> vid' == vid
                 _ -> False
@@ -150,5 +150,5 @@ instance RunMessage MasterOfIllusions where
             )
             damaged
           removeFromPlay attrs
-      pure a
+          pure a
     _ -> MasterOfIllusions <$> runMessage msg attrs

@@ -166,6 +166,8 @@ allAttachments =
       , SomeAttachmentCard frozen
       , SomeAttachmentCard beguiled
       , SomeAttachmentCard seduced
+      -- The Mad Titan's Shadow: the campaign set
+      , SomeAttachmentCard jormungand
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

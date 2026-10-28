@@ -12,6 +12,7 @@ module Marvel.Decklist (
   campaignDeck,
   campaignDeckShortBy,
   marketCardsIn,
+  campaignOnlyCardsIn,
   starterDecks,
   lookupStarterDeck,
 ) where
@@ -27,7 +28,7 @@ import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
-import Marvel.EncounterSet (EncounterSet (TheMarket))
+import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, TheMarket))
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
@@ -148,6 +149,14 @@ p.4), the campaign adding them to the deck it deals ('campaignDeck').
 -}
 marketCardsIn :: DeckList -> [CardCode]
 marketCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def == Just TheMarket]
+
+{- | The Mad Titan's Shadow's campaign-only cards in the deck (180-193): they "cannot be
+included in any deck unless playing The Mad Titan's Shadow campaign and the players were
+directed to add them to a deck by the Campaign Instructions" (rulebook p.4), which the
+campaign does as it deals each game, never in a deck brought to the table.
+-}
+campaignOnlyCardsIn :: DeckList -> [CardCode]
+campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def == Just MadTitansShadowCampaign]
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]

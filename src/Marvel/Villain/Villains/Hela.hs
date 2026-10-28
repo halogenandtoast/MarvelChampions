@@ -103,7 +103,9 @@ instance RunMessage Hela where
         if captive
           then do
             cancelVillainDefeat ident
+            -- every card attached to her, a player's upgrade on her too
             for_ (villainAttachments attrs) (removeFromPlay . AttachmentRef)
+            for_ (villainUpgrades attrs) (removeFromPlay . UpgradeRef)
             flipVillain ident
             villainStep ident SetVillainHp
             pure e

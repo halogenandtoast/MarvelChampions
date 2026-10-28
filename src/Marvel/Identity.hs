@@ -585,7 +585,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           [ targeting c do
             discardCard c
             identityStep playerIdentityId DrawOrDiscardToHandLimit
-          | c <- unHand playerIdentityHand
+          | c <- choosableToDiscard (unHand playerIdentityHand)
           ]
       pure pid
     DrawToHandLimit -> do
@@ -613,7 +613,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         when (short > 0 && notNull (unDiscard playerIdentityDiscard)) $
           drawCards playerIdentityId short
         -- an obligation drawn goes into play in their play area, not drawn again for
-        let (obligations, drawn) = partition ((== ObligationType) . cdCardType . getCardDef) cards
+        -- (System Shock, whose text only works in hand, stays there)
+        let (obligations, drawn) = partition (\c -> cdCardType (getCardDef c) == ObligationType && not (staysInHand c)) cards
         for_ obligations (putObligationIntoPlay playerIdentityId)
         pure $
           PlayerIdentity $
@@ -809,7 +810,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
                     discardCard c
                     identityStep playerIdentityId $
                       DiscardedFor target FromHand discardMin discardMax (PlayerCard c : cards)
-                 | c <- unHand playerIdentityHand
+                 | c <- choosableToDiscard (unHand playerIdentityHand)
                  ]
       pure pid
     DiscardFor target RandomFromHand discardMin _ -> do
@@ -826,7 +827,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             : [ targeting c do
                   discardCard c
                   identityStep playerIdentityId DiscardCards
-              | c <- unHand playerIdentityHand
+              | c <- choosableToDiscard (unHand playerIdentityHand)
               ]
       pure pid
     DiscardFrom fromZone n mTarget -> case fromZone of
@@ -1243,3 +1244,8 @@ instance FromJSON (Attrs PlayerIdentity) where
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity
 
+
+-- | The cards of a hand a player may choose to discard: not System Shock ("You cannot
+-- choose to discard this card from your hand"); a random discard still takes it.
+choosableToDiscard :: [PlayerCard] -> [PlayerCard]
+choosableToDiscard = filter (not . staysInHand)

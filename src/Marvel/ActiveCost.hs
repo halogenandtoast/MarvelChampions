@@ -390,6 +390,7 @@ runActiveCost msg activeCost = runQueueT $ case msg of
         ForAbility ab -> do
           usedAbility payer ab
           for_ (abilityChoices ab) (resolveAs payer)
+          abilityResolved (abilitySource ab)
           -- an identity's printed ability, not its basic powers or changing form ("after
           -- you resolve Adam Warlock's Battle Mage")
           def <- getsGame \g -> case abilitySource ab of

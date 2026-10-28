@@ -101,6 +101,36 @@ spec = describe "Adam Warlock's nemesis set" do
         after <- deckSize p
         liftIO $ before - after `shouldBe` 5
 
+    it "an attack of his that is cancelled is still his activation against you" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        m <- addMinion p Minions.theMagus
+        changeForm p
+        before <- deckSize p
+        hp <- damageOf p
+        start [MinionMessage m (MinionAttacks p)]
+        -- the attack cancelled as its defender is asked for: none of it lands
+        cancelMatchingMessage \case
+          MinionMessage m' MinionAttacked -> m' == m
+          _ -> False
+        chooseIf isNoDefender
+        chooseIf (isAbilityOf m)
+        pass
+        damageOf p `shouldReturn` hp
+        after <- deckSize p
+        liftIO $ before - after `shouldBe` 5
+
+    it "stunned, he does not activate: nothing is discarded" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        m <- addMinion p Minions.theMagus
+        resolve [GiveStatus (MinionRef m) StunnedStatus]
+        before <- deckSize p
+        resolve [MinionMessage m (MinionAttacks p)]
+        deckSize p `shouldReturn` before
+
     it "attacking another player discards their deck, not yours" do
       tg <- testGame ["spider-man", "spider-man"]
       let p = player1 tg
@@ -148,6 +178,25 @@ spec = describe "Adam Warlock's nemesis set" do
         isExhaustedNow other `shouldReturn` True
         isStunned p `shouldReturn` False
         isExhaustedNow p `shouldReturn` False
+
+    it "is forced: it resolves before an optional response to the same reset (Soul World)" do
+      tg <- testGame ["adam-warlock"]
+      let p = player1 tg
+      inGame tg do
+        scheme <- church p
+        world <- putIntoPlay p "21033"
+        setDeck p ["01088"]
+        _ <- stackDiscard p ["01089"]
+        start [IdentityMessage p (DrawCards FromDeck 1)]
+        let isChurch = \case
+              UseAbility ab -> abilitySource ab == SideSchemeRef scheme
+              _ -> False
+        offers isChurch `shouldReturn` True
+        offers (isAbilityOfCard world) `shouldReturn` False
+        choose "the Church" isChurch
+        isStunned p `shouldReturn` True
+        isExhaustedNow p `shouldReturn` True
+        offers (isAbilityOfCard world) `shouldReturn` True
 
     it "out of play, a deck reset does nothing" do
       tg <- testGame ["spider-man"]
@@ -218,11 +267,15 @@ spec = describe "Adam Warlock's nemesis set" do
         _ <- church p
         before <- deckSize p
         threat <- mainSchemeThreatNow
+        liftIO $ writeIORef tg.ran []
         _ <- revealNow p Treacheries.cosmicInquisition
         pass
         after <- deckSize p
         liftIO $ before - after `shouldBe` 10
         mainSchemeThreatNow `shouldReturn` (threat + 2)
+        -- "Shuffle the encounter deck." whichever way it went
+        ran <- liftIO $ readIORef tg.ran
+        liftIO $ tshow ShuffleEncounterDeck `elem` ran `shouldBe` True
 
     it "otherwise reveals the Church from the set-aside area" do
       tg <- testGame ["adam-warlock"]

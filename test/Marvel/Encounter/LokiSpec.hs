@@ -12,14 +12,13 @@ import Marvel.Environment.Types (Environment)
 import Marvel.Hp (HP (..))
 import Marvel.MainScheme.Cards qualified as MainSchemeCards
 import Marvel.Minion.Cards qualified as MinionCards
-import Marvel.Scenario.Types (Attrs (scenarioVictoryCondition), villainAsCard)
+import Marvel.Scenario.Types (Attrs (scenarioVictoryCondition))
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.Trait (Trait (InfinityStone))
 import Marvel.Treachery.Cards qualified as TreacheryCards
 import Marvel.Villain.Cards qualified as VillainCards
 import Marvel.Villain.Types (getModifiedAttack, getModifiedScheme, villainAttachments, villainBoostCards, villainHp, villainId, villainStunned, villainTough)
-import Marvel.Window qualified as W
-import Data.List (sort)
+import Data.List (nub, sort)
 import TestImport
 
 lokiGame :: IO TestGame
@@ -59,7 +58,8 @@ lokiIs def = do
     aside <- getSetAsideEncounterCards
     resolve [RemoveFromGame (CardIdRef (ecCardId c)) | c <- aside, toCardCode c == toCardCode def]
     resolve [ReplaceVillain vid (toCardCode def) Swapped]
-    resolve [SetAside [EncounterCard (villainAsCard vid old)]]
+    out <- encounterCard old
+    resolve [SetAside [EncounterCard out]]
 
 -- | Only these versions left set aside, so a swap must pick among them.
 onlyAside :: [CardDef] -> GameAppT ()
@@ -152,6 +152,7 @@ spec = do
   versionsSpec
   attachmentsSpec
   treacheriesSpec
+  toughSpec
 
 setupSpec :: Spec
 setupSpec = describe "Loki (setup)" do
@@ -348,6 +349,23 @@ swapSpec = describe "Swapping Loki" do
         swapped `shouldBe` [Just (EnemyVillainId vid)]
         advanced `shouldBe` [Just (EnemyVillainId vid)]
         length onLoki `shouldSatisfy` (>= 1)
+
+  it "each Loki out of play is a card of its own: distinct ids in the victory display and set aside" do
+    tg <- lokiGame
+    inGame tg do
+      setVictoryCondition 3
+      vid <- villainIdNow
+      resolve [SwapVillain vid]
+      defeatLoki
+      resolve [SwapVillain vid]
+      defeatLoki
+      shown <- map ecCardId <$> getVictoryDisplay
+      aside <- map ecCardId . filter ((`elem` map toCardCode lokis) . toCardCode) <$> getSetAsideEncounterCards
+      let ids = shown <> aside
+      liftIO do
+        length shown `shouldBe` 2
+        length aside `shouldBe` 2
+        length (nub ids) `shouldBe` length ids
 
   it "with no set-aside Loki, a swap does nothing" do
     tg <- lokiGame
@@ -576,45 +594,66 @@ attachmentsSpec = describe "Loki's attachments" do
       left <- attachmentsOf AttachmentCards.masterOfIllusions
       liftIO $ (dmg, left) `shouldBe` (0, [])
 
-  it "Master of Illusions: a treachery discarded, every instance of damage the attack deals Loki is prevented until it ends" do
+  it "Master of Illusions: a treachery discarded, the event's attack deals Loki nothing; once it has resolved, the next attack is dealt" do
     tg <- lokiGame
     let you = player1 tg
     inGame tg do
       lokiIs VillainCards.loki3
+      asHero you
+      clearHand you
+      haymaker <- putInHand you "01087"
+      energy <- putInHand you "01088"
       _ <- attachNow you AttachmentCards.masterOfIllusions
       _ <- stackEncounterDeck [TreacheryCards.deviousSorcery]
-      vid <- villainIdNow
-      eid <- getRandom
-      let loki = EnemyRef (EnemyVillainId vid)
-          -- an attack event dealing its damage in two instances, its attack ending after both
-          instance' n = DamageEnemy loki (EventRef eid) (toDamage n (FromPlayerAttack you))
-      runNow [Ask you (ChooseOne [Label "the attack" [instance' 3, instance' 2]])]
-      choose "the attack" (const True)
+      playWith haymaker [energy]
+      chooseVillain
       chooseIf isAnyAbility
       resolve []
       during <- villainDamageNow
       left <- attachmentsOf AttachmentCards.masterOfIllusions
-      resolve [CheckWindows [W.Window W.After (W.IdentityAttack you (EnemyVillainId vid))]]
-      heroAttackFor you 3
+      -- the event resolved, its attack is over: the hero's basic attack is dealt
+      choose "attack" (isHeroAttack you)
+      chooseVillain
+      resolve []
       after <- villainDamageNow
-      liftIO $ (during, left, after) `shouldBe` (0, [], 3)
+      liftIO $ (during, left, after > 0) `shouldBe` (0, [], True)
 
-  it "Master of Illusions answers an attack's overkill, and prevents the rest of that attack's damage" do
+  it "Master of Illusions answers the overkill of an attack that defeats a minion, and that damage is prevented" do
+    tg <- lokiGame
+    let you = player1 tg
+    inGame tg do
+      lokiIs VillainCards.loki3
+      asHero you
+      clearHand you
+      assault <- putInHand you "01053"
+      strength <- putInHand you "01090"
+      _ <- attachNow you AttachmentCards.masterOfIllusions
+      mid <- addMinion you MinionCards.hydraMercenary
+      _ <- stackEncounterDeck [TreacheryCards.deviousSorcery]
+      -- paid with a [physical] resource: overkill, 2 past its 3 hit points
+      playWith assault [strength]
+      choose "the minion" (isTargetChoice mid)
+      chooseIf isAnyAbility
+      resolve []
+      minion <- minionDamageOf mid
+      dmg <- villainDamageNow
+      left <- attachmentsOf AttachmentCards.masterOfIllusions
+      liftIO $ (minion, dmg, left) `shouldBe` (Nothing, 0, [])
+
+  it "Master of Illusions discarding the encounter deck's last card: the deck is made again from its discard pile, with one acceleration token" do
     tg <- lokiGame
     let you = player1 tg
     inGame tg do
       lokiIs VillainCards.loki3
       _ <- attachNow you AttachmentCards.masterOfIllusions
-      _ <- stackEncounterDeck [TreacheryCards.deviousSorcery]
-      vid <- villainIdNow
-      let loki = EnemyRef (EnemyVillainId vid)
-      runNow [Ask you (ChooseOne [Label "the attack" [DamageEnemy loki (toSource you) (toDamage 2 FromOverkill)]])]
-      choose "the attack" (const True)
-      chooseIf isAnyAbility
-      resolve []
+      _ <- setEncounterDeck [TreacheryCards.deviousSorcery] [MinionCards.hydraMercenary]
+      tokens <- accelerationTokensNow
+      heroAttackFor you 3
       dmg <- villainDamageNow
       left <- attachmentsOf AttachmentCards.masterOfIllusions
-      liftIO $ (dmg, left) `shouldBe` (0, [])
+      tokens' <- accelerationTokensNow
+      deck <- encounterDeckSize
+      liftIO $ (dmg, left, tokens' - tokens, deck) `shouldBe` (0, [], 1, 2)
 
   it "Master of Illusions does not answer damage that is not from an attack" do
     tg <- lokiGame
@@ -627,6 +666,25 @@ attachmentsSpec = describe "Loki's attachments" do
       dmg <- villainDamageNow
       left <- length <$> attachmentsOf AttachmentCards.masterOfIllusions
       liftIO $ (dmg, left) `shouldBe` (2, 1)
+
+toughSpec :: Spec
+toughSpec = describe "Tough status cards and no damage" do
+  it "0 damage does not discard a villain's or a minion's tough status card" do
+    tg <- lokiGame
+    let you = player1 tg
+    inGame tg do
+      lokiIs VillainCards.loki3
+      vid <- villainIdNow
+      resolve [VillainMessage vid VillainBecomeTough]
+      damageFromGame 0
+      mid <- addMinion you MinionCards.hydraMercenary
+      resolve [MinionMessage mid MinionBecomeTough]
+      runNow [Ask you (ChooseOne [DamageEnemy (EnemyRef (EnemyMinionId mid)) GameRef (toDamage 0 FromAbility)])]
+      choose "the damage" (const True)
+      resolve []
+      villain <- villainTough <$> villainAttrs
+      minion <- getsGame (fmap (minionTough . toAttrs) . HashMap.lookup mid . gameMinions)
+      liftIO $ (villain, minion) `shouldBe` (True, Just True)
 
 treacheriesSpec :: Spec
 treacheriesSpec = describe "The Loki set's treacheries" do

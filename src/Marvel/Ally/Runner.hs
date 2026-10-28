@@ -104,7 +104,9 @@ instance RunMessage (Attrs Ally) where
       AllyThwarted -> if allyConfused a
         then pure $ a & confusedL .~ False
         else do
-          schemes <- selectList SchemeYouCanThwart
+          -- "ignore any crisis icons in play" as it thwarts (Fandral)
+          ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
+          schemes <- selectList (if ignoresCrisis then SchemeYouCanThwartIgnoringCrisis else SchemeYouCanThwart)
           thw <- getModifiedThwart a
           atk <- getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows

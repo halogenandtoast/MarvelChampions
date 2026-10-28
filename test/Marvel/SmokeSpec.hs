@@ -7,6 +7,7 @@ import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
 import System.Environment (lookupEnv)
 import TestImport
+import Marvel.Campaign
 import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson (encode)
 import Data.ByteString.Lazy qualified as BL
@@ -54,12 +55,25 @@ spec = do
       for_ (if full then scenarioCodes else [scenarioCodes !! (i `mod` length scenarioCodes)]) \villain ->
         it (show villain <> " with " <> show modular) do
           playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
+    -- each scenario of The Mad Titan's Shadow as a campaign game, every box of its log
+    -- checked so each campaign card comes in, expert with the hit points recorded (one
+    -- player hurt, one defeated last scenario)
+    describe "The Mad Titan's Shadow campaign" do
+      for_ (zip [0 ..] madTitansShadow) \(n, villain) ->
+        for_ [StandardCampaign, ExpertCampaign] \mode ->
+          it (show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode) do
+            let heroes' = ["spider-man", "she-hulk"]
+                identities = map ((.hero) . starter) heroes'
+                marked = foldr (recordInLog . RecordTitanMark) ((newCampaignOf MadTitansShadow mode identities) {completed = n}) [minBound .. maxBound]
+                c = foldr recordInLog marked (zipWith RecordHitPoints identities [5, 0])
+            playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
  where
-  playSetup setup heroes = do
+  playSetup = playWith id
+  playWith f setup heroes = do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
    seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
-      (app, ran) <- dealtGame setup (map starter heroes) seed
+      (app, ran, _) <- dealtGameWith f setup (map starter heroes) seed
       result <- try do
         _ <- runGameApp app (playRandomly (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame

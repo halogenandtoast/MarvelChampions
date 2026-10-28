@@ -12,7 +12,7 @@ import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
-import type { CampaignView, StarterDeck } from '../server'
+import type { CampaignView, StarterDeck, TitanMark } from '../server'
 
 // A campaign's overview: its log as the printed one has it, the scenarios won and the
 // one next, and the button that deals it (or goes back to the game of it being played).
@@ -84,6 +84,15 @@ const useDeck = async () => {
 
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
+const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+// The Mad Titan's Shadow's log: its checkboxes by the scenario that checks them (p.28)
+const titanMarks: [number, TitanMark[]][] = [
+  [1, ['CosmoInPool', 'SecurityBreachInPool']],
+  [2, ['ShawarmaInPool', 'BlackSwanInPool', 'AvengersTowerDamaged']],
+  [3, ['SystemShockInPool', 'InfinityStones1BCompleted']],
+  [4, ['NornStoneInPool', 'OdinInPool']],
+]
+const marked = (m: TitanMark) => (log.value?.titan?.marks ?? []).includes(m)
 const expert = computed(() => view.value?.campaign.mode === 'ExpertCampaign')
 const galaxyPlayer = (identity: string) => log.value?.galaxy.galaxyPlayers.find((p) => p.identity === identity) ?? null
 // between games, a player spends their units on The Market's cards (rulebook p.5)
@@ -163,8 +172,8 @@ const remove = async () => {
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
-        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : 'campaign.won') }}</p>
-        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : 'campaign.lost') }}</p>
+        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : 'campaign.won') }}</p>
+        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : 'campaign.lost') }}</p>
         <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
       </div>
       <p v-if="error" class="error">{{ tr(error) }}</p>
@@ -190,7 +199,11 @@ const remove = async () => {
               <dt>{{ $t('campaign.collection') }}</dt>
               <dd>{{ names(galaxyPlayer(p.identity)?.collection ?? []) }}</dd>
             </dl>
-            <dl v-else>
+            <dl v-else-if="titan && expert">
+              <dt>{{ $t('campaign.hitPoints') }}</dt>
+              <dd>{{ p.hitPoints ?? $t('campaign.none') }}</dd>
+            </dl>
+            <dl v-else-if="!titan">
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="view.campaign.mode === 'ExpertCampaign'">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.obligations') }}</dt>
@@ -229,6 +242,14 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="titan" class="scenario-log">
+          <template v-for="[n, marks] in titanMarks" :key="n">
+            <template v-for="m in marks" :key="m">
+              <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t(`campaign.titanMarks.${m}`) }}</dt>
+              <dd>{{ marked(m) ? '✓' : '—' }}</dd>
+            </template>
+          </template>
         </dl>
         <dl v-else class="scenario-log">
           <dt>{{ $t('campaign.scenario', { n: 1 }) }} · {{ $t('campaign.experimentalWeapons') }}</dt>

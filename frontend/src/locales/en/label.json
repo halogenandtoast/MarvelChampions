@@ -138,6 +138,10 @@
   "wreckerGetsAttack": "Wrecker gets +{count} ATK for this activation",
   "placeThreatOnHisSideScheme": "Place {count} threat on Wrecker's side scheme",
 
+  "-- The Mad Titan's Shadow campaign --": "",
+  "healWithAccelerationToken": "Place an acceleration token on a main scheme to heal your identity to full?",
+  "chooseCaptiveAlly": "Open the Dungeons: choose a Captive ally to put into play under your control",
+
   "-- The Rise of Red Skull --": "",
   "chooseTechUpgrade": "Choose a Tech upgrade for your deck",
   "chooseBasicUpgrade": "You may choose a Basic upgrade: it is attached to your identity and added to your deck",

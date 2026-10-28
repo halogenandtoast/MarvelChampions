@@ -28,3 +28,9 @@ instance HasCardCode PlayerCard where
 
 instance HasCardDef PlayerCard where
   getCardDef = pcCardDef
+
+-- | System Shock (The Mad Titan's Shadow campaign): drawn, it stays in hand, where its
+-- text works (project owner's ruling), rather than going into play as an obligation, and
+-- it cannot be chosen to discard from there. ponytail: by its code, the one such card.
+staysInHand :: PlayerCard -> Bool
+staysInHand = (== "21185") . toCardCode

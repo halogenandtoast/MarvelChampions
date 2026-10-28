@@ -303,8 +303,11 @@ runVillainMessage msg attrs = case msg of
     keywords <- getModifiedKeywords attrs
     for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
     pure attrs
-  VillainDamaged source damage -> do
+  VillainDamaged source dealt -> do
     modifiers <- getModifiers attrs
+    -- a tough status card prevents the damage before anything else that answers "would
+    -- take damage" (RR Damage); what gets past it is reduced (Thanos's Armor)
+    let damage = if villainTough attrs && preventedByTough dealt then dealt else reducedDamage modifiers dealt
     -- none at all (The Red House), or none from a player card (Sanctuary)
     cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
@@ -315,7 +318,7 @@ runVillainMessage msg attrs = case msg of
     if
       | cannotTakeDamage -> pure attrs
       | preventedAttackDamage attrs source damage -> pure attrs
-      | villainTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
+      | villainTough attrs && preventedByTough dealt -> pure $ attrs & toughL .~ False
       | otherwise -> do
         when (damageAmount damage > 0) $
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
@@ -337,7 +340,7 @@ runVillainMessage msg attrs = case msg of
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
         pure $
           attrs
-            & toughL %~ (&& not (piercesTough damage))
+            & toughL %~ (&& not (piercesTough dealt))
             & hpL
               %~ HP
                 . max 0
@@ -481,19 +484,15 @@ instance RunMessage (Attrs Villain) where
     VillainMessage ident msg'
       | ident == villainId attrs ->
           runVillainMessage msg' attrs
-    -- the attack whose damage he is spared has ended
-    CheckWindows ws | isJust (villainPreventedAttack attrs), any attackEnded ws -> pure attrs {villainPreventedAttack = Nothing}
+    -- the attack whose damage he is spared has ended: what made it, an ability or an
+    -- event, has resolved all it does (or, at the latest, the phase has ended)
+    AbilityResolved source | villainPreventedAttack attrs == Just source -> pure attrs {villainPreventedAttack = Nothing}
+    EventMessage eid ResolvedEvent | villainPreventedAttack attrs == Just (EventRef eid) -> pure attrs {villainPreventedAttack = Nothing}
+    EndPhase _ -> pure attrs {villainPreventedAttack = Nothing}
     WithBoostIcons (VillainRef vid) _ counts | vid == villainId attrs -> do
       villainStep vid (VillainAddBoost $ sum $ map snd counts)
       pure attrs
     _ -> pure attrs
-
--- | The window after an attack by a player or an ally: the attack has ended.
-attackEnded :: W.Window -> Bool
-attackEnded = \case
-  W.Window W.After (W.IdentityAttack _ _) -> True
-  W.Window W.After (W.AllyAttack _ _) -> True
-  _ -> False
 
 -- | The damage is the attack's whose damage to him is prevented ('villainPreventedAttack'):
 -- by what makes it, an attack's own or its overkill (RR Overkill: damage from an attack).
@@ -542,6 +541,11 @@ flipVillainTo newVillain attrs = overVillainAttrs (keepDial attrs) $ advanceVill
 -- by the one replacing it (a flip, a swap).
 keepDial :: Attrs Villain -> Attrs Villain -> Attrs Villain
 keepDial attrs a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
+
+-- | The damage less what reduces "any amount of damage" the villain would take (Thanos's
+-- Armor), once a tough status card has had its say.
+reducedDamage :: [Modifier] -> Damage -> Damage
+reducedDamage modifiers d = d {damageAmount = subtractNatural (sum [n | DamageReduction n <- modifiers]) (damageAmount d)}
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do

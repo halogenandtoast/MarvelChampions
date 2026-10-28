@@ -57,9 +57,10 @@ withRanged :: Damage -> Damage
 withRanged d = d { damageRanged = True }
 
 -- | Whether a tough status card on the character prevents the damage, as it does
--- unless the damage ignores it or pierces it.
+-- unless the damage ignores it or pierces it. No damage is none to prevent: the card
+-- stays (RR Tough: "would take damage").
 preventedByTough :: Damage -> Bool
-preventedByTough d = not (damageIgnoresTough d || damagePiercing d)
+preventedByTough d = damageAmount d > 0 && not (damageIgnoresTough d || damagePiercing d)
 
 -- | Whether the damage discards the character's tough status card as it is dealt: a
 -- piercing attack's, if it deals any.

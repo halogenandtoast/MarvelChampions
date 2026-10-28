@@ -136,6 +136,19 @@ spec = describe "The Mad Titan's Shadow aspect cards" do
         map toCardCode <$> scenarioEncounterDeckNow >>= (`shouldSatisfy` notElem "21042")
         map toCardCode <$> discardOf p >>= (`shouldSatisfy` notElem "21042")
 
+    it "revealed, it cannot be cancelled: Spycraft is not offered" do
+      tg <- warlock
+      let p = player1 tg
+      inGame tg do
+        asHero p
+        clearHand p
+        spycraft <- putIntoPlay p "08018"
+        ib <- encounterCard Events.inBetweener
+        runNow [RevealEncounterCard p ib]
+        offers (isAbilityOfCard spycraft) `shouldReturn` False
+        pass
+        villainDamageNow `shouldReturn` 2
+
     it "revealed, Living Tribunal removes 2 threat from the main scheme" do
       tg <- warlock
       let p = player1 tg
@@ -279,6 +292,21 @@ spec = describe "The Mad Titan's Shadow aspect cards" do
         pass
         mainSchemeThreatNow `shouldReturn` (main' - 1)
         sideSchemeThreat scheme `shouldReturn` (side - 1)
+
+    it "removes threat without thwarting: patrol does not keep it off the main scheme" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        placeMainThreat 3
+        _ <- addMinion p Minions.headhuntersHenchman
+        main' <- mainSchemeThreatNow
+        quasar <- putInHand p "21047"
+        payment <- traverse (putInHand p) [energy, energy, energy]
+        playWith quasar payment
+        choose "Quasar" (isAbilityOfCard quasar)
+        pass
+        mainSchemeThreatNow `shouldReturn` (main' - 1)
 
   describe "Zone of Silence (21050)" do
     it "removes 1 threat from the scheme for each card discarded from the top of the deck" do

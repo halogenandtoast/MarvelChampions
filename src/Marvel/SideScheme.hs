@@ -193,6 +193,16 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard gjallerbru
   , SomeSideSchemeCard legionsOfHelScheme
   , SomeSideSchemeCard unnaturalStorm
+
+  -- The Mad Titan's Shadow: the campaign set
+  , SomeSideSchemeCard secureTheLandingPad
+  , SomeSideSchemeCard securityBreach
+  , SomeSideSchemeCard saveTheShawarmaPlace
+  , SomeSideSchemeCard hackSanctuarysComputer
+  , SomeSideSchemeCard defensiveProtocols
+  , SomeSideSchemeCard findTheNornStones
+  , SomeSideSchemeCard retrieveOdinsArmor
+  , SomeSideSchemeCard openTheDungeons
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

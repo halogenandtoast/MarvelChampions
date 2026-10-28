@@ -517,9 +517,10 @@ newtype JoinGame = JoinGame {deck :: DeckChoice}
 resolveDeck :: UserId -> DeckChoice -> Handler DeckList
 resolveDeck userId choice = do
   deckList <- resolveDeckList userId choice
-  case marketCardsIn deckList of
-    [] -> pure deckList
-    market -> sendResponseStatus status400 (ikeyWith "error.marketCards" [textVar "cards" (intercalate ", " (map unCardCode market))])
+  case (marketCardsIn deckList, campaignOnlyCardsIn deckList) of
+    ([], []) -> pure deckList
+    ([], campaignOnly) -> sendResponseStatus status400 (ikeyWith "error.campaignOnlyCards" [textVar "cards" (intercalate ", " (map unCardCode campaignOnly))])
+    (market, _) -> sendResponseStatus status400 (ikeyWith "error.marketCards" [textVar "cards" (intercalate ", " (map unCardCode market))])
 
 resolveDeckList :: UserId -> DeckChoice -> Handler DeckList
 resolveDeckList userId = \case

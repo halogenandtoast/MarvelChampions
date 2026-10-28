@@ -8,7 +8,7 @@ import Marvel.Boost
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
-import Marvel.EncounterSet (EncounterSet (Kang, MasterOfTime))
+import Marvel.EncounterSet (EncounterSet (Kang, MadTitansShadowCampaign, MasterOfTime))
 import Marvel.Name
 import Marvel.Trait qualified as Trait
 
@@ -78,6 +78,8 @@ allObligations = fromList $ map
     , lossOfControl
     -- Adam Warlock
     , regenerationCycle
+    -- The Mad Titan's Shadow: the campaign set
+    , systemShock
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -157,7 +159,7 @@ antiHeroPropaganda = obligation "04166" "Anti-Hero Propaganda" []
 
 -- | The obligations that go into a player's deck, not the encounter deck.
 playerDeckObligations :: HashMap CardCode CardDef
-playerDeckObligations = fromList $ map (toFst toCardCode) [zolasAlgorithm, medicalEmergency, martialLaw, antiHeroPropaganda]
+playerDeckObligations = fromList $ map (toFst toCardCode) [zolasAlgorithm, medicalEmergency, martialLaw, antiHeroPropaganda, systemShock]
 criminalPast :: CardDef
 criminalPast = obligation "04026" "Criminal Past" [Boost, Boost]
 
@@ -255,3 +257,9 @@ lossOfControl = obligation "21026" "Loss of Control" [Boost, Boost]
 
 regenerationCycle :: CardDef
 regenerationCycle = obligation "21066" "Regeneration Cycle" [Boost, Boost]
+
+-- * The Mad Titan's Shadow: the campaign set, an obligation with a player-card back the
+-- campaign shuffles into a player's deck or puts in their hand
+
+systemShock :: CardDef
+systemShock = (obligation "21185" "System Shock" []) {cdEncounterSet = Just MadTitansShadowCampaign, cdEncounterSetQuantity = Just 4}

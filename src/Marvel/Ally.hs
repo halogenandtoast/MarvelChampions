@@ -161,4 +161,10 @@ allAllies = fromList $ map
   -- The Mad Titan's Shadow: Hela
   , SomeAllyCard odinCaptive
   , SomeAllyCard odinKing
+  -- The Mad Titan's Shadow: the campaign set
+  , SomeAllyCard cosmoCampaign
+  , SomeAllyCard ladySifCaptive
+  , SomeAllyCard fandral
+  , SomeAllyCard hogun
+  , SomeAllyCard volstagg
   ]

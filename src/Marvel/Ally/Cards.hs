@@ -155,6 +155,13 @@ allAllies = fromList $ concatMap
   -- The Mad Titan's Shadow: Hela
   , odinCaptive
   , odinKing
+
+  -- The Mad Titan's Shadow: the campaign set
+  , cosmoCampaign
+  , ladySifCaptive
+  , fandral
+  , hogun
+  , volstagg
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -663,3 +670,26 @@ odinCaptive =
 odinKing :: CardDef
 odinKing =
   (basicAlly "21139b" ("Odin" <:> "All-Father") 0 [Asgard, King] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 1}
+
+-- The Mad Titan's Shadow: the campaign set, cards no deck may hold
+
+-- | Secure the Landing Pad's other side: the first player gains control of him.
+cosmoCampaign :: CardDef
+cosmoCampaign = (basicAlly "21180b" "Cosmo" 0 [Guardian] [Mental]) {cdEncounterSet = Just EncounterSet.MadTitansShadowCampaign, cdEncounterSetQuantity = Just 1}
+
+-- | A Captive ally of the campaign set, set aside for Open the Dungeons.
+asgardCaptive :: CardCode -> Name -> CardDef
+asgardCaptive code name =
+  (basicAlly code name 0 [Asgard, Captive] [Wild]) {cdEncounterSet = Just EncounterSet.MadTitansShadowCampaign, cdEncounterSetQuantity = Just 1}
+
+ladySifCaptive :: CardDef
+ladySifCaptive = asgardCaptive "21190" "Lady Sif"
+
+fandral :: CardDef
+fandral = asgardCaptive "21191" "Fandral"
+
+hogun :: CardDef
+hogun = (asgardCaptive "21192" "Hogun") {cdKeywords = fromList [Piercing]}
+
+volstagg :: CardDef
+volstagg = (asgardCaptive "21193" "Volstagg") {cdKeywords = fromList [Retaliate 1, Toughness]}

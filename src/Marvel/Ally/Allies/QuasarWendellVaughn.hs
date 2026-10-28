@@ -22,7 +22,9 @@ newtype QuasarWendellVaughn = QuasarWendellVaughn (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 -- | Response: After Quasar enters play, remove 1 threat from each scheme in play (each
--- one threat can be removed from, as Hyper Thrusters).
+-- one threat can be removed from, as Hyper Thrusters). Not a thwart: its card is no
+-- ability labeled one, so the threat is removed, not thwarted (Marvel.Choice
+-- 'ThwartScheme'), as Battle Mage's "remove 2 threat".
 instance HasAbilities QuasarWendellVaughn where
   getAbilities a =
     [limitedWindowAbility a 1 EntersPlayThis Response (OwnsThis <> SchemeExists ThwartableScheme) NoCost $ runAbility a 1]

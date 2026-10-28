@@ -200,6 +200,9 @@ allMinions =
       , SomeMinionCard laufey
       , SomeMinionCard (reprintAs Cards.frostGiantFrostGiants frostGiant)
       , SomeMinionCard enchantress
+
+      -- The Mad Titan's Shadow: the campaign set
+      , SomeMinionCard blackSwan
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

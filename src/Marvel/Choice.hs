@@ -147,9 +147,9 @@ resolveChoice ident = \case
         FromPlayerAttack _ -> True
         FromAllyAttack _ -> True
         _ -> False
-    -- "reduce any amount of damage it would take by 1" (Thanos's Armor), from any source
-    anyReduction <- sum . mapMaybe (\case DamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
-    reduction <- (+ anyReduction) <$> if fromAttack then attackReduction else pure 0
+    -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
+    -- tough status card: 'Marvel.Villain.Types')
+    reduction <- if fromAttack then attackReduction else pure 0
     cap <- if fromAttack then attackCap else pure Nothing
     let
       reduced = subtractNatural reduction (damageAmount damage' + bonus)

@@ -129,3 +129,5 @@ import Marvel.Ally.Allies.Charlie27 as X
 import Marvel.Ally.Allies.MartinexTNaga as X
 -- The Mad Titan's Shadow: Hela
 import Marvel.Ally.Allies.Odin as X
+-- The Mad Titan's Shadow: the campaign set
+import Marvel.Ally.Allies.MadTitansShadowCampaign as X

@@ -714,7 +714,8 @@ instance RunMessage LokiScenario where
       case mdef of
         Nothing -> pure a
         Just def -> do
-          addCardToVictoryDisplay (villainAsCard vid def)
+          -- a card of its own: the villain id stays with the Loki in play
+          addCardToVictoryDisplay =<< genEncounterCard def
           lokis <- (+ 1) . length . filter isLokiVillain <$> getVictoryDisplay
           setAside' <- shuffleM [ec | EncounterCard ec <- scenarioSetAsideCards a, isLokiVillain ec]
           case setAside' of

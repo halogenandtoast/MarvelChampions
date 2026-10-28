@@ -195,6 +195,16 @@ allSideSchemes = fromList $ map
   , legionsOfHel
   -- Frost Giants
   , unnaturalStorm
+
+  -- The Mad Titan's Shadow: the campaign set
+  , secureTheLandingPad
+  , securityBreach
+  , saveTheShawarmaPlace
+  , hackSanctuarysComputer
+  , defensiveProtocols
+  , findTheNornStones
+  , retrieveOdinsArmor
+  , openTheDungeons
   ]
 
 sideScheme
@@ -755,3 +765,33 @@ legionsOfHel = sideScheme "21155" "Legions of Hel" [Boost, Boost] LegionsOfHel 2
 
 unnaturalStorm :: CardDef
 unnaturalStorm = sideScheme "21159" "Unnatural Storm" [Boost, Boost] FrostGiants 1
+
+-- The Mad Titan's Shadow: the campaign set, each A side flipping into its B side as it is
+-- defeated
+
+campaignScheme :: CardCode -> Name -> [BoostIcon] -> [Keyword] -> CardDef
+campaignScheme code name boosts keywords = (sideScheme code name boosts MadTitansShadowCampaign 1) {cdKeywords = fromList keywords}
+
+secureTheLandingPad :: CardDef
+secureTheLandingPad = campaignScheme "21180a" "Secure the Landing Pad" [] [Hinder (PerPlayer 1)]
+
+securityBreach :: CardDef
+securityBreach = campaignScheme "21181" "Security Breach" [Boost, Boost] [Hinder (PerPlayer 2), Victory 2]
+
+saveTheShawarmaPlace :: CardDef
+saveTheShawarmaPlace = campaignScheme "21182a" "Save the Shawarma Place" [] [Hinder (PerPlayer 1)]
+
+hackSanctuarysComputer :: CardDef
+hackSanctuarysComputer = campaignScheme "21184a" "Hack Sanctuary's Computer" [] [Hinder (PerPlayer 1)]
+
+defensiveProtocols :: CardDef
+defensiveProtocols = campaignScheme "21184b" "Defensive Protocols" [] [Hinder (PerPlayer 2), Victory 2]
+
+findTheNornStones :: CardDef
+findTheNornStones = campaignScheme "21186a" "Find the Norn Stones" [] []
+
+retrieveOdinsArmor :: CardDef
+retrieveOdinsArmor = campaignScheme "21186b" "Retrieve Odin's Armor" [] [Hinder (PerPlayer 2), Victory 1]
+
+openTheDungeons :: CardDef
+openTheDungeons = campaignScheme "21189a" "Open the Dungeons" [] []

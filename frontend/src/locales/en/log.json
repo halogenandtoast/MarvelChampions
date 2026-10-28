@@ -118,7 +118,18 @@
     "collection": "Recorded in the campaign log: {player}'s {card} in The Collection",
     "powerStone": "Recorded in the campaign log: {player} controls the Power Stone",
     "headhunterDefeated": "Recorded in the campaign log: the Badoon Headhunter is defeated",
-    "evasionCounters": "Recorded in the campaign log: {count} evasion counters"
+    "evasionCounters": "Recorded in the campaign log: {count} evasion counters",
+    "titanMark": {
+      "CosmoInPool": "Cosmo is added to the campaign pool",
+      "SecurityBreachInPool": "Security Breach is added to the campaign pool",
+      "ShawarmaInPool": "Shawarma is added to the campaign pool",
+      "BlackSwanInPool": "Black Swan is added to the campaign pool",
+      "AvengersTowerDamaged": "Recorded in the campaign log: Avengers Tower has the Damaged trait",
+      "SystemShockInPool": "System Shock is added to the campaign pool",
+      "InfinityStones1BCompleted": "Recorded in the campaign log: The Infinity Stones 1B was completed",
+      "NornStoneInPool": "Norn Stone is added to the campaign pool",
+      "OdinInPool": "Odin is added to the campaign pool"
+    }
   },
   "attackGainsOverkill": "{target}'s attack gains overkill",
   "attackGainsPiercing": "{target}'s attack gains piercing",

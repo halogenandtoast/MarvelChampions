@@ -261,7 +261,8 @@ Adopted readings (recommended, not ruled otherwise):
 - **A swap with no set-aside Loki** does nothing (RR "Swap" cannot be completed).
 - **Master of Illusions** answers damage from an attack, its overkill included (RR Overkill: "considered damage from
   an attack"); with a treachery discarded, every instance of damage that attack deals Loki is prevented until the
-  attack ends (the window after the attack).
+  attack ends (the ability or event that made it has resolved). The encounter deck is never empty to discard
+  from: it is made again as it empties, once, with an acceleration token.
 - **"Loki's attacks gain piercing" [star]** on 21164 is the piercing keyword on his card.
 - **MarvelCDB typos**: Loki's Staff's boost "Attack this card to Loki" is "Attach"; Infinite Mischief's "it's" is
   "its".

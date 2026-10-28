@@ -134,7 +134,7 @@ const kindOptions = computed(() => [
 const campaignMode = ref<CampaignMode>('StandardCampaign')
 // which box's campaign
 const campaignKind = ref<CampaignKind>('RiseOfRedSkull')
-const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted']
+const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow']
 const campaignTitle = computed(() => t(`campaign.${campaignKind.value}`))
 const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
