@@ -7,6 +7,7 @@ import { createCampaign, createGame, fetchScenarios } from '../api'
 import { currentUser, updateSettings } from '../auth'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
 import SetupBar from '../components/SetupBar.vue'
+import { campaignArt } from '../campaigns'
 import { useServerText } from '../i18n'
 import { baseCode, useScenarios, type Release } from '../scenarios'
 import type { CampaignKind, CampaignMode, ScenarioOption } from '../server'
@@ -185,6 +186,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
       <SetupBar
         v-if="step === 2 && (kind === 'campaign' || scenario)"
         :portraits="kind === 'campaign' ? [] : portraits(scenario!.code)"
+        :campaign="kind === 'campaign' ? campaignKind : undefined"
         :name="kind === 'campaign' ? campaignTitle : scenarioName(scenario!.code)"
         :details="
           (kind === 'campaign' ? [$t(`campaign.${campaignMode}`), $t(`difficulty.${difficulty}`)] : details({ scenarioCode: scenario!.code, modulars, difficulty })).concat(
@@ -210,8 +212,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
               :aria-checked="campaignKind === k"
               @click="(campaignKind = k), (step = 2)"
             >
-              <span v-if="k === 'RiseOfRedSkull'" class="box-art" />
-              <span v-else class="box-art galaxy" :style="{ backgroundImage: villainArt('16058') }" />
+              <span class="box-art" :style="{ backgroundImage: `url('${campaignArt[k]}')` }" />
               <span class="villain-name">{{ $t(`campaign.${k}`) }}</span>
               <Check v-if="campaignKind === k" class="tick" aria-hidden="true" />
             </button>
@@ -344,8 +345,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 <style scoped>
 .new-game { display: grid; gap: 22px; }
 .kind { width: 20rem; max-width: 100%; }
-.box-art.galaxy { background-size: cover; background-position: center top; }
-.box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: url('/images/products/rise-of-red-skull.avif') center / cover; }
+.box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: center / contain no-repeat; }
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
 .art-strip .art { aspect-ratio: auto; height: 100%; }

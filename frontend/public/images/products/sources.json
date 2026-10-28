@@ -1,0 +1,14 @@
+{
+  "rise-of-red-skull.webp": {
+    "campaign": "The Rise of Red Skull",
+    "source": "https://steamusercontent-a.akamaihd.net/ugc/1625192833983660998/73C257EF31D218E09E65415DE0943799F624FD02/",
+    "workshopId": "2222049059",
+    "crop": { "x": 424, "y": 384, "width": 771, "height": 827 }
+  },
+  "galaxys-most-wanted.webp": {
+    "campaign": "The Galaxy's Most Wanted",
+    "source": "https://steamusercontent-a.akamaihd.net/ugc/1804230114517001440/A6F7BB9D8200586DBDB3BBAEA2B1E0B1FC4BC492/",
+    "workshopId": "2222049059",
+    "crop": { "x": 424, "y": 384, "width": 771, "height": 827 }
+  }
+}
