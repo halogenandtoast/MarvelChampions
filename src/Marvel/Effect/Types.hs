@@ -130,9 +130,10 @@ effect f cardDef =
 
 effectValidFor :: (HasGame m) => Attrs Effect -> Target -> m Bool
 effectValidFor e target = case (target, effectMatcher e) of
-  (IdentityRef ident, IdentityEntity matcher) ->
-    member ident <$> select matcher
-  (AllyRef ident, AllyEntity matcher) -> member ident <$> select matcher
+  -- the target first: matching every identity or ally runs their modifiers, which
+  -- each run this again
+  (IdentityRef ident, IdentityEntity matcher) -> selectAny (IdentityWithId ident <> matcher)
+  (AllyRef ident, AllyEntity matcher) -> selectAny (AllyWithId ident <> matcher)
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
   (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'
   _ -> pure False

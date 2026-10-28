@@ -529,7 +529,7 @@ getNemesisMinionsOutOfPlay ident = getsGame \g -> fromMaybe [] do
 -- scheme with the cards they control, by a basic thwart or an ability labeled thwart (RR
 -- Patrol, Thwart); removing threat otherwise is not a thwart.
 isPatrolled :: (HasGame m) => IdentityId -> m Bool
-isPatrolled ident = selectAny $ MinionWithKeyword Patrol <> MinionEngagedWith (IdentityWithId ident)
+isPatrolled ident = selectAny $ MinionEngagedWith (IdentityWithId ident) <> MinionWithKeyword Patrol
 
 -- | The card code of the main scheme in play.
 getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
