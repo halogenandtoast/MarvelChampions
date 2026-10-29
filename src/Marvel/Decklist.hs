@@ -87,6 +87,8 @@ deckBuildingError :: DeckList -> Maybe Text
 deckBuildingError d
   | not (aspectsBalanced d) = Just "error.unbalancedAspects"
   | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
+  | not withinCopyLimits = Just "error.deckCopyLimit"
+  | not teamUpIdentity = Just "error.teamUpIdentity"
   | otherwise = Nothing
  where
   defs = [(def, n) | (c, n) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards]]
@@ -96,6 +98,25 @@ deckBuildingError d
   notHisOwn def = isJust (cdAspect def)
   copies = HashMap.fromListWith (+) [(canonicalCardCode def, n) | (def, n) <- defs, notHisOwn def]
   avatarOfLife = all (> 0) perAspect && length (nub perAspect) == 1 && all (<= 1) (HashMap.elems copies)
+  -- The copies of reprints are one card. Old identity-specific definitions had
+  -- no copy metadata; keep those legacy decks compatible until annotated.
+  deckCopies = HashMap.fromListWith (+) [(canonicalCardCode def, n) | (def, n) <- defs, n > 0]
+  copyLimits = HashMap.fromListWith min
+    [ (canonicalCardCode def, fromIntegral n :: Int)
+    | (def, _) <- defs
+    , Just n <- [cdDeckLimit def <|> (3 <$ cdAspect def)]
+    ]
+  withinCopyLimits = all
+    (\(code, n) -> maybe True (n <=) (HashMap.lookup code copyLimits))
+    (HashMap.toList deckCopies)
+  identityTitles = map (title . cdName) $ catMaybes
+    [ HashMap.lookup (toHeroCardCode d.hero) allHeroesMap
+    , HashMap.lookup (toAlterEgoCardCode d.hero) allAlterEgosMap
+    ]
+  teamUpIdentity = and
+    [ a `elem` identityTitles || b `elem` identityTitles
+    | (def, n) <- defs, n > 0, Just (a, b) <- [cdTeamUp def]
+    ]
 
 -- | The deck, if the engine can play it.
 checkedDeckList :: DeckList -> Either [CardCode] DeckList
@@ -225,6 +246,10 @@ starterDecks =
   , -- Adam Warlock: his signature cards, six of each aspect and a basic card (MTS
     -- rulebook p.3)
     ("adam-warlock", DeckList "21031a" ["aggression", "justice", "leadership", "protection"] $ tally ["21032", "21033", "21034", "21035", "21036", "21036", "21037", "21037", "21038", "21038", "21038", "21039", "21039", "21040", "21040", "21041", "21042", "21043", "21044", "21045", "21046", "21047", "21048", "21049", "21050", "21051", "21052", "21053", "21054", "21055", "21056", "21057", "21058", "21059", "21060", "21061", "21062", "21063", "21064", "21065"])
+  , ("nebula", DeckList "22001a" ["justice"] $ tally ["22002", "22003", "22004", "22004", "22005", "22006", "22007", "22007", "22008", "22008", "22009", "22009", "22010", "22010", "22010", "22011", "22012", "22013", "22014", "22014", "22014", "22015", "22015", "22015", "22016", "22017", "22018", "22018", "22018", "22019", "22019", "22020", "22021", "22022", "22023", "22023", "22024", "22025", "22026"])
+  , ("war-machine", DeckList "23001a" ["leadership"] $ tally ["23002", "23003", "23004", "23005", "23005", "23006", "23007", "23008", "23008", "23009", "23009", "23010", "23010", "23011", "23011", "23012", "23013", "23014", "23015", "23016", "23016", "23016", "23017", "23017", "23017", "23018", "23018", "23018", "23019", "23019", "23019", "23020", "23020", "23021", "23022", "23023", "23024", "23025", "23026", "23027"])
+  , ("valkyrie", DeckList "25001a" ["aggression"] $ tally ["25002", "25003", "25004", "25005", "25006", "25007", "25008", "25008", "25009", "25010", "25010", "25011", "25011", "25012", "25012", "25012", "25013", "25014", "25015", "25016", "25017", "25017", "25018", "25018", "25018", "25019", "25019", "25019", "25020", "25020", "25020", "25021", "25022", "25022", "25023", "25024", "25024", "25024", "25025", "25026", "25027"])
+  , ("vision", DeckList "26001a" ["protection"] $ tally ["26002", "26003", "26004", "26005", "26006", "26007", "26007", "26008", "26008", "26008", "26009", "26009", "26010", "26010", "26011", "26012", "26013", "26014", "26015", "26016", "26016", "26016", "26017", "26017", "26018", "26018", "26018", "26019", "26019", "26019", "26020", "26020", "26021", "26022", "26023", "26024", "26024", "26024", "26025", "26026", "26027"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

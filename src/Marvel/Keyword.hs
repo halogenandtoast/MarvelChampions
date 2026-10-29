@@ -5,7 +5,8 @@ import Marvel.Prelude
 import Marvel.GameValue.Types (GameValue)
 
 data Keyword
-  = Guard
+  = Alliance
+  | Guard
   | Toughness
   | Quickstrike
   | Retaliate Natural
@@ -35,5 +36,7 @@ data Keyword
   -- Spectrum
   | -- | an energy form upgrade: an additional form, faceup while it is the one she is in
     EnergyForm
+  | -- | Vision's additional form, retained even if the upgrade is blank
+    MassForm
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

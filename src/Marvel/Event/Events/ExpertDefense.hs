@@ -25,6 +25,6 @@ newtype ExpertDefense = ExpertDefense (Attrs Event)
 instance RunMessage ExpertDefense where
   runMessage msg e@(ExpertDefense attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent _ _ (Just (HeroDefends defender _))) | ident == eventId attrs -> do
-      addDefense defender 3
+      addToBasicPower defender 3
       pure e
     _ -> ExpertDefense <$> runMessage msg attrs

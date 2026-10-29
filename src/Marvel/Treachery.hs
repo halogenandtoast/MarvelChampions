@@ -232,6 +232,9 @@ allTreacheries = fromList $ map
 
   -- The Mad Titan's Shadow: the campaign set
   , SomeTreacheryCard summonedBack
+  , SomeTreacheryCard oldRivals
+  , SomeTreacheryCard laserStrike
+  , SomeTreacheryCard relentlessAndroid
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

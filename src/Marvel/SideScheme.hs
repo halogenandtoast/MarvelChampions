@@ -203,6 +203,10 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard findTheNornStones
   , SomeSideSchemeCard retrieveOdinsArmor
   , SomeSideSchemeCard openTheDungeons
+  , SomeSideSchemeCard selfPreservation
+  , SomeSideSchemeCard deadlyLightShow
+  , SomeSideSchemeCard powerfulEnchantments
+  , SomeSideSchemeCard ultronUnleashed
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

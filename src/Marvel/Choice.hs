@@ -11,6 +11,7 @@ import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
+import Marvel.Keyword (Keyword (Overkill, Piercing, Ranged))
 import Marvel.Matchers.Types
 import Marvel.Message
 import Marvel.Modifier.Types
@@ -126,6 +127,9 @@ resolveChoice ident = \case
   -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
+    attackKeywords <- case damageSource damage' of
+      FromPlayerAttack attacker -> getModifiers (IdentityRef attacker)
+      _ -> pure []
     -- each instance of damage the source deals may be increased, as by Embiggen!
     -- (excess damage carried on by overkill has had it already)
     bonus <-
@@ -153,7 +157,12 @@ resolveChoice ident = \case
     cap <- if fromAttack then attackCap else pure Nothing
     let
       reduced = subtractNatural reduction (damageAmount damage' + bonus)
-      damage = damage' {damageAmount = maybe reduced (min reduced) cap}
+      damage = damage'
+        { damageAmount = maybe reduced (min reduced) cap
+        , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
+        , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
+        , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords
+        }
       enemy = case target of
         VillainRef vid -> EnemyVillainId vid
         MinionRef mid -> EnemyMinionId mid
@@ -186,11 +195,12 @@ resolveChoice ident = \case
   -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
   -- a thwart, as "Hero Action (thwart)"; "remove threat" otherwise is not one
   ThwartScheme target source n' -> do
-    labeled <- getsGame \g -> maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
+    labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
     removeThreatFrom labeled target source n'
   BasicThwartScheme target source n' -> removeThreatFrom True target source n'
   RemoveThreat source n schemeMatcher -> do
-    schemes <- selectList schemeMatcher
+    labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
+    schemes <- selectList (schemeMatcher <> if labeled then SchemeWithoutThwartPrevention else AnyScheme)
     let f target = ThwartScheme target source n
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x]]
   PlaceThreat _source n schemeMatcher -> do
@@ -225,15 +235,21 @@ resolveChoice ident = \case
     AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
     VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
     MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
-  DamageCharacter characterId source damage -> case characterId of
-    IdentityCharacter ident' ->
-      pure $ damageIdentity ident' source damage
-    AllyCharacter ident' ->
-      pure $ damageAlly ident' source damage
-    -- every damage to an enemy goes one way: its reductions (Thanos's Armor) and its
-    -- "would take damage" window
-    VillainCharacter ident' -> choiceMessages ident (DamageEnemy (VillainRef ident') source damage)
-    MinionCharacter ident' -> choiceMessages ident (DamageEnemy (MinionRef ident') source damage)
+  DamageCharacter characterId source damage -> do
+    modifiers <- getModifiers (characterRef characterId)
+    let isAttack = case damageSource damage of
+          FromAttack -> True
+          FromPlayerAttack _ -> True
+          FromAllyAttack _ -> True
+          _ -> False
+        reduction = if isAttack then sum [n | AttackDamageReduction n <- modifiers] else 0
+        reduced = damage {damageAmount = subtractNatural reduction (damageAmount damage)}
+    case characterId of
+      IdentityCharacter ident' -> pure $ damageIdentity ident' source reduced
+      AllyCharacter ident' -> pure $ damageAlly ident' source reduced
+      -- enemy reductions are applied by their own damage pipeline
+      VillainCharacter ident' -> choiceMessages ident (DamageEnemy (VillainRef ident') source damage)
+      MinionCharacter ident' -> choiceMessages ident (DamageEnemy (MinionRef ident') source damage)
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->

@@ -1,4 +1,13 @@
 {
+  "choosePrintedX": "Choose X before cost modifiers",
+  "chooseXAmount": "X = {count}",
+  "cancelPayment": "Cancel payment",
+  "offerAllianceContribution": "Contribute to this card’s cost?",
+  "contributeToCost": "Contribute",
+  "declineContribution": "Decline",
+  "declareContributedWild": "Choose the type of your contributed wild resource",
+  "chooseCostContributor": "Choose a player to contribute to this cost",
+  "doneContributing": "Pass",
   "attack": "Attack",
   "thwart": "Thwart",
   "recover": "Recover",
@@ -125,7 +134,6 @@
   "chooseResourceToDiscard": "Choose a resource to discard",
   "placeThreatOnRunningInterference": "Place {count} threat on Running Interference",
   "spendMentalPhysicalResources": "Spend a mental and a physical resource",
-
   "-- The Wrecking Crew --": "",
   "breakTie": "They are tied: choose one",
   "chooseActivationOrder": "Choose which of these villains activates next",
@@ -137,11 +145,9 @@
   "placeThreatForEachUpgrade": "Place 1 threat on the active villain's side scheme for each upgrade you control",
   "wreckerGetsAttack": "Wrecker gets +{count} ATK for this activation",
   "placeThreatOnHisSideScheme": "Place {count} threat on Wrecker's side scheme",
-
   "-- The Mad Titan's Shadow campaign --": "",
   "healWithAccelerationToken": "Place an acceleration token on a main scheme to heal your identity to full?",
   "chooseCaptiveAlly": "Open the Dungeons: choose a Captive ally to put into play under your control",
-
   "-- The Rise of Red Skull --": "",
   "chooseTechUpgrade": "Choose a Tech upgrade for your deck",
   "chooseBasicUpgrade": "You may choose a Basic upgrade: it is attached to your identity and added to your deck",
@@ -174,19 +180,15 @@
   "exhaustJessicaDrewRemoveUncertainLoyalties": "Exhaust Jessica Drew → remove Uncertain Loyalties from the game",
   "placeThreatDiscardObligation": "Place {count} threat on the main scheme, and discard this obligation",
   "spendAnEnergyResource": "Spend an energy resource",
-
   "thwartWithThw": "Thwart with THW",
   "thwartWithAtk": "Thwart with ATK instead",
-
   "threatHereOrDamage": "Place 1 threat here or take 1 damage",
-
   "-- The Once and Future Kang --": "",
   "kangPlacesThreat": "Place {count} threat on the main scheme",
   "kangGetsAttack": "Kang gets +{count} ATK for this attack",
   "keepUniqueCopy": "Areas combine: keep which copy of this unique card? The others are discarded",
   "discardRandomCardsFromHand": "Discard a card at random from your hand | Discard {count} cards at random from your hand",
   "placeThreatOnCorruptedTimestream": "Place {count} threat on Corrupted Timestream",
-
   "exhaustPietroMaximoffRemoveNeedForSpeed": "Exhaust Pietro Maximoff → remove Need for Speed from the game",
   "exhaustPeterQuillRemoveBanishment": "Exhaust Peter Quill → remove Banishment from the game",
   "exhaustGamoraRemoveUnfulfilledDestiny": "Exhaust Gamora → remove Unfulfilled Destiny from the game",
@@ -204,18 +206,15 @@
   "scarletWitchDiscardTop": "Discard the top card of the encounter deck: Scarlet Witch gets +1 to this power for each boost icon",
   "chooseEnemyToStun": "Choose an enemy to stun",
   "healAFriendlyCharacter": "Heal {count} damage from a friendly character",
-
   "-- Scarlet Witch --": "",
   "chooseCardForBottomOfDeck": "Choose the next card to place on the bottom of your deck",
   "increaseBoostIcons": "Increase the boost icons on that card by 1",
   "decreaseBoostIcons": "Decrease the boost icons on that card by 1",
   "exhaustWandaMaximoffRemoveSlippingSanity": "Exhaust Wanda Maximoff → remove Slipping Sanity from the game",
   "discardEncounterCardsThreatPerStar": "Discard the top {count} encounter cards: 1 threat on the main scheme for each [star]",
-
   "-- rocket-raccoon --": "",
   "exhaustRocketRaccoonRemoveCrisisOnHalfworld": "Exhaust Rocket Raccoon → remove Crisis on Halfworld from the game",
   "discardHighestCostUpgradeDiscardObligation": "Discard the highest cost upgrade you control (if none, this card gains surge), then discard this obligation",
-
   "-- The Galaxy's Most Wanted --": "",
   "exhaustTheMilano": "Exhaust the Milano",
   "doNotExhaustTheMilano": "Do not exhaust the Milano",
@@ -224,21 +223,17 @@
   "stunTheFirstPlayer": "Stun the first player",
   "dealDamageToTheFirstPlayer": "Deal {count} damage to the first player",
   "discardRandomCardFromFirstPlayersHand": "Discard a card at random from the first player's hand",
-
   "-- Brotherhood of Badoon --": "",
   "removeThreatFromThisScheme": "Remove {count} threat from this scheme",
   "dealDamageToAMinion": "Deal {count} damage to a minion",
-
   "-- Escape the Museum --": "",
   "exhaustTheMilanoIndirectDamageAmongPlayers": "Exhaust the Milano → {count} indirect damage among the players",
   "indirectDamageAmongPlayers": "{count} indirect damage among the players",
-
   "-- The Galaxy's Most Wanted: Nebula --": "",
   "chooseTechniqueToDiscard": "Choose a Technique attachment to discard",
   "removeTopCardToDiscardTechnique": "You may remove the top card of your deck from the game to discard a Technique attachment",
   "doNotRemoveTopCard": "Do not remove the top card of your deck",
   "shootTheThrusters": "Shoot the Thrusters!: exhaust the Milano and spend a resource to remove an evasion counter | Shoot the Thrusters!: exhaust the Milano and spend {count} resources to remove {count} evasion counters",
-
   "-- The Galaxy's Most Wanted: campaign --": "",
   "placeOnTopOfDeck": "Place it on top of your deck",
   "placeOnBottomOfDeck": "Place it on the bottom of your deck",
@@ -249,25 +244,37 @@
   "revealKreeSupremacy": "Reveal Kree Supremacy?",
   "spendUnitToHeal": "Spend a unit to heal to full hit points",
   "chooseCardForCollection": "Choose a card from your hand to put into The Collection",
-
   "-- Infiltrate the Museum --": "",
   "topCardIntoTheCollection": "Put the top card of your deck into The Collection",
   "highestCostIntoTheCollection": "Put the highest cost card from your hand into The Collection",
   "discardHighestCostForThreat": "Discard the highest cost card from your hand, then place threat on the main scheme equal to its printed cost",
-
   "-- Tower Defense --": "",
   "chooseTheVillain": "Choose the villain",
   "damageAvengersTower": "Deal {count} damage to Avengers Tower",
   "proximaGetsAttack": "Proxima Midnight gets +{count} ATK for this attack",
   "chooseTowerDefenseDifficulty": "Modular difficulty: place damage on Avengers Tower",
   "towerDamagePerPlayer": "No damage on Avengers Tower | Place {count} damage per player on Avengers Tower | Place {count} damage per player on Avengers Tower",
-
   "discardFromTopOfDeck": "Discard cards from the top of your deck",
   "discardTopOfDeck": "Discard no cards | Discard the top card of your deck | Discard the top {count} cards of your deck",
   "dealDamageToTheVillain": "Deal {count} damage to the villain",
   "removeThreatFromMainScheme": "Remove {count} threat from the main scheme",
   "exhaustAdamWarlockRemoveRegenerationCycle": "Exhaust Adam Warlock → remove Regeneration Cycle from the game",
   "discardTopFiveThreatPerAspect": "Discard the top 5 cards of your deck: 1 threat on the main scheme for each different aspect, then discard Regeneration Cycle",
-
-  "-- end --": ""
+  "-- end --": "",
+  "searchEncounterDeck": "Choose an encounter card",
+  "encounterDiscard": "The encounter discard pile",
+  "combatProtocols": "Combat Protocols",
+  "cyberneticUpgrades": "Cybernetic Upgrades",
+  "stun": "Stun an enemy",
+  "confuse": "Confuse an enemy",
+  "combatReadyShuffle": "Shuffle up to 2 Technique upgrades into your deck",
+  "combatReadyDiscard": "Discard until you find a Technique upgrade",
+  "deathPerception": "Death Perception",
+  "notThisDay": "Not this Day",
+  "chooseWarMachineCardToShuffle": "Choose a War Machine card to shuffle into your deck",
+  "readyShoulderCannon": "Spend 1 ammo to ready Shoulder Cannon",
+  "densityManipulation": "Density Manipulation",
+  "exhaustJamesRhodesRemoveEquipmentMalfunction": "Exhaust James Rhodes to remove Equipment Malfunction from the game",
+  "removeAllAmmoDiscardEquipmentMalfunction": "Remove all ammo counters and discard Equipment Malfunction",
+  "spendResourceAllocation": "Spend {physical} physical, {mental} mental, {energy} energy, {wild} wild"
 }

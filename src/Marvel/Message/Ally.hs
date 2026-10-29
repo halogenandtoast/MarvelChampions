@@ -25,6 +25,9 @@ data AllyMessage
   | -- | the interrupts to the attack resolved: the damage lands, if the enemy is still
     -- in play to take it
     AllyAttackLands EnemyId Damage
+  | AllyAttackMultiple [EnemyId] Damage
+  | AllyAttackMultipleNext [EnemyId] [EnemyId] Damage
+  | AllyAttackMultipleFinished [EnemyId]
   | AllyThwarted
   | -- | the thwart done: its consequential damage, as the ally is then
     AllyThwartConsequential

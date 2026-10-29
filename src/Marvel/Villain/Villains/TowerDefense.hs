@@ -83,14 +83,16 @@ heldUp a = do
 
 -- | The villains defeated along with the one whose damage defeated him are given the
 -- window after their defeat too, by the same damage, none of it excess.
-defeatedWith :: (HasQueue m) => VillainId -> [VillainId] -> m ()
-defeatedWith vid others = withQueue_ \q -> case break isAfter q of
-  (pre, w@(CheckWindows [W.Window W.After (W.DefeatedVillain _ damage source _)]) : rest) ->
-    pre <> (w : [CheckWindows [W.Window W.After (W.DefeatedVillain o damage source 0)] | o <- others]) <> rest
-  _ -> q
+defeatedWith :: (HasQueue m, HasGame m) => VillainId -> [VillainId] -> m ()
+defeatedWith vid others = do
+  snapshots <- for others $ \other -> (other,) <$> enemyDefeatUpgrades (EnemyVillainId other)
+  withQueue_ $ \q -> case break isAfter q of
+    (pre, w@(CheckWindows ws) : rest) | W.Window W.After (W.DefeatedVillain _ damage source _) : _ <- ws ->
+      pre <> (w : [CheckWindows [W.Window W.After (W.DefeatedVillain o damage source 0), W.Window W.After (W.DefeatedEnemyWithUpgrades (EnemyVillainId o) defs damage source)] | (o, defs) <- snapshots]) <> rest
+    _ -> q
  where
   isAfter = \case
-    CheckWindows [W.Window W.After (W.DefeatedVillain v _ _ _)] -> v == vid
+    CheckWindows ws -> any (\case W.Window W.After (W.DefeatedVillain v _ _ _) -> v == vid; _ -> False) ws
     _ -> False
 
 -- * Proxima Midnight

@@ -172,6 +172,9 @@ allAttachments =
 
       -- The Mad Titan's Shadow: the campaign set
       , jormungand
+      , lethalWeapon
+      , beguiledValkyrie
+      , seducedValkyrie
       ]
 
 attachment ::
@@ -205,6 +208,8 @@ attachment code name traits boostIcons encounterSet quantity =
     , cdAcceleration = 0
     , cdAmplify = 0
     , cdLimit = Nothing
+    , cdDeckLimit = Nothing
+    , cdTeamUp = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
     , cdAbilityCost = NoCost
@@ -621,3 +626,16 @@ seduced = attachment "21179" "Seduced" [Condition] [Boost, Boost] Enchantress 2
 -- | Open the Dungeons' other side.
 jormungand :: CardDef
 jormungand = unique $ attachment "21189b" "Jormungand" [Dragon] [] MadTitansShadowCampaign 1
+
+-- Nebula
+
+lethalWeapon :: CardDef
+lethalWeapon = attachment "22030" "Lethal Weapon" [Weapon] [Boost, Boost] NebulaNemesis 1
+
+-- Valkyrie
+
+beguiledValkyrie :: CardDef
+beguiledValkyrie = (reprint "25031" beguiled) {cdEncounterSet = Just ValkyrieNemesis, cdEncounterSetQuantity = Just 1}
+
+seducedValkyrie :: CardDef
+seducedValkyrie = (reprint "25032" seduced) {cdEncounterSet = Just ValkyrieNemesis, cdEncounterSetQuantity = Just 2, cdTraits = mempty}

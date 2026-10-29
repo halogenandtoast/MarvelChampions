@@ -4,3 +4,8 @@ packages:
 - .
 system-ghc: true
 install-ghc: false
+# Stack runs packages in parallel but GHC builds a package's modules one at a
+# time unless told -j. -A128M sizes each capability's nursery, -c compacts the
+# old generation to bound memory (as in LordOfTheRings).
+ghc-options:
+  "$targets": -j +RTS -A128M -n4m -c -RTS

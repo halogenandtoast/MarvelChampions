@@ -62,6 +62,7 @@ allEnvironments = fromList $ map (toFst toCardCode)
   , soulStone
   , spaceStone
   , timeStone
+  , ultronDronesVision
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -90,6 +91,8 @@ ultronDrones =
     , cdAcceleration = 0
     , cdAmplify = 0
     , cdLimit = Nothing
+    , cdDeckLimit = Nothing
+    , cdTeamUp = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
     , cdAbilityCost = NoCost
@@ -279,3 +282,14 @@ spaceStone = infinityStone "21134" "Space Stone" 2
 
 timeStone :: CardDef
 timeStone = infinityStone "21135" "Time Stone" 4
+
+-- Vision
+
+ultronDronesVision :: CardDef
+ultronDronesVision = (ultronDrones)
+    { cdCardCode = "26031"
+    , cdName = "Ultron Drones"
+    , cdEncounterSet = Just VisionNemesis
+    , cdEncounterSetQuantity = Just 1
+    , cdBoostIcons = []
+    }

@@ -167,4 +167,19 @@ allAllies = fromList $ map
   , SomeAllyCard fandral
   , SomeAllyCard hogun
   , SomeAllyCard volstagg
+  , SomeAllyCard gamoraNebula
+  , SomeAllyCard eros
+  , SomeAllyCard wraithZakDel
+  , SomeAllyCard venomFlashThompson
+  , SomeAllyCard ironManWarMachine
+  , SomeAllyCard blackPantherTChalla
+  , SomeAllyCard captainMarvelWarMachine
+  , SomeAllyCard annabelleRiggs
+  , SomeAllyCard thorOdinson
+  , SomeAllyCard throgPuddlegulp
+  , SomeAllyCard vivian
+  , SomeAllyCard jocasta
+  , SomeAllyCard protectorAlexis
+  , SomeAllyCard victorMancha
+  , SomeAllyCard machineManAaronStack
   ]

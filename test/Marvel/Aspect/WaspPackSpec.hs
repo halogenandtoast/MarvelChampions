@@ -56,7 +56,7 @@ spec = describe "The Wasp pack's aspect and basic cards" do
       inGame tg do
         clearHand p
         thor <- putInHand p "13011"
-        playPaying p thor ["01088", "01088", "01089", "01089"]
+        playPaying p thor ["01088", "01088"]
         choose "Thor" (isAbilityOfCard thor)
         chooseVillain
         villainDamageNow `shouldReturn` 2
@@ -67,7 +67,7 @@ spec = describe "The Wasp pack's aspect and basic cards" do
       inGame tg do
         clearHand p
         thor <- putInHand p "13011"
-        playPaying p thor ["01090", "01088", "01089", "01089"]
+        playPaying p thor ["01090", "01088"]
         choose "Thor" (isAbilityOfCard thor)
         chooseVillain
         villainDamageNow `shouldReturn` 3

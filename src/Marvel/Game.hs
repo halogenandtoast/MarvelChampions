@@ -4,6 +4,8 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+
+import Marvel.Hero.Runner qualified as Hero
 import Marvel.GameValue (fromGameValue)
 
 import Control.Monad (replicateM_)
@@ -46,6 +48,7 @@ import Marvel.Deck
 import Marvel.Difficulty
 import Marvel.Discard
 import Marvel.Effect
+import Marvel.Effect.CardPlayReduction (CardPlayReduction (..))
 import Marvel.Effect.Types (Effect)
 import Marvel.Effect.Types qualified as Effect
 import Marvel.EncounterSet
@@ -53,7 +56,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment, Field (EnvironmentCounters, EnvironmentOwner))
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -106,7 +109,7 @@ import Marvel.Trait
 import Marvel.Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
-import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeFaceDown, upgradeHeldCards, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets)
+import Marvel.Upgrade.Types (Attrs (upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeFaceDown, upgradeHeldCards, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets, upgradeSpecialCanResolve)
 import Marvel.Villain
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Villain.Types (
@@ -564,7 +567,9 @@ getNemesisMinionsOutOfPlay ident = getsGame \g -> fromMaybe [] do
 -- scheme with the cards they control, by a basic thwart or an ability labeled thwart (RR
 -- Patrol, Thwart); removing threat otherwise is not a thwart.
 isPatrolled :: (HasGame m) => IdentityId -> m Bool
-isPatrolled ident = selectAny $ MinionEngagedWith (IdentityWithId ident) <> MinionWithKeyword Patrol
+isPatrolled ident = do
+  ignores <- elem IgnoresPatrol <$> getModifiers (IdentityRef ident)
+  if ignores then pure False else selectAny $ MinionEngagedWith (IdentityWithId ident) <> MinionWithKeyword Patrol
 
 -- | The card code of the main scheme in play.
 getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
@@ -1084,6 +1089,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) \ally -> do
         for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+        for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
         identityStep (getAllyController ally) (AllyRemoved aid)
       pure $ g & (entitiesL . alliesL %~ deleteMap aid)
     -- an upgrade out of the game, not discarded: the cards it holds are
@@ -1154,6 +1160,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           let ident = getAllyController ally
           -- what is attached to it is discarded with it
           for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+          for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
           identityStep ident $ AllyRemoved aid
           discardFromPlay g ally
         -- kept as removed, so an ability it was discarded to pay for still resolves
@@ -1190,10 +1197,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- a permanent attachment does not leave play: it attaches anew ('Marvel.Attachment.Types')
     AttachmentRef aid | maybe False isPermanent (lookup aid $ gameAttachments g) -> pure g
     AttachmentRef aid -> do
-      for_ (lookup aid $ gameAttachments g) $ \attachment -> do
-        attachmentRemoved aid
-        discardFromPlay g attachment
-      pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
+      protected <- elem CannotBeDiscarded <$> getModifiers (AttachmentRef aid)
+      if protected then pure g else do
+        for_ (lookup aid $ gameAttachments g) $ \attachment -> do
+          attachmentRemoved aid
+          discardFromPlay g attachment
+        pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
     -- discarded, its own cards with it, and no longer engaged
     MinionRef mid -> case lookup mid (gameMinions g) of
       Nothing -> pure g
@@ -1293,6 +1302,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   UsedAbility ident a ->
     pure $ g & usedAbilitiesL %~ HashMap.insertWith (<>) ident [(a, gameWindowDepth)]
   DisableActiveCost ident -> pure $ g & activeCostL %~ filter ((/= ident) . activeCostId)
+  PlayCardWithReduction ident card reduction -> do
+    eid <- getRandom
+    identityStep ident (PlayingCard card Nothing)
+    -- The nested play, including its payment or abort, completes before cleanup.
+    disableEffect eid
+    pure $ g & entitiesL . effectsL %~ insertMap eid (cardPlayReduction eid ident card reduction)
   SetActiveCost activeCost -> do
     createdActiveCost (activeCostId activeCost)
     pure $ g & activeCostL %~ (activeCost :)
@@ -1348,7 +1363,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- the effect of an attack or thwart event is its player's attack or thwart: a stun or
   -- confusion replaces it as it would resolve, its cost paid ("Stunned", "Confused")
   ResolveEventEffect ident (EventMessage eid playEvent) -> do
-    let labels = maybe [] (cdAbilitySubTypes . eventCardDef . toAttrs) (lookup eid (gameEvents g))
+    labels <- case lookup eid (gameEvents g) of
+      Just (Event event) -> eventAbilitySubTypes event
+      Nothing -> pure []
     stunned <- identityMatches StunnedIdentity ident
     confused <- identityMatches ConfusedIdentity ident
     let stops = Ability.Attack `elem` labels && stunned
@@ -1367,6 +1384,57 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           attacker <- selectOne (AttackingEnemy <> UndefendedEnemy)
           for_ attacker \enemy -> enemyDefendedBy enemy (IdentityCharacter ident)
         eventStep eid playEvent
+    pure g
+  FriendlyCharacterAttacks attacker target -> do
+    let ref = characterRef attacker
+    modifiers <- getModifiers ref
+    stunned <- case attacker of
+      IdentityCharacter ident -> identityMatches StunnedIdentity ident
+      AllyCharacter aid -> getsGame (maybe False (Ally.allyStunned . toAttrs) . lookup aid . gameAllies)
+      _ -> pure False
+    -- A prohibition is stronger than a request to attack; a stun replaces the attack.
+    unless (CannotAttack `elem` modifiers) $
+      if stunned
+        then removeStatus attacker StunnedStatus
+        else do
+          checkWindows [W.Window When $ W.FriendlyCharacterAttack attacker target]
+          push $ FriendlyAttackLands attacker target
+    pure g
+  FriendlyAttackLands attacker target -> do
+    let source = characterRef attacker
+    info <- case attacker of
+      IdentityCharacter ident -> getsGame (lookup ident . gamePlayers) >>= \case
+        Just p | isHero p -> Just <$> ((,) <$> getIdentityHeroAttackDamage p <*> getModifiedKeywords p)
+        _ -> pure Nothing
+      AllyCharacter aid -> getsGame (lookup aid . gameAllies) >>= \case
+        Just a -> do
+          modifiers <- getModifiers a
+          n <- Ally.getModifiedAttack (toAttrs a)
+          pure $ Just (n, toList (cdKeywords $ getCardDef a) <> [k | KeywordModifier k <- modifiers])
+        Nothing -> pure Nothing
+      _ -> pure Nothing
+    for_ info \(n, keywords) -> do
+      let damage = (toDamage n FromAttack) {damagePiercing = Piercing `elem` keywords, damageRanged = Ranged `elem` keywords}
+      damageCharacter target source damage
+      push $ FriendlyAttackResolved attacker target (Ranged `elem` keywords)
+    pure g
+  FriendlyAttackResolved attacker target ranged -> do
+    -- Retaliate is forced and precedes optional after-attack responses. Its source
+    -- remains the attacked identity; its target remains the friendly attacker.
+    p <- getsGame (lookup target . gamePlayers)
+    unless ranged $ for_ p \identity -> do
+      n <- sum . map (\case Retaliate k -> k; _ -> 0) <$> getModifiedKeywords identity
+      when (n > 0) $ retaliate target attacker n
+    checkWindows [W.Window After $ W.FriendlyCharacterAttack attacker target]
+    case attacker of
+      AllyCharacter aid -> push $ FriendlyAttackConsequential aid
+      _ -> pure ()
+    pure g
+  FriendlyAttackConsequential aid -> do
+    ally <- getsGame (lookup aid . gameAllies)
+    for_ ally \a -> do
+      n <- Ally.getModifiedAttackConsequentialDamage (toAttrs a)
+      when (n > 0) $ damageCharacter aid a (toDamage n FromConsequential)
     pure g
   ResolveEventWithoutPlaying ident card -> do
     let event = createEvent ident card
@@ -1404,70 +1472,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           & (boostEntitiesL . treacheriesL %~ deleteMap (TreacheryId $ unCardId $ ecCardId card))
           & (boostEntitiesL . minionsL %~ deleteMap (MinionId $ unCardId $ ecCardId card))
     Nothing -> pure g
-  RevealBoostCard card enemyId -> do
-    player <- getActivePlayerId
-    let
-      -- after it is turned faceup, before its boost ability resolves
-      turnedFaceup target = do
-        checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
-        revealedAsBoost target enemyId
-    case cdCardType (getCardDef card) of
-      TreacheryType -> do
-        let treachery = createTreachery card
-        turnedFaceup (toTarget treachery)
-        pure $
-          g
-            & (boostEntitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
-            & (boostCardsL . at (toTarget treachery) ?~ card)
-      MinionType -> do
-        let minion = createMinion player card
-        turnedFaceup (toTarget minion)
-        pure $
-          g
-            & (boostEntitiesL . minionsL %~ insertMap (toId minion) minion)
-            & (boostCardsL . at (toTarget minion) ?~ card)
-      AttachmentType -> do
-        let attachment = createAttachment card
-        turnedFaceup (toTarget attachment)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . attachmentsL
-                  %~ insertMap (toId attachment) attachment
-              )
-            & (boostCardsL . at (toTarget attachment) ?~ card)
-      ObligationType -> do
-        let obligation = createObligation card
-        turnedFaceup (toTarget obligation)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . obligationsL
-                  %~ insertMap (toId obligation) obligation
-              )
-            & (boostCardsL . at (toTarget obligation) ?~ card)
-      SideSchemeType -> do
-        let sideScheme = createSideScheme card
-        turnedFaceup (toTarget sideScheme)
-        pure $
-          g
-            & ( boostEntitiesL
-                  . sideSchemesL
-                  %~ insertMap (toId sideScheme) sideScheme
-              )
-            & (boostCardsL . at (toTarget sideScheme) ?~ card)
-      EnvironmentType -> do
-        let environment = createEnvironment card
-        turnedFaceup (toTarget environment)
-        pure $
-          g
-            & (boostEntitiesL . environmentsL %~ insertMap (toId environment) environment)
-            & (boostCardsL . at (toTarget environment) ?~ card)
-      -- a card with no boost ability, a player's event shuffled in among them (a Cosmic
-      -- Entity), is discarded with the others: to the encounter discard pile (RR FAQ)
-      _ -> do
-        checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
-        pure $ g & (boostCardsL . at (CardIdRef $ ecCardId card) ?~ card)
+  RevealBoostCard card enemyId -> revealBoostCardFor True card enemyId g
+  RevealBoostCardWithoutAbility card enemyId -> revealBoostCardFor False card enemyId g
   CountBoostIcons target value cards -> do
     counts <- for cards \card -> (card,) <$> getBoostIcons card
     for_ cards \card -> checkWindows [W.Window When $ W.CountingBoostIcons card]
@@ -1491,10 +1497,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- a card set aside from play (Escape the Museum's Milano) leaves it, out of play and
   -- not discarded: permanent or not; the scenario keeps it set aside
   SetAside cards -> do
-    let ids = map toCardId cards
-        gone = [s | s <- HashMap.elems (gameSupports g), CardId (unSupportId (toId s)) `elem` ids]
+    let selected cid def = any (\card -> toCardId card == cid && sameCard (getCardDef card) def) cards
+        gone = [s | s <- HashMap.elems (gameSupports g), selected (CardId $ unSupportId $ toId s) (supportCardDef $ toAttrs s)]
+        upgrades = [u | u <- HashMap.elems (gameUpgrades g), selected (CardId $ unUpgradeId $ toId u) (getCardDef u)]
     for_ gone \s -> identityStep (getSupportController s) (SupportRemoved (toId s))
-    pure $ g & entitiesL . supportsL %~ \m -> foldr (deleteMap . toId) m gone
+    for_ upgrades \u -> do
+      upgradeRemoved (toId u)
+      for_ (upgradeHeldCards $ toAttrs u) discardCard
+    pure $ g
+      & entitiesL . supportsL %~ (\m -> foldr (deleteMap . toId) m gone)
+      & entitiesL . upgradesL %~ (\m -> foldr (deleteMap . toId) m upgrades)
   -- divided damage (Giant Wasp, Wasp Sting): a point at a time among the enemies
   -- matching, then each share dealt at once; an attack's attacks each enemy dealt one
   AssignDividedDamage ident source damage matcher assigned -> do
@@ -1513,14 +1525,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- divided threat removal: a point at a time among the schemes matching, none past a
   -- scheme's threat, then each scheme given a share thwarted (Wasp rulesheet)
   AssignDividedThreat ident source basic upTo n matcher assigned -> do
+    labeledThwart <- elem Ability.Thwart <$> sourceAbilitySubTypes source
     let given s = sum [k | (s', k) <- assigned, s' == s]
-        labeledThwart = maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
     patrolled <- isPatrolled ident
     -- a thwart, the main scheme not while a minion with patrol is engaged (RR Patrol)
     let thwartable = \case
           SchemeMainSchemeId _ -> not (patrolled && (basic || labeledThwart))
           _ -> True
-    schemes <- filter thwartable <$> selectList matcher
+    schemes <- filter thwartable <$> selectList (matcher <> if basic || labeledThwart then SchemeWithoutThwartPrevention else AnyScheme)
     open <- forMaybeM schemes \s -> do
       threat <- selectCount SchemeThreat (SchemeWithId s)
       let room = subtractNatural (given s) threat
@@ -1743,7 +1755,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           ident = getAllyController ally
           mid = MinionId $ unAllyId aid
           card = MkPlayerCard (CardId $ unAllyId aid) (Ally.allyCardDef a) (Just $ allyOwner a) (Just ident)
-      for_ (allyUpgrades a) removeFromPlay
+      -- Treating the ally as a minion does not make its physical card leave play;
+      -- Attach To is checked when attached, not when its host's type changes.
+      for_ (allyUpgrades a) $ \uid -> upgradeStep uid (UpgradeHostBecameMinion mid)
       for_ [k | (k, at) <- HashMap.toList (gameAttachments g), Attachment.attachmentAlly (toAttrs at) == Just aid] removeFromPlay
       identityStep ident (AllyRemoved aid)
       engageMinion mid ident
@@ -1753,16 +1767,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     Just minion | Just card <- Minion.minionFacedownCard (toAttrs minion) -> do
       let a = toAttrs minion
           owner = fromMaybe (minionEngagedIdentity a) (pcOwner card)
-          ally = createAlly owner card
+          controller = fromMaybe owner (pcController card)
+          ally = createAlly controller card
           aid = toId ally
-      for_ (minionUpgrades a) removeFromPlay
+      for_ (minionUpgrades a) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
       for_ (minionAttachments a) removeFromPlay
       minionDisengages (minionEngagedIdentity a) mid
       allyStep aid (AllyOwnedBy owner)
       allyStep aid (AllySetDamage $ Minion.minionDamage a)
       for_ [(Minion.minionStunned a, StunnedStatus), (Minion.minionConfused a, ConfusedStatus), (Minion.minionTough a, ToughStatus)] \(on, s) ->
         when on $ push $ GiveStatus (AllyRef aid) s
-      identityStep owner (AllyCreated aid)
+      identityStep controller (AllyCreated aid)
       pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
     _ -> pure g
   EndCheckWindows -> pure g
@@ -1812,6 +1827,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (lookup aid $ gameAllies g) $ \ally -> do
           let controller = getAllyController ally
               owner = allyOwner (toAttrs ally)
+          for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+          for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
           identityStep controller (AllyRemoved aid)
           addToHand owner $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
         pure $ g & entitiesL . alliesL %~ deleteMap aid
@@ -1943,7 +1960,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
-    declareDefenseWithout ident enemyId defensePriority []
+    open <- selectAny (EnemyWithId enemyId <> UndefendedEnemy)
+    when open $ declareDefenseWithout ident enemyId defensePriority []
     pure g
   -- each player decides for themselves whether a character they control defends (RR
   -- "Defend"): the attacked player first, who may ask another player before deciding;
@@ -1959,7 +1977,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   DeclareDefenseWithout ident enemyId defensePriority declined -> do
     allies <- selectList UnexhaustedAlly
-    identities <- select $ UnexhaustedIdentity <> HeroIdentity
+    identities <- select $ UnexhaustedIdentity <> HeroIdentity <> IdentityCanDefend
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
       defensesOf owner =
@@ -1985,10 +2003,90 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   _ -> pure g
 
+-- | A boost-effect interrupt before reveal still turns the original card faceup.
+-- Icons, After windows, entity identity and eventual discard remain unchanged.
+revealBoostCardFor :: (ReverseQueue m) => Bool -> EncounterCard -> EnemyId -> Game -> m Game
+revealBoostCardFor allowAbility card enemyId g = do
+  player <- getActivePlayerId
+  let
+    -- after it is turned faceup, before its boost ability resolves
+    turnedFaceup target = do
+      checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
+      when allowAbility $ revealedAsBoost target enemyId
+  case cdCardType (getCardDef card) of
+    TreacheryType -> do
+      let treachery = createTreachery card
+      turnedFaceup (toTarget treachery)
+      pure $
+        g
+          & (boostEntitiesL . treacheriesL %~ insertMap (toId treachery) treachery)
+          & (boostCardsL . at (toTarget treachery) ?~ card)
+    MinionType -> do
+      let minion = createMinion player card
+      turnedFaceup (toTarget minion)
+      pure $
+        g
+          & (boostEntitiesL . minionsL %~ insertMap (toId minion) minion)
+          & (boostCardsL . at (toTarget minion) ?~ card)
+    AttachmentType -> do
+      let attachment = createAttachment card
+      turnedFaceup (toTarget attachment)
+      pure $
+        g
+          & ( boostEntitiesL
+                . attachmentsL
+                %~ insertMap (toId attachment) attachment
+            )
+          & (boostCardsL . at (toTarget attachment) ?~ card)
+    ObligationType -> do
+      let obligation = createObligation card
+      turnedFaceup (toTarget obligation)
+      pure $
+        g
+          & ( boostEntitiesL
+                . obligationsL
+                %~ insertMap (toId obligation) obligation
+            )
+          & (boostCardsL . at (toTarget obligation) ?~ card)
+    SideSchemeType -> do
+      let sideScheme = createSideScheme card
+      turnedFaceup (toTarget sideScheme)
+      pure $
+        g
+          & ( boostEntitiesL
+                . sideSchemesL
+                %~ insertMap (toId sideScheme) sideScheme
+            )
+          & (boostCardsL . at (toTarget sideScheme) ?~ card)
+    EnvironmentType -> do
+      let environment = createEnvironment card
+      turnedFaceup (toTarget environment)
+      pure $
+        g
+          & (boostEntitiesL . environmentsL %~ insertMap (toId environment) environment)
+          & (boostCardsL . at (toTarget environment) ?~ card)
+    -- a card with no boost ability, a player's event shuffled in among them (a Cosmic
+    -- Entity), is discarded with the others: to the encounter discard pile (RR FAQ)
+    _ -> do
+      checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
+      pure $ g & (boostCardsL . at (CardIdRef $ ecCardId card) ?~ card)
+
 perPhase :: Limit -> Bool
 perPhase = \case
   PerPhase _ -> True
   _ -> False
+
+-- | Work out an event's selected ability before checking its labels. Keep the
+-- original card intact: zone membership and payment refer to that physical card.
+effectivePlayerCardDef :: (HasGame m) => IdentityId -> PlayerCard -> m CardDef
+effectivePlayerCardDef ident card
+  | cdCardType def == EventType = case createEvent ident card of
+      Event event -> do
+        labels <- eventAbilitySubTypes event
+        pure def {cdAbilitySubTypes = labels}
+  | otherwise = pure def
+ where
+  def = getCardDef card
 
 getWindowPlayableCards ::
   ( HasCallStack
@@ -2001,12 +2099,9 @@ getWindowPlayableCards ::
   Window ->
   PlayerIdentity ->
   m [PlayerCard]
-getWindowPlayableCards window player =
-  filterM
-    (isWindowPlayable window player)
-    cards
- where
-  cards = unHand $ playerIdentityHand $ toAttrs player
+getWindowPlayableCards window player = do
+  held <- (<>) <$> getUpgradeHeldCards (toId player) <*> getAllyHeldCards (toId player)
+  filterM (isWindowPlayable window player) (unHand (playerIdentityHand $ toAttrs player) <> held)
 
 isWindowPlayable ::
   ( HasCallStack
@@ -2021,8 +2116,9 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window attrs c = do
+  effectiveDef <- effectivePlayerCardDef ident c
   affordable <- notNull <$> playableTargets attrs c
-  passedCriteria <- passesCardCriteria ident c (cdCriteria def <> toAdditionalCriteria def)
+  passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
   passedWindow <-
     maybe
       (pure False)
@@ -2086,14 +2182,14 @@ runHandCardMessage msg g = case msg of
     pure g
   _ -> pure g
 
--- | An enemy that has gained stalwart while stunned or confused has those status cards
--- removed at once (RR Stalwart): looked for after each message, among the enemies with
--- one only.
+-- | A character gaining stalwart immediately discards its stun and confusion.
 stalwartSweep :: (HasGame m, HasQueue m) => Game -> m Game
 stalwartSweep g = do
   let villains = [(VillainRef (toId v), Villain.getModifiedKeywords a, Villain.villainStunned a, Villain.villainConfused a) | v <- HashMap.elems (gameVillains g), let a = toAttrs v, Villain.villainStunned a || Villain.villainConfused a]
       minions = [(MinionRef (toId m), Minion.getModifiedKeywords a, minionStunned a, minionConfused a) | m <- HashMap.elems (gameMinions g), let a = toAttrs m, minionStunned a || minionConfused a]
-  for_ (villains <> minions) \(ref, keywords, stunned, confused) -> do
+      identities = [(IdentityRef (toId p), getModifiedKeywords p, playerIdentityStunned a, playerIdentityConfused a) | p <- HashMap.elems (gamePlayers g), let a = toAttrs p, playerIdentityStunned a || playerIdentityConfused a]
+      allies = [(AllyRef (toId ally), do { ms <- getModifiers a; pure $ toList (cdKeywords $ Ally.allyCardDef a) <> [k | KeywordModifier k <- ms] }, Ally.allyStunned a, Ally.allyConfused a) | ally <- HashMap.elems (gameAllies g), let a = toAttrs ally, Ally.allyStunned a || Ally.allyConfused a]
+  for_ (villains <> minions <> identities <> allies) \(ref, keywords, stunned, confused) -> do
     stalwart <- elem Stalwart <$> runReaderT keywords (refreshTraits g)
     when stalwart do
       when stunned $ push (RemoveStatus ref StunnedStatus)
@@ -2275,28 +2371,38 @@ filterChoices f = \case
 -- | A player engaged with a minion with patrol cannot thwart the main scheme (RR Patrol):
 -- a choice that would thwart it is not theirs to make. Removing threat from it otherwise
 -- than by a thwart is not kept from them.
-withoutPatrolledThwarts :: Game -> Bool -> Question -> Question
+withoutPatrolledThwarts :: (HasGame m) => Game -> Bool -> Question -> m Question
 withoutPatrolledThwarts g patrolled
-  | patrolled = filterChoices (not . thwartsMain)
-  | otherwise = id
+  | patrolled = filterChoicesM (fmap not . thwartsMain)
+  | otherwise = pure
  where
   thwartsMain = \case
-    Run msgs -> any thwartMessage msgs
-    Label _ cs -> any thwartsMain cs
-    TargetLabel _ cs -> any thwartsMain cs
+    Run msgs -> anyM thwartMessage msgs
+    Label _ cs -> anyM thwartsMain cs
+    TargetLabel _ cs -> anyM thwartsMain cs
     CardLabel _ c -> thwartsMain c
-    -- a thwart only by a basic thwart or an ability labeled one, as 'resolveChoice' says
-    ThwartScheme t source _ -> isMain t && labeledThwart source
-    BasicThwartScheme t _ _ -> isMain t
-    _ -> False
+    ThwartScheme t source _ | isMain t -> do
+      labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
+      ignores <- elem IgnoresPatrol <$> getModifiers source
+      pure $ labeled && not ignores
+    BasicThwartScheme t _ _ -> pure (isMain t)
+    _ -> pure False
   thwartMessage = \case
-    MainSchemeMessage _ (MainSchemeThwarted _ _) -> True
-    _ -> False
+    MainSchemeMessage _ (MainSchemeThwarted source _) -> fmap (notElem IgnoresPatrol) (getModifiers source)
+    _ -> pure False
   isMain = \case
     MainSchemeRef _ -> True
     SchemeRef (SchemeMainSchemeId _) -> True
     _ -> False
-  labeledThwart source = maybe False (elem Ability.Thwart . cdAbilitySubTypes) (abilityCardDef g (toTarget source))
+
+filterChoicesM :: (Monad m) => (Choice -> m Bool) -> Question -> m Question
+filterChoicesM f = \case
+  QuestionLabel l t q -> QuestionLabel l t <$> filterChoicesM f q
+  Searched cs q -> Searched cs <$> filterChoicesM f q
+  ChooseOne cs -> ChooseOne <$> filterM f cs
+  ChooseN n cs -> ChooseN n <$> filterM f cs
+  ChooseOneAtATime cs -> ChooseOneAtATime <$> filterM f cs
+  q -> pure q
 
 -- | The choice is not one that would make a permanent card leave play.
 offerable :: Game -> Choice -> Bool
@@ -2518,6 +2624,15 @@ instance HasAbilities Game where
 
 -- | The def of the player card an ability is on: in play, or an upgrade just discarded
 -- to pay for it.
+sourceAbilitySubTypes :: (HasGame m) => Source -> m [Ability.AbilitySubType]
+sourceAbilitySubTypes source = do
+  g <- getGame
+  case toTarget source of
+    EventRef eid -> case lookup eid (gameEvents g) of
+      Just (Event event) -> eventAbilitySubTypes event
+      Nothing -> pure []
+    target -> pure $ maybe [] cdAbilitySubTypes (abilityCardDef g target)
+
 abilityCardDef :: Game -> Target -> Maybe CardDef
 abilityCardDef g = \case
   UpgradeRef uid ->
@@ -2655,6 +2770,7 @@ isBlanked a = do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameAttachments g)
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEnvironments g)
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameVillains g)
+      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameObligations g)
       ]
 
 -- | Run messages until the queue empties or someone has to answer a question, saying
@@ -2675,13 +2791,16 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
-            Just (Ask ident asked) -> isPatrolled ident >>= \patrolled -> case withoutPatrolledThwarts g patrolled (withoutPermanentTargets g asked) of
-              -- nothing is asked when there is nothing to choose
-              question | not (hasChoices question) -> go (n + 1)
-              question -> do
-                withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
-                -- a player chosen when there is only the one is chosen for them
-                when (onlyPlayer question) $ answerQuestionWith before ident 0
+            Just (Ask ident asked) -> do
+              patrolled <- isPatrolled ident
+              cleaned <- withoutPatrolledThwarts g patrolled (withoutPermanentTargets g asked)
+              case cleaned of
+                -- nothing is asked when there is nothing to choose
+                question | not (hasChoices question) -> go (n + 1)
+                question -> do
+                  withGame_ $ (questionL .~ fromList [(ident, question)]) . (questionVersionL +~ 1)
+                  -- a player chosen when there is only the one is chosen for them
+                  when (onlyPlayer question) $ answerQuestionWith before ident 0
             Just other -> do
               debug other
               before other
@@ -2832,6 +2951,7 @@ gameSelectIdentity m = do
     UnexhaustedIdentity -> pure . not . isExhausted
     Matchers.ExhaustedIdentity -> pure . isExhausted
     ConfusedIdentity -> pure . identityIsConfused
+    IdentityWithoutToughStatus -> pure . not . playerIdentityTough . toAttrs
     StunnedIdentity -> pure . identityIsStunned
     IdentityEngagedWith minionMatcher -> \ident -> do
       minions <- select minionMatcher
@@ -2850,7 +2970,9 @@ gameSelectIdentity m = do
       gameValueMatches gameValueMatcher . playerIdentityCounters . toAttrs
     IdentityMatchAll xs -> andM . traverse matchFilter xs
     IdentityCanThwart -> fmap (notElem CannotThwart) . getModifiers
-    IdentityCanBasicAttack -> fmap (notElem CannotBasicAttack) . getModifiers
+    IdentityCanBasicAttack -> fmap (\ms -> CannotBasicAttack `notElem` ms && CannotAttack `notElem` ms) . getModifiers
+    IdentityCanAttack -> fmap (notElem CannotAttack) . getModifiers
+    IdentityCanDefend -> fmap (notElem CannotDefend) . getModifiers
     IdentityCanChangeForm -> fmap (notElem CannotChangeForm) . getModifiers
     FirstPlayer -> \a -> do
       ps <- getAllPlayers
@@ -2899,8 +3021,16 @@ gameSelectCharacter = \case
     identities <- selectMap IdentityCharacter identityMatcher
     allies <- selectMap AllyCharacter (AllyControlledBy identityMatcher)
     pure . HashSet.fromList $ identities <> allies
+  CharacterCanBeReadied -> do
+    identities <- selectList Matchers.ExhaustedIdentity
+    readyable <- filterM (\ident -> do
+      modifiers <- getModifiers ident
+      hero <- selectAny (IdentityWithId ident <> HeroIdentity)
+      pure $ CannotReady `notElem` modifiers && (not hero || CannotBeReadiedByPlayerCards `notElem` modifiers)) identities
+    allies <- selectList (Matchers.ExhaustedAlly <> AllyCanReady)
+    pure $ HashSet.fromList (map IdentityCharacter readyable <> map AllyCharacter allies)
   CharacterWithTrait t -> do
-    villains <- getsGame $ map (VillainCharacter . toId) . filter (member t . cdTraits . getCardDef) . HashMap.elems . gameVillains
+    villains <- selectMap VillainCharacter (VillainWithTrait t)
     minions <- selectMap MinionCharacter (MinionWithTrait t)
     identities <- selectMap IdentityCharacter (IdentityWithTrait t)
     allies <- selectMap AllyCharacter (AllyWithTrait t)
@@ -2961,6 +3091,7 @@ gameSelectExtendedCard m = do
       concatMap (unHand . playerIdentityHand . toAttrs) players
         <> concatMap (unDiscard . playerIdentityDiscard . toAttrs) players
         <> concatMap (unDeck . playerIdentityDeck . toAttrs) players
+        <> [c | PlayerCard c <- scenarioSetAsideCards (toAttrs $ gameScenario g)]
   result <- runGameApp tempApp $ do
     runGameMessages
     go players allCards m
@@ -2985,6 +3116,10 @@ gameSelectExtendedCard m = do
       concatMapM (\ident -> filterM (isPlayableWith True ident) inner) players'
     BasicCardMatches cardMatcher -> do
       pure $ filter (cardMatch cardMatcher) cards
+    InSetAsideOf identityMatcher extendedCardMatcher -> do
+      owners <- selectList identityMatcher
+      aside <- getSetAsidePlayerCards
+      go players [c | c <- aside, c `elem` cards, maybe False (`elem` owners) (pcOwner c <|> pcController c)] extendedCardMatcher
     InDiscardOf identityMatcher extendedCardMatcher -> do
       identities <- selectList identityMatcher
       let
@@ -3058,6 +3193,10 @@ gameSelectAlly m = do
       Nothing -> pure False
       Just p -> not . null <$> liftA2 HashSet.intersection (getTraits ally) (getTraits p)
     AllyIs def -> pure . sameCard def . getCardDef
+    AllyWithPrintedCostAtLeast n -> pure . (>= fromIntegral n) . max 0 . fromMaybe 0 . cdCost . getCardDef
+    AllyCanReady -> \ally -> do
+      modifiers <- getModifiers ally
+      pure $ CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
     AllyWithTitle t -> pure . (== t) . title . cdName . getCardDef
     AllyNamedAs t -> pure . (\n -> title n == t || subtitle n == Just t) . cdName . getCardDef
     AllyWithRemainingHitPoints n -> \ally -> (== n) . subtractNatural (getAllyDamage ally) <$> Ally.getModifiedHitPoints (toAttrs ally)
@@ -3105,6 +3244,10 @@ gameSelectUpgrade m = do
       gameValueMatches gameValueMatcher . getUpgradeUses
     UpgradeWithTrait t -> pure . member t . cdTraits . getCardDef
     UpgradeWithKeyword k -> pure . member k . cdKeywords . getCardDef
+    UpgradeWithResolvableSpecial -> \u -> do
+      blanked <- isBlanked u
+      if blanked then pure False else case u of
+        Upgrade a -> upgradeSpecialCanResolve a
     UpgradeControlledBy identityMatcher -> \upgrade -> do
       identities <- select identityMatcher
       pure $ getUpgradeController upgrade `member` identities
@@ -3116,6 +3259,9 @@ gameSelectUpgrade m = do
     UpgradeWithId upgradeId -> pure . (== upgradeId) . toId
     UpgradeOneOf xs -> orM . traverse matchFilter xs
     NotUpgrade m' -> fmap not . matchFilter m'
+    UpgradeOnAlly allyMatcher -> \upgrade -> case upgradeAttachedAlly (toAttrs upgrade) of
+      Nothing -> pure False
+      Just aid -> selectAny (AllyWithId aid <> allyMatcher)
     UpgradeOnIdentity identityMatcher -> \upgrade -> do
       identities <- select identityMatcher
       let a = toAttrs upgrade
@@ -3126,6 +3272,9 @@ gameSelectUpgrade m = do
           && isNothing (upgradeAttachedSideScheme a)
           && isNothing (upgradeAttachedMainScheme a)
     UpgradeThatCanLeavePlay -> pure . not . isPermanent
+    UpgradeThatCanBeDiscarded -> \upgrade -> do
+      modifiers <- getModifiers (toRef upgrade)
+      pure $ not (isPermanent upgrade) && CannotBeDiscarded `notElem` modifiers
     UpgradeWithHighestCostAmong m' -> \upgrade -> do
       candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gameUpgrades
       let cost = fromMaybe 0 . cdCost . getCardDef
@@ -3140,6 +3289,9 @@ gameSelectAttachment m = do
  where
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
+    AttachmentOnEnemyWithHeroAbility enemy -> \attachment ->
+      pure $ Attachment.attachmentEnemy (toAttrs attachment) == Just enemy
+        && any ((`elem` [Ability.HeroAction, Ability.HeroResponse]) . abilityType) (getAbilities attachment)
     AttachmentIs def -> pure . sameCard def . getCardDef
     AttachmentWithTrait t -> pure . member t . cdTraits . getCardDef
     AttachmentOnEnemy eid -> pure . (== Just eid) . Attachment.attachmentEnemy . toAttrs
@@ -3154,6 +3306,7 @@ gameSelectEnvironment m = do
   matches e = case m of
     AnyEnvironment -> True
     EnvironmentIs def -> sameCard def (getCardDef e)
+    EnvironmentWithTitle t -> title (cdName $ getCardDef e) == t
     EnvironmentWithTrait t -> t `member` cdTraits (getCardDef e)
     EnvironmentInPlayAreaOf ident -> field EnvironmentOwner e == Just ident
 
@@ -3185,7 +3338,14 @@ gameSelectEnemy m = do
     DefeatedEnemy m' -> goVillain e m'
     AttackableByAlly aid -> do
       controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
-      maybe (pure False) (goVillain e . AttackableBy . IdentityWithId) controller
+      case controller of
+        Nothing -> pure False
+        Just who -> do
+          active <- member (toId e) <$> gameSelectVillain ActiveVillain
+          guarded <- if active then selectAny (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who)) else pure False
+          untouchable <- elem CannotBeAttacked <$> getModifiers (VillainRef $ toId e)
+          barred <- barredFromAlly (IdentityWithId who) e
+          pure $ not (guarded || untouchable || barred)
     EnemyWithId enemyId -> pure $ case enemyId of
       EnemyVillainId villainId -> toId e == villainId
       EnemyMinionId _ -> False
@@ -3198,9 +3358,11 @@ gameSelectEnemy m = do
     -- active one (TWC insert p.6); a 'CannotBeAttacked' villain is attacked by no one
     AttackableBy attacker -> do
       active <- member (toId e) <$> gameSelectVillain ActiveVillain
-      guarded <- if active then selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker) else pure False
+      attackers <- selectList attacker
+      ignoreGuard <- anyM (fmap (elem IgnoresGuard) . getModifiers . IdentityRef) attackers
+      guarded <- if active && not ignoreGuard then selectAny (MinionWithKeyword Guard <> MinionEngagedWith attacker) else pure False
       untouchable <- elem CannotBeAttacked <$> getModifiers (VillainRef $ toId e)
-      barred <- barredFrom attacker e
+      barred <- barredFrom attacker (EnemyVillainId $ toId e) e
       pure $ not (guarded || untouchable || barred)
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (villainAttackDetails e)
@@ -3216,6 +3378,9 @@ gameSelectEnemy m = do
     StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
     EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
     ConfusedEnemy -> pure $ Villain.villainConfused (toAttrs e)
+    EnemyCanBeConfused -> do
+      stalwart <- elem Stalwart <$> Villain.getModifiedKeywords (toAttrs e)
+      pure $ not stalwart && not (Villain.villainConfused $ toAttrs e)
     EnemyWithLowestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> (minimum <$> attacks)
     EnemyWithHighestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (maximum <$> schemes)
     EnemyWithLowestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (minimum <$> schemes)
@@ -3229,11 +3394,11 @@ gameSelectEnemy m = do
     MinionEnemy -> pure True
     UniqueEnemy -> pure $ cdUnique (getCardDef e)
     DamageableEnemy -> pure True
-    AttackableBy attacker -> not <$> barredFrom attacker e
+    AttackableBy attacker -> not <$> barredFrom attacker (EnemyMinionId $ toId e) e
     AttackableByAlly aid -> do
       allowed <- notElem CannotAttackMinions <$> getModifiers (AllyRef aid)
       controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
-      maybe (pure False) (\c -> (allowed &&) <$> goMinion e (AttackableBy $ IdentityWithId c)) controller
+      maybe (pure False) (\c -> (allowed &&) . not <$> barredFromAlly (IdentityWithId c) e) controller
     UndefendedEnemy ->
       pure $ maybe False (not . attackDefended) (minionAttackDetails e)
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)
@@ -3248,12 +3413,19 @@ gameSelectEnemy m = do
     StunnedEnemy -> pure $ minionStunned (toAttrs e)
     EnemyWithTrait t -> member t <$> getTraits e
     ConfusedEnemy -> pure $ minionConfused (toAttrs e)
+    EnemyCanBeConfused -> do
+      stalwart <- elem Stalwart <$> Minion.getModifiedKeywords (toAttrs e)
+      pure $ not stalwart && not (minionConfused $ toAttrs e)
     EnemyWithLowestAttack -> (==) <$> Minion.getModifiedAttack (toAttrs e) <*> (minimum <$> attacks)
     EnemyWithHighestScheme -> (==) <$> Minion.getModifiedScheme (toAttrs e) <*> (maximum <$> schemes)
     EnemyWithLowestScheme -> (==) <$> Minion.getModifiedScheme (toAttrs e) <*> (minimum <$> schemes)
 
   -- a player kept from attacking the enemy's title (Fear of Kang)
-  barredFrom attacker e = do
+  barredFrom attacker target e = do
+    mods <- concatMapM getModifiers =<< selectList attacker
+    pure $ title (cdName $ getCardDef e) `elem` [t | CannotAttackTitled t <- mods]
+      || any (\case CannotAttackEnemy enemy -> enemy == target; _ -> False) mods
+  barredFromAlly attacker e = do
     mods <- concatMapM getModifiers =<< selectList attacker
     pure $ title (cdName $ getCardDef e) `elem` [t | CannotAttackTitled t <- mods]
   highestAttack = do
@@ -3351,6 +3523,9 @@ gameSelectScheme m = fmap HashSet.fromList . inYourAreaOnly SchemeRef . HashSet.
 -- | The schemes matching, in any area.
 gameSelectAnyScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectAnyScheme = \case
+  SchemeMatches matchers -> do
+    initial <- gameSelectAnyScheme AnyScheme
+    foldlM (\found matcher -> HashSet.intersection found <$> gameSelectAnyScheme matcher) initial matchers
   AnyScheme -> do
     mainSchemes <- HashMap.elems <$> getsGame gameMainSchemes
     sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
@@ -3373,15 +3548,28 @@ gameSelectAnyScheme = \case
     SchemeSideSchemeId sideSchemeId ->
       HashSet.map SchemeSideSchemeId
         <$> gameSelectSideScheme (SideSchemeWithId sideSchemeId)
-  ThwartableScheme -> thwartable =<< selectAny CrisisSideScheme
+  SchemeWithoutThwartPrevention -> do
+    schemes <- gameSelectAnyScheme AnyScheme
+    HashSet.fromList <$> filterM (fmap (notElem ThreatCannotBeRemovedByThwarting) . getModifiers . schemeRef) (HashSet.toList schemes)
+  ThwartableScheme -> do
+    ignores <- elem IgnoresCrisis <$> (getModifiers . IdentityRef =<< getYou)
+    crisis <- selectAny CrisisSideScheme
+    thwartable (crisis && not ignores)
   ThwartableSchemeIgnoringCrisis -> thwartable False
   SchemeYouCanThwart -> do
-    schemes <- gameSelectAnyScheme ThwartableScheme
+    schemes <- gameSelectAnyScheme (ThwartableScheme <> SchemeWithoutThwartPrevention)
     patrolled <- isPatrolled =<< getYou
     pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
   SchemeYouCanThwartIgnoringCrisis -> do
-    schemes <- gameSelectAnyScheme ThwartableSchemeIgnoringCrisis
+    schemes <- gameSelectAnyScheme (ThwartableSchemeIgnoringCrisis <> SchemeWithoutThwartPrevention)
     patrolled <- isPatrolled =<< getYou
+    pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
+  SchemeAnAllyCanThwart aid ignoresCrisis -> do
+    ownException <- elem BasicThwartIgnoresCrisis <$> getModifiers (AllyRef aid)
+    crisis <- selectAny CrisisSideScheme
+    schemes <- HashSet.fromList <$> (filterM (fmap (notElem ThreatCannotBeRemovedByThwarting) . getModifiers . schemeRef) . HashSet.toList =<< thwartable (crisis && not (ignoresCrisis || ownException)))
+    controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
+    patrolled <- maybe (pure False) (\ident -> selectAny (MinionEngagedWith (IdentityWithId ident) <> MinionWithKeyword Patrol)) controller
     pure $ if patrolled then HashSet.filter (not . isMain) schemes else schemes
   UnpatrolledMainScheme -> do
     patrolled <- isPatrolled =<< getYou
@@ -3467,6 +3655,68 @@ delve :: Game -> Game
 delve g = g {gameDepth = gameDepth g + 1}
 
 -- | The cards held by the upgrades the player controls, played as if in hand.
+-- | Facedown events an ally permits its controller to play. Blanking suppresses
+-- that permission without discarding the attached cards.
+-- | The effect is serializable but has no card definition: it is engine plumbing
+-- for a reduction on one exact card, not a next-card discount.
+cardPlayReduction :: EffectId -> IdentityId -> PlayerCard -> Natural -> Effect
+cardPlayReduction eid ident card amount = Effect.Effect $ CardPlayReduction Effect.EffectAttrs
+  { Effect.effectId = eid
+  , Effect.effectCardCode = "engine-card-play-reduction"
+  , Effect.effectSource = CardIdRef (pcCardId card)
+  , Effect.effectMatcher = IdentityEntity (IdentityWithId ident)
+  , Effect.effectModifiers = [ResourceCostReductionForCard (pcCardId card) amount]
+  , Effect.effectEnds = Nothing
+  }
+
+-- | Check the complete ordinary play rules under the same exact-card reduction
+-- that the nested play will receive. Feasibility uses an isolated copy of the game.
+canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
+canPlayCardWithReduction ident amount card = do
+  g <- getGame
+  canPlayCardWithReductionIn g ident amount card
+
+canPlayCardWithReductionIn :: (HasGame m, MonadThrow m, HasQueue m) => Game -> IdentityId -> Natural -> PlayerCard -> m Bool
+canPlayCardWithReductionIn g ident amount card = case lookup ident (gamePlayers g) of
+  Nothing -> pure False
+  Just player | card `notElem` unHand (playerIdentityHand $ toAttrs player) -> pure False
+  Just player -> do
+    -- Physical card IDs already exist in the saved game; no randomness is used to
+    -- construct a feasibility-only effect in this isolated game.
+    let eid = EffectId (unCardId $ pcCardId card)
+        reduced = g & entitiesL . effectsL %~ insertMap eid (cardPlayReduction eid ident card amount)
+    app <- newApp reduced []
+    runGameApp app (isPlayable player card)
+
+-- | Meditation's initiation check excludes itself as a target and resource, and
+-- tests every candidate after the identity has been exhausted to pay its cost.
+hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
+hasCardToPlayWithReductionAfterExhausting ident source amount = do
+  g <- getGame
+  let exhausted = g & entitiesL . playersL . ix ident %~ \(PlayerIdentity a) -> PlayerIdentity a
+        { playerIdentityExhausted = True
+        , playerIdentityHand = Hand (filter ((/= pcCardId source) . pcCardId) (unHand $ playerIdentityHand a)) }
+      cards = maybe [] (unHand . playerIdentityHand . toAttrs) (lookup ident $ gamePlayers exhausted)
+  anyM (canPlayCardWithReductionIn exhausted ident amount) cards
+
+getAllyHoldingCard :: (HasGame m) => PlayerCard -> m (Maybe AllyId)
+getAllyHoldingCard card = getsGame $ headMay . map fst . filter (elem card . Ally.allyHeldCards . toAttrs . snd) . HashMap.toList . gameAllies
+
+getAllyHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
+getAllyHeldCards ident = do
+  allies <- getsGame $ filter ((== ident) . getAllyController) . HashMap.elems . gameAllies
+  active <- filterM (fmap not . isBlanked) allies
+  pure $ concatMap (Ally.allyHeldCards . toAttrs) active
+
+-- | Players who may contribute to this card. Peril and separate game areas still
+-- prevent help from players who cannot participate in the resolving player's game.
+allianceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
+allianceCostPayers ident card = do
+  peril <- getsGame gamePeril
+  if maybe False (member Alliance . cdKeywords . getCardDef) card && isNothing peril
+    then asYou ident $ selectList AnyIdentity
+    else pure [ident]
+
 getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getUpgradeHeldCards ident =
   getsGame \g -> [c | u <- HashMap.elems (gameUpgrades g), getUpgradeController u == ident, c <- upgradeHeldCards (toAttrs u)]
@@ -3576,6 +3826,17 @@ getActiveCost = do
     [] -> Nothing
     cost : _ -> Just $ activeCostId cost
 
+-- | The original payer, even while a contributor pays one of this cost's parts.
+getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
+getActiveCostPayer acid = getsGame $ fmap activeCostIdentityId . find ((== acid) . activeCostId) . gameActiveCost
+
+-- | A card-owned predicate for a complete exhaust-cost assignment. Non-events
+-- have no event predicate; event code determines its own meaningful effect.
+eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId] -> m Bool
+eventExhaustionsValid payer card characters = case cdCardType (getCardDef card) of
+  EventType -> case createEvent payer card of Event e -> eventExhaustionCostValid e characters
+  _ -> pure True
+
 getCurrentPayment :: (HasGame m) => m Payment
 getCurrentPayment = do
   costStack <- getsGame gameActiveCost
@@ -3642,6 +3903,7 @@ allyAsMinion ident card a = overMinion become $ lookupMinion "xallyminion" ident
       , Minion.minionHitPoints = Ally.allyHitPoints a
       , Minion.minionDamage = Ally.allyDamage a
       , Minion.minionFacedownCard = Just card
+      , Minion.minionUpgrades = allyUpgrades a
       }
 
 -- | The cards in The Collection (Infiltrate the Museum), the first added first: a player
@@ -3791,3 +4053,38 @@ gameSelectCountAlly aggregate matcher = do
     AllyAttackValue -> Ally.getModifiedAttack (toAttrs ally)
     AllyThwartValue -> Ally.getModifiedThwart (toAttrs ally)
     AllyDamageValue -> pure (getAllyDamage ally)
+
+-- | An identity's hero ATK while attacking a particular enemy. Event attacks that
+-- use ATK (Quick Strike) use this rather than the out-of-attack stat.
+getIdentityAttackAgainst :: (HasGame m) => IdentityId -> EnemyId -> m Natural
+getIdentityAttackAgainst ident enemy = do
+  player <- getIdentity ident
+  case currentIdentity player of
+    HeroSide hero -> Hero.getModifiedAttackAgainst (toAttrs hero) enemy
+    AlterEgoSide _ -> pure 0
+
+-- | Whether an attachment still has a friendly character as its live host. A host
+-- leaving play ceases to be protected before its attached cards are discarded.
+attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
+attachmentHasFriendlyHost aid = getsGame $ \g -> case lookup aid (gameAttachments g) of
+  Nothing -> False
+  Just att -> let a = toAttrs att in
+    maybe False (`HashMap.member` gamePlayers g) (Attachment.attachmentIdentity a)
+      || maybe False (`HashMap.member` gameAllies g) (Attachment.attachmentAlly a)
+
+-- | Test meaningful exhaust-cost assignments using only the players currently
+-- allowed to pay (including the Peril restriction), before beginning payment.
+eventExhaustionsAffordable :: (HasGame m) => IdentityId -> [IdentityId] -> PlayerCard -> Cost -> m Bool
+eventExhaustionsAffordable payer payers card cost
+  | null traits = pure True
+  | otherwise = do
+      candidates <- traverse (\trait -> concatMapM (characters trait) payers) traits
+      assign [] candidates
+ where
+  traits = [trait | ExhaustCharacterWithTraitCost trait <- flattenCosts cost]
+  characters trait who = (<>)
+    <$> selectMap IdentityCharacter (IdentityWithId who <> UnexhaustedIdentity <> IdentityWithTrait trait)
+    <*> selectMap AllyCharacter (UnexhaustedAlly <> AllyControlledBy (IdentityWithId who) <> AllyWithTrait trait)
+  assign used [] = eventExhaustionsValid payer card (reverse used)
+  assign used (xs : rest) = anyM (\character ->
+    if character `elem` used then pure False else assign (character : used) rest) xs

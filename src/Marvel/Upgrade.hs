@@ -219,6 +219,32 @@ allUpgrades = fromList $ map
   -- The Mad Titan's Shadow: the campaign set
   , SomeUpgradeCard nornStoneSetup
   , SomeUpgradeCard nornStone
+  , SomeUpgradeCard cutthroatAmbition
+  , SomeUpgradeCard evasiveManeuvering
+  , SomeUpgradeCard unyieldingPersistence
+  , SomeUpgradeCard weaponsMaster
+  , SomeUpgradeCard wideStance
+  , SomeUpgradeCard justiceServed
+  , SomeUpgradeCard energySpear
+  , SomeUpgradeCard honoraryGuardian
+  , SomeUpgradeCard upgradedChassis
+  , SomeUpgradeCard gauntletGun
+  , SomeUpgradeCard missileLauncher
+  , SomeUpgradeCard shoulderCannon
+  , SomeUpgradeCard sidearm
+  , SomeUpgradeCard deathGlow
+  , SomeUpgradeCard valkyriesSpear
+  , SomeUpgradeCard dragonfang
+  , SomeUpgradeCard aragorn
+  , SomeUpgradeCard flightOfTheValkyrior
+  , SomeUpgradeCard anticipation
+  , SomeUpgradeCard intangible
+  , SomeUpgradeCard solarGem
+  , SomeUpgradeCard visionsCape
+  , SomeUpgradeCard densityControl
+  , SomeUpgradeCard flowLikeWater
+  , SomeUpgradeCard chanceEncounter
+  , SomeUpgradeCard dense
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

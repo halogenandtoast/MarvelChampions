@@ -229,6 +229,9 @@ allTreacheries = fromList $ map
 
   -- The Mad Titan's Shadow: the campaign set
   , summonedBack
+  , oldRivals
+  , laserStrike
+  , relentlessAndroid
   ]
 
 treachery
@@ -255,6 +258,8 @@ treachery code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -844,3 +849,18 @@ noPlaceForTheLiving = treachery "21154" "No Place for the Living" [Boost] Legion
 
 summonedBack :: CardDef
 summonedBack = (treachery "21188" "Summoned Back" [Boost, Boost, Boost] MadTitansShadowCampaign 1) {cdKeywords = fromList [Keyword.Peril, Keyword.Surge]}
+
+-- Nebula
+
+oldRivals :: CardDef
+oldRivals = treachery "22031" "Old Rivals" [Boost] NebulaNemesis 2
+
+-- War Machine
+
+laserStrike :: CardDef
+laserStrike = treachery "23031" "Laser Strike" [Boost, Star] WarMachineNemesis 3
+
+-- Vision
+
+relentlessAndroid :: CardDef
+relentlessAndroid = treachery "26032" "Relentless Android" [Boost, Boost] VisionNemesis 2

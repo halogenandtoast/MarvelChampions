@@ -31,6 +31,7 @@ data IdentityMatcher
   | ExhaustedIdentity
   | ConfusedIdentity
   | StunnedIdentity
+  | IdentityWithoutToughStatus
   | IdentityWithTitle Text
   | -- | the player playing as this identity, whichever face is up
     IdentityIs CardDef
@@ -48,6 +49,8 @@ data IdentityMatcher
     IdentityCanThwart
   | -- | not kept from basic attacks (by a 'CannotBasicAttack' modifier, Seduced)
     IdentityCanBasicAttack
+  | IdentityCanAttack
+  | IdentityCanDefend
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm
   | -- | of the identities matching, those with the fewest hit points remaining
@@ -87,6 +90,9 @@ data AllyMatcher
   | -- | the card in any of its printings
     AllyIs CardDef
   | AllyWithTitle Text
+  | AllyWithPrintedCostAtLeast Natural
+  | -- | allowed to be readied by a player-card effect (exhaustion checked separately)
+    AllyCanReady
   | -- | its title or its subtitle the name: a named character (RR Team-Up)
     AllyNamedAs Text
   | -- | with exactly so many hit points remaining
@@ -136,6 +142,8 @@ data UpgradeMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait
   | UpgradeWithKeyword Keyword
+  | -- | A nonblanked upgrade whose Special can affect the game now.
+    UpgradeWithResolvableSpecial
   | UpgradeIs CardDef
   | UpgradeNamed Name
   | UnexhaustedUpgrade
@@ -145,10 +153,12 @@ data UpgradeMatcher
   | NotUpgrade UpgradeMatcher
   | -- | on an identity matching: controlled by it, and attached to nothing else
     UpgradeOnIdentity IdentityMatcher
+  | UpgradeOnAlly AllyMatcher
   | -- | of the upgrades matching, those with the highest printed cost
     UpgradeWithHighestCostAmong UpgradeMatcher
   | -- | one an effect may make leave play: not a permanent one (RR, Permanent)
     UpgradeThatCanLeavePlay
+  | UpgradeThatCanBeDiscarded
   | -- | an upgrade whose card matches
     UpgradeWithCard CardMatcher
   | -- | facedown: out of play for its text (Spectrum's energy forms)
@@ -192,6 +202,8 @@ data EnemyMatcher
   | StunnedEnemy
   | EnemyWithTrait Trait
   | ConfusedEnemy
+  | -- | May receive a new confused status: neither stalwart nor already confused.
+    EnemyCanBeConfused
   -- Galactic Artifacts: "attach to the enemy with the lowest ATK" (highest, lowest SCH)
   | EnemyWithLowestAttack
   | EnemyWithHighestScheme
@@ -242,6 +254,8 @@ data SchemeMatcher
   = AnyScheme
   | MainScheme
   | ThwartableScheme
+  | -- | no effect prohibits removing threat specifically by thwarting
+    SchemeWithoutThwartPrevention
   | -- | threat can be removed from it, "ignoring any crisis icons in play"
     ThwartableSchemeIgnoringCrisis
   | -- | one "you" can thwart: a thwartable scheme, the main scheme not while a minion
@@ -249,11 +263,25 @@ data SchemeMatcher
     SchemeYouCanThwart
   | -- | as 'SchemeYouCanThwart', ignoring any crisis icons in play (Fandral's basic thwart)
     SchemeYouCanThwartIgnoringCrisis
+  | -- | An ally uses its own keyword exceptions, not its controller's.
+    SchemeAnAllyCanThwart AllyId Bool
   | -- | the main scheme, unless a patrol minion is engaged with you (RR Patrol)
     UnpatrolledMainScheme
   | SchemeWithId SchemeId
+  | SchemeMatches [SchemeMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup SchemeMatcher where
+  AnyScheme <> x = x
+  x <> AnyScheme = x
+  SchemeMatches xs <> SchemeMatches ys = SchemeMatches (xs <> ys)
+  SchemeMatches xs <> y = SchemeMatches (xs <> [y])
+  x <> SchemeMatches ys = SchemeMatches (x : ys)
+  x <> y = SchemeMatches [x, y]
+
+instance Monoid SchemeMatcher where
+  mempty = AnyScheme
 
 data SideSchemeMatcher
   = AnySideScheme
@@ -321,6 +349,8 @@ data CharacterMatcher
   | -- | the identities of the players matching: "damages you"
     IdentityCharacters IdentityMatcher
   | CharacterWithTrait Trait
+  | -- | an exhausted friendly character allowed to ready through a player card
+    CharacterCanBeReadied
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack
@@ -358,6 +388,7 @@ data ExtendedCardMatcher
   | -- | a card the player could play ignoring its resource cost
     PlayableIgnoringCostBy IdentityMatcher ExtendedCardMatcher
   | BasicCardMatches CardMatcher
+  | InSetAsideOf IdentityMatcher ExtendedCardMatcher
   | InDiscardOf IdentityMatcher ExtendedCardMatcher
   | TopmostCardInDiscardOf IdentityMatcher CardMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
@@ -377,6 +408,7 @@ instance Semigroup ExtendedCardMatcher where
 
 data AttachmentMatcher
   = AttachmentWithId AttachmentId
+  | AttachmentOnEnemyWithHeroAbility EnemyId
   | AttachmentIs CardDef
   | AttachmentWithTrait Trait
   | -- | attached to the enemy
@@ -397,6 +429,7 @@ instance Monoid AttachmentMatcher where
 data EnvironmentMatcher
   = AnyEnvironment
   | EnvironmentIs CardDef
+  | EnvironmentWithTitle Text
   | EnvironmentWithTrait Trait
   | -- | in the player's play area (Ebony Maw's Spells)
     EnvironmentInPlayAreaOf IdentityId

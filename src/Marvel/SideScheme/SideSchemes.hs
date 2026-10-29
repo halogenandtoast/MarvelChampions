@@ -147,3 +147,11 @@ import Marvel.SideScheme.SideSchemes.Hela as X
 
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.SideScheme.SideSchemes.MadTitansShadowCampaign as X
+
+import Marvel.SideScheme.SideSchemes.SelfPreservation as X
+
+import Marvel.SideScheme.SideSchemes.DeadlyLightShow as X
+
+import Marvel.SideScheme.SideSchemes.PowerfulEnchantments as X
+
+import Marvel.SideScheme.SideSchemes.UltronUnleashed as X

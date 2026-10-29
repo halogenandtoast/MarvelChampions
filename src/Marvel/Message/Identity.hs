@@ -38,6 +38,8 @@ data IdentityMessage
   | AllyCreated AllyId
   | AllyRemoved AllyId
   | UpgradeCreated UpgradeId
+  | -- | A controlled upgrade changes controller without leaving play.
+    UpgradeControlLost UpgradeId
   | SupportCreated SupportId
   | SupportRemoved SupportId
   | AddToHand PlayerCard
@@ -104,6 +106,8 @@ data SideMessage
   | Attacked
   | Thwarted
   | Defended EnemyId
+  | DefendedWithoutExhausting Natural EnemyId
+  | DefenseUsingAttackApplied Natural EnemyId
   | -- | the basic attack, after the interrupts to making it, and what they add to it
     BasicAttack Natural
   | -- | the basic attack's target chosen, after the interrupts to attacking it

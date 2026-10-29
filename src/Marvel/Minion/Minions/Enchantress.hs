@@ -8,7 +8,8 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.Def (CardMatcher (CardIs))
+import Marvel.Card.Def (CardMatcher (CardIs, CardInEncounterSet), cdEncounterSet)
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 
@@ -25,6 +26,11 @@ newtype Enchantress = Enchantress (Attrs Minion)
 instance RunMessage Enchantress where
   runMessage msg (Enchantress attrs) = runQueueT $ case msg of
     MinionMessage ident (RevealMinion you) | ident == minionId attrs -> do
-      searchEverywhereAndPutIntoPlayEncounterCard you (CardIs Attachments.seduced)
+      -- Valkyrie's nemesis copy searches its own associated encounter set.
+      -- The modular copy retains the generic Seduced search across printings.
+      let associated = case cdEncounterSet (minionCardDef attrs) of
+            Just EncounterSet.ValkyrieNemesis -> CardInEncounterSet EncounterSet.ValkyrieNemesis
+            _ -> mempty
+      searchEverywhereAndPutIntoPlayEncounterCard you (CardIs Attachments.seduced <> associated)
       Enchantress <$> runMessage msg attrs
     _ -> Enchantress <$> runMessage msg attrs

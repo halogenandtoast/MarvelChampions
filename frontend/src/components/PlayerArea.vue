@@ -126,7 +126,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
             :stunned="ally.stunned"
             :confused="ally.confused"
             :tough="ally.tough"
-            :attached="[...(ally.upgrades ?? []), ...(ally.attachments ?? [])]"
+            :attached="[...(ally.upgrades ?? []), ...(ally.attachments ?? []), ...facedown(ally)]"
           />
           <Meter :label="t('game.hp')" :value="Math.max(0, ally.hitPoints - ally.damage)" :max="ally.hitPoints" />
         </div>

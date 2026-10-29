@@ -33,7 +33,7 @@ instance HasAbilities Ally where
           Basic
           -- "you cannot thwart" (Baron Zemo) keeps the identity from thwarting, not
           -- its allies
-          (SchemeExists SchemeYouCanThwart)
+          (SchemeExists $ SchemeAnAllyCanThwart (toId x) False)
           ExhaustCost
           (AllyThwart $ toId x)
       | unThw (allyThwart $ toAllyAttrs a) > 0
@@ -56,6 +56,11 @@ statusL = \case
 
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
+    ReserveAllyHeldCard ident card | ident == allyId a ->
+      pure $ a & heldCardsL %~ filter (/= card)
+    AttachPlayableEventToAlly ident card | ident == allyId a ->
+      pure $ a & heldCardsL <>~ [card]
+    PutCardIntoPlay _ card _ _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     AllyMessage ident msg' | ident == allyId a -> case msg' of
       -- "attached character cannot ready" (Restrained)
       -- "allies cannot be readied by player card effects" (Unnatural Storm)
@@ -101,12 +106,37 @@ instance RunMessage (Attrs Ally) where
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
+      AllyAttackMultiple enemies damage -> do
+        allyStep ident (AllyAttackMultipleNext enemies [] damage)
+        pure a
+      AllyAttackMultipleNext remaining resolved damage -> do
+        present <- selectAny (AllyWithId ident)
+        when present do
+          enemies <- filterM (selectAny . EnemyWithId) remaining
+          if null enemies
+            then allyStep ident (AllyAttackMultipleFinished resolved)
+            else chooseOne (allyController a)
+              [ targeting (enemyRef enemy) do
+                  dealDamage enemy a damage
+                  unless (damageRanged damage) $ enemyRetaliates enemy (AllyCharacter ident)
+                  allyStep ident (AllyAttackMultipleNext (filter (/= enemy) enemies) (resolved <> [enemy]) damage)
+              | enemy <- enemies
+              ]
+        pure a
+      AllyAttackMultipleFinished resolved -> do
+        present <- selectAny (AllyWithId ident)
+        when (present && not (null resolved)) do
+          checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident resolved]
+          -- This is one use, hence consequential damage is suffered only once.
+          consequential <- getModifiedAttackConsequentialDamage a
+          when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
+        pure a
       AllyThwarted -> if allyConfused a
         then pure $ a & confusedL .~ False
         else do
           -- "ignore any crisis icons in play" as it thwarts (Fandral)
           ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
-          schemes <- selectList (if ignoresCrisis then SchemeYouCanThwartIgnoringCrisis else SchemeYouCanThwart)
+          schemes <- selectList (SchemeAnAllyCanThwart (allyId a) ignoresCrisis)
           thw <- getModifiedThwart a
           atk <- getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows
@@ -136,10 +166,12 @@ instance RunMessage (Attrs Ally) where
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyWasAttacked attack' -> do
         hitPoints <- getModifiedHitPoints a
+        modifiers <- getModifiers a
         let
+          reduced = subtractNatural (sum [n | AttackDamageReduction n <- modifiers]) (attackDamageDealt attack')
           overkill = subtractNatural
             (subtractNatural (allyDamage a) hitPoints)
-            (attackDamageDealt attack')
+            reduced
         -- an attack dealing indirect damage (Starshark) has it divided among the
         -- characters the ally's controller controls, overkill having none past it
         when (attackDamageDealt attack' > 0) $
@@ -150,8 +182,7 @@ instance RunMessage (Attrs Ally) where
         -- damage" answers it, as it does the attack's own
         when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack')) do
           let excess = toDamage overkill FromAttack
-          checkWindows [W.Window W.When $ W.IdentityTakeDamage (allyController a) excess]
-          attackDamageIdentity (allyController a) (attackSource attack') excess
+          damageCharacter (allyController a) (attackSource attack') excess
         -- retaliate, if it is still in play after the attack, and the attack not ranged
         let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
         when (retaliates > 0 && not (attackRanged attack')) $
@@ -179,7 +210,12 @@ instance RunMessage (Attrs Ally) where
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AllyOwnedBy owner -> pure a {allyOwner = owner}
-      AllyChangedController new -> pure a {allyController = new}
+      AllyChangedController new -> do
+        when (new /= allyController a) do
+          identityStep (allyController a) (AllyRemoved $ allyId a)
+          for_ (allyUpgrades a) $ \uid -> upgradeStep uid (UpgradeControlledByPlayer new)
+          identityStep new (AllyCreated $ allyId a)
+        pure a {allyController = new}
       AllySetDamage n -> pure $ a & damageL .~ n
       -- the game replaces it with its other face ('FlipAlly' in "Marvel.Game")
       FlipAlly -> pure a
@@ -203,8 +239,6 @@ instance RunMessage (Attrs Ally) where
     RemoveFromPlay (IdentityRef _) -> followFirstPlayer
     CardSpecific (isTarget a -> True) "followFirstPlayer" _ -> do
       selectOne FirstPlayer >>= traverse_ \first -> when (first /= allyController a) do
-        identityStep (allyController a) (AllyRemoved $ allyId a)
-        identityStep first (AllyCreated $ allyId a)
         allyStep (allyId a) (AllyChangedController first)
       pure a
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False

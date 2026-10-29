@@ -49,6 +49,7 @@ export interface AllyView extends CardView {
   confused: boolean
   tough: boolean
   counters?: number
+  facedownCards?: number
   upgrades?: UpgradeView[]
   /** encounter cards attached to it (Restrained) */
   attachments?: AttachmentView[]

@@ -140,6 +140,10 @@ data CardDef = CardDef
     -- gains a boost icon for each amplify icon in play (RR Amplify Icon)
     cdAmplify :: Natural
   , cdLimit :: Maybe InPlayLimit
+  , -- | its deck-copy limit, shared across all printings; absent in legacy saves
+    cdDeckLimit :: Maybe Natural
+  , -- | the named identities permitted to include this Team-Up in their deck
+    cdTeamUp :: Maybe (Text, Text)
   , -- | the codes the card is also printed under: a reprint, an alternate art
     cdAlternateCardCodes :: [CardCode]
   , -- | may be played from its owner's discard pile, during their turn
@@ -149,6 +153,12 @@ data CardDef = CardDef
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+deckLimited :: Natural -> CardDef -> CardDef
+deckLimited n def = def {cdDeckLimit = Just n}
+
+teamUpNames :: Text -> Text -> CardDef -> CardDef
+teamUpNames a b def = def {cdTeamUp = Just (a, b)}
 
 resourcesL :: Lens' CardDef [(ResourceRestriction, Resource)]
 resourcesL = lens cdResources $ \m x -> m { cdResources = x }

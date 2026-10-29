@@ -44,6 +44,20 @@ getModifiedAttack attrs = modifiedStat (unAtk $ heroBaseAttack attrs) change <$>
   change (AttackPenalty n) = negate (toInteger n)
   change _ = 0
 
+-- | The ATK during an attack against this enemy. Conditional modifiers add to the
+-- ordinary statistic, so a weapon's +2 instead of +1 is baseline +1, contextual +1.
+getModifiedAttackAgainst :: (HasGame m) => Attrs Hero -> EnemyId -> m Natural
+getModifiedAttackAgainst attrs enemy = do
+  normal <- getModifiedAttack attrs
+  modifiers <- getModifiers attrs
+  pure $ normal + sum [n | AttackModifierAgainst target n <- modifiers, target == enemy]
+
+getModifiedDefenseAgainst :: (HasGame m) => Attrs Hero -> EnemyId -> m Natural
+getModifiedDefenseAgainst attrs enemy = do
+  normal <- getModifiedDefense attrs
+  modifiers <- getModifiers attrs
+  pure $ normal + sum [n | DefenseModifierAgainst target n <- modifiers, target == enemy]
+
 getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
 getModifiedThwart attrs = modifiedStat (unThw $ heroBaseThwart attrs) change <$> getModifiers attrs
  where
@@ -99,7 +113,7 @@ instance RunMessage (Attrs Hero) where
           checkWindows [W.Window W.After $ W.MadeBasicAttack ident]
           pure a
         BasicAttackOn enemy bonus -> do
-          damage <- attackDamage ident bonus
+          damage <- attackDamageAgainst ident enemy bonus
           dealDamage enemy a damage
           pure a
         Thwarted -> do
@@ -137,8 +151,20 @@ instance RunMessage (Attrs Hero) where
           checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
           defenseApplied ident enemy
           pure a
-        DefenseApplied bonus _ -> do
-          addDefense ident . (+ bonus) =<< getModifiedDefense a
+        -- A card may declare the basic defender without exhausting it. Its DEF is
+        -- applied once, after the same defense window as an ordinary basic defense.
+        DefendedWithoutExhausting bonus enemy -> do
+          enemyDefendedBy enemy (IdentityCharacter ident)
+          checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+          identityStep ident (SideMessage $ DefenseApplied bonus enemy)
+          pure a
+        DefenseApplied bonus enemy -> do
+          addDefense ident . (+ bonus) =<< getModifiedDefenseAgainst a enemy
+          pure a
+        DefenseUsingAttackApplied _ _ -> do
+          -- DEF modifiers, including bonuses in the pending defense, are ignored:
+          -- The Best Defense uses ATK instead of DEF, not ATK plus bonus DEF.
+          addDefense ident =<< getModifiedAttack a
           pure a
         _ -> pure a
     _ -> pure a
@@ -147,6 +173,11 @@ instance RunMessage (Attrs Hero) where
     -- made
     attackDamage ident bonus = do
       dmg <- (+ bonus) <$> getModifiedAttack a
+      modifiers <- getModifiers a
+      let gains k f = if KeywordModifier k `elem` modifiers then f else id
+      pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
+    attackDamageAgainst ident enemy bonus = do
+      dmg <- (+ bonus) <$> getModifiedAttackAgainst a enemy
       modifiers <- getModifiers a
       let gains k f = if KeywordModifier k `elem` modifiers then f else id
       pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing

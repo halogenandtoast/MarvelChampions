@@ -55,3 +55,11 @@ import Marvel.Hero.Heroes.Venom as X
 import Marvel.Hero.Heroes.Spectrum as X
 -- Adam Warlock
 import Marvel.Hero.Heroes.AdamWarlock as X
+
+import Marvel.Hero.Heroes.NebulaHero as X
+
+import Marvel.Hero.Heroes.WarMachineHero as X
+
+import Marvel.Hero.Heroes.ValkyrieHero as X
+
+import Marvel.Hero.Heroes.VisionHero as X

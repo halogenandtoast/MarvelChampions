@@ -210,7 +210,13 @@ instance RunMessage (Attrs MainScheme) where
                 SupportRef _ -> True
                 UpgradeRef _ -> True
                 _ -> False
-          pure $ if crisis && playerCard then attrs else attrs & threatL %~ subtractNatural n
+          ownIgnores <- elem IgnoresCrisis <$> getModifiers source
+          controller <- getSourceController source
+          controllerIgnores <- case source of
+            AllyRef _ -> pure False
+            _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
+          pure $ if crisis && playerCard && not (ownIgnores || controllerIgnores)
+            then attrs else attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
@@ -224,7 +230,8 @@ instance RunMessage (Attrs MainScheme) where
    where
     unlessPatrolled source body = do
       patrolled <- maybe (pure False) isPatrolled =<< getSourceController source
-      if patrolled then pure attrs else body
+      ignores <- elem IgnoresPatrol <$> getModifiers source
+      if patrolled && not ignores then pure attrs else body
 
 -- | The threat that advances it: printed, and as modified (Under Surveillance).
 getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural

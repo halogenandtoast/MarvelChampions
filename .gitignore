@@ -1,4 +1,5 @@
 .stack-work/
+.stack-work-codex/
 dist-newstyle/
 *~
 tags

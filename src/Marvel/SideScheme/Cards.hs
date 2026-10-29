@@ -205,6 +205,10 @@ allSideSchemes = fromList $ map
   , findTheNornStones
   , retrieveOdinsArmor
   , openTheDungeons
+  , selfPreservation
+  , deadlyLightShow
+  , powerfulEnchantments
+  , ultronUnleashed
   ]
 
 sideScheme
@@ -231,6 +235,8 @@ sideScheme code name boostIcons encounterSet quantity = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -795,3 +801,30 @@ retrieveOdinsArmor = campaignScheme "21186b" "Retrieve Odin's Armor" [] [Hinder 
 
 openTheDungeons :: CardDef
 openTheDungeons = campaignScheme "21189a" "Open the Dungeons" [] []
+
+-- Nebula
+
+selfPreservation :: CardDef
+selfPreservation = sideScheme "22029" "Self-Preservation" [Boost, Boost] NebulaNemesis 1
+
+-- War Machine
+
+deadlyLightShow :: CardDef
+deadlyLightShow = (sideScheme "23030" "Deadly Light Show" [Boost, Boost, Boost] WarMachineNemesis 1)
+    { cdKeywords = fromList [Hinder (PerPlayer 1)]
+    }
+
+-- Valkyrie
+
+powerfulEnchantments :: CardDef
+powerfulEnchantments = (sideScheme "25030" "Powerful Enchantments" [Boost, Boost] ValkyrieNemesis 1)
+    { cdKeywords = fromList [Hinder (PerPlayer 1)]
+    , cdAcceleration = 1
+    }
+
+-- Vision
+
+ultronUnleashed :: CardDef
+ultronUnleashed = (sideScheme "26030" "Ultron Unleashed" [Boost, Boost, Boost] VisionNemesis 1)
+    { cdAcceleration = 1
+    }

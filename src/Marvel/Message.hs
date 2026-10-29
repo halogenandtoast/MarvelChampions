@@ -41,7 +41,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EngagedMinion, AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -141,7 +141,7 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
     (pre, _ : rest') -> pre <> rest'
     _ -> rest
   isAfter = \case
-    CheckWindows [Window After (DefeatedMinion mid' _ _ _)] -> mid' == mid
+    CheckWindows ws -> any (\case Window After (DefeatedMinion mid' _ _ _) -> mid' == mid; _ -> False) ws
     _ -> False
 
 -- | A villain that would be defeated is not ("instead"), as it answers
@@ -152,13 +152,16 @@ cancelVillainDefeat vid = withQueue_ \q -> case break isAfter q of
   _ -> q
  where
   isAfter = \case
-    CheckWindows [Window After (DefeatedVillain vid' _ _ _)] -> vid' == vid
+    CheckWindows ws -> any (\case Window After (DefeatedVillain vid' _ _ _) -> vid' == vid; _ -> False) ws
     _ -> False
 
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: MinionId -> IdentityId -> [Message]
 engageMinion minion ident =
-  [IdentityMessage ident (MinionEngaged minion), MinionMessage minion (MinionEngagedIdentity ident)]
+  [ CheckWindows [Window When $ EngagedMinion ident minion]
+  , IdentityMessage ident (MinionEngaged minion)
+  , MinionMessage minion (MinionEngagedIdentity ident)
+  ]
 
 -- | Add to the power of the basic attack, thwart or defense the player is making, as an
 -- interrupt to making it.
@@ -167,10 +170,12 @@ addToBasicPower ident n = replaceMatchingMessage raise \case
   IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicAttackOn _ _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
+  IdentityMessage ident' (SideMessage (DefenseUsingAttackApplied _ _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (DefenseApplied _ _)) -> ident == ident'
   _ -> False
  where
   raise = \case
+    IdentityMessage i (SideMessage (DefenseUsingAttackApplied x e)) -> [IdentityMessage i (SideMessage (DefenseUsingAttackApplied (x + n) e))]
     IdentityMessage i (SideMessage (DefenseApplied x e)) -> [IdentityMessage i (SideMessage (DefenseApplied (x + n) e))]
     IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
     IdentityMessage i (SideMessage (BasicAttackOn e x)) -> [IdentityMessage i (SideMessage (BasicAttackOn e (x + n)))]
@@ -331,14 +336,30 @@ data Message
   | DiscardTopOfEncounterDeck Natural (Maybe Target)
   | WithDiscarded Target FromZone [Card]
   | WithChosen Target FromZone [Card]
+  | -- | one nested normal card play, with a reduction scoped to this exact card
+    PlayCardWithReduction IdentityId PlayerCard Natural
   | SetActiveCost ActiveCost
   | CreatedActiveCost ActiveCostId
   | DisableActiveCost ActiveCostId
   | Spent ActiveCostId PlayerCard
   | Paid Payment
+  | -- | another player is invited to contribute resources to an alliance card
+    ContributeResources ActiveCostId IdentityId
+  | -- | newly contributed wild resources are declared by their contributor
+    DeclareContributionWilds ActiveCostId IdentityId Natural
+  | -- | a player pays a non-resource part of an alliance cost with their own cards
+    ContributeCost ActiveCostId IdentityId Cost
+  | -- | obtain every contributor's consent before non-resource costs are committed
+    PrepareAllianceCosts ActiveCostId [(IdentityId, Cost)] [Cost]
+  | OfferAllianceCost ActiveCostId IdentityId Cost [(IdentityId, Cost)] [Cost]
+  | -- | hold an event facedown on an ally, playable as if in its controller's hand
+    AttachPlayableEventToAlly AllyId PlayerCard
+  | ReserveAllyHeldCard AllyId PlayerCard
   | -- | the nth wild resource paid toward the active cost is declared as this type
     DeclaredWild Natural Resource
   | FinishedPayment ActiveCostId
+  | -- | which generated resources actually paid the final modified resource cost
+    AllocatedPayment ActiveCostId [Resource]
   | -- | one part of the cost is paid, as one more ally exhausted for "exhaust any
     -- number of allies"
     PayCost ActiveCostId Cost
@@ -376,6 +397,8 @@ data Message
   | RevealEncounterCard IdentityId EncounterCard
   | RevealedEncounterCard IdentityId EncounterCard
   | RevealBoostCard EncounterCard EnemyId
+  | -- | Turn the card faceup, preserving its icons and windows but cancel its boost ability.
+    RevealBoostCardWithoutAbility EncounterCard EnemyId
   | -- | the main scheme is completed
     AdvanceMainScheme MainSchemeId
   | -- | the main scheme gives way to the scenario's next stage
@@ -396,6 +419,11 @@ data Message
   | ReturnToHand Target
   | SetAside [Card]
   | ShuffleIntoEncounterDeck [EncounterCard]
+  | -- | An ability makes a friendly hero or ally attack an identity (Old Rivals).
+    FriendlyCharacterAttacks CharacterId IdentityId
+  | FriendlyAttackLands CharacterId IdentityId
+  | FriendlyAttackResolved CharacterId IdentityId Bool
+  | FriendlyAttackConsequential AllyId
   | ClearBoosts
   | ClearRemoved
   | CheckPayment ActiveCostId

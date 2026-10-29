@@ -71,6 +71,10 @@ allHeroCards =
 
   -- Adam Warlock
   , adamWarlockHero
+  , nebulaHero
+  , warMachineHero
+  , valkyrieHero
+  , visionHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -99,6 +103,8 @@ hero cardCode name traits = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -208,3 +214,31 @@ spectrum = hero "21001a" "Spectrum" [Aerial, Avenger]
 -- | Not the ally of the same name (17011).
 adamWarlockHero :: CardDef
 adamWarlockHero = hero "21031a" "Adam Warlock" [Guardian, Mystic]
+
+-- Nebula
+
+nebulaHero :: CardDef
+nebulaHero = deckLimited 1 $ (hero "22001a" "Nebula" [Guardian])
+    { cdUnique = True
+    }
+
+-- War Machine
+
+warMachineHero :: CardDef
+warMachineHero = deckLimited 1 $ (hero "23001a" "War Machine" [Avenger, Soldier])
+    { cdUnique = True
+    }
+
+-- Valkyrie
+
+valkyrieHero :: CardDef
+valkyrieHero = deckLimited 1 $ (hero "25001a" "Valkyrie" [Asgard, Avenger])
+    { cdUnique = True
+    }
+
+-- Vision
+
+visionHero :: CardDef
+visionHero = deckLimited 1 $ (hero "26001a" "Vision" [Android, Avenger])
+    { cdUnique = True
+    }

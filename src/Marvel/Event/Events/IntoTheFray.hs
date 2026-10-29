@@ -52,8 +52,9 @@ instance RunMessage IntoTheFray where
         | minion <- minions
         ]
       pure e
-    CheckWindows [W.Window W.When (W.DefeatedMinion _ _ source excess)]
-      | source == toSource attrs && excess > 0 && not (excessResolved meta) -> do
+    CheckWindows ws
+      | excess : _ <- [n | W.Window W.When (W.DefeatedMinion _ _ source n) <- ws, source == toSource attrs, n > 0]
+      , not (excessResolved meta) -> do
           mains <- filter isMain <$> selectList ThwartableScheme
           -- none to remove it from (a crisis icon in play): nothing happens
           unless (null mains) $ chooseOrRunOne (eventController attrs)

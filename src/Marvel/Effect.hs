@@ -2,11 +2,14 @@
 
 module Marvel.Effect where
 
+import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
+
 import Marvel.Prelude
 
 import Marvel.Ally.Allies
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Effect.CardPlayReduction (CardPlayReduction)
 import Marvel.Effect.Types
 import Marvel.Event.Events
 import Marvel.Hero.Heroes
@@ -21,10 +24,12 @@ import Marvel.Upgrade.Upgrades
 instance FromJSON Effect where
   parseJSON = withObject "Effect" $ \o -> do
     cCode <- o .: "effectCardCode"
-    case lookup cCode allEffects of
-      Nothing -> error $ "Invalid effect: " <> show cCode
-      Just (SomeCardEffect (_ :: CardEffect a)) ->
-        Effect <$> parseJSON @a (Object o)
+    if cCode == "engine-card-play-reduction"
+      then Effect <$> parseJSON @CardPlayReduction (Object o)
+      else case lookup cCode allEffects of
+        Nothing -> error $ "Invalid effect: " <> show cCode
+        Just (SomeCardEffect (_ :: CardEffect a)) ->
+          Effect <$> parseJSON @a (Object o)
 
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
@@ -77,6 +82,7 @@ allEffects =
     , ("16024", SomeCardEffect deftFocusEffect)
 
     -- Spectrum
+    , ("23017", SomeCardEffect sneakAttackEffect)
     , ("21009", SomeCardEffect pulsarShieldEffect)
     , ("21012", SomeCardEffect powerManVictorAlvarezEffect)
 

@@ -4,6 +4,8 @@ module Marvel.Minion where
 
 import Marvel.Prelude
 
+import Marvel.Card.Builder (reprintAs)
+
 import Marvel.Card
 import Marvel.Id
 import Marvel.Minion.Minions
@@ -203,6 +205,10 @@ allMinions =
 
       -- The Mad Titan's Shadow: the campaign set
       , SomeMinionCard blackSwan
+      , SomeMinionCard gamoraNemesis
+      , SomeMinionCard livingLaser
+      , SomeMinionCard (reprintAs Cards.enchantressValkyrie enchantress)
+      , SomeMinionCard ultronNemesis
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

@@ -286,6 +286,40 @@ allEvents = fromList $ map
   , SomeEventCard summoningSpell
   , SomeEventCard theGardener
   , SomeEventCard shieldSpell
+  , SomeEventCard combatReady
+  , SomeEventCard lethalIntent
+  , SomeEventCard oneWayOrAnother
+  , SomeEventCard brainsOverBrawn
+  , SomeEventCard daughtersOfThanos
+  , SomeEventCard repulsorBeam
+  , SomeEventCard targetedStrike
+  , SomeEventCard scorchedEarth
+  , SomeEventCard fullAuto
+  , SomeEventCard sneakAttack
+  , SomeEventCard saveTheDay
+  , SomeEventCard goDownSwinging
+  , SomeEventCard twoAgainstTheWorld
+  , SomeEventCard asOne
+  , SomeEventCard standTogether
+  , SomeEventCard visitValhalla
+  , SomeEventCard chooserOfTheSlain
+  , SomeEventCard shieldmaiden
+  , SomeEventCard haveAtThee
+  , SomeEventCard quickStrike
+  , SomeEventCard smashTheProblem
+  , SomeEventCard theBestDefense
+  , SomeEventCard godlikeStamina
+  , SomeEventCard problemSolvers
+  , SomeEventCard cosmicAlliance
+  , SomeEventCard solarBeam
+  , SomeEventCard superdenseStrike
+  , SomeEventCard justPassingThrough
+  , SomeEventCard phaseDisruption
+  , SomeEventCard massIncrease
+  , SomeEventCard defiance
+  , SomeEventCard reboot
+  , SomeEventCard joiningForces
+  , SomeEventCard meditation
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

@@ -131,3 +131,33 @@ import Marvel.Ally.Allies.MartinexTNaga as X
 import Marvel.Ally.Allies.Odin as X
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Ally.Allies.MadTitansShadowCampaign as X
+
+import Marvel.Ally.Allies.GamoraNebula as X
+
+import Marvel.Ally.Allies.Eros as X
+
+import Marvel.Ally.Allies.WraithZakDel as X
+
+import Marvel.Ally.Allies.VenomFlashThompson as X
+
+import Marvel.Ally.Allies.IronManWarMachine as X
+
+import Marvel.Ally.Allies.BlackPantherTChalla as X
+
+import Marvel.Ally.Allies.CaptainMarvelWarMachine as X
+
+import Marvel.Ally.Allies.AnnabelleRiggs as X
+
+import Marvel.Ally.Allies.ThorOdinson as X
+
+import Marvel.Ally.Allies.ThrogPuddlegulp as X
+
+import Marvel.Ally.Allies.Vivian as X
+
+import Marvel.Ally.Allies.Jocasta as X
+
+import Marvel.Ally.Allies.ProtectorAlexis as X
+
+import Marvel.Ally.Allies.VictorMancha as X
+
+import Marvel.Ally.Allies.MachineManAaronStack as X

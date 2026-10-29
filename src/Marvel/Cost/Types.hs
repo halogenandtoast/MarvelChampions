@@ -3,7 +3,7 @@ module Marvel.Cost.Types where
 import Marvel.Prelude
 
 import Data.List (nub)
-import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, UpgradeMatcher)
 import Marvel.Ref
 import Marvel.Resource.Types
 import Marvel.Trait.Types (Trait)
@@ -12,6 +12,11 @@ data Cost
   = Costs [Cost]
   | ResourceCost (Maybe Resource)
   | DynamicResourceCost (Maybe Resource)
+  | -- | printed X cost: minimum meaningful X, and an effect bound only when its
+    -- resource cost is ignored (finite choices without capping ordinary overpayment)
+    PrintedXCost Natural UpgradeMatcher
+  | -- | spend one through this many resources ("up to" in a cost; Machine Man)
+    UpToResourcesCost Natural
   | MultiResourceCost [Maybe Resource]
   | DamageCost Natural
   | HealCost Natural
@@ -32,6 +37,8 @@ data Cost
     ReturnUpgradeToHandCost UpgradeMatcher
   | -- | discard an upgrade the payer controls, chosen among those matching
     DiscardUpgradeCost UpgradeMatcher
+  | -- | discard a controlled ally, retaining its printed card in the payment
+    DiscardAllyCost AllyMatcher
   | -- | discard the top card of the payer's deck: not payable with an empty deck
     DiscardTopOfDeckCost
   | -- | discard between so many cards from the top of the payer's deck and so many (as
@@ -57,12 +64,18 @@ data Cost
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
     DiscardEncounterCardsUntilMinionCost
+  | SearchEncounterSideSchemeCost
+  | SearchEncounterMinionCost
   | -- | "deal yourself 1 facedown encounter card"
     DealEncounterCardCost
   | -- | "discard the top card of the encounter deck" (Leading Blow), the card paid with
     DiscardTopEncounterCardCost
   | -- | the printed resource cost of the card chosen as the card's target
     TargetPrintedCost
+  | -- | choose a hand card as a cost; it remains in hand but cannot pay resources
+    ChosenHandCardCost
+  | -- | choose a matching character without exhausting or spending that character
+    ChooseCharacterWithTraitCost Trait CharacterMatcher
   | -- | nothing more is due, but the payer may go on spending resources: "for each
     -- resource you overpaid" (Ant-Man, Hank Pym)
     MayOverpay
@@ -97,6 +110,7 @@ costResources (DiscardRandomHandCardsCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (DiscardUpgradeCost _) = []
+costResources (DiscardAllyCost _) = []
 costResources DiscardTopOfDeckCost = []
 costResources (DiscardTopOfDeckCardsCost _ _) = []
 costResources DiscardTopOfDeckForDamageCost = []
@@ -106,10 +120,16 @@ costResources (ResourcesFromHandCost c) = costResources c
 costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
+costResources SearchEncounterSideSchemeCost = []
+costResources SearchEncounterMinionCost = []
 costResources DealEncounterCardCost = []
 costResources DiscardTopEncounterCardCost = []
 costResources TargetPrintedCost = []
+costResources ChosenHandCardCost = []
+costResources (ChooseCharacterWithTraitCost _ _) = []
 costResources MayOverpay = []
+costResources (PrintedXCost _ _) = []
+costResources (UpToResourcesCost _) = [Nothing]
 costResources (IdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'

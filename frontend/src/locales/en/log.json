@@ -1,4 +1,5 @@
 {
+  "attachesFacedownEvent": "An event is attached facedown to {ally}.",
   "scenarioBegins": "{villain}",
   "round": "Round {count}",
   "phase": {
@@ -22,6 +23,8 @@
   "plays": "{player} plays {card}",
   "usesAbility": "{player} uses {card}",
   "changesForm": "{player} flips to {identity}",
+  "changesMassForm": "{player} changes mass form.",
+  "friendlyCharacterAttacks": "{attacker} attacks {player}.",
   "changesToEnergyForm": "{player} changes to {form} energy form",
   "basicAttack": "{player} attacks",
   "basicThwart": "{player} thwarts",

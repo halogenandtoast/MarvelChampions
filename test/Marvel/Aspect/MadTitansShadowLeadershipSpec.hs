@@ -73,6 +73,7 @@ payAll = go (20 :: Int)
  where
   go 0 _ _ = pure ()
   go n cs xs = do
+    chooseIf (isLabelStarting "$label.spendResourceAllocation")
     cards <- filterM (offers . isPayWith) cs
     allies <- filterM (offers . isTargetChoice) xs
     finish <- offers isFinishPayment
@@ -294,7 +295,7 @@ spec = describe "The Mad Titan's Shadow: Leadership and basic cards" do
         mockingbird <- allyIdOf <$> putIntoPlay p "01083"
         clearHand p
         attack <- putInHand p "21016"
-        payment <- traverse (putInHand p) ["01090", "01088"]
+        payment <- traverse (putInHand p) ["01090", "01032"]
         choose "Mass Attack" (isPlay attack)
         payAll payment []
         offers (isTargetChoice blade) `shouldReturn` True

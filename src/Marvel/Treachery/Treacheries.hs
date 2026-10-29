@@ -172,3 +172,9 @@ import Marvel.Treachery.Treacheries.LegionsOfHel as X
 
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Treachery.Treacheries.MadTitansShadowCampaign as X
+
+import Marvel.Treachery.Treacheries.OldRivals as X
+
+import Marvel.Treachery.Treacheries.LaserStrike as X
+
+import Marvel.Treachery.Treacheries.RelentlessAndroid as X

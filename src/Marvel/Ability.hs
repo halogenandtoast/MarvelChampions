@@ -148,6 +148,7 @@ passesCriteria x a =
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
     AnyCriteria xs -> anyM go xs
+    NotCriteria x -> not <$> go x
     MinionExists m -> selectAny m
     CharacterExists m -> selectAny m
     EnemyExists m -> selectAny m
@@ -157,11 +158,13 @@ passesCriteria x a =
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
     UpgradeExists m -> selectAny m
+    EnvironmentExists m -> selectAny m
     -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
     CollectionHasCards -> notNull <$> getCollection
+    CardPlayAfterExhaustingHasTarget _ -> pure False
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -181,6 +184,7 @@ passesCardCriteria ident card = go
     Exhausted -> member ident <$> select ExhaustedIdentity
     Criteria xs -> allM go xs
     AnyCriteria xs -> anyM go xs
+    NotCriteria x -> not <$> go x
     MinionExists m -> selectAny m
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
@@ -189,11 +193,13 @@ passesCardCriteria ident card = go
     -- the card itself, about to leave the hand, is not one of them
     ExtendedCardExists m -> selectAny (NotCard card <> m)
     UpgradeExists m -> selectAny m
+    EnvironmentExists m -> selectAny m
     -- how it is paid for is checked as it is paid
     SpendOnly _ -> pure True
     PayingFor _ -> pure True
     ForAnyPlayer -> pure True
     CollectionHasCards -> notNull <$> getCollection
+    CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])

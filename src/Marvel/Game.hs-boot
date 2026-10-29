@@ -17,6 +17,7 @@ import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Card.Types (Card)
 import Marvel.Count
+import Marvel.Cost.Types (Cost)
 import Marvel.Debug
 import Marvel.Difficulty
 import Marvel.Id
@@ -233,3 +234,23 @@ gameSelectCountAlly ::
 -- Hela
 sideSchemesInVictoryDisplay :: (HasGame m) => m Natural
 getMainSchemeHeldCards :: (HasGame m) => MainSchemeId -> m [PlayerCard]
+
+getAllyHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
+allianceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
+
+getAllyHoldingCard :: (HasGame m) => PlayerCard -> m (Maybe AllyId)
+
+effectivePlayerCardDef :: (HasGame m) => IdentityId -> PlayerCard -> m CardDef
+
+getIdentityAttackAgainst :: (HasGame m) => IdentityId -> EnemyId -> m Natural
+attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
+
+canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
+hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
+
+getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
+eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId] -> m Bool
+
+eventExhaustionsAffordable :: (HasGame m) => IdentityId -> [IdentityId] -> PlayerCard -> Cost -> m Bool
+
+sourceAbilitySubTypes :: (HasGame m) => Source -> m [AbilitySubType]

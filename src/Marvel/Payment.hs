@@ -23,16 +23,20 @@ paymentResources
      )
   => Payment
   -> m [Resource]
-paymentResources (ResourcePayment r) = pure [r]
-paymentResources (WildPayment r) = pure [r]
-paymentResources (ResourcePaymentFromCard matcher) = do
-  cards <- selectList matcher
-  case cards of
-    [] -> pure []
-    [x] -> pure $ printedResources $ getCardDef x
-    _ -> error "target matches too many cards"
-paymentResources (Payments ps) = concatMapM paymentResources ps
-paymentResources _ = pure []
+paymentResources payment = case paymentActualResources payment of
+  Just resources -> pure resources
+  Nothing -> concatMapM generated (payments payment)
+ where
+  generated (ResourcePayment r) = pure [r]
+  generated (WildPayment r) = pure [r]
+  generated (ContributedWildPayment _ r) = pure [r]
+  generated (ResourcePaymentFromCard matcher) = do
+    cards <- selectList matcher
+    case cards of
+      [] -> pure []
+      [x] -> pure $ printedResources $ getCardDef x
+      _ -> error "target matches too many cards"
+  generated _ = pure []
 
 -- | Whether a resource of this type went to the payment: "if you paid for this card
 -- using a [physical] resource". A wild resource counts as the type it was declared as,

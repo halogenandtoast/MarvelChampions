@@ -80,6 +80,10 @@ allObligations = fromList $ map
     , regenerationCycle
     -- The Mad Titan's Shadow: the campaign set
     , systemShock
+    , inferiorityComplex
+    , equipmentMalfunction
+    , troubleInOtherworld
+    , corruptedProgramming
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -105,6 +109,8 @@ obligation code name boostIcons = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -263,3 +269,23 @@ regenerationCycle = obligation "21066" "Regeneration Cycle" [Boost, Boost]
 
 systemShock :: CardDef
 systemShock = (obligation "21185" "System Shock" []) {cdEncounterSet = Just MadTitansShadowCampaign, cdEncounterSetQuantity = Just 4}
+
+-- Nebula
+
+inferiorityComplex :: CardDef
+inferiorityComplex = obligation "22027" "Inferiority Complex" [Boost, Boost]
+
+-- War Machine
+
+equipmentMalfunction :: CardDef
+equipmentMalfunction = obligation "23028" "Equipment Malfunction" [Boost, Boost]
+
+-- Valkyrie
+
+troubleInOtherworld :: CardDef
+troubleInOtherworld = obligation "25028" "Trouble in Otherworld" [Boost, Boost]
+
+-- Vision
+
+corruptedProgramming :: CardDef
+corruptedProgramming = obligation "26028" "Corrupted Programming" [Boost, Boost]

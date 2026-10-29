@@ -39,6 +39,7 @@ data WindowMatcher
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
+  | CharacterWouldTakeAttackDamage CharacterMatcher
   | -- | an ally matching would take damage exactly equal to its remaining hit points
     AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
   | -- | after a player matching's hero thwarts and removes all threat from a scheme
@@ -61,6 +62,7 @@ data WindowMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
+  | EnemyDefeatedWithUpgrade WindowTiming CardDef DamageMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | -- | after an enemy matching takes damage of the kind matching
     EnemyTookDamage EnemyMatcher DamageMatcher
@@ -70,6 +72,7 @@ data WindowMatcher
     IdentityChangedAnyForm WindowTiming IdentityMatcher
   | -- | "after you change to this form": an energy form matching turned faceup
     EnergyFormChangedTo WindowTiming UpgradeMatcher
+  | MassFormChangedTo WindowTiming UpgradeMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | -- | a player matching makes a basic attack against an enemy matching, its target chosen
     MakesBasicAttackAgainst WindowTiming IdentityMatcher EnemyMatcher
@@ -95,6 +98,8 @@ data WindowMatcher
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
     PlaysCard WindowTiming IdentityMatcher CardMatcher
+  | -- | A player matching played an upgrade onto an ally; target is snapshotted.
+    PlaysUpgradeOnAlly WindowTiming IdentityMatcher
   | -- | after a player plays an ally matching, as it is in play (traits it gains count)
     PlaysAlly AllyMatcher
   | -- | "when you play a card from your hand": a player matching is about to pay for a
@@ -182,6 +187,7 @@ data WindowType
   | -- | the minion, the damage that defeated it, what dealt it, and how much of it went
     -- past its hit points
     DefeatedMinion MinionId Damage Source Natural
+  | DefeatedEnemyWithUpgrades EnemyId [CardDef] Damage Source
   | MinionEnteredPlay MinionId
   | -- | the enemy took this damage, from this source: none a tough status card prevented
     EnemyTookDamageFrom EnemyId Damage Source
@@ -191,11 +197,15 @@ data WindowType
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
   | AllyThwart AllyId SchemeId
+  | AllyAttackCompletedAgainst AllyId [EnemyId]
   | AllyAttack AllyId EnemyId
+  | -- | A hero or ally attacks a friendly identity, without becoming an enemy.
+    FriendlyCharacterAttack CharacterId IdentityId
   | ThreatPlaced ThreatSource SchemeId Natural
   | IdentityChangesForm IdentityId
   | -- | the identity changed to the energy form of this upgrade, turned faceup
     EnergyFormChanged IdentityId UpgradeId
+  | MassFormChanged IdentityId UpgradeId
   | MadeBasicAttack IdentityId
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
@@ -218,6 +228,8 @@ data WindowType
   | FlippedBoostCard EncounterCard EnemyId
   | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard
+  | -- | The player, upgrade and ally named when it was played, even after either leaves.
+    UpgradePlayedOnAlly IdentityId UpgradeId AllyId
   | -- | the player played the card from their hand, its cost paid
     PlayedCardFromHand IdentityId PlayerCard
   | -- | the player is about to pay for the card from their hand

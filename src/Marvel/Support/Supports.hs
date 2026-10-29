@@ -77,3 +77,25 @@ import Marvel.Support.Supports.MightyAvengers as X
 
 -- Adam Warlock
 import Marvel.Support.Supports.SoulWorld as X
+
+import Marvel.Support.Supports.NebulasShipSupport as X
+
+import Marvel.Support.Supports.GuardiansOfTheGalaxy as X
+
+import Marvel.Support.Supports.DefensiveTraining as X
+
+import Marvel.Support.Supports.MunitionsBunker as X
+
+import Marvel.Support.Supports.CommandTeam as X
+
+import Marvel.Support.Supports.VigilanteTraining as X
+
+import Marvel.Support.Supports.Valhalla as X
+
+import Marvel.Support.Supports.TheBifrost as X
+
+import Marvel.Support.Supports.LeadershipTraining as X
+
+import Marvel.Support.Supports.HickoryBranchLane616 as X
+
+import Marvel.Support.Supports.AssaultTraining as X

@@ -120,3 +120,5 @@ import Marvel.Attachment.Attachments.LegionsOfHel as X
 
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Attachment.Attachments.MadTitansShadowCampaign as X
+
+import Marvel.Attachment.Attachments.LethalWeapon as X

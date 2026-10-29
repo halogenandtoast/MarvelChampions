@@ -257,3 +257,71 @@ import Marvel.Event.Events.MagicAttack as X
 import Marvel.Event.Events.ZoneOfSilence as X
 import Marvel.Event.Events.SummoningSpell as X
 import Marvel.Event.Events.ShieldSpell as X
+
+import Marvel.Event.Events.CombatReady as X
+
+import Marvel.Event.Events.LethalIntent as X
+
+import Marvel.Event.Events.OneWayOrAnother as X
+
+import Marvel.Event.Events.BrainsOverBrawn as X
+
+import Marvel.Event.Events.DaughtersOfThanos as X
+
+import Marvel.Event.Events.RepulsorBeam as X
+
+import Marvel.Event.Events.TargetedStrike as X
+
+import Marvel.Event.Events.ScorchedEarth as X
+
+import Marvel.Event.Events.FullAuto as X
+
+import Marvel.Event.Events.SneakAttack as X
+
+import Marvel.Event.Events.SaveTheDay as X
+
+import Marvel.Event.Events.GoDownSwinging as X
+
+import Marvel.Event.Events.TwoAgainstTheWorld as X
+
+import Marvel.Event.Events.AsOne as X
+
+import Marvel.Event.Events.StandTogether as X
+
+import Marvel.Event.Events.VisitValhalla as X
+
+import Marvel.Event.Events.ChooserOfTheSlain as X
+
+import Marvel.Event.Events.Shieldmaiden as X
+
+import Marvel.Event.Events.HaveAtThee as X
+
+import Marvel.Event.Events.QuickStrike as X
+
+import Marvel.Event.Events.SmashTheProblem as X
+
+import Marvel.Event.Events.TheBestDefense as X
+
+import Marvel.Event.Events.GodlikeStamina as X
+
+import Marvel.Event.Events.ProblemSolvers as X
+
+import Marvel.Event.Events.CosmicAlliance as X
+
+import Marvel.Event.Events.SolarBeam as X
+
+import Marvel.Event.Events.SuperdenseStrike as X
+
+import Marvel.Event.Events.JustPassingThrough as X
+
+import Marvel.Event.Events.PhaseDisruption as X
+
+import Marvel.Event.Events.MassIncrease as X
+
+import Marvel.Event.Events.Defiance as X
+
+import Marvel.Event.Events.Reboot as X
+
+import Marvel.Event.Events.JoiningForces as X
+
+import Marvel.Event.Events.Meditation as X

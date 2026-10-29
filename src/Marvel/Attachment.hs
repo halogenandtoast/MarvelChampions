@@ -168,6 +168,9 @@ allAttachments =
       , SomeAttachmentCard seduced
       -- The Mad Titan's Shadow: the campaign set
       , SomeAttachmentCard jormungand
+      , SomeAttachmentCard lethalWeapon
+      , SomeAttachmentCard (reprintAs Cards.beguiledValkyrie beguiled)
+      , SomeAttachmentCard (reprintAs Cards.seducedValkyrie seduced)
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

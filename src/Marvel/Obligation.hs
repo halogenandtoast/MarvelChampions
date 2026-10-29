@@ -88,6 +88,10 @@ allObligations = fromList $ map
   , SomeObligationCard regenerationCycle
   -- The Mad Titan's Shadow: the campaign set
   , SomeObligationCard systemShock
+  , SomeObligationCard inferiorityComplex
+  , SomeObligationCard equipmentMalfunction
+  , SomeObligationCard troubleInOtherworld
+  , SomeObligationCard corruptedProgramming
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

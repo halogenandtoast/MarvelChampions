@@ -103,6 +103,17 @@ allSupports = fromList $ map
 
   -- Adam Warlock
   , SomeSupportCard soulWorld
+  , SomeSupportCard nebulasShipSupport
+  , SomeSupportCard guardiansOfTheGalaxy
+  , SomeSupportCard defensiveTraining
+  , SomeSupportCard munitionsBunker
+  , SomeSupportCard commandTeam
+  , SomeSupportCard vigilanteTraining
+  , SomeSupportCard valhalla
+  , SomeSupportCard theBifrost
+  , SomeSupportCard leadershipTraining
+  , SomeSupportCard hickoryBranchLane616
+  , SomeSupportCard assaultTraining
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

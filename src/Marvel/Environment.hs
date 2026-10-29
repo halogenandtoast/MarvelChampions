@@ -4,6 +4,8 @@ module Marvel.Environment where
 
 import Marvel.Prelude
 
+import Marvel.Environment.Environments.UltronDronesVision
+
 import Marvel.Ability.Types
 import Marvel.Card
 import Marvel.Environment.Cards qualified as Cards
@@ -83,6 +85,7 @@ allEnvironments =
     , SomeEnvironmentCard soulStone
     , SomeEnvironmentCard spaceStone
     , SomeEnvironmentCard timeStone
+    , SomeEnvironmentCard ultronDronesVision
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

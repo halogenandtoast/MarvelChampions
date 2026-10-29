@@ -1,6 +1,10 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Ability.Types qualified as Ability
+
 import Marvel.Prelude
+
+import Marvel.GameValue.Types (GameValue (PerPlayer))
 
 import Marvel.Cost.Types (Cost (NoCost))
 
@@ -214,6 +218,32 @@ allUpgrades = fromList $ concatMap
   -- The Mad Titan's Shadow: the campaign set
   , nornStoneSetup
   , nornStone
+  , cutthroatAmbition
+  , evasiveManeuvering
+  , unyieldingPersistence
+  , weaponsMaster
+  , wideStance
+  , justiceServed
+  , energySpear
+  , honoraryGuardian
+  , upgradedChassis
+  , gauntletGun
+  , missileLauncher
+  , shoulderCannon
+  , sidearm
+  , deathGlow
+  , valkyriesSpear
+  , dragonfang
+  , aragorn
+  , flightOfTheValkyrior
+  , anticipation
+  , intangible
+  , solarGem
+  , visionsCape
+  , densityControl
+  , flowLikeWater
+  , chanceEncounter
+  , dense
   ]
 
 upgrade
@@ -253,6 +283,8 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -337,11 +369,11 @@ vibraniumSuit =
   identityUpgrade "01049" "Vibranium Suit" 2 [Armor, BlackPanther] [Mental]
 
 combatTraining :: CardDef
-combatTraining = reprintedAs ["04041", "18017", "21045"] $ limited (MaxPerPlayerUnderAnyControl 1)
+combatTraining = deckLimited 3 $ reprintedAs ["04041", "18017", "21045", "25017"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01057" "Combat Training" 2 [Skill] [Physical] Aggression
 
 heroicIntuition :: CardDef
-heroicIntuition = reprintedAs ["04046", "15017", "21051"] $ limited (MaxPerPlayerUnderAnyControl 1)
+heroicIntuition = deckLimited 3 $ reprintedAs ["04046", "15017", "21051", "22019"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "01065" "Heroic Intuition" 2 [Skill] [Energy] Justice
 
 inspired :: CardDef
@@ -355,7 +387,7 @@ armoredVest = reprintedAs ["14016", "21063"] $ limited (MaxPerPlayerUnderAnyCont
   $ upgrade "01081" "Armored Vest" 1 [Armor] [Mental] Protection
 
 indomitable :: CardDef
-indomitable = reprintedAs ["16018", "19019"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
+indomitable = deckLimited 3 $ reprintedAs ["16018", "19019", "26017"] $ upgrade "01082" "Indomitable" 1 [Condition] [Energy] Protection
 
 tenacity :: CardDef
 tenacity = basicUpgrade "01093" "Tenacity" 2 [Condition] [Energy]
@@ -936,3 +968,119 @@ nornStoneFace code =
     , cdEncounterSet = Just MadTitansShadowCampaign
     , cdEncounterSetQuantity = Just 4
     }
+
+-- Nebula
+
+cutthroatAmbition :: CardDef
+cutthroatAmbition = deckLimited 2 $ (identityUpgrade "22004" "Cutthroat Ambition" 1 [Technique] [Mental]) {cdAbilitySubTypes = [Ability.Thwart]}
+
+evasiveManeuvering :: CardDef
+evasiveManeuvering = deckLimited 1 $ identityUpgrade "22005" "Evasive Maneuvering" 1 [Technique] [Energy]
+
+unyieldingPersistence :: CardDef
+unyieldingPersistence = deckLimited 1 $ identityUpgrade "22006" "Unyielding Persistence" 1 [Technique] [Mental]
+
+weaponsMaster :: CardDef
+weaponsMaster = deckLimited 2 $ (identityUpgrade "22007" "Weapons Master" 1 [Technique] [Physical]) {cdAbilitySubTypes = [Ability.Attack]}
+
+wideStance :: CardDef
+wideStance = deckLimited 2 $ identityUpgrade "22008" "Wide Stance" 1 [Technique] [Energy]
+
+justiceServed :: CardDef
+justiceServed = deckLimited 3 $ (upgrade "22014" "Justice Served" 1 [] [Mental] Justice)
+    { cdLimit = Just (MaxPerPlayerUnderAnyControl 1)
+    }
+
+energySpear :: CardDef
+energySpear = deckLimited 3 $ (upgrade "22032" "Energy Spear" 1 [Weapon] [Energy] Aggression)
+    { cdLimit = Just (MaxPerAlly 1)
+    }
+
+honoraryGuardian :: CardDef
+honoraryGuardian = deckLimited 3 $ (basicUpgrade "22035" "Honorary Guardian" 0 [Title] [Energy])
+    { cdLimit = Just (MaxPerCharacter 1)
+    , cdCriteria = SelfMatches (IdentityWithTrait Guardian)
+    }
+
+-- War Machine
+
+upgradedChassis :: CardDef
+upgradedChassis = deckLimited 1 $ identityUpgrade "23004" "Upgraded Chassis" 3 [Armor, Tech] [Mental]
+
+gauntletGun :: CardDef
+gauntletGun = deckLimited 2 $ identityUpgrade "23005" "Gauntlet Gun" 2 [Tech, Weapon] [Physical]
+
+missileLauncher :: CardDef
+missileLauncher = deckLimited 1 $ identityUpgrade "23006" "Missile Launcher" 1 [Tech, Weapon] [Mental]
+
+shoulderCannon :: CardDef
+shoulderCannon = deckLimited 1 $ identityUpgrade "23007" "Shoulder Cannon" 2 [Tech, Weapon] [Energy]
+
+sidearm :: CardDef
+sidearm = deckLimited 3 $ (basicUpgrade "23035" "Sidearm" 1 [Weapon] [Physical])
+    { cdLimit = Just (MaxPerAlly 1)
+    }
+
+-- Valkyrie
+
+deathGlow :: CardDef
+deathGlow = deckLimited 1 $ identityUpgrade "25002" "Death-Glow" 1 [Condition] []
+
+valkyriesSpear :: CardDef
+valkyriesSpear = deckLimited 1 $ (identityUpgrade "25005" "Valkyrie's Spear" 1 [Asgard, Weapon] [Physical])
+    { cdUnique = True
+    , cdKeywords = fromList [Restricted]
+    }
+
+dragonfang :: CardDef
+dragonfang = deckLimited 1 $ (identityUpgrade "25006" "Dragonfang" 1 [Asgard, Weapon] [Physical])
+    { cdUnique = True
+    , cdKeywords = fromList [Restricted]
+    }
+
+aragorn :: CardDef
+aragorn = deckLimited 1 $ (identityUpgrade "25007" "Aragorn" 2 [Asgard, Creature] [Mental])
+    { cdUnique = True
+    }
+
+flightOfTheValkyrior :: CardDef
+flightOfTheValkyrior = deckLimited 2 $ identityUpgrade "25008" "Flight of the Valkyrior" 2 [] [Energy]
+
+anticipation :: CardDef
+anticipation = deckLimited 3 $ (upgrade "25035" "Anticipation" 1 [Preparation] [Physical] Protection)
+    { cdLimit = Just (MaxPerPlayer 1)
+    }
+
+-- Vision
+
+intangible :: CardDef
+intangible = deckLimited 1 $ (identityUpgrade "26002" "Intangible" 0 [] [])
+    { cdKeywords = fromList [Permanent, MassForm]
+    }
+
+solarGem :: CardDef
+solarGem = deckLimited 1 $ (identityUpgrade "26005" "Solar Gem" 2 [Item] [Wild])
+    { cdUnique = True
+    }
+
+visionsCape :: CardDef
+visionsCape = deckLimited 1 $ (identityUpgrade "26006" "Vision's Cape" 2 [Item] [Physical])
+    { cdUnique = True
+    }
+
+densityControl :: CardDef
+densityControl = deckLimited 2 $ identityUpgrade "26007" "Density Control" 1 [Superpower] [Mental]
+
+flowLikeWater :: CardDef
+flowLikeWater = deckLimited 3 $ (upgrade "26016" "Flow Like Water" 2 [Condition] [Physical] Protection)
+    { cdLimit = Just (MaxPerPlayerUnderAnyControl 1)
+    }
+
+chanceEncounter :: CardDef
+chanceEncounter = deckLimited 3 $ (upgrade "26034" "Chance Encounter" 0 [Condition] [Energy] Justice)
+    { cdLimit = Just (MaxPerSideScheme 1)
+    }
+
+-- The reverse of Intangible, flipped in place; its front keeps CDB code 26002.
+dense :: CardDef
+dense = intangible {cdCardCode = "26002b", cdName = "Dense", cdDeckLimit = Just 0}

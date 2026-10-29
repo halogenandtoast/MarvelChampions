@@ -65,6 +65,10 @@ allAlterEgoCards =
     , monicaRambeau
     -- Adam Warlock
     , adamWarlockAlterEgo
+    , nebulaAlterEgo
+    , jamesRhodes
+    , brunnhilde
+    , visionAlterEgo
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -93,6 +97,8 @@ alterEgo cardCode name traits = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -188,3 +194,31 @@ monicaRambeau = alterEgo "21001b" "Monica Rambeau" [Civilian]
 
 adamWarlockAlterEgo :: CardDef
 adamWarlockAlterEgo = alterEgo "21031b" "Adam Warlock" [Mystic]
+
+-- Nebula
+
+nebulaAlterEgo :: CardDef
+nebulaAlterEgo = deckLimited 1 $ (alterEgo "22001b" "Nebula" [Outlaw])
+    { cdUnique = True
+    }
+
+-- War Machine
+
+jamesRhodes :: CardDef
+jamesRhodes = deckLimited 1 $ (alterEgo "23001b" "James Rhodes" [Soldier, Shield])
+    { cdUnique = True
+    }
+
+-- Valkyrie
+
+brunnhilde :: CardDef
+brunnhilde = deckLimited 1 $ (alterEgo "25001b" "Brunnhilde" [Asgard])
+    { cdUnique = True
+    }
+
+-- Vision
+
+visionAlterEgo :: CardDef
+visionAlterEgo = deckLimited 1 $ (alterEgo "26001b" "Vision" [Android])
+    { cdUnique = True
+    }

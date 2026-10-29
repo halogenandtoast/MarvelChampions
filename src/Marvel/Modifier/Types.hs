@@ -2,6 +2,9 @@ module Marvel.Modifier.Types where
 
 import Marvel.Prelude
 
+import Marvel.Card.Id (CardId)
+import Marvel.Id (EnemyId)
+
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
 import Marvel.Id (IdentityId, MainSchemeId)
@@ -10,9 +13,17 @@ import Marvel.Trait.Types
 
 data Modifier
   = ResourceCostReduction Natural
+  | -- | on a resource ability source: its effect can generate identity counters
+    MayGenerateIdentityCountersFor CardMatcher Natural
+  | -- | reduction scoped to one physical card during one nested play
+    ResourceCostReductionForCard CardId Natural
   | ThwartModifier Natural
   | AttackModifier Natural
   | SchemeModifier Natural
+  | AttackModifierAgainst EnemyId Natural
+  | DefenseModifierAgainst EnemyId Natural
+  | CannotAttackEnemy EnemyId
+  | CannotBeDiscarded
   | DefenseModifier Natural
   | AllyLimitModifier Natural
   | -- | on an identity: it can control this many more restricted upgrades (Venom)
@@ -26,6 +37,15 @@ data Modifier
     HandSizeReduction Natural
   | TraitModifier Trait
   | KeywordModifier Keyword
+  | -- | on an identity: its attacks ignore guard, its thwarts patrol or crisis
+    IgnoresGuard
+  | IgnoresPatrol
+  | IgnoresCrisis
+  | -- | prevents all attacks/defenses, including labeled abilities (Intangible)
+    CannotAttack
+  | CannotDefend
+  | -- | reduce each instance of consequential damage, to a minimum of zero
+    ConsequentialDamageReduction Natural
   | LastSpecial
   | -- | on a main scheme: an acceleration token that would be placed on it is placed on
     -- the one given instead

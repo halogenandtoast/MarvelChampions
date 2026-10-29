@@ -199,6 +199,10 @@ allMinions =
 
       -- The Mad Titan's Shadow: the campaign set
       , blackSwan
+      , gamoraNemesis
+      , livingLaser
+      , enchantressValkyrie
+      , ultronNemesis
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -241,6 +245,8 @@ minion code name traits boostIcons encounterSet quantity =
     , cdAcceleration = 0
     , cdAmplify = 0
     , cdLimit = Nothing
+    , cdDeckLimit = Nothing
+    , cdTeamUp = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
     , cdAbilityCost = NoCost
@@ -890,3 +896,31 @@ enchantress = unique $ minion "21177" "Enchantress" [Asgard, Elite] [Boost, Boos
 -- | Save the Shawarma Place's other side.
 blackSwan :: CardDef
 blackSwan = unique $ (minion "21182b" "Black Swan" [BlackOrder, Elite] [] MadTitansShadowCampaign 1) {cdKeywords = fromList [Toughness, Victory 2]}
+
+-- Nebula
+
+gamoraNemesis :: CardDef
+gamoraNemesis = (minion "22028" "Gamora" [Elite, Outlaw] [Boost, Boost, Boost] NebulaNemesis 1)
+    { cdUnique = True
+    }
+
+-- War Machine
+
+livingLaser :: CardDef
+livingLaser = (minion "23029" "Living Laser" [Criminal] [Boost, Boost] WarMachineNemesis 1)
+    { cdUnique = True
+    , cdKeywords = fromList [Quickstrike]
+    }
+
+-- Valkyrie
+
+enchantressValkyrie :: CardDef
+enchantressValkyrie = (reprint "25029" enchantress) {cdEncounterSet = Just ValkyrieNemesis, cdEncounterSetQuantity = Just 1}
+
+-- Vision
+
+ultronNemesis :: CardDef
+ultronNemesis = (minion "26029" "Ultron" [Android, Elite] [Boost, Boost] VisionNemesis 1)
+    { cdUnique = True
+    , cdKeywords = fromList [Toughness]
+    }

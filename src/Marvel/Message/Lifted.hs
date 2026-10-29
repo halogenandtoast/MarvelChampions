@@ -10,6 +10,18 @@ module Marvel.Message.Lifted (
 
 import Marvel.Prelude
 
+import Marvel.Card.Code (HasCardCode (toCardCode))
+
+import Marvel.Discard (unDiscard)
+
+import Marvel.Deck (unDeck)
+
+import Marvel.Hand (unHand)
+
+import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard))
+
+import Marvel.Projection
+
 import Marvel.Ability.Types (Ability)
 import Marvel.I18n (ikeyWith, intVar)
 import Marvel.ActiveCost.Types
@@ -17,8 +29,8 @@ import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..))
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
-import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..))
-import Marvel.Card.Id (CardId (..))
+import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType))
+import Marvel.Card.Id (CardId (..), HasCardId (..))
 import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Card.PlayerCard.Types (PlayerCard (..))
 import Marvel.Card.Side (Side (..))
@@ -30,7 +42,7 @@ import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain))
+import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -41,9 +53,10 @@ import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
-import Marvel.Keyword (Keyword (EnergyForm, Incite, Permanent))
+import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
+import Marvel.Resource.Types (Resource)
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
 import Marvel.Window.Types qualified as W
 
@@ -193,6 +206,11 @@ damageCharacter character source = resolve . DamageCharacter (toCharacter charac
 -- | An attack's damage to the identity, which is not 'damageIdentity''s.
 attackDamageIdentity :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> m ()
 attackDamageIdentity ident source = push . IdentityMessage ident . IdentityDamaged (toSource source)
+
+-- | A friendly character really attacks, for attack-triggered abilities and ally
+-- consequential damage. This is not an enemy activation or a basic attack.
+friendlyCharacterAttacks :: (ReverseQueue m, IsCharacter character) => character -> IdentityId -> m ()
+friendlyCharacterAttacks attacker = push . FriendlyCharacterAttacks (toCharacter attacker)
 
 -- | The window after an enemy's attack damages the character, if the damage is that.
 attackDealtDamageTo :: (ReverseQueue m, IsCharacter character) => Source -> Damage -> character -> m ()
@@ -497,9 +515,43 @@ flipToEnergyForm ident u = do
   upgradeStep u FlipUpgradeFaceUp
   checkWindows [Window After $ W.EnergyFormChanged ident u]
 
+-- | Ask the mass-form card to flip itself in place.
+flipMassForm :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
+flipMassForm ident uid = do
+  canChange <- not . null <$> selectList (IdentityWithId ident <> IdentityCanChangeForm)
+  when canChange $ cardSpecific uid "flipMassForm" ()
+
+massFormChanged :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
+massFormChanged ident uid = checkWindows [Window After $ W.MassFormChanged ident uid]
+
+isInMassForm :: (HasGame m) => IdentityId -> CardDef -> m Bool
+isInMassForm ident def = not . null <$> selectList (UpgradeIs def <> UpgradeControlledBy (IdentityWithId ident))
+
+putMassFormIntoPlay :: (ReverseQueue m) => IdentityId -> m ()
+putMassFormIntoPlay ident = do
+  cards <- filter (\c -> MassForm `elem` cdKeywords (getCardDef c) && pcOwner c == Just ident) <$> getSetAsidePlayerCards
+  for_ cards \c -> do
+    removeFromGame (CardIdRef $ pcCardId c)
+    putIntoPlay ident c
+
 -- | Power Down: every energy form facedown, which is not a change of form (R3).
 turnEnergyFormsFacedown :: (ReverseQueue m) => IdentityId -> m ()
 turnEnergyFormsFacedown ident = faceupEnergyForm ident >>= traverse_ (`upgradeStep` FlipUpgradeFaceDown)
+
+-- | Declare a basic defender without exhausting it, then apply the additional DEF
+-- for this attack. The enemy must already have begun its attack (its When window).
+declareHeroDefenseWithoutExhausting :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> Natural -> m ()
+declareHeroDefenseWithoutExhausting ident enemy bonus = identityStep ident (SideMessage $ DefendedWithoutExhausting bonus $ toEnemy enemy)
+
+-- | Replace the pending basic DEF calculation with ATK for this attack.
+useAttackForDefense :: (HasQueue m) => IdentityId -> m ()
+useAttackForDefense ident = replaceMatchingMessage change \case
+  IdentityMessage who (SideMessage (DefenseApplied _ _)) -> who == ident
+  _ -> False
+ where
+  change = \case
+    IdentityMessage who (SideMessage (DefenseApplied n enemy)) -> [IdentityMessage who $ SideMessage $ DefenseUsingAttackApplied n enemy]
+    msg -> [msg]
 
 -- * Attacks and defense
 
@@ -569,7 +621,14 @@ advanceVillain :: (ReverseQueue m) => VillainId -> m ()
 advanceVillain vid = villainStep vid VillainAdvanced
 
 defeatVillain :: (ReverseQueue m) => VillainId -> m ()
-defeatVillain vid = villainStep vid VillainDefeated
+defeatVillain vid = do
+  -- Would-be-defeated replacements have already chosen to defeat the villain. Only
+  -- now open the actual defeat interrupt, before advancing/removing its stage.
+  attached <- enemyDefeatUpgrades (EnemyVillainId vid)
+  pending <- withQueueM $ \q -> pure [(damage, source) | CheckWindows ws <- q, W.Window After (W.DefeatedVillain _ damage source _) <- ws]
+  let (damage, source) = fromMaybe (toDamage 0 FromAbility, GameRef) (headMay pending)
+  checkWindows [W.Window When $ W.DefeatedEnemyWithUpgrades (EnemyVillainId vid) attached damage source]
+  villainStep vid VillainDefeated
 
 -- | The ability of the source has resolved all it does ('AbilityResolved').
 abilityResolved :: (ReverseQueue m) => Source -> m ()
@@ -1028,6 +1087,26 @@ upgradeAttachedTo character u = push case toCharacter character of
 upgradeRemoved :: (ReverseQueue m) => UpgradeId -> m ()
 upgradeRemoved = push . UpgradeRemoved
 
+-- | An upgrade changes controller, without a leave-play notification.
+upgradeControlLost :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
+upgradeControlLost ident = identityStep ident . UpgradeControlLost
+
+-- | A bonus to the ally's current basic power, whose target and base amount have
+-- already been chosen before its interrupt window opens.
+addToAllyBasicPower :: (HasQueue m) => AllyId -> Natural -> m ()
+addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
+ where
+  matches = \case
+    AllyMessage who (AllyAttackLands _ _) -> who == aid
+    MainSchemeMessage _ (MainSchemeThwarted (AllyRef who) _) -> who == aid
+    SideSchemeMessage _ (SideSchemeThwarted (AllyRef who) _) -> who == aid
+    _ -> False
+  raise = \case
+    AllyMessage who (AllyAttackLands enemy damage) -> [AllyMessage who (AllyAttackLands enemy damage {damageAmount = damageAmount damage + bonus})]
+    MainSchemeMessage sid (MainSchemeThwarted source amount) -> [MainSchemeMessage sid (MainSchemeThwarted source (amount + bonus))]
+    SideSchemeMessage sid (SideSchemeThwarted source amount) -> [SideSchemeMessage sid (SideSchemeThwarted source (amount + bonus))]
+    other -> [other]
+
 -- * Paying
 
 -- | The player pays the cost for an encounter card, as a treachery asks.
@@ -1050,6 +1129,39 @@ spendCard acid = push . Spent acid
 paid :: (ReverseQueue m) => Payment -> m ()
 paid = push . Paid
 
+-- | Invite another player to contribute to the current alliance payment.
+contributeResources :: (ReverseQueue m) => ActiveCostId -> IdentityId -> m ()
+contributeResources acid = push . ContributeResources acid
+
+-- | Ask the contributor to declare the wild resources they just generated.
+declareContributionWilds :: (ReverseQueue m) => ActiveCostId -> IdentityId -> Natural -> m ()
+declareContributionWilds acid who = push . DeclareContributionWilds acid who
+
+-- | The contributor pays this part using their own characters and cards.
+contributeCost :: (ReverseQueue m) => ActiveCostId -> IdentityId -> Cost -> m ()
+contributeCost acid ident = push . ContributeCost acid ident
+
+-- | Obtain all contributions before committing non-resource costs.
+prepareAllianceCosts :: (ReverseQueue m) => ActiveCostId -> [(IdentityId, Cost)] -> [Cost] -> m ()
+prepareAllianceCosts acid approved = push . PrepareAllianceCosts acid approved
+
+offerAllianceCost :: (ReverseQueue m) => ActiveCostId -> IdentityId -> Cost -> [(IdentityId, Cost)] -> [Cost] -> m ()
+offerAllianceCost acid who cost approved = push . OfferAllianceCost acid who cost approved
+
+reserveAllyHeldCard :: (ReverseQueue m) => AllyId -> PlayerCard -> m ()
+reserveAllyHeldCard ally = push . ReserveAllyHeldCard ally
+
+-- | Attach an event facedown and allow its controller to play it while the ally's
+-- text is active. The event leaves its previous zone before being attached.
+attachPlayableEventToAlly :: (ReverseQueue m) => AllyId -> PlayerCard -> m ()
+attachPlayableEventToAlly ally card = do
+  removeFromGame card
+  push $ AttachPlayableEventToAlly ally card
+
+-- | Play this card normally with a reduction confined to its own play and payment.
+playCardWithReduction :: (ReverseQueue m) => IdentityId -> Natural -> PlayerCard -> m ()
+playCardWithReduction who n card = push $ PlayCardWithReduction who card n
+
 -- | The part of the cost is paid ('PayCost').
 payCost :: (ReverseQueue m) => ActiveCostId -> Cost -> m ()
 payCost acid = push . PayCost acid
@@ -1061,6 +1173,10 @@ checkPayment = push . CheckPayment
 -- | The resources are paid: the rest of the cost follows.
 finishPayment :: (ReverseQueue m) => ActiveCostId -> m ()
 finishPayment = push . FinishedPayment
+
+-- | Select the actual resources spent out of the generated pool.
+allocatePayment :: (ReverseQueue m) => ActiveCostId -> [Resource] -> m ()
+allocatePayment acid = push . AllocatedPayment acid
 
 -- | The cost cannot be paid: what was spent on it goes back.
 abortPayment :: (ReverseQueue m) => ActiveCostId -> m ()
@@ -1078,10 +1194,16 @@ disableActiveCost = push . DisableActiveCost
 cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
 cardPlayed ident card payment mWindow =
   pushAll
-    [ CheckWindows [Window When $ W.CardPlayed ident card]
+    [ CheckWindows (windows When)
     , IdentityMessage ident (PlayedCard card mWindow)
     , PutCardIntoPlay ident card payment mWindow True
-    , CheckWindows [Window After $ W.CardPlayed ident card]
+    , CheckWindows (windows After)
+    ]
+ where
+  windows timing = Window timing (W.CardPlayed ident card) :
+    [ Window timing $ W.UpgradePlayedOnAlly ident (UpgradeId $ unCardId $ pcCardId card) aid
+    | cdCardType (getCardDef card) == UpgradeType
+    , Just (AllyRef aid) <- [paymentTarget payment]
     ]
 
 -- | The ability on the target resolves, as if triggered in the windows given.
@@ -1375,9 +1497,15 @@ highestCostControlled :: (HasGame m) => IdentityId -> Bool -> Bool -> m [Target]
 highestCostControlled you upgrades supports = do
   us <- if upgrades then selectList (UpgradeControlledBy $ IdentityWithId you) else pure []
   ss <- if supports then selectList (SupportControlledBy $ IdentityWithId you) else pure []
-  costed <- for (map UpgradeRef us <> map SupportRef ss) \t ->
+  targets <- filterM discardable (map UpgradeRef us <> map SupportRef ss)
+  costed <- for targets \t ->
     (t,) . fromIntegral . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` t)
   pure $ extremes MostThreat costed
+ where
+  discardable target = do
+    def <- getsGame (`abilityCardDef` target)
+    modifiers <- getModifiers target
+    pure $ maybe True (notElem Permanent . cdKeywords) def && CannotBeDiscarded `notElem` modifiers
 
 -- | "The highest-cost card you control": of the player's allies, supports and upgrades,
 -- each with the highest printed cost.
@@ -1664,6 +1792,64 @@ cancelDamage ident = cancelMatchingMessage \case
   IdentityMessage ident' (IdentityDamaged _ _) -> ident' == ident
   _ -> False
 
+-- | Cancel only this card's boost ability, preserving its icons and every other card.
+cancelBoostEffect :: (HasQueue m) => EncounterCard -> m ()
+cancelBoostEffect card = replaceMatchingMessage replace matchesMessage
+ where
+  matchesMessage = \case
+    RevealBoostCard other _ -> other == card
+    RevealedAsBoost target _ -> matchesTarget target
+    _ -> False
+  replace = \case
+    RevealBoostCard other enemy -> [RevealBoostCardWithoutAbility other enemy]
+    RevealedAsBoost _ _ -> []
+    other -> [other]
+  matchesTarget = \case
+    TreacheryRef (TreacheryId uid) -> matches uid
+    MinionRef (MinionId uid) -> matches uid
+    AttachmentRef (AttachmentId uid) -> matches uid
+    SideSchemeRef (SideSchemeId uid) -> matches uid
+    ObligationRef (ObligationId uid) -> matches uid
+    EnvironmentRef (EnvironmentId uid) -> matches uid
+    VillainRef (VillainId uid) -> matches uid
+    MainSchemeRef (MainSchemeId uid) -> matches uid
+    CardIdRef cid -> cid == toCardId card
+    _ -> False
+  matches uid = CardId uid == toCardId card
+
+-- | The queued attack damage still awaiting resolution for a friendly character.
+pendingCharacterAttackDamage :: (HasQueue m, IsCharacter character) => character -> m (Maybe (Source, Damage))
+pendingCharacterAttackDamage (toCharacter -> character) = withQueue \q -> (q, headMay $ mapMaybe matching q)
+ where
+  matching = \case
+    IdentityMessage ident (IdentityDamaged source damage)
+      | character == IdentityCharacter ident && damageSource damage == FromAttack -> Just (source, damage)
+    AllyMessage aid (AllyDamaged source damage)
+      | character == AllyCharacter aid && damageSource damage == FromAttack -> Just (source, damage)
+    _ -> Nothing
+
+-- | Cancel the pending attack damage to this friendly character.
+cancelCharacterAttackDamage :: (HasQueue m, IsCharacter character) => character -> m ()
+cancelCharacterAttackDamage (toCharacter -> character) = cancelMatchingMessage \case
+  IdentityMessage ident (IdentityDamaged _ damage) -> character == IdentityCharacter ident && damageSource damage == FromAttack
+  AllyMessage aid (AllyDamaged _ damage) -> character == AllyCharacter aid && damageSource damage == FromAttack
+  _ -> False
+
+-- | Replace turning this facedown boost card faceup with discarding it. Keep every
+-- other boost card, including any other cards in a pending icon count.
+discardBoostCardBeforeReveal :: (ReverseQueue m) => EncounterCard -> m ()
+discardBoostCardBeforeReveal card = do
+  replaceMatchingMessage removeCard \case
+    RevealBoostCard other _ -> other == card
+    CountActivationBoostIcons _ cards -> card `elem` cards
+    _ -> False
+  discardCard card
+ where
+  removeCard = \case
+    RevealBoostCard _ _ -> []
+    CountActivationBoostIcons target cards -> [CountActivationBoostIcons target rest | let rest = filter (/= card) cards, not (null rest)]
+    other -> [other]
+
 -- | The boost icons about to be counted and added to the enemy's activation are
 -- cancelled.
 cancelBoostIcons :: (HasQueue m, IsEnemy enemy) => enemy -> m ()
@@ -1731,12 +1917,14 @@ allyAttackGainsOverkill aid = replaceMatchingMessage gain \case
 increaseExcessDamage :: (HasQueue m) => Natural -> m ()
 increaseExcessDamage n = replaceMatchingMessage raise \case
   MinionMessage _ MinionDefeatedWithExcess {} -> True
-  CheckWindows [Window After W.DefeatedVillain {}] -> True
+  CheckWindows ws -> any (\case Window After W.DefeatedVillain {} -> True; _ -> False) ws
   _ -> False
  where
   raise = \case
     MinionMessage m (MinionDefeatedWithExcess s d k) -> [MinionMessage m $ MinionDefeatedWithExcess s d (k + n)]
-    CheckWindows [Window After (W.DefeatedVillain v d s k)] -> [CheckWindows [Window After $ W.DefeatedVillain v d s (k + n)]]
+    CheckWindows ws -> [CheckWindows $ map (\case
+      Window After (W.DefeatedVillain v d s k) -> Window After (W.DefeatedVillain v d s (k + n))
+      window -> window) ws]
     msg -> [msg]
 
 -- | The first message queued matching is replaced by what the body does.
@@ -1751,3 +1939,45 @@ afterMatching matcher body = do
   msgs <- capture body
   replaceMatchingMessage (: msgs) matcher
 
+
+-- | Find an owned card in any normal player zone or the set-aside zone and set it
+-- aside. Identity Setup abilities may call this after the opening hand/mulligan.
+setAsideOwnedCard :: (ReverseQueue m, Projection m PlayerIdentity) => IdentityId -> CardCode -> m ()
+setAsideOwnedCard ident code = do
+  hand <- projectMap PlayerIdentityHand unHand ident
+  deck <- projectMap PlayerIdentityDeck unDeck ident
+  discard <- projectMap PlayerIdentityDiscard unDiscard ident
+  aside <- getSetAsidePlayerCards
+  for_ (headMay [c | c <- hand <> deck <> discard <> aside, toCardCode c == code]) $ setAside . pure . toCard
+
+-- | Begin playing a set-aside card, paying its normal costs and choosing its normal
+-- targets. Callers use AffordableCardBy + InSetAsideOf as their ability criteria.
+playCardFromSetAside :: (ReverseQueue m) => IdentityId -> CardCode -> m ()
+playCardFromSetAside ident code = do
+  cards <- getSetAsidePlayerCards
+  for_ (headMay [c | c <- cards, toCardCode c == code, pcOwner c == Just ident]) $ \card -> identityStep ident (PlayingCard card Nothing)
+
+-- | Snapshot the upgrades attached to an enemy before its defeat interrupts run.
+-- Pass the same snapshot to the When and After windows.
+enemyDefeatUpgrades :: (HasGame m) => EnemyId -> m [CardDef]
+enemyDefeatUpgrades enemy = do
+  upgrades <- selectList (UpgradeMatches [])
+  catMaybes <$> for upgrades (\uid -> do
+    let matches = EnemyWithId enemy <> EnemyWithUpgrade (UpgradeWithId uid)
+    found <- not . null <$> gameSelectEnemy matches
+    if found then getsGame (`abilityCardDef` UpgradeRef uid) else pure Nothing)
+
+-- | One attack is resolved against every chosen enemy: replace its pending landing
+-- after its single initiation window. Thor's controller chooses the landing order.
+resolveAllyAttackAgainstAll :: (HasQueue m) => AllyId -> [EnemyId] -> m ()
+resolveAllyAttackAgainstAll aid enemies = replaceMatchingMessage replaceAttack \case
+  AllyMessage who (AllyAttackLands _ _) -> who == aid
+  _ -> False
+ where
+  replaceAttack = \case
+    AllyMessage who (AllyAttackLands _ damage) -> [AllyMessage who $ AllyAttackMultiple enemies damage]
+    msg -> [msg]
+
+-- | Put an upgrade into play attached to the chosen target, without playing it.
+putIntoPlayOn :: (ReverseQueue m) => IdentityId -> PlayerCard -> Target -> m ()
+putIntoPlayOn ident card target = push $ PutCardIntoPlay ident card (TargetPayment target) Nothing False

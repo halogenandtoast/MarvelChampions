@@ -149,7 +149,7 @@ spec = describe "Protection" do
         clearHand p
         team <- putInHand p "01080"
         power <- putInHand p "01079"
-        energy <- putInHand p "01088"
+        energy <- putInHand p "01032"
         offers (isPlay team) `shouldReturn` True
         playWith team [power]
         supportsWith "01080" `shouldReturn` []

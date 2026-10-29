@@ -335,9 +335,10 @@ runVillainMessage msg attrs = case msg of
             hero <- heroAttackBy damage source
             for_ hero \ident ->
               when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
+            attached <- enemyDefeatUpgrades (toEnemyId attrs)
             villainStep vid VillainWouldBeDefeated
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
-            checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess]
+            checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough dealt))

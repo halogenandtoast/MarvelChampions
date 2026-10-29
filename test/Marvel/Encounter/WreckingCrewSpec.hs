@@ -11,6 +11,7 @@ import Marvel.Area
 import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Matchers
+import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Message.Lifted (signatureSchemeOf)
 import Marvel.Query
 import Marvel.Minion.Cards qualified as Minions
@@ -54,6 +55,44 @@ deckSize v = length . pileDeck <$> getPile (VillainDeckKey v)
 
 spec :: Spec
 spec = describe "The Wrecking Crew" do
+  describe "Pile It On! with permanent forms" do
+    for_ ["spectrum", "vision"] $ \hero -> do
+      it ("resets to three threat without a discard question when only permanent forms are controlled: " <> show hero) do
+        tg <- breakout [hero]
+        let p = player1 tg
+        inGame tg do
+          forms <- upgradesOf p
+          forms `shouldSatisfy` (not . null)
+          upgrades <- getsGame (map toAttrs . HashMap.elems . gameUpgrades)
+          all (member Permanent . cdKeywords . getCardDef) upgrades `shouldBe` True
+          getsGame (HashMap.size . gameSupports) `shouldReturn` 0
+          pile <- ownScheme =<< piledriver
+          sideSchemeThreat pile `shouldReturn` 3
+          runNow [SideSchemeMessage pile $ SideSchemePlaceThreat 7]
+          sideSchemeThreat pile `shouldReturn` 3
+          upgradesOf p >>= (`shouldMatchList` forms)
+          asked >>= \case
+            Just (_, choices) -> choices `shouldSatisfy` elem EndTurn
+            Nothing -> error "Pile It On failed to return to the player's turn"
+
+      it ("discards the highest-cost eligible support while preserving permanent forms and lower-cost support: " <> show hero) do
+        tg <- breakout [hero]
+        let p = player1 tg
+        inGame tg do
+          forms <- upgradesOf p
+          highest <- putIntoPlay p "01091"
+          lower <- putIntoPlay p "01092"
+          pile <- ownScheme =<< piledriver
+          runNow [SideSchemeMessage pile $ SideSchemePlaceThreat 7]
+          sideSchemeThreat pile `shouldReturn` 3
+          supportsWith "01091" `shouldReturn` []
+          map supportId <$> supportsWith "01092" `shouldReturn` [supportIdOf lower]
+          discardOf p >>= (`shouldSatisfy` elem highest)
+          upgradesOf p >>= (`shouldMatchList` forms)
+          asked >>= \case
+            Just (_, choices) -> choices `shouldSatisfy` elem EndTurn
+            Nothing -> error "Pile It On failed to finish after discarding the support"
+
   it "sets up four villains, each with his own side scheme and 15-card deck, Wrecker active" do
     tg <- breakout ["spider-man"]
     inGame tg do
@@ -171,7 +210,10 @@ spec = describe "The Wrecking Crew" do
       forJustice <- putInHand p "01060"
       payment <- traverse (putInHand p) ["01088", "01088"]
       playWith forJustice payment
-      choose "thwart Thunderstruck" (isTargetChoice (SchemeSideSchemeId st))
+      offers (isTargetChoice (SchemeSideSchemeId st)) `shouldReturn` False
+      choose "thwart another unprotected scheme" $ \case
+        TargetLabel target _ -> target /= SideSchemeRef st
+        _ -> False
       sideSchemeThreat st `shouldReturn` 6
       -- a "remove threat" that is not a thwart still removes it
       answerNow p (ThwartScheme (SideSchemeRef st) GameRef 2)

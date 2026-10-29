@@ -75,11 +75,12 @@ runMinionMessage msg attrs = case msg of
   MinionDefeatedWithExcess source damage overkill -> do
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
-    checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill]
+    attached <- enemyDefeatUpgrades (toEnemyId attrs)
+    checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
     defeatMinion (minionId attrs)
     when (overkill > 0 && damageOverkill damage) do
       traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
-    checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill]
+    checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
     pure attrs
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
@@ -215,6 +216,7 @@ instance RunMessage (Attrs Minion) where
           runMinionMessage msg' attrs
     AttachmentRemoved attachmentId ->
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    UpgradeRemoved upgradeId -> pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     WithBoostIcons (MinionRef mid) _ counts | mid == minionId attrs -> do
       minionStep mid (MinionAddBoost $ sum $ map snd counts)
       pure attrs

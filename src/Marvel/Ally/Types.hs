@@ -12,6 +12,7 @@ import Marvel.Modifier as X
 import Marvel.Ref as X
 import Marvel.Stats as X
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types
@@ -56,6 +57,9 @@ upgradesL = lens allyUpgrades $ \m x -> m {allyUpgrades = x}
 
 countersL :: Lens' (Attrs Ally) Natural
 countersL = lens allyCounters $ \m x -> m {allyCounters = x}
+
+heldCardsL :: Lens' (Attrs Ally) [PlayerCard]
+heldCardsL = lens allyHeldCards $ \m x -> m {allyHeldCards = x}
 
 damageL :: Lens' (Attrs Ally) Natural
 damageL = lens allyDamage $ \m x -> m {allyDamage = x}
@@ -126,6 +130,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyUpgrades = mempty
             , allyAdditionalAttackCost = NoCost
             , allyPaidWith = NoPayment
+            , allyHeldCards = []
             }
     }
 
@@ -155,20 +160,20 @@ getModifiedAttackConsequentialDamage attrs = do
   pure $
     if NoConsequentialDamage `elem` modifiers
       then 0
-      else allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
+      else subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers]) $
+        allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
 
 getModifiedThwartConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwartConsequentialDamage attrs = do
   modifiers <- getModifiers attrs
-  pure $ if NoConsequentialDamage `elem` modifiers then 0 else allyThwartConsequentialDamage attrs
+  pure $ if NoConsequentialDamage `elem` modifiers then 0 else
+    subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers]) (allyThwartConsequentialDamage attrs)
 
 getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unThw $ allyThwart attrs) modifiers
- where
-  applyModifier (ThwartModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  pure $ subtractNatural (sum [n | ThwartPenalty n <- modifiers]) $
+    unThw (allyThwart attrs) + sum [n | ThwartModifier n <- modifiers]
 
 instance IsCard (Attrs Ally) where
   toCard a =
@@ -202,11 +207,13 @@ instance Entity Ally where
     , allyTough :: Bool
     , allyAdditionalAttackCost :: Cost
     -- ^ paid on top of exhausting it, for its basic attack
+    , allyHeldCards :: [PlayerCard]
+    -- ^ facedown events playable from here while this ally is not blank
     , allyPaidWith :: Payment
     -- ^ what was paid to play it, for "if you paid for this card using …"
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Ally :: Type -> Type where
     AllyId :: Field Ally Id.AllyId
     AllyCardDef :: Field Ally CardDef
@@ -223,6 +230,7 @@ instance Entity Ally where
     AllyStunned :: Field Ally Bool
     AllyConfused :: Field Ally Bool
     AllyTough :: Field Ally Bool
+    AllyHeldCards :: Field Ally [PlayerCard]
   toId = allyId . toAttrs
   toAttrs (Ally a) = toAllyAttrs a
   field fld a =
@@ -243,6 +251,7 @@ instance Entity Ally where
           AllyStunned -> allyStunned
           AllyConfused -> allyConfused
           AllyTough -> allyTough
+          AllyHeldCards -> allyHeldCards
 
 instance RunMessage Ally where
   runMessage msg (Ally a) = Ally <$> runMessage msg a
@@ -273,3 +282,8 @@ instance HasTraits Ally where
 
 instance HasModifiersFor Ally where
   getModifiersFor source target (Ally a) = getModifiersFor source target a
+
+-- Saved games from before allies could hold events have no attached cards.
+instance FromJSON (Attrs Ally) where
+  parseJSON = withObject "AllyAttrs" $ \o ->
+    genericParseJSON defaultOptions (Object $ if KeyMap.member "allyHeldCards" o then o else KeyMap.insert "allyHeldCards" (toJSON ([] :: [PlayerCard])) o)

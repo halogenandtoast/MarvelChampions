@@ -2,6 +2,7 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
+import Marvel.Keyword (Keyword (Alliance))
 import Marvel.Cost.Types
 
 import Marvel.Ability.Types (AbilityType(..))
@@ -284,6 +285,40 @@ allEvents = fromList $ concatMap
   , summoningSpell
   , theGardener
   , shieldSpell
+  , combatReady
+  , lethalIntent
+  , oneWayOrAnother
+  , brainsOverBrawn
+  , daughtersOfThanos
+  , repulsorBeam
+  , targetedStrike
+  , scorchedEarth
+  , fullAuto
+  , sneakAttack
+  , saveTheDay
+  , goDownSwinging
+  , twoAgainstTheWorld
+  , asOne
+  , standTogether
+  , visitValhalla
+  , chooserOfTheSlain
+  , shieldmaiden
+  , haveAtThee
+  , quickStrike
+  , smashTheProblem
+  , theBestDefense
+  , godlikeStamina
+  , problemSolvers
+  , cosmicAlliance
+  , solarBeam
+  , superdenseStrike
+  , justPassingThrough
+  , phaseDisruption
+  , massIncrease
+  , defiance
+  , reboot
+  , joiningForces
+  , meditation
   ]
 
 event
@@ -339,6 +374,8 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -519,7 +556,7 @@ leadFromTheFront = reprintedAs ["04018"] $
   event "01070" "Lead from the Front" 2 HeroAction [Tactic] [Energy] Leadership
 
 makeTheCall :: CardDef
-makeTheCall = reprintedAs ["03016", "21056"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
+makeTheCall = deckLimited 3 $ reprintedAs ["03016", "21056", "23020"] $ (event "01071" "Make the Call" 0 Action [] [Mental] Leadership)
   { cdAbilityCost = TargetPrintedCost
   }
 
@@ -531,7 +568,7 @@ counterPunch = reprintedAs ["19014", "21062"] $
     }
 
 getBehindMe :: CardDef
-getBehindMe = reprintedAs ["05013"] $
+getBehindMe = deckLimited 3 $ reprintedAs ["05013", "26020"] $
   (event "01078" "Get Behind Me!" 1 HeroInterrupt [] [Mental] Protection)
     { cdResponseWindow =
         Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
@@ -544,7 +581,7 @@ emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
   }
 
 firstAid :: CardDef
-firstAid = reprintedAs ["12019"] (basicEvent "01086" "First Aid" 1 Action [] [Mental])
+firstAid = deckLimited 3 $ reprintedAs ["12019", "22023"] (basicEvent "01086" "First Aid" 1 Action [] [Mental])
   { cdCriteria = CharacterExists CharacterWithAnyDamage
   }
 
@@ -979,7 +1016,7 @@ moxie =
 -- | Team-Up (Ant-Man and Wasp): played only while both are in play, as hero or ally
 -- (Ant-Man rulesheet).
 swarmTactics :: CardDef
-swarmTactics = reprintedAs ["13020"] $
+swarmTactics = deckLimited 1 $ teamUpNames "Ant-Man" "Wasp" $ reprintedAs ["13020"] $
   (basicEvent "12020" "Swarm Tactics" 1 HeroAction [Tactic] [Mental])
     { cdCriteria = teamUp "Ant-Man" "Wasp"
     }
@@ -988,7 +1025,7 @@ teamUp :: Text -> Text -> Criteria
 teamUp a b = inPlay a <> inPlay b
  where
   -- an ally counts by its title or its subtitle (RR Team-Up)
-  inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t), AllyExists (AllyNamedAs t)]
+  inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t <> HeroIdentity), AllyExists (AllyNamedAs t)]
 
 momentOfTriumph :: CardDef
 momentOfTriumph =
@@ -1113,14 +1150,14 @@ neverBackDown =
 
 sideStep :: CardDef
 sideStep =
-  (event "14015" "Side Step" 1 HeroInterrupt [Defense] [Mental] Protection)
+  deckLimited 3 $ reprintedAs ["26019"] $ (event "14015" "Side Step" 1 HeroInterrupt [Defense] [Mental] Protection)
     { cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
     , cdAbilitySubTypes = [Ability.Defense]
     }
 
 -- | Team-Up (Quicksilver and Scarlet Witch). Max 1 per deck.
 orderAndChaos :: CardDef
-orderAndChaos = reprintedAs ["15018"] $
+orderAndChaos = deckLimited 1 $ teamUpNames "Quicksilver" "Scarlet Witch" $ reprintedAs ["15018"] $
   (basicEvent "14018" "Order and Chaos" 1 HeroInterrupt [] [Physical])
     { cdCriteria = teamUp "Quicksilver" "Scarlet Witch"
     , cdResponseWindow = Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
@@ -1406,7 +1443,7 @@ fightingFit =
 
 -- | Team-Up (Groot and Rocket Raccoon). Max 1 per deck.
 floraAndFauna :: CardDef
-floraAndFauna = reprintedAs ["16048"] $
+floraAndFauna = deckLimited 1 $ teamUpNames "Groot" "Rocket Raccoon" $ reprintedAs ["16048"] $
   (basicEvent "16020" "Flora and Fauna" 1 HeroAction [] [Wild])
     { cdCriteria = teamUp "Groot" "Rocket Raccoon"
     }
@@ -1765,4 +1802,209 @@ shieldSpell =
     , cdAbilitySubTypes = [Ability.Defense]
     , cdCriteria = SelfMatches (IdentityWithTrait Mystic)
     , cdAbilityCost = DiscardTopOfDeckForDamageCost
+    }
+
+-- Nebula
+
+combatReady :: CardDef
+combatReady = deckLimited 2 $ identityEvent "22009" "Combat Ready" 0 AlterEgoAction [Skill] [Physical]
+
+lethalIntent :: CardDef
+lethalIntent = deckLimited 3 $ (identityEvent "22010" "Lethal Intent" (-1) HeroAction [] [Mental])
+    { cdAbilityCost = PrintedXCost 1 (UpgradeWithTrait Technique <> UpgradeControlledBy You <> UpgradeWithResolvableSpecial)
+    }
+
+oneWayOrAnother :: CardDef
+oneWayOrAnother = deckLimited 3 $ (event "22015" "One Way or Another" 0 HeroAction [] [Mental] Justice)
+    { cdLimit = Just (MaxPerRound 1)
+    , cdAbilityCost = SearchEncounterSideSchemeCost
+    }
+
+brainsOverBrawn :: CardDef
+brainsOverBrawn = deckLimited 3 $ (event "22018" "Brains Over Brawn" 2 HeroResponse [Attack] [Physical] Justice)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdResponseWindow = Just (MakesBasicThwart After You)
+    }
+
+daughtersOfThanos :: CardDef
+daughtersOfThanos = deckLimited 1 $ teamUpNames "Gamora" "Nebula" $ (basicEvent "22022" "Daughters of Thanos" 1 HeroAction [] [Wild])
+    { cdCriteria = teamUp "Gamora" "Nebula"
+    }
+
+-- War Machine
+
+repulsorBeam :: CardDef
+repulsorBeam = deckLimited 2 $ (identityEvent "23008" "Repulsor Beam" 1 HeroAction [Attack] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = IdentityCountersCost 1
+    }
+
+targetedStrike :: CardDef
+targetedStrike = deckLimited 2 $ (identityEvent "23009" "Targeted Strike" 1 HeroAction [Thwart] [Energy])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+    , cdAbilityCost = IdentityCountersCost 1
+    }
+
+scorchedEarth :: CardDef
+scorchedEarth = deckLimited 2 $ (identityEvent "23010" "Scorched Earth" 3 HeroAction [Tactic] [Mental])
+    { cdAbilityCost = IdentityCountersCost 3
+    }
+
+fullAuto :: CardDef
+fullAuto = deckLimited 2 $ (identityEvent "23011" "Full Auto" 2 HeroAction [Attack] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = IdentityCountersCost 4
+    }
+
+sneakAttack :: CardDef
+sneakAttack = deckLimited 3 $ (event "23017" "Sneak Attack" 1 Action [Tactic] [Physical] Leadership)
+    { cdAbilityCost = ChosenHandCardCost
+    }
+
+saveTheDay :: CardDef
+saveTheDay = deckLimited 3 $ (event "23018" "Save the Day" 1 HeroAction [Tactic] [Mental] Leadership)
+    { cdAbilityCost = DiscardAllyCost (AllyWithPrintedCostAtLeast 1)
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+goDownSwinging :: CardDef
+goDownSwinging = deckLimited 3 $ (event "23019" "Go Down Swinging" 0 HeroAction [Tactic] [Physical] Leadership)
+    { cdAbilityCost = DiscardAllyCost (AllyWithPrintedCostAtLeast 1)
+    }
+
+twoAgainstTheWorld :: CardDef
+twoAgainstTheWorld = deckLimited 1 $ teamUpNames "Iron Man" "War Machine" $ (basicEvent "23024" "Two Against the World" 3 HeroAction [] [Energy])
+    { cdCriteria = teamUp "Iron Man" "War Machine"
+    }
+
+asOne :: CardDef
+asOne = deckLimited 3 $ (event "23032" "As One!" 2 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdAbilityCost = ExhaustCharacterWithTraitCost Avenger <> ExhaustCharacterWithTraitCost Guardian
+    , cdKeywords = fromList [Alliance]
+    }
+
+standTogether :: CardDef
+standTogether = deckLimited 3 $ (event "23034" "Stand Together" 4 HeroInterrupt [Tactic] [Energy] Protection)
+    { cdAbilityCost = ExhaustCharacterWithTraitCost Avenger <> ExhaustCharacterWithTraitCost Guardian
+    , cdKeywords = fromList [Alliance]
+    , cdResponseWindow = Just (CharacterWouldTakeAttackDamage (CharacterControlledBy AnyIdentity))
+    }
+
+-- Valkyrie
+
+visitValhalla :: CardDef
+visitValhalla = deckLimited 1 $ (identityEvent "25009" "Visit Valhalla" 0 AlterEgoAction [] [Physical])
+    { cdCriteria = ExtendedCardExists (InDiscardOf You (BasicCardMatches (HeroSpecificCard <> CardMatchesAny (map CardWithTitle ["Death-Glow", "Annabelle Riggs", "Valhalla", "Valkyrie's Spear", "Dragonfang", "Aragorn", "Flight of the Valkyrior", "Visit Valhalla", "Chooser of the Slain", "Shieldmaiden", "Have at Thee!"]))))
+    }
+
+chooserOfTheSlain :: CardDef
+chooserOfTheSlain = deckLimited 2 $ (identityEvent "25010" "Chooser of the Slain" 0 HeroAction [] [Mental])
+    { cdAbilityCost = SearchEncounterMinionCost
+    }
+
+shieldmaiden :: CardDef
+shieldmaiden = deckLimited 2 $ (identityEvent "25011" "Shieldmaiden" 1 HeroInterrupt [Defense] [Physical])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (EnemyAttacked When (EnemyWithUpgrade (UpgradeIs Upgrades.deathGlow)) AnyIdentity)
+    }
+
+haveAtThee :: CardDef
+haveAtThee = deckLimited 3 $ (identityEvent "25012" "Have at Thee!" 3 HeroAction [Attack] [Energy])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+quickStrike :: CardDef
+quickStrike = deckLimited 3 $ (event "25018" "Quick Strike" 2 HeroAction [Attack] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+smashTheProblem :: CardDef
+smashTheProblem = deckLimited 3 $ (event "25019" "Smash the Problem" 1 HeroAction [Thwart] [Mental] Aggression)
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+    , cdAbilityCost = ExhaustCost
+    }
+
+theBestDefense :: CardDef
+theBestDefense = deckLimited 3 $ (event "25020" "The Best Defense…" 0 HeroInterrupt [Defense] [Physical] Aggression)
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    }
+
+godlikeStamina :: CardDef
+godlikeStamina = deckLimited 3 $ (basicEvent "25024" "Godlike Stamina" 0 Action [] [Physical])
+    { cdCriteria = SelfMatches (IdentityWithTrait Asgard)
+    }
+
+problemSolvers :: CardDef
+problemSolvers = deckLimited 3 $ (event "25033" "Problem Solvers" 4 HeroAction [Thwart] [Physical] Justice)
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+    , cdAbilityCost = ExhaustCharacterWithTraitCost Avenger <> ExhaustCharacterWithTraitCost Guardian
+    , cdKeywords = fromList [Alliance]
+    }
+
+cosmicAlliance :: CardDef
+cosmicAlliance = deckLimited 3 $ (basicEvent "25036" "Cosmic Alliance" 3 HeroAction [] [Energy])
+    { cdKeywords = fromList [Alliance]
+    , cdAbilityCost = ChooseCharacterWithTraitCost Avenger CharacterCanBeReadied <> ChooseCharacterWithTraitCost Guardian CharacterCanBeReadied
+    }
+
+-- Vision
+
+solarBeam :: CardDef
+solarBeam = deckLimited 3 $ (identityEvent "26008" "Solar Beam" 3 HeroAction [Attack, Superpower, Thwart] [Energy])
+    { cdCriteria = AnyCriteria [UpgradeExists (UpgradeIs Upgrades.dense <> UpgradeControlledBy You) <> canAttack, UpgradeExists (UpgradeIs Upgrades.intangible <> UpgradeControlledBy You) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]]
+    }
+
+superdenseStrike :: CardDef
+superdenseStrike = deckLimited 2 $ (identityEvent "26009" "Superdense Strike" 2 HeroAction [Attack, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.dense <> UpgradeControlledBy You) <> canAttack
+    }
+
+justPassingThrough :: CardDef
+justPassingThrough = deckLimited 2 $ (identityEvent "26010" "Just Passing Through" 1 HeroAction [Superpower, Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.intangible <> UpgradeControlledBy You) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists (ThwartableSchemeIgnoringCrisis <> SchemeWithoutThwartPrevention)]
+    }
+
+phaseDisruption :: CardDef
+phaseDisruption = deckLimited 1 $ (identityEvent "26011" "Phase Disruption" 2 HeroAction [Superpower] [Energy])
+    { cdCriteria = UpgradeExists (UpgradeIs Upgrades.intangible <> UpgradeControlledBy You)
+    }
+
+massIncrease :: CardDef
+massIncrease = deckLimited 1 $ (identityEvent "26012" "Mass Increase" 1 HeroInterrupt [Defense, Superpower] [Physical])
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (HeroDefended When You AnyEnemy)
+    , cdCriteria = UpgradeExists (UpgradeIs Upgrades.dense <> UpgradeControlledBy You)
+    }
+
+defiance :: CardDef
+defiance = deckLimited 3 $ (event "26018" "Defiance" 0 HeroInterrupt [Defense] [Energy] Protection)
+    { cdAbilitySubTypes = [Ability.Defense]
+    , cdResponseWindow = Just (BoostCardFlipped When (EnemyAttackingCharacter (IdentityCharacters You)))
+    }
+
+reboot :: CardDef
+reboot = deckLimited 3 $ basicEvent "26024" "Reboot" 1 Action [] [Physical]
+
+joiningForces :: CardDef
+joiningForces = deckLimited 3 $ (event "26035" "Joining Forces" 4 HeroAction [] [Energy] Leadership)
+    { cdKeywords = fromList [Alliance]
+    }
+
+meditation :: CardDef
+meditation = deckLimited 3 $ (basicEvent "26036" "Meditation" 0 AlterEgoAction [] [Mental])
+    { cdAbilityCost = ExhaustCost
+    , cdCriteria = CardPlayAfterExhaustingHasTarget 3
     }

@@ -198,6 +198,11 @@ choose what p = do
     Nothing | autoChosen -> pure ()
     Nothing -> error $ "nothing was asked when trying to " <> show what
     Just (ident, cs) -> case findIndex' p cs of
+      Nothing | notNull cs && all (isLabelStarting "$label.spendResourceAllocation") cs -> do
+        -- Unspecified surplus allocation is plumbing for most card tests. An
+        -- explicit allocation predicate matches above and is never overridden.
+        answerQuestion ident 0
+        choose what p
       Nothing | autoChosen -> pure ()
       Nothing -> error $ "could not " <> show what <> " among " <> show (map describe cs)
       Just n -> answerQuestion ident n
@@ -306,6 +311,10 @@ payWith :: (HasCallStack) => [PlayerCard] -> GameAppT ()
 payWith payment = do
   for_ payment \p -> choose "pay" (isPayWith p)
   whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
+  -- Most card tests do not distinguish which surplus icons are wasted. Tests
+  -- that do pay cards manually and select their desired satisfying allocation.
+  whenM (offers $ isLabelStarting "$label.spendResourceAllocation") $
+    choose "allocate the resources actually spent" (isLabelStarting "$label.spendResourceAllocation")
 
 getPlayer :: IdentityId -> GameAppT PlayerIdentity
 getPlayer = getIdentity
@@ -720,7 +729,14 @@ exhaustedNow ident = (.playerIdentityExhausted) . toAttrs <$> getPlayer ident
 
 -- | Answer with the first choice that matches when it is offered.
 chooseIf :: (Choice -> Bool) -> GameAppT ()
-chooseIf p = whenM (offers p) $ choose "optional choice" p
+chooseIf p = do
+  present <- offers p
+  if present
+    then choose "optional choice" p
+    else asked >>= \case
+      Just (ident, cs) | notNull cs && all (isLabelStarting "$label.spendResourceAllocation") cs ->
+        answerQuestion ident 0 >> chooseIf p
+      _ -> pure ()
 
 -- | Put a new copy of a card into a player's discard pile.
 putInDiscard :: IdentityId -> CardCode -> GameAppT PlayerCard

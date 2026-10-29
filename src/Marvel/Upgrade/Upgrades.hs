@@ -182,3 +182,53 @@ import Marvel.Upgrade.Upgrades.MysticSenses as X
 
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Upgrade.Upgrades.NornStone as X
+
+import Marvel.Upgrade.Upgrades.CutthroatAmbition as X
+
+import Marvel.Upgrade.Upgrades.EvasiveManeuvering as X
+
+import Marvel.Upgrade.Upgrades.UnyieldingPersistence as X
+
+import Marvel.Upgrade.Upgrades.WeaponsMaster as X
+
+import Marvel.Upgrade.Upgrades.WideStance as X
+
+import Marvel.Upgrade.Upgrades.JusticeServed as X
+
+import Marvel.Upgrade.Upgrades.EnergySpear as X
+
+import Marvel.Upgrade.Upgrades.HonoraryGuardian as X
+
+import Marvel.Upgrade.Upgrades.UpgradedChassis as X
+
+import Marvel.Upgrade.Upgrades.GauntletGun as X
+
+import Marvel.Upgrade.Upgrades.MissileLauncher as X
+
+import Marvel.Upgrade.Upgrades.ShoulderCannon as X
+
+import Marvel.Upgrade.Upgrades.Sidearm as X
+
+import Marvel.Upgrade.Upgrades.DeathGlow as X
+
+import Marvel.Upgrade.Upgrades.ValkyriesSpear as X
+
+import Marvel.Upgrade.Upgrades.Dragonfang as X
+
+import Marvel.Upgrade.Upgrades.Aragorn as X
+
+import Marvel.Upgrade.Upgrades.FlightOfTheValkyrior as X
+
+import Marvel.Upgrade.Upgrades.Anticipation as X
+
+import Marvel.Upgrade.Upgrades.Intangible as X
+
+import Marvel.Upgrade.Upgrades.SolarGem as X
+
+import Marvel.Upgrade.Upgrades.VisionsCape as X
+
+import Marvel.Upgrade.Upgrades.DensityControl as X
+
+import Marvel.Upgrade.Upgrades.FlowLikeWater as X
+
+import Marvel.Upgrade.Upgrades.ChanceEncounter as X

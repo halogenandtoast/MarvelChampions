@@ -51,6 +51,7 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  AllocatedPayment {} -> Nothing
   -- * Structure: the headings a reader finds their way by
   StartScenario -> Just do
     villains <- getsGame (Scenario.scenarioVillains . toAttrs . gameScenario)
@@ -102,16 +103,34 @@ narrationFor = \case
   Simultaneously msgs -> case mapMaybe narrationFor msgs of
     [] -> Nothing
     told -> Just $ concat <$> sequence told
+  -- Choosing a contributor is payment plumbing; spending their cards/abilities is
+  -- narrated by the same messages as any other payment.
+  PlayCardWithReduction {} -> Nothing
+  ContributeResources {} -> Nothing
+  DeclareContributionWilds {} -> Nothing
+  ContributeCost {} -> Nothing
+  PrepareAllianceCosts {} -> Nothing
+  OfferAllianceCost {} -> Nothing
+  ReserveAllyHeldCard {} -> Nothing
+  AttachPlayableEventToAlly aid _ -> Just $ whenRef (AllyRef aid) \ally ->
+    one $ mechanic [ikeyPart "log.attachesFacedownEvent" ["ally" ~> ally]]
   -- * Enemies
   VillainMessage vid msg -> villainNarration vid msg
   MinionMessage mid msg -> minionNarration mid msg
   AllyMessage aid msg -> allyNarration aid msg
   -- an energy form turned faceup is the form its player changes to (Spectrum)
+  UpgradeMessage _ (UpgradeHostBecameMinion _) -> Nothing
   UpgradeMessage uid FlipUpgradeFaceUp -> Just $ whenRef (UpgradeRef uid) \form ->
     getSourceController (UpgradeRef uid) >>= \case
       Just p -> do
         who <- playerRef' p
         one $ action [ikeyPart "log.changesToEnergyForm" ["player" ~> who, "form" ~> form]]
+      Nothing -> pure []
+  CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \form ->
+    getSourceController (UpgradeRef uid) >>= \case
+      Just p -> do
+        who <- playerRef' p
+        one $ action [ikeyPart "log.changesMassForm" ["player" ~> who]]
       Nothing -> pure []
   -- * Schemes
   MainSchemeMessage sid msg -> schemeNarration (MainSchemeRef sid) msg
@@ -129,7 +148,11 @@ narrationFor = \case
   GiveStatus target s
     | s == ToughStatus -> Just $ simply (statusKey s) target
     | otherwise -> Just $ unlessStalwart target $ simply (statusKey s) target
+  FriendlyCharacterAttacks attacker target -> Just $ whenRef (characterRef attacker) \who -> do
+    victim <- playerRef' target
+    one $ action [ikeyPart "log.friendlyCharacterAttacks" ["attacker" ~> who, "player" ~> victim]]
   RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
+  RevealBoostCardWithoutAbility card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
   -- a player's event into the encounter deck (a Cosmic Entity, Adam Warlock): played
   -- openly, so named
   ShuffleIntoEncounterDeck cards
@@ -275,6 +298,7 @@ campaignNarration = \case
 
 identityNarration :: (HasGame m) => IdentityId -> IdentityMessage -> Maybe (m [LogEntry])
 identityNarration ident = \case
+  UpgradeControlLost _ -> Nothing
   -- a card that was nobody's, as a rescued Captive ally, becomes the player's
   AddToHand card | isJust (pcOwner card) -> Just do
     unowned <- getsGame \g -> any (any (\c -> pcCardId c == pcCardId card && isNothing (pcOwner c)) . SideScheme.sideSchemeHeldCards . toAttrs) (gameSideSchemes g)
@@ -301,6 +325,8 @@ identityNarration ident = \case
   SideMessage Attacked -> Just $ simplyPlayer "log.basicAttack"
   SideMessage Thwarted -> Just $ simplyPlayer "log.basicThwart"
   SideMessage Recovered -> Just $ simplyPlayer "log.recovers"
+  SideMessage (DefendedWithoutExhausting _ enemy) -> identityNarration ident (SideMessage $ Defended enemy)
+  SideMessage (DefenseUsingAttackApplied {}) -> Nothing
   SideMessage (Defended enemy) -> Just $ whenRef (EnemyRef enemy) \e -> do
     who <- playerRef' ident
     one $ action [ikeyPart "log.defends" ["player" ~> who, "enemy" ~> e]]
@@ -420,6 +446,9 @@ attackChanged enemy n = whenRef enemy \e ->
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
+  AllyAttackMultiple {} -> Nothing
+  AllyAttackMultipleNext {} -> Nothing
+  AllyAttackMultipleFinished {} -> Nothing
   AllyAttacked -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyAttacks" ["ally" ~> a]]
   AllyThwarted -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyThwarts" ["ally" ~> a]]
   AllyDefended enemy -> Just $ whenRef (AllyRef aid) \a -> whenRef (EnemyRef enemy) \e ->

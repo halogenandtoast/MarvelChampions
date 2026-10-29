@@ -53,3 +53,11 @@ import Marvel.AlterEgo.AlterEgos.FlashThompson as X
 import Marvel.AlterEgo.AlterEgos.MonicaRambeau as X
 -- Adam Warlock
 import Marvel.AlterEgo.AlterEgos.AdamWarlock as X
+
+import Marvel.AlterEgo.AlterEgos.NebulaAlterEgo as X
+
+import Marvel.AlterEgo.AlterEgos.JamesRhodes as X
+
+import Marvel.AlterEgo.AlterEgos.Brunnhilde as X
+
+import Marvel.AlterEgo.AlterEgos.VisionAlterEgo as X

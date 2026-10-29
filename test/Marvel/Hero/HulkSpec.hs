@@ -334,7 +334,8 @@ spec = describe "Hulk" do
         choose "recover" isRecover
         damageOf p `shouldReturn` 4
         mansion <- putInHand p "01091"
-        energies <- traverse (putInHand p) ["01088", "01088"]
+        -- Three resources from cards require the Lab's mental resource to reach four.
+        energies <- traverse (putInHand p) ["01088", "01086"]
         choose "play Avengers Mansion" (isPlay mansion)
         choose "pay with the lab" (isAbilityOfCard lab)
         for_ energies \c -> choose "pay" (isPayWith c)

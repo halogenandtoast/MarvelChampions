@@ -162,6 +162,21 @@ allAllies = fromList $ concatMap
   , fandral
   , hogun
   , volstagg
+  , gamoraNebula
+  , eros
+  , wraithZakDel
+  , venomFlashThompson
+  , ironManWarMachine
+  , blackPantherTChalla
+  , captainMarvelWarMachine
+  , annabelleRiggs
+  , thorOdinson
+  , throgPuddlegulp
+  , vivian
+  , jocasta
+  , protectorAlexis
+  , victorMancha
+  , machineManAaronStack
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -228,6 +243,8 @@ baseAlly code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -312,7 +329,7 @@ lukeCage :: CardDef
 lukeCage = ally "01076" "Luke Cage" 4 [Defender] [Energy] Protection
 
 mockingbirdBobbiMorse :: CardDef
-mockingbirdBobbiMorse = reprintedAs ["03020"] $
+mockingbirdBobbiMorse = deckLimited 1 $ reprintedAs ["03020", "23022"] $
   basicAlly "01083" ("Mockingbird" <:> "Bobbi Morse") 3 [Shield, Spy] [Physical]
 
 nickFury :: CardDef
@@ -324,7 +341,7 @@ agent13SharonCarter =
 
 falconSamWilson :: CardDef
 falconSamWilson =
-  ally "03011" ("Falcon" <:> "Sam Wilson") 4 [Aerial, Avenger] [Physical] Leadership
+  deckLimited 1 $ reprintedAs ["23014"] $ ally "03011" ("Falcon" <:> "Sam Wilson") 4 [Aerial, Avenger] [Physical] Leadership
 
 squirrelGirlDoreenGreen :: CardDef
 squirrelGirlDoreenGreen =
@@ -410,7 +427,7 @@ blackKnightDaneWhitman =
     }
 
 goliathBillFoster :: CardDef
-goliathBillFoster = ally "04013" ("Goliath" <:> "Bill Foster") 4 [Avenger] [Mental] Leadership
+goliathBillFoster = deckLimited 1 $ reprintedAs ["23015"] $ ally "04013" ("Goliath" <:> "Bill Foster") 4 [Avenger] [Mental] Leadership
 
 usAgentJohnWalker :: CardDef
 usAgentJohnWalker =
@@ -543,7 +560,7 @@ yondu =
     }
 
 cosmo :: CardDef
-cosmo = basicAlly "17020" "Cosmo" 2 [Guardian] [Mental]
+cosmo = deckLimited 1 $ reprintedAs ["22020"] $ basicAlly "17020" "Cosmo" 2 [Guardian] [Mental]
 
 -- Gamora
 
@@ -551,7 +568,7 @@ nebulaAlly :: CardDef
 nebulaAlly = identityAlly "18002" "Nebula" 2 [Guardian] [Wild]
 
 angelaAldrifOdinsdottir :: CardDef
-angelaAldrifOdinsdottir = ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [Asgard, Guardian] [Mental] Aggression
+angelaAldrifOdinsdottir = deckLimited 1 $ reprintedAs ["25015"] $ ally "18011" ("Angela" <:> "Aldrif Odinsdottir") 0 [Asgard, Guardian] [Mental] Aggression
 
 drax :: CardDef
 drax =
@@ -693,3 +710,87 @@ hogun = (asgardCaptive "21192" "Hogun") {cdKeywords = fromList [Piercing]}
 
 volstagg :: CardDef
 volstagg = (asgardCaptive "21193" "Volstagg") {cdKeywords = fromList [Retaliate 1, Toughness]}
+
+-- Nebula
+
+gamoraNebula :: CardDef
+gamoraNebula = deckLimited 1 $ (identityAlly "22002" "Gamora" 3 [Guardian] [Wild])
+    { cdUnique = True
+    }
+
+eros :: CardDef
+eros = deckLimited 1 $ (ally "22011" "Eros" 2 [Guardian] [Mental] Justice)
+    { cdUnique = True
+    }
+
+wraithZakDel :: CardDef
+wraithZakDel = deckLimited 1 $ (ally "22012" ("Wraith" <:> "Zak-Del") 3 [Guardian] [Physical] Justice)
+    { cdUnique = True
+    }
+
+venomFlashThompson :: CardDef
+venomFlashThompson = deckLimited 1 $ (ally "22013" ("Venom" <:> "Flash Thompson") 4 [Guardian] [Energy] Justice)
+    { cdUnique = True
+    }
+
+-- War Machine
+
+ironManWarMachine :: CardDef
+ironManWarMachine = deckLimited 1 $ (identityAlly "23002" ("Iron Man" <:> "Tony Stark") 3 [Avenger] [Physical])
+    { cdUnique = True
+    }
+
+blackPantherTChalla :: CardDef
+blackPantherTChalla = deckLimited 1 $ (ally "23012" ("Black Panther" <:> "T'Challa") 4 [Avenger, Wakanda] [Mental] Leadership)
+    { cdUnique = True
+    }
+
+captainMarvelWarMachine :: CardDef
+captainMarvelWarMachine = deckLimited 1 $ (ally "23013" ("Captain Marvel" <:> "Carol Danvers") 5 [Aerial, Avenger] [Energy] Leadership)
+    { cdUnique = True
+    }
+
+-- Valkyrie
+
+annabelleRiggs :: CardDef
+annabelleRiggs = deckLimited 1 $ (identityAlly "25003" "Annabelle Riggs" 2 [Civilian] [Wild])
+    { cdUnique = True
+    }
+
+thorOdinson :: CardDef
+thorOdinson = deckLimited 1 $ (ally "25013" ("Thor" <:> "Odinson") 3 [Asgard, Avenger] [Energy] Aggression)
+    { cdUnique = True
+    , cdKeywords = fromList [Toughness]
+    }
+
+throgPuddlegulp :: CardDef
+throgPuddlegulp = deckLimited 1 $ (ally "25014" ("Throg" <:> "Puddlegulp") 2 [Asgard, Guardian] [Energy] Aggression)
+    { cdUnique = True
+    }
+
+-- Vision
+
+vivian :: CardDef
+vivian = deckLimited 1 $ (identityAlly "26003" "Vivian" 2 [Android, Champion] [Wild])
+    { cdUnique = True
+    }
+
+jocasta :: CardDef
+jocasta = deckLimited 1 $ (ally "26013" "Jocasta" 3 [Android, Avenger] [Mental] Protection)
+    { cdUnique = True
+    }
+
+protectorAlexis :: CardDef
+protectorAlexis = deckLimited 1 $ (ally "26014" ("Protector" <:> "Alexis") 4 [Android, Avenger] [Physical] Protection)
+    { cdUnique = True
+    }
+
+victorMancha :: CardDef
+victorMancha = deckLimited 1 $ (ally "26015" "Victor Mancha" 2 [Android, Avenger] [Energy] Protection)
+    { cdUnique = True
+    }
+
+machineManAaronStack :: CardDef
+machineManAaronStack = deckLimited 1 $ (basicAlly "26022" ("Machine Man" <:> "Aaron Stack") 2 [Android] [Physical])
+    { cdUnique = True
+    }

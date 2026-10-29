@@ -19,9 +19,26 @@ export const faceCode = (code: string, cardByCode: (code: string) => Card | unde
   return code
 }
 
+/** Some double-sided upgrades store their reverse on the front record. */
+export const boardCard = (code: string, cardByCode: (code: string) => Card | undefined): Card | undefined => {
+  const exact = cardByCode(faceCode(code, cardByCode))
+  if (exact) return exact
+  const front = /b$/.test(code) ? cardByCode(code.slice(0, -1)) : undefined
+  if (!front?.doubleSided || !front.backName) return undefined
+  return {
+    ...front,
+    code,
+    name: front.backName,
+    text: front.backText,
+    image: `${code}.avif`,
+    remoteImage: front.remoteBackImage,
+    linkedTo: front.code,
+  }
+}
+
 /** The images to try for a card, best first; a placeholder follows when all fail. */
 export const imageSources = (code: string, cardByCode: (code: string) => Card | undefined): string[] => {
-  const card = cardByCode(faceCode(code, cardByCode))
+  const card = boardCard(code, cardByCode)
   if (!card) return [`${CARD_IMAGES}/${code}.avif`]
   return [localImage(card), remoteImage(card)].filter((s): s is string => s !== null)
 }
@@ -29,7 +46,7 @@ export const imageSources = (code: string, cardByCode: (code: string) => Card | 
 export const useCards = () => {
   const store = useCardStore()
   void store.load()
-  const card = (code: string | null | undefined) => (code ? store.cardByCode(faceCode(code, store.cardByCode)) : undefined)
+  const card = (code: string | null | undefined) => (code ? boardCard(code, store.cardByCode) : undefined)
   return {
     store,
     card,

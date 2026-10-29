@@ -61,3 +61,11 @@ import Marvel.Obligation.Obligations.LossOfControl as X
 import Marvel.Obligation.Obligations.RegenerationCycle as X
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Obligation.Obligations.SystemShock as X
+
+import Marvel.Obligation.Obligations.InferiorityComplex as X
+
+import Marvel.Obligation.Obligations.EquipmentMalfunction as X
+
+import Marvel.Obligation.Obligations.TroubleInOtherworld as X
+
+import Marvel.Obligation.Obligations.CorruptedProgramming as X

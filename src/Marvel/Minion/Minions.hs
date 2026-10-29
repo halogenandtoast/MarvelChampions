@@ -142,3 +142,9 @@ import Marvel.Minion.Minions.LegionsOfHel as X
 
 -- The Mad Titan's Shadow: the campaign set
 import Marvel.Minion.Minions.MadTitansShadowCampaign as X
+
+import Marvel.Minion.Minions.GamoraNemesis as X
+
+import Marvel.Minion.Minions.LivingLaser as X
+
+import Marvel.Minion.Minions.UltronNemesis as X

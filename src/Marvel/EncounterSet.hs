@@ -113,6 +113,10 @@ data EncounterSet
     Challenge
   | -- | the campaign's player cards bought with units
     TheMarket
+  | NebulaNemesis
+  | WarMachineNemesis
+  | ValkyrieNemesis
+  | VisionNemesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -193,6 +197,10 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "20001" -> VenomNemesis
   "21001" -> SpectrumNemesis
   "21031" -> AdamWarlockNemesis
+  "22001" -> NebulaNemesis
+  "23001" -> WarMachineNemesis
+  "25001" -> ValkyrieNemesis
+  "26001" -> VisionNemesis
   cCode ->
     error $
       "No nemesis set for "

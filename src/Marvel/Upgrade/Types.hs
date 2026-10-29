@@ -131,6 +131,12 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilitie
   upgradeTargets :: (HasGame m) => a -> m (Maybe [Target])
   upgradeTargets = controlTargets . toUpgradeAttrs
 
+  -- | Whether the upgrade's Special can change the game state now. Cards without
+  -- a Special default to False; status-card replacement can make one meaningful
+  -- even without a target (stun/confusion replaces an attack/thwart attempt).
+  upgradeSpecialCanResolve :: (HasGame m) => a -> m Bool
+  upgradeSpecialCanResolve _ = pure False
+
 -- | "Play under any player's control": its player chooses whose, among those who may.
 controlTargets :: (HasGame m) => Attrs Upgrade -> m (Maybe [Target])
 controlTargets a = case cdLimit (upgradeCardDef a) of
@@ -251,6 +257,9 @@ instance RunMessage (Attrs Upgrade) where
       PlayedUpgrade mTarget -> do
         case mTarget of
           Just (IdentityRef p) -> upgradeStep (upgradeId a) (UpgradeControlledByPlayer p)
+          -- Register only the host's controller, so the payer never briefly counts
+          -- this restricted upgrade against their own limit.
+          Just (AllyRef aid) -> upgradeStep (upgradeId a) (UpgradeAttachedToAlly aid)
           Just target -> do
             upgradeCreated (upgradeController a) (upgradeId a)
             upgradeStep (upgradeId a) (attachedTo target)
@@ -267,6 +276,7 @@ instance RunMessage (Attrs Upgrade) where
           MainSchemeRef mainSchemeId -> UpgradeAttachedToMainScheme mainSchemeId
           target -> error $ "an upgrade cannot attach to " <> show target
       UpgradeControlledByPlayer p -> do
+        when (p /= upgradeController a) $ upgradeControlLost (upgradeController a) (upgradeId a)
         upgradeCreated p (upgradeId a)
         pure a {upgradeController = p}
       ReadiedUpgrade -> do
@@ -285,8 +295,19 @@ instance RunMessage (Attrs Upgrade) where
         upgradeAttachedTo enemyId (upgradeId a)
         pure $ a & attachedEnemyL ?~ enemyId
       UpgradeAttachedToAlly allyId -> do
+        hostController <- fromMaybe (upgradeController a) <$> getSourceController (AllyRef allyId)
+        when (hostController /= upgradeController a) $ upgradeControlLost (upgradeController a) (upgradeId a)
+        -- Attach before the new controller checks restricted upgrades; discarding
+        -- one during that check must not enqueue a later phantom attachment.
         upgradeAttachedTo allyId (upgradeId a)
-        pure $ a & attachedAllyL ?~ allyId
+        upgradeCreated hostController (upgradeId a)
+        let priorEnemy = case upgradeAttachedEnemy a of
+              Just enemy@(EnemyMinionId mid) | unMinionId mid == unAllyId allyId -> Just enemy
+              _ -> Nothing
+        pure a {upgradeAttachedAlly = Just allyId, upgradeAttachedEnemy = priorEnemy, upgradeController = hostController}
+      UpgradeHostBecameMinion mid -> do
+        upgradeAttachedTo mid (upgradeId a)
+        pure a {upgradeAttachedEnemy = Just (EnemyMinionId mid), upgradeAttachedAlly = Just (AllyId $ unMinionId mid)}
       UpgradeAttachedToSideScheme sideSchemeId ->
         pure a {upgradeAttachedSideScheme = Just sideSchemeId}
       UpgradeAttachedToMainScheme mainSchemeId ->

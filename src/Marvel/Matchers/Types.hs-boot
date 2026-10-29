@@ -16,3 +16,11 @@ instance Eq AllyMatcher
 instance ToJSON AllyMatcher
 instance FromJSON AllyMatcher
 instance Hashable AllyMatcher
+
+data CharacterMatcher
+
+instance Show CharacterMatcher
+instance Eq CharacterMatcher
+instance ToJSON CharacterMatcher
+instance FromJSON CharacterMatcher
+instance Hashable CharacterMatcher

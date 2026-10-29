@@ -485,6 +485,9 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       for_ mTarget \target -> withDiscarded target FromEncounterDeck (EncounterCard <$> discarded)
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     -- out of play, from wherever in the decks it was
+    PutCardIntoPlay _ card _ _ _ -> pure $ attrs & setAsideCardsL %~ filter (\case
+      PlayerCard other -> pcCardId other /= pcCardId card
+      EncounterCard _ -> True)
     SetAside cards -> pure $ foldr leaves attrs [ec | EncounterCard ec <- cards] & setAsideCardsL <>~ cards
     RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)

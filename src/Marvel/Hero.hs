@@ -87,6 +87,10 @@ allHeroes = fromList $ map
   , SomeHeroCard spectrum
   -- Adam Warlock
   , SomeHeroCard adamWarlockHero
+  , SomeHeroCard nebulaHero
+  , SomeHeroCard warMachineHero
+  , SomeHeroCard valkyrieHero
+  , SomeHeroCard visionHero
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

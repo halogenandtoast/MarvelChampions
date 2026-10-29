@@ -5,6 +5,8 @@ module Marvel.Window (
 
 import Marvel.Prelude
 
+import Marvel.Card.Def (sameCard)
+
 import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
 import Marvel.Damage
@@ -27,6 +29,10 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   HeroThwartsAllThreat identityMatcher -> case windowType w of
     ThwartedAllThreat ident _ -> identityMatches identityMatcher ident
+    _ -> pure False
+  CharacterWouldTakeAttackDamage characterMatcher -> case windowType w of
+    IdentityTakeDamage ident damage | damageAmount damage > 0 && damageSource damage == FromAttack -> characterMatches characterMatcher (IdentityCharacter ident)
+    AllyTakeDamage aid damage | damageAmount damage > 0 && damageSource damage == FromAttack -> characterMatches characterMatcher (AllyCharacter aid)
     _ -> pure False
   AllyWouldTakeDamage allyMatcher -> case windowType w of
     AllyTakeDamage aid damage | damageAmount damage > 0 -> allyMatches allyMatcher aid
@@ -68,6 +74,8 @@ windowMatches matcher w source = case matcher of
             (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
+    FriendlyCharacterAttack (IdentityCharacter ident) _
+      | windowTiming w == timing && enemyMatcher == AnyEnemy -> identityMatches identityMatcher ident
     IdentityAttack ident enemyId
       | windowTiming w == timing ->
           liftA2
@@ -76,13 +84,19 @@ windowMatches matcher w source = case matcher of
             (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   AllyAttacked timing allyMatcher enemyMatcher -> case windowType w of
+    FriendlyCharacterAttack (AllyCharacter aid) _
+      | windowTiming w == timing && enemyMatcher == AnyEnemy -> allyMatches allyMatcher aid
     AllyAttack allyId enemyId
       | windowTiming w == timing ->
           liftA2
             (&&)
             (allyMatches allyMatcher allyId)
             (enemyMatches enemyMatcher enemyId)
+    AllyAttackCompletedAgainst allyId enemies | windowTiming w == timing ->
+      liftA2 (&&) (allyMatches allyMatcher allyId) (anyM (enemyMatches enemyMatcher) enemies)
     _ -> pure False
+  -- A single attack may resolve against several enemies. Its After window is one
+  -- triggering condition; a target matcher succeeds if any resolved enemy matches.
   AllyThwarted timing allyMatcher schemeMatcher -> case windowType w of
     AllyThwart allyId schemeId
       | windowTiming w == timing ->
@@ -149,6 +163,10 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == After ->
           liftA2 (&&) (enemyMatches enemyMatcher enemy) (damageMatchesFrom damageMatcher damage source)
     _ -> pure False
+  EnemyDefeatedWithUpgrade timing def damageMatcher -> case windowType w of
+    DefeatedEnemyWithUpgrades _ defs damage source | windowTiming w == timing ->
+      (any (sameCard def) defs &&) <$> damageMatchesFrom damageMatcher damage source
+    _ -> pure False
   EnemyDefeated timing enemyMatcher damageMatcher -> case windowType w of
     DefeatedMinion minionId damage source _
       | windowTiming w == timing ->
@@ -204,11 +222,18 @@ windowMatches matcher w source = case matcher of
     EnergyFormChanged identityId _
       | windowTiming w == timing ->
           identityMatches identityMatcher identityId
+    MassFormChanged identityId _
+      | windowTiming w == timing ->
+          identityMatches identityMatcher identityId
     _ -> pure False
   EnergyFormChangedTo timing upgradeMatcher -> case windowType w of
     EnergyFormChanged _ upgradeId
       | windowTiming w == timing ->
           upgradeMatches upgradeMatcher upgradeId
+    _ -> pure False
+  MassFormChangedTo timing upgradeMatcher -> case windowType w of
+    MassFormChanged _ upgradeId
+      | windowTiming w == timing -> upgradeMatches upgradeMatcher upgradeId
     _ -> pure False
   MakesBasicAttackAgainst timing identityMatcher enemyMatcher -> case windowType w of
     MadeBasicAttackAgainst identityId enemyId
@@ -329,6 +354,9 @@ windowMatches matcher w source = case matcher of
     CardPlayed ident card
       | windowTiming w == timing && cardMatch cardMatcher card ->
           identityMatches identityMatcher ident
+    _ -> pure False
+  PlaysUpgradeOnAlly timing identityMatcher -> case windowType w of
+    UpgradePlayedOnAlly ident _ _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
   PlaysAlly allyMatcher -> case windowType w of
     PlayedAlly aid | windowTiming w == After -> allyMatches allyMatcher aid

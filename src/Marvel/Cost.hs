@@ -5,6 +5,10 @@ module Marvel.Cost (
 
 import Marvel.Prelude
 
+import Marvel.Card.Def (cardMatch, CardMatcher (CardWithType), CardType (MinionType, SideSchemeType))
+
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded))
+
 import Data.List qualified as L
 import Marvel.Ability
 import Marvel.Card.PlayerCard ()
@@ -24,6 +28,9 @@ import Marvel.Modifier.Types (Modifier (BasicAttackAdditionalCost))
 import Marvel.Question qualified as Q
 import Marvel.Ref
 import Marvel.Resource
+import Marvel.Trait (Trait)
+import Marvel.Status (StatusCard (ToughStatus))
+import Marvel.Modifier.Types (Modifier (CannotTakeDamage, CannotTakeDamageFromPlayerCards, DamageReduction))
 
 passesCanAffordCost ::
   ( HasQueue m
@@ -83,15 +90,26 @@ canAffordCost identityId source = go
     HealCost n ->
       member identityId
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
-    DamageThisCost _ -> pure True
-    DiscardCost _ -> pure True -- TODO: we need to check if target exists
+    DamageThisCost n -> case source of
+      AllyRef aid -> do
+        present <- selectAny (AllyWithId aid)
+        tough <- match (AllyCharacter aid) (CharacterWithStatus ToughStatus)
+        modifiers <- getModifiers source
+        let immune = CannotTakeDamage `elem` modifiers || CannotTakeDamageFromPlayerCards `elem` modifiers
+            reduced = sum [k | DamageReduction k <- modifiers]
+        -- Paying with the last hit point is legal: this cost deals damage, rather
+        -- than spending hit points. Tough or a prevention effect cannot pay it.
+        pure $ present && (n == 0 || not (tough || immune || reduced > 0))
+      _ -> pure False
+    DiscardCost target -> notElem CannotBeDiscarded <$> getModifiers target
     DiscardRandomHandCardsCost n ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . unHand) identityId
     DiscardHandCardsCost n _ ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter (\c -> notPlaying c && not (staysInHand c)) . unHand) identityId
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
-    DiscardUpgradeCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    DiscardUpgradeCost matcher -> selectAny (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy identityId)
+    DiscardAllyCost matcher -> selectAny (matcher <> AllyControlledBy (IdentityWithId identityId))
     DiscardTopOfDeckCost -> projectP PlayerIdentityDeck (not . null . unDeck) identityId
     -- "up to": as few as the deck holds, down to the least the cost asks
     DiscardTopOfDeckCardsCost lo _ -> projectP PlayerIdentityDeck ((>= lo) . fromIntegral . length . unDeck) identityId
@@ -112,10 +130,16 @@ canAffordCost identityId source = go
         , selectAny (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId) <> AllyWithTrait t)
         ]
     DiscardEncounterCardsUntilMinionCost -> pure True
+    SearchEncounterSideSchemeCost -> any (cardMatch $ CardWithType SideSchemeType) <$> getEncounterDeck
+    SearchEncounterMinionCost -> any (cardMatch $ CardWithType MinionType) <$> ((<>) <$> getEncounterDeck <*> getEncounterDiscard)
     DealEncounterCardCost -> pure True
     DiscardTopEncounterCardCost -> pure True
     TargetPrintedCost -> pure True
+    ChosenHandCardCost -> pure True
+    ChooseCharacterWithTraitCost t matcher -> notNull <$> chooseCharacterTraitCandidates t matcher
     MayOverpay -> pure True
+    PrintedXCost _ _ -> pure True
+    UpToResourcesCost n -> (n > 0 &&) . notNull <$> availableResources
     IdentityCountersCost n -> member identityId <$> select (IdentityWithCounters $ AtLeast $ Static $ fromIntegral n)
     ExhaustMilanoCost -> milanoIsReady
     IfControlsMilanoCost c c' -> controlsMilano identityId >>= \m -> go (if m then c else c')
@@ -130,6 +154,7 @@ canAffordCost identityId source = go
       ObligationRef _ -> member identityId <$> select (UnexhaustedIdentity <> AlterEgoIdentity)
       -- "exhaust your hero" on a main scheme (The Grand Collection)
       MainSchemeRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
+      CardIdRef _ -> member identityId <$> select UnexhaustedIdentity
       _ -> error "Unhandled"
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses
@@ -179,3 +204,33 @@ canAffordCost identityId source = go
       cards <- filter notPlaying <$> getAvailablePaymentSources identityId
       (<> abilities) <$> concatMapM (`resourcesFor` Nothing) cards
     _ -> getAvailableResourcesFor identityId Nothing
+
+-- | Alliance may split costs among players. Character exhaustions are allocated
+-- together so a dual-trait character cannot pay two exhaustions by itself.
+canAffordAllianceCost ::
+  (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  [IdentityId] -> Source -> Cost -> m Bool
+canAffordAllianceCost payers source cost = do
+  characters <- traverse candidates traitCosts
+  chosen <- traverse (uncurry chooseCharacterTraitCandidates) chooseCosts
+  let distinct _ [] = True
+      distinct used (xs : rest) = any (\x -> x `notElem` used && distinct (x : used) rest) xs
+  others <- allM (\c -> anyM (\p -> canAffordCost p source c) payers) otherCosts'
+  pure $ distinct [] characters && distinct [] chosen && others
+ where
+  parts = flatten cost
+  traitCosts = [t | ExhaustCharacterWithTraitCost t <- parts]
+  chooseCosts = [(t, m) | ChooseCharacterWithTraitCost t m <- parts]
+  otherCosts' = [c | c <- parts, case c of ExhaustCharacterWithTraitCost _ -> False; ChooseCharacterWithTraitCost _ _ -> False; _ -> True]
+  flatten (Costs cs) = concatMap flatten cs
+  flatten NoCost = []
+  flatten c = [c]
+  candidates t = concatMapM (\p -> do
+    heroes <- selectList (IdentityWithId p <> UnexhaustedIdentity <> IdentityWithTrait t)
+    allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId p) <> AllyWithTrait t)
+    pure $ map IdentityCharacter heroes <> map AllyCharacter allies) payers
+
+-- | A choose-only cost does not spend another player's game element, so it needs
+-- no ownership contribution or consent. The character may already be exhausted.
+chooseCharacterTraitCandidates :: (HasGame m) => Trait -> CharacterMatcher -> m [CharacterId]
+chooseCharacterTraitCandidates trait matcher = selectList (CharacterWithTrait trait <> matcher)

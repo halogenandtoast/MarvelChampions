@@ -283,9 +283,10 @@ isPlayable = isPlayableWith False
 -- your hand, ignoring its resource cost").
 isPlayableWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
 isPlayableWith ignoringCost attrs c = do
+  effectiveDef <- effectivePlayerCardDef ident c
   affordable <- notNull <$> playableTargetsWith ignoringCost attrs c
   -- a card with a window is played as an action only if it says so, under its criteria
-  passedCriteria <- passesCardCriteria ident c (fromMaybe (cdCriteria def) (cdActionCriteria def) <> toAdditionalCriteria def)
+  passedCriteria <- passesCardCriteria ident c (fromMaybe (cdCriteria effectiveDef) (cdActionCriteria effectiveDef) <> toAdditionalCriteria effectiveDef)
   passedPlayLimits <- checkPlayLimits attrs c
   forbidden <- any (\case CannotPlayCards m -> cardMatch m c; _ -> False) <$> getModifiers (toId attrs)
   matchesUnique <-
@@ -376,22 +377,57 @@ checkPlayLimits ident c = case cdLimit def of
 -- | The resource cost of playing the card on the target, as modified: Iron Man's "reduce
 -- the cost to play each upgrade on Iron Man" answers for the character it is played on.
 getModifiedCost :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m Int
-getModifiedCost attrs c mTarget = do
+getModifiedCost attrs c mTarget =
+  getModifiedCostWithBase attrs c mTarget $ case cdCost (getCardDef c) of
+    Just (-1) -> Just (fromIntegral $ fst $ printedXParameters c)
+    n -> n
+
+-- | Modifiers still inspect the original card, whose printed cost remains X.
+getModifiedCostWithBase :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> Maybe Int -> m Int
+getModifiedCostWithBase attrs c mTarget base = do
+  (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
+  pure $ if ignored then 0 else maybe 0 (max 0 . (+ adjustment)) base
+
+resourceCostAdjustment :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m (Bool, Int)
+resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
-  pure
-    if IgnoresResourceCost `elem` modifiers
-      then 0
-      else maybe 0 (max 0 . (+ sum (map change modifiers <> map changeOn onTarget))) (cdCost $ getCardDef c)
+  pure (IgnoresResourceCost `elem` modifiers, sum (map change modifiers <> map changeOn onTarget))
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
+    ResourceCostReductionForCard cid n | cid == pcCardId c -> negate (fromIntegral n)
     ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
     AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
     _ -> 0
   changeOn = \case
     UpgradeOnThisCostReduction n | cdCardType (getCardDef c) == UpgradeType -> negate (fromIntegral n)
     _ -> 0
+
+-- | The marker's bound matters only when ignoring resource costs, when arbitrarily
+-- large values cannot improve the effect. Ordinary play permits all affordable X.
+printedXParameters :: PlayerCard -> (Natural, UpgradeMatcher)
+printedXParameters c = fromMaybe (0, UpgradeMatches []) $ headMay
+  [(minimumX, matcher) | PrintedXCost minimumX matcher <- flattenCosts (cdAbilityCost $ getCardDef c)]
+
+printedXChoices :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> Maybe Target -> m [Natural]
+printedXChoices ignoringCost attrs c mTarget = do
+  let ident = toId attrs
+      (minimumX, meaningful) = printedXParameters c
+      allowed = canSpendOn (cdCriteria $ getCardDef c)
+  payers <- allianceCostPayers ident (Just c)
+  resources <- filter allowed <$> concatMapM (\payer -> do
+    abilities <- concatMapM abilityResources =<< getResourceAbilities payer (Just c)
+    cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getAvailablePaymentSources payer
+    (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
+  (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
+  modifiers <- getModifiers attrs
+  inHand <- projectP PlayerIdentityHand (elem c . unHand) ident
+  let potentialReduction = if inHand then sum [fromIntegral n | MayReduceCostToPlay n <- modifiers] else 0
+      upperPaid = max 0 (length resources - adjustment + potentialReduction)
+  upperEffect <- fromIntegral <$> selectListCount meaningful
+  let upper = if ignoringCost || ignored then upperEffect else fromIntegral upperPaid
+  pure [minimumX .. upper]
 
 -- | The whole cost of playing the card on the target: its resource cost, and the cost
 -- of its ability (an event's "→"), paid together.
@@ -401,8 +437,13 @@ getCardCost ::
   PlayerCard ->
   Maybe Target ->
   m Cost
-getCardCost attrs c mTarget = do
-  modifiedCost <- getModifiedCost attrs c mTarget
+getCardCost = getCardCostWithX Nothing
+
+getCardCostWithX :: (HasQueue m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
+getCardCostWithX chosenX attrs c mTarget = do
+  modifiedCost <- case chosenX of
+    Nothing -> getModifiedCost attrs c mTarget
+    Just n -> getModifiedCostWithBase attrs c mTarget (Just $ fromIntegral n)
   printed <- case (cdAbilityCost def, mTarget) of
     (abilityCost, Just (CardIdRef cid)) | usesTargetCost abilityCost -> do
       cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) =<< getPlayers
@@ -411,7 +452,7 @@ getCardCost attrs c mTarget = do
   pure $
     mconcat (replicate modifiedCost (ResourceCost $ spendOnly $ cdCriteria def))
       <> mconcat (replicate printed (ResourceCost Nothing))
-      <> filterCosts (/= TargetPrintedCost) (cdAbilityCost def)
+      <> filterCosts (\case TargetPrintedCost -> False; PrintedXCost _ _ -> False; _ -> True) (cdAbilityCost def)
  where
   def = getCardDef c
   usesTargetCost = elem TargetPrintedCost . flattenCosts
@@ -436,10 +477,47 @@ playableTargetsWith ignoringCost attrs c = do
   targets <- maybe [Nothing] (map Just) <$> getPlayTargets (toId attrs) c
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
-    resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> getAvailableResourcesFor (toId attrs) (Just c)
+    payers <- allianceCostPayers (toId attrs) (Just c)
+    resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> concatMapM (\payer -> do
+      abilities <- concatMapM abilityResources =<< getResourceAbilities payer (Just c)
+      cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getAvailablePaymentSources payer
+      (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
     reduction <- mayReduceCostToPlay attrs c mTarget
-    ((ignoringCost || length resources + reduction >= length (costResources cost)) &&)
-      <$> canAffordCost (toId attrs) (toSource c) (otherCosts cost)
+    affordable <- if cdCost (getCardDef c) == Just (-1)
+      then notNull <$> printedXChoices ignoringCost attrs c mTarget
+      else pure (ignoringCost || length resources + reduction >= length (costResources cost))
+    handTarget <- if ChosenHandCardCost `elem` flattenCosts cost
+      then projectP PlayerIdentityHand (any (isChosenHandTarget c mTarget) . unHand) (toId attrs)
+      else pure True
+    ((affordable && handTarget) &&) <$> canAffordCardOtherCosts (toId attrs) payers c (otherCosts cost)
+
+-- | The hand card already selected to pay a choose-card cost is logically reserved
+-- from resource spending, while remaining in its actual zone until the effect.
+isChosenHandTarget :: PlayerCard -> Maybe Target -> PlayerCard -> Bool
+isChosenHandTarget source target candidate =
+  ChosenHandCardCost `elem` flattenCosts (cdAbilityCost $ getCardDef source)
+    && pcCardId source /= pcCardId candidate
+    && target == Just (CardIdRef $ pcCardId candidate)
+
+-- | Resource abilities resolve before the other parts of a card's cost. A ready
+-- Gauntlet Gun can therefore supply ammo needed by the event it is paying for.
+-- Only the actual currently affordable resource abilities are considered; their
+-- own costs still use ordinary affordability, avoiding recursive speculation.
+canAffordCardOtherCosts :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => IdentityId -> [IdentityId] -> PlayerCard -> Cost -> m Bool
+canAffordCardOtherCosts ident payers card cost = do
+  current <- project PlayerIdentityCounters ident
+  bonus <- if current >= needed
+    then pure 0
+    else do
+      abilities <- getResourceAbilities ident (Just card)
+      amounts <- for abilities \a -> do
+        modifiers <- getModifiers (abilitySource a)
+        pure $ sum [n | MayGenerateIdentityCountersFor matcher n <- modifiers, cardMatch matcher card]
+      pure $ sum amounts
+  rest <- canAffordAllianceCost payers (toSource card) (filterCosts (\case IdentityCountersCost _ -> False; _ -> True) cost)
+  meaningful <- eventExhaustionsAffordable ident payers card cost
+  pure $ current + bonus >= needed && rest && meaningful
+ where needed = sum [n | IdentityCountersCost n <- flattenCosts cost]
 
 -- | How much less a card from hand could cost through an interrupt as it is played
 -- ('MayReduceCostToPlay'), no more than its resource cost.
@@ -452,7 +530,7 @@ mayReduceCostToPlay attrs c mTarget
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = do
-  held <- getUpgradeHeldCards (toId player)
+  held <- (<>) <$> getUpgradeHeldCards (toId player) <*> getAllyHeldCards (toId player)
   filterM (isPlayable player) (cards <> held)
  where
   attrs = toAttrs player
@@ -485,9 +563,12 @@ getChoices attrs = do
 
 -- | An "Alter-Ego Action" a card forbids to be triggered is not.
 triggerable :: (HasGame m) => Ability -> m Bool
-triggerable a
-  | abilityType a == AlterEgoAction = notElem CannotTriggerAlterEgoActions <$> getModifiers (abilitySource a)
-  | otherwise = pure True
+triggerable a = do
+  modifiers <- getModifiers (abilitySource a)
+  let blockedDiscard = CannotBeDiscarded `elem` modifiers
+        && abilityChoices a == [DiscardTarget (toTarget $ abilitySource a)]
+      blockedForm = abilityType a == AlterEgoAction && CannotTriggerAlterEgoActions `elem` modifiers
+  pure $ not (blockedDiscard || blockedForm)
 
 getObligations :: (MonadRandom m) => PlayerIdentity -> m [EncounterCard]
 getObligations attrs = case currentIdentity attrs of
@@ -508,6 +589,24 @@ getModifiedKeywords :: (HasGame m) => PlayerIdentity -> m [Keyword]
 getModifiedKeywords pid = do
   modifiers <- getModifiers pid
   pure $ toList (cdKeywords $ getCardDef pid) <> [k | KeywordModifier k <- modifiers]
+
+-- | Reserve the played card and retain chosen X independently of generated resources.
+beginCardPayment :: (ReverseQueue m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe W.Window -> Maybe Target -> m PlayerIdentity
+beginCardPayment chosenX pid card mWindow mTarget = do
+  cost <- getCardCostWithX chosenX pid card mTarget
+  activeCostId <- getRandom
+  holder <- getAllyHoldingCard card
+  for_ holder (\aid -> reserveAllyHeldCard aid card)
+  setActiveCost $
+      ActiveCost
+        activeCostId
+        (toId pid)
+        (ForCard card)
+        cost
+        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder)
+        mWindow
+        mempty
+  pure $ PlayerIdentity $ toAttrs pid & (handL %~ Hand . filter (/= card) . unHand)
 
 runIdentityMessage ::
   (ReverseQueue m) =>
@@ -658,11 +757,17 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       targets <- playableTargets pid card
       -- "when you play a card from your hand" is answered before its cost is worked out
       let fromHand = card `elem` unHand playerIdentityHand
-          payFor mTarget = do
-            costly <- (> 0) <$> getModifiedCost pid card mTarget
-            when (fromHand && costly) $
-              checkWindows [W.Window W.When $ W.PlayingCardFromHand playerIdentityId card]
-            identityStep playerIdentityId $ PayForCard card mWindow mTarget
+          payFor mTarget =
+            if cdCost (getCardDef card) == Just (-1)
+              then do
+                values <- printedXChoices False pid card mTarget
+                unless (null values) $ chooseOnePromptedAbout playerIdentityId "$label.choosePrintedX" card
+                  [labeled (countLabel "chooseXAmount" n) (cardSpecific pid "playChosenX" (card, mWindow, mTarget, n)) | n <- values]
+              else do
+                costly <- (> 0) <$> getModifiedCost pid card mTarget
+                when (fromHand && costly) $
+                  checkWindows [W.Window W.When $ W.PlayingCardFromHand playerIdentityId card]
+                identityStep playerIdentityId $ PayForCard card mWindow mTarget
           underAnyControl = case cdLimit (getCardDef card) of
             Just (MaxPerPlayerUnderAnyControl _) -> True
             Just (MaxTraitPerPlayerUnderAnyControl _ _) -> True
@@ -684,19 +789,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     -- a card played from a discard pile is left there until it is played, so that
     -- giving it up leaves it where it was
-    PayForCard card mWindow mTarget -> do
-      cost <- getCardCost pid card mTarget
-      activeCostId <- getRandom
-      setActiveCost $
-          ActiveCost
-            activeCostId
-            playerIdentityId
-            (ForCard card)
-            cost
-            (maybe NoPayment TargetPayment mTarget)
-            mWindow
-            mempty
-      pure $ PlayerIdentity $ attrs & (handL %~ Hand . filter (/= card) . unHand)
+    PayForCard card mWindow mTarget -> beginCardPayment Nothing pid card mWindow mTarget
     PlayedCard {} -> pure pid
     PaidWithCard card -> do
       mActiveCost <- getActiveCost
@@ -725,6 +818,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     UpgradeCreated upgradeId -> do
       identityStep playerIdentityId CheckRestrictedLimit
       pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.insert upgradeId
+    UpgradeControlLost upgradeId -> do
+      when (HashSet.member upgradeId playerIdentityUpgrades && not playerIdentityDefeated) do
+        when (playerIdentityDamage > 0) do
+          hp <- getModifiedHp pid
+          when (playerIdentityDamage >= hp) $ defeatIdentity playerIdentityId
+        identityStep playerIdentityId CheckRestrictedLimit
+      pure $ PlayerIdentity $ attrs & upgradesL %~ HashSet.delete upgradeId
     -- two restricted upgrades, and those its modifiers add (any, or Weapons only); over
     -- that the player discards one they choose, until what remains fits
     CheckRestrictedLimit -> do
@@ -906,9 +1006,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       when (damage > 0) $
         if attackIndirect attack'
           then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
-          else do
-            checkWindows [W.Window W.When $ W.IdentityTakeDamage playerIdentityId (attackDamageTo attack' damage)]
-            attackDamageIdentity playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
+          else damageCharacter playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       unless (attackRanged attack') $
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when playerIdentityDefended $
@@ -1107,6 +1205,15 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific target "playChosenX" (fromJSON -> Success (card, mWindow :: Maybe W.Window, mTarget, n :: Natural))
+      | target == toRef pid -> do
+          costly <- (> 0) <$> getModifiedCostWithBase pid card mTarget (Just $ fromIntegral n)
+          when (card `elem` unHand (playerIdentityHand attrs) && costly) $
+            checkWindows [W.Window W.When $ W.PlayingCardFromHand (toId pid) card]
+          cardSpecific pid "payForChosenX" (card, mWindow, mTarget, n)
+          pure pid
+    CardSpecific target "payForChosenX" (fromJSON -> Success (card, mWindow :: Maybe W.Window, mTarget, n :: Natural))
+      | target == toRef pid -> beginCardPayment (Just n) pid card mWindow mTarget
     DiscardedCard (PlayerCard card)
       | pcOwner card == Just (playerIdentityId attrs) ->
           pure $
@@ -1154,6 +1261,15 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     -- by one whose hero defends it
     VillainMessage _ (VillainBeginAttack _) -> attackBegins
     MinionMessage _ (MinionBeginAttack _) -> attackBegins
+    -- Setup abilities run after the opening hand and mulligan. A card found in
+    -- any of the player's zones is removed from that zone without being discarded.
+    SetAside cards -> do
+      let ids = [pcCardId c | PlayerCard c <- cards]
+          keep c = pcCardId c `notElem` ids
+      pure $ PlayerIdentity $ attrs
+        & (handL %~ Hand . filter keep . unHand)
+        & (discardL %~ Discard . filter keep . unDiscard)
+        & (deckL %~ Deck . filter keep . unDeck)
     -- a card put into play leaves wherever it was
     PutCardIntoPlay _ card _ _ _ ->
       pure $

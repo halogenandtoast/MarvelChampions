@@ -9,6 +9,7 @@ import Marvel.Attachment.Types (Attachment)
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Hp (HP (..))
 import Marvel.Minion.Cards qualified as MinionCards
+import Marvel.Minion.Types qualified as Minion
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.Stats (Atk (..), Sch (..))
 import Marvel.Trait (HasTraits (..), Trait (Android, Enthralled))
@@ -152,7 +153,7 @@ seducedSpec = describe "Seduced (21179)" do
 
 beguiledSpec :: Spec
 beguiledSpec = describe "Beguiled (21178)" do
-  it "attaches to the ally with the highest cost: an Enthralled minion engaged with its controller, SCH its printed THW, its damage kept, its upgrades discarded" do
+  it "attaches to the ally with the highest cost: an Enthralled minion engaged with its controller, SCH its printed THW, its damage and attachments kept, ally-only bonuses inactive" do
     tg <- testGame ["captain-marvel"]
     let p = player1 tg
     inGame tg do
@@ -177,6 +178,7 @@ beguiledSpec = describe "Beguiled (21178)" do
       marias <- alliesWith "01067"
       allies <- (.playerIdentityAllies) <$> playerAttrs p
       discard <- discardOf p
+      Minion.getModifiedAttack m `shouldReturn` 2
       liftIO do
         minionEngagedIdentity m `shouldBe` p
         (minionScheme m, minionAttack m, minionHitPoints m, minionDamage m) `shouldBe` (Sch 1, Atk 2, HP 3, 1)
@@ -185,7 +187,7 @@ beguiledSpec = describe "Beguiled (21178)" do
         Attachment.attachmentEnemy b `shouldBe` Just (EnemyMinionId mid)
         (length visions, length marias) `shouldBe` (0, 1)
         allies `shouldSatisfy` (not . member (allyId vision))
-        map pcCardId discard `shouldSatisfy` elem (pcCardId inspired)
+        map pcCardId discard `shouldSatisfy` notElem (pcCardId inspired)
 
   it "its minion defeated: the ally card goes to its owner's discard pile, Beguiled to the encounter discard pile" do
     tg <- testGame ["captain-marvel"]

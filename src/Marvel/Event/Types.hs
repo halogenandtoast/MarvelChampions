@@ -73,10 +73,20 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   default toEventAttrs :: (Coercible a (Attrs Event)) => a -> Attrs Event
   toEventAttrs = coerce
 
+  -- | The labels of the action being used. Most cards have one printed ability;
+  -- Solar Beam selects a different labeled ability according to its mass form.
+  eventAbilitySubTypes :: (HasGame m) => a -> m [Ability.AbilitySubType]
+  eventAbilitySubTypes = pure . cdAbilitySubTypes . eventCardDef . toEventAttrs
+
   -- | What it is played on, chosen before its cost is paid. Nothing for an event
   -- played on nothing.
   eventTargets :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => a -> m (Maybe [Target])
   eventTargets _ = pure Nothing
+
+  -- | Validate the complete ordered characters paying exhaust-as-cost parts.
+  -- Choices and Alliance contributor plans may only leave a valid complete set.
+  eventExhaustionCostValid :: (HasGame m) => a -> [CharacterId] -> m Bool
+  eventExhaustionCostValid _ _ = pure True
 
 type EventCard a = CardBuilder (IdentityId, EventId) a
 
@@ -119,11 +129,13 @@ instance RunMessage (Attrs Event) where
         discardCard e
         pure e {eventAttacked = []}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
-      EventAttacked attacker enemy ranged
+      EventAttacked attacker enemy ranged -> do
+        let card = MkPlayerCard (CardId $ unEventId $ eventId e) (eventCardDef e) (Just $ eventController e) (Just $ eventController e)
+        labels <- cdAbilitySubTypes <$> effectivePlayerCardDef (eventController e) card
         -- one attack, however many instances of damage it deals the enemy
-        | Ability.Attack `elem` cdAbilitySubTypes (eventCardDef e) ->
-            pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
-        | otherwise -> e <$ attackResolved attacker enemy ranged
+        if Ability.Attack `elem` labels
+          then pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
+          else e <$ attackResolved attacker enemy ranged
       _ -> pure e
      where
       -- a ranged attack ignores retaliate

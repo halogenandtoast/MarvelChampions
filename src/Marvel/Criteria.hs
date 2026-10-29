@@ -26,7 +26,10 @@ data Criteria
   | Criteria [Criteria]
   | -- | any one of them
     AnyCriteria [Criteria]
+  | -- | The enclosed condition must not hold.
+    NotCriteria Criteria
   | UpgradeExists UpgradeMatcher
+  | EnvironmentExists EnvironmentMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
   | -- | the card's resource cost is paid with only this type of resource: "you can
@@ -38,6 +41,8 @@ data Criteria
     ForAnyPlayer
   | -- | there is a card in The Collection (Infiltrate the Museum)
     CollectionHasCards
+  | -- | another card remains playable after this card exhausts the identity
+    CardPlayAfterExhaustingHasTarget Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -106,4 +111,6 @@ canAttackMinion = AnyCriteria [SelfMatches StunnedIdentity, MinionExists AnyMini
 abilitySubTypeCriteria :: AbilitySubType -> Criteria
 abilitySubTypeCriteria = \case
   Thwart -> SelfMatches IdentityCanThwart
+  Attack -> SelfMatches IdentityCanAttack
+  Defense -> SelfMatches IdentityCanDefend
   _ -> NoCriteria

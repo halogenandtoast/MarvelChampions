@@ -230,6 +230,7 @@ data AllyView = AllyView
   , tough :: Bool
   , counters :: Natural
   , upgrades :: [UpgradeView]
+  , facedownCards :: Int
   , attachments :: [AttachmentView]
   -- ^ encounter cards attached to it (Restrained)
   }
@@ -588,6 +589,7 @@ gameView seesHand g = do
         , confused = a.allyConfused
         , tough = a.allyTough
         , counters = a.allyCounters
+        , facedownCards = length a.allyHeldCards
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
         }
@@ -791,11 +793,13 @@ wildOrNot :: Payment -> [Bool]
 wildOrNot = \case
   ResourcePayment _ -> [False]
   WildPayment _ -> [True]
+  ContributedWildPayment _ _ -> [True]
   _ -> []
 
 dynamic :: Cost -> Bool
 dynamic = \case
   DynamicResourceCost _ -> True
+  UpToResourcesCost _ -> True
   Costs cs -> any dynamic cs
   _ -> False
 

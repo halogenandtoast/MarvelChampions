@@ -92,6 +92,17 @@ allSupports = fromList $ concatMap
 
   -- Adam Warlock
   , soulWorld
+  , nebulasShipSupport
+  , guardiansOfTheGalaxy
+  , defensiveTraining
+  , munitionsBunker
+  , commandTeam
+  , vigilanteTraining
+  , valhalla
+  , theBifrost
+  , leadershipTraining
+  , hickoryBranchLane616
+  , assaultTraining
   ]
 
 support
@@ -131,6 +142,8 @@ baseSupport code name cost traits resources mAspect = CardDef
   , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
@@ -188,7 +201,7 @@ medTeam :: CardDef
 medTeam = reprintedAs ["09018"] $ support "01080" "Med Team" 3 [Shield] [Energy] Protection
 
 avengersMansion :: CardDef
-avengersMansion = reprintedAs ["05022", "06025", "09025", "10023", "21021"] $ limited (MaxPerPlayer 1)
+avengersMansion = deckLimited 3 $ reprintedAs ["05022", "06025", "09025", "10023", "21021", "26023"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01091" "Avengers Mansion" 4 [Avenger, Location] [Mental]
 
 helicarrier :: CardDef
@@ -226,7 +239,7 @@ safeHouse29 =
   unique $ identitySupport "08005" "Safe House #29" 1 [Location, Shield] [Physical]
 
 quincarrier :: CardDef
-quincarrier = reprintedAs ["13025"] $ (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
+quincarrier = deckLimited 1 $ reprintedAs ["13025", "23023"] $ (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
   { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
   }
 
@@ -234,7 +247,7 @@ asgard :: CardDef
 asgard = unique $ identitySupport "06007" "Asgard" 3 [Asgard, Location] [Mental]
 
 hallOfHeroes :: CardDef
-hallOfHeroes = unique $ support "06017" "Hall of Heroes" 2 [Asgard, Location] [Mental] Aggression
+hallOfHeroes = deckLimited 1 $ reprintedAs ["25016"] $ unique $ support "06017" "Hall of Heroes" 2 [Asgard, Location] [Mental] Aggression
 
 sanctumSanctorum :: CardDef
 sanctumSanctorum =
@@ -290,7 +303,7 @@ citt = unique $ basicSupport "17021" "C.I.T.T." 2 [Vehicle] [Wild]
 
 knowhere :: CardDef
 knowhere =
-  (unique $ basicSupport "17022" "Knowhere" 2 [Location] [Energy])
+  deckLimited 1 $ reprintedAs ["22021"] $ (unique $ basicSupport "17022" "Knowhere" 2 [Location] [Energy])
     { cdCriteria = SelfMatches (IdentityWithTrait Guardian)
     }
 
@@ -342,3 +355,51 @@ mightyAvengers = limited (MaxTraitPerPlayerUnderAnyControl Team 1) $ support "21
 
 soulWorld :: CardDef
 soulWorld = unique $ identitySupport "21033" "Soul World" 1 [Location] [Mental]
+
+-- Nebula
+
+nebulasShipSupport :: CardDef
+nebulasShipSupport = deckLimited 1 $ identitySupport "22003" "Nebula's Ship" 2 [Vehicle] [Energy]
+
+guardiansOfTheGalaxy :: CardDef
+guardiansOfTheGalaxy = deckLimited 3 $ limited (MaxTraitPerPlayerUnderAnyControl Team 1) $ support "22033" "Guardians of the Galaxy" 2 [Team] [Mental] Leadership
+
+defensiveTraining :: CardDef
+defensiveTraining = deckLimited 2 $ support "22034" "Defensive Training" 1 [Condition] [Mental] Protection
+
+-- War Machine
+
+munitionsBunker :: CardDef
+munitionsBunker = deckLimited 1 $ identitySupport "23003" "Munitions Bunker" 2 [Location, Shield] [Physical]
+
+commandTeam :: CardDef
+commandTeam = deckLimited 3 $ support "23016" "Command Team" 2 [Shield] [Energy] Leadership
+
+vigilanteTraining :: CardDef
+vigilanteTraining = deckLimited 2 $ support "23033" "Vigilante Training" 1 [Condition] [Mental] Justice
+
+-- Valkyrie
+
+valhalla :: CardDef
+valhalla = deckLimited 1 $ (identitySupport "25004" "Valhalla" 2 [Asgard, Location] [Mental])
+    { cdUnique = True
+    }
+
+theBifrost :: CardDef
+theBifrost = deckLimited 1 $ (basicSupport "25023" "The Bifrost" 1 [Asgard, Location] [Energy])
+    { cdCriteria = SelfMatches (IdentityWithTrait Asgard)
+    , cdUnique = True
+    }
+
+leadershipTraining :: CardDef
+leadershipTraining = deckLimited 2 $ support "25034" "Leadership Training" 1 [Condition] [Mental] Leadership
+
+-- Vision
+
+hickoryBranchLane616 :: CardDef
+hickoryBranchLane616 = deckLimited 1 $ (identitySupport "26004" "616 Hickory Branch Lane" 1 [Location] [Mental])
+    { cdUnique = True
+    }
+
+assaultTraining :: CardDef
+assaultTraining = deckLimited 2 $ support "26033" "Assault Training" 1 [Condition] [Mental] Aggression

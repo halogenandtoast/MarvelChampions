@@ -22,6 +22,10 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Venom Hero Pack rulesheet (MC20) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc20_venom_rulesheet.pdf |
 | Quicksilver Hero Pack rulesheet (MC14) | 2 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf |
 | The Mad Titan's Shadow rulebook (MC21) | PDF created 2021-02-04, modified 2021-11-12, 28 pages (scenario pages with card art are partly images) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed-campaign_log.pdf) |
+| Nebula Hero Pack rulesheet (MC22) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/0b/0f/0b0f1475-6a14-4077-85e5-0353b097f94a/mc22_nebula_rulesheet.pdf |
+| War Machine Hero Pack rulesheet (MC23) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/53/e7/53e7fe04-5a82-4239-8ee9-9f65e6a6248d/mc23_war_machine_rulesheet.pdf |
+| Valkyrie Hero Pack rulesheet (MC25) | rules insert | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc25_valkyrie_rulesheet.pdf |
+| Vision Hero Pack rulesheet (MC26) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/53/60/53601f73-fa92-4cb9-816c-4f8d904de281/mc26_vision_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
@@ -72,6 +76,10 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-spectrum.md](hero-spectrum.md) | Spectrum (MTS): additional forms and energy form upgrades, starter deck, Leadership and basic cards, rulings |
 | [hero-adam-warlock.md](hero-adam-warlock.md) | Adam Warlock (MTS): Avatar of Life deck-building, Cosmic Entity events, starter deck, rulings |
 | [hero-rocket-raccoon.md](hero-rocket-raccoon.md) | Rocket Raccoon (GMW): charge counters FAQ, excess damage, starter deck, rulings |
+| [hero-nebula.md](hero-nebula.md) | Nebula: Techniques, printed Lethal Weapon stats, current errata and starter deck |
+| [hero-war-machine.md](hero-war-machine.md) | War Machine: Alliance, ammo, current errata and starter deck |
+| [hero-valkyrie.md](hero-valkyrie.md) | Valkyrie: Alliance, Hinder, Death-Glow, current errata and starter deck |
+| [hero-vision.md](hero-vision.md) | Vision: additional mass forms, Alliance, piercing, stalwart and Machine Man errata |
 
 ## Conventions
 
