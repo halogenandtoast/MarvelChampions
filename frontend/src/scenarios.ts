@@ -15,7 +15,8 @@ const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g,
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {
   '07001': ['07002', '07017', '07032', '07046'],
-  '21160': ['21160', '21161', '21162', '21163', '21164'],
+  '21098': ['21092'],
+  '21160': ['21163'],
 }
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')

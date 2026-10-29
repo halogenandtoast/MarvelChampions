@@ -21,7 +21,7 @@ const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
 
 <template>
   <span class="deck-tile" :class="{ selected, compact, unplayable: face.problem }" :title="face.problem ? tr(face.problem) : undefined">
-    <HeroPortrait class="art" :code="face.hero" :aspects="face.aspects" />
+    <HeroPortrait class="art" :data-code="heroFace(face.hero)" :code="face.hero" :aspects="face.aspects" />
     <span class="text">
       <span class="deck-name">{{ face.name ?? heroName }}</span>
       <span class="deck-detail">
@@ -47,6 +47,11 @@ const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
 .deck-tile.selected { border-color: var(--crimson); box-shadow: 0 0 0 3px rgb(184 50 58 / 0.25); }
 .deck-tile.unplayable { opacity: 0.6; }
 .art { aspect-ratio: 16 / 9; border-radius: 0; }
+.art[data-code='01040a'],
+.art[data-code='04001a'] { background-position: 95% calc(19% - 8px); }
+.art[data-code='12001a'],
+.art[data-code='13001a'],
+.art[data-code='14001a'] { background-position: 95% calc(19% + 2px); }
 .deck-tile.compact { flex-direction: row; align-items: center; }
 .compact .art { width: 112px; flex: none; }
 .compact .deck-name { padding-top: 0; }

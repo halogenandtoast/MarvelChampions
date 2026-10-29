@@ -238,7 +238,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
               @click="pickVillain(option)"
             >
               <span class="art-strip">
-                <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :style="{ backgroundImage: villainArt(code) }" />
+                <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :data-code="code" :style="{ backgroundImage: villainArt(code) }" />
               </span>
               <span class="villain-name">{{ tileName(option.code) }}</span>
               <span v-if="releaseOf(option.code).name !== tileName(option.code)" class="villain-sets">{{ releaseOf(option.code).name }}</span>
@@ -349,7 +349,12 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
 .art-strip .art { aspect-ratio: auto; height: 100%; }
+.art-strip .art[data-code='16103'] { background-position: 95% 12%; }
 .art-strip .art:not(:only-child) { background-size: auto 210%; background-position: 72% 12%; }
+.art-strip .art[data-code='07002'] { background-position: calc(72% + 16px) calc(12% - 8px); }
+.art-strip .art[data-code='07017'] { background-position: calc(72% + 32px) calc(12% - 8px); }
+.art-strip .art[data-code='07032'] { background-position: calc(72% + 48px) calc(12% - 8px); }
+.art-strip .art[data-code='07046'] { background-position: 72% calc(12% - 8px); }
 .head { display: flex; align-items: center; gap: 12px; }
 .head .page-title { margin: 0 auto 0 0; }
 .step { display: grid; gap: 14px; padding: 20px; border-radius: 16px; background: var(--ink-2); border: 1px solid var(--line); }
