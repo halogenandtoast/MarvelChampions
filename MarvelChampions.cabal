@@ -1835,6 +1835,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.RequirementSpec
       Marvel.Rules.SetMechanicsSpec
       Marvel.Rules.SinisterMotivesLogSpec
+      Marvel.Rules.SmokeMonitorSpec
       Marvel.Rules.SteadyMinionSpec
       Marvel.Rules.SupportHeldEventsSpec
       Marvel.Rules.SurgeSpec
@@ -1849,6 +1850,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.WhenRevealedSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
+      SmokeMonitor
       SpecHook
       TestImport
       Paths_MarvelChampions

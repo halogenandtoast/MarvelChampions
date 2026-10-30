@@ -7,6 +7,7 @@ import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
 import System.Environment (lookupEnv)
 import TestImport
+import SmokeMonitor (withQuestionMonitor)
 import Marvel.Campaign
 import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson (encode)
@@ -16,8 +17,8 @@ import Marvel.Game.Public (publicGameFor)
 -- | Answer whatever is asked at random, from a seed, for as many answers as given, or
 -- until the game ends. The game must not fail on the way. Hastened, a villain in play is
 -- defeated every so many answers, so that a scenario's later stages are played too.
-playRandomly :: Bool -> Int -> Int -> GameAppT Int
-playRandomly hasten seed = go (mkStdGen seed)
+playRandomly :: (Int -> IO ()) -> Bool -> Int -> Int -> GameAppT Int
+playRandomly onQuestion hasten seed = go (mkStdGen seed)
  where
   go _ 0 = pure 0
   go gen n = do
@@ -26,8 +27,14 @@ playRandomly hasten seed = go (mkStdGen seed)
       let (i, _) = randomR (0, max 0 (length vs - 1)) gen
       for_ (take 1 (drop i vs)) \v -> runNow [VillainMessage v VillainDefeated]
     openQuestion >>= \case
-      Nothing -> pure n
+      Nothing -> do
+        state <- getsGame gameState
+        case state of
+          Finished _ -> pure n
+          _ -> error "Smoke runner stopped without a question while the game is unfinished"
       Just (ident, q) -> do
+        version <- getsGame gameQuestionVersion
+        liftIO $ onQuestion version
         -- what the client is sent must be made too, whatever is asked
         view <- liftIO . publicGameFor (const True) =<< getGame
         void $ liftIO $ evaluate (BL.length (encode view))
@@ -95,16 +102,18 @@ spec = parallel do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
    seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
-      (app, ran, _) <- dealtGameWith f (withTestModulars setup) (map starter heroes) seed
-      result <- try do
-        _ <- runGameApp app (playRandomly (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
+      recent <- newIORef Nothing
+      result <- try $ withQuestionMonitor 5000000 $ \onQuestion -> do
+        (app, ran, _) <- dealtGameWith f (withTestModulars setup) (map starter heroes) seed
+        writeIORef recent (Just ran)
+        _ <- runGameApp app (playRandomly onQuestion (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame
         evaluate (length (show g))
       case result of
         Right _ -> pure ()
         Left (err :: SomeException) -> do
-          latest <- readIORef ran
-          expectationFailure $ unlines $ ("seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
+          latest <- readIORef recent >>= maybe (pure []) readIORef
+          expectationFailure $ unlines $ ("scenario " <> show setup.scenarioCode <> ", heroes " <> show heroes <> ", difficulty " <> show setup.difficulty <> ", seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
   heroes = map fst starterDecks
   -- The Once and Future Kang splits the table into an area a player: played with three
   -- too

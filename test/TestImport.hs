@@ -44,7 +44,7 @@ import Marvel.Deck as X
 import Marvel.Discard as X
 import Marvel.Log as X (LogEntry, entryText)
 import System.Random (mkStdGen)
-import Control.Exception (SomeException, displayException, evaluate, throwIO, try)
+import Control.Exception (SomeException, SomeAsyncException, displayException, evaluate, fromException, throwIO, try, tryJust)
 import Test.Hspec as X hiding (shouldBe, shouldMatchList, shouldReturn, shouldSatisfy)
 import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldMatchList, shouldReturn, shouldSatisfy)
 import Control.Monad.IO.Class as X (liftIO)
@@ -104,7 +104,11 @@ dealtGameBeforeSetup f setup decks seed tell = do
   -- a message whose show throws is kept as that error, so a crash's trail can be shown
   let keep :: (Show a) => a -> IO ()
       keep m = do
-        shown <- try (evaluate (force' (tshow m)))
+        shown <- tryJust
+          (\e -> case fromException e :: Maybe SomeAsyncException of
+            Just _ -> Nothing
+            Nothing -> Just (e :: SomeException))
+          (evaluate (force' (tshow m)))
         modifyIORef' ran (take 200 . (either (\(e :: SomeException) -> "<unshowable: " <> T.pack (displayException e) <> ">") id shown :))
       force' t = T.length t `seq` t
   let app' = app {appDebugLogger = Just $ DebugLogger keep}
