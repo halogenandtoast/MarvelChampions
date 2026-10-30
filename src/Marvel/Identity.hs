@@ -190,6 +190,19 @@ instance HasResources PlayerIdentity where
 instance IsRef PlayerIdentity where
   toRef = IdentityRef . toId
 
+-- | Ironheart's current version, on either face of her identity.
+ironheartVersion :: (HasGame m) => IdentityId -> m Natural
+ironheartVersion ident = do
+  code <- getIdentityCode ident
+  pure $ case code of
+    "29001a" -> 1
+    "29001b" -> 1
+    "29002a" -> 2
+    "29002b" -> 2
+    "29003a" -> 3
+    "29003b" -> 3
+    _ -> 0
+
 currentIdentity :: PlayerIdentity -> PlayerIdentitySide
 currentIdentity (PlayerIdentity a) =
   case lookup (playerIdentitySide a) (playerIdentitySides a) of
@@ -651,6 +664,12 @@ runIdentityMessage ::
   m PlayerIdentity
 runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
   case msg of
+    SwapIdentityVersion heroCode alterCode ->
+      pure $ PlayerIdentity attrs
+        { playerIdentitySides = fromList
+            [(A, HeroSide $ lookupHeroByCardCode heroCode playerIdentityId)
+            ,(B, AlterEgoSide $ lookupAlterEgoByCardCode alterCode playerIdentityId)]
+        }
     SetupIdentity -> do
       let nemesisSet = getNemesisSet $ toCardCode pid
       obligations <- getObligations pid
@@ -851,7 +870,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       case mActiveCost of
         Nothing -> error "no cost"
         Just activeCostId -> do
-          spendCard activeCostId card
+          mCost <- getActiveCostCard activeCostId
+          generated <- resourcesFor card mCost
+          printed <- printedResourcesFor card
+          spendCardWithResources activeCostId card generated printed
           pure $
             PlayerIdentity $
               attrs
@@ -1067,24 +1089,25 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       when playerIdentityDefended $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
-    -- a tough status card prevents all of it, and is discarded instead
-    IdentityDamaged _ damage
-      | playerIdentityTough && damageAmount damage > 0 && preventedByTough damage ->
-          pure $ PlayerIdentity $ attrs & toughL .~ False
     IdentityDamaged source damage -> do
-      modifiedHp <- getModifiedHp pid
-      -- what answers "would be defeated" may take the defeat off the queue
-      attackDealtDamageTo source damage playerIdentityId
-      when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentity playerIdentityId
-      when (damageAmount damage > 0) $
-        checkWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
-      let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
-      pure $
-        PlayerIdentity $
-          attrs
-            & damageL +~ damageAmount damage
-            & toughL %~ (&& not (piercesTough damage))
-            & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
+      immune <- cannotTakeDamageFrom (IdentityRef playerIdentityId) source
+      if immune then pure pid
+      else if playerIdentityTough && damageAmount damage > 0 && preventedByTough damage
+        then pure $ PlayerIdentity $ attrs & toughL .~ False
+        else do
+          modifiedHp <- getModifiedHp pid
+          -- what answers "would be defeated" may take the defeat off the queue
+          attackDealtDamageTo source damage playerIdentityId
+          when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentity playerIdentityId
+          when (damageAmount damage > 0) $
+            checkWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
+          let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
+          pure $
+            PlayerIdentity $
+              attrs
+                & damageL +~ damageAmount damage
+                & toughL %~ (&& not (piercesTough damage))
+                & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
     IdentityDefeated -> do
       players <- getAllPlayers
       let

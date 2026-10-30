@@ -48,7 +48,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
-import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon))
+import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, CanLookAtTopOfEncounterDeck))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -81,6 +81,7 @@ data GameView = GameView
   , minions :: [MinionView]
   , environments :: [EnvironmentView]
   , encounterDeckSize :: Int
+  , encounterDeckTop :: Maybe CardView
   , setAsideModulars :: [EncounterSet.EncounterSet]
   , encounterDiscard :: [CardView]
   , victoryDisplay :: [CardView]
@@ -409,6 +410,7 @@ gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
+  mayLook <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
   threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
     threshold <- case sid of
       SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> Just <$> MainScheme.getThreshold (toAttrs s)
@@ -429,7 +431,8 @@ gameView seesHand g = do
         , paid
         , wilds = [i | (i, True) <- zip [0 ..] (concatMap wildOrNot (payments c.activeCostPayment))]
         , owed = let required = printedResourceRequirements c.activeCostCost
-                     printed = concatMap (printedResources . getCardDef) c.activeCostSpentCards
+                     receipts = [rs | PrintedResourcesPayment rs <- payments c.activeCostPayment]
+                     printed = if null receipts then concatMap (printedResources . getCardDef) c.activeCostSpentCards else concat receipts
                   in if null required then owedFor (costResources c.activeCostCost) paid
                      else map Just (foldl' (flip L.delete) required printed)
         , anyAmount = dynamic c.activeCostCost
@@ -463,6 +466,7 @@ gameView seesHand g = do
           , let a = toAttrs e
           ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
+      , encounterDeckTop = if mayLook then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g)
@@ -683,7 +687,7 @@ gameView seesHand g = do
      in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere a.mainSchemeHasGlider
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [] a.sideSchemeAccelerationTokens False
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat (a.sideSchemeCrisis && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [] a.sideSchemeAccelerationTokens False
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)

@@ -18,6 +18,8 @@ data Payment
     ApprovedAlliancePayment [(IdentityId, Cost)]
   | -- | resources actually spent after surplus generation is discarded; raw receipts remain
     ActualResourcesPayment [Resource]
+  | -- | Icons on a payment card while it was still in hand (Haywire).
+    PrintedResourcesPayment [Resource]
   | ResourcePayment Resource
   | -- | a wild resource spent, as the type its payer declared it (RR Wild Resource):
     -- wild until they say otherwise

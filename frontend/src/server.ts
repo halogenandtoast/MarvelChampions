@@ -261,6 +261,7 @@ export interface GameView {
   environments?: EnvironmentView[]
   setAsideModulars?: string[]
   encounterDeckSize: number
+  encounterDeckTop?: CardView | null
   encounterDiscard: CardView[]
   /** the victory display: cards with victory X, defeated, the first added first */
   victoryDisplay?: CardView[]

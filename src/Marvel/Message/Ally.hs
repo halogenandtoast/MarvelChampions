@@ -25,6 +25,9 @@ data AllyMessage
   | -- | the interrupts to the attack resolved: the damage lands, if the enemy is still
     -- in play to take it
     AllyAttackLands EnemyId Damage
+  | AllyAssignEvenAttack Damage Natural [(EnemyId, Natural)] [EnemyId] [EnemyId]
+  | AllyEvenAttackLands Damage [(EnemyId, Natural)]
+  | AllyEvenAttackFinished Damage [EnemyId]
   | AllyAttackMultiple [EnemyId] Damage
   | AllyAttackMultipleNext [EnemyId] [EnemyId] Damage
   | AllyAttackMultipleFinished [EnemyId]

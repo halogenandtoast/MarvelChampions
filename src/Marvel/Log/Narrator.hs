@@ -53,7 +53,9 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  RemoveFromPlayAfterWindow {} -> Nothing
   AllocatedPayment {} -> Nothing
+  SpentWithResources {} -> Nothing
   -- * Structure: the headings a reader finds their way by
   StartScenario -> Just do
     villains <- getsGame (Scenario.scenarioVillains . toAttrs . gameScenario)
@@ -319,6 +321,9 @@ campaignNarration = \case
 
 identityNarration :: (HasGame m) => IdentityId -> IdentityMessage -> Maybe (m [LogEntry])
 identityNarration ident = \case
+  SwapIdentityVersion heroCode _ -> Just do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.identityVersionSwapped" ["player" ~> who, "version" ~> (case heroCode of "29002a" -> (2 :: Natural); "29003a" -> 3; _ -> 1)]]
   IdentityDealtBoost _ -> Just do
     who <- playerRef' ident
     one $ notice [ikeyPart "log.identityDealtBoost" ["player" ~> who]]
@@ -365,8 +370,13 @@ identityNarration ident = \case
       , exceptPlayer ident $ notice [ikeyPart "log.draws" ["player" ~> who, "count" ~> length drawn]]
       ]
   IdentityDamaged _ dmg | damageAmount dmg > 0 -> Just do
-    who <- playerRef' ident
-    one $ toned Bad $ mechanic [ikeyPart "log.takesDamage" ["target" ~> who, "count" ~> damageAmount dmg]]
+    tough <- getsGame $ maybe False (playerIdentityTough . toAttrs) . lookup ident . gamePlayers
+    immune <- elem CannotTakeDamage <$> getModifiers (IdentityRef ident)
+    if immune || (tough && preventedByTough dmg)
+      then damaged (IdentityRef ident) (tough && preventedByTough dmg) (damageAmount dmg)
+      else do
+        who <- playerRef' ident
+        one $ toned Bad $ mechanic [ikeyPart "log.takesDamage" ["target" ~> who, "count" ~> damageAmount dmg]]
   IdentityHealed n | n > 0 -> Just do
     who <- playerRef' ident
     damage <- getsGame $ maybe 0 identityDamage . lookup ident . gamePlayers
@@ -469,6 +479,9 @@ attackChanged enemy n = whenRef enemy \e ->
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
+  AllyAssignEvenAttack {} -> Nothing
+  AllyEvenAttackLands {} -> Nothing
+  AllyEvenAttackFinished {} -> Nothing
   AllyAttackMultiple {} -> Nothing
   AllyAttackMultipleNext {} -> Nothing
   AllyAttackMultipleFinished {} -> Nothing

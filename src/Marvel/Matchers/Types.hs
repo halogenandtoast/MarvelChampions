@@ -22,6 +22,7 @@ data EntityMatcher
   | -- | an event being played
     EventEntity EventId
   | MainSchemeEntity MainSchemeId
+  | SideSchemeEntity SideSchemeMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -92,6 +93,8 @@ data AllyMatcher
     AllyIs CardDef
   | AllyWithTitle Text
   | AllyWithPrintedCostAtLeast Natural
+  | AllyWithThwartAtLeast Natural
+  | AllyWithAttackAtLeast Natural
   | -- | allowed to be readied by a player-card effect (exhaustion checked separately)
     AllyCanReady
   | -- | its title or its subtitle the name: a named character (RR Team-Up)
@@ -300,6 +303,7 @@ data SideSchemeMatcher
   | CrisisSideScheme
   | SideSchemeIs CardDef
   | SideSchemeWithId SideSchemeId
+  | SideSchemeWithKeyword Keyword
   | SideSchemeWithUpgrade UpgradeMatcher
   | NotSideScheme SideSchemeMatcher
   | -- | the side scheme a villain matching owns, as Wrecker's Day of Reckoning

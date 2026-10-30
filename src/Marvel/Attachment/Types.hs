@@ -92,6 +92,8 @@ instance HasAbilities Attachment where
 instance HasModifiersFor Attachment where
   getModifiersFor source target (Attachment a) =
     getModifiersFor source target a
+  getPrintedModifiersFor source target (Attachment a) =
+    getPrintedModifiersFor source target a
 
 instance IsCard Attachment where
   toCard = toCard . toAttrs

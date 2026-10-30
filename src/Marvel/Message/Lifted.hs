@@ -77,6 +77,9 @@ shuffleTopEncounterCardsIntoPlayerDeck :: (ReverseQueue m) => IdentityId -> Natu
 shuffleTopEncounterCardsIntoPlayerDeck you n = replicateM_ (fromIntegral n) (push $ PutTopEncounterCardInPlayerDeck you)
 
 -- | A further resolve-mulligans step, before identity setup abilities.
+swapIdentityVersion :: (ReverseQueue m) => IdentityId -> CardCode -> CardCode -> m ()
+swapIdentityVersion you heroCode alterCode = identityStep you (SwapIdentityVersion heroCode alterCode)
+
 additionalMulligan :: (ReverseQueue m) => IdentityId -> m ()
 additionalMulligan you = do
   identityStep you DiscardCards
@@ -1206,12 +1209,14 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
  where
   matches = \case
     AllyMessage who (AllyAttackLands _ _) -> who == aid
+    AllyMessage who (AllyEvenAttackLands _ _) -> who == aid
     MainSchemeMessage _ (MainSchemeBasicThwarted (AllyRef who) _) -> who == aid
     MainSchemeMessage _ (MainSchemeThwarted (AllyRef who) _) -> who == aid
     SideSchemeMessage _ (SideSchemeThwarted (AllyRef who) _) -> who == aid
     _ -> False
   raise = \case
     AllyMessage who (AllyAttackLands enemy damage) -> [AllyMessage who (AllyAttackLands enemy damage {damageAmount = damageAmount damage + bonus})]
+    AllyMessage who (AllyEvenAttackLands damage shares) -> [AllyMessage who (AllyEvenAttackLands damage {damageAmount = damageAmount damage + bonus} shares)]
     MainSchemeMessage sid (MainSchemeBasicThwarted source amount) -> [MainSchemeMessage sid (MainSchemeBasicThwarted source (amount + bonus))]
     MainSchemeMessage sid (MainSchemeThwarted source amount) -> [MainSchemeMessage sid (MainSchemeThwarted source (amount + bonus))]
     SideSchemeMessage sid (SideSchemeThwarted source amount) -> [SideSchemeMessage sid (SideSchemeThwarted source (amount + bonus))]
@@ -1232,6 +1237,9 @@ setActiveCost :: (ReverseQueue m) => ActiveCost -> m ()
 setActiveCost = push . SetActiveCost
 
 -- | The card is spent on the cost.
+spendCardWithResources :: (ReverseQueue m) => ActiveCostId -> PlayerCard -> [Resource] -> [Resource] -> m ()
+spendCardWithResources acid card generated printed = push $ SpentWithResources acid card generated printed
+
 spendCard :: (ReverseQueue m) => ActiveCostId -> PlayerCard -> m ()
 spendCard acid = push . Spent acid
 
@@ -2012,9 +2020,11 @@ changeBoostIconCount card f = replaceMatchingMessage change \case
 
 -- | Positive-to-zero threat removal by an identity or a card that extends it.
 heroRemovedLastThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()
-heroRemovedLastThreat source scheme before n
-  | before == 0 || n < before = pure ()
-  | otherwise = getHeroSourceController source >>= traverse_ (\ident -> checkWindows [Window After $ W.LastThreatRemoved ident scheme])
+heroRemovedLastThreat source scheme before n = do
+  let removed = min before n
+  when (removed > 0) $ checkWindows [Window After $ W.ThreatRemovedBy source scheme before removed]
+  when (before > 0 && n >= before) $
+    getHeroSourceController source >>= traverse_ (\ident -> checkWindows [Window After $ W.LastThreatRemoved ident scheme])
 
 -- | The window after a hero's thwart took the last threat off the scheme ("after your
 -- hero thwarts and removes all threat from a scheme"): an ally's thwart is not one.
@@ -2034,20 +2044,24 @@ getBoostIconCount card = do
 raiseAllyAttack :: (HasQueue m) => AllyId -> Natural -> m ()
 raiseAllyAttack aid n = replaceMatchingMessage raise \case
   AllyMessage aid' (AllyAttackLands _ _) -> aid' == aid
+  AllyMessage aid' (AllyEvenAttackLands _ _) -> aid' == aid
   _ -> False
  where
   raise = \case
     AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy dmg {damageAmount = damageAmount dmg + n}]
+    AllyMessage a (AllyEvenAttackLands dmg shares) -> [AllyMessage a $ AllyEvenAttackLands dmg {damageAmount = damageAmount dmg + n} shares]
     msg -> [msg]
 
 -- | The ally's attack about to land gains overkill: "that attack gains overkill".
 allyAttackGainsOverkill :: (HasQueue m) => AllyId -> m ()
 allyAttackGainsOverkill aid = replaceMatchingMessage gain \case
   AllyMessage aid' (AllyAttackLands _ _) -> aid' == aid
+  AllyMessage aid' (AllyEvenAttackLands _ _) -> aid' == aid
   _ -> False
  where
   gain = \case
     AllyMessage a (AllyAttackLands enemy dmg) -> [AllyMessage a $ AllyAttackLands enemy (withOverkill dmg)]
+    AllyMessage a (AllyEvenAttackLands dmg shares) -> [AllyMessage a $ AllyEvenAttackLands (withOverkill dmg) shares]
     msg -> [msg]
 
 -- | The excess damage a hero's attack is dealing is more, as an interrupt to it: "increase

@@ -163,6 +163,7 @@ data WindowMatcher
   -- Infiltrate the Museum
   | -- | a card would be placed into a discard pile from play
     CardWouldBeDiscardedFromPlay
+  | PlayerCardWouldBeDiscardedFromPlay
   -- Adam Warlock
   | -- | "after your deck runs out of cards" (Soul World), "after a player resets their
     -- deck" (Universal Church of Truth)
@@ -188,6 +189,7 @@ data Window = Window
 
 data WindowType
   = HeroThwartComplete IdentityId
+  | ThreatRemovedBy Source SchemeId Natural Natural
   | LastThreatRemoved IdentityId SchemeId
   | PlayedAlly AllyId
   | -- | the ally entered play, played or put into play

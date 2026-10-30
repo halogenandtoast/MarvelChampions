@@ -9,11 +9,15 @@ import Marvel.Id (EnemyId)
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
 import Marvel.Id (IdentityId, MainSchemeId)
+import Marvel.Resource.Types (Resource)
 import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
   = CanHaveAnyNumberOfToughStatusCards
+  | CanLookAtTopOfEncounterDeck
+  | PrintedResourcesAs Resource
+  | DividesBasicAttackEvenly
   | ResourceCostReduction Natural
   | -- | on a resource ability source: its effect can generate identity counters
     MayGenerateIdentityCountersFor CardMatcher Natural

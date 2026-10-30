@@ -160,6 +160,8 @@ passesCriteria x a =
     EnemyExists m -> selectAny m
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
+    AttachmentExists m -> selectAny m
+    SideSchemeExists m -> selectAny m
     SupportExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
@@ -203,6 +205,8 @@ passesCardCriteria ident card = go
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
+    AttachmentExists m -> selectAny m
+    SideSchemeExists m -> selectAny m
     SupportExists m -> selectAny m
     SchemeExists m -> selectAny m
     -- the card itself, about to leave the hand, is not one of them

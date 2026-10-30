@@ -132,6 +132,11 @@ payCostPartAs contributing activeCost cost = do
     RemoveFromGameCost target -> do
       removeFromGame target
       paid (DiscardPayment target)
+    DiscardControlledCardCost matcher -> do
+      targets <- discardableControlledCardsMatching iid matcher
+      if null targets then abortPayment acid else oneOf targets \target -> do
+        discardControlled target
+        paid (DiscardPayment target)
     DiscardCost target -> do
       case target of
         UpgradeRef upgrade -> discardUpgrade upgrade
@@ -602,11 +607,15 @@ runActiveCost msg activeCost = runQueueT $ case msg of
     PayCost ident cost | ident == activeCostId activeCost -> do
       payCostPart activeCost cost
       pure activeCost
+    SpentWithResources ident discard resources printed | ident == activeCostId activeCost -> do
+      paid $ PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
+      pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
     Spent ident discard | ident == activeCostId activeCost -> do
       resources <- resourcesFor discard $ case activeCostTarget activeCost of
         ForCard card -> Just card
         _ -> Nothing
-      paid $ mconcat $ map ResourcePayment resources
+      printed <- printedResourcesFor discard
+      paid $ PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
       pure $
         activeCost
           { activeCostSpentCards = discard : activeCostSpentCards activeCost
@@ -819,7 +828,8 @@ resourceCostPaid ActiveCost {..} = do
         && length prs' >= length mrs
         && coversDifferentTypes (differentResourcesNeeded activeCostCost) prs
   let requiredPrinted = printedResourceRequirements activeCostCost
-      printedPaid = coversPrintedResources requiredPrinted (concatMap (printedResources . getCardDef) activeCostSpentCards)
+      printedReceipts = [rs | PrintedResourcesPayment rs <- payments activeCostPayment]
+      printedPaid = coversPrintedResources requiredPrinted (if null printedReceipts then concatMap (printedResources . getCardDef) activeCostSpentCards else concat printedReceipts)
         && coversPrintedResources requiredPrinted prs
   pure $ countersPaid && handTarget && resourcesPaid && printedPaid
 

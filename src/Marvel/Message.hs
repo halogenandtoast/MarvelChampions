@@ -347,6 +347,7 @@ data Message
   | CreatedActiveCost ActiveCostId
   | DisableActiveCost ActiveCostId
   | Spent ActiveCostId PlayerCard
+  | SpentWithResources ActiveCostId PlayerCard [Resource] [Resource]
   | Paid Payment
   | -- | another player is invited to contribute resources to an alliance card
     ContributeResources ActiveCostId IdentityId
@@ -400,6 +401,8 @@ data Message
   | -- | the defender is declared, the players who declined to defend not asked again
     DeclareDefenseWithout IdentityId EnemyId DefensePriority [IdentityId]
   | RemoveFromPlay Target
+  | -- | A player card leaves after its would-discard interrupts, before its destination.
+    RemoveFromPlayAfterWindow Target
   | RemoveFromGame Target
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId

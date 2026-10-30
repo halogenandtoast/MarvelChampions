@@ -1,4 +1,5 @@
 {
+  "identityVersionSwapped": "{player} swaps to Ironheart Version {version}",
   "attachesFacedownEvent": "An event is attached facedown to {ally}.",
   "scenarioBegins": "{villain}",
   "round": "Round {count}",

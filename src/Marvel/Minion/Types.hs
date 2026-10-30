@@ -278,7 +278,8 @@ instance HasCardDef (Attrs Minion) where
 getModifiedKeywords :: (HasGame m) => Attrs Minion -> m [Keyword]
 getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (toList . cdKeywords $ getCardDef attrs) modifiers
+  blanked <- isBlanked attrs
+  pure $ foldr applyModifier (if blanked then [] else toList . cdKeywords $ getCardDef attrs) modifiers
  where
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id

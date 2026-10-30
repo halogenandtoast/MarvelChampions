@@ -10,7 +10,7 @@ import Marvel.Message.Lifted as X
 import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
-import Marvel.Game.Source (getModifiers)
+import Marvel.Game.Source (getModifiers, isBlanked, cannotTakeDamageFrom)
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
@@ -33,17 +33,16 @@ instance HasAbilities Ally where
           Basic
           -- "you cannot thwart" (Baron Zemo) keeps the identity from thwarting, not
           -- its allies
-          (SchemeExists $ SchemeAnAllyCanThwart (toId x) False)
+          (AllyExists (AllyWithId (toId x) <> AllyWithThwartAtLeast 1) <> SchemeExists (SchemeAnAllyCanThwart (toId x) False))
           ExhaustCost
           (AllyThwart $ toId x)
-      | unThw (allyThwart $ toAllyAttrs a) > 0
       ]
       <> [ ability
              x
              301
              Basic
              -- a stunned ally can attempt an attack with no target ("Stunned")
-             (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists $ AttackableByAlly $ toId x)
+             (if allyStunned (toAllyAttrs a) then NoCriteria else AllyExists (AllyWithId (toId x) <> AllyWithAttackAtLeast 1) <> EnemyExists (AttackableByAlly $ toId x))
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]
@@ -88,12 +87,17 @@ instance RunMessage (Attrs Ally) where
                   <> [withRanged | Ranged `elem` keywords]
                   <> [withOverkill | Overkill `elem` keywords]
           dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
-          chooseOne (allyController a)
-            [ targeting (enemyRef enemy) do
-                checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
-                allyAttackLands (allyId a) enemy dmg
-            | enemy <- enemies
-            ]
+          if DividesBasicAttackEvenly `elem` modifiers
+            then unless (null enemies) do
+              let count = fromIntegral $ length enemies
+                  (base, extra) = damageAmount dmg `divMod` count
+              allyStep ident (AllyAssignEvenAttack dmg extra [(enemy, base) | enemy <- enemies] enemies [])
+            else chooseOne (allyController a)
+              [ targeting (enemyRef enemy) do
+                  checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
+                  allyAttackLands (allyId a) enemy dmg
+              | enemy <- enemies
+              ]
           pure a
       -- an interrupt that defeats the enemy aborts the attack: no damage and no
       -- consequential damage (RR, Consequential Damage)
@@ -105,6 +109,43 @@ instance RunMessage (Attrs Ally) where
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) [enemy]]
+          when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
+        pure a
+      AllyAssignEvenAttack dmg extra allocations candidates seen -> do
+        if extra == 0
+          then do
+            let attacked = [(enemy, n) | (enemy, n) <- allocations, n > 0]
+            checkWindows [W.Window W.When $ W.AllyAttack ident enemy | (enemy, _) <- attacked, enemy `notElem` seen]
+            allyStep ident (AllyEvenAttackLands dmg allocations)
+          else chooseOne (allyController a)
+            [ targeting (enemyRef enemy) $ allyStep ident
+                (AllyAssignEvenAttack dmg (extra - 1)
+                  [(target, n + if target == enemy then 1 else 0) | (target, n) <- allocations]
+                  (filter (/= enemy) candidates) seen)
+            | enemy <- candidates
+            ]
+        pure a
+      AllyEvenAttackLands dmg allocations -> do
+        -- Attack interrupts can change the total ATK after the initial allocation.
+        -- Re-divide that total, retaining zero-share enemies as possible recipients.
+        if damageAmount dmg /= sum (map snd allocations) && notNull allocations
+          then do
+            let enemies = map fst allocations
+                (base, extra) = damageAmount dmg `divMod` fromIntegral (length enemies)
+                seen = [enemy | (enemy, n) <- allocations, n > 0]
+            allyStep ident (AllyAssignEvenAttack dmg extra [(enemy, base) | enemy <- enemies] enemies seen)
+          else do
+            alive <- filterM (selectAny . EnemyWithId . fst) [(enemy, n) | (enemy, n) <- allocations, n > 0]
+            for_ alive $ \(enemy, n) -> dealDamage enemy a dmg {damageAmount = n}
+            allyStep ident (AllyEvenAttackFinished dmg $ map fst alive)
+        pure a
+      AllyEvenAttackFinished dmg enemies -> do
+        present <- selectAny (AllyWithId ident)
+        when (present && not (null enemies)) do
+          unless (damageRanged dmg) $ for_ enemies $ \enemy -> enemyRetaliates enemy (AllyCharacter ident)
+          checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident enemies]
+          checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) enemies]
+          consequential <- getModifiedAttackConsequentialDamage a
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyAttackMultiple enemies damage -> do
@@ -189,7 +230,9 @@ instance RunMessage (Attrs Ally) where
           let excess = toDamage overkill FromAttack
           damageCharacter (allyController a) (attackSource attack') excess
         -- retaliate, if it is still in play after the attack, and the attack not ranged
-        let retaliates = sum [n | Retaliate n <- toList (cdKeywords $ allyCardDef a)]
+        blanked <- isBlanked a
+        let keywords = (if blanked then [] else toList $ cdKeywords $ allyCardDef a) <> [k | KeywordModifier k <- modifiers]
+            retaliates = sum [n | Retaliate n <- keywords]
         when (retaliates > 0 && not (attackRanged attack')) $
           allyStep ident (AllyRetaliates (attackEnemy attack') retaliates)
         -- "after <ally> defends against an attack": the attack has resolved
@@ -199,17 +242,20 @@ instance RunMessage (Attrs Ally) where
       AllyRetaliates enemy n -> do
         dealDamage enemy a (toDamage n FromRetaliate)
         pure a
-      AllyDamaged source damage -> if allyTough a && preventedByTough damage
-        then pure $ a & toughL .~ False
-        else do
-          hitPoints <- getModifiedHitPoints a
-          attackDealtDamageTo source damage ident
-          when (damageAmount damage + allyDamage a >= hitPoints) $
-            case sourceEnemy source of
-              Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
-              _ -> defeatAlly ident
-          when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
-          pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
+      AllyDamaged source damage -> do
+        immune <- cannotTakeDamageFrom (AllyRef ident) source
+        if immune then pure a
+        else if allyTough a && preventedByTough damage
+          then pure $ a & toughL .~ False
+          else do
+            hitPoints <- getModifiedHitPoints a
+            attackDealtDamageTo source damage ident
+            when (damageAmount damage + allyDamage a >= hitPoints) $
+              case sourceEnemy source of
+                Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
+                _ -> defeatAlly ident
+            when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
+            pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       AllyDefeated -> defeated Nothing
       AllyDefeatedByAttack enemy -> defeated (Just enemy)
       SpendAllyUse -> pure $ a & countersL -~ 1

@@ -1200,152 +1200,175 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- revealed from the encounter deck)
     EventRef eid -> pure $ g & (entitiesL . eventsL %~ deleteMap eid)
     _ -> error "Unhandled"
-  RemoveFromPlay target -> case target of
-    IdentityRef iid -> do
-      when (length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
-      -- the last player of an area defeated, with players left in others
-      area <- getAreaOf iid
-      when (length (g ^. entitiesL . playersL) > 1 && all (== iid) (areaPlayers area)) $
-        push (AreaDefeated $ areaId area)
-      let order = filter (/= iid) gamePlayerOrder
-          -- whoever is left takes over from an eliminated active player
-          next = case break (== iid) gamePlayerOrder of
-            (before, _ : after) -> headMay (after <> before)
-            _ -> headMay order
-      pure $
-        g
-          & (entitiesL . playersL %~ deleteMap iid)
-          & (activeCostL %~ filter ((/= iid) . activeCostIdentityId))
-          & (playerOrderL .~ order)
-          & (activePlayerL %~ \active -> if active == iid then fromMaybe active next else active)
-          & (areasL . each %~ \a -> a {areaPlayers = filter (/= iid) (areaPlayers a)})
-    -- a villain leaving play takes his own deck and side scheme with him, and what is
-    -- attached to him is discarded; the next villain of his area becomes active
-    VillainRef vid -> case lookup vid (gameVillains g) of
-      Nothing -> pure g
-      Just v -> do
-        let a = toAttrs v
-        for_ (Villain.villainAttachments a) (removeFromPlay . AttachmentRef)
-        for_ (villainUpgrades a) (removeFromPlay . UpgradeRef)
-        push $ RemoveDeck (VillainDeckKey vid)
-        let signature = lookup vid gameSignatureSchemes
-        -- what is attached to his side scheme leaves play with it
-        for_
-          [ aid
-          | (aid, att) <- HashMap.toList (gameAttachments g)
-          , isJust signature
-          , attachmentSideScheme (toAttrs att) == signature
-          ]
-          (removeFromPlay . AttachmentRef)
-        let
-          leave area =
-            -- he stays listed in his area, out of play there: his kept deck is shown in it
-            let rest = filter (/= vid) (areaVillains area)
-             in area
-                  { areaActiveVillain = if areaActiveVillain area == Just vid then headMay rest else areaActiveVillain area
-                  , areaSideSchemes = filter ((/= signature) . Just) (areaSideSchemes area)
-                  }
+  RemoveFromPlay target
+    | Just (PlayerCard card) <- cardInPlay g target -> do
+        modifiers <- getModifiers target
+        let permanent = Permanent `elem` cdKeywords (getCardDef card)
+            barred = CannotLeavePlay `elem` modifiers || CannotBeDiscarded `elem` modifiers
+            removed = RemovedFromGameInsteadOfLeavingPlay `elem` modifiers
+            collecting = toCardId card `elem` gameCollecting
+            finish = case target of
+              AllyRef aid | Just ally <- lookup aid (gameAllies g) ->
+                ResolveAllyLeavingPlay (getAllyController ally) aid (getCardDef ally) (RemoveFromPlayAfterWindow target)
+              _ -> RemoveFromPlayAfterWindow target
+        unless (permanent || barred) $
+          if removed then push (RemoveFromGame target) else do
+            unless collecting $ checkWindows [W.Window W.Would $ W.WouldBeDiscardedFromPlay (Left card)]
+            push finish
+            if collecting then placeInCollection card else discardCard card
+        pure g
+  msg | Just (target, windowOpened) <- (case msg of
+          RemoveFromPlay target -> Just (target, False)
+          RemoveFromPlayAfterWindow target -> Just (target, True)
+          _ -> Nothing) ->
+    let discardLeaving :: (ReverseQueue n, IsCard card) => card -> n ()
+        discardLeaving c = unless windowOpened $ discardFromPlay g c
+     in case target of
+      IdentityRef iid -> do
+        when (length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
+        -- the last player of an area defeated, with players left in others
+        area <- getAreaOf iid
+        when (length (g ^. entitiesL . playersL) > 1 && all (== iid) (areaPlayers area)) $
+          push (AreaDefeated $ areaId area)
+        let order = filter (/= iid) gamePlayerOrder
+            -- whoever is left takes over from an eliminated active player
+            next = case break (== iid) gamePlayerOrder of
+              (before, _ : after) -> headMay (after <> before)
+              _ -> headMay order
         pure $
           g
-            & (entitiesL . villainsL %~ deleteMap vid)
-            & (removedEntitiesL . villainsL %~ insertMap vid v)
-            & (entitiesL . sideSchemesL %~ maybe id deleteMap signature)
-            & (signatureSchemesL %~ deleteMap vid)
-            & (areasL . each %~ leave)
-    AllyRef aid -> do
-      removed <- elem RemovedFromGameInsteadOfLeavingPlay <$> getModifiers target
-      if removed then g <$ push (RemoveFromGame target) else do
-        for_ (lookup aid $ gameAllies g) $ \ally -> do
-          let ident = getAllyController ally
-          -- what is attached to it is discarded with it
-          for_ (allyUpgrades $ toAttrs ally) removeFromPlay
-          for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
-          identityStep ident $ AllyRemoved aid
-          discardFromPlay g ally
+            & (entitiesL . playersL %~ deleteMap iid)
+            & (activeCostL %~ filter ((/= iid) . activeCostIdentityId))
+            & (playerOrderL .~ order)
+            & (activePlayerL %~ \active -> if active == iid then fromMaybe active next else active)
+            & (areasL . each %~ \a -> a {areaPlayers = filter (/= iid) (areaPlayers a)})
+      -- a villain leaving play takes his own deck and side scheme with him, and what is
+      -- attached to him is discarded; the next villain of his area becomes active
+      VillainRef vid -> case lookup vid (gameVillains g) of
+        Nothing -> pure g
+        Just v -> do
+          let a = toAttrs v
+          for_ (Villain.villainAttachments a) (removeFromPlay . AttachmentRef)
+          for_ (villainUpgrades a) (removeFromPlay . UpgradeRef)
+          push $ RemoveDeck (VillainDeckKey vid)
+          let signature = lookup vid gameSignatureSchemes
+          -- what is attached to his side scheme leaves play with it
+          for_
+            [ aid
+            | (aid, att) <- HashMap.toList (gameAttachments g)
+            , isJust signature
+            , attachmentSideScheme (toAttrs att) == signature
+            ]
+            (removeFromPlay . AttachmentRef)
+          let
+            leave area =
+              -- he stays listed in his area, out of play there: his kept deck is shown in it
+              let rest = filter (/= vid) (areaVillains area)
+               in area
+                    { areaActiveVillain = if areaActiveVillain area == Just vid then headMay rest else areaActiveVillain area
+                    , areaSideSchemes = filter ((/= signature) . Just) (areaSideSchemes area)
+                    }
+          pure $
+            g
+              & (entitiesL . villainsL %~ deleteMap vid)
+              & (removedEntitiesL . villainsL %~ insertMap vid v)
+              & (entitiesL . sideSchemesL %~ maybe id deleteMap signature)
+              & (signatureSchemesL %~ deleteMap vid)
+              & (areasL . each %~ leave)
+      AllyRef aid -> do
+        removed <- elem RemovedFromGameInsteadOfLeavingPlay <$> getModifiers target
+        if removed then g <$ push (RemoveFromGame target) else do
+          for_ (lookup aid $ gameAllies g) $ \ally -> do
+            let ident = getAllyController ally
+            -- what is attached to it is discarded with it
+            for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+            for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
+            identityStep ident $ AllyRemoved aid
+            discardLeaving ally
+          -- kept as removed, so an ability it was discarded to pay for still resolves
+          pure $
+            g
+              & (entitiesL . alliesL %~ deleteMap aid)
+              & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
+      -- a permanent support does not leave play: the Milano stays for the next first player
+      SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
+      SupportRef sid -> do
+        -- it is discarded, and the cards attached to it facedown with it
+        for_ (lookup sid $ gameSupports g) $ \support -> do
+          identityStep (getSupportController support) (SupportRemoved sid)
+          discardLeaving (toAttrs support)
+          for_ (supportHeldCards $ toAttrs support) discardCard
         -- kept as removed, so an ability it was discarded to pay for still resolves
         pure $
           g
-            & (entitiesL . alliesL %~ deleteMap aid)
-            & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
-    -- a permanent support does not leave play: the Milano stays for the next first player
-    SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
-    SupportRef sid -> do
-      -- it is discarded, and the cards attached to it facedown with it
-      for_ (lookup sid $ gameSupports g) $ \support -> do
-        identityStep (getSupportController support) (SupportRemoved sid)
-        discardFromPlay g (toAttrs support)
-        for_ (supportHeldCards $ toAttrs support) discardCard
-      -- kept as removed, so an ability it was discarded to pay for still resolves
-      pure $
-        g
-          & (entitiesL . supportsL %~ deleteMap sid)
-          & (removedEntitiesL . supportsL %~ maybe id (insertMap sid) (lookup sid $ gameSupports g))
-    UpgradeRef uid -> do
-      case (lookup uid $ gameUpgrades g) of
+            & (entitiesL . supportsL %~ deleteMap sid)
+            & (removedEntitiesL . supportsL %~ maybe id (insertMap sid) (lookup sid $ gameSupports g))
+      UpgradeRef uid -> do
+        case (lookup uid $ gameUpgrades g) of
+          Nothing -> pure g
+          -- the permanent keyword: it cannot leave play ("Permanent")
+          Just upgrade | isPermanent upgrade -> pure g
+          Just upgrade -> do
+            upgradeRemoved uid
+            discardLeaving upgrade
+            for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
+            pure $
+              g
+                & (entitiesL . upgradesL %~ deleteMap uid)
+                & (removedEntitiesL . upgradesL %~ insertMap uid upgrade)
+      -- a permanent attachment does not leave play: it attaches anew ('Marvel.Attachment.Types')
+      AttachmentRef aid | maybe False isPermanent (lookup aid $ gameAttachments g) -> pure g
+      AttachmentRef aid -> do
+        protected <- elem CannotBeDiscarded <$> getModifiers (AttachmentRef aid)
+        if protected then pure g else do
+          for_ (lookup aid $ gameAttachments g) $ \attachment -> do
+            attachmentRemoved aid
+            discardLeaving attachment
+          pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
+      -- discarded, its own cards with it, and no longer engaged
+      MinionRef mid -> case lookup mid (gameMinions g) of
         Nothing -> pure g
-        -- the permanent keyword: it cannot leave play ("Permanent")
-        Just upgrade | isPermanent upgrade -> pure g
-        Just upgrade -> do
-          upgradeRemoved uid
-          discardFromPlay g upgrade
-          for_ (upgradeHeldCards $ toAttrs upgrade) discardCard
+        Just minion -> do
+          cancelEnemyActivation mid
+          let a = toAttrs minion
+          for_ (minionUpgrades a) removeFromPlay
+          for_ (minionAttachments a) removeFromPlay
+          minionDisengages (minionEngagedIdentity a) mid
+          discardLeaving minion
           pure $
             g
-              & (entitiesL . upgradesL %~ deleteMap uid)
-              & (removedEntitiesL . upgradesL %~ insertMap uid upgrade)
-    -- a permanent attachment does not leave play: it attaches anew ('Marvel.Attachment.Types')
-    AttachmentRef aid | maybe False isPermanent (lookup aid $ gameAttachments g) -> pure g
-    AttachmentRef aid -> do
-      protected <- elem CannotBeDiscarded <$> getModifiers (AttachmentRef aid)
-      if protected then pure g else do
-        for_ (lookup aid $ gameAttachments g) $ \attachment -> do
-          attachmentRemoved aid
-          discardFromPlay g attachment
-        pure $ g & (entitiesL . attachmentsL %~ deleteMap aid)
-    -- discarded, its own cards with it, and no longer engaged
-    MinionRef mid -> case lookup mid (gameMinions g) of
-      Nothing -> pure g
-      Just minion -> do
-        cancelEnemyActivation mid
-        let a = toAttrs minion
-        for_ (minionUpgrades a) removeFromPlay
-        for_ (minionAttachments a) removeFromPlay
-        minionDisengages (minionEngagedIdentity a) mid
-        discardFromPlay g minion
+              & (entitiesL . minionsL %~ deleteMap mid)
+              & (removedEntitiesL . minionsL %~ insertMap mid minion)
+      TreacheryRef tid -> do
+        for_ (lookup tid $ gameTreacheries g) discardCard
+        pure $ g & (entitiesL . treacheriesL %~ deleteMap tid)
+      ObligationRef oid -> do
+        for_ (lookup oid $ gameObligations g) discardLeaving
+        pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
+      -- a villain's own side scheme cannot leave play while he is in play
+      SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
+      SideSchemeRef sid -> whenCanLeavePlay g sid do
+        -- what is attached to it is discarded with it, first
+        for_
+          [ uid
+          | (uid, u) <- HashMap.toList (gameUpgrades g)
+          , upgradeAttachedSideScheme (toAttrs u) == Just sid
+          ]
+          removeFromPlay
+        for_ (lookup sid $ gameSideSchemes g) discardLeaving
         pure $
           g
-            & (entitiesL . minionsL %~ deleteMap mid)
-            & (removedEntitiesL . minionsL %~ insertMap mid minion)
-    TreacheryRef tid -> do
-      for_ (lookup tid $ gameTreacheries g) discardCard
-      pure $ g & (entitiesL . treacheriesL %~ deleteMap tid)
-    ObligationRef oid -> do
-      for_ (lookup oid $ gameObligations g) (discardFromPlay g)
-      pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
-    -- a villain's own side scheme cannot leave play while he is in play
-    SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
-    SideSchemeRef sid -> whenCanLeavePlay g sid do
-      -- what is attached to it is discarded with it, first
-      for_
-        [ uid
-        | (uid, u) <- HashMap.toList (gameUpgrades g)
-        , upgradeAttachedSideScheme (toAttrs u) == Just sid
-        ]
-        removeFromPlay
-      for_ (lookup sid $ gameSideSchemes g) (discardFromPlay g)
-      pure $
-        g
-          & (entitiesL . sideSchemesL %~ deleteMap sid)
-          & (removedEntitiesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
-    MainSchemeRef mid -> do
-      for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
-      pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid)
-        & (areasL . each %~ \area -> area {areaMainSchemes = filter (/= mid) (areaMainSchemes area)})
-    EnvironmentRef eid -> do
-      for_ (lookup eid $ gameEnvironments g) (discardFromPlay g)
-      -- it leaves its area too: one put into play again is listed afresh, last
-      pure $ g & (entitiesL . environmentsL %~ deleteMap eid) & (areasL . each %~ \a -> a {areaEnvironments = filter (/= eid) (areaEnvironments a)})
-    _ -> error "Unhandled target"
+            & (entitiesL . sideSchemesL %~ deleteMap sid)
+            & (removedEntitiesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
+      MainSchemeRef mid -> do
+        for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
+        pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid)
+          & (areasL . each %~ \area -> area {areaMainSchemes = filter (/= mid) (areaMainSchemes area)})
+      EnvironmentRef eid -> do
+        for_ (lookup eid $ gameEnvironments g) discardLeaving
+        -- it leaves its area too: one put into play again is listed afresh, last
+        pure $ g & (entitiesL . environmentsL %~ deleteMap eid) & (areasL . each %~ \a -> a {areaEnvironments = filter (/= eid) (areaEnvironments a)})
+      _ -> error "Unhandled target"
   AddMainScheme cardCode -> do
     you <- getYou
     addMainSchemeIn (maybe defaultAreaId areaId $ areaOfTarget g (IdentityRef you)) cardCode g
@@ -1973,6 +1996,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           W.Window _ (W.IdentityTakeDamageFrom iid _ _) -> isQueued \case
             IdentityMessage iid' (IdentityDamaged _ _) -> iid' == iid
             _ -> False
+          W.Window _ (W.WouldBeDiscardedFromPlay card) ->
+            isQueued (== DiscardedCard (either PlayerCard EncounterCard card))
           _ -> pure True
     openWindows <- filterM open windows
     -- "you" on what is offered is the player it is offered to; while another player
@@ -2871,9 +2896,11 @@ getIdentity ident = do
     Nothing -> error "missing identity"
 
 initPlayer :: (MonadRandom m) => CardCode -> Deck -> m PlayerIdentity
-initPlayer cardCode deck = do
+initPlayer requestedCardCode deck = do
   ident <- getRandom
   let
+    -- Progressing identities always begin with their weakest version.
+    cardCode = if toBaseCardCode requestedCardCode `elem` ["29002", "29003"] then "29001a" else requestedCardCode
     mAlterEgo = do
       def <- lookup (toAlterEgoCardCode cardCode) allAlterEgosMap
       lookupAlterEgo def ident
@@ -3569,6 +3596,8 @@ gameSelectAlly m = do
       pure $ CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
     AllyWithTitle t -> pure . (== t) . title . cdName . getCardDef
     AllyNamedAs t -> pure . (\n -> title n == t || subtitle n == Just t) . cdName . getCardDef
+    AllyWithAttackAtLeast n -> \ally -> (>= n) <$> Ally.getModifiedAttack (toAttrs ally)
+    AllyWithThwartAtLeast n -> \ally -> (>= n) <$> Ally.getModifiedThwart (toAttrs ally)
     AllyWithRemainingHitPoints n -> \ally -> (== n) . subtractNatural (getAllyDamage ally) <$> Ally.getModifiedHitPoints (toAttrs ally)
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
@@ -3718,7 +3747,8 @@ gameSelectEnemy m = do
         Nothing -> pure False
         Just who -> do
           active <- member (toId e) <$> gameSelectVillain ActiveVillain
-          guarded <- if active then selectAny (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who)) else pure False
+          ignoresGuard <- elem IgnoresGuard <$> getModifiers (AllyRef aid)
+          guarded <- if active && not ignoresGuard then selectAny (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who)) else pure False
           untouchable <- elem CannotBeAttacked <$> getModifiers (VillainRef $ toId e)
           barred <- barredFromAlly (IdentityWithId who) e
           pure $ not (guarded || untouchable || barred)
@@ -3965,14 +3995,16 @@ gameSelectAnyScheme = \case
     let schemes = allowed
     if patrolled then fromList <$> filterM (\case SchemeMainSchemeId sid -> not <$> isRestrictedMainScheme sid; _ -> pure True) (HashSet.toList schemes) else pure schemes
   SchemeAnAllyCanThwart aid ignoresCrisis -> do
-    ownException <- elem BasicThwartIgnoresCrisis <$> getModifiers (AllyRef aid)
+    allyModifiers <- getModifiers (AllyRef aid)
+    let ownException = BasicThwartIgnoresCrisis `elem` allyModifiers || IgnoresCrisis `elem` allyModifiers
+        ignoresPatrol = IgnoresPatrol `elem` allyModifiers
     crisis <- hasCrisisInYourArea
     schemes <- HashSet.fromList <$> (filterM (fmap (notElem ThreatCannotBeRemovedByThwarting) . getModifiers . schemeRef) . HashSet.toList =<< thwartable (crisis && not (ignoresCrisis || ownException)))
     controller <- getsGame (fmap getAllyController . lookup aid . gameAllies)
     forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
     let allowed = if forbidden then HashSet.filter (\case SchemeSideSchemeId _ -> False; _ -> True) schemes else schemes
     patrolled <- maybe (pure False) (\ident -> selectAny (MinionEngagedWith (IdentityWithId ident) <> MinionWithKeyword Patrol)) controller
-    if patrolled then fromList <$> filterM (\case SchemeMainSchemeId sid -> not <$> isRestrictedMainScheme sid; _ -> pure True) (HashSet.toList allowed) else pure allowed
+    if patrolled && not ignoresPatrol then fromList <$> filterM (\case SchemeMainSchemeId sid -> not <$> isRestrictedMainScheme sid; _ -> pure True) (HashSet.toList allowed) else pure allowed
   UnpatrolledMainScheme -> do
     patrolled <- isPatrolled =<< getYou
     schemes <- gameSelectAnyScheme Matchers.MainScheme
@@ -4035,9 +4067,10 @@ gameSelectSideScheme m = do
   matchFilter = \case
     AnySideScheme -> pure . const True
     LeftPlaySideScheme m' -> matchFilter m'
-    CrisisSideScheme -> pure . isCrisis
+    CrisisSideScheme -> \scheme -> if isCrisis scheme then not <$> isBlanked scheme else pure False
     SideSchemeIs def -> pure . sameCard def . getCardDef
     SideSchemeWithId ident -> pure . (== ident) . toId
+    SideSchemeWithKeyword keyword -> pure . elem keyword . cdKeywords . getCardDef
     SideSchemeWithUpgrade upgradeMatcher -> \sideScheme -> do
       upgrades <- select upgradeMatcher
       attached <- getsGame $ filter ((== Just (toId sideScheme)) . upgradeAttachedSideScheme . toAttrs) . HashMap.elems . gameUpgrades
@@ -4233,10 +4266,10 @@ getModifiers a = withDepthGuard 2 $ do
   supports <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameSupports
   attachments <- HashMap.elems <$> getsGame gameAttachments
   allies <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameAllies
-  minions <- HashMap.elems <$> getsGame gameMinions
+  minions <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameMinions
   events <- HashMap.elems <$> getsGame gameEvents
   players <- HashMap.elems <$> getsGame gamePlayers
-  sideSchemes <- HashMap.elems <$> getsGame gameSideSchemes
+  sideSchemes <- filterM (fmap not . isBlanked) . HashMap.elems =<< getsGame gameSideSchemes
   mainSchemes <- HashMap.elems <$> getsGame gameMainSchemes
   villains <- HashMap.elems <$> getsGame gameVillains
   environments <- HashMap.elems <$> getsGame gameEnvironments
@@ -4265,7 +4298,11 @@ getModifiers a = withDepthGuard 2 $ do
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) supportsInHand
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) upgrades
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) supports
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) attachments
+      , concatMapM (\attachment -> do
+          blanked <- isBlanked attachment
+          outside <- getPrintedModifiersFor (toSource a) (toTarget a) attachment
+          inside <- if blanked then pure [] else getModifiersFor (toSource a) (toTarget a) attachment
+          pure $ outside <> inside) attachments
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) allies
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) minions
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) events
@@ -4293,6 +4330,9 @@ getActiveCost = do
     cost : _ -> Just $ activeCostId cost
 
 -- | The original payer, even while a contributor pays one of this cost's parts.
+getActiveCostCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
+getActiveCostCard acid = getsGame $ \g -> headMay [c | cost <- gameActiveCost g, acid == activeCostId cost, ForCard c <- [activeCostTarget cost]]
+
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
 getActiveCostPayer acid = getsGame $ fmap activeCostIdentityId . find ((== acid) . activeCostId) . gameActiveCost
 
@@ -4380,7 +4420,7 @@ getHazardCount = getHazardCountIn . areaId =<< getYourArea
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getHazardCountIn aid = getsGame \g ->
   let icons :: (HasCardDef a) => (k -> Target) -> HashMap k a -> Natural
-      icons ref = sum . map (cdHazards . getCardDef) . inArea g aid ref
+      icons ref cards = sum [cdHazards (getCardDef card) | (key, card) <- HashMap.toList cards, (areaId <$> areaOfTarget g (ref key)) == Just aid, not (blankIn g $ ref key)]
    in icons SideSchemeRef (gameSideSchemes g)
       + icons VillainRef (gameVillains g)
       + icons MainSchemeRef (gameMainSchemes g)
@@ -4553,7 +4593,7 @@ getAccelerationCountIn aid = getsGame \g ->
 -- | The acceleration icons in the area, on its schemes, villains and obligations.
 accelerationIconsIn :: Game -> AreaId -> Natural
 accelerationIconsIn g aid =
-  sum (map (cdAcceleration . getCardDef) (inArea g aid SideSchemeRef (gameSideSchemes g)))
+  sum [cdAcceleration (getCardDef scheme) | (sid, scheme) <- HashMap.toList (gameSideSchemes g), (areaId <$> areaOfTarget g (SideSchemeRef sid)) == Just aid, not (blankIn g $ SideSchemeRef sid)]
     + sum (map (sideSchemeAccelerationTokens . toAttrs) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
     -- an obligation in a player's play area, in theirs
@@ -4638,6 +4678,22 @@ getMainSchemeAccelerationTokensIn aid = getsGame $ sum . map (mainSchemeAccelera
 
 getRemovedFromGameEncounterCards :: (HasGame m) => m [EncounterCard]
 getRemovedFromGameEncounterCards = getsGame gameRemovedFromGameEncounterCards
+
+-- | In-play controlled cards matching the printed card, and legally discardable.
+discardableControlledCardsMatching :: (HasGame m) => IdentityId -> CardMatcher -> m [Target]
+discardableControlledCardsMatching who matcher = do
+  allies <- selectList (AllyControlledBy $ IdentityWithId who)
+  supports <- selectList (SupportControlledBy $ IdentityWithId who)
+  upgrades <- selectList (UpgradeControlledBy $ IdentityWithId who)
+  filterM (\target -> do
+    card <- getsGame (`cardInPlay` target)
+    modifiers <- getModifiers target
+    pure $ maybe False (\c -> cardMatch matcher c && Permanent `notElem` cdKeywords (getCardDef c)) card
+      && CannotBeDiscarded `notElem` modifiers && CannotLeavePlay `notElem` modifiers)
+    (map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades)
+
+blankIn :: Game -> Target -> Bool
+blankIn g target = runIdentity $ runReaderT (isBlanked target) g
 
 -- | Dynamic icons count both in the public board and during the villain phase.
 iconModifiersIn :: Game -> AreaId -> [[Modifier]]

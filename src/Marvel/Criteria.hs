@@ -21,6 +21,8 @@ data Criteria
   | EnemyExists EnemyMatcher
   | SchemeExists SchemeMatcher
   | AllyExists AllyMatcher
+  | AttachmentExists AttachmentMatcher
+  | SideSchemeExists SideSchemeMatcher
   | SupportExists SupportMatcher
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher

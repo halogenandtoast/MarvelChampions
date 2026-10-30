@@ -3,6 +3,7 @@ module Marvel.Message.Identity where
 import Marvel.Prelude
 
 import Marvel.Attack
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.Types
 import Marvel.Damage
 import Marvel.Id
@@ -20,6 +21,8 @@ data IdentityMessage
     ChooseHeroForm
   | EndedTurn
   | ChangedToForm Side
+  | -- | Replace both faces without changing form or resetting identity state.
+    SwapIdentityVersion CardCode CardCode
   | DrawCards FromZone Natural
   | DiscardCards
   | DiscardFor Target FromZone Natural Natural

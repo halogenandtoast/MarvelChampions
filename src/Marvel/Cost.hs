@@ -12,7 +12,7 @@ import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
 import Marvel.Ability
-import Marvel.Card.PlayerCard ()
+import Marvel.Card.PlayerCard (printedResourcesFor)
 import Marvel.Card.PlayerCard.Types (PlayerCard (..), staysInHand)
 import Marvel.Cost.Types
 import Marvel.Game.Source
@@ -86,7 +86,7 @@ canAffordCost identityId source cost = do
   ordinary <- go cost
   let required = printedResourceRequirements cost
   if null required then pure ordinary else do
-    printed <- concatMap (printedResources . getCardDef) . filter notPlaying <$> getAvailablePaymentSources identityId
+    printed <- concatMapM printedResourcesFor . filter notPlaying =<< getAvailablePaymentSources identityId
     pure $ ordinary && coversPrintedResources required printed
  where
   go = \case
@@ -94,7 +94,12 @@ canAffordCost identityId source cost = do
     -- a tough status card would prevent the damage, so it cannot be paid (RR FAQ, Focused
     -- Rage)
     IndirectDamageCost n -> (>= n) . sum . map snd <$> indirectCostCandidates identityId source
-    DamageCost _ -> projectP PlayerIdentityTough not identityId
+    DamageCost n -> do
+      tough <- project PlayerIdentityTough identityId
+      modifiers <- getModifiers (IdentityRef identityId)
+      let immune = CannotTakeDamage `elem` modifiers || CannotTakeDamageFromPlayerCards `elem` modifiers
+          reduced = sum [k | DamageReduction k <- modifiers]
+      pure $ n == 0 || not (tough || immune || reduced > 0)
     HealCost n ->
       member identityId
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
@@ -113,6 +118,7 @@ canAffordCost identityId source cost = do
       present <- getsGame (maybe False (notElem Permanent . cdKeywords . getCardDef) . (\g -> cardInPlay g target))
       canLeave <- notElem CannotLeavePlay <$> getModifiers target
       pure $ present && canLeave
+    DiscardControlledCardCost matcher -> notNull <$> discardableControlledCardsMatching identityId matcher
     DiscardCost target -> notElem CannotBeDiscarded <$> getModifiers target
     DiscardHandCardsWithTotalCost matcher n ->
       projectP PlayerIdentityHand ((>= n) . sum . map (fromIntegral . fromMaybe 0 . cdCost . getCardDef) . filter (\c -> notPlaying c && not (staysInHand c) && cardMatch matcher c) . unHand) identityId
@@ -204,7 +210,7 @@ canAffordCost identityId source cost = do
         Nothing -> not (null resources)
         Just r -> r `elem` resources || Wild `elem` resources
     MultiResourceCost mr -> coversResources mr <$> availableResources
-    PrintedResourceCost rs -> coversPrintedResources rs . concatMap (printedResources . getCardDef) . filter notPlaying <$> getAvailablePaymentSources identityId
+    PrintedResourceCost rs -> coversPrintedResources rs <$> (concatMapM printedResourcesFor . filter notPlaying =<< getAvailablePaymentSources identityId)
     DifferentResourcesCost n ->
       coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
     -- the Milano exhausted to pay, its own resource is not there to spend as well

@@ -144,6 +144,10 @@ getAvailableResourcesFor ::
   IdentityId ->
   Maybe PlayerCard ->
   m [Resource]
+isBlanked :: (HasGame m, IsRef a) => a -> m Bool
+
+discardableControlledCardsMatching :: (HasGame m) => IdentityId -> CardMatcher -> m [Target]
+
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
 getGainedTraits :: (HasGame m, IsRef a) => a -> m (HashSet Trait)
 getUpgradeHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
@@ -256,6 +260,8 @@ attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
 canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
 playableCardsWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Target -> CardMatcher -> Natural -> m [PlayerCard]
 hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
+
+getActiveCostCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
 
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
 eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId] -> m Bool

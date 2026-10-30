@@ -137,6 +137,8 @@ effectValidFor e target = case (target, effectMatcher e) of
   (AllyRef ident, AllyEntity matcher) -> selectAny (AllyWithId ident <> matcher)
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
   (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'
+  (AttachmentRef ident, AttachmentEntity matcher) -> selectAny (AttachmentWithId ident <> matcher)
+  (SideSchemeRef ident, SideSchemeEntity matcher) -> elem ident <$> selectList matcher
   _ -> pure False
 
 instance RunMessage (Attrs Effect) where

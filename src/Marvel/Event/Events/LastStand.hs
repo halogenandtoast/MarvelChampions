@@ -34,4 +34,5 @@ instance RunMessage LastStand where
    where
     isLanding ally = \case
       AllyMessage ally' (AllyAttackLands _ _) -> ally' == ally
+      AllyMessage ally' (AllyEvenAttackLands _ _) -> ally' == ally
       _ -> False

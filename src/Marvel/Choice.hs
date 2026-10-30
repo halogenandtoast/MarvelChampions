@@ -79,6 +79,13 @@ resolveChoice ident = \case
               [ Ask ident $
                   ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
+      SideSchemeEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . SideSchemeEntity . SideSchemeWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]]
       MainSchemeEntity sid -> pure [CreatedEffect def source (MainSchemeEntity sid)]
       EventEntity eid -> pure [CreatedEffect def source (EventEntity eid)]
       AttachmentEntity matcher -> do
