@@ -32,6 +32,11 @@ const faceGroups = computed(() => {
   })
   return groups
 })
+// a scheme's sides by stage (1A, 1B), else by the code's side letter (side schemes print none)
+const faceLabel = (c: Card, group: { faces: { card: Card }[] }) =>
+  group.faces.some((f) => /scheme$/.test(f.card.type))
+    ? /^\d+[AB]$/.test(c.stage ?? '') ? c.stage! : c.code.slice(-1).toUpperCase()
+    : (c.traits?.at(-1) ?? c.name)
 
 const facts = computed(() => {
   const c = shown.value
@@ -73,7 +78,7 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
                 :class="{ 'is-active': imageIndex === f.i }"
                 @click="imageIndex = f.i"
               >
-                {{ f.card.traits?.at(-1) ?? f.card.name }}
+                {{ faceLabel(f.card, group) }}
               </button>
             </div>
             <button
