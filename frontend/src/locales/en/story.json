@@ -897,5 +897,77 @@
         "Venom Goblin is defeated. Your final reputation records the objectives achieved throughout the campaign."
       ]
     }
+  },
+  "mutantGenesis": {
+    "sabretooth": {
+      "setup": {
+        "title": "Campaign Setup",
+        "text": [
+          "Choose distinct team roles and receive one random role upgrade. You may role-build. Set the Future Past deck aside and reveal Frightened Police."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory",
+        "text": [
+          "Record Frightened Police if defeated, retain Future Past cards still encountered, permanently remove defeated Future Past cards and role upgrades used this game. Record remaining hit points in an expert campaign."
+        ]
+      }
+    },
+    "projectWideawake": {
+      "setup": {
+        "title": "Campaign Setup",
+        "text": [
+          "Shuffle recorded Future Past cards into the encounter deck. If Frightened Police was defeated, receive a role upgrade and you may role-build. Reveal Enemy of My Enemy. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory",
+        "text": [
+          "Record Enemy of My Enemy if defeated. Record Jubilee if she is in play and each Captive ally that entered play. Update Future Past and remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        ]
+      }
+    },
+    "masterMold": {
+      "setup": {
+        "title": "Campaign Setup",
+        "text": [
+          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Enemy of My Enemy was defeated, receive a role upgrade and you may role-build. Reveal Find the Prisoners. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory",
+        "text": [
+          "Record Find the Prisoners if defeated. Update Jubilee and Future Past. Allies still under Find the Prisoners or Rescue Captives cannot be used for the rest of the campaign. Remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        ]
+      }
+    },
+    "mansionAttack": {
+      "setup": {
+        "title": "Campaign Setup",
+        "text": [
+          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Find the Prisoners was defeated, receive a role upgrade and you may role-build. Reveal Surprise Attack. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory",
+        "text": [
+          "Record Surprise Attack if defeated. Update Jubilee and Future Past. Remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        ]
+      }
+    },
+    "magneto": {
+      "setup": {
+        "title": "Campaign Setup",
+        "text": [
+          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Surprise Attack was defeated, receive a role upgrade and you may role-build. Reveal Magneto’s Fortress. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully. Losing this final game in an expert campaign loses the campaign."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory",
+        "text": [
+          "Magneto is defeated. The campaign is won!"
+        ]
+      }
+    }
   }
 }

@@ -85,6 +85,9 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const mutant = computed(() => view.value?.campaign.kind === 'MutantGenesis')
+const mutantPlayer = (identity: string) => log.value?.mutantGenesis?.mutantPlayers.find((p) => p.identity === identity) ?? null
+const mutantSchemes = ['32171a', '32172a', '32173a', '32174a']
 const sinister = computed(() => view.value?.campaign.kind === 'SinisterMotives')
 const sinisterPlayer = (identity: string) => log.value?.sinister?.sinisterPlayers.find((p) => p.identity === identity) ?? null
 // The Mad Titan's Shadow's log: its checkboxes by the scenario that checks them (p.28)
@@ -174,8 +177,8 @@ const remove = async () => {
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
-        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : sinister ? 'campaign.sinisterWon' : 'campaign.won') }}</p>
-        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : sinister ? 'campaign.sinisterLost' : 'campaign.lost') }}</p>
+        <p v-if="view.won" class="result good">{{ $t(mutant ? 'campaign.mutantWon' : galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : sinister ? 'campaign.sinisterWon' : 'campaign.won') }}</p>
+        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(mutant ? 'campaign.mutantLost' : galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : sinister ? 'campaign.sinisterLost' : 'campaign.lost') }}</p>
         <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
       </div>
       <p v-if="error" class="error">{{ tr(error) }}</p>
@@ -200,6 +203,12 @@ const remove = async () => {
               <dd>{{ names(galaxyPlayer(p.identity)?.marketCards ?? []) }}</dd>
               <dt>{{ $t('campaign.collection') }}</dt>
               <dd>{{ names(galaxyPlayer(p.identity)?.collection ?? []) }}</dd>
+            </dl>
+            <dl v-else-if="mutant">
+              <dt>{{ $t('campaign.role') }}</dt>
+              <dd>{{ mutantPlayer(p.identity)?.role ? $t(`campaign.roles.${mutantPlayer(p.identity)!.role}`) : $t('campaign.none') }}</dd>
+              <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
+              <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
             </dl>
             <dl v-else-if="sinister">
               <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
@@ -254,6 +263,24 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="mutant" class="scenario-log">
+          <template v-for="(code, i) in mutantSchemes" :key="code">
+            <dt>{{ $t('campaign.scenario', { n: i + 1 }) }} · {{ name(code) }}</dt>
+            <dd>{{ log.mutantGenesis.defeatedSchemes.includes(code) ? '✓' : '—' }}</dd>
+          </template>
+          <dt>{{ $t('campaign.futurePastActive') }}</dt>
+          <dd>{{ names(log.mutantGenesis.futurePastActive) }}</dd>
+          <dt>{{ $t('campaign.futurePastRemoved') }}</dt>
+          <dd>{{ names(log.mutantGenesis.futurePastRemoved) }}</dd>
+          <dt>{{ $t('campaign.roleUpgradesRemoved') }}</dt>
+          <dd>{{ names(log.mutantGenesis.roleUpgradesRemoved) }}</dd>
+          <dt>{{ $t('campaign.jubilee') }}</dt>
+          <dd>{{ log.mutantGenesis.jubileeInPlay ? '✓' : '—' }}</dd>
+          <dt>{{ $t('campaign.rescuedAllies') }}</dt>
+          <dd>{{ names(log.mutantGenesis.captiveAllies) }}</dd>
+          <dt>{{ $t('campaign.alliesRemoved') }}</dt>
+          <dd>{{ names(log.alliesRemoved) }}</dd>
         </dl>
         <dl v-else-if="sinister" class="scenario-log">
           <dt>{{ $t('campaign.reputation') }}</dt>

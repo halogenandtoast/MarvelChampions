@@ -131,6 +131,7 @@
       "mts": "Use the modular sets named on the main scheme: one for Tower Defense, or two for Ebony Maw, Thanos, Hela, or Loki. You may replace those modular sets when customizing the scenario. The Infinity Gauntlet remains required for Thanos and Loki and is included automatically.",
       "hood": "Choose any seven modular encounter sets from this product or other products; you may choose them at random. No single lineup is specified. Set all seven aside, then shuffle one randomly chosen set into the encounter deck. The others are recruited during play.",
       "other": "Follow the main scheme and product rulebook for the number of modular sets and any required encounter sets. Choose your own modular sets when no specific sets are recommended.",
+      "mut_gen": "Use the recommended modular sets: Brotherhood and Mystique for Sabretooth, Sentinels for Project Wideawake, Zero Tolerance for Master Mold, Mystique for Mansion Attack, and Acolytes for Magneto. You may replace these when customizing the scenario. Other required sets remain included automatically. Future Past uses a separate deck in campaign play.",
       "sm": "Sinister Motives fixes certain modular sets to their scenarios: City in Chaos for Sandman, Symbiotic Strength for Venom and Venom Goblin, and Personal Nightmare for Mysterio. The other listed set may be replaced. Osborn Tech and Sinister Assault are added to campaign scenarios only when campaign rules direct it."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
@@ -263,7 +264,21 @@
     "finalReputation": "Final reputation score",
     "ChooseSinisterTech": "Choose S.H.I.E.L.D. Tech",
     "ChooseSinisterAspectAdvantage": "Choose Aspect Advantage",
-    "ChooseSinisterPlanningAhead": "Choose Planning Ahead"
+    "ChooseSinisterPlanningAhead": "Choose Planning Ahead",
+    "MutantGenesis": "Mutant Genesis",
+    "mutantWon": "Magneto is defeated: the campaign is won",
+    "mutantLost": "Magneto rules the world: the campaign is lost",
+    "role": "Campaign role",
+    "roles": {
+      "Brawler": "Brawler",
+      "Commander": "Commander",
+      "Defender": "Defender",
+      "Peacekeeper": "Peacekeeper"
+    },
+    "futurePastActive": "Future Past cards in the encounter deck",
+    "futurePastRemoved": "Future Past cards removed from the campaign",
+    "roleUpgradesRemoved": "Role upgrades removed from the campaign",
+    "jubilee": "Jubilee in play"
   },
   "settings": {
     "title": "Settings",

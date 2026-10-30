@@ -95,6 +95,7 @@ const escalation = (scheme: SchemeView) => {
           :confuse-cards="villain.confuseCards"
           :confused="villain.confused"
           :tough="villain.tough"
+          :bomb-counters="villain.bombCounters"
         />
       </div>
       <!-- infinite hit points (Escape the Museum): a full bar, ∞ -->
@@ -107,10 +108,12 @@ const escalation = (scheme: SchemeView) => {
       <BoardCard v-for="u in villain.upgrades ?? []" :id="u.id" :key="u.id" class="villain-attached" :code="u.code" :name="u.name" :exhausted="u.exhausted" :counters="u.uses ?? null" />
     </template>
 
+    <BoardCard v-for="ally in game.uncontrolledAllies ?? []" :key="ally.id" :id="ally.id" :code="ally.code" :name="ally.name" :damage="ally.damage" :attached="ally.attachments ?? []" :tough="ally.tough" />
+
     <!-- environments in the middle, between the villain and the schemes -->
     <div v-if="environments.length" class="environments">
       <div v-for="environment in environments" :key="environment.id" class="scheme side">
-        <BoardCard :id="environment.id" :code="environment.code" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" :damage="environment.damage ?? 0" />
+        <BoardCard :id="environment.id" :code="environment.code" :held="environment.facedownCards" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" :damage="environment.damage ?? 0" />
       </div>
     </div>
 
@@ -147,6 +150,7 @@ const escalation = (scheme: SchemeView) => {
         <Pile :label="t('game.piles.encounterDeck')" back="encounter" :count="game.encounterDeckSize ?? 0" :cards="game.encounterDeckTop ? [game.encounterDeckTop] : null" pile="deck-encounter" />
         <Pile :label="t('game.piles.encounterDiscard')" :cards="game.encounterDiscard ?? []" pile="discard-encounter" />
       </template>
+      <Pile v-if="game.futurePastDeckCount != null" :label="t('game.piles.futurePastDeck')" back="encounter" :count="game.futurePastDeckCount" />
       <!-- the victory display: shared, out of play, the cards with victory X defeated -->
       <!-- a scenario won by villains in it (Loki) counts them against its victory condition -->
       <Pile v-if="game.victoryDisplay?.length || game.victoryCondition" :label="victoryLabel" :cards="game.victoryDisplay ?? []" pile="victory-display" />

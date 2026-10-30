@@ -41,6 +41,7 @@ const props = withDefaults(
     confused?: boolean
     tough?: boolean
     toughCards?: number
+    bombCounters?: number
     /** what is attached to it or upgrades it, peeking out underneath */
     attached?: Attached[]
     /** a label shown on its top edge, as for a crisis */
@@ -139,6 +140,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :title="$t('game.damageOn', { count: displayedDamage })" />
+      <TokenStack v-if="bombCounters" class="token bombs" kind="generic" :count="bombCounters" :title="$t('game.bombsOn', { count: bombCounters })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :title="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
@@ -246,6 +248,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .token.damage { top: 4%; right: 4%; }
 .token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, 22cqi); }
 .card:not(.landscape) .token.threat { --token-size: max(28px, 34cqi); }
+.token.bombs { bottom: 42%; right: 4%; }
 .token.counters { bottom: 24%; right: 4%; }
 .held {
   position: absolute;

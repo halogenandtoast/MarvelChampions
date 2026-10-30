@@ -24,6 +24,7 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
   gmw: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf`,
   mts: `${RULEBOOK_ROOT}mc21_the_mad_titans_shadow_rulebook-compressed.pdf`,
   sm: `${RULEBOOK_ROOT}mc27_sinister_motives_rules_v5-compressed.pdf`,
+  mut_gen: `${RULEBOOK_ROOT}mc32_mutant_genesis_rulebook_v5-compressed.pdf`,
   hood: 'https://images-cdn.fantasyflightgames.com/filer_public/89/66/89666652-cfcb-47c1-822f-a7a377a69401/mc24_the_hood_rules_insert.pdf',
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
@@ -32,6 +33,7 @@ const SCENARIO_VILLAINS: Record<string, string[]> = {
   '21098': ['21092'],
   '21160': ['21163'],
   '27100': ['27094', '27095', '27096', '27097', '27098', '27099'],
+  '32121': ['32121a', '32122a', '32123a', '32124a'],
 }
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')

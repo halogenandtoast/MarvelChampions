@@ -60,6 +60,7 @@ export interface AllyView extends CardView {
 }
 
 export interface PlayerView {
+  toughCards?: number
   stunCards?: number
   confuseCards?: number
   id: string
@@ -106,6 +107,7 @@ export interface PlayerView {
 }
 
 export interface VillainView extends CardView {
+  bombCounters?: number
   stunCards?: number
   confuseCards?: number
   stage: number
@@ -151,6 +153,7 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
+  bombCounters?: number
   heldCards?: CardView[]
   facedownCards?: number
   toughCards?: number
@@ -235,6 +238,7 @@ export interface ActiveCostView {
 }
 
 export interface EnvironmentView {
+  facedownCards?: number
   id: string
   code: string
   name: string
@@ -253,6 +257,8 @@ export interface BoostView {
 }
 
 export interface GameView {
+  uncontrolledAllies?: AllyView[]
+  futurePastDeckCount?: number | null
   round: number
   phase: 'PlayerPhase' | 'VillainPhase' | string
   outcome: 'Won' | 'Lost' | null
@@ -407,6 +413,26 @@ export interface CampaignLog {
   /** The Mad Titan's Shadow's */
   titan: TitanLog
   sinister: SinisterLog
+  mutantGenesis: MutantGenesisLog
+}
+
+export type MutantRole = 'Brawler' | 'Commander' | 'Defender' | 'Peacekeeper'
+
+export interface MutantPlayer {
+  identity: string
+  role: MutantRole | null
+}
+
+export interface MutantGenesisLog {
+  mutantPlayers: MutantPlayer[]
+  defeatedSchemes: string[]
+  futurePastRemoved: string[]
+  futurePastActive: string[]
+  futurePastDeck: string[]
+  roleUpgradesRemoved: string[]
+  roleUpgradesInPlay: string[]
+  jubileeInPlay: boolean
+  captiveAllies: string[]
 }
 
 export interface SinisterPlayer {
@@ -460,7 +486,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

@@ -83,7 +83,8 @@
       "experimentalWeapons": "Experimental Weapons",
       "kangsDominion": "Under Kang's Wrath (4A)"
     },
-    "identityBoostCards": "Boost cards"
+    "identityBoostCards": "Boost cards",
+    "futurePastDeck": "Future Past deck"
   },
   "activeVillain": "Active",
   "areas": {
@@ -242,5 +243,6 @@
     "wild": "Wild"
   },
   "facedownCard": "Facedown card",
-  "glider": "Glider"
+  "glider": "Glider",
+  "bombsOn": "{count} bomb counters"
 }

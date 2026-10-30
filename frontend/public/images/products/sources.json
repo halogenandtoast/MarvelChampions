@@ -20,5 +20,10 @@
     "campaign": "Sinister Motives",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc27en-sinistermotives_boxfront_right.webp",
     "perspective": { "from": [[145, 0], [479, 21], [479, 430], [145, 497]], "width": 771, "height": 827 }
+  },
+  "mutant-genesis.webp": {
+    "campaign": "Mutant Genesis",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/FFG_MC32_Product-Image-1.webp",
+    "perspective": { "from": [[215, 147], [936, 48], [878, 750], [261, 984]], "width": 771, "height": 827 }
   }
 }

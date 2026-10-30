@@ -65,6 +65,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
             :stunned="player.stunned"
             :confused="player.confused"
             :tough="player.tough"
+            :tough-cards="player.toughCards"
             :counters="player.counters || null"
           />
         </div>
@@ -94,6 +95,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
               :confused="minion.confused"
               :tough="minion.tough"
               :tough-cards="minion.toughCards"
+              :bomb-counters="minion.bombCounters"
               :attached="minionAttached(minion)"
             />
           </div>
