@@ -1853,6 +1853,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.CampaignSpec
       Marvel.Rules.CancelActivationSpec
       Marvel.Rules.ChosenHandCardCostSpec
+      Marvel.Rules.DashPowerSpec
       Marvel.Rules.DeckBuildingMetadataSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
@@ -1875,9 +1876,11 @@ test-suite MarvelChampions-test
       Marvel.Rules.SinisterMotivesLogSpec
       Marvel.Rules.SmokeMonitorSpec
       Marvel.Rules.SpiderHamMechanicsSpec
+      Marvel.Rules.SteadyIdentitySpec
       Marvel.Rules.SteadyMinionSpec
       Marvel.Rules.SupportHeldEventsSpec
       Marvel.Rules.SurgeSpec
+      Marvel.Rules.SyncRatioPaymentSpec
       Marvel.Rules.TraitExhaustionSpec
       Marvel.Rules.UniqueSpec
       Marvel.Rules.UpgradePlaySpec

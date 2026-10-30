@@ -35,7 +35,9 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = HeroThwarted WindowTiming IdentityMatcher
+  = ResourcesGeneratedBy IdentityMatcher
+  | TreacheryResolvedBy IdentityMatcher
+  | HeroThwarted WindowTiming IdentityMatcher
   | IdentityDamaged WindowTiming IdentityMatcher
   | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
   | RemovesLastThreat IdentityMatcher
@@ -191,7 +193,9 @@ data Window = Window
   deriving anyclass (ToJSON, FromJSON)
 
 data WindowType
-  = HeroThwartComplete IdentityId
+  = GeneratedResources IdentityId Natural
+  | ResolvedTreacheryCard IdentityId EncounterCard
+  | HeroThwartComplete IdentityId
   | ThwartRemovedThreat Source SchemeId Natural Natural
   | ThreatRemovedBy Source SchemeId Natural Natural
   | LastThreatRemoved IdentityId SchemeId

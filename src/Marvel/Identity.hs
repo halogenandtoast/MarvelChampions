@@ -120,11 +120,27 @@ statusL = \case
   ConfusedStatus -> confusedL
   ToughStatus -> toughL
 
-identityIsStunned :: PlayerIdentity -> Bool
-identityIsStunned = playerIdentityStunned . toAttrs
+identityIsStunned :: (HasGame m) => PlayerIdentity -> m Bool
+identityIsStunned p = do
+  steady <- elem Steady <$> getModifiedKeywords p
+  let a = toAttrs p
+  pure $ playerIdentityStunned a && (not steady || playerIdentityAdditionalStun a)
 
-identityIsConfused :: PlayerIdentity -> Bool
-identityIsConfused = playerIdentityConfused . toAttrs
+identityIsConfused :: (HasGame m) => PlayerIdentity -> m Bool
+identityIsConfused p = do
+  steady <- elem Steady <$> getModifiedKeywords p
+  let a = toAttrs p
+  pure $ playerIdentityConfused a && (not steady || playerIdentityAdditionalConfuse a)
+
+-- | Adding a status card, as distinct from the character being stunned or confused.
+identityGivenStatus :: (HasGame m) => PlayerIdentity -> StatusCard -> m PlayerIdentity
+identityGivenStatus p s = do
+  keywords <- getModifiedKeywords p
+  let a = toAttrs p
+  pure $ PlayerIdentity $ if Stalwart `elem` keywords && s /= ToughStatus then a else case s of
+    StunnedStatus | Steady `elem` keywords && playerIdentityStunned a -> a {playerIdentityAdditionalStun = True}
+    ConfusedStatus | Steady `elem` keywords && playerIdentityConfused a -> a {playerIdentityAdditionalConfuse = True}
+    _ -> a & statusL s .~ True
 
 isHero :: PlayerIdentity -> Bool
 isHero player = case currentIdentity player of
@@ -236,6 +252,8 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityDamageReduction = 0
       , playerIdentityStunned = False
       , playerIdentityConfused = False
+      , playerIdentityAdditionalStun = False
+      , playerIdentityAdditionalConfuse = False
       , playerIdentityTough = False
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
@@ -1089,7 +1107,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- an attack dealing indirect damage (Starshark): the damage past the defense is
       -- divided among the characters the player controls, each share taken as it is
       when (damage > 0) $
-        if attackIndirect attack'
+        if attackDividedEvenly attack'
+          then divideAttackDamage playerIdentityId (attackSource attack') ((attackDamageTo attack' damage) {damageOverkill = attackOverkill attack'})
+          else if attackIndirect attack'
           then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
           else damageCharacter playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       unless (attackRanged attack') $
@@ -1159,12 +1179,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     IdentitySetHitPoints n -> do
       modifiedHp <- getModifiedHp pid
       pure $ PlayerIdentity $ attrs & damageL .~ subtractNatural n modifiedHp
-    IdentityStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ True
+    IdentityStunned -> identityGivenStatus pid StunnedStatus
     IdentityBecomeTough -> pure $ PlayerIdentity $ attrs & toughL .~ True
-    IdentityConfused -> pure $ PlayerIdentity $ attrs & confusedL .~ True
-    IdentityRemoveStunned -> pure $ PlayerIdentity $ attrs & stunnedL .~ False
+    IdentityConfused -> identityGivenStatus pid ConfusedStatus
+    IdentityRemoveStunned -> pure $ PlayerIdentity $ (attrs & stunnedL .~ False) {playerIdentityAdditionalStun = False}
     IdentityRemoveConfused ->
-      pure $ PlayerIdentity $ attrs & confusedL .~ False
+      pure $ PlayerIdentity $ (attrs & confusedL .~ False) {playerIdentityAdditionalConfuse = False}
     Search (SearchIdentityDeck iid projection) cardMatcher searchOption returnOption
       | iid == playerIdentityId ->
           do
@@ -1284,7 +1304,8 @@ instance RunMessage PlayerIdentity where
     -- queued after what the message did, so the deck is made again before any of it runs
     runQueueT $ when (null (unDeck a.playerIdentityDeck) && notNull (unDiscard a.playerIdentityDiscard) && not a.playerIdentitySearching) do
       resetDeck a.playerIdentityId
-    pure pid'
+    steady <- elem Steady <$> getModifiedKeywords pid'
+    pure $ if steady then pid' else PlayerIdentity (toAttrs pid') {playerIdentityAdditionalStun = False, playerIdentityAdditionalConfuse = False}
 
 runPlayerMessage ::
   (ReverseQueue m) =>
@@ -1348,8 +1369,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       pure $ PlayerIdentity attrs {playerIdentityCounters = playerIdentityCounters attrs + n}
     RemoveCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity attrs {playerIdentityCounters = subtractNatural n (playerIdentityCounters attrs)}
-    GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
-      pure $ PlayerIdentity $ attrs & statusL s .~ True
+    GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs -> identityGivenStatus pid s
+    RemoveStatus (IdentityRef ident) StunnedStatus | ident == playerIdentityId attrs, playerIdentityAdditionalStun attrs -> pure $ PlayerIdentity attrs {playerIdentityAdditionalStun = False}
+    RemoveStatus (IdentityRef ident) ConfusedStatus | ident == playerIdentityId attrs, playerIdentityAdditionalConfuse attrs -> pure $ PlayerIdentity attrs {playerIdentityAdditionalConfuse = False}
     RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity $ attrs & statusL s .~ False
     -- an enemy's attack begins: none of its damage taken yet, by the player attacked or
@@ -1453,8 +1475,8 @@ instance ToJSON (Attrs PlayerIdentity) where
 instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
-      if KeyMap.member "boostCards" o then o
-      else KeyMap.insert "boostCards" (toJSON ([] :: [EncounterCard])) o
+      KeyMap.union o $ KeyMap.fromList
+        [("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity

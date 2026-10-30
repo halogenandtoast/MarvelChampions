@@ -20,8 +20,11 @@ hulkBruceBanner =
   ally HulkBruceBanner Cards.hulkBruceBanner (Thw 0, 0) (Atk 3, 1) (HP 5)
 
 newtype HulkBruceBanner = HulkBruceBanner (Attrs Ally)
-  deriving anyclass (IsAlly, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef, HasController)
+
+instance IsAlly HulkBruceBanner where
+  allyHasThwart _ = False
 
 instance HasAbilities HulkBruceBanner where
   getAbilities (HulkBruceBanner a) =

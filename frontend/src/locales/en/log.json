@@ -156,5 +156,7 @@
   "identityDealtBoost": "{player} receives a facedown boost card.",
   "identityBoostsMoved": "{player}’s boost cards move to the villain.",
   "gliderMoved": "The glider counter moves to {target}",
-  "accelerationPlaced": "{target} gains an acceleration token | {target} gains {count} acceleration tokens"
+  "accelerationPlaced": "{target} gains an acceleration token | {target} gains {count} acceleration tokens",
+  "attachesPlayerCardToMinion": "A player card is attached to {minion}.",
+  "attachesTreacheryToAlly": "A treachery is attached facedown to {ally}."
 }

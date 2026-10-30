@@ -3,6 +3,7 @@ module Marvel.Treachery.Types where
 import Marvel.Prelude
 
 import Data.Typeable
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Id hiding (TreacheryId)
@@ -12,6 +13,7 @@ import Marvel.Modifier
 import Marvel.Id as X (TreacheryId)
 import Marvel.Message.Lifted
 import Marvel.Ref
+import Marvel.Window.Types qualified as W
 import Control.Monad (replicateM_)
 import Marvel.Game.Source (whenRevealedTimes)
 
@@ -47,11 +49,12 @@ instance Entity Treachery where
     { treacheryId :: TreacheryId
     , treacheryCardDef :: CardDef
     , treacherySurge :: Bool
+    , treacheryResolvedPart :: Bool
     , treacheryResolver :: Maybe IdentityId
     -- used when we need to remember for other messages
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Treachery :: Type -> Type where
     TreacheryId :: Field Treachery TreacheryId
     TreacheryCardDef :: Field Treachery CardDef
@@ -66,6 +69,10 @@ instance Entity Treachery where
           TreacheryResolver -> treacheryResolver
   toId = treacheryId . toAttrs
   toAttrs (Treachery a) = toTreacheryAttrs a
+
+instance FromJSON (Attrs Treachery) where
+  parseJSON = withObject "TreacheryAttrs" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.union o (KeyMap.singleton "treacheryResolvedPart" (Bool False))
 
 instance RunMessage Treachery where
   runMessage msg (Treachery a) = Treachery <$> runMessage msg a
@@ -119,6 +126,7 @@ treachery f cardDef =
             { treacheryId = mid
             , treacheryCardDef = cardDef
             , treacherySurge = False
+            , treacheryResolvedPart = False
             , treacheryResolver = Nothing
             }
     }
@@ -140,8 +148,14 @@ instance HasCardDef (Attrs Treachery) where
 instance RunMessage (Attrs Treachery) where
   runMessage msg attrs = runQueueT $ case msg of
     TreacheryMessage ident msg' | ident == treacheryId attrs -> case msg' of
+      TreacheryMarkResolved -> pure attrs {treacheryResolvedPart = True}
       TreacheryIncite -> do
         incite attrs
+        pure attrs {treacheryResolvedPart = treacheryResolvedPart attrs || any (\case Keyword.Incite _ -> True; _ -> False) (cdKeywords $ getCardDef attrs)}
+      ResolvedTreacheryAfterCancel identityId -> do
+        removeFromPlay attrs
+        when (treacheryResolvedPart attrs) $
+          checkWindows [W.Window W.After $ W.ResolvedTreacheryCard identityId (MkEncounterCard (CardId $ unTreacheryId $ treacheryId attrs) $ getCardDef attrs)]
         pure attrs
       ResolvedTreachery identityId -> do
         removeFromPlay attrs
@@ -149,6 +163,7 @@ instance RunMessage (Attrs Treachery) where
         when (treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)) do
           times <- whenRevealedTimes identityId
           replicateM_ times (surge identityId)
+        checkWindows [W.Window W.After $ W.ResolvedTreacheryCard identityId (MkEncounterCard (CardId $ unTreacheryId $ treacheryId attrs) $ getCardDef attrs)]
         pure attrs
       _ -> pure attrs
     GainSurge target | target == TreacheryRef (treacheryId attrs) -> pure $ attrs & surgeL .~ True

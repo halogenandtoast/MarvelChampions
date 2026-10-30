@@ -21,6 +21,7 @@ data Cost
     UpToResourcesCost Natural
   | MultiResourceCost [Maybe Resource]
   | PrintedResourceCost [Resource]
+  | DamageCharacterCost CharacterMatcher Natural
   | DamageCost Natural
   | IndirectDamageCost Natural
   | HealCost Natural
@@ -46,6 +47,7 @@ data Cost
     DifferentResourcesCost Natural
   | -- | exhaust an upgrade the payer controls, chosen among those matching
     ExhaustUpgradeCost UpgradeMatcher
+  | ExhaustSupportCost SupportMatcher
   | -- | return an upgrade the payer controls, chosen among those matching, to hand
     ReturnUpgradeToHandCost UpgradeMatcher
   | -- | discard an upgrade the payer controls, chosen among those matching
@@ -142,6 +144,7 @@ costResources (GiveEnemyBoostCost _ _) = []
 costResources (DiscardHandCardsCost _ _) = []
 costResources (DiscardRandomHandCardsCost _) = []
 costResources (DiscardRandomHandCardsMatchingCost _ _) = []
+costResources (ExhaustSupportCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (DiscardUpgradeCost _) = []
@@ -175,6 +178,7 @@ costResources (IdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
 costResources (DamageCost _) = []
+costResources (DamageCharacterCost _ _) = []
 costResources (IndirectDamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []

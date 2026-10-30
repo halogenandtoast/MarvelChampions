@@ -123,6 +123,16 @@ narrationFor = \case
   PrepareAllianceCosts {} -> Nothing
   OfferAllianceCost {} -> Nothing
   ReserveAllyHeldCard {} -> Nothing
+  AttachPlayerCardToMinion mid _ -> Just $ whenRef (MinionRef mid) \minion ->
+    one $ mechanic [ikeyPart "log.attachesPlayerCardToMinion" ["minion" ~> minion]]
+  AttachTreacheryToAlly aid _ -> Just $ whenRef (AllyRef aid) \ally ->
+    one $ mechanic [ikeyPart "log.attachesTreacheryToAlly" ["ally" ~> ally]]
+  DivideAttackDamage {} -> Nothing
+  AssignEvenDamage {} -> Nothing
+  IndirectDamageAndExhaust ident _ (damageAmount -> n) [] | n > 0 -> Just do
+    who <- playerRef' ident
+    one $ toned Bad $ mechanic [ikeyPart "log.takesIndirectDamage" ["player" ~> who, "count" ~> n]]
+  ExhaustIfDamaged {} -> Nothing
   AttachPlayableEventToAlly aid _ -> Just $ whenRef (AllyRef aid) \ally ->
     one $ mechanic [ikeyPart "log.attachesFacedownEvent" ["ally" ~> ally]]
   -- * Enemies
@@ -154,7 +164,7 @@ narrationFor = \case
     if current == Just vid then pure [] else whenRef (VillainRef vid) \v -> one $ mechanic [ikeyPart "log.activeVillain" ["villain" ~> v]]
   -- * The encounter deck
   -- Name-before-looking interrupts resolve before revealing the card to the table.
-  CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, ident :: IdentityId, card :: EncounterCard)) -> Just do
+  CardSpecific GameRef key (fromJSON -> Success (_ :: W.RevealSource, ident :: IdentityId, card :: EncounterCard)) | key `elem` ["revealAfterWould", "revealAfterWouldWithoutWhenRevealed"] -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
   GiveStatus target s

@@ -321,5 +321,8 @@
   "cartoonPower": "Cartoon Power",
   "exhaustPeterPorkerRemoveHotDog": "Exhaust Peter Porker and remove 1 toon counter to remove this obligation from the game",
   "stunnedDiscardHotDog": "Become stunned and discard this obligation",
-  "spendIdentityCounter": "Spend a toon counter"
+  "spendIdentityCounter": "Spend a toon counter",
+  "syncRatioUpgrade": "Sync Ratio — {upgrade}",
+  "spdrDivideAttack": "Choose a character to receive an extra point of damage",
+  "spendSyncRatioResources": "Pay with {count} resource(s) from Sync Ratio"
 }

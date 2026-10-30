@@ -41,6 +41,7 @@ data IdentityMatcher
   | IdentityWithId IdentityId
   | IdentityWithTrait Trait
   | AnyIdentity
+  | IdentityWithPrintedHitPoints GameValueMatcher
   | IdentityWithDamage GameValueMatcher
   | -- | with so many counters on the identity card (Groot's growth counters)
     IdentityWithCounters GameValueMatcher
@@ -193,6 +194,7 @@ data EnemyMatcher
   | -- | an enemy the ally may attack: as its controller may, and no minion for an ally
     -- that cannot attack minions (Drax)
     AttackableByAlly AllyId
+  | EnemyCanTakeDamageFrom Source
   | DamageableEnemy
   | EnemyIs CardDef
   | NotEnemy EnemyMatcher
@@ -366,6 +368,7 @@ data CharacterMatcher
   | CharacterWithTrait Trait
   | -- | an exhausted friendly character allowed to ready through a player card
     CharacterCanBeReadied
+  | CharacterWithId CharacterId
   | CharacterOtherThan CharacterId
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest

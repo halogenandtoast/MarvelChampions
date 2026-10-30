@@ -1909,10 +1909,12 @@ cancelEncounterWhenRevealed card = do
   when allowed $ replaceMatchingMessage replace $ \case
     RevealedEncounterCard _ other -> ecCardId other == ecCardId card
     RevealedEncounterCardFrom _ _ other -> ecCardId other == ecCardId card
+    CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, other :: EncounterCard)) -> ecCardId other == ecCardId card
     _ -> False
  where
   replace (RevealedEncounterCardFrom source you other) = [RevealedEncounterCardWithoutWhenRevealedFrom source you other]
   replace (RevealedEncounterCard you other) = [RevealedEncounterCardWithoutWhenRevealed you other]
+  replace (CardSpecific GameRef "revealAfterWould" value) = [CardSpecific GameRef "revealAfterWouldWithoutWhenRevealed" value]
   replace message = [message]
 
 -- | Cancel the entire pending encounter card: it never enters play, and neither
@@ -1925,7 +1927,7 @@ cancelEncounterCard card = do
     RevealedEncounterCardFrom _ _ other -> other == card
     RevealedEncounterCardWithoutWhenRevealed _ other -> other == card
     RevealedEncounterCardWithoutWhenRevealedFrom _ _ other -> other == card
-    CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, other :: EncounterCard)) -> other == card
+    CardSpecific GameRef key (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, other :: EncounterCard)) | key `elem` ["revealAfterWould", "revealAfterWouldWithoutWhenRevealed"] -> other == card
     _ -> False
 
 -- | The source of the damage the identity is about to take ("when you would take damage").
@@ -2198,3 +2200,19 @@ makeAttackIndirect :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 makeAttackIndirect enemy = case toEnemy enemy of
   EnemyVillainId vid -> villainStep vid VillainAttackBecomesIndirect
   EnemyMinionId mid -> minionStep mid MinionAttackBecomesIndirect
+
+-- | Faceup player cards on a minion, discarded with it when it leaves play.
+attachPlayerCardToMinion :: (ReverseQueue m) => MinionId -> PlayerCard -> m ()
+attachPlayerCardToMinion mid = push . AttachPlayerCardToMinion mid
+
+attachTreacheryToAlly :: (ReverseQueue m) => AllyId -> EncounterCard -> m ()
+attachTreacheryToAlly aid = push . AttachTreacheryToAlly aid
+
+makeAttackDividedEvenly :: (ReverseQueue m) => MinionId -> m ()
+makeAttackDividedEvenly mid = minionStep mid MinionAttackBecomesDividedEvenly
+
+divideAttackDamage :: (ReverseQueue m) => IdentityId -> Source -> Damage -> m ()
+divideAttackDamage you source = push . DivideAttackDamage you source
+
+dealIndirectDamageAndExhaustDamaged :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
+dealIndirectDamageAndExhaustDamaged you source n = push $ IndirectDamageAndExhaust you (toSource source) (toDamage n FromAbility) []

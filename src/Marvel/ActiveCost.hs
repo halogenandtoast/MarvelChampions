@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards))
 
 import Control.Monad.State
 import Data.List (partition, nub)
@@ -38,7 +38,7 @@ import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
 import Marvel.Window (windowMatches)
-import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility))
+import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility, GeneratedResources))
 
 
 -- | Pay this part of the cost. Resources are paid first, so a cost that cannot be paid
@@ -100,6 +100,10 @@ payCostPartAs contributing activeCost cost = do
             discardCard card
             paid (DiscardHandCardPayment $ PlayerCard card)
     IndirectDamageCost n -> cardSpecific (ActiveCostRef acid) "assignIndirectCost" (n, [] :: [(CharacterId, Natural)])
+    DamageCharacterCost matcher n -> do
+      candidates <- selectList matcher
+      valid <- filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
+      chooseOne iid [targeting (characterRef c) (damageCharacter c (activeCostSource activeCost) (toDamage n FromAbility) >> paid (ChosenCharacterPayment c <> DamagePayment n)) | c <- valid]
     DamageCost n -> case activeCostTarget activeCost of
       ForAbility a -> do
         damageIdentity iid (abilitySource a) (toDamage n FromAbility)
@@ -153,6 +157,9 @@ payCostPartAs contributing activeCost cost = do
           _ -> error "Unhandled"
         paid UsePayment
       _ -> error "Unhandled"
+    ExhaustSupportCost matcher -> do
+      supports <- selectList (SupportMatches [matcher, UnexhaustedSupport, SupportControlledBy (IdentityWithId iid)])
+      oneOf supports (\s -> exhaust s >> paid (ExhaustedCardPayment $ toTarget s))
     ExhaustUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> UnexhaustedUpgrade <> upgradeControlledBy iid)
       oneOf upgrades \u -> exhaust u >> paid ExhaustPayment
@@ -161,7 +168,11 @@ payCostPartAs contributing activeCost cost = do
       oneOf upgrades returnToHand
     DiscardUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy iid)
-      oneOf upgrades \u -> discardUpgrade u >> paid (DiscardPayment $ toTarget u)
+      oneOf upgrades \u -> do
+        card <- getsGame (\g -> cardInPlay g (UpgradeRef u))
+        for_ card (paid . DiscardedUpgradePayment)
+        discardUpgrade u
+        paid (DiscardPayment $ toTarget u)
     DiscardAllyCost matcher -> do
       allies <- selectList (matcher <> AllyControlledBy (IdentityWithId iid))
       oneOf allies \aid -> do
@@ -533,6 +544,7 @@ instance RunMessage ActiveCost where
       AbortPayment i -> i == acid
       FinishedPayment i -> i == acid
       AllocatedPayment i _ -> i == acid
+      CardSpecific (ActiveCostRef i) "allocateSyncRatio" _ -> i == acid
       PaidCosts i -> i == acid
       PayCost i _ -> i == acid
       _ -> False
@@ -608,25 +620,28 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       payCostPart activeCost cost
       pure activeCost
     SpentWithResources ident discard resources printed | ident == activeCostId activeCost -> do
-      paid $ PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
+      paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
       pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
     Spent ident discard | ident == activeCostId activeCost -> do
       resources <- resourcesFor discard $ case activeCostTarget activeCost of
         ForCard card -> Just card
         _ -> Nothing
       printed <- printedResourcesFor discard
-      paid $ PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
+      paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
       pure $
         activeCost
           { activeCostSpentCards = discard : activeCostSpentCards activeCost
           }
     Paid payment -> do
       let def = case activeCostTarget activeCost of ForCard card -> Just (getCardDef card); _ -> Nothing
-      raw <- fmap mconcat $ for (payments payment) $ \case
+      expanded <- for (payments payment) $ \receipt -> (receipt,) <$> case receipt of
         ResourcePayment r -> pure $ mconcat $ map ResourcePayment (doubleWildResources def [r])
         p@(ResourcePaymentFromCard _) -> mconcat . map ResourcePayment . doubleWildResources def <$> paymentResources p
         p -> pure p
-      payment' <- declarable raw
+      payment' <- declarable (normalizeSyncRatioExpansions expanded)
+      generated <- paymentResources payment'
+      let generator = fromMaybe (activeCostIdentityId activeCost) $ headMay [who | GeneratedByPayment who <- payments payment']
+      unless (null generated) $ checkWindows [Window After $ GeneratedResources generator (fromIntegral $ length generated)]
       pure $
         activeCost
           { activeCostPayment = activeCostPayment activeCost <> payment'
@@ -734,6 +749,12 @@ runActiveCost msg activeCost = runQueueT $ case msg of
             [resources] -> allocatePayment ident resources
             _ -> chooseOne (activeCostIdentityId activeCost)
               [labeled (allocationLabel resources) (allocatePayment ident resources) | resources <- allocations]
+        Just resources
+          | syncRatioResources (activeCostPayment activeCost) > 0
+          , null [() | SyncRatioSpentPayment _ <- payments (activeCostPayment activeCost)] ->
+              -- A save made after choosing typed resources but before provenance
+              -- was recorded still gets the same explicit source allocation.
+              allocatePayment ident resources
         Just _ -> do
           let card = case activeCostTarget activeCost of ForCard c -> Just c; _ -> Nothing
           payers <- allianceCostPayers (activeCostIdentityId activeCost) card
@@ -746,10 +767,31 @@ runActiveCost msg activeCost = runQueueT $ case msg of
     AllocatedPayment ident resources | ident == activeCostId activeCost -> do
       generated <- paymentResources (activeCostPayment activeCost)
       if resources `elem` actualResourceAllocations (activeCostCost activeCost) generated
-        then do
-          finishPayment ident
-          pure activeCost {activeCostPayment = activeCostPayment activeCost <> ActualResourcesPayment resources}
+        then if syncRatioResources (activeCostPayment activeCost) == 0
+          then do
+            finishPayment ident
+            pure activeCost {activeCostPayment = activeCostPayment activeCost <> ActualResourcesPayment resources}
+          else case syncRatioSpendOptions resources (activeCostPayment activeCost) of
+            [] -> abortPayment ident >> pure activeCost
+            [n] -> do
+              finishPayment ident
+              pure activeCost {activeCostPayment = activeCostPayment activeCost <> ActualResourcesPayment resources <> SyncRatioSpentPayment n}
+            counts -> do
+              chooseOne (activeCostIdentityId activeCost)
+                [ labeled (syncRatioAllocationLabel n) $
+                    cardSpecific (ActiveCostRef ident) "allocateSyncRatio" (resources, n)
+                | n <- counts ]
+              pure activeCost
         else abortPayment ident >> pure activeCost
+    CardSpecific (ActiveCostRef ident) "allocateSyncRatio" (fromJSON -> Success (resources, n :: Natural))
+      | ident == activeCostId activeCost -> do
+          generated <- paymentResources (activeCostPayment activeCost)
+          if resources `elem` actualResourceAllocations (activeCostCost activeCost) generated
+              && n `elem` syncRatioSpendOptions resources (activeCostPayment activeCost)
+            then do
+              finishPayment ident
+              pure activeCost {activeCostPayment = activeCostPayment activeCost <> ActualResourcesPayment resources <> SyncRatioSpentPayment n}
+            else abortPayment ident >> pure activeCost
     -- the cards spent are discarded and the cost done with, then what was paid for
     PaidCosts ident | ident == activeCostId activeCost -> do
       x <- spentX activeCost
@@ -838,6 +880,7 @@ resourceCostPaid ActiveCost {..} = do
 -- explicitly rather than asking RunAbility to read the previous game snapshot.
 abilityChoiceWithPayment :: IdentityId -> [WindowType] -> Payment -> Choice -> Choice
 abilityChoiceWithPayment who windows payment = \case
+  Pay receipt -> Pay (GeneratedByPayment who <> receipt)
   RunAbility target index -> Run [RanAbility who target index windows payment, ClearRemoved]
   Label label choices -> Label label (map (abilityChoiceWithPayment who windows payment) choices)
   TargetLabel target choices -> TargetLabel target (map (abilityChoiceWithPayment who windows payment) choices)
@@ -895,6 +938,10 @@ actualResourceAllocations cost generated
     [replicate k r <> rest | k <- [0 .. min n (length $ filter (== r) generated)], rest <- choose (n - k) rs]
   satisfies resources = coversResources requirements resources
     && coversDifferentTypes (differentResourcesNeeded cost) resources
+
+-- | Choosing between identical resource types from distinct payment sources.
+syncRatioAllocationLabel :: Natural -> Text
+syncRatioAllocationLabel = countLabel "spendSyncRatioResources"
 
 allocationLabel :: [Resource] -> Text
 allocationLabel resources = ikeyWith "label.spendResourceAllocation"

@@ -19,6 +19,7 @@ data Attack = Attack
   , attackRanged :: Bool
   , attackPrevented :: Bool
   -- ^ "prevent all damage from this attack"
+  , attackDividedEvenly :: Bool
   , attackIndirect :: Bool
   -- ^ the attack deals indirect damage (Starshark): its damage, past a hero's defense,
   -- is assigned among the characters the attacked player controls (RR Indirect Damage)
@@ -33,7 +34,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ existing -> existing) "attackIndirect" (toJSON False) o)
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -72,6 +73,7 @@ attack enemyId characterId dmg =
     , attackPiercing = False
     , attackRanged = False
     , attackPrevented = False
+    , attackDividedEvenly = False
     , attackIndirect = False
     , attackChange = 0
     , attackTarget = Nothing

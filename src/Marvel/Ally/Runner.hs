@@ -33,16 +33,17 @@ instance HasAbilities Ally where
           Basic
           -- "you cannot thwart" (Baron Zemo) keeps the identity from thwarting, not
           -- its allies
-          (AllyExists (AllyWithId (toId x) <> AllyWithThwartAtLeast 1) <> SchemeExists (SchemeAnAllyCanThwart (toId x) False))
+          (if allyConfused (toAllyAttrs a) then NoCriteria else SchemeExists (SchemeAnAllyCanThwart (toId x) False))
           ExhaustCost
           (AllyThwart $ toId x)
+      | allyHasThwart a
       ]
       <> [ ability
              x
              301
              Basic
              -- a stunned ally can attempt an attack with no target ("Stunned")
-             (if allyStunned (toAllyAttrs a) then NoCriteria else AllyExists (AllyWithId (toId x) <> AllyWithAttackAtLeast 1) <> EnemyExists (AttackableByAlly $ toId x))
+             (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists (AttackableByAlly $ toId x))
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
          ]
@@ -221,12 +222,14 @@ instance RunMessage (Attrs Ally) where
         -- an attack dealing indirect damage (Starshark) has it divided among the
         -- characters the ally's controller controls, overkill having none past it
         when (attackDamageDealt attack' > 0) $
-          if attackIndirect attack'
+          if attackDividedEvenly attack'
+            then divideAttackDamage (allyController a) (attackSource attack') ((attackDamageTo attack' (attackDamageDealt attack')) {damageOverkill = attackOverkill attack'})
+            else if attackIndirect attack'
             then dealIndirectAttackDamage (allyController a) (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
             else damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
         -- the excess is the attack's damage to the controller: "when you would take
         -- damage" answers it, as it does the attack's own
-        when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack')) do
+        when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack' || attackDividedEvenly attack')) do
           let excess = toDamage overkill FromAttack
           damageCharacter (allyController a) (attackSource attack') excess
         -- retaliate, if it is still in play after the attack, and the attack not ranged
@@ -254,11 +257,15 @@ instance RunMessage (Attrs Ally) where
               case sourceEnemy source of
                 Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
                 _ -> defeatAlly ident
+            when (damageOverkill damage && damageSource damage == FromAttack) do
+              let excess = subtractNatural hitPoints (damageAmount damage + allyDamage a)
+              when (excess > 0) $ damageIdentity (allyController a) source (toDamage excess FromOverkill)
             when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
             pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
       AllyDefeated -> defeated Nothing
       AllyDefeatedByAttack enemy -> defeated (Just enemy)
       SpendAllyUse -> pure $ a & countersL -~ 1
+      AllyHoldsTreachery card -> pure a {allyHeldTreacheries = allyHeldTreacheries a <> [card]}
       AllyPaidWith payment -> pure a {allyPaidWith = payment}
       AllyOwnedBy owner -> pure a {allyOwner = owner}
       AllyChangedController new -> do

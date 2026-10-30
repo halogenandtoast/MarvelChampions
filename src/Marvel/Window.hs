@@ -18,6 +18,12 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  ResourcesGeneratedBy identityMatcher -> case windowType w of
+    GeneratedResources ident n | windowTiming w == After && n > 0 -> identityMatches identityMatcher ident
+    _ -> pure False
+  TreacheryResolvedBy identityMatcher -> case windowType w of
+    ResolvedTreacheryCard ident _ | windowTiming w == After -> identityMatches identityMatcher ident
+    _ -> pure False
   HeroThwarted timing identityMatcher -> case windowType w of
     HeroThwartComplete ident | windowTiming w == timing -> identityMatches identityMatcher ident
     MadeBasicThwart ident | windowTiming w == timing -> identityMatches identityMatcher ident

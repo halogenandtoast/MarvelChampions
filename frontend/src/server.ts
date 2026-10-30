@@ -47,6 +47,8 @@ export interface AllyView extends CardView {
   thwart: number
   attack: number
   exhausted: boolean
+  stunCards?: number
+  confuseCards?: number
   stunned: boolean
   confused: boolean
   tough: boolean
@@ -58,6 +60,8 @@ export interface AllyView extends CardView {
 }
 
 export interface PlayerView {
+  stunCards?: number
+  confuseCards?: number
   id: string
   name: string
   form: 'hero' | 'alterEgo' | string
@@ -147,6 +151,8 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
+  heldCards?: CardView[]
+  facedownCards?: number
   toughCards?: number
   engagedWith: string
   hitPoints: number

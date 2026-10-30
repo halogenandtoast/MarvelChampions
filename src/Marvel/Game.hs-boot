@@ -85,6 +85,7 @@ withinUseLimit :: (HasGame m) => IdentityId -> Ability -> m Bool
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]
+treacheryHasResolvedPart :: (HasGame m) => TreacheryId -> m Bool
 getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
 getPhase :: (HasGame m) => m Phase
 getEncounterDeck :: (HasGame m) => m [EncounterCard]

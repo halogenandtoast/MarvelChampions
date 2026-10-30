@@ -41,7 +41,7 @@ const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
 const holders = computed(() => [...(player.upgrades ?? []), ...(player.supports ?? [])].filter((u) => u.heldCards?.length))
-const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgrades ?? [])]
+const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgrades ?? []), ...(m.heldCards ?? []), ...facedown(m)]
 </script>
 
 <template>
@@ -60,6 +60,8 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
             :name="player.name"
             :exhausted="player.exhausted"
             :damage="player.damage"
+            :stun-cards="player.stunCards"
+            :confuse-cards="player.confuseCards"
             :stunned="player.stunned"
             :confused="player.confused"
             :tough="player.tough"

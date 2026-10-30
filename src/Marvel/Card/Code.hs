@@ -28,10 +28,14 @@ flipCardCode cardCode = case T.unsnoc $ unCardCode cardCode of
   _ -> cardCode
 
 toAlterEgoCardCode :: CardCode -> CardCode
-toAlterEgoCardCode = flipToSide B
+toAlterEgoCardCode code
+  | toBaseCardCode code `elem` ["31001", "31002"] = "31002a"
+  | otherwise = flipToSide B code
 
 toHeroCardCode :: CardCode -> CardCode
-toHeroCardCode = flipToSide A
+toHeroCardCode code
+  | toBaseCardCode code `elem` ["31001", "31002"] = "31001a"
+  | otherwise = flipToSide A code
 
 class HasCardCode a where
   toCardCode :: a -> CardCode

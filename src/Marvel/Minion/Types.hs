@@ -100,6 +100,9 @@ instance Entity Minion where
     -- ^ the character its coming attack is against, when not the player's identity
     , minionBoostCards :: [EncounterCard]
     -- ^ dealt facedown for its activation, as a villainous minion's are
+    , minionHeldCards :: [PlayerCard]
+    , minionHeldTreacheries :: [EncounterCard]
+    -- ^ facedown attachments kept when an ally is treated as a minion
     , minionBoost :: Natural
     -- ^ the boost icons its activation under way has
     }
@@ -107,6 +110,8 @@ instance Entity Minion where
     deriving anyclass (ToJSON)
   data Field Minion :: Type -> Type where
     MinionId :: Field Minion MinionId
+    MinionHeldCards :: Field Minion [PlayerCard]
+    MinionHeldTreacheries :: Field Minion [EncounterCard]
     MinionCardDef :: Field Minion CardDef
     MinionDamage :: Field Minion Natural
     MinionHitPoints :: Field Minion (HP Natural)
@@ -128,6 +133,8 @@ instance Entity Minion where
     let MinionAttrs {..} = toAttrs m
      in case fld of
           MinionId -> minionId
+          MinionHeldCards -> minionHeldCards
+          MinionHeldTreacheries -> minionHeldTreacheries
           MinionCardDef -> minionCardDef
           MinionDamage -> minionDamage
           MinionHitPoints -> minionHitPoints
@@ -254,6 +261,8 @@ minion f cardDef sch atk hp =
             , minionFacedownCard = Nothing
             , minionAttackTarget = Nothing
             , minionBoostCards = []
+            , minionHeldCards = []
+            , minionHeldTreacheries = []
             , minionBoost = 0
             }
     }
@@ -288,7 +297,7 @@ getModifiedKeywords attrs = do
 instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-      [("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

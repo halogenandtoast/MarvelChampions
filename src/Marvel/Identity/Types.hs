@@ -45,6 +45,8 @@ instance Entity PlayerIdentity where
     , playerIdentityDamageReduction :: Natural
     , playerIdentityStunned :: Bool
     , playerIdentityConfused :: Bool
+    , playerIdentityAdditionalStun :: Bool
+    , playerIdentityAdditionalConfuse :: Bool
     , playerIdentityTough :: Bool
     , playerIdentityDefeated :: Bool
     , playerIdentityDefended :: Bool

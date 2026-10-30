@@ -2,6 +2,7 @@ module Marvel.Message.Minion where
 
 import Marvel.Prelude
 
+import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
@@ -51,6 +52,8 @@ data MinionMessage
     MinionFlipBoostCards
   | -- | a boost card's icons are added to its activation
     MinionAddBoost Natural
+  | MinionAttackBecomesDividedEvenly
+  | MinionHoldsCard PlayerCard
   | MinionAttackBecomesIndirect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

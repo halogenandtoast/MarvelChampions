@@ -29,6 +29,10 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbi
   default toAllyAttrs :: (Coercible a (Attrs Ally)) => a -> Attrs Ally
   toAllyAttrs = coerce
 
+  -- A printed dash is an unavailable power, distinct from a power of zero.
+  allyHasThwart :: a -> Bool
+  allyHasThwart _ = True
+
 type AllyCard a = CardBuilder (IdentityId, Id.AllyId) a
 
 data Ally = forall a. (IsAlly a) => Ally a
@@ -130,6 +134,7 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyUpgrades = mempty
             , allyAdditionalAttackCost = NoCost
             , allyPaidWith = NoPayment
+            , allyHeldTreacheries = []
             , allyHeldCards = []
             }
     }
@@ -207,6 +212,7 @@ instance Entity Ally where
     , allyTough :: Bool
     , allyAdditionalAttackCost :: Cost
     -- ^ paid on top of exhausting it, for its basic attack
+    , allyHeldTreacheries :: [EncounterCard]
     , allyHeldCards :: [PlayerCard]
     -- ^ facedown events playable from here while this ally is not blank
     , allyPaidWith :: Payment
@@ -230,6 +236,7 @@ instance Entity Ally where
     AllyStunned :: Field Ally Bool
     AllyConfused :: Field Ally Bool
     AllyTough :: Field Ally Bool
+    AllyHeldTreacheries :: Field Ally [EncounterCard]
     AllyHeldCards :: Field Ally [PlayerCard]
   toId = allyId . toAttrs
   toAttrs (Ally a) = toAllyAttrs a
@@ -251,6 +258,7 @@ instance Entity Ally where
           AllyStunned -> allyStunned
           AllyConfused -> allyConfused
           AllyTough -> allyTough
+          AllyHeldTreacheries -> allyHeldTreacheries
           AllyHeldCards -> allyHeldCards
 
 instance RunMessage Ally where
@@ -286,4 +294,4 @@ instance HasModifiersFor Ally where
 -- Saved games from before allies could hold events have no attached cards.
 instance FromJSON (Attrs Ally) where
   parseJSON = withObject "AllyAttrs" $ \o ->
-    genericParseJSON defaultOptions (Object $ if KeyMap.member "allyHeldCards" o then o else KeyMap.insert "allyHeldCards" (toJSON ([] :: [PlayerCard])) o)
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("allyHeldCards", toJSON ([] :: [PlayerCard])), ("allyHeldTreacheries", toJSON ([] :: [EncounterCard]))])

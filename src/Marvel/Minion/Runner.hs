@@ -198,6 +198,8 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
+  MinionAttackBecomesDividedEvenly -> pure $ attrs & attackingL . _Just %~ \a -> a {attackDividedEvenly = True}
   MinionAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ \a -> a {attackIndirect = True}
   MinionAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}

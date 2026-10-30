@@ -94,6 +94,9 @@ canAffordCost identityId source cost = do
     -- a tough status card would prevent the damage, so it cannot be paid (RR FAQ, Focused
     -- Rage)
     IndirectDamageCost n -> (>= n) . sum . map snd <$> indirectCostCandidates identityId source
+    DamageCharacterCost matcher _ -> do
+      candidates <- selectList matcher
+      notNull <$> filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
     DamageCost n -> do
       tough <- project PlayerIdentityTough identityId
       modifiers <- getModifiers (IdentityRef identityId)
@@ -131,6 +134,7 @@ canAffordCost identityId source cost = do
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter (\c -> notPlaying c && not (staysInHand c) && cardMatch matcher c) . unHand) identityId
     DiscardHandCardsCost n _ ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . filter (\c -> notPlaying c && not (staysInHand c)) . unHand) identityId
+    ExhaustSupportCost matcher -> selectAny (SupportMatches [matcher, UnexhaustedSupport, SupportControlledBy (IdentityWithId identityId)])
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     DiscardUpgradeCost matcher -> selectAny (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy identityId)

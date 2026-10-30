@@ -181,6 +181,8 @@ data PlayerView = PlayerView
   , hitPoints :: Natural
   , damage :: Natural
   , exhausted :: Bool
+  , stunCards :: Natural
+  , confuseCards :: Natural
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
@@ -283,6 +285,8 @@ data MinionView = MinionView
   , id :: MinionId
   , code :: CardCode
   , name :: Text
+  , heldCards :: [CardView]
+  , facedownCards :: Int
   , engagedWith :: IdentityId
   , hitPoints :: Natural
   , damage :: Natural
@@ -443,8 +447,8 @@ gameView seesHand g = do
             ForCard pc | cdCardType (getCardDef pc) == EventType ->
               let labels = cdAbilitySubTypes (getCardDef pc)
                   identity = HashMap.lookup c.activeCostIdentityId (gamePlayers g)
-               in ["stunned" | Ability.Attack `elem` labels, maybe False identityIsStunned identity]
-                    <> ["confused" | Ability.Thwart `elem` labels, maybe False identityIsConfused identity]
+               in ["stunned" | Ability.Attack `elem` labels, maybe False (runIdentity . flip runReaderT g . identityIsStunned) identity]
+                    <> ["confused" | Ability.Thwart `elem` labels, maybe False (runIdentity . flip runReaderT g . identityIsConfused) identity]
             _ -> []
         }
   pure
@@ -548,6 +552,8 @@ gameView seesHand g = do
         let ha = toAttrs h
         (,,,) <$> (Just <$> Hero.getModifiedThwart ha) <*> (Just <$> Hero.getModifiedAttack ha) <*> (Just <$> Hero.getModifiedDefense ha) <*> pure Nothing
       AlterEgoSide ae -> (Nothing,Nothing,Nothing,) . Just <$> AlterEgo.getModifiedRecovery (toAttrs ae)
+    stunnedNow <- identityIsStunned p
+    confusedNow <- identityIsConfused p
     allies <- traverse allyView [ally | ally <- HashMap.elems (gameAllies g), toId ally `HashSet.member` a.playerIdentityAllies]
     pure
       PlayerView
@@ -560,8 +566,10 @@ gameView seesHand g = do
         , hitPoints = hp
         , damage = a.playerIdentityDamage
         , exhausted = a.playerIdentityExhausted
-        , stunned = a.playerIdentityStunned
-        , confused = a.playerIdentityConfused
+        , stunCards = (if a.playerIdentityStunned then 1 else 0) + (if a.playerIdentityAdditionalStun then 1 else 0)
+        , confuseCards = (if a.playerIdentityConfused then 1 else 0) + (if a.playerIdentityAdditionalConfuse then 1 else 0)
+        , stunned = stunnedNow
+        , confused = confusedNow
         , tough = a.playerIdentityTough
         , counters = a.playerIdentityCounters
         , thwart = thw
@@ -613,7 +621,7 @@ gameView seesHand g = do
         , confused = a.allyConfused
         , tough = a.allyTough
         , counters = a.allyCounters
-        , facedownCards = length a.allyHeldCards
+        , facedownCards = length a.allyHeldCards + length a.allyHeldTreacheries
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
         }
@@ -663,6 +671,8 @@ gameView seesHand g = do
         { id = a.minionId
         , code = toCardCode a.minionCardDef
         , name = display (cdName a.minionCardDef)
+        , heldCards = map (cardView . PlayerCard) a.minionHeldCards
+        , facedownCards = length a.minionHeldTreacheries
         , engagedWith = a.minionEngagedIdentity
         , hitPoints = hp
         , damage = a.minionDamage

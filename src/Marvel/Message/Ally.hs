@@ -2,6 +2,7 @@ module Marvel.Message.Ally where
 
 import Marvel.Prelude
 
+import Marvel.Card.EncounterCard (EncounterCard)
 import Marvel.Attack
 import Marvel.Damage
 import Marvel.Id
@@ -46,6 +47,7 @@ data AllyMessage
   | SpendAllyUse
   | AttachedUpgradeToAlly UpgradeId
   | AllyStunned
+  | AllyHoldsTreachery EncounterCard
   | AllyPaidWith Payment
   | -- | whose deck it came from, and whose discard pile it goes to
     AllyOwnedBy IdentityId

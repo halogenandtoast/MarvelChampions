@@ -115,13 +115,16 @@ isThreatPlacement scheme = \case
 cancelWhenRevealed :: (HasQueue m, HasGame m) => TreacheryId -> m ()
 cancelWhenRevealed tid = do
   forbidden <- elem CannotBeCanceled <$> getModifiers (TreacheryRef tid)
+  resolvedPart <- treacheryHasResolvedPart tid
   unless forbidden $ withQueue_ $ mapMaybe $ \case
     Ask _ q | asksToResolveWhenRevealed (TreacheryRef tid) q -> Nothing
     TreacheryMessage tid' msg | tid' == tid -> case msg of
       RevealTreachery _ -> Nothing
       TreacheryIncite -> Nothing
       CheckTreacheryCondition _ -> Nothing
-      ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
+      ResolvedTreachery who -> Just $ if resolvedPart then TreacheryMessage tid (ResolvedTreacheryAfterCancel who) else RemoveFromPlay (TreacheryRef tid)
+      TreacheryMarkResolved -> Nothing
+      ResolvedTreacheryAfterCancel who -> Just $ TreacheryMessage tid (ResolvedTreacheryAfterCancel who)
     msg -> Just msg
 
 -- | A minion that would be defeated is not ("instead"): its defeat, the damage overkill
@@ -360,6 +363,12 @@ data Message
   | OfferAllianceCost ActiveCostId IdentityId Cost [(IdentityId, Cost)] [Cost]
   | -- | hold an event facedown on an ally, playable as if in its controller's hand
     AttachPlayableEventToAlly AllyId PlayerCard
+  | AttachTreacheryToAlly AllyId EncounterCard
+  | AttachPlayerCardToMinion MinionId PlayerCard
+  | DivideAttackDamage IdentityId Source Damage
+  | AssignEvenDamage IdentityId Source Damage Natural [(CharacterId, Natural)] [CharacterId]
+  | IndirectDamageAndExhaust IdentityId Source Damage [(CharacterId, Natural)]
+  | ExhaustIfDamaged CharacterId Natural
   | ReserveAllyHeldCard AllyId PlayerCard
   | -- | the nth wild resource paid toward the active cost is declared as this type
     DeclaredWild Natural Resource
