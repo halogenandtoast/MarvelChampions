@@ -216,7 +216,7 @@ choose what p = do
         choose what p
       Nothing | autoChosen -> pure ()
       Nothing -> error $ "could not " <> show what <> " among " <> show (map describe cs)
-      Just n -> answerQuestion ident n
+      Just n -> answerQuestion ident n >> pressSpecials
  where
   findIndex' f = fmap fst . headMay . filter (f . snd) . zip [0 ..]
   describe = take 120 . show
@@ -489,11 +489,20 @@ pressMainSchemeSetup = openQuestion >>= \case
   Just (ident, QuestionLabel "$label.setupMainScheme" _ _) -> answerQuestion ident 0 >> pressMainSchemeSetup
   _ -> pure ()
 
--- | The player resolves each When Revealed the game waits on, as they would by clicking
--- the card: a test is about what the card does.
+-- | Resolve acknowledgement prompts as a player clicking the card would. Tests
+-- about the prompt itself inspect openQuestion before using these helpers.
 pressWhenRevealed :: GameAppT ()
 pressWhenRevealed = openQuestion >>= \case
-  Just (ident, QuestionLabel "$label.resolveWhenRevealed" _ _) -> answerQuestion ident 0 >> pressWhenRevealed
+  Just (ident, QuestionLabel label _ _)
+    | label `elem` ["$label.resolveWhenRevealed", "$label.resolveWhenDefeated", "$label.resolveSpecial"] ->
+        answerQuestion ident 0 >> pressWhenRevealed
+  _ -> pure ()
+
+-- | Card behavior tests acknowledge a Special reached after their chosen action.
+-- Prompt tests use answerQuestion directly to inspect each pause.
+pressSpecials :: GameAppT ()
+pressSpecials = openQuestion >>= \case
+  Just (ident, QuestionLabel "$label.resolveSpecial" _ _) -> answerQuestion ident 0 >> pressSpecials
   _ -> pure ()
 
 -- | Set the damage on a player's identity.

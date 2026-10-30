@@ -44,7 +44,7 @@ runTechnique :: (ReverseQueue m) => (IdentityId -> VillainId -> m ()) -> Message
 runTechnique special msg attrs = case msg of
   AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> attrs <$ attachToTheVillain attrs
   CardSpecific (isTarget attrs -> True) "techniqueSpecial" (fromJSON -> Success you) -> do
-    selectOne ActiveVillain >>= traverse_ (special you)
+    specialAbility you attrs $ selectOne ActiveVillain >>= traverse_ (special you)
     pure attrs
   Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
     you <- getBoostedPlayer enemy

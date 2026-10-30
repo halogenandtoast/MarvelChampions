@@ -63,6 +63,23 @@ spec = describe "Miles Morales" do
         choose "decline Miles's response" isNoResponse
         discardOf p >>= (`shouldSatisfy` elem card)
 
+  it "waits for a click before resolving an identity's Special" do
+    tg <- milesGame
+    let p = player1 tg
+    inGame tg do
+      asMiles p
+      waiting <- openQuestion
+      withGame_ $ questionL .~ mempty
+      pushAll $ [CardSpecific (toTarget p) "spiderCamouflage" Null] <> [Ask ident q | Just (ident, q) <- [waiting]]
+      runGameMessages
+      (.playerIdentityTough) <$> playerAttrs p `shouldReturn` False
+      openQuestion >>= \case
+        Just (ident, QuestionLabel "$label.resolveSpecial" (Just target) _) -> do
+          liftIO $ target `shouldBe` toTarget p
+          answerQuestion ident 0
+        _ -> error "expected Miles's Special prompt"
+      (.playerIdentityTough) <$> playerAttrs p `shouldReturn` True
+
   describe "Ganke Lee" do
     it "exhausts and draws a card in alter-ego form" do
       tg <- milesGame

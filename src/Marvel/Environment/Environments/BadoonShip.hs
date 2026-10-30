@@ -31,8 +31,10 @@ newtype BadoonShip = BadoonShip (Attrs Environment)
 instance RunMessage BadoonShip where
   runMessage msg e@(BadoonShip attrs) = runQueueT $ case msg of
     CardSpecific (isTarget attrs -> True) "chargeUp" _ -> do
-      placeCounters attrs 1
-      cardSpecific attrs "barrage" ()
+      you <- getYou
+      specialAbility you attrs do
+        placeCounters attrs 1
+        cardSpecific attrs "barrage" ()
       pure e
     CardSpecific (isTarget attrs -> True) "barrage" _ -> do
       let n = environmentCounters attrs

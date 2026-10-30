@@ -47,12 +47,16 @@ instance RunMessage SmSandmanEnvironment where
   runMessage msg e@(SmSandmanEnvironment attrs) = runQueueT $ case msg of
     CardSpecific (isTarget attrs -> True) "placeSand" (fromJSON -> Success n) -> e <$ placeCounters attrs (n :: Natural)
     CardSpecific (isTarget attrs -> True) "surgingSands" _ -> do
-      placeCounters attrs 1
-      cardSpecific attrs "discardSands" ()
+      you <- getYou
+      specialAbility you attrs do
+        placeCounters attrs 1
+        cardSpecific attrs "discardSands" ()
       pure e
     CardSpecific (isTarget attrs -> True) "surgingSandsFor" (fromJSON -> Success target) -> do
-      placeCounters attrs 1
-      cardSpecific attrs "discardSandsFor" (target :: Target)
+      you <- getYou
+      specialAbility you attrs do
+        placeCounters attrs 1
+        cardSpecific attrs "discardSandsFor" (target :: Target)
       pure e
     CardSpecific (isTarget attrs -> True) "discardSands" _ -> e <$ discardTopOfEncounterDeck (environmentCounters attrs)
     CardSpecific (isTarget attrs -> True) "discardSandsFor" (fromJSON -> Success target) ->

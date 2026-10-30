@@ -27,6 +27,16 @@ settle = go (150 :: Int)
 streets :: GameAppT EnvironmentId
 streets = fromMaybe (error "City Streets absent") <$> cityStreets
 
+resolveCityStreetsSpecial :: GameAppT ()
+resolveCityStreetsSpecial = do
+  eid <- streets
+  openQuestion >>= \case
+    Just (ident, QuestionLabel "$label.resolveSpecial" (Just target) q) -> do
+      liftIO $ target `shouldBe` toTarget eid
+      liftIO $ any (isTargetChoice eid) (choicesOf q) `shouldBe` True
+      answerQuestion ident 0
+    _ -> error "expected City Streets' Special prompt"
+
 damageEnemy :: IdentityId -> EnemyId -> Natural -> GameAppT ()
 damageEnemy you enemy n = resolve =<< L.runQueueT (L.capture $ L.dealDamage enemy you $ toDamage n FromAbility)
 
@@ -43,7 +53,13 @@ spec = describe "Sandman scenario" do
     inGame tg do
       _ <- setEncounterDeck (replicate 8 Treacheries.advance) []
       eid <- streets
-      resolve [CardSpecific (EnvironmentRef eid) "surgingSands" Null]
+      waiting <- openQuestion
+      withGame_ $ questionL .~ mempty
+      pushAll $ [CardSpecific (EnvironmentRef eid) "surgingSands" Null] <> [Ask ident q | Just (ident, q) <- [waiting]]
+      runGameMessages
+      sandCounters `shouldReturn` 4
+      (length <$> scenarioEncounterDeckNow) `shouldReturn` 8
+      resolveCityStreetsSpecial
       sandCounters `shouldReturn` 5
       length <$> scenarioEncounterDeckNow `shouldReturn` 3
       length <$> getEncounterDiscard `shouldReturn` 5
@@ -144,6 +160,24 @@ spec = describe "Sandman scenario" do
       damageEnemy (player1 tg) (EnemyMinionId mid) 3
       sandCounters `shouldReturn` 3
 
+  it "waits for the player to resolve Sand Clone's When Defeated" do
+    tg <- testGameAgainst "27061" ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Minions.smSandClone
+      waiting <- openQuestion
+      withGame_ $ questionL .~ mempty
+      pushAll $ [MinionMessage mid MinionDefeated] <> [Ask ident q | Just (ident, q) <- [waiting]]
+      runGameMessages
+      sandCounters `shouldReturn` 4
+      openQuestion >>= \case
+        Just (ident, QuestionLabel "$label.resolveWhenDefeated" (Just target) q) -> do
+          liftIO $ target `shouldBe` toTarget mid
+          liftIO $ any (isTargetChoice mid) (choicesOf q) `shouldBe` True
+          answerQuestion ident 0
+        _ -> error "expected Sand Clone's When Defeated prompt"
+      settle
+      sandCounters `shouldReturn` 5
+
   it "Dirt Trap resolves two Surging Sands effects sequentially" do
     tg <- testGameAgainst "27061" ["spider-man"]
     inGame tg do
@@ -162,6 +196,21 @@ spec = describe "Sandman scenario" do
       _ <- setEncounterDeck (replicate 30 Treacheries.advance) []
       choose "make a basic thwart" (isHeroThwart you)
       choose "thwart Dirt Trap" (isTargetChoice $ sideSchemeOf card)
+      -- Defeat pauses on the card before either special changes the board.
+      sandCounters `shouldReturn` 4
+      (length <$> scenarioEncounterDeckNow) `shouldReturn` 30
+      openQuestion >>= \case
+        Just (ident, QuestionLabel "$label.resolveWhenDefeated" (Just target) q) -> do
+          liftIO $ target `shouldBe` toTarget (sideSchemeOf card)
+          liftIO $ any (isTargetChoice $ sideSchemeOf card) (choicesOf q) `shouldBe` True
+          answerQuestion ident 0
+        _ -> error "expected Dirt Trap's When Defeated prompt"
+      sandCounters `shouldReturn` 4
+      (length <$> scenarioEncounterDeckNow) `shouldReturn` 30
+      resolveCityStreetsSpecial
+      sandCounters `shouldReturn` 5
+      (length <$> scenarioEncounterDeckNow) `shouldReturn` 25
+      resolveCityStreetsSpecial
       settle
       sandCounters `shouldReturn` 6
       -- The separate specials discard five, then six; the defeated card leaves

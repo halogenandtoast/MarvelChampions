@@ -79,6 +79,9 @@ instance RunMessage SmVenomGoblinMainScheme where
         cardSpecific GameRef "goblinFlip" (sid, def, mainSchemeAccelerationTokens attrs)
       pure e
     CardSpecific target "goblinSpecial" (fromJSON -> Success you) | isTarget attrs target -> do
+      specialAbility you attrs $ cardSpecific attrs "resolveGoblinSpecial" (you :: IdentityId)
+      pure e
+    CardSpecific target "resolveGoblinSpecial" (fromJSON -> Success you) | isTarget attrs target -> do
       infested <- (> 0) <$> symbioteEnvironmentCount
       case toCardCode attrs of
         "27117" -> do

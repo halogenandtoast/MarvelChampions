@@ -112,7 +112,8 @@ instance RunMessage DoctorStrange where
           ResolveTopInvocation keep -> case invocationDeck deck of
             [] -> settled deck
             top : _ -> do
-              resolveEventWithoutPlaying ident top
+              chooseOnePromptedAbout ident "$label.resolveSpecial" top
+                [cardLabeled (toCardCode top) $ resolveEventWithoutPlaying ident top]
               settled deck {invocationKeptOnTop = if keep then Just top else Nothing}
           PlaceInInvocationDiscard card
             | invocationKeptOnTop deck == Just card -> settled deck {invocationKeptOnTop = Nothing}

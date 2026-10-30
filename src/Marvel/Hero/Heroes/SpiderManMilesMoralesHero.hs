@@ -28,7 +28,7 @@ instance RunMessage SpiderManMilesMoralesHero where
   runMessage msg h@(SpiderManMilesMoralesHero attrs) = runQueueT $ case msg of
     CardSpecific (isTarget attrs -> True) "venomBlast" _ -> do
       blocked <- elem CannotTriggerPrintedHeroAbilities <$> getModifiers attrs
-      unless blocked do
+      unless blocked $ specialAbility (heroIdentityId attrs) attrs do
         enemies <- selectList DamageableEnemy
         unless (null enemies) $ chooseOne (heroIdentityId attrs)
           [ targeting (enemyRef enemy) do
@@ -38,7 +38,7 @@ instance RunMessage SpiderManMilesMoralesHero where
       pure h
     CardSpecific (isTarget attrs -> True) "spiderCamouflage" _ -> do
       blocked <- elem CannotTriggerPrintedHeroAbilities <$> getModifiers attrs
-      unless blocked do
+      unless blocked $ specialAbility (heroIdentityId attrs) attrs do
         becomeTough (heroIdentityId attrs)
         enemies <- selectList AnyEnemy
         unless (null enemies) $ chooseOne (heroIdentityId attrs)

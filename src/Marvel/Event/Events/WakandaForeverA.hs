@@ -43,7 +43,7 @@ instance RunMessage WakandaForeverA where
       PlayedEvent identityId _ _ -> do
         upgradeIds <-
           select $ UpgradeWithTrait BlackPanther <> UpgradeControlledBy (IdentityWithId identityId)
-        chooseOneAtATime identityId [targetingAbility upgradeId 1 | upgradeId <- HashSet.toList upgradeIds]
+        chooseOneAtATimePrompted identityId "$label.chooseSpecial" [targetingAbility upgradeId 1 | upgradeId <- HashSet.toList upgradeIds]
         pure $ WakandaForeverA (attrs `With` Meta upgradeIds)
       _ -> WakandaForeverA . (`With` meta) <$> runMessage msg attrs
     RanAbility _ (UpgradeRef upgradeId) 1 _ _

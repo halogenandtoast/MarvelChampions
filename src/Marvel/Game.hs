@@ -39,6 +39,7 @@ import Marvel.Campaign (Campaign, CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
 import Marvel.Card
 import Marvel.Card.WhenRevealed (hasWhenRevealed)
+import Marvel.Card.WhenDefeated (hasWhenDefeated)
 import Marvel.Choice (choiceMessages)
 import Marvel.Cost
 import Marvel.Damage
@@ -2338,6 +2339,7 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage (ResolveWhenDefeated original) g = dispatchGameMessage original g
   runMessage (Simultaneously msgs) g = foldlM (flip runMessage) g (reverse msgs)
   runMessage (ResolveAllyLeavingPlay ident aid def original) g
     | not (HashMap.member aid $ gameAllies g) = pure g
@@ -2347,6 +2349,11 @@ instance RunMessage Game where
           checkWindows [W.Window W.After $ W.AllyLeavingPlay ident aid def]
         pure after
   runMessage msg g
+    | Just target <- whenDefeatedTarget msg g = runQueueT do
+        you <- getYou
+        chooseOnePromptedAbout you "$label.resolveWhenDefeated" target
+          [targeting target (push $ ResolveWhenDefeated msg)]
+        pure g
     | Just aid <- departingAlly msg, Just ally <- lookup aid (gameAllies g) = runQueueT do
         removed <- elem RemovedFromGameInsteadOfLeavingPlay <$> getModifiers (AllyRef aid)
         let original = if removed then RemoveFromGame (AllyRef aid) else msg
@@ -2354,6 +2361,30 @@ instance RunMessage Game where
         push $ ResolveAllyLeavingPlay (getAllyController ally) aid (getCardDef ally) original
         pure g
     | otherwise = dispatchGameMessage msg g
+
+-- | Printed defeat abilities pause while their card is still in play. Ordinary
+-- defeats without an ability need no acknowledgement.
+whenDefeatedTarget :: Message -> Game -> Maybe Target
+whenDefeatedTarget msg g = case msg of
+  SideSchemeMessage sid DefeatSideScheme -> do
+    card <- lookup sid (gameSideSchemes g)
+    guard $ hasWhenDefeated (toCardCode $ getCardDef card)
+    pure $ toTarget sid
+  MinionMessage mid MinionDefeated -> do
+    card <- lookup mid (gameMinions g)
+    -- Madame Masque asks in her source-aware defeat step, before Foul Play.
+    guard $ toCardCode (getCardDef card) /= "24010"
+    guard $ hasWhenDefeated (toCardCode $ getCardDef card)
+    pure $ toTarget mid
+  VillainMessage vid VillainDefeated -> do
+    card <- lookup vid (gameVillains g)
+    guard $ hasWhenDefeated (toCardCode $ getCardDef card)
+    pure $ toTarget vid
+  AllyMessage aid AllyDefeated -> do
+    card <- lookup aid (gameAllies g)
+    guard $ hasWhenDefeated (toCardCode $ getCardDef card)
+    pure $ toTarget aid
+  _ -> Nothing
 
 departingAlly :: Message -> Maybe AllyId
 departingAlly = \case

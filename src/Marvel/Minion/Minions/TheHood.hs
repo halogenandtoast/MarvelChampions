@@ -20,6 +20,7 @@ instance RunMessage MadameMasque where
     MinionMessage mid (RevealMinion you) | mid == minionId attrs -> e <$ foulPlay you
     MinionMessage mid (MinionDefeatedWithExcess source _ _) | mid == minionId attrs -> do
       you <- maybe getActivePlayerId pure =<< getSourceController source
-      foulPlay you
+      chooseOnePromptedAbout you "$label.resolveWhenDefeated" attrs
+        [targeting attrs (foulPlay you)]
       MadameMasque <$> runMessage msg attrs
     _ -> MadameMasque <$> runMessage msg attrs

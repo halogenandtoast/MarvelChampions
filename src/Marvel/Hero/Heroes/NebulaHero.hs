@@ -48,7 +48,7 @@ resolveTechnique :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
 resolveTechnique ident uid = do
   present <- selectAny (UpgradeWithId uid <> UpgradeControlledBy (IdentityWithId ident) <> UpgradeWithTrait Technique)
   blanked <- elem Blank <$> getModifiers uid
-  when (present && not blanked) $ resolveAs ident (runAbility uid 1)
+  when (present && not blanked) $ specialAbility ident uid $ resolveAs ident (runAbility uid 1)
 
 -- | Report only a Special that actually resolved. Ordinary Gamora/Lethal Intent/
 -- Combat Ready resolutions are ignored unless Combat Protocols is collecting them.

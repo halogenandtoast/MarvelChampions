@@ -55,8 +55,9 @@ infinityStonesInPlay = do
 runInfinityStone :: (ReverseQueue m) => (IdentityId -> m ()) -> Message -> Attrs Environment -> m (Attrs Environment)
 runInfinityStone special msg attrs = case msg of
   CardSpecific (isTarget attrs -> True) "infinityStoneSpecial" (fromJSON -> Success you) -> do
-    special you
-    removeFromPlay attrs
+    specialAbility you attrs do
+      special you
+      removeFromPlay attrs
     pure attrs
   _ -> runMessage msg attrs
 

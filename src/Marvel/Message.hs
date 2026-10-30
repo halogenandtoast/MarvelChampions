@@ -293,7 +293,8 @@ data DefensePriority
   deriving anyclass (ToJSON, FromJSON)
 
 data Message
-  = StartGame
+  = ResolveWhenDefeated Message
+  | StartGame
   | StartScenario
   | BeginPhase Phase
   | EndPhase Phase

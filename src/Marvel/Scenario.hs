@@ -24,7 +24,7 @@ import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Villain.Villains.SmSinisterSix qualified as Six
-import Marvel.Matchers (VillainMatcher (AnyVillain), SideSchemeMatcher (AnySideScheme, SideSchemeIs), SchemeMatcher (SchemeWithId, MainScheme))
+import Marvel.Matchers (VillainMatcher (AnyVillain), SideSchemeMatcher (AnySideScheme, SideSchemeIs), SchemeMatcher (SchemeWithId, MainScheme, EncounterMainScheme))
 import Marvel.Modifier (Modifier (ThreatCannotBeRemoved))
 import Marvel.Message.Lifted
 import Marvel.Ref
@@ -789,6 +789,11 @@ instance RunMessage TheHoodScenario where
       pure a
     CardSpecific GameRef "hoodFoulPlay" (fromJSON -> Success (you, penalize :: Maybe MainSchemeId)) -> runQueueT do
       mv <- selectOne ActiveVillain
+      let resolve = cardSpecific GameRef "resolveHoodFoulPlay" (you :: IdentityId, penalize)
+      maybe resolve (\vid -> specialAbility you vid resolve) mv
+      pure a
+    CardSpecific GameRef "resolveHoodFoulPlay" (fromJSON -> Success (you, penalize :: Maybe MainSchemeId)) -> runQueueT do
+      mv <- selectOne ActiveVillain
       stage <- maybe (pure 1) getVillainStage mv
       discardTopOfEncounterDeckThen (if stage == 1 then 1 else 2) \cards -> do
         let eligible = filter ((/= Just EncounterSet.TheHood) . cdEncounterSet . getCardDef) cards
@@ -889,6 +894,11 @@ instance RunMessage SmSinisterSixScenario where
       maybe (Six.sixVillains >>= traverse_ (setActiveVillain . fst) . take 1) (moveSixCounterAfter . cdCardCode) def
       pure a
     CardSpecific GameRef "sinisterSixAmbush" (fromJSON -> Success callback) -> runQueueT do
+      you <- getYou
+      scheme <- selectJust EncounterMainScheme
+      specialAbility you scheme $ cardSpecific GameRef "resolveSinisterSixAmbush" (callback :: Maybe (Target, Text, Value))
+      pure a
+    CardSpecific GameRef "resolveSinisterSixAmbush" (fromJSON -> Success callback) -> runQueueT do
       let available = [card | EncounterCard card <- Types.scenarioSetAsideCards a, toCardCode card `elem` Six.sixCodes]
       shuffled <- shuffleM available
       case shuffled of

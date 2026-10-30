@@ -149,6 +149,14 @@ forcedResponse a body = do
   you <- getYou
   chooseOnePromptedAbout you "$label.resolveForcedResponse" a [targeting a body]
 
+-- | Resolve a printed Special after its player acknowledges the card. Identity
+-- targets use a button so the single-player-choice shortcut cannot answer it.
+specialAbility :: (ReverseQueue m, IsRef a) => IdentityId -> a -> m () -> m ()
+specialAbility you a body = chooseOnePromptedAbout you "$label.resolveSpecial" a
+  [case toTarget a of
+    IdentityRef _ -> labeled "$label.resolveSpecial" body
+    _ -> targeting a body]
+
 -- | The revealing player resolves the card's When Revealed by clicking it: what follows
 -- waits for them.
 askToResolveWhenRevealed :: (ReverseQueue m, IsRef a) => IdentityId -> a -> m ()
