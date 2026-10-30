@@ -26,7 +26,8 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | War Machine Hero Pack rulesheet (MC23) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/53/e7/53e7fe04-5a82-4239-8ee9-9f65e6a6248d/mc23_war_machine_rulesheet.pdf |
 | Valkyrie Hero Pack rulesheet (MC25) | rules insert | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc25_valkyrie_rulesheet.pdf |
 | Vision Hero Pack rulesheet (MC26) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/53/60/53601f73-fa92-4cb9-816c-4f8d904de281/mc26_vision_rulesheet.pdf |
-| MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts}.json |
+| Sinister Motives rulebook (MC27) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc27_sinister_motives_rules_v5-compressed.pdf |
+| MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts,sm}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
 https://www.fantasyflightgames.com/en/news/2026/7/23/mission-updates/). The PDFs are not committed.
@@ -80,13 +81,17 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-war-machine.md](hero-war-machine.md) | War Machine: Alliance, ammo, current errata and starter deck |
 | [hero-valkyrie.md](hero-valkyrie.md) | Valkyrie: Alliance, Hinder, Death-Glow, current errata and starter deck |
 | [hero-vision.md](hero-vision.md) | Vision: additional mass forms, Alliance, piercing, stalwart and Machine Man errata |
-
 | [scenario-the-hood.md](scenario-the-hood.md) | The Hood: recruitment, Foul Play, steady; implementation notes and sources |
+| [campaign-sinister-motives.md](campaign-sinister-motives.md) | Sinister Motives campaign, reputation, rewards and campaign cards |
+| [scenario-sinister-motives.md](scenario-sinister-motives.md) | Sinister Motives scenarios, modular sets and recorded rulings |
+| [hero-ghost-spider.md](hero-ghost-spider.md) | Ghost-Spider: Dizzying Reflexes, George Stacy and starter deck |
+| [hero-miles-morales.md](hero-miles-morales.md) | Miles Morales: Specials, Requirement and starter deck |
 
 ## Conventions
 
-- Product files (`scenario-*.md`, `campaign-*.md`) transcribe the product's insert/rulebook verbatim with
-  `<!-- GOB insert p.N -->`-style markers; the card text they quote comes from MarvelCDB and is labelled as such.
+- Product files (`scenario-*.md`, `campaign-*.md`) contain insert/rulebook transcriptions with
+  `<!-- GOB insert p.N -->`-style markers or explicitly marked implementation summaries with source-page links.
+  Quoted card text comes from MarvelCDB and is labelled as such.
 
 - Each glossary entry is `## Term` (title-cased from the RR's all-caps headings), followed by
   `<!-- RR v1.8 p.N -->` with its PDF page. Search with e.g. `grep -n '^## Surge' docs/rules/*.md`.
