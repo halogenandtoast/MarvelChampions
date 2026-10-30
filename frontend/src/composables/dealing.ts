@@ -1,7 +1,7 @@
 // Cards flying between the board and its piles. The client sees only each new state, so it
 // works out what moved by comparing it with the last, and lays a stand-in over a pile for a
 // card that has nothing on screen at one end; the view transition morphs one into the other.
-import { BACKS } from '../cards'
+import { BACKS, useCards } from '../cards'
 import type { GameView } from '../server'
 
 const DEAL_MS = 520
@@ -20,6 +20,8 @@ interface Move {
   /** a card back flying, turned up as it lands */
   faceDown: boolean
   ghost: HTMLElement
+  /** The unrotated landscape card before it leaves the board. */
+  from?: DOMRect
 }
 
 const onScreen = (id: string) => document.querySelector(`[data-card-id="${CSS.escape(id)}"]`) !== null
@@ -38,10 +40,15 @@ const encounterBack = (pile: string) => pile.endsWith('-encounter') || pile.star
 
 const ghostFor = (id: string, pile: string, code: string | null, sources: Sources): Move => {
   const faceDown = code === null
-  const ghost = Object.assign(document.createElement('img'), {
+  const image = Object.assign(document.createElement('img'), {
     src: faceDown ? BACKS[encounterBack(pile) ? 'encounter' : 'player'] : (sources(code)[0] ?? ''),
     alt: '',
   })
+  const ghost = !faceDown && useCards().landscape(code) ? document.createElement('div') : image
+  if (ghost !== image) {
+    ghost.append(image)
+    Object.assign(image.style, { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%) rotate(90deg)', borderRadius: 'inherit', objectFit: 'cover' })
+  }
   ghost.style.borderRadius = '7px'
   ghost.style.setProperty('view-transition-name', morphName(id))
   return { id, pile, faceDown, ghost }
@@ -61,6 +68,8 @@ const lay = ({ pile, ghost }: Move) => {
   if (!rect) return false
   const { left, top, width, height } = rect
   Object.assign(ghost.style, { position: 'fixed', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, margin: '0', pointerEvents: 'none' })
+  const image = ghost.querySelector('img')
+  if (image) Object.assign(image.style, { width: `${height}px`, height: `${width}px` })
   document.body.append(ghost)
   return true
 }
@@ -75,6 +84,23 @@ const flyRules = (name: string, delay: number) => [
   `::view-transition-group(${name}) { animation-duration: ${DEAL_MS}ms; animation-delay: ${delay}ms; animation-fill-mode: both; z-index: 1; }`,
   `::view-transition-old(${name}), ::view-transition-new(${name}) { animation-delay: ${delay}ms; animation-fill-mode: both; }`,
 ]
+
+// Keep a landscape snapshot rigid as it travels into the portrait discard stack.
+// The destination is measured after rendering, so layout changes are included.
+const rotateToDiscard = (move: Move, delay: number): string[] => {
+  const from = move.from
+  if (!from || !move.ghost.isConnected) return []
+  const to = move.ghost.getBoundingClientRect()
+  const name = morphName(move.id)
+  const pose = (x: number, y: number, angle: number, sx: number, sy: number) =>
+    `translate(${x}px, ${y}px) rotate(${angle}deg) scale(${sx}, ${sy}) translate(${-from.width / 2}px, ${-from.height / 2}px)`
+  return [
+    `@keyframes discard-spin-${name} { from { transform: ${pose(from.left + from.width / 2, from.top + from.height / 2, 0, 1, 1)}; } to { transform: ${pose(to.left + to.width / 2, to.top + to.height / 2, 90, to.height / from.width, to.width / from.height)}; } }`,
+    `::view-transition-group(${name}) { width: ${from.width}px !important; height: ${from.height}px !important; transform-origin: 0 0; animation: discard-spin-${name} ${DEAL_MS}ms ease-in-out ${delay}ms both; }`,
+    `::view-transition-old(${name}) { animation: none; opacity: 1; width: 100%; height: 100%; mix-blend-mode: normal; }`,
+    `::view-transition-new(${name}) { animation: none; opacity: 0; }`,
+  ]
+}
 
 const styled = (rules: string[]) => {
   const style = Object.assign(document.createElement('style'), { textContent: rules.join('\n') })
@@ -170,7 +196,14 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   for (const [id, code] of was) {
     if (next.has(id) || !onScreen(id)) continue
     const to = isDiscarded.get(id)
-    if (to && !wasDiscarded.has(id)) arriving.push(ghostFor(id, to, code, sources))
+    if (to && !wasDiscarded.has(id)) {
+      const move = ghostFor(id, to, code, sources)
+      if (code && to.startsWith('discard-') && useCards().landscape(code)) {
+        const bounds = document.querySelector(`[data-card-id="${CSS.escape(id)}"]`)?.getBoundingClientRect()
+        if (bounds && bounds.width > bounds.height) move.from = bounds
+      }
+      arriving.push(move)
+    }
   }
   // dealt face down to a player: off the encounter deck onto their dealt pile
   const wasDealt = new Set((before.players ?? []).flatMap((p) => p.dealtCardIds ?? []))
@@ -213,7 +246,10 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   const style = styled(rules)
   return {
     lift: () => leaving.forEach((m) => m.ghost.remove()),
-    land: () => arriving.forEach(lay),
+    land: () => {
+      arriving.forEach(lay)
+      style.textContent += '\n' + discarding.flatMap((move, i) => rotateToDiscard(move, i * STAGGER_MS)).join('\n')
+    },
     done: () => {
       arriving.forEach((m) => m.ghost.remove())
       style.remove()
