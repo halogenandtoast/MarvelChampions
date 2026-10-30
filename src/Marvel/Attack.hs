@@ -13,6 +13,9 @@ data Attack = Attack
   { attackCharacter :: CharacterId
   , attackOverkill :: Bool
   , attackDamage :: Natural
+  , attackBaseReduction :: Natural
+  -- ^ the negative part of the signed base plus boosts, retained until the final
+  -- attack value is calculated together with attack-specific changes
   , attackEnemy :: EnemyId
   , attackDefended :: Bool
   , attackPiercing :: Bool
@@ -37,7 +40,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBaseReduction", toJSON (0 :: Natural)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -71,6 +74,7 @@ attack enemyId characterId dmg =
     { attackCharacter = characterId
     , attackOverkill = False
     , attackDamage = dmg
+    , attackBaseReduction = 0
     , attackEnemy = enemyId
     , attackDefended = False
     , attackPiercing = False
@@ -87,7 +91,16 @@ attack enemyId characterId dmg =
 
 -- | The attack's ATK: its damage, boost icons included, and what it gets for this attack.
 attackValue :: Attack -> Natural
-attackValue a = fromIntegral $ max 0 (fromIntegral (attackDamage a) + attackChange a)
+attackValue a = fromInteger $ max 0
+  (toInteger (attackDamage a) - toInteger (attackBaseReduction a) + toInteger (attackChange a))
+
+-- | Refresh only the signed base and boosts. An attack's own changes, defense,
+-- prevention, target, and gained keywords remain its own.
+withAttackBase :: Integer -> Attack -> Attack
+withAttackBase value a = a
+  { attackDamage = fromInteger (max 0 value)
+  , attackBaseReduction = fromInteger (max 0 $ negate value)
+  }
 
 -- | The damage the attack deals: none once all of it is prevented.
 attackDamageDealt :: Attack -> Natural

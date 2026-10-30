@@ -85,7 +85,7 @@ runMinionMessage msg attrs = case msg of
           for_ hero \ident ->
             when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (toEnemyId attrs) excess]
           minionStep (minionId attrs) (MinionDefeatedWithExcess source damage excess)
-        pure $ (attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))) {minionDamageThisPhase = minionDamageThisPhase attrs + damageAmount damage}
+        pure $ (attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))) {minionDamageThisPhase = minionDamageThisPhase attrs + damageAmount damage, minionAdditionalTough = if piercesTough damage then 0 else minionAdditionalTough attrs}
   MinionDefeatedWithExcess source damage overkill -> do
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
@@ -211,7 +211,9 @@ runMinionMessage msg attrs = case msg of
     case minionAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
-        attack' <- undefendedIfDefenderGone attack0
+        base <- getModifiedAttackSigned attrs
+        let refreshed = withAttackBase (base + toInteger (minionBoost attrs)) attack0
+        attack' <- undefendedIfDefenderGone refreshed
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
@@ -229,7 +231,10 @@ runMinionMessage msg attrs = case msg of
  where
   isVillainous = elem Villainous <$> getModifiedKeywords attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
-  newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
+  newAttack ident = do
+    base <- getModifiedAttackSigned attrs
+    keywords <- getModifiedKeywords attrs
+    pure $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do

@@ -168,7 +168,7 @@ getModifiedAttackConsequentialDamage attrs = do
   pure $
     if NoConsequentialDamage `elem` modifiers || NoAttackConsequentialDamage `elem` modifiers
       then 0
-      else subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers]) $
+      else subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers] + sum [n | AttackConsequentialDamageReduction n <- modifiers]) $
         allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
 
 getModifiedThwartConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural

@@ -330,12 +330,16 @@ getModifiedHitPoints attrs = do
   applyModifier _ = id
 
 getModifiedAttack :: (HasGame m) => Attrs Minion -> m Natural
-getModifiedAttack attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unAtk $ minionAttack attrs) modifiers
+getModifiedAttack attrs = (fromInteger . max 0) <$> getModifiedAttackSigned attrs
+
+-- | Keep the signed intermediate while an activation still has boosts and
+-- attack-specific modifiers to add (RR Modifiers).
+getModifiedAttackSigned :: HasGame m => Attrs Minion -> m Integer
+getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ minionAttack attrs)) . sum . map change) <$> getModifiers attrs
  where
-  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  change (AttackModifier n) = toInteger n
+  change (AttackPenalty n) = negate (toInteger n)
+  change _ = 0
 
 toEnemyId :: Attrs Minion -> EnemyId
 toEnemyId = EnemyMinionId . minionId

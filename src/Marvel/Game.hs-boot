@@ -66,6 +66,7 @@ getAllPlayers :: (HasGame m) => m [IdentityId]
 getActivePlayerId :: (HasGame m) => m IdentityId
 getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
+asPayingForAbility :: HasGame m => Ability -> ReaderT Game m a -> m a
 inAnyArea :: (HasGame m) => ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getStartingPlayerCount :: (HasGame m) => m Int

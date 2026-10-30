@@ -23,6 +23,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Id (EnemyId (..))
 import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards))
+import Marvel.Modifier (Modifier (TakesFirstPlayerPhaseTurn))
 import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
@@ -395,7 +396,9 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
       players <- getAllPlayers
-      for_ players \p -> do
+      priority <- filterM (fmap (elem TakesFirstPlayerPhaseTurn) . getModifiers) players
+      let turns = priority <> filter (`notElem` priority) players
+      for_ turns \p -> do
         setActivePlayer p
         identityStep p BeginTurn
       endPhase PlayerPhase

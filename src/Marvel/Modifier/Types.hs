@@ -14,7 +14,12 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = IdentityCountersAsResources
+  = TakesFirstPlayerPhaseTurn
+  | AttackWithThwart
+  | AttackConsequentialDamageReduction Natural
+  | AttacksAgainstGainKeyword Keyword
+  | AttackDamageTakenModifier Int
+  | IdentityCountersAsResources
   | CanHaveAnyNumberOfToughStatusCards
   | AdditionalToughStatusCards Natural
   | CannotBeStunned

@@ -390,6 +390,7 @@ runVillainMessage msg attrs = case msg of
             for_ hero \ident ->
               when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
             attached <- enemyDefeatUpgrades (toEnemyId attrs)
+            checkWindows [W.Window W.When $ W.DefeatedVillain vid damage source excess, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
             villainStep vid VillainWouldBeDefeated
             -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
             checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
@@ -472,10 +473,10 @@ runVillainMessage msg attrs = case msg of
     case villainAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
-        base <- getModifiedAttack attrs
+        base <- getModifiedAttackSigned attrs
         keywords <- getModifiedKeywords attrs
         let current = keywords <> villainAttackGrantedKeywords attrs
-            refreshed = attack0 {attackDamage = base + villainBoost attrs,
+            refreshed = (withAttackBase (base + toInteger (villainBoost attrs)) attack0) {
               attackOverkill = Overkill `elem` current, attackPiercing = Piercing `elem` current,
               attackRanged = Ranged `elem` current}
         attack' <- undefendedIfDefenderGone refreshed
@@ -547,7 +548,10 @@ runVillainMessage msg attrs = case msg of
     modifiers <- getModifiers attrs
     unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
-  newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
+  newAttack ident = do
+    base <- getModifiedAttackSigned attrs
+    keywords <- getModifiedKeywords attrs
+    pure $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
@@ -641,12 +645,16 @@ reducedDamage modifiers d = d {damageAmount = maybe reduced (min reduced) cap}
     ns -> Just (minimum ns)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
-getModifiedAttack attrs = do
-  modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unAtk $ villainAttack attrs) modifiers
+getModifiedAttack attrs = (fromInteger . max 0) <$> getModifiedAttackSigned attrs
+
+-- | Keep the signed intermediate while an activation still has boosts and
+-- attack-specific modifiers to add (RR Modifiers).
+getModifiedAttackSigned :: HasGame m => Attrs Villain -> m Integer
+getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ villainAttack attrs)) . sum . map change) <$> getModifiers attrs
  where
-  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  change (AttackModifier n) = toInteger n
+  change (AttackPenalty n) = negate (toInteger n)
+  change _ = 0
 
 getModifiedScheme :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedScheme attrs = do

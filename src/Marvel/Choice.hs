@@ -194,7 +194,11 @@ resolveChoice ident = \case
             _ -> False
         -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
         -- tough status card: 'Marvel.Villain.Types')
-        taken <- sum . mapMaybe (\case DamageTakenModifier n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+        targetModifiers <- getModifiers enemyAsRef
+        let taken = sum [n | DamageTakenModifier n <- targetModifiers]
+              + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
+            targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
+            attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
         reduction <- if fromAttack then attackReduction else pure 0
         cap <- if fromAttack then attackCap else pure Nothing
         let
@@ -203,9 +207,9 @@ resolveChoice ident = \case
           reduced = subtractNatural reduction increased
           damage = damage'
             { damageAmount = maybe reduced (min reduced) cap
-            , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
-            , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
-            , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords
+            , damagePiercing = damagePiercing damage' || attackHas Piercing
+            , damageOverkill = damageOverkill damage' || attackHas Overkill
+            , damageRanged = damageRanged damage' || attackHas Ranged
             }
           enemy = case target of
             VillainRef vid -> EnemyVillainId vid

@@ -8,6 +8,7 @@ import Marvel.Trait.Types (Trait)
 
 data Keyword
   = Teamwork Trait
+  | Temporary
   | Alliance
   | Guard
   | Toughness

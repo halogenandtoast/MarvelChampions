@@ -18,7 +18,8 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
-import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled))
+import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
+import Marvel.Card.Def (cdKeywords)
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -172,6 +173,13 @@ passesCriteria x a =
     EnvironmentExists m -> selectAny m
     -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
+    PayingForAbility _ _ -> pure True
+    SourceHasKeyword keyword -> do
+      blanked <- isBlanked source
+      modifiers <- getModifiers source
+      definition <- getsGame (`abilityCardDef` refocus source)
+      pure $ not blanked && LoseKeyword keyword `notElem` modifiers
+        && (maybe False (elem keyword . cdKeywords) definition || KeywordModifier keyword `elem` modifiers)
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
@@ -220,6 +228,8 @@ passesCardCriteria ident card = go
     -- how it is paid for is checked as it is paid
     SpendOnly _ -> pure True
     PayingFor _ -> pure True
+    PayingForAbility _ _ -> pure True
+    SourceHasKeyword _ -> pure True
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
     CollectionHasCards -> notNull <$> getCollection

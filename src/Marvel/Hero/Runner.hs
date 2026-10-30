@@ -187,7 +187,11 @@ instance RunMessage (Attrs Hero) where
       let gains k f = if KeywordModifier k `elem` modifiers then f else id
       pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
     attackDamageAgainst ident enemy bonus = do
-      dmg <- (+ bonus) <$> getModifiedAttackAgainst a enemy
+      targetModifiers <- getModifiers (enemyRef enemy)
+      attackerModifiers <- getModifiers a
+      dmg <- (+ bonus) <$> if AttackWithThwart `elem` (targetModifiers <> attackerModifiers)
+        then getModifiedThwart a
+        else getModifiedAttackAgainst a enemy
       modifiers <- getModifiers a
       let gains k f = if KeywordModifier k `elem` modifiers then f else id
       pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing

@@ -106,7 +106,10 @@ instance RunMessage (Attrs Ally) where
       AllyAttackLands enemy dmg -> do
         stillInPlay <- selectAny (EnemyWithId enemy)
         when stillInPlay do
-          dealDamage enemy a dmg
+          targetModifiers <- getModifiers (enemyRef enemy)
+          modifiers <- getModifiers a
+          amount <- if AttackWithThwart `elem` (targetModifiers <> modifiers) then getModifiedThwart a else pure (damageAmount dmg)
+          dealDamage enemy a dmg {damageAmount = amount}
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) [enemy]]
@@ -149,21 +152,27 @@ instance RunMessage (Attrs Ally) where
           allyStep ident AllyAttackConsequential
         pure a
       AllyAttackMultiple enemies damage -> do
-        allyStep ident (AllyAttackMultipleNext enemies [] damage)
+        modifiers <- getModifiers a
+        amount <- if AttackWithThwart `elem` modifiers then getModifiedThwart a else pure (damageAmount damage)
+        allyStep ident (AllyAttackMultipleNext enemies [] damage {damageAmount = amount})
         pure a
       AllyAttackMultipleNext remaining resolved damage -> do
         present <- selectAny (AllyWithId ident)
         when present do
           enemies <- filterM (selectAny . EnemyWithId) remaining
           if null enemies
-            then allyStep ident (AllyAttackMultipleFinished resolved)
+            then allyStep ident (AllyAttackMultipleRetaliation resolved (damageRanged damage))
             else chooseOne (allyController a)
               [ targeting (enemyRef enemy) do
                   dealDamage enemy a damage
-                  unless (damageRanged damage) $ enemyRetaliates enemy (AllyCharacter ident)
                   allyStep ident (AllyAttackMultipleNext (filter (/= enemy) enemies) (resolved <> [enemy]) damage)
               | enemy <- enemies
               ]
+        pure a
+      AllyAttackMultipleRetaliation resolved ranged -> do
+        alive <- filterM (selectAny . EnemyWithId) resolved
+        unless ranged $ for_ alive $ \enemy -> enemyRetaliates enemy (AllyCharacter ident)
+        allyStep ident (AllyAttackMultipleFinished resolved)
         pure a
       AllyAttackMultipleFinished resolved -> do
         present <- selectAny (AllyWithId ident)

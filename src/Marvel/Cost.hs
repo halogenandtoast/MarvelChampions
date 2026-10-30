@@ -44,7 +44,7 @@ passesCanAffordCost ::
   IdentityId ->
   Ability ->
   m Bool
-passesCanAffordCost identityId a = canAffordCost identityId (abilitySource a) =<< getAbilityCost a
+passesCanAffordCost identityId a = asPayingForAbility a $ canAffordCost identityId (abilitySource a) =<< getAbilityCost a
 
 -- | Whether the resources cover those asked for, each of a type or of any ('Nothing'):
 -- a wild resource covers any type.

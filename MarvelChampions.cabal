@@ -1971,6 +1971,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.CampaignSpec
       Marvel.Rules.CancelActivationSpec
       Marvel.Rules.ChosenHandCardCostSpec
+      Marvel.Rules.CyclopsMechanicsSpec
       Marvel.Rules.DashPowerSpec
       Marvel.Rules.DeckBuildingMetadataSpec
       Marvel.Rules.DeckSpec

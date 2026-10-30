@@ -446,6 +446,12 @@ windowMatches matcher w source = case matcher of
   PlaysUpgradeOnAlly timing identityMatcher -> case windowType w of
     UpgradePlayedOnAlly ident _ _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
+  UsesAbility timing identityMatcher index -> case windowType w of
+    UsedCardAbility ident source usedIndex | source == IdentityRef ident && windowTiming w == timing && index == usedIndex -> identityMatches identityMatcher ident
+    _ -> pure False
+  AllyEntersPlay timing allyMatcher -> case windowType w of
+    AllyEnteredPlay aid | windowTiming w == timing -> allyMatches allyMatcher aid
+    _ -> pure False
   PlaysAlly allyMatcher -> case windowType w of
     PlayedAlly aid | windowTiming w == After -> allyMatches allyMatcher aid
     _ -> pure False

@@ -1,6 +1,8 @@
 module Marvel.Criteria where
 
 import Marvel.Prelude
+import Marvel.Card.Code (CardCode)
+import Marvel.Keyword (Keyword)
 
 import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
@@ -37,6 +39,8 @@ data Criteria
   | EnvironmentExists EnvironmentMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
+  | PayingForAbility CardCode Natural
+  | SourceHasKeyword Keyword
   | -- | the card's resource cost is paid with only this type of resource: "you can
     -- only spend [physical] resources to pay for this card"
     SpendOnly Resource

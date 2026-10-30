@@ -35,7 +35,11 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = ResourcesGeneratedBy IdentityMatcher
+  = -- | A named identity ability (the index on that identity), not an ability on
+    -- another card controlled by its player.
+    UsesAbility WindowTiming IdentityMatcher Natural
+  | AllyEntersPlay WindowTiming AllyMatcher
+  | ResourcesGeneratedBy IdentityMatcher
   | TreacheryResolvedBy IdentityMatcher
   | HeroThwarted WindowTiming IdentityMatcher
   | IdentityDamaged WindowTiming IdentityMatcher
@@ -199,7 +203,8 @@ data Window = Window
   deriving anyclass (ToJSON, FromJSON)
 
 data WindowType
-  = GeneratedResources IdentityId Natural
+  = UsedCardAbility IdentityId Source Natural
+  | GeneratedResources IdentityId Natural
   | ResolvedTreacheryCard IdentityId EncounterCard
   | HeroThwartComplete IdentityId
   | ThwartRemovedThreat Source SchemeId Natural Natural

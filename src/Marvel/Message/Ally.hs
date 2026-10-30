@@ -31,6 +31,7 @@ data AllyMessage
   | AllyEvenAttackFinished Damage [EnemyId]
   | AllyAttackMultiple [EnemyId] Damage
   | AllyAttackMultipleNext [EnemyId] [EnemyId] Damage
+  | AllyAttackMultipleRetaliation [EnemyId] Bool
   | AllyAttackMultipleFinished [EnemyId]
   | AllyAttackConsequential
   | AllyThwarted

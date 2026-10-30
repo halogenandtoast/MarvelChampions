@@ -499,6 +499,7 @@ allyNarration aid = \case
   AllyEvenAttackFinished {} -> Nothing
   AllyAttackMultiple {} -> Nothing
   AllyAttackMultipleNext {} -> Nothing
+  AllyAttackMultipleRetaliation {} -> Nothing
   AllyAttackMultipleFinished {} -> Nothing
   AllyAttacked -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyAttacks" ["ally" ~> a]]
   AllyThwarted -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyThwarts" ["ally" ~> a]]

@@ -3,7 +3,12 @@ module Marvel.Upgrade.Types where
 import Marvel.Prelude
 
 import Data.Typeable
+import Marvel.Ability (limitedWindowAbility)
 import Marvel.Ability.Types
+import Marvel.Cost.Types (Cost (NoCost))
+import Marvel.Criteria (Criteria (SourceHasKeyword))
+import Marvel.Question (Choice (DiscardTarget))
+import Marvel.Window qualified as W
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -12,7 +17,7 @@ import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Keyword (Keyword (Permanent))
+import Marvel.Keyword (Keyword (Permanent, Temporary))
 import Marvel.Query
 import Marvel.Ref
 
@@ -105,7 +110,11 @@ instance IsRef Upgrade where
   toRef = UpgradeRef . toId
 
 instance HasAbilities Upgrade where
-  getAbilities (Upgrade a) = getAbilities a
+  getAbilities (Upgrade a) = getAbilities a <>
+    [ limitedWindowAbility (toUpgradeAttrs a) 998 W.RoundEnds ForcedInterrupt (SourceHasKeyword Temporary) NoCost
+        (DiscardTarget $ toTarget $ toUpgradeAttrs a)
+    | Temporary `elem` cdKeywords (getCardDef $ toUpgradeAttrs a)
+    ]
 
 instance HasCardDef Upgrade where
   getCardDef = getCardDef . toAttrs

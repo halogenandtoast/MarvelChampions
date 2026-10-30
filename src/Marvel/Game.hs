@@ -190,6 +190,7 @@ data Game = Game
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
+  , gamePayingForAbility :: Maybe (CardCode, Natural)
   , gameYou :: Maybe IdentityId
   -- ^ who "you" is while a player's card, choice or window is looked at: its
   -- controller, or the player choosing or being offered it (see 'asYou'); otherwise
@@ -320,7 +321,8 @@ instance FromJSON Game where
     -- Saves from before phase limits were tracked have no phase history.
     genericParseJSON (aesonOptions $ Just "game") $
       Object
-        ( KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
+        ( KeyMap.insertWith (\_ existing -> existing) "payingForAbility" Null
+            . KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
              . KeyMap.insertWith (\_ existing -> existing) "playedInWindows" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playedThisTurn" (toJSON ([] :: [Value]))
@@ -509,6 +511,14 @@ getYou = getsGame \g -> fromMaybe (gameActivePlayer g) (gameYou g)
 -- the player who would play or trigger it (RR "You").
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a
 asYou ident body = getGame >>= runReaderT body . (youL ?~ ident)
+
+-- | An affordability query carries the ability being paid for without changing the
+-- stored game. Resource abilities can then distinguish a named ability from a card.
+asPayingForAbility :: HasGame m => Ability -> ReaderT Game m a -> m a
+asPayingForAbility ability body = do
+  g <- getGame
+  let context = (, abilityIndex ability) . toCardCode <$> abilityCardDef g (refocus $ abilitySource ability)
+  runReaderT body g {gamePayingForAbility = context}
 
 -- * Game areas
 
@@ -1114,6 +1124,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           then traverse_ (resolveAs you) continuations
           else do
             when (Ability.Defense `elem` labels) $ beginLabeledDefense you
+            case abilitySource ab of
+              IdentityRef _ | abilityType ab /= Basic && abilityIndex ab /= 100 ->
+                checkWindows [W.Window W.When $ W.UsedCardAbility you (abilitySource ab) (abilityIndex ab)]
+              _ -> pure ()
             cardSpecific GameRef "finishLabeledAbility" (you, ab, windows :: [W.WindowType], payment :: Payment)
     pure g
   CardSpecific GameRef "finishLabeledAbility" (fromJSON -> Success (you, ab, windows, payment)) -> do
@@ -2975,6 +2989,7 @@ newGame player scenario =
     , gameQuestion = mempty
     , gameUsedAbilities = mempty
     , gameActivePlayer = toId player
+    , gamePayingForAbility = Nothing
     , gameYou = Nothing
     , gameScenario = scenario
     , gameFocusedCards = []
@@ -3745,6 +3760,7 @@ getResourceAbilities ident mc = asYou ident do
         . sequence
           [ pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
           , pure . paysFor
+          , paysForAbility
           , withinUseLimit ident
           , preservesCounters
           , passesCriteria ident
@@ -3754,6 +3770,20 @@ getResourceAbilities ident mc = asYou ident do
     abilities
  where
   paysFor a = all (\m -> maybe False (cardMatch m) mc) (payingForMatchers $ abilityCriteria a)
+  paysForAbility a = do
+    g <- getGame
+    let active = case gameActiveCost g of
+          cost : _ -> case activeCostTarget cost of
+            ForAbility ab -> (, abilityIndex ab) . toCardCode <$> abilityCardDef g (refocus $ abilitySource ab)
+            _ -> Nothing
+          _ -> Nothing
+        context = gamePayingForAbility g <|> active
+        matches = \case
+          PayingForAbility code index -> isNothing mc && context == Just (code, index)
+          Criteria cs -> all matches cs
+          AnyCriteria cs -> any matches cs
+          _ -> True
+    pure $ matches (abilityCriteria a)
   preservesCounters a = case abilityCost a of
     IdentityCountersCost n -> do
       current <- project PlayerIdentityCounters ident

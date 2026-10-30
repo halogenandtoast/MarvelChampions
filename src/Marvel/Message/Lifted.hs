@@ -2157,7 +2157,9 @@ resolveAllyAttackAgainstAll aid enemies = replaceMatchingMessage replaceAttack \
   _ -> False
  where
   replaceAttack = \case
-    AllyMessage who (AllyAttackLands _ damage) -> [AllyMessage who $ AllyAttackMultiple enemies damage]
+    AllyMessage who (AllyAttackLands original damage) ->
+      [CheckWindows [Window When $ W.AllyAttack who enemy | enemy <- enemies, enemy /= original]]
+        <> [AllyMessage who $ AllyAttackMultiple enemies damage]
     msg -> [msg]
 
 -- | Put an upgrade into play attached to the chosen target, without playing it.
