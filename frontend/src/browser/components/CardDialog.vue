@@ -10,6 +10,7 @@
  * the faces of the card in front of you.
  */
 import { computed, ref, watch } from 'vue'
+import { useEventListener } from '@vueuse/core'
 import CardDetail from './CardDetail.vue'
 import type { Card } from '@browser/types/card'
 import { useCardStore } from '@browser/stores/cards'
@@ -26,6 +27,8 @@ const emit = defineEmits<{ 'update:index': [value: number]; close: [] }>()
 const store = useCardStore()
 const dialog = ref<HTMLDialogElement | null>(null)
 const imageIndex = ref(0)
+const prevButton = ref<HTMLButtonElement | null>(null)
+const nextButton = ref<HTMLButtonElement | null>(null)
 
 const card = computed(() => (index >= 0 ? (cards[index] ?? null) : null))
 const hasPrev = computed(() => index > 0)
@@ -35,14 +38,18 @@ const hasNext = computed(() => index >= 0 && index < cards.length - 1)
 // a click handler, so a card arrived at through the URL opens too.
 watch(
   () => card.value,
-  (current, previous) => {
+  (current) => {
     const el = dialog.value
     if (!el) return
     if (current && !el.open) el.showModal()
     else if (!current && el.open) el.close()
-    if (current?.code !== previous?.code) imageIndex.value = 0
   },
   { flush: 'post' },
+)
+// before the render, so the next card mounts on its front rather than turning to it
+watch(
+  () => card.value?.code,
+  () => (imageIndex.value = 0),
 )
 
 function step(by: number): void {
@@ -58,6 +65,12 @@ function stepImage(by: number): void {
   imageIndex.value = (imageIndex.value + by + faces) % faces
 }
 
+// On the window, not the dialog: a face tab clicked and then gone with the card it
+// was on leaves focus on the body, outside the dialog.
+useEventListener(window, 'keydown', (event: KeyboardEvent) => {
+  if (dialog.value?.open) onKeydown(event)
+})
+
 function onKeydown(event: KeyboardEvent): void {
   // Let the browser have the keys while a field inside the dialog has focus.
   const target = event.target as HTMLElement | null
@@ -67,10 +80,12 @@ function onKeydown(event: KeyboardEvent): void {
     case 'ArrowLeft':
       event.preventDefault()
       step(-1)
+      prevButton.value?.focus()
       break
     case 'ArrowRight':
       event.preventDefault()
       step(1)
+      nextButton.value?.focus()
       break
     case 'ArrowUp':
       event.preventDefault()
@@ -96,13 +111,13 @@ function onClick(event: MouseEvent): void {
     :aria-label="$t('browser.dialog.label')"
     @cancel.prevent="emit('close')"
     @close="emit('close')"
-    @keydown="onKeydown"
     @click="onClick"
   >
     <div v-if="card" class="dialog__frame">
       <header class="dialog__bar">
         <div class="dialog__nav">
           <button
+            ref="prevButton"
             type="button"
             class="button button--ghost"
             :disabled="!hasPrev"
@@ -114,6 +129,7 @@ function onClick(event: MouseEvent): void {
           </button>
           <span class="dialog__position">{{ $t('browser.dialog.position', { index: index + 1, total: cards.length }) }}</span>
           <button
+            ref="nextButton"
             type="button"
             class="button button--ghost"
             :disabled="!hasNext"

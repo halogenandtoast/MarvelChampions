@@ -56,9 +56,9 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
   <div class="detail-container">
     <article class="detail" :data-aspect="shown.faction">
       <div class="art">
-        <div v-if="third" class="folding-frame" :class="{ unfolded: shown === third, horizontal }"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
+        <div v-if="third" :key="card.code" class="folding-frame" :class="{ unfolded: shown === third, horizontal }"><FoldingIdentity :faces="faces.map((c) => c.code)" :code="shown.code" /></div>
         <!-- a two-sided card turns over to its other face -->
-        <div v-else-if="other" class="flip" :class="{ 'is-flipped': imageIndex === 1 }">
+        <div v-else-if="other" :key="card.code" class="flip" :class="{ 'is-flipped': imageIndex === 1 }">
           <CardImage class="side" :card="card" eager />
           <CardImage class="side side--back" :card="other" eager />
         </div>
