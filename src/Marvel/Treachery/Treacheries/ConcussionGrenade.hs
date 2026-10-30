@@ -36,6 +36,6 @@ instance RunMessage ConcussionGrenade where
         else do
           already <- identityMatches ConfusedIdentity you
           confuseIdentity you
-          placeThreatOnEach attrs (if already then 2 else 1) MainScheme
+          placeThreatOnEach attrs (if already then 2 else 1) EncounterMainScheme
       pure t
     _ -> ConcussionGrenade <$> runMessage msg attrs

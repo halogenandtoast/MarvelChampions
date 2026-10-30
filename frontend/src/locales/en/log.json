@@ -96,10 +96,8 @@
   "-- The Green Goblin --": "",
   "boostIconsCounted": "{card}: no boost icons counted | {card}: 1 boost icon counted | {card}: {count} boost icons counted",
   "encounterCardsDiscarded": "The top card of the encounter deck is discarded | The top {count} cards of the encounter deck are discarded",
-
   "-- The Wrecking Crew --": "",
   "activeVillain": "{villain} becomes the active villain",
-
   "-- The Rise of Red Skull --": "",
   "takesNoDamage": "{target} takes no damage",
   "infinityStoneIntoPlay": "{card} is put into play from the Infinity Stone deck",
@@ -132,26 +130,30 @@
       "InfinityStones1BCompleted": "Recorded in the campaign log: The Infinity Stones 1B was completed",
       "NornStoneInPool": "Norn Stone is added to the campaign pool",
       "OdinInPool": "Odin is added to the campaign pool"
-    }
+    },
+    "reputation": "The group gains {count} reputation.",
+    "planningAhead": "{player} records {card} for Planning Ahead.",
+    "wakingNightmare": "Waking Nightmare is recorded as {count}.",
+    "finalReputation": "The group records its final reputation score."
   },
   "attackGainsOverkill": "{target}'s attack gains overkill",
   "attackGainsPiercing": "{target}'s attack gains piercing",
   "attackGainsRanged": "{target}'s attack gains ranged",
-
   "-- The Once and Future Kang --": "",
   "areaCreated": "{player} is sent to a game area of their own",
   "areaJoins": "{player} joins {other}'s game area",
   "areaJoinsCentral": "{player} joins The Master of Time's game area",
-
   "-- The Galaxy's Most Wanted --": "",
   "victoryDisplay": "{target} goes to the victory display",
   "peril": "Peril: {player} resolves this alone, no one else may help",
-
   "-- Escape the Museum --": "",
   "indirectDamageAmongPlayers": "{count} indirect damage is dealt among the players",
-
   "-- Infiltrate the Museum --": "",
   "collection": "{card} goes into The Collection",
-
-  "-- end --": ""
+  "-- end --": "",
+  "encounterCardShuffledIntoPlayerDeck": "An encounter card is shuffled into {player}’s deck.",
+  "identityDealtBoost": "{player} receives a facedown boost card.",
+  "identityBoostsMoved": "{player}’s boost cards move to the villain.",
+  "gliderMoved": "The glider counter moves to {target}",
+  "accelerationPlaced": "{target} gains an acceleration token | {target} gains {count} acceleration tokens"
 }

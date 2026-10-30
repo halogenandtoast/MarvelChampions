@@ -6,7 +6,8 @@ import Marvel.Id
 import Marvel.Ref
 
 data UpgradeMessage
-  = ExhaustedUpgrade
+  = UpgradeDetached
+  | ExhaustedUpgrade
   | -- | whose deck it came from, and whose discard pile it goes to
     UpgradeOwnedBy IdentityId
   | DiscardUpgrade

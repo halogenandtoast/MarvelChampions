@@ -148,3 +148,15 @@ import Marvel.Minion.Minions.GamoraNemesis as X
 import Marvel.Minion.Minions.LivingLaser as X
 
 import Marvel.Minion.Minions.UltronNemesis as X
+
+-- Sinister Motives
+import Marvel.Minion.Minions.TheLizard as X
+import Marvel.Minion.Minions.Prowler as X
+
+import Marvel.Minion.Minions.SmSandman as X
+
+import Marvel.Minion.Minions.SmMysterio as X
+
+import Marvel.Minion.Minions.SmVenomGoblin as X
+
+import Marvel.Minion.Minions.SmModulars as X

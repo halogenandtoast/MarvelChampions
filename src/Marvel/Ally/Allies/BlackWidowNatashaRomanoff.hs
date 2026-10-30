@@ -34,7 +34,7 @@ instance HasAbilities BlackWidowNatashaRomanoff where
         1
         (EncounterCardRevealedFromDeck When AnyEncounterCard)
         Interrupt
-        NoCriteria
+        CanCancelRevealedEncounterCard
         (ExhaustCost <> ResourceCost (Just Mental))
         $ runAbility a 1
     ]
@@ -46,6 +46,7 @@ instance RunMessage BlackWidowNatashaRomanoff where
         (const [DiscardedCard (EncounterCard card), DrawAndRevealEncounterCard ident])
         $ \case
           RevealedEncounterCard _ card' -> card' == card
+          RevealedEncounterCardFrom _ _ card' -> card' == card
           _ -> False
       pure a
     _ -> BlackWidowNatashaRomanoff <$> runMessage msg attrs

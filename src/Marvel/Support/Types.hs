@@ -2,6 +2,7 @@ module Marvel.Support.Types where
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card.Builder
@@ -9,6 +10,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Types
 import Marvel.Entity
+import Marvel.Game.Source (getModifiers)
 import Marvel.Id hiding (SupportId)
 import Marvel.Id as X (SupportId)
 import Marvel.Message.Lifted
@@ -53,11 +55,13 @@ instance Entity Support where
     , supportDiscardIfNoUses :: Bool
     , supportHeldCards :: [PlayerCard]
     -- ^ cards attached here facedown
+    , supportCanPlayHeldEvents :: Bool
+    -- ^ a printed permission; Bruno's stored cards have no such permission
     , supportThreat :: Natural
     -- ^ threat moved here, as Beat Cop's
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Support :: Type -> Type where
     SupportId :: Field Support SupportId
     SupportCardDef :: Field Support CardDef
@@ -78,6 +82,12 @@ instance Entity Support where
           SupportHeldCards -> supportHeldCards
   toId = supportId . toAttrs
   toAttrs (Support a) = toSupportAttrs a
+
+instance FromJSON (Attrs Support) where
+  parseJSON = withObject "SupportAttrs" $ \o ->
+    genericParseJSON defaultOptions $ Object $
+      if KeyMap.member "supportCanPlayHeldEvents" o then o
+      else KeyMap.insert "supportCanPlayHeldEvents" (Bool False) o
 
 instance RunMessage Support where
   runMessage msg (Support a) = Support <$> runMessage msg a
@@ -156,6 +166,7 @@ support f cardDef =
             , supportUses = 0
             , supportDiscardIfNoUses = False
             , supportHeldCards = []
+            , supportCanPlayHeldEvents = False
             , supportThreat = 0
             }
     }
@@ -166,13 +177,20 @@ instance IsRef (Attrs Support) where
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
     SupportMessage ident msg' | ident == supportId a -> case msg' of
+      AttachPlayableEvent card -> pure a
+        { supportHeldCards = supportHeldCards a <> [card | card `notElem` supportHeldCards a]
+        , supportCanPlayHeldEvents = True
+        }
+      ReserveHeldCard card -> pure a {supportHeldCards = filter (/= card) (supportHeldCards a)}
       ReadiedSupport -> do
-        pure $ a & exhaustedL .~ False
+        readies <- notElem CannotReady <$> getModifiers a
+        pure $ a & exhaustedL %~ (&& not readies)
       ExhaustedSupport -> do
         pure $ a & exhaustedL .~ True
       SpendSupportUse -> do
         when (supportUses a == 1 && supportDiscardIfNoUses a) $ removeFromPlay a
         pure $ a & usesL -~ 1
+      AddSupportUses n -> pure $ a & usesL +~ n
       SupportOwnedBy owner -> pure a {supportOwner = owner}
       SupportChangedController new -> pure a {supportController = new}
     _ -> pure a

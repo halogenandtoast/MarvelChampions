@@ -82,7 +82,7 @@ spec = describe "chosen cards and choose-only character costs" do
       resolve [IdentityMessage other ExhaustedIdentity]
       acid <- getRandom
       let cost = ChooseCharacterWithTraitCost Guardian AnyCharacter
-      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery cost NoPayment Nothing []]
+      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery cost NoPayment Nothing [] Nothing]
       runNow [PayCost acid cost]
       paymentChosenCharacters <$> getCurrentPayment `shouldReturn` [IdentityCharacter other]
       playerIdentityExhausted . toAttrs <$> getPlayer other `shouldReturn` True
@@ -136,7 +136,7 @@ spec = describe "chosen cards and choose-only character costs" do
         (ChooseCharacterWithTraitCost Avenger CharacterCanBeReadied <> ChooseCharacterWithTraitCost Avenger CharacterCanBeReadied)
         `shouldReturn` False
       acid <- getRandom
-      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery pair NoPayment Nothing []]
+      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery pair NoPayment Nothing [] Nothing]
       runNow [PayCost acid (ChooseCharacterWithTraitCost Avenger CharacterCanBeReadied)]
       runNow [PayCost acid (ChooseCharacterWithTraitCost Guardian CharacterCanBeReadied)]
       paymentChosenCharacters <$> getCurrentPayment `shouldReturn` [IdentityCharacter p, IdentityCharacter other]

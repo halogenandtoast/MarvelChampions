@@ -152,7 +152,7 @@ instance RunMessage TimeStone where
   runMessage msg (TimeStone attrs) = runQueueT $ case msg of
     WithDiscarded (isTarget attrs -> True) _ cards -> do
       let types = fromIntegral . length . nub $ map (cdCardType . getCardDef) cards
-      when (types > 0) $ placeThreatOnEach attrs types MainScheme
+      when (types > 0) $ placeThreatOnEach attrs types EncounterMainScheme
       pure $ TimeStone attrs
     _ -> TimeStone <$> runInfinityStone special msg attrs
    where

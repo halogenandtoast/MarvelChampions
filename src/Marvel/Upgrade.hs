@@ -24,7 +24,8 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard spiderTracer
+  [ SomeUpgradeCard smCompactDartsA, SomeUpgradeCard smCompactDartsB, SomeUpgradeCard smImpactDampeningSuitA, SomeUpgradeCard smImpactDampeningSuitB, SomeUpgradeCard smLaserGogglesA, SomeUpgradeCard smLaserGogglesB, SomeUpgradeCard smPropulsionGauntletA, SomeUpgradeCard smPropulsionGauntletB, SomeUpgradeCard smRetinalDisplayA, SomeUpgradeCard smRetinalDisplayB, SomeUpgradeCard smShockKnucklesA, SomeUpgradeCard smShockKnucklesB, SomeUpgradeCard smWaveBracersA, SomeUpgradeCard smWaveBracersB, SomeUpgradeCard smWristNavigatorA, SomeUpgradeCard smWristNavigatorB
+  , SomeUpgradeCard spiderTracer
   , SomeUpgradeCard webShooter
   , SomeUpgradeCard webbedUp
   , SomeUpgradeCard captainMarvelsHelmet
@@ -245,6 +246,13 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard flowLikeWater
   , SomeUpgradeCard chanceEncounter
   , SomeUpgradeCard dense
+  , SomeUpgradeCard ticketToTheMultiverse
+  , SomeUpgradeCard webBracelet
+  , SomeUpgradeCard planB
+  , SomeUpgradeCard powerWithin
+  , SomeUpgradeCard defenseMechanism
+  , SomeUpgradeCard webShooterMilesMorales
+  , SomeUpgradeCard symbioteSuit
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

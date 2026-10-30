@@ -48,6 +48,7 @@ escapeStage cleared msg attrs = case msg of
   _ -> runMessage msg attrs
  where
   removes = \case
+    MainSchemeBasicThwarted {} -> True
     MainSchemeThwarted {} -> True
     MainSchemeThreatRemoved {} -> True
     _ -> False

@@ -143,14 +143,17 @@ instance HasCardDef (Attrs Obligation) where
 instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
+      ObligationOwnedBy identityId -> pure attrs {obligationOwner = Just identityId}
       RevealObligation identityId -> pure attrs {obligationOwner = Just identityId}
       -- resolved, it is discarded as a treachery is, never having entered play (an
       -- obligation that stays answers this itself): not a card discarded from play
       ResolvedObligation identityId -> do
-        for_ (obligationHeldCards attrs) discardCard
-        removeFromGame attrs
-        discardCard attrs
-        when (obligationSurge attrs) $ surge identityId
+        active <- obligationIsInPlay (obligationId attrs)
+        when active do
+          for_ (obligationHeldCards attrs) discardCard
+          removeFromGame attrs
+          discardCard attrs
+          when (obligationSurge attrs) $ surge identityId
         pure $ attrs & heldCardsL .~ []
       _ -> pure attrs
     GainSurge target | isTarget attrs target -> pure $ attrs & surgeL .~ True

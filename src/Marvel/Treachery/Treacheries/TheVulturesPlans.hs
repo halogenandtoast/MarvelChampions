@@ -44,6 +44,6 @@ instance RunMessage TheVulturesPlans where
         resources =
           HashSet.fromList (concatMap (printedResources . getCardDef) cards)
             `HashSet.difference` unMeta meta
-      placeThreatOnEach attrs (fromIntegral $ HashSet.size resources) MainScheme
+      placeThreatOnEach attrs (fromIntegral $ HashSet.size resources) EncounterMainScheme
       pure $ TheVulturesPlans (attrs `With` Meta (unMeta meta <> resources))
     _ -> TheVulturesPlans . (`With` meta) <$> runMessage msg attrs

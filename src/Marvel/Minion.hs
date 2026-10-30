@@ -32,7 +32,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard Hood.madameMasque
+      [ SomeMinionCard smSandClone, SomeMinionCard smShiftingApparition, SomeMinionCard smSymbioticBerserker, SomeMinionCard smSymbioticMonstrosity, SomeMinionCard smSymbioticThrall, SomeMinionCard smRhino, SomeMinionCard smCommonCriminal, SomeMinionCard smLifeSizeDecoy, SomeMinionCard smEvilDoppelganger, SomeMinionCard smDoctorOctopus, SomeMinionCard smElectro, SomeMinionCard smHobgoblin, SomeMinionCard smKravenTheHunter, SomeMinionCard smScorpion, SomeMinionCard smVulture, SomeMinionCard smEnragedSymbiote
+  , SomeMinionCard Hood.madameMasque
       , SomeMinionCard hydraMercenary
       , SomeMinionCard sandman
       , SomeMinionCard shocker
@@ -211,6 +212,8 @@ allMinions =
       , SomeMinionCard livingLaser
       , SomeMinionCard (reprintAs Cards.enchantressValkyrie enchantress)
       , SomeMinionCard ultronNemesis
+  , SomeMinionCard theLizard
+  , SomeMinionCard prowler
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

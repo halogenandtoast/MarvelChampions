@@ -24,7 +24,7 @@ instance RunMessage KreeManipulator where
   runMessage msg t@(KreeManipulator attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery _ -> do
-        placeThreatOnEach attrs 1 MainScheme
+        placeThreatOnEach attrs 1 EncounterMainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     Boost msg' -> case msg' of
@@ -32,7 +32,7 @@ instance RunMessage KreeManipulator where
         undefended <-
           member enemyId
             <$> select (VillainEnemy <> UndefendedEnemy)
-        when undefended $ placeThreatOnEach attrs 1 MainScheme
+        when undefended $ placeThreatOnEach attrs 1 EncounterMainScheme
         pure t
       _ -> KreeManipulator <$> runMessage msg attrs
     _ -> KreeManipulator <$> runMessage msg attrs

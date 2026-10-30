@@ -6,6 +6,7 @@ import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Matchers.Types
 import Marvel.Resource.Types
+import Marvel.Trait.Types (Trait)
 
 data Criteria
   = IsSelf
@@ -19,6 +20,7 @@ data Criteria
   | EnemyExists EnemyMatcher
   | SchemeExists SchemeMatcher
   | AllyExists AllyMatcher
+  | SupportExists SupportMatcher
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher
@@ -43,6 +45,11 @@ data Criteria
     CollectionHasCards
   | -- | another card remains playable after this card exhausts the identity
     CardPlayAfterExhaustingHasTarget Natural
+  | PlayCardWithReductionHasTarget CardMatcher Natural
+  | ControlsCardsWithTrait Trait Natural
+  | CanCancelRevealedEncounterCard
+  | CanCancelRevealedTreachery
+  | CanResolvePrintedHeroAbilities
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

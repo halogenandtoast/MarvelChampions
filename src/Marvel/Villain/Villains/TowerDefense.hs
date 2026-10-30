@@ -128,7 +128,7 @@ instance RunMessage ProximaMidnight where
           ]
       pure $ ProximaMidnight attrs
     CardSpecific (isTarget attrs -> True) "attackGets2" _ ->
-      pure . ProximaMidnight $ attrs & attackingL . _Just . attackDamageL +~ 2
+      pure . ProximaMidnight $ attrs & attackingL . _Just %~ (\attack -> attack {attackChange = attackChange attack + 2})
     _ -> blackOrderVillain ProximaMidnight next msg attrs (ProximaMidnight <$> runMessage msg attrs)
    where
     next = \case

@@ -24,8 +24,8 @@ instance RunMessage Advance where
   runMessage msg t@(Advance attrs) = runQueueT $ case msg of
     TreacheryMessage ident msg' | treacheryId attrs == ident ->
       case msg' of
-        RevealTreachery _ -> do
-          traverse_ villainSchemes =<< selectOne ActiveVillain
+        RevealTreachery you -> do
+          currentVillainSchemes you
           pure t
         _ -> Advance <$> runMessage msg attrs
     _ -> Advance <$> runMessage msg attrs

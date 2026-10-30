@@ -325,3 +325,21 @@ import Marvel.Event.Events.Reboot as X
 import Marvel.Event.Events.JoiningForces as X
 
 import Marvel.Event.Events.Meditation as X
+
+-- Sinister Motives
+import Marvel.Event.Events.GhostKick as X
+import Marvel.Event.Events.ParentalGuidance as X
+import Marvel.Event.Events.PhantomFlip as X
+import Marvel.Event.Events.PirouetteAndPunch as X
+import Marvel.Event.Events.WebBinding as X
+import Marvel.Event.Events.JumpFlip as X
+import Marvel.Event.Events.ReturnTheFavor as X
+import Marvel.Event.Events.WhatDoesntKillMe as X
+import Marvel.Event.Events.AcrossTheSpiderVerse as X
+import Marvel.Event.Events.YoungLove as X
+import Marvel.Event.Events.Arachnobatics as X
+import Marvel.Event.Events.DoubleLife as X
+import Marvel.Event.Events.SwingIn as X
+import Marvel.Event.Events.WebShot as X
+import Marvel.Event.Events.HomelandIntervention as X
+import Marvel.Event.Events.GlobalLogistics as X

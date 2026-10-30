@@ -114,6 +114,13 @@ allSupports = fromList $ map
   , SomeSupportCard leadershipTraining
   , SomeSupportCard hickoryBranchLane616
   , SomeSupportCard assaultTraining
+  , SomeSupportCard georgeStacy
+  , SomeSupportCard webOfLifeAndDestiny
+  , SomeSupportCard gankeLee
+  , SomeSupportCard jeffersonDavis
+  , SomeSupportCard fieldAgent
+  , SomeSupportCard governmentLiaison
+  , SomeSupportCard skyDestroyer
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

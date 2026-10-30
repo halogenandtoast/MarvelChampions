@@ -6,7 +6,8 @@ import Marvel.Ability.Types hiding (Attack, Thwart)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Card.Def (CardDef (..))
 import Marvel.ActiveCost.Types
-import Marvel.Cost (getAbilityCost)
+import Marvel.Cost (getAbilityCost, canAffordCost)
+import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
@@ -19,7 +20,7 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
-import Marvel.Window (Window (..), WindowTiming (..))
+import Marvel.Window (Window (..), WindowTiming (..), windowMatches)
 import Marvel.Window qualified as W
 
 choiceMessages ::
@@ -60,6 +61,13 @@ resolveChoice ident = \case
                   ChooseOne
                     [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
+      MinionEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . MinionEntity . MinionWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]]
       AllyEntity matcher -> do
         targets <- selectList matcher
         let f = CreatedEffect def source . AllyEntity . AllyWithId
@@ -71,6 +79,7 @@ resolveChoice ident = \case
               [ Ask ident $
                   ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
+      MainSchemeEntity sid -> pure [CreatedEffect def source (MainSchemeEntity sid)]
       EventEntity eid -> pure [CreatedEffect def source (EventEntity eid)]
       AttachmentEntity matcher -> do
         targets <- selectList matcher
@@ -87,6 +96,10 @@ resolveChoice ident = \case
   UseAbility a -> do
     activeCostId <- getRandom
     cost <- getAbilityCost a
+    occurrence <- getCurrentWindows
+    triggering <- case abilityWindow a of
+      Nothing -> pure occurrence
+      Just matcher -> filterM (\window -> windowMatches matcher window (abilitySource a)) occurrence
     pure
       [ SetActiveCost $
           ActiveCost
@@ -97,6 +110,7 @@ resolveChoice ident = \case
             NoPayment
             Nothing
             mempty
+            (Just $ map windowType triggering)
       ]
   -- UseAbility a -> do
   --   rest <- concatMapM (choiceMessages ident) (abilityChoices a)
@@ -127,81 +141,108 @@ resolveChoice ident = \case
   -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
-    attackKeywords <- case damageSource damage' of
-      FromPlayerAttack attacker -> getModifiers (IdentityRef attacker)
-      _ -> pure []
-    -- each instance of damage the source deals may be increased, as by Embiggen!
-    -- (excess damage carried on by overkill has had it already)
-    bonus <-
-      if damageSource damage' == FromOverkill
-        then pure 0
-        else sourceBonus source \case
-          DamageDealtModifier n -> Just n
-          _ -> Nothing
-    -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
-    let
-      enemyAsRef = case target of
-        EnemyRef (EnemyVillainId vid) -> VillainRef vid
-        EnemyRef (EnemyMinionId mid) -> MinionRef mid
-        t -> t
-      attackReduction = sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
-      -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
-      attackCap = (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
-      fromAttack = case damageSource damage' of
-        FromPlayerAttack _ -> True
-        FromAllyAttack _ -> True
-        _ -> False
-    -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
-    -- tough status card: 'Marvel.Villain.Types')
-    reduction <- if fromAttack then attackReduction else pure 0
-    cap <- if fromAttack then attackCap else pure Nothing
-    let
-      reduced = subtractNatural reduction (damageAmount damage' + bonus)
-      damage = damage'
-        { damageAmount = maybe reduced (min reduced) cap
-        , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
-        , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
-        , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords
-        }
-      enemy = case target of
-        VillainRef vid -> EnemyVillainId vid
-        MinionRef mid -> EnemyMinionId mid
-        EnemyRef e -> e
-        _ -> error "can not damage target"
-      attacked = case damageSource damage of
-        -- an event's attack is answered by the event, after all of it if it is labeled one
-        FromPlayerAttack attacker
-          | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy (damageRanged damage))]
-          | otherwise ->
-              [enemyRetaliates enemy (IdentityCharacter attacker) | not (damageRanged damage)]
-                <> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
-        _ -> []
-    -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
-    -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
-    -- "would take damage" does not answer it, though "when he is attacked" does
-    cannot <- case enemy of
-      EnemyVillainId vid -> (||) <$> cannotTakeDamageFrom (VillainRef vid) source <*> villainPreventsAttackDamage vid source damage
-      EnemyMinionId _ -> pure False
-    let windowDamage = if cannot then damage {damageAmount = 0} else damage
-    pure $
-      ( case enemy of
-          EnemyVillainId vid ->
-            [ CheckWindows [Window When $ W.DamagedVillain vid windowDamage]
-            , VillainMessage vid $ VillainDamaged source damage
-            ]
-          EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
-      )
-        <> attacked
+    replacement <- case damageSource damage' of
+      FromPlayerAttack who | source /= IdentityRef who -> do
+        labels <- sourceAbilitySubTypes source
+        hero <- selectAny (IdentityWithId who <> HeroIdentity)
+        modifiers <- getModifiers (IdentityRef who)
+        pure $ if hero && Ability.Attack `notElem` labels && any (\case ReplaceHeroAttackWithDiscardAndStun _ -> True; _ -> False) modifiers then Just who else Nothing
+      _ -> pure Nothing
+    case replacement of
+      Just who -> do
+        targets <- (\ms -> [t | ReplaceHeroAttackWithDiscardAndStun t <- ms]) <$> getModifiers (IdentityRef who)
+        let choices = [TargetLabel target [Run [RemoveFromPlay target, IdentityMessage who IdentityStunned]] | target <- targets]
+        pure $ case choices of
+          [TargetLabel _ [Run messages]] -> messages
+          [] -> []
+          _ -> [Ask who $ ChooseOne choices]
+      Nothing -> do
+        attackKeywords <- case damageSource damage' of
+          FromPlayerAttack attacker -> getModifiers (IdentityRef attacker)
+          _ -> pure []
+        -- each instance of damage the source deals may be increased, as by Embiggen!
+        -- (excess damage carried on by overkill has had it already)
+        bonus <-
+          if damageSource damage' == FromOverkill
+            then pure 0
+            else sourceBonus source \case
+              DamageDealtModifier n -> Just n
+              _ -> Nothing
+        -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
+        let
+          enemyAsRef = case target of
+            EnemyRef (EnemyVillainId vid) -> VillainRef vid
+            EnemyRef (EnemyMinionId mid) -> MinionRef mid
+            t -> t
+          attackReduction = case enemyAsRef of
+            VillainRef _ -> pure 0 -- applied after tough in Villain.reducedDamage
+            _ -> sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+          -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
+          attackCap = case enemyAsRef of
+            VillainRef _ -> pure Nothing -- reduced and capped together after tough
+            _ -> (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
+          fromAttack = case damageSource damage' of
+            FromPlayerAttack _ -> True
+            FromAllyAttack _ -> True
+            _ -> False
+        -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
+        -- tough status card: 'Marvel.Villain.Types')
+        taken <- sum . mapMaybe (\case DamageTakenModifier n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+        reduction <- if fromAttack then attackReduction else pure 0
+        cap <- if fromAttack then attackCap else pure Nothing
+        let
+          incoming = damageAmount damage' + bonus
+          increased = if incoming == 0 then 0 else fromIntegral (max 0 (fromIntegral incoming + taken))
+          reduced = subtractNatural reduction increased
+          damage = damage'
+            { damageAmount = maybe reduced (min reduced) cap
+            , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
+            , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
+            , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords
+            }
+          enemy = case target of
+            VillainRef vid -> EnemyVillainId vid
+            MinionRef mid -> EnemyMinionId mid
+            EnemyRef e -> e
+            _ -> error "can not damage target"
+          attacked = case damageSource damage of
+            -- an event's attack is answered by the event, after all of it if it is labeled one
+            FromPlayerAttack attacker
+              | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy (damageRanged damage))]
+              | otherwise ->
+                  [enemyRetaliates enemy (IdentityCharacter attacker) | not (damageRanged damage)]
+                    <> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
+                    <> [CheckWindows [Window After $ W.PlayerAttackResolved source attacker [enemy]] | case source of IdentityRef _ -> False; _ -> True]
+            _ -> []
+        -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
+        -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
+        -- "would take damage" does not answer it, though "when he is attacked" does
+        cannot <- case enemy of
+          EnemyVillainId vid -> (||) <$> cannotTakeDamageFrom (VillainRef vid) source <*> villainPreventsAttackDamage vid source damage
+          EnemyMinionId _ -> pure False
+        let windowDamage = if cannot then damage {damageAmount = 0} else damage
+        pure $
+          ( case enemy of
+              EnemyVillainId vid ->
+                [ CheckWindows [Window When $ W.DamagedVillain vid windowDamage, Window When $ W.VillainDamageFrom vid source windowDamage]
+                , VillainMessage vid $ VillainDamaged source damage
+                ]
+              EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
+          )
+            <> attacked
   -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
   -- a thwart, as "Hero Action (thwart)"; "remove threat" otherwise is not one
   ThwartScheme target source n' -> do
     labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
-    removeThreatFrom labeled target source n'
-  BasicThwartScheme target source n' -> removeThreatFrom True target source n'
+    removeThreatFrom False labeled target source n'
+  BasicThwartScheme target source n' -> removeThreatFrom True True target source n'
   RemoveThreat source n schemeMatcher -> do
     labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
-    schemes <- selectList (schemeMatcher <> if labeled then SchemeWithoutThwartPrevention else AnyScheme)
-    let f target = ThwartScheme target source n
+    candidates <- selectList (schemeMatcher <> if labeled then SchemeWithoutThwartPrevention else AnyScheme)
+    controller <- getSourceController source
+    forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
+    let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) candidates else candidates
+        f target = ThwartScheme target source n
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x]]
   PlaceThreat _source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
@@ -296,21 +337,29 @@ resolveChoice ident = \case
 
 -- | What the source's modifiers add to each instance of what it does.
 -- | The threat removed from the scheme, by thwarting or not.
-removeThreatFrom :: (HasGame m) => Bool -> Target -> Source -> Natural -> m [Message]
-removeThreatFrom thwarting target source n' = do
+removeThreatFrom :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
+removeThreatFrom basic thwarting target source n' = do
   -- each instance of threat the source removes may be increased, as by Shrink
   bonus <- sourceBonus source \case
     ThreatRemovedModifier n -> Just n
     _ -> Nothing
   let n = n' + bonus
       side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
-      main mid = MainSchemeMessage mid $ if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n
-  pure case target of
-    MainSchemeRef mid -> [main mid]
-    SideSchemeRef sid -> [side sid]
-    SchemeRef (SchemeMainSchemeId mid) -> [main mid]
-    SchemeRef (SchemeSideSchemeId sid) -> [side sid]
-    _ -> error $ "can not thwart target: " <> show target
+      main mid = MainSchemeMessage mid $ if basic then MainSchemeBasicThwarted source n else if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n
+  let continuation = case target of
+        MainSchemeRef mid -> [main mid]
+        SideSchemeRef sid -> [side sid]
+        SchemeRef (SchemeMainSchemeId mid) -> [main mid]
+        SchemeRef (SchemeSideSchemeId sid) -> [side sid]
+        _ -> error $ "can not thwart target: " <> show target
+  let canonical = case target of SchemeRef sid -> schemeRef sid; other -> other
+  modifiers <- getModifiers canonical
+  let cost = if thwarting then mconcat [c | AdditionalThwartCost c <- modifiers] else NoCost
+  if cost == NoCost then pure continuation else do
+    payer <- fromMaybe <$> getYou <*> getSourceController source
+    payable <- canAffordCost payer (refocus target) cost
+    acid <- getRandom
+    pure [SetActiveCost $ ActiveCost acid payer (ForContinuation (refocus target) continuation) cost NoPayment Nothing mempty Nothing | payable]
 
 sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
 sourceBonus source f = sum . mapMaybe f <$> getModifiers source

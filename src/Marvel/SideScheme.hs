@@ -24,7 +24,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard Hood.unbridledAmbition
+  [ SomeSideSchemeCard smDirtTrap, SomeSideSchemeCard smTidalSands, SomeSideSchemeCard smGuardTheBellTower, SomeSideSchemeCard smLashingOut, SomeSideSchemeCard smToothAndNail, SomeSideSchemeCard smLightAtTheEndA, SomeSideSchemeCard smLightAtTheEndB, SomeSideSchemeCard smBruteForceBarricade, SomeSideSchemeCard smFesteringMass, SomeSideSchemeCard smJoyRide, SomeSideSchemeCard smPanicInTheStreets, SomeSideSchemeCard smVolunteerWork, SomeSideSchemeCard smLimitlessSupply, SomeSideSchemeCard smCoordinatedEffort, SomeSideSchemeCard smHiddenInShadow, SomeSideSchemeCard smTeamworkMakesTheDreamWork, SomeSideSchemeCard smFoolSParadise, SomeSideSchemeCard smWeaknessFromWithin, SomeSideSchemeCard smAnalysisParalysis, SomeSideSchemeCard smBackAlleyBurglary, SomeSideSchemeCard smCatInATree, SomeSideSchemeCard smHenchmenHeist, SomeSideSchemeCard smOffTheRails, SomeSideSchemeCard smRubbleRescue
+  , SomeSideSchemeCard Hood.unbridledAmbition
   , SomeSideSchemeCard breakinAndTakin
   , SomeSideSchemeCard crowdControl
   , SomeSideSchemeCard bombScare
@@ -209,6 +210,8 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard deadlyLightShow
   , SomeSideSchemeCard powerfulEnchantments
   , SomeSideSchemeCard ultronUnleashed
+  , SomeSideSchemeCard regenerativeResearch
+  , SomeSideSchemeCard trackingPrey
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

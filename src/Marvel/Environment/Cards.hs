@@ -1,5 +1,11 @@
 module Marvel.Environment.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -16,7 +22,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ ultronDrones
+  [ smCityStreets, smBellTowerA, smBellTowerB, smSkiesOverNewYorkB, smLowerManhattanB, smMidtownManhattanB, smUpperManhattanB, smPublicOutcryA, smPublicOutcryB
+  , ultronDrones
   -- The Green Goblin
   , criminalEnterprise
   , stateOfMadness
@@ -293,3 +300,134 @@ ultronDronesVision = (ultronDrones)
     , cdEncounterSetQuantity = Just 1
     , cdBoostIcons = []
     }
+
+-- Sinister Motives
+
+smEnvironmentDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smEnvironmentDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smCityStreets :: CardDef
+smCityStreets = (smEnvironmentDef "27065" "City Streets" SMSet.Sandman 1)
+  { cdTraits = fromList [SMTrait.Location]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smBellTowerA :: CardDef
+smBellTowerA = (smEnvironmentDef "27077a" "Bell Tower" SMSet.Venom 0)
+  { cdTraits = fromList [SMTrait.Location, SMTrait.Quiet]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smBellTowerB :: CardDef
+smBellTowerB = (smEnvironmentDef "27077b" "Bell Tower" SMSet.Venom 0)
+  { cdTraits = fromList [SMTrait.Location, SMTrait.Ringing]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSkiesOverNewYorkB :: CardDef
+smSkiesOverNewYorkB = (smEnvironmentDef "27116b" "Skies Over New York" SMSet.VenomGoblin 0)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLowerManhattanB :: CardDef
+smLowerManhattanB = (smEnvironmentDef "27117b" "Lower Manhattan" SMSet.VenomGoblin 0)
+  { cdTraits = fromList [SMTrait.Location, SMTrait.Symbiote]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMidtownManhattanB :: CardDef
+smMidtownManhattanB = (smEnvironmentDef "27118b" "Midtown Manhattan" SMSet.VenomGoblin 0)
+  { cdTraits = fromList [SMTrait.Location, SMTrait.Symbiote]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smUpperManhattanB :: CardDef
+smUpperManhattanB = (smEnvironmentDef "27119b" "Upper Manhattan" SMSet.VenomGoblin 0)
+  { cdTraits = fromList [SMTrait.Location, SMTrait.Symbiote]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smPublicOutcryA :: CardDef
+smPublicOutcryA = (smEnvironmentDef "27174a" "Public Outcry" SMSet.BadPublicity 0)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smPublicOutcryB :: CardDef
+smPublicOutcryB = (smEnvironmentDef "27174b" "Public Outcry" SMSet.BadPublicity 0)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

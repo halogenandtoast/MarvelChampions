@@ -1,5 +1,7 @@
 module Marvel.Event.Types where
 
+import Data.List (nub)
+
 import Marvel.Prelude
 
 import Data.Typeable
@@ -126,7 +128,11 @@ instance RunMessage (Attrs Event) where
       -- what answers a labeled attack follows the whole of it
       ResolvedEvent -> do
         for_ (eventAttacked e) \(attacker, enemy, ranged) -> attackResolved attacker enemy ranged
+        for_ (nub [attacker | (attacker, _, _) <- eventAttacked e]) \attacker ->
+          checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource e) attacker (nub [enemy | (who, enemy, _) <- eventAttacked e, who == attacker])]
         discardCard e
+        when (cdAbilityType (eventCardDef e) `elem` map Just [Ability.Interrupt, Ability.HeroInterrupt, Ability.ForcedInterrupt, Ability.Response, Ability.HeroResponse, Ability.ForcedResponse]) $
+          checkWindows [W.Window W.After $ W.EventAbilityResolved (eventController e) (eventId e) (eventCardDef e)]
         pure e {eventAttacked = []}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy ranged -> do
@@ -135,7 +141,10 @@ instance RunMessage (Attrs Event) where
         -- one attack, however many instances of damage it deals the enemy
         if Ability.Attack `elem` labels
           then pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
-          else e <$ attackResolved attacker enemy ranged
+          else do
+            attackResolved attacker enemy ranged
+            checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource e) attacker [enemy]]
+            pure e
       _ -> pure e
      where
       -- a ranged attack ignores retaliate

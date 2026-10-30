@@ -208,7 +208,7 @@ victory c = do
           2 -> length (filter id [length collection <= length c.campaignLog.players, noThreat])
           3 -> length artifacts `div` 2
           _ -> length (filter id [evasion <= 1, stageOne])
-        units = 1 + min 3 points + fromIntegral bonus
+        units = 1 + fromIntegral (max 0 (min 3 points)) + fromIntegral bonus
     for_ participants \code -> recordInCampaignLog (RecordUnits code units)
     -- Infiltrate the Museum: each player's cards in The Collection, by title
     when (n == 2) $ for_ (zip survivors codes) \(ident, code) ->

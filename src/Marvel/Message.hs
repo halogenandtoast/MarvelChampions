@@ -33,6 +33,7 @@ import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromOverkill, FromR
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
+import Marvel.Modifier.Types (Modifier (CannotBeCanceled))
 import Marvel.Payment.Types
 import Marvel.Resource.Types (Resource)
 import Marvel.Phase
@@ -41,7 +42,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
-import Marvel.Window.Types (ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EngagedMinion, AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, ThreatPlaced))
+import Marvel.Window.Types (RevealSource, ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EngagedMinion, AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, IdentityTakeDamageFrom, ThreatPlaced))
 
 class RunMessage a where
   runMessage :: (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Message -> a -> m a
@@ -50,7 +51,7 @@ class RunMessage a where
 -- what answers "when you would take damage", then the damage.
 damageIdentity :: IdentityId -> Source -> Damage -> [Message]
 damageIdentity ident source damage =
-  [ CheckWindows [Window When $ IdentityTakeDamage ident damage]
+  [ CheckWindows [Window When $ IdentityTakeDamage ident damage, Window When $ IdentityTakeDamageFrom ident source damage]
   , IdentityMessage ident $ IdentityDamaged source damage
   ]
 
@@ -111,15 +112,17 @@ isThreatPlacement scheme = \case
 -- | Cancel a treachery's "When Revealed" effects as it is revealed: none of them resolves,
 -- the surge it has or would gain included (surge is a "When Revealed" ability), and it is
 -- discarded as it would be.
-cancelWhenRevealed :: (HasQueue m) => TreacheryId -> m ()
-cancelWhenRevealed tid = withQueue_ $ mapMaybe \case
-  Ask _ q | asksToResolveWhenRevealed (TreacheryRef tid) q -> Nothing
-  TreacheryMessage tid' msg | tid' == tid -> case msg of
-    RevealTreachery _ -> Nothing
-    TreacheryIncite -> Nothing
-    CheckTreacheryCondition _ -> Nothing
-    ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
-  msg -> Just msg
+cancelWhenRevealed :: (HasQueue m, HasGame m) => TreacheryId -> m ()
+cancelWhenRevealed tid = do
+  forbidden <- elem CannotBeCanceled <$> getModifiers (TreacheryRef tid)
+  unless forbidden $ withQueue_ $ mapMaybe $ \case
+    Ask _ q | asksToResolveWhenRevealed (TreacheryRef tid) q -> Nothing
+    TreacheryMessage tid' msg | tid' == tid -> case msg of
+      RevealTreachery _ -> Nothing
+      TreacheryIncite -> Nothing
+      CheckTreacheryCondition _ -> Nothing
+      ResolvedTreachery _ -> Just $ RemoveFromPlay (TreacheryRef tid)
+    msg -> Just msg
 
 -- | A minion that would be defeated is not ("instead"): its defeat, the damage overkill
 -- would deal past it, and the window after its defeat are cancelled.
@@ -133,8 +136,9 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
     _ -> False
   -- the excess on to the villain, its "would take damage" window first when it opens
   dropOverkill = \case
-    CheckWindows [Window When (DamagedVillain _ d)] : VillainMessage _ (VillainDamaged _ d') : rest
-      | damageSource d == FromOverkill, damageSource d' == FromOverkill -> rest
+    CheckWindows windows : VillainMessage _ (VillainDamaged _ d) : rest
+      | any (\case Window When (DamagedVillain _ other) -> damageSource other == FromOverkill; _ -> False) windows
+      , damageSource d == FromOverkill -> rest
     VillainMessage _ (VillainDamaged _ d) : rest | damageSource d == FromOverkill -> rest
     rest -> rest
   cancelAfter rest = case break isAfter rest of
@@ -200,7 +204,7 @@ attackedYou enemy character = do
 attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
 attackDealtDamage source damage character =
   [ CheckWindows [Window After $ EnemyAttacksAndDamages enemy character (damageAmount damage)]
-  | damageSource damage == FromAttack
+  | damageSource damage `elem` [FromAttack, FromOverkill]
   , damageAmount damage > 0
   , Just enemy <- [sourceEnemy source]
   ]
@@ -377,6 +381,10 @@ data Message
   | CheckWindows [Window]
   | EndCheckWindows
   | DealBoost Target
+  | -- | The ally's interrupt has finished; perform its departure once, then respond.
+    ResolveAllyLeavingPlay IdentityId AllyId CardDef Message
+  | -- | Move the top encounter card into a player's deck, preserving its card id.
+    PutTopEncounterCardInPlayerDeck IdentityId
   | FlipBoostCards Target
   | PutBoostIntoPlay Target IdentityId
   | -- | "Boost: reveal this card"
@@ -395,10 +403,16 @@ data Message
   | CreatedEffect CardDef Source EntityMatcher
   | DisabledEffect EffectId
   | RevealEncounterCard IdentityId EncounterCard
+  | RevealEncounterCardFrom RevealSource IdentityId EncounterCard
   | RevealedEncounterCard IdentityId EncounterCard
+  | RevealedEncounterCardFrom RevealSource IdentityId EncounterCard
+  | RevealedEncounterCardWithoutWhenRevealed IdentityId EncounterCard
+  | RevealedEncounterCardWithoutWhenRevealedFrom RevealSource IdentityId EncounterCard
   | RevealBoostCard EncounterCard EnemyId
   | -- | Turn the card faceup, preserving its icons and windows but cancel its boost ability.
     RevealBoostCardWithoutAbility EncounterCard EnemyId
+  | BoostCardResolved EnemyId EncounterCard
+  | ConsumeBoostCard EncounterCard
   | -- | the main scheme is completed
     AdvanceMainScheme MainSchemeId
   | -- | the main scheme gives way to the scenario's next stage

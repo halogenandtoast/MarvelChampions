@@ -44,7 +44,7 @@ instance RunMessage AgentOfThanos where
           hero <- identityMatches HeroIdentity you
           if hero
             then damageIdentity you attrs (toDamage x FromTreachery)
-            else placeThreatOnEach attrs x MainScheme
+            else placeThreatOnEach attrs x EncounterMainScheme
           pure t
     _ -> AgentOfThanos <$> runMessage msg attrs
 

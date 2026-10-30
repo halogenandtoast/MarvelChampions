@@ -9,6 +9,8 @@
 module Marvel.Game.Public (publicGame, publicGameFor, owedFor, describeChoice, GameView (..), ChoiceView (..)) where
 
 import Marvel.Prelude
+import Control.Monad.Reader (runReaderT)
+import Data.Functor.Identity (runIdentity)
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
@@ -17,7 +19,7 @@ import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
 import Marvel.Payment (Payment (..), paymentResources, payments)
 import Data.List qualified as L
-import Marvel.Cost.Types (Cost (..), costResources)
+import Marvel.Cost.Types (Cost (..), costResources, printedResourceRequirements)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Area
@@ -46,7 +48,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
-import Marvel.Modifier (Modifier (InfiniteHitPoints))
+import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -195,6 +197,7 @@ data PlayerView = PlayerView
   , deckSize :: Int
   , discard :: [CardView]
   , dealtEncounterCards :: Int
+  , identityBoostCards :: Int
   , dealtCardIds :: [CardId]
   -- ^ the encounter cards dealt face down, for the board to move each from and to its pile
   , allies :: [AllyView]
@@ -239,7 +242,7 @@ data AllyView = AllyView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural}
+data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural, heldCards :: [CardView]}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -284,6 +287,8 @@ data MinionView = MinionView
   , scheme :: Natural
   , attack :: Natural
   , stunned :: Bool
+  , stunCards :: Natural
+  , confuseCards :: Natural
   , confused :: Bool
   , tough :: Bool
   , boostCards :: Int
@@ -301,7 +306,7 @@ data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural, counters :: Natural}
+data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural, counters :: Natural, crisis :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -323,6 +328,8 @@ data SchemeView = SchemeView
   , attachedCards :: [CardView]
   -- ^ the player cards attached to it faceup (Odin on Odin's Torment): a main scheme's
   -- held cards
+  , accelerationTokens :: Natural
+  , glider :: Bool
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -416,10 +423,14 @@ gameView seesHand g = do
             _ -> Nothing
         , source = case c.activeCostTarget of
             ForAbility a -> refId a.abilitySource
+            ForContinuation source _ -> refId source
             _ -> Nothing
         , paid
         , wilds = [i | (i, True) <- zip [0 ..] (concatMap wildOrNot (payments c.activeCostPayment))]
-        , owed = owedFor (costResources c.activeCostCost) paid
+        , owed = let required = printedResourceRequirements c.activeCostCost
+                     printed = concatMap (printedResources . getCardDef) c.activeCostSpentCards
+                  in if null required then owedFor (costResources c.activeCostCost) paid
+                     else map Just (foldl' (flip L.delete) required printed)
         , anyAmount = dynamic c.activeCostCost
         , spent = map (cardView . PlayerCard) c.activeCostSpentCards
         , canceledBy = case c.activeCostTarget of
@@ -463,7 +474,7 @@ gameView seesHand g = do
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
-      , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g))
+      , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g)) + sum [(toAttrs scheme).mainSchemeAccelerationTokens | scheme <- HashMap.elems (gameMainSchemes g)]
       , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
       , question = HashMap.mapWithKey questionView (gameQuestion g)
       , questionVersion = gameQuestionVersion g
@@ -510,7 +521,7 @@ gameView seesHand g = do
                 <> deckView "sideScheme" Nothing SideSchemeDeckKey
                 -- the Infinity Gauntlet's stones, beside the villain (The Mad Titan's Shadow)
                 <> concat [deckView "infinityStones" Nothing InfinityStoneDeckKey | first]
-          , accelerationTokens = areaAccelerationTokens a
+          , accelerationTokens = areaAccelerationTokens a + sum [(toAttrs scheme).mainSchemeAccelerationTokens | (sid, scheme) <- HashMap.toList (gameMainSchemes g), here (MainSchemeRef sid)]
           , accelerationIcons = accelerationIconsIn g aid
           }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
@@ -556,6 +567,7 @@ gameView seesHand g = do
         , deckSize = length (unDeck a.playerIdentityDeck)
         , discard = map (cardView . PlayerCard) (unDiscard a.playerIdentityDiscard)
         , dealtEncounterCards = length a.playerIdentityEncounterCards
+        , identityBoostCards = length a.playerIdentityBoostCards
         , dealtCardIds = map ecCardId a.playerIdentityEncounterCards
         , allies
         , allyLimit
@@ -600,13 +612,14 @@ gameView seesHand g = do
         }
   supportView (s :: Support) =
     let a = toAttrs s
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | seesHand a.supportController, card <- a.supportHeldCards]
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
      in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown
   attachmentView (x :: Attachment) =
     let a = toAttrs x
-     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters
+        crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
+     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters crisisHere
   villainView (v :: Villain) = do
     let a = toAttrs v
     sch <- Villain.getModifiedScheme a
@@ -637,6 +650,7 @@ gameView seesHand g = do
     let a = toAttrs m
     hp <- Minion.getModifiedHitPoints a
     atk <- Minion.getModifiedAttack a
+    sch <- Minion.getModifiedScheme a
     pure
       MinionView
         { id = a.minionId
@@ -645,8 +659,10 @@ gameView seesHand g = do
         , engagedWith = a.minionEngagedIdentity
         , hitPoints = hp
         , damage = a.minionDamage
-        , scheme = unSch a.minionScheme
+        , scheme = sch
         , attack = maybe atk Attack.attackValue (Minion.minionAttackDetails m)
+        , stunCards = (if a.minionStunned then 1 else 0) + (if a.minionAdditionalStun then 1 else 0)
+        , confuseCards = (if a.minionConfused then 1 else 0) + (if a.minionAdditionalConfuse then 1 else 0)
         , stunned = a.minionStunned
         , confused = a.minionConfused
         , tough = a.minionTough
@@ -661,10 +677,11 @@ gameView seesHand g = do
           QuestionLabel "$label.setupMainScheme" (Just target) _ -> target == toTarget a.mainSchemeId
           _ -> False) (HashMap.elems $ gameQuestion g)
         face = if awaitingSetup then CardCode (unCardCode code <> "a") else code
-     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards)
+        tokensHere = a.mainSchemeAccelerationTokens + maybe 0 areaAccelerationTokens (areaOfTarget g $ MainSchemeRef a.mainSchemeId)
+     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere a.mainSchemeHasGlider
   sideSchemeView (s :: SideScheme) =
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) []
+     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat a.sideSchemeCrisis (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [] a.sideSchemeAccelerationTokens False
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)
@@ -772,6 +789,7 @@ describeChoice asked = \case
     Msg.MinionMessage m (Msg.MinionStunned _) -> Just ("stun", MinionRef m)
     Msg.VillainMessage v (Msg.VillainConfused _) -> Just ("confuse", VillainRef v)
     Msg.MinionMessage m (Msg.MinionConfused _) -> Just ("confuse", MinionRef m)
+    Msg.MainSchemeMessage m (Msg.MainSchemeBasicThwarted _ _) -> Just ("thwartScheme", MainSchemeRef m)
     Msg.MainSchemeMessage m (Msg.MainSchemeThwarted _ _) -> Just ("thwartScheme", MainSchemeRef m)
     Msg.MainSchemeMessage m (Msg.MainSchemeThreatRemoved _ _) -> Just ("thwartScheme", MainSchemeRef m)
     Msg.SideSchemeMessage m (Msg.SideSchemeThwarted _ _) -> Just ("thwartScheme", SideSchemeRef m)

@@ -1,5 +1,11 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -15,7 +21,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ affairsOfState
+    [ smFriendsAndFamily
+  , affairsOfState
     , legalWork
     , evictionNotice
     , businessProblems
@@ -84,6 +91,8 @@ allObligations = fromList $ map
     , equipmentMalfunction
     , troubleInOtherworld
     , corruptedProgramming
+  , worriedFather
+  , keepingSecrets
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -289,3 +298,55 @@ troubleInOtherworld = obligation "25028" "Trouble in Otherworld" [Boost, Boost]
 
 corruptedProgramming :: CardDef
 corruptedProgramming = obligation "26028" "Corrupted Programming" [Boost, Boost]
+
+
+-- Sinister Motives
+
+worriedFather :: CardDef
+worriedFather = obligation "27025" "Worried Father" [Boost, Boost]
+
+keepingSecrets :: CardDef
+keepingSecrets = obligation "27056" "Keeping Secrets" [Boost, Boost]
+
+-- Sinister Motives
+
+smObligationDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smObligationDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smFriendsAndFamily :: CardDef
+smFriendsAndFamily = (smObligationDef "27132" "Friends and Family" SMSet.DownToEarth 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

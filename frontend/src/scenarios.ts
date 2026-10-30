@@ -10,7 +10,7 @@ import type { ScenarioOption } from './server'
 export interface Release { code: string; name: string; order: number }
 const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
-const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant' }
+const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
@@ -23,6 +23,7 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
   toafk: `${RULEBOOK_ROOT}mc11_once_and_future_kang_rules_insert-compressed.pdf`,
   gmw: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf`,
   mts: `${RULEBOOK_ROOT}mc21_the_mad_titans_shadow_rulebook-compressed.pdf`,
+  sm: `${RULEBOOK_ROOT}mc27_sinister_motives_rules_v5-compressed.pdf`,
   hood: 'https://images-cdn.fantasyflightgames.com/filer_public/89/66/89666652-cfcb-47c1-822f-a7a377a69401/mc24_the_hood_rules_insert.pdf',
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
@@ -30,6 +31,7 @@ const SCENARIO_VILLAINS: Record<string, string[]> = {
   '07001': ['07002', '07017', '07032', '07046'],
   '21098': ['21092'],
   '21160': ['21163'],
+  '27100': ['27094', '27095', '27096', '27097', '27098', '27099'],
 }
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')

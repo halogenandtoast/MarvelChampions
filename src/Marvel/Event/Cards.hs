@@ -2,7 +2,7 @@ module Marvel.Event.Cards where
 
 import Marvel.Prelude
 
-import Marvel.Keyword (Keyword (Alliance))
+import Marvel.Keyword (Keyword (Alliance, Requirement))
 import Marvel.Cost.Types
 
 import Marvel.Ability.Types (AbilityType(..))
@@ -319,6 +319,22 @@ allEvents = fromList $ concatMap
   , reboot
   , joiningForces
   , meditation
+  , ghostKick
+  , parentalGuidance
+  , phantomFlip
+  , pirouetteAndPunch
+  , webBinding
+  , jumpFlip
+  , returnTheFavor
+  , whatDoesntKillMe
+  , acrossTheSpiderVerse
+  , youngLove
+  , arachnobatics
+  , doubleLife
+  , swingIn
+  , webShot
+  , homelandIntervention
+  , globalLogistics
   ]
 
 event
@@ -399,6 +415,7 @@ enhancedSpiderSense = (identityEvent
                       )
   { cdResponseWindow = Just
     (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
+  , cdCriteria = CanCancelRevealedTreachery
   }
 
 swingingWebKick :: CardDef
@@ -839,6 +856,7 @@ protectiveWard =
   (identityEvent "09007" "Protective Ward" 1 HeroInterrupt [Spell] [Physical])
     { cdResponseWindow =
         Just (TreacheryRevealed When AnyTreachery RevealedFromEncounterDeck)
+    , cdCriteria = CanCancelRevealedTreachery
     }
 
 desperateDefense :: CardDef
@@ -1199,6 +1217,7 @@ warpReality :: CardDef
 warpReality =
   (identityEvent "15006" "Warp Reality" 1 HeroInterrupt [Spell, Superpower] [Physical])
     { cdResponseWindow = Just (EncounterCardRevealedFromDeck When AnyEncounterCard)
+    , cdCriteria = CanCancelRevealedEncounterCard
     }
 
 crisisAverted :: CardDef
@@ -1250,7 +1269,7 @@ lastStand =
 
 baitAndSwitch :: CardDef
 baitAndSwitch =
-  (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
+  reprintedAs ["27013"] $ (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
     { cdAbilitySubTypes = [Ability.Thwart]
     }
 
@@ -1601,6 +1620,7 @@ onrush :: CardDef
 onrush =
   (marketEvent "16167" "Onrush" 0 HeroInterrupt [])
     { cdResponseWindow = Just (EncounterCardRevealedFromDeck When AnyEncounterCard)
+    , cdCriteria = CanCancelRevealedEncounterCard
     }
 
 safeguard :: CardDef
@@ -2007,4 +2027,121 @@ meditation :: CardDef
 meditation = deckLimited 3 $ (basicEvent "26036" "Meditation" 0 AlterEgoAction [] [Mental])
     { cdAbilityCost = ExhaustCost
     , cdCriteria = CardPlayAfterExhaustingHasTarget 3
+    }
+
+
+-- Sinister Motives
+
+ghostKick :: CardDef
+ghostKick = (identityEvent "27002" "Ghost Kick" 2 HeroResponse [Attack] [Physical])
+    { cdDeckLimit = Just 3
+    , cdLimit = Just (MaxPerWindow 1)
+    , cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    , cdResponseWindow = Just (WindowOneOf [MakesBasicAttack After You, MakesBasicThwart After You, HeroDefended After You AnyEnemy])
+    }
+
+parentalGuidance :: CardDef
+parentalGuidance = (identityEvent "27003" "Parental Guidance" 0 AlterEgoAction [] [Energy])
+    { cdDeckLimit = Just 1
+    }
+
+phantomFlip :: CardDef
+phantomFlip = (identityEvent "27004" "Phantom Flip" 2 HeroResponse [Thwart] [Energy])
+    { cdDeckLimit = Just 3
+    , cdLimit = Just (MaxPerWindow 1)
+    , cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+    , cdResponseWindow = Just (WindowOneOf [MakesBasicAttack After You, MakesBasicThwart After You, HeroDefended After You AnyEnemy])
+    }
+
+pirouetteAndPunch :: CardDef
+pirouetteAndPunch = (identityEvent "27005" "Pirouette and Punch" 2 HeroInterrupt [Skill] [Mental])
+    { cdDeckLimit = Just 2
+    , cdResponseWindow = Just (EncounterCardRevealedFromDeck When AnyEncounterCard)
+    }
+
+webBinding :: CardDef
+webBinding = (identityEvent "27006" "Web Binding" 2 HeroInterrupt [Superpower] [Mental])
+    { cdDeckLimit = Just 2
+    , cdResponseWindow = Just (EnemyActivates When AnyEnemy AnyIdentity)
+    , cdKeywords = fromList [Requirement [Mental]]
+    }
+
+jumpFlip :: CardDef
+jumpFlip = (event "27014" "Jump Flip" 1 HeroInterrupt [Defense] [Physical] Protection)
+    { cdDeckLimit = Just 3
+    , cdResponseWindow = Just (WouldTakeDamage You FromAnyDamageSource AnyValue)
+    , cdAbilitySubTypes = [Ability.Defense]
+    }
+
+returnTheFavor :: CardDef
+returnTheFavor = (event "27015" "Return the Favor" 0 HeroAction [Attack] [Energy] Protection)
+    { cdDeckLimit = Just 3
+    , cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttackVillain
+    , cdAbilityCost = RevealEncounterTreacheryCost
+    }
+
+whatDoesntKillMe :: CardDef
+whatDoesntKillMe = (event "27016" "What Doesn't Kill Me" 2 HeroAction [] [Physical] Protection)
+    { cdDeckLimit = Just 3
+    , cdAbilityCost = HealCost 2
+    , cdKeywords = fromList [Requirement [Physical]]
+    , cdCriteria = SelfMatches ExhaustedIdentity
+    }
+
+acrossTheSpiderVerse :: CardDef
+acrossTheSpiderVerse = (basicEvent "27018" "Across the Spider-Verse" 2 HeroAction [] [Wild])
+    { cdDeckLimit = Just 1
+    , cdAbilityCost = ExhaustCardsWithTraitCost WebWarrior 1 1
+    , cdCriteria = ExtendedCardExists (InDiscardOf You (BasicCardMatches (CardWithType AllyType <> CardWithTrait WebWarrior)))
+    }
+
+youngLove :: CardDef
+youngLove = (basicEvent "27019" "Young Love" 1 AlterEgoAction [] [Wild])
+    { cdDeckLimit = Just 1
+    , cdTeamUp = Just ("Gwen Stacy", "Miles Morales")
+    , cdCriteria = AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Gwen Stacy")), AllyExists (AllyNamedAs "Gwen Stacy")] <> AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Miles Morales")), AllyExists (AllyNamedAs "Miles Morales")]
+    , cdAlternateCardCodes = ["27050"]
+    }
+
+arachnobatics :: CardDef
+arachnobatics = (identityEvent "27031" "Arachnobatics" 1 HeroAction [Attack] [Mental])
+    { cdDeckLimit = Just 2
+    , cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+doubleLife :: CardDef
+doubleLife = (identityEvent "27032" "Double Life" 1 Action [] [Energy])
+    { cdDeckLimit = Just 2
+    , cdLimit = Just (MaxPerRound 1)
+    }
+
+swingIn :: CardDef
+swingIn = (identityEvent "27033" "Swing In" 2 HeroAction [Thwart] [Energy])
+    { cdDeckLimit = Just 2
+    , cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+    }
+
+webShot :: CardDef
+webShot = (identityEvent "27034" "Web-Shot" 2 HeroAction [Attack] [Mental])
+    { cdDeckLimit = Just 3
+    , cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = canAttack
+    }
+
+homelandIntervention :: CardDef
+homelandIntervention = (event "27042" "Homeland Intervention" 0 Action [Shield, Tactic] [Energy] Justice)
+    { cdDeckLimit = Just 3
+    , cdAbilityCost = ExhaustCardsWithTraitCost Shield 1 3
+    , cdCriteria = SchemeExists ThwartableScheme
+    }
+
+globalLogistics :: CardDef
+globalLogistics = (event "27043" "Global Logistics" 0 Action [Shield, Tactic] [Physical] Justice)
+    { cdDeckLimit = Just 3
+    , cdAbilityCost = ExhaustCardsWithTraitCost Shield 1 1
     }

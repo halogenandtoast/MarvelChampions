@@ -161,3 +161,16 @@ import Marvel.Ally.Allies.ProtectorAlexis as X
 import Marvel.Ally.Allies.VictorMancha as X
 
 import Marvel.Ally.Allies.MachineManAaronStack as X
+
+-- Sinister Motives
+import Marvel.Ally.Allies.SilkCindyMoon as X
+import Marvel.Ally.Allies.SpiderManMilesMoralesSinisterMotives as X
+import Marvel.Ally.Allies.SpiderUKBillyBraddock as X
+import Marvel.Ally.Allies.SpiderManHobieBrown as X
+import Marvel.Ally.Allies.MonicaChang as X
+import Marvel.Ally.Allies.SpiderWomanJessicaDrewSinisterMotives as X
+import Marvel.Ally.Allies.Agent13SharonCarterSinisterMotives as X
+import Marvel.Ally.Allies.DumDumDugan as X
+import Marvel.Ally.Allies.GhostSpiderGwenStacy as X
+import Marvel.Ally.Allies.SpiderManPeterParkerSinisterMotives as X
+import Marvel.Ally.Allies.VenomEddieBrock as X

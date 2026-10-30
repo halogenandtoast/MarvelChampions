@@ -17,6 +17,7 @@ import Marvel.Trait.Types
 data EntityMatcher
   = IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
+  | MinionEntity MinionMatcher
   | AttachmentEntity AttachmentMatcher
   | -- | an event being played
     EventEntity EventId
@@ -118,11 +119,14 @@ instance Semigroup AllyMatcher where
 
 data SupportMatcher
   = UnexhaustedSupport
+  | SupportWithExhaustion Bool
   | SupportControlledBy IdentityMatcher
   | SupportWithUses GameValueMatcher
   | SupportNamed Name
   | SupportMatches [SupportMatcher]
   | SupportWithTrait Trait
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON, Hashable)
 
 pattern SupportWithAnyUses :: SupportMatcher
 pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))
@@ -253,6 +257,7 @@ data TreacheryMatcher = AnyTreachery
 data SchemeMatcher
   = AnyScheme
   | MainScheme
+  | EncounterMainScheme
   | ThwartableScheme
   | -- | no effect prohibits removing threat specifically by thwarting
     SchemeWithoutThwartPrevention
@@ -265,9 +270,12 @@ data SchemeMatcher
     SchemeYouCanThwartIgnoringCrisis
   | -- | An ally uses its own keyword exceptions, not its controller's.
     SchemeAnAllyCanThwart AllyId Bool
+  | SchemeAHeroCanBasicThwart IdentityId
   | -- | the main scheme, unless a patrol minion is engaged with you (RR Patrol)
     UnpatrolledMainScheme
   | SchemeWithId SchemeId
+  | SchemeWithThreat GameValueMatcher
+  | SchemeWithLeastThreat
   | SchemeMatches [SchemeMatcher]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
@@ -351,6 +359,7 @@ data CharacterMatcher
   | CharacterWithTrait Trait
   | -- | an exhausted friendly character allowed to ready through a player card
     CharacterCanBeReadied
+  | CharacterOtherThan CharacterId
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack

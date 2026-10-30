@@ -72,7 +72,7 @@ instance RunMessage Collector where
       for_ [either PlayerCard EncounterCard c | W.WouldBeDiscardedFromPlay c <- windows] \card ->
         insteadOf (== DiscardedCard card) do
           placeInCollection card
-          when (villainStage attrs >= 3) $ selectOne MainScheme >>= traverse_ (`placeThreat` 1)
+          when (villainStage attrs >= 3) $ selectOne EncounterMainScheme >>= traverse_ (`placeThreat` 1)
       pure e
     RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
       players <- getAllPlayers
@@ -92,6 +92,6 @@ instance RunMessage Collector where
       pure e
     CardSpecific (isTarget attrs -> True) "threatForTheCollection" _ -> do
       n <- fromIntegral . length <$> getCollection
-      when (n > 0) $ selectOne MainScheme >>= traverse_ (`placeThreat` n)
+      when (n > 0) $ selectOne EncounterMainScheme >>= traverse_ (`placeThreat` n)
       pure e
     _ -> Collector <$> runMessage msg attrs

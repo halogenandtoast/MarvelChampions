@@ -155,3 +155,20 @@ import Marvel.SideScheme.SideSchemes.DeadlyLightShow as X
 import Marvel.SideScheme.SideSchemes.PowerfulEnchantments as X
 
 import Marvel.SideScheme.SideSchemes.UltronUnleashed as X
+
+-- Sinister Motives
+import Marvel.SideScheme.SideSchemes.RegenerativeResearch as X
+import Marvel.SideScheme.SideSchemes.TrackingPrey as X
+
+
+import Marvel.SideScheme.SideSchemes.SmSandman as X
+
+import Marvel.SideScheme.SideSchemes.SmVenom as X
+
+import Marvel.SideScheme.SideSchemes.SmSinisterSix as X
+
+import Marvel.SideScheme.SideSchemes.SmVenomGoblin as X
+
+import Marvel.SideScheme.SideSchemes.SmModulars as X
+
+import Marvel.SideScheme.SideSchemes.SmCampaign as X

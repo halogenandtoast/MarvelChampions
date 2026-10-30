@@ -40,6 +40,8 @@ data Limit
   = PerTurn Natural
   | PerRound Natural
   | PerWindow Natural
+  | -- | A maximum shared by copies of a named ability during this occurrence.
+    SharedPerWindow Text Natural
   | NoLimit
   | PerPhase Natural
   | -- | "(Limit ... per player.)": each player has the limit of their own, on a card

@@ -59,7 +59,7 @@ instance RunMessage DeviantSyndrome where
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       selectOne ActiveVillain >>= traverse_ \v -> do
         tough <- selectAny (VillainWithId v <> VillainWithToughStatus)
-        if tough then placeThreatOnEach attrs 2 MainScheme else enemyBecomesTough v
+        if tough then placeThreatOnEach attrs 2 EncounterMainScheme else enemyBecomesTough v
       pure t
     Boost (RevealedAsBoost target _) | isTarget attrs target -> do
       traverse_ enemyBecomesTough =<< selectOne ActiveVillain

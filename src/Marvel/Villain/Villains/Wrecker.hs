@@ -46,5 +46,5 @@ instance RunMessage Wrecker where
     VillainMessage ident VillainAttacked
       | ident == villainId attrs
       , maybe False (not . attackDefended) (villainAttacking attrs) ->
-          Wrecker <$> runMessage msg (attrs & attackingL . _Just . attackDamageL +~ 2)
+          Wrecker <$> runMessage msg (attrs & attackingL . _Just %~ (\attack -> attack {attackChange = attackChange attack + 2}))
     _ -> Wrecker <$> runMessage msg attrs

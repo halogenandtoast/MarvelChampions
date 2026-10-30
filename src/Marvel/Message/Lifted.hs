@@ -9,6 +9,7 @@ module Marvel.Message.Lifted (
 ) where
 
 import Marvel.Prelude
+import Control.Monad (replicateM_)
 
 import Marvel.Card.Code (HasCardCode (toCardCode))
 
@@ -31,8 +32,8 @@ import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType))
 import Marvel.Card.Id (CardId (..), HasCardId (..))
-import Marvel.Card.EncounterCard (EncounterCard)
-import Marvel.Card.PlayerCard.Types (PlayerCard (..))
+import Marvel.Card.EncounterCard (EncounterCard (..))
+import Marvel.Card.PlayerCard.Types (PlayerCard (..), encounterCardInPlayerDeck)
 import Marvel.Card.Side (Side (..))
 import Marvel.Card.Types (Card, IsCard (..))
 import Marvel.Cost.Types (Cost)
@@ -42,7 +43,7 @@ import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded))
+import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -59,6 +60,64 @@ import Marvel.Ref
 import Marvel.Resource.Types (Resource)
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
 import Marvel.Window.Types qualified as W
+
+-- | Attach an event facedown to a support that permits playing its held events.
+attachPlayableEventToSupport :: (ReverseQueue m) => SupportId -> PlayerCard -> m ()
+attachPlayableEventToSupport sid card = do
+  removeFromGame card
+  supportStep sid (AttachPlayableEvent card)
+
+reserveSupportHeldCard :: (ReverseQueue m) => SupportId -> PlayerCard -> m ()
+reserveSupportHeldCard sid = supportStep sid . ReserveHeldCard
+
+giveIdentityBoostCards :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+giveIdentityBoostCards you n = replicateM_ (fromIntegral n) (dealBoost you)
+
+shuffleTopEncounterCardsIntoPlayerDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+shuffleTopEncounterCardsIntoPlayerDeck you n = replicateM_ (fromIntegral n) (push $ PutTopEncounterCardInPlayerDeck you)
+
+-- | A further resolve-mulligans step, before identity setup abilities.
+additionalMulligan :: (ReverseQueue m) => IdentityId -> m ()
+additionalMulligan you = do
+  identityStep you DiscardCards
+  identityStep you DrawOrDiscardToHandLimit
+
+addSupportUses :: (ReverseQueue m) => SupportId -> Natural -> m ()
+addSupportUses sid = supportStep sid . AddSupportUses
+
+placeSideSchemeAccelerationToken :: (ReverseQueue m) => SideSchemeId -> m ()
+placeSideSchemeAccelerationToken sid = sideSchemeStep sid SideSchemePlaceAccelerationToken
+
+showCardsTo :: (ReverseQueue m) => IdentityId -> [Card] -> m ()
+showCardsTo you = push . ShowCardsTo you
+
+hideCardsFrom :: (ReverseQueue m) => IdentityId -> m ()
+hideCardsFrom = push . HideCardsFrom
+
+consumeBoostCard :: (ReverseQueue m) => EncounterCard -> m ()
+consumeBoostCard = push . ConsumeBoostCard
+
+discardBoostToPlayerDiscard :: (ReverseQueue m) => EncounterCard -> IdentityId -> m ()
+discardBoostToPlayerDiscard card you = whenM (isCurrentBoostCard card) do
+  consumeBoostCard card
+  identityStep you (EncounterCardInDiscard card)
+
+putBoostOnBottomOfPlayerDeck :: (ReverseQueue m) => EncounterCard -> IdentityId -> m ()
+putBoostOnBottomOfPlayerDeck card you = whenM (isCurrentBoostCard card) do
+  consumeBoostCard card
+  placeOnBottomOfDeck you (encounterCardInPlayerDeck you card)
+
+putBoostOnTopOfPlayerDeck :: (ReverseQueue m) => EncounterCard -> IdentityId -> m ()
+putBoostOnTopOfPlayerDeck card you = whenM (isCurrentBoostCard card) do
+  consumeBoostCard card
+  placeOnTopOfDeck you (encounterCardInPlayerDeck you card)
+
+dealBoostAsEncounterCard :: (ReverseQueue m, IsRef card) => card -> IdentityId -> m ()
+dealBoostAsEncounterCard target you = do
+  card <- getBoostCard (toTarget target)
+  for_ card \encounter -> do
+    consumeBoostCard encounter
+    identityStep you (DealtEncounterCard encounter)
 
 -- * Questions
 --
@@ -313,7 +372,7 @@ placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 -- there are two (Tower Defense, MTS rulebook p.10).
 incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
 incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
-  schemes <- selectList MainScheme
+  schemes <- selectList EncounterMainScheme
   for_ schemes (`placeThreat` n)
 
 -- * Status cards and counters
@@ -738,6 +797,47 @@ cancelAttackAsDefense ident (toEnemy -> enemy) = flip insteadOf defended \case
     enemyDefendedBy enemy (IdentityCharacter ident)
     checkWindows [Window After (W.HeroDefends ident enemy), Window After (W.DefendedWithoutDamage ident enemy)]
 
+-- | Cancel the activation in its opening window. This is not a defense. Keep the
+-- cleanup, and never cancel a later activation. A canceled activation does not
+-- trigger responses to its completion.
+cancelEnemyActivation :: (HasQueue m, IsEnemy enemy) => enemy -> m ()
+cancelEnemyActivation (toEnemy -> enemy) = withQueue_ $ \messages ->
+  let (current, rest) = break activationEnded messages
+      remaining = case rest of
+        CheckWindows windows : later ->
+          [CheckWindows kept | let kept = filter (not . endedWindow) windows, notNull kept] <> later
+        _ -> rest
+   in mapMaybe keep current <> remaining
+ where
+  endedWindow = \case
+    Window After (W.EnemyActivation e _) -> e == enemy
+    _ -> False
+  activationEnded = \case
+    CheckWindows windows -> any endedWindow windows
+    _ -> False
+  keep = \case
+    VillainMessage vid step | enemy == EnemyVillainId vid -> case step of
+      VillainBeginAttack _ -> Nothing
+      VillainBeginAttackWithoutBoost _ -> Nothing
+      VillainBeginScheme -> Nothing
+      VillainSchemed -> Nothing
+      VillainFlipBoostCards -> Nothing
+      VillainCheckAdditionalBoosts -> Nothing
+      VillainAttacked -> Nothing
+      _ -> Just (VillainMessage vid step)
+    MinionMessage mid step | enemy == EnemyMinionId mid -> case step of
+      MinionBeginAttack _ -> Nothing
+      MinionSchemed -> Nothing
+      MinionFlipBoostCards -> Nothing
+      MinionAttacked -> Nothing
+      _ -> Just (MinionMessage mid step)
+    DealBoost target | target == enemyRef enemy -> Nothing
+    DeclareDefense _ e _ | e == enemy -> Nothing
+    CheckWindows windows -> case filter (\case Window _ (W.EnemyAttack e _) -> e /= enemy; _ -> True) windows of
+      [] -> Nothing
+      remaining -> Just (CheckWindows remaining)
+    message -> Just message
+
 -- | The villain turns to its other face, then its "When Revealed" is answered.
 flipVillain :: (ReverseQueue m) => VillainId -> m ()
 flipVillain vid = do
@@ -1098,11 +1198,13 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
  where
   matches = \case
     AllyMessage who (AllyAttackLands _ _) -> who == aid
+    MainSchemeMessage _ (MainSchemeBasicThwarted (AllyRef who) _) -> who == aid
     MainSchemeMessage _ (MainSchemeThwarted (AllyRef who) _) -> who == aid
     SideSchemeMessage _ (SideSchemeThwarted (AllyRef who) _) -> who == aid
     _ -> False
   raise = \case
     AllyMessage who (AllyAttackLands enemy damage) -> [AllyMessage who (AllyAttackLands enemy damage {damageAmount = damageAmount damage + bonus})]
+    MainSchemeMessage sid (MainSchemeBasicThwarted source amount) -> [MainSchemeMessage sid (MainSchemeBasicThwarted source (amount + bonus))]
     MainSchemeMessage sid (MainSchemeThwarted source amount) -> [MainSchemeMessage sid (MainSchemeThwarted source (amount + bonus))]
     SideSchemeMessage sid (SideSchemeThwarted source amount) -> [SideSchemeMessage sid (SideSchemeThwarted source (amount + bonus))]
     other -> [other]
@@ -1111,7 +1213,7 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
 
 -- | The player pays the cost for an encounter card, as a treachery asks.
 payForTreachery :: (ReverseQueue m) => IdentityId -> Cost -> m ()
-payForTreachery ident cost = getRandom >>= \cid -> setActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty
+payForTreachery ident cost = getRandom >>= \cid -> setActiveCost $ ActiveCost cid ident ForTreachery cost NoPayment Nothing mempty Nothing
 
 -- | The cost is begun on.
 createdActiveCost :: (ReverseQueue m) => ActiveCostId -> m ()
@@ -1241,7 +1343,7 @@ putEncounterCardIntoPlay ident = push . PutEncounterCardIntoPlay ident
 -- | The encounter card resolves as revealed, without the windows a reveal opens:
 -- put into play, as setup does.
 revealEncounterCardWithoutWindows :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
-revealEncounterCardWithoutWindows ident = push . RevealedEncounterCard ident
+revealEncounterCardWithoutWindows ident = push . RevealedEncounterCardFrom W.RevealedFromEncounterDeck ident
 
 shuffleEncounterDeck :: (ReverseQueue m) => m ()
 shuffleEncounterDeck = push ShuffleEncounterDeck
@@ -1282,6 +1384,9 @@ gainSurge = push . GainSurge . toTarget
 -- | The player reveals the encounter card, its "when revealed" windows answered.
 revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
 revealEncounterCard ident = push . RevealEncounterCard ident
+
+revealEncounterCardFrom :: (ReverseQueue m) => W.RevealSource -> IdentityId -> EncounterCard -> m ()
+revealEncounterCardFrom source ident = push . RevealEncounterCardFrom source ident
 
 -- | The top cards of the encounter deck are discarded, the target told which
 -- ('WithDiscarded').
@@ -1560,8 +1665,12 @@ discardControlled = \case
 -- none left, nothing is asked.
 chooseAndDiscardControlled :: (ReverseQueue m) => IdentityId -> [Target] -> m ()
 chooseAndDiscardControlled you cards = do
-  discardable <- filterM (\t -> getsGame \g -> maybe True (notElem Permanent . cdKeywords) (abilityCardDef g t)) cards
-  chooseOne you [targeting c (discardControlled c) | c <- discardable]
+  discardable <- filterM (\target -> do
+    def <- getsGame (`abilityCardDef` target)
+    modifiers <- getModifiers target
+    pure $ maybe False (notElem Permanent . cdKeywords) def
+      && CannotBeDiscarded `notElem` modifiers && CannotLeavePlay `notElem` modifiers) cards
+  unless (null discardable) $ chooseOne you [targeting c (discardControlled c) | c <- discardable]
 
 -- * Effects
 
@@ -1777,9 +1886,25 @@ searchFoundCards target = push . SearchFoundCards (toTarget target)
 
 -- * Interrupts: what is on the queue changed
 
+-- | Cancel this reveal's When Revealed abilities, retaining its entry into play.
+cancelEncounterWhenRevealed :: (HasQueue m, HasGame m) => EncounterCard -> m ()
+cancelEncounterWhenRevealed card = do
+  allowed <- encounterCardCanBeCanceled card
+  when allowed $ replaceMatchingMessage replace $ \case
+    RevealedEncounterCard _ other -> ecCardId other == ecCardId card
+    RevealedEncounterCardFrom _ _ other -> ecCardId other == ecCardId card
+    _ -> False
+ where
+  replace (RevealedEncounterCardFrom source you other) = [RevealedEncounterCardWithoutWhenRevealedFrom source you other]
+  replace (RevealedEncounterCard you other) = [RevealedEncounterCardWithoutWhenRevealed you other]
+  replace message = [message]
+
 -- | The source of the damage the identity is about to take ("when you would take damage").
 pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
 pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
+
+pendingVillainDamageSource :: (HasQueue m) => VillainId -> m (Maybe Source)
+pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMessage who (VillainDamaged source _) <- q, who == vid])
 
 -- | The damage the identity is about to take ("when you would take damage"), as other
 -- interrupts have left it.
@@ -1981,3 +2106,49 @@ resolveAllyAttackAgainstAll aid enemies = replaceMatchingMessage replaceAttack \
 -- | Put an upgrade into play attached to the chosen target, without playing it.
 putIntoPlayOn :: (ReverseQueue m) => IdentityId -> PlayerCard -> Target -> m ()
 putIntoPlayOn ident card target = push $ PutCardIntoPlay ident card (TargetPayment target) Nothing False
+
+-- | Finish a cost's already chosen continuation without initiating a new ability.
+enqueueContinuation :: (ReverseQueue m) => [Message] -> m ()
+enqueueContinuation = pushAll
+
+payCostThen :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Cost -> [Message] -> m ()
+payCostThen you source cost continuation = do
+  acid <- getRandom
+  setActiveCost $ ActiveCost acid you (ForContinuation (toSource source) continuation) cost NoPayment Nothing mempty Nothing
+
+-- | A permanent upgrade returns to its controller's play area when its host leaves.
+detachUpgrade :: (ReverseQueue m) => UpgradeId -> m ()
+detachUpgrade uid = upgradeStep uid UpgradeDetached
+
+redirectVillainAttackToAlly :: (ReverseQueue m) => VillainId -> AllyId -> m ()
+redirectVillainAttackToAlly vid aid = do
+  cancelMatchingMessage $ \case
+    DeclareDefense _ (EnemyVillainId target) _ -> target == vid
+    _ -> False
+  cardSpecific GameRef "redirectVillainAttackToAlly" (vid, aid)
+
+-- | Standard-set activations use the Sinister Six's counter and ambush rules.
+currentVillainAttacks :: (ReverseQueue m) => IdentityId -> m ()
+currentVillainAttacks you = do
+  code <- getScenarioCode
+  if code == "27100" then cardSpecific GameRef "sinisterSixActivate" (you, True)
+    else selectOne Matchers.ActiveVillain >>= traverse_ (`enemyAttacks` you)
+
+-- | An activation's additional boost cards follow any Ambush that brings its villain into play.
+currentVillainAttacksWithAdditionalBoostCards :: (ReverseQueue m) => IdentityId -> Natural -> m ()
+currentVillainAttacksWithAdditionalBoostCards you n = do
+  code <- getScenarioCode
+  if code == "27100" then cardSpecific GameRef "sinisterSixActivateWithBoost" (you, n)
+    else selectOne Matchers.ActiveVillain >>= traverse_ (\vid -> villainStep vid $ VillainAttacksWithAdditionalBoostCards you n)
+
+currentVillainSchemes :: (ReverseQueue m) => IdentityId -> m ()
+currentVillainSchemes you = do
+  code <- getScenarioCode
+  if code == "27100" then cardSpecific GameRef "sinisterSixActivate" (you, False)
+    else selectOne Matchers.ActiveVillain >>= traverse_ (`villainSchemesAgainst` you)
+
+-- | Change the current attack's damage type without beginning another activation.
+makeAttackIndirect :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+makeAttackIndirect enemy = case toEnemy enemy of
+  EnemyVillainId vid -> villainStep vid VillainAttackBecomesIndirect
+  EnemyMinionId mid -> minionStep mid MinionAttackBecomesIndirect

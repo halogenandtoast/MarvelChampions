@@ -5,6 +5,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Card.Id
+import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Id
 import Marvel.Ref
 
@@ -28,6 +29,19 @@ instance HasCardCode PlayerCard where
 
 instance HasCardDef PlayerCard where
   getCardDef = pcCardDef
+
+-- | Encounter cards in a player zone retain their original id and have no player
+-- owner. The controller records whose zone contains them. Ordinary deck cards gain
+-- their owner when the identity is initialized.
+encounterCardInPlayerDeck :: IdentityId -> EncounterCard -> PlayerCard
+encounterCardInPlayerDeck you card = MkPlayerCard (ecCardId card) (ecCardDef card) Nothing (Just you)
+
+playerZoneEncounterCard :: PlayerCard -> Maybe EncounterCard
+playerZoneEncounterCard card
+  | isNothing (pcOwner card), isJust (pcController card)
+  , cdCardType (getCardDef card) `notElem` [AllyType, EventType, SupportType, UpgradeType, ResourceType] =
+      Just $ MkEncounterCard (pcCardId card) (pcCardDef card)
+  | otherwise = Nothing
 
 -- | System Shock (The Mad Titan's Shadow campaign): drawn, it stays in hand, where its
 -- text works (project owner's ruling), rather than going into play as an obligation, and

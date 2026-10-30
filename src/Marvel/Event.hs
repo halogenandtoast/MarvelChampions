@@ -320,6 +320,22 @@ allEvents = fromList $ map
   , SomeEventCard reboot
   , SomeEventCard joiningForces
   , SomeEventCard meditation
+  , SomeEventCard ghostKick
+  , SomeEventCard parentalGuidance
+  , SomeEventCard phantomFlip
+  , SomeEventCard pirouetteAndPunch
+  , SomeEventCard webBinding
+  , SomeEventCard jumpFlip
+  , SomeEventCard returnTheFavor
+  , SomeEventCard whatDoesntKillMe
+  , SomeEventCard acrossTheSpiderVerse
+  , SomeEventCard youngLove
+  , SomeEventCard arachnobatics
+  , SomeEventCard doubleLife
+  , SomeEventCard swingIn
+  , SomeEventCard webShot
+  , SomeEventCard homelandIntervention
+  , SomeEventCard globalLogistics
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

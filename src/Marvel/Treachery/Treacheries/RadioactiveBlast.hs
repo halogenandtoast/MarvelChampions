@@ -29,6 +29,6 @@ instance RunMessage RadioactiveBlast where
       isHero <- identityMatches HeroIdentity you
       if isHero
         then damageIdentity you attrs (toDamage 2 FromTreachery)
-        else placeThreatOnEach attrs 2 MainScheme
+        else placeThreatOnEach attrs 2 EncounterMainScheme
       pure t
     _ -> RadioactiveBlast <$> runMessage msg attrs

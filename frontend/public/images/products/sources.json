@@ -15,5 +15,10 @@
     "campaign": "The Mad Titan's Shadow",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21en-box-left500.png",
     "perspective": { "from": [[77.5, 60], [483, 16], [437, 366], [122.5, 498]], "width": 771, "height": 827 }
+  },
+  "sinister-motives.webp": {
+    "campaign": "Sinister Motives",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc27en-sinistermotives_boxfront_right.webp",
+    "perspective": { "from": [[145, 0], [479, 21], [479, 430], [145, 497]], "width": 771, "height": 827 }
   }
 }

@@ -3,6 +3,7 @@ module Marvel.Minion.Types where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Attack
@@ -85,6 +86,8 @@ instance Entity Minion where
     , minionEngagedIdentity :: IdentityId
     , minionStunned :: Bool
     , minionConfused :: Bool
+    , minionAdditionalStun :: Bool
+    , minionAdditionalConfuse :: Bool
     , minionTough :: Bool
     , minionAttacking :: Maybe Attack
     , minionUpgrades :: HashSet UpgradeId
@@ -100,7 +103,7 @@ instance Entity Minion where
     -- ^ the boost icons its activation under way has
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Minion :: Type -> Type where
     MinionId :: Field Minion MinionId
     MinionCardDef :: Field Minion CardDef
@@ -111,6 +114,8 @@ instance Entity Minion where
     MinionEngagedIdentity :: Field Minion IdentityId
     MinionStunned :: Field Minion Bool
     MinionConfused :: Field Minion Bool
+    MinionAdditionalStun :: Field Minion Bool
+    MinionAdditionalConfuse :: Field Minion Bool
     MinionTough :: Field Minion Bool
     MinionAttacking :: Field Minion (Maybe Attack)
     MinionUpgrades :: Field Minion (HashSet UpgradeId)
@@ -129,6 +134,8 @@ instance Entity Minion where
           MinionEngagedIdentity -> minionEngagedIdentity
           MinionStunned -> minionStunned
           MinionConfused -> minionConfused
+          MinionAdditionalStun -> minionAdditionalStun
+          MinionAdditionalConfuse -> minionAdditionalConfuse
           MinionTough -> minionTough
           MinionAttacking -> minionAttacking
           MinionUpgrades -> minionUpgrades
@@ -174,10 +181,10 @@ attackingL :: Lens' (Attrs Minion) (Maybe Attack)
 attackingL = lens minionAttacking $ \m x -> m {minionAttacking = x}
 
 stunnedL :: Lens' (Attrs Minion) Bool
-stunnedL = lens minionStunned $ \m x -> m {minionStunned = x}
+stunnedL = lens minionStunned $ \m x -> m {minionStunned = x, minionAdditionalStun = x && minionAdditionalStun m}
 
 confusedL :: Lens' (Attrs Minion) Bool
-confusedL = lens minionConfused $ \m x -> m {minionConfused = x}
+confusedL = lens minionConfused $ \m x -> m {minionConfused = x, minionAdditionalConfuse = x && minionAdditionalConfuse m}
 
 toughL :: Lens' (Attrs Minion) Bool
 toughL = lens minionTough $ \m x -> m {minionTough = x}
@@ -233,6 +240,8 @@ minion f cardDef sch atk hp =
             , minionEngagedIdentity = ident
             , minionStunned = False
             , minionConfused = False
+            , minionAdditionalStun = False
+            , minionAdditionalConfuse = False
             , minionTough = False
             , minionAttacking = Nothing
             , minionUpgrades = mempty
@@ -269,6 +278,21 @@ getModifiedKeywords attrs = do
  where
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
+
+-- | Older saves predate the second status cards a Steady minion can hold.
+instance FromJSON (Attrs Minion) where
+  parseJSON = withObject "MinionAttrs" \o ->
+    genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
+      [("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+
+-- | Having a status card is distinct from being stunned or confused (RR Steady).
+isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool
+isStunned attrs = do
+  steady <- elem Steady <$> getModifiedKeywords attrs
+  pure $ minionStunned attrs && (not steady || minionAdditionalStun attrs)
+isConfused attrs = do
+  steady <- elem Steady <$> getModifiedKeywords attrs
+  pure $ minionConfused attrs && (not steady || minionAdditionalConfuse attrs)
 
 getModifiedHitPoints :: (HasGame m) => Attrs Minion -> m Natural
 getModifiedHitPoints attrs = do

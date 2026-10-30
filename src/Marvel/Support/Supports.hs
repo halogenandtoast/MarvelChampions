@@ -99,3 +99,12 @@ import Marvel.Support.Supports.LeadershipTraining as X
 import Marvel.Support.Supports.HickoryBranchLane616 as X
 
 import Marvel.Support.Supports.AssaultTraining as X
+
+-- Sinister Motives
+import Marvel.Support.Supports.GeorgeStacy as X
+import Marvel.Support.Supports.WebOfLifeAndDestiny as X
+import Marvel.Support.Supports.GankeLee as X
+import Marvel.Support.Supports.JeffersonDavis as X
+import Marvel.Support.Supports.FieldAgent as X
+import Marvel.Support.Supports.GovernmentLiaison as X
+import Marvel.Support.Supports.SkyDestroyer as X

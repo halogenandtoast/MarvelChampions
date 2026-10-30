@@ -1,6 +1,7 @@
 module Marvel.Window.Types where
 
 import Marvel.Prelude
+import Marvel.Phase (Phase)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
@@ -19,6 +20,7 @@ data RevealSource
   | RevealedFromVillain
   | RevealedFromDiscardPile
   | RevealedFromSetAside
+  | RevealedFromRemovedFromGame
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -39,6 +41,7 @@ data WindowMatcher
   | WouldTakeDamage IdentityMatcher DamageSource GameValueMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
+  | AllyWouldTakeDamageOf WindowTiming AllyMatcher DamageSource
   | CharacterWouldTakeAttackDamage CharacterMatcher
   | -- | an ally matching would take damage exactly equal to its remaining hit points
     AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
@@ -59,9 +62,12 @@ data WindowMatcher
   | -- | "when <the villain> would take damage" of the kind matching: damage he can take,
     -- not all of it prevented by his tough status card
     VillainWouldTakeDamage VillainMatcher DamageMatcher
+  | VillainWouldTakeDamageFrom VillainMatcher DamageMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
+  | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
+  | PhaseBegins WindowTiming Phase
   | EnemyDefeatedWithUpgrade WindowTiming CardDef DamageMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | -- | after an enemy matching takes damage of the kind matching
@@ -90,6 +96,7 @@ data WindowMatcher
     AllyDefeatedByAttack WindowTiming AllyMatcher
   | -- | an ally is defeated by damage from the attack of an enemy matching (Direct Assault)
     AllyDefeatedByAttackOf WindowTiming EnemyMatcher
+  | AllyDefeatedByAttackOfEnemy WindowTiming AllyMatcher EnemyMatcher
   | -- | after an ally matching takes damage of this kind
     AllyTookDamageOf AllyMatcher DamageSource
   | -- | a boost card is turned face up for an enemy's activation
@@ -109,6 +116,9 @@ data WindowMatcher
     PlayedFromHand IdentityMatcher CardMatcher
   | -- | a player matching resolves the ability of a card matching
     ResolvesAbility WindowTiming IdentityMatcher CardMatcher
+  | -- | an interrupt or response event has fully resolved, distinguished by its copy
+    ResolvesEventAbility WindowTiming IdentityMatcher CardMatcher
+  | AllyLeavesPlay WindowTiming IdentityMatcher CardMatcher
   | MinionHasSchemed WindowTiming MinionMatcher
   | BoostCardTurnedFaceup WindowTiming BasicEncounterCardMatcher
   | -- | the boost icons on an encounter card would be, or are, counted
@@ -143,6 +153,8 @@ data WindowMatcher
     DealsExcessDamage IdentityMatcher
   | -- | "after <ally> defends against an attack": the attack it defended has resolved
     AllyDefends AllyMatcher
+  | AllyDefendsAgainst WindowTiming AllyMatcher EnemyMatcher
+  | IdentityWouldTakeAttackDamageFrom EnemyMatcher IdentityMatcher
   -- Infiltrate the Museum
   | -- | a card would be placed into a discard pile from play
     CardWouldBeDiscardedFromPlay
@@ -175,12 +187,14 @@ data WindowType
     AllyEnteredPlay AllyId
   | PlayedSupport SupportId
   | IdentityTakeDamage IdentityId Damage
+  | IdentityTakeDamageFrom IdentityId Source Damage
   | AllyTakeDamage AllyId Damage
   | -- | the player's hero thwarted the scheme, removing all its threat
     ThwartedAllThreat IdentityId SchemeId
   | RevealTreachery TreacheryId RevealSource
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
+  | VillainDamageFrom VillainId Source Damage
   | -- | the villain, the damage that defeated its stage, what dealt it, and how much of
     -- it went past its hit points
     DefeatedVillain VillainId Damage Source Natural
@@ -189,6 +203,9 @@ data WindowType
     DefeatedMinion MinionId Damage Source Natural
   | DefeatedEnemyWithUpgrades EnemyId [CardDef] Damage Source
   | MinionEnteredPlay MinionId
+  | SideSchemeEnteredPlay SideSchemeId
+  | EncounterCardResolved IdentityId EncounterCard
+  | PhaseBegan Phase
   | -- | the enemy took this damage, from this source: none a tough status card prevented
     EnemyTookDamageFrom EnemyId Damage Source
   | EnemyAttack EnemyId IdentityId
@@ -196,6 +213,7 @@ data WindowType
     EnemyAttacksAndDamages EnemyId CharacterId Natural
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
+  | PlayerAttackResolved Source IdentityId [EnemyId]
   | AllyThwart AllyId SchemeId
   | AllyAttackCompletedAgainst AllyId [EnemyId]
   | AllyAttack AllyId EnemyId
@@ -236,6 +254,8 @@ data WindowType
     PlayingCardFromHand IdentityId PlayerCard
   | -- | the player resolved the ability of a card with this def
     ResolvedAbility IdentityId CardDef
+  | EventAbilityResolved IdentityId EventId CardDef
+  | AllyLeavingPlay IdentityId AllyId CardDef
   | SchemedByMinion MinionId
   | -- | the player took damage from this source
     IdentityTookDamage IdentityId Source Damage

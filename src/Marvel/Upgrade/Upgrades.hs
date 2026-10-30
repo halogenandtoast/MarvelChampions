@@ -232,3 +232,15 @@ import Marvel.Upgrade.Upgrades.DensityControl as X
 import Marvel.Upgrade.Upgrades.FlowLikeWater as X
 
 import Marvel.Upgrade.Upgrades.ChanceEncounter as X
+
+-- Sinister Motives
+import Marvel.Upgrade.Upgrades.TicketToTheMultiverse as X
+import Marvel.Upgrade.Upgrades.WebBracelet as X
+import Marvel.Upgrade.Upgrades.PlanB as X
+import Marvel.Upgrade.Upgrades.PowerWithin as X
+import Marvel.Upgrade.Upgrades.DefenseMechanism as X
+import Marvel.Upgrade.Upgrades.WebShooterMilesMorales as X
+import Marvel.Upgrade.Upgrades.SymbioteSuit as X
+
+
+import Marvel.Upgrade.Upgrades.SmCampaign as X

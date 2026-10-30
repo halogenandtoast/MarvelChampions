@@ -91,6 +91,8 @@ allHeroes = fromList $ map
   , SomeHeroCard warMachineHero
   , SomeHeroCard valkyrieHero
   , SomeHeroCard visionHero
+  , SomeHeroCard ghostSpider
+  , SomeHeroCard spiderManMilesMoralesHero
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

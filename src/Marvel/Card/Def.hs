@@ -103,6 +103,8 @@ data InPlayLimit
     MaxPerRound Natural
   | -- | "Max N per phase": copies played this phase, by any player
     MaxPerPhase Natural
+  | -- | copies of this title played during one triggering occurrence
+    MaxPerWindow Natural
   | MaxPerCharacter Natural
   | MaxPerSideScheme Natural
   | -- | "Play under any player's control.", with no maximum
@@ -168,6 +170,15 @@ printedResources = mapMaybe printedResource . cdResources
  where
   printedResource (PrintedResource, a) = Just a
   printedResource _ = Nothing
+
+-- | Requirement icons constrain the resources spent; they are not an additional
+-- resource cost. Reductions cannot remove these mandatory icons.
+requiredResources :: HasCardDef a => a -> [Resource]
+requiredResources a = concat [rs | Requirement rs <- toList (cdKeywords $ getCardDef a)]
+
+requirementResourceCost :: [Resource] -> Int -> [Maybe Resource]
+requirementResourceCost required cost =
+  map Just required <> replicate (max 0 (cost - length required)) Nothing
 
 instance HasCardCode CardDef where
   toCardCode = cdCardCode

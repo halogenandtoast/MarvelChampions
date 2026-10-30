@@ -12,6 +12,7 @@ import Marvel.Id as X (UpgradeId)
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
+import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Query
 import Marvel.Ref
 
@@ -254,6 +255,8 @@ instance IsCard (Attrs Upgrade) where
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = runQueueT $ case msg of
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
+      UpgradeDetached -> pure a {upgradeAttachedEnemy = Nothing, upgradeAttachedAlly = Nothing,
+        upgradeAttachedSideScheme = Nothing, upgradeAttachedMainScheme = Nothing}
       PlayedUpgrade mTarget -> do
         case mTarget of
           Just (IdentityRef p) -> upgradeStep (upgradeId a) (UpgradeControlledByPlayer p)
@@ -316,6 +319,19 @@ instance RunMessage (Attrs Upgrade) where
       DiscardUpgrade -> do
         removeFromPlay a
         pure a
+    -- A permanent attachment returns to its controller when its host leaves play.
+    msg' | Permanent `elem` cdKeywords (getCardDef a), Just host <- leavingHost msg', host `elem` attachedHosts -> do
+      detachUpgrade (upgradeId a)
+      pure a
     -- a held card played leaves it
     PutCardIntoPlay _ card _ _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     _ -> pure a
+   where
+    attachedHosts = catMaybes [enemyRef <$> upgradeAttachedEnemy a, AllyRef <$> upgradeAttachedAlly a,
+      SideSchemeRef <$> upgradeAttachedSideScheme a, MainSchemeRef <$> upgradeAttachedMainScheme a]
+    leavingHost = \case
+      RemoveFromPlay target -> Just target
+      RemoveFromGame target -> Just target
+      ReturnToHand target -> Just target
+      AddToVictoryDisplay target -> Just target
+      _ -> Nothing

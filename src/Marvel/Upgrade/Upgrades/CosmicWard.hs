@@ -35,7 +35,7 @@ instance HasAbilities CosmicWard where
         1
         (EncounterCardRevealedBy When (IdentityWithId $ upgradeController attrs) (EncounterCardMatching $ CardWithType TreacheryType))
         ForcedInterrupt
-        OwnsThis
+        (OwnsThis <> CanCancelRevealedEncounterCard)
         NoCost
         (runAbility a 1)
     ]
@@ -45,7 +45,7 @@ instance HasAbilities CosmicWard where
 instance RunMessage CosmicWard where
   runMessage msg u@(CosmicWard attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ _ card] _ -> do
-      insteadOf (\case RevealedEncounterCard _ card' -> card' == card; _ -> False) $
+      insteadOf (\case RevealedEncounterCard _ card' -> card' == card; RevealedEncounterCardFrom _ _ card' -> card' == card; _ -> False) $
         discardCard (EncounterCard card)
       discardUpgrade (upgradeId attrs)
       pure u

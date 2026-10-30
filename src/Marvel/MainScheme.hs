@@ -24,7 +24,8 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
 allMainSchemes = fromList $ map
   (toFst someMainSchemeCardCode)
-  [ SomeMainSchemeCard Hood.makingConnections
+  [ SomeMainSchemeCard smHaplessPedestrians, SomeMainSchemeCard smLeaveUsAlone, SomeMainSchemeCard smMazeOfMirrors, SomeMainSchemeCard smEdgeOfReality, SomeMainSchemeCard smSinisterSynchronization, SomeMainSchemeCard smSinisterBeatdown, SomeMainSchemeCard smSkiesOverNewYork, SomeMainSchemeCard smLowerManhattan, SomeMainSchemeCard smMidtownManhattan, SomeMainSchemeCard smUpperManhattan
+  , SomeMainSchemeCard Hood.makingConnections
   , SomeMainSchemeCard Hood.promisedProsperity
   , SomeMainSchemeCard Hood.crimeState
   , SomeMainSchemeCard theBreakIn

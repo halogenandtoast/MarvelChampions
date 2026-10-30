@@ -108,5 +108,11 @@ data Trait
   | Vampire
   | CosmicEntity
   | Dragon
+  | WebWarrior
+  | Quiet
+  | Ringing
+  | Enhanced
+  | Trap
+  | Chase
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

@@ -1,5 +1,11 @@
 module Marvel.Minion.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -20,7 +26,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ madameMasque
+      [ smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
+  , madameMasque
       , hydraMercenary
       , sandman
       , shocker
@@ -204,6 +211,8 @@ allMinions =
       , livingLaser
       , enchantressValkyrie
       , ultronNemesis
+  , theLizard
+  , prowler
       ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -931,3 +940,225 @@ ultronNemesis = (minion "26029" "Ultron" [Android, Elite] [Boost, Boost] VisionN
 
 madameMasque :: CardDef
 madameMasque = unique $ (minion "24010" "Madame Masque" [Criminal, Trait.MastersOfEvil] [Boost, Boost, Boost] TheHood 1) {cdKeywords = singleton Guard}
+
+
+-- Sinister Motives
+
+theLizard :: CardDef
+theLizard = (minion "27027" "The Lizard" [Brute, Creature] [Boost, Boost] GhostSpiderNemesis 1)
+    { cdUnique = True
+    }
+
+prowler :: CardDef
+prowler = (minion "27058" "Prowler" [Criminal] [Boost, Boost] SpiderManMoralesNemesis 1)
+    { cdUnique = True
+    , cdKeywords = fromList [Stalwart]
+    }
+
+-- Sinister Motives
+
+smMinionDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smMinionDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smSandClone :: CardDef
+smSandClone = (smMinionDef "27067" "Sand Clone" SMSet.Sandman 4)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smShiftingApparition :: CardDef
+smShiftingApparition = (smMinionDef "27091" "Shifting Apparition" SMSet.Mysterio 4)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList [SMKeyword.Guard]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSymbioticBerserker :: CardDef
+smSymbioticBerserker = (smMinionDef "27121" "Symbiotic Berserker" SMSet.VenomGoblin 2)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSymbioticMonstrosity :: CardDef
+smSymbioticMonstrosity = (smMinionDef "27122" "Symbiotic Monstrosity" SMSet.VenomGoblin 1)
+  { cdTraits = fromList [SMTrait.Elite, SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Retaliate 1, SMKeyword.Steady, SMKeyword.Toughness]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSymbioticThrall :: CardDef
+smSymbioticThrall = (smMinionDef "27123" "Symbiotic Thrall" SMSet.VenomGoblin 4)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Guard]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRhino :: CardDef
+smRhino = (smMinionDef "27128" "Rhino" SMSet.CityInChaos 1)
+  { cdTraits = fromList [SMTrait.Criminal, SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Steady]
+  , cdUnique = True
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smCommonCriminal :: CardDef
+smCommonCriminal = (smMinionDef "27131" "Common Criminal" SMSet.DownToEarth 3)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLifeSizeDecoy :: CardDef
+smLifeSizeDecoy = (smMinionDef "27142" "Life-Size Decoy" SMSet.GuerrillaTactics 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smEvilDoppelganger :: CardDef
+smEvilDoppelganger = (smMinionDef "27154" "Evil Doppelgänger" SMSet.PersonalNightmare 2)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smDoctorOctopus :: CardDef
+smDoctorOctopus = (smMinionDef "27158" "Doctor Octopus" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Elite, SMTrait.Genius]
+  , cdKeywords = fromList [SMKeyword.Incite 2, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smElectro :: CardDef
+smElectro = (smMinionDef "27159" "Electro" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Criminal, SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Retaliate 1, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHobgoblin :: CardDef
+smHobgoblin = (smMinionDef "27160" "Hobgoblin" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Aerial, SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Patrol, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smKravenTheHunter :: CardDef
+smKravenTheHunter = (smMinionDef "27161" "Kraven the Hunter" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Steady, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smScorpion :: CardDef
+smScorpion = (smMinionDef "27162" "Scorpion" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Brute, SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Toughness, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVulture :: CardDef
+smVulture = (smMinionDef "27163" "Vulture" SMSet.SinisterAssault 1)
+  { cdTraits = fromList [SMTrait.Aerial, SMTrait.Elite]
+  , cdKeywords = fromList [SMKeyword.Quickstrike, SMKeyword.Villainous]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smEnragedSymbiote :: CardDef
+smEnragedSymbiote = (smMinionDef "27167" "Enraged Symbiote" SMSet.SymbioticStrength 3)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Guard, SMKeyword.Patrol]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

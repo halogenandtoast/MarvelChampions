@@ -82,7 +82,8 @@
     "named": {
       "experimentalWeapons": "Experimental Weapons",
       "kangsDominion": "Under Kang's Wrath (4A)"
-    }
+    },
+    "identityBoostCards": "Boost cards"
   },
   "activeVillain": "Active",
   "areas": {
@@ -240,5 +241,6 @@
     "physical": "Physical",
     "wild": "Wild"
   },
-  "facedownCard": "Facedown card"
+  "facedownCard": "Facedown card",
+  "glider": "Glider"
 }

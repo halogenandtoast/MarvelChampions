@@ -55,7 +55,7 @@ instance RunMessage GreenGoblin where
           pure $ advanceVillainTo greenGoblin3 attrs
         _ -> GreenGoblin <$> runMessage msg attrs
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      scheme <- selectJust MainScheme
+      scheme <- selectJust EncounterMainScheme
       placeThreat scheme (if villainStage attrs == 3 then 2 else 1)
       pure e
     -- "When Revealed: Deal 2 (3) encounter cards to each player"

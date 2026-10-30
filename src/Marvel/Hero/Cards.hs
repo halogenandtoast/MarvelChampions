@@ -75,6 +75,8 @@ allHeroCards =
   , warMachineHero
   , valkyrieHero
   , visionHero
+  , ghostSpider
+  , spiderManMilesMoralesHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -242,3 +244,12 @@ visionHero :: CardDef
 visionHero = deckLimited 1 $ (hero "26001a" "Vision" [Android, Avenger])
     { cdUnique = True
     }
+
+
+-- Sinister Motives
+
+ghostSpider :: CardDef
+ghostSpider = hero "27001a" "Ghost-Spider" [WebWarrior]
+
+spiderManMilesMoralesHero :: CardDef
+spiderManMilesMoralesHero = hero "27030a" "Spider-Man" [Champion, WebWarrior]

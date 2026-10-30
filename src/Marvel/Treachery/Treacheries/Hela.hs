@@ -44,12 +44,12 @@ instance RunMessage HelasDomain where
   runMessage msg t@(HelasDomain (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       n <- sideSchemesInVictoryDisplay
-      placeThreatOnEach attrs (1 + n) MainScheme
+      placeThreatOnEach attrs (1 + n) EncounterMainScheme
       pure t
     Boost (CheckWindows ws)
       | not (threatPlaced meta)
       , notNull [() | W.Window W.When (W.DefeatedAlly _ (Just _)) <- ws] -> do
-          placeThreatOnEach attrs 2 MainScheme
+          placeThreatOnEach attrs 2 EncounterMainScheme
           pure $ HelasDomain (attrs `With` meta {threatPlaced = True})
     _ -> HelasDomain . (`With` meta) <$> runMessage msg attrs
 

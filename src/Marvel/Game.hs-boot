@@ -10,7 +10,7 @@ import Marvel.Attack (Attack)
 import Marvel.Damage (Damage)
 import Marvel.Card.Code (CardCode)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
-import {-# SOURCE #-} Marvel.Card.Def (CardDef)
+import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
 import Marvel.Card.Code (CardCode)
@@ -175,7 +175,7 @@ getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAmplifyCount :: (HasGame m) => m Natural
 -- The Galaxy's Most Wanted
 getVictoryDisplay :: (HasGame m) => m [EncounterCard]
-getVictoryPoints :: (HasGame m) => m Natural
+getVictoryPoints :: (HasGame m) => m Int
 getCollection :: (HasGame m) => m [Card]
 getMilano :: (HasGame m) => m (Maybe SupportId)
 milanoIsReady :: (HasGame m) => m Bool
@@ -246,6 +246,7 @@ getIdentityAttackAgainst :: (HasGame m) => IdentityId -> EnemyId -> m Natural
 attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
 
 canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
+playableCardsWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Target -> CardMatcher -> Natural -> m [PlayerCard]
 hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
 
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
@@ -254,3 +255,38 @@ eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId
 eventExhaustionsAffordable :: (HasGame m) => IdentityId -> [IdentityId] -> PlayerCard -> Cost -> m Bool
 
 sourceAbilitySubTypes :: (HasGame m) => Source -> m [AbilitySubType]
+
+getSupportHoldingCard :: (HasGame m) => PlayerCard -> m (Maybe SupportId)
+getSupportHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
+getSupportHeldCardsOn :: (HasGame m) => SupportId -> m [PlayerCard]
+isCurrentBoostCard :: (HasGame m) => EncounterCard -> m Bool
+getBoostCard :: (HasGame m) => Target -> m (Maybe EncounterCard)
+characterAttackValue :: (HasGame m) => CharacterId -> m Natural
+countControlledCardsWithTrait :: (HasGame m) => IdentityId -> Trait -> m Natural
+getHeldPlayableCards :: (HasGame m) => IdentityId -> m [PlayerCard]
+
+getPlayedThisWindow :: (HasGame m) => m [CardDef]
+
+supportIsInPlay :: (HasGame m) => SupportId -> m Bool
+
+indirectCostCandidates :: (HasGame m) => IdentityId -> Source -> m [(CharacterId, Natural)]
+characterStoredDamage :: (HasGame m) => CharacterId -> m Natural
+
+hasCrisisInYourArea :: (HasGame m) => m Bool
+canPayAdditionalThwartCost :: (HasGame m) => IdentityId -> SchemeId -> m Bool
+basicThwartSchemes :: (HasGame m) => IdentityId -> m (HashSet SchemeId)
+
+encounterCardCanBeCanceled :: (HasGame m) => EncounterCard -> m Bool
+
+getGliderSchemes :: (HasGame m) => m [MainSchemeId]
+isRestrictedMainScheme :: (HasGame m) => MainSchemeId -> m Bool
+
+getMainSchemeAccelerationTokensIn :: (HasGame m) => AreaId -> m Natural
+
+getRemovedFromGameEncounterCards :: (HasGame m) => m [EncounterCard]
+
+getAccelerationTokenCount :: (HasGame m) => m Natural
+
+replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
+
+obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool

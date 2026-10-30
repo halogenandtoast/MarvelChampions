@@ -103,6 +103,13 @@ allSupports = fromList $ concatMap
   , leadershipTraining
   , hickoryBranchLane616
   , assaultTraining
+  , georgeStacy
+  , webOfLifeAndDestiny
+  , gankeLee
+  , jeffersonDavis
+  , fieldAgent
+  , governmentLiaison
+  , skyDestroyer
   ]
 
 support
@@ -190,7 +197,7 @@ interrogationRoom = reprintedAs ["08015", "04048"] $ limited (MaxPerPlayer 1)
   $ support "01063" "Interrogation Room" 1 [Location] [Energy] Justice
 
 surveillanceTeam :: CardDef
-surveillanceTeam = reprintedAs ["08016"] $
+surveillanceTeam = reprintedAs ["27045", "08016"] $
   support "01064" "Surveillance Team" 2 [Shield] [Mental] Justice
 
 theTriskellion :: CardDef
@@ -403,3 +410,46 @@ hickoryBranchLane616 = deckLimited 1 $ (identitySupport "26004" "616 Hickory Bra
 
 assaultTraining :: CardDef
 assaultTraining = deckLimited 2 $ support "26033" "Assault Training" 1 [Condition] [Mental] Aggression
+
+
+-- Sinister Motives
+
+georgeStacy :: CardDef
+georgeStacy = (identitySupport "27007" "George Stacy" 1 [Persona] [Energy])
+    { cdUnique = True
+    , cdDeckLimit = Just 1
+    }
+
+webOfLifeAndDestiny :: CardDef
+webOfLifeAndDestiny = (basicSupport "27023" "Web of Life and Destiny" 3 [Location, WebWarrior] [Energy])
+    { cdUnique = True
+    , cdDeckLimit = Just 1
+    }
+
+gankeLee :: CardDef
+gankeLee = (identitySupport "27035" "Ganke Lee" 2 [Persona] [Wild])
+    { cdUnique = True
+    , cdDeckLimit = Just 1
+    }
+
+jeffersonDavis :: CardDef
+jeffersonDavis = (identitySupport "27036" "Jefferson Davis" 2 [Shield, Persona] [Physical])
+    { cdUnique = True
+    , cdDeckLimit = Just 1
+    }
+
+fieldAgent :: CardDef
+fieldAgent = (support "27044" "Field Agent" 1 [Shield, Persona] [Energy] Justice)
+    { cdDeckLimit = Just 3
+    }
+
+governmentLiaison :: CardDef
+governmentLiaison = (basicSupport "27054" "Government Liaison" 2 [Shield, Persona] [Mental])
+    { cdDeckLimit = Just 3
+    }
+
+skyDestroyer :: CardDef
+skyDestroyer = (basicSupport "27055" "Sky-Destroyer" 3 [Shield, Vehicle] [Energy])
+    { cdUnique = True
+    , cdDeckLimit = Just 1
+    }

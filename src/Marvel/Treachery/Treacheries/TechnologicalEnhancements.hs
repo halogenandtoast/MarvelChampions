@@ -33,6 +33,6 @@ instance RunMessage TechnologicalEnhancements where
       pure t
     _ -> TechnologicalEnhancements <$> runMessage msg attrs
    where
-    testCounter = selectOne MainScheme >>= traverse_ \case
+    testCounter = selectOne EncounterMainScheme >>= traverse_ \case
       SchemeMainSchemeId ms -> placeCounters ms 1
       _ -> pure ()

@@ -44,7 +44,7 @@ instance RunMessage CutThePower where
       ready <- milanoIsReady
       chooseOrRunOne you $
         [labeled "$label.exhaustTheMilano" exhaustMilano | ready]
-          <> [labeled (countLabel "placeThreatOnMainScheme" 2) (selectOne MainScheme >>= traverse_ (`placeThreat` 2))]
+          <> [labeled (countLabel "placeThreatOnMainScheme" 2) (selectOne EncounterMainScheme >>= traverse_ (`placeThreat` 2))]
       pure s
     _ -> CutThePower <$> runMessage msg attrs
 

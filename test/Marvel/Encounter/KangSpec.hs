@@ -4,7 +4,7 @@ module Marvel.Encounter.KangSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (nub, sort)
-import Marvel.Attack (Attack (attackDamage))
+import Marvel.Attack (Attack (attackDamage), attackValue)
 import Marvel.Area
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.MainScheme.MainSchemes.KangsWrath (kangsDominionDeck)
@@ -246,7 +246,7 @@ spec = describe "The Once and Future Kang" do
         chooseIf isAnyAbility
         offers (isLabel (countLabel "kangPlacesThreat" 1)) `shouldReturn` True
         choose "+2 ATK" (isLabel (countLabel "kangGetsAttack" 2))
-        fmap attackDamage <$> getVillainAttack k `shouldReturn` Just 4
+        fmap attackValue <$> getVillainAttack k `shouldReturn` Just 4
 
     it "Kang (Immortus) cannot take damage while a minion is in play in his area" do
       tg <- kang ["spider-man"]

@@ -66,7 +66,7 @@ perSideScheme a = if toCardCode (getCardDef a) `elem` ["21137a", "21137b"] then 
 -- | Whether Odin is attached to a main scheme (Odin's Torment holds him faceup).
 odinAttachedToMainScheme :: (HasGame m) => m Bool
 odinAttachedToMainScheme = do
-  schemes <- selectList MainScheme
+  schemes <- selectList EncounterMainScheme
   held <- concat <$> for [m | SchemeMainSchemeId m <- schemes] getMainSchemeHeldCards
   pure $ any (sameCard Allies.odinCaptive . getCardDef) held || any (sameCard Allies.odinKing . getCardDef) held
 

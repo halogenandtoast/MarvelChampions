@@ -7,6 +7,7 @@ module Marvel.Identity (
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.List (find, partition, sortOn)
@@ -16,6 +17,7 @@ import Marvel.AlterEgo
 import Marvel.AlterEgo.Types
 import Marvel.Attack
 import Marvel.Card
+import Marvel.Campaign qualified as Campaign
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -214,6 +216,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityUpgrades = mempty
       , playerIdentityExhausted = False
       , playerIdentityEncounterCards = []
+      , playerIdentityBoostCards = []
       , playerIdentityDamageReduction = 0
       , playerIdentityStunned = False
       , playerIdentityConfused = False
@@ -278,6 +281,20 @@ instance HasAbilities PlayerIdentity where
 
 isPlayable :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayable = isPlayableWith False
+
+playableCardsWithReduction :: (ReverseQueue m) => IdentityId -> Natural -> CardMatcher -> m [PlayerCard]
+playableCardsWithReduction you reduction matcher = do
+  cards <- filter (cardMatch matcher) <$> projectMap PlayerIdentityHand unHand you
+  filterM (canPlayCardWithReduction you reduction) cards
+
+-- | Mysterio's encounter cards keep their encounter identity in a player's deck.
+-- Deal each facedown and replace it with a draw after this batch finishes.
+replacePlayerDeckEncounters :: (ReverseQueue m) => IdentityId -> [PlayerCard] -> m [PlayerCard]
+replacePlayerDeckEncounters you cards = do
+  let encounters = mapMaybe playerZoneEncounterCard cards
+  traverse_ (identityStep you . DealtEncounterCard) encounters
+  unless (null encounters) $ drawCards you (fromIntegral $ length encounters)
+  pure [card | card <- cards, isNothing (playerZoneEncounterCard card)]
 
 -- | Whether the card can be played, its resource cost ignored if so ("play a card from
 -- your hand, ignoring its resource cost").
@@ -355,6 +372,7 @@ checkPlayLimits ident c = case cdLimit def of
     MaxPerScheme 1 -> selectNone $ UpgradeNamed name
     MaxPerScheme _ -> error "Unhandled"
     -- copies played by any player count
+    MaxPerWindow n -> (< n) . count ((== name) . cdName) <$> getPlayedThisWindow
     MaxPerRound n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisRound
     MaxPerPhase n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisPhase
     -- a friendly character without one: an ally, or an identity
@@ -450,7 +468,7 @@ getCardCostWithX chosenX attrs c mTarget = do
       pure $ maybe 0 (fromMaybe 0 . cdCost . getCardDef) (find ((== cid) . pcCardId) cards)
     _ -> pure 0
   pure $
-    mconcat (replicate modifiedCost (ResourceCost $ spendOnly $ cdCriteria def))
+    mconcat (map (ResourceCost . (\r -> r <|> spendOnly (cdCriteria def))) (requirementResourceCost (requiredResources def) modifiedCost))
       <> mconcat (replicate printed (ResourceCost Nothing))
       <> filterCosts (\case TargetPrintedCost -> False; PrintedXCost _ _ -> False; _ -> True) (cdAbilityCost def)
  where
@@ -483,9 +501,20 @@ playableTargetsWith ignoringCost attrs c = do
       cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getAvailablePaymentSources payer
       (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
     reduction <- mayReduceCostToPlay attrs c mTarget
-    affordable <- if cdCost (getCardDef c) == Just (-1)
+    (ignored, _) <- resourceCostAdjustment attrs c mTarget
+    printedResourceCost <- getModifiedCost attrs c mTarget
+    let requirements = requiredResources c
+        requirementAllowed = null requirements || not (ignoringCost || ignored)
+        cardSymbols = requirementResourceCost requirements printedResourceCost
+        reducedCardSymbols = map (\r -> r <|> spendOnly (cdCriteria $ getCardDef c))
+          (requirementResourceCost requirements (max 0 (printedResourceCost - reduction)))
+        payableSymbols = reducedCardSymbols <> drop (length cardSymbols) (costResources cost)
+    affordable <- if not requirementAllowed then pure False
+      else if cdCost (getCardDef c) == Just (-1)
       then notNull <$> printedXChoices ignoringCost attrs c mTarget
-      else pure (ignoringCost || length resources + reduction >= length (costResources cost))
+      else pure (ignoringCost || if null requirements
+        then length resources + reduction >= length (costResources cost)
+        else coversResources payableSymbols resources)
     handTarget <- if ChosenHandCardCost `elem` flattenCosts cost
       then projectP PlayerIdentityHand (any (isChosenHandTarget c mTarget) . unHand) (toId attrs)
       else pure True
@@ -530,7 +559,7 @@ mayReduceCostToPlay attrs c mTarget
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = do
-  held <- (<>) <$> getUpgradeHeldCards (toId player) <*> getAllyHeldCards (toId player)
+  held <- getHeldPlayableCards (toId player)
   filterM (isPlayable player) (cards <> held)
  where
   attrs = toAttrs player
@@ -596,16 +625,19 @@ beginCardPayment chosenX pid card mWindow mTarget = do
   cost <- getCardCostWithX chosenX pid card mTarget
   activeCostId <- getRandom
   holder <- getAllyHoldingCard card
+  supportHolder <- getSupportHoldingCard card
   for_ holder (\aid -> reserveAllyHeldCard aid card)
+  for_ supportHolder (\sid -> supportStep sid (ReserveHeldCard card))
   setActiveCost $
       ActiveCost
         activeCostId
         (toId pid)
         (ForCard card)
         cost
-        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder)
+        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder <> maybe NoPayment (\sid -> ReservedSupportCardPayment sid card) supportHolder)
         mWindow
         mempty
+        Nothing
   pure $ PlayerIdentity $ toAttrs pid & (handL %~ Hand . filter (/= card) . unHand)
 
 runIdentityMessage ::
@@ -633,10 +665,21 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     -- draw up to hand size, mulligan any of it, draw again, then the setup abilities
     DealStartingHand -> do
+      campaign <- getCampaign
+      let extraMulligan = maybe False (\c -> c.kind == Campaign.SinisterMotives && c.campaignLog.sinister.reputation >= 5) campaign
       let setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
       for_ [DrawOrDiscardToHandLimit, DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
+      when extraMulligan $
+        for_ [DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
       for_ setupAbilities \a -> ranAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment
       pure pid
+    IdentityDealtBoost card -> pure $ PlayerIdentity attrs
+      {playerIdentityBoostCards = playerIdentityBoostCards <> [card]}
+    EncounterCardInDiscard card -> pure $ PlayerIdentity $ attrs
+      & discardL %~ Discard . (encounterCardInPlayerDeck playerIdentityId card :) . unDiscard
+    MoveIdentityBoostCardsToVillain vid -> do
+      for_ playerIdentityBoostCards (villainStep vid . VillainDealtBoost)
+      pure $ PlayerIdentity attrs {playerIdentityBoostCards = []}
     BeginTurn -> do
       -- before anything else is done in the turn
       checkWindows [W.Window W.After $ W.TurnBegan playerIdentityId]
@@ -714,7 +757,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           drawCards playerIdentityId short
         -- an obligation drawn goes into play in their play area, not drawn again for
         -- (System Shock, whose text only works in hand, stays there)
-        let (obligations, drawn) = partition (\c -> cdCardType (getCardDef c) == ObligationType && not (staysInHand c)) cards
+        ordinary <- replacePlayerDeckEncounters playerIdentityId cards
+        let (obligations, drawn) = partition (\c -> cdCardType (getCardDef c) == ObligationType && not (staysInHand c)) ordinary
         for_ obligations (putObligationIntoPlay playerIdentityId)
         pure $
           PlayerIdentity $
@@ -950,11 +994,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       FromDeck -> do
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
-        for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> cards
+        discarded <- replacePlayerDeckEncounters playerIdentityId cards
+        for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discarded
         pure $
           PlayerIdentity $
             attrs
-              & (discardL %~ Discard . (cards <>) . unDiscard)
+              & (discardL %~ Discard . (discarded <>) . unDiscard)
               & (deckL .~ Deck deck')
     -- "heroes cannot be readied by player card effects" (Unnatural Storm)
     ReadiedIdentity -> do
@@ -968,10 +1013,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     -- the active villain of the player's area, if it has one, then their minions
     VillainAndMinionsActivate -> do
-      villain <- selectOne ActiveVillain
       case currentIdentity pid of
-        HeroSide _ -> for_ villain (`enemyAttacks` playerIdentityId)
-        AlterEgoSide _ -> for_ villain villainSchemes
+        HeroSide _ -> currentVillainAttacks playerIdentityId
+        AlterEgoSide _ -> currentVillainSchemes playerIdentityId
       identityStep playerIdentityId MinionsActivate
       pure pid
     -- read once the villain has activated: a minion its boost card put into play
@@ -1140,11 +1184,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         (missed, rest) = break (cardMatch matcher) (unDeck playerIdentityDeck)
         found = take 1 rest
-      for_ found \c -> withDiscardedMatch target FromDeck (PlayerCard c)
+      discarded <- replacePlayerDeckEncounters playerIdentityId (missed <> found)
+      for_ [c | c <- found, isNothing (playerZoneEncounterCard c)] \c -> withDiscardedMatch target FromDeck (PlayerCard c)
       pure $
         PlayerIdentity $
           attrs
-            & (discardL %~ Discard . (reverse (missed <> found) <>) . unDiscard)
+            & (discardL %~ Discard . (reverse discarded <>) . unDiscard)
             & (deckL .~ Deck (drop 1 rest))
     PlaceOnBottomOfDeck card ->
       pure $
@@ -1214,6 +1259,14 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
           pure pid
     CardSpecific target "payForChosenX" (fromJSON -> Success (card, mWindow :: Maybe W.Window, mTarget, n :: Natural))
       | target == toRef pid -> beginCardPayment (Just n) pid card mWindow mTarget
+    DiscardedCard (PlayerCard card)
+      | Just encounter <- playerZoneEncounterCard card
+      , pcController card == Just (playerIdentityId attrs) -> do
+          discardCard encounter
+          pure $ PlayerIdentity $ attrs
+            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (handL %~ Hand . filter (/= card) . unHand)
+            & (deckL %~ Deck . filter (/= card) . unDeck)
     DiscardedCard (PlayerCard card)
       | pcOwner card == Just (playerIdentityId attrs) ->
           pure $
@@ -1356,7 +1409,10 @@ instance ToJSON (Attrs PlayerIdentity) where
   toJSON = genericToJSON $ aesonOptions $ Just "playerIdentity"
 
 instance FromJSON (Attrs PlayerIdentity) where
-  parseJSON = genericParseJSON $ aesonOptions $ Just "playerIdentity"
+  parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
+    genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
+      if KeyMap.member "boostCards" o then o
+      else KeyMap.insert "boostCards" (toJSON ([] :: [EncounterCard])) o
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity

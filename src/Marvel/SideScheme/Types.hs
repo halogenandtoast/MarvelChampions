@@ -58,6 +58,8 @@ instance Entity SideScheme where
     -- ^ the player whose thwarting removed its last threat: "the player who defeated it"
     , sideSchemeCounters :: Natural
     -- ^ counters on it (Defensive Protocols' crash counters)
+    , sideSchemeAccelerationTokens :: Natural
+    -- ^ acceleration tokens on this scheme; they leave play with it
     }
     deriving stock (Show, Eq, Generic)
     deriving anyclass (ToJSON)
@@ -69,6 +71,7 @@ instance Entity SideScheme where
     SideSchemeCrisis :: Field SideScheme Bool
     SideSchemeHeldCards :: Field SideScheme [PlayerCard]
     SideSchemeCounters :: Field SideScheme Natural
+    SideSchemeAccelerationTokens :: Field SideScheme Natural
   field fld s =
     let SideSchemeAttrs {..} = toAttrs s
      in case fld of
@@ -79,6 +82,7 @@ instance Entity SideScheme where
           SideSchemeCrisis -> sideSchemeCrisis
           SideSchemeHeldCards -> sideSchemeHeldCards
           SideSchemeCounters -> sideSchemeCounters
+          SideSchemeAccelerationTokens -> sideSchemeAccelerationTokens
   toId = sideSchemeId . toAttrs
   toAttrs (SideScheme a) = toSideSchemeAttrs a
 
@@ -157,6 +161,7 @@ sideScheme f cardDef initialThreat =
             , sideSchemeHeldCards = []
             , sideSchemeDefeatedBy = Nothing
             , sideSchemeCounters = 0
+            , sideSchemeAccelerationTokens = 0
             }
     }
 
@@ -182,7 +187,7 @@ instance IsCard (Attrs SideScheme) where
 -- | A side scheme saved before it could hold counters has none.
 instance FromJSON (Attrs SideScheme) where
   parseJSON = withObject "SideSchemeAttrs" \o ->
-    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.singleton "sideSchemeCounters" (Number 0))))
+    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0)])))
 
 countersL :: Lens' (Attrs SideScheme) Natural
 countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
@@ -199,12 +204,16 @@ instance RunMessage (Attrs SideScheme) where
           hinder <- sum <$> traverse fromGameValue [x | Hinder x <- toList $ cdKeywords $ getCardDef attrs]
           pure $ attrs & threatL .~ n + fromIntegral hinder
         SideSchemePlaceThreat n -> pure $ attrs & threatL +~ n
+        SideSchemePlaceAccelerationToken -> pure attrs {sideSchemeAccelerationTokens = sideSchemeAccelerationTokens attrs + 1}
         SideSchemeThwarted _ _ | any (`elem` modifiers) [ThreatCannotBeRemoved, ThreatCannotBeRemovedByThwarting] -> pure attrs
         SideSchemeThreatRemoved _ _ | ThreatCannotBeRemoved `elem` modifiers -> pure attrs
         SideSchemeThwarted source n -> unlessBarred source do
-          attrs' <- removed source n
-          heroThwartedAllThreat source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
-          pure attrs'
+          controller <- getSourceController source
+          forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
+          if forbidden then pure attrs else do
+            attrs' <- removed source n
+            heroThwartedAllThreat source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
+            pure attrs'
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
         SideSchemeThreatRemoved source n -> unlessBarred source (removed source n)
         _ -> pure attrs

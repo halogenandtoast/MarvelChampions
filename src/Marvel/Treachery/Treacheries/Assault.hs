@@ -27,7 +27,7 @@ instance RunMessage Assault where
         isHero <- identityMatches HeroIdentity identityId
         if isHero
           then do
-            traverse_ (\villainId -> enemyAttacks villainId identityId) =<< selectOne ActiveVillain
+            currentVillainAttacks identityId
             pure t
           else pure . Assault $ attrs & surgeL .~ True
       _ -> Assault <$> runMessage msg attrs

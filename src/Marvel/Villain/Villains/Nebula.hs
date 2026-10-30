@@ -97,7 +97,10 @@ instance RunMessage Nebula where
       pure e
     CheckWindows [W.Window W.When (W.EncounterCardRevealed _ you card)] | isTechnique card, not (techniqueSurged meta) -> do
       -- after the card has resolved
-      afterMatching (== RevealedEncounterCard you card) (surge you)
+      afterMatching (\case
+        RevealedEncounterCard ident other -> ident == you && other == card
+        RevealedEncounterCardFrom _ ident other -> ident == you && other == card
+        _ -> False) (surge you)
       Nebula . (`With` Meta True) <$> runMessage msg attrs
     EndRound -> Nebula . (`With` Meta False) <$> runMessage msg attrs
     _ -> passOn

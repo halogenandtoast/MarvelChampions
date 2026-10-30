@@ -35,6 +35,6 @@ instance RunMessage HydraHunter where
       hero <- identityMatches HeroIdentity you
       if hero
         then damageIdentity you attrs (toDamage 1 FromAbility)
-        else placeThreatOnEach attrs 1 MainScheme
+        else placeThreatOnEach attrs 1 EncounterMainScheme
       pure e
     _ -> HydraHunter <$> runMessage msg attrs

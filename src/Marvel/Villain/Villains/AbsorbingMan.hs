@@ -88,7 +88,7 @@ instance RunMessage AbsorbingMan where
     -- III: Ice or Stone, 1 threat on the main scheme; Metal or Wood, 1 indirect damage
     RanAbility you (isTarget attrs -> True) 2 _ _ -> do
       let has t = villainMatches (VillainWithTrait t) (villainId attrs)
-      whenM (orM [has Ice, has Stone]) $ placeThreatOnEach attrs 1 MainScheme
+      whenM (orM [has Ice, has Stone]) $ placeThreatOnEach attrs 1 EncounterMainScheme
       whenM (orM [has Metal, has Wood]) $ dealIndirectDamage you attrs 1
       pure e
     _ -> AbsorbingMan <$> runMessage msg attrs

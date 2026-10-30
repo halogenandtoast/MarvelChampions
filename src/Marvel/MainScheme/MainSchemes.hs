@@ -67,3 +67,13 @@ import Marvel.MainScheme.MainSchemes.Loki as X
 
 -- The Mad Titan's Shadow: Hela
 import Marvel.MainScheme.MainSchemes.Hela as X
+
+import Marvel.MainScheme.MainSchemes.SmSandman as X
+
+import Marvel.MainScheme.MainSchemes.SmVenom as X
+
+import Marvel.MainScheme.MainSchemes.SmMysterio as X
+
+import Marvel.MainScheme.MainSchemes.SmSinisterSix as X
+
+import Marvel.MainScheme.MainSchemes.SmVenomGoblin as X

@@ -23,6 +23,8 @@ data VillainMessage
     VillainAttackChanged Int
   | -- | all damage from its attack under way is prevented
     VillainAttackDamagePrevented
+  | VillainAttacksWithAdditionalBoostCards IdentityId Natural
+  | VillainSetAttackAdditionalBoostCards Natural
   | VillainAttacks IdentityId
   | -- | it attacks the player, the attack given no boost card (Escaped Convict)
     VillainAttacksWithoutBoost IdentityId
@@ -69,5 +71,6 @@ data VillainMessage
   | -- | all damage to him from the attack the source makes is prevented, until that
     -- attack ends (Master of Illusions)
     VillainPreventAttackDamage Source
+  | VillainAttackBecomesIndirect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

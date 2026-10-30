@@ -52,7 +52,7 @@ otherFace a = case toCardCode (getCardDef a) of
 -- | The main scheme's current stage number: 1 to 3, by Escape the Museum's main schemes.
 mainSchemeStage :: (HasGame m) => m Natural
 mainSchemeStage = do
-  scheme <- selectOne MainScheme
+  scheme <- selectOne EncounterMainScheme
   code <- case scheme of
     Just (SchemeMainSchemeId mid) -> getMainSchemeCode mid
     _ -> pure Nothing
@@ -85,7 +85,7 @@ instance RunMessage CollectorEscape where
       VillainWouldBeDefeated | not (isWounded attrs) -> do
         cancelVillainDefeat ident
         n <- fromGameValue (PerPlayer 3)
-        scheme <- selectOne MainScheme
+        scheme <- selectOne EncounterMainScheme
         for_ scheme \s -> thwartScheme s attrs (fromIntegral n)
         flipVillain ident
         pure e

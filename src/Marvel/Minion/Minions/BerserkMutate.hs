@@ -24,7 +24,7 @@ newtype BerserkMutate = BerserkMutate (Attrs Minion)
 instance RunMessage BerserkMutate where
   runMessage msg e@(BerserkMutate attrs) = runQueueT $ case msg of
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
-      selectOne MainScheme >>= \case
+      selectOne EncounterMainScheme >>= \case
         Just (SchemeMainSchemeId ms) -> do
           counters <- getMainSchemeCounters ms
           placeCounters ms 1

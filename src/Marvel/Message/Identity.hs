@@ -66,6 +66,9 @@ data IdentityMessage
     -- villain activated among them
     MinionsActivate
   | DealtEncounterCard EncounterCard
+  | IdentityDealtBoost EncounterCard
+  | EncounterCardInDiscard EncounterCard
+  | MoveIdentityBoostCardsToVillain VillainId
   | RevealEncounterCards
   | IdentityWasAttacked Attack
   | IdentityDamaged Source Damage

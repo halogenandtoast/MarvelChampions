@@ -29,7 +29,7 @@ spec = describe "discarding an ally to pay a cost" do
       let cost = DiscardAllyCost AnyAlly
       -- Keep the active cost open so its retained payment can be inspected, as an
       -- event handler would inspect the payment passed to PlayedEvent.
-      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery cost NoPayment Nothing []]
+      withGame_ $ activeCostL .~ [ActiveCost acid p ForTreachery cost NoPayment Nothing [] Nothing]
       runNow [PayCost acid cost]
       choose "discard Vision" (isTargetChoice $ allyIdOf ally)
       payment <- getCurrentPayment

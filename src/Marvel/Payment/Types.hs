@@ -13,6 +13,7 @@ data Payment
   = Payments [Payment]
   | -- | an ally-held event detached for payment, restored on abort
     ReservedAllyCardPayment AllyId PlayerCard
+  | ReservedSupportCardPayment SupportId PlayerCard
   | -- | all non-resource alliance contributions approved before any is committed
     ApprovedAlliancePayment [(IdentityId, Cost)]
   | -- | resources actually spent after surplus generation is discarded; raw receipts remain
@@ -39,6 +40,7 @@ data Payment
   | UsePayment
   | -- | an ally exhausted to pay
     ExhaustedAllyPayment AllyId
+  | ExhaustedCardPayment Target
   | -- | a character exhausted to pay
     ExhaustedCharacterPayment CharacterId
   | -- | a character chosen as a cost, without being exhausted
@@ -146,3 +148,10 @@ paymentChosenCharacters p = [c | ChosenCharacterPayment c <- payments p]
 -- | The final actual spend, after choosing how surplus resources are wasted.
 paymentActualResources :: Payment -> Maybe [Resource]
 paymentActualResources p = lastMay [rs | ActualResourcesPayment rs <- payments p]
+
+-- | Support-held events detached while paying, restored on abort.
+paymentReservedSupportCards :: Payment -> [(SupportId, PlayerCard)]
+paymentReservedSupportCards p = [(s, c) | ReservedSupportCardPayment s c <- payments p]
+
+paymentExhaustedCards :: Payment -> [Target]
+paymentExhaustedCards p = [t | ExhaustedCardPayment t <- payments p]

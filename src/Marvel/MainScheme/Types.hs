@@ -1,6 +1,7 @@
 module Marvel.MainScheme.Types where
 
 import Marvel.Prelude
+import Data.Aeson.KeyMap qualified as KeyMap
 
 import Data.Typeable
 import Marvel.Ability.Types (Ability, HasAbilities (..))
@@ -55,12 +56,14 @@ instance Entity MainScheme where
     , mainSchemeCrisis :: Bool
     , mainSchemeHeldCards :: [PlayerCard]
     , mainSchemeCounters :: Natural
+    , mainSchemeHasGlider :: Bool
+    , mainSchemeAccelerationTokens :: Natural
     , mainSchemeVillain :: Maybe Text
     -- ^ the title of the villain whose own scheme it is ("Proxima Midnight's Scheme"),
     -- who schemes onto it alone (Tower Defense)
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field MainScheme :: Type -> Type where
     MainSchemeId :: Field MainScheme MainSchemeId
     MainSchemeCardDef :: Field MainScheme CardDef
@@ -71,6 +74,8 @@ instance Entity MainScheme where
     MainSchemeCrisis :: Field MainScheme Bool
     MainSchemeHeldCards :: Field MainScheme [PlayerCard]
     MainSchemeCounters :: Field MainScheme Natural
+    MainSchemeHasGlider :: Field MainScheme Bool
+    MainSchemeAccelerationTokens :: Field MainScheme Natural
   field fld m =
     let MainSchemeAttrs {..} = toAttrs m
      in case fld of
@@ -83,8 +88,15 @@ instance Entity MainScheme where
           MainSchemeCrisis -> mainSchemeCrisis
           MainSchemeHeldCards -> mainSchemeHeldCards
           MainSchemeCounters -> mainSchemeCounters
+          MainSchemeHasGlider -> mainSchemeHasGlider
+          MainSchemeAccelerationTokens -> mainSchemeAccelerationTokens
   toId = mainSchemeId . toAttrs
   toAttrs (MainScheme a) = toMainSchemeAttrs a
+
+instance FromJSON (Attrs MainScheme) where
+  parseJSON = withObject "MainSchemeAttrs" \o -> genericParseJSON defaultOptions
+    (Object $ KeyMap.union o $ KeyMap.fromList
+      [("mainSchemeHasGlider", Bool False), ("mainSchemeAccelerationTokens", Number 0)])
 
 instance RunMessage MainScheme where
   runMessage msg (MainScheme a) = MainScheme <$> runMessage msg a
@@ -161,6 +173,8 @@ mainScheme f cardDef threshold initialThreat acceleration =
             , mainSchemeCrisis = False
             , mainSchemeHeldCards = []
             , mainSchemeCounters = 0
+            , mainSchemeHasGlider = False
+            , mainSchemeAccelerationTokens = 0
             , mainSchemeVillain = Nothing
             }
     }
@@ -184,6 +198,9 @@ instance RunMessage (Attrs MainScheme) where
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
       locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
       case msg' of
+        SetMainSchemeGlider value -> pure attrs {mainSchemeHasGlider = value}
+        SetMainSchemeAcceleration value -> pure attrs {mainSchemeAccelerationTokens = value}
+        AddMainSchemeAcceleration value -> pure attrs {mainSchemeAccelerationTokens = mainSchemeAccelerationTokens attrs + value}
         MainSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (mainSchemeInitialThreat attrs)
           pure $ attrs & threatL .~ n
@@ -192,17 +209,21 @@ instance RunMessage (Attrs MainScheme) where
           when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
           pure $ attrs & threatL +~ n
         -- a scheme threat cannot be removed from ("Take What Is Mine")
+        MainSchemeBasicThwarted _ _ | locked -> pure attrs
         MainSchemeThwarted _ _ | locked -> pure attrs
         MainSchemeThreatRemoved _ _ | locked -> pure attrs
         -- a player a patrol minion is engaged with cannot thwart it with the cards they
         -- control (RR Patrol); removing threat otherwise is not a thwart
-        MainSchemeThwarted source n -> unlessPatrolled source do
+        MainSchemeBasicThwarted source n -> unlessPatrolled True source do
+          heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
+          pure $ attrs & threatL %~ subtractNatural n
+        MainSchemeThwarted source n -> unlessPatrolled False source do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n
         -- "player cards cannot remove threat from the main scheme" while a crisis icon is
         -- in play (RR Crisis Icon); a thwart is already kept off it
         MainSchemeThreatRemoved source n -> do
-          crisis <- selectAny CrisisSideScheme
+          crisis <- hasCrisisInYourArea
           let playerCard = case source of
                 IdentityRef _ -> True
                 AllyRef _ -> True
@@ -215,7 +236,8 @@ instance RunMessage (Attrs MainScheme) where
           controllerIgnores <- case source of
             AllyRef _ -> pure False
             _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
-          pure $ if crisis && playerCard && not (ownIgnores || controllerIgnores)
+          restricted <- isRestrictedMainScheme (mainSchemeId attrs)
+          pure $ if crisis && restricted && playerCard && not (ownIgnores || controllerIgnores)
             then attrs else attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
@@ -224,14 +246,20 @@ instance RunMessage (Attrs MainScheme) where
       -- the tokens, and the icons in its own area
       acceleration <- getAccelerationCountIn =<< getAreaOfTarget (mainSchemeId attrs)
       additionalThreat <- fromIntegral <$> fromGameValue (mainSchemeAcceleration attrs)
-      placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + acceleration)
+      gliders <- getGliderSchemes
+      localTokens <- getMainSchemeAccelerationTokensIn =<< getAreaOfTarget (mainSchemeId attrs)
+      let extra = if null gliders then acceleration
+            else mainSchemeAccelerationTokens attrs + if mainSchemeHasGlider attrs then subtractNatural localTokens acceleration else 0
+      placeThreatFrom W.ThreatFromAcceleration (mainSchemeId attrs) (additionalThreat + extra)
       pure attrs
     _ -> pure attrs
    where
-    unlessPatrolled source body = do
+    unlessPatrolled basic source body = do
       patrolled <- maybe (pure False) isPatrolled =<< getSourceController source
-      ignores <- elem IgnoresPatrol <$> getModifiers source
-      if patrolled && not ignores then pure attrs else body
+      modifiers <- getModifiers source
+      let ignores = IgnoresPatrol `elem` modifiers || (basic && BasicThwartIgnoresPatrol `elem` modifiers)
+      restricted <- isRestrictedMainScheme (mainSchemeId attrs)
+      if patrolled && restricted && not ignores then pure attrs else body
 
 -- | The threat that advances it: printed, and as modified (Under Surveillance).
 getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural

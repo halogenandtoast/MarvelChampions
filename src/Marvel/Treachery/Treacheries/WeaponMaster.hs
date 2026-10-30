@@ -28,12 +28,12 @@ newtype WeaponMaster = WeaponMaster (Attrs Treachery)
 instance RunMessage WeaponMaster where
   runMessage msg t@(WeaponMaster attrs) = runQueueT $ case msg of
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
+      hero <- identityMatches HeroIdentity you
+      if hero then currentVillainAttacks you else currentVillainSchemes you
+      cardSpecific attrs "checkWeapon" ()
+      pure t
+    CardSpecific (isTarget attrs -> True) "checkWeapon" _ -> do
       villain <- selectOne ActiveVillain
-      case villain of
-        Nothing -> pure t
-        Just vid -> do
-          hero <- identityMatches HeroIdentity you
-          armed <- selectAny $ AttachmentOnEnemy (EnemyVillainId vid) <> AttachmentWithTrait Weapon
-          if hero then enemyAttacks vid you else villainSchemes vid
-          pure . WeaponMaster $ attrs & surgeL .~ armed
+      armed <- maybe (pure False) (\vid -> selectAny $ AttachmentOnEnemy (EnemyVillainId vid) <> AttachmentWithTrait Weapon) villain
+      pure . WeaponMaster $ attrs & surgeL .~ armed
     _ -> WeaponMaster <$> runMessage msg attrs

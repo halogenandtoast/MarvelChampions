@@ -104,6 +104,7 @@ instance RunMessage (Attrs Ally) where
           dealDamage enemy a dmg
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
+          checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) [enemy]]
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyAttackMultiple enemies damage -> do
@@ -127,6 +128,7 @@ instance RunMessage (Attrs Ally) where
         present <- selectAny (AllyWithId ident)
         when (present && not (null resolved)) do
           checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident resolved]
+          checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) resolved]
           -- This is one use, hence consequential damage is suffered only once.
           consequential <- getModifiedAttackConsequentialDamage a
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
@@ -160,8 +162,11 @@ instance RunMessage (Attrs Ally) where
         when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyDefended enemyId -> do
-        exhaust ident
-        enemyDefendedBy enemyId (AllyCharacter ident)
+        forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
+        unless forbidden do
+          exhaust ident
+          enemyDefendedBy enemyId (AllyCharacter ident)
+          checkWindows [W.Window W.When $ W.AllyDefendedAgainst ident enemyId]
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyWasAttacked attack' -> do
@@ -224,6 +229,7 @@ instance RunMessage (Attrs Ally) where
     -- "if an ability that says an ally gets +X hit points ceases to be in effect and
     -- causes that ally to have damage on it equal to or greater than its hit points,
     -- that ally is defeated"
+    UpgradeMessage uid UpgradeDetached -> pure $ a & upgradesL %~ HashSet.delete uid
     UpgradeRemoved upgradeId | HashSet.member upgradeId (allyUpgrades a) -> do
       hitPoints <- getModifiedHitPoints a
       when (allyDamage a > 0 && allyDamage a >= hitPoints) $ defeatAlly (allyId a)

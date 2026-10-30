@@ -29,7 +29,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard Hood.establishedDominance
+      [ SomeAttachmentCard smSandForm, SomeAttachmentCard smNowWeReAngry, SomeAttachmentCard smHumongousHallucination, SomeAttachmentCard smMasterfulMirage, SomeAttachmentCard smHeightenedMorale, SomeAttachmentCard smTauntingPresence, SomeAttachmentCard smTeamLeader, SomeAttachmentCard smTakeOneForTheTeam, SomeAttachmentCard smWeAreOne, SomeAttachmentCard smAdvancedGlider, SomeAttachmentCard smConcussiveBombs, SomeAttachmentCard smIncendiaryBombs, SomeAttachmentCard smSmokeBombs, SomeAttachmentCard smArmCannon, SomeAttachmentCard smIonicBoots, SomeAttachmentCard smKineticArmor, SomeAttachmentCard smNeocarbonScales, SomeAttachmentCard smSpikedGauntlet, SomeAttachmentCard smTrackingDisplay, SomeAttachmentCard smInducedPanic, SomeAttachmentCard smImprovisedWeapons, SomeAttachmentCard smViolentTendencies, SomeAttachmentCard smWebbedUp, SomeAttachmentCard smDelusionOfCollusion, SomeAttachmentCard smManipulatedMind, SomeAttachmentCard smOldGrudge, SomeAttachmentCard smSnitchesGetStitches
+  , SomeAttachmentCard Hood.establishedDominance
       , SomeAttachmentCard Hood.theHoodsMantle
       , SomeAttachmentCard Hood.theHoodsPistol
       , SomeAttachmentCard armoredRhinoSuit
@@ -175,6 +176,8 @@ allAttachments =
       , SomeAttachmentCard lethalWeapon
       , SomeAttachmentCard (reprintAs Cards.beguiledValkyrie beguiled)
       , SomeAttachmentCard (reprintAs Cards.seducedValkyrie seduced)
+  , SomeAttachmentCard experimentalInjection
+  , SomeAttachmentCard razorClaws
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

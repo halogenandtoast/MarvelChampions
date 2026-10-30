@@ -122,3 +122,21 @@ import Marvel.Attachment.Attachments.LegionsOfHel as X
 import Marvel.Attachment.Attachments.MadTitansShadowCampaign as X
 
 import Marvel.Attachment.Attachments.LethalWeapon as X
+
+-- Sinister Motives
+import Marvel.Attachment.Attachments.ExperimentalInjection as X
+import Marvel.Attachment.Attachments.RazorClaws as X
+
+import Marvel.Attachment.Attachments.SmSandman as X
+
+import Marvel.Attachment.Attachments.SmVenom as X
+
+import Marvel.Attachment.Attachments.SmMysterio as X
+
+import Marvel.Attachment.Attachments.SmSinisterSix as X
+
+import Marvel.Attachment.Attachments.SmVenomGoblin as X
+
+import Marvel.Attachment.Attachments.SmModulars as X
+
+import Marvel.Attachment.Attachments.SmCampaign as X

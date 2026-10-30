@@ -34,7 +34,7 @@ instance HasAbilities Spycraft where
         1
         (EncounterCardRevealedBy When (IdentityWithId $ upgradeController attrs) AnyEncounterCard)
         Interrupt
-        OwnsThis
+        (OwnsThis <> CanCancelRevealedEncounterCard)
         (DiscardCost $ toTarget a)
         (runAbility a 1)
     ]
@@ -53,6 +53,7 @@ instance RunMessage Spycraft where
         drawAndRevealEncounterCard ident
       replaceMatchingMessage (const $ instead <> resolved) \case
         RevealedEncounterCard _ card' -> card' == card
+        RevealedEncounterCardFrom _ _ card' -> card' == card
         _ -> False
       pure u
     _ -> Spycraft <$> runMessage msg attrs

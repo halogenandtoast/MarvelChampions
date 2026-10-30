@@ -51,5 +51,6 @@ data MinionMessage
     MinionFlipBoostCards
   | -- | a boost card's icons are added to its activation
     MinionAddBoost Natural
+  | MinionAttackBecomesIndirect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

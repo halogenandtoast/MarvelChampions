@@ -70,13 +70,13 @@ instance RunMessage Kang where
       pure e
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
       for_ [you | W.EnemyAttack _ you <- windows] \you -> do
-        scheme <- selectOne MainScheme
+        scheme <- selectOne EncounterMainScheme
         chooseOne you $
           [labeled (countLabel "kangPlacesThreat" 1) (placeThreat s 1) | Just s <- [scheme]]
             <> [labeled (countLabel "kangGetsAttack" 2) (cardSpecific attrs "attackGets2" ())]
       pure e
     CardSpecific (isTarget attrs -> True) "attackGets2" _ ->
-      pure . Kang $ attrs & attackingL . _Just . attackDamageL +~ 2
+      pure . Kang $ attrs & attackingL . _Just %~ (\attack -> attack {attackChange = attackChange attack + 2})
     _ -> Kang <$> runMessage msg attrs
 
 -- | The main schemes of the stage in the area.

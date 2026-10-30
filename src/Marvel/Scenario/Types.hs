@@ -250,6 +250,7 @@ deckMessage = \case
   SearchForAndDealEncounterCard ident _ -> Just (Just ident)
   SearchForAndRevealScheme _ -> Just Nothing
   DealBoost _ -> Just Nothing
+  PutTopEncounterCardInPlayerDeck ident -> Just (Just ident)
   DiscardTopOfEncounterDeck _ _ -> Just Nothing
   ShuffleEncounterDeck -> Just Nothing
   ShuffleIntoEncounterDeck _ -> Just Nothing
@@ -268,6 +269,7 @@ drawsFromDeck = \case
   DealEncounterCard _ -> True
   DrawAndRevealEncounterCard _ -> True
   DealBoost _ -> True
+  PutTopEncounterCardInPlayerDeck _ -> True
   PutTopOfEncounterDeckIntoPlay _ -> True
   _ -> False
 
@@ -375,6 +377,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
     -- the encounter deck or discard pile searched
     RevealEncounterCard _ card -> pure $ leaves card attrs
+    RevealEncounterCardFrom _ _ card -> pure $ leaves card attrs
     PutEncounterCardIntoPlay _ card -> pure $ leaves card attrs
     -- an expert Setup of The Galaxy's Most Wanted's campaign has encounter cards discarded
     -- until one: for a player, a minion put into play engaged with them or an attachment
@@ -475,7 +478,12 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         EnemyRef (EnemyVillainId vid) -> for_ ecs (villainStep vid . VillainDealtBoost)
         MinionRef mid -> for_ ecs (minionStep mid . MinionDealtBoost)
         EnemyRef (EnemyMinionId mid) -> for_ ecs (minionStep mid . MinionDealtBoost)
+        IdentityRef ident -> for_ ecs (identityStep ident . IdentityDealtBoost)
         _ -> error "Can not deal boost to target"
+      pure attrs'
+    PutTopEncounterCardInPlayerDeck ident -> do
+      (cards, attrs') <- drawEncounterCard attrs
+      for_ cards \card -> shuffleIntoDeck ident [encounterCardInPlayerDeck ident card]
       pure attrs'
     -- a deck emptied partway is fulfilled: the new deck is not discarded from
     -- never empty here while its discard pile has cards: an encounter deck is made again

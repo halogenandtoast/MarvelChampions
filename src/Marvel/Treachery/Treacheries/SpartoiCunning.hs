@@ -28,6 +28,6 @@ instance RunMessage SpartoiCunning where
     TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
       discardFrom you RandomFromHand 1
       damageIdentity you attrs (toDamage 1 FromTreachery)
-      placeThreatOnEach attrs 1 MainScheme
+      placeThreatOnEach attrs 1 EncounterMainScheme
       pure t
     _ -> SpartoiCunning <$> runMessage msg attrs

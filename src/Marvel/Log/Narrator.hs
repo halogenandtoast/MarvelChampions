@@ -97,6 +97,9 @@ narrationFor = \case
   GameOver Lost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.lost" []]
   -- * What the players do
   IdentityMessage ident msg -> identityNarration ident msg
+  PutTopEncounterCardInPlayerDeck ident -> Just do
+    who <- playerRef' ident
+    one $ notice [ikeyPart "log.encounterCardShuffledIntoPlayerDeck" ["player" ~> who]]
   -- changing form is told as the change itself
   UsedAbility _ a | ChangeForm `elem` a.abilityChoices -> Nothing
   UsedAbility ident a | narrates a.abilityType -> Just $ whenRef (refocus a.abilitySource) \source -> do
@@ -145,6 +148,9 @@ narrationFor = \case
     if current == Just vid then pure [] else whenRef (VillainRef vid) \v -> one $ mechanic [ikeyPart "log.activeVillain" ["villain" ~> v]]
   -- * The encounter deck
   RevealEncounterCard ident card -> Just do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
+  RevealEncounterCardFrom _ ident card -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
   GiveStatus target s
@@ -285,6 +291,17 @@ campaignNarration = \case
   RecordEvasionCounters n -> Just $ one $ notice [ikeyPart "log.campaign.evasionCounters" ["count" ~> n]]
   -- The Mad Titan's Shadow
   RecordTitanMark m -> Just $ one $ notice [ikeyPart ("log.campaign.titanMark." <> tshow m) []]
+  RecordReputation n -> Just $ one $ notice [ikeyPart "log.campaign.reputation" ["count" ~> n]]
+  RecordShieldTech who code -> Just $ added who code
+  RecordAspectAdvantage who code _ -> Just $ added who code
+  RecordPlanningAhead who code -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.planningAhead" ["player" ~> p, "card" ~> card code]]
+  RecordCommunityService codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordOsbornTech code -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> [card code]]]
+  RecordWakingNightmare n -> Just $ one $ notice [ikeyPart "log.campaign.wakingNightmare" ["count" ~> n]]
+  RecordLastOnesStanding codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordFinalReputation -> Just $ one $ notice [ikeyPart "log.campaign.finalReputation" []]
   _ -> Nothing
  where
   added who code = do
@@ -300,6 +317,12 @@ campaignNarration = \case
 
 identityNarration :: (HasGame m) => IdentityId -> IdentityMessage -> Maybe (m [LogEntry])
 identityNarration ident = \case
+  IdentityDealtBoost _ -> Just do
+    who <- playerRef' ident
+    one $ notice [ikeyPart "log.identityDealtBoost" ["player" ~> who]]
+  MoveIdentityBoostCardsToVillain _ -> Just do
+    who <- playerRef' ident
+    one $ notice [ikeyPart "log.identityBoostsMoved" ["player" ~> who]]
   UpgradeControlLost _ -> Nothing
   -- a card that was nobody's, as a rescued Captive ally, becomes the player's
   AddToHand card | isJust (pcOwner card) -> Just do
@@ -334,7 +357,7 @@ identityNarration ident = \case
     one $ action [ikeyPart "log.defends" ["player" ~> who, "enemy" ~> e]]
   DrawCards FromDeck n | n > 0 -> Just do
     who <- playerRef' ident
-    drawn <- getsGame $ maybe [] (take (fromIntegral n) . unDeck . (.playerIdentityDeck) . toAttrs) . lookup ident . gamePlayers
+    drawn <- getsGame $ maybe [] (filter (isNothing . playerZoneEncounterCard) . take (fromIntegral n) . unDeck . (.playerIdentityDeck) . toAttrs) . lookup ident . gamePlayers
     pure
       [ forPlayer ident $ notice [ikeyPart "log.drawsCards" ["player" ~> who, "cards" ~> map PlayerCard drawn]]
       , exceptPlayer ident $ notice [ikeyPart "log.draws" ["player" ~> who, "count" ~> length drawn]]
@@ -467,13 +490,17 @@ allyNarration aid = \case
 
 schemeNarration :: (HasGame m) => Target -> MainSchemeMessage -> Maybe (m [LogEntry])
 schemeNarration target = \case
+  SetMainSchemeGlider True -> Just $ simply "log.gliderMoved" target
+  AddMainSchemeAcceleration n | n > 0 -> Just $ counted "log.accelerationPlaced" target n
   MainSchemePlaceThreat n | n > 0 -> Just $ threat target "log.threatPlaced" n Bad
+  MainSchemeBasicThwarted _ n | n > 0 -> Just $ threat target "log.threatRemoved" n Good
   MainSchemeThwarted _ n | n > 0 -> Just $ threat target "log.threatRemoved" n Good
   MainSchemeThreatRemoved _ n | n > 0 -> Just $ threat target "log.threatRemoved" n Good
   _ -> Nothing
 
 sideSchemeNarration :: (HasGame m) => SideSchemeId -> SideSchemeMessage -> Maybe (m [LogEntry])
 sideSchemeNarration sid = \case
+  SideSchemePlaceAccelerationToken -> Just $ counted "log.accelerationPlaced" (SideSchemeRef sid) 1
   RevealSideScheme -> Just $ simply "log.sideSchemeRevealed" (SideSchemeRef sid)
   SideSchemePlaceThreat n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatPlaced" n Bad
   SideSchemeThwarted _ n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatRemoved" n Good

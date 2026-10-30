@@ -1,6 +1,16 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Villain where
 
+import Marvel.Villain.Villains.SmVenomGoblin
+
+import Marvel.Villain.Villains.SmSinisterSix
+
+import Marvel.Villain.Villains.SmMysterio
+
+import Marvel.Villain.Villains.SmVenom
+
+import Marvel.Villain.Villains.SmSandman
+
 import Marvel.Villain.Villains.TheHood qualified as Hood
 import Marvel.Prelude
 
@@ -86,7 +96,8 @@ lookupVillain cardCode villainId = case lookup cardCode allVillains of
 allVillains :: HashMap CardCode SomeVillainCard
 allVillains = fromList $ map
   (toFst someVillainCardCode)
-  [ SomeVillainCard Hood.theHood1
+  [ SomeVillainCard smSandman1, SomeVillainCard smSandman2, SomeVillainCard smSandman3, SomeVillainCard smVenom1, SomeVillainCard smVenom2, SomeVillainCard smVenom3, SomeVillainCard smMysterio1, SomeVillainCard smMysterio2, SomeVillainCard smMysterio3, SomeVillainCard smDoctorOctopus1, SomeVillainCard smElectro1, SomeVillainCard smHobgoblin1, SomeVillainCard smKravenTheHunter1, SomeVillainCard smScorpion1, SomeVillainCard smVulture1, SomeVillainCard smVenomGoblin1, SomeVillainCard smVenomGoblin2, SomeVillainCard smVenomGoblin3
+  , SomeVillainCard Hood.theHood1
   , SomeVillainCard Hood.theHood2
   , SomeVillainCard Hood.theHood3
   , SomeVillainCard rhino

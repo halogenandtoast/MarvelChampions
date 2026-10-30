@@ -28,7 +28,7 @@ instance HasAbilities Hero where
   getAbilities (Hero a) = getAbilities a <> basicAbilities
    where
     basicAbilities =
-      [ ability a 300 Basic (SchemeExists SchemeYouCanThwart <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
+      [ ability a 300 Basic (SchemeExists (SchemeAHeroCanBasicThwart $ heroIdentityId $ toHeroAttrs a) <> SelfMatches IdentityCanThwart) ExhaustCost Thwart
       , ability a 301 Basic (canAttack <> SelfMatches IdentityCanBasicAttack) ExhaustCost Attack
       ]
 
@@ -86,8 +86,10 @@ instance RunMessage (Attrs Hero) where
           if stunned
             then removeStun ident
             else do
-              checkWindows [W.Window W.When $ W.MadeBasicAttack ident]
-              basicAttack ident 0
+              replaced <- replaceHeroAttackWithDiscardAndStun ident
+              unless replaced do
+                checkWindows [W.Window W.When $ W.MadeBasicAttack ident]
+                basicAttack ident 0
           pure a
         BasicAttack bonus -> do
           enemies <- selectList $ AttackableBy (IdentityWithId ident)
@@ -115,6 +117,7 @@ instance RunMessage (Attrs Hero) where
         BasicAttackOn enemy bonus -> do
           damage <- attackDamageAgainst ident enemy bonus
           dealDamage enemy a damage
+          checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) ident [enemy]]
           pure a
         Thwarted -> do
           confused <- identityMatches ConfusedIdentity (heroIdentityId a)
@@ -125,7 +128,7 @@ instance RunMessage (Attrs Hero) where
               basicThwart ident 0
           pure a
         BasicThwart bonus -> do
-          schemes <- selectList SchemeYouCanThwart
+          schemes <- selectList (SchemeAHeroCanBasicThwart ident)
           thw <- (+ bonus) <$> getModifiedThwart a
           atk <- (+ bonus) <$> getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows
@@ -146,17 +149,21 @@ instance RunMessage (Attrs Hero) where
           checkWindows [W.Window W.After $ W.MadeBasicThwart ident]
           pure a
         Defended enemy -> do
-          exhaust ident
-          enemyDefendedBy enemy (IdentityCharacter ident)
-          checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
-          defenseApplied ident enemy
+          forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+          unless forbidden do
+            exhaust ident
+            enemyDefendedBy enemy (IdentityCharacter ident)
+            checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+            defenseApplied ident enemy
           pure a
         -- A card may declare the basic defender without exhausting it. Its DEF is
         -- applied once, after the same defense window as an ordinary basic defense.
         DefendedWithoutExhausting bonus enemy -> do
-          enemyDefendedBy enemy (IdentityCharacter ident)
-          checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
-          identityStep ident (SideMessage $ DefenseApplied bonus enemy)
+          forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+          unless forbidden do
+            enemyDefendedBy enemy (IdentityCharacter ident)
+            checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+            identityStep ident (SideMessage $ DefenseApplied bonus enemy)
           pure a
         DefenseApplied bonus enemy -> do
           addDefense ident . (+ bonus) =<< getModifiedDefenseAgainst a enemy

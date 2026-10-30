@@ -39,8 +39,12 @@ statusL = \case
 -- Stalwart).
 statusUnlessStalwart :: (HasGame m) => Attrs Minion -> StatusCard -> m (Attrs Minion)
 statusUnlessStalwart attrs s = do
-  stalwart <- elem Stalwart <$> getModifiedKeywords attrs
-  pure $ if stalwart && s /= ToughStatus then attrs else attrs & statusL s .~ True
+  keywords <- getModifiedKeywords attrs
+  pure $ if Stalwart `elem` keywords && s /= ToughStatus then attrs else
+    case s of
+      StunnedStatus | Steady `elem` keywords && minionStunned attrs -> attrs {minionAdditionalStun = True}
+      ConfusedStatus | Steady `elem` keywords && minionConfused attrs -> attrs {minionAdditionalConfuse = True}
+      _ -> attrs & statusL s .~ True
 
 runMinionMessage ::
   (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
@@ -91,7 +95,9 @@ runMinionMessage msg attrs = case msg of
   MinionStunned _ -> statusUnlessStalwart attrs StunnedStatus
   MinionConfused _ -> statusUnlessStalwart attrs ConfusedStatus
   MinionBecomeTough -> pure $ attrs & toughL .~ True
-  MinionDefendedBy characterId -> pure $ attrs & attackingL . _Just %~ defendedBy characterId
+  MinionDefendedBy characterId -> do
+    forbidden <- elem AttacksCannotBeDefended <$> getModifiers attrs
+    pure $ if forbidden then attrs else attrs & attackingL . _Just %~ defendedBy characterId
   AttachedToMinion attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToMinion upgradeId ->
@@ -113,8 +119,9 @@ runMinionMessage msg attrs = case msg of
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs
   -- a villainous minion is given a boost card as it uses a basic power (RR, Villainous)
-  MinionSchemes ->
-    if minionConfused attrs
+  MinionSchemes -> do
+    confused <- isConfused attrs
+    if confused
       then pure $ attrs & confusedL .~ False
       else do
         villainous <- isVillainous
@@ -133,17 +140,20 @@ runMinionMessage msg attrs = case msg of
     enemyAttacks (minionId attrs) ident
     pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
   -- a stunned minion discards its stun instead (RR Stun)
-  MinionAttacksEnemy enemy
-    | minionStunned attrs -> pure $ attrs & stunnedL .~ False
-    | otherwise -> do
+  MinionAttacksEnemy enemy -> do
+    stunned <- isStunned attrs
+    if stunned
+      then pure $ attrs & stunnedL .~ False
+      else do
         keywords <- getModifiedKeywords attrs
         atk <- getModifiedAttack attrs
         let attack' = attackWith keywords (toEnemyId attrs) (MinionCharacter $ minionId attrs) atk
         dealDamage enemy attrs (attackDamageTo attack' atk)
         unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
         pure attrs
-  MinionAttacks ident ->
-    if minionStunned attrs
+  MinionAttacks ident -> do
+    stunned <- isStunned attrs
+    if stunned
       then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
         -- the attack is its activation against the player, from start to end, whether
@@ -173,7 +183,7 @@ runMinionMessage msg attrs = case msg of
   -- (Tower Defense, RR v1.8 p.67 errata)
   MinionSchemed -> do
     paired <- maybe (pure Nothing) getPairedMainScheme =<< selectOne ActiveVillain
-    mainScheme <- maybe (selectOne MainScheme) (pure . Just . SchemeMainSchemeId) paired
+    mainScheme <- maybe (selectOne EncounterMainScheme) (pure . Just . SchemeMainSchemeId) paired
     threat <- getModifiedScheme attrs
     for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
       placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
@@ -181,6 +191,7 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  MinionAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ \a -> a {attackIndirect = True}
   MinionAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   MinionAttacked -> do
@@ -208,19 +219,25 @@ runMinionMessage msg attrs = case msg of
   newAttack ident = attackWith <$> getModifiedKeywords attrs <*> pure (toEnemyId attrs) <*> pure (attackTarget ident) <*> getModifiedAttack attrs
 
 instance RunMessage (Attrs Minion) where
-  runMessage msg attrs = runQueueT $ case msg of
-    GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
-    RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
-    MinionMessage ident msg'
-      | ident == minionId attrs ->
-          runMinionMessage msg' attrs
-    AttachmentRemoved attachmentId ->
-      pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
-    UpgradeRemoved upgradeId -> pure $ attrs & upgradesL %~ HashSet.delete upgradeId
-    WithBoostIcons (MinionRef mid) _ counts | mid == minionId attrs -> do
-      minionStep mid (MinionAddBoost $ sum $ map snd counts)
-      pure attrs
-    _ -> pure attrs
+  runMessage msg attrs = runQueueT do
+    updated <- case msg of
+      GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
+      RemoveStatus (MinionRef mid) StunnedStatus | mid == minionId attrs, minionAdditionalStun attrs -> pure attrs {minionAdditionalStun = False}
+      RemoveStatus (MinionRef mid) ConfusedStatus | mid == minionId attrs, minionAdditionalConfuse attrs -> pure attrs {minionAdditionalConfuse = False}
+      RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
+      MinionMessage ident msg'
+        | ident == minionId attrs ->
+            runMinionMessage msg' attrs
+      AttachmentRemoved attachmentId ->
+        pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+      UpgradeMessage uid UpgradeDetached -> pure $ attrs & upgradesL %~ HashSet.delete uid
+      UpgradeRemoved upgradeId -> pure $ attrs & upgradesL %~ HashSet.delete upgradeId
+      WithBoostIcons (MinionRef mid) _ counts | mid == minionId attrs -> do
+        minionStep mid (MinionAddBoost $ sum $ map snd counts)
+        pure attrs
+      _ -> pure attrs
+    steady <- elem Steady <$> getModifiedKeywords updated
+    pure $ if steady then updated else updated {minionAdditionalStun = False, minionAdditionalConfuse = False}
 
 -- Hela
 

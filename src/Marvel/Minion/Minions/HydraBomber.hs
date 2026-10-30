@@ -25,7 +25,7 @@ instance RunMessage HydraBomber where
         chooseOne
           identityId
           [ labeled (countLabel "takeDamage" 2) $ damageIdentity identityId attrs (toDamage 2 FromAbility)
-          , labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreatOnEach attrs 1 MainScheme
+          , labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreatOnEach attrs 1 EncounterMainScheme
           ]
         pure e
       _ -> HydraBomber <$> runMessage msg attrs

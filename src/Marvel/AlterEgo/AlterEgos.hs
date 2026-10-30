@@ -61,3 +61,7 @@ import Marvel.AlterEgo.AlterEgos.JamesRhodes as X
 import Marvel.AlterEgo.AlterEgos.Brunnhilde as X
 
 import Marvel.AlterEgo.AlterEgos.VisionAlterEgo as X
+
+-- Sinister Motives
+import Marvel.AlterEgo.AlterEgos.GwenStacy as X
+import Marvel.AlterEgo.AlterEgos.MilesMorales as X

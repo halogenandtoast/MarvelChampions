@@ -1,5 +1,11 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -20,7 +26,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ establishedDominance
+      [ smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
+  , establishedDominance
       , theHoodsMantle
       , theHoodsPistol
       , armoredRhinoSuit
@@ -178,6 +185,8 @@ allAttachments =
       , lethalWeapon
       , beguiledValkyrie
       , seducedValkyrie
+  , experimentalInjection
+  , razorClaws
       ]
 
 attachment ::
@@ -653,3 +662,341 @@ theHoodsMantle = attachment "24008" "The Hood's Mantle" [Armor] [] TheHood 1
 
 theHoodsPistol :: CardDef
 theHoodsPistol = attachment "24009" "The Hood's Pistol" [Weapon] [Star] TheHood 2
+
+
+-- Sinister Motives
+
+experimentalInjection :: CardDef
+experimentalInjection = attachment "27028" "Experimental Injection" [] [] GhostSpiderNemesis 1
+
+razorClaws :: CardDef
+razorClaws = attachment "27059" "Razor Claws" [Weapon] [Boost, Boost] SpiderManMoralesNemesis 1
+
+-- Sinister Motives
+
+smAttachmentDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smAttachmentDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smSandForm :: CardDef
+smSandForm = (smAttachmentDef "27066" "Sand Form" SMSet.Sandman 2)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smNowWeReAngry :: CardDef
+smNowWeReAngry = (smAttachmentDef "27078" "\"Now We're Angry!\"" SMSet.Venom 2)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHumongousHallucination :: CardDef
+smHumongousHallucination = (smAttachmentDef "27089" "Humongous Hallucination" SMSet.Mysterio 1)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMasterfulMirage :: CardDef
+smMasterfulMirage = (smAttachmentDef "27090" "Masterful Mirage" SMSet.Mysterio 2)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHeightenedMorale :: CardDef
+smHeightenedMorale = (smAttachmentDef "27103" "Heightened Morale" SMSet.SinisterSix 2)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTauntingPresence :: CardDef
+smTauntingPresence = (smAttachmentDef "27104" "Taunting Presence" SMSet.SinisterSix 2)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTeamLeader :: CardDef
+smTeamLeader = (smAttachmentDef "27105" "Team Leader" SMSet.SinisterSix 1)
+  { cdTraits = fromList [SMTrait.Title]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTakeOneForTheTeam :: CardDef
+smTakeOneForTheTeam = (smAttachmentDef "27106" "Take One for the Team" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWeAreOne :: CardDef
+smWeAreOne = (smAttachmentDef "27120" "We Are One" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smAdvancedGlider :: CardDef
+smAdvancedGlider = (smAttachmentDef "27136" "Advanced Glider" SMSet.GoblinGear 1)
+  { cdTraits = fromList [SMTrait.Item, SMTrait.Tech]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smConcussiveBombs :: CardDef
+smConcussiveBombs = (smAttachmentDef "27137" "Concussive Bombs" SMSet.GoblinGear 1)
+  { cdTraits = fromList [SMTrait.Tech, SMTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smIncendiaryBombs :: CardDef
+smIncendiaryBombs = (smAttachmentDef "27138" "Incendiary Bombs" SMSet.GoblinGear 1)
+  { cdTraits = fromList [SMTrait.Tech, SMTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSmokeBombs :: CardDef
+smSmokeBombs = (smAttachmentDef "27139" "Smoke Bombs" SMSet.GoblinGear 1)
+  { cdTraits = fromList [SMTrait.Tech, SMTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smArmCannon :: CardDef
+smArmCannon = (smAttachmentDef "27147" "Arm Cannon" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Tech, SMTrait.Weapon]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smIonicBoots :: CardDef
+smIonicBoots = (smAttachmentDef "27148" "Ionic Boots" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Item, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smKineticArmor :: CardDef
+smKineticArmor = (smAttachmentDef "27149" "Kinetic Armor" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Armor, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smNeocarbonScales :: CardDef
+smNeocarbonScales = (smAttachmentDef "27150" "Neocarbon Scales" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Armor, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSpikedGauntlet :: CardDef
+smSpikedGauntlet = (smAttachmentDef "27151" "Spiked Gauntlet" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Tech, SMTrait.Weapon]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTrackingDisplay :: CardDef
+smTrackingDisplay = (smAttachmentDef "27152" "Tracking Display" SMSet.OsbornTech 1)
+  { cdTraits = fromList [SMTrait.Item, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smInducedPanic :: CardDef
+smInducedPanic = (smAttachmentDef "27153" "Induced Panic" SMSet.PersonalNightmare 1)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smImprovisedWeapons :: CardDef
+smImprovisedWeapons = (smAttachmentDef "27164" "Improvised Weapons" SMSet.SymbioticStrength 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 1
+  }
+
+smViolentTendencies :: CardDef
+smViolentTendencies = (smAttachmentDef "27165" "Violent Tendencies" SMSet.SymbioticStrength 1)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWebbedUp :: CardDef
+smWebbedUp = (smAttachmentDef "27166" "Webbed Up" SMSet.SymbioticStrength 1)
+  { cdTraits = fromList [SMTrait.Condition]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smDelusionOfCollusion :: CardDef
+smDelusionOfCollusion = (smAttachmentDef "27170" "Delusion of Collusion" SMSet.WhispersOfParanoia 2)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smManipulatedMind :: CardDef
+smManipulatedMind = (smAttachmentDef "27171" "Manipulated Mind" SMSet.WhispersOfParanoia 1)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smOldGrudge :: CardDef
+smOldGrudge = (smAttachmentDef "27172" "Old Grudge" SMSet.WhispersOfParanoia 1)
+  { cdTraits = fromList [SMTrait.Illusion]
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSnitchesGetStitches :: CardDef
+smSnitchesGetStitches = (smAttachmentDef "27181" "Snitches Get Stitches" SMSet.SnitchesGetStitches 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Victory (-1)]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

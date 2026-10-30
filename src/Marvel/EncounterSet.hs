@@ -118,6 +118,27 @@ data EncounterSet
   | ValkyrieNemesis
   | TheHood
   | VisionNemesis
+  | GhostSpiderNemesis
+  | SpiderManMoralesNemesis
+  -- Sinister Motives
+  | Sandman
+  | Venom
+  | Mysterio
+  | SinisterSix
+  | VenomGoblin
+  | CityInChaos
+  | DownToEarth
+  | GoblinGear
+  | GuerrillaTactics
+  | OsbornTech
+  | PersonalNightmare
+  | SinisterAssault
+  | SymbioticStrength
+  | WhispersOfParanoia
+  | BadPublicity
+  | CommunityService
+  | SnitchesGetStitches
+  | ShieldTech
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -169,6 +190,16 @@ modularSets =
   , LegionsOfHel
   , FrostGiants
   , Enchantress
+  -- Sinister Motives
+  , CityInChaos
+  , DownToEarth
+  , GoblinGear
+  , GuerrillaTactics
+  , OsbornTech
+  , PersonalNightmare
+  , SinisterAssault
+  , SymbioticStrength
+  , WhispersOfParanoia
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -202,6 +233,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "23001" -> WarMachineNemesis
   "25001" -> ValkyrieNemesis
   "26001" -> VisionNemesis
+  "27001" -> GhostSpiderNemesis
+  "27030" -> SpiderManMoralesNemesis
   cCode ->
     error $
       "No nemesis set for "

@@ -1,6 +1,7 @@
 module Marvel.Modifier.Types where
 
 import Marvel.Prelude
+import Marvel.Ref (Target)
 
 import Marvel.Card.Id (CardId)
 import Marvel.Id (EnemyId)
@@ -22,6 +23,8 @@ data Modifier
   | SchemeModifier Natural
   | AttackModifierAgainst EnemyId Natural
   | DefenseModifierAgainst EnemyId Natural
+  | AttacksCannotBeDefended
+  | ReplaceHeroAttackWithDiscardAndStun Target
   | CannotAttackEnemy EnemyId
   | CannotBeDiscarded
   | DefenseModifier Natural
@@ -55,10 +58,13 @@ data Modifier
   | -- | the player cannot thwart: no basic thwart, and no thwart ability, for any card
     -- they control
     CannotThwart
+  | CannotTriggerPrintedHeroAbilities
   | -- | more consequential damage after the ally attacks
     AttackConsequentialDamageModifier Natural
   | -- | on a source: each instance of damage it deals is increased
     DamageDealtModifier Natural
+  | DamageTakenModifier Int
+  | AdditionalActivationBoostIcons Natural
   | -- | on a source: each instance of threat it removes is increased
     ThreatRemovedModifier Natural
   | RecoveryModifier Natural
@@ -137,6 +143,14 @@ data Modifier
   | -- | on an enemy: it takes no more than this much damage from a single attack
     -- (Cutthroat Ambition), after any reduction
     AttackDamageCap Natural
+  | CannotBeCanceled
+  | AccelerationIconModifier Natural
+  | HazardIconModifier Natural
+  | CannotThwartSideSchemes
+  | CrisisIcon
+  | AdditionalThwartCost Cost
+  | BasicThwartOnlyMostThreat
+  | BasicThwartIgnoresPatrol
   | -- | on an identity: an interrupt it can use as it plays a card from hand reduces the
     -- card's cost by this much (Star-Lord), counted toward what it can afford
     MayReduceCostToPlay Natural

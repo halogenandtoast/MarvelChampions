@@ -93,7 +93,7 @@ instance RunMessage ViewTheCosmos where
               chooseOrRunOne you
                 [ targeting c do
                     discardCard c
-                    selectOne MainScheme >>= traverse_ (`placeThreat` printedCost c)
+                    selectOne EncounterMainScheme >>= traverse_ (`placeThreat` printedCost c)
                 | c <- highest
                 ]
           ]

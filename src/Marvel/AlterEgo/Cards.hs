@@ -69,6 +69,8 @@ allAlterEgoCards =
     , jamesRhodes
     , brunnhilde
     , visionAlterEgo
+  , gwenStacy
+  , milesMorales
     ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -222,3 +224,12 @@ visionAlterEgo :: CardDef
 visionAlterEgo = deckLimited 1 $ (alterEgo "26001b" "Vision" [Android])
     { cdUnique = True
     }
+
+
+-- Sinister Motives
+
+gwenStacy :: CardDef
+gwenStacy = alterEgo "27001b" "Gwen Stacy" [Civilian]
+
+milesMorales :: CardDef
+milesMorales = alterEgo "27030b" "Miles Morales" [Civilian]

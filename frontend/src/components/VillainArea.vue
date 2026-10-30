@@ -103,7 +103,7 @@ const escalation = (scheme: SchemeView) => {
     </div>
     <!-- what is attached to the villain, as cards beside it -->
     <template v-for="villain in villains" :key="`${villain.id}-attached`">
-      <BoardCard v-for="a in villain.attachments ?? []" :id="a.id" :key="a.id" class="villain-attached" :code="a.code" :name="a.name" :damage="a.damage ?? 0" :counters="a.counters || null" />
+      <BoardCard v-for="a in villain.attachments ?? []" :id="a.id" :key="a.id" class="villain-attached" :code="a.code" :name="a.name" :damage="a.damage ?? 0" :counters="a.counters || null" :flag="a.crisis ? t('game.crisis') : null" flag-icon="crisis" />
       <BoardCard v-for="u in villain.upgrades ?? []" :id="u.id" :key="u.id" class="villain-attached" :code="u.code" :name="u.name" :exhausted="u.exhausted" :counters="u.uses ?? null" />
     </template>
 
@@ -117,24 +117,26 @@ const escalation = (scheme: SchemeView) => {
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
+        <span v-if="scheme.glider" class="glider-marker">{{ t('game.glider') }}</span>
         <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
-          {{ t('game.perRound', { count: escalation(scheme)! + tokens + icons }) }}
+          {{ t('game.perRound', { count: escalation(scheme)! + (scheme.accelerationTokens ?? tokens) + icons }) }}
           <span v-if="icons" class="icons" :title="t('game.accelerationIcons', icons)">
             <GameIcon name="acceleration" :label="t('game.accelerationIcons', icons)" /><template v-if="icons > 1">×{{ icons }}</template>
           </span>
           <TokenStack
-            v-if="tokens"
+            v-if="scheme.accelerationTokens ?? tokens"
             kind="acceleration"
-            :count="tokens"
-            :title="t('game.acceleration', { count: tokens })"
+            :count="scheme.accelerationTokens ?? tokens"
+            :title="t('game.acceleration', { count: scheme.accelerationTokens ?? tokens })"
           />
         </p>
       </div>
 
       <div v-if="sideSchemes.length" class="side-schemes">
         <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
+          <TokenStack v-if="scheme.accelerationTokens" kind="acceleration" :count="scheme.accelerationTokens" :title="t('game.acceleration', { count: scheme.accelerationTokens })" />
           <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" :held="scheme.held || null" />
         </div>
       </div>
@@ -199,6 +201,7 @@ const escalation = (scheme: SchemeView) => {
 .scheme.main :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 .escalation .icons { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--crimson-bright); }
 .escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
+.glider-marker { align-self: center; padding: 3px 6px; border: 1px solid currentColor; font-size: 0.7rem; text-transform: uppercase; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
 .environments { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-inline: auto; min-width: 0; }

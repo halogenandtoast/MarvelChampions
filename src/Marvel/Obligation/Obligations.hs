@@ -69,3 +69,10 @@ import Marvel.Obligation.Obligations.EquipmentMalfunction as X
 import Marvel.Obligation.Obligations.TroubleInOtherworld as X
 
 import Marvel.Obligation.Obligations.CorruptedProgramming as X
+
+-- Sinister Motives
+import Marvel.Obligation.Obligations.WorriedFather as X
+import Marvel.Obligation.Obligations.KeepingSecrets as X
+
+
+import Marvel.Obligation.Obligations.SmModulars as X

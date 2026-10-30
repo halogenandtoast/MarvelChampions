@@ -4,6 +4,7 @@ module Marvel.Villain.Types (
 ) where
 
 import Marvel.Prelude
+import Control.Monad (replicateM_)
 
 import Data.HashSet qualified as HashSet
 import Data.Aeson (genericParseJSON, defaultOptions)
@@ -100,6 +101,9 @@ instance Entity Villain where
     , villainTough :: Bool
     , villainBoostCards :: [EncounterCard]
     , villainBoost :: Natural
+    , villainPendingAttackBoostCards :: Natural
+    , villainAttackAdditionalBoostCards :: Natural
+    , villainAttackGrantedKeywords :: [Keyword]
     , villainAttacking :: Maybe Attack
     , villainAttachments :: HashSet AttachmentId
     , villainUpgrades :: HashSet UpgradeId
@@ -201,6 +205,9 @@ villain f cardDef sch atk startingHp =
             , villainTough = False
             , villainBoostCards = mempty
             , villainBoost = 0
+            , villainPendingAttackBoostCards = 0
+            , villainAttackAdditionalBoostCards = 0
+            , villainAttackGrantedKeywords = []
             , villainAttacking = Nothing
             , villainAttachments = mempty
             , villainUpgrades = mempty
@@ -404,22 +411,30 @@ runVillainMessage msg attrs = case msg of
   VillainAttacksAlly ident allyId -> do
     enemyAttacks vid ident
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
+  VillainAttacksWithAdditionalBoostCards ident n -> do
+    -- Dispatch the ordinary declaration so card-specific activation interrupts still run.
+    villainStep vid (VillainAttacks ident)
+    pure attrs {villainPendingAttackBoostCards = n}
+  VillainSetAttackAdditionalBoostCards n -> pure attrs {villainAttackAdditionalBoostCards = n}
   VillainAttacks ident -> attacks (VillainBeginAttack ident) ident []
   VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident []
   VillainAttacksGaining ident keywords -> attacks (VillainBeginAttack ident) ident keywords
   VillainBeginAttack ident -> beginAttack True ident
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
-  VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing} & attackingL .~ Nothing
-  VillainAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
+  VillainAttackGains k -> pure $ attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
+  VillainAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ (\attack -> attack {attackIndirect = True})
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
-  VillainDefendedBy characterId -> pure $ attrs & attackingL . _Just %~ defendedBy characterId
+  VillainDefendedBy characterId -> do
+    forbidden <- elem AttacksCannotBeDefended <$> getModifiers attrs
+    pure $ if forbidden then attrs else attrs & attackingL . _Just %~ defendedBy characterId
   -- onto his own side scheme, when he has one, or his own main scheme (Tower Defense),
   -- or else the main scheme
   VillainSchemed -> do
     own <- selectOne (SignatureSchemeOf $ VillainWithId vid)
     paired <- getPairedMainScheme vid
-    scheme <- maybe (selectOne MainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
+    scheme <- maybe (selectOne EncounterMainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
     sch <- getModifiedScheme attrs
     for_ scheme \s -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
     checkWindows [W.Window W.After $ W.Schemed vid]
@@ -428,7 +443,13 @@ runVillainMessage msg attrs = case msg of
     case villainAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
-        attack' <- undefendedIfDefenderGone attack0
+        base <- getModifiedAttack attrs
+        keywords <- getModifiedKeywords attrs
+        let current = keywords <> villainAttackGrantedKeywords attrs
+            refreshed = attack0 {attackDamage = base + villainBoost attrs,
+              attackOverkill = Overkill `elem` current, attackPiercing = Piercing `elem` current,
+              attackRanged = Ranged `elem` current}
+        attack' <- undefendedIfDefenderGone refreshed
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
@@ -462,11 +483,12 @@ runVillainMessage msg attrs = case msg of
   attacks begin ident keywords = do
     stunned <- isStunned attrs
     if stunned
-      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
+      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainAttackAdditionalBoostCards = 0}
       else do
         -- the attack is his activation against the player, from start to end
         checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
         checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        villainStep vid (VillainSetAttackAdditionalBoostCards $ villainPendingAttackBoostCards attrs)
         villainStep vid begin
         villainStep vid VillainEndAttack
         clearBoosts
@@ -474,7 +496,7 @@ runVillainMessage msg attrs = case msg of
         -- the attack is under way from when it is declared, as its would windows open,
         -- with the keywords it gains as it is declared
         attack' <- flip (foldr gainKeyword) keywords <$> newAttack ident
-        pure $ attrs {villainActivationPlayer = Just ident} & attackingL ?~ attack'
+        pure $ attrs {villainActivationPlayer = Just ident, villainAttackGrantedKeywords = keywords, villainPendingAttackBoostCards = 0} & attackingL ?~ attack'
   -- an attack "that does not get a boost card" is dealt none
   beginAttack boosted ident = do
     -- with the keywords it gained as it was declared, and what its activation already
@@ -482,13 +504,16 @@ runVillainMessage msg attrs = case msg of
     attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
     modifiers <- getModifiers attrs
     checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
-    when boosted dealActivationBoost
+    when boosted do
+      dealActivationBoost
+      unless (NoActivationBoostCard `elem` modifiers) $
+        replicateM_ (fromIntegral $ villainAttackAdditionalBoostCards attrs) (dealBoost attrs)
     declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked
     checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
     pure $
-      attrs {villainAttackTarget = Nothing} & attackingL ?~ attack'
+      attrs {villainAttackTarget = Nothing, villainAttackAdditionalBoostCards = 0} & attackingL ?~ attack'
   dealActivationBoost = do
     modifiers <- getModifiers attrs
     unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
@@ -503,6 +528,7 @@ instance RunMessage (Attrs Villain) where
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
     AttachmentRemoved attachmentId -> do
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
+    UpgradeMessage uid UpgradeDetached -> pure $ attrs & upgradesL %~ HashSet.delete uid
     UpgradeRemoved upgradeId -> do
       pure $ attrs & upgradesL %~ HashSet.delete upgradeId
     VillainMessage ident msg'
@@ -553,6 +579,7 @@ carryOver VillainAttrs {..} = update
       & (upgradesL .~ villainUpgrades)
       & (boostCardsL .~ villainBoostCards)
       & (boostL .~ villainBoost)
+      & (\a -> a {villainAttackGrantedKeywords = villainAttackGrantedKeywords, villainPendingAttackBoostCards = villainPendingAttackBoostCards, villainAttackAdditionalBoostCards = villainAttackAdditionalBoostCards})
       & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
       & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer, villainPreventedAttack = villainPreventedAttack}
   restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
@@ -570,7 +597,19 @@ keepDial attrs a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs)
 -- | The damage less what reduces "any amount of damage" the villain would take (Thanos's
 -- Armor), once a tough status card has had its say.
 reducedDamage :: [Modifier] -> Damage -> Damage
-reducedDamage modifiers d = d {damageAmount = subtractNatural (sum [n | DamageReduction n <- modifiers]) (damageAmount d)}
+reducedDamage modifiers d = d {damageAmount = maybe reduced (min reduced) cap}
+ where
+  attack = case damageSource d of
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    FromAttack -> True
+    FromOverkill -> True
+    _ -> False
+  reduction = sum [n | DamageReduction n <- modifiers] + sum [n | AttackDamageReduction n <- modifiers, attack]
+  reduced = subtractNatural reduction (damageAmount d)
+  cap = case [n | AttackDamageCap n <- modifiers, attack] of
+    [] -> Nothing
+    ns -> Just (minimum ns)
 
 getModifiedAttack :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedAttack attrs = do
@@ -600,5 +639,8 @@ versionBEnters attrs
 instance FromJSON (Attrs Villain) where
   parseJSON = withObject "VillainAttrs" $ \o ->
     genericParseJSON defaultOptions $ Object $
+      KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
+      KeyMap.insertWith (\_ old -> old) "villainAttackAdditionalBoostCards" (toJSON (0 :: Natural)) $
+      KeyMap.insertWith (\_ old -> old) "villainAttackGrantedKeywords" (toJSON ([] :: [Keyword])) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalStun" (Bool False) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalConfuse" (Bool False) o

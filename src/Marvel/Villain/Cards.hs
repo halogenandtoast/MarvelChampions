@@ -1,5 +1,11 @@
 module Marvel.Villain.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Data.HashSet (singleton)
 import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.EncounterSet (EncounterSet (Bulldozer, Piledriver, Thunderball, Wrecker))
@@ -17,7 +23,8 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
-  [ theHood1
+  [ smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
+  , theHood1
   , theHood2
   , theHood3
   , rhino1
@@ -502,3 +509,233 @@ theHood2 = villain "24002" "The Hood" [Criminal]
 
 theHood3 :: CardDef
 theHood3 = villain "24003" "The Hood" [Criminal]
+
+-- Sinister Motives
+
+smVillainDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smVillainDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smSandman1 :: CardDef
+smSandman1 = (smVillainDef "27061" "Sandman" SMSet.Sandman 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSandman2 :: CardDef
+smSandman2 = (smVillainDef "27062" "Sandman" SMSet.Sandman 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSandman3 :: CardDef
+smSandman3 = (smVillainDef "27063" "Sandman" SMSet.Sandman 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenom1 :: CardDef
+smVenom1 = (smVillainDef "27073" "Venom" SMSet.Venom 1)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Toughness]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenom2 :: CardDef
+smVenom2 = (smVillainDef "27074" "Venom" SMSet.Venom 1)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Toughness, SMKeyword.Steady]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenom3 :: CardDef
+smVenom3 = (smVillainDef "27075" "Venom" SMSet.Venom 1)
+  { cdTraits = fromList [SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Retaliate 1, SMKeyword.Steady, SMKeyword.Toughness]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMysterio1 :: CardDef
+smMysterio1 = (smVillainDef "27084" "Mysterio" SMSet.Mysterio 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMysterio2 :: CardDef
+smMysterio2 = (smVillainDef "27085" "Mysterio" SMSet.Mysterio 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMysterio3 :: CardDef
+smMysterio3 = (smVillainDef "27086" "Mysterio" SMSet.Mysterio 1)
+  { cdTraits = fromList [SMTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smDoctorOctopus1 :: CardDef
+smDoctorOctopus1 = (smVillainDef "27094" "Doctor Octopus" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smElectro1 :: CardDef
+smElectro1 = (smVillainDef "27095" "Electro" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHobgoblin1 :: CardDef
+smHobgoblin1 = (smVillainDef "27096" "Hobgoblin" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smKravenTheHunter1 :: CardDef
+smKravenTheHunter1 = (smVillainDef "27097" "Kraven the Hunter" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smScorpion1 :: CardDef
+smScorpion1 = (smVillainDef "27098" "Scorpion" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVulture1 :: CardDef
+smVulture1 = (smVillainDef "27099" "Vulture" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenomGoblin1 :: CardDef
+smVenomGoblin1 = (smVillainDef "27113" "Venom Goblin" SMSet.VenomGoblin 1)
+  { cdTraits = fromList [SMTrait.Goblin, SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Steady]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenomGoblin2 :: CardDef
+smVenomGoblin2 = (smVillainDef "27114" "Venom Goblin" SMSet.VenomGoblin 1)
+  { cdTraits = fromList [SMTrait.Goblin, SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Steady, SMKeyword.Toughness]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smVenomGoblin3 :: CardDef
+smVenomGoblin3 = (smVillainDef "27115" "Venom Goblin" SMSet.VenomGoblin 1)
+  { cdTraits = fromList [SMTrait.Goblin, SMTrait.Symbiote]
+  , cdKeywords = fromList [SMKeyword.Retaliate 1, SMKeyword.Stalwart, SMKeyword.Toughness]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

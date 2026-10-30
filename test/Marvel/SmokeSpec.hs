@@ -67,6 +67,27 @@ spec = do
                 marked = foldr (recordInLog . RecordTitanMark) ((newCampaignOf MadTitansShadow mode identities) {completed = n}) [minBound .. maxBound]
                 c = foldr recordInLog marked (zipWith RecordHitPoints identities [5, 0])
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+    describe "Sinister Motives campaign" do
+      for_ (zip [0 ..] sinisterMotives) \(n, villain) ->
+        for_ [StandardCampaign, ExpertCampaign] \mode ->
+          it (show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode) do
+            let heroes' = ["spider-man", "she-hulk"]
+                identities = map ((.hero) . starter) heroes'
+                base = (newCampaignOf SinisterMotives mode identities) {completed = n}
+                records =
+                  [ RecordReputation ([0, 8, 16, 24, 28] !! n)
+                  , RecordCommunityService ["27176", "27177"]
+                  , RecordOsbornTech "27147"
+                  , RecordOsbornTech "27148"
+                  , RecordWakingNightmare 5
+                  , RecordLastOnesStanding ["27094", "27095"]
+                  ]
+                  <> zipWith RecordHitPoints identities [5, 0]
+                  <> zipWith RecordShieldTech identities ["27182a", "27183a"]
+                  <> [RecordAspectAdvantage identity "01069" 2 | identity <- identities]
+                  <> [RecordPlanningAhead identity "01091" | identity <- identities]
+                c = foldl' (flip recordInLog) base records
+            playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
  where
   playSetup = playWith id
   playWith f setup heroes = do

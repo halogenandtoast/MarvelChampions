@@ -27,6 +27,7 @@ instance RunMessage CountdownToOblivion where
         for_ players putTopOfDeckIntoPlayAsDrone
         pure ms
       -- threat cannot be removed from this scheme
+      MainSchemeBasicThwarted _ _ -> pure ms
       MainSchemeThwarted _ _ -> pure ms
       MainSchemeThreatRemoved _ _ -> pure ms
       _ -> CountdownToOblivion <$> runMessage msg attrs

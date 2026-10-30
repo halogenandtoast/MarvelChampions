@@ -48,6 +48,6 @@ instance RunMessage RegenerationCycle where
       _ -> RegenerationCycle <$> runMessage msg attrs
     WithDiscarded (isTarget attrs -> True) _ cards -> do
       let x = distinctAspects $ map (cdAspect . getCardDef) cards
-      when (x > 0) $ placeThreatOnEach attrs x MainScheme
+      when (x > 0) $ placeThreatOnEach attrs x EncounterMainScheme
       pure o
     _ -> RegenerationCycle <$> runMessage msg attrs

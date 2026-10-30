@@ -8,7 +8,7 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
-import Marvel.Matchers.Types (IdentityMatcher (IdentityWithTrait))
+import Marvel.Matchers
 import Marvel.Keyword
 
 import Marvel.EncounterSet qualified as EncounterSet
@@ -177,6 +177,17 @@ allAllies = fromList $ concatMap
   , protectorAlexis
   , victorMancha
   , machineManAaronStack
+  , silkCindyMoon
+  , spiderManMilesMoralesSinisterMotives
+  , spiderUKBillyBraddock
+  , spiderManHobieBrown
+  , monicaChang
+  , spiderWomanJessicaDrewSinisterMotives
+  , agent13SharonCarterSinisterMotives
+  , dumDumDugan
+  , ghostSpiderGwenStacy
+  , spiderManPeterParkerSinisterMotives
+  , venomEddieBrock
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -793,4 +804,66 @@ victorMancha = deckLimited 1 $ (ally "26015" "Victor Mancha" 2 [Android, Avenger
 machineManAaronStack :: CardDef
 machineManAaronStack = deckLimited 1 $ (basicAlly "26022" ("Machine Man" <:> "Aaron Stack") 2 [Android] [Physical])
     { cdUnique = True
+    }
+
+
+-- Sinister Motives
+
+silkCindyMoon :: CardDef
+silkCindyMoon = (ally "27010" ("Silk" <:> "Cindy Moon") 2 [WebWarrior] [Energy] Protection)
+    { cdDeckLimit = Just 1
+    }
+
+spiderManMilesMoralesSinisterMotives :: CardDef
+spiderManMilesMoralesSinisterMotives = (ally "27011" ("Spider-Man" <:> "Miles Morales") 4 [WebWarrior] [Mental] Protection)
+    { cdDeckLimit = Just 1
+    }
+
+spiderUKBillyBraddock :: CardDef
+spiderUKBillyBraddock = (ally "27012" ("Spider-UK" <:> "Billy Braddock") 3 [WebWarrior] [Physical] Protection)
+    { cdDeckLimit = Just 1
+    }
+
+spiderManHobieBrown :: CardDef
+spiderManHobieBrown = (basicAlly "27017" ("Spider-Man" <:> "Hobie Brown") 3 [WebWarrior] [Physical])
+    { cdDeckLimit = Just 1
+    , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait WebWarrior), AllyExists (AllyControlledBy You <> AllyWithTrait WebWarrior), UpgradeExists (UpgradeControlledBy You <> UpgradeWithTrait WebWarrior), SupportExists (SupportMatches [SupportControlledBy You, SupportWithTrait WebWarrior])]
+    }
+
+monicaChang :: CardDef
+monicaChang = (ally "27040" "Monica Chang" 3 [Shield] [Mental] Justice)
+    { cdDeckLimit = Just 1
+    }
+
+spiderWomanJessicaDrewSinisterMotives :: CardDef
+spiderWomanJessicaDrewSinisterMotives = (ally "27041" ("Spider-Woman" <:> "Jessica Drew") 3 [Shield, WebWarrior] [Mental] Justice)
+    { cdDeckLimit = Just 1
+    }
+
+agent13SharonCarterSinisterMotives :: CardDef
+agent13SharonCarterSinisterMotives = (basicAlly "27046" ("Agent 13" <:> "Sharon Carter") 4 [Shield, Spy] [Physical])
+    { cdDeckLimit = Just 1
+    }
+
+dumDumDugan :: CardDef
+dumDumDugan = (basicAlly "27047" "Dum Dum Dugan" 5 [Shield] [Physical])
+    { cdDeckLimit = Just 1
+    }
+
+ghostSpiderGwenStacy :: CardDef
+ghostSpiderGwenStacy = (basicAlly "27048" ("Ghost-Spider" <:> "Gwen Stacy") 3 [WebWarrior] [Wild])
+    { cdDeckLimit = Just 1
+    , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait WebWarrior), AllyExists (AllyControlledBy You <> AllyWithTrait WebWarrior), UpgradeExists (UpgradeControlledBy You <> UpgradeWithTrait WebWarrior), SupportExists (SupportMatches [SupportControlledBy You, SupportWithTrait WebWarrior])]
+    }
+
+spiderManPeterParkerSinisterMotives :: CardDef
+spiderManPeterParkerSinisterMotives = (basicAlly "27049" ("Spider-Man" <:> "Peter Parker") 3 [WebWarrior] [Mental])
+    { cdDeckLimit = Just 1
+    , cdKeywords = fromList [Requirement [Energy, Mental, Physical]]
+    }
+
+venomEddieBrock :: CardDef
+venomEddieBrock = (basicAlly "27190" ("Venom" <:> "Eddie Brock") 4 [Symbiote] [Wild])
+    { cdDeckLimit = Just 1
+    , cdHazards = 1
     }

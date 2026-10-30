@@ -372,7 +372,7 @@ spec = describe "The Galaxy's Most Wanted campaign" do
         win
         void readStory
         -- 1, the victory points to 3, no minions, stage 1B (Terrestrial Invasion)
-        unitsFor groot `shouldReturn` (1 + min 3 points + (if noMinions then 1 else 0) + 1)
+        unitsFor groot `shouldReturn` (1 + fromIntegral (max 0 $ min 3 points) + (if noMinions then 1 else 0) + 1)
 
     it "Infiltrate the Museum won: a player's card in The Collection recorded, 1 or fewer per player a unit" do
       tg <- dealReal (realAt StandardCampaign 1) [starter "groot"]
@@ -390,7 +390,7 @@ spec = describe "The Galaxy's Most Wanted campaign" do
         void readStory
         (.collection) <$> grootNow `shouldReturn` [toCardCode c | PlayerCard c <- collection]
         liftIO $ length collection `shouldBe` length already + 1
-        unitsFor groot `shouldReturn` (1 + min 3 points + (if length collection <= 1 then 1 else 0) + (if noThreat then 1 else 0))
+        unitsFor groot `shouldReturn` (1 + fromIntegral (max 0 $ min 3 points) + (if length collection <= 1 then 1 else 0) + (if noThreat then 1 else 0))
 
     it "Infiltrate the Museum: Gallery of Splendor defeated goes to the victory display, not The Collection, and puts the top of each deck there" do
       tg <- dealReal (realAt StandardCampaign 1) [starter "groot"]
@@ -454,7 +454,7 @@ spec = describe "The Galaxy's Most Wanted campaign" do
         g <- (.campaignLog.galaxy) <$> campaignNow
         liftIO $ (g.powerStoneControl, g.evasionCounters) `shouldBe` (Just groot, Just evasion)
         -- the main scheme still 1B: The Art of Evasion
-        unitsFor groot `shouldReturn` (1 + min 3 points + (if evasion <= 1 then 1 else 0) + 1)
+        unitsFor groot `shouldReturn` (1 + fromIntegral (max 0 $ min 3 points) + (if evasion <= 1 then 1 else 0) + 1)
 
     it "Ronan: the Power Stone's holder dealt \"You Stand Accused!\", Pincer Maneuver revealed with 3 - evasion counters per player more threat" do
       let c = recordInLog (RecordEvasionCounters 1) $ recordInLog (RecordPowerStoneControl groot) (realAt StandardCampaign 4)

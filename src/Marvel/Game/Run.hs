@@ -57,6 +57,7 @@ intoRiver :: Message -> Bool
 intoRiver = \case
   VillainMessage _ (VillainDealtBoost _) -> True
   RevealEncounterCard {} -> True
+  RevealEncounterCardFrom {} -> True
   _ -> False
 
 -- | What the board animates for a message, read before it runs.
@@ -69,6 +70,7 @@ cue = \case
   IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck -> Just $ Shuffled ("deck-" <> idText ident)
   VillainMessage _ (VillainDealtBoost card) -> Just $ BoostDealt (ecCardId card)
   RevealEncounterCard _ card -> Just $ Revealing (ecCardId card) (toCardCode card) False
+  RevealEncounterCardFrom _ _ card -> Just $ Revealing (ecCardId card) (toCardCode card) False
   RevealBoostCard card _ -> Just $ Revealing (ecCardId card) (toCardCode card) True
   _ -> Nothing
 

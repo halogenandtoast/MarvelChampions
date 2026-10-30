@@ -28,7 +28,7 @@ instance RunMessage StallTactics where
     TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       n <- (`div` 2) <$> getYourMainSchemeCounters
       if n > 0
-        then t <$ placeThreatOnEach attrs n MainScheme
+        then t <$ placeThreatOnEach attrs n EncounterMainScheme
         else pure . StallTactics $ attrs & surgeL .~ True
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       delay <- getYourMainSchemeCounters

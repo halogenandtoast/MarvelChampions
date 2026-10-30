@@ -40,7 +40,7 @@ instance RunMessage DeviousSorcery where
       if
         | not stunned -> stunIdentity you
         | hero -> damageIdentity you attrs (toDamage 2 FromTreachery)
-        | otherwise -> placeThreatOnEach attrs 2 MainScheme
+        | otherwise -> placeThreatOnEach attrs 2 EncounterMainScheme
       pure t
     _ -> DeviousSorcery <$> runMessage msg attrs
 

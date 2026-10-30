@@ -37,7 +37,7 @@ instance HasAbilities GrapplingHook where
             (EncounterCardMatching $ CardWithType TreacheryType)
         )
         HeroInterrupt
-        OwnsThis
+        (OwnsThis <> CanCancelRevealedEncounterCard)
         (DiscardCost $ toTarget a)
         (runAbility a 1)
     ]
@@ -49,6 +49,7 @@ instance RunMessage GrapplingHook where
     RanAbility _ (isTarget attrs -> True) 1 [EncounterCardRevealed _ _ card] _ -> do
       flip insteadOf (discardCard (EncounterCard card)) \case
         RevealedEncounterCard _ card' -> card' == card
+        RevealedEncounterCardFrom _ _ card' -> card' == card
         _ -> False
       pure u
     _ -> GrapplingHook <$> runMessage msg attrs

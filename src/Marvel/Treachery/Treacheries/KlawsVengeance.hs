@@ -31,6 +31,6 @@ instance RunMessage KlawsVengeance where
           else discardFrom identityId RandomFromHand 1
         pure t
       _ -> KlawsVengeance <$> runMessage msg attrs
-    AllyMessage _ (AllyDamaged _ _) -> t <$ placeThreatOnEach attrs 1 MainScheme
-    IdentityMessage _ (IdentityDamaged _ _) -> t <$ placeThreatOnEach attrs 1 MainScheme
+    AllyMessage _ (AllyDamaged _ _) -> t <$ placeThreatOnEach attrs 1 EncounterMainScheme
+    IdentityMessage _ (IdentityDamaged _ _) -> t <$ placeThreatOnEach attrs 1 EncounterMainScheme
     _ -> KlawsVengeance <$> runMessage msg attrs

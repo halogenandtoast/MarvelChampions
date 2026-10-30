@@ -7,8 +7,10 @@ import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
 import Marvel.Prelude
 
 import Marvel.Ally.Allies
+import Marvel.Attachment.Attachments.SmModulars (delusionOfCollusionBoostEffect)
 import Marvel.Card.Builder
 import Marvel.Card.Code
+import Marvel.Treachery.Treacheries.SmModulars (callingInFavorsEffect, threatOrMenaceEffect)
 import Marvel.Effect.CardPlayReduction (CardPlayReduction)
 import Marvel.Effect.Types
 import Marvel.Event.Events
@@ -17,6 +19,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Obligation.Obligations
 import Marvel.Ref
+import Marvel.SideScheme.SideSchemes.SmModulars (teamworkMakesTheDreamWorkBoostEffect)
 import Marvel.SideScheme.SideSchemes.GalacticArtifacts (crystalBallEffect)
 import Marvel.Support.Supports
 import Marvel.Upgrade.Upgrades
@@ -34,7 +37,10 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("01039", SomeCardEffect rocketBootsEffect)
+    [ ("27129", SomeCardEffect callingInFavorsEffect)
+    , ("27134", SomeCardEffect threatOrMenaceEffect)
+    , ("27145", SomeCardEffect teamworkMakesTheDreamWorkBoostEffect)
+    , ("01039", SomeCardEffect rocketBootsEffect)
     , ("01068", SomeCardEffect visionEffect)
     , ("01070", SomeCardEffect leadFromTheFrontEffect)
     , ("01092", SomeCardEffect helicarrierEffect)
@@ -97,6 +103,7 @@ allEffects =
 
     -- The Galaxy's Most Wanted: Galactic Artifacts
     , ("16130", SomeCardEffect crystalBallEffect)
+    , ("27170", SomeCardEffect delusionOfCollusionBoostEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

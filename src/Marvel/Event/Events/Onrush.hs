@@ -33,6 +33,7 @@ instance RunMessage Onrush where
     EventMessage ident (PlayedEvent _ _ (Just (W.EncounterCardRevealed _ _ card))) | ident == eventId attrs -> do
       cancelMatchingMessage \case
         RevealedEncounterCard _ card' -> card' == card
+        RevealedEncounterCardFrom _ _ card' -> card' == card
         _ -> False
       discardCard (EncounterCard card)
       pure e

@@ -182,4 +182,15 @@ allAllies = fromList $ map
   , SomeAllyCard protectorAlexis
   , SomeAllyCard victorMancha
   , SomeAllyCard machineManAaronStack
+  , SomeAllyCard silkCindyMoon
+  , SomeAllyCard spiderManMilesMoralesSinisterMotives
+  , SomeAllyCard spiderUKBillyBraddock
+  , SomeAllyCard spiderManHobieBrown
+  , SomeAllyCard monicaChang
+  , SomeAllyCard spiderWomanJessicaDrewSinisterMotives
+  , SomeAllyCard agent13SharonCarterSinisterMotives
+  , SomeAllyCard dumDumDugan
+  , SomeAllyCard ghostSpiderGwenStacy
+  , SomeAllyCard spiderManPeterParkerSinisterMotives
+  , SomeAllyCard venomEddieBrock
   ]

@@ -3,6 +3,7 @@ module Marvel.Keyword where
 import Marvel.Prelude
 
 import Marvel.GameValue.Types (GameValue)
+import Marvel.Resource.Types (Resource)
 
 data Keyword
   = Alliance
@@ -26,7 +27,9 @@ data Keyword
   -- The Galaxy's Most Wanted
   | -- | defeated, it goes to the victory display, worth this many victory points (RR
     -- Victory X)
-    Victory Natural
+    Victory Int
+  | -- | These resources must be spent on the card, even when its cost is reduced.
+    Requirement [Resource]
   | -- | while it is engaged with a player, they cannot thwart the main scheme
     Patrol
   | -- | it cannot be stunned or confused

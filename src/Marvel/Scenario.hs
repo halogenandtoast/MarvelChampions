@@ -2,8 +2,8 @@
 module Marvel.Scenario where
 
 import Data.HashSet qualified as HashSet
-import Data.List (nub)
-import Marvel.Query (selectOne)
+import Data.List (nub, sortOn)
+import Marvel.Query (selectOne, selectList)
 import Marvel.Matchers (VillainMatcher (ActiveVillain))
 import Marvel.Prelude
 
@@ -12,14 +12,20 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Area (experimentalWeaponsDeck, newArea)
 import Marvel.Attachment.Cards (allAttachments)
 import Marvel.Campaign (CampaignRecord (RecordExperimentalWeapons), CampaignStepKind (CampaignVictory))
+import Marvel.Card.Id (CardId (..))
+import Marvel.MainScheme.MainSchemes.SmVenomGoblin qualified as Goblin
+import Marvel.Environment.Cards qualified as Environments
 import Marvel.Card.Code
 import Marvel.Card.Def
-import Marvel.Card.EncounterCard (EncounterCard)
+import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.EncounterCard (isPlayerObligation)
 import Marvel.Entity
 import Marvel.Game.Source
+import Marvel.Villain.Villains.SmSinisterSix qualified as Six
+import Marvel.Matchers (VillainMatcher (AnyVillain), SideSchemeMatcher (AnySideScheme, SideSchemeIs), SchemeMatcher (SchemeWithId, MainScheme))
+import Marvel.Modifier (Modifier (ThreatCannotBeRemoved))
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Data.Aeson (Result (..), fromJSON)
@@ -35,7 +41,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Matchers (IdentityMatcher (FirstPlayer))
 import Marvel.Query (selectJust)
 import Marvel.Card (Card (EncounterCard))
-import Marvel.Id (MainSchemeId)
+import Marvel.Id (MainSchemeId (..), VillainId, IdentityId, SchemeId (..))
 import Marvel.Name (Name (..))
 import Marvel.EncounterCard (genEncounterCard, gatherEncounterSet)
 import Marvel.Villain.Cards qualified as VillainCards
@@ -106,6 +112,12 @@ allScenarios = fromList $ map
     , SomeScenarioCard lokiScenario
     -- The Mad Titan's Shadow: Hela
     , SomeScenarioCard helaScenario
+    -- Sinister Motives
+    , SomeScenarioCard smSandmanScenario
+    , SomeScenarioCard smVenomScenario
+    , SomeScenarioCard smMysterioScenario
+    , SomeScenarioCard smSinisterSixScenario
+    , SomeScenarioCard smVenomGoblinScenario
     ]
 
 -- | The scenario with the sets it recommends, at standard difficulty.
@@ -164,6 +176,12 @@ recommendedModulars =
     , ("21160", [EncounterSet.Enchantress, EncounterSet.FrostGiants])
     -- The Mad Titan's Shadow: Hela
     , ("21136a", [EncounterSet.LegionsOfHel, EncounterSet.FrostGiants])
+    -- Sinister Motives
+    , ("27061", [EncounterSet.DownToEarth])
+    , ("27073", [EncounterSet.DownToEarth])
+    , ("27084", [EncounterSet.WhispersOfParanoia])
+    , ("27100", [EncounterSet.GuerrillaTactics])
+    , ("27113", [EncounterSet.GoblinGear])
     ]
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
@@ -777,5 +795,223 @@ instance RunMessage TheHoodScenario where
             dealt = if stage == 3 then eligible else take 1 eligible
         traverse_ (dealFoundEncounterCard you) dealt
         when (null dealt) $ traverse_ (\mid -> cardSpecific mid "hoodFoulPlayMiss" ()) penalize
+      pure a
+    _ -> runMessage msg a
+
+-- Sinister Motives
+
+newtype SmSandmanScenario = SmSandmanScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+smSandmanScenario :: ScenarioCard SmSandmanScenario
+smSandmanScenario = scenario SmSandmanScenario "27061" ("27061", "27062") ["27064"] [EncounterSet.Sandman, EncounterSet.CityInChaos]
+
+instance RunMessage SmSandmanScenario where
+  runMessage msg (SmSandmanScenario a) = SmSandmanScenario <$> runMessage msg a
+
+newtype SmVenomScenario = SmVenomScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+smVenomScenario :: ScenarioCard SmVenomScenario
+smVenomScenario = scenario SmVenomScenario "27073" ("27073", "27074") ["27076"] [EncounterSet.Venom, EncounterSet.SymbioticStrength]
+
+instance RunMessage SmVenomScenario where
+  runMessage msg (SmVenomScenario a) = SmVenomScenario <$> runMessage msg a
+
+newtype SmMysterioScenario = SmMysterioScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+smMysterioScenario :: ScenarioCard SmMysterioScenario
+smMysterioScenario = scenario SmMysterioScenario "27084" ("27084", "27085") ["27087", "27088"] [EncounterSet.Mysterio, EncounterSet.PersonalNightmare]
+
+instance RunMessage SmMysterioScenario where
+  runMessage msg (SmMysterioScenario a) = SmMysterioScenario <$> runMessage msg a
+
+newtype SmSinisterSixScenario = SmSinisterSixScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+smSinisterSixScenario :: ScenarioCard SmSinisterSixScenario
+smSinisterSixScenario = scenario SmSinisterSixScenario "27100" ("27094", "27094") ["27100", "27101"] [EncounterSet.SinisterSix]
+
+-- | Entered villains are randomized once from the stored game generator. Defeated
+-- villains return to the set-aside pool rather than ending the game.
+instance RunMessage SmSinisterSixScenario where
+  runMessage msg (SmSinisterSixScenario a) = SmSinisterSixScenario <$> case msg of
+    StartScenario -> runQueueT do
+      count <- getStartingPlayerCount
+      shuffled <- shuffleM Six.sixCodes
+      let (chosen, others) = splitAt (count + 1) shuffled
+      aside <- traverse (genEncounterCard . (\code -> fromMaybe (error "missing Six villain") $ HashMap.lookup code VillainCards.allVillainsMap)) others
+      started <- runMessage StartScenario a
+        { Types.scenarioVillains = chosen
+        , Types.scenarioSetAsideCards = Types.scenarioSetAsideCards a <> map EncounterCard aside
+        }
+      cardSpecific GameRef "sinisterSixInitialActive" ()
+      pure started
+    CardSpecific GameRef "sinisterSixInitialActive" _ -> runQueueT do
+      present <- Six.sixVillains
+      for_ (take 1 present) (setActiveVillain . fst)
+      pure a
+    ResolveVillainDefeat vid -> runQueueT do
+      present <- Six.sixVillains
+      current <- selectOne ActiveVillain
+      let others = filter ((/= vid) . fst) present
+          amount = if null others then 7 else 4
+      schemes <- selectList AnySideScheme
+      legal <- filterM (\sid -> do
+        modifiers <- getModifiers (SideSchemeRef sid)
+        threat <- sideSchemeThreatOf sid
+        pure $ threat > 0 && ThreatCannotBeRemoved `notElem` modifiers) schemes
+      first <- selectJust FirstPlayer
+      unless (null legal) $ chooseOne first
+        [ targeting (SideSchemeRef sid) (removeThreat first GameRef amount $ SchemeWithId $ SchemeSideSchemeId sid)
+        | sid <- legal
+        ]
+      def <- getsGame (`abilityCardDef` VillainRef vid)
+      for_ def \card -> cardSpecific GameRef "sinisterSixSetAsideDefeated" (vid, cdCardCode card, current == Just vid)
+      pure a
+    CardSpecific GameRef "sinisterSixSetAsideDefeated" (fromJSON -> Success (vid, code, wasActive)) -> runQueueT do
+      let def = fromMaybe (error "missing defeated Six villain") $ HashMap.lookup code VillainCards.allVillainsMap
+      card <- genEncounterCard def
+      removeFromPlay (VillainRef vid)
+      when wasActive $ cardSpecific GameRef "sinisterSixNextAfterDefeat" (code :: CardCode)
+      pure a {Types.scenarioSetAsideCards = Types.scenarioSetAsideCards a <> [EncounterCard card]}
+    CardSpecific GameRef "sinisterSixNextAfterDefeat" (fromJSON -> Success code) -> runQueueT do
+      moveSixCounterAfter (code :: CardCode)
+      pure a
+    CardSpecific GameRef "sinisterSixNextActive" _ -> runQueueT do
+      current <- selectOne ActiveVillain
+      def <- maybe (pure Nothing) (\vid -> getsGame (`abilityCardDef` VillainRef vid)) current
+      maybe (Six.sixVillains >>= traverse_ (setActiveVillain . fst) . take 1) (moveSixCounterAfter . cdCardCode) def
+      pure a
+    CardSpecific GameRef "sinisterSixAmbush" (fromJSON -> Success callback) -> runQueueT do
+      let available = [card | EncounterCard card <- Types.scenarioSetAsideCards a, toCardCode card `elem` Six.sixCodes]
+      shuffled <- shuffleM available
+      case shuffled of
+        [] -> do
+          sixCallback (callback :: Maybe (Target, Text, Value)) Nothing
+          pure a
+        card : _ -> do
+          let code = toCardCode card
+          addVillain code
+          cardSpecific GameRef "sinisterSixAfterAmbush" (code, True, callback :: Maybe (Target, Text, Value))
+          pure a {Types.scenarioSetAsideCards = filter (/= EncounterCard card) $ Types.scenarioSetAsideCards a}
+    CardSpecific GameRef "sinisterSixStageTwo" (fromJSON -> Success callback) -> runQueueT do
+      let available = [card | EncounterCard card <- Types.scenarioSetAsideCards a, toCardCode card `elem` Six.sixCodes]
+      shuffled <- shuffleM available
+      case shuffled of
+        [] -> sixCallback (callback :: Maybe (Target, Text, Value)) Nothing >> pure a
+        card : _ -> do
+          addVillain (toCardCode card)
+          cardSpecific GameRef "sinisterSixAfterAmbush" (toCardCode card, False, callback :: Maybe (Target, Text, Value))
+          pure a {Types.scenarioSetAsideCards = filter (/= EncounterCard card) $ Types.scenarioSetAsideCards a}
+    CardSpecific GameRef "sinisterSixAfterAmbush" (fromJSON -> Success (code, penalty, callback)) -> runQueueT do
+      present <- Six.sixVillains
+      let entered = fst <$> find ((== code) . snd) present
+      traverse_ setActiveVillain entered
+      when (penalty && Types.scenarioDifficulty a == Expert && isJust entered) do
+        lights <- (<>) <$> selectList (SideSchemeIs SideSchemes.smLightAtTheEndA) <*> selectList (SideSchemeIs SideSchemes.smLightAtTheEndB)
+        for_ lights (`placeThreat` 2)
+      sixCallback (callback :: Maybe (Target, Text, Value)) entered
+      pure a
+    CardSpecific GameRef "sinisterSixPutVillain" (fromJSON -> Success code) -> runQueueT do
+      let available = [card | EncounterCard card <- Types.scenarioSetAsideCards a, toCardCode card == (code :: CardCode)]
+      for_ (take 1 available) (addVillain . toCardCode)
+      pure a {Types.scenarioSetAsideCards = filter (`notElem` map EncounterCard available) $ Types.scenarioSetAsideCards a}
+    CardSpecific GameRef "sinisterSixActivateWithBoost" (fromJSON -> Success (you, n)) -> runQueueT do
+      present <- Six.sixVillains
+      current <- selectOne ActiveVillain
+      case current <|> (fst <$> headMay present) of
+        Just vid -> do
+          setActiveVillain vid
+          villainStep vid (VillainAttacksWithAdditionalBoostCards you n)
+        Nothing -> Six.ambushThen GameRef "sinisterSixActivateWithBoostAfterAmbush" (you :: IdentityId, n :: Natural)
+      pure a
+    CardSpecific GameRef "sinisterSixActivateWithBoostAfterAmbush" (fromJSON -> Success (entered, value)) -> runQueueT do
+      case (entered :: Maybe VillainId, fromJSON value) of
+        (Just vid, Success (you, n)) -> do
+          villainStep vid (VillainAttacksWithAdditionalBoostCards you n)
+        _ -> pure ()
+      pure a
+    CardSpecific GameRef "sinisterSixActivate" (fromJSON -> Success (you, hero)) -> runQueueT do
+      present <- Six.sixVillains
+      current <- selectOne ActiveVillain
+      case current <|> (fst <$> headMay present) of
+        Just vid -> do
+          setActiveVillain vid
+          if hero then enemyAttacks vid you else villainSchemesAgainst vid you
+        Nothing -> Six.ambushThen GameRef "sinisterSixActivateAfterAmbush" (you :: IdentityId, hero :: Bool)
+      pure a
+    CardSpecific GameRef "sinisterSixActivateAfterAmbush" (fromJSON -> Success (entered, value)) -> runQueueT do
+      case (entered :: Maybe VillainId, fromJSON value) of
+        (Just vid, Success (you, hero)) -> if hero then enemyAttacks vid you else villainSchemesAgainst vid you
+        _ -> pure ()
+      pure a
+    _ -> runMessage msg a
+
+-- | The next surviving activation order, wrapping at six; no other villain means
+-- the counter remains on the single villain (or is set aside when none remain).
+moveSixCounterAfter :: (ReverseQueue m) => CardCode -> m ()
+moveSixCounterAfter code = do
+  present <- Six.sixVillains
+  let after = filter ((> Six.activationOrder code) . Six.activationOrder . snd) present
+      chosen = headMay (after <> present)
+  for_ chosen (setActiveVillain . fst)
+
+sixCallback :: (ReverseQueue m) => Maybe (Target, Text, Value) -> Maybe VillainId -> m ()
+sixCallback callback entered = for_ callback \(target, key, value) -> cardSpecific target key (entered, value)
+
+newtype SmVenomGoblinScenario = SmVenomGoblinScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+smVenomGoblinScenario :: ScenarioCard SmVenomGoblinScenario
+smVenomGoblinScenario = scenario SmVenomGoblinScenario "27113" ("27113", "27114") ["27117", "27118", "27119"] [EncounterSet.VenomGoblin, EncounterSet.SymbioticStrength]
+
+instance RunMessage SmVenomGoblinScenario where
+  runMessage msg (SmVenomGoblinScenario a) = SmVenomGoblinScenario <$> case msg of
+    StartScenario -> runQueueT do
+      started <- runMessage StartScenario a {Types.scenarioMainSchemes = ["27117"]}
+      addSetupMainScheme "27118"
+      addSetupMainScheme "27119"
+      cardSpecific GameRef "goblinSetup" ()
+      sky <- genEncounterCard Environments.smSkiesOverNewYorkB
+      pure $ started & setAsideCardsL <>~ [EncounterCard sky]
+    CardSpecific GameRef "goblinSetup" _ -> runQueueT do
+      schemes <- selectList MainScheme
+      for_ schemes $ \case
+        SchemeMainSchemeId sid -> do
+          def <- getsGame (`abilityCardDef` MainSchemeRef sid)
+          when (fmap toCardCode def == Just "27118") $ mainSchemeStep sid (SetMainSchemeGlider True)
+        _ -> pure ()
+      pure a
+    CardSpecific GameRef "goblinFlip" (fromJSON -> Success (sid, def, tokens)) -> runQueueT do
+      -- Flip preserves the physical card's id; tokens migrate after it changes type.
+      let card = MkEncounterCard (CardId $ unMainSchemeId sid) def
+      removeFromPlay (sid :: MainSchemeId)
+      you <- selectJust FirstPlayer
+      putEncounterCardIntoPlay you card
+      cardSpecific GameRef "goblinMigrate" (you, tokens :: Natural)
+      pure a
+    CardSpecific GameRef "goblinMigrate" (fromJSON -> Success (you, tokens)) -> runQueueT do
+      Goblin.chooseGliderScheme False you "goblinMigrationSelected"
+      cardSpecific GameRef "goblinMigrationTokens" (tokens :: Natural)
+      pure a
+    CardSpecific GameRef "goblinMigrationSelected" _ -> pure a
+    CardSpecific GameRef "goblinMigrationTokens" (fromJSON -> Success tokens) -> runQueueT do
+      gliders <- getGliderSchemes
+      for_ gliders $ \sid -> mainSchemeStep sid (AddMainSchemeAcceleration tokens)
+      infested <- Goblin.symbioteEnvironmentCount
+      when (infested >= 2) $ gameOver Lost
+      pure a
+    CardSpecific GameRef "goblinBerserkerBoost" (fromJSON -> Success (_you :: IdentityId, sid :: MainSchemeId)) -> runQueueT do
+      placeThreat sid 1
+      pure a
+    CardSpecific GameRef "goblinSpecialSelected" (fromJSON -> Success (you, sid)) -> runQueueT do
+      Goblin.resolveGoblinSpecial you sid
       pure a
     _ -> runMessage msg a

@@ -23,7 +23,8 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard affairsOfState
+  [ SomeObligationCard smFriendsAndFamily
+  , SomeObligationCard affairsOfState
   , SomeObligationCard legalWork
   , SomeObligationCard evictionNotice
   , SomeObligationCard businessProblems
@@ -92,6 +93,8 @@ allObligations = fromList $ map
   , SomeObligationCard equipmentMalfunction
   , SomeObligationCard troubleInOtherworld
   , SomeObligationCard corruptedProgramming
+  , SomeObligationCard worriedFather
+  , SomeObligationCard keepingSecrets
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

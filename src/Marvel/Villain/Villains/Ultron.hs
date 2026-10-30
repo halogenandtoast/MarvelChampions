@@ -89,7 +89,7 @@ instance RunMessage Ultron where
       VillainBeginAttack target | villainStage attrs == 2 -> do
         drones <- selectListCount $ MinionWithTrait Drone <> MinionEngagedWith (IdentityWithId target)
         Ultron attrs' <- Ultron <$> runMessage msg attrs
-        pure . Ultron $ attrs' & attackingL . _Just . attackDamageL +~ drones
+        pure . Ultron $ attrs' & attackingL . _Just %~ (\attack -> attack {attackChange = attackChange attack + fromIntegral drones})
       -- Ultron (III) cannot take damage while a Drone minion is in play
       VillainDamaged _ _ | villainStage attrs == 3 -> do
         drones <- selectAny (MinionWithTrait Drone)
@@ -98,7 +98,7 @@ instance RunMessage Ultron where
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       case villainStage attrs of
         1 -> do
-          mainScheme <- selectJust MainScheme
+          mainScheme <- selectJust EncounterMainScheme
           chooseOne
             ident
             [ labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreat mainScheme 1

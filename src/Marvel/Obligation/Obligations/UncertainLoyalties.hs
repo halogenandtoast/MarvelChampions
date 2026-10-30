@@ -32,7 +32,7 @@ instance RunMessage UncertainLoyalties where
         pure o
       ResolveObligation identityId -> do
         canExhaust <- identityMatches (AlterEgoIdentity <> UnexhaustedIdentity) identityId
-        mainSchemes <- selectList MainScheme
+        mainSchemes <- selectList EncounterMainScheme
         chooseOrRunOne identityId $
           [ labeled "$label.exhaustJessicaDrewRemoveUncertainLoyalties" (exhaust identityId >> removeFromGame attrs)
           | canExhaust

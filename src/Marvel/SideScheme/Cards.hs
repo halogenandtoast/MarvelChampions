@@ -1,5 +1,11 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -17,7 +23,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ unbridledAmbition
+  [ smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
+  , unbridledAmbition
   , breakinAndTakin
   , crowdControl
   , bombScare
@@ -210,6 +217,8 @@ allSideSchemes = fromList $ map
   , deadlyLightShow
   , powerfulEnchantments
   , ultronUnleashed
+  , regenerativeResearch
+  , trackingPrey
   ]
 
 sideScheme
@@ -835,3 +844,310 @@ ultronUnleashed = (sideScheme "26030" "Ultron Unleashed" [Boost, Boost, Boost] V
 
 unbridledAmbition :: CardDef
 unbridledAmbition = (sideScheme "24011" "Unbridled Ambition" [Boost, Boost] TheHood 1) {cdKeywords = singleton (Hinder (PerPlayer 2))}
+
+
+-- Sinister Motives
+
+regenerativeResearch :: CardDef
+regenerativeResearch = sideScheme "27026" "Regenerative Research" [Boost, Boost, Boost] GhostSpiderNemesis 1
+
+trackingPrey :: CardDef
+trackingPrey = (sideScheme "27057" "Tracking Prey" [Boost, Boost, Boost] SpiderManMoralesNemesis 1)
+    { cdAcceleration = 1
+    }
+
+-- Sinister Motives
+
+smSideSchemeDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smSideSchemeDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smDirtTrap :: CardDef
+smDirtTrap = (smSideSchemeDef "27068" "Dirt Trap" SMSet.Sandman 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTidalSands :: CardDef
+smTidalSands = (smSideSchemeDef "27069" "Tidal Sands" SMSet.Sandman 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smGuardTheBellTower :: CardDef
+smGuardTheBellTower = (smSideSchemeDef "27079" "Guard the Bell Tower" SMSet.Venom 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLashingOut :: CardDef
+smLashingOut = (smSideSchemeDef "27080" "Lashing Out" SMSet.Venom 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smToothAndNail :: CardDef
+smToothAndNail = (smSideSchemeDef "27081" "Tooth and Nail" SMSet.Venom 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLightAtTheEndA :: CardDef
+smLightAtTheEndA = (smSideSchemeDef "27102a" "Light at the End" SMSet.SinisterSix 0)
+  { cdTraits = fromList [SMTrait.Trap]
+  , cdKeywords = fromList [SMKeyword.Permanent, SMKeyword.Hinder (SMValue.PerPlayer 10)]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLightAtTheEndB :: CardDef
+smLightAtTheEndB = (smSideSchemeDef "27102b" "Light at the End" SMSet.SinisterSix 0)
+  { cdTraits = fromList [SMTrait.Chase]
+  , cdKeywords = fromList [SMKeyword.Permanent, SMKeyword.Hinder (SMValue.PerPlayer 10)]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smBruteForceBarricade :: CardDef
+smBruteForceBarricade = (smSideSchemeDef "27107" "Brute Force Barricade" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smFesteringMass :: CardDef
+smFesteringMass = (smSideSchemeDef "27124" "Festering Mass" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smJoyRide :: CardDef
+smJoyRide = (smSideSchemeDef "27125" "Joy Ride" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Hinder (SMValue.PerPlayer 2)]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smPanicInTheStreets :: CardDef
+smPanicInTheStreets = (smSideSchemeDef "27127" "Panic in the Streets" SMSet.CityInChaos 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smVolunteerWork :: CardDef
+smVolunteerWork = (smSideSchemeDef "27133" "Volunteer Work" SMSet.DownToEarth 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smLimitlessSupply :: CardDef
+smLimitlessSupply = (smSideSchemeDef "27140" "Limitless Supply" SMSet.GoblinGear 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smCoordinatedEffort :: CardDef
+smCoordinatedEffort = (smSideSchemeDef "27143" "Coordinated Effort" SMSet.GuerrillaTactics 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHiddenInShadow :: CardDef
+smHiddenInShadow = (smSideSchemeDef "27144" "Hidden in Shadow" SMSet.GuerrillaTactics 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smTeamworkMakesTheDreamWork :: CardDef
+smTeamworkMakesTheDreamWork = (smSideSchemeDef "27145" "Teamwork Makes the Dream Work" SMSet.GuerrillaTactics 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smFoolSParadise :: CardDef
+smFoolSParadise = (smSideSchemeDef "27155" "Fool's Paradise" SMSet.PersonalNightmare 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 1
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  }
+
+smWeaknessFromWithin :: CardDef
+smWeaknessFromWithin = (smSideSchemeDef "27156" "Weakness from Within" SMSet.PersonalNightmare 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smAnalysisParalysis :: CardDef
+smAnalysisParalysis = (smSideSchemeDef "27173" "Analysis Paralysis" SMSet.WhispersOfParanoia 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 1
+  }
+
+smBackAlleyBurglary :: CardDef
+smBackAlleyBurglary = (smSideSchemeDef "27176" "Back Alley Burglary" SMSet.CommunityService 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge, SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smCatInATree :: CardDef
+smCatInATree = (smSideSchemeDef "27177" "Cat in a Tree" SMSet.CommunityService 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge, SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHenchmenHeist :: CardDef
+smHenchmenHeist = (smSideSchemeDef "27178" "Henchmen Heist" SMSet.CommunityService 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge, SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smOffTheRails :: CardDef
+smOffTheRails = (smSideSchemeDef "27179" "Off the Rails" SMSet.CommunityService 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge, SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRubbleRescue :: CardDef
+smRubbleRescue = (smSideSchemeDef "27180" "Rubble Rescue" SMSet.CommunityService 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge, SMKeyword.Victory 1]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

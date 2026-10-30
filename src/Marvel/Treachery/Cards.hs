@@ -1,5 +1,11 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -16,7 +22,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ fieldRecruitment
+  [ smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
+  , fieldRecruitment
   , upperHand
   , hardToKeepDown
   , imTough
@@ -234,6 +241,8 @@ allTreacheries = fromList $ map
   , oldRivals
   , laserStrike
   , relentlessAndroid
+  , inColdBlood
+  , sliceAndDice
   ]
 
 treachery
@@ -875,3 +884,297 @@ fieldRecruitment = treachery "24012" "Field Recruitment" [Boost, Star] TheHood 1
 
 upperHand :: CardDef
 upperHand = treachery "24013" "Upper Hand" [Boost] TheHood 3
+
+
+-- Sinister Motives
+
+inColdBlood :: CardDef
+inColdBlood = treachery "27029" "In Cold Blood" [Boost] GhostSpiderNemesis 2
+
+sliceAndDice :: CardDef
+sliceAndDice = treachery "27060" "Slice and Dice" [Boost] SpiderManMoralesNemesis 2
+
+-- Sinister Motives
+
+smTreacheryDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smTreacheryDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smSandslide :: CardDef
+smSandslide = (smTreacheryDef "27070" "Sandslide" SMSet.Sandman 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSandStorm :: CardDef
+smSandStorm = (smTreacheryDef "27071" "Sand Storm" SMSet.Sandman 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSandSmash :: CardDef
+smSandSmash = (smTreacheryDef "27072" "Sand Smash" SMSet.Sandman 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smBitingRetort :: CardDef
+smBitingRetort = (smTreacheryDef "27082" "Biting Retort" SMSet.Venom 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smForWhomTheBellTolls :: CardDef
+smForWhomTheBellTolls = (smTreacheryDef "27083" "For Whom the Bell Tolls" SMSet.Venom 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smDejaVu :: CardDef
+smDejaVu = (smTreacheryDef "27092" "Déjà Vu" SMSet.Mysterio 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Peril]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smFearmonger :: CardDef
+smFearmonger = (smTreacheryDef "27093" "Fearmonger" SMSet.Mysterio 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smFrequentFlyers :: CardDef
+smFrequentFlyers = (smTreacheryDef "27108" "Frequent Flyers" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smHighFashion :: CardDef
+smHighFashion = (smTreacheryDef "27109" "High Fashion" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRoboticEnhancements :: CardDef
+smRoboticEnhancements = (smTreacheryDef "27110" "Robotic Enhancements" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smPartnershipOfPain :: CardDef
+smPartnershipOfPain = (smTreacheryDef "27111" "Partnership of Pain" SMSet.SinisterSix 3)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSurprise :: CardDef
+smSurprise = (smTreacheryDef "27112" "Surprise!" SMSet.SinisterSix 3)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSpreadingPanic :: CardDef
+smSpreadingPanic = (smTreacheryDef "27126" "Spreading Panic" SMSet.VenomGoblin 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smCallingInFavors :: CardDef
+smCallingInFavors = (smTreacheryDef "27129" "Calling in Favors" SMSet.CityInChaos 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smNowOrNever :: CardDef
+smNowOrNever = (smTreacheryDef "27130" "Now or Never" SMSet.CityInChaos 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Peril]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smThreatOrMenace :: CardDef
+smThreatOrMenace = (smTreacheryDef "27134" "\"Threat or Menace?\"" SMSet.DownToEarth 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLooseEnds :: CardDef
+smLooseEnds = (smTreacheryDef "27135" "Loose Ends" SMSet.DownToEarth 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRemoteNavigation :: CardDef
+smRemoteNavigation = (smTreacheryDef "27141" "Remote Navigation" SMSet.GoblinGear 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smFromEveryDirection :: CardDef
+smFromEveryDirection = (smTreacheryDef "27146" "From Every Direction" SMSet.GuerrillaTactics 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smDeepestFears :: CardDef
+smDeepestFears = (smTreacheryDef "27157" "Deepest Fears" SMSet.PersonalNightmare 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Peril]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSwingingAssault :: CardDef
+smSwingingAssault = (smTreacheryDef "27168" "Swinging Assault" SMSet.SymbioticStrength 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smUnstableSentience :: CardDef
+smUnstableSentience = (smTreacheryDef "27169" "Unstable Sentience" SMSet.SymbioticStrength 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [SMKeyword.Surge]
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Star]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSmearCampaign :: CardDef
+smSmearCampaign = (smTreacheryDef "27175" "Smear Campaign" SMSet.BadPublicity 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [SMBoost.Boost, SMBoost.Boost, SMBoost.Boost]
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

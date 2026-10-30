@@ -26,6 +26,9 @@ data CampaignChoice
     ChooseBasicUpgrade
   | -- | Zola: may replace the "Basic" Condition upgrade with its "Improved" side
     MayImproveUpgrade
+  | ChooseSinisterTech
+  | ChooseSinisterAspectAdvantage
+  | ChooseSinisterPlanningAhead
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -61,6 +64,8 @@ data CampaignLog = CampaignLog
   -- ^ The Galaxy's Most Wanted's log ("docs/rules/campaign-galaxys-most-wanted.md")
   , titan :: TitanLog
   -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
+  , sinister :: SinisterLog
+  -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -134,8 +139,50 @@ instance FromJSON TitanLog where
 hasMark :: TitanMark -> Campaign -> Bool
 hasMark m c = m `elem` c.campaignLog.titan.marks
 
+-- | A player's three reputation-track rewards. Aspect Advantage keeps its number of
+-- copies as well as its title's printing: the reward grants that title's maximum
+-- allowed copies, which can differ from the normal three (MC27 p.22).
+data SinisterPlayer = SinisterPlayer
+  { identity :: CardCode
+  , shieldTech :: Maybe CardCode
+  , aspectAdvantage :: Maybe (CardCode, Natural)
+  , planningAhead :: Maybe CardCode
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+-- | The nodes marked and the titles written in the Sinister Motives log. Reputation
+-- is signed because the victory display can include Victory -1; applying the scoring
+-- instructions belongs to the campaign steps, not JSON or record storage.
+data SinisterLog = SinisterLog
+  { sinisterPlayers :: [SinisterPlayer]
+  , reputation :: Int
+  , communityService :: [CardCode]
+  , osbornTech :: [CardCode]
+  , wakingNightmare :: Maybe Natural
+  , lastOnesStanding :: [CardCode]
+  , finalReputation :: Maybe Int
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
+
+instance FromJSON SinisterLog where
+  parseJSON = withObject "SinisterLog" \o ->
+    SinisterLog
+      <$> o .:? "sinisterPlayers" .!= []
+      <*> o .:? "reputation" .!= 0
+      <*> o .:? "communityService" .!= []
+      <*> o .:? "osbornTech" .!= []
+      <*> o .:? "wakingNightmare"
+      <*> o .:? "lastOnesStanding" .!= []
+      <*> o .:? "finalReputation"
+  omittedField = Just noSinisterLog
+
+noSinisterLog :: SinisterLog
+noSinisterLog = SinisterLog [] 0 [] [] Nothing [] Nothing
+
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -201,6 +248,16 @@ data CampaignRecord
   | RecordEvasionCounters Natural
   | -- | The Mad Titan's Shadow: a box of its log checked
     RecordTitanMark TitanMark
+  | -- | Sinister Motives: reputation earned by the group, added to its current score
+    RecordReputation Int
+  | RecordCommunityService [CardCode]
+  | RecordOsbornTech CardCode
+  | RecordShieldTech CardCode CardCode
+  | RecordAspectAdvantage CardCode CardCode Natural
+  | RecordPlanningAhead CardCode CardCode
+  | RecordWakingNightmare Natural
+  | RecordLastOnesStanding [CardCode]
+  | RecordFinalReputation
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -218,11 +275,17 @@ galaxysMostWanted = ["16058", "16070", "16080a", "16088", "16103"]
 madTitansShadow :: [CardCode]
 madTitansShadow = ["21071", "21098", "21111", "21136a", "21160"]
 
+-- | Sinister Motives: Sandman, Venom, Mysterio, the Sinister Six and Venom Goblin.
+-- The Six is set up by its main scheme, like Tower Defense.
+sinisterMotives :: [CardCode]
+sinisterMotives = ["27061", "27073", "27084", "27100", "27113"]
+
 campaignScenarios :: CampaignKind -> [CardCode]
 campaignScenarios = \case
   RiseOfRedSkull -> riseOfRedSkull
   GalaxysMostWanted -> galaxysMostWanted
   MadTitansShadow -> madTitansShadow
+  SinisterMotives -> sinisterMotives
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -283,6 +346,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , sinister = noSinisterLog {sinisterPlayers = [SinisterPlayer (toHeroCardCode i) Nothing Nothing Nothing | kind == SinisterMotives, i <- identities]}
           }
     }
  where
@@ -314,7 +378,59 @@ campaignCards p = maybeToList p.techUpgrade <> maybeToList p.conditionUpgrade <>
 -- | All the campaign adds to the player's deck: its log's cards, and the Market cards
 -- they bought.
 campaignCardsOf :: CardCode -> Campaign -> [CardCode]
-campaignCardsOf ident c = foldMap campaignCards (campaignPlayer ident c) <> foldMap (.marketCards) (galaxyPlayer ident c)
+campaignCardsOf ident c =
+  foldMap campaignCards (campaignPlayer ident c)
+    <> foldMap (.marketCards) (galaxyPlayer ident c)
+    <> foldMap sinisterCampaignCards (sinisterPlayer ident c)
+
+-- | Tech and Aspect Advantage are extra deck cards. Planning Ahead only names a
+-- card already in the deck; retrieving it does not add another copy.
+sinisterCampaignCards :: SinisterPlayer -> [CardCode]
+sinisterCampaignCards p =
+  maybeToList p.shieldTech
+    <> foldMap (\(code, copies) -> replicate (fromIntegral copies) code) p.aspectAdvantage
+
+sinisterPlayer :: CardCode -> Campaign -> Maybe SinisterPlayer
+sinisterPlayer ident c = find ((== toHeroCardCode ident) . (.identity)) c.campaignLog.sinister.sinisterPlayers
+
+-- | Nodes with connected effects, visually checked against the printed track p.22.
+reputationThresholds :: [Int]
+reputationThresholds = [1, 5, 9, 13, 17, 21, 25]
+
+-- | Newly marked connected nodes, in track order. A reward at an old node is not
+-- earned again simply because the group gains more reputation later.
+crossedReputationThresholds :: Int -> Int -> [Int]
+crossedReputationThresholds previous current = filter (\n -> previous < n && n <= current) reputationThresholds
+
+-- | The eight physical Tech cards, by their unenhanced faces. Unchosen cards return
+-- to the collection before the next player is dealt their three (MC27 p.22).
+shieldTechUpgrades :: [CardCode]
+shieldTechUpgrades = ["27182a", "27183a", "27184a", "27185a", "27186a", "27187a", "27188a", "27189a"]
+
+shieldTechLeft :: Campaign -> [CardCode]
+shieldTechLeft c = filter ((`notElem` chosen) . toBaseCardCode) shieldTechUpgrades
+ where
+  chosen = map toBaseCardCode $ mapMaybe (.shieldTech) c.campaignLog.sinister.sinisterPlayers
+
+osbornTechAttachments :: [CardCode]
+osbornTechAttachments = ["27147", "27148", "27149", "27150", "27151", "27152"]
+
+osbornTechLeft :: Campaign -> [CardCode]
+osbornTechLeft c = filter (`notElem` c.campaignLog.sinister.osbornTech) osbornTechAttachments
+
+communityServiceSideSchemes :: [CardCode]
+communityServiceSideSchemes = ["27176", "27177", "27178", "27179", "27180"]
+
+communityServiceLeft :: Campaign -> [CardCode]
+communityServiceLeft c = filter (`notElem` c.campaignLog.sinister.communityService) communityServiceSideSchemes
+
+-- | The villains' matching Sinister Assault minions, in activation order. Record
+-- the villain cards at the Six's victory; put the matching minions into Goblin's deck.
+sinisterAssaultVillains :: [(CardCode, CardCode)]
+sinisterAssaultVillains = zip ["27094", "27095", "27096", "27097", "27098", "27099"] ["27158", "27159", "27160", "27161", "27162", "27163"]
+
+lastOnesStandingMinions :: Campaign -> [CardCode]
+lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.campaignLog.sinister.lastOnesStanding
 
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
@@ -356,8 +472,24 @@ recordInLog r c = case r of
   RecordHeadhunterDefeated n -> galaxyL \g -> g {headhunterDefeated = nub (g.headhunterDefeated <> [n])}
   RecordEvasionCounters n -> galaxyL \g -> g {evasionCounters = Just n}
   RecordTitanMark m -> logged \l -> l {titan = TitanLog (nub (l.titan.marks <> [m]))}
+  RecordReputation n -> sinisterL \s -> s {reputation = s.reputation + n}
+  RecordCommunityService codes -> sinisterL \s ->
+    s {communityService = nub (s.communityService <> filter (`elem` communityServiceSideSchemes) codes)}
+  RecordOsbornTech code
+    | code `elem` osbornTechAttachments -> sinisterL \s -> s {osbornTech = nub (s.osbornTech <> [code])}
+    | otherwise -> c
+  RecordShieldTech ident code
+    | code `elem` shieldTechLeft c -> sinisterP ident \p -> p {shieldTech = Just code}
+    | otherwise -> c
+  RecordAspectAdvantage ident code copies -> sinisterP ident \p -> p {aspectAdvantage = Just (code, copies)}
+  RecordPlanningAhead ident code -> sinisterP ident \p -> p {planningAhead = Just code}
+  RecordWakingNightmare n -> sinisterL \s -> s {wakingNightmare = Just n}
+  RecordLastOnesStanding codes -> sinisterL \s -> s {lastOnesStanding = nub $ filter (`elem` map fst sinisterAssaultVillains) codes}
+  RecordFinalReputation -> sinisterL \s -> s {finalReputation = Just s.reputation}
  where
   logged f = c {campaignLog = f c.campaignLog}
+  sinisterL f = logged \l -> l {sinister = f l.sinister}
+  sinisterP ident f = sinisterL \s -> s {sinisterPlayers = [if p.identity == toHeroCardCode ident then f p else p | p <- s.sinisterPlayers]}
   galaxyL f = logged \l -> l {galaxy = f l.galaxy}
   galaxyP ident f = galaxyL \g -> g {galaxyPlayers = [if p.identity == toHeroCardCode ident then f p else p | p <- g.galaxyPlayers]}
   player ident f = logged \l -> l {players = [if p.identity == toHeroCardCode ident then f p else p | p <- l.players]}

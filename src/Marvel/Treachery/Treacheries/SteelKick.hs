@@ -32,6 +32,6 @@ instance RunMessage SteelKick where
       let extra = if metal then 1 else 0
       if hero
         then dealIndirectDamage you attrs (3 + extra)
-        else placeThreatOnEach attrs (2 + extra) MainScheme
+        else placeThreatOnEach attrs (2 + extra) EncounterMainScheme
       pure t
     _ -> SteelKick <$> runMessage msg attrs

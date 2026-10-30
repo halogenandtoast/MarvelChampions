@@ -26,7 +26,8 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard Hood.fieldRecruitment
+  [ SomeTreacheryCard smSandslide, SomeTreacheryCard smSandStorm, SomeTreacheryCard smSandSmash, SomeTreacheryCard smBitingRetort, SomeTreacheryCard smForWhomTheBellTolls, SomeTreacheryCard smDejaVu, SomeTreacheryCard smFearmonger, SomeTreacheryCard smFrequentFlyers, SomeTreacheryCard smHighFashion, SomeTreacheryCard smRoboticEnhancements, SomeTreacheryCard smPartnershipOfPain, SomeTreacheryCard smSurprise, SomeTreacheryCard smSpreadingPanic, SomeTreacheryCard smCallingInFavors, SomeTreacheryCard smNowOrNever, SomeTreacheryCard smThreatOrMenace, SomeTreacheryCard smLooseEnds, SomeTreacheryCard smRemoteNavigation, SomeTreacheryCard smFromEveryDirection, SomeTreacheryCard smDeepestFears, SomeTreacheryCard smSwingingAssault, SomeTreacheryCard smUnstableSentience, SomeTreacheryCard smSmearCampaign
+  , SomeTreacheryCard Hood.fieldRecruitment
   , SomeTreacheryCard Hood.upperHand
   , SomeTreacheryCard hardToKeepDown
   , SomeTreacheryCard imTough
@@ -238,6 +239,8 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard oldRivals
   , SomeTreacheryCard laserStrike
   , SomeTreacheryCard relentlessAndroid
+  , SomeTreacheryCard inColdBlood
+  , SomeTreacheryCard sliceAndDice
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

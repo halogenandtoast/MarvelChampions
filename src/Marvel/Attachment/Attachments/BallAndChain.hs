@@ -55,6 +55,6 @@ instance RunMessage BallAndChain where
         Nothing -> removeFromPlay attrs
       pure a
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
-      traverse_ (`placeThreat` 1) =<< selectOne MainScheme
+      traverse_ (`placeThreat` 1) =<< selectOne EncounterMainScheme
       pure a
     _ -> BallAndChain <$> runMessage msg attrs

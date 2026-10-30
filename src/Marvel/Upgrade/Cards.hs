@@ -1,5 +1,11 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Ability.Types qualified as Ability
 
 import Marvel.Prelude
@@ -23,7 +29,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ spiderTracer
+  [ smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
+  , spiderTracer
   , webShooter
   , webbedUp
   , captainMarvelsHelmet
@@ -244,6 +251,13 @@ allUpgrades = fromList $ concatMap
   , flowLikeWater
   , chanceEncounter
   , dense
+  , ticketToTheMultiverse
+  , webBracelet
+  , planB
+  , powerWithin
+  , defenseMechanism
+  , webShooterMilesMorales
+  , symbioteSuit
   ]
 
 upgrade
@@ -1084,3 +1098,251 @@ chanceEncounter = deckLimited 3 $ (upgrade "26034" "Chance Encounter" 0 [Conditi
 -- The reverse of Intangible, flipped in place; its front keeps CDB code 26002.
 dense :: CardDef
 dense = intangible {cdCardCode = "26002b", cdName = "Dense", cdDeckLimit = Just 0}
+
+
+-- Sinister Motives
+
+ticketToTheMultiverse :: CardDef
+ticketToTheMultiverse = (identityUpgrade "27008" "Ticket to the Multiverse" 3 [Item] [Wild, Wild])
+    { cdDeckLimit = Just 1
+    }
+
+webBracelet :: CardDef
+webBracelet = (identityUpgrade "27009" "Web-Bracelet" 2 [Item, Tech] [Physical])
+    { cdDeckLimit = Just 2
+    }
+
+planB :: CardDef
+planB = (basicUpgrade "27024" "Plan B" 1 [Tactic] [Physical])
+    { cdDeckLimit = Just 3
+    , cdLimit = Just (MaxPerPlayerUnderAnyControl 1)
+    }
+
+powerWithin :: CardDef
+powerWithin = (identityUpgrade "27037" "Power Within" 1 [Superpower] [Energy])
+    { cdDeckLimit = Just 1
+    }
+
+defenseMechanism :: CardDef
+defenseMechanism = (identityUpgrade "27038" "Defense Mechanism" 1 [Superpower] [Mental])
+    { cdDeckLimit = Just 1
+    }
+
+webShooterMilesMorales :: CardDef
+webShooterMilesMorales = (identityUpgrade "27039" "Web-Shooter" 1 [Item, Tech] [Physical])
+    { cdDeckLimit = Just 2
+    }
+
+symbioteSuit :: CardDef
+symbioteSuit = (basicUpgrade "27191" "Symbiote Suit" 4 [Symbiote] [Wild])
+    { cdDeckLimit = Just 1
+    , cdHazards = 1
+    }
+
+-- Sinister Motives
+
+smUpgradeDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smUpgradeDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smCompactDartsA :: CardDef
+smCompactDartsA = (smUpgradeDef "27182a" "Compact Darts" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smCompactDartsB :: CardDef
+smCompactDartsB = (smUpgradeDef "27182b" "Compact Darts" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smImpactDampeningSuitA :: CardDef
+smImpactDampeningSuitA = (smUpgradeDef "27183a" "Impact-Dampening Suit" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smImpactDampeningSuitB :: CardDef
+smImpactDampeningSuitB = (smUpgradeDef "27183b" "Impact-Dampening Suit" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLaserGogglesA :: CardDef
+smLaserGogglesA = (smUpgradeDef "27184a" "Laser Goggles" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLaserGogglesB :: CardDef
+smLaserGogglesB = (smUpgradeDef "27184b" "Laser Goggles" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smPropulsionGauntletA :: CardDef
+smPropulsionGauntletA = (smUpgradeDef "27185a" "Propulsion Gauntlet" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smPropulsionGauntletB :: CardDef
+smPropulsionGauntletB = (smUpgradeDef "27185b" "Propulsion Gauntlet" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRetinalDisplayA :: CardDef
+smRetinalDisplayA = (smUpgradeDef "27186a" "Retinal Display" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smRetinalDisplayB :: CardDef
+smRetinalDisplayB = (smUpgradeDef "27186b" "Retinal Display" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smShockKnucklesA :: CardDef
+smShockKnucklesA = (smUpgradeDef "27187a" "Shock Knuckles" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smShockKnucklesB :: CardDef
+smShockKnucklesB = (smUpgradeDef "27187b" "Shock Knuckles" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWaveBracersA :: CardDef
+smWaveBracersA = (smUpgradeDef "27188a" "Wave Bracers" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWaveBracersB :: CardDef
+smWaveBracersB = (smUpgradeDef "27188b" "Wave Bracers" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWristNavigatorA :: CardDef
+smWristNavigatorA = (smUpgradeDef "27189a" "Wrist Navigator" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Setup, SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smWristNavigatorB :: CardDef
+smWristNavigatorB = (smUpgradeDef "27189b" "Wrist Navigator" SMSet.ShieldTech 1)
+  { cdTraits = fromList [SMTrait.Shield, SMTrait.Enhanced, SMTrait.Tech]
+  , cdKeywords = fromList [SMKeyword.Permanent]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

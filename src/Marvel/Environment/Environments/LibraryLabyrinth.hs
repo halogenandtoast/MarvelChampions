@@ -53,7 +53,7 @@ instance RunMessage LibraryLabyrinth where
   runMessage msg e@(LibraryLabyrinth attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ | not (isMuseumShip attrs) -> do
       dealEncounterCard you
-      scheme <- selectOne MainScheme
+      scheme <- selectOne EncounterMainScheme
       for_ scheme \s -> thwartScheme s attrs 5
       pure e
     BeginPhase VillainPhase | isMuseumShip attrs -> do

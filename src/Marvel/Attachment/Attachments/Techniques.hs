@@ -80,7 +80,7 @@ instance HasModifiersFor CutthroatAmbition where
 instance RunMessage CutthroatAmbition where
   runMessage msg (CutthroatAmbition attrs) = runQueueT $ CutthroatAmbition <$> runTechnique special msg attrs
    where
-    special _ _ = selectOne MainScheme >>= traverse_ (`placeThreat` 1)
+    special _ _ = selectOne EncounterMainScheme >>= traverse_ (`placeThreat` 1)
 
 evasiveManeuvering :: AttachmentCard EvasiveManeuvering
 evasiveManeuvering = attachment EvasiveManeuvering Cards.evasiveManeuvering

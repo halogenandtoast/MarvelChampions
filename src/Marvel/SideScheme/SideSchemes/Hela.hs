@@ -123,7 +123,7 @@ instance RunMessage HallOfNastrond where
   runMessage msg (HallOfNastrond attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
       first <- selectJust FirstPlayer
-      schemes <- selectList MainScheme
+      schemes <- selectList EncounterMainScheme
       for_ schemes \s -> cardSpecific (schemeRef s) "detachOdin" first
       traverse_ dealEncounterCard =<< getPlayers
       HallOfNastrond <$> runMessage msg attrs

@@ -9,6 +9,8 @@ data SideSchemeMessage
   | DefeatSideScheme
   | SideSchemePlaceInitialThreat
   | SideSchemePlaceThreat Natural
+  | -- | an acceleration token on this side scheme, removed when the scheme leaves
+    SideSchemePlaceAccelerationToken
   | SideSchemeThwarted Source Natural
   | -- | threat taken off it by a card, not by thwarting: moved elsewhere (Tactical
     -- Prowess), or all but some removed by its own ability

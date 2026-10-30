@@ -178,3 +178,21 @@ import Marvel.Treachery.Treacheries.OldRivals as X
 import Marvel.Treachery.Treacheries.LaserStrike as X
 
 import Marvel.Treachery.Treacheries.RelentlessAndroid as X
+
+-- Sinister Motives
+import Marvel.Treachery.Treacheries.InColdBlood as X
+import Marvel.Treachery.Treacheries.SliceAndDice as X
+
+import Marvel.Treachery.Treacheries.SmSandman as X
+
+import Marvel.Treachery.Treacheries.SmVenom as X
+
+import Marvel.Treachery.Treacheries.SmMysterio as X
+
+import Marvel.Treachery.Treacheries.SmSinisterSix as X
+
+import Marvel.Treachery.Treacheries.SmVenomGoblin as X
+
+import Marvel.Treachery.Treacheries.SmModulars as X
+
+import Marvel.Treachery.Treacheries.SmCampaign as X

@@ -130,7 +130,8 @@
       "gmw": "Use the modular set listed for the scenario: Band of Badoon, Menagerie Medley, Space Pirates, or Kree Militants. You may replace that modular set when customizing the scenario. Other sets required by the scenario's setup remain included automatically.",
       "mts": "Use the modular sets named on the main scheme: one for Tower Defense, or two for Ebony Maw, Thanos, Hela, or Loki. You may replace those modular sets when customizing the scenario. The Infinity Gauntlet remains required for Thanos and Loki and is included automatically.",
       "hood": "Choose any seven modular encounter sets from this product or other products; you may choose them at random. No single lineup is specified. Set all seven aside, then shuffle one randomly chosen set into the encounter deck. The others are recruited during play.",
-      "other": "Follow the main scheme and product rulebook for the number of modular sets and any required encounter sets. Choose your own modular sets when no specific sets are recommended."
+      "other": "Follow the main scheme and product rulebook for the number of modular sets and any required encounter sets. Choose your own modular sets when no specific sets are recommended.",
+      "sm": "Sinister Motives fixes certain modular sets to their scenarios: City in Chaos for Sandman, Symbiotic Strength for Venom and Venom Goblin, and Personal Nightmare for Mysterio. The other listed set may be replaced. Osborn Tech and Sinister Assault are added to campaign scenarios only when campaign rules direct it."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",
@@ -247,7 +248,22 @@
       "InfinityStones1BCompleted": "The Infinity Stones 1B was completed",
       "NornStoneInPool": "Norn Stone was added to the campaign pool",
       "OdinInPool": "Odin was added to the campaign pool"
-    }
+    },
+    "SinisterMotives": "Sinister Motives",
+    "sinisterWon": "Venom Goblin is defeated: the campaign is won",
+    "sinisterLost": "Venom Goblin controls New York City: the campaign is lost",
+    "shieldTech": "S.H.I.E.L.D. Tech",
+    "aspectAdvantage": "Aspect Advantage",
+    "planningAhead": "Planning Ahead",
+    "reputation": "Reputation",
+    "communityService": "Community Service",
+    "osbornTech": "Osborn Tech",
+    "wakingNightmare": "Waking Nightmare",
+    "lastOnesStanding": "Last Ones Standing",
+    "finalReputation": "Final reputation score",
+    "ChooseSinisterTech": "Choose S.H.I.E.L.D. Tech",
+    "ChooseSinisterAspectAdvantage": "Choose Aspect Advantage",
+    "ChooseSinisterPlanningAhead": "Choose Planning Ahead"
   },
   "settings": {
     "title": "Settings",

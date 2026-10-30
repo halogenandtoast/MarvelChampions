@@ -1,5 +1,11 @@
 module Marvel.MainScheme.Cards where
 
+import Marvel.EncounterSet qualified as SMSet
+import Marvel.Trait qualified as SMTrait
+import Marvel.Keyword qualified as SMKeyword
+import Marvel.GameValue.Types qualified as SMValue
+import Marvel.Boost qualified as SMBoost
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -13,7 +19,8 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ makingConnections
+    [ smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
+  , makingConnections
     , promisedProsperity
     , crimeState
     , theBreakIn
@@ -301,3 +308,145 @@ promisedProsperity = mainScheme "24005" "Promised Prosperity" TheHood
 
 crimeState :: CardDef
 crimeState = mainScheme "24006" "Crime State" TheHood
+
+-- Sinister Motives
+
+smMainSchemeDef :: CardCode -> Name -> SMSet.EncounterSet -> Natural -> CardDef
+smMainSchemeDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  }
+
+smHaplessPedestrians :: CardDef
+smHaplessPedestrians = (smMainSchemeDef "27064" "Hapless Pedestrians" SMSet.Sandman 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLeaveUsAlone :: CardDef
+smLeaveUsAlone = (smMainSchemeDef "27076" "\"Leave Us Alone!\"" SMSet.Venom 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMazeOfMirrors :: CardDef
+smMazeOfMirrors = (smMainSchemeDef "27087" "Maze of Mirrors" SMSet.Mysterio 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smEdgeOfReality :: CardDef
+smEdgeOfReality = (smMainSchemeDef "27088" "Edge of Reality" SMSet.Mysterio 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSinisterSynchronization :: CardDef
+smSinisterSynchronization = (smMainSchemeDef "27100" "Sinister Synchronization" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSinisterBeatdown :: CardDef
+smSinisterBeatdown = (smMainSchemeDef "27101" "Sinister Beatdown" SMSet.SinisterSix 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smSkiesOverNewYork :: CardDef
+smSkiesOverNewYork = (smMainSchemeDef "27116" "Skies Over New York" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smLowerManhattan :: CardDef
+smLowerManhattan = (smMainSchemeDef "27117" "Lower Manhattan" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smMidtownManhattan :: CardDef
+smMidtownManhattan = (smMainSchemeDef "27118" "Midtown Manhattan" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }
+
+smUpperManhattan :: CardDef
+smUpperManhattan = (smMainSchemeDef "27119" "Upper Manhattan" SMSet.VenomGoblin 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  }

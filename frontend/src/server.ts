@@ -32,9 +32,11 @@ export interface SupportView extends CardView {
   threat?: number
   /** cards attached to it facedown */
   facedownCards?: number
+  heldCards?: CardView[]
 }
 
 export interface AttachmentView extends CardView {
+  crisis?: boolean
   damage?: number
   counters?: number
 }
@@ -80,6 +82,8 @@ export interface PlayerView {
   hand: CardView[] | null
   deckSize: number
   discard: CardView[]
+  /** Facedown boost cards waiting on this identity (Venom). */
+  identityBoostCards?: number
   dealtEncounterCards: number
   /** the encounter cards dealt face down, by id */
   dealtCardIds?: string[]
@@ -148,6 +152,8 @@ export interface MinionView extends CardView {
   damage: number
   scheme: number
   attack: number
+  stunCards?: number
+  confuseCards?: number
   stunned: boolean
   confused: boolean
   tough: boolean
@@ -158,6 +164,8 @@ export interface MinionView extends CardView {
 
 export interface SchemeView extends CardView {
   threat: number
+  accelerationTokens?: number
+  glider?: boolean
   crisis: boolean
   upgrades?: UpgradeView[]
   counters?: number
@@ -364,7 +372,7 @@ export interface CampaignInfo {
 }
 
 /** A choice a campaign victory leaves a player not in the game as it was won, asked as the next game is set up. */
-export type CampaignChoice = 'ChooseTechUpgrade' | 'ChooseBasicUpgrade' | 'MayImproveUpgrade'
+export type CampaignChoice = 'ChooseTechUpgrade' | 'ChooseBasicUpgrade' | 'MayImproveUpgrade' | 'ChooseSinisterTech' | 'ChooseSinisterAspectAdvantage' | 'ChooseSinisterPlanningAhead'
 
 /** A column of the campaign log's Player Information. */
 export interface CampaignPlayer {
@@ -389,6 +397,24 @@ export interface CampaignLog {
   galaxy: GalaxyLog
   /** The Mad Titan's Shadow's */
   titan: TitanLog
+  sinister: SinisterLog
+}
+
+export interface SinisterPlayer {
+  identity: string
+  shieldTech: string | null
+  aspectAdvantage: [string, number] | null
+  planningAhead: string | null
+}
+
+export interface SinisterLog {
+  sinisterPlayers: SinisterPlayer[]
+  reputation: number
+  communityService: string[]
+  osbornTech: string[]
+  wakingNightmare: number | null
+  lastOnesStanding: string[]
+  finalReputation: number | null
 }
 
 /** A box of The Mad Titan's Shadow's log: the campaign pool and what the scenarios record. */
@@ -425,7 +451,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

@@ -80,7 +80,7 @@ instance HasAbilities SnowyHillside where
 
 instance RunMessage SnowyHillside where
   runMessage msg e@(SnowyHillside attrs) = runQueueT do
-    handled <- runAbsorbing (\_ n -> placeThreatOnEach attrs n MainScheme) msg attrs
+    handled <- runAbsorbing (\_ n -> placeThreatOnEach attrs n EncounterMainScheme) msg attrs
     if handled then pure e else SnowyHillside <$> runMessage msg attrs
 
 rockyOutcrop :: EnvironmentCard RockyOutcrop

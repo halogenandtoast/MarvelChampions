@@ -133,6 +133,7 @@ effectValidFor e target = case (target, effectMatcher e) of
   -- the target first: matching every identity or ally runs their modifiers, which
   -- each run this again
   (IdentityRef ident, IdentityEntity matcher) -> selectAny (IdentityWithId ident <> matcher)
+  (MinionRef ident, MinionEntity matcher) -> selectAny (MinionWithId ident <> matcher)
   (AllyRef ident, AllyEntity matcher) -> selectAny (AllyWithId ident <> matcher)
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
   (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'

@@ -2,6 +2,14 @@
 
 module Marvel.Environment where
 
+import Marvel.Environment.Environments.SmCampaign
+
+import Marvel.Environment.Environments.SmVenomGoblin
+
+import Marvel.Environment.Environments.SmVenom
+
+import Marvel.Environment.Environments.SmSandman
+
 import Marvel.Prelude
 
 import Marvel.Environment.Environments.UltronDronesVision
@@ -43,7 +51,8 @@ withEnvironmentCardCode cCode f = case lookup cCode allEnvironments of
 allEnvironments :: HashMap CardCode SomeEnvironmentCard
 allEnvironments =
   fromList $ map (toFst someEnvironmentCardCode)
-    [ SomeEnvironmentCard ultronDrones
+    [ SomeEnvironmentCard smCityStreets, SomeEnvironmentCard smBellTowerA, SomeEnvironmentCard smBellTowerB, SomeEnvironmentCard smSkiesOverNewYorkB, SomeEnvironmentCard smLowerManhattanB, SomeEnvironmentCard smMidtownManhattanB, SomeEnvironmentCard smUpperManhattanB, SomeEnvironmentCard smPublicOutcryA, SomeEnvironmentCard smPublicOutcryB
+  , SomeEnvironmentCard ultronDrones
     -- The Green Goblin
     , SomeEnvironmentCard criminalEnterprise
     , SomeEnvironmentCard stateOfMadness

@@ -12,6 +12,7 @@ import Data.Text qualified as T
 import Marvel.Campaign
 import Marvel.Campaign.GalaxysMostWanted (runGalaxyStep)
 import Marvel.Campaign.MadTitansShadow (runTitanStep)
+import Marvel.Campaign.SinisterMotives (runSinisterStep)
 import Marvel.Card
 import Marvel.Deck
 import Marvel.EncounterCard (allEncounterCards, genEncounterCard)
@@ -32,6 +33,7 @@ runCampaignStep :: (ReverseQueue m) => CampaignStepKind -> m ()
 runCampaignStep step = getCampaign >>= traverse_ \c -> case c.kind of
  GalaxysMostWanted -> runGalaxyStep c step
  MadTitansShadow -> runTitanStep c step
+ SinisterMotives -> runSinisterStep c step
  RiseOfRedSkull -> case step of
   CampaignChoices -> do
     players <- getPlayers
@@ -99,6 +101,9 @@ choose chosen ident code p choice = case choice of
         , labeled "$label.keepBasicUpgrade" done
         ]
     _ -> done
+  ChooseSinisterTech -> pure ()
+  ChooseSinisterAspectAdvantage -> pure ()
+  ChooseSinisterPlanningAhead -> pure ()
  where
   done = recordInCampaignLog (ResolvedChoice code choice)
   added card record = do

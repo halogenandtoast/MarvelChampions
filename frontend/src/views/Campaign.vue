@@ -85,6 +85,8 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const sinister = computed(() => view.value?.campaign.kind === 'SinisterMotives')
+const sinisterPlayer = (identity: string) => log.value?.sinister?.sinisterPlayers.find((p) => p.identity === identity) ?? null
 // The Mad Titan's Shadow's log: its checkboxes by the scenario that checks them (p.28)
 const titanMarks: [number, TitanMark[]][] = [
   [1, ['CosmoInPool', 'SecurityBreachInPool']],
@@ -172,8 +174,8 @@ const remove = async () => {
 
       <div v-else class="next box">
         <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
-        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : 'campaign.won') }}</p>
-        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : 'campaign.lost') }}</p>
+        <p v-if="view.won" class="result good">{{ $t(galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : sinister ? 'campaign.sinisterWon' : 'campaign.won') }}</p>
+        <p v-else-if="view.campaign.lost" class="result bad">{{ $t(galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : sinister ? 'campaign.sinisterLost' : 'campaign.lost') }}</p>
         <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
       </div>
       <p v-if="error" class="error">{{ tr(error) }}</p>
@@ -198,6 +200,16 @@ const remove = async () => {
               <dd>{{ names(galaxyPlayer(p.identity)?.marketCards ?? []) }}</dd>
               <dt>{{ $t('campaign.collection') }}</dt>
               <dd>{{ names(galaxyPlayer(p.identity)?.collection ?? []) }}</dd>
+            </dl>
+            <dl v-else-if="sinister">
+              <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
+              <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
+              <dt>{{ $t('campaign.shieldTech') }}</dt>
+              <dd>{{ name(sinisterPlayer(p.identity)?.shieldTech) }}</dd>
+              <dt>{{ $t('campaign.aspectAdvantage') }}</dt>
+              <dd>{{ name(sinisterPlayer(p.identity)?.aspectAdvantage?.[0]) }}<template v-if="sinisterPlayer(p.identity)?.aspectAdvantage"> ×{{ sinisterPlayer(p.identity)!.aspectAdvantage![1] }}</template></dd>
+              <dt>{{ $t('campaign.planningAhead') }}</dt>
+              <dd>{{ name(sinisterPlayer(p.identity)?.planningAhead) }}</dd>
             </dl>
             <dl v-else-if="titan && expert">
               <dt>{{ $t('campaign.hitPoints') }}</dt>
@@ -242,6 +254,20 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="sinister" class="scenario-log">
+          <dt>{{ $t('campaign.reputation') }}</dt>
+          <dd>{{ log.sinister.reputation }}</dd>
+          <dt>{{ $t('campaign.communityService') }}</dt>
+          <dd>{{ names(log.sinister.communityService) }}</dd>
+          <dt>{{ $t('campaign.osbornTech') }}</dt>
+          <dd>{{ names(log.sinister.osbornTech) }}</dd>
+          <dt>{{ $t('campaign.wakingNightmare') }}</dt>
+          <dd>{{ log.sinister.wakingNightmare ?? $t('campaign.none') }}</dd>
+          <dt>{{ $t('campaign.lastOnesStanding') }}</dt>
+          <dd>{{ names(log.sinister.lastOnesStanding) }}</dd>
+          <dt v-if="log.sinister.finalReputation !== null">{{ $t('campaign.finalReputation') }}</dt>
+          <dd v-if="log.sinister.finalReputation !== null">{{ log.sinister.finalReputation }}</dd>
         </dl>
         <dl v-else-if="titan" class="scenario-log">
           <template v-for="[n, marks] in titanMarks" :key="n">

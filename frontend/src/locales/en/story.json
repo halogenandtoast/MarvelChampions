@@ -44,7 +44,9 @@
   },
   "expertVictory": {
     "title": "Expert Campaign Only",
-    "bullets": ["Record each identity’s remaining hit points in the campaign log, as well as any cards added to their deck."]
+    "bullets": [
+      "Record each identity’s remaining hit points in the campaign log, as well as any cards added to their deck."
+    ]
   },
   "crossbones": {
     "intro": {
@@ -62,7 +64,9 @@
     },
     "setup": {
       "title": "Campaign Instructions: Setup",
-      "bullets": ["Each player records their identity in the campaign log. Players cannot switch identities during a campaign."]
+      "bullets": [
+        "Each player records their identity in the campaign log. Players cannot switch identities during a campaign."
+      ]
     },
     "victory": {
       "title": "Campaign Instructions: Victory",
@@ -111,7 +115,9 @@
     },
     "victory": {
       "title": "Campaign Instructions: Victory",
-      "bullets": ["Each player who rescued one or more allies from the Taskmaster encounter set adds those allies to their deck and records their names in the campaign log."]
+      "bullets": [
+        "Each player who rescued one or more allies from the Taskmaster encounter set adds those allies to their deck and records their names in the campaign log."
+      ]
     }
   },
   "zola": {
@@ -171,7 +177,9 @@
     },
     "victory": {
       "title": "Campaign Instructions: Victory",
-      "bullets": ["Hydra is defeated and the players win the campaign!"]
+      "bullets": [
+        "Hydra is defeated and the players win the campaign!"
+      ]
     }
   },
   "galaxy": {
@@ -681,6 +689,213 @@
           "Loki is defeated and the players win the campaign!"
         ]
       }
+    }
+  },
+  "sm": {
+    "campaignMode": {
+      "title": "Sinister Motives: Campaign Mode",
+      "text": [
+        "Win the five scenarios in order: Sandman, Venom, Mysterio, the Sinister Six, then Venom Goblin. Keep the same identity throughout the campaign; aspects and deck contents may change between scenarios. A loss may be retried without penalty, except Venom Goblin in an expert campaign.",
+        "Reputation is shared by the group. At each victory, gain the victory points in the victory display plus 1 for each condition met: no minions, no side schemes, no threat on the main scheme, fewer acceleration tokens than players, and no defeated identities.",
+        "White reputation effects resolve when their node is first marked. Pink setup effects apply to later scenarios, left side from top to bottom, then right side from top to bottom. Tech and Aspect Advantage cards added by reputation do not count toward deck size.",
+        "Venom (Eddie Brock) and Symbiote Suit cannot be included in campaign decks unless a campaign rule allows them. Osborn Tech and Sinister Assault modular sets are included only when campaign instructions direct it."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Expert Campaign",
+      "text": [
+        "After a victory, record remaining hit points up to the identity’s printed hit points. The next scenario starts at the recorded value. Each scenario offers healing to printed hit points in exchange for facedown encounter cards.",
+        "A defeated player does not participate in victory instructions. They can rejoin the next scenario by accepting its healing penalty.",
+        "Optionally, lock aspect and basic cards after the campaign begins. Campaign rewards may still be added as instructed."
+      ]
+    },
+    "sandman": {
+      "intro": {
+        "title": "Sandman",
+        "text": [
+          "Sandman fills the streets with tidal sands as civilians struggle to escape. Stop him before the surrounding city is overwhelmed."
+        ]
+      },
+      "rules": {
+        "title": "Sandman: City Streets",
+        "text": [
+          "Sandman’s first two stages deal indirect attack damage. If his attack damages your identity, resolve Surging Sands: add a sand counter to City Streets, then discard encounter cards equal to its sand counters. His final stage uses overkill instead of indirect damage.",
+          "Once per round per player, a hero may exhaust a controlled character to remove sand counters equal to that character’s ATK. Each acceleration token placed on Hapless Pedestrians deals 3 indirect damage to the first player."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Setup: Sandman",
+        "bullets": [
+          "Put Public Outcry into play on the face matching the scenario difficulty.",
+          "Shuffle Smear Campaign and one random Community Service side scheme into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Setup: Sandman",
+        "bullets": [
+          "Place 2 additional sand counters on City Streets. Resolve Surging Sands."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory: Sandman",
+        "bullets": [
+          "Calculate and gain reputation. Resolve any newly reached immediate reputation effects.",
+          "Record a Community Service side scheme in the victory display. In an expert campaign, record each surviving identity’s remaining hit points."
+        ]
+      }
+    },
+    "venom": {
+      "intro": {
+        "title": "Venom",
+        "text": [
+          "Venom charges relentlessly. A nearby bell tower offers a chance to turn its sonic vibrations against him."
+        ]
+      },
+      "rules": {
+        "title": "Venom: Boost Cards and Bell Tower",
+        "text": [
+          "Attacks by your identity or an ally you control that damage Venom place facedown boost cards on your identity. When Venom activates against you, move those cards to Venom for that activation.",
+          "While Bell Tower is Quiet, attack damage to Venom may be converted into chime counters. At 3 counters per player, it flips to Ringing. Ringing increases damage Venom takes by 1 and spends chime counters to prevent damage his attacks would deal to identities; at no counters, it returns to Quiet. Converted damage is not excess damage."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Setup: Venom",
+        "bullets": [
+          "Put Public Outcry into play. Shuffle Smear Campaign and a random Community Service side scheme not already completed into the encounter deck.",
+          "Resolve marked reputation setup effects: left side top to bottom, then right side top to bottom."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Setup: Venom",
+        "bullets": [
+          "Restore recorded hit points. Each player may deal themself 1 facedown encounter card to heal to printed hit points.",
+          "Place 1 facedown boost card on each identity."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory: Venom",
+        "bullets": [
+          "Calculate and gain reputation; resolve newly reached immediate effects.",
+          "Record Community Service in the victory display and, in an expert campaign, remaining identity hit points."
+        ]
+      }
+    },
+    "mysterio": {
+      "intro": {
+        "title": "Mysterio",
+        "text": [
+          "Inside Oscorp, mirrors and phantoms distort reality. Fight through Mysterio’s illusions before his nightmare consumes you."
+        ]
+      },
+      "rules": {
+        "title": "Mysterio: Encounter Cards in Your Deck",
+        "text": [
+          "Encounter cards may enter your deck or discard pile. When you would draw or discard an encounter card from your deck, deal it to yourself as a facedown encounter card and draw a replacement card. For simultaneous draws, finish drawing the batch before dealing its encounter cards.",
+          "Mysterio places resolved Illusion boost cards in your discard pile, on the bottom of your deck, or on the top of your deck according to his stage. Remove all encounter cards from player decks, hands, and discard piles after the scenario."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Setup: Mysterio",
+        "bullets": [
+          "Put Venom (Eddie Brock) into play under the first player’s control. Put Public Outcry into play.",
+          "Shuffle Smear Campaign, Snitches Get Stitches, and a random uncompleted Community Service side scheme into the encounter deck.",
+          "Resolve marked reputation setup effects, left side then right side."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Setup: Mysterio",
+        "bullets": [
+          "Restore recorded hit points. Each player may deal themself 2 facedown encounter cards to heal to printed hit points.",
+          "In player order, each player shuffles the top 2 encounter-deck cards into their deck."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory: Mysterio",
+        "bullets": [
+          "Calculate and gain reputation; resolve newly reached immediate effects. Record Community Service in the victory display.",
+          "Count Illusion cards still in all player decks and record the total as Waking Nightmare. In an expert campaign, record remaining identity hit points."
+        ]
+      }
+    },
+    "sinisterSix": {
+      "intro": {
+        "title": "The Sinister Six",
+        "text": [
+          "Mysterio’s illusion gives way to an underground silo. Six villains emerge from the darkness as you search for a way out."
+        ]
+      },
+      "rules": {
+        "title": "The Sinister Six: Escape",
+        "text": [
+          "Only the villain with the active counter activates during the villain phase. Unqualified encounter references to “the villain” mean that villain. Move the counter to the next ascending activation order, wrapping to the lowest as needed.",
+          "A villain defeated is set aside and removes 4 threat from a side scheme, or 7 if no other villain remains. Defeating every villain does not win: remove the threat from both sides of Light at the End to escape. If a villain must activate with none in play, Ambush brings one back.",
+          "An attack prevented by stun or an attack that deals no damage does not trigger the villains’ damage-dependent counter movement. If villains are in play but none has the active counter when activation is needed, give it to the lowest activation order and continue."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Setup: The Sinister Six",
+        "bullets": [
+          "Put Venom (Eddie Brock) into play under the first player’s control and put Public Outcry into play.",
+          "Shuffle Smear Campaign, Snitches Get Stitches, and a random uncompleted Community Service side scheme into the encounter deck.",
+          "Place additional threat on Light at the End equal to Waking Nightmare. Resolve reputation setup effects, left side then right side."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Setup: The Sinister Six",
+        "bullets": [
+          "Restore recorded hit points. Each player may deal themself 2 facedown encounter cards to heal to printed hit points."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory: The Sinister Six",
+        "bullets": [
+          "Calculate and gain reputation; resolve newly reached immediate effects. Record Community Service in the victory display.",
+          "Record each villain still in play as Last Ones Standing. In an expert campaign, record remaining identity hit points."
+        ]
+      }
+    },
+    "venomGoblin": {
+      "intro": {
+        "title": "Venom Goblin",
+        "text": [
+          "Norman Osborn has bound himself to the symbiote. Stop Venom Goblin’s assault before New York falls under his control."
+        ]
+      },
+      "rules": {
+        "title": "Venom Goblin: The Glider Counter",
+        "text": [
+          "Three main schemes begin in play. Enemy scheming, unqualified encounter effects, and acceleration token placement affect the scheme with the glider counter. Player cards may affect any main scheme.",
+          "Each main scheme accumulates its own acceleration threat and tokens. A completed scheme flips to its Symbiote environment and is revealed; move the glider counter and its acceleration tokens to the least-threat main scheme. Two Symbiote environments lose the game. The first player resolves ties for least or most threat.",
+          "Patrol and crisis restrict only the scheme with the glider counter. Venom Goblin moves the counter after activating and resolves the destination scheme’s effects according to his stage."
+        ]
+      },
+      "setup": {
+        "title": "Campaign Setup: Venom Goblin",
+        "bullets": [
+          "Put Public Outcry into play and shuffle Smear Campaign into the encounter deck.",
+          "Shuffle in the Sinister Assault minion matching each villain recorded as Last Ones Standing.",
+          "Resolve reputation setup effects, left side then right side."
+        ]
+      },
+      "expertSetup": {
+        "title": "Expert Setup: Venom Goblin",
+        "bullets": [
+          "Restore recorded hit points. Each player may deal themself 3 facedown encounter cards to heal to printed hit points.",
+          "Place 1 additional threat per player on each main scheme. If you lose this game, the campaign is lost."
+        ]
+      },
+      "victory": {
+        "title": "Campaign Victory: Venom Goblin",
+        "text": [
+          "You win the campaign! Optionally calculate one final reputation gain and record the total as your Final Reputation Score."
+        ]
+      }
+    },
+    "conclusion": {
+      "title": "New York Is Safe",
+      "text": [
+        "Venom Goblin is defeated. Your final reputation records the objectives achieved throughout the campaign."
+      ]
     }
   }
 }

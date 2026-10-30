@@ -3,7 +3,9 @@ module Marvel.Cost.Types where
 import Marvel.Prelude
 
 import Data.List (nub)
-import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, SupportMatcher, UpgradeMatcher)
+import Marvel.Id (EnemyId)
 import Marvel.Ref
 import Marvel.Resource.Types
 import Marvel.Trait.Types (Trait)
@@ -18,7 +20,9 @@ data Cost
   | -- | spend one through this many resources ("up to" in a cost; Machine Man)
     UpToResourcesCost Natural
   | MultiResourceCost [Maybe Resource]
+  | PrintedResourceCost [Resource]
   | DamageCost Natural
+  | IndirectDamageCost Natural
   | HealCost Natural
   | DamageThisCost Natural
   | PlaceThreatOnMainSchemeCost Natural
@@ -26,8 +30,15 @@ data Cost
   | -- | at least so many cards from hand, and at most so many (any number for Nothing)
     DiscardHandCardsCost Natural (Maybe Natural)
   | DiscardCost Target
+  | RemoveFromGameCost Target
+  | DiscardHandCardsWithTotalCost CardMatcher Natural
+  | ExactCountersCost Natural
+  | GiveEnemyToughCost EnemyId
+  | GiveEnemyBoostCost EnemyId Natural
   | -- | so many cards discarded at random from the payer's hand
     DiscardRandomHandCardsCost Natural
+  | -- | discard matching cards at random from the payer's hand
+    DiscardRandomHandCardsMatchingCost Natural CardMatcher
   | UseCost
   | NoCost
   | -- | as many resources, each of a different type
@@ -40,6 +51,10 @@ data Cost
     DiscardUpgradeCost UpgradeMatcher
   | -- | discard a controlled ally, retaining its printed card in the payment
     DiscardAllyCost AllyMatcher
+  | -- | discard a support the payer controls
+    DiscardSupportCost SupportMatcher
+  | -- | discard one controlled ally or support, chosen among those matching
+    DiscardAllyOrSupportCost AllyMatcher SupportMatcher
   | -- | discard the top card of the payer's deck: not payable with an empty deck
     DiscardTopOfDeckCost
   | -- | discard between so many cards from the top of the payer's deck and so many (as
@@ -62,9 +77,19 @@ data Cost
     ResourcesFromHandCost Cost
   | -- | exhaust a character the payer controls with the trait: their identity or an ally
     ExhaustCharacterWithTraitCost Trait
+  | -- | exhaust one controlled character matching, with its identity in the receipt
+    ExhaustCharacterCost CharacterMatcher
+  | -- | exhaust between the given minimum and maximum number of ready cards the
+    -- payer controls with this trait, including identities, allies, supports and upgrades
+    ExhaustCardsWithTraitCost Trait Natural Natural
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
     DiscardEncounterCardsUntilMinionCost
+  | -- | discard encounter cards until a treachery is discarded, then reveal it;
+    -- the reveal must resolve before the effect paid for can begin (Return the Favor)
+    RevealEncounterTreacheryCost
+  | -- | shuffle this many top encounter cards into the payer's deck as a cost
+    ShuffleEncounterCardsIntoOwnDeckCost Natural
   | SearchEncounterSideSchemeCost
   | SearchEncounterMinionCost
   | -- | "deal yourself 1 facedown encounter card"
@@ -107,12 +132,20 @@ costResources NoCost = []
 costResources (PlaceThreatOnMainSchemeCost _) = []
 costResources ExhaustCost = []
 costResources (DiscardCost _) = []
+costResources (RemoveFromGameCost _) = []
+costResources (DiscardHandCardsWithTotalCost _ _) = []
+costResources (ExactCountersCost _) = []
+costResources (GiveEnemyToughCost _) = []
+costResources (GiveEnemyBoostCost _ _) = []
 costResources (DiscardHandCardsCost _ _) = []
 costResources (DiscardRandomHandCardsCost _) = []
+costResources (DiscardRandomHandCardsMatchingCost _ _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (DiscardUpgradeCost _) = []
 costResources (DiscardAllyCost _) = []
+costResources (DiscardSupportCost _) = []
+costResources (DiscardAllyOrSupportCost _ _) = []
 costResources DiscardTopOfDeckCost = []
 costResources (DiscardTopOfDeckCardsCost _ _) = []
 costResources DiscardTopOfDeckForDamageCost = []
@@ -121,7 +154,11 @@ costResources (ExhaustAlliesMatchingCost _ _) = []
 costResources (ResourcesFromHandCost c) = costResources c
 costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
+costResources (ExhaustCharacterCost _) = []
+costResources (ExhaustCardsWithTraitCost _ _ _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
+costResources RevealEncounterTreacheryCost = []
+costResources (ShuffleEncounterCardsIntoOwnDeckCost _) = []
 costResources SearchEncounterSideSchemeCost = []
 costResources SearchEncounterMinionCost = []
 costResources DealEncounterCardCost = []
@@ -136,6 +173,7 @@ costResources (IdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
 costResources (DamageCost _) = []
+costResources (IndirectDamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
 costResources UseCost = []
@@ -143,6 +181,7 @@ costResources UseCost = []
 costResources (DynamicResourceCost r) = [r]
 costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs
+costResources (PrintedResourceCost rs) = map Just rs
 costResources (Costs ps) = concatMap costResources ps
 costResources (DifferentResourcesCost n) = replicate (fromIntegral n) Nothing
 
@@ -158,3 +197,11 @@ differentResourcesNeeded = \case
 coversDifferentTypes :: Natural -> [Resource] -> Bool
 coversDifferentTypes n rs =
   fromIntegral (min 4 (length (nub (filter (/= Wild) rs)) + length (filter (== Wild) rs))) >= n
+
+-- | Icons that must be printed on the cards spent, without wild substitution.
+printedResourceRequirements :: Cost -> [Resource]
+printedResourceRequirements = \case
+  PrintedResourceCost rs -> rs
+  Costs cs -> concatMap printedResourceRequirements cs
+  ResourcesFromHandCost c -> printedResourceRequirements c
+  _ -> []

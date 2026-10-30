@@ -69,7 +69,7 @@ instance RunMessage DeadToRights where
       ready <- identityMatches UnexhaustedIdentity you
       if ready
         then exhaust you
-        else selectList MainScheme >>= traverse_ (`placeThreat` 2)
+        else selectList EncounterMainScheme >>= traverse_ (`placeThreat` 2)
       pure t
     _ | Just boost <- anotherBoostCard attrs msg -> t <$ boost
     _ -> DeadToRights <$> runMessage msg attrs

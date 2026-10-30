@@ -26,7 +26,7 @@ instance RunMessage Draugr where
     MinionMessage ident (RevealMinion you) | ident == minionId attrs -> do
       chooseOne you
         [ labeled (countLabel "takeDamage" 1) $ damageIdentity you attrs (toDamage 1 FromAbility)
-        , labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreatOnEach attrs 1 MainScheme
+        , labeled (countLabel "placeThreatOnMainScheme" 1) $ placeThreatOnEach attrs 1 EncounterMainScheme
         ]
       Draugr <$> runMessage msg attrs
     _ -> Draugr <$> runMessage msg attrs

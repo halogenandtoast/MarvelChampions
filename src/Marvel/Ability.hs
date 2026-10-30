@@ -14,6 +14,7 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
+import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled))
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -116,6 +117,9 @@ passesUseLimit x aMap a = case baseLimit (abilityLimit a) of
   PerTurn n -> count (== a) usedAbilities < n
   PerRound n -> count (== a) usedAbilities < n
   PerWindow n -> count (== a) usedAbilities < n
+  SharedPerWindow name n -> count (\used -> case baseLimit (abilityLimit used) of
+    SharedPerWindow other _ -> name == other
+    _ -> False) usedAbilities < n
   PerPhase n -> count (== a) usedAbilities < n
  where
   usedAbilities = HashMap.findWithDefault [] x aMap
@@ -154,6 +158,7 @@ passesCriteria x a =
     EnemyExists m -> selectAny m
     SchemeExists m -> selectAny m
     AllyExists m -> selectAny m
+    SupportExists m -> selectAny m
     ExtendedCardExists m -> selectAny m
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
@@ -165,6 +170,12 @@ passesCriteria x a =
     ForAnyPlayer -> pure True
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget _ -> pure False
+    PlayCardWithReductionHasTarget matcher amount ->
+      notNull <$> playableCardsWithReductionAfterExhausting x (toTarget source) matcher amount
+    ControlsCardsWithTrait trait n -> (>= n) <$> countControlledCardsWithTrait x trait
+    CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
+    CanCancelRevealedTreachery -> canCancelRevealedTreachery
+    CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers x
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -189,6 +200,7 @@ passesCardCriteria ident card = go
     EnemyExists m -> selectAny m
     CharacterExists m -> selectAny m
     AllyExists m -> selectAny m
+    SupportExists m -> selectAny m
     SchemeExists m -> selectAny m
     -- the card itself, about to leave the hand, is not one of them
     ExtendedCardExists m -> selectAny (NotCard card <> m)
@@ -200,6 +212,11 @@ passesCardCriteria ident card = go
     ForAnyPlayer -> pure True
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
+    PlayCardWithReductionHasTarget _ _ -> pure False
+    ControlsCardsWithTrait trait n -> (>= n) <$> countControlledCardsWithTrait ident trait
+    CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
+    CanCancelRevealedTreachery -> canCancelRevealedTreachery
+    CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers ident
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])
@@ -272,3 +289,18 @@ defaultAbilityLimit = \case
   Basic -> NoLimit
   Setup -> NoLimit
   WhenRevealed -> PerWindow 1
+
+-- A pure cancel must have a pending reveal whose abilities may be canceled.
+canCancelRevealedTreachery :: (HasGame m) => m Bool
+canCancelRevealedTreachery = do
+  windows <- getCurrentWindows
+  anyM (\case
+    Window _ (RevealTreachery tid _) -> notElem CannotBeCanceled <$> getModifiers tid
+    _ -> pure False) windows
+
+canCancelRevealedEncounterCard :: (HasGame m) => m Bool
+canCancelRevealedEncounterCard = do
+  windows <- getCurrentWindows
+  anyM (\case
+    Window _ (EncounterCardRevealed _ _ card) -> encounterCardCanBeCanceled card
+    _ -> pure False) windows

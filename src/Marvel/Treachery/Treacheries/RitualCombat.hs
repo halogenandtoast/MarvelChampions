@@ -41,7 +41,7 @@ instance RunMessage RitualCombat where
             [ labeled ("Deal " <> tshow x <> " damage to your hero") $
                 damageCharacter ident attrs (toDamage x FromTreachery)
             , labeled ("Place " <> tshow x <> " threat on the main scheme") $
-                placeThreatOnEach attrs x MainScheme
+                placeThreatOnEach attrs x EncounterMainScheme
             ]
           pure t
         Nothing -> error "no ident set"
