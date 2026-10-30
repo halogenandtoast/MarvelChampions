@@ -1977,7 +1977,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     checkWindowsFor rest windows
     pure g
   CheckWindowsFor (ident : rest) windows -> do
-    abilities <- getAbilitiesFor ident
+    abilities <- getAbilitiesForMatching ident (\a -> asYou ident $ anyM (`abilityInWindow` a) windows)
     attrs <- getIdentity ident
     -- a treachery's reveal, or an encounter card's, is cancelled by taking it off the
     -- queue: its window then closes, so a second cancel is not offered
@@ -3100,8 +3100,12 @@ cannotTakeDamageFrom target source = do
 
 -- | The abilities in play a player may trigger.
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
-getAbilitiesFor ident = do
-  abilities <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a) (getAbilities g)
+getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
+
+getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
+getAbilitiesForMatching ident matches = do
+  candidates <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a) (getAbilities g)
+  abilities <- filterM matches candidates
   filterM (\a -> if printed a then do
     blanked <- isBlanked (abilitySource a)
     blocked <- case abilitySource a of
