@@ -3145,14 +3145,14 @@ isBlanked a = do
         _ -> False
   (facedown ||) . elem Blank . mconcat
     <$> sequence
-      [ concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameSideSchemes g)
+      [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameSideSchemes g)
       -- Effect modifiers are stored explicitly; match only effects that can blank.
-      , concatMapM (getModifiersFor (toSource a) (toTarget a))
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a))
           (filter (elem Blank . Effect.effectModifiers . toAttrs) $ HashMap.elems $ gameEffects g)
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameAttachments g)
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEnvironments g)
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameVillains g)
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameObligations g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameAttachments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEnvironments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameVillains g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameObligations g)
       ]
 
 -- | Run messages until the queue empties or someone has to answer a question, saying

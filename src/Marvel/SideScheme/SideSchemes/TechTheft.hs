@@ -26,7 +26,7 @@ newtype TechTheft = TechTheft (Attrs SideScheme)
 -- | Treat the printed text box of each Tech player card as if it were blank: the printed
 -- trait, read straight off the card, as whether it is blank decides its modifiers.
 instance HasModifiersFor TechTheft where
-  getModifiersFor _ target _ = case target of
+  getBlankingModifiersFor _ target _ = case target of
     UpgradeRef _ -> blankIfTech
     SupportRef _ -> blankIfTech
     AllyRef _ -> blankIfTech

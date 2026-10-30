@@ -90,6 +90,7 @@ instance HasAbilities Attachment where
   getAbilities (Attachment a) = getAbilities a
 
 instance HasModifiersFor Attachment where
+  getBlankingModifiersFor source target (Attachment a) = getBlankingModifiersFor source target a
   getModifiersFor source target (Attachment a) =
     getModifiersFor source target a
   getPrintedModifiersFor source target (Attachment a) =

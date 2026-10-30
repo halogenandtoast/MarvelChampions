@@ -31,12 +31,12 @@ newtype CorruptedProgramming = CorruptedProgramming (Attrs Obligation)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor CorruptedProgramming where
-  getModifiersFor _ (UpgradeRef uid) (CorruptedProgramming a) = case obligationOwner a of
+  getBlankingModifiersFor _ (UpgradeRef uid) (CorruptedProgramming a) = case obligationOwner a of
     Nothing -> pure []
     Just owner -> do
       matches <- upgradeMatches (UpgradeWithId uid <> UpgradeWithKeyword MassForm <> UpgradeControlledBy (IdentityWithId owner)) uid
       pure [Blank | matches]
-  getModifiersFor _ _ _ = pure []
+  getBlankingModifiersFor _ _ _ = pure []
 
 instance HasAbilities CorruptedProgramming where
   getAbilities (CorruptedProgramming a) = case obligationOwner a of

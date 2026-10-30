@@ -90,6 +90,7 @@ instance RunMessage SideScheme where
   runMessage msg (SideScheme a) = SideScheme <$> runMessage msg a
 
 instance HasModifiersFor SideScheme where
+  getBlankingModifiersFor source target (SideScheme a) = getBlankingModifiersFor source target a
   getModifiersFor source target (SideScheme a) =
     getModifiersFor source target a
 

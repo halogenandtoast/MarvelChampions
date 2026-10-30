@@ -77,6 +77,7 @@ instance HasAbilities Environment where
   getAbilities (Environment a) = getAbilities a
 
 instance HasModifiersFor Environment where
+  getBlankingModifiersFor source target (Environment a) = getBlankingModifiersFor source target a
   getModifiersFor source target (Environment a) = getModifiersFor source target a
 
 instance IsRef Environment where

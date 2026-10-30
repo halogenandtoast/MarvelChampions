@@ -33,11 +33,11 @@ instance IsSideScheme SmVenomSideScheme where
     | otherwise = []
 
 instance HasModifiersFor SmVenomSideScheme where
-  getModifiersFor _ target (SmVenomSideScheme a)
+  getBlankingModifiersFor _ target (SmVenomSideScheme a)
     | toCardCode a == "27079", EnvironmentRef _ <- target = do
         def <- getsGame (`abilityCardDef` target)
         pure [Blank | maybe False ((== "27077") . toBaseCardCode . cdCardCode) def]
-  getModifiersFor _ _ _ = pure []
+  getBlankingModifiersFor _ _ _ = pure []
 
 smGuardTheBellTower, smLashingOut, smToothAndNail :: SideSchemeCard SmVenomSideScheme
 smGuardTheBellTower = sideScheme SmVenomSideScheme Cards.smGuardTheBellTower (Static 3)

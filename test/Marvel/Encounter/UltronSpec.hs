@@ -1,5 +1,7 @@
 module Marvel.Encounter.UltronSpec (spec) where
 
+import Control.Monad.Reader (runReaderT)
+import Marvel.Villain (lookupVillain)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Card.Def (getCardDef)
@@ -35,6 +37,20 @@ player = players >>= \case
 
 spec :: Spec
 spec = describe "Ultron" do
+  it "checks drone blanking without evaluating Ultron III's unrelated trait modifiers" do
+    app <- ultron
+    runGameApp app do
+      g <- getGame
+      vid <- villainIdNow
+      let stageThree = fromMaybe (error "missing Ultron III") (lookupVillain "01136" vid)
+          snapshot = g
+            { gameEntities = (gameEntities g) {entitiesVillains = HashMap.singleton vid stageThree}
+            , gameGainedTraits = error "blanking must not calculate unrelated traits"
+            }
+      ds <- drones
+      length ds `shouldBe` 1
+      for_ ds $ \drone -> liftIO $ runReaderT (isBlanked drone) snapshot `shouldReturn` False
+
   it "sets up the Ultron Drones environment and deals a facedown drone from the player's deck" do
     app <- ultron
     runGameApp app do

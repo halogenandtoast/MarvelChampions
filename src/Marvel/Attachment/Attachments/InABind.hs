@@ -39,8 +39,8 @@ attackEvent = CardWithType EventType <> CardWithTrait Trait.Attack
 -- | Treat Gamora's printed text box as if it were blank (except for traits): her basic
 -- powers and changing form are the game's, and stay.
 instance HasModifiersFor InABind where
-  getModifiersFor _ (IdentityRef ident) (InABind a) | attachmentIdentity a == Just ident = pure [Blank]
-  getModifiersFor _ _ _ = pure []
+  getBlankingModifiersFor _ (IdentityRef ident) (InABind a) | attachmentIdentity a == Just ident = pure [Blank]
+  getBlankingModifiersFor _ _ _ = pure []
 
 -- | Hero Action: choose and discard an [attack] event from your hand and deal 1 damage to
 -- Gamora → discard this card.

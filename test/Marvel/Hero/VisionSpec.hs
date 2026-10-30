@@ -39,7 +39,7 @@ data BlankingProbe = BlankingProbe (Attrs Obligation.Obligation) Target [Modifie
 instance Obligation.IsObligation BlankingProbe where
   toObligationAttrs (BlankingProbe attrs _ _) = attrs
 instance HasModifiersFor BlankingProbe where
-  getModifiersFor _ target (BlankingProbe _ affected modifiers) = pure [m | target == affected, m <- modifiers]
+  getBlankingModifiersFor _ target (BlankingProbe _ affected modifiers) = pure [m | target == affected, m <- modifiers]
 instance RunMessage BlankingProbe where
   runMessage msg (BlankingProbe attrs target modifiers) =
     (\a -> BlankingProbe a target modifiers) <$> runMessage msg attrs

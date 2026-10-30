@@ -71,13 +71,14 @@ instance IsSideScheme SmModularsSideScheme where
     | otherwise = []
 
 instance HasModifiersFor SmModularsSideScheme where
-  getModifiersFor _ (AttachmentRef aid) (SmModularsSideScheme attrs) | toCardCode attrs == "27140" = do
-    def <- getsGame (`abilityCardDef` AttachmentRef aid)
-    pure [KeywordModifier Keyword.Surge | maybe False (member Tech . cdTraits) def]
-  getModifiersFor _ (SupportRef sid) (SmModularsSideScheme attrs) | toCardCode attrs == "27127" = do
+  getBlankingModifiersFor _ (SupportRef sid) (SmModularsSideScheme attrs) | toCardCode attrs == "27127" = do
     location <- member sid <$> select (SupportWithTrait Location)
     persona <- member sid <$> select (SupportWithTrait Persona)
     pure [Blank | location || persona]
+  getBlankingModifiersFor _ _ _ = pure []
+  getModifiersFor _ (AttachmentRef aid) (SmModularsSideScheme attrs) | toCardCode attrs == "27140" = do
+    def <- getsGame (`abilityCardDef` AttachmentRef aid)
+    pure [KeywordModifier Keyword.Surge | maybe False (member Tech . cdTraits) def]
   getModifiersFor _ (SideSchemeRef sid) (SmModularsSideScheme attrs)
     | sid == sideSchemeId attrs, toCardCode attrs == "27133" = pure [ThreatCannotBeRemovedByThwarting]
   getModifiersFor _ target (SmModularsSideScheme attrs)
@@ -89,7 +90,7 @@ instance HasModifiersFor SmModularsSideScheme where
     isEnemy (VillainRef _) = True
     isEnemy _ = False
   getModifiersFor _ (IdentityRef _) (SmModularsSideScheme attrs) | toCardCode attrs == "27155" = pure [HandSizeModifier 2]
-  getModifiersFor _ _ _ = pure []
+  getModifiersFor source target a = getBlankingModifiersFor source target a
 
 instance RunMessage SmModularsSideScheme where
   runMessage msg s@(SmModularsSideScheme attrs) = runQueueT $ case msg of

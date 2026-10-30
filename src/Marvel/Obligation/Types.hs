@@ -87,6 +87,7 @@ instance HasAbilities Obligation where
   getAbilities (Obligation a) = getAbilities a
 
 instance HasModifiersFor Obligation where
+  getBlankingModifiersFor source target (Obligation a) = getBlankingModifiersFor source target a
   getModifiersFor source target (Obligation a) = getModifiersFor source target a
 
 instance IsCard Obligation where

@@ -71,6 +71,9 @@ someCardEffectCardCode :: SomeCardEffect -> CardCode
 someCardEffectCardCode = liftCardEffect toCardCode
 
 instance HasModifiersFor Effect where
+  getBlankingModifiersFor source target e
+    | Blank `elem` effectModifiers (toAttrs e) = filter (== Blank) <$> getModifiersFor source target e
+    | otherwise = pure []
   getModifiersFor _ target e = do
     valid <- effectValidFor attrs target
     pure $ if valid then effectModifiers attrs else []

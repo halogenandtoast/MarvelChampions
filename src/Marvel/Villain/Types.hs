@@ -76,6 +76,7 @@ instance HasAbilities Villain where
   getAbilities (Villain a) = getAbilities a
 
 instance HasModifiersFor Villain where
+  getBlankingModifiersFor source target (Villain a) = getBlankingModifiersFor source target a
   getModifiersFor source target (Villain a) = getModifiersFor source target a
 
 instance RunMessage Villain where
