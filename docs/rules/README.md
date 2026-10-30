@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| SP//dr Hero Pack rulesheet (MC31) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc31_spdr_rulesheet.pdf |
 | Spider-Ham Hero Pack rulesheet (MC30) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/c0/cc/c0cc6521-0690-4a3e-8e74-384b9be95e2d/mc30_spider-ham_rulesheet.pdf |
 | Rules Reference | **v1.8** (PDF created 2026-05-26, modified 2026-07-23; announced in FFG's "Mission Updates", 2026-07-23), 71 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc_rulesreference_v18_compressed.pdf (byte-identical copy at `.../uploads/2026/08/mc_rulesreference_v18_compressed-1.pdf`) |
 | Core Set Learn to Play | 2019 print edition (PDF dated 2019-10-26), 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mvc01_learn_to_play_eng-compressed.pdf |
@@ -41,6 +42,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-spdr.md](hero-spdr.md) | SP//dr: separated identity, independent exhaustion, Sync Ratio, permanent, Suit errata, Noir FAQ and starter deck |
 | [hero-spider-ham.md](hero-spider-ham.md) | Spider-Ham: toon counters, optional gestures, thwart timing, consequential damage, starter deck, Inheritors and recorded rulings |
 | [glossary-a-c.md](glossary-a-c.md) | RR glossary entries A–C (Ability … Crisis Icon) |
 | [glossary-d-h.md](glossary-d-h.md) | RR glossary entries D–H (Damage … Hit Points) |
