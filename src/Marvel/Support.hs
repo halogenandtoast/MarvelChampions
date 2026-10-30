@@ -127,6 +127,10 @@ allSupports = fromList $ map
   , SomeSupportCard tonyStarkAI
   , SomeSupportCard rAndDFacility
   , SomeSupportCard theDailyBeagle
+  , SomeSupportCard spdrSuitInactive
+  , SomeSupportCard auntMayAndUncleBen
+  , SomeSupportCard ejectionProtocol
+  , SomeSupportCard spdrCommand
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

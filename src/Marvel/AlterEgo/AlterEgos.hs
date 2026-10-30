@@ -76,3 +76,5 @@ import Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion3 as X
 
 -- Spider-Ham
 import Marvel.AlterEgo.AlterEgos.PeterPorker as X
+
+import Marvel.AlterEgo.AlterEgos.PeniParker as X

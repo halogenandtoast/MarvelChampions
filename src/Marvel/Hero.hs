@@ -98,6 +98,7 @@ allHeroes = fromList $ map
   , SomeHeroCard ironheartVersion2
   , SomeHeroCard ironheartVersion3
   , SomeHeroCard spiderHam
+  , SomeHeroCard spdrSuitHero
   ]
 
 lookupHeroByCardCode :: CardCode -> IdentityId -> Hero

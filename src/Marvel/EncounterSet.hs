@@ -145,6 +145,8 @@ data EncounterSet
   | Armadillo
   | SpiderHamNemesis
   | Inheritors
+  | SpdrNemesis
+  | IronSpiderSinisterSix
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -209,6 +211,7 @@ modularSets =
   , Armadillo
   , ZzzaxSet
   , Inheritors
+  , IronSpiderSinisterSix
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -249,6 +252,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "29003" -> IronheartNemesis
   "30001" -> SpiderHamNemesis
   "28001" -> NovaNemesis
+  "31001" -> SpdrNemesis
+  "31002" -> SpdrNemesis
   cCode ->
     error $
       "No nemesis set for "

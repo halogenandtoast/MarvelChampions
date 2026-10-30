@@ -184,3 +184,7 @@ import Marvel.SideScheme.SideSchemes.FeedbackLoop as X
 -- Spider-Ham
 import Marvel.SideScheme.SideSchemes.NefariousTrap as X
 import Marvel.SideScheme.SideSchemes.HuntingTheSpiderTotems as X
+
+import Marvel.SideScheme.SideSchemes.GiantMonsterAttack as X
+
+import Marvel.SideScheme.SideSchemes.GrandLarceny as X

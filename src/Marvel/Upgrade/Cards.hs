@@ -1,5 +1,6 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -270,6 +271,15 @@ allUpgrades = fromList $ concatMap
   , organicWebbing
   , overwatch
   , warriorOfTheGreatWeb
+  , spdrPilot
+  , hostSpider
+  , psychicLink
+  , speedMetalAlloy
+  , webFluidCompressor
+  , forcefieldGenerator
+  , spiderTingle
+  , unshakable
+  , clarityOfPurpose
   ]
 
 upgrade
@@ -465,7 +475,7 @@ shrink :: CardDef
 shrink = identityUpgrade "05011" "Shrink" 2 [Condition, Superpower] [Mental]
 
 energyBarrier :: CardDef
-energyBarrier = upgrade "05017" "Energy Barrier" 2 [Item, Tech] [Energy] Protection
+energyBarrier = reprintedAs ["31018"] $ upgrade "05017" "Energy Barrier" 2 [Item, Tech] [Energy] Protection
 
 endurance :: CardDef
 endurance = limited (MaxPerPlayerUnderAnyControl 1)
@@ -1445,5 +1455,67 @@ warriorOfTheGreatWeb :: CardDef
 warriorOfTheGreatWeb = (basicUpgrade "30029" "Warrior of the Great Web" 1 [Title] [Energy])
   { cdDeckLimit = Just 3
   , cdUnique = False
+  , cdLimit = Just (MaxPerCharacter 1)
+  }
+
+
+-- SP//dr
+
+spdrPilot :: CardDef
+spdrPilot = (identityUpgrade "31002b" "SP//dr" 0 [Interface, Pilot] [Wild])
+  { cdCost = Nothing
+  , cdUnique = True
+  , cdDeckLimit = Just 1
+  , cdKeywords = fromList [SpdrKeyword.Permanent]
+  }
+
+hostSpider :: CardDef
+hostSpider = (identityUpgrade "31010" "Host Spider" 3 [Interface, Spider] [Wild])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
+  }
+
+psychicLink :: CardDef
+psychicLink = (identityUpgrade "31011" "Psychic Link" 2 [Interface, Tech] [Mental])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
+  }
+
+speedMetalAlloy :: CardDef
+speedMetalAlloy = (identityUpgrade "31012" "Speed-Metal Alloy" 1 [Interface, Tech] [Physical])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
+  }
+
+webFluidCompressor :: CardDef
+webFluidCompressor = (identityUpgrade "31013" "Web-Fluid Compressor" 2 [Interface, Tech] [Energy])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
+  }
+
+forcefieldGenerator :: CardDef
+forcefieldGenerator = (upgrade "31019" "Forcefield Generator" 3 [Tech] [Energy] Protection)
+  { cdUnique = False
+  , cdDeckLimit = Just 3
+  , cdLimit = Just (MaxPerPlayer 1)
+  }
+
+spiderTingle :: CardDef
+spiderTingle = (upgrade "31020" "Spider-Tingle" 1 [Superpower] [Mental] Protection)
+  { cdUnique = False
+  , cdDeckLimit = Just 3
+  }
+
+unshakable :: CardDef
+unshakable = (basicUpgrade "31024" "Unshakable" 1 [Condition, Superpower] [Physical])
+  { cdUnique = False
+  , cdCriteria = SelfMatches (IdentityWithPrintedHitPoints $ AtLeast $ SMValue.Static 14)
+  , cdDeckLimit = Just 3
+  }
+
+clarityOfPurpose :: CardDef
+clarityOfPurpose = (upgrade "31029" "Clarity of Purpose" 1 [Condition] [Mental] Leadership)
+  { cdUnique = False
+  , cdDeckLimit = Just 3
   , cdLimit = Just (MaxPerCharacter 1)
   }

@@ -37,7 +37,8 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("30029", SomeCardEffect warriorOfTheGreatWebEffect)
+    [ ("31016", SomeCardEffect repurposeEffect)
+    , ("30029", SomeCardEffect warriorOfTheGreatWebEffect)
     , ("30010", SomeCardEffect hugeWoodenHammerEffect)
     , ("30011", SomeCardEffect organicWebbingEffect)
     , ("27129", SomeCardEffect callingInFavorsEffect)

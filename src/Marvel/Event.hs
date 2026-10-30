@@ -357,6 +357,12 @@ allEvents = fromList $ map
   , SomeEventCard petulantPig
   , SomeEventCard swingingWebPig
   , SomeEventCard evenTheOdds
+  , SomeEventCard allSystemsGo
+  , SomeEventCard rapidDeployment
+  , SomeEventCard webTrap
+  , SomeEventCard repurpose
+  , SomeEventCard thwipThwip
+  , SomeEventCard limitlessStamina
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

@@ -356,6 +356,12 @@ allEvents = fromList $ concatMap
   , petulantPig
   , swingingWebPig
   , evenTheOdds
+  , allSystemsGo
+  , rapidDeployment
+  , webTrap
+  , repurpose
+  , thwipThwip
+  , limitlessStamina
   ]
 
 event
@@ -2338,4 +2344,51 @@ evenTheOdds = (event "30014" "Even the Odds" 2 HeroAction [Thwart] [Energy] Just
   , cdAbilitySubTypes = [Ability.Thwart]
   , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists (NotScheme MainScheme <> SchemeYouCanThwart)]
   , cdKeywords = fromList [Requirement [Energy]]
+  }
+
+
+-- SP//dr
+
+allSystemsGo :: CardDef
+allSystemsGo = (identityEvent "31004" "All Systems Go!" 1 HeroAction [] [Energy])
+  { cdUnique = False
+  , cdDeckLimit = Just 3
+  }
+
+rapidDeployment :: CardDef
+rapidDeployment = (identityEvent "31005" "Rapid Deployment" 2 HeroAction [Thwart] [Mental])
+  { cdUnique = False
+  , cdDeckLimit = Just 2
+  , cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  }
+
+webTrap :: CardDef
+webTrap = (identityEvent "31006" "Web-Trap" 2 HeroAction [Attack] [Energy])
+  { cdUnique = False
+  , cdDeckLimit = Just 2
+  , cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  }
+
+repurpose :: CardDef
+repurpose = (event "31016" "Repurpose" 0 HeroAction [Skill] [Energy] Protection)
+  { cdUnique = False
+  , cdAbilityCost = DiscardUpgradeCost (UpgradeWithTrait Tech)
+  , cdDeckLimit = Just 3
+  }
+
+thwipThwip :: CardDef
+thwipThwip = (event "31017" "Thwip Thwip!" 2 HeroAction [Superpower] [Mental] Protection)
+  { cdUnique = False
+  , cdAbilityCost = DamageCharacterCost (CharacterWithTrait WebWarrior <> CharacterControlledBy You) 1
+  , cdCriteria = EnemyExists AnyEnemy
+  , cdDeckLimit = Just 3
+  }
+
+limitlessStamina :: CardDef
+limitlessStamina = (basicEvent "31023" "Limitless Stamina" 1 HeroAction [Superpower] [Physical])
+  { cdUnique = False
+  , cdCriteria = SelfMatches (IdentityWithPrintedHitPoints $ AtLeast $ Static 14)
+  , cdDeckLimit = Just 3
   }

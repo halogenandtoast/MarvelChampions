@@ -211,3 +211,5 @@ import Marvel.Treachery.Treacheries.Zzzap as X
 
 -- Spider-Ham
 import Marvel.Treachery.Treacheries.FeastOnThis as X
+
+import Marvel.Treachery.Treacheries.EnergyDrain as X

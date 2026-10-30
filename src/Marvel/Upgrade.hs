@@ -265,6 +265,15 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard organicWebbing
   , SomeUpgradeCard overwatch
   , SomeUpgradeCard warriorOfTheGreatWeb
+  , SomeUpgradeCard spdrPilot
+  , SomeUpgradeCard hostSpider
+  , SomeUpgradeCard psychicLink
+  , SomeUpgradeCard speedMetalAlloy
+  , SomeUpgradeCard webFluidCompressor
+  , SomeUpgradeCard forcefieldGenerator
+  , SomeUpgradeCard spiderTingle
+  , SomeUpgradeCard unshakable
+  , SomeUpgradeCard clarityOfPurpose
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

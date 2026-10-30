@@ -98,6 +98,7 @@ allObligations = fromList $ map
   , SomeObligationCard weightOfTheWorld
   , SomeObligationCard aMinorSetback
   , SomeObligationCard iReallyWantAHotDog
+  , SomeObligationCard inheritedBurden
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

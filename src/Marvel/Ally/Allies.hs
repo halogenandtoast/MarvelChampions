@@ -205,3 +205,13 @@ import Marvel.Ally.Allies.LadySpider as X
 import Marvel.Ally.Allies.SpiderManPavitrPrabhakar as X
 import Marvel.Ally.Allies.ScarletSpider as X
 import Marvel.Ally.Allies.SpDr as X
+
+import Marvel.Ally.Allies.VenmAddyBrock as X
+
+import Marvel.Ally.Allies.DaredevilSpdr as X
+
+import Marvel.Ally.Allies.SpiderManNoir as X
+
+import Marvel.Ally.Allies.SpiderHamPeterPorker as X
+
+import Marvel.Ally.Allies.SpiderManOttoOctavius as X

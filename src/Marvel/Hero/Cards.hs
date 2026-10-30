@@ -82,6 +82,7 @@ allHeroCards =
   , ironheartVersion2
   , ironheartVersion3
   , spiderHam
+  , spdrSuitHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -293,3 +294,11 @@ ironheartVersion3 = (hero "29003a" "Ironheart" [Aerial, Champion, Version3])
 
 spiderHam :: CardDef
 spiderHam = hero "30001a" "Spider-Ham" [Cartoon, WebWarrior]
+
+
+-- SP//dr
+
+spdrSuitHero :: CardDef
+spdrSuitHero = (hero "31001a" "SP//dr Suit" [Active, WebWarrior])
+  { cdUnique = True
+  }

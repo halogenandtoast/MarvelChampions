@@ -218,6 +218,8 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard feedbackLoop
   , SomeSideSchemeCard nefariousTrap
   , SomeSideSchemeCard huntingTheSpiderTotems
+  , SomeSideSchemeCard giantMonsterAttack
+  , SomeSideSchemeCard grandLarceny
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

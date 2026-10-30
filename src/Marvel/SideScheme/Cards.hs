@@ -1,5 +1,6 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -225,6 +226,8 @@ allSideSchemes = fromList $ map
   , feedbackLoop
   , nefariousTrap
   , huntingTheSpiderTotems
+  , giantMonsterAttack
+  , grandLarceny
   ]
 
 sideScheme
@@ -1199,5 +1202,18 @@ nefariousTrap = (sideScheme "30025" "Nefarious Trap" [Boost, Boost] SMSet.Spider
 
 huntingTheSpiderTotems :: CardDef
 huntingTheSpiderTotems = (sideScheme "30030" "Hunting the Spider-Totems" [Boost, Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = False
+  }
+
+
+-- SP//dr
+
+giantMonsterAttack :: CardDef
+giantMonsterAttack = (sideScheme "31026" "Giant Monster Attack" [Boost, Boost, Boost] SpdrSet.SpdrNemesis 1)
+  { cdUnique = False
+  }
+
+grandLarceny :: CardDef
+grandLarceny = (sideScheme "31030" "Grand Larceny" [Boost, Boost, Boost] SpdrSet.IronSpiderSinisterSix 1)
   { cdUnique = False
   }

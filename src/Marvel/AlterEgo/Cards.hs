@@ -76,6 +76,7 @@ allAlterEgoCards =
   , ririWilliamsVersion2
   , ririWilliamsVersion3
   , peterPorker
+  , peniParker
   ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -267,3 +268,11 @@ ririWilliamsVersion3 = alterEgo "29003b" "Riri Williams" [Genius]
 
 peterPorker :: CardDef
 peterPorker = alterEgo "30001b" "Peter Porker" [Cartoon, Civilian]
+
+
+-- SP//dr
+
+peniParker :: CardDef
+peniParker = (alterEgo "31002a" "Peni Parker" [Civilian])
+  { cdUnique = True
+  }

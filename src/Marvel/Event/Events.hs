@@ -381,3 +381,15 @@ import Marvel.Event.Events.IDontThinkSo as X
 import Marvel.Event.Events.PetulantPig as X
 import Marvel.Event.Events.SwingingWebPig as X
 import Marvel.Event.Events.EvenTheOdds as X
+
+import Marvel.Event.Events.AllSystemsGo as X
+
+import Marvel.Event.Events.RapidDeployment as X
+
+import Marvel.Event.Events.WebTrap as X
+
+import Marvel.Event.Events.Repurpose as X
+
+import Marvel.Event.Events.ThwipThwip as X
+
+import Marvel.Event.Events.LimitlessStamina as X

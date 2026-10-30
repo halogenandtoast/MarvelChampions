@@ -83,3 +83,5 @@ import Marvel.Obligation.Obligations.AMinorSetback as X
 
 -- Spider-Ham
 import Marvel.Obligation.Obligations.IReallyWantAHotDog as X
+
+import Marvel.Obligation.Obligations.InheritedBurden as X

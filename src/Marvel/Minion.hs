@@ -227,6 +227,13 @@ allMinions =
   , SomeMinionCard morlun
   , SomeMinionCard solus
   , SomeMinionCard verna
+  , SomeMinionCard morbius
+  , SomeMinionCard bombshellSinister
+  , SomeMinionCard electroSinister
+  , SomeMinionCard hobgoblinSinister
+  , SomeMinionCard ironSpider
+  , SomeMinionCard sandmanSinister
+  , SomeMinionCard spot
   ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

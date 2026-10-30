@@ -1,5 +1,6 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -250,6 +251,7 @@ allTreacheries = fromList $ map
   , politicalRetribution
   , zzzap
   , feastOnThis
+  , energyDrain
   ]
 
 treachery
@@ -1226,5 +1228,13 @@ zzzap = (treachery "29040" "Zzzap!" [Boost] SMSet.ZzzaxSet 2)
 
 feastOnThis :: CardDef
 feastOnThis = (treachery "30028" "\"Feast on This!\"" [Boost] SMSet.SpiderHamNemesis 2)
+  { cdUnique = False
+  }
+
+
+-- SP//dr
+
+energyDrain :: CardDef
+energyDrain = (treachery "31028" "Energy Drain" [Boost] SpdrSet.SpdrNemesis 3)
   { cdUnique = False
   }

@@ -324,5 +324,15 @@
   "spendIdentityCounter": "Spend a toon counter",
   "syncRatioUpgrade": "Sync Ratio — {upgrade}",
   "spdrDivideAttack": "Choose a character to receive an extra point of damage",
+  "spdrReadyInterfaces": "Ready each Interface upgrade",
+  "spdrSearchInterface": "Search for an Interface upgrade",
+  "repurposeThwart": "THW",
+  "repurposeAttack": "ATK",
+  "repurposeDefense": "DEF",
+  "exhaustPeniParkerRemoveInheritedBurden": "Exhaust Peni Parker → remove Inherited Burden from the game",
+  "discardInterfaceUpgrade": "Discard an Interface upgrade",
+  "spdrMaintenance": "Maintenance",
+  "spdrCommandDraw": "Exhaust SP//dr Command and an Interface → draw 1 card",
+  "spdrCommandReady": "Exhaust SP//dr Command and discard 1 card → ready an Interface",
   "spendSyncRatioResources": "Pay with {count} resource(s) from Sync Ratio"
 }

@@ -2,6 +2,7 @@
 
 module Marvel.Environment where
 
+import Marvel.Environment.Environments.SurgeInCrime
 import Marvel.Environment.Environments.SmCampaign
 
 import Marvel.Environment.Environments.SmVenomGoblin
@@ -98,6 +99,7 @@ allEnvironments =
     , SomeEnvironmentCard timeStone
     , SomeEnvironmentCard ultronDronesVision
   , SomeEnvironmentCard airStatic
+  , SomeEnvironmentCard surgeInCrime
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

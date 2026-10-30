@@ -265,3 +265,21 @@ import Marvel.Upgrade.Upgrades.HugeWoodenHammer as X
 import Marvel.Upgrade.Upgrades.OrganicWebbing as X
 import Marvel.Upgrade.Upgrades.Overwatch as X
 import Marvel.Upgrade.Upgrades.WarriorOfTheGreatWeb as X
+
+import Marvel.Upgrade.Upgrades.SpdrPilot as X
+
+import Marvel.Upgrade.Upgrades.HostSpider as X
+
+import Marvel.Upgrade.Upgrades.PsychicLink as X
+
+import Marvel.Upgrade.Upgrades.SpeedMetalAlloy as X
+
+import Marvel.Upgrade.Upgrades.WebFluidCompressor as X
+
+import Marvel.Upgrade.Upgrades.ForcefieldGenerator as X
+
+import Marvel.Upgrade.Upgrades.SpiderTingle as X
+
+import Marvel.Upgrade.Upgrades.Unshakable as X
+
+import Marvel.Upgrade.Upgrades.ClarityOfPurpose as X

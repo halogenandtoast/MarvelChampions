@@ -1,5 +1,6 @@
 module Marvel.Support.Cards where
 
+import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.Prelude
 
@@ -117,6 +118,10 @@ allSupports = fromList $ concatMap
   , tonyStarkAI
   , rAndDFacility
   , theDailyBeagle
+  , spdrSuitInactive
+  , auntMayAndUncleBen
+  , ejectionProtocol
+  , spdrCommand
   ]
 
 support
@@ -507,4 +512,33 @@ theDailyBeagle :: CardDef
 theDailyBeagle = (identitySupport "30008" "The Daily Beagle" 2 [Cartoon, Location] [Mental])
   { cdDeckLimit = Just 1
   , cdUnique = True
+  }
+
+
+-- SP//dr
+
+spdrSuitInactive :: CardDef
+spdrSuitInactive = (identitySupport "31001b" "SP//dr Suit" 0 [Inactive, Tech] [])
+  { cdCost = Nothing
+  , cdUnique = True
+  , cdDeckLimit = Just 1
+  , cdKeywords = fromList [SpdrKeyword.Permanent]
+  }
+
+auntMayAndUncleBen :: CardDef
+auntMayAndUncleBen = (identitySupport "31007" "Aunt May & Uncle Ben" 1 [Persona] [Mental])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+ejectionProtocol :: CardDef
+ejectionProtocol = (identitySupport "31008" "Ejection Protocol" 0 [Tactic] [Physical])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
+  }
+
+spdrCommand :: CardDef
+spdrCommand = (identitySupport "31009" "SP//dr Command" 1 [Location] [Mental])
+  { cdUnique = False
+  , cdDeckLimit = Just 1
   }

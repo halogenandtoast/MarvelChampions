@@ -1,5 +1,7 @@
 module Marvel.Minion.Cards where
 
+import Marvel.Keyword qualified as SpdrKeyword
+import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -226,6 +228,13 @@ allMinions =
   , morlun
   , solus
   , verna
+  , morbius
+  , bombshellSinister
+  , electroSinister
+  , hobgoblinSinister
+  , ironSpider
+  , sandmanSinister
+  , spot
   ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -1253,5 +1262,44 @@ solus = (minion "30037" "Solus" [Elite, Inheritor] [Boost, Boost, Boost] SMSet.I
 
 verna :: CardDef
 verna = (minion "30038" "Verna" [Elite, Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+
+-- SP//dr
+
+morbius :: CardDef
+morbius = (minion "31027" "M.O.R.B.I.U.S." [Creature] [Boost, Boost] SpdrSet.SpdrNemesis 1)
+  { cdUnique = False
+  }
+
+bombshellSinister :: CardDef
+bombshellSinister = (minion "31031" "Bombshell" [Criminal] [Star] SpdrSet.IronSpiderSinisterSix 1)
+  { cdUnique = True
+  }
+
+electroSinister :: CardDef
+electroSinister = (minion "31032" "Electro" [Criminal] [Boost] SpdrSet.IronSpiderSinisterSix 1)
+  { cdUnique = True
+  }
+
+hobgoblinSinister :: CardDef
+hobgoblinSinister = (minion "31033" "Hobgoblin" [Criminal] [Boost, Boost] SpdrSet.IronSpiderSinisterSix 1)
+  { cdUnique = True
+  }
+
+ironSpider :: CardDef
+ironSpider = (minion "31034" "Iron Spider" [Criminal, Elite] [Boost, Boost, Boost] SpdrSet.IronSpiderSinisterSix 1)
+  { cdUnique = True
+  , cdKeywords = fromList [SpdrKeyword.Guard, SpdrKeyword.Patrol, SpdrKeyword.Retaliate 1, SpdrKeyword.Toughness]
+  }
+
+sandmanSinister :: CardDef
+sandmanSinister = (minion "31035" "Sandman" [Criminal] [Boost, Star] SpdrSet.IronSpiderSinisterSix 1)
+  { cdUnique = True
+  }
+
+spot :: CardDef
+spot = (minion "31036" "Spot" [Criminal] [Star] SpdrSet.IronSpiderSinisterSix 1)
   { cdUnique = True
   }

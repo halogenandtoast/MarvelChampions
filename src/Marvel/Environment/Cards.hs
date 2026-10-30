@@ -1,5 +1,7 @@
 module Marvel.Environment.Cards where
 
+import Marvel.Keyword qualified as SpdrKeyword
+import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -71,6 +73,7 @@ allEnvironments = fromList $ map (toFst toCardCode)
   , timeStone
   , ultronDronesVision
   , airStatic
+  , surgeInCrime
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -447,4 +450,14 @@ airStatic = (smEnvironmentDef "29039" "Air Static" SMSet.ZzzaxSet 1)
   { cdTraits = fromList [Condition]
   , cdBoostIcons = [Boost, Boost]
   , cdUnique = False
+  }
+
+
+-- SP//dr
+
+surgeInCrime :: CardDef
+surgeInCrime = (smEnvironmentDef "31037" "Surge in Crime" SpdrSet.IronSpiderSinisterSix 1)
+  { cdBoostIcons = [Boost, Boost]
+  , cdUnique = False
+  , cdKeywords = fromList [SpdrKeyword.Surge]
   }

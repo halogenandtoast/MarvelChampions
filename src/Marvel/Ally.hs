@@ -210,4 +210,9 @@ allAllies = fromList $ map
   , SomeAllyCard spiderManPavitrPrabhakar
   , SomeAllyCard scarletSpider
   , SomeAllyCard spDr
+  , SomeAllyCard venmAddyBrock
+  , SomeAllyCard daredevilSpdr
+  , SomeAllyCard spiderManNoir
+  , SomeAllyCard spiderHamPeterPorker
+  , SomeAllyCard spiderManOttoOctavius
   ]

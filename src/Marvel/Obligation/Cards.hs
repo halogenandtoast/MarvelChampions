@@ -96,6 +96,7 @@ allObligations = fromList $ map
   , weightOfTheWorld
   , aMinorSetback
   , iReallyWantAHotDog
+  , inheritedBurden
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -378,3 +379,11 @@ aMinorSetback = (obligation "29028" "A Minor Setback" [Boost, Boost])
 
 iReallyWantAHotDog :: CardDef
 iReallyWantAHotDog = obligation "30024" "\"I Really Want a Hot Dog!\"" [Boost, Boost]
+
+
+-- SP//dr
+
+inheritedBurden :: CardDef
+inheritedBurden = (obligation "31025" "Inherited Burden" [Boost, Boost])
+  { cdUnique = False
+  }

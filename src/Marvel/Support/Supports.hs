@@ -121,3 +121,11 @@ import Marvel.Support.Supports.RAndDFacility as X
 
 -- Spider-Ham
 import Marvel.Support.Supports.TheDailyBeagle as X
+
+import Marvel.Support.Supports.SpdrSuitInactive as X
+
+import Marvel.Support.Supports.AuntMayAndUncleBen as X
+
+import Marvel.Support.Supports.EjectionProtocol as X
+
+import Marvel.Support.Supports.SpdrCommand as X

@@ -179,3 +179,17 @@ import Marvel.Minion.Minions.Karn as X
 import Marvel.Minion.Minions.Morlun as X
 import Marvel.Minion.Minions.Solus as X
 import Marvel.Minion.Minions.Verna as X
+
+import Marvel.Minion.Minions.Morbius as X
+
+import Marvel.Minion.Minions.BombshellSinister as X
+
+import Marvel.Minion.Minions.ElectroSinister as X
+
+import Marvel.Minion.Minions.HobgoblinSinister as X
+
+import Marvel.Minion.Minions.IronSpider as X
+
+import Marvel.Minion.Minions.SandmanSinister as X
+
+import Marvel.Minion.Minions.Spot as X

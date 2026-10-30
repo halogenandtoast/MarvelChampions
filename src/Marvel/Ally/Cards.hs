@@ -205,6 +205,11 @@ allAllies = fromList $ concatMap
   , spiderManPavitrPrabhakar
   , scarletSpider
   , spDr
+  , venmAddyBrock
+  , daredevilSpdr
+  , spiderManNoir
+  , spiderHamPeterPorker
+  , spiderManOttoOctavius
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -235,6 +240,7 @@ heroSpecificAllies =
   , pipTheTroll
   , msMarvelKamalaKhanNova
   , brawnAmadeusChoIronheart
+  , venmAddyBrock
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -995,5 +1001,40 @@ spDr :: CardDef
 spDr = (basicAlly "30021" ("SP//dr" <:> "Peni Parker") 2 [WebWarrior] [Energy])
   { cdDeckLimit = Just 1
   , cdUnique = True
+  , cdCriteria = ControlsCardsWithTrait WebWarrior 1
+  }
+
+
+-- SP//dr
+
+venmAddyBrock :: CardDef
+venmAddyBrock = (identityAlly "31003" ("VEN#m" <:> "Addy Brock") 4 [] [Energy])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+daredevilSpdr :: CardDef
+daredevilSpdr = (ally "31014" "Daredevil" 2 [] [Physical] Protection)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+spiderManNoir :: CardDef
+spiderManNoir = (ally "31015" "Spider-Man Noir" 3 [WebWarrior] [Energy] Protection)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+spiderHamPeterPorker :: CardDef
+spiderHamPeterPorker = (basicAlly "31021" ("Spider-Ham" <:> "Peter Porker") 3 [Cartoon, WebWarrior] [Physical])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  , cdCriteria = ControlsCardsWithTrait WebWarrior 1
+  }
+
+spiderManOttoOctavius :: CardDef
+spiderManOttoOctavius = (basicAlly "31022" ("Spider-Man" <:> "Otto Octavius") 2 [WebWarrior] [Mental])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
   , cdCriteria = ControlsCardsWithTrait WebWarrior 1
   }
