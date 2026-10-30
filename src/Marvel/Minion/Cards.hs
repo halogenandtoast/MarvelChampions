@@ -20,7 +20,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ hydraMercenary
+      [ madameMasque
+      , hydraMercenary
       , sandman
       , shocker
       , hydraBomber
@@ -924,3 +925,9 @@ ultronNemesis = (minion "26029" "Ultron" [Android, Elite] [Boost, Boost] VisionN
     { cdUnique = True
     , cdKeywords = fromList [Toughness]
     }
+
+
+-- The Hood
+
+madameMasque :: CardDef
+madameMasque = unique $ (minion "24010" "Madame Masque" [Criminal, Trait.MastersOfEvil] [Boost, Boost, Boost] TheHood 1) {cdKeywords = singleton Guard}

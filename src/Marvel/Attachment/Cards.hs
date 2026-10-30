@@ -20,7 +20,10 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ armoredRhinoSuit
+      [ establishedDominance
+      , theHoodsMantle
+      , theHoodsPistol
+      , armoredRhinoSuit
       , charge
       , enhancedIvoryHorn
       , sonicConverter
@@ -639,3 +642,14 @@ beguiledValkyrie = (reprint "25031" beguiled) {cdEncounterSet = Just ValkyrieNem
 
 seducedValkyrie :: CardDef
 seducedValkyrie = (reprint "25032" seduced) {cdEncounterSet = Just ValkyrieNemesis, cdEncounterSetQuantity = Just 2, cdTraits = mempty}
+
+-- The Hood
+
+establishedDominance :: CardDef
+establishedDominance = attachment "24007" "Established Dominance" [] [Boost, Boost] TheHood 1
+
+theHoodsMantle :: CardDef
+theHoodsMantle = attachment "24008" "The Hood's Mantle" [Armor] [] TheHood 1
+
+theHoodsPistol :: CardDef
+theHoodsPistol = attachment "24009" "The Hood's Pistol" [Weapon] [Star] TheHood 2

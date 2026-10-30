@@ -13,7 +13,10 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ theBreakIn
+    [ makingConnections
+    , promisedProsperity
+    , crimeState
+    , theBreakIn
     , undergroundDistribution
     , secretRendezvous
     , theCrimsonCowl
@@ -286,3 +289,15 @@ allHailKingLoki = mainScheme "21165" "All Hail King Loki" Loki
 
 odinsTorment :: CardDef
 odinsTorment = mainScheme "21138" "Odin's Torment" Hela
+
+
+-- The Hood
+
+makingConnections :: CardDef
+makingConnections = mainScheme "24004" "Making Connections" TheHood
+
+promisedProsperity :: CardDef
+promisedProsperity = mainScheme "24005" "Promised Prosperity" TheHood
+
+crimeState :: CardDef
+crimeState = mainScheme "24006" "Crime State" TheHood

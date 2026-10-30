@@ -193,6 +193,7 @@ payCostPartAs contributing activeCost cost = do
       if null found then abortPayment acid else
         chooseOneSearchedIn iid "$label.searchEncounterDeck" [("$label.encounterDeck", map EncounterCard deck), ("$label.encounterDiscard", map EncounterCard discard)]
           [targeting card (paid (SearchedMinionPayment $ MinionId $ unCardId $ ecCardId card) >> putEncounterCardIntoPlay iid card >> shuffleEncounterDeck) | card <- found]
+    PlaceThreatOnMainSchemeCost n -> traverse_ (`placeThreat` n) =<< selectList MainScheme
     DealEncounterCardCost -> dealEncounterCard iid
     IdentityCountersCost n -> removeCounters (IdentityRef iid) n
     CountersFromThisCost n -> do

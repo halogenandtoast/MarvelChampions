@@ -81,6 +81,8 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-valkyrie.md](hero-valkyrie.md) | Valkyrie: Alliance, Hinder, Death-Glow, current errata and starter deck |
 | [hero-vision.md](hero-vision.md) | Vision: additional mass forms, Alliance, piercing, stalwart and Machine Man errata |
 
+| [scenario-the-hood.md](scenario-the-hood.md) | The Hood: recruitment, Foul Play, steady; implementation notes and sources |
+
 ## Conventions
 
 - Product files (`scenario-*.md`, `campaign-*.md`) transcribe the product's insert/rulebook verbatim with

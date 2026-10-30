@@ -32,6 +32,7 @@ import Marvel.Card
 import Marvel.Deck
 import Marvel.Discard
 import Marvel.Hand
+import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game
 import Marvel.Hero.Heroes.DoctorStrange (InvocationDeck (..), invocationDeckOf)
@@ -78,6 +79,7 @@ data GameView = GameView
   , minions :: [MinionView]
   , environments :: [EnvironmentView]
   , encounterDeckSize :: Int
+  , setAsideModulars :: [EncounterSet.EncounterSet]
   , encounterDiscard :: [CardView]
   , victoryDisplay :: [CardView]
   -- ^ the cards in the victory display, the first added first
@@ -261,6 +263,8 @@ data VillainView = VillainView
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
+  , stunCards :: Natural
+  , confuseCards :: Natural
   , boostCards :: Int
   , attachments :: [AttachmentView]
   , upgrades :: [UpgradeView]
@@ -447,6 +451,7 @@ gameView seesHand g = do
           , let a = toAttrs e
           ]
       , encounterDeckSize = length scenario.scenarioEncounterDeck
+      , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g)
       , victoryCondition = scenario.scenarioVictoryCondition
@@ -621,6 +626,8 @@ gameView seesHand g = do
         , stunned = a.villainStunned
         , confused = a.villainConfused
         , tough = a.villainTough
+        , stunCards = (if a.villainStunned then 1 else 0) + (if a.villainAdditionalStun then 1 else 0)
+        , confuseCards = (if a.villainConfused then 1 else 0) + (if a.villainAdditionalConfuse then 1 else 0)
         , boostCards = length a.villainBoostCards
         , attachments = attachmentsIn a.villainAttachments
         , upgrades = upgradesOn \u -> u.upgradeAttachedEnemy == Just (EnemyVillainId a.villainId)

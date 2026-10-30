@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.MainScheme where
 
+import Marvel.MainScheme.MainSchemes.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Card
@@ -23,7 +24,10 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
 allMainSchemes = fromList $ map
   (toFst someMainSchemeCardCode)
-  [ SomeMainSchemeCard theBreakIn
+  [ SomeMainSchemeCard Hood.makingConnections
+  , SomeMainSchemeCard Hood.promisedProsperity
+  , SomeMainSchemeCard Hood.crimeState
+  , SomeMainSchemeCard theBreakIn
   , SomeMainSchemeCard undergroundDistribution
   , SomeMainSchemeCard secretRendezvous
   , SomeMainSchemeCard theCrimsonCowl

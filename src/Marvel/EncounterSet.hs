@@ -116,6 +116,7 @@ data EncounterSet
   | NebulaNemesis
   | WarMachineNemesis
   | ValkyrieNemesis
+  | TheHood
   | VisionNemesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

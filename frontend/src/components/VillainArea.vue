@@ -3,7 +3,8 @@
 // schemes, and the encounter deck and discard. With several game areas, only what is in the
 // area given; with several villains, the active one marked; a villain's own deck, and any
 // other deck, as piles of their own.
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useScenarios } from '../scenarios'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
 import type { AreaView, DeckView, GameView, SchemeView } from '../server'
@@ -16,6 +17,7 @@ import TokenStack from './TokenStack.vue'
 const { game, area = null } = defineProps<{ game: GameView; area?: AreaView | null }>()
 const { t, te } = useI18n()
 const cards = useCards()
+const { modularName } = useScenarios(ref([]))
 
 // what is in the area, in the area's order, or everything when there is no area to narrow to
 const inArea = <T extends { id: string }>(xs: T[] | undefined, ids: string[] | undefined): T[] =>
@@ -89,6 +91,8 @@ const escalation = (scheme: SchemeView) => {
           :name="villain.name"
           :damage="villain.damage"
           :stunned="villain.stunned"
+          :stun-cards="villain.stunCards"
+          :confuse-cards="villain.confuseCards"
           :confused="villain.confused"
           :tough="villain.tough"
         />
@@ -146,6 +150,10 @@ const escalation = (scheme: SchemeView) => {
       <Pile v-if="game.victoryDisplay?.length || game.victoryCondition" :label="victoryLabel" :cards="game.victoryDisplay ?? []" pile="victory-display" />
       <!-- The Collection (Infiltrate the Museum): shared, out of play, its cards faceup -->
       <Pile v-if="game.collection?.length" :label="t('game.piles.collection')" :cards="game.collection" pile="collection" />
+      <div v-if="game.setAsideModulars?.length" class="set-aside-modulars">
+        <strong>{{ t('game.setAsideModulars') }}</strong>
+        <ul><li v-for="set in game.setAsideModulars" :key="set">{{ modularName(set) }}</li></ul>
+      </div>
       <template v-for="deck in decks" :key="`${deck.kind}-${deck.name}`">
         <Pile :label="deckLabel(deck)" back="encounter" :count="deck.size" />
         <!-- a named deck's cards are discarded to the encounter discard pile -->

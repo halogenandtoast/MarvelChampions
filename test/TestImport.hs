@@ -3,6 +3,8 @@ module TestImport (
   module TestImport,
 ) where
 
+import Data.List (nub)
+import Marvel.EncounterSet qualified as EncounterSet
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
@@ -144,10 +146,19 @@ questionSize = \case
 -- turn, mulligans kept.
 data TestGame = TestGame {app :: GameApp, ran :: IORef [Text], logged :: IORef [LogEntry], seats :: [IdentityId]}
 
+-- | A concrete choice for tests of scenarios whose product names no default.
+-- This fixture is deliberately separate from recommendations exposed to players.
+withTestModulars :: ScenarioSetup -> ScenarioSetup
+withTestModulars setup
+  | setup.scenarioCode == "24001" = setup {modulars = take 7 $ nub (setup.modulars <> chosen)}
+  | otherwise = setup
+ where
+  chosen = [EncounterSet.BombScare, EncounterSet.MastersOfEvil, EncounterSet.UnderAttack, EncounterSet.GoblinGimmicks, EncounterSet.Temporal, EncounterSet.Anachronauts, EncounterSet.MasterOfTime]
+
 -- | Against the scenario with the starter decks of the heroes given.
 testGameAgainst :: CardCode -> [Text] -> IO TestGame
 testGameAgainst villain heroes = do
-  let setup = fromMaybe (error "no setup") (recommendedSetup villain)
+  let setup = withTestModulars $ fromMaybe (error "no setup") (recommendedSetup villain)
   (app, ran, logged) <- dealtGameLogged setup (map starter heroes) 1
   seats <- runGameApp app (getsGame gameSeats)
   let tg = TestGame app ran logged seats

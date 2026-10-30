@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Data.HashSet qualified as HashSet
+import Data.List (nub)
+import Marvel.Query (selectOne)
+import Marvel.Matchers (VillainMatcher (ActiveVillain))
 import Marvel.Prelude
 
 import Marvel.Card.Builder
@@ -33,7 +37,7 @@ import Marvel.Query (selectJust)
 import Marvel.Card (Card (EncounterCard))
 import Marvel.Id (MainSchemeId)
 import Marvel.Name (Name (..))
-import Marvel.EncounterCard (genEncounterCard)
+import Marvel.EncounterCard (genEncounterCard, gatherEncounterSet)
 import Marvel.Villain.Cards qualified as VillainCards
 import System.Random.Shuffle (shuffleM)
 
@@ -52,7 +56,8 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard rhinoScenario
+    [ SomeScenarioCard theHoodScenario
+    , SomeScenarioCard rhinoScenario
     , SomeScenarioCard klawScenario
     , SomeScenarioCard ultronScenario
     -- The Green Goblin
@@ -739,3 +744,38 @@ instance RunMessage HelaScenario where
 -- defeated with Odin rescued is the players' win, as any last stage's defeat.
 helaScenario :: ScenarioCard HelaScenario
 helaScenario = scenario HelaScenario "21136a" ("21136a", "21137a") ["21138"] [EncounterSet.Hela]
+
+-- The Hood's modular sets begin set aside; each recruitment chooses a whole set.
+newtype TheHoodScenario = TheHoodScenario (Attrs Scenario)
+  deriving anyclass IsScenario
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+-- No particular modular sets are recommended by the product. Use the player's
+-- selection as given; only the chosen sets are set aside at setup.
+theHoodScenario :: ScenarioCard TheHoodScenario
+theHoodScenario = scenario TheHoodScenario "24001" ("24001", "24002") ["24004", "24005", "24006"] [EncounterSet.TheHood]
+
+instance RunMessage TheHoodScenario where
+  runMessage msg (TheHoodScenario a) = TheHoodScenario <$> case msg of
+    StartScenario -> runQueueT do
+      let modulars = filter (`elem` EncounterSet.modularSets) (HashSet.toList $ Types.scenarioEncounterSets a)
+      cards <- concatMapM gatherEncounterSet modulars
+      runMessage StartScenario $ a
+        { Types.scenarioEncounterSets = Types.scenarioEncounterSets a `HashSet.difference` HashSet.fromList modulars
+        , Types.scenarioSetAsideCards = Types.scenarioSetAsideCards a <> map EncounterCard cards
+        }
+    CardSpecific GameRef "hoodRecruit" _ -> runQueueT do
+      let cards = [ec | EncounterCard ec <- scenarioSetAsideCards a, cdEncounterSet (getCardDef ec) `elem` map Just EncounterSet.modularSets]
+      sets <- shuffleM (nub $ map (cdEncounterSet . getCardDef) cards)
+      for_ (take 1 sets) \set -> shuffleIntoEncounterDeck [ec | ec <- cards, cdEncounterSet (getCardDef ec) == set]
+      pure a
+    CardSpecific GameRef "hoodFoulPlay" (fromJSON -> Success (you, penalize :: Maybe MainSchemeId)) -> runQueueT do
+      mv <- selectOne ActiveVillain
+      stage <- maybe (pure 1) getVillainStage mv
+      discardTopOfEncounterDeckThen (if stage == 1 then 1 else 2) \cards -> do
+        let eligible = filter ((/= Just EncounterSet.TheHood) . cdEncounterSet . getCardDef) cards
+            dealt = if stage == 3 then eligible else take 1 eligible
+        traverse_ (dealFoundEncounterCard you) dealt
+        when (null dealt) $ traverse_ (\mid -> cardSpecific mid "hoodFoulPlayMiss" ()) penalize
+      pure a
+    _ -> runMessage msg a

@@ -17,7 +17,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ breakinAndTakin
+  [ unbridledAmbition
+  , breakinAndTakin
   , crowdControl
   , bombScare
   , defenseNetwork
@@ -828,3 +829,9 @@ ultronUnleashed :: CardDef
 ultronUnleashed = (sideScheme "26030" "Ultron Unleashed" [Boost, Boost, Boost] VisionNemesis 1)
     { cdAcceleration = 1
     }
+
+
+-- The Hood
+
+unbridledAmbition :: CardDef
+unbridledAmbition = (sideScheme "24011" "Unbridled Ambition" [Boost, Boost] TheHood 1) {cdKeywords = singleton (Hinder (PerPlayer 2))}

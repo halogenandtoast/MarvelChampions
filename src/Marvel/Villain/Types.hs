@@ -6,6 +6,8 @@ module Marvel.Villain.Types (
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Data.Aeson (genericParseJSON, defaultOptions)
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Attack
@@ -93,6 +95,8 @@ instance Entity Villain where
     , villainAttack :: Atk
     , villainStunned :: Bool
     , villainConfused :: Bool
+    , villainAdditionalStun :: Bool
+    , villainAdditionalConfuse :: Bool
     , villainTough :: Bool
     , villainBoostCards :: [EncounterCard]
     , villainBoost :: Natural
@@ -109,7 +113,7 @@ instance Entity Villain where
     -- until it ends (Master of Illusions)
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass ToJSON
   data Field Villain :: Type -> Type where
     VillainId :: Field Villain VillainId
     VillainCardDef :: Field Villain CardDef
@@ -192,6 +196,8 @@ villain f cardDef sch atk startingHp =
             , villainAttack = atk
             , villainStunned = False
             , villainConfused = False
+            , villainAdditionalStun = False
+            , villainAdditionalConfuse = False
             , villainTough = False
             , villainBoostCards = mempty
             , villainBoost = 0
@@ -226,10 +232,10 @@ toughL :: Lens' (Attrs Villain) Bool
 toughL = lens villainTough $ \m x -> m {villainTough = x}
 
 stunnedL :: Lens' (Attrs Villain) Bool
-stunnedL = lens villainStunned $ \m x -> m {villainStunned = x}
+stunnedL = lens villainStunned $ \m x -> m {villainStunned = x, villainAdditionalStun = x && villainAdditionalStun m}
 
 confusedL :: Lens' (Attrs Villain) Bool
-confusedL = lens villainConfused $ \m x -> m {villainConfused = x}
+confusedL = lens villainConfused $ \m x -> m {villainConfused = x, villainAdditionalConfuse = x && villainAdditionalConfuse m}
 
 attackingL :: Lens' (Attrs Villain) (Maybe Attack)
 attackingL = lens villainAttacking $ \m x -> m {villainAttacking = x}
@@ -260,8 +266,21 @@ instance HasTraits Villain where
 -- Stalwart).
 statusUnlessStalwart :: (HasGame m) => Attrs Villain -> StatusCard -> m (Attrs Villain)
 statusUnlessStalwart attrs s = do
-  stalwart <- elem Stalwart <$> getModifiedKeywords attrs
-  pure $ if stalwart && s /= ToughStatus then attrs else attrs & statusL s .~ True
+  keywords <- getModifiedKeywords attrs
+  pure $ if Stalwart `elem` keywords && s /= ToughStatus then attrs else
+    case s of
+      StunnedStatus | Steady `elem` keywords && villainStunned attrs -> attrs {villainAdditionalStun = True}
+      ConfusedStatus | Steady `elem` keywords && villainConfused attrs -> attrs {villainAdditionalConfuse = True}
+      _ -> attrs & statusL s .~ True
+
+isStunned, isConfused :: (HasGame m) => Attrs Villain -> m Bool
+isStunned a = do
+  steady <- elem Steady <$> getModifiedKeywords a
+  pure $ villainStunned a && (not steady || villainAdditionalStun a)
+isConfused a = do
+  steady <- elem Steady <$> getModifiedKeywords a
+  pure $ villainConfused a && (not steady || villainAdditionalConfuse a)
+
 
 getModifiedKeywords :: (HasGame m) => Attrs Villain -> m [Keyword]
 getModifiedKeywords attrs = do
@@ -358,8 +377,9 @@ runVillainMessage msg attrs = case msg of
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
   Msg.VillainStunned _ -> statusUnlessStalwart attrs StunnedStatus
   Msg.VillainConfused _ -> statusUnlessStalwart attrs ConfusedStatus
-  VillainSchemes ->
-    if villainConfused attrs
+  VillainSchemes -> do
+    confused <- isConfused attrs
+    if confused
       then pure $ attrs {villainActivationPlayer = Nothing} & confusedL .~ False & boostL .~ 0
       else attrs <$ villainStep vid VillainBeginScheme
   -- queued after the scheme, everything it leads to runs before the player is forgotten,
@@ -439,8 +459,9 @@ runVillainMessage msg attrs = case msg of
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
-  attacks begin ident keywords =
-    if villainStunned attrs
+  attacks begin ident keywords = do
+    stunned <- isStunned attrs
+    if stunned
       then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing}
       else do
         -- the attack is his activation against the player, from start to end
@@ -477,6 +498,8 @@ runVillainMessage msg attrs = case msg of
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
     GiveStatus (VillainRef vid) s | vid == villainId attrs -> statusUnlessStalwart attrs s
+    RemoveStatus (VillainRef vid) StunnedStatus | vid == villainId attrs, villainAdditionalStun attrs -> pure attrs {villainAdditionalStun = False}
+    RemoveStatus (VillainRef vid) ConfusedStatus | vid == villainId attrs, villainAdditionalConfuse attrs -> pure attrs {villainAdditionalConfuse = False}
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
     AttachmentRemoved attachmentId -> do
       pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
@@ -524,6 +547,7 @@ carryOver VillainAttrs {..} = update
     new
       & (confusedL .~ villainConfused)
       & (stunnedL .~ villainStunned)
+      & (\a -> a {villainAdditionalStun = villainAdditionalStun, villainAdditionalConfuse = villainAdditionalConfuse})
       & (toughL %~ (|| villainTough))
       & (attachmentsL .~ villainAttachments)
       & (upgradesL .~ villainUpgrades)
@@ -571,3 +595,10 @@ versionBEnters :: (HasGame m) => Attrs Villain -> m Bool
 versionBEnters attrs
   | villainStage attrs /= 1 = pure False
   | otherwise = (== "07001a") <$> getScenarioCode
+
+-- Older saved games predate a second status card.
+instance FromJSON (Attrs Villain) where
+  parseJSON = withObject "VillainAttrs" $ \o ->
+    genericParseJSON defaultOptions $ Object $
+      KeyMap.insertWith (\_ old -> old) "villainAdditionalStun" (Bool False) $
+      KeyMap.insertWith (\_ old -> old) "villainAdditionalConfuse" (Bool False) o

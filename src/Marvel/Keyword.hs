@@ -31,6 +31,7 @@ data Keyword
     Patrol
   | -- | it cannot be stunned or confused
     Stalwart
+  | Steady
   | -- | while a player resolves it, the others cannot help them
     Peril
   -- Spectrum

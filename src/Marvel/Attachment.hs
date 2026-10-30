@@ -2,6 +2,7 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Attachment.Attachments
@@ -28,7 +29,10 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard armoredRhinoSuit
+      [ SomeAttachmentCard Hood.establishedDominance
+      , SomeAttachmentCard Hood.theHoodsMantle
+      , SomeAttachmentCard Hood.theHoodsPistol
+      , SomeAttachmentCard armoredRhinoSuit
       , SomeAttachmentCard charge
       , SomeAttachmentCard enhancedIvoryHorn
       , SomeAttachmentCard sonicConverter

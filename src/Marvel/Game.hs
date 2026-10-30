@@ -1055,6 +1055,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     push $ WithBoostIcons target (toJSON ()) counts
     pure g
   RemoveFromGame target -> case target of
+    TreacheryRef tid -> pure $ g & (entitiesL . treacheriesL %~ deleteMap tid)
     ObligationRef oid -> pure $ g & (entitiesL . obligationsL %~ deleteMap oid)
     -- a villain out of the game leaves play as he would, what is on him discarded
     VillainRef _ -> g <$ push (RemoveFromPlay target)
@@ -2192,8 +2193,16 @@ stalwartSweep g = do
   for_ (villains <> minions <> identities <> allies) \(ref, keywords, stunned, confused) -> do
     stalwart <- elem Stalwart <$> runReaderT keywords (refreshTraits g)
     when stalwart do
-      when stunned $ push (RemoveStatus ref StunnedStatus)
-      when confused $ push (RemoveStatus ref ConfusedStatus)
+      when stunned do
+        push (RemoveStatus ref StunnedStatus)
+        case ref of
+          VillainRef vid | maybe False (Villain.villainAdditionalStun . toAttrs) (HashMap.lookup vid $ gameVillains g) -> push (RemoveStatus ref StunnedStatus)
+          _ -> pure ()
+      when confused do
+        push (RemoveStatus ref ConfusedStatus)
+        case ref of
+          VillainRef vid | maybe False (Villain.villainAdditionalConfuse . toAttrs) (HashMap.lookup vid $ gameVillains g) -> push (RemoveStatus ref ConfusedStatus)
+          _ -> pure ()
   pure g
 
 -- | Whether the enemy, by its ref, is stalwart: it cannot be stunned or confused.
@@ -3375,12 +3384,13 @@ gameSelectEnemy m = do
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . villainUpgrades $ toAttrs e)
     EnemyWithAttachment m' -> not . null . HashSet.intersection (Villain.villainAttachments $ toAttrs e) <$> select m'
     EnemyWithHighestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> highestAttack
-    StunnedEnemy -> pure $ Villain.villainStunned (toAttrs e)
+    StunnedEnemy -> Villain.isStunned (toAttrs e)
     EnemyWithTrait t -> pure $ t `member` cdTraits (getCardDef e)
-    ConfusedEnemy -> pure $ Villain.villainConfused (toAttrs e)
+    ConfusedEnemy -> Villain.isConfused (toAttrs e)
     EnemyCanBeConfused -> do
       stalwart <- elem Stalwart <$> Villain.getModifiedKeywords (toAttrs e)
-      pure $ not stalwart && not (Villain.villainConfused $ toAttrs e)
+      confused <- Villain.isConfused (toAttrs e)
+      pure $ not stalwart && not confused
     EnemyWithLowestAttack -> (==) <$> Villain.getModifiedAttack (toAttrs e) <*> (minimum <$> attacks)
     EnemyWithHighestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (maximum <$> schemes)
     EnemyWithLowestScheme -> (==) <$> Villain.getModifiedScheme (toAttrs e) <*> (minimum <$> schemes)

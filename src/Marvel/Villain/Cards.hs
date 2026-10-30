@@ -17,7 +17,10 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
-  [ rhino1
+  [ theHood1
+  , theHood2
+  , theHood3
+  , rhino1
   , rhino2
   , rhino3
   , klaw1
@@ -488,3 +491,14 @@ helaB1 = villain "21137a" "Hela" [Asgard, Mystic]
 
 helaB2 :: CardDef
 helaB2 = villain "21137b" "Hela" [Asgard, Wounded]
+
+-- The Hood
+
+theHood1 :: CardDef
+theHood1 = villain "24001" "The Hood" [Criminal]
+
+theHood2 :: CardDef
+theHood2 = villain "24002" "The Hood" [Criminal]
+
+theHood3 :: CardDef
+theHood3 = villain "24003" "The Hood" [Criminal]

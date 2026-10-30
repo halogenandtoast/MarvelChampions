@@ -12,6 +12,19 @@ const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
 const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+// Product rulebooks, paired with the summaries under newGame.modularRules.
+// The scenario's named recommendations remain the server's printed setup contents.
+const RULEBOOK_ROOT = 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/'
+const MODULAR_RULEBOOKS: Record<string, string> = {
+  core: `${RULEBOOK_ROOT}mvc01_learn_to_play_eng-compressed.pdf`,
+  gob: `${RULEBOOK_ROOT}mc02_green_goblin_rules_insert.pdf`,
+  twc: `${RULEBOOK_ROOT}mc03_wrecking_crew_rules_insert-compressed.pdf`,
+  trors: `${RULEBOOK_ROOT}mc10_the_rise_of_red_skull_rules_web.pdf`,
+  toafk: `${RULEBOOK_ROOT}mc11_once_and_future_kang_rules_insert-compressed.pdf`,
+  gmw: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf`,
+  mts: `${RULEBOOK_ROOT}mc21_the_mad_titans_shadow_rulebook-compressed.pdf`,
+  hood: 'https://images-cdn.fantasyflightgames.com/filer_public/89/66/89666652-cfcb-47c1-822f-a7a377a69401/mc24_the_hood_rules_insert.pdf',
+}
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {
   '07001': ['07002', '07017', '07032', '07046'],
@@ -32,6 +45,15 @@ export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
     for (const c of cards.store.all) if (c.setCode && !bySet.has(c.setCode)) bySet.set(c.setCode, c)
     return bySet
   })
+  const modularRules = (code: string) => {
+    const release = releaseOf(code)
+    return {
+      product: release.name,
+      text: t(`newGame.modularRules.${MODULAR_RULEBOOKS[release.code] ? release.code : 'other'}`),
+      source: MODULAR_RULEBOOKS[release.code],
+      usesModulars: release.code !== 'twc',
+    }
+  }
   const modularName = (set: string) => setCards.value.get(setCode(set))?.setName ?? set
   const modularRelease = (set: string) => releaseOf(null, setCards.value.get(setCode(set)))
 
@@ -66,5 +88,5 @@ export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
       .filter((d) => d !== tileName(setup.scenarioCode))
       .concat(t(`difficulty.${setup.difficulty}`))
 
-  return { releaseOf, modularName, modularRelease, portraits, art, variant, tileName, scenarioName, villainName, details }
+  return { releaseOf, modularRules, modularName, modularRelease, portraits, art, variant, tileName, scenarioName, villainName, details }
 }

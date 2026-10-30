@@ -98,6 +98,8 @@ export interface PlayerView {
 }
 
 export interface VillainView extends CardView {
+  stunCards?: number
+  confuseCards?: number
   stage: number
   hitPoints: number
   /** infinite hit points (Escape the Museum): shown as ∞ */
@@ -248,6 +250,7 @@ export interface GameView {
   minions: MinionView[]
   /** Environments: lasting encounter cards, with what is attached to them. */
   environments?: EnvironmentView[]
+  setAsideModulars?: string[]
   encounterDeckSize: number
   encounterDiscard: CardView[]
   /** the victory display: cards with victory X, defeated, the first added first */

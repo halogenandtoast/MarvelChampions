@@ -56,7 +56,7 @@ const choose = (option: ScenarioOption) => {
 const toggleModular = (set: string) => {
   modulars.value = modulars.value.includes(set) ? modulars.value.filter((s) => s !== set) : [...modulars.value, set]
 }
-const { releaseOf, modularName, modularRelease, portraits, art: villainArt, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
+const { releaseOf, modularRules, modularName, modularRelease, portraits, art: villainArt, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
 
 const byRelease = <T,>(items: T[], release: (item: T) => Release, name: (item: T) => string) =>
   [...items].sort((a, b) => release(a).order - release(b).order || name(a).localeCompare(name(b)))
@@ -102,7 +102,9 @@ const makeDefault = async () => {
 }
 
 const defaultName = computed(() => (scenario.value ? t('home.versus', { villain: villainName(scenario.value.code) }) : ''))
-const canCreate = computed(() => !!scenario.value && !creating.value)
+const isHood = computed(() => scenario.value?.code === '24001')
+const modularGuidance = computed(() => scenario.value ? modularRules(scenario.value.code) : null)
+const canCreate = computed(() => !!scenario.value && !creating.value && (!isHood.value || modulars.value.length === 7))
 
 const create = async () => {
   if (!canCreate.value || !scenario.value) return
@@ -279,28 +281,39 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
             <p class="hint">{{ $t('newGame.version.hint') }}</p>
           </template>
           <h3 class="field-title">{{ $t('newGame.modulars') }}</h3>
-          <div class="filters">
-            <input v-model="modularSearch" class="input" type="search" :placeholder="$t('newGame.searchSets')" :aria-label="$t('newGame.searchSets')" />
-            <select v-model="modularFilter" class="input" :aria-label="$t('newGame.release')">
-              <option value="">{{ $t('newGame.allReleases') }}</option>
-              <option v-for="r in modularReleases" :key="r.code" :value="r.code">{{ r.name }}</option>
-            </select>
+          <div v-if="modularGuidance" class="modular-guidance">
+            <p class="hint">{{ modularGuidance.text }}</p>
+            <a v-if="modularGuidance.source" :href="modularGuidance.source" target="_blank" rel="noopener noreferrer">{{ $t('newGame.productRulebook', { product: modularGuidance.product }) }}</a>
+            <details v-if="isHood">
+              <summary>{{ $t('newGame.hoodDifficultyGuide') }}</summary>
+              <p class="hint">{{ $t('newGame.hoodDifficultyBands') }}</p>
+              <ol><li v-for="rank in 9" :key="rank">{{ $t(`newGame.hoodModularRanking.${rank}`) }}</li></ol>
+            </details>
           </div>
-          <div class="chips">
-            <button
-              v-for="set in shownModulars"
-              :key="set"
-              type="button"
-              class="set-chip"
-              :class="{ on: modulars.includes(set) }"
-              :aria-pressed="modulars.includes(set)"
-              @click="toggleModular(set)"
-            >
-              {{ modularName(set) }}
-              <small v-if="scenario.modulars.includes(set)">{{ $t('newGame.recommended') }}</small>
-            </button>
-          </div>
-          <p class="hint">{{ $t('newGame.modularsHint') }}</p>
+          <template v-if="modularGuidance?.usesModulars">
+            <div class="filters">
+              <input v-model="modularSearch" class="input" type="search" :placeholder="$t('newGame.searchSets')" :aria-label="$t('newGame.searchSets')" />
+              <select v-model="modularFilter" class="input" :aria-label="$t('newGame.release')">
+                <option value="">{{ $t('newGame.allReleases') }}</option>
+                <option v-for="r in modularReleases" :key="r.code" :value="r.code">{{ r.name }}</option>
+              </select>
+            </div>
+            <div class="chips">
+              <button
+                v-for="set in shownModulars"
+                :key="set"
+                type="button"
+                class="set-chip"
+                :class="{ on: modulars.includes(set) }"
+                :aria-pressed="modulars.includes(set)"
+                @click="toggleModular(set)"
+              >
+                {{ modularName(set) }}
+                <small v-if="scenario.modulars.includes(set)">{{ $t('newGame.recommended') }}</small>
+              </button>
+            </div>
+            <p class="hint">{{ isHood ? $t('newGame.hoodModularsHint', { count: modulars.length }) : scenario.modulars.length ? $t('newGame.modularsHint') : $t('newGame.noRecommendedModulars') }}</p>
+          </template>
         </div>
 
         <div class="col">
@@ -343,6 +356,13 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 </template>
 
 <style scoped>
+.modular-guidance { margin-bottom: 16px; }
+.modular-guidance .hint { margin-top: 0; }
+.modular-guidance a, .modular-guidance summary { font-size: 0.82rem; }
+.modular-guidance details { margin-top: 12px; }
+.modular-guidance summary { cursor: pointer; }
+.modular-guidance ol { padding-left: 1.5em; font-size: 0.82rem; line-height: 1.6; }
+
 .new-game { display: grid; gap: 22px; }
 .kind { width: 20rem; max-width: 100%; }
 .box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: center / contain no-repeat; }

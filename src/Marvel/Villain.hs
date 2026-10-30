@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Villain where
 
+import Marvel.Villain.Villains.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Card.Builder
@@ -85,7 +86,10 @@ lookupVillain cardCode villainId = case lookup cardCode allVillains of
 allVillains :: HashMap CardCode SomeVillainCard
 allVillains = fromList $ map
   (toFst someVillainCardCode)
-  [ SomeVillainCard rhino
+  [ SomeVillainCard Hood.theHood1
+  , SomeVillainCard Hood.theHood2
+  , SomeVillainCard Hood.theHood3
+  , SomeVillainCard rhino
   , SomeVillainCard rhino1
   , SomeVillainCard rhino2
   , SomeVillainCard rhino3

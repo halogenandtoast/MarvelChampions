@@ -2,6 +2,7 @@
 
 module Marvel.Minion where
 
+import Marvel.Minion.Minions.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Card.Builder (reprintAs)
@@ -31,7 +32,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard hydraMercenary
+      [ SomeMinionCard Hood.madameMasque
+      , SomeMinionCard hydraMercenary
       , SomeMinionCard sandman
       , SomeMinionCard shocker
       , SomeMinionCard hydraBomber

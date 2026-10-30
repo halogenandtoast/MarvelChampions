@@ -73,7 +73,7 @@ spec = do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
    seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
-      (app, ran, _) <- dealtGameWith f setup (map starter heroes) seed
+      (app, ran, _) <- dealtGameWith f (withTestModulars setup) (map starter heroes) seed
       result <- try do
         _ <- runGameApp app (playRandomly (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame

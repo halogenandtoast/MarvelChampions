@@ -62,7 +62,8 @@ inScope pack set = case pack of
 -- set code.
 modularSets :: [Text]
 modularSets =
-  [ "risky_business"
+  [ "the_hood"
+  , "risky_business"
   , "mutagen_formula"
   , "goblin_gimmicks"
   , "a_mess_of_things"

@@ -238,6 +238,7 @@ library
       Marvel.Attachment.Attachments.Techniques
       Marvel.Attachment.Attachments.TemporalShield
       Marvel.Attachment.Attachments.Thanos
+      Marvel.Attachment.Attachments.TheHood
       Marvel.Attachment.Attachments.TowerDefense
       Marvel.Attachment.Attachments.TwistedReality
       Marvel.Attachment.Attachments.UpgradedDrones
@@ -641,6 +642,7 @@ library
       Marvel.MainScheme.MainSchemes.TheCrimsonCowl
       Marvel.MainScheme.MainSchemes.TheGetaway
       Marvel.MainScheme.MainSchemes.TheGrandCollection
+      Marvel.MainScheme.MainSchemes.TheHood
       Marvel.MainScheme.MainSchemes.TheInfinityStone
       Marvel.MainScheme.MainSchemes.TheIslandOfDrZola
       Marvel.MainScheme.MainSchemes.TheMadDoctor
@@ -744,6 +746,7 @@ library
       Marvel.Minion.Minions.SpacePirates
       Marvel.Minion.Minions.Taskmaster
       Marvel.Minion.Minions.Terminatrix
+      Marvel.Minion.Minions.TheHood
       Marvel.Minion.Minions.TheSleeper
       Marvel.Minion.Minions.TheViper
       Marvel.Minion.Minions.ThomasEdison
@@ -905,6 +908,7 @@ library
       Marvel.SideScheme.SideSchemes.Thanos
       Marvel.SideScheme.SideSchemes.TheAnachronauts
       Marvel.SideScheme.SideSchemes.TheDoomsdayChair
+      Marvel.SideScheme.SideSchemes.TheHood
       Marvel.SideScheme.SideSchemes.TheImmortalKlaw
       Marvel.SideScheme.SideSchemes.TheMastersOfEvil
       Marvel.SideScheme.SideSchemes.TheNextEvolution
@@ -1096,6 +1100,7 @@ library
       Marvel.Treachery.Treacheries.TailSweep
       Marvel.Treachery.Treacheries.TechnologicalEnhancements
       Marvel.Treachery.Treacheries.Thanos
+      Marvel.Treachery.Treacheries.TheHood
       Marvel.Treachery.Treacheries.TheVulturesPlans
       Marvel.Treachery.Treacheries.Thoughtcasting
       Marvel.Treachery.Treacheries.TimeTravelTactics
@@ -1310,6 +1315,7 @@ library
       Marvel.Villain.Villains.Ronan
       Marvel.Villain.Villains.Taskmaster
       Marvel.Villain.Villains.Thanos
+      Marvel.Villain.Villains.TheHood
       Marvel.Villain.Villains.Thunderball
       Marvel.Villain.Villains.TowerDefense
       Marvel.Villain.Villains.Ultron
@@ -1543,6 +1549,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.StarLordNemesisSpec
       Marvel.Encounter.TaskmasterSpec
       Marvel.Encounter.ThanosSpec
+      Marvel.Encounter.TheHoodSpec
       Marvel.Encounter.ThorNemesisSpec
       Marvel.Encounter.TowerDefenseSpec
       Marvel.Encounter.UltronSpec

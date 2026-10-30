@@ -61,6 +61,7 @@
     "ThreatFromAbility": "Card effect",
     "ThreatFromAcceleration": "Acceleration"
   },
+  "setAsideModulars": "Sets awaiting recruitment",
   "piles": {
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",

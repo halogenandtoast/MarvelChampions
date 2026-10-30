@@ -16,7 +16,9 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ hardToKeepDown
+  [ fieldRecruitment
+  , upperHand
+  , hardToKeepDown
   , imTough
   , stampede
   , explosion
@@ -864,3 +866,12 @@ laserStrike = treachery "23031" "Laser Strike" [Boost, Star] WarMachineNemesis 3
 
 relentlessAndroid :: CardDef
 relentlessAndroid = treachery "26032" "Relentless Android" [Boost, Boost] VisionNemesis 2
+
+
+-- The Hood
+
+fieldRecruitment :: CardDef
+fieldRecruitment = treachery "24012" "Field Recruitment" [Boost, Star] TheHood 1
+
+upperHand :: CardDef
+upperHand = treachery "24013" "Upper Hand" [Boost] TheHood 3

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.Treachery.Treacheries.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Card
@@ -25,7 +26,9 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard hardToKeepDown
+  [ SomeTreacheryCard Hood.fieldRecruitment
+  , SomeTreacheryCard Hood.upperHand
+  , SomeTreacheryCard hardToKeepDown
   , SomeTreacheryCard imTough
   , SomeTreacheryCard stampede
   , SomeTreacheryCard explosion

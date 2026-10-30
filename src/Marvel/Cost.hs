@@ -132,6 +132,7 @@ canAffordCost identityId source = go
     DiscardEncounterCardsUntilMinionCost -> pure True
     SearchEncounterSideSchemeCost -> any (cardMatch $ CardWithType SideSchemeType) <$> getEncounterDeck
     SearchEncounterMinionCost -> any (cardMatch $ CardWithType MinionType) <$> ((<>) <$> getEncounterDeck <*> getEncounterDiscard)
+    PlaceThreatOnMainSchemeCost _ -> selectAny MainScheme
     DealEncounterCardCost -> pure True
     DiscardTopEncounterCardCost -> pure True
     TargetPrintedCost -> pure True
@@ -149,7 +150,7 @@ canAffordCost identityId source = go
       SupportRef ident -> member ident <$> select UnexhaustedSupport
       UpgradeRef ident -> member ident <$> select UnexhaustedUpgrade
       -- "exhaust your hero" on an encounter card
-      AttachmentRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
+      AttachmentRef _ -> member identityId <$> select UnexhaustedIdentity
       -- "exhaust your alter-ego" on an expert campaign's obligation
       ObligationRef _ -> member identityId <$> select (UnexhaustedIdentity <> AlterEgoIdentity)
       -- "exhaust your hero" on a main scheme (The Grand Collection)

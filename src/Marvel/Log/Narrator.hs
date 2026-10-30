@@ -34,6 +34,8 @@ import Marvel.Identity
 import Marvel.Keyword (Keyword (Overkill, Piercing, Ranged))
 import Marvel.Log
 import Marvel.Ally.Types qualified as Ally
+import Marvel.Matchers (EnemyMatcher (EnemyWithId, StunnedEnemy, ConfusedEnemy))
+import Marvel.Query (selectAny)
 import Marvel.Message
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier
@@ -367,12 +369,12 @@ villainNarration :: (HasGame m) => VillainId -> VillainMessage -> Maybe (m [LogE
 villainNarration vid = \case
   -- told as each gets under way, so one an ability replaces (Norman Osborn's attack, Green
   -- Goblin's scheme) is told as what it is replaced with; a stun or confusion as it is spent
-  VillainAttacks ident -> Just $ whenM' (villainHas (.villainStunned) vid) $ activation (VillainRef vid) ident "log.attacks" True
+  VillainAttacks ident -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> StunnedEnemy)) $ activation (VillainRef vid) ident "log.attacks" True
   VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
   VillainAttacksGaining ident _ -> villainNarration vid (VillainAttacks ident)
   VillainBeginAttack ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
   VillainBeginAttackWithoutBoost ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
-  VillainSchemes -> Just $ whenM' (villainHas (.villainConfused) vid) $ schemes (VillainRef vid) True
+  VillainSchemes -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> ConfusedEnemy)) $ schemes (VillainRef vid) True
   VillainBeginScheme -> Just $ schemes (VillainRef vid) False
   VillainDamaged source dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False Villain.villainIsTough . lookup vid . gameVillains
@@ -397,10 +399,6 @@ villainNarration vid = \case
   -- told as they are added, so icons cancelled as the card turns up are not
   VillainAddBoost n | n > 0 -> Just $ whenRef (VillainRef vid) \v -> one $ notice [ikeyPart "log.boostAdded" ["enemy" ~> v, "count" ~> n]]
   _ -> Nothing
-
--- | What the villain's state says, as the message finds it.
-villainHas :: (HasGame m) => (Attrs Villain.Villain -> Bool) -> VillainId -> m Bool
-villainHas f vid = getsGame (maybe False (f . toAttrs) . lookup vid . gameVillains)
 
 whenM' :: (Monad m) => m Bool -> m [LogEntry] -> m [LogEntry]
 whenM' cond body = cond >>= \b -> if b then body else pure []

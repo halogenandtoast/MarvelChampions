@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.TheHood qualified as Hood
 import Marvel.Prelude
 
 import Marvel.Card
@@ -23,7 +24,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard breakinAndTakin
+  [ SomeSideSchemeCard Hood.unbridledAmbition
+  , SomeSideSchemeCard breakinAndTakin
   , SomeSideSchemeCard crowdControl
   , SomeSideSchemeCard bombScare
   , SomeSideSchemeCard defenseNetwork
