@@ -40,7 +40,8 @@ playRandomly hasten seed = go (mkStdGen seed)
         go gen'' (n - 1)
 
 spec :: Spec
-spec = do
+-- Every example owns its game, queue, logs and seeded random generator.
+spec = parallel do
   -- SMOKE_FULL=1 plays every table against every scenario and every modular with every
   -- scenario; by default each scenario gets a few tables, the heroes rotating, and each
   -- modular one scenario, so every deck and set is still played
