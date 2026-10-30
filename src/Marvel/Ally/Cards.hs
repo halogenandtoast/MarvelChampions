@@ -200,6 +200,11 @@ allAllies = fromList $ concatMap
   , bombshellLanaBaumgartner
   , waspNadiaVanDyneIronheart
   , pinpointQureshiGupta
+  , captainAmericat
+  , ladySpider
+  , spiderManPavitrPrabhakar
+  , scarletSpider
+  , spDr
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -956,4 +961,39 @@ pinpointQureshiGupta :: CardDef
 pinpointQureshiGupta = (ally "29035" ("Pinpoint" <:> "Qureshi Gupta") 2 [Champion] [Mental] Protection)
   { cdDeckLimit = Just 1
   , cdCriteria = SelfMatches (IdentityWithTrait Champion)
+  }
+
+
+-- Spider-Ham
+
+captainAmericat :: CardDef
+captainAmericat = (identityAlly "30002" ("Captain Americat" <:> "Steve Mouser") 3 [Cartoon] [Wild])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+ladySpider :: CardDef
+ladySpider = (ally "30012" ("Lady Spider" <:> "May Reilly") 4 [WebWarrior] [Mental] Justice)
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+spiderManPavitrPrabhakar :: CardDef
+spiderManPavitrPrabhakar = (ally "30013" ("Spider-Man" <:> "Pavitr Prabhakar") 3 [WebWarrior] [Energy] Justice)
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+scarletSpider :: CardDef
+scarletSpider = (basicAlly "30020" ("Scarlet Spider" <:> "Kaine") 4 [WebWarrior] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  , cdCriteria = ControlsCardsWithTrait WebWarrior 1
+  }
+
+spDr :: CardDef
+spDr = (basicAlly "30021" ("SP//dr" <:> "Peni Parker") 2 [WebWarrior] [Energy])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  , cdCriteria = ControlsCardsWithTrait WebWarrior 1
   }

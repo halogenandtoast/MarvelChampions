@@ -146,3 +146,6 @@ import Marvel.Attachment.Attachments.RollinRollin as X
 import Marvel.Attachment.Attachments.CyborgTech as X
 
 import Marvel.Attachment.Attachments.Haywire as X
+
+-- Spider-Ham
+import Marvel.Attachment.Attachments.GobblerGlider as X

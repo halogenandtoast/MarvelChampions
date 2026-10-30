@@ -223,6 +223,8 @@ allSideSchemes = fromList $ map
   , armoredAssault
   , ruleByForce
   , feedbackLoop
+  , nefariousTrap
+  , huntingTheSpiderTotems
   ]
 
 sideScheme
@@ -1184,4 +1186,18 @@ feedbackLoop :: CardDef
 feedbackLoop = (sideScheme "29036" "Feedback Loop" [Boost, Boost, Boost] SMSet.ZzzaxSet 1)
   { cdAcceleration = 1
   , cdUnique = False
+  }
+
+
+-- Spider-Ham
+
+nefariousTrap :: CardDef
+nefariousTrap = (sideScheme "30025" "Nefarious Trap" [Boost, Boost] SMSet.SpiderHamNemesis 1)
+  { cdUnique = False
+  , cdHazards = 1
+  }
+
+huntingTheSpiderTotems :: CardDef
+huntingTheSpiderTotems = (sideScheme "30030" "Hunting the Spider-Totems" [Boost, Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = False
   }

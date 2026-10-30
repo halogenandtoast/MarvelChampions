@@ -80,3 +80,6 @@ import Marvel.Obligation.Obligations.SmModulars as X
 import Marvel.Obligation.Obligations.WeightOfTheWorld as X
 
 import Marvel.Obligation.Obligations.AMinorSetback as X
+
+-- Spider-Ham
+import Marvel.Obligation.Obligations.IReallyWantAHotDog as X

@@ -350,6 +350,12 @@ allEvents = fromList $ concatMap
   , goAllOut
   , pushAhead
   , goForChampions
+  , hamItUp
+  , hogwashed
+  , iDontThinkSo
+  , petulantPig
+  , swingingWebPig
+  , evenTheOdds
   ]
 
 event
@@ -576,7 +582,7 @@ forJustice = reprintedAs ["21049"] $
     }
 
 greatResponsibility :: CardDef
-greatResponsibility =
+greatResponsibility = reprintedAs ["30015"] $
   (event "01061" "Great Responsibility" 0 HeroInterrupt [] [Mental] Justice)
     { cdResponseWindow = Just (ThreatWouldBePlaced AnyThreatSource AnyScheme)
     }
@@ -1701,7 +1707,7 @@ scareTactic =
     }
 
 makingAnEntrance :: CardDef
-makingAnEntrance =
+makingAnEntrance = reprintedAs ["30016"] $
   (event "20013" "Making an Entrance" 1 HeroInterrupt [Skill] [Physical] Justice)
     { cdResponseWindow = Just (MakesBasicThwart When You)
     }
@@ -1853,7 +1859,7 @@ lethalIntent = deckLimited 3 $ (identityEvent "22010" "Lethal Intent" (-1) HeroA
     }
 
 oneWayOrAnother :: CardDef
-oneWayOrAnother = deckLimited 3 $ (event "22015" "One Way or Another" 0 HeroAction [] [Mental] Justice)
+oneWayOrAnother = reprintedAs ["30017"] $ deckLimited 3 $ (event "22015" "One Way or Another" 0 HeroAction [] [Mental] Justice)
     { cdLimit = Just (MaxPerRound 1)
     , cdAbilityCost = SearchEncounterSideSchemeCost
     }
@@ -2281,4 +2287,55 @@ goForChampions = (basicEvent "29025" "\"Go for Champions!\"" 3 HeroAction [] [Wi
   { cdDeckLimit = Just 1
   , cdUnique = False
   , cdCriteria = SelfMatches (IdentityWithTrait Champion)
+  }
+
+
+-- Spider-Ham
+
+hamItUp :: CardDef
+hamItUp = (identityEvent "30003" "Ham It Up" 0 HeroAction [Cartoon, Thwart] [Mental])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SelfMatches (IdentityWithCounters $ AtLeast $ Static 1) <> SchemeExists SchemeYouCanThwart]
+  }
+
+hogwashed :: CardDef
+hogwashed = (identityEvent "30004" "Hogwashed" 1 HeroAction [Cartoon] [Energy])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  , cdAbilityCost = IdentityCountersCost 1
+  , cdCriteria = AnyCriteria [MinionExists AnyMinion, SchemeExists (NotScheme MainScheme <> ThwartableScheme)]
+  }
+
+iDontThinkSo :: CardDef
+iDontThinkSo = (identityEvent "30005" "\"I Don't Think So!\"" 1 HeroInterrupt [Cartoon] [Energy])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  , cdAbilityCost = IdentityCountersCost 1
+  , cdCriteria = CanCancelRevealedEncounterCard
+  , cdResponseWindow = Just (EncounterCardRevealedFromDeckBy When You AnyEncounterCard)
+  }
+
+petulantPig :: CardDef
+petulantPig = (identityEvent "30006" "Petulant Pig" 0 HeroAction [Cartoon] [Mental])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
+  }
+
+swingingWebPig :: CardDef
+swingingWebPig = (identityEvent "30007" "Swinging Web Pig" 3 HeroAction [Cartoon, Attack] [Energy])
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  }
+
+evenTheOdds :: CardDef
+evenTheOdds = (event "30014" "Even the Odds" 2 HeroAction [Thwart] [Energy] Justice)
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists (NotScheme MainScheme <> SchemeYouCanThwart)]
+  , cdKeywords = fromList [Requirement [Energy]]
   }

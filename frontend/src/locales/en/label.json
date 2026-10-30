@@ -316,5 +316,10 @@
   "newAndImprovedReady": "Ready Ironheart",
   "discardEnergyCard": "Discard a card you control with a printed energy resource",
   "takeTwoIndirectDamage": "Take 2 indirect damage",
-  "placeShiftCounters": "Place {count} shift counters on Snowguard"
+  "placeShiftCounters": "Place {count} shift counters on Snowguard",
+  "spiderNonsense": "Spider-Nonsense",
+  "cartoonPower": "Cartoon Power",
+  "exhaustPeterPorkerRemoveHotDog": "Exhaust Peter Porker and remove 1 toon counter to remove this obligation from the game",
+  "stunnedDiscardHotDog": "Become stunned and discard this obligation",
+  "spendIdentityCounter": "Spend a toon counter"
 }

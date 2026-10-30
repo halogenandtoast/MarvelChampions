@@ -181,7 +181,8 @@ allAttachments =
   , SomeAttachmentCard rollinRollin
   , SomeAttachmentCard cyborgTech
   , SomeAttachmentCard haywire
-      ]
+      , SomeAttachmentCard gobblerGlider
+  ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment
 lookupAttachment cardCode = case lookup cardCode allAttachments of

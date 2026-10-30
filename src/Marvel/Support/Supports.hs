@@ -118,3 +118,6 @@ import Marvel.Support.Supports.RonnieWilliams as X
 import Marvel.Support.Supports.TonyStarkAI as X
 
 import Marvel.Support.Supports.RAndDFacility as X
+
+-- Spider-Ham
+import Marvel.Support.Supports.TheDailyBeagle as X

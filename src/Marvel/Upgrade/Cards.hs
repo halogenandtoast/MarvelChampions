@@ -265,6 +265,11 @@ allUpgrades = fromList $ concatMap
   , photonBlasters
   , propulsionJets
   , ingenuity
+  , cartoonPhysics
+  , hugeWoodenHammer
+  , organicWebbing
+  , overwatch
+  , warriorOfTheGreatWeb
   ]
 
 upgrade
@@ -442,7 +447,7 @@ enraged = limited (MaxPerAlly 1) $
   upgrade "03031" "Enraged" 1 [Condition] [Physical] Aggression
 
 followed :: CardDef
-followed = limited (MaxPerSideScheme 1) $
+followed = reprintedAs ["30018"] $ limited (MaxPerSideScheme 1) $
   upgrade "03032" "Followed" 1 [] [Energy] Justice
 
 enhancedAwareness :: CardDef
@@ -1406,4 +1411,39 @@ ingenuity = (basicUpgrade "29027" "Ingenuity" 2 [Skill] [Mental])
   , cdUnique = False
   , cdCriteria = SelfMatches (IdentityWithTrait Genius)
   , cdLimit = Just (MaxPerPlayer 1)
+  }
+
+
+-- Spider-Ham
+
+cartoonPhysics :: CardDef
+cartoonPhysics = (identityUpgrade "30009" "Cartoon Physics" 1 [Cartoon, Superpower] [Physical])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
+  }
+
+hugeWoodenHammer :: CardDef
+hugeWoodenHammer = (identityUpgrade "30010" "Huge Wooden Hammer" 2 [Cartoon, Weapon] [Physical])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  }
+
+organicWebbing :: CardDef
+organicWebbing = (identityUpgrade "30011" "Organic Webbing" 2 [Cartoon, Superpower] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  }
+
+overwatch :: CardDef
+overwatch = (upgrade "30019" "Overwatch" 0 [] [Physical] Justice)
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdLimit = Just (MaxPerScheme 1)
+  }
+
+warriorOfTheGreatWeb :: CardDef
+warriorOfTheGreatWeb = (basicUpgrade "30029" "Warrior of the Great Web" 1 [Title] [Energy])
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdLimit = Just (MaxPerCharacter 1)
   }

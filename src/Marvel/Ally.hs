@@ -205,4 +205,9 @@ allAllies = fromList $ map
   , SomeAllyCard bombshellLanaBaumgartner
   , SomeAllyCard waspNadiaVanDyneIronheart
   , SomeAllyCard pinpointQureshiGupta
+  , SomeAllyCard captainAmericat
+  , SomeAllyCard ladySpider
+  , SomeAllyCard spiderManPavitrPrabhakar
+  , SomeAllyCard scarletSpider
+  , SomeAllyCard spDr
   ]

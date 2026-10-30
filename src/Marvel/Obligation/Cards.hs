@@ -95,7 +95,8 @@ allObligations = fromList $ map
   , keepingSecrets
   , weightOfTheWorld
   , aMinorSetback
-  ]
+  , iReallyWantAHotDog
+    ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
 obligation code name boostIcons = CardDef
@@ -371,3 +372,9 @@ aMinorSetback :: CardDef
 aMinorSetback = (obligation "29028" "A Minor Setback" [Boost, Boost])
   { cdUnique = False
   }
+
+
+-- Spider-Ham
+
+iReallyWantAHotDog :: CardDef
+iReallyWantAHotDog = obligation "30024" "\"I Really Want a Hot Dog!\"" [Boost, Boost]

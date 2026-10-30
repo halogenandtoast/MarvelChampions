@@ -168,3 +168,14 @@ import Marvel.Minion.Minions.Armadillo as X
 import Marvel.Minion.Minions.LuciaVonBardas as X
 
 import Marvel.Minion.Minions.Zzzax as X
+
+-- Spider-Ham
+import Marvel.Minion.Minions.TheGreenGobbler as X
+import Marvel.Minion.Minions.Bora as X
+import Marvel.Minion.Minions.Brix as X
+import Marvel.Minion.Minions.Daemos as X
+import Marvel.Minion.Minions.Jennix as X
+import Marvel.Minion.Minions.Karn as X
+import Marvel.Minion.Minions.Morlun as X
+import Marvel.Minion.Minions.Solus as X
+import Marvel.Minion.Minions.Verna as X

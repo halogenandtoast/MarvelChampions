@@ -116,6 +116,7 @@ allSupports = fromList $ concatMap
   , ronnieWilliams
   , tonyStarkAI
   , rAndDFacility
+  , theDailyBeagle
   ]
 
 support
@@ -287,7 +288,7 @@ armyOfAnts :: CardDef
 armyOfAnts = identitySupport "12007" "Army of Ants" 1 [Ants, Tiny] [Physical]
 
 teamBuildingExercise :: CardDef
-teamBuildingExercise = basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]
+teamBuildingExercise = reprintedAs ["30022"] $ basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]
 
 -- Wasp
 
@@ -430,7 +431,7 @@ georgeStacy = (identitySupport "27007" "George Stacy" 1 [Persona] [Energy])
     }
 
 webOfLifeAndDestiny :: CardDef
-webOfLifeAndDestiny = (basicSupport "27023" "Web of Life and Destiny" 3 [Location, WebWarrior] [Energy])
+webOfLifeAndDestiny = reprintedAs ["30023"] $ (basicSupport "27023" "Web of Life and Destiny" 3 [Location, WebWarrior] [Energy])
     { cdUnique = True
     , cdDeckLimit = Just 1
     }
@@ -497,4 +498,13 @@ rAndDFacility = (support "29020" "R&D Facility" 3 [Location, Shield] [Mental] Le
   { cdDeckLimit = Just 3
   , cdUnique = False
   , cdKeywords = fromList [SMKeyword.Requirement [Mental, Mental]]
+  }
+
+
+-- Spider-Ham
+
+theDailyBeagle :: CardDef
+theDailyBeagle = (identitySupport "30008" "The Daily Beagle" 2 [Cartoon, Location] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
   }

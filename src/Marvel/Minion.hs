@@ -218,7 +218,16 @@ allMinions =
   , SomeMinionCard armadillo
   , SomeMinionCard luciaVonBardas
   , SomeMinionCard zzzax
-      ]
+      , SomeMinionCard theGreenGobbler
+  , SomeMinionCard bora
+  , SomeMinionCard brix
+  , SomeMinionCard daemos
+  , SomeMinionCard jennix
+  , SomeMinionCard karn
+  , SomeMinionCard morlun
+  , SomeMinionCard solus
+  , SomeMinionCard verna
+  ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion
 lookupMinion cardCode identityId minionId = case lookup cardCode allMinions of

@@ -249,6 +249,7 @@ allTreacheries = fromList $ map
   , toughItOut
   , politicalRetribution
   , zzzap
+  , feastOnThis
   ]
 
 treachery
@@ -1217,5 +1218,13 @@ politicalRetribution = (treachery "29032" "Political Retribution" [Boost] SMSet.
 
 zzzap :: CardDef
 zzzap = (treachery "29040" "Zzzap!" [Boost] SMSet.ZzzaxSet 2)
+  { cdUnique = False
+  }
+
+
+-- Spider-Ham
+
+feastOnThis :: CardDef
+feastOnThis = (treachery "30028" "\"Feast on This!\"" [Boost] SMSet.SpiderHamNemesis 2)
   { cdUnique = False
   }

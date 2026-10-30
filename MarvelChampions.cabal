@@ -37,6 +37,7 @@ library
       Marvel.Ally.Allies.BrotherVoodooJerichoDrumm
       Marvel.Ally.Allies.Bug
       Marvel.Ally.Allies.CaptainAmericaSteveRogers
+      Marvel.Ally.Allies.CaptainAmericat
       Marvel.Ally.Allies.CaptainMarvelCarolDanvers
       Marvel.Ally.Allies.CaptainMarvelWarMachine
       Marvel.Ally.Allies.Charlie27
@@ -71,6 +72,7 @@ library
       Marvel.Ally.Allies.Jocasta
       Marvel.Ally.Allies.Kaluu
       Marvel.Ally.Allies.LadySif
+      Marvel.Ally.Allies.LadySpider
       Marvel.Ally.Allies.Lockjaw
       Marvel.Ally.Allies.LukeCage
       Marvel.Ally.Allies.MachineManAaronStack
@@ -105,6 +107,7 @@ library
       Marvel.Ally.Allies.RedDagger
       Marvel.Ally.Allies.RocketRaccoonAlly
       Marvel.Ally.Allies.Ronin
+      Marvel.Ally.Allies.ScarletSpider
       Marvel.Ally.Allies.ScarletWitchWandaMaximoff
       Marvel.Ally.Allies.SentryRobertReynolds
       Marvel.Ally.Allies.ShangChi
@@ -112,11 +115,13 @@ library
       Marvel.Ally.Allies.Shuri
       Marvel.Ally.Allies.SilkCindyMoon
       Marvel.Ally.Allies.SnowguardAmkaAliyak
+      Marvel.Ally.Allies.SpDr
       Marvel.Ally.Allies.SpeedThomasShepherd
       Marvel.Ally.Allies.SpiderGirlAnyaCorazon
       Marvel.Ally.Allies.SpiderManHobieBrown
       Marvel.Ally.Allies.SpiderManMilesMorales
       Marvel.Ally.Allies.SpiderManMilesMoralesSinisterMotives
+      Marvel.Ally.Allies.SpiderManPavitrPrabhakar
       Marvel.Ally.Allies.SpiderManPeterParker
       Marvel.Ally.Allies.SpiderManPeterParkerSinisterMotives
       Marvel.Ally.Allies.SpiderUKBillyBraddock
@@ -179,6 +184,7 @@ library
       Marvel.AlterEgo.AlterEgos.NebulaAlterEgo
       Marvel.AlterEgo.AlterEgos.Odinson
       Marvel.AlterEgo.AlterEgos.PeterParker
+      Marvel.AlterEgo.AlterEgos.PeterPorker
       Marvel.AlterEgo.AlterEgos.PeterQuill
       Marvel.AlterEgo.AlterEgos.PietroMaximoff
       Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion1
@@ -232,6 +238,7 @@ library
       Marvel.Attachment.Attachments.FutureWeapon
       Marvel.Attachment.Attachments.GalacticArtifacts
       Marvel.Attachment.Attachments.GeneticallyEnhanced
+      Marvel.Attachment.Attachments.GobblerGlider
       Marvel.Attachment.Attachments.GoblinGlider
       Marvel.Attachment.Attachments.Haywire
       Marvel.Attachment.Attachments.Hela
@@ -413,6 +420,7 @@ library
       Marvel.Event.Events.ElectricArrow
       Marvel.Event.Events.Emergency
       Marvel.Event.Events.EnhancedSpiderSense
+      Marvel.Event.Events.EvenTheOdds
       Marvel.Event.Events.EverVigilant
       Marvel.Event.Events.ExpertDefense
       Marvel.Event.Events.ExplosiveArrow
@@ -450,6 +458,7 @@ library
       Marvel.Event.Events.GreatResponsibility
       Marvel.Event.Events.GroundStomp
       Marvel.Event.Events.GutsyMove
+      Marvel.Event.Events.HamItUp
       Marvel.Event.Events.HammerThrow
       Marvel.Event.Events.HardKnocks
       Marvel.Event.Events.HaveAtThee
@@ -458,10 +467,12 @@ library
       Marvel.Event.Events.HexBolt
       Marvel.Event.Events.HitAndRun
       Marvel.Event.Events.HiveMind
+      Marvel.Event.Events.Hogwashed
       Marvel.Event.Events.HomelandIntervention
       Marvel.Event.Events.HulkSmash
       Marvel.Event.Events.IAmGroot
       Marvel.Event.Events.IAmGrootExclaim
+      Marvel.Event.Events.IDontThinkSo
       Marvel.Event.Events.ImagesOfIkonn
       Marvel.Event.Events.Impede
       Marvel.Event.Events.Inconspicuous
@@ -518,6 +529,7 @@ library
       Marvel.Event.Events.Parry
       Marvel.Event.Events.Payback
       Marvel.Event.Events.Perseverance
+      Marvel.Event.Events.PetulantPig
       Marvel.Event.Events.PhantomFlip
       Marvel.Event.Events.PhaseDisruption
       Marvel.Event.Events.Pheromones
@@ -595,6 +607,7 @@ library
       Marvel.Event.Events.SwiftRetribution
       Marvel.Event.Events.SwingIn
       Marvel.Event.Events.SwingingWebKick
+      Marvel.Event.Events.SwingingWebPig
       Marvel.Event.Events.Tackle
       Marvel.Event.Events.TakeTheFightToThem
       Marvel.Event.Events.TargetedStrike
@@ -675,6 +688,7 @@ library
       Marvel.Hero.Heroes.ScarletWitch
       Marvel.Hero.Heroes.SheHulk
       Marvel.Hero.Heroes.Spectrum
+      Marvel.Hero.Heroes.SpiderHam
       Marvel.Hero.Heroes.SpiderMan
       Marvel.Hero.Heroes.SpiderManMilesMoralesHero
       Marvel.Hero.Heroes.SpiderWoman
@@ -783,10 +797,13 @@ library
       Marvel.Minion.Minions.BlackjackOHare
       Marvel.Minion.Minions.BlackOrder
       Marvel.Minion.Minions.BlackOrderBesieger
+      Marvel.Minion.Minions.Bora
+      Marvel.Minion.Minions.Brix
       Marvel.Minion.Minions.ChildrenOfThanos
       Marvel.Minion.Minions.ChitauriSoldier
       Marvel.Minion.Minions.CorruptPrisonGuard
       Marvel.Minion.Minions.Crossfire
+      Marvel.Minion.Minions.Daemos
       Marvel.Minion.Minions.Deathunt9000
       Marvel.Minion.Minions.Drone
       Marvel.Minion.Minions.EdisonsGiantRobot
@@ -811,7 +828,9 @@ library
       Marvel.Minion.Minions.HydraMercenary
       Marvel.Minion.Minions.HydraRegular
       Marvel.Minion.Minions.HydraSoldier
+      Marvel.Minion.Minions.Jennix
       Marvel.Minion.Minions.KangMasterOfTime
+      Marvel.Minion.Minions.Karn
       Marvel.Minion.Minions.Killmonger
       Marvel.Minion.Minions.KreeMilitants
       Marvel.Minion.Minions.LegionsOfHel
@@ -827,6 +846,7 @@ library
       Marvel.Minion.Minions.MisterKnife
       Marvel.Minion.Minions.Modok
       Marvel.Minion.Minions.Monster
+      Marvel.Minion.Minions.Morlun
       Marvel.Minion.Minions.NebulaMinion
       Marvel.Minion.Minions.PrivateSecuritySpecialist
       Marvel.Minion.Minions.Prowler
@@ -840,9 +860,11 @@ library
       Marvel.Minion.Minions.SmMysterio
       Marvel.Minion.Minions.SmSandman
       Marvel.Minion.Minions.SmVenomGoblin
+      Marvel.Minion.Minions.Solus
       Marvel.Minion.Minions.SpacePirates
       Marvel.Minion.Minions.Taskmaster
       Marvel.Minion.Minions.Terminatrix
+      Marvel.Minion.Minions.TheGreenGobbler
       Marvel.Minion.Minions.TheHood
       Marvel.Minion.Minions.TheLizard
       Marvel.Minion.Minions.TheSleeper
@@ -855,6 +877,7 @@ library
       Marvel.Minion.Minions.TyrannosaurusRex
       Marvel.Minion.Minions.UltimateBioServant
       Marvel.Minion.Minions.UltronNemesis
+      Marvel.Minion.Minions.Verna
       Marvel.Minion.Minions.Vulture
       Marvel.Minion.Minions.Warbringer
       Marvel.Minion.Minions.WeaponsRunner
@@ -892,6 +915,7 @@ library
       Marvel.Obligation.Obligations.HomeByDawn
       Marvel.Obligation.Obligations.InferiorityComplex
       Marvel.Obligation.Obligations.InnerDemons
+      Marvel.Obligation.Obligations.IReallyWantAHotDog
       Marvel.Obligation.Obligations.KeepingSecrets
       Marvel.Obligation.Obligations.LegalWork
       Marvel.Obligation.Obligations.LossOfControl
@@ -975,6 +999,7 @@ library
       Marvel.SideScheme.SideSchemes.Hela
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.HitSquad
+      Marvel.SideScheme.SideSchemes.HuntingTheSpiderTotems
       Marvel.SideScheme.SideSchemes.HydraPatrol
       Marvel.SideScheme.SideSchemes.HydraPrison
       Marvel.SideScheme.SideSchemes.HydraReinforcements
@@ -992,6 +1017,7 @@ library
       Marvel.SideScheme.SideSchemes.MarkedForDeath
       Marvel.SideScheme.SideSchemes.MassChaos
       Marvel.SideScheme.SideSchemes.MothersOrders
+      Marvel.SideScheme.SideSchemes.NefariousTrap
       Marvel.SideScheme.SideSchemes.OpenTheDarkDimension
       Marvel.SideScheme.SideSchemes.OscorpManufacturing
       Marvel.SideScheme.SideSchemes.Overrun
@@ -1111,6 +1137,7 @@ library
       Marvel.Support.Supports.TeamBuildingExercise
       Marvel.Support.Supports.TeamTraining
       Marvel.Support.Supports.TheBifrost
+      Marvel.Support.Supports.TheDailyBeagle
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheNightNurse
       Marvel.Support.Supports.TheTriskellion
@@ -1157,6 +1184,7 @@ library
       Marvel.Treachery.Treacheries.Explosion
       Marvel.Treachery.Treacheries.FalseAlarm
       Marvel.Treachery.Treacheries.FanTheFlames
+      Marvel.Treachery.Treacheries.FeastOnThis
       Marvel.Treachery.Treacheries.FullAuto
       Marvel.Treachery.Treacheries.GangUp
       Marvel.Treachery.Treacheries.GetWrecked
@@ -1285,6 +1313,7 @@ library
       Marvel.Upgrade.Upgrades.CaptainAmericasShield
       Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet
       Marvel.Upgrade.Upgrades.CargoHold
+      Marvel.Upgrade.Upgrades.CartoonPhysics
       Marvel.Upgrade.Upgrades.ChanceEncounter
       Marvel.Upgrade.Upgrades.CivicDuty
       Marvel.Upgrade.Upgrades.CloakOfLevitation
@@ -1349,6 +1378,7 @@ library
       Marvel.Upgrade.Upgrades.HonedTechnique
       Marvel.Upgrade.Upgrades.HonoraryAvenger
       Marvel.Upgrade.Upgrades.HonoraryGuardian
+      Marvel.Upgrade.Upgrades.HugeWoodenHammer
       Marvel.Upgrade.Upgrades.HydraCampaign
       Marvel.Upgrade.Upgrades.HyperPerception
       Marvel.Upgrade.Upgrades.HyperThrusters
@@ -1379,6 +1409,8 @@ library
       Marvel.Upgrade.Upgrades.NavigationColumn
       Marvel.Upgrade.Upgrades.NervesOfSteel
       Marvel.Upgrade.Upgrades.NornStone
+      Marvel.Upgrade.Upgrades.OrganicWebbing
+      Marvel.Upgrade.Upgrades.Overwatch
       Marvel.Upgrade.Upgrades.PantherClaws
       Marvel.Upgrade.Upgrades.ParticleCannon
       Marvel.Upgrade.Upgrades.Photon
@@ -1442,6 +1474,7 @@ library
       Marvel.Upgrade.Upgrades.VineSpikes
       Marvel.Upgrade.Upgrades.VisionsCape
       Marvel.Upgrade.Upgrades.WarlocksCape
+      Marvel.Upgrade.Upgrades.WarriorOfTheGreatWeb
       Marvel.Upgrade.Upgrades.WaspsHelmet
       Marvel.Upgrade.Upgrades.WeaponsMaster
       Marvel.Upgrade.Upgrades.WebbedUp
@@ -1667,6 +1700,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.RocketRaccoonPackSpec
       Marvel.Aspect.ScarletWitchPackSpec
       Marvel.Aspect.SinisterShieldSpec
+      Marvel.Aspect.SpiderHamPackSpec
       Marvel.Aspect.StarLordBasicSpec
       Marvel.Aspect.StarLordPackSpec
       Marvel.Aspect.ThorPackSpec
@@ -1734,6 +1768,8 @@ test-suite MarvelChampions-test
       Marvel.Encounter.SinisterSixSpec
       Marvel.Encounter.SinisterTechSpec
       Marvel.Encounter.SpectrumNemesisSpec
+      Marvel.Encounter.SpiderHamInheritorsSpec
+      Marvel.Encounter.SpiderHamNemesisSpec
       Marvel.Encounter.StarLordNemesisSpec
       Marvel.Encounter.TaskmasterSpec
       Marvel.Encounter.ThanosSpec
@@ -1786,6 +1822,8 @@ test-suite MarvelChampions-test
       Marvel.Hero.ScarletWitchSpec
       Marvel.Hero.SheHulkSpec
       Marvel.Hero.SpectrumSpec
+      Marvel.Hero.SpiderHamSignatureSpec
+      Marvel.Hero.SpiderHamSpec
       Marvel.Hero.SpiderManSpec
       Marvel.Hero.SpiderWomanSpec
       Marvel.Hero.StarLordSignatureSpec
@@ -1836,6 +1874,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.SetMechanicsSpec
       Marvel.Rules.SinisterMotivesLogSpec
       Marvel.Rules.SmokeMonitorSpec
+      Marvel.Rules.SpiderHamMechanicsSpec
       Marvel.Rules.SteadyMinionSpec
       Marvel.Rules.SupportHeldEventsSpec
       Marvel.Rules.SurgeSpec

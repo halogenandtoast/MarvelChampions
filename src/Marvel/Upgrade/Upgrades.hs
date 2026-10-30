@@ -258,3 +258,10 @@ import Marvel.Upgrade.Upgrades.PhotonBlasters as X
 import Marvel.Upgrade.Upgrades.PropulsionJets as X
 
 import Marvel.Upgrade.Upgrades.Ingenuity as X
+
+-- Spider-Ham
+import Marvel.Upgrade.Upgrades.CartoonPhysics as X
+import Marvel.Upgrade.Upgrades.HugeWoodenHammer as X
+import Marvel.Upgrade.Upgrades.OrganicWebbing as X
+import Marvel.Upgrade.Upgrades.Overwatch as X
+import Marvel.Upgrade.Upgrades.WarriorOfTheGreatWeb as X

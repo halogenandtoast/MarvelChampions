@@ -260,6 +260,11 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard photonBlasters
   , SomeUpgradeCard propulsionJets
   , SomeUpgradeCard ingenuity
+  , SomeUpgradeCard cartoonPhysics
+  , SomeUpgradeCard hugeWoodenHammer
+  , SomeUpgradeCard organicWebbing
+  , SomeUpgradeCard overwatch
+  , SomeUpgradeCard warriorOfTheGreatWeb
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

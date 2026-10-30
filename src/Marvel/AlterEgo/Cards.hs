@@ -75,6 +75,7 @@ allAlterEgoCards =
   , ririWilliamsVersion1
   , ririWilliamsVersion2
   , ririWilliamsVersion3
+  , peterPorker
   ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -260,3 +261,9 @@ ririWilliamsVersion2 = alterEgo "29002b" "Riri Williams" [Genius]
 
 ririWilliamsVersion3 :: CardDef
 ririWilliamsVersion3 = alterEgo "29003b" "Riri Williams" [Genius]
+
+
+-- Spider-Ham
+
+peterPorker :: CardDef
+peterPorker = alterEgo "30001b" "Peter Porker" [Cartoon, Civilian]

@@ -190,6 +190,7 @@ allAttachments =
   , rollinRollin
   , cyborgTech
   , haywire
+  , gobblerGlider
   ]
 
 attachment ::
@@ -1026,4 +1027,13 @@ cyborgTech = (attachment "29031" "Cyborg Tech" [Tech] [Star] SMSet.IronheartNeme
 haywire :: CardDef
 haywire = (attachment "29038" "Haywire" [] [Boost] SMSet.ZzzaxSet 2)
   { cdUnique = False
+  }
+
+
+-- Spider-Ham
+
+gobblerGlider :: CardDef
+gobblerGlider = (attachment "30027" "Gobbler Glider" [] [Boost, Boost] SMSet.SpiderHamNemesis 1)
+  { cdUnique = False
+  , cdKeywords = fromList [Surge]
   }

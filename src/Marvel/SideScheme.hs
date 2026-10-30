@@ -216,6 +216,8 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard armoredAssault
   , SomeSideSchemeCard ruleByForce
   , SomeSideSchemeCard feedbackLoop
+  , SomeSideSchemeCard nefariousTrap
+  , SomeSideSchemeCard huntingTheSpiderTotems
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

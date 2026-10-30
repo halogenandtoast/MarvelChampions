@@ -373,3 +373,11 @@ import Marvel.Event.Events.GoAllOut as X
 import Marvel.Event.Events.PushAhead as X
 
 import Marvel.Event.Events.GoForChampions as X
+
+-- Spider-Ham
+import Marvel.Event.Events.HamItUp as X
+import Marvel.Event.Events.Hogwashed as X
+import Marvel.Event.Events.IDontThinkSo as X
+import Marvel.Event.Events.PetulantPig as X
+import Marvel.Event.Events.SwingingWebPig as X
+import Marvel.Event.Events.EvenTheOdds as X

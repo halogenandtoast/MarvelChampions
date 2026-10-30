@@ -351,6 +351,12 @@ allEvents = fromList $ map
   , SomeEventCard goAllOut
   , SomeEventCard pushAhead
   , SomeEventCard goForChampions
+  , SomeEventCard hamItUp
+  , SomeEventCard hogwashed
+  , SomeEventCard iDontThinkSo
+  , SomeEventCard petulantPig
+  , SomeEventCard swingingWebPig
+  , SomeEventCard evenTheOdds
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

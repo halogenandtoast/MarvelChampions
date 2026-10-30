@@ -198,3 +198,10 @@ import Marvel.Ally.Allies.BombshellLanaBaumgartner as X
 import Marvel.Ally.Allies.WaspNadiaVanDyneIronheart as X
 
 import Marvel.Ally.Allies.PinpointQureshiGupta as X
+
+-- Spider-Ham
+import Marvel.Ally.Allies.CaptainAmericat as X
+import Marvel.Ally.Allies.LadySpider as X
+import Marvel.Ally.Allies.SpiderManPavitrPrabhakar as X
+import Marvel.Ally.Allies.ScarletSpider as X
+import Marvel.Ally.Allies.SpDr as X

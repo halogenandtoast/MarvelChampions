@@ -217,6 +217,15 @@ allMinions =
   , armadillo
   , luciaVonBardas
   , zzzax
+  , theGreenGobbler
+  , bora
+  , brix
+  , daemos
+  , jennix
+  , karn
+  , morlun
+  , solus
+  , verna
   ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -1196,5 +1205,53 @@ luciaVonBardas = (minion "29030" "Lucia von Bardas" [Criminal, Cyborg, Elite] [B
 
 zzzax :: CardDef
 zzzax = (minion "29037" "Zzzax" [Criminal] [Star] SMSet.ZzzaxSet 1)
+  { cdUnique = True
+  }
+
+
+-- Spider-Ham
+
+theGreenGobbler :: CardDef
+theGreenGobbler = (minion "30026" "The Green Gobbler" [Cartoon, Criminal] [Boost, Boost, Boost] SMSet.SpiderHamNemesis 1)
+  { cdUnique = True
+  }
+
+bora :: CardDef
+bora = (minion "30031" "Bora" [Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+brix :: CardDef
+brix = (minion "30032" "Brix" [Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+daemos :: CardDef
+daemos = (minion "30033" "Daemos" [Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+jennix :: CardDef
+jennix = (minion "30034" "Jennix" [Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+karn :: CardDef
+karn = (minion "30035" "Karn" [Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+morlun :: CardDef
+morlun = (minion "30036" "Morlun" [Elite, Inheritor] [Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+solus :: CardDef
+solus = (minion "30037" "Solus" [Elite, Inheritor] [Boost, Boost, Boost] SMSet.Inheritors 1)
+  { cdUnique = True
+  }
+
+verna :: CardDef
+verna = (minion "30038" "Verna" [Elite, Inheritor] [Boost, Boost] SMSet.Inheritors 1)
   { cdUnique = True
   }

@@ -180,3 +180,7 @@ import Marvel.SideScheme.SideSchemes.ArmoredAssault as X
 import Marvel.SideScheme.SideSchemes.RuleByForce as X
 
 import Marvel.SideScheme.SideSchemes.FeedbackLoop as X
+
+-- Spider-Ham
+import Marvel.SideScheme.SideSchemes.NefariousTrap as X
+import Marvel.SideScheme.SideSchemes.HuntingTheSpiderTotems as X

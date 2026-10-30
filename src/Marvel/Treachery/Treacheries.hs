@@ -208,3 +208,6 @@ import Marvel.Treachery.Treacheries.ToughItOut as X
 import Marvel.Treachery.Treacheries.PoliticalRetribution as X
 
 import Marvel.Treachery.Treacheries.Zzzap as X
+
+-- Spider-Ham
+import Marvel.Treachery.Treacheries.FeastOnThis as X

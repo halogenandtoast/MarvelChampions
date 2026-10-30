@@ -143,6 +143,8 @@ data EncounterSet
   | ZzzaxSet
   | NovaNemesis
   | Armadillo
+  | SpiderHamNemesis
+  | Inheritors
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -206,6 +208,7 @@ modularSets =
   , WhispersOfParanoia
   , Armadillo
   , ZzzaxSet
+  , Inheritors
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -244,6 +247,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "29001" -> IronheartNemesis
   "29002" -> IronheartNemesis
   "29003" -> IronheartNemesis
+  "30001" -> SpiderHamNemesis
   "28001" -> NovaNemesis
   cCode ->
     error $
