@@ -93,3 +93,6 @@ import Marvel.Obligation.Obligations.PermanentlyPhased as X
 import Marvel.Obligation.Obligations.MutantGenesis as X
 
 import Marvel.Obligation.Obligations.MutantGenesisCampaign as X
+
+-- Cyclops
+import Marvel.Obligation.Obligations.LostVisor as X

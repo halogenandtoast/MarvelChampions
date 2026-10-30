@@ -37,6 +37,7 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
+import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
 import Marvel.Window (windowMatches)
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility, GeneratedResources))
@@ -819,11 +820,16 @@ runActiveCost msg activeCost = runQueueT $ case msg of
         payer = activeCostIdentityId activeCost
         payment = activeCostPayment activeCost <> x
       for_ (reverse $ activeCostSpentCards activeCost) discardCard
+      -- Interrupts to spending resolve before responses to having spent a card.
+      case activeCostTarget activeCost of
+        ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card ->
+          cyclopsResourceSpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
+        _ -> pure ()
       -- "after you spend this card" (Pym Particles), before what was paid for resolves
       for_ (reverse $ activeCostSpentCards activeCost) \card ->
         afterSpent payer (fromMaybe payer $ pcController card <|> pcOwner card) (activeCostSpentCards activeCost) card
       case activeCostTarget activeCost of
-        ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card ->
+        ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card -> do
           mutantEnergySpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
         _ -> pure ()
       disableActiveCost ident

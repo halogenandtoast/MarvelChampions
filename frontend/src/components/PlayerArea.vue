@@ -36,7 +36,7 @@ const stats = computed(() =>
     ] as const
   ).filter(([, v]) => v !== null && v !== undefined),
 )
-const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? [])])
+const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])])
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))

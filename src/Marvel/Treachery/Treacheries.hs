@@ -217,3 +217,6 @@ import Marvel.Treachery.Treacheries.EnergyDrain as X
 import Marvel.Treachery.Treacheries.Slammed as X
 
 import Marvel.Treachery.Treacheries.MutantGenesis as X
+
+-- Cyclops
+import Marvel.Treachery.Treacheries.ConcussiveForce as X

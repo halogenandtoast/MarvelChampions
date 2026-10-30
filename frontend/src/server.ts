@@ -36,6 +36,7 @@ export interface SupportView extends CardView {
 }
 
 export interface AttachmentView extends CardView {
+  facedownCards?: number
   crisis?: boolean
   damage?: number
   counters?: number

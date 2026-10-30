@@ -201,3 +201,6 @@ import Marvel.Minion.Minions.WhiteQueenMutantGenesis as X
 import Marvel.Minion.Minions.HellfirePawn as X
 
 import Marvel.Minion.Minions.MutantGenesis as X
+
+-- Cyclops
+import Marvel.Minion.Minions.MisterSinister as X

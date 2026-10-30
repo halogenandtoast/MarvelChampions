@@ -307,3 +307,16 @@ import Marvel.Upgrade.Upgrades.AttackTraining as X
 import Marvel.Upgrade.Upgrades.Gatekeeper as X
 
 import Marvel.Upgrade.Upgrades.MutantGenesisCampaign as X
+
+-- Cyclops
+import Marvel.Upgrade.Upgrades.RubyQuartzVisor as X
+import Marvel.Upgrade.Upgrades.FieldCommander as X
+import Marvel.Upgrade.Upgrades.ExploitWeakness as X
+import Marvel.Upgrade.Upgrades.PracticedDefense as X
+import Marvel.Upgrade.Upgrades.PriorityTarget as X
+import Marvel.Upgrade.Upgrades.DangerRoomTraining as X
+import Marvel.Upgrade.Upgrades.CoordinatedAttack as X
+import Marvel.Upgrade.Upgrades.Marked as X
+import Marvel.Upgrade.Upgrades.Befuddle as X
+import Marvel.Upgrade.Upgrades.PinnedDown as X
+import Marvel.Upgrade.Upgrades.HonoraryXMen as X

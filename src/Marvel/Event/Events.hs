@@ -417,3 +417,9 @@ import Marvel.Event.Events.Airwalk as X
 import Marvel.Event.Events.QuickShift as X
 
 import Marvel.Event.Events.TeamStrike as X
+
+-- Cyclops
+import Marvel.Event.Events.FullBlast as X
+import Marvel.Event.Events.RicochetBeam as X
+import Marvel.Event.Events.TacticalBrilliance as X
+import Marvel.Event.Events.GameTime as X

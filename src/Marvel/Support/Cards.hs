@@ -30,7 +30,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ mgMetroPD
+  [ utopia, dangerRoom
+  , mgMetroPD
   , alphaFlightStation
   , auntMay
   , superhumanLawDivision
@@ -592,3 +593,12 @@ xmansion = (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
 
 mgMetroPD :: CardDef
 mgMetroPD = (basicSupport "32171b" "Metro P.D." 0 [MGTrait.Persona] [MGResource.Mental]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdKeywords = fromList [MGKeyword.Permanent]}
+
+
+-- Cyclops
+
+utopia :: CardDef
+utopia = (basicSupport "33020" "Utopia" 2 [Location, XMen] [Physical]) { cdDeckLimit = Just 1, cdUnique = True }
+
+dangerRoom :: CardDef
+dangerRoom = (basicSupport "33021" "Danger Room" 2 [Location, XMen] [Energy]) { cdDeckLimit = Just 1, cdUnique = True }

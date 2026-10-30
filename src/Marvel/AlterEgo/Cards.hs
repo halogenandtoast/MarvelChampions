@@ -1,6 +1,11 @@
 module Marvel.AlterEgo.Cards where
 
 import Marvel.Prelude
+import Marvel.Matchers
+import Marvel.Resource
+import Marvel.Keyword
+import Marvel.EncounterSet
+import Marvel.Boost
 
 import Marvel.Cost.Types (Cost (NoCost))
 
@@ -13,7 +18,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ peterParker
+    [ scottSummers
+  , peterParker
     , carolDanvers
     , jenniferWalters
     , tonyStark
@@ -292,3 +298,9 @@ kittyPryde :: CardDef
 kittyPryde = (alterEgo "32030b" "Kitty Pryde" [Mutant])
   { cdUnique = True
   }
+
+
+-- Cyclops
+
+scottSummers :: CardDef
+scottSummers = (alterEgo "33001b" "Scott Summers" [Mutant]) { cdDeckLimit = Just 1, cdUnique = True }

@@ -38,7 +38,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
+  [ rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
+  , mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
   , smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
   , spiderTracer
   , webShooter
@@ -1680,3 +1681,39 @@ mgMentorship = (basicUpgrade "32194" "Mentorship" 0 [MGTrait.Skill, MGTrait.Tact
 
 mgFortitude :: CardDef
 mgFortitude = (basicUpgrade "32195" "Fortitude" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+
+-- Cyclops
+
+rubyQuartzVisor :: CardDef
+rubyQuartzVisor = (identityUpgrade "33003" "Ruby Quartz Visor" 2 [Item] [Physical]) { cdDeckLimit = Just 1, cdUnique = True }
+
+fieldCommander :: CardDef
+fieldCommander = (identityUpgrade "33004" "Field Commander" 1 [Title] [Physical]) { cdDeckLimit = Just 1, cdUnique = True }
+
+exploitWeakness :: CardDef
+exploitWeakness = (identityUpgrade "33005" "Exploit Weakness" 1 [Tactic] [Physical]) { cdDeckLimit = Just 2, cdKeywords = fromList [Temporary], cdLimit = Just (MaxPerEnemy 1) }
+
+practicedDefense :: CardDef
+practicedDefense = (identityUpgrade "33006" "Practiced Defense" 0 [Tactic] [Energy]) { cdDeckLimit = Just 2, cdKeywords = fromList [Temporary], cdLimit = Just (MaxPerEnemy 1) }
+
+priorityTarget :: CardDef
+priorityTarget = (identityUpgrade "33007" "Priority Target" 0 [Tactic] [Mental]) { cdDeckLimit = Just 2, cdKeywords = fromList [Temporary], cdLimit = Just (MaxPerEnemy 1) }
+
+dangerRoomTraining :: CardDef
+dangerRoomTraining = (upgrade "33015" "Danger Room Training" 1 [Training] [Mental] Leadership) { cdDeckLimit = Just 3 }
+
+coordinatedAttack :: CardDef
+coordinatedAttack = (upgrade "33016" "Coordinated Attack" 0 [Tactic] [Physical] Leadership) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerEnemy 1) }
+
+marked :: CardDef
+marked = (upgrade "33032" "Marked" 0 [Tactic] [Physical] Aggression) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerEnemy 1) }
+
+befuddle :: CardDef
+befuddle = (upgrade "33033" "Befuddle" 0 [Tactic] [Physical] Justice) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerEnemy 1) }
+
+pinnedDown :: CardDef
+pinnedDown = (upgrade "33034" "Pinned Down" 0 [Tactic] [Physical] Protection) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerEnemy 1) }
+
+honoraryXMen :: CardDef
+honoraryXMen = (basicUpgrade "33035" "Honorary X-Men" 0 [Title] [Physical]) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerCharacter 1), cdCriteria = SelfMatches (IdentityWithTrait XMen) }

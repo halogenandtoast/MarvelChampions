@@ -38,7 +38,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
+  [ geneticManipulation
+  , mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
   , smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
   , unbridledAmbition
   , breakinAndTakin
@@ -1448,3 +1449,9 @@ mgBastionsMachinations = (smSideSchemeDef "32169" ("Bastion's Machinations") MGS
   , cdAmplify = 1
   , cdKeywords = fromList [MGKeyword.Victory 1]
   }
+
+
+-- Cyclops
+
+geneticManipulation :: CardDef
+geneticManipulation = (sideScheme "33029" "Genetic Manipulation" [Boost, Boost, Boost] CyclopsNemesis 1) { cdAmplify = 1 }

@@ -1,6 +1,7 @@
 module Marvel.Minion.Cards where
 
 import Marvel.Keyword qualified as SpdrKeyword
+import Marvel.Resource
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
@@ -37,7 +38,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
+      [ misterSinister
+  , mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
   , madameMasque
       , hydraMercenary
       , sandman
@@ -1491,3 +1493,9 @@ mgBastion = (smMinionDef "32167" ("Bastion") MGSet.FuturePast 1)
   , cdBoostIcons = [MGBoost.Star]
   , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Villainous, MGKeyword.Victory 1]
   }
+
+
+-- Cyclops
+
+misterSinister :: CardDef
+misterSinister = (minion "33028" "Mister Sinister" [Elite, Marauder] [Boost, Boost, Star] CyclopsNemesis 1) { cdUnique = True, cdKeywords = fromList [Stalwart, Toughness, Villainous] }

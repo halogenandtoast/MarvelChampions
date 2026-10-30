@@ -235,3 +235,11 @@ import Marvel.Ally.Allies.ColossusPiotrRasputin as X
 import Marvel.Ally.Allies.MutantGenesisCampaign as X
 
 import Marvel.Ally.Allies.MutantGenesis as X
+
+-- Cyclops
+import Marvel.Ally.Allies.PhoenixJeanGrey as X
+import Marvel.Ally.Allies.Beast as X
+import Marvel.Ally.Allies.Dust as X
+import Marvel.Ally.Allies.Rockslide as X
+import Marvel.Ally.Allies.Blindfold as X
+import Marvel.Ally.Allies.Angel as X

@@ -35,6 +35,7 @@ import Marvel.Identity (PlayerIdentity)
 import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Name
 import Marvel.PlayerCard
+import Marvel.Trait qualified as Trait
 
 data DeckList = DeckList
   { hero :: CardCode
@@ -87,10 +88,24 @@ deckBuildingError :: DeckList -> Maybe Text
 deckBuildingError d
   | not (aspectsBalanced d) = Just "error.unbalancedAspects"
   | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
+  | toBaseCardCode d.hero == CardCode "33001" && not cyclopsAspects = Just "error.cyclopsAspects"
   | not withinCopyLimits = Just "error.deckCopyLimit"
   | not teamUpIdentity = Just "error.teamUpIdentity"
   | otherwise = Nothing
  where
+  -- Constant Training changes only which allies can be included, not the
+  -- ordinary single-aspect rule for Cyclops's other cards.
+  cyclopsAspects = case map T.toLower d.aspects of
+    [] -> all (cyclopsCardAllowed Nothing) includedDefs
+    [chosen] | chosen `elem` ["aggression", "justice", "leadership", "protection"] ->
+      all (cyclopsCardAllowed $ Just chosen) includedDefs
+    _ -> False
+  includedDefs = [def | (def, n) <- defs, n > 0]
+  cyclopsCardAllowed chosen def = case cdAspect def of
+    Nothing -> canonicalCardCode def `elem` ["33002", "33003", "33004", "33005", "33006", "33007", "33008", "33009", "33010"]
+    Just Neutral -> True
+    Just aspect -> Just (T.toLower $ tshow aspect) == chosen
+      || (cdCardType def == AllyType && Trait.XMen `member` cdTraits def)
   defs = [(def, n) | (c, n) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards]]
   ofAspect a = sum [n | (def, n) <- defs, cdAspect def == Just a]
   perAspect = map ofAspect [Aggression, Justice, Leadership, Protection]
@@ -258,6 +273,8 @@ starterDecks =
   , ("spdr", DeckList "31001a" ["protection"] $ tally ["31003", "31004", "31004", "31004", "31005", "31005", "31006", "31006", "31007", "31008", "31009", "31010", "31011", "31012", "31013", "31014", "31015", "31016", "31016", "31016", "31017", "31017", "31017", "31018", "31018", "31018", "31019", "31019", "31019", "31020", "31020", "31020", "31021", "31022", "31023", "31023", "31023", "31024", "31024", "31024"])
   , ("colossus", DeckList "32001a" ["protection"] $ tally ["32002", "32003", "32004", "32005", "32006", "32006", "32007", "32007", "32008", "32008", "32008", "32009", "32009", "32010", "32010", "32011", "32012", "32013", "32013", "32013", "32014", "32014", "32014", "32015", "32015", "32015", "32016", "32016", "32016", "32017", "32017", "32017", "32018", "32018", "32019", "32020", "32021", "32022", "32023", "32024"])
   , ("shadowcat", DeckList "32030a" ["aggression"] $ tally ["32031a", "32032", "32033", "32034", "32035", "32036", "32036", "32037", "32037", "32037", "32038", "32038", "32039", "32039", "32040", "32040", "32041", "32042", "32043", "32043", "32043", "32044", "32044", "32044", "32045", "32045", "32045", "32046", "32046", "32046", "32047", "32047", "32048", "32049", "32050", "32051", "32051", "32051", "32052", "32053", "32054"])
+  , ("cyclops", DeckList "33001a" ["leadership"] $ tally ["33002", "33003", "33004", "33005", "33005", "33006", "33006", "33007", "33007", "33008", "33009", "33009", "33010", "33010", "33010", "33011", "33012", "33013", "33014", "33015", "33015", "33015", "33016", "33016", "33016", "33017", "33017", "33017", "33018", "33018", "33019", "33020", "33021", "33022", "33022", "33022", "33023", "33024", "33025", "33026"])
+
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

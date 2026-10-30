@@ -37,7 +37,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ mgReactiveDefense
+    [ lostVisor
+  , mgReactiveDefense
   , mgWarnTheOthers, smFriendsAndFamily
   , affairsOfState
     , legalWork
@@ -429,3 +430,9 @@ mgWarnTheOthers = (smObligationDef "32099" ("Warn the Others") MGSet.ProjectWide
 
 mgReactiveDefense :: CardDef
 mgReactiveDefense = (obligation "32174b" "Reactive Defense" [MGBoost.Boost, MGBoost.Boost]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+
+-- Cyclops
+
+lostVisor :: CardDef
+lostVisor = (obligation "33027" "Lost Visor" [Boost, Boost])

@@ -59,6 +59,8 @@ spec = parallel do
   -- modular one scenario, so every deck and set is still played
   full <- runIO $ isJust <$> lookupEnv "SMOKE_FULL"
   focusHeroes <- runIO $ csvEnv "SMOKE_HEROES"
+  -- Keep unfinished concurrent decks out of both focused cases and the sample.
+  skipHeroes <- runIO $ csvEnv "SMOKE_SKIP_HEROES"
   focusModulars <- runIO $ csvEnv "SMOKE_MODULARS"
   sampleCount <- runIO $ lookupEnv "SMOKE_SAMPLE"
   let focused = not full && (notNull focusHeroes || notNull focusModulars || isJust sampleCount)
@@ -69,7 +71,7 @@ spec = parallel do
       modularName villain modular = show villain <> " with " <> show modular
       campaignName villain n mode = show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode
       scenarios = [(scenarioName villain heroes' difficulty, villain, heroes', difficulty)
-                  | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, difficulty <- [Normal, Expert]]
+                  | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
       campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis], (n, villain) <- zip [0..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
@@ -82,6 +84,7 @@ spec = parallel do
     for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
     for_ focusModulars $ \modular -> unless (any ((== Text.toCaseFold modular) . Text.toCaseFold . Text.pack . show) modularSets) $
       fail $ "Unknown SMOKE_MODULARS set: " <> unpack modular
+    for_ skipHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_SKIP_HEROES starter deck: " <> unpack hero
     explicitSeed <- lookupEnv "SMOKE_SAMPLE_SEED"
     -- Only test selection uses this clock seed; each game's RNG remains fixed.
     seed <- maybe (fromIntegral . (`mod` 2147483647) <$> getMonotonicTimeNSec) (pure . read) explicitSeed

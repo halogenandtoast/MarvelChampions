@@ -33,7 +33,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
+  [ phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
+  , mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
   , blackCatFeliciaHardy
   , spiderWomanJessicaDrew
   , hellcatPatsyWalker
@@ -1196,3 +1197,24 @@ mgWolfsbane = (baseAlly "32092" ("Wolfsbane" <:> "Rahne Sinclair") 2 [] [] Nothi
   , cdKeywords = fromList []
   , cdResources = [(PrintedResource, Wild)]
   }
+
+
+-- Cyclops
+
+phoenixJeanGrey :: CardDef
+phoenixJeanGrey = (identityAlly "33002" ("Phoenix" <:> "Jean Grey") 3 [Psionic, XMen] [Wild]) { cdDeckLimit = Just 1, cdUnique = True }
+
+beast :: CardDef
+beast = (ally "33011" ("Beast" <:> "Hank McCoy") 4 [Genius, XMen] [Mental] Leadership) { cdDeckLimit = Just 1, cdUnique = True }
+
+dust :: CardDef
+dust = (ally "33012" ("Dust" <:> "Sooraya Qadir") 3 [XMen] [Energy] Aggression) { cdDeckLimit = Just 1, cdUnique = True }
+
+rockslide :: CardDef
+rockslide = (ally "33013" ("Rockslide" <:> "Santo Vaccarro") 4 [XMen] [Physical] Protection) { cdDeckLimit = Just 1, cdUnique = True, cdKeywords = fromList [Retaliate 1] }
+
+blindfold :: CardDef
+blindfold = (ally "33014" ("Blindfold" <:> "Ruth Aldine") 3 [Psionic, XMen] [Physical] Justice) { cdDeckLimit = Just 1, cdUnique = True }
+
+angel :: CardDef
+angel = (basicAlly "33019" ("Angel" <:> "Warren Worthington III") 3 [Aerial, XMen] [Mental]) { cdDeckLimit = Just 1, cdUnique = True }

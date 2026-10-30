@@ -1,4 +1,7 @@
 {
+  "opticBlast": "Optic Blast",
+  "constantTraining": "Constant Training",
+  "effectiveLeadership": "Effective Leadership",
   "choosePrintedX": "Choose X before cost modifiers",
   "chooseXAmount": "X = {count}",
   "cancelPayment": "Cancel payment",

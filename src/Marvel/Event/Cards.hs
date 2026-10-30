@@ -1,6 +1,7 @@
 module Marvel.Event.Cards where
 
 import Marvel.Keyword
+import Marvel.Boost
 import Marvel.EncounterSet
 import Marvel.Prelude
 
@@ -27,7 +28,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ backflip
+  [ fullBlast, ricochetBeam, tacticalBrilliance, gameTime
+  , backflip
   , enhancedSpiderSense
   , swingingWebKick
   , crisisInterdiction
@@ -865,7 +867,7 @@ invulnerability = basicEvent "06021" "Invulnerability" 3 HeroAction [Superpower]
 -- | "Exhaust an ally you control" is part of its cost.
 teamwork :: CardDef
 teamwork =
-  (event "06032" "Teamwork" 0 HeroInterrupt [Tactic] [Energy] Leadership)
+  reprintedAs ["33017"] $ (event "06032" "Teamwork" 0 HeroInterrupt [Tactic] [Energy] Leadership)
     { cdResponseWindow = Just (WindowOneOf [MakesBasicAttack When You, MakesBasicThwart When You])
     , cdCriteria = SelfMatches You
     , cdAbilityCost = ExhaustAlliesCost 1 (Just 1)
@@ -2511,3 +2513,18 @@ teamStrike = (event "32045" "Team Strike" 1 HeroAction [Attack] [Energy] Aggress
   , cdCriteria = SelfMatches (IdentityWithTrait XMen)
   , cdAbilityCost = ExhaustCost <> ExhaustAlliesWithTraitCost XMen 0 Nothing
   }
+
+
+-- Cyclops
+
+fullBlast :: CardDef
+fullBlast = (identityEvent "33008" "Full Blast" 1 HeroInterrupt [Superpower] [Physical]) { cdDeckLimit = Just 1, cdResponseWindow = Just (UsesAbility When You 1), cdAbilityCost = ExhaustCost, cdCriteria = SelfMatches (IdentityWithTitle "Cyclops") }
+
+ricochetBeam :: CardDef
+ricochetBeam = (identityEvent "33009" "Ricochet Beam" 2 HeroAction [Attack, Superpower] [Energy]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack], cdCriteria = EnemyExists AttackableEnemy }
+
+tacticalBrilliance :: CardDef
+tacticalBrilliance = (identityEvent "33010" "Tactical Brilliance" 2 HeroAction [Thwart] [Mental]) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = SchemeExists ThwartableScheme }
+
+gameTime :: CardDef
+gameTime = (basicEvent "33022" "Game Time" 0 HeroAction [Tactic] [Energy]) { cdDeckLimit = Just 3, cdCriteria = AllyExists (AllyWithUpgrade (UpgradeWithTrait Training)) }

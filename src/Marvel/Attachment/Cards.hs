@@ -40,7 +40,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ mgMagnetosPower
+      [ geneTherapy
+  , mgMagnetosPower
   , mgAdamantiumClaws, mgAnimalFerocity, mgHomoSuperior, mgGauntletBeam, mgLearningAI, mgAdaptiveArmor, mgEnergyBarrier, mgTargetedForElimination, mgUnitUpgrade, mgStunBeam, mgPhysicalStrain, mgMagnetosHelmet, mgMagnetosArmor, mgMagneticBubble, mgWrappedInMetal, mgNanoSentinelTech, smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
   , establishedDominance
       , theHoodsMantle
@@ -1197,3 +1198,9 @@ mgNanoSentinelTech = (smAttachmentDef "32170" ("Nano-Sentinel Tech") MGSet.Futur
 
 mgMagnetosPower :: CardDef
 mgMagnetosPower = (attachment "32175b" "Magneto's Power" [MGTrait.Condition] [] MGSet.MutantGenesisCampaign 1) {cdKeywords = fromList [MGKeyword.Permanent]}
+
+
+-- Cyclops
+
+geneTherapy :: CardDef
+geneTherapy = (attachment "33030" "Gene Therapy" [] [Boost, Boost] CyclopsNemesis 2)

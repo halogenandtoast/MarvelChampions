@@ -314,7 +314,7 @@ data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, n
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text}
+data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -603,7 +603,7 @@ gameView seesHand g = do
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , obligations =
-            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef)
+            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards)
             | a <- map toAttrs (HashMap.elems (gameObligations g))
             , a.obligationOwner == Just (toId p)
             ]

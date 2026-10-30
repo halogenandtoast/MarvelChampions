@@ -157,3 +157,6 @@ import Marvel.Attachment.Attachments.TelepathicRestraint as X
 import Marvel.Attachment.Attachments.MutantGenesis as X
 
 import Marvel.Attachment.Attachments.MutantGenesisCampaign as X
+
+-- Cyclops
+import Marvel.Attachment.Attachments.GeneTherapy as X

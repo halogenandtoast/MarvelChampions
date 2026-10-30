@@ -1,6 +1,7 @@
 module Marvel.Treachery.Cards where
 
 import Marvel.EncounterSet qualified as SpdrSet
+import Marvel.Resource
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
@@ -33,7 +34,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
+  [ concussiveForce
+  , mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
   , fieldRecruitment
   , upperHand
   , hardToKeepDown
@@ -1415,3 +1417,9 @@ mgZealForTheCause = (smTreacheryDef "32164" ("Zeal for the Cause") MGSet.Acolyte
   , cdBoostIcons = [MGBoost.Boost]
   , cdKeywords = fromList []
   }
+
+
+-- Cyclops
+
+concussiveForce :: CardDef
+concussiveForce = (treachery "33031" "Concussive Force" [Boost, Boost] CyclopsNemesis 1)

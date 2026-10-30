@@ -3,7 +3,8 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Acolyte
+  = Marauder
+  | Acolyte
   | Hellfire
   | Magnetic
   | Mission

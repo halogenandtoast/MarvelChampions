@@ -1,6 +1,10 @@
 module Marvel.Hero.Cards where
 
 import Marvel.Prelude
+import Marvel.Matchers
+import Marvel.Resource
+import Marvel.EncounterSet
+import Marvel.Boost
 
 import Marvel.Cost.Types (Cost (NoCost))
 
@@ -14,7 +18,8 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ spiderMan
+  [ cyclopsHero
+  , spiderMan
   , captainMarvel
   , sheHulk
   , ironMan
@@ -318,3 +323,9 @@ shadowcatHero :: CardDef
 shadowcatHero = (hero "32030a" "Shadowcat" [XMen])
   { cdUnique = True
   }
+
+
+-- Cyclops
+
+cyclopsHero :: CardDef
+cyclopsHero = (hero "33001a" "Cyclops" [XMen]) { cdDeckLimit = Just 1, cdUnique = True }

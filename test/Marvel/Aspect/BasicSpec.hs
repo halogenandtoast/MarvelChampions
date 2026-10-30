@@ -2,6 +2,7 @@ module Marvel.Aspect.BasicSpec (spec) where
 
 import Marvel.Ability.Types (AbilityType (Action, HeroAction))
 import Marvel.Villain.Types (villainStunned)
+import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
 isAbilityOfType :: (IsRef a) => a -> AbilityType -> Choice -> Bool
@@ -57,6 +58,9 @@ spec = describe "Basic" do
         choose "Nick Fury's forced response" (isAbilityOf (allyId nick))
         choose "draw 3 cards" (isLabel (countLabel "drawCards" 3))
         length <$> handOf p `shouldReturn` 3
+        -- Keep the full round deterministic: an unrelated shuffled encounter
+        -- must not end Rhino's game before Nick Fury's round-ending response.
+        void $ setEncounterDeck (replicate 4 Treacheries.advance) []
         toNextTurn
         alliesWith "01084" `shouldReturn` []
         map toCardCode <$> discardOf p >>= (`shouldSatisfy` elem "01084")

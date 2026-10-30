@@ -139,3 +139,7 @@ import Marvel.Support.Supports.KittysRoom as X
 import Marvel.Support.Supports.Xmansion as X
 
 import Marvel.Support.Supports.MutantGenesisCampaign as X
+
+-- Cyclops
+import Marvel.Support.Supports.Utopia as X
+import Marvel.Support.Supports.DangerRoom as X
