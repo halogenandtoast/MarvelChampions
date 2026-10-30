@@ -9,6 +9,11 @@ import Marvel.Boost qualified as SMBoost
 import Data.HashSet (singleton)
 import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.EncounterSet (EncounterSet (Bulldozer, Piledriver, Thunderball, Wrecker))
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -23,7 +28,7 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
-  [ smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
+  [ mgSabretooth60, mgSabretooth61, mgSabretooth62, mgSentinel84, mgSentinel85, mgSentinel86, mgMasterMold09, mgMasterMold10, mgMasterMold11, mgAvalancheA, mgAvalancheB, mgBlobA, mgBlobB, mgPyroA, mgPyroB, mgToadA, mgToadB, mgMagneto38, mgMagneto39, mgMagneto40, smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
   , theHood1
   , theHood2
   , theHood3
@@ -744,4 +749,165 @@ smVenomGoblin3 = (smVillainDef "27115" "Venom Goblin" SMSet.VenomGoblin 1)
   , cdHazards = 0
   , cdAcceleration = 0
   , cdAmplify = 0
+  }
+
+-- Mutant Genesis scenario definitions
+mgSabretooth60 :: CardDef
+mgSabretooth60 = (smVillainDef "32060" ("Sabretooth") MGSet.Sabretooth 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgSabretooth61 :: CardDef
+mgSabretooth61 = (smVillainDef "32061" ("Sabretooth") MGSet.Sabretooth 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness]
+  }
+
+mgSabretooth62 :: CardDef
+mgSabretooth62 = (smVillainDef "32062" ("Sabretooth") MGSet.Sabretooth 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Retaliate 1]
+  }
+
+mgSentinel84 :: CardDef
+mgSentinel84 = (smVillainDef "32084" ("Sentinel") MGSet.ProjectWideawake 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness]
+  }
+
+mgSentinel85 :: CardDef
+mgSentinel85 = (smVillainDef "32085" ("Sentinel") MGSet.ProjectWideawake 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Steady]
+  }
+
+mgSentinel86 :: CardDef
+mgSentinel86 = (smVillainDef "32086" ("Sentinel") MGSet.ProjectWideawake 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Stalwart]
+  }
+
+mgMasterMold09 :: CardDef
+mgMasterMold09 = (smVillainDef "32109" ("Master Mold") MGSet.MasterMold 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Stalwart]
+  }
+
+mgMasterMold10 :: CardDef
+mgMasterMold10 = (smVillainDef "32110" ("Master Mold") MGSet.MasterMold 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Stalwart]
+  }
+
+mgMasterMold11 :: CardDef
+mgMasterMold11 = (smVillainDef "32111" ("Master Mold") MGSet.MasterMold 0)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Stalwart]
+  }
+
+mgAvalancheA :: CardDef
+mgAvalancheA = (smVillainDef "32121a" ("Avalanche") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgAvalancheB :: CardDef
+mgAvalancheB = (smVillainDef "32121b" ("Avalanche") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgBlobA :: CardDef
+mgBlobA = (smVillainDef "32122a" ("Blob") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgBlobB :: CardDef
+mgBlobB = (smVillainDef "32122b" ("Blob") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgPyroA :: CardDef
+mgPyroA = (smVillainDef "32123a" ("Pyro") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgPyroB :: CardDef
+mgPyroB = (smVillainDef "32123b" ("Pyro") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgToadA :: CardDef
+mgToadA = (smVillainDef "32124a" ("Toad") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgToadB :: CardDef
+mgToadB = (smVillainDef "32124b" ("Toad") MGSet.MansionAttack 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Victory 2]
+  }
+
+mgMagneto38 :: CardDef
+mgMagneto38 = (smVillainDef "32138" ("Magneto") MGSet.Magneto 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Steady]
+  }
+
+mgMagneto39 :: CardDef
+mgMagneto39 = (smVillainDef "32139" ("Magneto") MGSet.Magneto 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Steady]
+  }
+
+mgMagneto40 :: CardDef
+mgMagneto40 = (smVillainDef "32140" ("Magneto") MGSet.Magneto 0)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Steady]
   }

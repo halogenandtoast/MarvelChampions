@@ -1,7 +1,17 @@
 module Marvel.Support.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.Keyword qualified as SMKeyword
+import Marvel.Keyword
+import Marvel.EncounterSet
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -20,7 +30,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ alphaFlightStation
+  [ mgMetroPD
+  , alphaFlightStation
   , auntMay
   , superhumanLawDivision
   , pepperPotts
@@ -122,6 +133,10 @@ allSupports = fromList $ concatMap
   , auntMayAndUncleBen
   , ejectionProtocol
   , spdrCommand
+  , piotrsStudio
+  , theXjet
+  , kittysRoom
+  , xmansion
   ]
 
 support
@@ -542,3 +557,38 @@ spdrCommand = (identitySupport "31009" "SP//dr Command" 1 [Location] [Mental])
   { cdUnique = False
   , cdDeckLimit = Just 1
   }
+
+-- Mutant Genesis
+
+piotrsStudio :: CardDef
+piotrsStudio = (identitySupport "32003" "Piotr's Studio" 1 [Location] [Mental])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+theXjet :: CardDef
+theXjet = (basicSupport "32020" "The X-Jet" 3 [Vehicle, XMen] [Energy])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+kittysRoom :: CardDef
+kittysRoom = (identitySupport "32033" "Kitty's Room" 1 [Location] [Physical])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+xmansion :: CardDef
+xmansion = (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+mgMetroPD :: CardDef
+mgMetroPD = (basicSupport "32171b" "Metro P.D." 0 [MGTrait.Persona] [MGResource.Mental]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdKeywords = fromList [MGKeyword.Permanent]}

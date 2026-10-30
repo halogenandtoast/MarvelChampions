@@ -363,6 +363,18 @@ allEvents = fromList $ map
   , SomeEventCard repurpose
   , SomeEventCard thwipThwip
   , SomeEventCard limitlessStamina
+  , SomeEventCard madeOfRage
+  , SomeEventCard steelFist
+  , SomeEventCard bulletproofProtector
+  , SomeEventCard armorUp
+  , SomeEventCard powerfulPunch
+  , SomeEventCard mutantProtectors
+  , SomeEventCard shadowAndSteel
+  , SomeEventCard shadowcatSurprise
+  , SomeEventCard phasedStrike
+  , SomeEventCard airwalk
+  , SomeEventCard quickShift
+  , SomeEventCard teamStrike
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

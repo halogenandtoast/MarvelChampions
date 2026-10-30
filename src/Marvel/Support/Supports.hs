@@ -129,3 +129,13 @@ import Marvel.Support.Supports.AuntMayAndUncleBen as X
 import Marvel.Support.Supports.EjectionProtocol as X
 
 import Marvel.Support.Supports.SpdrCommand as X
+
+import Marvel.Support.Supports.PiotrsStudio as X
+
+import Marvel.Support.Supports.TheXjet as X
+
+import Marvel.Support.Supports.KittysRoom as X
+
+import Marvel.Support.Supports.Xmansion as X
+
+import Marvel.Support.Supports.MutantGenesisCampaign as X

@@ -1,5 +1,10 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
@@ -9,6 +14,9 @@ import Marvel.Boost qualified as SMBoost
 
 import Marvel.Ability.Types qualified as Ability
 
+import Marvel.EncounterSet
+import Marvel.Cost.Types
+import Marvel.Window
 import Marvel.Prelude
 
 import Marvel.GameValue.Types (GameValue (PerPlayer))
@@ -30,7 +38,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
+  [ mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
+  , smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
   , spiderTracer
   , webShooter
   , webbedUp
@@ -280,6 +289,17 @@ allUpgrades = fromList $ concatMap
   , spiderTingle
   , unshakable
   , clarityOfPurpose
+  , ironWill
+  , titaniumMuscles
+  , organicSteel
+  , protectiveTraining
+  , solid
+  , phased
+  , acuteControl
+  , intangibleInterference
+  , phasedAndConfused
+  , attackTraining
+  , gatekeeper
   ]
 
 upgrade
@@ -975,7 +995,7 @@ energyDuplication :: CardDef
 energyDuplication = identityUpgrade "21006" "Energy Duplication" 2 [Superpower] [Wild]
 
 readyToRumble :: CardDef
-readyToRumble = limited (MaxPerPlayerUnderAnyControl 1) $ basicUpgrade "21022" "Ready to Rumble" 1 [Condition] [Energy]
+readyToRumble = reprintedAs ["32051"] $ limited (MaxPerPlayerUnderAnyControl 1) $ basicUpgrade "21022" "Ready to Rumble" 1 [Condition] [Energy]
 
 -- Adam Warlock
 
@@ -1519,3 +1539,144 @@ clarityOfPurpose = (upgrade "31029" "Clarity of Purpose" 1 [Condition] [Mental] 
   , cdDeckLimit = Just 3
   , cdLimit = Just (MaxPerCharacter 1)
   }
+
+-- Mutant Genesis
+
+ironWill :: CardDef
+ironWill = (identityUpgrade "32004" "Iron Will" 2 [Superpower] [Mental])
+  { cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+titaniumMuscles :: CardDef
+titaniumMuscles = (identityUpgrade "32005" "Titanium Muscles" 2 [Superpower] [Physical])
+  { cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+organicSteel :: CardDef
+organicSteel = (identityUpgrade "32006" "Organic Steel" 2 [Superpower] [Energy])
+  { cdDeckLimit = Just 2
+  }
+
+-- Mutant Genesis
+
+protectiveTraining :: CardDef
+protectiveTraining = (upgrade "32013" "Protective Training" 1 [Training] [Mental] Protection)
+  { cdDeckLimit = Just 3
+  }
+
+-- Mutant Genesis
+
+solid :: CardDef
+solid = (identityUpgrade "32031a" "Solid" 0 [] [Physical])
+  { cdDeckLimit = Just 1
+  , cdKeywords = fromList [Permanent, MassForm]
+  , cdCost = Nothing
+  }
+
+-- Mutant Genesis
+
+phased :: CardDef
+phased = (identityUpgrade "32031b" "Phased" 0 [] [Mental])
+  { cdDeckLimit = Just 1
+  , cdKeywords = fromList [Permanent, MassForm]
+  , cdCost = Nothing
+  }
+
+-- Mutant Genesis
+
+acuteControl :: CardDef
+acuteControl = (identityUpgrade "32034" "Acute Control" 1 [Superpower] [Mental])
+  { cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+intangibleInterference :: CardDef
+intangibleInterference = (identityUpgrade "32035" "Intangible Interference" 1 [Superpower] [Mental])
+  { cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+phasedAndConfused :: CardDef
+phasedAndConfused = (identityUpgrade "32036" "Phased and Confused" 3 [Condition] [Mental]) {cdCriteria = InHeroForm}
+  { cdDeckLimit = Just 2
+  }
+
+-- Mutant Genesis
+
+attackTraining :: CardDef
+attackTraining = (upgrade "32043" "Attack Training" 1 [Training] [Physical] Aggression)
+  { cdDeckLimit = Just 3
+  }
+
+-- Mutant Genesis
+
+gatekeeper :: CardDef
+gatekeeper = (upgrade "32044" "Gatekeeper" 0 [Condition] [Mental] Aggression)
+  { cdDeckLimit = Just 3
+  }
+
+mgCoupDeGrace :: CardDef
+mgCoupDeGrace = (basicUpgrade "32176" "Coup de Grâce" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgSwagger :: CardDef
+mgSwagger = (basicUpgrade "32177" "Swagger" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Defense], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgBrazenDefense :: CardDef
+mgBrazenDefense = (basicUpgrade "32178" "Brazen Defense" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Attack, Ability.Defense], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgFerociousAttack :: CardDef
+mgFerociousAttack = (basicUpgrade "32179" "Ferocious Attack" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Attack], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgWarCry :: CardDef
+mgWarCry = (basicUpgrade "32180" "War Cry" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgCommanderCoupDeGrace :: CardDef
+mgCommanderCoupDeGrace = (basicUpgrade "32181" "Coup de Grâce" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgCompassion :: CardDef
+mgCompassion = (basicUpgrade "32182" "Compassion" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgGroupAssault :: CardDef
+mgGroupAssault = (basicUpgrade "32183" "Group Assault" 0 [MGTrait.Skill, MGTrait.Tactic] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgShockAndAwe :: CardDef
+mgShockAndAwe = (basicUpgrade "32184" "Shock and Awe" 0 [MGTrait.Skill, MGTrait.Tactic] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Attack], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgImprovisation :: CardDef
+mgImprovisation = (basicUpgrade "32185" "Improvisation" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgDefenderSwagger :: CardDef
+mgDefenderSwagger = (basicUpgrade "32186" "Swagger" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Defense], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgSurprise :: CardDef
+mgSurprise = (basicUpgrade "32187" "Surprise!" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgHeroicIntervention :: CardDef
+mgHeroicIntervention = (basicUpgrade "32188" "Heroic Intervention" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Thwart], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgDeterminedDefense :: CardDef
+mgDeterminedDefense = (basicUpgrade "32189" "Determined Defense" 0 [MGTrait.Skill] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Defense, Ability.Thwart], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgBodyguard :: CardDef
+mgBodyguard = (basicUpgrade "32190" "Bodyguard" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgPeacekeeperSurprise :: CardDef
+mgPeacekeeperSurprise = (basicUpgrade "32191" "Surprise!" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgPeacekeeperCompassion :: CardDef
+mgPeacekeeperCompassion = (basicUpgrade "32192" "Compassion" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgRescueOperation :: CardDef
+mgRescueOperation = (basicUpgrade "32193" "Rescue Operation" 0 [MGTrait.Skill, MGTrait.Tactic] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgMentorship :: CardDef
+mgMentorship = (basicUpgrade "32194" "Mentorship" 0 [MGTrait.Skill, MGTrait.Tactic] [MGResource.Wild]) {cdAbilitySubTypes = [Ability.Thwart], cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+mgFortitude :: CardDef
+mgFortitude = (basicUpgrade "32195" "Fortitude" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}

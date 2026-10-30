@@ -80,3 +80,7 @@ import Marvel.Hero.Heroes.IronheartVersion3 as X
 import Marvel.Hero.Heroes.SpiderHam as X
 
 import Marvel.Hero.Heroes.SpdrSuitHero as X
+
+import Marvel.Hero.Heroes.ColossusHero as X
+
+import Marvel.Hero.Heroes.ShadowcatHero as X

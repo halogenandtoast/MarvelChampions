@@ -35,7 +35,7 @@ import Marvel.Card.Id (CardId (..), HasCardId (..))
 import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Card.PlayerCard.Types (PlayerCard (..), encounterCardInPlayerDeck)
 import Marvel.Card.Side (Side (..))
-import Marvel.Card.Types (Card, IsCard (..))
+import Marvel.Card.Types (Card (..), IsCard (..))
 import Marvel.Cost.Types (Cost)
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
@@ -43,7 +43,7 @@ import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay))
+import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -54,7 +54,7 @@ import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
-import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent))
+import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
 import Marvel.Resource.Types (Resource)
@@ -429,10 +429,10 @@ enemyBecomesTough enemy = push case toEnemy enemy of
 -- | Counters placed on, or removed from, an environment, main scheme, attachment or
 -- identity card.
 placeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
-placeCounters a = push . PlaceCounters (toTarget a)
+placeCounters a = push . PlaceCounters (counterTarget a)
 
 removeCounters :: (ReverseQueue m, IsRef a) => a -> Natural -> m ()
-removeCounters a = push . RemoveCounters (toTarget a)
+removeCounters a = push . RemoveCounters (counterTarget a)
 
 -- | Growth counters placed on Groot, "to a maximum of 10".
 placeGrowthCounters :: (ReverseQueue m) => IdentityId -> Natural -> m ()
@@ -589,7 +589,8 @@ flipToEnergyForm ident u = do
 flipMassForm :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
 flipMassForm ident uid = do
   canChange <- not . null <$> selectList (IdentityWithId ident <> IdentityCanChangeForm)
-  when canChange $ cardSpecific uid "flipMassForm" ()
+  locked <- elem CannotChangeMassForm <$> getModifiers ident
+  when (canChange && not locked) $ cardSpecific uid "flipMassForm" ()
 
 massFormChanged :: (ReverseQueue m) => IdentityId -> UpgradeId -> m ()
 massFormChanged ident uid = checkWindows [Window After $ W.MassFormChanged ident uid]
@@ -613,15 +614,10 @@ turnEnergyFormsFacedown ident = faceupEnergyForm ident >>= traverse_ (`upgradeSt
 declareHeroDefenseWithoutExhausting :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> Natural -> m ()
 declareHeroDefenseWithoutExhausting ident enemy bonus = identityStep ident (SideMessage $ DefendedWithoutExhausting bonus $ toEnemy enemy)
 
--- | Replace the pending basic DEF calculation with ATK for this attack.
-useAttackForDefense :: (HasQueue m) => IdentityId -> m ()
-useAttackForDefense ident = replaceMatchingMessage change \case
-  IdentityMessage who (SideMessage (DefenseApplied _ _)) -> who == ident
-  _ -> False
- where
-  change = \case
-    IdentityMessage who (SideMessage (DefenseApplied n enemy)) -> [IdentityMessage who $ SideMessage $ DefenseUsingAttackApplied n enemy]
-    msg -> [msg]
+-- | Use ATK for this attack's basic defense calculation, even when a defense
+-- event has not yet declared that basic defense.
+useAttackForDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> m ()
+useAttackForDefense ident enemy = cardSpecific GameRef "useAttackForDefense" (ident, toEnemy enemy)
 
 -- * Attacks and defense
 
@@ -716,8 +712,13 @@ replaceVillain vid code = push . ReplaceVillain vid code
 -- alter-ego.
 villainActivatesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
 villainActivatesAgainst vid you = do
-  hero <- Matchers.identityMatches HeroIdentity you
-  if hero then enemyAttacks vid you else villainSchemesAgainst vid you
+  checkWindows [Window Would $ W.VillainActivationWouldBegin vid you]
+  cardSpecific GameRef "resolveVillainActivation" (vid, you)
+
+-- | Resolve a prescribed declaration after its "would activate" window. Internal
+-- aliases use this to preserve the original type without offering that window twice.
+resolveVillainActivationAfterWould :: (ReverseQueue m) => VillainId -> VillainMessage -> m ()
+resolveVillainActivationAfterWould vid = cardSpecific (VillainRef vid) "activationAfterWould"
 
 -- | "The villain" of a card a player plays or an ability they trigger: the active
 -- villain, or the villain of their area they choose while a card says so (Focused
@@ -870,7 +871,9 @@ engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinion minion = pushAll . Msg.engageMinion minion
 
 defeatMinion :: (ReverseQueue m) => MinionId -> m ()
-defeatMinion mid = push $ MinionMessage mid MinionDefeated
+defeatMinion mid = do
+  blocked <- elem CannotBeDefeated <$> getModifiers (MinionRef mid)
+  unless blocked $ push $ MinionMessage mid MinionDefeated
 
 -- | The player is no longer engaged with the minion.
 minionDisengages :: (ReverseQueue m) => IdentityId -> MinionId -> m ()
@@ -1640,6 +1643,12 @@ highestCostCardsControlled you = do
   let costed = [(t, fromIntegral . max 0 . fromMaybe 0 $ cdCost =<< d) | (t, d) <- defs, maybe True ((Permanent `notElem`) . cdKeywords) d]
   pure $ extremes MostThreat costed
 
+-- | A newly initiated activation waits for the current activation and every
+-- response to it. The game batches simultaneous deferred activations for first
+-- player ordering; with no activation underway it resolves immediately.
+enemyActivationAfterCurrent :: (ReverseQueue m, IsEnemy enemy) => enemy -> m () -> m ()
+enemyActivationAfterCurrent enemy body = capture body >>= cardSpecific GameRef "deferEnemyActivation" . (toEnemy enemy,)
+
 -- | The villain's activation the body initiates during the enemy's activation under way:
 -- "the newly initiated activation resolves after the current activation has finished
 -- resolving", the abilities the current one triggered first, and several initiated so
@@ -2216,3 +2225,85 @@ divideAttackDamage you source = push . DivideAttackDamage you source
 
 dealIndirectDamageAndExhaustDamaged :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
 dealIndirectDamageAndExhaustDamaged you source n = push $ IndirectDamageAndExhaust you (toSource source) (toDamage n FromAbility) []
+
+-- Insert into Marvel.Message.Lifted; all callers refer to the same generic zone protocol.
+placePlayerCardUnder :: (ReverseQueue m, IsRef target) => target -> PlayerCard -> m ()
+placePlayerCardUnder target card = do
+  removeFromGame (CardIdRef $ pcCardId card)
+  cardSpecific target "mgHoldCard" card
+
+putTopCardsUnder :: (ReverseQueue m, IsRef target) => IdentityId -> target -> Natural -> m ()
+putTopCardsUnder you target n = do
+  cards <- take (fromIntegral n) <$> projectMap PlayerIdentityDeck unDeck you
+  traverse_ (placePlayerCardUnder target) cards
+
+heldCardsAt :: (HasGame m, IsRef target) => target -> m [PlayerCard]
+heldCardsAt = getZoneHeldCards . toTarget
+
+transferHeldCards :: (ReverseQueue m, IsRef source, IsRef target) => source -> target -> m ()
+transferHeldCards source target = do
+  cards <- heldCardsAt source
+  cardSpecific source "mgClearHeld" ()
+  for_ cards (cardSpecific target "mgHoldCard")
+
+takeHeldCardIntoPlay :: (ReverseQueue m, IsRef target) => IdentityId -> target -> PlayerCard -> m ()
+takeHeldCardIntoPlay you target card = do
+  cardSpecific target "mgRemoveHeld" (pcCardId card)
+  putIntoPlay you card
+
+shuffleMinionIntoEncounterDeck :: (ReverseQueue m) => MinionId -> m ()
+shuffleMinionIntoEncounterDeck mid = do
+  card <- getsGame (\g -> cardInPlay g $ MinionRef mid)
+  for_ card $ \case
+    EncounterCard c -> removeFromPlay mid >> shuffleIntoEncounterDeck [c]
+    _ -> pure ()
+
+-- | Replacement of the damage this particular attack would deal, after defense.
+replaceAttackDamageWithThreatRemoval :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
+replaceAttackDamageWithThreatRemoval enemy you = cardSpecific GameRef "mgAttackThreatReplacement" (toEnemy enemy, you)
+
+preventEnemyAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
+preventEnemyAttackDamage enemy n = cardSpecific GameRef "mgPartialAttackPrevention" (toEnemy enemy, n)
+
+-- | The current attack's pending damage, after its attack window has opened.
+modifyCurrentPlayerAttack :: (ReverseQueue m) => IdentityId -> Natural -> [Keyword] -> m ()
+modifyCurrentPlayerAttack you n keywords = withQueue_ change
+ where
+  improve d = foldr apply (d {damageAmount = damageAmount d + n}) keywords
+  apply Overkill d = d {damageOverkill = True}
+  apply Piercing d = d {damagePiercing = True}
+  apply Ranged d = d {damageRanged = True}
+  apply _ d = d
+  change [] = []
+  change (VillainMessage v (VillainDamaged source d) : rest) | damageSource d == FromPlayerAttack you = VillainMessage v (VillainDamaged source $ improve d) : rest
+  change (MinionMessage m (MinionDamaged source d) : rest) | damageSource d == FromPlayerAttack you = MinionMessage m (MinionDamaged source $ improve d) : rest
+  change (CheckWindows windows : rest) = CheckWindows (map improveWindow windows) : change rest
+  change (message : rest) = message : change rest
+  improveWindow window = window {windowType = case windowType window of
+    W.DamagedVillain v d | damageSource d == FromPlayerAttack you -> W.DamagedVillain v (improve d)
+    W.VillainDamageFrom v source d | damageSource d == FromPlayerAttack you -> W.VillainDamageFrom v source (improve d)
+    other -> other}
+
+healDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> CharacterMatcher -> m ()
+healDivided you source n matcher = cardSpecific GameRef "mgDivideHealing" (you, toSource source, n, matcher)
+
+removeThreatDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
+removeThreatDivided you source n matcher = cardSpecific GameRef "mgDivideRemoval" (you, toSource source, n, matcher)
+
+-- | Heal from the named source, retaining the distinction between player and encounter effects.
+healFrom :: (ReverseQueue m, IsRef source, IsCharacter character) => source -> character -> Natural -> m ()
+healFrom source character n = do
+  playerCard <- isPlayerCardSource (toSource source)
+  if playerCard then heal character n else case toCharacter character of
+    IdentityCharacter ident -> identityStep ident (IdentityHealed n)
+    AllyCharacter aid -> allyStep aid (AllyHealed n)
+    MinionCharacter mid -> minionStep mid (MinionHealed n)
+    VillainCharacter vid -> villainStep vid (VillainHealed n)
+
+-- | Wrapped scheme, enemy and character IDs name the same element as their concrete IDs.
+counterTarget :: IsRef a => a -> Target
+counterTarget a = case toTarget a of
+  SchemeRef scheme -> schemeRef scheme
+  EnemyRef enemy -> enemyRef enemy
+  CharacterRef character -> characterRef character
+  target -> target

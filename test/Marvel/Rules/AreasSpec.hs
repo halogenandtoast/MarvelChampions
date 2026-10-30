@@ -137,7 +137,7 @@ spec = describe "game areas" do
       resolve [SetActiveVillain klaw]
       activeVillainFor p `shouldReturn` klaw
       runNow [IdentityMessage p VillainAndMinionsActivate]
-      ranMessage tg (VillainMessage klaw VillainSchemes) `shouldReturn` True
+      ranMessage tg (VillainMessage klaw VillainBeginScheme) `shouldReturn` True
 
   it "the villain phase activates each area's villain against its own players" do
     tg <- testGame ["spider-man", "thor"]
@@ -146,7 +146,7 @@ spec = describe "game areas" do
       _ <- splitOff p2
       klaw <- addVillainFor p2 "01113"
       runNow [IdentityMessage p2 VillainAndMinionsActivate]
-      ranMessage tg (VillainMessage klaw VillainSchemes) `shouldReturn` True
+      ranMessage tg (VillainMessage klaw VillainBeginScheme) `shouldReturn` True
 
   it "a villain defeated with another left leaves play, his deck and side scheme with him" do
     tg <- testGame ["spider-man"]

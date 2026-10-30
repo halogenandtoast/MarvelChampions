@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Support where
 
+import Marvel.Support.Supports.MutantGenesisCampaign
 import Marvel.Prelude
 
 import Marvel.Card.Builder
@@ -26,7 +27,8 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard auntMay
+  [ SomeSupportCard mgMetroPD
+  , SomeSupportCard auntMay
   , SomeSupportCard alphaFlightStation
   , SomeSupportCard superhumanLawDivision
   , SomeSupportCard pepperPotts
@@ -131,6 +133,10 @@ allSupports = fromList $ map
   , SomeSupportCard auntMayAndUncleBen
   , SomeSupportCard ejectionProtocol
   , SomeSupportCard spdrCommand
+  , SomeSupportCard piotrsStudio
+  , SomeSupportCard theXjet
+  , SomeSupportCard kittysRoom
+  , SomeSupportCard xmansion
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

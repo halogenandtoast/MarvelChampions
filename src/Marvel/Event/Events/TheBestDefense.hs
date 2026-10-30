@@ -20,7 +20,7 @@ newtype TheBestDefense = TheBestDefense (Attrs Event)
 
 instance RunMessage TheBestDefense where
   runMessage msg e@(TheBestDefense attrs) = runQueueT $ case msg of
-    EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ _))) | eid == eventId attrs -> do
-      useAttackForDefense you
+    EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ enemy))) | eid == eventId attrs -> do
+      useAttackForDefense you enemy
       pure e
     _ -> TheBestDefense <$> runMessage msg attrs

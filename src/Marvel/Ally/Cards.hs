@@ -1,5 +1,19 @@
 module Marvel.Ally.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
+import Marvel.EncounterSet
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (MayOverpay, NoCost))
@@ -19,7 +33,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ blackCatFeliciaHardy
+  [ mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
+  , blackCatFeliciaHardy
   , spiderWomanJessicaDrew
   , hellcatPatsyWalker
   , warMachineJamesRhodes
@@ -210,6 +225,14 @@ allAllies = fromList $ concatMap
   , spiderManNoir
   , spiderHamPeterPorker
   , spiderManOttoOctavius
+  , shadowcatKittyPryde
+  , nightcrawler
+  , polaris
+  , professorX
+  , lockheed
+  , wolverine
+  , magik
+  , colossusPiotrRasputin
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -1037,4 +1060,139 @@ spiderManOttoOctavius = (basicAlly "31022" ("Spider-Man" <:> "Otto Octavius") 2 
   { cdUnique = True
   , cdDeckLimit = Just 1
   , cdCriteria = ControlsCardsWithTrait WebWarrior 1
+  }
+
+-- Mutant Genesis
+
+shadowcatKittyPryde :: CardDef
+shadowcatKittyPryde = (identityAlly "32002" ("Shadowcat" <:> "Kitty Pryde") 3 [XMen] [Wild])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+nightcrawler :: CardDef
+nightcrawler = (ally "32011" ("Nightcrawler" <:> "Kurt Wagner") 3 [XMen] [Physical] Protection)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+polaris :: CardDef
+polaris = (ally "32012" ("Polaris" <:> "Lorna Dane") 3 [XMen] [Energy] Protection)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+professorX :: CardDef
+professorX = (basicAlly "32019" ("Professor X" <:> "Charles Xavier") 3 [Psionic, XMen] [Mental])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+lockheed :: CardDef
+lockheed = (identityAlly "32032" "Lockheed" 2 [Dragon, XMen] [Wild])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+wolverine :: CardDef
+wolverine = (ally "32041" ("Wolverine" <:> "Logan") 4 [XMen] [Physical] Aggression)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+magik :: CardDef
+magik = (ally "32042" ("Magik" <:> "Illyana Rasputin") 3 [Mystic, XMen] [Energy] Aggression)
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  }
+
+-- Mutant Genesis
+
+colossusPiotrRasputin :: CardDef
+colossusPiotrRasputin = (basicAlly "32048" ("Colossus" <:> "Piotr Rasputin") 4 [XMen] [Physical])
+  { cdUnique = True
+  , cdDeckLimit = Just 1
+  , cdKeywords = fromList [Toughness]
+  }
+
+mgCampaignMagneto :: CardDef
+mgCampaignMagneto = (basicAlly "32172b" ("Magneto" <:> "Erik Lehnsherr") 0 [MGTrait.BrotherhoodOfMutants] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdKeywords = fromList [MGKeyword.Victory 1]}
+
+-- Mutant Genesis scenario definitions
+mgRobertKelly :: CardDef
+mgRobertKelly = (baseAlly "32066" ("Robert Kelly") 0 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.Senator]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.Sabretooth
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  , cdResources = []
+  }
+
+mgJubilee :: CardDef
+mgJubilee = (baseAlly "32088b" ("Jubilee" <:> "Jubilation Lee") 0 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.XMen]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.ProjectWideawake
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Victory (-1)]
+  , cdResources = [(PrintedResource, Wild)]
+  }
+
+mgRictor :: CardDef
+mgRictor = (baseAlly "32089" ("Rictor" <:> "Julio Richter") 2 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.Captive, MGTrait.XMen]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.ProjectWideawake
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  , cdResources = [(PrintedResource, Wild)]
+  }
+
+mgBoomBoom :: CardDef
+mgBoomBoom = (baseAlly "32090" ("Boom Boom" <:> "Tabitha Smith") 2 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.Captive, MGTrait.XMen]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.ProjectWideawake
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  , cdResources = [(PrintedResource, Wild)]
+  }
+
+mgCannonball :: CardDef
+mgCannonball = (baseAlly "32091" ("Cannonball" <:> "Sam Guthrie") 2 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.Captive, MGTrait.XMen]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.ProjectWideawake
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  , cdResources = [(PrintedResource, Wild)]
+  }
+
+mgWolfsbane :: CardDef
+mgWolfsbane = (baseAlly "32092" ("Wolfsbane" <:> "Rahne Sinclair") 2 [] [] Nothing)
+  { cdTraits = fromList [MGTrait.Captive, MGTrait.XMen]
+  , cdUnique = True
+  , cdEncounterSet = Just MGSet.ProjectWideawake
+  , cdEncounterSetQuantity = Just 0
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  , cdResources = [(PrintedResource, Wild)]
   }

@@ -77,6 +77,8 @@ allAlterEgoCards =
   , ririWilliamsVersion3
   , peterPorker
   , peniParker
+  , piotrRasputin
+  , kittyPryde
   ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -274,5 +276,19 @@ peterPorker = alterEgo "30001b" "Peter Porker" [Cartoon, Civilian]
 
 peniParker :: CardDef
 peniParker = (alterEgo "31002a" "Peni Parker" [Civilian])
+  { cdUnique = True
+  }
+
+-- Mutant Genesis
+
+piotrRasputin :: CardDef
+piotrRasputin = (alterEgo "32001b" "Piotr Rasputin" [Mutant])
+  { cdUnique = True
+  }
+
+-- Mutant Genesis
+
+kittyPryde :: CardDef
+kittyPryde = (alterEgo "32030b" "Kitty Pryde" [Mutant])
   { cdUnique = True
   }

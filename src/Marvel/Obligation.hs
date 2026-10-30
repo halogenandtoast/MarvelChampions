@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Obligation where
 
+import Marvel.Obligation.Obligations.MutantGenesisCampaign
 import Marvel.Prelude
 
 import Marvel.Card
@@ -23,7 +24,8 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard smFriendsAndFamily
+  [ SomeObligationCard mgReactiveDefense
+  , SomeObligationCard mgWarnTheOthers, SomeObligationCard smFriendsAndFamily
   , SomeObligationCard affairsOfState
   , SomeObligationCard legalWork
   , SomeObligationCard evictionNotice
@@ -99,6 +101,8 @@ allObligations = fromList $ map
   , SomeObligationCard aMinorSetback
   , SomeObligationCard iReallyWantAHotDog
   , SomeObligationCard inheritedBurden
+  , SomeObligationCard homesick
+  , SomeObligationCard permanentlyPhased
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

@@ -68,6 +68,7 @@ instance Entity Attachment where
     AttachmentDamage :: Field Attachment Natural
     AttachmentCounters :: Field Attachment Natural
     AttachmentAlly :: Field Attachment (Maybe AllyId)
+    AttachmentIdentity :: Field Attachment (Maybe IdentityId)
   field fld a =
     let AttachmentAttrs {..} = toAttrs a
      in case fld of
@@ -77,6 +78,7 @@ instance Entity Attachment where
           AttachmentDamage -> attachmentDamage
           AttachmentCounters -> attachmentCounters
           AttachmentAlly -> attachmentAlly
+          AttachmentIdentity -> attachmentIdentity
   toId = attachmentId . toAttrs
   toAttrs (Attachment a) = toAttachmentAttrs a
 

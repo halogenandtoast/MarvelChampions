@@ -11,6 +11,8 @@ import Marvel.Card.Def
 import Marvel.Card.Types
 import Marvel.Entity
 import Marvel.Game.Source (getModifiers)
+import Marvel.Matchers.Types (IdentityMatcher (FirstPlayer))
+import Marvel.Query (selectOne)
 import Marvel.Id hiding (SupportId)
 import Marvel.Id as X (SupportId)
 import Marvel.Message.Lifted
@@ -176,6 +178,22 @@ instance IsRef (Attrs Support) where
 
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
+    PassFirstPlayer -> do
+      follows <- elem ControlledByFirstPlayer <$> getModifiers a
+      when follows $ cardSpecific a "followFirstPlayer" ()
+      pure a
+    SetPlayerOrder _ -> do
+      follows <- elem ControlledByFirstPlayer <$> getModifiers a
+      when follows $ cardSpecific a "followFirstPlayer" ()
+      pure a
+    RemoveFromPlay (IdentityRef _) -> do
+      follows <- elem ControlledByFirstPlayer <$> getModifiers a
+      when follows $ cardSpecific a "followFirstPlayer" ()
+      pure a
+    CardSpecific (isTarget a -> True) "followFirstPlayer" _ -> do
+      first <- selectOne FirstPlayer
+      for_ first $ \new -> when (new /= supportController a) $ supportStep (supportId a) (SupportChangedController new)
+      pure a
     RemoveCounters target n | target == toRef a -> do
       when (supportUses a > 0 && n >= supportUses a && supportDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n
@@ -195,5 +213,9 @@ instance RunMessage (Attrs Support) where
         pure $ a & usesL -~ 1
       AddSupportUses n -> pure $ a & usesL +~ n
       SupportOwnedBy owner -> pure a {supportOwner = owner}
-      SupportChangedController new -> pure a {supportController = new}
+      SupportChangedController new -> do
+        when (new /= supportController a) $ do
+          identityStep (supportController a) (SupportRemoved $ supportId a)
+          identityStep new (SupportCreated $ supportId a)
+        pure a {supportController = new}
     _ -> pure a

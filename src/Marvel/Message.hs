@@ -50,7 +50,9 @@ class RunMessage a where
 -- | Damage to a hero or alter-ego from anything but an attack: first the window for
 -- what answers "when you would take damage", then the damage.
 damageIdentity :: IdentityId -> Source -> Damage -> [Message]
-damageIdentity ident source damage =
+damageIdentity ident source damage
+  | damagePiercing damage && damageAmount damage > 0 = [CardSpecific (IdentityRef ident) "discardToughForPiercing" (toJSON (source, damage))]
+  | otherwise =
   [ CheckWindows [Window When $ IdentityTakeDamage ident damage, Window When $ IdentityTakeDamageFrom ident source damage]
   , IdentityMessage ident $ IdentityDamaged source damage
   ]

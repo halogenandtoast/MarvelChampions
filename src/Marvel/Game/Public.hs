@@ -29,6 +29,7 @@ import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.Obligation.Types (Attrs (..))
 import Marvel.Attack qualified as Attack
+import Marvel.Campaign qualified as Campaign
 import Marvel.Campaign (Campaign (..), CampaignMode)
 import Marvel.Card
 import Marvel.Deck
@@ -79,7 +80,9 @@ data GameView = GameView
   , mainSchemes :: [SchemeView]
   , sideSchemes :: [SchemeView]
   , minions :: [MinionView]
+  , uncontrolledAllies :: [AllyView]
   , environments :: [EnvironmentView]
+  , futurePastDeckCount :: Maybe Int
   , encounterDeckSize :: Int
   , encounterDeckTop :: Maybe CardView
   , setAsideModulars :: [EncounterSet.EncounterSet]
@@ -186,6 +189,7 @@ data PlayerView = PlayerView
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
+  , toughCards :: Natural
   , counters :: Natural
   -- ^ on the identity card: Groot's growth counters, Drax's vengeance
   , thwart :: Maybe Natural
@@ -256,7 +260,8 @@ data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text,
   deriving anyclass (ToJSON)
 
 data VillainView = VillainView
-  { id :: VillainId
+  { bombCounters :: Natural
+  , id :: VillainId
   , code :: CardCode
   , name :: Text
   , stage :: Natural
@@ -281,7 +286,8 @@ data VillainView = VillainView
   deriving anyclass (ToJSON)
 
 data MinionView = MinionView
-  { toughCards :: Natural
+  { bombCounters :: Natural
+  , toughCards :: Natural
   , id :: MinionId
   , code :: CardCode
   , name :: Text
@@ -304,7 +310,7 @@ data MinionView = MinionView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural, owner :: Maybe IdentityId, damage :: Natural}
+data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, name :: Text, attachments :: [AttachmentView], counters :: Natural, owner :: Maybe IdentityId, damage :: Natural, facedownCards :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -416,6 +422,7 @@ gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
+  uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g]
   mayLook <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
   threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
     threshold <- case sid of
@@ -466,11 +473,15 @@ gameView seesHand g = do
       , mainSchemes = map mainSchemeView (HashMap.elems $ gameMainSchemes g)
       , sideSchemes = map sideSchemeView (HashMap.elems $ gameSideSchemes g)
       , minions
+      , uncontrolledAllies
       , environments =
-          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters a.environmentOwner a.environmentDamage
+          [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters a.environmentOwner a.environmentDamage (fromIntegral $ length a.environmentHeldCards)
           | e <- HashMap.elems (gameEnvironments g)
           , let a = toAttrs e
           ]
+      , futurePastDeckCount = case gameCampaign g of
+          Just c | c.kind == Campaign.MutantGenesis -> Just $ length c.campaignLog.mutantGenesis.futurePastDeck
+          _ -> Nothing
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDeckTop = if mayLook then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
@@ -570,6 +581,7 @@ gameView seesHand g = do
         , confuseCards = (if a.playerIdentityConfused then 1 else 0) + (if a.playerIdentityAdditionalConfuse then 1 else 0)
         , stunned = stunnedNow
         , confused = confusedNow
+        , toughCards = (if a.playerIdentityTough then 1 else 0) + a.playerIdentityAdditionalTough
         , tough = a.playerIdentityTough
         , counters = a.playerIdentityCounters
         , thwart = thw
@@ -642,7 +654,8 @@ gameView seesHand g = do
     infinite <- elem InfiniteHitPoints <$> getModifiers a
     pure
       VillainView
-        { id = a.villainId
+        { bombCounters = sum [n | (EnemyVillainId vid,_,n) <- gameBombCounters g, vid == toId v]
+        , id = a.villainId
         , code = toCardCode a.villainCardDef
         , name = display (cdName a.villainCardDef)
         , stage = a.villainStage
@@ -668,7 +681,8 @@ gameView seesHand g = do
     sch <- Minion.getModifiedScheme a
     pure
       MinionView
-        { id = a.minionId
+        { bombCounters = sum [n | (EnemyMinionId mid,_,n) <- gameBombCounters g, mid == a.minionId]
+        , id = a.minionId
         , code = toCardCode a.minionCardDef
         , name = display (cdName a.minionCardDef)
         , heldCards = map (cardView . PlayerCard) a.minionHeldCards

@@ -28,7 +28,7 @@ import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
-import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, TheMarket))
+import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesisCampaign, TheMarket))
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
@@ -177,7 +177,7 @@ directed to add them to a deck by the Campaign Instructions" (rulebook p.4), whi
 campaign does as it deals each game, never in a deck brought to the table.
 -}
 campaignOnlyCardsIn :: DeckList -> [CardCode]
-campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def == Just MadTitansShadowCampaign]
+campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def `elem` [Just MadTitansShadowCampaign, Just MutantGenesisCampaign]]
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]
@@ -256,6 +256,8 @@ starterDecks =
   , ("spider-ham", DeckList "30001a" ["justice"] $ tally ["30002", "30003", "30003", "30004", "30005", "30006", "30006", "30007", "30007", "30007", "30008", "30009", "30009", "30010", "30011", "30012", "30013", "30014", "30014", "30014", "30015", "30015", "30016", "30016", "30016", "30017", "30017", "30017", "30018", "30018", "30018", "30019", "30019", "30019", "30020", "30021", "30022", "30022", "30022", "30023"])
   , ("ironheart", DeckList "29001a" ["leadership"] $ tally ["29004", "29005", "29005", "29006", "29006", "29006", "29007", "29007", "29008", "29009", "29009", "29010", "29011", "29012", "29013", "29014", "29015", "29016", "29017", "29017", "29017", "29018", "29018", "29018", "29019", "29019", "29019", "29020", "29020", "29020", "29021", "29021", "29022", "29023", "29024", "29025", "29026", "29027", "29027", "29027"])
   , ("spdr", DeckList "31001a" ["protection"] $ tally ["31003", "31004", "31004", "31004", "31005", "31005", "31006", "31006", "31007", "31008", "31009", "31010", "31011", "31012", "31013", "31014", "31015", "31016", "31016", "31016", "31017", "31017", "31017", "31018", "31018", "31018", "31019", "31019", "31019", "31020", "31020", "31020", "31021", "31022", "31023", "31023", "31023", "31024", "31024", "31024"])
+  , ("colossus", DeckList "32001a" ["protection"] $ tally ["32002", "32003", "32004", "32005", "32006", "32006", "32007", "32007", "32008", "32008", "32008", "32009", "32009", "32010", "32010", "32011", "32012", "32013", "32013", "32013", "32014", "32014", "32014", "32015", "32015", "32015", "32016", "32016", "32016", "32017", "32017", "32017", "32018", "32018", "32019", "32020", "32021", "32022", "32023", "32024"])
+  , ("shadowcat", DeckList "32030a" ["aggression"] $ tally ["32031a", "32032", "32033", "32034", "32035", "32036", "32036", "32037", "32037", "32037", "32038", "32038", "32039", "32039", "32040", "32040", "32041", "32042", "32043", "32043", "32043", "32044", "32044", "32044", "32045", "32045", "32045", "32046", "32046", "32046", "32047", "32047", "32048", "32049", "32050", "32051", "32051", "32051", "32052", "32053", "32054"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

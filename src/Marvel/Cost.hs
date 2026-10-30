@@ -126,6 +126,10 @@ canAffordCost identityId source cost = do
     DiscardHandCardsWithTotalCost matcher n ->
       projectP PlayerIdentityHand ((>= n) . sum . map (fromIntegral . fromMaybe 0 . cdCost . getCardDef) . filter (\c -> notPlaying c && not (staysInHand c) && cardMatch matcher c) . unHand) identityId
     ExactCountersCost n -> (>= n) <$> getCountersOn source
+    DiscardToughCost n -> do
+      tough <- project PlayerIdentityTough identityId
+      extra <- project PlayerIdentityAdditionalTough identityId
+      pure $ (if tough then 1 else 0) + extra >= n
     GiveEnemyToughCost enemy -> not <$> characterMatches (CharacterWithStatus ToughStatus) (toCharacter enemy)
     GiveEnemyBoostCost _ _ -> pure True
     DiscardRandomHandCardsCost n ->
@@ -150,6 +154,9 @@ canAffordCost identityId source cost = do
     DiscardTopOfDeckForDamageCost -> do
       n <- pendingDamageAmount identityId
       projectP PlayerIdentityDeck ((>= n) . fromIntegral . length . unDeck) identityId
+    ReturnAllyToHandCost matcher -> selectAny (matcher <> AllyControlledBy (IdentityWithId identityId))
+    ExhaustAlliesWithTraitCost trait n _ ->
+      (>= n) <$> selectListCount (AllyWithTrait trait <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     ExhaustAlliesCost n _ ->
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))

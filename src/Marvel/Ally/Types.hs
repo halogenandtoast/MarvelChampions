@@ -33,6 +33,9 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbi
   allyHasThwart :: a -> Bool
   allyHasThwart _ = True
 
+  allyHasAttack :: a -> Bool
+  allyHasAttack _ = True
+
 type AllyCard a = CardBuilder (IdentityId, Id.AllyId) a
 
 data Ally = forall a. (IsAlly a) => Ally a
@@ -163,7 +166,7 @@ getModifiedAttackConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttackConsequentialDamage attrs = do
   modifiers <- getModifiers attrs
   pure $
-    if NoConsequentialDamage `elem` modifiers
+    if NoConsequentialDamage `elem` modifiers || NoAttackConsequentialDamage `elem` modifiers
       then 0
       else subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers]) $
         allyAttackConsequentialDamage attrs + sum [n | AttackConsequentialDamageModifier n <- modifiers]
@@ -171,7 +174,7 @@ getModifiedAttackConsequentialDamage attrs = do
 getModifiedThwartConsequentialDamage :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwartConsequentialDamage attrs = do
   modifiers <- getModifiers attrs
-  pure $ if NoConsequentialDamage `elem` modifiers then 0 else
+  pure $ if NoConsequentialDamage `elem` modifiers || NoThwartConsequentialDamage `elem` modifiers then 0 else
     subtractNatural (sum [n | ConsequentialDamageReduction n <- modifiers]) (allyThwartConsequentialDamage attrs)
 
 getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural

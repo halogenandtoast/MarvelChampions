@@ -193,3 +193,11 @@ import Marvel.Minion.Minions.IronSpider as X
 import Marvel.Minion.Minions.SandmanSinister as X
 
 import Marvel.Minion.Minions.Spot as X
+
+import Marvel.Minion.Minions.Juggernaut as X
+
+import Marvel.Minion.Minions.WhiteQueenMutantGenesis as X
+
+import Marvel.Minion.Minions.HellfirePawn as X
+
+import Marvel.Minion.Minions.MutantGenesis as X

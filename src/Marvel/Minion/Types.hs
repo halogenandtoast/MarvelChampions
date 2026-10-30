@@ -5,7 +5,13 @@ import Marvel.Prelude
 import Data.HashSet qualified as HashSet
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
+import Marvel.Ability (windowAbility)
 import Marvel.Ability.Types
+import Marvel.Criteria (Criteria (MinionExists))
+import Marvel.Cost.Types (Cost (NoCost))
+import Marvel.Matchers.Types (MinionMatcher (..))
+import Marvel.Question (Choice (RunAbility))
+import Marvel.Window.Types qualified as W
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Entity
@@ -80,6 +86,7 @@ instance Entity Minion where
     , minionCardDef :: CardDef
     , minionOriginalCardDef :: CardDef
     , minionDamage :: Natural
+    , minionDamageThisPhase :: Natural
     , minionHitPoints :: HP Natural
     , minionScheme :: Sch
     , minionAttack :: Atk
@@ -159,7 +166,11 @@ instance RunMessage Minion where
   runMessage msg (Minion a) = Minion <$> runMessage msg a
 
 instance HasAbilities Minion where
-  getAbilities (Minion a) = getAbilities a
+  getAbilities (Minion a) = getAbilities a <>
+    [ (windowAbility attrs 9901 (W.MinionEntersPlay W.After $ MinionWithId $ minionId attrs)
+        ForcedResponse NoCost (RunAbility (toTarget attrs) 9901)) {abilityCriteria = MinionExists $ MinionWithTrait trait <> NotMinion (MinionWithId $ minionId attrs)}
+    | let attrs = toMinionAttrs a, Teamwork trait <- toList $ cdKeywords $ getCardDef attrs
+    ]
 
 instance HasModifiersFor Minion where
   getModifiersFor source target (Minion a) = getModifiersFor source target a
@@ -244,6 +255,7 @@ minion f cardDef sch atk hp =
             , minionCardDef = cardDef
             , minionOriginalCardDef = cardDef
             , minionDamage = 0
+            , minionDamageThisPhase = 0
             , minionAttack = atk
             , minionScheme = sch
             , minionHitPoints = hp
@@ -290,6 +302,7 @@ getModifiedKeywords attrs = do
   blanked <- isBlanked attrs
   pure $ foldr applyModifier (if blanked then [] else toList . cdKeywords $ getCardDef attrs) modifiers
  where
+  applyModifier (LoseKeyword k) = filter (/= k)
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
 
@@ -297,7 +310,7 @@ getModifiedKeywords attrs = do
 instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-      [("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

@@ -26,7 +26,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard smSandslide, SomeTreacheryCard smSandStorm, SomeTreacheryCard smSandSmash, SomeTreacheryCard smBitingRetort, SomeTreacheryCard smForWhomTheBellTolls, SomeTreacheryCard smDejaVu, SomeTreacheryCard smFearmonger, SomeTreacheryCard smFrequentFlyers, SomeTreacheryCard smHighFashion, SomeTreacheryCard smRoboticEnhancements, SomeTreacheryCard smPartnershipOfPain, SomeTreacheryCard smSurprise, SomeTreacheryCard smSpreadingPanic, SomeTreacheryCard smCallingInFavors, SomeTreacheryCard smNowOrNever, SomeTreacheryCard smThreatOrMenace, SomeTreacheryCard smLooseEnds, SomeTreacheryCard smRemoteNavigation, SomeTreacheryCard smFromEveryDirection, SomeTreacheryCard smDeepestFears, SomeTreacheryCard smSwingingAssault, SomeTreacheryCard smUnstableSentience, SomeTreacheryCard smSmearCampaign
+  [ SomeTreacheryCard mgSabretoothStrikes, SomeTreacheryCard mgUnrelentingSavage, SomeTreacheryCard mgMutantTerrorists, SomeTreacheryCard mgInfiltration, SomeTreacheryCard mgShapeshifterSurprise, SomeTreacheryCard mgSelfRepair, SomeTreacheryCard mgMutantDetected, SomeTreacheryCard mgMasterMoldsChildren, SomeTreacheryCard mgShieldsUp, SomeTreacheryCard mgBrotherhoodBeatdown, SomeTreacheryCard mgGroundSwell, SomeTreacheryCard mgImmovable, SomeTreacheryCard mgPyromaniac, SomeTreacheryCard mgHoppingMad, SomeTreacheryCard mgMasterOfMagnetism, SomeTreacheryCard mgElectricShock, SomeTreacheryCard mgElectromagneticBlast, SomeTreacheryCard mgMetalShards, SomeTreacheryCard mgMagneticMissile, SomeTreacheryCard mgZealForTheCause, SomeTreacheryCard smSandslide, SomeTreacheryCard smSandStorm, SomeTreacheryCard smSandSmash, SomeTreacheryCard smBitingRetort, SomeTreacheryCard smForWhomTheBellTolls, SomeTreacheryCard smDejaVu, SomeTreacheryCard smFearmonger, SomeTreacheryCard smFrequentFlyers, SomeTreacheryCard smHighFashion, SomeTreacheryCard smRoboticEnhancements, SomeTreacheryCard smPartnershipOfPain, SomeTreacheryCard smSurprise, SomeTreacheryCard smSpreadingPanic, SomeTreacheryCard smCallingInFavors, SomeTreacheryCard smNowOrNever, SomeTreacheryCard smThreatOrMenace, SomeTreacheryCard smLooseEnds, SomeTreacheryCard smRemoteNavigation, SomeTreacheryCard smFromEveryDirection, SomeTreacheryCard smDeepestFears, SomeTreacheryCard smSwingingAssault, SomeTreacheryCard smUnstableSentience, SomeTreacheryCard smSmearCampaign
   , SomeTreacheryCard Hood.fieldRecruitment
   , SomeTreacheryCard Hood.upperHand
   , SomeTreacheryCard hardToKeepDown
@@ -249,6 +249,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard zzzap
   , SomeTreacheryCard feastOnThis
   , SomeTreacheryCard energyDrain
+  , SomeTreacheryCard slammed
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

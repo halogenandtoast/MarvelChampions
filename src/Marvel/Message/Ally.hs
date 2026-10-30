@@ -32,6 +32,7 @@ data AllyMessage
   | AllyAttackMultiple [EnemyId] Damage
   | AllyAttackMultipleNext [EnemyId] [EnemyId] Damage
   | AllyAttackMultipleFinished [EnemyId]
+  | AllyAttackConsequential
   | AllyThwarted
   | -- | the thwart done: its consequential damage, as the ally is then
     AllyThwartConsequential

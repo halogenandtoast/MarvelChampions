@@ -429,8 +429,10 @@ villainNarration vid = \case
       then whenRef (VillainRef vid) \t -> one $ toned Good $ mechanic [ikeyPart "log.takesNoDamage" ["target" ~> t]]
       else do
         -- what gets past a tough status card is reduced (Thanos's Armor)
-        reduced <- damageAmount . (`Villain.reducedDamage` dmg) <$> getModifiers (VillainRef vid)
-        damaged (VillainRef vid) (tough && preventedByTough dmg) reduced
+        modifiers <- getModifiers (VillainRef vid)
+        let reduced = damageAmount $ Villain.reducedDamage modifiers dmg
+        capped <- getsGame $ \g -> maybe reduced (\v -> minimum (reduced : [subtractNatural (Villain.villainDamage v) cap | MaximumSustainedDamage cap <- modifiers])) (lookup vid $ gameVillains g)
+        damaged (VillainRef vid) (tough && preventedByTough dmg) capped
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
@@ -463,7 +465,9 @@ minionNarration mid = \case
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
-    damaged (MinionRef mid) (tough && preventedByTough dmg) (damageAmount dmg)
+    modifiers <- getModifiers (MinionRef mid)
+    capped <- getsGame $ \g -> maybe (damageAmount dmg) (\m -> minimum (damageAmount dmg : [subtractNatural (Minion.minionDamageThisPhase $ toAttrs m) cap | MaximumDamagePerPhase cap <- modifiers])) (lookup mid $ gameMinions g)
+    damaged (MinionRef mid) (tough && preventedByTough dmg) capped
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
   MinionDefeated -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
   MinionStunned _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.stunned" (MinionRef mid)
@@ -489,6 +493,7 @@ attackChanged enemy n = whenRef enemy \e ->
 
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
+  AllyAttackConsequential -> Nothing
   AllyAssignEvenAttack {} -> Nothing
   AllyEvenAttackLands {} -> Nothing
   AllyEvenAttackFinished {} -> Nothing

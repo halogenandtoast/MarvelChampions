@@ -393,3 +393,27 @@ import Marvel.Event.Events.Repurpose as X
 import Marvel.Event.Events.ThwipThwip as X
 
 import Marvel.Event.Events.LimitlessStamina as X
+
+import Marvel.Event.Events.MadeOfRage as X
+
+import Marvel.Event.Events.SteelFist as X
+
+import Marvel.Event.Events.BulletproofProtector as X
+
+import Marvel.Event.Events.ArmorUp as X
+
+import Marvel.Event.Events.PowerfulPunch as X
+
+import Marvel.Event.Events.MutantProtectors as X
+
+import Marvel.Event.Events.ShadowAndSteel as X
+
+import Marvel.Event.Events.ShadowcatSurprise as X
+
+import Marvel.Event.Events.PhasedStrike as X
+
+import Marvel.Event.Events.Airwalk as X
+
+import Marvel.Event.Events.QuickShift as X
+
+import Marvel.Event.Events.TeamStrike as X

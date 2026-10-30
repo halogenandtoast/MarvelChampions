@@ -10,12 +10,14 @@ import {-# SOURCE #-} Marvel.Window.Types
 
 data AbilityType
   = Interrupt
+  | AlterEgoInterrupt
   | HeroInterrupt
   | ForcedInterrupt
   | Resource
   | HeroResource
   | AlterEgoResource
   | Response
+  | AlterEgoResponse
   | HeroResponse
   | ForcedResponse
   | Action

@@ -188,3 +188,11 @@ import Marvel.SideScheme.SideSchemes.HuntingTheSpiderTotems as X
 import Marvel.SideScheme.SideSchemes.GiantMonsterAttack as X
 
 import Marvel.SideScheme.SideSchemes.GrandLarceny as X
+
+import Marvel.SideScheme.SideSchemes.RampagingJuggernaut as X
+
+import Marvel.SideScheme.SideSchemes.TheHellfireClub as X
+
+import Marvel.SideScheme.SideSchemes.MutantGenesisCampaign as X
+
+import Marvel.SideScheme.SideSchemes.MutantGenesis as X

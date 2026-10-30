@@ -283,3 +283,27 @@ import Marvel.Upgrade.Upgrades.SpiderTingle as X
 import Marvel.Upgrade.Upgrades.Unshakable as X
 
 import Marvel.Upgrade.Upgrades.ClarityOfPurpose as X
+
+import Marvel.Upgrade.Upgrades.IronWill as X
+
+import Marvel.Upgrade.Upgrades.TitaniumMuscles as X
+
+import Marvel.Upgrade.Upgrades.OrganicSteel as X
+
+import Marvel.Upgrade.Upgrades.ProtectiveTraining as X
+
+import Marvel.Upgrade.Upgrades.Solid as X
+
+import Marvel.Upgrade.Upgrades.Phased as X
+
+import Marvel.Upgrade.Upgrades.AcuteControl as X
+
+import Marvel.Upgrade.Upgrades.IntangibleInterference as X
+
+import Marvel.Upgrade.Upgrades.PhasedAndConfused as X
+
+import Marvel.Upgrade.Upgrades.AttackTraining as X
+
+import Marvel.Upgrade.Upgrades.Gatekeeper as X
+
+import Marvel.Upgrade.Upgrades.MutantGenesisCampaign as X

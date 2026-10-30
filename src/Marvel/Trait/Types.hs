@@ -3,7 +3,18 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Aerial
+  = Acolyte
+  | Hellfire
+  | Magnetic
+  | Mission
+  | Mutant
+  | Psionic
+  | Senator
+  | Sentinel
+  | Shapeshifter
+  | Training
+  | XMen
+  | Aerial
   | Android
   | Armor
   | Assassin

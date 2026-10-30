@@ -6,6 +6,7 @@ import Data.List (nub, sortOn)
 import Marvel.Query (selectOne, selectList)
 import Marvel.Matchers (VillainMatcher (ActiveVillain))
 import Marvel.Prelude
+import Marvel.Scenario.MutantGenesis
 
 import Marvel.Card.Builder
 import Data.HashMap.Strict qualified as HashMap
@@ -62,7 +63,12 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard theHoodScenario
+    [ SomeScenarioCard mgSabretoothScenario
+    , SomeScenarioCard mgProjectWideawakeScenario
+    , SomeScenarioCard mgMasterMoldScenario
+    , SomeScenarioCard mgMansionAttackScenario
+    , SomeScenarioCard mgMagnetoScenario
+    , SomeScenarioCard theHoodScenario
     , SomeScenarioCard rhinoScenario
     , SomeScenarioCard klawScenario
     , SomeScenarioCard ultronScenario
@@ -130,7 +136,12 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("01094", [EncounterSet.BombScare])
+    [ ("32060", [EncounterSet.Brotherhood, EncounterSet.Mystique])
+    , ("32084", [EncounterSet.Sentinels])
+    , ("32109", [EncounterSet.ZeroTolerance])
+    , ("32121a", [EncounterSet.Mystique])
+    , ("32138", [EncounterSet.Acolytes])
+    , ("01094", [EncounterSet.BombScare])
     , ("01113", [EncounterSet.MastersOfEvil])
     , ("01134", [EncounterSet.UnderAttack])
     -- The Green Goblin

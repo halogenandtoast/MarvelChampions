@@ -5,7 +5,11 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = Rhino
+  = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
+  | MutantGenesisCampaign
+  | ColossusNemesis
+  | ShadowcatNemesis
+  | Rhino
   | BombScare
   | Klaw
   | MastersOfEvil
@@ -212,6 +216,13 @@ modularSets =
   , ZzzaxSet
   , Inheritors
   , IronSpiderSinisterSix
+  -- Mutant Genesis
+  , Brotherhood
+  , Mystique
+  , ZeroTolerance
+  , Sentinels
+  , Acolytes
+  , FuturePast
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -254,6 +265,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "28001" -> NovaNemesis
   "31001" -> SpdrNemesis
   "31002" -> SpdrNemesis
+  "32001" -> ColossusNemesis
+  "32030" -> ShadowcatNemesis
   cCode ->
     error $
       "No nemesis set for "

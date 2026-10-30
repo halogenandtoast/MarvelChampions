@@ -37,6 +37,7 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
+import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
 import Marvel.Window (windowMatches)
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility, GeneratedResources))
 
@@ -84,6 +85,12 @@ payCostPartAs contributing activeCost cost = do
     ExactCountersCost n -> do
       count <- getCountersOn (activeCostSource activeCost)
       if count < n then abortPayment acid else removeCounters (activeCostSource activeCost) n >> paid (CountersPayment n)
+    DiscardToughCost n -> do
+      tough <- project PlayerIdentityTough iid
+      extra <- project PlayerIdentityAdditionalTough iid
+      if (if tough then 1 else 0) + extra < n
+        then abortPayment acid
+        else replicateM_ (fromIntegral n) (removeStatus iid ToughStatus)
     GiveEnemyToughCost enemy -> do
       tough <- characterMatches (CharacterWithStatus ToughStatus) (toCharacter enemy)
       if tough then abortPayment acid else enemyBecomesTough enemy
@@ -163,6 +170,9 @@ payCostPartAs contributing activeCost cost = do
     ExhaustUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> UnexhaustedUpgrade <> upgradeControlledBy iid)
       oneOf upgrades \u -> exhaust u >> paid ExhaustPayment
+    ReturnAllyToHandCost matcher -> do
+      allies <- selectList (matcher <> AllyControlledBy (IdentityWithId iid))
+      oneOf allies returnToHand
     ReturnUpgradeToHandCost matcher -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
       oneOf upgrades returnToHand
@@ -226,6 +236,16 @@ payCostPartAs contributing activeCost cost = do
                     paid (ExhaustedCardPayment target)
                     payCost acid (ExhaustCardsWithTraitCost trait (subtractNatural 1 lo) (hi - 1))
                  | target <- cards]
+    ExhaustAlliesWithTraitCost trait n m -> do
+      allies <- selectList (AllyWithTrait trait <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
+      when (maybe True (> 0) m && notNull allies) $
+        chooseOnePromptedAbout iid "$label.chooseAllyToExhaust" (activeCostSource activeCost) $
+          [labeled "$label.done" (pure ()) | n == 0]
+            <> [targeting a do
+                  exhaust a
+                  paid (ExhaustedAllyPayment a)
+                  payCost acid (ExhaustAlliesWithTraitCost trait (subtractNatural 1 n) (subtractNatural 1 <$> m))
+               | a <- allies]
     ExhaustAlliesCost n m -> do
       allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId iid))
       when (maybe True (> 0) m && notNull allies) $
@@ -802,6 +822,10 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       -- "after you spend this card" (Pym Particles), before what was paid for resolves
       for_ (reverse $ activeCostSpentCards activeCost) \card ->
         afterSpent payer (fromMaybe payer $ pcController card <|> pcOwner card) (activeCostSpentCards activeCost) card
+      case activeCostTarget activeCost of
+        ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card ->
+          mutantEnergySpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
+        _ -> pure ()
       disableActiveCost ident
       case activeCostTarget activeCost of
         ForCard card -> do
@@ -823,15 +847,9 @@ runActiveCost msg activeCost = runQueueT $ case msg of
                 Nothing -> pure occurrence
                 Just matcher -> filterM (\window -> windowMatches matcher window (abilitySource ab)) occurrence
               pure $ map windowType triggering
-          for_ (abilityChoices ab) (resolveAs payer . abilityChoiceWithPayment payer windows payment)
-          abilityResolved (abilitySource ab)
-          -- an identity's printed ability, not its basic powers or changing form ("after
-          -- you resolve Adam Warlock's Battle Mage")
-          def <- getsGame \g -> case abilitySource ab of
-            IdentityRef _ | abilityType ab == Basic || abilityIndex ab == 100 -> Nothing
-            source -> abilityCardDef g (refocus source)
-          -- whatever the ability does, the window after it resolves follows
-          for_ def \d -> checkWindows [Window After $ ResolvedAbility payer d]
+          -- A labeled card ability begins only after its costs are paid. The game
+          -- applies status cancellation and defense declaration before its effects.
+          cardSpecific GameRef "resolveLabeledAbility" (payer, ab, windows, payment)
         ForTreachery -> pure ()
         ForContinuation _ continuation -> enqueueContinuation continuation
       pure $ activeCost {activeCostPayment = payment}

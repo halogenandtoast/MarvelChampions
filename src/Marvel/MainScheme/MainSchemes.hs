@@ -77,3 +77,5 @@ import Marvel.MainScheme.MainSchemes.SmMysterio as X
 import Marvel.MainScheme.MainSchemes.SmSinisterSix as X
 
 import Marvel.MainScheme.MainSchemes.SmVenomGoblin as X
+
+import Marvel.MainScheme.MainSchemes.MutantGenesis as X

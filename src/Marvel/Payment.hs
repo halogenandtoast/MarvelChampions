@@ -27,6 +27,10 @@ paymentResources payment = case paymentActualResources payment of
   Just resources -> pure resources
   Nothing -> concatMapM generated (payments payment)
  where
+  generated (PhysicalResourcesForTough ident) = do
+    tough <- project PlayerIdentityTough ident
+    extra <- project PlayerIdentityAdditionalTough ident
+    pure $ replicate (fromIntegral $ (if tough then 1 else 0) + extra) Physical
   generated (ResourcePayment r) = pure [r]
   generated (WildPayment r) = pure [r]
   generated (ContributedWildPayment _ r) = pure [r]

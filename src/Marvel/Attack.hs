@@ -17,6 +17,9 @@ data Attack = Attack
   , attackDefended :: Bool
   , attackPiercing :: Bool
   , attackRanged :: Bool
+  , attackPrevention :: Natural
+  , attackUsesAttackForDefense :: Maybe IdentityId
+  , attackThreatRemoval :: Maybe IdentityId
   , attackPrevented :: Bool
   -- ^ "prevent all damage from this attack"
   , attackDividedEvenly :: Bool
@@ -34,7 +37,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -72,6 +75,9 @@ attack enemyId characterId dmg =
     , attackDefended = False
     , attackPiercing = False
     , attackRanged = False
+    , attackPrevention = 0
+    , attackUsesAttackForDefense = Nothing
+    , attackThreatRemoval = Nothing
     , attackPrevented = False
     , attackDividedEvenly = False
     , attackIndirect = False
@@ -85,7 +91,7 @@ attackValue a = fromIntegral $ max 0 (fromIntegral (attackDamage a) + attackChan
 
 -- | The damage the attack deals: none once all of it is prevented.
 attackDamageDealt :: Attack -> Natural
-attackDamageDealt a = if attackPrevented a then 0 else attackValue a
+attackDamageDealt a = if attackPrevented a then 0 else subtractNatural (attackPrevention a) (attackValue a)
 
 -- | "The attack gains overkill, piercing or ranged"; no other keyword is an attack's.
 gainKeyword :: Keyword -> Attack -> Attack
@@ -112,5 +118,12 @@ keepingGains (Just old) a =
     { attackOverkill = attackOverkill a || attackOverkill old
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
+    , attackPrevented = attackPrevented a || attackPrevented old
+    , attackPrevention = attackPrevention a + attackPrevention old
+    , attackUsesAttackForDefense = attackUsesAttackForDefense old <|> attackUsesAttackForDefense a
+    , attackThreatRemoval = attackThreatRemoval old <|> attackThreatRemoval a
+    , attackDefended = attackDefended a || attackDefended old
+    , attackCharacter = if attackDefended old then attackCharacter old else attackCharacter a
+    , attackTarget = attackTarget old <|> attackTarget a
     , attackChange = attackChange a + attackChange old
     }

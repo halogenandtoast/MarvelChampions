@@ -310,3 +310,12 @@ replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, Mon
 obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool
 
 getEventPaidResources :: (HasGame m) => EventId -> m [Resource]
+
+isIdentityDefending :: (HasGame m) => IdentityId -> m Bool
+
+getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
+
+getEnemyPrintedAttack :: (HasGame m) => EnemyId -> m Natural
+getAttachmentIdentity :: (HasGame m) => AttachmentId -> m (Maybe IdentityId)
+
+usesAttackForDefense :: HasGame m => IdentityId -> EnemyId -> m Bool

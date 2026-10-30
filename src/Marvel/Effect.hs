@@ -5,6 +5,7 @@ module Marvel.Effect where
 import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
 
 import Marvel.Prelude
+import Marvel.Resource.Resources.MutantGenesis (aggressiveEnergyEffect)
 
 import Marvel.Ally.Allies
 import Marvel.Attachment.Attachments.SmModulars (delusionOfCollusionBoostEffect)
@@ -37,7 +38,10 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("31016", SomeCardEffect repurposeEffect)
+    [ ("32183", SomeCardEffect mgGroupAssaultEffect)
+    , ("32193", SomeCardEffect mgRescueOperationEffect)
+    , ("32047", SomeCardEffect aggressiveEnergyEffect)
+    , ("31016", SomeCardEffect repurposeEffect)
     , ("30029", SomeCardEffect warriorOfTheGreatWebEffect)
     , ("30010", SomeCardEffect hugeWoodenHammerEffect)
     , ("30011", SomeCardEffect organicWebbingEffect)

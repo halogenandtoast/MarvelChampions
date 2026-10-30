@@ -72,11 +72,12 @@ spec = parallel do
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
-      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives], (n, villain) <- zip [0..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis], (n, villain) <- zip [0..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
                <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
-               <> [(name, baselineRelevant) | name <- campaigns]
+               <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases)) | name <- campaigns]
+      mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
   selected <- if not focused then pure Nothing else runIO do
     for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
     for_ focusModulars $ \modular -> unless (any ((== Text.toCaseFold modular) . Text.toCaseFold . Text.pack . show) modularSets) $
@@ -130,6 +131,20 @@ spec = parallel do
                   <> zipWith RecordShieldTech identities ["27182a", "27183a"]
                   <> [RecordAspectAdvantage identity "01069" 2 | identity <- identities]
                   <> [RecordPlanningAhead identity "01091" | identity <- identities]
+                c = foldl' (flip recordInLog) base records
+            playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+    describe "Mutant Genesis campaign" do
+      for_ (zip [0 ..] $ campaignScenarios MutantGenesis) \(n, villain) ->
+        for_ [StandardCampaign, ExpertCampaign] \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
+            let heroes' = ["colossus", "shadowcat"]
+                identities = map ((.hero) . starter) heroes'
+                base = (newCampaignOf MutantGenesis mode identities) {completed = n}
+                records = zipWith RecordMutantRole identities [Defender, Brawler]
+                  <> map RecordMutantSchemeDefeated (take n ["32171a", "32172a", "32173a", "32174a", "32175a"])
+                  <> (if n > 0 then [RecordMutantJubilee True, RecordMutantCaptives ["32089", "32090"], RecordFuturePast ["32167"] ["32166"]] else [])
+                  <> zipWith RecordHitPoints identities [5, 0]
                 c = foldl' (flip recordInLog) base records
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
  where

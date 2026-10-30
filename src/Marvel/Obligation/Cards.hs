@@ -1,11 +1,27 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Keyword
+import Marvel.EncounterSet
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Matchers
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -21,7 +37,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ smFriendsAndFamily
+    [ mgReactiveDefense
+  , mgWarnTheOthers, smFriendsAndFamily
   , affairsOfState
     , legalWork
     , evictionNotice
@@ -97,6 +114,8 @@ allObligations = fromList $ map
   , aMinorSetback
   , iReallyWantAHotDog
   , inheritedBurden
+  , homesick
+  , permanentlyPhased
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -387,3 +406,26 @@ inheritedBurden :: CardDef
 inheritedBurden = (obligation "31025" "Inherited Burden" [Boost, Boost])
   { cdUnique = False
   }
+
+-- Mutant Genesis
+
+homesick :: CardDef
+homesick = (obligation "32025" "Homesick" [Boost, Boost])
+
+-- Mutant Genesis
+
+permanentlyPhased :: CardDef
+permanentlyPhased = (obligation "32055" "Permanently Phased" [Boost, Boost])
+
+-- Mutant Genesis scenario definitions
+mgWarnTheOthers :: CardDef
+mgWarnTheOthers = (smObligationDef "32099" ("Warn the Others") MGSet.ProjectWideawake 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+
+mgReactiveDefense :: CardDef
+mgReactiveDefense = (obligation "32174b" "Reactive Defense" [MGBoost.Boost, MGBoost.Boost]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}

@@ -3,6 +3,7 @@ module Marvel.Environment.Types where
 import Marvel.Prelude
 
 import Data.HashSet qualified as HashSet
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card
@@ -46,11 +47,12 @@ instance Entity Environment where
     , environmentCounters :: Natural
     , environmentDamage :: Natural
     -- ^ the damage on it (Tower Defense's Avengers Tower)
+    , environmentHeldCards :: [PlayerCard]
     , environmentOwner :: Maybe IdentityId
     -- ^ the player in whose play area it is (Ebony Maw's Spells); otherwise the villain's
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass ToJSON
   data Field Environment :: Type -> Type where
     EnvironmentId :: Field Environment EnvironmentId
     EnvironmentCardDef :: Field Environment CardDef
@@ -58,6 +60,7 @@ instance Entity Environment where
     EnvironmentCounters :: Field Environment Natural
     EnvironmentDamage :: Field Environment Natural
     EnvironmentOwner :: Field Environment (Maybe IdentityId)
+    EnvironmentHeldCards :: Field Environment [PlayerCard]
   field fld e =
     let EnvironmentAttrs {..} = toAttrs e
      in case fld of
@@ -67,6 +70,7 @@ instance Entity Environment where
           EnvironmentCounters -> environmentCounters
           EnvironmentDamage -> environmentDamage
           EnvironmentOwner -> environmentOwner
+          EnvironmentHeldCards -> environmentHeldCards
   toId = environmentId . toAttrs
   toAttrs (Environment a) = toEnvironmentAttrs a
 
@@ -100,7 +104,7 @@ environment :: (Attrs Environment -> a) -> CardDef -> CardBuilder EnvironmentId 
 environment f cardDef =
   CardBuilder
     { cbCardDef = cardDef
-    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0 0 Nothing
+    , cbCardBuilder = \cardDef eid -> f $ EnvironmentAttrs eid cardDef mempty 0 0 [] Nothing
     }
 
 attachmentsL :: Lens' (Attrs Environment) (HashSet AttachmentId)
@@ -144,3 +148,7 @@ instance RunMessage (Attrs Environment) where
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs
+
+instance FromJSON (Attrs Environment) where
+  parseJSON = withObject "EnvironmentAttrs" $ \o ->
+    genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.singleton "environmentHeldCards" (toJSON ([] :: [PlayerCard]))

@@ -1,5 +1,10 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
@@ -7,6 +12,15 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Matchers
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -24,7 +38,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
+  [ mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
+  , smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
   , unbridledAmbition
   , breakinAndTakin
   , crowdControl
@@ -228,6 +243,8 @@ allSideSchemes = fromList $ map
   , huntingTheSpiderTotems
   , giantMonsterAttack
   , grandLarceny
+  , rampagingJuggernaut
+  , theHellfireClub
   ]
 
 sideScheme
@@ -1216,4 +1233,218 @@ giantMonsterAttack = (sideScheme "31026" "Giant Monster Attack" [Boost, Boost, B
 grandLarceny :: CardDef
 grandLarceny = (sideScheme "31030" "Grand Larceny" [Boost, Boost, Boost] SpdrSet.IronSpiderSinisterSix 1)
   { cdUnique = False
+  }
+
+-- Mutant Genesis
+
+rampagingJuggernaut :: CardDef
+rampagingJuggernaut = (sideScheme "32027" "Rampaging Juggernaut" [Boost, Boost, Boost] ColossusNemesis 1)
+
+-- Mutant Genesis
+
+theHellfireClub :: CardDef
+theHellfireClub = (sideScheme "32057" "The Hellfire Club" [Boost, Boost, Boost] ShadowcatNemesis 1) {cdAcceleration = 1}
+
+mgFrightenedPolice :: CardDef
+mgFrightenedPolice = (sideScheme "32171a" "Frightened Police" [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost] MGSet.MutantGenesisCampaign 1) {cdHazards = 0, cdAcceleration = 0}
+
+mgEnemyOfMyEnemy :: CardDef
+mgEnemyOfMyEnemy = (sideScheme "32172a" "Enemy of My Enemy" [] MGSet.MutantGenesisCampaign 1) {cdHazards = 0, cdAcceleration = 1}
+
+mgFindThePrisoners :: CardDef
+mgFindThePrisoners = (sideScheme "32173a" "Find the Prisoners" [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost] MGSet.MutantGenesisCampaign 1) {cdHazards = 0, cdAcceleration = 0}
+
+mgSurpriseAttack :: CardDef
+mgSurpriseAttack = (sideScheme "32174a" "Surprise Attack" [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost] MGSet.MutantGenesisCampaign 1) {cdHazards = 1, cdAcceleration = 0}
+
+mgMagnetosFortress :: CardDef
+mgMagnetosFortress = (sideScheme "32175a" "Magneto's Fortress" [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost] MGSet.MutantGenesisCampaign 1) {cdHazards = 0, cdAcceleration = 0}
+
+-- Mutant Genesis scenario definitions
+mgFindTheSenator :: CardDef
+mgFindTheSenator = (smSideSchemeDef "32065a" ("Find the Senator") MGSet.Sabretooth 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgMedicalEmergency :: CardDef
+mgMedicalEmergency = (smSideSchemeDef "32071" ("Medical Emergency") MGSet.Sabretooth 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdAcceleration = 1
+  , cdKeywords = fromList [MGKeyword.Victory 1, MGKeyword.Hinder (MGValue.PerPlayer 2)]
+  }
+
+mgFeralRage :: CardDef
+mgFeralRage = (smSideSchemeDef "32072" ("Feral Rage") MGSet.Sabretooth 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgTheBrotherhood :: CardDef
+mgTheBrotherhood = (smSideSchemeDef "32079" ("The Brotherhood") MGSet.Brotherhood 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdHazards = 1
+  , cdKeywords = fromList [MGKeyword.Hinder (MGValue.PerPlayer 2)]
+  }
+
+mgMetamorphicMayhem :: CardDef
+mgMetamorphicMayhem = (smSideSchemeDef "32081" ("Metamorphic Mayhem") MGSet.Mystique 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdAmplify = 1
+  , cdKeywords = fromList []
+  }
+
+mgMutantsAtTheMall :: CardDef
+mgMutantsAtTheMall = (smSideSchemeDef "32088a" ("Mutants at the Mall") MGSet.ProjectWideawake 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdAcceleration = 1
+  , cdKeywords = fromList []
+  }
+
+mgAbductionProtocols :: CardDef
+mgAbductionProtocols = (smSideSchemeDef "32100" ("Abduction Protocols") MGSet.ProjectWideawake 4)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Victory 2, MGKeyword.Hinder (MGValue.PerPlayer 2)]
+  }
+
+mgOperationZeroTolerance :: CardDef
+mgOperationZeroTolerance = (smSideSchemeDef "32104" ("Operation Zero Tolerance") MGSet.ZeroTolerance 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgRelentlessRobots :: CardDef
+mgRelentlessRobots = (smSideSchemeDef "32108" ("Relentless Robots") MGSet.Sentinels 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdHazards = 1
+  , cdKeywords = fromList []
+  }
+
+mgIntruderAlert :: CardDef
+mgIntruderAlert = (smSideSchemeDef "32119" ("Intruder Alert!") MGSet.MasterMold 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgInsertVirusProgram :: CardDef
+mgInsertVirusProgram = (smSideSchemeDef "32120" ("Insert Virus Program") MGSet.MasterMold 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdAcceleration = 1
+  , cdKeywords = fromList [MGKeyword.Victory 1, MGKeyword.Hinder (MGValue.PerPlayer 2)]
+  }
+
+mgProtectTheStudents :: CardDef
+mgProtectTheStudents = (smSideSchemeDef "32136" ("Protect the Students") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Hinder (MGValue.PerPlayer 2)]
+  }
+
+mgUnderSiege :: CardDef
+mgUnderSiege = (smSideSchemeDef "32137" ("Under Siege") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdAcceleration = 1
+  , cdKeywords = fromList []
+  }
+
+mgBoardingParty :: CardDef
+mgBoardingParty = (smSideSchemeDef "32144a" ("Boarding Party") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgSabotageMasterMold :: CardDef
+mgSabotageMasterMold = (smSideSchemeDef "32144b" ("Sabotage Master Mold") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgOrbitalDecay :: CardDef
+mgOrbitalDecay = (smSideSchemeDef "32145a" ("Orbital Decay") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgMagneticMayhem :: CardDef
+mgMagneticMayhem = (smSideSchemeDef "32156" ("Magnetic Mayhem") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdAmplify = 1
+  , cdKeywords = fromList []
+  }
+
+mgMagneticallySealed :: CardDef
+mgMagneticallySealed = (smSideSchemeDef "32157" ("Magnetically Sealed") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgSeized :: CardDef
+mgSeized = (smSideSchemeDef "32158" ("Seized!") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdAcceleration = 1
+  , cdKeywords = fromList []
+  }
+
+mgTheAcolytes :: CardDef
+mgTheAcolytes = (smSideSchemeDef "32165" ("The Acolytes") MGSet.Acolytes 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdHazards = 1
+  , cdKeywords = fromList []
+  }
+
+mgNimrodsPortal :: CardDef
+mgNimrodsPortal = (smSideSchemeDef "32168" ("Nimrod's Portal") MGSet.FuturePast 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdHazards = 1
+  , cdKeywords = fromList [MGKeyword.Victory 1]
+  }
+
+mgBastionsMachinations :: CardDef
+mgBastionsMachinations = (smSideSchemeDef "32169" ("Bastion's Machinations") MGSet.FuturePast 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdAmplify = 1
+  , cdKeywords = fromList [MGKeyword.Victory 1]
   }

@@ -1,11 +1,25 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Matchers
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -26,7 +40,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
+      [ mgMagnetosPower
+  , mgAdamantiumClaws, mgAnimalFerocity, mgHomoSuperior, mgGauntletBeam, mgLearningAI, mgAdaptiveArmor, mgEnergyBarrier, mgTargetedForElimination, mgUnitUpgrade, mgStunBeam, mgPhysicalStrain, mgMagnetosHelmet, mgMagnetosArmor, mgMagneticBubble, mgWrappedInMetal, mgNanoSentinelTech, smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
   , establishedDominance
       , theHoodsMantle
       , theHoodsPistol
@@ -191,6 +206,8 @@ allAttachments =
   , cyborgTech
   , haywire
   , gobblerGlider
+  , unstoppable
+  , telepathicRestraint
   ]
 
 attachment ::
@@ -1037,3 +1054,146 @@ gobblerGlider = (attachment "30027" "Gobbler Glider" [] [Boost, Boost] SMSet.Spi
   { cdUnique = False
   , cdKeywords = fromList [Surge]
   }
+
+-- Mutant Genesis
+
+unstoppable :: CardDef
+unstoppable = (attachment "32028" "Unstoppable" [] [Boost, Boost] ColossusNemesis 2)
+
+-- Mutant Genesis
+
+telepathicRestraint :: CardDef
+telepathicRestraint = (attachment "32059" "Telepathic Restraint" [Condition] [Boost, Boost] ShadowcatNemesis 1)
+
+-- Mutant Genesis scenario definitions
+mgAdamantiumClaws :: CardDef
+mgAdamantiumClaws = (smAttachmentDef "32067" ("Adamantium Claws") MGSet.Sabretooth 1)
+  { cdTraits = fromList [MGTrait.Weapon]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgAnimalFerocity :: CardDef
+mgAnimalFerocity = (smAttachmentDef "32068" ("Animal Ferocity") MGSet.Sabretooth 1)
+  { cdTraits = fromList [MGTrait.Condition]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgHomoSuperior :: CardDef
+mgHomoSuperior = (smAttachmentDef "32077" ("Homo Superior") MGSet.Brotherhood 2)
+  { cdTraits = fromList [MGTrait.Condition]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgGauntletBeam :: CardDef
+mgGauntletBeam = (smAttachmentDef "32094" ("Gauntlet Beam") MGSet.ProjectWideawake 2)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgLearningAI :: CardDef
+mgLearningAI = (smAttachmentDef "32095" ("Learning A.I.") MGSet.ProjectWideawake 1)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgAdaptiveArmor :: CardDef
+mgAdaptiveArmor = (smAttachmentDef "32096" ("Adaptive Armor") MGSet.ProjectWideawake 1)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgEnergyBarrier :: CardDef
+mgEnergyBarrier = (smAttachmentDef "32103" ("Energy Barrier") MGSet.ZeroTolerance 2)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgTargetedForElimination :: CardDef
+mgTargetedForElimination = (smAttachmentDef "32107" ("Targeted for Elimination") MGSet.Sentinels 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgUnitUpgrade :: CardDef
+mgUnitUpgrade = (smAttachmentDef "32115" ("Unit Upgrade") MGSet.MasterMold 2)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgStunBeam :: CardDef
+mgStunBeam = (smAttachmentDef "32116" ("Stun Beam") MGSet.MasterMold 2)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgPhysicalStrain :: CardDef
+mgPhysicalStrain = (smAttachmentDef "32145b" ("Physical Strain") MGSet.Magneto 0)
+  { cdTraits = fromList [MGTrait.Condition]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList [MGKeyword.Permanent]
+  }
+
+mgMagnetosHelmet :: CardDef
+mgMagnetosHelmet = (smAttachmentDef "32147" ("Magneto's Helmet") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Armor, MGTrait.Magnetic]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgMagnetosArmor :: CardDef
+mgMagnetosArmor = (smAttachmentDef "32148" ("Magneto's Armor") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Armor, MGTrait.Magnetic]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgMagneticBubble :: CardDef
+mgMagneticBubble = (smAttachmentDef "32149" ("Magnetic Bubble") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgWrappedInMetal :: CardDef
+mgWrappedInMetal = (smAttachmentDef "32150" ("Wrapped in Metal") MGSet.Magneto 1)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgNanoSentinelTech :: CardDef
+mgNanoSentinelTech = (smAttachmentDef "32170" ("Nano-Sentinel Tech") MGSet.FuturePast 1)
+  { cdTraits = fromList [MGTrait.Sentinel, MGTrait.Tech]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Victory 1]
+  }
+
+
+mgMagnetosPower :: CardDef
+mgMagnetosPower = (attachment "32175b" "Magneto's Power" [MGTrait.Condition] [] MGSet.MutantGenesisCampaign 1) {cdKeywords = fromList [MGKeyword.Permanent]}

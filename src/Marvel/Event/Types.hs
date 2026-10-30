@@ -145,7 +145,7 @@ instance RunMessage (Attrs Event) where
         for_ (nub [attacker | (attacker, _, _) <- eventAttacked e]) \attacker ->
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource e) attacker (nub [enemy | (who, enemy, _) <- eventAttacked e, who == attacker])]
         discardCard e
-        when (cdAbilityType (eventCardDef e) `elem` map Just [Ability.Interrupt, Ability.HeroInterrupt, Ability.ForcedInterrupt, Ability.Response, Ability.HeroResponse, Ability.ForcedResponse]) $
+        when (cdAbilityType (eventCardDef e) `elem` map Just [Ability.Interrupt, Ability.AlterEgoInterrupt, Ability.HeroInterrupt, Ability.ForcedInterrupt, Ability.Response, Ability.AlterEgoResponse, Ability.HeroResponse, Ability.ForcedResponse]) $
           checkWindows [W.Window W.After $ W.EventAbilityResolved (eventController e) (eventId e) (eventCardDef e)]
         pure e {eventAttacked = [], eventThwarted = False}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made

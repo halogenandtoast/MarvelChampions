@@ -12,6 +12,7 @@ import Data.List qualified as List
 import Control.Monad (mfilter)
 import Data.Maybe (maybeToList)
 import Marvel.Card.Code
+import Marvel.Aspect (Aspect (..))
 
 data CampaignMode = StandardCampaign | ExpertCampaign
   deriving stock (Show, Eq, Generic)
@@ -64,6 +65,7 @@ data CampaignLog = CampaignLog
   -- ^ The Galaxy's Most Wanted's log ("docs/rules/campaign-galaxys-most-wanted.md")
   , titan :: TitanLog
   -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
+  , mutantGenesis :: MutantGenesisLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
   }
@@ -181,8 +183,53 @@ instance FromJSON SinisterLog where
 noSinisterLog :: SinisterLog
 noSinisterLog = SinisterLog [] 0 [] [] Nothing [] Nothing
 
+-- | The four team roles, fixed and distinct for a Mutant Genesis campaign.
+data MutantRole = Brawler | Commander | Defender | Peacekeeper
+  deriving stock (Show, Eq, Generic, Enum, Bounded)
+  deriving anyclass (ToJSON, FromJSON)
+
+data MutantPlayer = MutantPlayer {identity :: CardCode, role :: Maybe MutantRole}
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
+data MutantGenesisLog = MutantGenesisLog
+  { mutantPlayers :: [MutantPlayer]
+  , defeatedSchemes :: [CardCode]
+  , futurePastRemoved :: [CardCode]
+  , futurePastActive :: [CardCode]
+  , futurePastDeck :: [CardCode]
+  , roleUpgradesRemoved :: [CardCode]
+  , roleUpgradesInPlay :: [CardCode]
+  , jubileeInPlay :: Bool
+  , captiveAllies :: [CardCode]
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass ToJSON
+
+instance FromJSON MutantGenesisLog where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just noMutantGenesisLog
+
+noMutantGenesisLog :: MutantGenesisLog
+noMutantGenesisLog = MutantGenesisLog [] [] [] [] [] [] [] False []
+
+mutantPlayer :: CardCode -> Campaign -> Maybe MutantPlayer
+mutantPlayer ident c = find ((== toHeroCardCode ident) . (.identity)) c.campaignLog.mutantGenesis.mutantPlayers
+
+mutantRoleCards :: MutantRole -> [CardCode]
+mutantRoleCards r = map (CardCode . tshow) [start .. start + 4]
+ where
+  start = case r of { Brawler -> 32176; Commander -> 32181; Defender -> 32186; Peacekeeper -> 32191 } :: Int
+
+mutantRoleAspects :: MutantRole -> [Aspect]
+mutantRoleAspects = \case
+  Brawler -> [Aggression, Protection]
+  Commander -> [Aggression, Leadership]
+  Defender -> [Justice, Protection]
+  Peacekeeper -> [Justice, Leadership]
+
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -258,6 +305,14 @@ data CampaignRecord
   | RecordWakingNightmare Natural
   | RecordLastOnesStanding [CardCode]
   | RecordFinalReputation
+  | RecordMutantRole CardCode MutantRole
+  | RecordMutantSchemeDefeated CardCode
+  | RecordFuturePast [CardCode] [CardCode]
+  | RecordFuturePastDeck [CardCode]
+  | RecordMutantRoleUpgrade CardCode
+  | RemoveMutantRoleUpgrade CardCode
+  | RecordMutantJubilee Bool
+  | RecordMutantCaptives [CardCode]
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -286,6 +341,7 @@ campaignScenarios = \case
   GalaxysMostWanted -> galaxysMostWanted
   MadTitansShadow -> madTitansShadow
   SinisterMotives -> sinisterMotives
+  MutantGenesis -> ["32060", "32084", "32109", "32121a", "32138"]
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -346,6 +402,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , mutantGenesis = noMutantGenesisLog {mutantPlayers = [MutantPlayer (toHeroCardCode i) Nothing | kind == MutantGenesis, i <- identities]}
           , sinister = noSinisterLog {sinisterPlayers = [SinisterPlayer (toHeroCardCode i) Nothing Nothing Nothing | kind == SinisterMotives, i <- identities]}
           }
     }
@@ -434,7 +491,16 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
-recordInLog r c = case r of
+recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordMutantRole ident r -> mutant \l -> l {mutantPlayers = [if p.identity == toHeroCardCode ident then p {role = Just r} else p | p <- l.mutantPlayers]}
+  RecordMutantSchemeDefeated code -> mutant \l -> l {defeatedSchemes = nub (l.defeatedSchemes <> [code])}
+  RecordFuturePast active removed -> mutant \l -> l {futurePastActive = active, futurePastRemoved = nub (l.futurePastRemoved <> removed)}
+  RecordFuturePastDeck codes -> mutant \l -> l {futurePastDeck = codes}
+  RecordMutantRoleUpgrade code -> mutant \l -> l {roleUpgradesInPlay = nub (l.roleUpgradesInPlay <> [code])}
+  RemoveMutantRoleUpgrade code -> mutant \l -> l {roleUpgradesRemoved = nub (l.roleUpgradesRemoved <> [code]), roleUpgradesInPlay = filter (/= code) l.roleUpgradesInPlay}
+  RecordMutantJubilee present -> mutant \l -> l {jubileeInPlay = present}
+  RecordMutantCaptives codes -> mutant \l -> l {captiveAllies = nub (l.captiveAllies <> codes)}
+
   RecordHitPoints ident n -> player ident \p -> p {hitPoints = Just n}
   RecordExperimentalWeapons codes -> logged \l -> l {experimentalWeapons = nub (l.experimentalWeapons <> codes)}
   RecordDelayCounters n -> logged \l -> l {delayCounters = Just n}

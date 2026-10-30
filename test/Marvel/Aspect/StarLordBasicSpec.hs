@@ -50,6 +50,30 @@ spec = describe "Star-Lord pack basic and other aspect cards" do
         cosmoDamage `shouldReturn` 0
         map toCardCode <$> encounterDiscardNow >>= (`shouldSatisfy` elem (toCardCode Treacheries.shadowOfThePast))
 
+    it "does not carry a successful discard from an aborted attack into its next use" do
+      tg <- testGame ["captain-marvel"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        card <- putIntoPlay p "17020"
+        target <- addMinion p Minions.hydraBomber
+        _ <- stackEncounterDeck [Treacheries.shadowOfThePast]
+        cosmo <- allyIn "17020"
+        choose "Cosmo attacks" (isAllyAttack cosmo)
+        choose "attack the minion" (isTargetChoice target)
+        choose "Cosmo's interrupt" (isAbilityOfCard card)
+        choose "name treachery" (isLabel "$label.nameTreacheryType")
+        -- Another interrupt defeats the target before Cosmo finishes its own.
+        resolve [MinionMessage target MinionDefeated]
+        choose "the encounter deck" (isLabel "$label.encounterDeck")
+        pass
+        cosmoDamage `shouldReturn` 0
+        runNow [AllyMessage (allyId cosmo) ReadiedAlly]
+        choose "Cosmo attacks again" (isAllyAttack cosmo)
+        chooseVillain
+        pass
+        cosmoDamage `shouldReturn` 1
+
     it "takes it when the card is of another type" do
       tg <- testGame ["captain-marvel"]
       let p = player1 tg

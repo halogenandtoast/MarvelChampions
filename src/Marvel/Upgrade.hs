@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Upgrade where
 
+import Marvel.Upgrade.Upgrades.MutantGenesisCampaign
 import Marvel.Prelude
 
 import Marvel.Card
@@ -24,7 +25,8 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard smCompactDartsA, SomeUpgradeCard smCompactDartsB, SomeUpgradeCard smImpactDampeningSuitA, SomeUpgradeCard smImpactDampeningSuitB, SomeUpgradeCard smLaserGogglesA, SomeUpgradeCard smLaserGogglesB, SomeUpgradeCard smPropulsionGauntletA, SomeUpgradeCard smPropulsionGauntletB, SomeUpgradeCard smRetinalDisplayA, SomeUpgradeCard smRetinalDisplayB, SomeUpgradeCard smShockKnucklesA, SomeUpgradeCard smShockKnucklesB, SomeUpgradeCard smWaveBracersA, SomeUpgradeCard smWaveBracersB, SomeUpgradeCard smWristNavigatorA, SomeUpgradeCard smWristNavigatorB
+  [ SomeUpgradeCard mgCoupDeGrace, SomeUpgradeCard mgSwagger, SomeUpgradeCard mgBrazenDefense, SomeUpgradeCard mgFerociousAttack, SomeUpgradeCard mgWarCry, SomeUpgradeCard mgCommanderCoupDeGrace, SomeUpgradeCard mgCompassion, SomeUpgradeCard mgGroupAssault, SomeUpgradeCard mgShockAndAwe, SomeUpgradeCard mgImprovisation, SomeUpgradeCard mgDefenderSwagger, SomeUpgradeCard mgSurprise, SomeUpgradeCard mgHeroicIntervention, SomeUpgradeCard mgDeterminedDefense, SomeUpgradeCard mgBodyguard, SomeUpgradeCard mgPeacekeeperSurprise, SomeUpgradeCard mgPeacekeeperCompassion, SomeUpgradeCard mgRescueOperation, SomeUpgradeCard mgMentorship, SomeUpgradeCard mgFortitude
+  , SomeUpgradeCard smCompactDartsA, SomeUpgradeCard smCompactDartsB, SomeUpgradeCard smImpactDampeningSuitA, SomeUpgradeCard smImpactDampeningSuitB, SomeUpgradeCard smLaserGogglesA, SomeUpgradeCard smLaserGogglesB, SomeUpgradeCard smPropulsionGauntletA, SomeUpgradeCard smPropulsionGauntletB, SomeUpgradeCard smRetinalDisplayA, SomeUpgradeCard smRetinalDisplayB, SomeUpgradeCard smShockKnucklesA, SomeUpgradeCard smShockKnucklesB, SomeUpgradeCard smWaveBracersA, SomeUpgradeCard smWaveBracersB, SomeUpgradeCard smWristNavigatorA, SomeUpgradeCard smWristNavigatorB
   , SomeUpgradeCard spiderTracer
   , SomeUpgradeCard webShooter
   , SomeUpgradeCard webbedUp
@@ -274,6 +276,17 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard spiderTingle
   , SomeUpgradeCard unshakable
   , SomeUpgradeCard clarityOfPurpose
+  , SomeUpgradeCard ironWill
+  , SomeUpgradeCard titaniumMuscles
+  , SomeUpgradeCard organicSteel
+  , SomeUpgradeCard protectiveTraining
+  , SomeUpgradeCard solid
+  , SomeUpgradeCard phased
+  , SomeUpgradeCard acuteControl
+  , SomeUpgradeCard intangibleInterference
+  , SomeUpgradeCard phasedAndConfused
+  , SomeUpgradeCard attackTraining
+  , SomeUpgradeCard gatekeeper
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

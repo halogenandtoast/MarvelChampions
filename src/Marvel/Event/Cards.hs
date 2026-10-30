@@ -1,5 +1,7 @@
 module Marvel.Event.Cards where
 
+import Marvel.Keyword
+import Marvel.EncounterSet
 import Marvel.Prelude
 
 import Marvel.Keyword (Keyword (Alliance, Requirement))
@@ -362,6 +364,18 @@ allEvents = fromList $ concatMap
   , repurpose
   , thwipThwip
   , limitlessStamina
+  , madeOfRage
+  , steelFist
+  , bulletproofProtector
+  , armorUp
+  , powerfulPunch
+  , mutantProtectors
+  , shadowAndSteel
+  , shadowcatSurprise
+  , phasedStrike
+  , airwalk
+  , quickShift
+  , teamStrike
   ]
 
 event
@@ -765,7 +779,7 @@ dropKick =
     }
 
 toeToToe :: CardDef
-toeToToe =
+toeToToe = reprintedAs ["32046"] $
   (event "10015" "Toe to Toe" 1 HeroAction [Attack] [Mental] Aggression)
     { cdAbilitySubTypes = [Ability.Attack]
     }
@@ -1162,7 +1176,7 @@ allForOne =
     }
 
 perseverance :: CardDef
-perseverance =
+perseverance = reprintedAs ["32016"] $
   (event "13033" "Perseverance" 1 HeroResponse [Tactic] [Mental] Protection)
     { cdResponseWindow = Just (IdentityChangedAnyForm After You)
     }
@@ -1298,8 +1312,8 @@ lastStand =
     }
 
 baitAndSwitch :: CardDef
-baitAndSwitch =
-  reprintedAs ["27013"] $ (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
+baitAndSwitch = reprintedAs ["32015", "27013"] $
+  (event "15030" "Bait and Switch" 1 HeroAction [Thwart] [Energy] Protection)
     { cdAbilitySubTypes = [Ability.Thwart]
     }
 
@@ -2391,4 +2405,109 @@ limitlessStamina = (basicEvent "31023" "Limitless Stamina" 1 HeroAction [Superpo
   { cdUnique = False
   , cdCriteria = SelfMatches (IdentityWithPrintedHitPoints $ AtLeast $ Static 14)
   , cdDeckLimit = Just 3
+  }
+
+-- Mutant Genesis
+
+madeOfRage :: CardDef
+madeOfRage = (identityEvent "32007" "Made of Rage" 0 HeroInterrupt [Superpower] [Energy])
+  { cdDeckLimit = Just 2
+  , cdAbilityCost = DiscardToughCost 1
+  , cdResponseWindow = Just (MakesBasicAttack When You)
+  }
+
+-- Mutant Genesis
+
+steelFist :: CardDef
+steelFist = (identityEvent "32008" "Steel Fist" 2 HeroAction [Attack, Superpower] [Physical])
+  { cdDeckLimit = Just 3
+  , cdAbilitySubTypes = [Ability.Attack]
+  }
+
+-- Mutant Genesis
+
+bulletproofProtector :: CardDef
+bulletproofProtector = (identityEvent "32009" "Bulletproof Protector" 0 HeroAction [Superpower] [Physical])
+  { cdDeckLimit = Just 2
+  , cdAbilityCost = DiscardToughCost 1
+  }
+
+-- Mutant Genesis
+
+armorUp :: CardDef
+armorUp = (identityEvent "32010" "Armor Up" 0 AlterEgoInterrupt [Superpower] [Physical])
+  { cdDeckLimit = Just 2
+  , cdResponseWindow = Just (VillainWouldActivate AnyIdentity)
+  }
+
+-- Mutant Genesis
+
+powerfulPunch :: CardDef
+powerfulPunch = (event "32014" "Powerful Punch" 2 HeroInterrupt [Attack, Defense] [Physical] Protection)
+  { cdDeckLimit = Just 3
+  , cdAbilitySubTypes = [Ability.Attack, Ability.Defense]
+  , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
+  }
+
+-- Mutant Genesis
+
+mutantProtectors :: CardDef
+mutantProtectors = (event "32017" "Mutant Protectors" 1 HeroInterrupt [Defense] [Energy] Protection)
+  { cdDeckLimit = Just 3
+  , cdAbilitySubTypes = [Ability.Defense]
+  , cdCriteria = SelfMatches (IdentityWithTrait XMen)
+  , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
+  }
+
+-- Mutant Genesis
+
+shadowAndSteel :: CardDef
+shadowAndSteel = reprintedAs ["32050"] $ (basicEvent "32021" "Shadow and Steel" 2 HeroInterrupt [Attack, Defense] [Physical])
+  { cdDeckLimit = Just 1
+  , cdAbilitySubTypes = [Ability.Attack, Ability.Defense]
+  , cdTeamUp = Just ("Colossus", "Shadowcat")
+  , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
+  }
+
+-- Mutant Genesis
+
+shadowcatSurprise :: CardDef
+shadowcatSurprise = (identityEvent "32037" "Shadowcat Surprise" 2 HeroAction [Attack, Superpower] [Physical])
+  { cdDeckLimit = Just 3
+  , cdAbilitySubTypes = [Ability.Attack]
+  }
+
+-- Mutant Genesis
+
+phasedStrike :: CardDef
+phasedStrike = (identityEvent "32038" "Phased Strike" 3 HeroAction [Attack, Superpower] [Energy])
+  { cdDeckLimit = Just 2
+  , cdAbilitySubTypes = [Ability.Attack]
+  }
+
+-- Mutant Genesis
+
+airwalk :: CardDef
+airwalk = (identityEvent "32039" "Airwalk" 1 HeroAction [Superpower, Thwart] [Mental])
+  { cdDeckLimit = Just 2
+  , cdAbilitySubTypes = [Ability.Thwart]
+  }
+
+-- Mutant Genesis
+
+quickShift :: CardDef
+quickShift = (identityEvent "32040" "Quick Shift" 0 HeroInterrupt [Defense, Superpower] [Energy])
+  { cdDeckLimit = Just 2
+  , cdAbilitySubTypes = [Ability.Defense]
+  , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
+  }
+
+-- Mutant Genesis
+
+teamStrike :: CardDef
+teamStrike = (event "32045" "Team Strike" 1 HeroAction [Attack] [Energy] Aggression)
+  { cdDeckLimit = Just 3
+  , cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = SelfMatches (IdentityWithTrait XMen)
+  , cdAbilityCost = ExhaustCost <> ExhaustAlliesWithTraitCost XMen 0 Nothing
   }

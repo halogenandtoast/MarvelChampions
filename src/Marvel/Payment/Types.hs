@@ -26,6 +26,7 @@ data Payment
     SyncRatioSpentPayment Natural
   | -- | The player who generated the following resource receipts.
     GeneratedByPayment IdentityId
+  | PhysicalResourcesForTough IdentityId
   | ResourcePayment Resource
   | -- | a wild resource spent, as the type its payer declared it (RR Wild Resource):
     -- wild until they say otherwise

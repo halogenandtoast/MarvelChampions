@@ -78,3 +78,7 @@ import Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion3 as X
 import Marvel.AlterEgo.AlterEgos.PeterPorker as X
 
 import Marvel.AlterEgo.AlterEgos.PeniParker as X
+
+import Marvel.AlterEgo.AlterEgos.PiotrRasputin as X
+
+import Marvel.AlterEgo.AlterEgos.KittyPryde as X

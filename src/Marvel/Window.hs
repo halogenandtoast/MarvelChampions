@@ -63,8 +63,8 @@ windowMatches matcher w source = case matcher of
     ThwartedAllThreat ident _ -> identityMatches identityMatcher ident
     _ -> pure False
   CharacterWouldTakeAttackDamage characterMatcher -> case windowType w of
-    IdentityTakeDamage ident damage | damageAmount damage > 0 && damageSource damage == FromAttack -> characterMatches characterMatcher (IdentityCharacter ident)
-    AllyTakeDamage aid damage | damageAmount damage > 0 && damageSource damage == FromAttack -> characterMatches characterMatcher (AllyCharacter aid)
+    IdentityTakeDamage ident damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (IdentityCharacter ident)
+    AllyTakeDamage aid damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (AllyCharacter aid)
     _ -> pure False
   AllyWouldTakeDamageOf timing allyMatcher source -> case windowType w of
     AllyTakeDamage aid damage
@@ -117,7 +117,7 @@ windowMatches matcher w source = case matcher of
           liftA2
             (&&)
             (identityMatches identityMatcher ident)
-            (enemyMatches enemyMatcher enemyId)
+            (enemyMatches (if timing == After then DefeatedEnemy enemyMatcher else enemyMatcher) enemyId)
     _ -> pure False
   AllyAttacked timing allyMatcher enemyMatcher -> case windowType w of
     FriendlyCharacterAttack (AllyCharacter aid) _
@@ -127,9 +127,9 @@ windowMatches matcher w source = case matcher of
           liftA2
             (&&)
             (allyMatches allyMatcher allyId)
-            (enemyMatches enemyMatcher enemyId)
+            (enemyMatches (if timing == After then DefeatedEnemy enemyMatcher else enemyMatcher) enemyId)
     AllyAttackCompletedAgainst allyId enemies | windowTiming w == timing ->
-      liftA2 (&&) (allyMatches allyMatcher allyId) (anyM (enemyMatches enemyMatcher) enemies)
+      liftA2 (&&) (allyMatches allyMatcher allyId) (anyM (enemyMatches $ if timing == After then DefeatedEnemy enemyMatcher else enemyMatcher) enemies)
     _ -> pure False
   -- A single attack may resolve against several enemies. Its After window is one
   -- triggering condition; a target matcher succeeds if any resolved enemy matches.
@@ -275,6 +275,21 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           upgradeMatches upgradeMatcher upgradeId
     _ -> pure False
+  IdentityAttackResolved matcher -> case windowType w of
+    PlayerAttackResolved _ ident _ | windowTiming w == After -> identityMatches matcher ident
+    _ -> pure False
+  VillainWouldActivate matcher -> case windowType w of
+    VillainActivationWouldBegin _ ident | windowTiming w == Would -> identityMatches matcher ident
+    _ -> pure False
+  IdentityIgnoresKeyword timing im mm -> case windowType w of
+    IgnoredKeyword ident mid | windowTiming w == timing -> liftA2 (&&) (identityMatches im ident) (minionMatches mm mid)
+    _ -> pure False
+  IdentityIgnoresCrisis timing im sm -> case windowType w of
+    IgnoredCrisis ident sid | windowTiming w == timing -> liftA2 (&&) (identityMatches im ident) (sideSchemeMatches sm sid)
+    _ -> pure False
+  IdentityDiscardsTough timing identityMatcher -> case windowType w of
+    IdentityDiscardedTough ident | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
   MassFormChangedTo timing upgradeMatcher -> case windowType w of
     MassFormChanged _ upgradeId
       | windowTiming w == timing -> upgradeMatches upgradeMatcher upgradeId
@@ -343,6 +358,14 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   CardWouldBeDiscardedFromPlay -> case windowType w of
     WouldBeDiscardedFromPlay _ -> pure $ windowTiming w == Would
+    _ -> pure False
+  MakesBasicDefense timing identityMatcher enemyMatcher -> case windowType w of
+    MadeBasicDefense identityId enemyId
+      | windowTiming w == timing ->
+          liftA2
+            (&&)
+            (identityMatches identityMatcher identityId)
+            (enemyMatches enemyMatcher enemyId)
     _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId

@@ -23,7 +23,7 @@ import Marvel.Window qualified as W
 
 instance HasAbilities AlterEgo where
   getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
-    where basicAbilities = [ability a 200 Basic (SelfMatches IdentityWithAnyDamage) ExhaustCost Recover]
+    where basicAbilities = [ability a 200 Basic (SelfMatches (IdentityWithAnyDamage <> IdentityCanRecover)) ExhaustCost Recover]
 
 instance HasTraits AlterEgo where
   getTraits = pure . cdTraits . getCardDef

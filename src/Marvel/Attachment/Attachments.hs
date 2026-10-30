@@ -149,3 +149,11 @@ import Marvel.Attachment.Attachments.Haywire as X
 
 -- Spider-Ham
 import Marvel.Attachment.Attachments.GobblerGlider as X
+
+import Marvel.Attachment.Attachments.Unstoppable as X
+
+import Marvel.Attachment.Attachments.TelepathicRestraint as X
+
+import Marvel.Attachment.Attachments.MutantGenesis as X
+
+import Marvel.Attachment.Attachments.MutantGenesisCampaign as X

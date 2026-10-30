@@ -215,3 +215,23 @@ import Marvel.Ally.Allies.SpiderManNoir as X
 import Marvel.Ally.Allies.SpiderHamPeterPorker as X
 
 import Marvel.Ally.Allies.SpiderManOttoOctavius as X
+
+import Marvel.Ally.Allies.ShadowcatKittyPryde as X
+
+import Marvel.Ally.Allies.Nightcrawler as X
+
+import Marvel.Ally.Allies.Polaris as X
+
+import Marvel.Ally.Allies.ProfessorX as X
+
+import Marvel.Ally.Allies.Lockheed as X
+
+import Marvel.Ally.Allies.Wolverine as X
+
+import Marvel.Ally.Allies.Magik as X
+
+import Marvel.Ally.Allies.ColossusPiotrRasputin as X
+
+import Marvel.Ally.Allies.MutantGenesisCampaign as X
+
+import Marvel.Ally.Allies.MutantGenesis as X

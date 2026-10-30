@@ -153,7 +153,7 @@ instance RunMessage (Attrs Hero) where
           unless forbidden do
             exhaust ident
             enemyDefendedBy enemy (IdentityCharacter ident)
-            checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+            checkWindows [W.Window W.When $ W.HeroDefends ident enemy, W.Window W.When $ W.MadeBasicDefense ident enemy]
             defenseApplied ident enemy
           pure a
         -- A card may declare the basic defender without exhausting it. Its DEF is
@@ -162,11 +162,14 @@ instance RunMessage (Attrs Hero) where
           forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
           unless forbidden do
             enemyDefendedBy enemy (IdentityCharacter ident)
-            checkWindows [W.Window W.When $ W.HeroDefends ident enemy]
+            checkWindows [W.Window W.When $ W.HeroDefends ident enemy, W.Window W.When $ W.MadeBasicDefense ident enemy]
             identityStep ident (SideMessage $ DefenseApplied bonus enemy)
           pure a
         DefenseApplied bonus enemy -> do
-          addDefense ident . (+ bonus) =<< getModifiedDefenseAgainst a enemy
+          usingAttack <- usesAttackForDefense ident enemy
+          if usingAttack
+            then addDefense ident =<< getModifiedAttack a
+            else addDefense ident . (+ bonus) =<< getModifiedDefenseAgainst a enemy
           pure a
         DefenseUsingAttackApplied _ _ -> do
           -- DEF modifiers, including bonuses in the pending defense, are ignored:

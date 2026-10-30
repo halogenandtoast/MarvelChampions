@@ -213,3 +213,7 @@ import Marvel.Treachery.Treacheries.Zzzap as X
 import Marvel.Treachery.Treacheries.FeastOnThis as X
 
 import Marvel.Treachery.Treacheries.EnergyDrain as X
+
+import Marvel.Treachery.Treacheries.Slammed as X
+
+import Marvel.Treachery.Treacheries.MutantGenesis as X

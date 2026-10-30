@@ -22,7 +22,7 @@ import TestImport
 
 -- These small fixture upgrades supply ordinary player-triggered abilities without
 -- depending on a new hero pack's registration or card implementations.
-data ProbeAction = OrdinaryProbe | BroadenAttack AllyId [EnemyId] | ReplaceDefenseWithAttack IdentityId
+data ProbeAction = OrdinaryProbe | BroadenAttack AllyId [EnemyId] | ReplaceDefenseWithAttack IdentityId EnemyId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
@@ -50,7 +50,7 @@ instance RunMessage ProbeUpgrade where
     RanAbility _ source idx _ _ | source == UpgradeRef (upgradeId a) -> do
       for_ (List.lookup idx actions) $ \case
         BroadenAttack aid enemies -> L.resolveAllyAttackAgainstAll aid enemies
-        ReplaceDefenseWithAttack ident -> L.useAttackForDefense ident
+        ReplaceDefenseWithAttack ident enemy -> L.useAttackForDefense ident enemy
         OrdinaryProbe -> pure ()
       pure $ ProbeUpgrade a abilities modifiers protected actions
     _ -> (\a' -> ProbeUpgrade a' abilities modifiers protected actions) <$> runMessage msg a
@@ -171,7 +171,7 @@ spec = describe "Valkyrie shared engine mechanics" do
         changeForm p
         attacker <- addMinion p Minions.hydraMercenary
         probe <- installProbe p [(1, W.HeroDefended W.When (IdentityWithId p) AnyEnemy, Interrupt, [])]
-          [(IdentityRef p, [AttackModifier 1, DefenseModifier 4]), (MinionRef attacker, [AttackModifier 5])] Nothing [(1, ReplaceDefenseWithAttack p)]
+          [(IdentityRef p, [AttackModifier 1, DefenseModifier 4]), (MinionRef attacker, [AttackModifier 5])] Nothing [(1, ReplaceDefenseWithAttack p (EnemyMinionId attacker))]
         expert <- putInHand p "03033"
         runNow [MinionMessage attacker (MinionAttacks p)]
         choose "make the basic defense" $ \case Defend (EnemyMinionId m) -> m == attacker; _ -> False

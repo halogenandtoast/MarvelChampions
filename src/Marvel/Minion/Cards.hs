@@ -8,6 +8,15 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Matchers
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -28,7 +37,7 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
+      [ mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
   , madameMasque
       , hydraMercenary
       , sandman
@@ -235,6 +244,9 @@ allMinions =
   , ironSpider
   , sandmanSinister
   , spot
+  , juggernaut
+  , whiteQueenMutantGenesis
+  , hellfirePawn
   ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -1302,4 +1314,180 @@ sandmanSinister = (minion "31035" "Sandman" [Criminal] [Boost, Star] SpdrSet.Iro
 spot :: CardDef
 spot = (minion "31036" "Spot" [Criminal] [Star] SpdrSet.IronSpiderSinisterSix 1)
   { cdUnique = True
+  }
+
+-- Mutant Genesis
+
+juggernaut :: CardDef
+juggernaut = (minion "32026" "Juggernaut" [Brute, Elite] [Boost, Boost, Star] ColossusNemesis 1)
+  { cdUnique = True
+  , cdKeywords = fromList [Toughness, Stalwart]
+  }
+
+-- Mutant Genesis
+
+whiteQueenMutantGenesis :: CardDef
+whiteQueenMutantGenesis = (minion "32056" "White Queen" [Elite, Psionic] [Boost, Star] ShadowcatNemesis 1)
+  { cdUnique = True
+  , cdKeywords = fromList [Villainous]
+  }
+
+-- Mutant Genesis
+
+hellfirePawn :: CardDef
+hellfirePawn = (minion "32058" "Hellfire Pawn" [Hellfire] [Star] ShadowcatNemesis 2)
+  { cdKeywords = fromList [Guard, Patrol, Surge]
+  }
+
+-- Mutant Genesis scenario definitions
+mgAvalanche :: CardDef
+mgAvalanche = (smMinionDef "32073" ("Avalanche") MGSet.Brotherhood 1)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgBlob :: CardDef
+mgBlob = (smMinionDef "32074" ("Blob") MGSet.Brotherhood 1)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Guard]
+  }
+
+mgPyro :: CardDef
+mgPyro = (smMinionDef "32075" ("Pyro") MGSet.Brotherhood 1)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgToad :: CardDef
+mgToad = (smMinionDef "32076" ("Toad") MGSet.Brotherhood 1)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgMystique :: CardDef
+mgMystique = (smMinionDef "32080" ("Mystique") MGSet.Mystique 1)
+  { cdTraits = fromList [MGTrait.BrotherhoodOfMutants, MGTrait.Elite]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Toughness]
+  }
+
+mgSentinelMarkIv :: CardDef
+mgSentinelMarkIv = (smMinionDef "32093" ("Sentinel Mark IV") MGSet.ProjectWideawake 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList [MGKeyword.Guard, MGKeyword.Patrol]
+  }
+
+mgSentinelMarkIi :: CardDef
+mgSentinelMarkIi = (smMinionDef "32101" ("Sentinel Mark II") MGSet.ZeroTolerance 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgSentinelMarkIii :: CardDef
+mgSentinelMarkIii = (smMinionDef "32102" ("Sentinel Mark III") MGSet.ZeroTolerance 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList [MGKeyword.Toughness]
+  }
+
+mgSentinelMarkV :: CardDef
+mgSentinelMarkV = (smMinionDef "32105" ("Sentinel Mark V") MGSet.Sentinels 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgSentinelMarkVi :: CardDef
+mgSentinelMarkVi = (smMinionDef "32106" ("Sentinel Mark VI") MGSet.Sentinels 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList [MGKeyword.Quickstrike]
+  }
+
+mgSentinelMarkViii :: CardDef
+mgSentinelMarkViii = (smMinionDef "32114" ("Sentinel Mark VIII") MGSet.MasterMold 2)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgMTypeSentinel :: CardDef
+mgMTypeSentinel = (smMinionDef "32146" ("M-Type Sentinel") MGSet.Magneto 4)
+  { cdTraits = fromList [MGTrait.Sentinel]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList [MGKeyword.Guard]
+  }
+
+mgFabianCortez :: CardDef
+mgFabianCortez = (smMinionDef "32159" ("Fabian Cortez") MGSet.Acolytes 1)
+  { cdTraits = fromList [MGTrait.Acolyte, MGTrait.Elite]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Villainous, MGKeyword.Teamwork MGTrait.Acolyte]
+  }
+
+mgAmeliaVoght :: CardDef
+mgAmeliaVoght = (smMinionDef "32160" ("Amelia Voght") MGSet.Acolytes 1)
+  { cdTraits = fromList [MGTrait.Acolyte]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Stalwart, MGKeyword.Teamwork MGTrait.Acolyte]
+  }
+
+mgSenyaka :: CardDef
+mgSenyaka = (smMinionDef "32161" ("Senyaka") MGSet.Acolytes 1)
+  { cdTraits = fromList [MGTrait.Acolyte]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Teamwork MGTrait.Acolyte]
+  }
+
+mgDelgado :: CardDef
+mgDelgado = (smMinionDef "32162" ("Delgado") MGSet.Acolytes 1)
+  { cdTraits = fromList [MGTrait.Acolyte]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Retaliate 1, MGKeyword.Teamwork MGTrait.Acolyte]
+  }
+
+mgUnuscione :: CardDef
+mgUnuscione = (smMinionDef "32163" ("Unuscione") MGSet.Acolytes 1)
+  { cdTraits = fromList [MGTrait.Acolyte]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Teamwork MGTrait.Acolyte]
+  }
+
+mgNimrod :: CardDef
+mgNimrod = (smMinionDef "32166" ("Nimrod") MGSet.FuturePast 1)
+  { cdTraits = fromList [MGTrait.Elite, MGTrait.Sentinel]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Stalwart, MGKeyword.Victory 1]
+  }
+
+mgBastion :: CardDef
+mgBastion = (smMinionDef "32167" ("Bastion") MGSet.FuturePast 1)
+  { cdTraits = fromList [MGTrait.Elite, MGTrait.Sentinel]
+  , cdUnique = True
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Villainous, MGKeyword.Victory 1]
   }

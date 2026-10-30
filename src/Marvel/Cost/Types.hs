@@ -35,6 +35,7 @@ data Cost
   | RemoveFromGameCost Target
   | DiscardHandCardsWithTotalCost CardMatcher Natural
   | ExactCountersCost Natural
+  | DiscardToughCost Natural
   | GiveEnemyToughCost EnemyId
   | GiveEnemyBoostCost EnemyId Natural
   | -- | so many cards discarded at random from the payer's hand
@@ -50,6 +51,8 @@ data Cost
   | ExhaustSupportCost SupportMatcher
   | -- | return an upgrade the payer controls, chosen among those matching, to hand
     ReturnUpgradeToHandCost UpgradeMatcher
+  | ReturnAllyToHandCost AllyMatcher
+  | ExhaustAlliesWithTraitCost Trait Natural (Maybe Natural)
   | -- | discard an upgrade the payer controls, chosen among those matching
     DiscardUpgradeCost UpgradeMatcher
   | -- | discard a controlled ally, retaining its printed card in the payment
@@ -139,6 +142,7 @@ costResources (DiscardControlledCardCost _) = []
 costResources (RemoveFromGameCost _) = []
 costResources (DiscardHandCardsWithTotalCost _ _) = []
 costResources (ExactCountersCost _) = []
+costResources (DiscardToughCost _) = []
 costResources (GiveEnemyToughCost _) = []
 costResources (GiveEnemyBoostCost _ _) = []
 costResources (DiscardHandCardsCost _ _) = []
@@ -147,6 +151,8 @@ costResources (DiscardRandomHandCardsMatchingCost _ _) = []
 costResources (ExhaustSupportCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
+costResources (ReturnAllyToHandCost _) = []
+costResources (ExhaustAlliesWithTraitCost _ _ _) = []
 costResources (DiscardUpgradeCost _) = []
 costResources (DiscardAllyCost _) = []
 costResources (DiscardSupportCost _) = []

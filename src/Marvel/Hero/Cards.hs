@@ -83,6 +83,8 @@ allHeroCards =
   , ironheartVersion3
   , spiderHam
   , spdrSuitHero
+  , colossusHero
+  , shadowcatHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -300,5 +302,19 @@ spiderHam = hero "30001a" "Spider-Ham" [Cartoon, WebWarrior]
 
 spdrSuitHero :: CardDef
 spdrSuitHero = (hero "31001a" "SP//dr Suit" [Active, WebWarrior])
+  { cdUnique = True
+  }
+
+-- Mutant Genesis
+
+colossusHero :: CardDef
+colossusHero = (hero "32001a" "Colossus" [XMen])
+  { cdUnique = True
+  }
+
+-- Mutant Genesis
+
+shadowcatHero :: CardDef
+shadowcatHero = (hero "32030a" "Shadowcat" [XMen])
   { cdUnique = True
   }

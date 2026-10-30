@@ -46,6 +46,7 @@ instance HasAbilities Ally where
              (if allyStunned (toAllyAttrs a) then NoCriteria else EnemyExists (AttackableByAlly $ toId x))
              (ExhaustCost <> allyAdditionalAttackCost (toAllyAttrs a))
              (AllyAttack $ toId x)
+         | allyHasAttack a
          ]
 
 statusL :: StatusCard -> Lens' (Attrs Ally) Bool
@@ -104,13 +105,12 @@ instance RunMessage (Attrs Ally) where
       -- consequential damage (RR, Consequential Damage)
       AllyAttackLands enemy dmg -> do
         stillInPlay <- selectAny (EnemyWithId enemy)
-        consequential <- getModifiedAttackConsequentialDamage a
         when stillInPlay do
           dealDamage enemy a dmg
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) [enemy]]
-          when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
+          allyStep ident AllyAttackConsequential
         pure a
       AllyAssignEvenAttack dmg extra allocations candidates seen -> do
         if extra == 0
@@ -146,8 +146,7 @@ instance RunMessage (Attrs Ally) where
           unless (damageRanged dmg) $ for_ enemies $ \enemy -> enemyRetaliates enemy (AllyCharacter ident)
           checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident enemies]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) enemies]
-          consequential <- getModifiedAttackConsequentialDamage a
-          when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
+          allyStep ident AllyAttackConsequential
         pure a
       AllyAttackMultiple enemies damage -> do
         allyStep ident (AllyAttackMultipleNext enemies [] damage)
@@ -172,6 +171,11 @@ instance RunMessage (Attrs Ally) where
           checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident resolved]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) resolved]
           -- This is one use, hence consequential damage is suffered only once.
+          allyStep ident AllyAttackConsequential
+        pure a
+      AllyAttackConsequential -> do
+        present <- selectAny (AllyWithId ident)
+        when present $ do
           consequential <- getModifiedAttackConsequentialDamage a
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
@@ -222,11 +226,13 @@ instance RunMessage (Attrs Ally) where
         -- an attack dealing indirect damage (Starshark) has it divided among the
         -- characters the ally's controller controls, overkill having none past it
         when (attackDamageDealt attack' > 0) $
-          if attackDividedEvenly attack'
-            then divideAttackDamage (allyController a) (attackSource attack') ((attackDamageTo attack' (attackDamageDealt attack')) {damageOverkill = attackOverkill attack'})
-            else if attackIndirect attack'
-            then dealIndirectAttackDamage (allyController a) (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
-            else damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
+          case attackThreatRemoval attack' of
+            Just you -> removeThreat you (attackSource attack') reduced MainScheme
+            Nothing -> if attackDividedEvenly attack'
+              then divideAttackDamage (allyController a) (attackSource attack') ((attackDamageTo attack' (attackDamageDealt attack')) {damageOverkill = attackOverkill attack'})
+              else if attackIndirect attack'
+              then dealIndirectAttackDamage (allyController a) (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
+              else damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
         -- the excess is the attack's damage to the controller: "when you would take
         -- damage" answers it, as it does the attack's own
         when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack' || attackDividedEvenly attack')) do

@@ -6,6 +6,11 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -19,7 +24,7 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
+    [ mgStalkedBySabretooth, mgTheInjuredSenator, mgNightOfTheSentinels, mgTheSentinelFactory, mgMasterMoldsAgenda, mgTheBrotherhoodStrikes, mgTheAtrium, mgTheCafeteria, mgTheBasketballCourt, mgTheCourtyard, mgAsteroidM, mgFactoryOnline, mgTheRuleOfMagnus, smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
   , makingConnections
     , promisedProsperity
     , crimeState
@@ -455,4 +460,109 @@ smUpperManhattan = (smMainSchemeDef "27119" "Upper Manhattan" SMSet.VenomGoblin 
   , cdHazards = 0
   , cdAcceleration = 0
   , cdAmplify = 0
+  }
+
+-- Mutant Genesis scenario definitions
+mgStalkedBySabretooth :: CardDef
+mgStalkedBySabretooth = (smMainSchemeDef "32063" ("Stalked by Sabretooth") MGSet.Sabretooth 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheInjuredSenator :: CardDef
+mgTheInjuredSenator = (smMainSchemeDef "32064" ("The Injured Senator") MGSet.Sabretooth 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgNightOfTheSentinels :: CardDef
+mgNightOfTheSentinels = (smMainSchemeDef "32087" ("Night of the Sentinels") MGSet.ProjectWideawake 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheSentinelFactory :: CardDef
+mgTheSentinelFactory = (smMainSchemeDef "32112" ("The Sentinel Factory") MGSet.MasterMold 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgMasterMoldsAgenda :: CardDef
+mgMasterMoldsAgenda = (smMainSchemeDef "32113" ("Master Mold's Agenda") MGSet.MasterMold 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheBrotherhoodStrikes :: CardDef
+mgTheBrotherhoodStrikes = (smMainSchemeDef "32125" ("The Brotherhood Strikes!") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheAtrium :: CardDef
+mgTheAtrium = (smMainSchemeDef "32126" ("The Atrium") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheCafeteria :: CardDef
+mgTheCafeteria = (smMainSchemeDef "32127" ("The Cafeteria") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheBasketballCourt :: CardDef
+mgTheBasketballCourt = (smMainSchemeDef "32128" ("The Basketball Court") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheCourtyard :: CardDef
+mgTheCourtyard = (smMainSchemeDef "32129" ("The Courtyard") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgAsteroidM :: CardDef
+mgAsteroidM = (smMainSchemeDef "32141" ("Asteroid M") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgFactoryOnline :: CardDef
+mgFactoryOnline = (smMainSchemeDef "32142" ("Factory Online") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgTheRuleOfMagnus :: CardDef
+mgTheRuleOfMagnus = (smMainSchemeDef "32143" ("The Rule of Magnus") MGSet.Magneto 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
   }

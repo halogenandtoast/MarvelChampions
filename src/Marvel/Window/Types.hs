@@ -86,11 +86,17 @@ data WindowMatcher
   | -- | "after you change to this form": an energy form matching turned faceup
     EnergyFormChangedTo WindowTiming UpgradeMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
+  | IdentityDiscardsTough WindowTiming IdentityMatcher
+  | VillainWouldActivate IdentityMatcher
+  | IdentityAttackResolved IdentityMatcher
+  | IdentityIgnoresKeyword WindowTiming IdentityMatcher MinionMatcher
+  | IdentityIgnoresCrisis WindowTiming IdentityMatcher SideSchemeMatcher
   | MakesBasicAttack WindowTiming IdentityMatcher
   | -- | a player matching makes a basic attack against an enemy matching, its target chosen
     MakesBasicAttackAgainst WindowTiming IdentityMatcher EnemyMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
+  | MakesBasicDefense WindowTiming IdentityMatcher EnemyMatcher
   | -- | revealed from the encounter deck, by any player
     EncounterCardRevealedFromDeck WindowTiming BasicEncounterCardMatcher
   | RoundEnds
@@ -241,6 +247,10 @@ data WindowType
   | -- | the identity changed to the energy form of this upgrade, turned faceup
     EnergyFormChanged IdentityId UpgradeId
   | MassFormChanged IdentityId UpgradeId
+  | IdentityDiscardedTough IdentityId
+  | VillainActivationWouldBegin VillainId IdentityId
+  | IgnoredKeyword IdentityId MinionId
+  | IgnoredCrisis IdentityId SideSchemeId
   | MadeBasicAttack IdentityId
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
@@ -252,6 +262,7 @@ data WindowType
   | -- | the identity was exhausted and has been readied
     IdentityReadied IdentityId
   | HeroDefends IdentityId EnemyId
+  | MadeBasicDefense IdentityId EnemyId
   | EncounterCardRevealed RevealSource IdentityId EncounterCard
   | RoundEnded
   | IdentityDefeat IdentityId

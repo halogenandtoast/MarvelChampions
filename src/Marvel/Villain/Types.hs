@@ -80,7 +80,29 @@ instance HasModifiersFor Villain where
   getModifiersFor source target (Villain a) = getModifiersFor source target a
 
 instance RunMessage Villain where
-  runMessage msg (Villain a) = Villain <$> runMessage msg a
+  runMessage msg v@(Villain a) = runQueueT $ case msg of
+    -- Resume the original declaration through its concrete villain, so that
+    -- scenario-specific replacements and interrupts still see Attacks/Schemes.
+    CardSpecific target "activationAfterWould" (fromJSON -> Success declaration)
+      | target == VillainRef vid -> Villain <$> runMessage (VillainMessage vid declaration) a
+    VillainMessage target declaration
+      | target == vid, Just recipient <- activationRecipient declaration -> do
+          you <- maybe getActivePlayerId pure recipient
+          checkWindows [W.Window W.Would $ W.VillainActivationWouldBegin vid you]
+          resolveVillainActivationAfterWould vid declaration
+          pure v
+    _ -> Villain <$> runMessage msg a
+   where
+    vid = toId v
+    activationRecipient = \case
+      VillainAttacks you -> Just (Just you)
+      VillainAttacksWithoutBoost you -> Just (Just you)
+      VillainAttacksGaining you _ -> Just (Just you)
+      VillainAttacksWithAdditionalBoostCards you _ -> Just (Just you)
+      VillainAttacksAlly you _ -> Just (Just you)
+      VillainSchemesAgainst you -> Just (Just you)
+      VillainSchemes -> Just Nothing
+      _ -> Nothing
 
 instance HasCardDef Villain where
   getCardDef = getCardDef . toAttrs
@@ -275,7 +297,8 @@ instance HasTraits Villain where
 statusUnlessStalwart :: (HasGame m) => Attrs Villain -> StatusCard -> m (Attrs Villain)
 statusUnlessStalwart attrs s = do
   keywords <- getModifiedKeywords attrs
-  pure $ if Stalwart `elem` keywords && s /= ToughStatus then attrs else
+  modifiers <- getModifiers attrs
+  pure $ if (Stalwart `elem` keywords && s /= ToughStatus) || (s == StunnedStatus && CannotBeStunned `elem` modifiers) || (s == ConfusedStatus && CannotBeConfused `elem` modifiers) then attrs else
     case s of
       StunnedStatus | Steady `elem` keywords && villainStunned attrs -> attrs {villainAdditionalStun = True}
       ConfusedStatus | Steady `elem` keywords && villainConfused attrs -> attrs {villainAdditionalConfuse = True}
@@ -295,6 +318,7 @@ getModifiedKeywords attrs = do
   modifiers <- getModifiers attrs
   pure $ foldr applyModifier (toList . cdKeywords $ getCardDef attrs) modifiers
  where
+  applyModifier (LoseKeyword k) = filter (/= k)
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
 
@@ -334,7 +358,10 @@ runVillainMessage msg attrs = case msg of
     modifiers <- getModifiers attrs
     -- a tough status card prevents the damage before anything else that answers "would
     -- take damage" (RR Damage); what gets past it is reduced (Thanos's Armor)
-    let damage = if villainTough attrs && preventedByTough dealt then dealt else reducedDamage modifiers dealt
+    let reduced = reducedDamage modifiers dealt
+        sustained = subtractNatural (fromIntegral $ unHp $ villainHp attrs) (fromIntegral $ unHp $ villainMaxHp attrs)
+        room = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
+        damage = if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = room}
     -- none at all (The Red House), or none from a player card (Sanctuary)
     cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
@@ -393,7 +420,7 @@ runVillainMessage msg attrs = case msg of
   -- queued after the scheme, everything it leads to runs before the player is forgotten,
   -- whether the scheme resolved, was replaced or was cancelled
   VillainSchemesAgainst ident -> do
-    villainStep vid VillainSchemes
+    resolveVillainActivationAfterWould vid VillainSchemes
     villainStep vid VillainSchemeAgainstEnded
     pure attrs {villainActivationPlayer = Just ident}
   VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing}
@@ -402,7 +429,8 @@ runVillainMessage msg attrs = case msg of
     player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
     -- the scheme is his activation against the player whose alter-ego activates him
     checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
-    dealActivationBoost
+    modifiers <- getModifiers attrs
+    unless (SchemesWithoutBoost `elem` modifiers) dealActivationBoost
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainSchemed
     clearBoosts
@@ -410,11 +438,11 @@ runVillainMessage msg attrs = case msg of
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
-    enemyAttacks vid ident
+    resolveVillainActivationAfterWould vid (VillainAttacks ident)
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
   VillainAttacksWithAdditionalBoostCards ident n -> do
     -- Dispatch the ordinary declaration so card-specific activation interrupts still run.
-    villainStep vid (VillainAttacks ident)
+    resolveVillainActivationAfterWould vid (VillainAttacks ident)
     pure attrs {villainPendingAttackBoostCards = n}
   VillainSetAttackAdditionalBoostCards n -> pure attrs {villainAttackAdditionalBoostCards = n}
   VillainAttacks ident -> attacks (VillainBeginAttack ident) ident []

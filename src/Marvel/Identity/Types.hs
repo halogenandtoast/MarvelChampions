@@ -48,6 +48,7 @@ instance Entity PlayerIdentity where
     , playerIdentityAdditionalStun :: Bool
     , playerIdentityAdditionalConfuse :: Bool
     , playerIdentityTough :: Bool
+    , playerIdentityAdditionalTough :: Natural
     , playerIdentityDefeated :: Bool
     , playerIdentityDefended :: Bool
     , playerIdentityAttackDamageTaken :: Natural
@@ -79,6 +80,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityStunned :: Field PlayerIdentity Bool
     PlayerIdentityConfused :: Field PlayerIdentity Bool
     PlayerIdentityTough :: Field PlayerIdentity Bool
+    PlayerIdentityAdditionalTough :: Field PlayerIdentity Natural
     PlayerIdentityDefeated :: Field PlayerIdentity Bool
     PlayerIdentityDefended :: Field PlayerIdentity Bool
     PlayerIdentityAttackDamageTaken :: Field PlayerIdentity Natural
@@ -106,6 +108,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityStunned -> playerIdentityStunned
     PlayerIdentityConfused -> playerIdentityConfused
     PlayerIdentityTough -> playerIdentityTough
+    PlayerIdentityAdditionalTough -> playerIdentityAdditionalTough
     PlayerIdentityDefeated -> playerIdentityDefeated
     PlayerIdentityDefended -> playerIdentityDefended
     PlayerIdentityAttackDamageTaken -> playerIdentityAttackDamageTaken

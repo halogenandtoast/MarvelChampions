@@ -16,6 +16,21 @@ import Marvel.Trait.Types
 data Modifier
   = IdentityCountersAsResources
   | CanHaveAnyNumberOfToughStatusCards
+  | AdditionalToughStatusCards Natural
+  | CannotBeStunned
+  | CannotBeConfused
+  | LoseKeyword Keyword
+  | CannotRecover
+  | CannotBeHealedByPlayerCards
+  | CannotHaveAttachedPlayerCards
+  | ContinuouslyStunned
+  | ContinuouslyConfused
+  | CannotChangeMassForm
+  | SchemesWithoutBoost
+  | MaximumSustainedDamage Natural
+  | MaximumDamagePerPhase Natural
+  | NoAttackConsequentialDamage
+  | NoThwartConsequentialDamage
   | CanLookAtTopOfEncounterDeck
   | PrintedResourcesAs Resource
   | DividesBasicAttackEvenly

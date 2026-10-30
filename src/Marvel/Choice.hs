@@ -12,7 +12,7 @@ import Marvel.Damage
 import Marvel.Exception
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Keyword (Keyword (Overkill, Piercing, Ranged))
+import Marvel.Keyword (Keyword (Guard, Patrol, Overkill, Piercing, Ranged))
 import Marvel.Matchers.Types
 import Marvel.Message
 import Marvel.Modifier.Types
@@ -228,7 +228,18 @@ resolveChoice ident = \case
           EnemyVillainId vid -> (||) <$> cannotTakeDamageFrom (VillainRef vid) source <*> villainPreventsAttackDamage vid source damage
           EnemyMinionId _ -> pure False
         let windowDamage = if cannot then damage {damageAmount = 0} else damage
-        pure $
+        ignored <- case (damageSource damage, enemy) of
+          (FromPlayerAttack who, EnemyVillainId _) -> do
+            mods <- getModifiers (IdentityRef who)
+            if IgnoresGuard `elem` mods then do
+              minions <- selectList (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who))
+              pure [CheckWindows [Window After $ W.IgnoredKeyword who mid | mid <- minions] | notNull minions]
+            else pure []
+          _ -> pure []
+        let attackingWindow = case damageSource damage of
+              FromPlayerAttack who -> [CheckWindows [Window When $ W.IdentityAttack who enemy]]
+              _ -> []
+        pure $ ignored <> attackingWindow <>
           ( case enemy of
               EnemyVillainId vid ->
                 [ CheckWindows [Window When $ W.DamagedVillain vid windowDamage, Window When $ W.VillainDamageFrom vid source windowDamage]
@@ -276,13 +287,16 @@ resolveChoice ident = \case
       EnemyVillainId vid -> pure [VillainMessage vid $ VillainConfused source]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionConfused source]
     _ -> error "can not confuse target"
-  Recover -> pure [IdentityMessage ident $ SideMessage Recovered]
-  Heal characterId n -> case characterId of
-    IdentityCharacter ident' ->
-      pure [IdentityMessage ident' $ IdentityHealed n]
-    AllyCharacter ident' -> pure [AllyMessage ident' $ AllyHealed n]
-    VillainCharacter ident' -> pure [VillainMessage ident' $ VillainHealed n]
-    MinionCharacter ident' -> pure [MinionMessage ident' $ MinionHealed n]
+  Recover -> do
+    forbidden <- elem CannotRecover <$> getModifiers (IdentityRef ident)
+    pure [IdentityMessage ident $ SideMessage Recovered | not forbidden]
+  Heal characterId n -> do
+    forbidden <- elem CannotBeHealedByPlayerCards <$> getModifiers (characterRef characterId)
+    pure $ if forbidden then [] else case characterId of
+      IdentityCharacter ident' -> [IdentityMessage ident' $ IdentityHealed n]
+      AllyCharacter ident' -> [AllyMessage ident' $ AllyHealed n]
+      VillainCharacter ident' -> [VillainMessage ident' $ VillainHealed n]
+      MinionCharacter ident' -> [MinionMessage ident' $ MinionHealed n]
   DamageCharacter characterId source damage -> do
     modifiers <- getModifiers (characterRef characterId)
     let isAttack = case damageSource damage of
@@ -366,10 +380,17 @@ removeThreatFrom basic thwarting target source n' = do
         SchemeRef (SchemeMainSchemeId mid) -> [main mid]
         SchemeRef (SchemeSideSchemeId sid) -> [side sid]
         _ -> error $ "can not thwart target: " <> show target
+  ignored <- case (heroController, target) of
+    (Just who, t) | thwarting && (case t of MainSchemeRef _ -> True; SchemeRef (SchemeMainSchemeId _) -> True; _ -> False) -> do
+      mods <- getModifiers (IdentityRef who)
+      patrols <- if IgnoresPatrol `elem` mods then selectList (MinionWithKeyword Patrol <> MinionEngagedWith (IdentityWithId who)) else pure []
+      crises <- if IgnoresCrisis `elem` mods then selectList CrisisSideScheme else pure []
+      pure [CheckWindows (map (Window After . W.IgnoredKeyword who) patrols <> map (Window After . W.IgnoredCrisis who) crises) | notNull patrols || notNull crises]
+    _ -> pure []
   let canonical = case target of SchemeRef sid -> schemeRef sid; other -> other
   modifiers <- getModifiers canonical
   let cost = if thwarting then mconcat [c | AdditionalThwartCost c <- modifiers] else NoCost
-  if cost == NoCost then pure continuation else do
+  if cost == NoCost then pure (ignored <> continuation) else do
     payer <- fromMaybe <$> getYou <*> getSourceController source
     payable <- canAffordCost payer (refocus target) cost
     acid <- getRandom

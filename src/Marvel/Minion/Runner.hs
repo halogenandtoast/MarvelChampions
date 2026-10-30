@@ -41,7 +41,7 @@ statusUnlessStalwart :: (HasGame m) => Attrs Minion -> StatusCard -> m (Attrs Mi
 statusUnlessStalwart attrs s = do
   keywords <- getModifiedKeywords attrs
   modifiers <- getModifiers attrs
-  pure $ if Stalwart `elem` keywords && s /= ToughStatus then attrs else
+  pure $ if (Stalwart `elem` keywords && s /= ToughStatus) || (s == StunnedStatus && CannotBeStunned `elem` modifiers) || (s == ConfusedStatus && CannotBeConfused `elem` modifiers) then attrs else
     case s of
       ToughStatus | CanHaveAnyNumberOfToughStatusCards `elem` modifiers && minionTough attrs -> attrs {minionAdditionalTough = minionAdditionalTough attrs + 1}
       StunnedStatus | Steady `elem` keywords && minionStunned attrs -> attrs {minionAdditionalStun = True}
@@ -64,7 +64,10 @@ runMinionMessage msg attrs = case msg of
     pure attrs
   MinionHealAllDamage -> do
     pure $ attrs & damageL .~ 0
-  MinionDamaged source damage -> do
+  MinionDamaged source originalDamage -> do
+    modifiers <- getModifiers attrs
+    let room = minimum (damageAmount originalDamage : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
+        damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
     hitPoints <- getModifiedHitPoints attrs
     cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
     if
@@ -82,7 +85,7 @@ runMinionMessage msg attrs = case msg of
           for_ hero \ident ->
             when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (toEnemyId attrs) excess]
           minionStep (minionId attrs) (MinionDefeatedWithExcess source damage excess)
-        pure $ attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
+        pure $ (attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))) {minionDamageThisPhase = minionDamageThisPhase attrs + damageAmount damage}
   MinionDefeatedWithExcess source damage overkill -> do
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
@@ -115,7 +118,8 @@ runMinionMessage msg attrs = case msg of
     isHero <- identityMatches HeroIdentity ident
     let previous = minionEngagedIdentity attrs
     when (previous /= ident) $ minionDisengages previous (minionId attrs)
-    when (isHero && Quickstrike `member` cdKeywords (getCardDef attrs)) $ enemyAttacks (minionId attrs) ident
+    keywords <- getModifiedKeywords attrs
+    when (isHero && Quickstrike `elem` keywords) $ enemyActivationAfterCurrent (minionId attrs) (enemyAttacks (minionId attrs) ident)
     checkWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]
     pure attrs {minionEngagedIdentity = ident}
   -- with victory X, it and an attachment on it with victory X go to the victory display
@@ -230,6 +234,14 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
+      BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
+      RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
+        let ident = minionEngagedIdentity attrs
+        present <- selectAny (MinionWithId $ minionId attrs)
+        hero <- identityMatches HeroIdentity ident
+        when present $ enemyActivationAfterCurrent (minionId attrs) $
+          if hero then enemyAttacks (minionId attrs) ident else minionSchemes (minionId attrs)
+        pure attrs
       GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
       RemoveStatus (MinionRef mid) StunnedStatus | mid == minionId attrs, minionAdditionalStun attrs -> pure attrs {minionAdditionalStun = False}
       RemoveStatus (MinionRef mid) ConfusedStatus | mid == minionId attrs, minionAdditionalConfuse attrs -> pure attrs {minionAdditionalConfuse = False}

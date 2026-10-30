@@ -85,3 +85,11 @@ import Marvel.Obligation.Obligations.AMinorSetback as X
 import Marvel.Obligation.Obligations.IReallyWantAHotDog as X
 
 import Marvel.Obligation.Obligations.InheritedBurden as X
+
+import Marvel.Obligation.Obligations.Homesick as X
+
+import Marvel.Obligation.Obligations.PermanentlyPhased as X
+
+import Marvel.Obligation.Obligations.MutantGenesis as X
+
+import Marvel.Obligation.Obligations.MutantGenesisCampaign as X

@@ -7,6 +7,16 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Keyword
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
+import Marvel.Matchers
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -23,7 +33,7 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
+  [ mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
   , fieldRecruitment
   , upperHand
   , hardToKeepDown
@@ -252,6 +262,7 @@ allTreacheries = fromList $ map
   , zzzap
   , feastOnThis
   , energyDrain
+  , slammed
   ]
 
 treachery
@@ -1237,4 +1248,170 @@ feastOnThis = (treachery "30028" "\"Feast on This!\"" [Boost] SMSet.SpiderHamNem
 energyDrain :: CardDef
 energyDrain = (treachery "31028" "Energy Drain" [Boost] SpdrSet.SpdrNemesis 3)
   { cdUnique = False
+  }
+
+-- Mutant Genesis
+
+slammed :: CardDef
+slammed = (treachery "32029" "Slammed" [Boost, Boost, Star] ColossusNemesis 1)
+
+-- Mutant Genesis scenario definitions
+mgSabretoothStrikes :: CardDef
+mgSabretoothStrikes = (smTreacheryDef "32069" ("Sabretooth Strikes") MGSet.Sabretooth 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgUnrelentingSavage :: CardDef
+mgUnrelentingSavage = (smTreacheryDef "32070" ("Unrelenting Savage") MGSet.Sabretooth 3)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgMutantTerrorists :: CardDef
+mgMutantTerrorists = (smTreacheryDef "32078" ("Mutant Terrorists") MGSet.Brotherhood 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgInfiltration :: CardDef
+mgInfiltration = (smTreacheryDef "32082" ("Infiltration") MGSet.Mystique 2)
+  { cdTraits = fromList [MGTrait.Shapeshifter]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgShapeshifterSurprise :: CardDef
+mgShapeshifterSurprise = (smTreacheryDef "32083" ("Shapeshifter Surprise") MGSet.Mystique 1)
+  { cdTraits = fromList [MGTrait.Shapeshifter]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgSelfRepair :: CardDef
+mgSelfRepair = (smTreacheryDef "32097" ("Self-Repair") MGSet.ProjectWideawake 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgMutantDetected :: CardDef
+mgMutantDetected = (smTreacheryDef "32098" ("Mutant Detected") MGSet.ProjectWideawake 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgMasterMoldsChildren :: CardDef
+mgMasterMoldsChildren = (smTreacheryDef "32117" ("Master Mold's Children") MGSet.MasterMold 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgShieldsUp :: CardDef
+mgShieldsUp = (smTreacheryDef "32118" ("Shields Up") MGSet.MasterMold 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgBrotherhoodBeatdown :: CardDef
+mgBrotherhoodBeatdown = (smTreacheryDef "32131" ("Brotherhood Beatdown") MGSet.MansionAttack 3)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgGroundSwell :: CardDef
+mgGroundSwell = (smTreacheryDef "32132" ("Ground Swell") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgImmovable :: CardDef
+mgImmovable = (smTreacheryDef "32133" ("Immovable") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgPyromaniac :: CardDef
+mgPyromaniac = (smTreacheryDef "32134" ("Pyromaniac") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgHoppingMad :: CardDef
+mgHoppingMad = (smTreacheryDef "32135" ("Hopping Mad") MGSet.MansionAttack 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgMasterOfMagnetism :: CardDef
+mgMasterOfMagnetism = (smTreacheryDef "32151" ("Master of Magnetism") MGSet.Magneto 3)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgElectricShock :: CardDef
+mgElectricShock = (smTreacheryDef "32152" ("Electric Shock") MGSet.Magneto 2)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost, MGBoost.Boost]
+  , cdKeywords = fromList []
+  }
+
+mgElectromagneticBlast :: CardDef
+mgElectromagneticBlast = (smTreacheryDef "32153" ("Electromagnetic Blast") MGSet.Magneto 2)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgMetalShards :: CardDef
+mgMetalShards = (smTreacheryDef "32154" ("Metal Shards") MGSet.Magneto 2)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Star]
+  , cdKeywords = fromList []
+  }
+
+mgMagneticMissile :: CardDef
+mgMagneticMissile = (smTreacheryDef "32155" ("Magnetic Missile") MGSet.Magneto 2)
+  { cdTraits = fromList [MGTrait.Magnetic]
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList [MGKeyword.Surge]
+  }
+
+mgZealForTheCause :: CardDef
+mgZealForTheCause = (smTreacheryDef "32164" ("Zeal for the Cause") MGSet.Acolytes 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = [MGBoost.Boost]
+  , cdKeywords = fromList []
   }

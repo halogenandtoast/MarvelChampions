@@ -86,8 +86,10 @@ forAnyPlayer = \case
 -- | The form a "Hero …" or "Alter-Ego …" ability is used in.
 abilityTypeCriteria :: AbilityType -> Criteria
 abilityTypeCriteria = \case
+  AlterEgoInterrupt -> InAlterEgoForm
   HeroInterrupt -> InHeroForm
   HeroResource -> InHeroForm
+  AlterEgoResponse -> InAlterEgoForm
   HeroResponse -> InHeroForm
   HeroAction -> InHeroForm
   AlterEgoAction -> InAlterEgoForm

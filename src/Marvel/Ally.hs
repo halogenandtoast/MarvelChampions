@@ -4,6 +4,7 @@ module Marvel.Ally
   , module X
   ) where
 
+import Marvel.Ally.Allies.MutantGenesisCampaign
 import Marvel.Prelude
 
 import Marvel.Ally.Allies
@@ -31,7 +32,8 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard blackCatFeliciaHardy
+  [ SomeAllyCard mgRobertKelly, SomeAllyCard mgJubilee, SomeAllyCard mgRictor, SomeAllyCard mgBoomBoom, SomeAllyCard mgCannonball, SomeAllyCard mgWolfsbane, SomeAllyCard mgCampaignMagneto
+  , SomeAllyCard blackCatFeliciaHardy
   , SomeAllyCard spiderWomanJessicaDrew
   , SomeAllyCard hellcatPatsyWalker
   , SomeAllyCard warMachineJamesRhodes
@@ -215,4 +217,12 @@ allAllies = fromList $ map
   , SomeAllyCard spiderManNoir
   , SomeAllyCard spiderHamPeterPorker
   , SomeAllyCard spiderManOttoOctavius
+  , SomeAllyCard shadowcatKittyPryde
+  , SomeAllyCard nightcrawler
+  , SomeAllyCard polaris
+  , SomeAllyCard professorX
+  , SomeAllyCard lockheed
+  , SomeAllyCard wolverine
+  , SomeAllyCard magik
+  , SomeAllyCard colossusPiotrRasputin
   ]

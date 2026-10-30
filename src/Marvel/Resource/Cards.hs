@@ -1,6 +1,11 @@
 module Marvel.Resource.Cards where
 
 import Marvel.Matchers
+import Marvel.Keyword
+import Marvel.EncounterSet
+import Marvel.Ability.Types qualified as Ability
+import Marvel.Cost.Types
+import Marvel.Window
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -59,6 +64,8 @@ allResources = fromList $ concatMap
   , connectionToTheWorldmind
   , everydayHero
   , strokeOfGenius
+  , defensiveEnergy
+  , aggressiveEnergy
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -139,13 +146,13 @@ thePowerOfProtection = reprintedAs ["05016", "09017", "16015"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = deckLimited 1 $ reprintedAs ["27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = deckLimited 1 $ reprintedAs ["27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = deckLimited 1 $ reprintedAs ["27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -227,4 +234,18 @@ strokeOfGenius :: CardDef
 strokeOfGenius = (identityResource "29009" "Stroke of Genius" [] [Mental])
   { cdDeckLimit = Just 2
   , cdUnique = False
+  }
+
+-- Mutant Genesis
+
+defensiveEnergy :: CardDef
+defensiveEnergy = (resource "32018" "Defensive Energy" [] [Wild] Protection)
+  { cdDeckLimit = Just 2
+  }
+
+-- Mutant Genesis
+
+aggressiveEnergy :: CardDef
+aggressiveEnergy = (resource "32047" "Aggressive Energy" [] [Wild] Aggression)
+  { cdDeckLimit = Just 2
   }

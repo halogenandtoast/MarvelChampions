@@ -53,8 +53,8 @@ instance HasAbilities Cosmo where
    where
     self = AllyWithId (allyId $ toAllyAttrs a)
 
--- | No consequential damage for the use the discard answered: read as the attack lands
--- or the thwart's consequential damage is worked out, then gone.
+-- | No consequential damage for the use the discard answered, cleared after
+-- that use's consequential damage is worked out.
 instance HasModifiersFor Cosmo where
   getModifiersFor _ (AllyRef aid) (Cosmo (a `With` meta))
     | aid == allyId a && safe meta = pure [NoConsequentialDamage]
@@ -74,14 +74,23 @@ instance RunMessage Cosmo where
     WithDiscarded (isTarget c -> True) _ cards -> do
       let hit = any (\card -> Just (cdCardType $ getCardDef card) == named meta) cards
       pure . Cosmo $ attrs `With` Meta Nothing hit
+    AllyMessage aid msg' | aid == allyId attrs, starts msg' -> do
+      -- An interrupted use may end before its consequential-damage step exists.
+      -- Its successful discard must never protect a later use.
+      attrs' <- runMessage msg attrs
+      pure . Cosmo $ attrs' `With` Meta Nothing False
     AllyMessage aid msg' | aid == allyId attrs, done msg' -> do
       -- the modifier is read from the game as this runs, then cleared
       attrs' <- runMessage msg attrs
       pure . Cosmo $ attrs' `With` Meta Nothing False
     _ -> Cosmo . (`With` meta) <$> runMessage msg attrs
    where
+    starts = \case
+      AllyAttacked -> True
+      AllyThwarted -> True
+      _ -> False
     done = \case
-      AllyAttackLands {} -> True
+      AllyAttackConsequential -> True
       AllyThwartConsequential -> True
       _ -> False
 

@@ -4,9 +4,11 @@ import Marvel.Prelude
 
 import Marvel.GameValue.Types (GameValue)
 import Marvel.Resource.Types (Resource)
+import Marvel.Trait.Types (Trait)
 
 data Keyword
-  = Alliance
+  = Teamwork Trait
+  | Alliance
   | Guard
   | Toughness
   | Quickstrike

@@ -297,7 +297,7 @@ runScenarioMessage msg attrs = case msg of
     let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
     pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
   -- a card set aside leaves the set-aside area for wherever it goes
-  RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId)
+  RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId) & encounterDeckL %~ filter ((/= cid) . ecCardId) & discardL %~ filter ((/= cid) . ecCardId)
   RemoveDeck EncounterDeckKey -> pure attrs
   -- a defeated villain's cards still in play are his deck's: they have no discard pile
   -- to go to

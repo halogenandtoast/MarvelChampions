@@ -1,5 +1,10 @@
 module Marvel.Environment.Cards where
 
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.Trait qualified as MGTrait
+import Marvel.Resource qualified as MGResource
+import Marvel.Boost qualified as MGBoost
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
@@ -8,6 +13,11 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
+import Marvel.Trait qualified as MGTrait
+import Marvel.EncounterSet qualified as MGSet
+import Marvel.Keyword qualified as MGKeyword
+import Marvel.GameValue.Types qualified as MGValue
+import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -24,7 +34,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ smCityStreets, smBellTowerA, smBellTowerB, smSkiesOverNewYorkB, smLowerManhattanB, smMidtownManhattanB, smUpperManhattanB, smPublicOutcryA, smPublicOutcryB
+  [ mgProtectTheSenator, mgSaveTheSchool, mgRescueCaptives
+  , smCityStreets, smBellTowerA, smBellTowerB, smSkiesOverNewYorkB, smLowerManhattanB, smMidtownManhattanB, smUpperManhattanB, smPublicOutcryA, smPublicOutcryB
   , ultronDrones
   -- The Green Goblin
   , criminalEnterprise
@@ -460,4 +471,24 @@ surgeInCrime = (smEnvironmentDef "31037" "Surge in Crime" SpdrSet.IronSpiderSini
   { cdBoostIcons = [Boost, Boost]
   , cdUnique = False
   , cdKeywords = fromList [SpdrKeyword.Surge]
+  }
+
+mgRescueCaptives :: CardDef
+mgRescueCaptives = (ultronDrones) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdCardCode = "32173b", cdName = "Rescue Captives", cdBoostIcons = [MGBoost.Boost, MGBoost.Boost], cdTraits = fromList [MGTrait.Mission], cdHazards = 0, cdAcceleration = 0}
+
+-- Mutant Genesis scenario definitions
+mgProtectTheSenator :: CardDef
+mgProtectTheSenator = (smEnvironmentDef "32065b" ("Protect the Senator") MGSet.Sabretooth 0)
+  { cdTraits = fromList [MGTrait.Mission]
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
+  }
+
+mgSaveTheSchool :: CardDef
+mgSaveTheSchool = (smEnvironmentDef "32130" ("Save the School") MGSet.MansionAttack 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdBoostIcons = []
+  , cdKeywords = fromList []
   }

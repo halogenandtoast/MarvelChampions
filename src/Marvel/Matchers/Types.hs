@@ -57,6 +57,8 @@ data IdentityMatcher
   | IdentityCanDefend
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm
+  | IdentityCanChangeMassForm
+  | IdentityCanRecover
   | -- | of the identities matching, those with the fewest hit points remaining
     IdentityWithFewestRemainingHitPoints IdentityMatcher
   deriving stock (Show, Eq, Generic)
@@ -215,6 +217,7 @@ data EnemyMatcher
   | ConfusedEnemy
   | -- | May receive a new confused status: neither stalwart nor already confused.
     EnemyCanBeConfused
+  | EnemyCanBeStunned
   -- Galactic Artifacts: "attach to the enemy with the lowest ATK" (highest, lowest SCH)
   | EnemyWithLowestAttack
   | EnemyWithHighestScheme
@@ -370,6 +373,7 @@ data CharacterMatcher
     CharacterCanBeReadied
   | CharacterWithId CharacterId
   | CharacterOtherThan CharacterId
+  | CharacterCanGainTough
   | CharacterWithStatus StatusCard
   | -- | of the heroes and allies, those whose ATK is the highest
     HeroOrAllyWithHighestAttack

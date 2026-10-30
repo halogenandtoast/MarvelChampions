@@ -247,12 +247,14 @@ passesTiming _ a = all passes (toList $ abilityTiming a)
 passesTypeIsRelevant :: (HasGame m) => IdentityId -> Ability -> m Bool
 passesTypeIsRelevant ident a = case abilityType a of
   Interrupt -> pure False
+  AlterEgoInterrupt -> pure False
   HeroInterrupt -> pure False
   ForcedInterrupt -> pure False
   Resource -> pure False
   HeroResource -> pure False
   AlterEgoResource -> pure False
   Response -> pure False
+  AlterEgoResponse -> pure False
   HeroResponse -> pure False
   ForcedResponse -> pure False
   Action -> pure True
@@ -269,12 +271,14 @@ class PerformAbility a where
 isForcedAbility :: Ability -> Bool
 isForcedAbility a = case abilityType a of
   Interrupt -> False
+  AlterEgoInterrupt -> False
   HeroInterrupt -> False
   ForcedInterrupt -> True
   Resource -> False
   HeroResource -> False
   AlterEgoResource -> False
   Response -> False
+  AlterEgoResponse -> False
   HeroResponse -> False
   ForcedResponse -> True
   Action -> False
@@ -288,12 +292,14 @@ isForcedAbility a = case abilityType a of
 defaultAbilityLimit :: AbilityType -> Limit
 defaultAbilityLimit = \case
   Interrupt -> PerWindow 1
+  AlterEgoInterrupt -> PerWindow 1
   HeroInterrupt -> PerWindow 1
   ForcedInterrupt -> PerWindow 1
   Resource -> NoLimit
   HeroResource -> NoLimit
   AlterEgoResource -> NoLimit
   Response -> PerWindow 1
+  AlterEgoResponse -> PerWindow 1
   HeroResponse -> PerWindow 1
   ForcedResponse -> PerWindow 1
   Action -> NoLimit

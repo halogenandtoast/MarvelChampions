@@ -6,6 +6,7 @@ module Marvel.Identity (
 ) where
 
 import Marvel.Prelude
+import Control.Monad (replicateM_)
 
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
@@ -136,11 +137,18 @@ identityIsConfused p = do
 identityGivenStatus :: (HasGame m) => PlayerIdentity -> StatusCard -> m PlayerIdentity
 identityGivenStatus p s = do
   keywords <- getModifiedKeywords p
+  modifiers <- getModifiers p
   let a = toAttrs p
   pure $ PlayerIdentity $ if Stalwart `elem` keywords && s /= ToughStatus then a else case s of
+    ToughStatus | playerIdentityTough a -> a {playerIdentityAdditionalTough = if CanHaveAnyNumberOfToughStatusCards `elem` modifiers then playerIdentityAdditionalTough a + 1 else max (playerIdentityAdditionalTough a) $ min (sum [n | AdditionalToughStatusCards n <- modifiers]) (playerIdentityAdditionalTough a + 1)}
     StunnedStatus | Steady `elem` keywords && playerIdentityStunned a -> a {playerIdentityAdditionalStun = True}
     ConfusedStatus | Steady `elem` keywords && playerIdentityConfused a -> a {playerIdentityAdditionalConfuse = True}
     _ -> a & statusL s .~ True
+
+removeOneIdentityTough :: Attrs PlayerIdentity -> Attrs PlayerIdentity
+removeOneIdentityTough attrs
+  | playerIdentityAdditionalTough attrs > 0 = attrs {playerIdentityAdditionalTough = playerIdentityAdditionalTough attrs - 1}
+  | otherwise = attrs & toughL .~ False
 
 isHero :: PlayerIdentity -> Bool
 isHero player = case currentIdentity player of
@@ -255,6 +263,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityAdditionalStun = False
       , playerIdentityAdditionalConfuse = False
       , playerIdentityTough = False
+      , playerIdentityAdditionalTough = 0
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
       , playerIdentityAttackDamageTaken = 0
@@ -325,10 +334,17 @@ playableCardsWithReduction you reduction matcher = do
 -- Deal each facedown and replace it with a draw after this batch finishes.
 replacePlayerDeckEncounters :: (ReverseQueue m) => IdentityId -> [PlayerCard] -> m [PlayerCard]
 replacePlayerDeckEncounters you cards = do
-  let encounters = mapMaybe playerZoneEncounterCard cards
+  let encounters = mapMaybe playerZoneEncounterCard (filter (not . cardMatch (CardWithTrait Shapeshifter)) cards)
   traverse_ (identityStep you . DealtEncounterCard) encounters
   unless (null encounters) $ drawCards you (fromIntegral $ length encounters)
-  pure [card | card <- cards, isNothing (playerZoneEncounterCard card)]
+  pure [card | card <- cards, isNothing (playerZoneEncounterCard card) || cardMatch (CardWithTrait Shapeshifter) card]
+
+discardPlayerDeckEncounters :: ReverseQueue m => IdentityId -> [PlayerCard] -> m [PlayerCard]
+discardPlayerDeckEncounters you cards = do
+  ordinary <- replacePlayerDeckEncounters you cards
+  let shapeshifters = filter (cardMatch $ CardWithTrait Shapeshifter) ordinary
+  traverse_ discardCard shapeshifters
+  pure $ filter (not . cardMatch (CardWithTrait Shapeshifter)) ordinary
 
 -- | Whether the card can be played, its resource cost ignored if so ("play a card from
 -- your hand, ignoring its resource cost").
@@ -814,6 +830,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         -- an obligation drawn goes into play in their play area, not drawn again for
         -- (System Shock, whose text only works in hand, stays there)
         ordinary <- replacePlayerDeckEncounters playerIdentityId cards
+        for_ (filter (cardMatch $ CardWithTrait Shapeshifter) ordinary) (\card -> cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,card))
         let (obligations, drawn) = partition (\c -> cdCardType (getCardDef c) == ObligationType && not (staysInHand c)) ordinary
         for_ obligations (putObligationIntoPlay playerIdentityId)
         pure $
@@ -958,7 +975,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.insert supportId
     SupportRemoved supportId -> do
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.delete supportId
-    AddToHand card ->
+    AddToHand card -> do
+      when (cardMatch (CardWithTrait Shapeshifter) card) $ cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,card)
       pure $
         PlayerIdentity $
           attrs
@@ -1045,15 +1063,16 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           take (fromIntegral n)
             <$> shuffleM (unHand playerIdentityHand)
         for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discards
+        traverse_ discardCard (filter (cardMatch $ CardWithTrait Shapeshifter) discards)
         pure $
           PlayerIdentity $
             attrs
-              & (discardL %~ Discard . (discards <>) . unDiscard)
+              & (discardL %~ Discard . (filter (not . cardMatch (CardWithTrait Shapeshifter)) discards <>) . unDiscard)
               & (handL %~ Hand . filter (`notElem` discards) . unHand)
       FromDeck -> do
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
-        discarded <- replacePlayerDeckEncounters playerIdentityId cards
+        discarded <- discardPlayerDeckEncounters playerIdentityId cards
         for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discarded
         pure $
           PlayerIdentity $
@@ -1072,9 +1091,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     -- the active villain of the player's area, if it has one, then their minions
     VillainAndMinionsActivate -> do
-      case currentIdentity pid of
-        HeroSide _ -> currentVillainAttacks playerIdentityId
-        AlterEgoSide _ -> currentVillainSchemes playerIdentityId
+      villain <- selectOne ActiveVillain
+      case villain of
+        Just vid -> do
+          checkWindows [W.Window W.Would $ W.VillainActivationWouldBegin vid playerIdentityId]
+          cardSpecific GameRef "resolveCurrentVillainActivation" playerIdentityId
+        Nothing -> cardSpecific GameRef "resolveCurrentVillainActivation" playerIdentityId
       identityStep playerIdentityId MinionsActivate
       pure pid
     -- read once the villain has activated: a minion its boost card put into play
@@ -1098,6 +1120,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId RevealEncounterCards
         pure $ PlayerIdentity $ attrs & encounterCardsL .~ rest
     IdentityWasAttacked attack' -> do
+      senator <- selectOne (AllyWithTitle "Robert Kelly" <> AllyControlledBy (IdentityWithId playerIdentityId))
       let
         damage =
           subtractNatural playerIdentityDamageReduction $ attackDamageDealt attack'
@@ -1107,21 +1130,29 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       -- an attack dealing indirect damage (Starshark): the damage past the defense is
       -- divided among the characters the player controls, each share taken as it is
       when (damage > 0) $
-        if attackDividedEvenly attack'
-          then divideAttackDamage playerIdentityId (attackSource attack') ((attackDamageTo attack' damage) {damageOverkill = attackOverkill attack'})
-          else if attackIndirect attack'
-          then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
-          else damageCharacter playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
+        case attackThreatRemoval attack' of
+          Just you -> removeThreat you (attackSource attack') damage MainScheme
+          Nothing | not (attackDefended attack'), Just aid <- senator -> damageCharacter aid (attackSource attack') (attackDamageTo attack' damage)
+          Nothing -> if attackDividedEvenly attack'
+            then divideAttackDamage playerIdentityId (attackSource attack') ((attackDamageTo attack' damage) {damageOverkill = attackOverkill attack'})
+            else if attackIndirect attack'
+            then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
+            else damageCharacter playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
       unless (attackRanged attack') $
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
-      when playerIdentityDefended $
+      when (playerIdentityDefended || attackDefended attack') $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
       pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
+    IdentityDamaged source damage | damagePiercing damage && damageAmount damage > 0 -> do
+      cardSpecific playerIdentityId "discardToughForPiercing" (source, damage)
+      pure pid
     IdentityDamaged source damage -> do
       immune <- cannotTakeDamageFrom (IdentityRef playerIdentityId) source
       if immune then pure pid
       else if playerIdentityTough && damageAmount damage > 0 && preventedByTough damage
-        then pure $ PlayerIdentity $ attrs & toughL .~ False
+        then do
+          checkWindows [W.Window W.After $ W.IdentityDiscardedTough playerIdentityId]
+          pure $ PlayerIdentity $ removeOneIdentityTough attrs
         else do
           modifiedHp <- getModifiedHp pid
           -- what answers "would be defeated" may take the defeat off the queue
@@ -1135,7 +1166,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               attrs
                 & damageL +~ damageAmount damage
                 & toughL %~ (&& not (piercesTough damage))
-                & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack}
+                & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack, playerIdentityAdditionalTough = if piercesTough damage then 0 else playerIdentityAdditionalTough}
     IdentityDefeated -> do
       players <- getAllPlayers
       let
@@ -1180,7 +1211,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       modifiedHp <- getModifiedHp pid
       pure $ PlayerIdentity $ attrs & damageL .~ subtractNatural n modifiedHp
     IdentityStunned -> identityGivenStatus pid StunnedStatus
-    IdentityBecomeTough -> pure $ PlayerIdentity $ attrs & toughL .~ True
+    IdentityBecomeTough -> identityGivenStatus pid ToughStatus
     IdentityConfused -> identityGivenStatus pid ConfusedStatus
     IdentityRemoveStunned -> pure $ PlayerIdentity $ (attrs & stunnedL .~ False) {playerIdentityAdditionalStun = False}
     IdentityRemoveConfused ->
@@ -1246,7 +1277,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let
         (missed, rest) = break (cardMatch matcher) (unDeck playerIdentityDeck)
         found = take 1 rest
-      discarded <- replacePlayerDeckEncounters playerIdentityId (missed <> found)
+      discarded <- discardPlayerDeckEncounters playerIdentityId (missed <> found)
       for_ [c | c <- found, isNothing (playerZoneEncounterCard c)] \c -> withDiscardedMatch target FromDeck (PlayerCard c)
       pure $
         PlayerIdentity $
@@ -1304,8 +1335,18 @@ instance RunMessage PlayerIdentity where
     -- queued after what the message did, so the deck is made again before any of it runs
     runQueueT $ when (null (unDeck a.playerIdentityDeck) && notNull (unDiscard a.playerIdentityDiscard) && not a.playerIdentitySearching) do
       resetDeck a.playerIdentityId
-    steady <- elem Steady <$> getModifiedKeywords pid'
-    pure $ if steady then pid' else PlayerIdentity (toAttrs pid') {playerIdentityAdditionalStun = False, playerIdentityAdditionalConfuse = False}
+    keywords <- getModifiedKeywords pid'
+    modifiers <- getModifiers pid'
+    let steady = Steady `elem` keywords
+        continuousStun = ContinuouslyStunned `elem` modifiers && Stalwart `notElem` keywords
+        continuousConfuse = ContinuouslyConfused `elem` modifiers && Stalwart `notElem` keywords
+        updated = (toAttrs pid')
+          { playerIdentityStunned = playerIdentityStunned a || continuousStun
+          , playerIdentityConfused = playerIdentityConfused a || continuousConfuse
+          , playerIdentityAdditionalStun = steady && (playerIdentityAdditionalStun a || continuousStun)
+          , playerIdentityAdditionalConfuse = steady && (playerIdentityAdditionalConfuse a || continuousConfuse)
+          }
+    pure $ PlayerIdentity updated
 
 runPlayerMessage ::
   (ReverseQueue m) =>
@@ -1313,6 +1354,13 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific (IdentityRef ident) "discardToughForPiercing" (fromJSON -> Success (source :: Source, damage :: Damage)) | ident == playerIdentityId attrs -> do
+      immune <- cannotTakeDamageFrom (IdentityRef ident) source
+      let count = if playerIdentityTough attrs && not immune then 1 + playerIdentityAdditionalTough attrs else 0
+      replicateM_ (fromIntegral count) $ checkWindows [W.Window W.After $ W.IdentityDiscardedTough ident]
+      -- Piercing is processed once. A new tough granted by a response can prevent the damage.
+      damageIdentity ident source damage {damagePiercing = False}
+      pure $ if count == 0 then pid else PlayerIdentity attrs {playerIdentityTough = False, playerIdentityAdditionalTough = 0}
     CardSpecific target "playChosenX" (fromJSON -> Success (card, mWindow :: Maybe W.Window, mTarget, n :: Natural))
       | target == toRef pid -> do
           costly <- (> 0) <$> getModifiedCostWithBase pid card mTarget (Just $ fromIntegral n)
@@ -1370,6 +1418,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     RemoveCounters (IdentityRef ident) n | ident == playerIdentityId attrs ->
       pure $ PlayerIdentity attrs {playerIdentityCounters = subtractNatural n (playerIdentityCounters attrs)}
     GiveStatus (IdentityRef ident) s | ident == playerIdentityId attrs -> identityGivenStatus pid s
+    RemoveStatus (IdentityRef ident) ToughStatus | ident == playerIdentityId attrs -> do
+      when (playerIdentityTough attrs) $ checkWindows [W.Window W.After $ W.IdentityDiscardedTough ident]
+      pure $ PlayerIdentity $ removeOneIdentityTough attrs
     RemoveStatus (IdentityRef ident) StunnedStatus | ident == playerIdentityId attrs, playerIdentityAdditionalStun attrs -> pure $ PlayerIdentity attrs {playerIdentityAdditionalStun = False}
     RemoveStatus (IdentityRef ident) ConfusedStatus | ident == playerIdentityId attrs, playerIdentityAdditionalConfuse attrs -> pure $ PlayerIdentity attrs {playerIdentityAdditionalConfuse = False}
     RemoveStatus (IdentityRef ident) s | ident == playerIdentityId attrs ->
@@ -1476,7 +1527,7 @@ instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
       KeyMap.union o $ KeyMap.fromList
-        [("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
+        [("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity
