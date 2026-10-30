@@ -28,6 +28,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Vision Hero Pack rulesheet (MC26) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/53/60/53601f73-fa92-4cb9-816c-4f8d904de281/mc26_vision_rulesheet.pdf |
 | Sinister Motives rulebook (MC27) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc27_sinister_motives_rules_v5-compressed.pdf |
 | Nova Hero Pack rulesheet (MC28) | PDF dated 2021-02-04, 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc28_nova_rulesheet.pdf |
+| Ironheart Hero Pack rulesheet (MC29) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/df/95/df950da6-c3b3-4edd-9f58-8d3bd192b755/mc29_ironheart_rulesheet.pdf |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts,sm}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
@@ -88,6 +89,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-ghost-spider.md](hero-ghost-spider.md) | Ghost-Spider: Dizzying Reflexes, George Stacy and starter deck |
 | [hero-miles-morales.md](hero-miles-morales.md) | Miles Morales: Specials, Requirement and starter deck |
 | [hero-nova.md](hero-nova.md) | Nova: stacked tough, Requirement, wild resources, Ms. Marvel errata, starter deck and Armadillo modular set |
+| [hero-ironheart.md](hero-ironheart.md) | Ironheart: progressing identity cards, Requirement, printed-card corrections, Go for Champions errata and FAQ, starter deck, Zzzax modular set and pending rulings |
 
 ## Conventions
 
