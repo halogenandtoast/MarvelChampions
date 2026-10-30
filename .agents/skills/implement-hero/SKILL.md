@@ -14,6 +14,23 @@ the worked example of every step below; read its diffs when unsure how something
 Follow AGENTS.md throughout: the lifted layer, `damageIdentity` / `placeThreatOn`, i18n
 labels, the narrator for logs, `Marvel.Game.Public` for anything the board must show.
 
+## Visible progress
+
+Show a visual progress bar in commentary when starting, at each phase transition, and
+in ongoing status updates. Include the hero, an approximate percentage, the current
+step, and what remains. Render it in the conversation UI; this does not call for a
+progress feature in the game client. For example:
+
+**Nova pack — approximately 30% complete**
+`██████░░░░░░░░░░░░░░ 30%` — Engine foundation compiling; card behavior and tests next.
+
+Use these approximate milestones: gather/plan 10–20%, engine/scaffold 20–35%, card
+batches 35–70%, targeted/full tests 70–90%, independent audit and fixes 90–95%,
+committed and verified 100%. Advance on completed work, not elapsed time. While a
+build, test, or ruling holds progress, keep the percentage steady and name that step.
+Keep updates concise and report actual failures; never show 100% with required work
+remaining. Include a final bar with the completion report.
+
 ## 0. The tree
 
 Run `git status`. Preserve unrelated uncommitted changes and work alongside them; ask
