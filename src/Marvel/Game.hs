@@ -2020,10 +2020,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       asYou ident $ filterM
         ( andM
             . sequence
-              [ withinUseLimit ident
+              [ \a -> anyM (`abilityInWindow` a) openWindows
+              , withinUseLimit ident
               , passesCriteria ident
               , passesCanAffordCost ident
-              , \a -> anyM (`abilityInWindow` a) openWindows
               ]
         )
         abilities
@@ -2204,17 +2204,16 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window attrs c = do
-  effectiveDef <- effectivePlayerCardDef ident c
-  affordable <- notNull <$> playableTargets attrs c
-  passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
-  passedWindow <-
-    maybe
-      (pure False)
-      (\matcher -> windowMatches matcher window GameRef)
-      (cdResponseWindow def)
-  passedPlayLimits <- checkPlayLimits attrs c
-  forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
-  pure $ not forbidden && affordable && passedCriteria && passedWindow && passedPlayLimits
+  -- Ordinary actions and nonmatching responses cannot be played in this window.
+  -- Reject them before payment planning, which can search many resource choices.
+  passedWindow <- maybe (pure False) (\matcher -> windowMatches matcher window GameRef) (cdResponseWindow def)
+  if not passedWindow then pure False else do
+    effectiveDef <- effectivePlayerCardDef ident c
+    affordable <- notNull <$> playableTargets attrs c
+    passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
+    passedPlayLimits <- checkPlayLimits attrs c
+    forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
+    pure $ not forbidden && affordable && passedCriteria && passedPlayLimits
  where
   ident = toId attrs
   def = getCardDef c
