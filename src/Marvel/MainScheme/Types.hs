@@ -215,13 +215,9 @@ instance RunMessage (Attrs MainScheme) where
         -- a player a patrol minion is engaged with cannot thwart it with the cards they
         -- control (RR Patrol); removing threat otherwise is not a thwart
         MainSchemeBasicThwarted source n -> unlessPatrolled True source do
-          heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
-          heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
-          pure $ attrs & threatL %~ subtractNatural n
+          interruptThwart source n
         MainSchemeThwarted source n -> unlessPatrolled False source do
-          heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
-          heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
-          pure $ attrs & threatL %~ subtractNatural n
+          interruptThwart source n
         -- "player cards cannot remove threat from the main scheme" while a crisis icon is
         -- in play (RR Crisis Icon); a thwart is already kept off it
         MainSchemeThreatRemoved source n -> do
@@ -244,6 +240,12 @@ instance RunMessage (Attrs MainScheme) where
               heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
               pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
+    CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
+      let scheme = SchemeMainSchemeId $ mainSchemeId attrs
+      thwartRemovesThreat W.After source scheme (mainSchemeThreat attrs) n
+      heroThwartedAllThreat source scheme (mainSchemeThreat attrs) n
+      heroRemovedLastThreat source scheme (mainSchemeThreat attrs) n
+      pure $ attrs & threatL %~ subtractNatural n
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     AccelerateMainScheme -> do
@@ -258,6 +260,10 @@ instance RunMessage (Attrs MainScheme) where
       pure attrs
     _ -> pure attrs
    where
+    interruptThwart source n = do
+      thwartRemovesThreat W.When source (SchemeMainSchemeId $ mainSchemeId attrs) (mainSchemeThreat attrs) n
+      cardSpecific attrs "resolveThwart" (source, n)
+      pure attrs
     unlessPatrolled basic source body = do
       patrolled <- maybe (pure False) isPatrolled =<< getSourceController source
       modifiers <- getModifiers source

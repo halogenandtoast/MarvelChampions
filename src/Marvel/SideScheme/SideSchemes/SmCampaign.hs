@@ -55,7 +55,7 @@ instance RunMessage SmCampaignSideScheme where
         removeFromGame attrs
         traverse_ (`discardTopOfDeck` 3) =<< getPlayers
       pure s
-    SideSchemeMessage sid (SideSchemeThwarted source _) | sid == sideSchemeId attrs -> do
+    CardSpecific target "resolveThwart" (fromJSON -> Success (source, _ :: Natural)) | target == toRef attrs -> do
       attrs' <- runMessage msg attrs
       let removed = subtractNatural (sideSchemeThreat attrs') (sideSchemeThreat attrs)
       when (removed > 0) do

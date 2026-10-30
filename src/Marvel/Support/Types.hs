@@ -176,6 +176,9 @@ instance IsRef (Attrs Support) where
 
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
+    RemoveCounters target n | target == toRef a -> do
+      when (supportUses a > 0 && n >= supportUses a && supportDiscardIfNoUses a) $ removeFromPlay a
+      pure $ a & usesL %~ subtractNatural n
     SupportMessage ident msg' | ident == supportId a -> case msg' of
       AttachPlayableEvent card -> pure a
         { supportHeldCards = supportHeldCards a <> [card | card `notElem` supportHeldCards a]

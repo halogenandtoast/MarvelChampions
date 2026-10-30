@@ -118,5 +118,7 @@ data Trait
   | Version1
   | Version2
   | Version3
+  | Cartoon
+  | Inheritor
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

@@ -16,6 +16,8 @@
 module Marvel.Log.Narrator (narrationFor) where
 
 import Marvel.Prelude
+import Data.Aeson (Result (Success), fromJSON)
+import Marvel.Window.Types qualified as W
 
 import Marvel.Ability.Types (Ability (..), AbilityType (..))
 import Data.HashMap.Strict qualified as HashMap
@@ -151,10 +153,8 @@ narrationFor = \case
     current <- getActiveVillainIn aid
     if current == Just vid then pure [] else whenRef (VillainRef vid) \v -> one $ mechanic [ikeyPart "log.activeVillain" ["villain" ~> v]]
   -- * The encounter deck
-  RevealEncounterCard ident card -> Just do
-    who <- playerRef' ident
-    one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
-  RevealEncounterCardFrom _ ident card -> Just do
+  -- Name-before-looking interrupts resolve before revealing the card to the table.
+  CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, ident :: IdentityId, card :: EncounterCard)) -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
   GiveStatus target s

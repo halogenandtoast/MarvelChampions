@@ -120,6 +120,8 @@ heroAttackBy damage source = case damageSource damage of
 -- | Whether the source matches: an event by who played it, while it resolves.
 sourceMatches :: (HasGame m) => SourceMatcher -> Source -> m Bool
 sourceMatches matcher source = case matcher of
+  AnySource -> pure True
+  SourceIs expected -> pure $ expected == source
   SourceIsIdentity m | IdentityRef ident <- source -> identityMatches m ident
   EventPlayedBy m | EventRef _ <- source -> maybe (pure False) (identityMatches m) =<< getSourceController source
   SourceOneOf ms -> anyM (`sourceMatches` source) ms

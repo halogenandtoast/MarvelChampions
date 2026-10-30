@@ -22,6 +22,13 @@ windowMatches matcher w source = case matcher of
     HeroThwartComplete ident | windowTiming w == timing -> identityMatches identityMatcher ident
     MadeBasicThwart ident | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
+  IdentityDamaged timing identityMatcher -> case windowType w of
+    IdentityTookDamage ident _ damage | windowTiming w == timing && damageAmount damage > 0 -> identityMatches identityMatcher ident
+    _ -> pure False
+  ThreatRemovedByThwart timing sourceMatcher schemeMatcher -> case windowType w of
+    ThwartRemovedThreat from scheme _ removed | windowTiming w == timing && removed > 0 ->
+      (&&) <$> sourceMatches sourceMatcher from <*> schemeMatches schemeMatcher scheme
+    _ -> pure False
   RemovesLastThreat identityMatcher -> case windowType w of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
     _ -> pure False
@@ -391,6 +398,10 @@ windowMatches matcher w source = case matcher of
   BoostCardFlipped timing enemyMatcher -> case windowType w of
     FlippedBoostCard _ enemyId
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
+    _ -> pure False
+  EncounterCardRevealedFromDeckBy timing identityMatcher encounterCardMatcher -> case windowType w of
+    EncounterCardRevealed RevealedFromEncounterDeck ident encounterCard | windowTiming w == timing ->
+      (&&) <$> encounterCardMatches encounterCardMatcher encounterCard <*> identityMatches identityMatcher ident
     _ -> pure False
   EncounterCardRevealedBy timing identityMatcher encounterCardMatcher -> case windowType w of
     EncounterCardResolved ident card | timing == After -> (&&) <$> identityMatches identityMatcher ident <*> encounterCardMatches encounterCardMatcher card

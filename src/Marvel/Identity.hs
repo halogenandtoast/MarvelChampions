@@ -358,7 +358,7 @@ controlledWithTrait t p = do
   upgrades <- fromIntegral . length <$> selectList (UpgradeWithTrait t <> upgradeControlledBy p)
   pure $ supports + upgrades
 
-checkPlayLimits :: (HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
+checkPlayLimits :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => PlayerIdentity -> PlayerCard -> m Bool
 checkPlayLimits ident c = case cdLimit def of
   Nothing -> pure True
   Just limit -> case limit of
@@ -383,10 +383,11 @@ checkPlayLimits ident c = case cdLimit def of
       UpgradeType -> selectAny $ NotEnemy $ EnemyWithUpgrade $ UpgradeNamed name
       _ -> error "Unhandled"
     MaxPerEnemy _ -> error "Unhandled"
-    -- every such card attaches to the main scheme, of which there is one: one in play
-    -- is one on it
-    MaxPerScheme 1 -> selectNone $ UpgradeNamed name
-    MaxPerScheme _ -> error "Unhandled"
+    MaxPerScheme n -> do
+      targets <- fromMaybe [] <$> getPlayTargets (toId ident) c
+      existing <- selectList $ UpgradeNamed name
+      occupied <- concatMapM getUpgradeAttachedSchemes existing
+      pure $ any (\target -> maybe False (\scheme -> count (== scheme) occupied < n) (targetScheme target)) targets
     -- copies played by any player count
     MaxPerWindow n -> (< n) . count ((== name) . cdName) <$> getPlayedThisWindow
     MaxPerRound n -> (< n) . count ((== name) . cdName . snd) <$> getPlayedThisRound
@@ -407,6 +408,11 @@ checkPlayLimits ident c = case cdLimit def of
  where
   def = getCardDef c
   name = cdName def
+  targetScheme = \case
+    MainSchemeRef sid -> Just $ SchemeMainSchemeId sid
+    SideSchemeRef sid -> Just $ SchemeSideSchemeId sid
+    SchemeRef sid -> Just sid
+    _ -> Nothing
 
 -- | The resource cost of playing the card on the target, as modified: Iron Man's "reduce
 -- the cost to play each upgrade on Iron Man" answers for the character it is played on.
@@ -451,7 +457,8 @@ printedXChoices ignoringCost attrs c mTarget = do
       allowed = canSpendOn (cdCriteria $ getCardDef c)
   payers <- resourceCostPayers ident (Just c)
   resources <- filter allowed <$> concatMapM (\payer -> do
-    abilities <- concatMapM abilityResources =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+    let reserved = if payer == toId attrs then sum [n | IdentityCountersCost n <- flattenCosts (cdAbilityCost $ getCardDef c)] else 0
+    abilities <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
     cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
     doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
   (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
@@ -513,7 +520,8 @@ playableTargetsWith ignoringCost attrs c = do
     cost <- getCardCost attrs c mTarget
     payers <- resourceCostPayers (toId attrs) (Just c)
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> concatMapM (\payer -> do
-      abilities <- concatMapM abilityResources =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+      let reserved = if payer == toId attrs then sum [n | IdentityCountersCost n <- flattenCosts cost] else 0
+      abilities <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
       cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
       doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
     reduction <- mayReduceCostToPlay attrs c mTarget

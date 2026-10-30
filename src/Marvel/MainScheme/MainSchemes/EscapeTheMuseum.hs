@@ -41,6 +41,10 @@ theGreatEscape = mainScheme TheGreatEscape Cards.theGreatEscape (PerPlayer 12) (
 escapeStage :: (ReverseQueue m) => m () -> Message -> Attrs MainScheme -> m (Attrs MainScheme)
 escapeStage cleared msg attrs = case msg of
   AdvanceMainScheme mid | mid == mainSchemeId attrs -> attrs <$ gameOver Lost
+  CardSpecific target "resolveThwart" _ | target == toRef attrs -> do
+    attrs' <- runMessage msg attrs
+    when (mainSchemeThreat attrs > 0 && mainSchemeThreat attrs' == 0) cleared
+    pure attrs'
   MainSchemeMessage mid m | mid == mainSchemeId attrs, removes m -> do
     attrs' <- runMessage msg attrs
     when (mainSchemeThreat attrs > 0 && mainSchemeThreat attrs' == 0) cleared

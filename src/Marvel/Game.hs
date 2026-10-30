@@ -792,6 +792,12 @@ getEnemyPrintedHitPoints = \case
       Just v -> fromIntegral <$> fromGameValue (unHp $ Villain.villainStartingHp $ toAttrs v)
   EnemyMinionId mid -> getsGame $ maybe 0 (unHp . getMinionPrintedHitPoints) . lookup mid . gameMinions
 
+-- | The schemes to which this upgrade is attached, independent of scheme type.
+getUpgradeAttachedSchemes :: (HasGame m) => UpgradeId -> m [SchemeId]
+getUpgradeAttachedSchemes uid = getsGame $ maybe [] (\u ->
+  maybe [] pure (SchemeMainSchemeId <$> upgradeAttachedMainScheme (toAttrs u))
+    <> maybe [] pure (SchemeSideSchemeId <$> upgradeAttachedSideScheme (toAttrs u))) . lookup uid . gameUpgrades
+
 -- | The counters on the environment, main scheme or attachment.
 obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool
 obligationIsInPlay oid = getsGame (HashMap.member oid . gameObligations)
@@ -801,6 +807,8 @@ getCountersOn a = getsGame \g -> case toTarget a of
   EnvironmentRef eid -> maybe 0 (field EnvironmentCounters) (lookup eid $ gameEnvironments g)
   MainSchemeRef mid -> maybe 0 (field MainSchemeCounters) (lookup mid $ gameMainSchemes g)
   AttachmentRef aid -> maybe 0 (field AttachmentCounters) (lookup aid $ gameAttachments g)
+  IdentityRef ident -> maybe 0 (playerIdentityCounters . toAttrs) (lookup ident $ gamePlayers g)
+  SupportRef sid -> maybe 0 getSupportUses (lookup sid $ gameSupports g)
   AllyRef aid -> maybe 0 getAllyUses (lookup aid $ gameAllies g)
   UpgradeRef uid -> maybe 0 getUpgradeUses (lookup uid $ gameUpgrades g)
   SideSchemeRef sid -> maybe 0 (sideSchemeCounters . toAttrs) (lookup sid $ gameSideSchemes g)
@@ -848,6 +856,11 @@ runPreGameMessage msg g = runQueueT $ case msg of
     discardCard card
     pure g
   RevealEncounterCardFrom source ident card -> do
+    -- Naming a card type must happen before the card is turned faceup or focused.
+    checkWindows [W.Window W.Would $ W.EncounterCardRevealed source ident card]
+    cardSpecific GameRef "revealAfterWould" (source, ident, card)
+    pure g
+  CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (source, ident, card)) -> do
     unless (cdCardType (getCardDef card) == EventType) $
       focusing [EncounterCard card] $
         checkWindows [W.Window When $ W.EncounterCardRevealed source ident card]
@@ -861,12 +874,7 @@ runPreGameMessage msg g = runQueueT $ case msg of
         | EncounterCard card `elem` scenarioSetAsideCards scenario = W.RevealedFromSetAside
         | card `elem` gameRemovedFromGameEncounterCards g = W.RevealedFromRemovedFromGame
         | otherwise = W.RevealedFromEncounterDeck
-    -- a player's event shuffled in (a Cosmic Entity) cannot be cancelled: no window for
-    -- "when revealed" to cancel it
-    unless (cdCardType (getCardDef card) == EventType) $
-      focusing [EncounterCard card] $
-        checkWindows [W.Window When $ W.EncounterCardRevealed source ident card]
-    push $ RevealedEncounterCardFrom source ident card
+    revealEncounterCardFrom source ident card
     pure g
   CheckWindows windows -> do
     endCheckWindows
@@ -1979,6 +1987,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
             _ -> False
           W.Window _ (W.EncounterCardRevealed _ _ card) -> isQueued \case
+            CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, card' :: EncounterCard)) -> card' == card
             RevealedEncounterCardFrom _ _ card' -> card' == card
             RevealedEncounterCardWithoutWhenRevealedFrom _ _ card' -> card' == card
             RevealedEncounterCard _ card' -> card' == card
@@ -3291,7 +3300,8 @@ getAvailableResourcesFor ::
 getAvailableResourcesFor ident mc = do
   payers <- resourceCostPayers ident mc
   generated <- concatMapM (\payer -> do
-    abilitiesResources <- concatMapM abilityResources =<< getPaymentResourceAbilities ident payer mc
+    let reserved = if payer == ident then maybe 0 (sum . map (\case IdentityCountersCost n -> n; _ -> 0) . flattenCosts . cdAbilityCost . getCardDef) mc else 0
+    abilitiesResources <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities ident payer mc
     playerResources <- concatMapM (`resourcesFor` mc) =<< getPaymentSourcesFor ident payer mc
     pure $ playerResources <> abilitiesResources) payers
   pure $ doubleWildResources (getCardDef <$> mc) generated
@@ -3307,13 +3317,24 @@ getResourceAbilities ::
   Maybe PlayerCard ->
   m [Ability]
 getResourceAbilities ident mc = asYou ident do
-  abilities <- getAbilitiesFor ident
+  printedAbilities <- getAbilitiesFor ident
+  counters <- project PlayerIdentityCounters ident
+  -- With no counters this payment cannot be made. Avoid a full modifier pass for
+  -- every affordability check of heroes who have no counter resource to spend.
+  counterAbilities <- if counters == 0 then pure [] else do
+    modifiers <- getModifiers ident
+    blanked <- isBlanked ident
+    pure [ label "$label.spendIdentityCounter" $ ability ident 990 Resource IsSelf
+             (IdentityCountersCost 1) (Pay $ ResourcePayment Wild)
+         | IdentityCountersAsResources `elem` modifiers, not blanked ]
+  let abilities = printedAbilities <> counterAbilities
   filterM
     ( andM
         . sequence
           [ withinUseLimit ident
           , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
           , pure . paysFor
+          , preservesCounters
           , passesCanAffordCost ident
           , passesCriteria ident
           ]
@@ -3321,6 +3342,12 @@ getResourceAbilities ident mc = asYou ident do
     abilities
  where
   paysFor a = all (\m -> maybe False (cardMatch m) mc) (payingForMatchers $ abilityCriteria a)
+  preservesCounters a = case abilityCost a of
+    IdentityCountersCost n -> do
+      current <- project PlayerIdentityCounters ident
+      let reserved = maybe 0 (sum . map (\case IdentityCountersCost k -> k; _ -> 0) . flattenCosts . cdAbilityCost . getCardDef) mc
+      pure $ current >= n + reserved
+    _ -> pure True
 
 gameSelectIdentity :: (HasGame m) => IdentityMatcher -> m (HashSet IdentityId)
 gameSelectIdentity m = do
@@ -3930,6 +3957,7 @@ gameSelectScheme m = fmap HashSet.fromList . inYourAreaOnly SchemeRef . HashSet.
 -- | The schemes matching, in any area.
 gameSelectAnyScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
 gameSelectAnyScheme = \case
+  NotScheme matcher -> HashSet.difference <$> gameSelectAnyScheme AnyScheme <*> gameSelectAnyScheme matcher
   SchemeMatches matchers -> do
     initial <- gameSelectAnyScheme AnyScheme
     foldlM (\found matcher -> HashSet.intersection found <$> gameSelectAnyScheme matcher) initial matchers
@@ -4367,7 +4395,20 @@ getDifficulty = getsGame $ getScenarioDifficulty . gameScenario
 
 abilityResources ::
   (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
-abilityResources a = go (abilityChoices a)
+abilityResources = abilityResourcesWithReservedCounters 0
+
+-- | Repeated counter spending has one activation choice, but every unreserved
+-- counter contributes to affordability. Counters owed by the card itself remain due.
+abilityResourcesWithReservedCounters ::
+  (HasQueue m, MonadThrow m, HasGame m) => Natural -> Ability -> m [Resource]
+abilityResourcesWithReservedCounters reserved a = do
+  generated <- go (abilityChoices a)
+  repeats <- case (abilitySource a, baseLimit $ abilityLimit a, abilityCost a) of
+    (IdentityRef ident, NoLimit, IdentityCountersCost n) | n > 0 -> do
+      counters <- project PlayerIdentityCounters ident
+      pure $ subtractNatural reserved counters `div` n
+    _ -> pure 1
+  pure $ concat $ replicate (fromIntegral repeats) generated
  where
   go [] = pure []
   go (Pay (ResourcePayment r) : xs) = (r :) <$> go xs

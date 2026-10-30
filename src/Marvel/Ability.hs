@@ -9,6 +9,8 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types as X
 import Marvel.Card.PlayerCard.Types
 import Marvel.Discard (unDiscard)
+import Marvel.Damage (damageAmount)
+import Marvel.Message qualified as Msg
 import Marvel.Card.Id (CardId (..))
 import Marvel.Cost.Types
 import Marvel.Criteria
@@ -181,6 +183,8 @@ passesCriteria x a =
     CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers x
+    PendingDamageAtLeast n -> pendingDamageAtLeast x n
+    HasOtherSchemeForThreatRemoval -> hasOtherSchemeForThreatRemoval
   source = abilitySource a
 
 -- | Whether a card's criteria hold for the player who would play it.
@@ -225,6 +229,8 @@ passesCardCriteria ident card = go
     CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers ident
+    PendingDamageAtLeast n -> pendingDamageAtLeast ident n
+    HasOtherSchemeForThreatRemoval -> hasOtherSchemeForThreatRemoval
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
 partitionMaybes = foldr (maybe nothing just) ([], [])
@@ -321,3 +327,20 @@ playedEventInDiscard = do
     EventPlayed who eid _ -> projectP PlayerIdentityDiscard
       (any ((== CardId (unEventId eid)) . pcCardId) . unDiscard) who
     _ -> pure False
+
+-- | A copied removal needs another scheme with threat that the player may remove.
+-- ThwartableScheme checks removal restrictions and crisis, without imposing patrol.
+hasOtherSchemeForThreatRemoval :: (HasGame m) => m Bool
+hasOtherSchemeForThreatRemoval = do
+  windows <- getCurrentWindows
+  anyM (\case
+    Window _ (ThwartRemovedThreat _ scheme _ _) ->
+      selectAny (NotScheme (SchemeWithId scheme) <> ThwartableScheme)
+    _ -> pure False) windows
+
+-- | Check what remains on the queue after earlier prevention interrupts, rather
+-- than the original damage amount snapshotted by the window.
+pendingDamageAtLeast :: (HasQueue m) => IdentityId -> Natural -> m Bool
+pendingDamageAtLeast ident n = withQueue $ \q ->
+  (q, maybe False ((>= n) . damageAmount) $ headMay
+    [damage | Msg.IdentityMessage who (Msg.IdentityDamaged _ damage) <- q, who == ident])

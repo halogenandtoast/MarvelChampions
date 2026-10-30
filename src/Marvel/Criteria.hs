@@ -53,6 +53,8 @@ data Criteria
   | CanCancelRevealedEncounterCard
   | CanCancelRevealedTreachery
   | CanResolvePrintedHeroAbilities
+  | PendingDamageAtLeast Natural
+  | HasOtherSchemeForThreatRemoval
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 

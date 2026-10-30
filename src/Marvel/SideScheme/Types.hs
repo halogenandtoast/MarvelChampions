@@ -194,6 +194,12 @@ countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
 
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
+      let scheme = SchemeSideSchemeId $ sideSchemeId attrs
+      thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n
+      attrs' <- removed source n
+      heroThwartedAllThreat source scheme (sideSchemeThreat attrs) n
+      pure attrs'
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
@@ -211,9 +217,9 @@ instance RunMessage (Attrs SideScheme) where
           controller <- getSourceController source
           forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
           if forbidden then pure attrs else do
-            attrs' <- removed source n
-            heroThwartedAllThreat source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
-            pure attrs'
+            thwartRemovesThreat When source (SchemeSideSchemeId ident) (sideSchemeThreat attrs) n
+            cardSpecific attrs "resolveThwart" (source, n)
+            pure attrs
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
         SideSchemeThreatRemoved source n -> unlessBarred source (removed source n)
         _ -> pure attrs

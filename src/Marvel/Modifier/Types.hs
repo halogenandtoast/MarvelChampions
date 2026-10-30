@@ -14,7 +14,8 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = CanHaveAnyNumberOfToughStatusCards
+  = IdentityCountersAsResources
+  | CanHaveAnyNumberOfToughStatusCards
   | CanLookAtTopOfEncounterDeck
   | PrintedResourcesAs Resource
   | DividesBasicAttackEvenly

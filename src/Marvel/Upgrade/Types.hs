@@ -254,6 +254,9 @@ instance IsCard (Attrs Upgrade) where
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = runQueueT $ case msg of
+    RemoveCounters target n | target == toRef a -> do
+      when (upgradeUses a > 0 && n >= upgradeUses a && upgradeDiscardIfNoUses a) $ removeFromPlay a
+      pure $ a & usesL %~ subtractNatural n
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
       UpgradeDetached -> pure a {upgradeAttachedEnemy = Nothing, upgradeAttachedAlly = Nothing,
         upgradeAttachedSideScheme = Nothing, upgradeAttachedMainScheme = Nothing}

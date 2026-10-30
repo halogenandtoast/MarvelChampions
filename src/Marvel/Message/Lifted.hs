@@ -1915,6 +1915,19 @@ cancelEncounterWhenRevealed card = do
   replace (RevealedEncounterCard you other) = [RevealedEncounterCardWithoutWhenRevealed you other]
   replace message = [message]
 
+-- | Cancel the entire pending encounter card: it never enters play, and neither
+-- its keywords nor its When Revealed effects resolve.
+cancelEncounterCard :: (HasQueue m, HasGame m) => EncounterCard -> m ()
+cancelEncounterCard card = do
+  allowed <- encounterCardCanBeCanceled card
+  when allowed $ replaceMatchingMessage (const [DiscardedCard $ toCard card]) $ \case
+    RevealedEncounterCard _ other -> other == card
+    RevealedEncounterCardFrom _ _ other -> other == card
+    RevealedEncounterCardWithoutWhenRevealed _ other -> other == card
+    RevealedEncounterCardWithoutWhenRevealedFrom _ _ other -> other == card
+    CardSpecific GameRef "revealAfterWould" (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, other :: EncounterCard)) -> other == card
+    _ -> False
+
 -- | The source of the damage the identity is about to take ("when you would take damage").
 pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
 pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
@@ -2017,6 +2030,11 @@ changeBoostIconCount card f = replaceMatchingMessage change \case
   change = \case
     WithBoostIcons t v counts -> [WithBoostIcons t v [(c, if c == card then f n else n) | (c, n) <- counts]]
     msg -> [msg]
+
+-- | A thwart's actual removal, distinguished from moving or otherwise removing threat.
+thwartRemovesThreat :: (ReverseQueue m) => WindowTiming -> Source -> SchemeId -> Natural -> Natural -> m ()
+thwartRemovesThreat timing source scheme before n =
+  when (min before n > 0) $ checkWindows [Window timing $ W.ThwartRemovedThreat source scheme before (min before n)]
 
 -- | Positive-to-zero threat removal by an identity or a card that extends it.
 heroRemovedLastThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()

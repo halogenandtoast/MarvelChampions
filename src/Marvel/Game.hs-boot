@@ -74,6 +74,7 @@ getCampaign :: (HasGame m) => m (Maybe Campaign)
 offerable :: Game -> Choice -> Bool
 getIdentityCode :: (HasGame m) => IdentityId -> m CardCode
 getRemainingHitPoints :: (HasGame m) => IdentityId -> m (Natural, Natural, Natural)
+getUpgradeAttachedSchemes :: (HasGame m) => UpgradeId -> m [SchemeId]
 getCountersOnMainSchemes :: (HasGame m) => m Natural
 getSideSchemesInPlay :: (HasGame m) => m [(CardCode, [PlayerCard])]
 getCardsOwnedBy :: (HasGame m) => IdentityId -> m [CardDef]
@@ -237,6 +238,8 @@ getResourceAbilities ::
   m [Ability]
 abilityResources ::
   (HasQueue m, MonadThrow m, HasGame m) => Ability -> m [Resource]
+abilityResourcesWithReservedCounters ::
+  (HasQueue m, MonadThrow m, HasGame m) => Natural -> Ability -> m [Resource]
 gameSelectCountScheme ::
   (HasGame m) => QueryCount SchemeMatcher -> SchemeMatcher -> m Natural
 gameSelectCountIdentity ::

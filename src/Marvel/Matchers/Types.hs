@@ -11,6 +11,7 @@ import Marvel.GameValue.Types
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Name
+import Marvel.Ref (Source)
 import Marvel.Status
 import Marvel.Trait.Types
 
@@ -259,7 +260,8 @@ data TreacheryMatcher = AnyTreachery
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data SchemeMatcher
-  = AnyScheme
+  = NotScheme SchemeMatcher
+  | AnyScheme
   | MainScheme
   | EncounterMainScheme
   | ThwartableScheme
@@ -456,7 +458,9 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
 
 -- | What did something, by its source.
 data SourceMatcher
-  = -- | the identity itself: its basic powers and its own card's abilities
+  = AnySource
+  | SourceIs Source
+  | -- | the identity itself: its basic powers and its own card's abilities
     SourceIsIdentity IdentityMatcher
   | -- | an event a player matching played
     EventPlayedBy IdentityMatcher

@@ -51,21 +51,23 @@ instance RunMessage SmSinisterSixSideScheme where
             , sideSchemeInitialThreat = Static 5
             , sideSchemeThreat = sideSchemeThreat attrs + 5 + hinder
             }
-    SideSchemeMessage sid removal | sid == sideSchemeId attrs -> do
-      let removed = case removal of
-            SideSchemeThwarted source n -> Just (source, n, True)
-            SideSchemeThreatRemoved source n -> Just (source, n, False)
-            _ -> Nothing
-      for_ removed \(source, n, thwarting) -> do
-        modifiers <- getModifiers attrs
-        controller <- getSourceController source
-        let barred = ThreatCannotBeRemoved `elem` modifiers
-              || (thwarting && ThreatCannotBeRemovedByThwarting `elem` modifiers)
-              || any (\p -> maybe False (/= p) controller) [p | ThreatRemovableOnlyBy p <- modifiers]
-            clears = sideSchemeThreat attrs > 0 && n >= sideSchemeThreat attrs && not barred
-        when clears $ case toCardCode attrs of
-          "27102a" -> forcedResponse attrs $ Six.ambushThen attrs "flipAfterAmbush" ()
-          "27102b" -> forcedResponse attrs $ gameOver Won
-          _ -> pure ()
+    CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
+      clearsScheme source n True
+      SmSinisterSixSideScheme <$> runMessage msg attrs
+    SideSchemeMessage sid (SideSchemeThreatRemoved source n) | sid == sideSchemeId attrs -> do
+      clearsScheme source n False
       SmSinisterSixSideScheme <$> runMessage msg attrs
     _ -> SmSinisterSixSideScheme <$> runMessage msg attrs
+
+   where
+    clearsScheme source n thwarting = do
+      modifiers <- getModifiers attrs
+      controller <- getSourceController source
+      let barred = ThreatCannotBeRemoved `elem` modifiers
+            || (thwarting && ThreatCannotBeRemovedByThwarting `elem` modifiers)
+            || any (\p -> maybe False (/= p) controller) [p | ThreatRemovableOnlyBy p <- modifiers]
+          clears = sideSchemeThreat attrs > 0 && n >= sideSchemeThreat attrs && not barred
+      when clears $ case toCardCode attrs of
+        "27102a" -> forcedResponse attrs $ Six.ambushThen attrs "flipAfterAmbush" ()
+        "27102b" -> forcedResponse attrs $ gameOver Won
+        _ -> pure ()

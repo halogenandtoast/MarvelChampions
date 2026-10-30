@@ -36,6 +36,8 @@ data ThreatSource
 
 data WindowMatcher
   = HeroThwarted WindowTiming IdentityMatcher
+  | IdentityDamaged WindowTiming IdentityMatcher
+  | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
   | RemovesLastThreat IdentityMatcher
   | -- | "after you play <this card>": played, not only put into play
     PlayThis WindowTiming
@@ -108,6 +110,7 @@ data WindowMatcher
     BoostCardFlipped WindowTiming EnemyMatcher
   | -- | "you reveal": the encounter card is revealed for a player matching
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
+  | EncounterCardRevealedFromDeckBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
     PlaysCard WindowTiming IdentityMatcher CardMatcher
   | -- | A player matching played an upgrade onto an ally; target is snapshotted.
@@ -189,6 +192,7 @@ data Window = Window
 
 data WindowType
   = HeroThwartComplete IdentityId
+  | ThwartRemovedThreat Source SchemeId Natural Natural
   | ThreatRemovedBy Source SchemeId Natural Natural
   | LastThreatRemoved IdentityId SchemeId
   | PlayedAlly AllyId
