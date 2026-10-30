@@ -348,6 +348,8 @@ data QuestionView = QuestionView
   -- ^ an i18n key under @$label.@, or text
   , source :: Maybe Text
   -- ^ the id of the card the question is about
+  , assignedDamage :: HashMap Text Natural
+  -- ^ Damage allocated so far, before the simultaneous damage resolves.
   , choices :: [ChoiceView]
   , reading :: [Text]
   -- ^ i18n keys of what to read before answering: a campaign scenario's story and rules
@@ -715,13 +717,27 @@ questionView asked = \case
      in v {prompt = Just l, source = refId =<< t, choices = map named v.choices}
   Read r q -> (questionView asked q) {reading = r}
   Searched cs q -> (questionView asked q) {searched = [SearchedView l (map cardView xs) | (l, xs) <- cs]}
-  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (described cs) [] []
-  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (described cs) [] []
-  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (described cs) [] []
+  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (allocations cs) (described cs) [] []
   ChoosePlayerOrder (Unsorted xs) _ ->
-    QuestionView "choosePlayerOrder" Nothing Nothing [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
+    QuestionView "choosePlayerOrder" Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
  where
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
+  -- Every allocation choice carries the continuation with its new point prepended.
+  -- Remove that point to describe the current state, including targets now full.
+  allocations cs = fromMaybe mempty $ headMay $ concatMap allocationChoice cs
+  allocationChoice = \case
+    TargetLabel _ body -> concatMap allocationChoice body
+    Label _ body -> concatMap allocationChoice body
+    Run msgs -> concatMap allocationMessage msgs
+    _ -> []
+  allocationMessage = \case
+    Msg.AssignIndirectDamage _ _ _ shares -> [totals [(CharacterRef c, n) | (c, n) <- drop 1 shares]]
+    Msg.AssignIndirectDamageAmongPlayers _ _ shares -> [totals [(CharacterRef c, n) | (c, n) <- drop 1 shares]]
+    Msg.AssignDividedDamage _ _ _ _ shares -> [totals [(EnemyRef e, n) | (e, n) <- drop 1 shares]]
+    _ -> []
+  totals shares = HashMap.fromListWith (+) [(k, n) | (r, n) <- shares, Just k <- [refId r]]
 
 -- | What a choice is about, for the client to put it on the card it concerns: the
 -- player asked defends with their own identity.

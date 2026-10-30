@@ -197,6 +197,7 @@ export interface ChoiceView {
 }
 
 export interface QuestionView {
+  assignedDamage?: Record<string, number>
   kind: 'chooseOne' | 'chooseN' | 'chooseOneAtATime' | 'choosePlayerOrder' | string
   /** What is asked: an i18n key when it starts with `$`, plain text otherwise. */
   prompt?: string | null

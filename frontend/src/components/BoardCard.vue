@@ -57,7 +57,7 @@ const props = withDefaults(
 
 const cards = useCards()
 const overlay = useCardOverlay()
-const { byTarget, choose, sourceId } = useChoices()
+const { byTarget, choose, sourceId, assignedDamage } = useChoices()
 const label = useChoiceLabel()
 const el = useTemplateRef<HTMLElement>('el')
 
@@ -65,6 +65,7 @@ const landscape = computed(() => !props.back && cards.landscape(props.code))
 const unfolded = computed(() => props.faces?.length === 3 && props.code === props.faces[2])
 const title = computed(() => cards.name(props.code, props.name))
 const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : []))
+const displayedDamage = computed(() => props.damage + (props.id ? assignedDamage.value[props.id] ?? 0 : 0))
 const active = computed(() => options.value.length > 0)
 // the card the question is about: lifted, and ringed in amber
 const source = computed(() => !!props.id && sourceId.value === props.id)
@@ -137,7 +138,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
-      <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
+      <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :title="$t('game.damageOn', { count: displayedDamage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :title="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">

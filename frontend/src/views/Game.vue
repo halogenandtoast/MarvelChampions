@@ -250,7 +250,7 @@ const picking = computed(() => Object.entries(game.value?.question ?? {}).find((
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
 
-provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null)
+provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null, () => question.value?.assignedDamage ?? {})
 
 const filingBug = ref(false)
 const debugging = ref(false)

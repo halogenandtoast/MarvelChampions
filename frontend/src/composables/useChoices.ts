@@ -8,6 +8,8 @@ import type { ChoiceView } from '../server'
  * card with something to do lights up and a click answers (or opens a menu, for several).
  */
 export interface Choices {
+  /** Damage allocated while answering the question, by character id. */
+  assignedDamage: ComputedRef<Record<string, number>>
   /** The choices about each card or entity, by its id. */
   byTarget: ComputedRef<Map<string, ChoiceView[]>>
   choose: (index: number) => void
@@ -17,7 +19,7 @@ export interface Choices {
 
 const key: InjectionKey<Choices> = Symbol('choices')
 
-export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void, source: () => string | null = () => null) => {
+export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void, source: () => string | null = () => null, assignedDamage: () => Record<string, number> = () => ({})) => {
   const byTarget = computed(() => {
     const map = new Map<string, ChoiceView[]>()
     for (const choice of choices()) {
@@ -26,12 +28,12 @@ export const provideChoices = (choices: () => ChoiceView[], choose: (index: numb
     }
     return map
   })
-  const provided = { byTarget, choose, sourceId: computed(source) }
+  const provided = { assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source) }
   provide(key, provided)
   return provided
 }
 
-export const useChoices = () => inject(key, { byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
+export const useChoices = () => inject(key, { assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
 
 /** Server text that may be a key the locale lacks yet: then its last word, spaced out. */
 export const useKeyed = () => {
