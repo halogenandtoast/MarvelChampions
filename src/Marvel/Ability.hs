@@ -8,6 +8,8 @@ import Marvel.Prelude
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types as X
 import Marvel.Card.PlayerCard.Types
+import Marvel.Discard (unDiscard)
+import Marvel.Card.Id (CardId (..))
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Game.Source
@@ -168,6 +170,7 @@ passesCriteria x a =
     PayingFor _ -> pure True
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
+    PlayedEventInDiscard -> playedEventInDiscard
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget _ -> pure False
     PlayCardWithReductionHasTarget matcher amount ->
@@ -210,6 +213,7 @@ passesCardCriteria ident card = go
     SpendOnly _ -> pure True
     PayingFor _ -> pure True
     ForAnyPlayer -> pure True
+    PlayedEventInDiscard -> playedEventInDiscard
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
     PlayCardWithReductionHasTarget _ _ -> pure False
@@ -304,3 +308,12 @@ canCancelRevealedEncounterCard = do
   anyM (\case
     Window _ (EncounterCardRevealed _ _ card) -> encounterCardCanBeCanceled card
     _ -> pure False) windows
+
+-- | The physical event that opened this play window is still in its owner's discard.
+playedEventInDiscard :: (HasGame m, Projection m PlayerIdentity) => m Bool
+playedEventInDiscard = do
+  windows <- getCurrentWindows
+  orM $ flip map windows $ \w -> case windowType w of
+    EventPlayed who eid _ -> projectP PlayerIdentityDiscard
+      (any ((== CardId (unEventId eid)) . pcCardId) . unDiscard) who
+    _ -> pure False

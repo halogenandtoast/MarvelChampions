@@ -114,5 +114,6 @@ data Trait
   | Enhanced
   | Trap
   | Chase
+  | Chitauri
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

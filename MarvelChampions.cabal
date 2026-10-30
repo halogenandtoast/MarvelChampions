@@ -1750,6 +1750,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.EventResolutionSpec
       Marvel.Rules.FourHeroMechanicsSpec
       Marvel.Rules.GalaxysMostWantedSpec
+      Marvel.Rules.NovaMechanicsSpec
       Marvel.Rules.PrintedCostSpec
       Marvel.Rules.PrintedXSpec
       Marvel.Rules.PrintingSpec

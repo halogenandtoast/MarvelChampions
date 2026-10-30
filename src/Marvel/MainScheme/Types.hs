@@ -216,9 +216,11 @@ instance RunMessage (Attrs MainScheme) where
         -- control (RR Patrol); removing threat otherwise is not a thwart
         MainSchemeBasicThwarted source n -> unlessPatrolled True source do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
+          heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n
         MainSchemeThwarted source n -> unlessPatrolled False source do
           heroThwartedAllThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
+          heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
           pure $ attrs & threatL %~ subtractNatural n
         -- "player cards cannot remove threat from the main scheme" while a crisis icon is
         -- in play (RR Crisis Icon); a thwart is already kept off it
@@ -237,8 +239,10 @@ instance RunMessage (Attrs MainScheme) where
             AllyRef _ -> pure False
             _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
           restricted <- isRestrictedMainScheme (mainSchemeId attrs)
-          pure $ if crisis && restricted && playerCard && not (ownIgnores || controllerIgnores)
-            then attrs else attrs & threatL %~ subtractNatural n
+          if crisis && restricted && playerCard && not (ownIgnores || controllerIgnores)
+            then pure attrs else do
+              heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
+              pure $ attrs & threatL %~ subtractNatural n
         RevealMainScheme -> pure attrs
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n

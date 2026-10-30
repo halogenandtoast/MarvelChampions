@@ -91,6 +91,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
               :stunned="minion.stunned"
               :confused="minion.confused"
               :tough="minion.tough"
+              :tough-cards="minion.toughCards"
               :attached="minionAttached(minion)"
             />
           </div>

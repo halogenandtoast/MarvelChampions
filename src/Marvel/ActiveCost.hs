@@ -329,7 +329,8 @@ payCostPartAs contributing activeCost cost = do
     let notTheSource c = activeCostSource activeCost /= CardIdRef (pcCardId c)
           && (ChosenHandCardCost `notElem` flattenCosts (activeCostCost activeCost)
               || paymentTarget (activeCostPayment activeCost) /= Just (CardIdRef $ pcCardId c))
-    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getAvailablePaymentSources payer
+    originalPayer <- fromMaybe iid <$> getActiveCostPayer acid
+    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getPaymentSourcesFor originalPayer payer mcard
     -- "from your hand": the cards in it, none of the resource abilities in play
     let printed = printedResourceRequirements (activeCostCost activeCost)
         printedOnly = notNull printed && length printed == length (costResources $ activeCostCost activeCost)
@@ -337,12 +338,12 @@ payCostPartAs contributing activeCost cost = do
     abilities <-
       if fromHandOnly
         then pure []
-        else filterM (fmap spendable . abilityResources) =<< getResourceAbilities payer mcard
+        else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities originalPayer payer mcard
     let canHelp p = do
-          cs <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getAvailablePaymentSources p
-          abs' <- if fromHandOnly then pure [] else filterM (fmap spendable . abilityResources) =<< getResourceAbilities p mcard
+          cs <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getPaymentSourcesFor iid p mcard
+          abs' <- if fromHandOnly then pure [] else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities iid p mcard
           pure $ notNull cs || notNull abs'
-    payers <- allianceCostPayers iid mcard
+    payers <- resourceCostPayers iid mcard
     helpers <- if contributor then pure [] else filterM canHelp (filter (/= iid) payers)
     isPaid <- resourceCostPaid activeCost
     resources <- paymentResources (activeCostPayment activeCost)
@@ -541,7 +542,7 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       checkPayment ident
       pure activeCost
     ContributeResources ident contributor | ident == activeCostId activeCost -> do
-      allowed <- allianceCostPayers (activeCostIdentityId activeCost) $ case activeCostTarget activeCost of
+      allowed <- resourceCostPayers (activeCostIdentityId activeCost) $ case activeCostTarget activeCost of
         ForCard card -> Just card
         _ -> Nothing
       when (contributor `elem` allowed) do
@@ -611,7 +612,12 @@ runActiveCost msg activeCost = runQueueT $ case msg of
           { activeCostSpentCards = discard : activeCostSpentCards activeCost
           }
     Paid payment -> do
-      payment' <- declarable payment
+      let def = case activeCostTarget activeCost of ForCard card -> Just (getCardDef card); _ -> Nothing
+      raw <- fmap mconcat $ for (payments payment) $ \case
+        ResourcePayment r -> pure $ mconcat $ map ResourcePayment (doubleWildResources def [r])
+        p@(ResourcePaymentFromCard _) -> mconcat . map ResourcePayment . doubleWildResources def <$> paymentResources p
+        p -> pure p
+      payment' <- declarable raw
       pure $
         activeCost
           { activeCostPayment = activeCostPayment activeCost <> payment'
@@ -744,7 +750,7 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       for_ (reverse $ activeCostSpentCards activeCost) discardCard
       -- "after you spend this card" (Pym Particles), before what was paid for resolves
       for_ (reverse $ activeCostSpentCards activeCost) \card ->
-        afterSpent (fromMaybe payer $ pcController card <|> pcOwner card) (activeCostSpentCards activeCost) card
+        afterSpent payer (fromMaybe payer $ pcController card <|> pcOwner card) (activeCostSpentCards activeCost) card
       disableActiveCost ident
       case activeCostTarget activeCost of
         ForCard card -> do

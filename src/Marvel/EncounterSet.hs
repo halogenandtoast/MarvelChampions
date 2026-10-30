@@ -139,6 +139,8 @@ data EncounterSet
   | CommunityService
   | SnitchesGetStitches
   | ShieldTech
+  | NovaNemesis
+  | Armadillo
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -200,6 +202,7 @@ modularSets =
   , SinisterAssault
   , SymbioticStrength
   , WhispersOfParanoia
+  , Armadillo
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -235,6 +238,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "26001" -> VisionNemesis
   "27001" -> GhostSpiderNemesis
   "27030" -> SpiderManMoralesNemesis
+  "28001" -> NovaNemesis
   cCode ->
     error $
       "No nemesis set for "

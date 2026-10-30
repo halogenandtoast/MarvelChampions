@@ -2,6 +2,7 @@ module Marvel.Window.Types where
 
 import Marvel.Prelude
 import Marvel.Phase (Phase)
+import Marvel.Resource.Types (Resource)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
@@ -34,7 +35,9 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = -- | "after you play <this card>": played, not only put into play
+  = HeroThwarted WindowTiming IdentityMatcher
+  | RemovesLastThreat IdentityMatcher
+  | -- | "after you play <this card>": played, not only put into play
     PlayThis WindowTiming
   | -- | "after <this ally> enters play": played or put into play
     EntersPlayThis
@@ -89,8 +92,10 @@ data WindowMatcher
   | RoundEnds
   | IdentityWouldBeDefeated IdentityMatcher
   | TurnBegins IdentityMatcher
+  | TurnBeginsAt WindowTiming IdentityMatcher
   | -- | a player matching plays an event matching
     PlaysEvent WindowTiming IdentityMatcher CardMatcher
+  | PlaysEventPaidWith WindowTiming IdentityMatcher CardMatcher Resource
   | AllyDefeated WindowTiming AllyMatcher
   | -- | an ally matching is defeated by damage from an enemy's attack
     AllyDefeatedByAttack WindowTiming AllyMatcher
@@ -182,7 +187,9 @@ data Window = Window
   deriving anyclass (ToJSON, FromJSON)
 
 data WindowType
-  = PlayedAlly AllyId
+  = HeroThwartComplete IdentityId
+  | LastThreatRemoved IdentityId SchemeId
+  | PlayedAlly AllyId
   | -- | the ally entered play, played or put into play
     AllyEnteredPlay AllyId
   | PlayedSupport SupportId

@@ -180,6 +180,9 @@ villain cardCode name traits =
     , cdTeamUp = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdDoubleWildResources = False
+    , cdDoesNotCountTowardHandSize = False
+    , cdCanPayForOthersWithTrait = Nothing
     , cdAbilityCost = NoCost
     }
 
@@ -539,6 +542,9 @@ smVillainDef code name set quantity = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 

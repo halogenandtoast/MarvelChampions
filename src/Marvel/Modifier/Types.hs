@@ -13,7 +13,8 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = ResourceCostReduction Natural
+  = CanHaveAnyNumberOfToughStatusCards
+  | ResourceCostReduction Natural
   | -- | on a resource ability source: its effect can generate identity counters
     MayGenerateIdentityCountersFor CardMatcher Natural
   | -- | reduction scoped to one physical card during one nested play

@@ -225,6 +225,7 @@ instance RunMessage (Attrs SideScheme) where
       controller <- getSourceController source
       if any (\p -> maybe False (/= p) controller) onlyBy then pure attrs else body
     removed source n = do
+          heroRemovedLastThreat source (SchemeSideSchemeId $ sideSchemeId attrs) (sideSchemeThreat attrs) n
           modifiers <- getModifiers attrs
           -- a villain's own side scheme is not discarded with no threat on it
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)

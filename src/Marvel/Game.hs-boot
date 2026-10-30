@@ -90,6 +90,7 @@ getEncounterDeck :: (HasGame m) => m [EncounterCard]
 getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
+getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 isPlayerCardSource :: (HasGame m) => Source -> m Bool
 cannotTakeDamageFrom :: (HasGame m) => Target -> Source -> m Bool
@@ -125,6 +126,13 @@ gameSelectEncounterCard ::
 
 instance HasAbilities Game
 
+resourceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
+getPaymentSourcesFor ::
+  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) =>
+  IdentityId -> IdentityId -> Maybe PlayerCard -> m [PlayerCard]
+getPaymentResourceAbilities ::
+  (MonadThrow m, MonadRandom m, HasQueue m, HasGame m) =>
+  IdentityId -> IdentityId -> Maybe PlayerCard -> m [Ability]
 getAvailableResourcesFor ::
   ( HasCallStack
   , HasQueue m
@@ -290,3 +298,5 @@ getAccelerationTokenCount :: (HasGame m) => m Natural
 replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
 
 obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool
+
+getEventPaidResources :: (HasGame m) => EventId -> m [Resource]

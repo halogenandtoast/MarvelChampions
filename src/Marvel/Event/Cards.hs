@@ -394,6 +394,9 @@ baseEvent code name cost aType traits resources mAspect = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 

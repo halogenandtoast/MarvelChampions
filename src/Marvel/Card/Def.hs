@@ -1,6 +1,7 @@
 module Marvel.Card.Def where
 
 import Marvel.Prelude
+import Data.Aeson.KeyMap qualified as KeyMap
 
 import Marvel.Ability.Types
 import Marvel.Aspect
@@ -152,9 +153,21 @@ data CardDef = CardDef
     cdPlayableFromDiscard :: Bool
   , -- | an event's cost before the arrow, paid with its resource cost
     cdAbilityCost :: Cost
+  , cdDoubleWildResources :: Bool
+  , cdDoesNotCountTowardHandSize :: Bool
+  , cdCanPayForOthersWithTrait :: Maybe Trait
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass (ToJSON, Hashable)
+
+instance FromJSON CardDef where
+  parseJSON = withObject "CardDef" $ \o -> genericParseJSON defaultOptions $ Object $
+    foldr (\(k, v) -> KeyMap.insertWith (\_ existing -> existing) k v) o
+      [("cdDoubleWildResources", Bool False), ("cdDoesNotCountTowardHandSize", Bool False), ("cdCanPayForOthersWithTrait", Null)]
+
+-- | Generation doubles before wild resources are declared as their payment types.
+doubleWildResources :: Maybe CardDef -> [Resource] -> [Resource]
+doubleWildResources def = concatMap (\r -> replicate (if r == Wild && maybe False cdDoubleWildResources def then 2 else 1) r)
 
 deckLimited :: Natural -> CardDef -> CardDef
 deckLimited n def = def {cdDeckLimit = Just n}

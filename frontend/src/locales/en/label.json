@@ -112,6 +112,7 @@
   "chooseAllyToExhaust": "Choose an ally to exhaust",
   "healYourIdentity": "Heal {count} damage from your identity",
   "discardTopInvocation": "Discard the top card of the Invocation deck",
+  "everydayHeroHeal": "Heal 1 damage from the paying player’s identity",
   "chooseCharacterToGiveTough": "Choose a character to give a tough status card",
   "chooseStatusToReplace": "Choose a status card to replace",
   "chooseReplacementStatus": "Choose the status card to replace it with",

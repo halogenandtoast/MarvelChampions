@@ -147,6 +147,7 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
+  toughCards?: number
   engagedWith: string
   hitPoints: number
   damage: number

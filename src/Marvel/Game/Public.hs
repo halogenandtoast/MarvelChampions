@@ -278,7 +278,8 @@ data VillainView = VillainView
   deriving anyclass (ToJSON)
 
 data MinionView = MinionView
-  { id :: MinionId
+  { toughCards :: Natural
+  , id :: MinionId
   , code :: CardCode
   , name :: Text
   , engagedWith :: IdentityId
@@ -666,6 +667,7 @@ gameView seesHand g = do
         , stunned = a.minionStunned
         , confused = a.minionConfused
         , tough = a.minionTough
+        , toughCards = (if a.minionTough then 1 else 0) + a.minionAdditionalTough
         , boostCards = length a.minionBoostCards
         , attachments = attachmentsIn a.minionAttachments
         , upgrades = upgradesOn \u -> u.upgradeAttachedEnemy == Just (EnemyMinionId a.minionId)

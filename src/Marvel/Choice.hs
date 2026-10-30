@@ -346,7 +346,14 @@ removeThreatFrom basic thwarting target source n' = do
   let n = n' + bonus
       side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
       main mid = MainSchemeMessage mid $ if basic then MainSchemeBasicThwarted source n else if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n
-  let continuation = case target of
+  heroController <- getHeroSourceController source
+  let completed = if thwarting && not basic then case source of
+        EventRef eid -> [EventMessage eid EventThwarted]
+        IdentityRef ident -> [CheckWindows [Window After $ W.HeroThwartComplete ident]]
+        UpgradeRef _ -> [CheckWindows [Window After $ W.HeroThwartComplete ident] | Just ident <- [heroController]]
+        _ -> []
+        else []
+      continuation = (<> completed) $ case target of
         MainSchemeRef mid -> [main mid]
         SideSchemeRef sid -> [side sid]
         SchemeRef (SchemeMainSchemeId mid) -> [main mid]

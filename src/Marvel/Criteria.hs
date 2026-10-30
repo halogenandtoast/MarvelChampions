@@ -16,6 +16,7 @@ data Criteria
   | Unexhausted
   | Exhausted
   | OwnsThis
+  | PlayedEventInDiscard
   | MinionExists MinionMatcher
   | EnemyExists EnemyMatcher
   | SchemeExists SchemeMatcher

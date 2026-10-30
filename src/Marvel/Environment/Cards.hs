@@ -102,6 +102,9 @@ ultronDrones =
     , cdTeamUp = Nothing
     , cdAlternateCardCodes = []
     , cdPlayableFromDiscard = False
+    , cdDoubleWildResources = False
+    , cdDoesNotCountTowardHandSize = False
+    , cdCanPayForOthersWithTrait = Nothing
     , cdAbilityCost = NoCost
     }
 
@@ -330,6 +333,9 @@ smEnvironmentDef code name set quantity = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 

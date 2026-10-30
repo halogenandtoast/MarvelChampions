@@ -142,7 +142,8 @@ upgradeControlledBy :: IdentityId -> UpgradeMatcher
 upgradeControlledBy = UpgradeControlledBy . IdentityWithId
 
 data UpgradeMatcher
-  = UpgradeWithUses GameValueMatcher
+  = UpgradeCanBeReadied
+  | UpgradeWithUses GameValueMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait
   | UpgradeWithKeyword Keyword
@@ -465,6 +466,8 @@ data DamageMatcher
   | -- | damage a player dealt: by attacking, or with a card they control other than an
     -- ally
     DamageByPlayer IdentityMatcher
+  | -- | damage dealt by the identity or a card extending it (RR You/Your)
+    DamageByHero IdentityMatcher
   | AnyDamage
   | -- | an attack's, by a player or an ally
     AnyAttack

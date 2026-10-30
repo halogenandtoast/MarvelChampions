@@ -110,6 +110,8 @@ narrationFor = \case
     told -> Just $ concat <$> sequence told
   -- Choosing a contributor is payment plumbing; spending their cards/abilities is
   -- narrated by the same messages as any other payment.
+  EventMessage _ (EventPaidWith _) -> Nothing
+  EventMessage _ EventThwarted -> Nothing
   PlayCardWithReduction {} -> Nothing
   ContributeResources {} -> Nothing
   DeclareContributionWilds {} -> Nothing

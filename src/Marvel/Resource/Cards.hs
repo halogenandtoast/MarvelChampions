@@ -55,6 +55,8 @@ allResources = fromList $ concatMap
 
   -- The Mad Titan's Shadow: the campaign set
   , shawarma
+  , connectionToTheWorldmind
+  , everydayHero
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -97,6 +99,9 @@ baseResource code name traits resources mAspect = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 
@@ -198,3 +203,17 @@ shawarma =
     { cdEncounterSet = Just EncounterSet.MadTitansShadowCampaign
     , cdEncounterSetQuantity = Just 4
     }
+
+-- Nova
+
+connectionToTheWorldmind :: CardDef
+connectionToTheWorldmind = (identityResource "28007" "Connection to the Worldmind" [] [Wild])
+  { cdDeckLimit = Just 2
+  , cdDoesNotCountTowardHandSize = True
+  }
+
+everydayHero :: CardDef
+everydayHero = (basicResource "28019" "Everyday Hero" [] [Wild])
+  { cdDeckLimit = Just 3
+  , cdCanPayForOthersWithTrait = Just Civilian
+  }

@@ -139,6 +139,9 @@ isAlterEgo player = case currentIdentity player of
 identityDamage :: PlayerIdentity -> Natural
 identityDamage = playerIdentityDamage . toAttrs
 
+countedHandSize :: [PlayerCard] -> Int
+countedHandSize = length . filter (not . cdDoesNotCountTowardHandSize . getCardDef)
+
 getModifiedHandSize :: (HasGame m) => PlayerIdentity -> m Natural
 getModifiedHandSize pid = do
   modifiers <- getModifiers pid
@@ -433,11 +436,11 @@ printedXChoices ignoringCost attrs c mTarget = do
   let ident = toId attrs
       (minimumX, meaningful) = printedXParameters c
       allowed = canSpendOn (cdCriteria $ getCardDef c)
-  payers <- allianceCostPayers ident (Just c)
+  payers <- resourceCostPayers ident (Just c)
   resources <- filter allowed <$> concatMapM (\payer -> do
-    abilities <- concatMapM abilityResources =<< getResourceAbilities payer (Just c)
-    cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getAvailablePaymentSources payer
-    (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
+    abilities <- concatMapM abilityResources =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+    cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
+    doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
   (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
   modifiers <- getModifiers attrs
   inHand <- projectP PlayerIdentityHand (elem c . unHand) ident
@@ -495,11 +498,11 @@ playableTargetsWith ignoringCost attrs c = do
   targets <- maybe [Nothing] (map Just) <$> getPlayTargets (toId attrs) c
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
-    payers <- allianceCostPayers (toId attrs) (Just c)
+    payers <- resourceCostPayers (toId attrs) (Just c)
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> concatMapM (\payer -> do
-      abilities <- concatMapM abilityResources =<< getResourceAbilities payer (Just c)
-      cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getAvailablePaymentSources payer
-      (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
+      abilities <- concatMapM abilityResources =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+      cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
+      doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
     reduction <- mayReduceCostToPlay attrs c mTarget
     (ignored, _) <- resourceCostAdjustment attrs c mTarget
     printedResourceCost <- getModifiedCost attrs c mTarget
@@ -518,7 +521,8 @@ playableTargetsWith ignoringCost attrs c = do
     handTarget <- if ChosenHandCardCost `elem` flattenCosts cost
       then projectP PlayerIdentityHand (any (isChosenHandTarget c mTarget) . unHand) (toId attrs)
       else pure True
-    ((affordable && handTarget) &&) <$> canAffordCardOtherCosts (toId attrs) payers c (otherCosts cost)
+    otherPayers <- allianceCostPayers (toId attrs) (Just c)
+    ((affordable && handTarget) &&) <$> canAffordCardOtherCosts (toId attrs) otherPayers c (otherCosts cost)
 
 -- | The hand card already selected to pay a choose-card cost is logically reserved
 -- from resource spending, while remaining in its actual zone until the effect.
@@ -682,6 +686,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure $ PlayerIdentity attrs {playerIdentityBoostCards = []}
     BeginTurn -> do
       -- before anything else is done in the turn
+      checkWindows [W.Window W.When $ W.TurnBegan playerIdentityId]
       checkWindows [W.Window W.After $ W.TurnBegan playerIdentityId]
       takeTurn pid
       pure $ PlayerIdentity $ attrs & passedL .~ False
@@ -719,8 +724,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       modifiedHandSize <- getModifiedHandSize pid
       let
         diff =
-          fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
-      when (diff > 0) $ drawCards playerIdentityId (fromIntegral diff)
+          fromIntegral modifiedHandSize - countedHandSize (unHand playerIdentityHand)
+      when (diff > 0 && (notNull (unDeck playerIdentityDeck) || notNull (unDiscard playerIdentityDiscard))) $ do
+        drawCards playerIdentityId 1
+        identityStep playerIdentityId DrawToHandLimit
       when (diff < 0) $
         chooseOnePrompted
           playerIdentityId
@@ -728,19 +735,23 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           [ targeting c do
             discardCard c
             identityStep playerIdentityId DrawOrDiscardToHandLimit
-          | c <- choosableToDiscard (unHand playerIdentityHand)
+          | c <- choosableToDiscard (filter (not . cdDoesNotCountTowardHandSize . getCardDef) $ unHand playerIdentityHand)
           ]
       pure pid
     DrawToHandLimit -> do
       modifiedHandSize <- getModifiedHandSize pid
       let
         diff =
-          fromIntegral modifiedHandSize - length (unHand playerIdentityHand)
-      when (diff > 0) $ drawCards playerIdentityId (fromIntegral diff)
+          fromIntegral modifiedHandSize - countedHandSize (unHand playerIdentityHand)
+      when (diff > 0 && (notNull (unDeck playerIdentityDeck) || notNull (unDiscard playerIdentityDiscard))) $ do
+        drawCards playerIdentityId 1
+        identityStep playerIdentityId DrawToHandLimit
       pure pid
     DrawToPrintedHandSize -> do
-      let short = fromIntegral (unHandSize $ handSize pid) - length (unHand playerIdentityHand)
-      when (short > 0) $ drawCards playerIdentityId (fromIntegral short)
+      let short = fromIntegral (unHandSize $ handSize pid) - countedHandSize (unHand playerIdentityHand)
+      when (short > 0 && (notNull (unDeck playerIdentityDeck) || notNull (unDiscard playerIdentityDiscard))) $ do
+        drawCards playerIdentityId 1
+        identityStep playerIdentityId DrawToPrintedHandSize
       pure pid
     DrawCards fromZone n -> case fromZone of
       FromHand -> error "Impossible"

@@ -301,6 +301,9 @@ baseUpgrade code name cost traits resources mAspect = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 
@@ -1168,6 +1171,9 @@ smUpgradeDef code name set quantity = CardDef
   , cdTeamUp = Nothing
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
   }
 

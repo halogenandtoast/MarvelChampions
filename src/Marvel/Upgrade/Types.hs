@@ -283,7 +283,8 @@ instance RunMessage (Attrs Upgrade) where
         upgradeCreated p (upgradeId a)
         pure a {upgradeController = p}
       ReadiedUpgrade -> do
-        pure $ a & exhaustedL .~ False
+        readies <- notElem CannotReady <$> getModifiers a
+        pure $ a & exhaustedL %~ (&& not readies)
       AddUpgradeUses n -> do
         pure $ a & usesL +~ n
       SpendUpgradeUse -> do

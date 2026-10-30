@@ -89,6 +89,7 @@ instance Entity Minion where
     , minionAdditionalStun :: Bool
     , minionAdditionalConfuse :: Bool
     , minionTough :: Bool
+    , minionAdditionalTough :: Natural
     , minionAttacking :: Maybe Attack
     , minionUpgrades :: HashSet UpgradeId
     , minionAttachments :: HashSet AttachmentId
@@ -117,6 +118,7 @@ instance Entity Minion where
     MinionAdditionalStun :: Field Minion Bool
     MinionAdditionalConfuse :: Field Minion Bool
     MinionTough :: Field Minion Bool
+    MinionAdditionalTough :: Field Minion Natural
     MinionAttacking :: Field Minion (Maybe Attack)
     MinionUpgrades :: Field Minion (HashSet UpgradeId)
     MinionAttachments :: Field Minion (HashSet AttachmentId)
@@ -137,6 +139,7 @@ instance Entity Minion where
           MinionAdditionalStun -> minionAdditionalStun
           MinionAdditionalConfuse -> minionAdditionalConfuse
           MinionTough -> minionTough
+          MinionAdditionalTough -> minionAdditionalTough
           MinionAttacking -> minionAttacking
           MinionUpgrades -> minionUpgrades
           MinionAttachments -> minionAttachments
@@ -187,7 +190,7 @@ confusedL :: Lens' (Attrs Minion) Bool
 confusedL = lens minionConfused $ \m x -> m {minionConfused = x, minionAdditionalConfuse = x && minionAdditionalConfuse m}
 
 toughL :: Lens' (Attrs Minion) Bool
-toughL = lens minionTough $ \m x -> m {minionTough = x}
+toughL = lens minionTough $ \m x -> m {minionTough = x, minionAdditionalTough = if x then minionAdditionalTough m else 0}
 
 upgradesL :: Lens' (Attrs Minion) (HashSet UpgradeId)
 upgradesL = lens minionUpgrades $ \m x -> m {minionUpgrades = x}
@@ -243,6 +246,7 @@ minion f cardDef sch atk hp =
             , minionAdditionalStun = False
             , minionAdditionalConfuse = False
             , minionTough = False
+            , minionAdditionalTough = 0
             , minionAttacking = Nothing
             , minionUpgrades = mempty
             , minionAttachments = mempty
@@ -283,7 +287,7 @@ getModifiedKeywords attrs = do
 instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-      [("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

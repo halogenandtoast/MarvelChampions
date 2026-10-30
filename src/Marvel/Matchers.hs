@@ -89,6 +89,9 @@ damageMatches matcher damage = case matcher of
     FromOverkill -> True
     _ -> False
   -- who dealt it is known only from its source: see 'damageMatchesFrom'
+  DamageByHero identityMatcher -> case damageSource damage of
+    FromPlayerAttack ident -> identityMatches identityMatcher ident
+    _ -> pure False
   DamageByPlayer identityMatcher -> case damageSource damage of
     FromPlayerAttack ident -> identityMatches identityMatcher ident
     _ -> pure False
@@ -96,6 +99,7 @@ damageMatches matcher damage = case matcher of
 -- | Whether damage, dealt by the source given, matches.
 damageMatchesFrom :: (HasGame m) => DamageMatcher -> Damage -> Source -> m Bool
 damageMatchesFrom matcher damage source = case matcher of
+  DamageByHero identityMatcher -> getHeroSourceController source >>= maybe (pure False) (identityMatches identityMatcher)
   -- "you" is the identity (RR, "You"): what an ally does is not the player's doing
   DamageByPlayer _ | AllyRef _ <- source -> pure False
   DamageByPlayer identityMatcher ->

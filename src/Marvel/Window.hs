@@ -18,6 +18,13 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  HeroThwarted timing identityMatcher -> case windowType w of
+    HeroThwartComplete ident | windowTiming w == timing -> identityMatches identityMatcher ident
+    MadeBasicThwart ident | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
+  RemovesLastThreat identityMatcher -> case windowType w of
+    LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
+    _ -> pure False
   PhaseBegins timing phase -> pure $ windowTiming w == timing && windowType w == PhaseBegan phase
   PlayThis timing -> case windowType w of
     PlayedAlly allyId ->
@@ -199,7 +206,7 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           liftA2
             (&&)
-            (enemyMatches enemyMatcher (EnemyVillainId villainId))
+            (if enemyMatcher `elem` [AnyEnemy, VillainEnemy] then pure True else enemyMatches (DefeatedEnemy enemyMatcher) (EnemyVillainId villainId))
             (damageMatchesFrom damageMatcher damage source)
     _ -> pure False
   SideSchemeEntersPlay timing schemeMatcher -> case windowType w of
@@ -334,6 +341,9 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == Would ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  TurnBeginsAt timing identityMatcher -> case windowType w of
+    TurnBegan ident | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
   TurnBegins identityMatcher -> case windowType w of
     TurnBegan identityId
       | windowTiming w == After ->
@@ -347,6 +357,13 @@ windowMatches matcher w source = case matcher of
   HeroDefendedWithoutDamage timing identityMatcher -> case windowType w of
     DefendedWithoutDamage identityId _
       | windowTiming w == timing -> identityMatches identityMatcher identityId
+    _ -> pure False
+  PlaysEventPaidWith timing identityMatcher cardMatcher resource -> case windowType w of
+    EventPlayed ident eid def
+      | windowTiming w == timing && cardMatch cardMatcher def -> do
+          yours <- identityMatches identityMatcher ident
+          spent <- getEventPaidResources eid
+          pure $ yours && resource `elem` spent
     _ -> pure False
   PlaysEvent timing identityMatcher cardMatcher -> case windowType w of
     EventPlayed ident _ def

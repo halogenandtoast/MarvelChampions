@@ -8,6 +8,8 @@ import Marvel.Window.Types (WindowType)
 
 data EventMessage
   = PlayedEvent IdentityId Payment (Maybe WindowType)
+  | EventPaidWith Payment
+  | EventThwarted
   | ResolvedEvent
   | -- | the event's damage attacked the enemy for the player, ranged or not
     EventAttacked IdentityId EnemyId Bool

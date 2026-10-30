@@ -40,11 +40,18 @@ statusL = \case
 statusUnlessStalwart :: (HasGame m) => Attrs Minion -> StatusCard -> m (Attrs Minion)
 statusUnlessStalwart attrs s = do
   keywords <- getModifiedKeywords attrs
+  modifiers <- getModifiers attrs
   pure $ if Stalwart `elem` keywords && s /= ToughStatus then attrs else
     case s of
+      ToughStatus | CanHaveAnyNumberOfToughStatusCards `elem` modifiers && minionTough attrs -> attrs {minionAdditionalTough = minionAdditionalTough attrs + 1}
       StunnedStatus | Steady `elem` keywords && minionStunned attrs -> attrs {minionAdditionalStun = True}
       ConfusedStatus | Steady `elem` keywords && minionConfused attrs -> attrs {minionAdditionalConfuse = True}
       _ -> attrs & statusL s .~ True
+
+removeOneTough :: Attrs Minion -> Attrs Minion
+removeOneTough attrs
+  | minionAdditionalTough attrs > 0 = attrs {minionAdditionalTough = minionAdditionalTough attrs - 1}
+  | otherwise = attrs & toughL .~ False
 
 runMinionMessage ::
   (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
@@ -64,7 +71,7 @@ runMinionMessage msg attrs = case msg of
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints -> pure attrs
       | cannotTakeDamage -> pure attrs
-      | minionTough attrs && preventedByTough damage -> pure $ attrs & toughL .~ False
+      | minionTough attrs && preventedByTough damage -> pure $ removeOneTough attrs
       | otherwise -> do
         when (damageAmount damage > 0) $
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
@@ -94,7 +101,7 @@ runMinionMessage msg attrs = case msg of
   -- a stalwart minion cannot be stunned or confused (RR Stalwart)
   MinionStunned _ -> statusUnlessStalwart attrs StunnedStatus
   MinionConfused _ -> statusUnlessStalwart attrs ConfusedStatus
-  MinionBecomeTough -> pure $ attrs & toughL .~ True
+  MinionBecomeTough -> statusUnlessStalwart attrs ToughStatus
   MinionDefendedBy characterId -> do
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers attrs
     pure $ if forbidden then attrs else attrs & attackingL . _Just %~ defendedBy characterId
@@ -224,6 +231,7 @@ instance RunMessage (Attrs Minion) where
       GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
       RemoveStatus (MinionRef mid) StunnedStatus | mid == minionId attrs, minionAdditionalStun attrs -> pure attrs {minionAdditionalStun = False}
       RemoveStatus (MinionRef mid) ConfusedStatus | mid == minionId attrs, minionAdditionalConfuse attrs -> pure attrs {minionAdditionalConfuse = False}
+      RemoveStatus (MinionRef mid) ToughStatus | mid == minionId attrs -> pure $ removeOneTough attrs
       RemoveStatus (MinionRef mid) s | mid == minionId attrs -> pure $ attrs & statusL s .~ False
       MinionMessage ident msg'
         | ident == minionId attrs ->

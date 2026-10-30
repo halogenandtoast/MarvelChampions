@@ -58,7 +58,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment, Field (EnvironmentCounters, EnvironmentOwner))
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventCardDef, eventController), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -1459,6 +1459,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           -- "when you play" answers once the cost is paid, before the event resolves;
           -- "after you play", once it has
           played timing = checkWindows [W.Window timing $ W.EventPlayed ident (toId event) (getCardDef card)]
+        eventStep (toId event) (EventPaidWith payment)
         played When
         resolveEventEffect ident (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
         eventStep (toId event) ResolvedEvent
@@ -3029,6 +3030,17 @@ getSourceController source = getsGame \g -> case source of
   ObligationRef oid -> obligationOwner . toAttrs =<< lookup oid (gameObligations g)
   _ -> Nothing
 
+-- | RR You/Your: allies, supports and encounter cards do not extend the identity.
+getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
+getHeroSourceController source = case source of
+  IdentityRef _ -> getSourceController source
+  EventRef _ -> getSourceController source
+  UpgradeRef uid -> do
+    attached <- getsGame (fmap (upgradeAttachedAlly . toAttrs) . lookup uid . gameUpgrades)
+    if maybe False isJust attached then pure Nothing else getSourceController source
+  EffectRef eid -> getsGame (fmap (Effect.effectSource . toAttrs) . lookup eid . gameEffects) >>= maybe (pure Nothing) getHeroSourceController
+  _ -> pure Nothing
+
 -- | Whether the source is a player card: a hero or alter-ego, an ally, event, upgrade or
 -- support, or an effect one of them created. Obligations and encounter cards are not.
 isPlayerCardSource :: (HasGame m) => Source -> m Bool
@@ -3211,6 +3223,33 @@ getAvailablePaymentSources ident = asYou ident do
       then passesCardCriteria ident c (cdCriteria $ getCardDef c)
       else pure True
 
+-- | Ordinary helpers contribute only cards whose text permits another payer.
+resourceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
+resourceCostPayers ident card = do
+  peril <- getsGame gamePeril
+  if isJust peril then pure [ident] else asYou ident $ selectList AnyIdentity
+
+getPaymentSourcesFor ::
+  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) =>
+  IdentityId -> IdentityId -> Maybe PlayerCard -> m [PlayerCard]
+getPaymentSourcesFor payer contributor card = do
+  ordinary <- allianceCostPayers payer card
+  sources <- getAvailablePaymentSources contributor
+  if contributor `elem` ordinary then pure sources else do
+    allowed <- resourceCostPayers payer card
+    if contributor `notElem` allowed then pure [] else filterM shared sources
+ where
+  shared c = case cdCanPayForOthersWithTrait (getCardDef c) of
+    Nothing -> pure False
+    Just trait -> identityMatches (IdentityWithId contributor <> IdentityWithTrait trait) contributor
+
+getPaymentResourceAbilities ::
+  (MonadThrow m, MonadRandom m, HasQueue m, HasGame m) =>
+  IdentityId -> IdentityId -> Maybe PlayerCard -> m [Ability]
+getPaymentResourceAbilities payer contributor card = do
+  ordinary <- allianceCostPayers payer card
+  if contributor `elem` ordinary then getResourceAbilities contributor card else pure []
+
 getAvailableResourcesFor ::
   ( HasCallStack
   , HasQueue m
@@ -3223,9 +3262,12 @@ getAvailableResourcesFor ::
   Maybe PlayerCard ->
   m [Resource]
 getAvailableResourcesFor ident mc = do
-  abilitiesResources <- concatMapM abilityResources =<< getResourceAbilities ident mc
-  playerResources <- concatMapM (`resourcesFor` mc) =<< getAvailablePaymentSources ident
-  pure $ playerResources <> abilitiesResources
+  payers <- resourceCostPayers ident mc
+  generated <- concatMapM (\payer -> do
+    abilitiesResources <- concatMapM abilityResources =<< getPaymentResourceAbilities ident payer mc
+    playerResources <- concatMapM (`resourcesFor` mc) =<< getPaymentSourcesFor ident payer mc
+    pure $ playerResources <> abilitiesResources) payers
+  pure $ doubleWildResources (getCardDef <$> mc) generated
 
 getResourceAbilities ::
   ( MonadThrow m
@@ -3570,6 +3612,9 @@ gameSelectUpgrade m = do
   pure $ HashSet.fromList $ map toId result
  where
   matchFilter x = case x of
+    UpgradeCanBeReadied -> \u -> do
+      modifiers <- getModifiers u
+      pure $ isExhausted u && CannotReady `notElem` modifiers
     UnexhaustedUpgrade -> pure . not . isExhausted
     UpgradeWithUses gameValueMatcher ->
       gameValueMatches gameValueMatcher . getUpgradeUses
@@ -4257,6 +4302,18 @@ eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId
 eventExhaustionsValid payer card characters = case cdCardType (getCardDef card) of
   EventType -> case createEvent payer card of Event e -> eventExhaustionCostValid e characters
   _ -> pure True
+
+-- | The resources actually spent on an event, after declarations and wasted surplus.
+getEventPaidResources :: (HasGame m) => EventId -> m [Resource]
+getEventPaidResources eid = do
+  receipt <- getsGame (fmap (eventPaidWith . toAttrs) . lookup eid . gameEvents)
+  pure $ maybe [] resources receipt
+ where
+  resources p = fromMaybe (mapMaybe one $ payments p) (paymentActualResources p)
+  one (ResourcePayment r) = Just r
+  one (WildPayment r) = Just r
+  one (ContributedWildPayment _ r) = Just r
+  one _ = Nothing
 
 getCurrentPayment :: (HasGame m) => m Payment
 getCurrentPayment = do

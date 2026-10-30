@@ -2010,6 +2010,12 @@ changeBoostIconCount card f = replaceMatchingMessage change \case
     WithBoostIcons t v counts -> [WithBoostIcons t v [(c, if c == card then f n else n) | (c, n) <- counts]]
     msg -> [msg]
 
+-- | Positive-to-zero threat removal by an identity or a card that extends it.
+heroRemovedLastThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()
+heroRemovedLastThreat source scheme before n
+  | before == 0 || n < before = pure ()
+  | otherwise = getHeroSourceController source >>= traverse_ (\ident -> checkWindows [Window After $ W.LastThreatRemoved ident scheme])
+
 -- | The window after a hero's thwart took the last threat off the scheme ("after your
 -- hero thwarts and removes all threat from a scheme"): an ally's thwart is not one.
 heroThwartedAllThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()

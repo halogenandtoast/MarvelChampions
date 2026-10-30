@@ -40,6 +40,7 @@ const props = withDefaults(
     stunned?: boolean
     confused?: boolean
     tough?: boolean
+    toughCards?: number
     /** what is attached to it or upgrades it, peeking out underneath */
     attached?: Attached[]
     /** a label shown on its top edge, as for a crisis */
@@ -134,7 +135,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       </div>
       <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
-      <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" />
+      <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="damage > 0" class="token damage" kind="damage" :count="damage" :title="$t('game.damageOn', { count: damage })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />

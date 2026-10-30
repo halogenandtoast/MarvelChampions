@@ -3,6 +3,8 @@ module Marvel.Event.Types where
 import Data.List (nub)
 
 import Marvel.Prelude
+import Marvel.Payment.Types
+import Data.Aeson.KeyMap qualified as KeyMap
 
 import Data.Typeable
 import Marvel.Card
@@ -49,11 +51,13 @@ instance Entity Event where
     { eventId :: EventId
     , eventCardDef :: CardDef
     , eventController :: IdentityId
+    , eventPaidWith :: Payment
+    , eventThwarted :: Bool
     , -- | whom a labeled attack attacked, for the windows after it
       eventAttacked :: [(IdentityId, EnemyId, Bool)]
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Event :: Type -> Type where
     EventId :: Field Event EventId
     EventCardDef :: Field Event CardDef
@@ -66,6 +70,11 @@ instance Entity Event where
           EventController -> eventController
   toId = eventId . toAttrs
   toAttrs (Event a) = toEventAttrs a
+
+instance FromJSON (Attrs Event) where
+  parseJSON = withObject "EventAttrs" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ existing -> existing) "eventThwarted" (Bool False) $
+    KeyMap.insertWith (\_ existing -> existing) "eventPaidWith" (toJSON NoPayment) o
 
 instance RunMessage Event where
   runMessage msg (Event a) = Event <$> runMessage msg a
@@ -105,6 +114,8 @@ event f cardDef =
             { eventId = aid
             , eventCardDef = cardDef
             , eventController = ident
+            , eventPaidWith = NoPayment
+            , eventThwarted = False
             , eventAttacked = []
             }
     }
@@ -125,15 +136,18 @@ instance IsCard (Attrs Event) where
 instance RunMessage (Attrs Event) where
   runMessage msg e = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId e -> case msg' of
+      EventPaidWith p -> pure e {eventPaidWith = p}
+      EventThwarted -> pure e {eventThwarted = True}
       -- what answers a labeled attack follows the whole of it
       ResolvedEvent -> do
+        when (eventThwarted e) $ checkWindows [W.Window W.After $ W.HeroThwartComplete (eventController e)]
         for_ (eventAttacked e) \(attacker, enemy, ranged) -> attackResolved attacker enemy ranged
         for_ (nub [attacker | (attacker, _, _) <- eventAttacked e]) \attacker ->
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource e) attacker (nub [enemy | (who, enemy, _) <- eventAttacked e, who == attacker])]
         discardCard e
         when (cdAbilityType (eventCardDef e) `elem` map Just [Ability.Interrupt, Ability.HeroInterrupt, Ability.ForcedInterrupt, Ability.Response, Ability.HeroResponse, Ability.ForcedResponse]) $
           checkWindows [W.Window W.After $ W.EventAbilityResolved (eventController e) (eventId e) (eventCardDef e)]
-        pure e {eventAttacked = []}
+        pure e {eventAttacked = [], eventThwarted = False}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy ranged -> do
         let card = MkPlayerCard (CardId $ unEventId $ eventId e) (eventCardDef e) (Just $ eventController e) (Just $ eventController e)
