@@ -31,6 +31,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 | Sinister Motives rulebook (MC27) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc27_sinister_motives_rules_v5-compressed.pdf |
 | Nova Hero Pack rulesheet (MC28) | PDF dated 2021-02-04, 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc28_nova_rulesheet.pdf |
 | Ironheart Hero Pack rulesheet (MC29) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/df/95/df950da6-c3b3-4edd-9f58-8d3bd192b755/mc29_ironheart_rulesheet.pdf |
+| Mutant Genesis rulebook (MC32) | 24 pages; official campaign log fetched alongside it | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc32_mutant_genesis_rulebook_v5-compressed.pdf (campaign log: https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc32_mutant_genesis_campaign_log.pdf) |
 | MarvelCDB card data (scenario card text quoted in the product files) | public API, fetched 2026-10-22 | https://marvelcdb.com/api/public/cards/{gob,twc,trors,toafk,mts,sm}.json |
 
 The FFG PDFs are all linked from https://www.fantasyflightgames.com/marvel-champions-the-card-game/ (and the v1.8 announcement
@@ -42,6 +43,10 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-colossus.md](hero-colossus.md) | Colossus: tough status cards, discard responses, starter deck and current errata |
+| [hero-shadowcat.md](hero-shadowcat.md) | Shadowcat: mass forms, defense timing, ignored restrictions, starter deck and recorded rulings |
+| [scenario-mutant-genesis.md](scenario-mutant-genesis.md) | The five Mutant Genesis scenarios, modular sets, current Teamwork and scenario errata |
+| [campaign-mutant-genesis.md](campaign-mutant-genesis.md) | Campaign roles, objectives, Future Past, rewards, expert campaign and owner rulings |
 | [hero-spdr.md](hero-spdr.md) | SP//dr: separated identity, independent exhaustion, Sync Ratio, permanent, Suit errata, Noir FAQ and starter deck |
 | [hero-spider-ham.md](hero-spider-ham.md) | Spider-Ham: toon counters, optional gestures, thwart timing, consequential damage, starter deck, Inheritors and recorded rulings |
 | [glossary-a-c.md](glossary-a-c.md) | RR glossary entries A–C (Ability … Crisis Icon) |
