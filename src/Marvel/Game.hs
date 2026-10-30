@@ -2459,8 +2459,11 @@ stalwartSweep g = do
       minions = [(MinionRef (toId m), Minion.getModifiedKeywords a, minionStunned a, minionConfused a) | m <- HashMap.elems (gameMinions g), let a = toAttrs m, minionStunned a || minionConfused a]
       identities = [(IdentityRef (toId p), getModifiedKeywords p, playerIdentityStunned a, playerIdentityConfused a) | p <- HashMap.elems (gamePlayers g), let a = toAttrs p, playerIdentityStunned a || playerIdentityConfused a]
       allies = [(AllyRef (toId ally), do { ms <- getModifiers a; pure $ toList (cdKeywords $ Ally.allyCardDef a) <> [k | KeywordModifier k <- ms] }, Ally.allyStunned a, Ally.allyConfused a) | ally <- HashMap.elems (gameAllies g), let a = toAttrs ally, Ally.allyStunned a || Ally.allyConfused a]
+  -- Every character is checked against this same snapshot. Share its lazy trait
+  -- calculation instead of rebuilding the whole trait fixpoint for each character.
+  let snapshot = refreshTraits g
   for_ (villains <> minions <> identities <> allies) \(ref, keywords, stunned, confused) -> do
-    stalwart <- elem Stalwart <$> runReaderT keywords (refreshTraits g)
+    stalwart <- elem Stalwart <$> runReaderT keywords snapshot
     when stalwart do
       when stunned do
         push (RemoveStatus ref StunnedStatus)
@@ -3102,6 +3105,9 @@ cannotTakeDamageFrom target source = do
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
 
+-- Filter large candidate sets with pure or cheap checks first. Blanking scans
+-- modifiers, and affordability may search payment combinations, so callers should
+-- reject irrelevant ability types/windows before asking for that expensive work.
 getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
 getAbilitiesForMatching ident matches = do
   candidates <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a) (getAbilities g)
@@ -3140,7 +3146,9 @@ isBlanked a = do
   (facedown ||) . elem Blank . mconcat
     <$> sequence
       [ concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameSideSchemes g)
-      , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEffects g)
+      -- Effect modifiers are stored explicitly; match only effects that can blank.
+      , concatMapM (getModifiersFor (toSource a) (toTarget a))
+          (filter (elem Blank . Effect.effectModifiers . toAttrs) $ HashMap.elems $ gameEffects g)
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameAttachments g)
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameEnvironments g)
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) (HashMap.elems $ gameVillains g)
@@ -3320,7 +3328,7 @@ getResourceAbilities ::
   Maybe PlayerCard ->
   m [Ability]
 getResourceAbilities ident mc = asYou ident do
-  printedAbilities <- getAbilitiesFor ident
+  printedAbilities <- getAbilitiesForMatching ident (pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType)
   counters <- project PlayerIdentityCounters ident
   -- With no counters this payment cannot be made. Avoid a full modifier pass for
   -- every affordability check of heroes who have no counter resource to spend.
@@ -3334,12 +3342,12 @@ getResourceAbilities ident mc = asYou ident do
   filterM
     ( andM
         . sequence
-          [ withinUseLimit ident
-          , pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
+          [ pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType
           , pure . paysFor
+          , withinUseLimit ident
           , preservesCounters
-          , passesCanAffordCost ident
           , passesCriteria ident
+          , passesCanAffordCost ident
           ]
     )
     abilities
@@ -4220,7 +4228,7 @@ getSupportHoldingCard card = getsGame $ headMay . map fst . filter (elem card . 
 
 getSupportHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getSupportHeldCards ident = do
-  supports <- getsGame $ filter (\s -> getSupportController s == ident && supportCanPlayHeldEvents (toAttrs s)) . HashMap.elems . gameSupports
+  supports <- getsGame $ filter (\s -> getSupportController s == ident && supportCanPlayHeldEvents (toAttrs s) && notNull (supportHeldCards $ toAttrs s)) . HashMap.elems . gameSupports
   active <- filterM (fmap not . isBlanked) supports
   pure $ concatMap (supportHeldCards . toAttrs) active
 
@@ -4232,7 +4240,7 @@ getAllyHoldingCard card = getsGame $ headMay . map fst . filter (elem card . All
 
 getAllyHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 getAllyHeldCards ident = do
-  allies <- getsGame $ filter ((== ident) . getAllyController) . HashMap.elems . gameAllies
+  allies <- getsGame $ filter (\a -> getAllyController a == ident && notNull (Ally.allyHeldCards $ toAttrs a)) . HashMap.elems . gameAllies
   active <- filterM (fmap not . isBlanked) allies
   pure $ concatMap (Ally.allyHeldCards . toAttrs) active
 
