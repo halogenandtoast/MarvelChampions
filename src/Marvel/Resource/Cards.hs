@@ -58,6 +58,7 @@ allResources = fromList $ concatMap
   , shawarma
   , connectionToTheWorldmind
   , everydayHero
+  , strokeOfGenius
   ]
 
 resource :: CardCode -> Name -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -126,7 +127,7 @@ thePowerOfJustice = deckLimited 2 $ reprintedAs ["08014", "15016", "20014", "220
     <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
 
 thePowerOfLeadership :: CardDef
-thePowerOfLeadership = reprintedAs ["03018", "04019", "17018"] $
+thePowerOfLeadership = reprintedAs ["03018", "04019", "17018", "29021"] $
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]
@@ -217,4 +218,13 @@ everydayHero :: CardDef
 everydayHero = (basicResource "28019" "Everyday Hero" [] [Wild])
   { cdDeckLimit = Just 3
   , cdCanPayForOthersWithTrait = Just Civilian
+  }
+
+
+-- Ironheart
+
+strokeOfGenius :: CardDef
+strokeOfGenius = (identityResource "29009" "Stroke of Genius" [] [Mental])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
   }

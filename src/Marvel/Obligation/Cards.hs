@@ -94,6 +94,7 @@ allObligations = fromList $ map
   , worriedFather
   , keepingSecrets
   , weightOfTheWorld
+  , aMinorSetback
   ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -362,3 +363,11 @@ smFriendsAndFamily = (smObligationDef "27132" "Friends and Family" SMSet.DownToE
 
 weightOfTheWorld :: CardDef
 weightOfTheWorld = obligation "28021" "Weight of the World" [Boost, Boost]
+
+
+-- Ironheart
+
+aMinorSetback :: CardDef
+aMinorSetback = (obligation "29028" "A Minor Setback" [Boost, Boost])
+  { cdUnique = False
+  }

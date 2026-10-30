@@ -17,6 +17,10 @@ import Marvel.Resource.Resources.AdamWarlock
 -- spent with it are on their way to the discard pile.
 afterSpent :: (ReverseQueue m) => IdentityId -> IdentityId -> [PlayerCard] -> PlayerCard -> m ()
 afterSpent recipient you spent card
+  | getCardDef card `sameCard` Cards.strokeOfGenius = chooseOne you
+      [ labeled "$label.strokeOfGenius" (placeCounters you 1 >> drawCards you 1)
+      , labeled "$label.noResponse" (pure ())
+      ]
   | getCardDef card `sameCard` Cards.pymParticles = pymParticlesSpent you
   | getCardDef card `sameCard` Cards.salvage = salvageSpent you spent
   -- Adam Warlock

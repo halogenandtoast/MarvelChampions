@@ -112,3 +112,9 @@ import Marvel.Support.Supports.SkyDestroyer as X
 import Marvel.Support.Supports.JesseAlexander as X
 
 import Marvel.Support.Supports.ChampionsMobileBunker as X
+
+import Marvel.Support.Supports.RonnieWilliams as X
+
+import Marvel.Support.Supports.TonyStarkAI as X
+
+import Marvel.Support.Supports.RAndDFacility as X

@@ -179,6 +179,8 @@ allAttachments =
   , SomeAttachmentCard experimentalInjection
   , SomeAttachmentCard razorClaws
   , SomeAttachmentCard rollinRollin
+  , SomeAttachmentCard cyborgTech
+  , SomeAttachmentCard haywire
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

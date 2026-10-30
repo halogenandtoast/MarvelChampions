@@ -78,6 +78,9 @@ allHeroCards =
   , ghostSpider
   , spiderManMilesMoralesHero
   , novaHero
+  , ironheartVersion1
+  , ironheartVersion2
+  , ironheartVersion3
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -264,4 +267,22 @@ novaHero :: CardDef
 novaHero = (hero "28001a" "Nova" [Champion])
   { cdDeckLimit = Just 1
   , cdUnique = True
+  }
+
+
+-- Ironheart
+
+ironheartVersion1 :: CardDef
+ironheartVersion1 = (hero "29001a" "Ironheart" [Champion, Version1])
+  { cdUnique = True
+  }
+
+ironheartVersion2 :: CardDef
+ironheartVersion2 = (hero "29002a" "Ironheart" [Aerial, Champion, Version2])
+  { cdUnique = True
+  }
+
+ironheartVersion3 :: CardDef
+ironheartVersion3 = (hero "29003a" "Ironheart" [Aerial, Champion, Version3])
+  { cdUnique = True
   }

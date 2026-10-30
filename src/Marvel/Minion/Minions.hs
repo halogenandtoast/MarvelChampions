@@ -164,3 +164,7 @@ import Marvel.Minion.Minions.SmModulars as X
 import Marvel.Minion.Minions.Warbringer as X
 
 import Marvel.Minion.Minions.Armadillo as X
+
+import Marvel.Minion.Minions.LuciaVonBardas as X
+
+import Marvel.Minion.Minions.Zzzax as X

@@ -257,6 +257,9 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard fluidMotion
   , SomeUpgradeCard honedTechnique
   , SomeUpgradeCard heightAdvantage
+  , SomeUpgradeCard photonBlasters
+  , SomeUpgradeCard propulsionJets
+  , SomeUpgradeCard ingenuity
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

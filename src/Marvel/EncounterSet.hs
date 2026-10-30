@@ -139,6 +139,8 @@ data EncounterSet
   | CommunityService
   | SnitchesGetStitches
   | ShieldTech
+  | IronheartNemesis
+  | ZzzaxSet
   | NovaNemesis
   | Armadillo
   deriving stock (Show, Eq, Generic)
@@ -203,6 +205,7 @@ modularSets =
   , SymbioticStrength
   , WhispersOfParanoia
   , Armadillo
+  , ZzzaxSet
   ]
 
 getNemesisSet :: CardCode -> EncounterSet
@@ -238,6 +241,9 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "26001" -> VisionNemesis
   "27001" -> GhostSpiderNemesis
   "27030" -> SpiderManMoralesNemesis
+  "29001" -> IronheartNemesis
+  "29002" -> IronheartNemesis
+  "29003" -> IronheartNemesis
   "28001" -> NovaNemesis
   cCode ->
     error $

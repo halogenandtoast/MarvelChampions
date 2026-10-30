@@ -215,6 +215,8 @@ allMinions =
   , prowler
   , warbringer
   , armadillo
+  , luciaVonBardas
+  , zzzax
   ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -1182,4 +1184,17 @@ armadillo :: CardDef
 armadillo = (minion "28029" "Armadillo" [Brute, Elite] [Boost, Boost, Boost] SMSet.Armadillo 1)
   { cdUnique = True
   , cdKeywords = fromList [Toughness]
+  }
+
+
+-- Ironheart
+
+luciaVonBardas :: CardDef
+luciaVonBardas = (minion "29030" "Lucia von Bardas" [Criminal, Cyborg, Elite] [Boost, Boost, Boost] SMSet.IronheartNemesis 1)
+  { cdUnique = True
+  }
+
+zzzax :: CardDef
+zzzax = (minion "29037" "Zzzax" [Criminal] [Star] SMSet.ZzzaxSet 1)
+  { cdUnique = True
   }

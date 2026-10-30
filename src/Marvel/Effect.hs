@@ -107,6 +107,12 @@ allEffects =
     , ("28006", SomeCardEffect unleashNovaForceEffect)
     , ("28016", SomeCardEffect fluidMotionEffect)
     , ("28017", SomeCardEffect honedTechniqueEffect)
+    , ("29008", SomeCardEffect sectorScanEffect)
+    , ("29014", SomeCardEffect cloud9Effect)
+    , ("29016", SomeCardEffect patriotRayshaunLucasEffect)
+    , ("29020", SomeCardEffect rAndDFacilityEffect)
+    , ("29024", SomeCardEffect vivianIronheartEffect)
+    , ("29025", SomeCardEffect goForChampionsEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

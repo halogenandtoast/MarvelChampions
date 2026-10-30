@@ -70,6 +70,7 @@ allEnvironments = fromList $ map (toFst toCardCode)
   , spaceStone
   , timeStone
   , ultronDronesVision
+  , airStatic
   ]
 
 -- | Ultron Drones is put into play by The Crimson Cowl's setup, so none are shuffled
@@ -436,4 +437,14 @@ smPublicOutcryB = (smEnvironmentDef "27174b" "Public Outcry" SMSet.BadPublicity 
   , cdHazards = 1
   , cdAcceleration = 0
   , cdAmplify = 0
+  }
+
+
+-- Ironheart
+
+airStatic :: CardDef
+airStatic = (smEnvironmentDef "29039" "Air Static" SMSet.ZzzaxSet 1)
+  { cdTraits = fromList [Condition]
+  , cdBoostIcons = [Boost, Boost]
+  , cdUnique = False
   }

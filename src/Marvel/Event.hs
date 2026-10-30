@@ -344,6 +344,13 @@ allEvents = fromList $ map
   , SomeEventCard noQuarter
   , SomeEventCard oneByOne
   , SomeEventCard yawAndRoll
+  , SomeEventCard flyOver
+  , SomeEventCard photonBeam
+  , SomeEventCard newAndImproved
+  , SomeEventCard sectorScan
+  , SomeEventCard goAllOut
+  , SomeEventCard pushAhead
+  , SomeEventCard goForChampions
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

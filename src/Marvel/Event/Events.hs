@@ -359,3 +359,17 @@ import Marvel.Event.Events.NoQuarter as X
 import Marvel.Event.Events.OneByOne as X
 
 import Marvel.Event.Events.YawAndRoll as X
+
+import Marvel.Event.Events.FlyOver as X
+
+import Marvel.Event.Events.PhotonBeam as X
+
+import Marvel.Event.Events.NewAndImproved as X
+
+import Marvel.Event.Events.SectorScan as X
+
+import Marvel.Event.Events.GoAllOut as X
+
+import Marvel.Event.Events.PushAhead as X
+
+import Marvel.Event.Events.GoForChampions as X

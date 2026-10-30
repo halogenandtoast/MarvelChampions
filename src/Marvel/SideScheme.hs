@@ -214,6 +214,8 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard trackingPrey
   , SomeSideSchemeCard bringTheWar
   , SomeSideSchemeCard armoredAssault
+  , SomeSideSchemeCard ruleByForce
+  , SomeSideSchemeCard feedbackLoop
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

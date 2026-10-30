@@ -252,3 +252,9 @@ import Marvel.Upgrade.Upgrades.FluidMotion as X
 import Marvel.Upgrade.Upgrades.HonedTechnique as X
 
 import Marvel.Upgrade.Upgrades.HeightAdvantage as X
+
+import Marvel.Upgrade.Upgrades.PhotonBlasters as X
+
+import Marvel.Upgrade.Upgrades.PropulsionJets as X
+
+import Marvel.Upgrade.Upgrades.Ingenuity as X

@@ -216,6 +216,8 @@ allMinions =
   , SomeMinionCard prowler
   , SomeMinionCard warbringer
   , SomeMinionCard armadillo
+  , SomeMinionCard luciaVonBardas
+  , SomeMinionCard zzzax
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

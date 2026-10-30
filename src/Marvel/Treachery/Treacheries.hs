@@ -204,3 +204,7 @@ import Marvel.Treachery.Treacheries.TheWarsBeenBrought as X
 import Marvel.Treachery.Treacheries.ToughAndTumble as X
 
 import Marvel.Treachery.Treacheries.ToughItOut as X
+
+import Marvel.Treachery.Treacheries.PoliticalRetribution as X
+
+import Marvel.Treachery.Treacheries.Zzzap as X

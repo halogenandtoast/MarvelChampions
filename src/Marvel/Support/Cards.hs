@@ -1,5 +1,6 @@
 module Marvel.Support.Cards where
 
+import Marvel.Keyword qualified as SMKeyword
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -112,6 +113,9 @@ allSupports = fromList $ concatMap
   , skyDestroyer
   , jesseAlexander
   , championsMobileBunker
+  , ronnieWilliams
+  , tonyStarkAI
+  , rAndDFacility
   ]
 
 support
@@ -217,7 +221,7 @@ avengersMansion = deckLimited 3 $ reprintedAs ["05022", "06025", "09025", "10023
   $ basicSupport "01091" "Avengers Mansion" 4 [Avenger, Location] [Mental]
 
 helicarrier :: CardDef
-helicarrier = reprintedAs ["10024"] $ limited (MaxPerPlayer 1)
+helicarrier = reprintedAs ["10024", "29026"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
 
 stevesApartment :: CardDef
@@ -471,4 +475,26 @@ championsMobileBunker :: CardDef
 championsMobileBunker = (basicSupport "28020" "Champions Mobile Bunker" 2 [Champion, Vehicle] [Physical])
   { cdDeckLimit = Just 1
   , cdUnique = True
+  }
+
+
+-- Ironheart
+
+ronnieWilliams :: CardDef
+ronnieWilliams = (identitySupport "29010" "Ronnie Williams" 1 [Persona] [Wild])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+tonyStarkAI :: CardDef
+tonyStarkAI = (identitySupport "29011" "Tony Stark A.I." 2 [Persona] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+rAndDFacility :: CardDef
+rAndDFacility = (support "29020" "R&D Facility" 3 [Location, Shield] [Mental] Leadership)
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdKeywords = fromList [SMKeyword.Requirement [Mental, Mental]]
   }

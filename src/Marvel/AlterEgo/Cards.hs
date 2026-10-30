@@ -72,6 +72,9 @@ allAlterEgoCards =
   , gwenStacy
   , milesMorales
   , samAlexander
+  , ririWilliamsVersion1
+  , ririWilliamsVersion2
+  , ririWilliamsVersion3
   ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -245,3 +248,15 @@ samAlexander = (alterEgo "28001b" "Sam Alexander" [Civilian])
   { cdDeckLimit = Just 1
   , cdUnique = True
   }
+
+
+-- Ironheart
+
+ririWilliamsVersion1 :: CardDef
+ririWilliamsVersion1 = alterEgo "29001b" "Riri Williams" [Genius]
+
+ririWilliamsVersion2 :: CardDef
+ririWilliamsVersion2 = alterEgo "29002b" "Riri Williams" [Genius]
+
+ririWilliamsVersion3 :: CardDef
+ririWilliamsVersion3 = alterEgo "29003b" "Riri Williams" [Genius]

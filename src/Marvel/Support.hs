@@ -123,6 +123,9 @@ allSupports = fromList $ map
   , SomeSupportCard skyDestroyer
   , SomeSupportCard jesseAlexander
   , SomeSupportCard championsMobileBunker
+  , SomeSupportCard ronnieWilliams
+  , SomeSupportCard tonyStarkAI
+  , SomeSupportCard rAndDFacility
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

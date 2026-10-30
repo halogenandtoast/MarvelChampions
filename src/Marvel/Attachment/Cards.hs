@@ -188,6 +188,8 @@ allAttachments =
   , experimentalInjection
   , razorClaws
   , rollinRollin
+  , cyborgTech
+  , haywire
   ]
 
 attachment ::
@@ -1012,3 +1014,16 @@ smSnitchesGetStitches = (smAttachmentDef "27181" "Snitches Get Stitches" SMSet.S
 
 rollinRollin :: CardDef
 rollinRollin = attachment "28030" "Rollin', Rollin'" [Condition] [Boost, Boost] SMSet.Armadillo 1
+
+
+-- Ironheart
+
+cyborgTech :: CardDef
+cyborgTech = (attachment "29031" "Cyborg Tech" [Tech] [Star] SMSet.IronheartNemesis 1)
+  { cdUnique = False
+  }
+
+haywire :: CardDef
+haywire = (attachment "29038" "Haywire" [] [Boost] SMSet.ZzzaxSet 2)
+  { cdUnique = False
+  }

@@ -221,6 +221,8 @@ allSideSchemes = fromList $ map
   , trackingPrey
   , bringTheWar
   , armoredAssault
+  , ruleByForce
+  , feedbackLoop
   ]
 
 sideScheme
@@ -1169,3 +1171,17 @@ bringTheWar = (sideScheme "28022" "\"Bring the War!\"" [Boost, Boost] SMSet.Nova
 
 armoredAssault :: CardDef
 armoredAssault = sideScheme "28028" "Armored Assault" [Boost, Boost] SMSet.Armadillo 1
+
+
+-- Ironheart
+
+ruleByForce :: CardDef
+ruleByForce = (sideScheme "29029" "Rule by Force" [Boost, Boost] SMSet.IronheartNemesis 1)
+  { cdUnique = False
+  }
+
+feedbackLoop :: CardDef
+feedbackLoop = (sideScheme "29036" "Feedback Loop" [Boost, Boost, Boost] SMSet.ZzzaxSet 1)
+  { cdAcceleration = 1
+  , cdUnique = False
+  }

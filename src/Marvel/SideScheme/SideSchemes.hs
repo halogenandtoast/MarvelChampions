@@ -176,3 +176,7 @@ import Marvel.SideScheme.SideSchemes.SmCampaign as X
 import Marvel.SideScheme.SideSchemes.BringTheWar as X
 
 import Marvel.SideScheme.SideSchemes.ArmoredAssault as X
+
+import Marvel.SideScheme.SideSchemes.RuleByForce as X
+
+import Marvel.SideScheme.SideSchemes.FeedbackLoop as X

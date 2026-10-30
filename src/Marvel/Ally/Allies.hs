@@ -180,3 +180,21 @@ import Marvel.Ally.Allies.MsMarvelKamalaKhanNova as X
 import Marvel.Ally.Allies.TheLocustFernandaRodriguez as X
 
 import Marvel.Ally.Allies.MoonGirlLunellaLafayette as X
+
+import Marvel.Ally.Allies.BrawnAmadeusChoIronheart as X
+
+import Marvel.Ally.Allies.Cloud9 as X
+
+import Marvel.Ally.Allies.FalconJoaquinTorres as X
+
+import Marvel.Ally.Allies.PatriotRayshaunLucas as X
+
+import Marvel.Ally.Allies.SnowguardAmkaAliyak as X
+
+import Marvel.Ally.Allies.VivianIronheart as X
+
+import Marvel.Ally.Allies.BombshellLanaBaumgartner as X
+
+import Marvel.Ally.Allies.WaspNadiaVanDyneIronheart as X
+
+import Marvel.Ally.Allies.PinpointQureshiGupta as X

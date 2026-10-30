@@ -10,6 +10,8 @@ import Marvel.Environment.Environments.SmVenom
 
 import Marvel.Environment.Environments.SmSandman
 
+import Marvel.Environment.Environments.AirStatic
+
 import Marvel.Prelude
 
 import Marvel.Environment.Environments.UltronDronesVision
@@ -95,6 +97,7 @@ allEnvironments =
     , SomeEnvironmentCard spaceStone
     , SomeEnvironmentCard timeStone
     , SomeEnvironmentCard ultronDronesVision
+  , SomeEnvironmentCard airStatic
     ]
 
 lookupEnvironment :: CardCode -> EnvironmentId -> Environment

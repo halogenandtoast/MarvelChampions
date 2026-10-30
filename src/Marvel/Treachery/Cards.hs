@@ -247,6 +247,8 @@ allTreacheries = fromList $ map
   , theWarsBeenBrought
   , toughAndTumble
   , toughItOut
+  , politicalRetribution
+  , zzzap
   ]
 
 treachery
@@ -1204,3 +1206,16 @@ toughAndTumble = treachery "28031" "Tough and Tumble" [Boost] SMSet.Armadillo 1
 
 toughItOut :: CardDef
 toughItOut = treachery "28032" "Tough It Out" [] SMSet.Armadillo 2
+
+
+-- Ironheart
+
+politicalRetribution :: CardDef
+politicalRetribution = (treachery "29032" "Political Retribution" [Boost] SMSet.IronheartNemesis 2)
+  { cdUnique = False
+  }
+
+zzzap :: CardDef
+zzzap = (treachery "29040" "Zzzap!" [Boost] SMSet.ZzzaxSet 2)
+  { cdUnique = False
+  }

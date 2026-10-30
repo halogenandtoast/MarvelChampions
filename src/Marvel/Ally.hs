@@ -196,4 +196,13 @@ allAllies = fromList $ map
   , SomeAllyCard msMarvelKamalaKhanNova
   , SomeAllyCard theLocustFernandaRodriguez
   , SomeAllyCard moonGirlLunellaLafayette
+  , SomeAllyCard brawnAmadeusChoIronheart
+  , SomeAllyCard cloud9
+  , SomeAllyCard falconJoaquinTorres
+  , SomeAllyCard patriotRayshaunLucas
+  , SomeAllyCard snowguardAmkaAliyak
+  , SomeAllyCard vivianIronheart
+  , SomeAllyCard bombshellLanaBaumgartner
+  , SomeAllyCard waspNadiaVanDyneIronheart
+  , SomeAllyCard pinpointQureshiGupta
   ]

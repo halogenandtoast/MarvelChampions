@@ -191,6 +191,15 @@ allAllies = fromList $ concatMap
   , msMarvelKamalaKhanNova
   , theLocustFernandaRodriguez
   , moonGirlLunellaLafayette
+  , brawnAmadeusChoIronheart
+  , cloud9
+  , falconJoaquinTorres
+  , patriotRayshaunLucas
+  , snowguardAmkaAliyak
+  , vivianIronheart
+  , bombshellLanaBaumgartner
+  , waspNadiaVanDyneIronheart
+  , pinpointQureshiGupta
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -220,6 +229,7 @@ heroSpecificAllies =
   , blueMarvelAdamBrashear
   , pipTheTroll
   , msMarvelKamalaKhanNova
+  , brawnAmadeusChoIronheart
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -848,7 +858,7 @@ spiderWomanJessicaDrewSinisterMotives = (ally "27041" ("Spider-Woman" <:> "Jessi
     }
 
 agent13SharonCarterSinisterMotives :: CardDef
-agent13SharonCarterSinisterMotives = (basicAlly "27046" ("Agent 13" <:> "Sharon Carter") 4 [Shield, Spy] [Physical])
+agent13SharonCarterSinisterMotives = reprintedAs ["29022"] $ (basicAlly "27046" ("Agent 13" <:> "Sharon Carter") 4 [Shield, Spy] [Physical])
     { cdDeckLimit = Just 1
     }
 
@@ -895,4 +905,55 @@ moonGirlLunellaLafayette = (basicAlly "28018" ("Moon Girl" <:> "Lunella Lafayett
   { cdDeckLimit = Just 1
   , cdUnique = True
   , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Champion), SelfMatches (IdentityWithTrait Genius)]
+  }
+
+
+-- Ironheart
+
+brawnAmadeusChoIronheart :: CardDef
+brawnAmadeusChoIronheart = (identityAlly "29004" ("Brawn" <:> "Amadeus Cho") 4 [Champion, Gamma] [Physical])
+  { cdDeckLimit = Just 1
+  }
+
+cloud9 :: CardDef
+cloud9 = (ally "29014" ("Cloud 9" <:> "Abby Boylen") 3 [Aerial, Champion] [Mental] Leadership)
+  { cdDeckLimit = Just 1
+  }
+
+falconJoaquinTorres :: CardDef
+falconJoaquinTorres = (ally "29015" ("Falcon" <:> "Joaquin Torres") 4 [Aerial, Champion] [Energy] Leadership)
+  { cdDeckLimit = Just 1
+  }
+
+patriotRayshaunLucas :: CardDef
+patriotRayshaunLucas = (ally "29016" ("Patriot" <:> "Rayshaun Lucas") 3 [Champion] [Physical] Leadership)
+  { cdDeckLimit = Just 1
+  }
+
+snowguardAmkaAliyak :: CardDef
+snowguardAmkaAliyak = (basicAlly "29023" ("Snowguard" <:> "Amka Aliyak") 4 [Champion] [Energy])
+  { cdDeckLimit = Just 1
+  }
+
+vivianIronheart :: CardDef
+vivianIronheart = (basicAlly "29024" "Vivian" 2 [Aerial, Android, Champion] [Mental])
+  { cdDeckLimit = Just 1
+  }
+
+bombshellLanaBaumgartner :: CardDef
+bombshellLanaBaumgartner = (ally "29033" ("Bombshell" <:> "Lana Baumgartner") 4 [Champion] [Energy] Aggression)
+  { cdDeckLimit = Just 1
+  , cdCriteria = SelfMatches (IdentityWithTrait Champion)
+  }
+
+waspNadiaVanDyneIronheart :: CardDef
+waspNadiaVanDyneIronheart = (ally "29034" ("Wasp" <:> "Nadia Van Dyne") 2 [Champion] [Physical] Justice)
+  { cdDeckLimit = Just 1
+  , cdCriteria = SelfMatches (IdentityWithTrait Champion)
+  }
+
+pinpointQureshiGupta :: CardDef
+pinpointQureshiGupta = (ally "29035" ("Pinpoint" <:> "Qureshi Gupta") 2 [Champion] [Mental] Protection)
+  { cdDeckLimit = Just 1
+  , cdCriteria = SelfMatches (IdentityWithTrait Champion)
   }

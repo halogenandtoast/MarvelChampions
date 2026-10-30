@@ -343,6 +343,13 @@ allEvents = fromList $ concatMap
   , noQuarter
   , oneByOne
   , yawAndRoll
+  , flyOver
+  , photonBeam
+  , newAndImproved
+  , sectorScan
+  , goAllOut
+  , pushAhead
+  , goForChampions
   ]
 
 event
@@ -713,7 +720,7 @@ concussiveBlow =
     }
 
 moraleBoost :: CardDef
-moraleBoost = event "05032" "Morale Boost" 1 HeroAction [] [Energy] Leadership
+moraleBoost = reprintedAs ["29019"] $ event "05032" "Morale Boost" 1 HeroAction [] [Energy] Leadership
 crushingBlow :: CardDef
 crushingBlow =
   (identityEvent "10002" "Crushing Blow" 1 HeroAction [Attack] [Physical])
@@ -2216,4 +2223,62 @@ yawAndRoll = (event "28026" "Yaw and Roll" 1 HeroResponse [Aerial, Thwart] [Ener
   , cdResponseWindow = Just (HeroThwarted After You)
   , cdDeckLimit = Just 3
   , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  }
+
+
+-- Ironheart
+
+flyOver :: CardDef
+flyOver = (identityEvent "29005" "Fly Over" 2 HeroAction [Thwart] [Mental])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  }
+
+photonBeam :: CardDef
+photonBeam = (identityEvent "29006" "Photon Beam" 2 HeroAction [Attack] [Energy])
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  }
+
+newAndImproved :: CardDef
+newAndImproved = (identityEvent "29007" "New and Improved" 3 HeroAction [Skill] [Mental])
+  { cdDeckLimit = Just 2
+  , cdUnique = False
+  }
+
+sectorScan :: CardDef
+sectorScan = (identityEvent "29008" "Sector Scan" 3 HeroAction [] [Energy])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  }
+
+goAllOut :: CardDef
+goAllOut = (event "29017" "Go All Out" 2 HeroAction [Attack] [Mental] Leadership)
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  , cdAbilityCost = ExhaustCost
+  , cdKeywords = fromList [Requirement [Energy]]
+  }
+
+pushAhead :: CardDef
+pushAhead = (event "29018" "Push Ahead" 3 HeroAction [Thwart] [Energy] Leadership)
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  , cdAbilityCost = ExhaustCost
+  , cdKeywords = fromList [Requirement [Mental]]
+  }
+
+goForChampions :: CardDef
+goForChampions = (basicEvent "29025" "\"Go for Champions!\"" 3 HeroAction [] [Wild])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  , cdCriteria = SelfMatches (IdentityWithTrait Champion)
   }

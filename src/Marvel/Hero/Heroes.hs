@@ -69,3 +69,9 @@ import Marvel.Hero.Heroes.GhostSpider as X
 import Marvel.Hero.Heroes.SpiderManMilesMoralesHero as X
 
 import Marvel.Hero.Heroes.NovaHero as X
+
+import Marvel.Hero.Heroes.IronheartVersion1 as X
+
+import Marvel.Hero.Heroes.IronheartVersion2 as X
+
+import Marvel.Hero.Heroes.IronheartVersion3 as X

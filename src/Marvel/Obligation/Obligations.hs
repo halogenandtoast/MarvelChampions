@@ -78,3 +78,5 @@ import Marvel.Obligation.Obligations.KeepingSecrets as X
 import Marvel.Obligation.Obligations.SmModulars as X
 
 import Marvel.Obligation.Obligations.WeightOfTheWorld as X
+
+import Marvel.Obligation.Obligations.AMinorSetback as X

@@ -245,6 +245,8 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard theWarsBeenBrought
   , SomeTreacheryCard toughAndTumble
   , SomeTreacheryCard toughItOut
+  , SomeTreacheryCard politicalRetribution
+  , SomeTreacheryCard zzzap
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

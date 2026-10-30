@@ -307,5 +307,14 @@
   "smCriminalRemoveThreat": "Remove 3 threat from a side scheme",
   "smNowOrNeverAcceleration": "Place 1 acceleration token on the main scheme",
   "smNowOrNeverExhaust": "Exhaust a character you control and spend 1 resource",
-  "doNotChangeForm": "Do not change form"
+  "doNotChangeForm": "Do not change form",
+  "strokeOfGenius": "Place 1 progress counter and draw 1 card",
+  "ronnieHeal": "Heal 2 damage from Riri Williams",
+  "ronnieProgress": "Place 1 progress counter on Riri Williams",
+  "newAndImprovedSearch": "Search your deck for an Ironheart card",
+  "newAndImprovedTough": "Give Ironheart a tough status card",
+  "newAndImprovedReady": "Ready Ironheart",
+  "discardEnergyCard": "Discard a card you control with a printed energy resource",
+  "takeTwoIndirectDamage": "Take 2 indirect damage",
+  "placeShiftCounters": "Place {count} shift counters on Snowguard"
 }

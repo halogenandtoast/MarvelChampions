@@ -262,6 +262,9 @@ allUpgrades = fromList $ concatMap
   , fluidMotion
   , honedTechnique
   , heightAdvantage
+  , photonBlasters
+  , propulsionJets
+  , ingenuity
   ]
 
 upgrade
@@ -1380,4 +1383,27 @@ honedTechnique = (upgrade "28017" "Honed Technique" 3 [Skill] [Mental] Aggressio
 heightAdvantage :: CardDef
 heightAdvantage = (upgrade "28027" "Height Advantage" 1 [Aerial, Tactic] [Mental] Protection)
   { cdDeckLimit = Just 3
+  }
+
+
+-- Ironheart
+
+photonBlasters :: CardDef
+photonBlasters = (identityUpgrade "29012" "Photon Blasters" 2 [Tech, Weapon] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  }
+
+propulsionJets :: CardDef
+propulsionJets = (identityUpgrade "29013" "Propulsion Jets" 2 [Tech] [Physical])
+  { cdDeckLimit = Just 1
+  , cdUnique = False
+  }
+
+ingenuity :: CardDef
+ingenuity = (basicUpgrade "29027" "Ingenuity" 2 [Skill] [Mental])
+  { cdDeckLimit = Just 3
+  , cdUnique = False
+  , cdCriteria = SelfMatches (IdentityWithTrait Genius)
+  , cdLimit = Just (MaxPerPlayer 1)
   }
