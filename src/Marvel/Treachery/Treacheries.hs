@@ -196,3 +196,11 @@ import Marvel.Treachery.Treacheries.SmVenomGoblin as X
 import Marvel.Treachery.Treacheries.SmModulars as X
 
 import Marvel.Treachery.Treacheries.SmCampaign as X
+
+import Marvel.Treachery.Treacheries.WarDelivery as X
+
+import Marvel.Treachery.Treacheries.TheWarsBeenBrought as X
+
+import Marvel.Treachery.Treacheries.ToughAndTumble as X
+
+import Marvel.Treachery.Treacheries.ToughItOut as X

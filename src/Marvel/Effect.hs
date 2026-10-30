@@ -104,6 +104,9 @@ allEffects =
     -- The Galaxy's Most Wanted: Galactic Artifacts
     , ("16130", SomeCardEffect crystalBallEffect)
     , ("27170", SomeCardEffect delusionOfCollusionBoostEffect)
+    , ("28006", SomeCardEffect unleashNovaForceEffect)
+    , ("28016", SomeCardEffect fluidMotionEffect)
+    , ("28017", SomeCardEffect honedTechniqueEffect)
     ]
 
 lookupEffect :: CardCode -> Source -> EntityMatcher -> EffectId -> Effect

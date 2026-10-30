@@ -187,7 +187,8 @@ allAttachments =
       , seducedValkyrie
   , experimentalInjection
   , razorClaws
-      ]
+  , rollinRollin
+  ]
 
 attachment ::
   CardCode ->
@@ -1006,3 +1007,8 @@ smSnitchesGetStitches = (smAttachmentDef "27181" "Snitches Get Stitches" SMSet.S
   , cdAcceleration = 0
   , cdAmplify = 0
   }
+
+-- Nova
+
+rollinRollin :: CardDef
+rollinRollin = attachment "28030" "Rollin', Rollin'" [Condition] [Boost, Boost] SMSet.Armadillo 1

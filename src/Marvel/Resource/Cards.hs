@@ -1,5 +1,6 @@
 module Marvel.Resource.Cards where
 
+import Marvel.Matchers
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -113,7 +114,7 @@ vibranium :: CardDef
 vibranium = identityResource "01044" "Vibranium" [] [Wild, Wild]
 
 thePowerOfAggression :: CardDef
-thePowerOfAggression = deckLimited 2 $ reprintedAs ["06016", "10017", "13015", "25022"] $
+thePowerOfAggression = deckLimited 2 $ reprintedAs ["06016", "10017", "13015", "25022", "28015"] $
   resource "01055" "The Power of Aggression" [] [Wild] Aggression
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Aggression, Wild)]

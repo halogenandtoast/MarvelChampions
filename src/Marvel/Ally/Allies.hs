@@ -174,3 +174,9 @@ import Marvel.Ally.Allies.DumDumDugan as X
 import Marvel.Ally.Allies.GhostSpiderGwenStacy as X
 import Marvel.Ally.Allies.SpiderManPeterParkerSinisterMotives as X
 import Marvel.Ally.Allies.VenomEddieBrock as X
+
+import Marvel.Ally.Allies.MsMarvelKamalaKhanNova as X
+
+import Marvel.Ally.Allies.TheLocustFernandaRodriguez as X
+
+import Marvel.Ally.Allies.MoonGirlLunellaLafayette as X

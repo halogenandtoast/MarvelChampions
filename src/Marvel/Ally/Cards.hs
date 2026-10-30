@@ -188,6 +188,9 @@ allAllies = fromList $ concatMap
   , ghostSpiderGwenStacy
   , spiderManPeterParkerSinisterMotives
   , venomEddieBrock
+  , msMarvelKamalaKhanNova
+  , theLocustFernandaRodriguez
+  , moonGirlLunellaLafayette
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -216,6 +219,7 @@ heroSpecificAllies =
   , mantis
   , blueMarvelAdamBrashear
   , pipTheTroll
+  , msMarvelKamalaKhanNova
   ]
 
 ally :: CardCode -> Name -> Int -> [Trait] -> [Resource] -> Aspect -> CardDef
@@ -870,3 +874,25 @@ venomEddieBrock = (basicAlly "27190" ("Venom" <:> "Eddie Brock") 4 [Symbiote] [W
     { cdDeckLimit = Just 1
     , cdHazards = 1
     }
+
+-- Nova
+
+msMarvelKamalaKhanNova :: CardDef
+msMarvelKamalaKhanNova = (identityAlly "28002" ("Ms. Marvel" <:> "Kamala Khan") 3 [Champion, Inhuman] [Physical])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+theLocustFernandaRodriguez :: CardDef
+theLocustFernandaRodriguez = (ally "28010" ("The Locust" <:> "Fernanda Rodriguez") 2 [Champion] [Energy] Aggression)
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  , cdCriteria = SelfMatches (IdentityWithTrait Champion)
+  }
+
+moonGirlLunellaLafayette :: CardDef
+moonGirlLunellaLafayette = (basicAlly "28018" ("Moon Girl" <:> "Lunella Lafayette") 3 [Champion, Genius] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  , cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Champion), SelfMatches (IdentityWithTrait Genius)]
+  }

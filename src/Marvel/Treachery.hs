@@ -241,6 +241,10 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard relentlessAndroid
   , SomeTreacheryCard inColdBlood
   , SomeTreacheryCard sliceAndDice
+  , SomeTreacheryCard warDelivery
+  , SomeTreacheryCard theWarsBeenBrought
+  , SomeTreacheryCard toughAndTumble
+  , SomeTreacheryCard toughItOut
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

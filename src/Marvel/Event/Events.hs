@@ -343,3 +343,19 @@ import Marvel.Event.Events.SwingIn as X
 import Marvel.Event.Events.WebShot as X
 import Marvel.Event.Events.HomelandIntervention as X
 import Marvel.Event.Events.GlobalLogistics as X
+
+import Marvel.Event.Events.ForcefieldProjection as X
+
+import Marvel.Event.Events.LightspeedFlight as X
+
+import Marvel.Event.Events.PotShot as X
+
+import Marvel.Event.Events.UnleashNovaForce as X
+
+import Marvel.Event.Events.Pitchback as X
+
+import Marvel.Event.Events.NoQuarter as X
+
+import Marvel.Event.Events.OneByOne as X
+
+import Marvel.Event.Events.YawAndRoll as X

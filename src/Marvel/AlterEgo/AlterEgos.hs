@@ -65,3 +65,5 @@ import Marvel.AlterEgo.AlterEgos.VisionAlterEgo as X
 -- Sinister Motives
 import Marvel.AlterEgo.AlterEgos.GwenStacy as X
 import Marvel.AlterEgo.AlterEgos.MilesMorales as X
+
+import Marvel.AlterEgo.AlterEgos.SamAlexander as X

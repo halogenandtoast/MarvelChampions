@@ -77,6 +77,7 @@ allHeroCards =
   , visionHero
   , ghostSpider
   , spiderManMilesMoralesHero
+  , novaHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -256,3 +257,11 @@ ghostSpider = hero "27001a" "Ghost-Spider" [WebWarrior]
 
 spiderManMilesMoralesHero :: CardDef
 spiderManMilesMoralesHero = hero "27030a" "Spider-Man" [Champion, WebWarrior]
+
+-- Nova
+
+novaHero :: CardDef
+novaHero = (hero "28001a" "Nova" [Champion])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }

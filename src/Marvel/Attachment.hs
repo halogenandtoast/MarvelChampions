@@ -178,6 +178,7 @@ allAttachments =
       , SomeAttachmentCard (reprintAs Cards.seducedValkyrie seduced)
   , SomeAttachmentCard experimentalInjection
   , SomeAttachmentCard razorClaws
+  , SomeAttachmentCard rollinRollin
       ]
 
 lookupAttachment :: CardCode -> AttachmentId -> Attachment

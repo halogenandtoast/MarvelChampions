@@ -93,7 +93,8 @@ allObligations = fromList $ map
     , corruptedProgramming
   , worriedFather
   , keepingSecrets
-    ]
+  , weightOfTheWorld
+  ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
 obligation code name boostIcons = CardDef
@@ -356,3 +357,8 @@ smFriendsAndFamily = (smObligationDef "27132" "Friends and Family" SMSet.DownToE
   , cdAcceleration = 0
   , cdAmplify = 0
   }
+
+-- Nova
+
+weightOfTheWorld :: CardDef
+weightOfTheWorld = obligation "28021" "Weight of the World" [Boost, Boost]

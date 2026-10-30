@@ -243,6 +243,10 @@ allTreacheries = fromList $ map
   , relentlessAndroid
   , inColdBlood
   , sliceAndDice
+  , warDelivery
+  , theWarsBeenBrought
+  , toughAndTumble
+  , toughItOut
   ]
 
 treachery
@@ -1184,3 +1188,19 @@ smSmearCampaign = (smTreacheryDef "27175" "Smear Campaign" SMSet.BadPublicity 1)
   , cdAcceleration = 0
   , cdAmplify = 0
   }
+
+-- Nova
+
+warDelivery :: CardDef
+warDelivery = treachery "28024" "War Delivery" [Boost, Star] SMSet.NovaNemesis 2
+
+theWarsBeenBrought :: CardDef
+theWarsBeenBrought = (treachery "28025" "\"The War's Been Brought\"" [] SMSet.NovaNemesis 1)
+  { cdKeywords = fromList [Keyword.Surge]
+  }
+
+toughAndTumble :: CardDef
+toughAndTumble = treachery "28031" "Tough and Tumble" [Boost] SMSet.Armadillo 1
+
+toughItOut :: CardDef
+toughItOut = treachery "28032" "Tough It Out" [] SMSet.Armadillo 2

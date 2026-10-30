@@ -244,3 +244,11 @@ import Marvel.Upgrade.Upgrades.SymbioteSuit as X
 
 
 import Marvel.Upgrade.Upgrades.SmCampaign as X
+
+import Marvel.Upgrade.Upgrades.SupernovaHelmet as X
+
+import Marvel.Upgrade.Upgrades.FluidMotion as X
+
+import Marvel.Upgrade.Upgrades.HonedTechnique as X
+
+import Marvel.Upgrade.Upgrades.HeightAdvantage as X

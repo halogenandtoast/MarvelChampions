@@ -160,3 +160,7 @@ import Marvel.Minion.Minions.SmMysterio as X
 import Marvel.Minion.Minions.SmVenomGoblin as X
 
 import Marvel.Minion.Minions.SmModulars as X
+
+import Marvel.Minion.Minions.Warbringer as X
+
+import Marvel.Minion.Minions.Armadillo as X

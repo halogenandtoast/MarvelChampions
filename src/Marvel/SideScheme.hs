@@ -212,6 +212,8 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard ultronUnleashed
   , SomeSideSchemeCard regenerativeResearch
   , SomeSideSchemeCard trackingPrey
+  , SomeSideSchemeCard bringTheWar
+  , SomeSideSchemeCard armoredAssault
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

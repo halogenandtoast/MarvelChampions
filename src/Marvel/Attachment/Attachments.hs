@@ -140,3 +140,5 @@ import Marvel.Attachment.Attachments.SmVenomGoblin as X
 import Marvel.Attachment.Attachments.SmModulars as X
 
 import Marvel.Attachment.Attachments.SmCampaign as X
+
+import Marvel.Attachment.Attachments.RollinRollin as X

@@ -258,6 +258,10 @@ allUpgrades = fromList $ concatMap
   , defenseMechanism
   , webShooterMilesMorales
   , symbioteSuit
+  , supernovaHelmet
+  , fluidMotion
+  , honedTechnique
+  , heightAdvantage
   ]
 
 upgrade
@@ -1351,4 +1355,29 @@ smWristNavigatorB = (smUpgradeDef "27189b" "Wrist Navigator" SMSet.ShieldTech 1)
   , cdHazards = 0
   , cdAcceleration = 0
   , cdAmplify = 0
+  }
+
+-- Nova
+
+supernovaHelmet :: CardDef
+supernovaHelmet = (identityUpgrade "28009" "Supernova Helmet" 1 [Armor] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+fluidMotion :: CardDef
+fluidMotion = (upgrade "28016" "Fluid Motion" 1 [Skill] [Energy] Aggression)
+  { cdDeckLimit = Just 3
+  }
+
+honedTechnique :: CardDef
+honedTechnique = (upgrade "28017" "Honed Technique" 3 [Skill] [Mental] Aggression)
+  { cdDeckLimit = Just 3
+  , cdKeywords = fromList [Requirement [Mental, Mental]]
+  , cdLimit = Just (MaxPerPlayer 1)
+  }
+
+heightAdvantage :: CardDef
+heightAdvantage = (upgrade "28027" "Height Advantage" 1 [Aerial, Tactic] [Mental] Protection)
+  { cdDeckLimit = Just 3
   }

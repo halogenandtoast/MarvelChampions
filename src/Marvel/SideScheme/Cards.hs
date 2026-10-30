@@ -219,6 +219,8 @@ allSideSchemes = fromList $ map
   , ultronUnleashed
   , regenerativeResearch
   , trackingPrey
+  , bringTheWar
+  , armoredAssault
   ]
 
 sideScheme
@@ -1157,3 +1159,13 @@ smRubbleRescue = (smSideSchemeDef "27180" "Rubble Rescue" SMSet.CommunityService
   , cdAcceleration = 0
   , cdAmplify = 0
   }
+
+-- Nova
+
+bringTheWar :: CardDef
+bringTheWar = (sideScheme "28022" "\"Bring the War!\"" [Boost, Boost] SMSet.NovaNemesis 1)
+  { cdHazards = 1
+  }
+
+armoredAssault :: CardDef
+armoredAssault = sideScheme "28028" "Armored Assault" [Boost, Boost] SMSet.Armadillo 1

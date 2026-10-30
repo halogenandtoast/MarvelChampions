@@ -71,7 +71,8 @@ allAlterEgoCards =
     , visionAlterEgo
   , gwenStacy
   , milesMorales
-    ]
+  , samAlexander
+  ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
 allAlterEgosMap = fromList $ map (toFst toCardCode) allAlterEgoCards
@@ -236,3 +237,11 @@ gwenStacy = alterEgo "27001b" "Gwen Stacy" [Civilian]
 
 milesMorales :: CardDef
 milesMorales = alterEgo "27030b" "Miles Morales" [Civilian]
+
+-- Nova
+
+samAlexander :: CardDef
+samAlexander = (alterEgo "28001b" "Sam Alexander" [Civilian])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }

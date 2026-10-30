@@ -193,4 +193,7 @@ allAllies = fromList $ map
   , SomeAllyCard ghostSpiderGwenStacy
   , SomeAllyCard spiderManPeterParkerSinisterMotives
   , SomeAllyCard venomEddieBrock
+  , SomeAllyCard msMarvelKamalaKhanNova
+  , SomeAllyCard theLocustFernandaRodriguez
+  , SomeAllyCard moonGirlLunellaLafayette
   ]

@@ -336,6 +336,14 @@ allEvents = fromList $ map
   , SomeEventCard webShot
   , SomeEventCard homelandIntervention
   , SomeEventCard globalLogistics
+  , SomeEventCard forcefieldProjection
+  , SomeEventCard lightspeedFlight
+  , SomeEventCard potShot
+  , SomeEventCard unleashNovaForce
+  , SomeEventCard pitchback
+  , SomeEventCard noQuarter
+  , SomeEventCard oneByOne
+  , SomeEventCard yawAndRoll
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

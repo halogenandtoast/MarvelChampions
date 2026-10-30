@@ -214,6 +214,8 @@ allMinions =
       , SomeMinionCard ultronNemesis
   , SomeMinionCard theLizard
   , SomeMinionCard prowler
+  , SomeMinionCard warbringer
+  , SomeMinionCard armadillo
       ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

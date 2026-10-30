@@ -335,6 +335,14 @@ allEvents = fromList $ concatMap
   , webShot
   , homelandIntervention
   , globalLogistics
+  , forcefieldProjection
+  , lightspeedFlight
+  , potShot
+  , unleashNovaForce
+  , pitchback
+  , noQuarter
+  , oneByOne
+  , yawAndRoll
   ]
 
 event
@@ -532,7 +540,7 @@ wakandaForeverD =
   identityEvent "01043d" "Wakanda Forever!" 1 HeroAction [Tactic] [Wild]
 
 chaseThemDown :: CardDef
-chaseThemDown = reprintedAs ["06013", "16041"] $
+chaseThemDown = reprintedAs ["06013", "16041", "28011"] $
   (event "01052" "Chase Them Down" 0 Response [Thwart] [Mental] Aggression)
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdCriteria = SchemeExists AnyScheme
@@ -2148,3 +2156,64 @@ globalLogistics = (event "27043" "Global Logistics" 0 Action [Shield, Tactic] [P
     { cdDeckLimit = Just 3
     , cdAbilityCost = ExhaustCardsWithTraitCost Shield 1 1
     }
+
+-- Nova
+
+forcefieldProjection :: CardDef
+forcefieldProjection = (identityEvent "28003" "Forcefield Projection" 1 HeroInterrupt [Superpower] [Physical])
+  { cdResponseWindow = Just (CharacterWouldTakeAttackDamage (CharacterControlledBy AnyIdentity))
+  , cdDeckLimit = Just 2
+  }
+
+lightspeedFlight :: CardDef
+lightspeedFlight = (identityEvent "28004" "Lightspeed Flight" 2 HeroAction [Superpower, Thwart] [Mental])
+  { cdAbilitySubTypes = [Ability.Thwart]
+  , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  , cdDeckLimit = Just 3
+  , cdDoubleWildResources = True
+  }
+
+potShot :: CardDef
+potShot = (identityEvent "28005" "Pot Shot" 2 HeroAction [Attack, Superpower] [Energy])
+  { cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  , cdDeckLimit = Just 3
+  , cdDoubleWildResources = True
+  }
+
+unleashNovaForce :: CardDef
+unleashNovaForce = (identityEvent "28006" "Unleash Nova Force" 1 HeroAction [Superpower] [Energy])
+  { cdDeckLimit = Just 2
+  , cdLimit = Just (MaxPerRound 1)
+  }
+
+pitchback :: CardDef
+pitchback = (event "28012" "Pitchback" 1 HeroResponse [Aerial, Attack] [Physical] Aggression)
+  { cdAbilitySubTypes = [Ability.Attack]
+  , cdResponseWindow = Just (IdentityAttacked After You AnyEnemy)
+  , cdDeckLimit = Just 3
+  , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> canAttack
+  }
+
+noQuarter :: CardDef
+noQuarter = (event "28013" "No Quarter" 2 HeroAction [Attack] [Mental] Aggression)
+  { cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  , cdDeckLimit = Just 3
+  , cdKeywords = fromList [Requirement [Physical]]
+  }
+
+oneByOne :: CardDef
+oneByOne = (event "28014" "One by One" 1 HeroAction [Attack] [Energy] Aggression)
+  { cdAbilitySubTypes = [Ability.Attack]
+  , cdCriteria = canAttack
+  , cdDeckLimit = Just 3
+  }
+
+yawAndRoll :: CardDef
+yawAndRoll = (event "28026" "Yaw and Roll" 1 HeroResponse [Aerial, Thwart] [Energy] Justice)
+  { cdAbilitySubTypes = [Ability.Thwart]
+  , cdResponseWindow = Just (HeroThwarted After You)
+  , cdDeckLimit = Just 3
+  , cdCriteria = SelfMatches (IdentityWithTrait Aerial) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]
+  }

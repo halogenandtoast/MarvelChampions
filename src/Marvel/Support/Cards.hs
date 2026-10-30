@@ -110,6 +110,8 @@ allSupports = fromList $ concatMap
   , fieldAgent
   , governmentLiaison
   , skyDestroyer
+  , jesseAlexander
+  , championsMobileBunker
   ]
 
 support
@@ -456,3 +458,17 @@ skyDestroyer = (basicSupport "27055" "Sky-Destroyer" 3 [Shield, Vehicle] [Energy
     { cdUnique = True
     , cdDeckLimit = Just 1
     }
+
+-- Nova
+
+jesseAlexander :: CardDef
+jesseAlexander = (identitySupport "28008" "Jesse Alexander" 2 [Persona] [Mental])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }
+
+championsMobileBunker :: CardDef
+championsMobileBunker = (basicSupport "28020" "Champions Mobile Bunker" 2 [Champion, Vehicle] [Physical])
+  { cdDeckLimit = Just 1
+  , cdUnique = True
+  }

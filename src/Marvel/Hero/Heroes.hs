@@ -67,3 +67,5 @@ import Marvel.Hero.Heroes.VisionHero as X
 -- Sinister Motives
 import Marvel.Hero.Heroes.GhostSpider as X
 import Marvel.Hero.Heroes.SpiderManMilesMoralesHero as X
+
+import Marvel.Hero.Heroes.NovaHero as X

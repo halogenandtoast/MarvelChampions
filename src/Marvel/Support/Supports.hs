@@ -108,3 +108,7 @@ import Marvel.Support.Supports.JeffersonDavis as X
 import Marvel.Support.Supports.FieldAgent as X
 import Marvel.Support.Supports.GovernmentLiaison as X
 import Marvel.Support.Supports.SkyDestroyer as X
+
+import Marvel.Support.Supports.JesseAlexander as X
+
+import Marvel.Support.Supports.ChampionsMobileBunker as X

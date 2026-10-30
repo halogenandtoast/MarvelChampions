@@ -253,6 +253,10 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard defenseMechanism
   , SomeUpgradeCard webShooterMilesMorales
   , SomeUpgradeCard symbioteSuit
+  , SomeUpgradeCard supernovaHelmet
+  , SomeUpgradeCard fluidMotion
+  , SomeUpgradeCard honedTechnique
+  , SomeUpgradeCard heightAdvantage
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

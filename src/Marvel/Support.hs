@@ -121,6 +121,8 @@ allSupports = fromList $ map
   , SomeSupportCard fieldAgent
   , SomeSupportCard governmentLiaison
   , SomeSupportCard skyDestroyer
+  , SomeSupportCard jesseAlexander
+  , SomeSupportCard championsMobileBunker
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

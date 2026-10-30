@@ -213,7 +213,9 @@ allMinions =
       , ultronNemesis
   , theLizard
   , prowler
-      ]
+  , warbringer
+  , armadillo
+  ]
 
 allSpecialMinions :: HashMap CardCode CardDef
 allSpecialMinions =
@@ -1167,4 +1169,17 @@ smEnragedSymbiote = (smMinionDef "27167" "Enraged Symbiote" SMSet.SymbioticStren
   , cdHazards = 0
   , cdAcceleration = 0
   , cdAmplify = 0
+  }
+
+-- Nova
+
+warbringer :: CardDef
+warbringer = (minion "28023" "Warbringer" [Brute, Chitauri] [Boost, Boost, Boost] SMSet.NovaNemesis 1)
+  { cdUnique = True
+  }
+
+armadillo :: CardDef
+armadillo = (minion "28029" "Armadillo" [Brute, Elite] [Boost, Boost, Boost] SMSet.Armadillo 1)
+  { cdUnique = True
+  , cdKeywords = fromList [Toughness]
   }
