@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Cyclops Hero Pack rules insert (MC33) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc33_cyclops_rules_insert.pdf |
 | SP//dr Hero Pack rulesheet (MC31) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc31_spdr_rulesheet.pdf |
 | Spider-Ham Hero Pack rulesheet (MC30) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/c0/cc/c0cc6521-0690-4a3e-8e74-384b9be95e2d/mc30_spider-ham_rulesheet.pdf |
 | Rules Reference | **v1.8** (PDF created 2026-05-26, modified 2026-07-23; announced in FFG's "Mission Updates", 2026-07-23), 71 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc_rulesreference_v18_compressed.pdf (byte-identical copy at `.../uploads/2026/08/mc_rulesreference_v18_compressed-1.pdf`) |
@@ -43,6 +44,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-cyclops.md](hero-cyclops.md) | Cyclops: Temporary, Field Commander, Optic Blast, printed starter deck and owner rulings |
 | [hero-colossus.md](hero-colossus.md) | Colossus: tough status cards, discard responses, starter deck and current errata |
 | [hero-shadowcat.md](hero-shadowcat.md) | Shadowcat: mass forms, defense timing, ignored restrictions, starter deck and recorded rulings |
 | [scenario-mutant-genesis.md](scenario-mutant-genesis.md) | The five Mutant Genesis scenarios, modular sets, current Teamwork and scenario errata |
