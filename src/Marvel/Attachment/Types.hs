@@ -195,9 +195,15 @@ instance RunMessage (Attrs Attachment) where
       pure attrs
     -- it leaves play with the card it is attached to
     RemoveFromPlay target
-      | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs, toTarget <$> attachmentMainScheme attrs, toTarget <$> attachmentAlly attrs] -> do
+      | Just target `elem` [toTarget <$> attachmentIdentity attrs, toTarget <$> attachmentSideScheme attrs, toTarget <$> attachmentMainScheme attrs] -> do
           removeFromPlay attrs
           pure attrs
+    -- A player card's discard interrupts resolve while its host is still in play.
+    -- Discard attached encounter cards only when the ally actually leaves, so its
+    -- protection no longer prevents them from leaving with it.
+    RemoveFromPlayAfterWindow target | Just target == (toTarget <$> attachmentAlly attrs) -> do
+      removeFromPlay attrs
+      pure attrs
     -- an ally leaving play any other way (returned to hand, taken out of the game) has
     -- what is attached to it discarded
     RemoveFromGame target | Just target == (toTarget <$> attachmentAlly attrs) -> do
