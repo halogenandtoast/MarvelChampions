@@ -2149,17 +2149,19 @@ enemyDefeatUpgrades enemy = do
     found <- not . null <$> gameSelectEnemy matches
     if found then getsGame (`abilityCardDef` UpgradeRef uid) else pure Nothing)
 
--- | One attack is resolved against every chosen enemy: replace its pending landing
--- after its single initiation window. Thor's controller chooses the landing order.
-resolveAllyAttackAgainstAll :: (HasQueue m) => AllyId -> [EnemyId] -> m ()
-resolveAllyAttackAgainstAll aid enemies = replaceMatchingMessage replaceAttack \case
-  AllyMessage who (AllyAttackLands _ _) -> who == aid
-  _ -> False
+-- | Newly attacked targets answer within the original attack's interrupt window,
+-- so the same attack-expanding interrupt cannot be used a second time. One attack
+-- then lands against every target before its retaliate and consequential damage.
+resolveAllyAttackAgainstAll :: (ReverseQueue m) => AllyId -> [EnemyId] -> m ()
+resolveAllyAttackAgainstAll aid enemies = do
+  original <- withQueue $ \queue -> (queue, headMay [enemy | AllyMessage who (AllyAttackLands enemy _) <- queue, who == aid])
+  for_ original $ \target -> checkWindows [Window When $ W.AllyAttack aid enemy | enemy <- enemies, enemy /= target]
+  replaceMatchingMessage replaceAttack \case
+    AllyMessage who (AllyAttackLands _ _) -> who == aid
+    _ -> False
  where
   replaceAttack = \case
-    AllyMessage who (AllyAttackLands original damage) ->
-      [CheckWindows [Window When $ W.AllyAttack who enemy | enemy <- enemies, enemy /= original]]
-        <> [AllyMessage who $ AllyAttackMultiple enemies damage]
+    AllyMessage who (AllyAttackLands _ damage) -> [AllyMessage who $ AllyAttackMultiple enemies damage]
     msg -> [msg]
 
 -- | Put an upgrade into play attached to the chosen target, without playing it.

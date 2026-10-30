@@ -147,7 +147,7 @@ spec = describe "Valkyrie pack main aspect cards" do
         pass
         villainDamageNow `shouldReturn` 3
 
-    it "resolves retaliate separately after each target and stops if Thor is defeated" do
+    it "damages every target before a surviving enemy's lethal retaliate defeats Thor" do
       tg <- testGame ["valkyrie"]
       let p = player1 tg
       inGame tg do
@@ -161,10 +161,13 @@ spec = describe "Valkyrie pack main aspect cards" do
         choose "use Thor's interrupt" (cardAbility thor 1)
         payWith [money]
         choose "resolve the lethal retaliating enemy first" (isTargetChoice first)
+        minionDamageOf first `shouldReturn` Just 3
+        minionDamageOf second `shouldReturn` Just 0
+        choose "resolve the other target before retaliation" (isTargetChoice second)
         pass
         alliesWith "25013" `shouldReturn` []
         minionDamageOf first `shouldReturn` Just 3
-        minionDamageOf second `shouldReturn` Just 0
+        minionDamageOf second `shouldReturn` Just 3
 
     it "cannot play a second Thor while Odinson is the identity in play" do
       tg <- testGame ["thor"]
