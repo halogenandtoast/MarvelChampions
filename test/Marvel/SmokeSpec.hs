@@ -6,6 +6,11 @@ import Control.Monad.IO.Class (liftIO)
 import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
 import System.Environment (lookupEnv)
+import GHC.Clock (getMonotonicTimeNSec)
+import Data.Set qualified as Set
+import Data.Text qualified as Text
+import Data.List (nub)
+import SmokeSelection (selectSmokeCases)
 import TestImport
 import SmokeMonitor (withQuestionMonitor)
 import Marvel.Campaign
@@ -53,23 +58,53 @@ spec = parallel do
   -- scenario; by default each scenario gets a few tables, the heroes rotating, and each
   -- modular one scenario, so every deck and set is still played
   full <- runIO $ isJust <$> lookupEnv "SMOKE_FULL"
+  focusHeroes <- runIO $ csvEnv "SMOKE_HEROES"
+  focusModulars <- runIO $ csvEnv "SMOKE_MODULARS"
+  sampleCount <- runIO $ lookupEnv "SMOKE_SAMPLE"
+  let focused = not full && (notNull focusHeroes || notNull focusModulars || isJust sampleCount)
+      matchesModular modular = Text.toCaseFold (Text.pack $ show modular) `elem` map Text.toCaseFold focusModulars
+      tables i villain = if full then allTables villain else nub $ someTables i villain <> [pure hero | hero <- focusHeroes]
+      modularVillains i modular = if full || matchesModular modular then scenarioCodes else [scenarioCodes !! (i `mod` length scenarioCodes)]
+      scenarioName villain heroes' difficulty = show villain <> " against " <> show heroes' <> " on " <> show difficulty
+      modularName villain modular = show villain <> " with " <> show modular
+      campaignName villain n mode = show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode
+      scenarios = [(scenarioName villain heroes' difficulty, villain, heroes', difficulty)
+                  | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, difficulty <- [Normal, Expert]]
+      modulars = [(modularName villain modular, villain, modular)
+                 | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives], (n, villain) <- zip [0..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
+      catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
+               <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
+               <> [(name, baselineRelevant) | name <- campaigns]
+  selected <- if not focused then pure Nothing else runIO do
+    for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
+    for_ focusModulars $ \modular -> unless (any ((== Text.toCaseFold modular) . Text.toCaseFold . Text.pack . show) modularSets) $
+      fail $ "Unknown SMOKE_MODULARS set: " <> unpack modular
+    explicitSeed <- lookupEnv "SMOKE_SAMPLE_SEED"
+    -- Only test selection uses this clock seed; each game's RNG remains fixed.
+    seed <- maybe (fromIntegral . (`mod` 2147483647) <$> getMonotonicTimeNSec) (pure . read) explicitSeed
+    let extra = maybe 50 read sampleCount
+        chosen = selectSmokeCases seed extra snd catalogue
+    putStrLn $ "Smoke selection: " <> show (length $ filter snd chosen) <> " relevant + "
+      <> show (length $ filter (not . snd) chosen) <> " sampled; replay with SMOKE_SAMPLE_SEED=" <> show seed
+    pure $ Just $ Set.fromList $ map fst chosen
+  let selectedCase name = maybe True (Set.member name) selected
   describe "random play" do
-    for_ (zip [0 ..] scenarioCodes) \(i, villain) ->
-      for_ (if full then allTables villain else someTables i villain) \heroes ->
-        for_ [Normal, Expert] \difficulty ->
-          it (show villain <> " against " <> show heroes <> " on " <> show difficulty) do
-            playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes
-    for_ (zip [0 ..] modularSets) \(i, modular) ->
-      for_ (if full then scenarioCodes else [scenarioCodes !! (i `mod` length scenarioCodes)]) \villain ->
-        it (show villain <> " with " <> show modular) do
-          playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
+    for_ scenarios $ \(name, villain, heroes', difficulty) ->
+      when (selectedCase name) $ it name do
+        playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes'
+    for_ modulars $ \(name, villain, modular) ->
+      when (selectedCase name) $ it name do
+        playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
     -- each scenario of The Mad Titan's Shadow as a campaign game, every box of its log
     -- checked so each campaign card comes in, expert with the hit points recorded (one
     -- player hurt, one defeated last scenario)
     describe "The Mad Titan's Shadow campaign" do
       for_ (zip [0 ..] madTitansShadow) \(n, villain) ->
-        for_ [StandardCampaign, ExpertCampaign] \mode ->
-          it (show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode) do
+        for_ [StandardCampaign, ExpertCampaign] \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
             let heroes' = ["spider-man", "she-hulk"]
                 identities = map ((.hero) . starter) heroes'
                 marked = foldr (recordInLog . RecordTitanMark) ((newCampaignOf MadTitansShadow mode identities) {completed = n}) [minBound .. maxBound]
@@ -77,8 +112,9 @@ spec = parallel do
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
     describe "Sinister Motives campaign" do
       for_ (zip [0 ..] sinisterMotives) \(n, villain) ->
-        for_ [StandardCampaign, ExpertCampaign] \mode ->
-          it (show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode) do
+        for_ [StandardCampaign, ExpertCampaign] \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
             let heroes' = ["spider-man", "she-hulk"]
                 identities = map ((.hero) . starter) heroes'
                 base = (newCampaignOf SinisterMotives mode identities) {completed = n}
@@ -97,6 +133,7 @@ spec = parallel do
                 c = foldl' (flip recordInLog) base records
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
  where
+  csvEnv name = maybe [] (filter (not . Text.null) . map Text.strip . Text.splitOn "," . Text.pack) <$> lookupEnv name
   playSetup = playWith id
   playWith f setup heroes = do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes

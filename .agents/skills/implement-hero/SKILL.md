@@ -164,9 +164,21 @@ While they work, do nothing that edits their files. When all have reported:
    files you own yourself.
 3. Test: `stack test --fast --ta '--match "<Hero>"'` (and the batch spec names). Route
    failures to owners the same way, with the failing expectation and the test name.
-4. When green: `stack test --fast` — the whole suite, including `SmokeSpec` (the new
-   starter deck is dealt against every scenario) and `CoverageSpec`. A smoke crash is an
-   engine bug: find which card, send it to its owner or fix the engine yourself.
+4. When green, run every non-smoke test (including `CoverageSpec`) with
+   `stack --work-dir .stack-work-codex test --fast --ta '--skip Marvel.Smoke --fail-fast +RTS -N2 -RTS'`,
+   then focused smoke verification: `SMOKE_HEROES=<starter-deck-name> SMOKE_MODULARS=<new-set-name>
+   stack --work-dir .stack-work-codex test --fast --ta '--match Marvel.Smoke --fail-fast --jobs 2 +RTS -N2 -A32m -RTS'`.
+   Omit `SMOKE_MODULARS` if there is no new modular set; both focus variables accept
+   comma-separated names (`SMOKE_MODULARS` uses the engine's set name, e.g. `ZzzaxSet`). This keeps every focused hero case (including solo against
+   every scenario on both difficulties) and each new modular set against every scenario,
+   then samples 50 distinct cases from the rest. The runner prints `SMOKE_SAMPLE_SEED`;
+   record it so the exact sample can be replayed. Keep four game seeds per case and the
+   five-second new-question watchdog. Stop on the first timeout or crash and eliminate
+   it before continuing; do not sweep through potentially cascading failures or relax
+   the deadline. Filter large candidate sets with pure/cheap checks before modifier,
+   trait, criteria and payment searches. A smoke crash is an engine bug: find which card,
+   send it to its owner or fix the engine yourself. Full smoke sweeps are optional unless
+   explicitly requested; `SMOKE_FULL=1` still enables the exhaustive catalogue.
 
 Always build and test with `stack --work-dir .stack-work-codex …` (every command above):
 the user usually has `make api.watch` rebuilding `.stack-work` with other flags, and

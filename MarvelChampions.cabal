@@ -1919,6 +1919,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.SetMechanicsSpec
       Marvel.Rules.SinisterMotivesLogSpec
       Marvel.Rules.SmokeMonitorSpec
+      Marvel.Rules.SmokeSelectionSpec
       Marvel.Rules.SpiderHamMechanicsSpec
       Marvel.Rules.SteadyIdentitySpec
       Marvel.Rules.SteadyMinionSpec
@@ -1937,6 +1938,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       SmokeMonitor
+      SmokeSelection
       SpecHook
       TestImport
       Paths_MarvelChampions
