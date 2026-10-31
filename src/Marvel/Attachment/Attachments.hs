@@ -160,3 +160,7 @@ import Marvel.Attachment.Attachments.MutantGenesisCampaign as X
 
 -- Cyclops
 import Marvel.Attachment.Attachments.GeneTherapy as X
+
+-- Storm
+import Marvel.Attachment.Attachments.Switchblade as X
+import Marvel.Attachment.Attachments.Possessed as X

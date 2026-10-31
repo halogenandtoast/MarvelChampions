@@ -37,7 +37,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ lostVisor
+    [ claustrophobia
+  , lostVisor
   , mgReactiveDefense
   , mgWarnTheOthers, smFriendsAndFamily
   , affairsOfState
@@ -443,3 +444,9 @@ burningHunger = obligation "34028" "Burning Hunger" [Boost, Boost]
 
 lostVisor :: CardDef
 lostVisor = (obligation "33027" "Lost Visor" [Boost, Boost])
+
+
+-- Storm
+
+claustrophobia :: CardDef
+claustrophobia = obligation "36030" "Claustrophobia" [Boost, Boost]

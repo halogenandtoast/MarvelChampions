@@ -153,6 +153,8 @@ data EncounterSet
   | Inheritors
   | SpdrNemesis
   | IronSpiderSinisterSix
+  | StormNemesis
+  | ShadowKingSet
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -160,7 +162,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ BombScare
+  [ ShadowKingSet
+  , BombScare
   , MastersOfEvil
   , UnderAttack
   , LegionsOfHydra
@@ -229,6 +232,7 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "36001" -> StormNemesis
   "33001" -> CyclopsNemesis
   "01001" -> SpiderManNemesis
   "01010" -> CaptainMarvelNemesis

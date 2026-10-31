@@ -26,7 +26,13 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard fullBlast, SomeEventCard ricochetBeam, SomeEventCard tacticalBrilliance, SomeEventCard gameTime
+  [ SomeEventCard weatherGoddess
+  , SomeEventCard torrentialRain
+  , SomeEventCard lightningBolt
+  , SomeEventCard flashFreeze
+  , SomeEventCard blastOfWind
+  , SomeEventCard toMeMyXMen
+  , SomeEventCard fullBlast, SomeEventCard ricochetBeam, SomeEventCard tacticalBrilliance, SomeEventCard gameTime
   , SomeEventCard backflip
   , SomeEventCard enhancedSpiderSense
   , SomeEventCard swingingWebKick

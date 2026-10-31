@@ -228,3 +228,7 @@ import Marvel.Treachery.Treacheries.FieryRage as X
 
 -- Cyclops
 import Marvel.Treachery.Treacheries.ConcussiveForce as X
+
+-- Storm
+import Marvel.Treachery.Treacheries.KnifeFight as X
+import Marvel.Treachery.Treacheries.AstralAttack as X

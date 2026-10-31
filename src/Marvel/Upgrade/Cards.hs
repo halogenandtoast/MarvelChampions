@@ -38,7 +38,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
+  [ stormsCrown, stormsCape, leadershipSkill
+  , rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
   , mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
   , smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
   , spiderTracer
@@ -507,7 +508,7 @@ energyBarrier :: CardDef
 energyBarrier = reprintedAs ["31018"] $ upgrade "05017" "Energy Barrier" 2 [Item, Tech] [Energy] Protection
 
 endurance :: CardDef
-endurance = limited (MaxPerPlayerUnderAnyControl 1)
+endurance = reprintedAs ["36026"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ basicUpgrade "05023" "Endurance" 1 [Condition] [Energy]
 
 enhancedReflexes :: CardDef
@@ -1752,3 +1753,15 @@ pinnedDown = (upgrade "33034" "Pinned Down" 0 [Tactic] [Physical] Protection) { 
 
 honoraryXMen :: CardDef
 honoraryXMen = (basicUpgrade "33035" "Honorary X-Men" 0 [Title] [Physical]) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerCharacter 1), cdCriteria = SelfMatches (IdentityWithTrait XMen) }
+
+
+-- Storm
+
+stormsCrown :: CardDef
+stormsCrown = (identityUpgrade "36006" "Storm's Crown" 2 [Item] [Mental]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+stormsCape :: CardDef
+stormsCape = (identityUpgrade "36007" "Storm's Cape" 3 [Item] [Energy]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+leadershipSkill :: CardDef
+leadershipSkill = (upgrade "36019" "Leadership Skill" 1 [Skill] [Physical] Leadership) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }

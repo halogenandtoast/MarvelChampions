@@ -18,7 +18,8 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ cyclopsHero
+  [ stormHero
+  , cyclopsHero
   , spiderMan
   , captainMarvel
   , sheHulk
@@ -336,3 +337,9 @@ phoenixHero = hero "34001a" "Phoenix" [Psionic, XMen]
 
 cyclopsHero :: CardDef
 cyclopsHero = (hero "33001a" "Cyclops" [XMen]) { cdDeckLimit = Just 1, cdUnique = True }
+
+
+-- Storm
+
+stormHero :: CardDef
+stormHero = (hero "36001a" "Storm" [XMen]) { cdUnique = True }

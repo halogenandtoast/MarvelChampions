@@ -30,7 +30,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ utopia, dangerRoom
+  [ clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
+  , utopia, dangerRoom
   , mgMetroPD
   , alphaFlightStation
   , auntMay
@@ -572,7 +573,7 @@ piotrsStudio = (identitySupport "32003" "Piotr's Studio" 1 [Location] [Mental])
 -- Mutant Genesis
 
 theXjet :: CardDef
-theXjet = (basicSupport "32020" "The X-Jet" 3 [Vehicle, XMen] [Energy])
+theXjet = reprintedAs ["36023"] $ (basicSupport "32020" "The X-Jet" 3 [Vehicle, XMen] [Energy])
   { cdUnique = True
   , cdDeckLimit = Just 1
   }
@@ -588,7 +589,7 @@ kittysRoom = (identitySupport "32033" "Kitty's Room" 1 [Location] [Physical])
 -- Mutant Genesis
 
 xmansion :: CardDef
-xmansion = (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
+xmansion = reprintedAs ["36025"] $ (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
   { cdUnique = True
   , cdDeckLimit = Just 1
   }
@@ -609,7 +610,31 @@ cerebro = (basicSupport "34022" "Cerebro" 1 [Location, XMen] [Mental]) {cdDeckLi
 -- Cyclops
 
 utopia :: CardDef
-utopia = (basicSupport "33020" "Utopia" 2 [Location, XMen] [Physical]) { cdDeckLimit = Just 1, cdUnique = True }
+utopia = reprintedAs ["36024"] $ (basicSupport "33020" "Utopia" 2 [Location, XMen] [Physical]) { cdDeckLimit = Just 1, cdUnique = True }
 
 dangerRoom :: CardDef
 dangerRoom = (basicSupport "33021" "Danger Room" 2 [Location, XMen] [Energy]) { cdDeckLimit = Just 1, cdUnique = True }
+
+
+-- Storm
+
+clearSkies :: CardDef
+clearSkies = (identitySupport "36002" "Clear Skies" 0 [Weather] [Wild]) { cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent] }
+
+hurricane :: CardDef
+hurricane = (identitySupport "36003" "Hurricane" 0 [Weather] [Physical]) { cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent] }
+
+thunderstorm :: CardDef
+thunderstorm = (identitySupport "36004" "Thunderstorm" 0 [Weather] [Energy]) { cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent] }
+
+blizzard :: CardDef
+blizzard = (identitySupport "36005" "Blizzard" 0 [Weather] [Mental]) { cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent] }
+
+ororosGarden :: CardDef
+ororosGarden = (identitySupport "36008" "Ororo's Garden" 1 [Location] [Physical]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+uncannyXMen :: CardDef
+uncannyXMen = (support "36018" "Uncanny X-Men" 3 [Team] [Mental] Leadership) { cdDeckLimit = Just 3, cdLimit = Just (MaxTraitPerPlayerUnderAnyControl Team 1) }
+
+hangarBay :: CardDef
+hangarBay = (support "36035" "Hangar Bay" 1 [Location] [Mental] Protection) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }

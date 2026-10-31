@@ -33,7 +33,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
+  [ havok, mirage, gentle, pixie, forge
+  , phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
   , mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
   , blackCatFeliciaHardy
   , spiderWomanJessicaDrew
@@ -1244,3 +1245,21 @@ blindfold = (ally "33014" ("Blindfold" <:> "Ruth Aldine") 3 [Psionic, XMen] [Phy
 
 angel :: CardDef
 angel = (basicAlly "33019" ("Angel" <:> "Warren Worthington III") 3 [Aerial, XMen] [Mental]) { cdDeckLimit = Just 1, cdUnique = True }
+
+
+-- Storm
+
+havok :: CardDef
+havok = (ally "36014" ("Havok" <:> "Alex Summers") 4 [XMen] [Energy] Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+mirage :: CardDef
+mirage = (ally "36015" ("Mirage" <:> "Dani Moonstar") 3 [Psionic, XMen] [Mental] Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+gentle :: CardDef
+gentle = (ally "36016" ("Gentle" <:> "Nezhno Abidemi") 3 [XMen] [Physical] Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+pixie :: CardDef
+pixie = (ally "36017" ("Pixie" <:> "Megan Gwynn") 2 [Aerial, XMen] [Energy] Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+forge :: CardDef
+forge = (basicAlly "36022" "Forge" 2 [XMen] [Mental]) { cdUnique = True, cdDeckLimit = Just 1 }

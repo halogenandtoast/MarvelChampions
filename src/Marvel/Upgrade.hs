@@ -25,7 +25,10 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard rubyQuartzVisor, SomeUpgradeCard fieldCommander, SomeUpgradeCard exploitWeakness, SomeUpgradeCard practicedDefense, SomeUpgradeCard priorityTarget, SomeUpgradeCard dangerRoomTraining, SomeUpgradeCard coordinatedAttack, SomeUpgradeCard marked, SomeUpgradeCard befuddle, SomeUpgradeCard pinnedDown, SomeUpgradeCard honoraryXMen
+  [ SomeUpgradeCard stormsCrown
+  , SomeUpgradeCard stormsCape
+  , SomeUpgradeCard leadershipSkill
+  , SomeUpgradeCard rubyQuartzVisor, SomeUpgradeCard fieldCommander, SomeUpgradeCard exploitWeakness, SomeUpgradeCard practicedDefense, SomeUpgradeCard priorityTarget, SomeUpgradeCard dangerRoomTraining, SomeUpgradeCard coordinatedAttack, SomeUpgradeCard marked, SomeUpgradeCard befuddle, SomeUpgradeCard pinnedDown, SomeUpgradeCard honoraryXMen
   , SomeUpgradeCard mgCoupDeGrace, SomeUpgradeCard mgSwagger, SomeUpgradeCard mgBrazenDefense, SomeUpgradeCard mgFerociousAttack, SomeUpgradeCard mgWarCry, SomeUpgradeCard mgCommanderCoupDeGrace, SomeUpgradeCard mgCompassion, SomeUpgradeCard mgGroupAssault, SomeUpgradeCard mgShockAndAwe, SomeUpgradeCard mgImprovisation, SomeUpgradeCard mgDefenderSwagger, SomeUpgradeCard mgSurprise, SomeUpgradeCard mgHeroicIntervention, SomeUpgradeCard mgDeterminedDefense, SomeUpgradeCard mgBodyguard, SomeUpgradeCard mgPeacekeeperSurprise, SomeUpgradeCard mgPeacekeeperCompassion, SomeUpgradeCard mgRescueOperation, SomeUpgradeCard mgMentorship, SomeUpgradeCard mgFortitude
   , SomeUpgradeCard smCompactDartsA, SomeUpgradeCard smCompactDartsB, SomeUpgradeCard smImpactDampeningSuitA, SomeUpgradeCard smImpactDampeningSuitB, SomeUpgradeCard smLaserGogglesA, SomeUpgradeCard smLaserGogglesB, SomeUpgradeCard smPropulsionGauntletA, SomeUpgradeCard smPropulsionGauntletB, SomeUpgradeCard smRetinalDisplayA, SomeUpgradeCard smRetinalDisplayB, SomeUpgradeCard smShockKnucklesA, SomeUpgradeCard smShockKnucklesB, SomeUpgradeCard smWaveBracersA, SomeUpgradeCard smWaveBracersB, SomeUpgradeCard smWristNavigatorA, SomeUpgradeCard smWristNavigatorB
   , SomeUpgradeCard spiderTracer

@@ -89,3 +89,6 @@ import Marvel.Hero.Heroes.ShadowcatHero as X
 import Marvel.Hero.Heroes.CyclopsHero as X
 
 import Marvel.Hero.Heroes.PhoenixHero as X
+
+-- Storm
+import Marvel.Hero.Heroes.StormHero as X

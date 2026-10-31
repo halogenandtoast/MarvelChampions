@@ -40,7 +40,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ geneTherapy
+      [ switchblade, possessed
+  , geneTherapy
   , mgMagnetosPower
   , mgAdamantiumClaws, mgAnimalFerocity, mgHomoSuperior, mgGauntletBeam, mgLearningAI, mgAdaptiveArmor, mgEnergyBarrier, mgTargetedForElimination, mgUnitUpgrade, mgStunBeam, mgPhysicalStrain, mgMagnetosHelmet, mgMagnetosArmor, mgMagneticBubble, mgWrappedInMetal, mgNanoSentinelTech, smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
   , establishedDominance
@@ -1204,3 +1205,12 @@ mgMagnetosPower = (attachment "32175b" "Magneto's Power" [MGTrait.Condition] [] 
 
 geneTherapy :: CardDef
 geneTherapy = (attachment "33030" "Gene Therapy" [] [Boost, Boost] CyclopsNemesis 2)
+
+
+-- Storm
+
+switchblade :: CardDef
+switchblade = attachment "36033" "Switchblade" [] [Boost, Boost] StormNemesis 1
+
+possessed :: CardDef
+possessed = attachment "36038" "Possessed" [Condition] [Boost, Boost] ShadowKingSet 2

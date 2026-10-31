@@ -147,3 +147,12 @@ import Marvel.Support.Supports.DangerRoom as X
 import Marvel.Support.Supports.WhiteHotRoom as X
 
 import Marvel.Support.Supports.Cerebro as X
+
+-- Storm
+import Marvel.Support.Supports.ClearSkies as X
+import Marvel.Support.Supports.Hurricane as X
+import Marvel.Support.Supports.Thunderstorm as X
+import Marvel.Support.Supports.Blizzard as X
+import Marvel.Support.Supports.OrorosGarden as X
+import Marvel.Support.Supports.UncannyXMen as X
+import Marvel.Support.Supports.HangarBay as X

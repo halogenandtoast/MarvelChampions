@@ -334,3 +334,8 @@ import Marvel.Upgrade.Upgrades.MindControl as X
 import Marvel.Upgrade.Upgrades.MissionTraining as X
 
 import Marvel.Upgrade.Upgrades.PhoenixForce as X
+
+-- Storm
+import Marvel.Upgrade.Upgrades.StormsCrown as X
+import Marvel.Upgrade.Upgrades.StormsCape as X
+import Marvel.Upgrade.Upgrades.LeadershipSkill as X

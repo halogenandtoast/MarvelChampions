@@ -253,3 +253,10 @@ import Marvel.Ally.Allies.MarvelGirl as X
 import Marvel.Ally.Allies.StormOroroMunroe as X
 
 import Marvel.Ally.Allies.ControlledMinion as X
+
+-- Storm
+import Marvel.Ally.Allies.Havok as X
+import Marvel.Ally.Allies.Mirage as X
+import Marvel.Ally.Allies.Gentle as X
+import Marvel.Ally.Allies.Pixie as X
+import Marvel.Ally.Allies.Forge as X

@@ -445,3 +445,11 @@ import Marvel.Event.Events.PsychicMisdirection as X
 import Marvel.Event.Events.PsychicKicker as X
 
 import Marvel.Event.Events.SoulSisters as X
+
+-- Storm
+import Marvel.Event.Events.WeatherGoddess as X
+import Marvel.Event.Events.TorrentialRain as X
+import Marvel.Event.Events.LightningBolt as X
+import Marvel.Event.Events.FlashFreeze as X
+import Marvel.Event.Events.BlastOfWind as X
+import Marvel.Event.Events.ToMeMyXMen as X

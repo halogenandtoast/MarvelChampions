@@ -30,7 +30,9 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard geneTherapy
+      [ SomeAttachmentCard switchblade
+  , SomeAttachmentCard possessed
+  , SomeAttachmentCard geneTherapy
   , SomeAttachmentCard mgMagnetosPower
   , SomeAttachmentCard mgAdamantiumClaws, SomeAttachmentCard mgAnimalFerocity, SomeAttachmentCard mgHomoSuperior, SomeAttachmentCard mgGauntletBeam, SomeAttachmentCard mgLearningAI, SomeAttachmentCard mgAdaptiveArmor, SomeAttachmentCard mgEnergyBarrier, SomeAttachmentCard mgTargetedForElimination, SomeAttachmentCard mgUnitUpgrade, SomeAttachmentCard mgStunBeam, SomeAttachmentCard mgPhysicalStrain, SomeAttachmentCard mgMagnetosHelmet, SomeAttachmentCard mgMagnetosArmor, SomeAttachmentCard mgMagneticBubble, SomeAttachmentCard mgWrappedInMetal, SomeAttachmentCard mgNanoSentinelTech, SomeAttachmentCard smSandForm, SomeAttachmentCard smNowWeReAngry, SomeAttachmentCard smHumongousHallucination, SomeAttachmentCard smMasterfulMirage, SomeAttachmentCard smHeightenedMorale, SomeAttachmentCard smTauntingPresence, SomeAttachmentCard smTeamLeader, SomeAttachmentCard smTakeOneForTheTeam, SomeAttachmentCard smWeAreOne, SomeAttachmentCard smAdvancedGlider, SomeAttachmentCard smConcussiveBombs, SomeAttachmentCard smIncendiaryBombs, SomeAttachmentCard smSmokeBombs, SomeAttachmentCard smArmCannon, SomeAttachmentCard smIonicBoots, SomeAttachmentCard smKineticArmor, SomeAttachmentCard smNeocarbonScales, SomeAttachmentCard smSpikedGauntlet, SomeAttachmentCard smTrackingDisplay, SomeAttachmentCard smInducedPanic, SomeAttachmentCard smImprovisedWeapons, SomeAttachmentCard smViolentTendencies, SomeAttachmentCard smWebbedUp, SomeAttachmentCard smDelusionOfCollusion, SomeAttachmentCard smManipulatedMind, SomeAttachmentCard smOldGrudge, SomeAttachmentCard smSnitchesGetStitches
   , SomeAttachmentCard Hood.establishedDominance

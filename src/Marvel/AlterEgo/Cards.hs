@@ -18,7 +18,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ scottSummers
+    [ ororoMunroe
+  , scottSummers
   , peterParker
     , carolDanvers
     , jenniferWalters
@@ -311,3 +312,9 @@ jeanGrey = alterEgo "34001b" "Jean Grey" [Mutant, Psionic]
 
 scottSummers :: CardDef
 scottSummers = (alterEgo "33001b" "Scott Summers" [Mutant]) { cdDeckLimit = Just 1, cdUnique = True }
+
+
+-- Storm
+
+ororoMunroe :: CardDef
+ororoMunroe = (alterEgo "36001b" "Ororo Munroe" [Mutant]) { cdUnique = True }

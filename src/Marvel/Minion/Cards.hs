@@ -38,7 +38,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ misterSinister
+      [ callisto, theShadowKing
+  , misterSinister
   , mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
   , madameMasque
       , hydraMercenary
@@ -1506,3 +1507,12 @@ darkPhoenix = (minion "34029" "Dark Phoenix" [CosmicEntity, Elite] [Boost, Boost
 
 misterSinister :: CardDef
 misterSinister = (minion "33028" "Mister Sinister" [Elite, Marauder] [Boost, Boost, Star] CyclopsNemesis 1) { cdUnique = True, cdKeywords = fromList [Stalwart, Toughness, Villainous] }
+
+
+-- Storm
+
+callisto :: CardDef
+callisto = (minion "36031" "Callisto" [Elite, Morlock] [Boost, Boost, Boost] StormNemesis 1) { cdUnique = True, cdKeywords = fromList [Quickstrike] }
+
+theShadowKing :: CardDef
+theShadowKing = (minion "36036" "The Shadow King" [Elite, Psionic] [Boost, Boost, Boost] ShadowKingSet 1) { cdUnique = True }

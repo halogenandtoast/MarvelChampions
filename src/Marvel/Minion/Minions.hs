@@ -206,3 +206,7 @@ import Marvel.Minion.Minions.MutantGenesis as X
 import Marvel.Minion.Minions.MisterSinister as X
 
 import Marvel.Minion.Minions.DarkPhoenix as X
+
+-- Storm
+import Marvel.Minion.Minions.Callisto as X
+import Marvel.Minion.Minions.TheShadowKing as X

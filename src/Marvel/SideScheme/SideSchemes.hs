@@ -201,3 +201,7 @@ import Marvel.SideScheme.SideSchemes.MutantGenesis as X
 import Marvel.SideScheme.SideSchemes.GeneticManipulation as X
 
 import Marvel.SideScheme.SideSchemes.ConsumeTheWorld as X
+
+-- Storm
+import Marvel.SideScheme.SideSchemes.LeaderOfTheMorlocks as X
+import Marvel.SideScheme.SideSchemes.RulerOfTheAstralPlane as X

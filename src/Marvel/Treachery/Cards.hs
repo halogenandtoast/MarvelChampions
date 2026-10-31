@@ -34,7 +34,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ concussiveForce
+  [ knifeFight, astralAttack
+  , concussiveForce
   , mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
   , fieldRecruitment
   , upperHand
@@ -1430,3 +1431,12 @@ fieryRage = (treachery "34031" "Fiery Rage" [Boost, Boost] PhoenixNemesis 3) {cd
 
 concussiveForce :: CardDef
 concussiveForce = (treachery "33031" "Concussive Force" [Boost, Boost] CyclopsNemesis 1)
+
+
+-- Storm
+
+knifeFight :: CardDef
+knifeFight = treachery "36034" "Knife Fight" [Boost, Boost] StormNemesis 2
+
+astralAttack :: CardDef
+astralAttack = treachery "36039" "Astral Attack" [Star] ShadowKingSet 1

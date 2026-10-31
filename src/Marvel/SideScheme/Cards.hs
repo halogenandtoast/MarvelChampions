@@ -38,7 +38,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ geneticManipulation
+  [ leaderOfTheMorlocks, rulerOfTheAstralPlane
+  , geneticManipulation
   , mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
   , smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
   , unbridledAmbition
@@ -1462,3 +1463,12 @@ consumeTheWorld = (sideScheme "34030" "Consume the World" [Boost, Boost, Boost] 
 
 geneticManipulation :: CardDef
 geneticManipulation = (sideScheme "33029" "Genetic Manipulation" [Boost, Boost, Boost] CyclopsNemesis 1) { cdAmplify = 1 }
+
+
+-- Storm
+
+leaderOfTheMorlocks :: CardDef
+leaderOfTheMorlocks = (sideScheme "36032" "Leader of the Morlocks" [Boost, Boost, Boost] StormNemesis 1) { cdAmplify = 1 }
+
+rulerOfTheAstralPlane :: CardDef
+rulerOfTheAstralPlane = (sideScheme "36037" "Ruler of the Astral Plane" [Star] ShadowKingSet 1) { cdHazards = 1 }

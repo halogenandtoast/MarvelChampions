@@ -28,7 +28,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ fullBlast, ricochetBeam, tacticalBrilliance, gameTime
+  [ weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
+  , fullBlast, ricochetBeam, tacticalBrilliance, gameTime
   , backflip
   , enhancedSpiderSense
   , swingingWebKick
@@ -2575,3 +2576,24 @@ tacticalBrilliance = (identityEvent "33010" "Tactical Brilliance" 2 HeroAction [
 
 gameTime :: CardDef
 gameTime = (basicEvent "33022" "Game Time" 0 HeroAction [Tactic] [Energy]) { cdDeckLimit = Just 3, cdCriteria = AllyExists (AllyWithUpgrade (UpgradeWithTrait Training)) }
+
+
+-- Storm
+
+weatherGoddess :: CardDef
+weatherGoddess = (identityEvent "36009" "Weather Goddess" 0 HeroAction [Superpower] [Energy]) { cdDeckLimit = Just 3 }
+
+torrentialRain :: CardDef
+torrentialRain = (identityEvent "36010" "Torrential Rain" 2 HeroAction [Superpower, Thwart] [Mental]) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = SchemeExists ThwartableScheme }
+
+lightningBolt :: CardDef
+lightningBolt = (identityEvent "36011" "Lightning Bolt" 3 HeroAction [Attack, Superpower] [Energy]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack], cdCriteria = EnemyExists AttackableEnemy }
+
+flashFreeze :: CardDef
+flashFreeze = (identityEvent "36012" "Flash Freeze" 1 HeroInterrupt [Defense, Superpower] [Physical]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (EnemyAttacked When VillainEnemy You) }
+
+blastOfWind :: CardDef
+blastOfWind = (identityEvent "36013" "Blast of Wind" 3 HeroAction [Superpower] [Physical]) { cdDeckLimit = Just 2 }
+
+toMeMyXMen :: CardDef
+toMeMyXMen = (event "36020" "\"To Me, My X-Men!\"" 1 HeroAction [Tactic] [Energy] Leadership) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait XMen) }
