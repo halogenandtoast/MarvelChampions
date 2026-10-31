@@ -205,6 +205,7 @@ canAffordCost identityId source cost = do
       MainSchemeRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
       CardIdRef _ -> member identityId <$> select UnexhaustedIdentity
       _ -> error "Unhandled"
+    CountersFromUpgradeCost matcher n -> selectAny (matcher <> UpgradeControlledBy (IdentityWithId identityId) <> UpgradeWithUses (AtLeast $ Static $ fromIntegral n))
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses
       SupportRef ident -> member ident <$> select SupportWithAnyUses

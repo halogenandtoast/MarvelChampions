@@ -18,6 +18,7 @@ import Marvel.Trait.Types
 data EntityMatcher
   = IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
+  | UpgradeEntity UpgradeMatcher
   | VillainsAndEngagedMinions IdentityId
   | MinionEntity MinionMatcher
   | AttachmentEntity AttachmentMatcher

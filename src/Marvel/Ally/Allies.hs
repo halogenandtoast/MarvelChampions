@@ -243,3 +243,9 @@ import Marvel.Ally.Allies.Dust as X
 import Marvel.Ally.Allies.Rockslide as X
 import Marvel.Ally.Allies.Blindfold as X
 import Marvel.Ally.Allies.Angel as X
+
+
+
+
+
+import Marvel.Ally.Allies.ControlledMinion as X

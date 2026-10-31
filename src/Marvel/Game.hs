@@ -27,6 +27,7 @@ import Marvel.Ability
 import Marvel.Ability qualified as Ability
 import Marvel.ActiveCost
 import Marvel.Ally
+import Marvel.Ally.Allies.ControlledMinion (ControlledMinion (..))
 import Marvel.Area
 import Marvel.Ally.Types (allyOwner, allyUpgrades, getAllyController, getAllyDamage, getAllyUses)
 import Marvel.Ally.Types qualified as Ally
@@ -789,7 +790,7 @@ getBoostedPlayer enemy = do
     Just who -> pure who
     Nothing -> case enemy of
       EnemyVillainId vid -> maybe getActivePlayerId pure =<< getVillainActivationPlayer vid
-      EnemyMinionId _ -> getActivePlayerId
+      EnemyMinionId mid -> getsGame (fmap (\m -> fromMaybe (minionEngagedIdentity $ toAttrs m) (Minion.minionActivationPlayer $ toAttrs m)) . lookup mid . gameMinions) >>= maybe getActivePlayerId pure
 
 -- | The obligations in the player's play area.
 countObligationsOf :: (HasGame m) => IdentityId -> m Natural
@@ -1648,6 +1649,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             let ident = getAllyController ally
             -- what is attached to it is discarded with it
             for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+            for_ [toId at | at <- HashMap.elems (gameAttachments g), Attachment.attachmentAlly (toAttrs at) == Just aid] removeFromPlay
             for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
             for_ (Ally.allyHeldTreacheries $ toAttrs ally) discardCard
             identityStep ident $ AllyRemoved aid
@@ -2197,6 +2199,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         engageMinion mid ident
         checkWindows [W.Window After $ W.MinionEnteredPlay mid]
         pure $ g & (entitiesL . minionsL %~ insertMap mid (allyAsMinion ident card (Ally.toAttrs $ createAlly ident card)))
+  AllyBecomesMinion aid | Just ally <- lookup aid (gameAllies g), isJust (Ally.allyOriginalMinion $ toAttrs ally) ->
+    g <$ restoreControlledMinion aid
   AllyBecomesMinion aid -> case lookup aid (gameAllies g) of
     Nothing -> pure g
     Just ally -> do
@@ -2222,27 +2226,111 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             , Minion.minionAttachments = attachments
             }) (allyAsMinion ident card a)
       pure $ g & (entitiesL . alliesL %~ deleteMap aid) & (entitiesL . minionsL %~ insertMap mid minion)
-  MinionBecomesAlly mid -> case lookup mid (gameMinions g) of
-    Just minion | Just card <- Minion.minionFacedownCard (toAttrs minion) -> do
-      let a = toAttrs minion
-          owner = fromMaybe (minionEngagedIdentity a) (pcOwner card)
-          controller = fromMaybe owner (pcController card)
-          ally = createAlly controller card
-          aid = toId ally
-      for_ (minionUpgrades a) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
-      for_ (minionAttachments a) $ \at -> attachmentStep at (AttachmentHostBecameAlly aid)
-      for_ (Minion.minionHeldCards a) discardCard
-      minionDisengages (minionEngagedIdentity a) mid
-      -- This is still the same physical card in play. Its facedown treacheries
-      -- remain attached, rather than being discarded by the change of allegiance.
-      for_ (Minion.minionHeldTreacheries a) (allyStep aid . AllyHoldsTreachery)
-      allyStep aid (AllyOwnedBy owner)
-      allyStep aid (AllySetDamage $ Minion.minionDamage a)
-      for_ [(Minion.minionStunned a, StunnedStatus), (Minion.minionConfused a, ConfusedStatus), (Minion.minionTough a, ToughStatus)] \(on, s) ->
-        when on $ push $ GiveStatus (AllyRef aid) s
+  TakeControlOfMinion controller mid -> case lookup mid (gameMinions g) of
+    Nothing -> pure g
+    Just minion -> do
+      let m = toAttrs minion
+          aid = AllyId $ unMinionId mid
+          printed = Minion.minionCardDef m
+          def = printed {cdCardType = AllyType, cdKeywords = mempty,
+            cdTraits = HashSet.insert Controlled (cdTraits printed)}
+          base = toAttrs $ lookupAlly "xcontrolledminion" controller aid
+          a = base
+            { Ally.allyCardDef = def
+            , Ally.allyExhausted = Minion.minionExhausted m
+            , Ally.allyOwner = case toCard minion of
+                PlayerCard card -> fromMaybe controller (pcOwner card)
+                EncounterCard _ -> controller
+            , Ally.allyDamage = Minion.minionDamage m
+            , Ally.allyHitPoints = Minion.minionHitPoints m
+            , Ally.allyThwart = Thw $ unSch $ Minion.minionScheme m
+            , Ally.allyAttack = Minion.minionAttack m
+            , Ally.allyAdditionalStun = Minion.minionAdditionalStun m
+            , Ally.allyAdditionalConfuse = Minion.minionAdditionalConfuse m
+            , Ally.allyAdditionalTough = Minion.minionAdditionalTough m
+            , Ally.allyStunned = Minion.minionStunned m
+            , Ally.allyConfused = Minion.minionConfused m
+            , Ally.allyTough = Minion.minionTough m
+            , Ally.allyUpgrades = minionUpgrades m
+            , Ally.allyHeldCards = Minion.minionHeldCards m
+            , Ally.allyHeldTreacheries = Minion.minionHeldTreacheries m
+            , Ally.allyOriginalCard = Just $ toCard minion
+            , Ally.allyOriginalMinion = Just $ toJSON minion
+            }
+      cancelEnemyActivation mid
+      for_ (minionUpgrades m) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
+      for_ (minionAttachments m) $ \at -> attachmentStep at (AttachmentHostBecameAlly aid)
+      minionDisengages (minionEngagedIdentity m) mid
       identityStep controller (AllyCreated aid)
-      pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
+      pure $ g & (entitiesL . minionsL %~ deleteMap mid)
+        & (entitiesL . alliesL %~ insertMap aid (Ally.Ally $ ControlledMinion a))
+  RestoreControlledMinion aid -> case lookup aid (gameAllies g) of
+    Just ally | Just original <- Ally.allyOriginalMinion (toAttrs ally) -> case fromJSON original of
+      Error err -> error $ "invalid controlled minion snapshot: " <> err
+      Success (minion :: Minion) -> do
+        let a = toAttrs ally
+            mid = MinionId $ unAllyId aid
+            controller = getAllyController ally
+            attachments = HashSet.fromList [toId at | at <- HashMap.elems (gameAttachments g),
+              Attachment.attachmentAlly (toAttrs at) == Just aid]
+            restored = overMinion (\m -> m
+              { Minion.minionExhausted = Ally.allyExhausted a
+              , Minion.minionDamage = Ally.allyDamage a
+              , Minion.minionAdditionalStun = Ally.allyAdditionalStun a
+              , Minion.minionAdditionalConfuse = Ally.allyAdditionalConfuse a
+              , Minion.minionAdditionalTough = Ally.allyAdditionalTough a
+              , Minion.minionStunned = Ally.allyStunned a
+              , Minion.minionConfused = Ally.allyConfused a
+              , Minion.minionTough = Ally.allyTough a
+              , Minion.minionUpgrades = allyUpgrades a
+              , Minion.minionAttachments = attachments
+              , Minion.minionHeldCards = Ally.allyHeldCards a
+              , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
+              , Minion.minionEngagedIdentity = controller
+              }) minion
+        for_ (allyUpgrades a) $ \uid -> upgradeStep uid (UpgradeHostBecameMinion mid)
+        for_ attachments $ \at -> attachmentStep at (AttachmentHostBecameMinion mid)
+        identityStep controller (AllyRemoved aid)
+        -- Losing ally-only hit points can defeat it before engagement resolves.
+        -- A surviving restored minion engages normally, including quickstrike,
+        -- without entering play or resolving When Revealed again.
+        identityStep controller (MinionEngaged mid)
+        minionStep mid MinionCheckHitPoints
+        engageMinionIfInPlay mid controller
+        pure $ g & (entitiesL . alliesL %~ deleteMap aid)
+          & (entitiesL . minionsL %~ insertMap mid restored)
     _ -> pure g
+  CardSpecific GameRef "engageMinionIfInPlay" (fromJSON -> Success (mid, you)) -> do
+    when (HashMap.member mid $ gameMinions g) $ engageMinion mid you
+    pure g
+  MinionBecomesAlly mid -> do
+    controls <- filterM (fmap not . isBlanked)
+      [u | u <- HashMap.elems (gameUpgrades g), toCardCode (getCardDef u) == "34009",
+        upgradeAttachedEnemy (toAttrs u) == Just (EnemyMinionId mid)]
+    case controls of
+      control : _ -> g <$ takeControlOfMinion (getUpgradeController control) mid
+      [] -> case lookup mid (gameMinions g) of
+        Just minion | Just card <- Minion.minionFacedownCard (toAttrs minion) -> do
+          let a = toAttrs minion
+              owner = fromMaybe (minionEngagedIdentity a) (pcOwner card)
+              controller = fromMaybe owner (pcController card)
+              ally = createAlly controller card
+              aid = toId ally
+          for_ (minionUpgrades a) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
+          for_ (minionAttachments a) removeFromPlay
+          for_ (Minion.minionHeldCards a) discardCard
+          minionDisengages (minionEngagedIdentity a) mid
+          -- This is still the same physical card in play. Its facedown treacheries
+          -- remain attached, rather than being discarded by the change of allegiance.
+          for_ (Minion.minionHeldTreacheries a) (allyStep aid . AllyHoldsTreachery)
+          allyStep aid (AllyOwnedBy owner)
+          when (Minion.minionExhausted a) $ exhaust aid
+          allyStep aid (AllySetDamage $ Minion.minionDamage a)
+          for_ [(Minion.minionStunned a, StunnedStatus), (Minion.minionConfused a, ConfusedStatus), (Minion.minionTough a, ToughStatus)] \(on, s) ->
+            when on $ push $ GiveStatus (AllyRef aid) s
+          identityStep controller (AllyCreated aid)
+          pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
+        _ -> pure g
   EndCheckWindows -> pure g
   EntersPlayUnlessUnique ident revealed target rest -> do
     let def = case target of
@@ -2283,6 +2371,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   GameOver status -> do
     clearQueue
     pure $ g & stateL .~ Finished status
+  ReturnToHand target@(AllyRef aid)
+    | Just ally <- lookup aid (gameAllies g), EncounterCard _ <- toCard ally ->
+      g <$ removeFromPlay target
   -- A player card treated as a minion still returns to its owner's hand. Remove
   -- its entity before discarding its attachments so their expiring type changes
   -- cannot recreate an ally that has already left play.
@@ -2318,7 +2409,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
           for_ (Ally.allyHeldTreacheries $ toAttrs ally) discardCard
           identityStep controller (AllyRemoved aid)
-          addToHand owner $ MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
+          let card = case Ally.allyOriginalCard (toAttrs ally) of
+                Just (PlayerCard original) -> original {pcController = Just owner}
+                _ -> MkPlayerCard (CardId $ unAllyId aid) (getCardDef ally) (Just owner) (Just owner)
+          addToHand owner card
         pure $ g & (entitiesL . alliesL %~ deleteMap aid)
           & (removedEntitiesL . alliesL %~ maybe id (insertMap aid) (lookup aid $ gameAllies g))
     SupportRef sid | maybe False (elem Permanent . cdKeywords . supportCardDef . toAttrs) (lookup sid $ gameSupports g) -> pure g
@@ -5047,6 +5141,7 @@ allyAsMinion ident card a = overMinion become $ lookupMinion "xallyminion" ident
       , Minion.minionScheme = Sch (unThw $ Ally.allyThwart a)
       , Minion.minionAttack = Ally.allyAttack a
       , Minion.minionHitPoints = Ally.allyHitPoints a
+      , Minion.minionExhausted = Ally.allyExhausted a
       , Minion.minionDamage = Ally.allyDamage a
       , Minion.minionFacedownCard = Just card
       , Minion.minionUpgrades = allyUpgrades a
@@ -5335,6 +5430,11 @@ modifyEnemyAttack enemy f g = case enemy of
   EnemyVillainId vid -> g & entitiesL . villainsL . ix vid %~ (\(Villain.Villain v) -> Villain.Villain $ Villain.overVillainAttrs (\a -> a {Villain.villainAttacking = f <$> Villain.villainAttacking a}) v)
   EnemyMinionId mid -> g & entitiesL . minionsL . ix mid %~ Minion.overMinion (\a -> a {Minion.minionAttacking = f <$> Minion.minionAttacking a})
 
+getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
+getEnemyPrintedScheme enemy = getsGame $ \g -> case enemy of
+  EnemyVillainId vid -> maybe 0 (unSch . Villain.villainScheme . toAttrs) (lookup vid $ gameVillains g)
+  EnemyMinionId mid -> maybe 0 (unSch . Minion.minionScheme . toAttrs) (lookup mid $ gameMinions g)
+
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
 getEnemyScheme enemy = case enemy of
   EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure 0) (Minion.getModifiedScheme . toAttrs)
@@ -5400,6 +5500,33 @@ usesAttackForDefense you enemy = getsGame $ \g ->
         EnemyVillainId vid -> lookup vid (gameVillains g) >>= villainAttackDetails
         EnemyMinionId mid -> lookup mid (gameMinions g) >>= minionAttackDetails
    in maybe False (\a -> attackCharacter a == IdentityCharacter you && attackUsesAttackForDefense a == Just you) details
+
+canMoveSchemeThreatFrom :: (HasGame m, IsRef source) => source -> SchemeId -> m Bool
+canMoveSchemeThreatFrom source scheme = do
+  exists <- not . null <$> selectList (SchemeWithId scheme)
+  modifiers <- getModifiers (schemeRef scheme)
+  controller <- getSourceController (toSource source)
+  let allowedByController = all (\case
+        ThreatRemovableOnlyBy who -> maybe True (== who) controller
+        _ -> True) modifiers
+  blockedByCrisis <- case scheme of
+    SchemeMainSchemeId sid -> do
+      crisis <- hasCrisisInYourArea
+      restricted <- isRestrictedMainScheme sid
+      ownIgnores <- elem IgnoresCrisis <$> getModifiers source
+      inheritedIgnores <- case toSource source of
+        AllyRef _ -> pure False
+        _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
+      let playerCard = case toSource source of
+            IdentityRef _ -> True
+            AllyRef _ -> True
+            EventRef _ -> True
+            SupportRef _ -> True
+            UpgradeRef _ -> True
+            _ -> False
+      pure $ crisis && restricted && playerCard && not (ownIgnores || inheritedIgnores)
+    _ -> pure False
+  pure $ exists && ThreatCannotBeRemoved `notElem` modifiers && allowedByController && not blockedByCrisis
 
 -- | Resolving a Special needs a potential game effect (RR Resolve). Blanking an
 -- already blank non-Elite minion still establishes a new lasting effect.

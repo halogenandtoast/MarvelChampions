@@ -1151,6 +1151,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       when (damage > 0) $
         case attackThreatRemoval attack' of
           Just you -> removeThreat you (attackSource attack') damage MainScheme
+          Nothing | Just enemy <- attackDamageRedirect attack' -> dealDamage enemy (attackSource attack') ((attackDamageTo attack' damage) {damageOverkill = attackOverkill attack'})
           Nothing | not (attackDefended attack'), Just aid <- senator -> damageCharacter aid (attackSource attack') (attackDamageTo attack' damage)
           Nothing -> if attackDividedEvenly attack'
             then divideAttackDamage playerIdentityId (attackSource attack') ((attackDamageTo attack' damage) {damageOverkill = attackOverkill attack'})
@@ -1426,7 +1427,8 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
           damage = playerIdentityDamage attrs
       when (HashSet.member upgradeId (playerIdentityUpgrades attrs) && not (playerIdentityDefeated attrs) && damage > 0) do
         modifiedHp <- getModifiedHp pid
-        when (damage >= modifiedHp) $
+        pending <- isQueued (== IdentityMessage ident IdentityDefeated)
+        when (damage >= modifiedHp && not pending) $
           defeatIdentity ident
       -- its restricted limit may have dropped (Side Holster)
       when (HashSet.member upgradeId (playerIdentityUpgrades attrs) && not (playerIdentityDefeated attrs)) $

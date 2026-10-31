@@ -16,6 +16,7 @@ data UpgradeMessage
     PlayedUpgrade (Maybe Target)
   | UpgradeControlledByPlayer IdentityId
   | UpgradeAttachedToEnemy EnemyId
+  | UpgradeAttachedToIdentity IdentityId
   | UpgradeAttachedToAlly AllyId
   | -- | Same physical host, now treated as a minion; preserve its ally-reference alias.
     UpgradeHostBecameMinion MinionId

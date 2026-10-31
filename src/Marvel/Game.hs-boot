@@ -323,4 +323,8 @@ getAttachmentIdentity :: (HasGame m) => AttachmentId -> m (Maybe IdentityId)
 
 usesAttackForDefense :: HasGame m => IdentityId -> EnemyId -> m Bool
 
+getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
+
+canMoveSchemeThreatFrom :: (HasGame m, IsRef source) => source -> SchemeId -> m Bool
+
 weatherSpecialCanResolve :: (HasGame m) => IdentityId -> SupportId -> m Bool

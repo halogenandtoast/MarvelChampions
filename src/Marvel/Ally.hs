@@ -6,6 +6,7 @@ module Marvel.Ally
 
 import Marvel.Ally.Allies.MutantGenesisCampaign
 import Marvel.Prelude
+import Data.Aeson.Types (Parser)
 
 import Marvel.Ally.Allies
 import Marvel.Ally.Types
@@ -15,7 +16,8 @@ import Marvel.Id
 instance FromJSON Ally where
   parseJSON = withObject "Ally" $ \o -> do
     cardDef <- o .: "allyCardDef"
-    withAllyCardCode (cdCardCode cardDef)
+    originalMinion <- o .:? "allyOriginalMinion" :: Parser (Maybe Value)
+    withAllyCardCode (if isJust originalMinion then "xcontrolledminion" else cdCardCode cardDef)
       $ \(_ :: AllyCard a) -> Ally <$> parseJSON @a (Object o)
 
 withAllyCardCode :: CardCode -> (forall a . IsAlly a => AllyCard a -> r) -> r
@@ -226,4 +228,5 @@ allAllies = fromList $ map
   , SomeAllyCard wolverine
   , SomeAllyCard magik
   , SomeAllyCard colossusPiotrRasputin
+  , SomeAllyCard controlledMinion
   ]

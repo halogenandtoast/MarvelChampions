@@ -293,6 +293,12 @@ windowMatches matcher w source = case matcher of
   IdentityDiscardsTough timing identityMatcher -> case windowType w of
     IdentityDiscardedTough ident | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
+  UpgradeLosesLastCounter timing upgradeMatcher -> case windowType w of
+    UpgradeCounterAmountChanged uid old new | windowTiming w == timing, old > 0, new == 0 -> upgradeMatches upgradeMatcher uid
+    _ -> pure False
+  UpgradeCountersPlaced timing upgradeMatcher -> case windowType w of
+    UpgradeCounterAmountChanged uid old new | windowTiming w == timing, new > old -> upgradeMatches upgradeMatcher uid
+    _ -> pure False
   MassFormChangedTo timing upgradeMatcher -> case windowType w of
     MassFormChanged _ upgradeId
       | windowTiming w == timing -> upgradeMatches upgradeMatcher upgradeId

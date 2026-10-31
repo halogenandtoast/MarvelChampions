@@ -42,6 +42,7 @@ data Cost
     DiscardRandomHandCardsCost Natural
   | -- | discard matching cards at random from the payer's hand
     DiscardRandomHandCardsMatchingCost Natural CardMatcher
+  | CountersFromUpgradeCost UpgradeMatcher Natural
   | UseCost
   | NoCost
   | -- | as many resources, each of a different type
@@ -188,6 +189,7 @@ costResources (DamageCharacterCost _ _) = []
 costResources (IndirectDamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
+costResources (CountersFromUpgradeCost _ _) = []
 costResources UseCost = []
 -- | X is at least 1
 costResources (DynamicResourceCost r) = [r]

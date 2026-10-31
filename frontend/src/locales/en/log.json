@@ -160,5 +160,9 @@
   "attachesPlayerCardToMinion": "A player card is attached to {minion}.",
   "attachesTreacheryToAlly": "A treachery is attached facedown to {ally}.",
   "changesWeather": "{player} changes the weather to {card}.",
-  "resolvesWeatherSpecial": "{player} resolves the Special ability on {card}."
+  "resolvesWeatherSpecial": "{player} resolves the Special ability on {card}.",
+  "controlledMinion": "{player} takes control of {card} as an ally",
+  "restoredMinion": "{target} is a minion again",
+  "schemeRemovesThreat": "{target}’s scheme removes threat instead of placing it",
+  "attackDamageRedirected": "Damage from {enemy}’s attack is dealt to {target} instead"
 }

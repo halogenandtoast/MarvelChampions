@@ -137,6 +137,10 @@ data Trait
   | Interface
   | Pilot
   | Spider
+  | Restrained
+  | Unleashed
+  | Phoenix
+  | Controlled
   | Weather
   | Morlock
   | XForce

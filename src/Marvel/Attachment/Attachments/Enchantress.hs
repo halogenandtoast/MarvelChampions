@@ -38,7 +38,11 @@ newtype Beguiled = Beguiled (Attrs Attachment)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor Beguiled where
-  getModifiersFor _ target (Beguiled a) = allyMinionTrait Enthralled a target
+  getBlankingModifiersFor _ (MinionRef mid) (Beguiled a) = pure [Blank | attachedAllyMinion a == Just mid]
+  getBlankingModifiersFor _ _ _ = pure []
+  getModifiersFor _ target (Beguiled a) = do
+    traits <- allyMinionTrait Enthralled a target
+    pure $ traits <> [Blank | case target of MinionRef mid -> attachedAllyMinion a == Just mid; _ -> False]
 
 -- | When Revealed: attach to the ally with the highest cost without Beguiled attached
 -- (any player's: the revealing player breaks a tie). Attached ally engages its

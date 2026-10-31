@@ -365,9 +365,8 @@ resolveChoice ident = \case
 removeThreatFrom :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
 removeThreatFrom basic thwarting target source n' = do
   -- each instance of threat the source removes may be increased, as by Shrink
-  bonus <- sourceBonus source \case
-    ThreatRemovedModifier n -> Just n
-    _ -> Nothing
+  modifiers <- getModifiers source
+  let bonus = if ThreatRemovalBonusInTotal `elem` modifiers then 0 else sum [n | ThreatRemovedModifier n <- modifiers]
   let n = n' + bonus
       side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
       main mid = MainSchemeMessage mid $ if basic then MainSchemeBasicThwarted source n else if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n

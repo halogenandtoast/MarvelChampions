@@ -3,6 +3,7 @@ module Marvel.Upgrade.Types where
 import Marvel.Prelude
 
 import Data.Typeable
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Ability (limitedWindowAbility)
 import Marvel.Ability.Types
 import Marvel.Cost.Types (Cost (NoCost))
@@ -54,6 +55,7 @@ instance Entity Upgrade where
     , upgradeController :: IdentityId
     , upgradeExhausted :: Bool
     , upgradeAttachedEnemy :: Maybe EnemyId
+    , upgradeAttachedIdentity :: Maybe IdentityId
     , upgradeAttachedAlly :: Maybe AllyId
     , upgradeAttachedSideScheme :: Maybe SideSchemeId
     , upgradeAttachedMainScheme :: Maybe MainSchemeId
@@ -68,7 +70,7 @@ instance Entity Upgrade where
     -- ^ facedown, out of play for its text (Spectrum's energy forms)
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Upgrade :: Type -> Type where
     UpgradeId :: Field Upgrade UpgradeId
     UpgradeCardDef :: Field Upgrade CardDef
@@ -205,6 +207,7 @@ upgrade f cardDef =
             , upgradeController = ident
             , upgradeExhausted = False
             , upgradeAttachedEnemy = Nothing
+            , upgradeAttachedIdentity = Nothing
             , upgradeAttachedAlly = Nothing
             , upgradeAttachedSideScheme = Nothing
             , upgradeAttachedMainScheme = Nothing
@@ -267,7 +270,7 @@ instance RunMessage (Attrs Upgrade) where
       when (upgradeUses a > 0 && n >= upgradeUses a && upgradeDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      UpgradeDetached -> pure a {upgradeAttachedEnemy = Nothing, upgradeAttachedAlly = Nothing,
+      UpgradeDetached -> pure a {upgradeAttachedEnemy = Nothing, upgradeAttachedIdentity = Nothing, upgradeAttachedAlly = Nothing,
         upgradeAttachedSideScheme = Nothing, upgradeAttachedMainScheme = Nothing}
       PlayedUpgrade mTarget -> do
         case mTarget of
@@ -310,6 +313,7 @@ instance RunMessage (Attrs Upgrade) where
       UpgradeAttachedToEnemy enemyId -> do
         upgradeAttachedTo enemyId (upgradeId a)
         pure $ a & attachedEnemyL ?~ enemyId
+      UpgradeAttachedToIdentity you -> pure a {upgradeAttachedIdentity = Just you}
       UpgradeAttachedToAlly allyId -> do
         hostController <- fromMaybe (upgradeController a) <$> getSourceController (AllyRef allyId)
         when (hostController /= upgradeController a) $ upgradeControlLost (upgradeController a) (upgradeId a)
@@ -348,3 +352,6 @@ instance RunMessage (Attrs Upgrade) where
       ReturnToHand target -> Just target
       AddToVictoryDisplay target -> Just target
       _ -> Nothing
+
+instance FromJSON (Attrs Upgrade) where
+  parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ old -> old) "upgradeAttachedIdentity" (toJSON (Nothing :: Maybe IdentityId)) o)

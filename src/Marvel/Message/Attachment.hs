@@ -15,5 +15,7 @@ data AttachmentMessage
     AttachedToMainScheme MainSchemeId
   | -- | attached to a player's ally (Ebony Maw's Restrained)
     AttachedToAlly AllyId
+  | AttachmentHostBecameAlly AllyId
+  | AttachmentHostBecameMinion MinionId
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

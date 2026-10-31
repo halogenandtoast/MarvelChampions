@@ -23,6 +23,7 @@ import Marvel.Deck
 import Marvel.Discard
 import Marvel.Hand
 import Marvel.Game.Source
+import Marvel.GameValue.Types (GameValue (Static))
 import Marvel.I18n (ikeyWith, intVar)
 import Marvel.Id (CharacterId (..), IdentityId, MinionId (..))
 import Marvel.Identity.Types
@@ -37,8 +38,9 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
-import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
+import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
+import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
 import Marvel.Window (windowMatches)
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility, GeneratedResources))
 
@@ -156,6 +158,9 @@ payCostPartAs contributing activeCost cost = do
         AllyRef _ -> removeFromPlay target
         _ -> error "Unhandled"
       paid $ DiscardPayment target
+    CountersFromUpgradeCost matcher n -> do
+      upgrades <- selectList (matcher <> upgradeControlledBy iid <> UpgradeWithUses (AtLeast $ Static $ fromIntegral n))
+      oneOf upgrades (\u -> removeCounters u n >> paid (CountersPayment n))
     UseCost -> case activeCostTarget activeCost of
       ForAbility a -> do
         case abilitySource a of
@@ -831,6 +836,7 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       case activeCostTarget activeCost of
         ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card -> do
           mutantEnergySpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
+          passionForJusticeSpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
         _ -> pure ()
       disableActiveCost ident
       case activeCostTarget activeCost of

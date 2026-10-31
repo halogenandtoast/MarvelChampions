@@ -130,6 +130,9 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyOwner = ident
             , allyHitPoints = hp
             , allyExhausted = False
+            , allyAdditionalStun = False
+            , allyAdditionalConfuse = False
+            , allyAdditionalTough = 0
             , allyStunned = False
             , allyConfused = False
             , allyTough = False
@@ -139,6 +142,8 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyPaidWith = NoPayment
             , allyHeldTreacheries = []
             , allyHeldCards = []
+            , allyOriginalCard = Nothing
+            , allyOriginalMinion = Nothing
             }
     }
 
@@ -185,6 +190,7 @@ getModifiedThwart attrs = do
     unThw (allyThwart attrs) + sum [n | ThwartModifier n <- modifiers]
 
 instance IsCard (Attrs Ally) where
+  toCard a | Just card <- allyOriginalCard a = card
   toCard a =
     PlayerCard $
       MkPlayerCard
@@ -211,6 +217,9 @@ instance Entity Ally where
     , allyExhausted :: Bool
     , allyCounters :: Natural
     , allyUpgrades :: HashSet UpgradeId
+    , allyAdditionalStun :: Bool
+    , allyAdditionalConfuse :: Bool
+    , allyAdditionalTough :: Natural
     , allyStunned :: Bool
     , allyConfused :: Bool
     , allyTough :: Bool
@@ -219,6 +228,10 @@ instance Entity Ally where
     , allyHeldTreacheries :: [EncounterCard]
     , allyHeldCards :: [PlayerCard]
     -- ^ facedown events playable from here while this ally is not blank
+    , allyOriginalCard :: Maybe Card
+    -- ^ physical provenance while an encounter minion is treated as an ally
+    , allyOriginalMinion :: Maybe Value
+    -- ^ original entity for restoring its printed behavior when control ends
     , allyPaidWith :: Payment
     -- ^ what was paid to play it, for "if you paid for this card using …"
     }
@@ -298,4 +311,4 @@ instance HasModifiersFor Ally where
 -- Saved games from before allies could hold events have no attached cards.
 instance FromJSON (Attrs Ally) where
   parseJSON = withObject "AllyAttrs" $ \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("allyHeldCards", toJSON ([] :: [PlayerCard])), ("allyHeldTreacheries", toJSON ([] :: [EncounterCard]))])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("allyAdditionalStun", toJSON False), ("allyAdditionalConfuse", toJSON False), ("allyAdditionalTough", toJSON (0 :: Natural)), ("allyOriginalCard", toJSON (Nothing :: Maybe Card)), ("allyOriginalMinion", toJSON (Nothing :: Maybe Value)), ("allyHeldCards", toJSON ([] :: [PlayerCard])), ("allyHeldTreacheries", toJSON ([] :: [EncounterCard]))])

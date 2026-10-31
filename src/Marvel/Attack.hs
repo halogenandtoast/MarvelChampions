@@ -31,6 +31,7 @@ data Attack = Attack
   -- is assigned among the characters the attacked player controls (RR Indirect Damage)
   , attackChange :: Int
   -- ^ "gets +X/-X ATK for that attack", applied after its boost icons
+  , attackDamageRedirect :: Maybe EnemyId
   , attackTarget :: Maybe CharacterId
   -- ^ the character it was against before a defender was declared
   }
@@ -40,7 +41,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBaseReduction", toJSON (0 :: Natural)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -86,6 +87,7 @@ attack enemyId characterId dmg =
     , attackDividedEvenly = False
     , attackIndirect = False
     , attackChange = 0
+    , attackDamageRedirect = Nothing
     , attackTarget = Nothing
     }
 
@@ -137,6 +139,7 @@ keepingGains (Just old) a =
     , attackThreatRemoval = attackThreatRemoval old <|> attackThreatRemoval a
     , attackDefended = attackDefended a || attackDefended old
     , attackCharacter = if attackDefended old then attackCharacter old else attackCharacter a
+    , attackDamageRedirect = attackDamageRedirect old <|> attackDamageRedirect a
     , attackTarget = attackTarget old <|> attackTarget a
     , attackChange = attackChange a + attackChange old
     }

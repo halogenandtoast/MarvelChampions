@@ -41,9 +41,10 @@ import Marvel.Choice qualified as Choice
 import Marvel.Damage
 import Marvel.Exception (NoChoices (..))
 import Marvel.Game.Source
+import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay))
+import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -55,7 +56,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged))
-import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
+import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage, isQueued)
 import Marvel.Ref
 import Marvel.Resource.Types (Resource)
 import Marvel.Trait.Types (Trait (Weather))
@@ -378,6 +379,10 @@ basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme 
 -- ('threatPlacement'): what an interrupt to that window places in its stead.
 placeThreatWithoutWindow :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreatWithoutWindow scheme = push . threatPlacement (toScheme scheme)
+
+-- | A prescribed scheme is thwarted by the given player, without a target question.
+thwartSchemeAs :: (ReverseQueue m, IsScheme scheme, IsRef source) => IdentityId -> scheme -> source -> Natural -> m ()
+thwartSchemeAs you scheme source n = resolveAs you $ ThwartScheme (SchemeRef $ toScheme scheme) (toSource source) n
 
 -- | Threat removed by thwarting, divided among the schemes matching as the player
 -- chooses: assigned a point at a time, none past a scheme's threat, then each scheme
@@ -942,6 +947,14 @@ allyBecomesMinion = push . AllyBecomesMinion
 -- | The minion an ally was treated as is its owner's ally again.
 minionBecomesAlly :: (ReverseQueue m) => MinionId -> m ()
 minionBecomesAlly = push . MinionBecomesAlly
+
+-- | Treat a minion as a controlled ally without leaving play.
+takeControlOfMinion :: (ReverseQueue m) => IdentityId -> MinionId -> m ()
+takeControlOfMinion you = push . TakeControlOfMinion you
+
+-- | Restore the minion when its continuous control effect ends.
+restoreControlledMinion :: (ReverseQueue m) => AllyId -> m ()
+restoreControlledMinion = push . RestoreControlledMinion
 
 -- | Whether the minion is about to leave play: its defeat, discard or removal queued
 -- (its attachments leave first as it is defeated).
@@ -1983,6 +1996,28 @@ pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMe
 pendingDamage :: (HasQueue m) => IdentityId -> m (Maybe Damage)
 pendingDamage ident = withQueue \q -> (q, headMay [d | IdentityMessage i (IdentityDamaged _ d) <- q, i == ident])
 
+-- | The next attack damage pending against a character, after earlier prevention.
+pendingAttackDamage :: (HasQueue m, IsRef character) => character -> m Natural
+pendingAttackDamage host = withQueue $ \queue -> (queue, fromMaybe 0 $ headMay $ mapMaybe amount $ concatMap nested queue)
+ where
+  nested msg = msg : maybe [] (concatMap nested) (simultaneousMessages msg)
+  amount msg = case (toTarget host, msg) of
+    (IdentityRef ident, IdentityMessage who (IdentityDamaged _ damage)) | ident == who, fromAttack damage -> Just $ damageAmount damage
+    (AllyRef aid, AllyMessage who (AllyDamaged _ damage)) | aid == who, fromAttack damage -> Just $ damageAmount damage
+    (CharacterRef (IdentityCharacter ident), _) -> amountFor (IdentityRef ident) msg
+    (CharacterRef (AllyCharacter aid), _) -> amountFor (AllyRef aid) msg
+    _ -> Nothing
+  amountFor target msg = case (target, msg) of
+    (IdentityRef ident, IdentityMessage who (IdentityDamaged _ damage)) | ident == who, fromAttack damage -> Just $ damageAmount damage
+    (AllyRef aid, AllyMessage who (AllyDamaged _ damage)) | aid == who, fromAttack damage -> Just $ damageAmount damage
+    _ -> Nothing
+  fromAttack damage = case damageSource damage of
+    FromAttack -> True
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    FromOverkill -> True
+    _ -> False
+
 -- | All of the damage the identity is about to take is cancelled.
 cancelDamage :: (HasQueue m) => IdentityId -> m ()
 cancelDamage ident = cancelMatchingMessage \case
@@ -2343,3 +2378,76 @@ counterTarget a = case toTarget a of
   EnemyRef enemy -> enemyRef enemy
   CharacterRef character -> characterRef character
   target -> target
+
+-- Phoenix Force's power counters use the existing persistent upgrade counters.
+phoenixForceFor :: HasGame m => IdentityId -> m (Maybe UpgradeId)
+phoenixForceFor you = selectOne (UpgradeNamed "Phoenix Force" <> UpgradeControlledBy (IdentityWithId you))
+
+addPhoenixPower :: ReverseQueue m => IdentityId -> Natural -> m ()
+addPhoenixPower you n = phoenixForceFor you >>= traverse_ (\uid -> addUpgradeUses uid n)
+
+removePhoenixPower :: ReverseQueue m => IdentityId -> Natural -> m ()
+removePhoenixPower you n = phoenixForceFor you >>= traverse_ (\uid -> removeCounters uid n)
+
+removeAllPhoenixPower :: ReverseQueue m => IdentityId -> m ()
+removeAllPhoenixPower you = do
+  force <- phoenixForceFor you
+  for_ force \uid -> getCountersOn (UpgradeRef uid) >>= removeCounters uid
+
+putPhoenixForceIntoPlay :: ReverseQueue m => IdentityId -> m ()
+putPhoenixForceIntoPlay you = do
+  cards <- filter (\c -> toCardCode c == "34002a" && pcOwner c == Just you) <$> getSetAsidePlayerCards
+  for_ cards \c -> do
+    removeFromGame (CardIdRef $ pcCardId c)
+    putIntoPlay you c
+    addUpgradeUses (UpgradeId $ unCardId $ pcCardId c) 4
+
+villainSchemeRemovesThreat :: (ReverseQueue m, IsRef source) => VillainId -> IdentityId -> source -> m ()
+villainSchemeRemovesThreat vid you source = villainStep vid (VillainSchemeRemovesThreat you $ toSource source)
+
+redirectAttackDamage :: (ReverseQueue m, IsEnemy enemy, IsEnemy other) => enemy -> other -> m ()
+redirectAttackDamage enemy other = case toEnemy enemy of
+  EnemyVillainId vid -> villainStep vid (VillainAttackDamageRedirected $ toEnemy other)
+  EnemyMinionId mid -> minionStep mid (MinionAttackDamageRedirected $ toEnemy other)
+
+minionSchemesAgainst :: ReverseQueue m => MinionId -> IdentityId -> m ()
+minionSchemesAgainst mid = minionStep mid . MinionSchemesAgainst
+
+searchEverywhereAndRevealEncounterCard :: ReverseQueue m => IdentityId -> CardMatcher -> m ()
+searchEverywhereAndRevealEncounterCard you = push . SearchEverywhereAndRevealEncounterCard you
+
+-- | Moving threat removes exactly the moved amount without thwarting, then places
+-- that amount through the ordinary placement window (RR Move). It cannot duplicate
+-- threat when removal is prohibited, and removal bonuses never increase a move.
+
+moveSchemeThreat :: (ReverseQueue m, IsRef source) => source -> SchemeId -> SchemeId -> Natural -> m ()
+moveSchemeThreat source from to n = when (from /= to && n > 0) do
+  removable <- canMoveSchemeThreatFrom source from
+  destinationExists <- not . null <$> selectList (SchemeWithId to)
+  when (removable && destinationExists) do
+    available <- selectCount Matchers.SchemeThreat (SchemeWithId from)
+    let amount = min n available
+    when (amount > 0) do
+      case from of
+        SchemeMainSchemeId sid -> mainSchemeStep sid (MainSchemeThreatRemoved (toSource source) amount)
+        SchemeSideSchemeId sid -> sideSchemeStep sid (SideSchemeThreatRemoved (toSource source) amount)
+      placeThreat to amount
+
+-- The replacement is resolved as the scheme resolves; retain the event, its thwart
+-- context and resource effects until the resulting removal has finished.
+deferEventResolutionUntilScheme :: ReverseQueue m => EventId -> VillainId -> m ()
+deferEventResolutionUntilScheme eid vid = withQueue_ $ \queue ->
+  let completion = filter isCompletion queue
+      rest = filter (not . isCompletion) queue
+      insertAfter [] = completion
+      insertAfter (msg : msgs)
+        | msg == VillainMessage vid VillainSchemed = msg : completion <> msgs
+        | otherwise = msg : insertAfter msgs
+   in insertAfter rest
+ where
+  isCompletion (EventMessage target ResolvedEvent) = target == eid
+  isCompletion (CheckWindows [Window After (W.EventPlayed _ target _)]) = target == eid
+  isCompletion _ = False
+
+engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
+engageMinionIfInPlay minion you = cardSpecific GameRef "engageMinionIfInPlay" (minion, you)

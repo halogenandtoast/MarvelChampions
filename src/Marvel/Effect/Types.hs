@@ -140,6 +140,7 @@ effectValidFor e target = case (target, effectMatcher e) of
   (MinionRef mid, VillainsAndEngagedMinions you) -> selectAny (MinionWithId mid <> MinionEngagedWith (IdentityWithId you))
   (MinionRef ident, MinionEntity matcher) -> selectAny (MinionWithId ident <> matcher)
   (AllyRef ident, AllyEntity matcher) -> selectAny (AllyWithId ident <> matcher)
+  (UpgradeRef ident, UpgradeEntity matcher) -> selectAny (UpgradeWithId ident <> matcher)
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
   (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'
   (AttachmentRef ident, AttachmentEntity matcher) -> selectAny (AttachmentWithId ident <> matcher)

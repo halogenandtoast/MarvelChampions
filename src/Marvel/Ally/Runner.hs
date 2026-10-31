@@ -77,7 +77,7 @@ instance RunMessage (Attrs Ally) where
       AllyStunned -> do
         pure $ a & stunnedL .~ True
       AllyAttacked -> if allyStunned a
-        then pure $ a & stunnedL .~ False
+        then pure $ a {allyAdditionalStun = False} & stunnedL .~ False
         else do
           enemies <- selectList $ AttackableByAlly $ allyId a
           -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally, or
@@ -189,7 +189,7 @@ instance RunMessage (Attrs Ally) where
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyThwarted -> if allyConfused a
-        then pure $ a & confusedL .~ False
+        then pure $ a {allyAdditionalConfuse = False} & confusedL .~ False
         else do
           -- "ignore any crisis icons in play" as it thwarts (Fandral)
           ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
@@ -264,7 +264,7 @@ instance RunMessage (Attrs Ally) where
         immune <- cannotTakeDamageFrom (AllyRef ident) source
         if immune then pure a
         else if allyTough a && preventedByTough damage
-          then pure $ a & toughL .~ False
+          then pure $ removeOneAllyStatus ToughStatus a
           else do
             hitPoints <- getModifiedHitPoints a
             attackDealtDamageTo source damage ident
@@ -276,7 +276,7 @@ instance RunMessage (Attrs Ally) where
               let excess = subtractNatural hitPoints (damageAmount damage + allyDamage a)
               when (excess > 0) $ damageIdentity (allyController a) source (toDamage excess FromOverkill)
             when (damageAmount damage > 0) $ checkWindows [W.Window W.After $ W.AllyTookDamage ident source damage]
-            pure $ a & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))
+            pure $ (if piercesTough damage then a {allyTough = False, allyAdditionalTough = 0} else a) & damageL +~ damageAmount damage
       AllyDefeated -> defeated Nothing
       AllyDefeatedByAttack enemy -> defeated (Just enemy)
       SpendAllyUse -> pure $ a & countersL -~ 1
@@ -315,7 +315,7 @@ instance RunMessage (Attrs Ally) where
       selectOne FirstPlayer >>= traverse_ \first -> when (first /= allyController a) do
         allyStep (allyId a) (AllyChangedController first)
       pure a
-    RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ False
+    RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ removeOneAllyStatus s a
     _ -> pure a
    where
     -- once the game has seen to the player order
@@ -331,3 +331,15 @@ instance RunMessage (Attrs Ally) where
       removeFromPlay a
       checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
       pure a
+
+-- | Removing one physical status preserves another held through a type change.
+removeOneAllyStatus :: StatusCard -> Attrs Ally -> Attrs Ally
+removeOneAllyStatus StunnedStatus a
+  | allyAdditionalStun a = a {allyAdditionalStun = False}
+  | otherwise = a {allyStunned = False}
+removeOneAllyStatus ConfusedStatus a
+  | allyAdditionalConfuse a = a {allyAdditionalConfuse = False}
+  | otherwise = a {allyConfused = False}
+removeOneAllyStatus ToughStatus a
+  | allyAdditionalTough a > 0 = a {allyAdditionalTough = allyAdditionalTough a - 1}
+  | otherwise = a {allyTough = False}

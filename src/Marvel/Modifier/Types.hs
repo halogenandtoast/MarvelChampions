@@ -73,6 +73,7 @@ data Modifier
   | IgnoresCrisis
   | -- | prevents all attacks/defenses, including labeled abilities (Intangible)
     CannotAttack
+  | CannotActivate
   | CannotDefend
   | -- | reduce each instance of consequential damage, to a minimum of zero
     ConsequentialDamageReduction Natural
@@ -94,6 +95,8 @@ data Modifier
   | AdditionalActivationBoostIcons Natural
   | -- | on a source: each instance of threat it removes is increased
     ThreatRemovedModifier Natural
+  | -- | a divided thwart counts its threat-removal bonuses once in the total pool
+    ThreatRemovalBonusInTotal
   | RecoveryModifier Natural
   | CannotTakeDamage
   | -- | on a character: it takes no damage from a player card, or from an effect one

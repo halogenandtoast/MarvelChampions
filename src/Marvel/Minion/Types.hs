@@ -85,6 +85,8 @@ instance Entity Minion where
     { minionId :: MinionId
     , minionCardDef :: CardDef
     , minionOriginalCardDef :: CardDef
+    , minionExhausted :: Bool
+    -- ^ physical state retained when an ally is temporarily treated as a minion
     , minionDamage :: Natural
     , minionDamageThisPhase :: Natural
     , minionHitPoints :: HP Natural
@@ -103,6 +105,7 @@ instance Entity Minion where
     , minionDefensePriority :: DefensePriority
     , minionFacedownCard :: Maybe PlayerCard
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
+    , minionActivationPlayer :: Maybe IdentityId
     , minionAttackTarget :: Maybe CharacterId
     -- ^ the character its coming attack is against, when not the player's identity
     , minionBoostCards :: [EncounterCard]
@@ -254,6 +257,7 @@ minion f cardDef sch atk hp =
             { minionId = mid
             , minionCardDef = cardDef
             , minionOriginalCardDef = cardDef
+            , minionExhausted = False
             , minionDamage = 0
             , minionDamageThisPhase = 0
             , minionAttack = atk
@@ -271,6 +275,7 @@ minion f cardDef sch atk hp =
             , minionAttachments = mempty
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
+            , minionActivationPlayer = Nothing
             , minionAttackTarget = Nothing
             , minionBoostCards = []
             , minionHeldCards = []
@@ -309,8 +314,9 @@ getModifiedKeywords attrs = do
 -- | Older saves predate the second status cards a Steady minion can hold.
 instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
-    genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-      [("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+    genericParseJSON defaultOptions $ Object $
+      KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
+      [("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

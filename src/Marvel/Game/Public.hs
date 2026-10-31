@@ -239,6 +239,9 @@ data AllyView = AllyView
   , thwart :: Natural
   , attack :: Natural
   , exhausted :: Bool
+  , stunCards :: Natural
+  , confuseCards :: Natural
+  , toughCards :: Natural
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
@@ -255,7 +258,7 @@ data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text,
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool}
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural}
   -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver); facedown,
   -- a Spectrum energy form she is not in (its owner's, not secret)
   deriving stock (Show, Generic)
@@ -297,6 +300,7 @@ data MinionView = MinionView
   , facedownCards :: Int
   , engagedWith :: IdentityId
   , hitPoints :: Natural
+  , exhausted :: Bool
   , damage :: Natural
   , scheme :: Natural
   , attack :: Natural
@@ -601,7 +605,7 @@ gameView seesHand g = do
         , allies
         , allyLimit
         , supports = [supportView s | s <- HashMap.elems (gameSupports g), toId s `HashSet.member` a.playerIdentitySupports]
-        , upgrades = upgradesOn \u -> u.upgradeController == toId p && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme && isNothing u.upgradeAttachedMainScheme
+        , upgrades = upgradesOn \u -> (u.upgradeAttachedIdentity == Just (toId p) || (u.upgradeController == toId p && isNothing u.upgradeAttachedIdentity)) && isNothing u.upgradeAttachedAlly && isNothing u.upgradeAttachedEnemy && isNothing u.upgradeAttachedSideScheme && isNothing u.upgradeAttachedMainScheme
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , obligations =
@@ -632,6 +636,9 @@ gameView seesHand g = do
         , thwart = thw
         , attack = atk
         , exhausted = a.allyExhausted
+        , stunCards = (if a.allyStunned then 1 else 0) + (if a.allyAdditionalStun then 1 else 0)
+        , confuseCards = (if a.allyConfused then 1 else 0) + (if a.allyAdditionalConfuse then 1 else 0)
+        , toughCards = (if a.allyTough then 1 else 0) + a.allyAdditionalTough
         , stunned = a.allyStunned
         , confused = a.allyConfused
         , tough = a.allyTough
@@ -645,7 +652,7 @@ gameView seesHand g = do
      in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | seesHand a.supportController, card <- a.supportHeldCards]
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted a.upgradeUses a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a == "34007" then 0 else a.upgradeUses) a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown (if toCardCode a == "34007" then a.upgradeUses else 0)
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
@@ -692,6 +699,7 @@ gameView seesHand g = do
         , facedownCards = length a.minionHeldTreacheries
         , engagedWith = a.minionEngagedIdentity
         , hitPoints = hp
+        , exhausted = a.minionExhausted
         , damage = a.minionDamage
         , scheme = sch
         , attack = maybe atk Attack.attackValue (Minion.minionAttackDetails m)

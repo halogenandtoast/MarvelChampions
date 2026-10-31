@@ -192,6 +192,7 @@ passesCriteria x a =
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers x
     PendingDamageAtLeast n -> pendingDamageAtLeast x n
+    HasOtherSchemeForThreatMovement -> hasOtherSchemeForThreatMovement
     HasOtherSchemeForThreatRemoval -> hasOtherSchemeForThreatRemoval
   source = abilitySource a
 
@@ -240,6 +241,7 @@ passesCardCriteria ident card = go
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers ident
     PendingDamageAtLeast n -> pendingDamageAtLeast ident n
+    HasOtherSchemeForThreatMovement -> hasOtherSchemeForThreatMovement
     HasOtherSchemeForThreatRemoval -> hasOtherSchemeForThreatRemoval
 
 partitionMaybes :: [Maybe a] -> ([()], [a])
@@ -360,3 +362,10 @@ pendingDamageAtLeast :: (HasQueue m) => IdentityId -> Natural -> m Bool
 pendingDamageAtLeast ident n = withQueue $ \q ->
   (q, maybe False ((>= n) . damageAmount) $ headMay
     [damage | Msg.IdentityMessage who (Msg.IdentityDamaged _ damage) <- q, who == ident])
+
+hasOtherSchemeForThreatMovement :: HasGame m => m Bool
+hasOtherSchemeForThreatMovement = do
+  windows <- getCurrentWindows
+  anyM (\case
+    Window _ (AllyThwart aid scheme) -> (&&) <$> canMoveSchemeThreatFrom aid scheme <*> selectAny (NotScheme $ SchemeWithId scheme)
+    _ -> pure False) windows

@@ -234,6 +234,7 @@ allAllies = fromList $ concatMap
   , wolverine
   , magik
   , colossusPiotrRasputin
+  , controlledMinion
   ]
 
 -- | The allies of a hero's own set, "hero-specific" (Hydra Prison takes them): neither
@@ -1197,6 +1198,12 @@ mgWolfsbane = (baseAlly "32092" ("Wolfsbane" <:> "Rahne Sinclair") 2 [] [] Nothi
   , cdKeywords = fromList []
   , cdResources = [(PrintedResource, Wild)]
   }
+
+
+
+
+controlledMinion :: CardDef
+controlledMinion = basicAlly "xcontrolledminion" "Controlled minion" 0 [] []
 
 
 -- Cyclops

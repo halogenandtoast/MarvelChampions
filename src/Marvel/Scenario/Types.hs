@@ -247,6 +247,7 @@ deckMessage = \case
   SearchForAndRevealEncounterCard ident _ -> Just (Just ident)
   SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
   SearchEverywhereAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
+  SearchEverywhereAndRevealEncounterCard ident _ -> Just (Just ident)
   DiscardUntilIntoPlay ident _ -> Just (Just ident)
   SearchForAndDealEncounterCard ident _ -> Just (Just ident)
   SearchForAndRevealScheme _ -> Just Nothing
@@ -534,6 +535,8 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       search ident (CardIs cardDef) (revealEncounterCard ident)
     SearchForAndRevealEncounterCard ident matcher -> search ident matcher (revealEncounterCard ident)
     SearchForAndPutIntoPlayEncounterCard ident matcher -> search ident matcher (putEncounterCardIntoPlay ident)
+    SearchEverywhereAndRevealEncounterCard ident matcher ->
+      searchIn ([ec | EncounterCard ec <- scenarioSetAsideCards]) ident matcher (revealEncounterCard ident)
     SearchEverywhereAndPutIntoPlayEncounterCard ident matcher ->
       searchIn ([ec | EncounterCard ec <- scenarioSetAsideCards]) ident matcher (putEncounterCardIntoPlay ident)
     SearchForAndDealEncounterCard ident matcher -> search ident matcher (dealFoundEncounterCard ident)

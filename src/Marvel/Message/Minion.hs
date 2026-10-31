@@ -54,6 +54,9 @@ data MinionMessage
     MinionAddBoost Natural
   | MinionAttackBecomesDividedEvenly
   | MinionHoldsCard PlayerCard
+  | MinionAttackDamageRedirected EnemyId
+  | MinionSchemesAgainst IdentityId
+  | MinionSchemeAgainstEnded
   | MinionAttackBecomesIndirect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

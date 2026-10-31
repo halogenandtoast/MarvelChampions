@@ -187,6 +187,8 @@ instance RunMessage (Attrs Attachment) where
               else do
                 when (attached attrs) $ attachmentRemoved (attachmentId attrs)
                 pure attrs {attachmentAlly = Just ally, attachmentIdentity = Nothing, attachmentEnemy = Nothing}
+          AttachmentHostBecameAlly aid -> pure attrs {attachmentAlly = Just aid, attachmentEnemy = Nothing}
+          AttachmentHostBecameMinion mid -> pure attrs {attachmentAlly = Nothing, attachmentEnemy = Just (EnemyMinionId mid)}
           AttachedToSideScheme sid -> pure attrs {attachmentSideScheme = Just sid}
           AttachedToMainScheme mid -> pure attrs {attachmentMainScheme = Just mid}
           _ -> pure attrs

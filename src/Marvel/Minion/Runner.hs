@@ -130,14 +130,20 @@ runMinionMessage msg attrs = case msg of
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs
   -- a villainous minion is given a boost card as it uses a basic power (RR, Villainous)
+  MinionSchemesAgainst you -> do
+    minionStep (minionId attrs) MinionSchemes
+    minionStep (minionId attrs) MinionSchemeAgainstEnded
+    pure attrs {minionActivationPlayer = Just you}
+  MinionSchemeAgainstEnded -> pure attrs {minionActivationPlayer = Nothing}
   MinionSchemes -> do
+    forbidden <- elem CannotActivate <$> getModifiers attrs
     confused <- isConfused attrs
-    if confused
-      then pure $ attrs & confusedL .~ False
+    if forbidden then pure attrs else if confused
+      then pure $ attrs {minionAdditionalConfuse = False} & confusedL .~ False
       else do
         villainous <- isVillainous
         -- the scheme is its activation against the player it is engaged with
-        let activation timing = checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (minionEngagedIdentity attrs)]
+        let activation timing = checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (fromMaybe (minionEngagedIdentity attrs) $ minionActivationPlayer attrs)]
         activation W.When
         when villainous do
           dealBoost attrs
@@ -152,9 +158,10 @@ runMinionMessage msg attrs = case msg of
     pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
   -- a stunned minion discards its stun instead (RR Stun)
   MinionAttacksEnemy enemy -> do
+    forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs
-    if stunned
-      then pure $ attrs & stunnedL .~ False
+    if forbidden then pure attrs else if stunned
+      then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False
       else do
         keywords <- getModifiedKeywords attrs
         atk <- getModifiedAttack attrs
@@ -163,9 +170,10 @@ runMinionMessage msg attrs = case msg of
         unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
         pure attrs
   MinionAttacks ident -> do
+    forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs
-    if stunned
-      then pure $ attrs & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
+    if forbidden then pure attrs else if stunned
+      then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
         -- the attack is its activation against the player, from start to end, whether
         -- the attack resolves or is cancelled (a stunned minion does not activate)
@@ -204,6 +212,7 @@ runMinionMessage msg attrs = case msg of
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
   MinionAttackBecomesDividedEvenly -> pure $ attrs & attackingL . _Just %~ \a -> a {attackDividedEvenly = True}
+  MinionAttackDamageRedirected enemy -> pure $ attrs & attackingL . _Just %~ (\a -> a {attackDamageRedirect = Just enemy})
   MinionAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ \a -> a {attackIndirect = True}
   MinionAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}

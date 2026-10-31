@@ -71,6 +71,8 @@ data VillainMessage
   | -- | all damage to him from the attack the source makes is prevented, until that
     -- attack ends (Master of Illusions)
     VillainPreventAttackDamage Source
+  | VillainSchemeRemovesThreat IdentityId Source
+  | VillainAttackDamageRedirected EnemyId
   | VillainAttackBecomesIndirect
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)

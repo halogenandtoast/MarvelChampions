@@ -135,6 +135,7 @@ instance Entity Villain where
     -- ^ the character its coming attack is against, when not the player's identity
     , villainActivationPlayer :: Maybe IdentityId
     -- ^ the player its activation under way is against, who resolves its boost cards
+    , villainSchemeRemoval :: Maybe (IdentityId, Source)
     , villainPreventedAttack :: Maybe Source
     -- ^ the attack under way, by what makes it, all of whose damage to him is prevented
     -- until it ends (Master of Illusions)
@@ -237,6 +238,7 @@ villain f cardDef sch atk startingHp =
             , villainStage = 1
             , villainAttackTarget = Nothing
             , villainActivationPlayer = Nothing
+            , villainSchemeRemoval = Nothing
             , villainPreventedAttack = Nothing
             }
     }
@@ -424,12 +426,13 @@ runVillainMessage msg attrs = case msg of
     resolveVillainActivationAfterWould vid VillainSchemes
     villainStep vid VillainSchemeAgainstEnded
     pure attrs {villainActivationPlayer = Just ident}
-  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing}
+  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing}
   VillainBeginScheme -> do
     -- against the player it was said to be against, or the active player
     player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
     -- the scheme is his activation against the player whose alter-ego activates him
     checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
+    checkWindows [W.Window W.When $ W.Schemed vid]
     modifiers <- getModifiers attrs
     unless (SchemesWithoutBoost `elem` modifiers) dealActivationBoost
     villainStep vid VillainFlipBoostCards
@@ -454,6 +457,8 @@ runVillainMessage msg attrs = case msg of
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
+  VillainSchemeRemovesThreat you source -> pure attrs {villainSchemeRemoval = Just (you, source)}
+  VillainAttackDamageRedirected enemy -> pure $ attrs & attackingL . _Just %~ (\a -> a {attackDamageRedirect = Just enemy})
   VillainAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ (\attack -> attack {attackIndirect = True})
   VillainAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
   VillainDefendedBy characterId -> do
@@ -466,9 +471,11 @@ runVillainMessage msg attrs = case msg of
     paired <- getPairedMainScheme vid
     scheme <- maybe (selectOne EncounterMainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
     sch <- getModifiedScheme attrs
-    for_ scheme \s -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
+    for_ scheme \s -> case villainSchemeRemoval attrs of
+      Nothing -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
+      Just (you, source) -> thwartSchemeAs you s source (sch + villainBoost attrs)
     checkWindows [W.Window W.After $ W.Schemed vid]
-    pure $ attrs {villainActivationPlayer = Nothing} & boostL .~ 0
+    pure $ attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing} & boostL .~ 0
   VillainAttacked -> do
     case villainAttacking attrs of
       Nothing -> error "No current attack"
@@ -571,6 +578,7 @@ instance RunMessage (Attrs Villain) where
     -- the attack whose damage he is spared has ended: what made it, an ability or an
     -- event, has resolved all it does (or, at the latest, the phase has ended)
     AbilityResolved source | villainPreventedAttack attrs == Just source -> pure attrs {villainPreventedAttack = Nothing}
+    EventMessage eid ResolvedEvent | Just (_, EventRef source) <- villainSchemeRemoval attrs, eid == source -> pure attrs {villainSchemeRemoval = Nothing}
     EventMessage eid ResolvedEvent | villainPreventedAttack attrs == Just (EventRef eid) -> pure attrs {villainPreventedAttack = Nothing}
     EndPhase _ -> pure attrs {villainPreventedAttack = Nothing}
     WithBoostIcons (VillainRef vid) _ counts | vid == villainId attrs -> do
@@ -679,6 +687,7 @@ versionBEnters attrs
 instance FromJSON (Attrs Villain) where
   parseJSON = withObject "VillainAttrs" $ \o ->
     genericParseJSON defaultOptions $ Object $
+      KeyMap.insertWith (\_ old -> old) "villainSchemeRemoval" (toJSON (Nothing :: Maybe (IdentityId, Source))) $
       KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackAdditionalBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackGrantedKeywords" (toJSON ([] :: [Keyword])) $

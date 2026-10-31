@@ -91,6 +91,8 @@ data WindowMatcher
     EnergyFormChangedTo WindowTiming UpgradeMatcher
   | WeatherSpecialResolvedFor WindowTiming IdentityMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
+  | UpgradeLosesLastCounter WindowTiming UpgradeMatcher
+  | UpgradeCountersPlaced WindowTiming UpgradeMatcher
   | IdentityDiscardsTough WindowTiming IdentityMatcher
   | VillainWouldActivate IdentityMatcher
   | IdentityAttackResolved IdentityMatcher
@@ -205,6 +207,7 @@ data Window = Window
 
 data WindowType
   = UsedCardAbility IdentityId Source Natural
+  | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
   | ResolvedTreacheryCard IdentityId EncounterCard
   | HeroThwartComplete IdentityId

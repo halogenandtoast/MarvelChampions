@@ -491,6 +491,10 @@ data Message
   | -- | the minion an ally was treated as is that ally again, under its owner's control,
     -- its damage kept (its Fallen Warrior or Beguiled gone first)
     MinionBecomesAlly MinionId
+  | -- | treat the same physical minion as a blank controlled ally
+    TakeControlOfMinion IdentityId MinionId
+  | -- | the continuous control effect ends while its host remains in play
+    RestoreControlledMinion AllyId
   | -- | an encounter card put into play without being revealed: its "When Revealed"
     -- abilities and surge do not resolve
     PutEncounterCardIntoPlay IdentityId EncounterCard
@@ -518,6 +522,7 @@ data Message
   | -- | as 'SearchForAndPutIntoPlayEncounterCard', the set-aside area searched too
     -- ("search the encounter deck, discard pile, and set-aside area", Enchantress)
     SearchEverywhereAndPutIntoPlayEncounterCard IdentityId CardMatcher
+  | SearchEverywhereAndRevealEncounterCard IdentityId CardMatcher
   | -- | cards are discarded from the top of the encounter deck until one matches, which
     -- is put into play for the player (Ebony Maw's Spells); a deck run out first is
     -- fulfilled, nothing put into play
