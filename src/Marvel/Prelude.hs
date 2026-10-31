@@ -119,6 +119,9 @@ instance (Eq a, Eq b) => Eq (With a b) where
 instance (ToJSON a, ToJSON b) => ToJSON (a `With` b) where
   toJSON (a `With` b) = case (toJSON a, toJSON b) of
     (Object o, Object m) -> Object $ KeyMap.union m o
+    -- Attributes stay at the top level for the entity's card-code dispatch. A
+    -- tuple, optional value, or other non-object metadata needs its own slot.
+    (Object o, metadata) -> Object $ KeyMap.insert "_withMetadata" metadata o
     (a', b') -> metadataError a' b'
    where
     metadataError a' b' =
@@ -133,8 +136,10 @@ instance (ToJSON a, ToJSON b) => ToJSON (a `With` b) where
           <> encodeToTextBuilder b'
 
 instance (FromJSON a, FromJSON b) => FromJSON (a `With` b) where
-  parseJSON = withObject "With" $
-    \o -> With <$> parseJSON (Object o) <*> parseJSON (Object o)
+  parseJSON = withObject "With" $ \o -> case KeyMap.lookup "_withMetadata" o of
+    Just metadata -> With <$> parseJSON (Object $ KeyMap.delete "_withMetadata" o) <*> parseJSON metadata
+    -- Preserve the existing flattened format for record-shaped metadata.
+    Nothing -> With <$> parseJSON (Object o) <*> parseJSON (Object o)
 
 instance (S.Show a, S.Show b) => S.Show (a `With` b) where
   show (With a b) = show a <> " WITH " <> show b

@@ -1,6 +1,7 @@
 module Marvel.Rules.PhoenixControlSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Modifier (Modifier (Blank))
@@ -11,6 +12,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.Card qualified as Card
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
+import Marvel.Minion.Minions.MutantGenesis (MutantGenesisMinion (..))
 import Marvel.Trait (Trait (Controlled))
 import Marvel.Hp (HP (..))
 import Marvel.Stats
@@ -367,3 +369,42 @@ spec = describe "Phoenix controlled minions" do
       getsGame (HashMap.member mid . gameMinions) `shouldReturn` False
       getsGame (HashMap.member (AllyId $ unMinionId mid) . gameAllies) `shouldReturn` False
       damageOf p `shouldReturn` 0
+
+  it "saves and restores a Mind Controlled Sentinel without losing its tuple-shaped minion state" do
+    tg <- testGame ["phoenix"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      pass
+      clearHand p
+      mid <- addMinion p Minions.mgSentinelMarkIv
+      Just original <- getsGame (HashMap.lookup mid . gameMinions)
+      -- This ordinary Sentinel has tuple metadata (Nothing, Nothing), which must
+      -- serialize before Phoenix captures its original entity for restoration.
+      case fromJSON (toJSON original) of
+        Success (loaded :: Minion) -> loaded `shouldBe` original
+        Error err -> error err
+      let metadata = (Just p, Just (p, 2 :: Natural, 3 :: Natural))
+      withGame_ $ entitiesL . minionsL . at mid ?~
+        Minion.Minion (MutantGenesisMinion (toAttrs original `With` metadata))
+      control <- putInHand p "34009"
+      energy <- putInHand p "01088"
+      genius <- putInHand p "01089"
+      playOn control mid [energy, genius]
+      pass
+      Just controlled <- getsGame (HashMap.lookup (AllyId $ unMinionId mid) . gameAllies)
+      -- Save/reload the controlled ally too: its snapshot embeds the complete
+      -- original wrapper rather than only its public minion attributes.
+      case fromJSON (toJSON controlled) of
+        Success (loaded :: Ally) -> withGame_ $ entitiesL . alliesL . at (AllyId $ unMinionId mid) ?~ loaded
+        Error err -> error err
+      resolve [RemoveFromPlay (UpgradeRef $ upgradeIdOf control)]
+      Just restored <- getsGame (HashMap.lookup mid . gameMinions)
+      case toJSON restored of
+        Object o -> KeyMap.lookup "_withMetadata" o `shouldBe` Just (toJSON metadata)
+        _ -> error "restored minion must retain its attribute object"
+      case fromJSON (toJSON restored) of
+        Success (loaded :: Minion) -> loaded `shouldBe` restored
+        Error err -> error err
+      let a = toAttrs restored
+      (minionScheme a, minionAttack a, minionHitPoints a) `shouldBe` (Sch 2, Atk 2, HP 4)
