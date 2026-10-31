@@ -904,7 +904,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           canChange = CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
       if canChange
         then do
-          checkWindows [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
+          oldTraits <- getTraits pid
+          let fromAlterEgo = case currentIdentity pid of AlterEgoSide _ -> True; _ -> False
+          checkWindows $ W.Window W.After (W.IdentityChangesForm playerIdentityId)
+            : [W.Window W.After (W.MutantChangedToHero playerIdentityId) | fromAlterEgo && toHero && Mutant `member` oldTraits]
           pure $ PlayerIdentity $ attrs & sideL .~ side
         else pure pid
     PlayingCard card mWindow -> do
@@ -1157,6 +1160,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId RevealEncounterCards
         pure $ PlayerIdentity $ attrs & encounterCardsL .~ rest
     IdentityWasAttacked attack' -> do
+      -- Prevention changes damage taken. Piercing still resolves when the attack
+      -- deals positive damage after defense, even when all of it is prevented.
+      let piercingPrevented = attackPrevented attack' && attackPiercing attack'
+            && subtractNatural playerIdentityDamageReduction (attackValue attack') > 0
+          stripped = if piercingPrevented && playerIdentityTough then 1 + playerIdentityAdditionalTough else 0
+      replicateM_ (fromIntegral stripped) $ checkWindows [W.Window W.After $ W.IdentityDiscardedTough playerIdentityId]
       senator <- selectOne (AllyWithTitle "Robert Kelly" <> AllyControlledBy (IdentityWithId playerIdentityId))
       let
         damage =
@@ -1180,7 +1189,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when (playerIdentityDefended || attackDefended attack') $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
-      pure $ PlayerIdentity $ attrs & damageReductionL .~ 0 & defendedL .~ False
+      let final = attrs & damageReductionL .~ 0 & defendedL .~ False
+      pure $ PlayerIdentity $ if stripped > 0 then final {playerIdentityTough = False, playerIdentityAdditionalTough = 0} else final
     IdentityDamaged source damage | damagePiercing damage && damageAmount damage > 0 -> do
       cardSpecific playerIdentityId "discardToughForPiercing" (source, damage)
       pure pid

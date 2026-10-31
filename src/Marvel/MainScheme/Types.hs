@@ -195,6 +195,7 @@ instance IsCard (Attrs MainScheme) where
 
 instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    RemoveFromGame (CardIdRef cid) -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs)}
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
       locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
       case msg' of

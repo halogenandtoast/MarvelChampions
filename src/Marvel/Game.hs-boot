@@ -97,6 +97,8 @@ getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 sourceHasBegunLabeledAttack :: (HasGame m) => Source -> m Bool
 
+getAllyControlSource :: (HasGame m) => AllyId -> m (Maybe Source)
+
 getCharacterOwner :: (HasGame m) => CharacterId -> m (Maybe IdentityId)
 
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
@@ -343,3 +345,10 @@ sourceHasBegunLabeledThwart :: HasGame m => Source -> m Bool
 
 withAdditionalIdentityCounters :: HasGame m => [(IdentityId, Natural)] -> ReaderT Game m a -> m a
 recalculateCardPaymentCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> PlayerCard -> Payment -> m Cost
+
+canFindTouched :: HasGame m => IdentityId -> m Bool
+touchedHost :: (HasGame m) => IdentityId -> m (Maybe CharacterId)
+getCharacterTraits :: (HasGame m) => CharacterId -> m (HashSet Trait)
+canPlayHeldAlly :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+heldAllyPlayable :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> SupportId -> m Bool
+canCaptureDefeatedAlly :: HasGame m => PlayerCard -> m Bool

@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Ref (Target)
 
 import Marvel.Card.Id (CardId)
-import Marvel.Id (EnemyId)
+import Marvel.Id (EnemyId, CharacterId)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
@@ -65,6 +65,7 @@ data Modifier
   | HandSizeModifier Natural
   | -- | "your hand size is reduced by N"
     HandSizeReduction Natural
+  | CopyTraitsFrom CharacterId
   | TraitModifier Trait
   | KeywordModifier Keyword
   | -- | on an identity: its attacks ignore guard, its thwarts patrol or crisis

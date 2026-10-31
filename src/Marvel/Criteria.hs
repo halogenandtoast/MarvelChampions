@@ -2,6 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 import Marvel.Card.Code (CardCode)
+import Marvel.Id (SupportId)
 import Marvel.Keyword (Keyword)
 
 import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
@@ -12,6 +13,7 @@ import Marvel.Trait.Types (Trait)
 
 data Criteria
   = IsSelf
+  | CanFindTouched
   | NoCriteria
   | InHeroForm
   | InAlterEgoForm
@@ -26,6 +28,8 @@ data Criteria
   | AttachmentExists AttachmentMatcher
   | SideSchemeExists SideSchemeMatcher
   | SupportExists SupportMatcher
+  | HeldAllyPlayable SupportId
+  | MedLabCaptureAvailable
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher

@@ -184,6 +184,9 @@ passesCriteria x a =
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
+    HeldAllyPlayable sid -> heldAllyPlayable x sid
+    CanFindTouched -> canFindTouched x
+    MedLabCaptureAvailable -> medLabCaptureAvailable
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget _ -> pure False
     PlayCardWithReductionHasTarget matcher amount ->
@@ -235,6 +238,9 @@ passesCardCriteria ident card = go
     SourceHasKeyword _ -> pure True
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
+    HeldAllyPlayable _ -> pure False
+    CanFindTouched -> pure False
+    MedLabCaptureAvailable -> pure False
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
     PlayCardWithReductionHasTarget _ _ -> pure False
@@ -371,3 +377,10 @@ hasOtherSchemeForThreatMovement = do
   anyM (\case
     Window _ (AllyThwart aid scheme) -> (&&) <$> canMoveSchemeThreatFrom aid scheme <*> selectAny (NotScheme $ SchemeWithId scheme)
     _ -> pure False) windows
+
+-- | A prior response may have moved the defeated ally into play or hand. A Lab
+-- can still retrieve it from discard, victory display, or the Collection.
+medLabCaptureAvailable :: HasGame m => m Bool
+medLabCaptureAvailable = do
+  windows <- getCurrentWindows
+  anyM canCaptureDefeatedAlly [card | Window _ (AllyCardDefeatedByConsequentialDamage _ card) <- windows]

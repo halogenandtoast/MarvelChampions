@@ -649,7 +649,8 @@ gameView seesHand g = do
         }
   supportView (s :: Support) =
     let a = toAttrs s
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | seesHand a.supportController, card <- a.supportHeldCards]
+        faceup = toCardCode a.supportCardDef == "38028"
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards]
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
      in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a == "34007" then 0 else a.upgradeUses) a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown (if toCardCode a == "34007" then a.upgradeUses else 0)

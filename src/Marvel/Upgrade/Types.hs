@@ -266,6 +266,18 @@ instance IsCard (Attrs Upgrade) where
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = runQueueT $ case msg of
+    RemoveFromGame (CardIdRef cid) -> pure a {upgradeHeldCards = filter ((/= cid) . pcCardId) (upgradeHeldCards a)}
+    CardSpecific (isTarget a -> True) "attachTouched" (fromJSON -> Success host) -> do
+      let uid = upgradeId a
+      case host of
+        IdentityCharacter _ -> pure ()
+        _ -> upgradeAttachedTo host uid
+      pure a {upgradeAttachedEnemy = case host of
+                MinionCharacter mid -> Just $ EnemyMinionId mid
+                VillainCharacter vid -> Just $ EnemyVillainId vid
+                _ -> Nothing
+             , upgradeAttachedAlly = case host of AllyCharacter aid -> Just aid; _ -> Nothing
+             , upgradeAttachedIdentity = case host of IdentityCharacter you -> Just you; _ -> Nothing}
     RemoveCounters target n | target == toRef a -> do
       when (upgradeUses a > 0 && n >= upgradeUses a && upgradeDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n

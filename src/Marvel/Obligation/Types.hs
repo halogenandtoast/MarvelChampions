@@ -143,6 +143,7 @@ instance HasCardDef (Attrs Obligation) where
 
 instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
+    RemoveFromGame (CardIdRef cid) -> pure attrs {obligationHeldCards = filter ((/= cid) . pcCardId) (obligationHeldCards attrs)}
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       ObligationOwnedBy identityId -> pure attrs {obligationOwner = Just identityId}
       RevealObligation identityId -> pure attrs {obligationOwner = Just identityId}

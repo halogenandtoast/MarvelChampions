@@ -155,6 +155,8 @@ data WindowMatcher
     TookDamage IdentityMatcher DamageSource EnemyMatcher
   | -- | an ally a player matching controls is defeated
     AllyWasDefeated WindowTiming IdentityMatcher
+  | AllyDefeatedByConsequentialDamage WindowTiming IdentityMatcher
+  | MutantChangesToHero WindowTiming IdentityMatcher
   | SurgeWouldResolve
   | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
   | MakesBasicThwart WindowTiming IdentityMatcher
@@ -263,6 +265,7 @@ data WindowType
   | -- | A hero or ally attacks a friendly identity, without becoming an enemy.
     FriendlyCharacterAttack CharacterId IdentityId
   | ThreatPlaced ThreatSource SchemeId Natural
+  | MutantChangedToHero IdentityId
   | IdentityChangesForm IdentityId
   | -- | the identity changed to the energy form of this upgrade, turned faceup
     EnergyFormChanged IdentityId UpgradeId
@@ -314,6 +317,7 @@ data WindowType
     AllyTookDamage AllyId Source Damage
   | -- | the ally, as a card, and its controller
     AllyCardDefeated IdentityId PlayerCard
+  | AllyCardDefeatedByConsequentialDamage IdentityId PlayerCard
   | -- | the surge keyword of a card revealed for the player
     SurgeResolves IdentityId
   | -- | the player engages the minion: it enters play engaged with them, or is made to

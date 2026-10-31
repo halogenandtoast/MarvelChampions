@@ -534,6 +534,12 @@ windowMatches matcher w source = case matcher of
     AllyTookDamage aid _ damage
       | windowTiming w == After && damageSource damage == damageSource' -> allyMatches allyMatcher aid
     _ -> pure False
+  MutantChangesToHero timing identityMatcher -> case windowType w of
+    MutantChangedToHero ident | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
+  AllyDefeatedByConsequentialDamage timing identityMatcher -> case windowType w of
+    AllyCardDefeatedByConsequentialDamage ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
   AllyWasDefeated timing identityMatcher -> case windowType w of
     AllyCardDefeated ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False

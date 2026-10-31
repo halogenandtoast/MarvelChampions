@@ -195,6 +195,7 @@ countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
 
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    RemoveFromGame (CardIdRef cid) -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs)}
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
       thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n

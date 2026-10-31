@@ -15,6 +15,8 @@ import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Card (Card (..))
+import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck)
 import Marvel.Card.Def
 import Marvel.Damage
 import Marvel.Keyword
@@ -57,10 +59,19 @@ statusL = \case
 
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "defeatedByConsequential" _ -> do
+      present <- selectAny (AllyWithId $ allyId a)
+      when present $ defeatAlly (allyId a)
+      pure a {allyDefeatedByConsequential = present}
+    RemoveFromGame (CardIdRef cid) -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a)}
     ReserveAllyHeldCard ident card | ident == allyId a ->
       pure $ a & heldCardsL %~ filter (/= card)
     AttachPlayableEventToAlly ident card | ident == allyId a ->
       pure $ a & heldCardsL <>~ [card]
+    CardSpecific (isTarget a -> True) "controlledMinionSource" (fromJSON -> Success (source, n)) ->
+      pure a {allyControlSource = Just source, allyAttackConsequentialDamage = n, allyThwartConsequentialDamage = n}
+    CardSpecific (isTarget a -> True) "controlledMinionConsequential" (fromJSON -> Success n) ->
+      pure a {allyAttackConsequentialDamage = n, allyThwartConsequentialDamage = n}
     PutCardIntoPlay _ card _ _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     AllyMessage ident msg' | ident == allyId a -> case msg' of
       -- "attached character cannot ready" (Restrained)
@@ -270,9 +281,11 @@ instance RunMessage (Attrs Ally) where
             hitPoints <- getModifiedHitPoints a
             attackDealtDamageTo source damage ident
             when (damageAmount damage + allyDamage a >= hitPoints) $
-              case sourceEnemy source of
-                Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
-                _ -> defeatAlly ident
+              if damageSource damage == FromConsequential
+                then cardSpecific a "defeatedByConsequential" ()
+                else case sourceEnemy source of
+                  Just enemy | damageSource damage == FromAttack -> allyStep ident (AllyDefeatedByAttack enemy)
+                  _ -> defeatAlly ident
             when (damageOverkill damage && damageSource damage == FromAttack) do
               let excess = subtractNatural hitPoints (damageAmount damage + allyDamage a)
               when (excess > 0) $ damageIdentity (allyController a) source (toDamage excess FromOverkill)
@@ -330,8 +343,13 @@ instance RunMessage (Attrs Ally) where
       checkWindows [W.Window W.When $ W.DefeatedAlly (allyId a) byAttack]
       -- which discards it
       removeFromPlay a
-      checkWindows [W.Window W.After $ W.AllyCardDefeated (allyController a) card]
-      pure a
+      let physicalCard = case allyOriginalCard a of
+            Just (EncounterCard encounter) -> encounterCardInPlayerDeck (allyController a) encounter
+            Just (PlayerCard original) -> original
+            Nothing -> card
+      checkWindows $ W.Window W.After (W.AllyCardDefeated (allyController a) card)
+        : [W.Window W.After (W.AllyCardDefeatedByConsequentialDamage (allyController a) physicalCard) | allyDefeatedByConsequential a]
+      pure a {allyDefeatedByConsequential = False}
 
 -- | Removing one physical status preserves another held through a type change.
 removeOneAllyStatus :: StatusCard -> Attrs Ally -> Attrs Ally

@@ -142,6 +142,8 @@ ally f cardDef (thw, thwConsequentialDamage) (atk, atkConsequentialDamage) hp =
             , allyPaidWith = NoPayment
             , allyHeldTreacheries = []
             , allyHeldCards = []
+            , allyDefeatedByConsequential = False
+            , allyControlSource = Nothing
             , allyOriginalCard = Nothing
             , allyOriginalMinion = Nothing
             }
@@ -228,6 +230,9 @@ instance Entity Ally where
     , allyHeldTreacheries :: [EncounterCard]
     , allyHeldCards :: [PlayerCard]
     -- ^ facedown events playable from here while this ally is not blank
+    , allyDefeatedByConsequential :: Bool
+    , allyControlSource :: Maybe Source
+    -- ^ the latest effect that made this minion an ally; earlier sources cannot undo it
     , allyOriginalCard :: Maybe Card
     -- ^ physical provenance while an encounter minion is treated as an ally
     , allyOriginalMinion :: Maybe Value
@@ -246,6 +251,7 @@ instance Entity Ally where
     AllyThwartConsequentialDamage :: Field Ally Natural
     AllyAttack :: Field Ally Atk
     AllyAttackConsequentialDamage :: Field Ally Natural
+    AllyControlSource :: Field Ally (Maybe Source)
     AllyController :: Field Ally IdentityId
     AllyExhausted :: Field Ally Bool
     AllyCounters :: Field Ally Natural
@@ -268,6 +274,7 @@ instance Entity Ally where
           AllyThwartConsequentialDamage -> allyThwartConsequentialDamage
           AllyAttack -> allyAttack
           AllyAttackConsequentialDamage -> allyAttackConsequentialDamage
+          AllyControlSource -> allyControlSource
           AllyController -> allyController
           AllyExhausted -> allyExhausted
           AllyCounters -> allyCounters
@@ -311,4 +318,4 @@ instance HasModifiersFor Ally where
 -- Saved games from before allies could hold events have no attached cards.
 instance FromJSON (Attrs Ally) where
   parseJSON = withObject "AllyAttrs" $ \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("allyAdditionalStun", toJSON False), ("allyAdditionalConfuse", toJSON False), ("allyAdditionalTough", toJSON (0 :: Natural)), ("allyOriginalCard", toJSON (Nothing :: Maybe Card)), ("allyOriginalMinion", toJSON (Nothing :: Maybe Value)), ("allyHeldCards", toJSON ([] :: [PlayerCard])), ("allyHeldTreacheries", toJSON ([] :: [EncounterCard]))])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("allyControlSource", toJSON (Nothing :: Maybe Source)), ("allyDefeatedByConsequential", toJSON False), ("allyAdditionalStun", toJSON False), ("allyAdditionalConfuse", toJSON False), ("allyAdditionalTough", toJSON (0 :: Natural)), ("allyOriginalCard", toJSON (Nothing :: Maybe Card)), ("allyOriginalMinion", toJSON (Nothing :: Maybe Value)), ("allyHeldCards", toJSON ([] :: [PlayerCard])), ("allyHeldTreacheries", toJSON ([] :: [EncounterCard]))])

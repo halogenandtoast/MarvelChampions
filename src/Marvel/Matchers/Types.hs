@@ -20,6 +20,7 @@ data EntityMatcher
   | AllyEntity AllyMatcher
   | UpgradeEntity UpgradeMatcher
   | VillainsAndEngagedMinions IdentityId
+  | EnemyEntity EnemyMatcher
   | MinionEntity MinionMatcher
   | AttachmentEntity AttachmentMatcher
   | -- | an event being played
@@ -338,6 +339,7 @@ data MinionMatcher
   | NotMinion MinionMatcher
   | MinionWithAttachment AttachmentMatcher
   | StunnedMinion
+  | MinionCanBeStunned
   | -- | of the minions matching, those with the highest printed hit points
     MinionWithHighestPrintedHitPointsAmong MinionMatcher
   | -- | of the minions matching, those with the most hit points remaining

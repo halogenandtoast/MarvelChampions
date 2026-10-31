@@ -7,6 +7,7 @@ import Marvel.Card.Types
 import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Ref
+import Marvel.Trait.Types (Trait)
 import Marvel.Resource.Types
 
 data Payment
@@ -41,6 +42,7 @@ data Payment
   | -- | the top card of the encounter deck, discarded to pay
     DiscardedEncounterCardPayment Card
   | PendingDamageCostPayment Natural Natural
+  | TouchedPayment CharacterId [Trait]
   | DamagePayment Natural
   | HealPayment Natural
   | DamageThisPayment Natural

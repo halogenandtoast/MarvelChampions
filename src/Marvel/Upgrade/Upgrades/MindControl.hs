@@ -2,7 +2,7 @@ module Marvel.Upgrade.Upgrades.MindControl where
 
 import Marvel.Prelude
 import Data.Aeson.KeyMap qualified as KeyMap
-import Marvel.Game.Source (isBlanked)
+import Marvel.Game.Source (isBlanked, getAllyControlSource)
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
@@ -60,7 +60,7 @@ instance RunMessage MindControl where
     UpgradeMessage uid (UpgradeAttachedToEnemy (EnemyMinionId mid)) | uid == upgradeId a -> do
       a' <- runMessage msg a
       blanked <- isBlanked a
-      unless blanked $ takeControlOfMinion (upgradeController a) mid
+      unless blanked $ takeControlOfMinionFrom a (upgradeController a) mid 1
       pure $ MindControl a' (not blanked)
     RemoveFromPlayAfterWindow target | target == toTarget a -> e <$ restoreHost
     RemoveFromGame target | target == toTarget a -> e <$ restoreHost
@@ -78,7 +78,7 @@ instance RunMessage MindControl where
         else if not enabled && not blanked then do
           for_ (upgradeAttachedEnemy a) \case
             EnemyMinionId mid -> whenM (selectAny $ MinionWithId mid) $
-              takeControlOfMinion (upgradeController a) mid
+              takeControlOfMinionFrom a (upgradeController a) mid 1
             _ -> pure ()
           pure $ MindControl a True
         else pure e
@@ -100,4 +100,8 @@ instance RunMessage MindControl where
         ReturnToHand target -> target == AllyRef aid
         AddToVictoryDisplay target -> target == AllyRef aid
         _ -> False
-      unless leaving $ restoreControlledMinion aid
+      present <- selectAny $ AllyWithId aid
+      when (present && not leaving) do
+        source <- getAllyControlSource aid
+        -- Untagged snapshots predate source ownership and retain their old behavior.
+        when (isNothing source || source == Just (toSource a)) $ restoreControlledMinion aid

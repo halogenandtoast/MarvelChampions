@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards, ContinuouslyRecalculateResourceCost))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost))
 
 import Control.Monad.State
 import Data.List (partition, nub)
@@ -112,6 +112,16 @@ payCostPartAs contributing activeCost cost = do
             discardCard card
             paid (DiscardHandCardPayment $ PlayerCard card)
     IndirectDamageCost n -> cardSpecific (ActiveCostRef acid) "assignIndirectCost" (n, [] :: [(CharacterId, Natural)])
+    TouchedDamageCost n -> do
+      candidates <- selectList (CharacterOtherThan $ IdentityCharacter iid)
+      host <- touchedHost iid
+      valid <- filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
+      available <- canFindTouched iid
+      if null valid || not available then abortPayment acid else chooseOne iid [targeting (characterRef c) do
+        findAndAttachTouched iid c
+        damageCharacter c (activeCostSource activeCost) (toDamage n FromAbility)
+        paid (TouchedPayment c [] <> DamagePayment n)
+        | c <- valid]
     DamageCharacterCost matcher n -> do
       candidates <- selectList matcher
       valid <- filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
@@ -903,7 +913,10 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           cardPlayed payer card payment (activeCostWindow activeCost)
           aside <- getSetAsidePlayerCards
           inDeck <- projectP PlayerIdentityDeck (elem card . unDeck) payer
-          when (card `notElem` (map snd (paymentReservedAllyCards payment) <> map snd (paymentReservedSupportCards payment)) && card `notElem` (held <> aside) && not inDiscard && not inDeck) $
+          medLabPlay <- anyM (\(sid, reserved) -> do
+            medLab <- elem sid <$> selectList (SupportNamed "Med Lab")
+            pure $ reserved == card && medLab) (paymentReservedSupportCards payment)
+          when (medLabPlay || (card `notElem` (map snd (paymentReservedAllyCards payment) <> map snd (paymentReservedSupportCards payment)) && card `notElem` (held <> aside) && not inDiscard && not inDeck)) $
             checkWindows [Window After $ PlayedCardFromHand payer card]
         ForAbility ab -> do
           usedAbility payer ab

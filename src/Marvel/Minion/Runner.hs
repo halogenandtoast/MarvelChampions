@@ -277,6 +277,7 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
+      RemoveFromGame (CardIdRef cid) -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs)}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
         let ident = minionEngagedIdentity attrs

@@ -21,6 +21,7 @@ data Cost
     UpToResourcesCost Natural
   | MultiResourceCost [Maybe Resource]
   | PrintedResourceCost [Resource]
+  | TouchedDamageCost Natural
   | DamageCharacterCost CharacterMatcher Natural
   | DamageCost Natural
   | IndirectDamageCost Natural
@@ -189,6 +190,7 @@ costResources (PlaceIdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
 costResources (DamageCost _) = []
+costResources (TouchedDamageCost _) = []
 costResources (DamageCharacterCost _ _) = []
 costResources (IndirectDamageCost _) = []
 costResources (HealCost _) = []

@@ -2247,6 +2247,25 @@ afterMatching matcher body = do
   replaceMatchingMessage (: msgs) matcher
 
 
+-- | Find Rogue's physical Touched card, wherever it currently is, and move it.
+findAndAttachTouched :: (ReverseQueue m) => IdentityId -> CharacterId -> m ()
+findAndAttachTouched you host = cardSpecific GameRef "findAndAttachTouched" (you, host)
+
+setAsideTouched :: (ReverseQueue m) => IdentityId -> m ()
+setAsideTouched you = cardSpecific GameRef "setAsideTouched" you
+
+-- | A named control effect only ends the conversion it created, not a newer one.
+takeControlOfMinionFrom :: (ReverseQueue m, IsRef source) => source -> IdentityId -> MinionId -> Natural -> m ()
+takeControlOfMinionFrom source you mid n = do
+  takeControlOfMinion you mid
+  cardSpecific (AllyRef $ AllyId $ unMinionId mid) "controlledMinionSource" (toSource source, n)
+
+-- | Karma has two consequential damage; Mind Control keeps its printed one.
+takeControlOfMinionWithConsequential :: (ReverseQueue m) => IdentityId -> MinionId -> Natural -> m ()
+takeControlOfMinionWithConsequential you mid n = do
+  takeControlOfMinion you mid
+  cardSpecific (AllyRef $ AllyId $ unMinionId mid) "controlledMinionConsequential" n
+
 -- | Find an owned card in any normal player zone or the set-aside zone and set it
 -- aside. Identity Setup abilities may call this after the opening hand/mulligan.
 setAsideOwnedCard :: (ReverseQueue m, Projection m PlayerIdentity) => IdentityId -> CardCode -> m ()
@@ -2527,3 +2546,14 @@ deferEventResolutionUntilScheme eid vid = withQueue_ $ \queue ->
 
 engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinionIfInPlay minion you = cardSpecific GameRef "engageMinionIfInPlay" (minion, you)
+
+-- | Med Lab starts an ordinary paid play of its held ally; the reservation in the
+-- payment records where it came from, so it enters play exhausted.
+playHeldAllyExhausted :: ReverseQueue m => IdentityId -> SupportId -> PlayerCard -> m ()
+playHeldAllyExhausted you _ card = identityStep you (PlayingCard card Nothing)
+
+attachAllyToMedLab :: ReverseQueue m => SupportId -> PlayerCard -> m ()
+attachAllyToMedLab sid card = do
+  removeFromGame card
+  cardSpecific GameRef "medLabRemoveCapturedCard" (pcCardId card)
+  cardSpecific (SupportRef sid) "holdAlly" card

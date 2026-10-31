@@ -8,7 +8,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id as X (EffectId)
+import Marvel.Id as X (EffectId, EnemyId (..))
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -136,6 +136,8 @@ effectValidFor e target = case (target, effectMatcher e) of
   -- the target first: matching every identity or ally runs their modifiers, which
   -- each run this again
   (IdentityRef ident, IdentityEntity matcher) -> selectAny (IdentityWithId ident <> matcher)
+  (VillainRef vid, EnemyEntity matcher) -> selectAny (EnemyWithId (EnemyVillainId vid) <> matcher)
+  (MinionRef mid, EnemyEntity matcher) -> selectAny (EnemyWithId (EnemyMinionId mid) <> matcher)
   (VillainRef _, VillainsAndEngagedMinions _) -> pure True
   (MinionRef mid, VillainsAndEngagedMinions you) -> selectAny (MinionWithId mid <> MinionEngagedWith (IdentityWithId you))
   (MinionRef ident, MinionEntity matcher) -> selectAny (MinionWithId ident <> matcher)

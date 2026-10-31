@@ -77,6 +77,7 @@ import Marvel.MainScheme
 import Marvel.MainScheme.Types (Attrs (mainSchemeCounters, mainSchemeHeldCards, mainSchemeVillain, mainSchemeHasGlider, mainSchemeAccelerationTokens), Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
+import Marvel.Message.Ally qualified as AllyMsg
 import Marvel.Message.Lifted hiding (ExhaustedAlly, createEffect)
 import Marvel.Minion
 import Marvel.Minion.Types qualified as Minion
@@ -120,6 +121,7 @@ import Marvel.Treachery
 import Marvel.Treachery.Types qualified as Treachery
 import Marvel.Treachery.Types (Treachery)
 import Marvel.Upgrade
+import Marvel.Upgrade.Types qualified as Upgrade
 import Marvel.Upgrade.Types (Attrs (upgradeController, upgradeExhausted, upgradeAttachedAlly, upgradeAttachedEnemy, upgradeAttachedMainScheme, upgradeAttachedSideScheme, upgradeFaceDown, upgradeHeldCards, upgradeOwner), Upgrade (..), getUpgradeController, getUpgradeUses, upgradeTargets, upgradeSpecialCanResolve)
 import Marvel.Villain
 import Marvel.Villain.Villains.SmSinisterSix qualified as ActivationSix
@@ -1251,8 +1253,28 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     let source = maybe GameRef toSource $ headMay [a | a <- HashMap.elems (gameAllies g), toCardCode (getCardDef a) == "32090"]
         existing = fromMaybe 0 $ headMay [n | (target,_,n) <- g.gameBombCounters, target == enemy]
     pure $ g {gameBombCounters = filter (\(target,_,_) -> target /= enemy) (g.gameBombCounters) <> [(enemy,source,existing+1)]}
+  CardSpecific GameRef "findAndAttachTouched" (fromJSON -> Success (you, host)) -> do
+    when (host /= IdentityCharacter you) $ for_ (findTouchedCard you g) \card -> do
+      let uid = UpgradeId $ unCardId $ pcCardId card
+      unless (HashMap.member uid $ gameUpgrades g) $ do
+        removeFromGame card
+        putIntoPlay you card
+      detachUpgrade uid
+      cardSpecific (UpgradeRef uid) "attachTouched" host
+      for_ [toId p | p <- HashMap.elems (gamePlayers g), card `elem` unDeck (playerIdentityDeck $ toAttrs p)] shuffleDeck
+    pure $ g & collectionL %~ filter (\c -> not (toCardCode c == "38002" && case c of PlayerCard pc -> pcOwner pc == Just you; _ -> False))
+  CardSpecific GameRef "setAsideTouched" (fromJSON -> Success you) -> do
+    for_ (findTouchedCard you g) \card -> do
+      removeFromGame card
+      setAside [PlayerCard card]
+      for_ [toId p | p <- HashMap.elems (gamePlayers g), card `elem` unDeck (playerIdentityDeck $ toAttrs p)] shuffleDeck
+    pure $ g & collectionL %~ filter (\c -> not (toCardCode c == "38002" && case c of PlayerCard pc -> pcOwner pc == Just you; _ -> False))
+  CardSpecific GameRef "medLabRemoveCapturedCard" (fromJSON -> Success cid) ->
+    pure $ g & collectionL %~ filter ((/= cid) . toCardId)
+      & victoryDisplayL %~ filter ((/= cid) . ecCardId)
   CardSpecific GameRef "mgShapeshifterEnteredHand" (fromJSON -> Success (you,card)) -> do
     case toCardCode (card :: PlayerCard) of
+      "38027" -> forcedResponse card $ resolveAs you (PlaceThreat (toSource card) 2 EncounterMainScheme)
       "32082" -> forcedResponse card do
         supports <- selectList (SupportControlledBy $ IdentityWithId you)
         allies <- selectList (AllyControlledBy $ IdentityWithId you)
@@ -1878,7 +1900,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   PutCardIntoPlay ident card payment mWindow wasPlayed -> do
     case cdCardType (getCardDef card) of
       AllyType -> do
-        let ally = createAlly ident card
+        let fromMedLab = any (\(sid, _) -> maybe False ((== "38028") . toCardCode . supportCardDef . toAttrs) (lookup sid $ gameSupports g)) (paymentReservedSupportCards payment)
+            initialAlly = createAlly ident card
+        ally <- if fromMedLab then runMessage (AllyMessage (toId initialAlly) AllyMsg.ExhaustedAlly) initialAlly else pure initialAlly
         allyStep (toId ally) (AllyOwnedBy $ fromMaybe ident $ pcOwner card)
         allyStep (toId ally) (AllyPaidWith payment)
         cardSpecific (AllyRef $ toId ally) "applyToughness" ()
@@ -3457,6 +3481,53 @@ characterStoredDamage character = getsGame $ \g -> case character of
   MinionCharacter mid -> maybe 0 getMinionDamage (lookup mid (gameMinions g) <|> lookup mid (entitiesMinions $ gameRemovedEntities g))
   VillainCharacter vid -> maybe 0 villainDamage (lookup vid (gameVillains g) <|> lookup vid (entitiesVillains $ gameRemovedEntities g))
 
+-- | Find includes every player zone and cards held under another game element.
+findTouchedCard :: IdentityId -> Game -> Maybe PlayerCard
+findTouchedCard you g = headMay [c | c <- cards, toCardCode c == "38002", pcOwner c == Just you]
+ where
+  cards = [c | u <- HashMap.elems (gameUpgrades g), PlayerCard c <- [toCard u]]
+    <> concat [unHand a.playerIdentityHand <> unDeck a.playerIdentityDeck <> unDiscard a.playerIdentityDiscard
+       | p <- HashMap.elems (gamePlayers g), let a = toAttrs p]
+    <> [c | PlayerCard c <- scenarioSetAsideCards (toAttrs $ gameScenario g) <> gameCollection g]
+    <> concatMap (Ally.allyHeldCards . toAttrs) (HashMap.elems $ gameAllies g)
+    <> concatMap (Minion.minionHeldCards . toAttrs) (HashMap.elems $ gameMinions g)
+    <> concatMap (supportHeldCards . toAttrs) (HashMap.elems $ gameSupports g)
+    <> concatMap (upgradeHeldCards . toAttrs) (HashMap.elems $ gameUpgrades g)
+    <> concatMap (Obligation.obligationHeldCards . toAttrs) (HashMap.elems $ gameObligations g)
+    <> concatMap (mainSchemeHeldCards . toAttrs) (HashMap.elems $ gameMainSchemes g)
+    <> concatMap (sideSchemeHeldCards . toAttrs) (HashMap.elems $ gameSideSchemes g)
+
+canFindTouched :: HasGame m => IdentityId -> m Bool
+canFindTouched you = getsGame (isJust . findTouchedCard you)
+
+touchedHost :: (HasGame m) => IdentityId -> m (Maybe CharacterId)
+touchedHost you = getsGame $ \g -> headMay $ catMaybes
+  [ resolve g =<< ((IdentityCharacter <$> Upgrade.upgradeAttachedIdentity a)
+      <|> (AllyCharacter <$> upgradeAttachedAlly a)
+      <|> ((\case EnemyMinionId mid -> MinionCharacter mid; EnemyVillainId vid -> VillainCharacter vid) <$> upgradeAttachedEnemy a))
+  | u <- HashMap.elems (gameUpgrades g), let a = toAttrs u, toCardCode a == "38002", upgradeOwner a == you]
+ where
+  resolve g = \case
+    IdentityCharacter p -> IdentityCharacter p <$ lookup p (gamePlayers g)
+    VillainCharacter v -> VillainCharacter v <$ lookup v (gameVillains g)
+    AllyCharacter a -> (AllyCharacter a <$ lookup a (gameAllies g))
+      <|> (MinionCharacter (MinionId $ unAllyId a) <$ lookup (MinionId $ unAllyId a) (gameMinions g))
+    MinionCharacter m -> (MinionCharacter m <$ lookup m (gameMinions g))
+      <|> (AllyCharacter (AllyId $ unMinionId m) <$ lookup (AllyId $ unMinionId m) (gameAllies g))
+
+getCharacterTraits :: (HasGame m) => CharacterId -> m (HashSet Trait)
+getCharacterTraits character = do
+  g <- getsGame id
+  case character of
+    IdentityCharacter you -> maybe (pure mempty) getTraits (lookup you $ gamePlayers g)
+    AllyCharacter aid -> case lookup aid (gameAllies g) of
+      Just ally -> getTraits ally
+      Nothing -> maybe (pure mempty) getTraits (lookup (MinionId $ unAllyId aid) $ gameMinions g)
+    MinionCharacter mid -> case lookup mid (gameMinions g) of
+      Just minion -> getTraits minion
+      Nothing -> maybe (pure mempty) getTraits (lookup (AllyId $ unMinionId mid) $ gameAllies g)
+    VillainCharacter vid -> maybe (pure mempty) getTraits (lookup vid $ gameVillains g)
+
 getCardsOwnedBy :: (HasGame m) => IdentityId -> m [CardDef]
 getCardsOwnedBy ident = getsGame \g ->
   let playersCards = concat
@@ -3757,6 +3828,10 @@ sourceHasBegunLabeledAttack (EventRef eid) = do
   attacked <- getsGame $ maybe False (notNull . eventAttacked . toAttrs) . lookup eid . gameEvents
   pure $ Ability.Attack `elem` labels && attacked
 sourceHasBegunLabeledAttack _ = pure False
+
+-- | The effect that currently owns a controlled minion conversion.
+getAllyControlSource :: HasGame m => AllyId -> m (Maybe Source)
+getAllyControlSource aid = getsGame $ maybe Nothing (Ally.allyControlSource . toAttrs) . lookup aid . gameAllies
 
 -- | Ownership persists when an ally is defeated or temporarily changes controller.
 getCharacterOwner :: (HasGame m) => CharacterId -> m (Maybe IdentityId)
@@ -4732,6 +4807,7 @@ gameSelectMinion m = do
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
     -- a keyword it gains counts, as guard from Defensive Programming
     MinionWithKeyword k -> fmap (elem k) . Minion.getModifiedKeywords . toAttrs
+    MinionCanBeStunned -> \minion -> enemyMatches EnemyCanBeStunned (EnemyMinionId $ toId minion)
     StunnedMinion -> Minion.isStunned . toAttrs
     MinionMatches xs -> andM . traverse matchFilter xs
     NotMinion m' -> fmap not . matchFilter m'
@@ -4978,6 +5054,32 @@ canPlayCardIgnoringResourceCost ident card = do
       app <- newApp ignored []
       runGameApp app (isPlayable player card)
 
+-- | Med Lab may follow a consequential defeat into any of these out-of-play
+-- destinations, but cannot exhaust to recapture a card now in hand or in play.
+canCaptureDefeatedAlly :: HasGame m => PlayerCard -> m Bool
+canCaptureDefeatedAlly card = do
+  g <- getGame
+  let cid = pcCardId card
+      discarded = [pcCardId c | p <- HashMap.elems (gamePlayers g), c <- unDiscard (playerIdentityDiscard $ toAttrs p)]
+      encounters = map ecCardId (scenarioDiscard (toAttrs $ gameScenario g) <> concatMap pileDiscard (HashMap.elems $ scenarioDecks $ toAttrs $ gameScenario g))
+      victory = map ecCardId (gameVictoryDisplay g)
+      collection = map toCardId (gameCollection g)
+  pure $ cid `elem` (discarded <> encounters <> victory <> collection)
+
+-- | A held ally is playable as if in hand, retaining its physical owner.
+canPlayHeldAlly :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+canPlayHeldAlly _ card | not (cardMatch (CardWithType AllyType) card) = pure False
+canPlayHeldAlly you card = do
+  g <- getGame
+  let withCard = g & entitiesL . playersL . ix you %~ \(PlayerIdentity a) -> PlayerIdentity a
+        {playerIdentityHand = Hand $ card : unHand (playerIdentityHand a)}
+  canPlayCardWithReductionIn withCard you 0 card
+
+heldAllyPlayable :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> SupportId -> m Bool
+heldAllyPlayable you sid = do
+  cards <- getsGame $ maybe [] (supportHeldCards . toAttrs) . lookup sid . gameSupports
+  anyM (canPlayHeldAlly you) cards
+
 -- | Check the complete ordinary play rules under the same exact-card reduction
 -- that the nested play will receive. Feasibility uses an isolated copy of the game.
 canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
@@ -5098,10 +5200,16 @@ getGainedTraits :: (HasGame m, IsRef a) => a -> m (HashSet Trait)
 getGainedTraits a =
   getsGame gameGainedTraits >>= \case
     GainedTraits (Just layer) | Just gained <- HashMap.lookup (toTarget a) layer -> pure gained
-    _ -> traitsGainedFrom <$> getModifiers a
+    _ -> gainedTraitsFromModifiers =<< getModifiers a
 
 traitsGainedFrom :: [Modifier] -> HashSet Trait
 traitsGainedFrom ms = HashSet.fromList [t | TraitModifier t <- ms]
+
+-- Copied traits participate in the same monotone trait layer as printed grants.
+gainedTraitsFromModifiers :: HasGame m => [Modifier] -> m (HashSet Trait)
+gainedTraitsFromModifiers ms = do
+  copied <- traverse getCharacterTraits [c | CopyTraitsFrom c <- ms]
+  pure $ traitsGainedFrom ms <> mconcat copied
 
 -- | Work out the traits each character gains, once for the game as it stands, so that
 -- asking a trait never runs every modifier again: Blaze of Glory's "each Guardian
@@ -5125,7 +5233,7 @@ refreshTraits g = blank {gameGainedTraits = GainedTraits (Just $ go (0 :: Int) n
   none = HashMap.fromList [(c, mempty) | c <- characters]
   -- wherever the character is, whoever looks
   grant known =
-    runIdentity . runReaderT (HashMap.fromList <$> for characters \c -> (c,) . traitsGainedFrom <$> getModifiers c) $
+    runIdentity . runReaderT (HashMap.fromList <$> for characters \c -> (c,) <$> (gainedTraitsFromModifiers =<< getModifiers c)) $
       blank {gameGainedTraits = GainedTraits (Just known), gameAllAreas = True}
   go n known
     | n > 20 = error "the traits characters gain do not settle"

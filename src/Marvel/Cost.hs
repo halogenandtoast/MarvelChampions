@@ -32,7 +32,7 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Status (StatusCard (ToughStatus))
-import Marvel.Modifier.Types (Modifier (CannotTakeDamage, CannotTakeDamageFromPlayerCards, DamageReduction))
+import Marvel.Modifier.Types (Modifier (CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, DamageReduction))
 
 passesCanAffordCost ::
   ( HasQueue m
@@ -94,6 +94,11 @@ canAffordCost identityId source cost = do
     -- a tough status card would prevent the damage, so it cannot be paid (RR FAQ, Focused
     -- Rage)
     IndirectDamageCost n -> (>= n) . sum . map snd <$> indirectCostCandidates identityId source
+    TouchedDamageCost _ -> do
+      candidates <- selectList (CharacterOtherThan $ IdentityCharacter identityId)
+      host <- touchedHost identityId
+      available <- canFindTouched identityId
+      (available &&) . notNull <$> filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
     DamageCharacterCost matcher _ -> do
       candidates <- selectList matcher
       notNull <$> filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
