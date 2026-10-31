@@ -14,6 +14,7 @@ import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Criteria
+import Marvel.Status (StatusCard (StunnedStatus, ConfusedStatus))
 import Marvel.Damage
 import Marvel.EncounterSet (EncounterSet (TheMarket))
 import Marvel.GameValue.Types
@@ -29,6 +30,7 @@ allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
   [ weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
+  , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
   , fullBlast, ricochetBeam, tacticalBrilliance, gameTime
   , backflip
   , enhancedSpiderSense
@@ -867,7 +869,7 @@ getOverHere =
 -- | "Exhaust a Weapon upgrade on your hero" is part of its cost.
 meanSwing :: CardDef
 meanSwing =
-  (event "06015" "Mean Swing" 0 HeroInterrupt [Skill] [Physical] Aggression)
+  reprintedAs ["35019"] $ (event "06015" "Mean Swing" 0 HeroInterrupt [Skill] [Physical] Aggression)
     { cdResponseWindow = Just (MakesBasicAttack When You)
     , cdCriteria = SelfMatches You
     , cdAbilityCost = ExhaustUpgradeCost (UpgradeWithTrait Weapon)
@@ -2597,3 +2599,29 @@ blastOfWind = (identityEvent "36013" "Blast of Wind" 3 HeroAction [Superpower] [
 
 toMeMyXMen :: CardDef
 toMeMyXMen = (event "36020" "\"To Me, My X-Men!\"" 1 HeroAction [Tactic] [Energy] Leadership) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait XMen) }
+
+-- Wolverine
+
+berserkerBarrage :: CardDef
+berserkerBarrage = (identityEvent "35008" "Berserker Barrage" 2 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
+
+sliceAndDice :: CardDef
+sliceAndDice = (identityEvent "35009" "Slice and Dice" 3 HeroAction [Attack] [Energy]) {cdDeckLimit = Just 2, cdCriteria = canAttack}
+
+lungingStrike :: CardDef
+lungingStrike = (identityEvent "35010" "Lunging Strike" 3 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
+
+trackByScent :: CardDef
+trackByScent = (identityEvent "35011" "Track by Scent" 2 HeroAction [Superpower, Thwart] [Mental]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart]}
+
+regenerativeHealing :: CardDef
+regenerativeHealing = (identityEvent "35012" "Regenerative Healing" 1 Action [Superpower] [Energy]) {cdDeckLimit = Just 2, cdCriteria = AnyCriteria [SelfMatches (IdentityWithAnyDamage <> IdentityCanBeHealed), CharacterExists (IdentityCharacters You <> CharacterWithStatus StunnedStatus), CharacterExists (IdentityCharacters You <> CharacterWithStatus ConfusedStatus)]}
+
+outtaMyWay :: CardDef
+outtaMyWay = (event "35017" "Outta My Way!" 2 HeroAction [Attack] [Physical] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
+
+precisionStrike :: CardDef
+precisionStrike = (event "35018" "Precision Strike" 1 HeroAction [Attack] [Mental] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
+
+fastballSpecial :: CardDef
+fastballSpecial = (basicEvent "35023" "Fastball Special" 1 HeroAction [Aerial, Attack] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Colossus", "Wolverine"), cdCriteria = teamUp "Colossus" "Wolverine", cdAbilitySubTypes = [Ability.Attack]}

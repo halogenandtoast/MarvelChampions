@@ -39,6 +39,7 @@ allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
   [ leaderOfTheMorlocks, rulerOfTheAstralPlane
+  , theCarbonadiumSynthesizer, seekingVengeance
   , geneticManipulation
   , mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
   , smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
@@ -1472,3 +1473,11 @@ leaderOfTheMorlocks = (sideScheme "36032" "Leader of the Morlocks" [Boost, Boost
 
 rulerOfTheAstralPlane :: CardDef
 rulerOfTheAstralPlane = (sideScheme "36037" "Ruler of the Astral Plane" [Star] ShadowKingSet 1) { cdHazards = 1 }
+
+-- Wolverine
+
+theCarbonadiumSynthesizer :: CardDef
+theCarbonadiumSynthesizer = (sideScheme "35029" "The Carbonadium Synthesizer" [Boost, Boost, Boost] WolverineNemesis 1) {cdAcceleration = 1}
+
+seekingVengeance :: CardDef
+seekingVengeance = (sideScheme "35035" "Seeking Vengeance" [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdAcceleration = 1}

@@ -40,6 +40,7 @@ allAllies = fromList $ map
   , SomeAllyCard pixie
   , SomeAllyCard forge
   , SomeAllyCard phoenixJeanGrey, SomeAllyCard beast, SomeAllyCard dust, SomeAllyCard rockslide, SomeAllyCard blindfold, SomeAllyCard angel
+  , SomeAllyCard jubilee, SomeAllyCard psylocke, SomeAllyCard sunfire, SomeAllyCard longshot
   , SomeAllyCard mgRobertKelly, SomeAllyCard mgJubilee, SomeAllyCard mgRictor, SomeAllyCard mgBoomBoom, SomeAllyCard mgCannonball, SomeAllyCard mgWolfsbane, SomeAllyCard mgCampaignMagneto
   , SomeAllyCard blackCatFeliciaHardy
   , SomeAllyCard spiderWomanJessicaDrew

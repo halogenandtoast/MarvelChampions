@@ -158,6 +158,8 @@ import Marvel.Attachment.Attachments.MutantGenesis as X
 
 import Marvel.Attachment.Attachments.MutantGenesisCampaign as X
 
+import Marvel.Attachment.Attachments.DeathFactor as X
+import Marvel.Attachment.Attachments.AdamantiumUpgrades as X
 -- Cyclops
 import Marvel.Attachment.Attachments.GeneTherapy as X
 

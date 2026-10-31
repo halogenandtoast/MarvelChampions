@@ -153,6 +153,8 @@ data EncounterSet
   | Inheritors
   | SpdrNemesis
   | IronSpiderSinisterSix
+  | WolverineNemesis
+  | LadyDeathstrikeSet
   | StormNemesis
   | ShadowKingSet
   deriving stock (Show, Eq, Generic)
@@ -221,6 +223,7 @@ modularSets =
   , ZzzaxSet
   , Inheritors
   , IronSpiderSinisterSix
+  , LadyDeathstrikeSet
   -- Mutant Genesis
   , Brotherhood
   , Mystique
@@ -275,6 +278,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "32001" -> ColossusNemesis
   "32030" -> ShadowcatNemesis
   "34001" -> PhoenixNemesis
+  "35001" -> WolverineNemesis
   cCode ->
     error $
       "No nemesis set for "

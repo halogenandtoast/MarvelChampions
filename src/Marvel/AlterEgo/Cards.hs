@@ -19,6 +19,7 @@ allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
     [ ororoMunroe
+  , logan
   , scottSummers
   , peterParker
     , carolDanvers
@@ -318,3 +319,8 @@ scottSummers = (alterEgo "33001b" "Scott Summers" [Mutant]) { cdDeckLimit = Just
 
 ororoMunroe :: CardDef
 ororoMunroe = (alterEgo "36001b" "Ororo Munroe" [Mutant]) { cdUnique = True }
+
+-- Wolverine
+
+logan :: CardDef
+logan = (alterEgo "35001b" "Logan" [Mutant]) {cdUnique = True}

@@ -94,6 +94,7 @@ import Marvel.Obligation.Obligations.MutantGenesis as X
 
 import Marvel.Obligation.Obligations.MutantGenesisCampaign as X
 
+import Marvel.Obligation.Obligations.PastDemons as X
 -- Cyclops
 import Marvel.Obligation.Obligations.LostVisor as X
 

@@ -423,6 +423,14 @@ import Marvel.Event.Events.FullBlast as X
 import Marvel.Event.Events.RicochetBeam as X
 import Marvel.Event.Events.TacticalBrilliance as X
 import Marvel.Event.Events.GameTime as X
+import Marvel.Event.Events.BerserkerBarrage as X
+import Marvel.Event.Events.SliceAndDice as X
+import Marvel.Event.Events.LungingStrike as X
+import Marvel.Event.Events.TrackByScent as X
+import Marvel.Event.Events.RegenerativeHealing as X
+import Marvel.Event.Events.OuttaMyWay as X
+import Marvel.Event.Events.PrecisionStrike as X
+import Marvel.Event.Events.FastballSpecial as X
 
 import Marvel.Event.Events.TelekineticAttack as X
 

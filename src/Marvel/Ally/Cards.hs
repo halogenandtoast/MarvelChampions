@@ -34,6 +34,7 @@ allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
   [ havok, mirage, gentle, pixie, forge
+  , jubilee, psylocke, sunfire, longshot
   , phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
   , mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
   , blackCatFeliciaHardy
@@ -1128,7 +1129,7 @@ magik = (ally "32042" ("Magik" <:> "Illyana Rasputin") 3 [Mystic, XMen] [Energy]
 -- Mutant Genesis
 
 colossusPiotrRasputin :: CardDef
-colossusPiotrRasputin = (basicAlly "32048" ("Colossus" <:> "Piotr Rasputin") 4 [XMen] [Physical])
+colossusPiotrRasputin = reprintedAs ["35021"] $ (basicAlly "32048" ("Colossus" <:> "Piotr Rasputin") 4 [XMen] [Physical])
   { cdUnique = True
   , cdDeckLimit = Just 1
   , cdKeywords = fromList [Toughness]
@@ -1263,3 +1264,17 @@ pixie = (ally "36017" ("Pixie" <:> "Megan Gwynn") 2 [Aerial, XMen] [Energy] Lead
 
 forge :: CardDef
 forge = (basicAlly "36022" "Forge" 2 [XMen] [Mental]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+-- Wolverine
+
+jubilee :: CardDef
+jubilee = (identityAlly "35003" ("Jubilee" <:> "Jubilation Lee") 2 [XMen] [Wild]) {cdUnique = True, cdDeckLimit = Just 1}
+
+psylocke :: CardDef
+psylocke = (ally "35013" ("Psylocke" <:> "Betsy Braddock") 4 [Psionic, XMen] [Mental] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
+
+sunfire :: CardDef
+sunfire = (ally "35014" ("Sunfire" <:> "Shiro Yoshida") 2 [XMen] [Energy] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
+
+longshot :: CardDef
+longshot = (basicAlly "35033" "Longshot" 4 [XMen] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait XMen)}

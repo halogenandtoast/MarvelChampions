@@ -83,6 +83,7 @@ import Marvel.AlterEgo.AlterEgos.PiotrRasputin as X
 
 import Marvel.AlterEgo.AlterEgos.KittyPryde as X
 
+import Marvel.AlterEgo.AlterEgos.Logan as X
 -- Cyclops
 import Marvel.AlterEgo.AlterEgos.ScottSummers as X
 

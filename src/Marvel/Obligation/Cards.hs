@@ -38,6 +38,7 @@ allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
     [ claustrophobia
+  , pastDemons
   , lostVisor
   , mgReactiveDefense
   , mgWarnTheOthers, smFriendsAndFamily
@@ -450,3 +451,8 @@ lostVisor = (obligation "33027" "Lost Visor" [Boost, Boost])
 
 claustrophobia :: CardDef
 claustrophobia = obligation "36030" "Claustrophobia" [Boost, Boost]
+
+-- Wolverine
+
+pastDemons :: CardDef
+pastDemons = obligation "35027" "Past Demons" [Boost, Boost]

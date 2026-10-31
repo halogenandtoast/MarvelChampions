@@ -35,6 +35,7 @@ allSupports = fromList $ map
   , SomeSupportCard uncannyXMen
   , SomeSupportCard hangarBay
   , SomeSupportCard utopia, SomeSupportCard dangerRoom
+  , SomeSupportCard logansCabin, SomeSupportCard weaponX, SomeSupportCard commandCenter
   , SomeSupportCard mgMetroPD
   , SomeSupportCard auntMay
   , SomeSupportCard alphaFlightStation

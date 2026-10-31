@@ -35,6 +35,7 @@ allHeroes = fromList $ map
   (toFst someHeroCardCode)
   [ SomeHeroCard stormHero
   , SomeHeroCard cyclopsHero
+  , SomeHeroCard wolverineHero
   , SomeHeroCard spiderMan
   , SomeHeroCard captainMarvel
   , SomeHeroCard sheHulk

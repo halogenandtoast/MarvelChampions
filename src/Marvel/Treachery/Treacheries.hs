@@ -219,8 +219,6 @@ import Marvel.Treachery.Treacheries.Slammed as X
 import Marvel.Treachery.Treacheries.MutantGenesis as X
 
 import Marvel.Treachery.Treacheries.TentacleStrike as X
-import Marvel.Treachery.Treacheries.HackNSlash as X
-import Marvel.Treachery.Treacheries.TentacleStrike as X
 
 import Marvel.Treachery.Treacheries.HackNSlash as X
 

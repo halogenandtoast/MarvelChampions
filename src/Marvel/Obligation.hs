@@ -26,6 +26,7 @@ allObligations = fromList $ map
   (toFst someObligationCardCode)
   [ SomeObligationCard claustrophobia
   , SomeObligationCard lostVisor
+  , SomeObligationCard pastDemons
   , SomeObligationCard mgReactiveDefense
   , SomeObligationCard mgWarnTheOthers, SomeObligationCard smFriendsAndFamily
   , SomeObligationCard affairsOfState

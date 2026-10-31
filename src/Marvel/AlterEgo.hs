@@ -26,6 +26,7 @@ allAlterEgos = fromList $ map
   (toFst someAlterEgoCardCode)
   [ SomeAlterEgoCard ororoMunroe
   , SomeAlterEgoCard scottSummers
+  , SomeAlterEgoCard logan
   , SomeAlterEgoCard peterParker
   , SomeAlterEgoCard carolDanvers
   , SomeAlterEgoCard jenniferWalters

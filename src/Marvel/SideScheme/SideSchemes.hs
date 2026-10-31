@@ -197,6 +197,8 @@ import Marvel.SideScheme.SideSchemes.MutantGenesisCampaign as X
 
 import Marvel.SideScheme.SideSchemes.MutantGenesis as X
 
+import Marvel.SideScheme.SideSchemes.TheCarbonadiumSynthesizer as X
+import Marvel.SideScheme.SideSchemes.SeekingVengeance as X
 -- Cyclops
 import Marvel.SideScheme.SideSchemes.GeneticManipulation as X
 

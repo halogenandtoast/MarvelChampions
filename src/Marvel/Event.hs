@@ -33,6 +33,7 @@ allEvents = fromList $ map
   , SomeEventCard blastOfWind
   , SomeEventCard toMeMyXMen
   , SomeEventCard fullBlast, SomeEventCard ricochetBeam, SomeEventCard tacticalBrilliance, SomeEventCard gameTime
+  , SomeEventCard berserkerBarrage, SomeEventCard sliceAndDice, SomeEventCard lungingStrike, SomeEventCard trackByScent, SomeEventCard regenerativeHealing, SomeEventCard outtaMyWay, SomeEventCard precisionStrike, SomeEventCard fastballSpecial
   , SomeEventCard backflip
   , SomeEventCard enhancedSpiderSense
   , SomeEventCard swingingWebKick

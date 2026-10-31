@@ -320,6 +320,11 @@ import Marvel.Upgrade.Upgrades.Marked as X
 import Marvel.Upgrade.Upgrades.Befuddle as X
 import Marvel.Upgrade.Upgrades.PinnedDown as X
 import Marvel.Upgrade.Upgrades.HonoraryXMen as X
+import Marvel.Upgrade.Upgrades.WolverinesClaws as X
+import Marvel.Upgrade.Upgrades.AdamantiumSkeleton as X
+import Marvel.Upgrade.Upgrades.BerserkerFrenzy as X
+import Marvel.Upgrade.Upgrades.IGotBetter as X
+import Marvel.Upgrade.Upgrades.WarriorSkill as X
 
 import Marvel.Upgrade.Upgrades.PhoenixSuit as X
 

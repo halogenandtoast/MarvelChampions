@@ -41,6 +41,7 @@ allAttachments =
     map
       (toFst toCardCode)
       [ switchblade, possessed
+  , deathFactor, adamantiumUpgrades
   , geneTherapy
   , mgMagnetosPower
   , mgAdamantiumClaws, mgAnimalFerocity, mgHomoSuperior, mgGauntletBeam, mgLearningAI, mgAdaptiveArmor, mgEnergyBarrier, mgTargetedForElimination, mgUnitUpgrade, mgStunBeam, mgPhysicalStrain, mgMagnetosHelmet, mgMagnetosArmor, mgMagneticBubble, mgWrappedInMetal, mgNanoSentinelTech, smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
@@ -1214,3 +1215,11 @@ switchblade = attachment "36033" "Switchblade" [] [Boost, Boost] StormNemesis 1
 
 possessed :: CardDef
 possessed = attachment "36038" "Possessed" [Condition] [Boost, Boost] ShadowKingSet 2
+
+-- Wolverine
+
+deathFactor :: CardDef
+deathFactor = attachment "35030" "Death Factor" [] [Boost, Boost] WolverineNemesis 2
+
+adamantiumUpgrades :: CardDef
+adamantiumUpgrades = attachment "35036" "Adamantium Upgrades" [Tech] [Boost, Boost] LadyDeathstrikeSet 2

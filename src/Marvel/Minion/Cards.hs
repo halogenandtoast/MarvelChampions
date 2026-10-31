@@ -39,6 +39,7 @@ allMinions =
     map
       (toFst toCardCode)
       [ callisto, theShadowKing
+  , omegaRed, ladyDeathstrike
   , misterSinister
   , mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
   , madameMasque
@@ -1516,3 +1517,11 @@ callisto = (minion "36031" "Callisto" [Elite, Morlock] [Boost, Boost, Boost] Sto
 
 theShadowKing :: CardDef
 theShadowKing = (minion "36036" "The Shadow King" [Elite, Psionic] [Boost, Boost, Boost] ShadowKingSet 1) { cdUnique = True }
+
+-- Wolverine
+
+omegaRed :: CardDef
+omegaRed = (minion "35028" "Omega Red" [Brute, Elite] [Boost, Boost, Boost] WolverineNemesis 1) {cdKeywords = fromList [Retaliate 1, Steady]}
+
+ladyDeathstrike :: CardDef
+ladyDeathstrike = (minion "35034" "Lady Deathstrike" [Elite, Trait.Reaver] [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdUnique = True, cdKeywords = fromList [Quickstrike]}

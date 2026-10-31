@@ -31,6 +31,7 @@ allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
   [ clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
+  , logansCabin, weaponX, commandCenter
   , utopia, dangerRoom
   , mgMetroPD
   , alphaFlightStation
@@ -638,3 +639,14 @@ uncannyXMen = (support "36018" "Uncanny X-Men" 3 [Team] [Mental] Leadership) { c
 
 hangarBay :: CardDef
 hangarBay = (support "36035" "Hangar Bay" 1 [Location] [Mental] Protection) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }
+
+-- Wolverine
+
+logansCabin :: CardDef
+logansCabin = (identitySupport "35007" "Logan's Cabin" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1}
+
+weaponX :: CardDef
+weaponX = (basicSupport "35022" "Weapon X" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant)}
+
+commandCenter :: CardDef
+commandCenter = (support "35032" "Command Center" 1 [Location] [Mental] Justice) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}

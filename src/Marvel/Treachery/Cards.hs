@@ -35,6 +35,7 @@ allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
   [ knifeFight, astralAttack
+  , tentacleStrike, hackNSlash
   , concussiveForce
   , mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
   , fieldRecruitment
@@ -1440,3 +1441,11 @@ knifeFight = treachery "36034" "Knife Fight" [Boost, Boost] StormNemesis 2
 
 astralAttack :: CardDef
 astralAttack = treachery "36039" "Astral Attack" [Star] ShadowKingSet 1
+
+-- Wolverine
+
+tentacleStrike :: CardDef
+tentacleStrike = treachery "35031" "Tentacle Strike" [Star] WolverineNemesis 1
+
+hackNSlash :: CardDef
+hackNSlash = treachery "35037" "Hack 'n' Slash" [Star] LadyDeathstrikeSet 2
