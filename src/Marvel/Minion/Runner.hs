@@ -264,8 +264,11 @@ instance RunMessage (Attrs Minion) where
         minionStep mid (MinionAddBoost $ sum $ map snd counts)
         pure attrs
       _ -> pure attrs
-    steady <- elem Steady <$> getModifiedKeywords updated
-    pure $ if steady then updated else updated {minionAdditionalStun = False, minionAdditionalConfuse = False}
+    if not (minionAdditionalStun updated || minionAdditionalConfuse updated)
+      then pure updated
+      else do
+        steady <- elem Steady <$> getModifiedKeywords updated
+        pure $ if steady then updated else updated {minionAdditionalStun = False, minionAdditionalConfuse = False}
 
 -- Hela
 

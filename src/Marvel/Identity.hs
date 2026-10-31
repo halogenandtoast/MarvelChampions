@@ -1354,9 +1354,9 @@ instance RunMessage PlayerIdentity where
     -- queued after what the message did, so the deck is made again before any of it runs
     runQueueT $ when (null (unDeck a.playerIdentityDeck) && notNull (unDiscard a.playerIdentityDiscard) && not a.playerIdentitySearching) do
       resetDeck a.playerIdentityId
-    keywords <- getModifiedKeywords pid'
     modifiers <- getModifiers pid'
-    let steady = Steady `elem` keywords
+    let keywords = toList (cdKeywords $ getCardDef pid') <> [k | KeywordModifier k <- modifiers]
+        steady = Steady `elem` keywords
         continuousStun = ContinuouslyStunned `elem` modifiers && Stalwart `notElem` keywords
         continuousConfuse = ContinuouslyConfused `elem` modifiers && Stalwart `notElem` keywords
         updated = (toAttrs pid')
