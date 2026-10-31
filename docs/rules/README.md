@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Storm Hero Pack rules insert (MC36) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/93/59/9359dac0-92c6-4b91-b73e-1d53253601a0/mc36_storm_rules_insert.pdf |
 | Phoenix Hero Pack rules insert (MC34) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc34_phoenix_rules_insert.pdf |
 | Cyclops Hero Pack rules insert (MC33) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc33_cyclops_rules_insert.pdf |
 | SP//dr Hero Pack rulesheet (MC31) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc31_spdr_rulesheet.pdf |
@@ -45,6 +46,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-storm.md](hero-storm.md) | Storm: Weather deck, Special abilities, Flash Freeze ruling, Possessed, starter deck and errata |
 | [hero-phoenix.md](hero-phoenix.md) | Phoenix: Phoenix Force, controlled allies, keyword rules and FAQ, printed nemesis text, starter deck and owner rulings |
 | [hero-cyclops.md](hero-cyclops.md) | Cyclops: Temporary, Field Commander, Optic Blast, printed starter deck and owner rulings |
 | [hero-colossus.md](hero-colossus.md) | Colossus: tough status cards, discard responses, starter deck and current errata |
