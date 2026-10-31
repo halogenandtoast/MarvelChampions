@@ -135,6 +135,17 @@ narrationFor = \case
   ExhaustIfDamaged {} -> Nothing
   AttachPlayableEventToAlly aid _ -> Just $ whenRef (AllyRef aid) \ally ->
     one $ mechanic [ikeyPart "log.attachesFacedownEvent" ["ally" ~> ally]]
+  SwapWeatherSupport you _ card _ -> Just do
+    who <- playerRef' you
+    one $ action [ikeyPart "log.changesWeather" ["player" ~> who, "card" ~> PlayerCard card]]
+  ResolveCurrentWeatherSpecial {} -> Nothing
+  ResolveWeatherSpecial you sid -> Just do
+    resolves <- asYou you $ weatherSpecialCanResolve you sid
+    if resolves then whenRef (SupportRef sid) (\support -> do
+      who <- playerRef' you
+      one $ action [ikeyPart "log.resolvesWeatherSpecial" ["player" ~> who, "card" ~> support]])
+    else pure []
+  WeatherSpecialFinished {} -> Nothing
   -- * Enemies
   VillainMessage vid msg -> villainNarration vid msg
   MinionMessage mid msg -> minionNarration mid msg

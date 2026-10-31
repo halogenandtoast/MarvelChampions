@@ -339,6 +339,8 @@ getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ minionAttack attrs)) . su
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
+  change (AttackReductionWhileAttacking you n)
+    | Just (IdentityCharacter you) == (attackCharacter <$> minionAttacking attrs) = negate (toInteger n)
   change _ = 0
 
 toEnemyId :: Attrs Minion -> EnemyId

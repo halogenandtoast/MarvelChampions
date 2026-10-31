@@ -89,6 +89,7 @@ data WindowMatcher
     IdentityChangedAnyForm WindowTiming IdentityMatcher
   | -- | "after you change to this form": an energy form matching turned faceup
     EnergyFormChangedTo WindowTiming UpgradeMatcher
+  | WeatherSpecialResolvedFor WindowTiming IdentityMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
   | IdentityDiscardsTough WindowTiming IdentityMatcher
   | VillainWouldActivate IdentityMatcher
@@ -251,6 +252,7 @@ data WindowType
   | IdentityChangesForm IdentityId
   | -- | the identity changed to the energy form of this upgrade, turned faceup
     EnergyFormChanged IdentityId UpgradeId
+  | WeatherSpecialResolved IdentityId SupportId
   | MassFormChanged IdentityId UpgradeId
   | IdentityDiscardedTough IdentityId
   | VillainActivationWouldBegin VillainId IdentityId

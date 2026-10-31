@@ -473,10 +473,11 @@ runVillainMessage msg attrs = case msg of
     case villainAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
-        base <- getModifiedAttackSigned attrs
+        actual <- undefendedIfDefenderGone attack0
+        base <- getModifiedAttackSigned (attrs {villainAttacking = Just actual})
         keywords <- getModifiedKeywords attrs
         let current = keywords <> villainAttackGrantedKeywords attrs
-            refreshed = (withAttackBase (base + toInteger (villainBoost attrs)) attack0) {
+            refreshed = (withAttackBase (base + toInteger (villainBoost attrs)) actual) {
               attackOverkill = Overkill `elem` current, attackPiercing = Piercing `elem` current,
               attackRanged = Ranged `elem` current}
         attack' <- undefendedIfDefenderGone refreshed
@@ -654,6 +655,8 @@ getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ villainAttack attrs)) . s
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
+  change (AttackReductionWhileAttacking you n)
+    | Just (IdentityCharacter you) == (attackCharacter <$> villainAttacking attrs) = negate (toInteger n)
   change _ = 0
 
 getModifiedScheme :: (HasGame m) => Attrs Villain -> m Natural

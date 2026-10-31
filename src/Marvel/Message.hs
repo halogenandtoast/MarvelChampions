@@ -447,6 +447,10 @@ data Message
   | ShuffleEncounterDeck
   | ReturnToHand Target
   | SetAside [Card]
+  | SwapWeatherSupport IdentityId (Maybe SupportId) PlayerCard Bool
+  | ResolveCurrentWeatherSpecial IdentityId
+  | ResolveWeatherSpecial IdentityId SupportId
+  | WeatherSpecialFinished IdentityId SupportId
   | ShuffleIntoEncounterDeck [EncounterCard]
   | -- | An ability makes a friendly hero or ally attack an identity (Old Rivals).
     FriendlyCharacterAttacks CharacterId IdentityId

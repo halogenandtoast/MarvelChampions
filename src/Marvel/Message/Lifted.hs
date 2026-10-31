@@ -19,7 +19,7 @@ import Marvel.Deck (unDeck)
 
 import Marvel.Hand (unHand)
 
-import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard))
+import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard, PlayerIdentityWeatherDeck))
 
 import Marvel.Projection
 
@@ -58,8 +58,40 @@ import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkil
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage)
 import Marvel.Ref
 import Marvel.Resource.Types (Resource)
+import Marvel.Trait.Types (Trait (Weather))
 import Marvel.Window.Types (ThreatSource (..), Window (..), WindowTiming (After, When, Would))
 import Marvel.Window.Types qualified as W
+
+-- | Storm's separate WEATHER deck is created before her setup choice, without resolving a Special.
+setupWeatherDeck :: (ReverseQueue m) => IdentityId -> [CardDef] -> m ()
+setupWeatherDeck you defs = do
+  cards <- for defs $ \def -> do
+    cid <- getRandom
+    pure $ MkPlayerCard cid def (Just you) (Just you)
+  identityStep you (SetUpWeatherDeck cards)
+
+-- | Swap with a different WEATHER support, then resolve the new support's Special.
+swapWeather :: (ReverseQueue m) => IdentityId -> m ()
+swapWeather you = do
+  cards <- fromMaybe [] <$> project PlayerIdentityWeatherDeck you
+  current <- selectOne (SupportMatches [SupportWithTrait Weather, SupportControlledBy $ IdentityWithId you])
+  when (isJust current && not (null cards)) $
+    chooseOne you [cardLabeled (toCardCode card) $ identityStep you (ChooseWeatherSupport card True) | card <- cards]
+
+swapWeatherSupport :: (ReverseQueue m) => IdentityId -> Maybe SupportId -> PlayerCard -> Bool -> m ()
+swapWeatherSupport you old card special = push $ SwapWeatherSupport you old card special
+
+resolveCurrentWeatherSpecial :: (ReverseQueue m) => IdentityId -> m ()
+resolveCurrentWeatherSpecial = push . ResolveCurrentWeatherSpecial
+
+-- | Only a Special that can affect the game resolves and opens its after window.
+resolveWeatherSpecial :: (ReverseQueue m) => IdentityId -> SupportId -> m ()
+resolveWeatherSpecial you sid = whenM (asYou you $ weatherSpecialCanResolve you sid) $ do
+  push $ ResolveWeatherSpecial you sid
+
+-- | The support queues this after its Special's effects, only when it resolves.
+finishWeatherSpecial :: (ReverseQueue m) => IdentityId -> SupportId -> m ()
+finishWeatherSpecial you sid = push $ WeatherSpecialFinished you sid
 
 -- | Attach an event facedown to a support that permits playing its held events.
 attachPlayableEventToSupport :: (ReverseQueue m) => SupportId -> PlayerCard -> m ()

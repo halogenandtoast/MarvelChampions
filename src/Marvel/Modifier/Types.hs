@@ -45,6 +45,7 @@ data Modifier
   | -- | reduction scoped to one physical card during one nested play
     ResourceCostReductionForCard CardId Natural
   | ThwartModifier Natural
+  | AttackReductionWhileAttacking IdentityId Natural
   | AttackModifier Natural
   | SchemeModifier Natural
   | AttackModifierAgainst EnemyId Natural
@@ -126,6 +127,7 @@ data Modifier
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | CannotChangeToHeroForm
   | -- | "your hero gets -1 THW": taken off, not below 0
     ThwartPenalty Natural
   | AttackPenalty Natural

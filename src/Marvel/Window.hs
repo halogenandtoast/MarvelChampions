@@ -270,6 +270,9 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           identityMatches identityMatcher identityId
     _ -> pure False
+  WeatherSpecialResolvedFor timing identityMatcher -> case windowType w of
+    WeatherSpecialResolved ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
   EnergyFormChangedTo timing upgradeMatcher -> case windowType w of
     EnergyFormChanged _ upgradeId
       | windowTiming w == timing ->

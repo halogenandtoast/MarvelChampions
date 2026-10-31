@@ -316,7 +316,11 @@ isIdentityDefending :: (HasGame m) => IdentityId -> m Bool
 
 getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
 
+getEnemyScheme :: HasGame m => EnemyId -> m Natural
+
 getEnemyPrintedAttack :: (HasGame m) => EnemyId -> m Natural
 getAttachmentIdentity :: (HasGame m) => AttachmentId -> m (Maybe IdentityId)
 
 usesAttackForDefense :: HasGame m => IdentityId -> EnemyId -> m Bool
+
+weatherSpecialCanResolve :: (HasGame m) => IdentityId -> SupportId -> m Bool

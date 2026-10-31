@@ -71,6 +71,7 @@
     "deck": "Deck",
     "discard": "Discard",
     "dealt": "Dealt",
+    "weather": "Weather",
     "invocation": "Invocation",
     "invocationDiscard": "Invocations used",
     "villainDeck": "{name}'s deck",

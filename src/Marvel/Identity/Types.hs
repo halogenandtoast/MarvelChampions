@@ -53,6 +53,8 @@ instance Entity PlayerIdentity where
     , playerIdentityDefended :: Bool
     , playerIdentityAttackDamageTaken :: Natural
     -- ^ the damage taken from the latest enemy attack against them
+    , playerIdentityWeatherDeck :: Maybe [PlayerCard]
+    -- ^ Storm's separate, facedown WEATHER deck, in stored game order
     , playerIdentityCounters :: Natural
     -- ^ on the identity card, whichever face is up: Groot's growth counters, Drax's vengeance
     }
@@ -84,6 +86,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityDefeated :: Field PlayerIdentity Bool
     PlayerIdentityDefended :: Field PlayerIdentity Bool
     PlayerIdentityAttackDamageTaken :: Field PlayerIdentity Natural
+    PlayerIdentityWeatherDeck :: Field PlayerIdentity (Maybe [PlayerCard])
     PlayerIdentityCounters :: Field PlayerIdentity Natural
   field fld p = let PlayerIdentityAttrs {..} = toAttrs p in case fld of
     PlayerIdentityId -> playerIdentityId
@@ -112,6 +115,7 @@ instance Entity PlayerIdentity where
     PlayerIdentityDefeated -> playerIdentityDefeated
     PlayerIdentityDefended -> playerIdentityDefended
     PlayerIdentityAttackDamageTaken -> playerIdentityAttackDamageTaken
+    PlayerIdentityWeatherDeck -> playerIdentityWeatherDeck
     PlayerIdentityCounters -> playerIdentityCounters
   toAttrs (PlayerIdentity attrs) = attrs
   toId = playerIdentityId . toAttrs

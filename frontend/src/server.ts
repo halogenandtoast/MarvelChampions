@@ -102,6 +102,8 @@ export interface PlayerView {
   attachments?: AttachmentView[]
   /** the obligations in their play area */
   obligations?: AttachmentView[]
+  /** Storm's separate facedown Weather deck */
+  weatherDeckSize?: number | null
   /** Doctor Strange's Invocation deck: its top card is faceup */
   invocation?: { top: CardView | null; deckSize: number; discard: CardView[] } | null
   [more: string]: unknown

@@ -137,5 +137,8 @@ data Trait
   | Interface
   | Pilot
   | Spider
+  | Weather
+  | Morlock
+  | XForce
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

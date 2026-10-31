@@ -217,6 +217,8 @@ data PlayerView = PlayerView
   -- ^ encounter cards attached to their hero
   , obligations :: [ObligationView]
   -- ^ the obligations in their play area
+  , weatherDeckSize :: Maybe Int
+  -- ^ Storm's separate deck stays facedown
   , invocation :: Maybe InvocationView
   -- ^ Doctor Strange's Invocation deck
   }
@@ -607,6 +609,7 @@ gameView seesHand g = do
             | a <- map toAttrs (HashMap.elems (gameObligations g))
             , a.obligationOwner == Just (toId p)
             ]
+        , weatherDeckSize = length <$> a.playerIdentityWeatherDeck
         , invocation =
             invocationDeckOf p <&> \d ->
               InvocationView

@@ -211,8 +211,9 @@ runMinionMessage msg attrs = case msg of
     case minionAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
-        base <- getModifiedAttackSigned attrs
-        let refreshed = withAttackBase (base + toInteger (minionBoost attrs)) attack0
+        actual <- undefendedIfDefenderGone attack0
+        base <- getModifiedAttackSigned (attrs {minionAttacking = Just actual})
+        let refreshed = withAttackBase (base + toInteger (minionBoost attrs)) actual
         attack' <- undefendedIfDefenderGone refreshed
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'

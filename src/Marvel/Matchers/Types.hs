@@ -18,6 +18,7 @@ import Marvel.Trait.Types
 data EntityMatcher
   = IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
+  | VillainsAndEngagedMinions IdentityId
   | MinionEntity MinionMatcher
   | AttachmentEntity AttachmentMatcher
   | -- | an event being played
@@ -211,7 +212,8 @@ data EnemyMatcher
     -- are declared
     EnemyAttackingCharacter CharacterMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
-    EnemyWithHighestAttack
+    EnemyWithSchemeLessThanAllyThwart AllyId
+  | EnemyWithHighestAttack
   | StunnedEnemy
   | EnemyWithTrait Trait
   | ConfusedEnemy

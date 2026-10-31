@@ -148,10 +148,11 @@ instance IsRef (Attrs Ally) where
 getModifiedAttack :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unAtk $ allyAttack attrs) modifiers
+  pure $ fromInteger $ max 0 (toInteger (unAtk $ allyAttack attrs) + sum (map change modifiers))
  where
-  applyModifier (AttackModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  change (AttackModifier n) = toInteger n
+  change (AttackPenalty n) = negate (toInteger n)
+  change _ = 0
 
 getModifiedHitPoints :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedHitPoints attrs = do

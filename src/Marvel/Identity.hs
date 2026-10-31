@@ -267,6 +267,7 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityDefeated = False
       , playerIdentityDefended = False
       , playerIdentityAttackDamageTaken = 0
+      , playerIdentityWeatherDeck = Nothing
       , playerIdentityCounters = 0
       }
  where
@@ -712,6 +713,22 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             [(A, HeroSide $ lookupHeroByCardCode heroCode playerIdentityId)
             ,(B, AlterEgoSide $ lookupAlterEgoByCardCode alterCode playerIdentityId)]
         }
+    SetUpWeatherDeck cards -> do
+      shuffled <- shuffleM cards
+      unless (null shuffled) $ chooseOne playerIdentityId
+        [cardLabeled (toCardCode card) $ identityStep playerIdentityId (ChooseWeatherSupport card False) | card <- shuffled]
+      pure $ PlayerIdentity attrs {playerIdentityWeatherDeck = Just shuffled}
+    ChooseWeatherSupport card resolveSpecial
+      | Just cards <- playerIdentityWeatherDeck, card `elem` cards -> do
+          current <- selectOne (SupportMatches [SupportWithTrait Weather, SupportControlledBy $ IdentityWithId playerIdentityId])
+          old <- for current $ \sid -> getsGame $ \g -> case cardInPlay g (SupportRef sid) of
+            Just (PlayerCard c) -> Just c
+            _ -> Nothing
+          swapWeatherSupport playerIdentityId current card resolveSpecial
+          let replacement = join old
+              cards' = concatMap (\c -> if c == card then maybe [] pure replacement else [c]) cards
+          pure $ PlayerIdentity attrs {playerIdentityWeatherDeck = Just cards'}
+    ChooseWeatherSupport {} -> pure pid
     SetupIdentity -> do
       let nemesisSet = getNemesisSet $ toCardCode pid
       obligations <- getObligations pid
@@ -864,7 +881,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       when canChange $ chooseOrRunOne playerIdentityId $ map (pure . formChoice pid) (sortOn show heroForms)
       pure pid
     ChangedToForm side -> do
-      canChange <- identityMatches IdentityCanChangeForm playerIdentityId
+      modifiers <- getModifiers pid
+      let toHero = case HashMap.lookup side playerIdentitySides of Just (HeroSide _) -> True; _ -> False
+          canChange = CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
       if canChange
         then do
           checkWindows [W.Window W.After $ W.IdentityChangesForm playerIdentityId]
@@ -1527,7 +1546,7 @@ instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
       KeyMap.union o $ KeyMap.fromList
-        [("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
+        [("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity
