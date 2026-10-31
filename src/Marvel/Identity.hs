@@ -46,6 +46,7 @@ import Marvel.Question
 import Marvel.Queue (HasQueue)
 import Marvel.Ref
 import Marvel.Resource
+import Marvel.Resource.Resources.MolecularAcceleration (spendingInterruptCounters)
 import Marvel.Trait
 import Marvel.Window qualified as W
 import System.Random.Shuffle
@@ -559,7 +560,9 @@ playableTargetsWith ignoringCost attrs c = do
       abilities <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
       cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
       doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
-    reduction <- mayReduceCostToPlay attrs c mTarget
+    prePlayReduction <- mayReduceCostToPlay attrs c mTarget
+    spendingReduction <- continuousSpendingCostReduction attrs c mTarget payers
+    let reduction = prePlayReduction + spendingReduction
     (ignored, _) <- resourceCostAdjustment attrs c mTarget
     printedResourceCost <- getModifiedCost attrs c mTarget
     let requirements = requiredResources c
@@ -579,6 +582,21 @@ playableTargetsWith ignoringCost attrs c = do
       else pure True
     otherPayers <- allianceCostPayers (toId attrs) (Just c)
     ((affordable && handTarget) &&) <$> canAffordCardOtherCosts (toId attrs) otherPayers c (otherCosts cost)
+
+-- | Only cards with a continuously evaluated resource cost consider counter
+-- generation while spending. Ordinary card costs retain their standard timing.
+continuousSpendingCostReduction :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) => PlayerIdentity -> PlayerCard -> Maybe Target -> [IdentityId] -> m Int
+continuousSpendingCostReduction attrs card target payers = do
+  continuous <- elem ContinuouslyRecalculateResourceCost <$> getModifiers card
+  if not continuous then pure 0 else do
+    gains <- concatMapM (\payer -> do
+      candidates <- filter (\candidate -> pcCardId candidate /= pcCardId card && not (isChosenHandTarget card target candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just card)
+      spendable <- filterM (fmap (any $ canSpendOn $ cdCriteria $ getCardDef card) . (`resourcesFor` Just card)) candidates
+      concatMapM (spendingInterruptCounters payer) spendable) payers
+    if null gains then pure 0 else do
+      current <- getModifiedCost attrs card target
+      prospective <- withAdditionalIdentityCounters gains $ getModifiedCost attrs card target
+      pure $ max 0 (current - prospective)
 
 -- | The hand card already selected to pay a choose-card cost is logically reserved
 -- from resource spending, while remaining in its actual zone until the effect.

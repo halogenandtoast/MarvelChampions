@@ -24,6 +24,24 @@ windowMatches matcher w source = case matcher of
   TreacheryResolvedBy identityMatcher -> case windowType w of
     ResolvedTreacheryCard ident _ | windowTiming w == After -> identityMatches identityMatcher ident
     _ -> pure False
+  IdentityThwarts timing identityMatcher -> case windowType w of
+    IdentityThwart ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
+    _ -> pure False
+  EnemyAttackedAnyTarget timing enemyMatcher -> case windowType w of
+    EnemyAttack enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
+    EnemyAttackOnEnemy enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
+    _ -> pure False
+  CharacterDefeatedByEnemyAttack timing enemyMatcher -> case windowType w of
+    EnemyAttackDefeatedCharacter enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
+    DefeatedAlly _ (Just enemy) | windowTiming w == timing -> enemyMatches enemyMatcher enemy
+    DefeatedMinion _ damage from _
+      | windowTiming w == timing, damageSource damage == FromAttack, Just enemy <- sourceEnemy from -> enemyMatches enemyMatcher enemy
+    DefeatedVillain _ damage from _
+      | windowTiming w == timing, damageSource damage == FromAttack, Just enemy <- sourceEnemy from -> enemyMatches enemyMatcher enemy
+    _ -> pure False
+  MinionWouldLeavePlay minionMatcher -> case windowType w of
+    MinionLeavingPlay mid | windowTiming w == Would -> minionMatches minionMatcher mid
+    _ -> pure False
   HeroThwarted timing identityMatcher -> case windowType w of
     HeroThwartComplete ident | windowTiming w == timing -> identityMatches identityMatcher ident
     MadeBasicThwart ident | windowTiming w == timing -> identityMatches identityMatcher ident

@@ -20,6 +20,8 @@ data MinionMessage
   | MinionConfused Source
   | MinionBecomeTough
   | MinionDefeated
+  | -- | Defeat interrupts finished: clean up only if leaving play was not replaced.
+    MinionLeavesPlay
   | -- | the damage defeats it, with this much past its hit points: past the window in
     -- which the excess of a hero's attack may be increased
     MinionDefeatedWithExcess Source Damage Natural
@@ -47,6 +49,8 @@ data MinionMessage
   | -- | it attacks another enemy (Moondragon): its ATK as damage, no boost card, the
     -- enemy's retaliate answering it
     MinionAttacksEnemy EnemyId
+  | -- | Resolve damage after interrupts to an enemy attacking another enemy.
+    MinionAttackEnemyAfterInterrupt EnemyId
   | MinionDealtBoost EncounterCard
   | -- | its boost cards are turned faceup in turn, then any it is given meanwhile
     MinionFlipBoostCards

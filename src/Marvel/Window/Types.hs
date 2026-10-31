@@ -61,6 +61,7 @@ data WindowMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
+  | EnemyAttackedAnyTarget WindowTiming EnemyMatcher
   | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
@@ -76,6 +77,9 @@ data WindowMatcher
   | VillainWouldTakeDamageFrom VillainMatcher DamageMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
+  | IdentityThwarts WindowTiming IdentityMatcher
+  | CharacterDefeatedByEnemyAttack WindowTiming EnemyMatcher
+  | MinionWouldLeavePlay MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
   | PhaseBegins WindowTiming Phase
@@ -237,6 +241,9 @@ data WindowType
     -- past its hit points
     DefeatedMinion MinionId Damage Source Natural
   | DefeatedEnemyWithUpgrades EnemyId [CardDef] Damage Source
+  | IdentityThwart IdentityId Source
+  | EnemyAttackDefeatedCharacter EnemyId CharacterId
+  | MinionLeavingPlay MinionId
   | MinionEnteredPlay MinionId
   | SideSchemeEnteredPlay SideSchemeId
   | EncounterCardResolved IdentityId EncounterCard
@@ -244,6 +251,7 @@ data WindowType
   | -- | the enemy took this damage, from this source: none a tough status card prevented
     EnemyTookDamageFrom EnemyId Damage Source
   | EnemyAttack EnemyId IdentityId
+  | EnemyAttackOnEnemy EnemyId EnemyId
   | -- | the damage an enemy's attack dealt the character
     EnemyAttacksAndDamages EnemyId CharacterId Natural
   | Schemed VillainId

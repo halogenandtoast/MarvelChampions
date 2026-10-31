@@ -54,8 +54,8 @@ instance RunMessage MutantPeacekeepers where
     EventMessage eid (PlayedEvent you payment _) | eid == eventId attrs -> do
       hero <- selectCount HeroThwartValue (IdentityWithId you)
       allies <- traverse (selectCount AllyThwartValue . AllyWithId) (paymentExhaustedAllies payment)
-      modifiers <- getModifiers attrs
-      let bonus = sum [n | ThreatRemovedModifier n <- modifiers]
-      thwartDivided you attrs (hero + sum allies + bonus) SchemeYouCanThwart
+      -- The divided-thwart pipeline reads bonuses after its interrupt window,
+      -- then adds them to this single total before any points are assigned.
+      thwartDivided you attrs (hero + sum allies) SchemeYouCanThwart
       pure e
     _ -> MutantPeacekeepers <$> runMessage msg attrs

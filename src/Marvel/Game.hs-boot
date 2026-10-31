@@ -338,3 +338,8 @@ getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
 canMoveSchemeThreatFrom :: (HasGame m, IsRef source) => source -> SchemeId -> m Bool
 
 weatherSpecialCanResolve :: (HasGame m) => IdentityId -> SupportId -> m Bool
+
+sourceHasBegunLabeledThwart :: HasGame m => Source -> m Bool
+
+withAdditionalIdentityCounters :: HasGame m => [(IdentityId, Natural)] -> ReaderT Game m a -> m a
+recalculateCardPaymentCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> PlayerCard -> Payment -> m Cost

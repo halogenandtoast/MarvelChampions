@@ -46,7 +46,7 @@ import Marvel.Card
 import Marvel.Card.AttachmentHeroAbilities (hasPrintedHeroActionOrResponse)
 import Marvel.Card.WhenRevealed (hasWhenRevealed)
 import Marvel.Card.WhenDefeated (hasWhenDefeated)
-import Marvel.Choice (choiceMessages)
+import Marvel.Choice (choiceMessages, resolveThreatRemoval)
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Count
@@ -64,7 +64,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment, Field (EnvironmentCounters, EnvironmentOwner))
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith, eventAttacked), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith, eventAttacked, eventThwarted), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -193,6 +193,8 @@ data Game = Game
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
   , gamePayingForAbility :: Maybe (CardCode, Natural)
+  , gameResolvingAbilitySubTypes :: [(Source, [Ability.AbilitySubType], Bool)]
+  -- ^ Active labeled ability scopes, innermost first; the flag marks a begun thwart.
   , gameYou :: Maybe IdentityId
   -- ^ who "you" is while a player's card, choice or window is looked at: its
   -- controller, or the player choosing or being offered it (see 'asYou'); otherwise
@@ -323,7 +325,8 @@ instance FromJSON Game where
     -- Saves from before phase limits were tracked have no phase history.
     genericParseJSON (aesonOptions $ Just "game") $
       Object
-        ( KeyMap.insertWith (\_ existing -> existing) "payingForAbility" Null
+        ( KeyMap.insertWith (\_ existing -> existing) "resolvingAbilitySubTypes" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "payingForAbility" Null
             . KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "treacheriesRevealedThisPhase" (toJSON ([] :: [Value]))
              . KeyMap.insertWith (\_ existing -> existing) "playedInWindows" (toJSON ([] :: [Value]))
@@ -1139,7 +1142,19 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           IdentityRef _ | abilityType ab == Basic || abilityIndex ab == 100 -> Nothing
           source -> abilityCardDef g (refocus source)
     for_ def \d -> checkWindows [W.Window W.After $ W.ResolvedAbility you d]
-    pure g
+    pure g {gameResolvingAbilitySubTypes = (abilitySource ab, labeledAbilityTypes g ab, False) : gameResolvingAbilitySubTypes}
+  AbilityResolved source -> do
+    let pop [] = []
+        pop (scope@(active, _, _) : rest)
+          | active == source = rest
+          | otherwise = scope : pop rest
+    pure g {gameResolvingAbilitySubTypes = pop $ gameResolvingAbilitySubTypes}
+  CardSpecific GameRef "markLabeledThwart" (fromJSON -> Success source) -> do
+    let mark [] = []
+        mark ((active, labels, begun) : rest)
+          | active == source = (active, labels, True) : rest
+          | otherwise = (active, labels, begun) : mark rest
+    pure g {gameResolvingAbilitySubTypes = mark $ gameResolvingAbilitySubTypes}
   CardSpecific target "applyToughness" _ -> do
     for_ (cardInPlay g target) $ \card -> do
       modifiers <- getModifiers target
@@ -1474,6 +1489,38 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         attachmentRemoved aid
         pure $ g & (entitiesL . attachmentsL %~ deleteMap aid) & (victoryDisplayL <>~ [ec | EncounterCard ec <- [toCard at]])
     _ -> error $ "Cannot add to the victory display: " <> show target
+  CardSpecific GameRef "shuffleMinionIntoEncounterDeck" (fromJSON -> Success mid) -> do
+    for_ (cardInPlay g $ MinionRef mid) $ \case
+      EncounterCard card -> do
+        checkWindows [W.Window W.Would $ W.MinionLeavingPlay mid]
+        push $ ResolveMinionLeavingPlay mid (CardSpecific GameRef "shuffleMinionAfterLeaveWindow" $ toJSON (mid, card))
+      _ -> pure ()
+    pure g
+  CardSpecific GameRef "shuffleMinionAfterLeaveWindow" (fromJSON -> Success (mid, card)) -> do
+    removeMinionFromGameWithoutLeaveWindow mid
+    shuffleIntoEncounterDeck [card]
+    pure g
+  CardSpecific GameRef "minionActivatesAgainst" (fromJSON -> Success (mid, you)) -> do
+    present <- selectAny (MinionWithId mid)
+    when present do
+      hero <- identityMatches HeroIdentity you
+      if hero then enemyAttacks mid you else minionSchemesAgainst mid you
+    pure g
+  CardSpecific GameRef "enemyDefeatedIdentity" (fromJSON -> Success (ident, enemy)) -> do
+    let defeated = maybe True (playerIdentityDefeated . toAttrs) $ lookup ident (gamePlayers g)
+    when defeated $ checkWindows [W.Window W.After $ W.EnemyAttackDefeatedCharacter enemy (IdentityCharacter ident)]
+    pure g
+  PrepareDividedThreat ident source upTo n matcher -> do
+    sourceModifiers <- getModifiers source
+    let bonus = if ThreatRemovalBonusInTotal `elem` sourceModifiers
+          then sum [k | ThreatRemovedModifier k <- sourceModifiers]
+          else 0
+    push $ AssignDividedThreat ident source False upTo (n + bonus) matcher []
+    pure g
+  ResolveThreatRemoval basic thwarting ident target source n -> do
+    msgs <- asYou ident $ resolveThreatRemoval basic thwarting target source n
+    traverse_ push msgs
+    pure g
   DefeatedLeavesPlay target -> do
     let def = case target of
           MinionRef k -> getCardDef <$> lookup k (gameMinions g)
@@ -1484,7 +1531,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         isVictory = \case
           Victory _ -> True
           _ -> False
-    push $ if victory then AddToVictoryDisplay target else RemoveFromPlay target
+    let departure = if victory then AddToVictoryDisplay target else RemoveFromPlay target
+    -- The defeated minion already answered its would-leave window before cleanup.
+    push $ case target of
+      MinionRef mid -> ResolveMinionLeavingPlay mid departure
+      _ -> departure
     pure g
   SetPeril who -> pure $ g & perilL .~ who
   -- each card's icons and one more for each amplify icon in play, counted as
@@ -2123,7 +2174,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     attachTo (toId attachment) enemy
     pure $ g & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment) & (boostCardsL %~ HashMap.filter (/= card))
   -- a boost card shuffled into the encounter deck is not discarded with the others
-  ShuffleIntoEncounterDeck cards -> pure $ g & boostCardsL %~ HashMap.filter (`notElem` cards)
+  ShuffleIntoEncounterDeck cards -> pure $ g
+    {gameRemovedFromGameEncounterCards = filter (`notElem` cards) gameRemovedFromGameEncounterCards}
+    & boostCardsL %~ HashMap.filter (`notElem` cards)
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     MinionType -> do
       let
@@ -2386,7 +2439,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   ReturnToHand target@(MinionRef mid) -> case lookup mid (gameMinions g) of
     Nothing -> pure g
     Just minion -> case toCard minion of
-      EncounterCard _ -> g <$ removeFromPlay target
+      EncounterCard _ -> g <$ push (ResolveMinionLeavingPlay mid $ RemoveFromPlay target)
       PlayerCard card -> do
         modifiers <- getModifiers target
         if RemovedFromGameInsteadOfLeavingPlay `elem` modifiers
@@ -2520,6 +2573,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- likewise damage prevented in full: nothing more answers it
     let open = \case
           W.Window W.When (W.UsedRecovery iid) -> isQueued (== IdentityMessage iid (SideMessage Recovered))
+          W.Window W.Would (W.MinionLeavingPlay mid) -> isQueued \case
+            ResolveMinionLeavingPlay mid' _ -> mid == mid'
+            _ -> False
           W.Window W.Would (W.IdentityDefeat iid) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window W.Would (W.IdentityDefeatFromDamage iid _ _) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
@@ -2584,7 +2640,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   DeclareDefense ident enemyId defensePriority -> do
     open <- selectAny (EnemyWithId enemyId <> UndefendedEnemy)
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
-    when (open && not forbidden) $ declareDefenseWithout ident enemyId defensePriority []
+    unless forbidden $ case defendingIdentity g enemyId of
+      Just defender -> offerClaimedBasicDefense defender enemyId
+      Nothing -> when open $ declareDefenseWithout ident enemyId defensePriority []
+    pure g
+  -- A defense event can claim the attack before basic defense is declared. That
+  -- same identity may still exhaust for its basic DEF; the defender cannot change.
+  DeclareDefenseWithout _ enemyId _ declined | Just defender <- defendingIdentity g enemyId -> do
+    unless (defender `elem` declined) $ offerClaimedBasicDefense defender enemyId
     pure g
   -- each player decides for themselves whether a character they control defends (RR
   -- "Defend"): the attacked player first, who may ask another player before deciding;
@@ -2627,6 +2690,25 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               <> [targeting o (ask o) | o <- others]
     pure g
   _ -> pure g
+
+-- | The current identity defender, including one established by a defense event.
+defendingIdentity :: Game -> EnemyId -> Maybe IdentityId
+defendingIdentity g enemy = do
+  details <- case enemy of
+    EnemyVillainId vid -> lookup vid (gameVillains g) >>= villainAttackDetails
+    EnemyMinionId mid -> lookup mid (gameMinions g) >>= minionAttackDetails
+  case attackCharacter details of
+    IdentityCharacter who | attackDefended details -> Just who
+    _ -> Nothing
+
+offerClaimedBasicDefense :: ReverseQueue m => IdentityId -> EnemyId -> m ()
+offerClaimedBasicDefense who enemy = do
+  canDefend <- identityMatches (UnexhaustedIdentity <> HeroIdentity <> IdentityCanDefend) who
+  forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+  when (canDefend && not forbidden) $ chooseOnePromptedAbout who "$label.declareDefender" enemy
+    [ pure (Defend enemy)
+    , labeled "$label.declineToDefend" (pure ())
+    ]
 
 -- | A boost-effect interrupt before reveal still turns the original card faceup.
 -- Icons, After windows, entity identity and eventual discard remain unchanged.
@@ -2910,10 +2992,43 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
   checkWindows [W.Window W.After $ W.EncounterCardResolved ident card]
   pure result
 
+-- | Inspect a possible spending interrupt's counter generation without mutating
+-- the game. This is used only to decide whether beginning a payment is legal.
+withAdditionalIdentityCounters :: HasGame m => [(IdentityId, Natural)] -> ReaderT Game m a -> m a
+withAdditionalIdentityCounters gains body = do
+  g <- getGame
+  let add state (who, n) = state & entitiesL . playersL . ix who %~ \(PlayerIdentity attrs) ->
+        PlayerIdentity attrs {playerIdentityCounters = playerIdentityCounters attrs + n}
+  runReaderT body $ refreshTraits $ foldl' add g gains
+
+-- | Continuous cost-setting abilities may change the resource cost while it is
+-- being paid. The original selected target and printed X remain fixed.
+recalculateCardPaymentCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> PlayerCard -> Payment -> m Cost
+recalculateCardPaymentCost who card payment = do
+  player <- getIdentity who
+  let chosenX = if cdCost (getCardDef card) == Just (-1)
+        then Just $ sum [n | XPayment n <- payments payment]
+        else Nothing
+  getCardCostWithX chosenX player card (paymentTarget payment)
+
+-- | A labeled thwart's first threat-removal step marks it before opening the
+-- interrupt; later instances belong to that same thwart.
+sourceHasBegunLabeledThwart :: HasGame m => Source -> m Bool
+sourceHasBegunLabeledThwart source = do
+  g <- getGame
+  case headMay [begun | (active, _, begun) <- gameResolvingAbilitySubTypes g, active == source] of
+    Just begun -> pure begun
+    Nothing -> pure $ case source of
+      EventRef eid -> maybe False (eventThwarted . toAttrs) $ lookup eid $ gameEvents g
+      _ -> False
+
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
   runMessage (ResolveWhenDefeated original) g = dispatchGameMessage original g
+  runMessage (ResolveMinionLeavingPlay mid original) g
+    | not (HashMap.member mid $ gameMinions g) = pure g
+    | otherwise = dispatchGameMessage original g
   runMessage (Simultaneously msgs) g = foldlM (flip runMessage) g (reverse msgs)
   runMessage (ResolveAllyLeavingPlay ident aid def original) g
     | not (HashMap.member aid $ gameAllies g) = pure g
@@ -2923,6 +3038,10 @@ instance RunMessage Game where
           checkWindows [W.Window W.After $ W.AllyLeavingPlay ident aid def]
         pure after
   runMessage msg g
+    | Just mid <- departingMinion msg, HashMap.member mid (gameMinions g) = runQueueT do
+        checkWindows [W.Window W.Would $ W.MinionLeavingPlay mid]
+        push $ ResolveMinionLeavingPlay mid msg
+        pure g
     | Just target <- whenDefeatedTarget msg g = runQueueT do
         you <- getYou
         chooseOnePromptedAbout you "$label.resolveWhenDefeated" target
@@ -2935,6 +3054,16 @@ instance RunMessage Game where
         push $ ResolveAllyLeavingPlay (getAllyController ally) aid (getCardDef ally) original
         pure g
     | otherwise = dispatchGameMessage msg g
+
+-- | A departure is intercepted while the minion and its attachments are still
+-- present, before any attached cards or held cards are discarded.
+departingMinion :: Message -> Maybe MinionId
+departingMinion = \case
+  RemoveFromPlay (MinionRef mid) -> Just mid
+  ReturnToHand (MinionRef mid) -> Just mid
+  RemoveFromGame (MinionRef mid) -> Just mid
+  AddToVictoryDisplay (MinionRef mid) -> Just mid
+  _ -> Nothing
 
 -- | Printed defeat abilities pause while their card is still in play. Ordinary
 -- defeats without an ability need no acknowledgement.
@@ -2969,8 +3098,18 @@ departingAlly = \case
   _ -> Nothing
 
 dispatchGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
-dispatchGameMessage msg g =
-  runPreGameMessage msg g
+dispatchGameMessage original g =
+  let msg = case original of
+        CheckWindows windows ->
+          let completions =
+                [ W.Window W.After $ W.EnemyAttackDefeatedCharacter enemy (AllyCharacter aid)
+                | W.Window W.After (W.AllyCardDefeated _ card) <- windows
+                , let aid = AllyId $ unCardId $ pcCardId card
+                , Just enemy <- [Data.List.lookup aid $ gamePendingAttackDefeats g]
+                ]
+           in CheckWindows (windows <> completions)
+        _ -> original
+   in runPreGameMessage msg g
     >>= traverseOf scenarioL (runMessage msg)
     >>= traverseOf entitiesL (runMessage msg)
     >>= traverseOf removedEntitiesL (runMessage msg)
@@ -3147,6 +3286,7 @@ newGame player scenario =
     , gameUsedAbilities = mempty
     , gameActivePlayer = toId player
     , gamePayingForAbility = Nothing
+    , gameResolvingAbilitySubTypes = []
     , gameYou = Nothing
     , gameScenario = scenario
     , gameFocusedCards = []
@@ -3506,11 +3646,13 @@ instance HasAbilities Game where
 sourceAbilitySubTypes :: (HasGame m) => Source -> m [Ability.AbilitySubType]
 sourceAbilitySubTypes source = do
   g <- getGame
-  case toTarget source of
-    EventRef eid -> case lookup eid (gameEvents g) of
-      Just (Event event) -> eventAbilitySubTypes event
-      Nothing -> pure []
-    target -> pure $ maybe [] cdAbilitySubTypes (abilityCardDef g target)
+  case headMay [labels | (active, labels, _) <- gameResolvingAbilitySubTypes g, active == source] of
+    Just labels -> pure labels
+    Nothing -> case toTarget source of
+      EventRef eid -> case lookup eid (gameEvents g) of
+        Just (Event event) -> eventAbilitySubTypes event
+        Nothing -> pure []
+      target -> pure $ maybe [] cdAbilitySubTypes (abilityCardDef g target)
 
 encounterCardCanBeCanceled :: (HasGame m) => EncounterCard -> m Bool
 encounterCardCanBeCanceled card = do
@@ -5006,16 +5148,17 @@ getModifiers a = withDepthGuard 2 $ do
   environments <- HashMap.elems <$> getsGame gameEnvironments
   treacheries <- HashMap.elems <$> getsGame gameTreacheries
   obligations <- HashMap.elems <$> getsGame gameObligations
-  -- a card in hand answers for itself: "reduce the cost to play this card". ponytail:
-  -- allies and events only, the kinds so far that do
+  -- A card answers its own play-cost text from hand and while reserved for an
+  -- active payment. Reserving it must not turn off a continuous cost ability.
   let inHandOf :: (HasGame m) => CardType -> (IdentityId -> PlayerCard -> x) -> m [x]
       inHandOf cardType create = case toTarget a of
         CardIdRef cid -> getsGame \g ->
-          [ create (toId p) c
-          | p <- HashMap.elems (gamePlayers g)
-          , c <- unHand (playerIdentityHand $ toAttrs p)
-          , pcCardId c == cid
-          , cdCardType (getCardDef c) == cardType
+          [ create owner card
+          | (owner, card) <- Data.List.nubBy (\(_, left) (_, right) -> pcCardId left == pcCardId right) $
+              [(toId p, c) | p <- HashMap.elems (gamePlayers g), c <- unHand (playerIdentityHand $ toAttrs p)]
+                <> [(activeCostIdentityId cost, c) | cost <- gameActiveCost g, ForCard c <- [activeCostTarget cost]]
+          , pcCardId card == cid
+          , cdCardType (getCardDef card) == cardType
           ]
         _ -> pure []
   inHand <- inHandOf AllyType createAlly

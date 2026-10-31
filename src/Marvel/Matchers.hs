@@ -76,6 +76,7 @@ damageMatches matcher damage = case matcher of
     FromPlayerAttack ident -> identityMatches identityMatcher ident
     _ -> pure False
   AttackFromAlly allyMatcher -> case damageSource damage of
+    FromAllyAttack _ | allyMatcher == AnyAlly -> pure True
     FromAllyAttack ident -> allyMatches allyMatcher ident
     _ -> pure False
   AnyDamage -> pure True

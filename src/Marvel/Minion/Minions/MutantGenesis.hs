@@ -195,7 +195,10 @@ instance RunMessage MutantGenesisMinion where
       MutantGenesisMinion . (`With` (defeater, pyroState)) <$> runMessage msg attrs
     WithDiscardedMatch (isTarget attrs -> True) FromEncounterDeck (EncounterCard card) | toCardCode attrs == "32159" -> do
       you <- maybe getYou pure defeater
-      afterMatching (\case DefeatedLeavesPlay target -> target == toTarget attrs; _ -> False) (putEncounterCardIntoPlay you card)
+      afterMatching (\case
+        DefeatedLeavesPlay target -> target == toTarget attrs
+        ResolveMinionLeavingPlay mid _ -> mid == minionId attrs
+        _ -> False) (putEncounterCardIntoPlay you card)
       pure e
     CardSpecific (isTarget attrs -> True) "mgResolveDefeat" _ -> e <$ acolyteDefeat attrs (minionEngagedIdentity attrs)
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do

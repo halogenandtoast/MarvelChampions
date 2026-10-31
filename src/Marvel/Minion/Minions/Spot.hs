@@ -34,9 +34,12 @@ instance RunMessage Spot where
         [targeting attrs $ cardSpecific attrs "shuffleDefeated" ()]
       pure e
     CardSpecific (isTarget attrs -> True) "shuffleDefeated" _ -> do
+      minionLeavingPlayStep (minionId attrs) "shuffleAfterLeaveWindow"
+      pure e
+    CardSpecific (isTarget attrs -> True) "shuffleAfterLeaveWindow" _ -> do
       for_ (minionUpgrades attrs) removeFromPlay
       for_ (minionAttachments attrs) defeatedLeavesPlay
-      removeFromGame attrs
+      removeMinionFromGameWithoutLeaveWindow (minionId attrs)
       minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
       shuffleIntoEncounterDeck [MkEncounterCard (CardId $ unMinionId $ minionId attrs) (getCardDef attrs)]
       pure e

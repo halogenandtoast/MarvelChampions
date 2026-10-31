@@ -39,7 +39,10 @@ instance RunMessage TheSleeper where
         pure e
       -- When Defeated: removed from the game, not discarded
       MinionDefeated -> do
-        removeFromGame attrs
+        minionLeavingPlayStep (minionId attrs) "removeDefeatedSleeper"
         pure e
       _ -> TheSleeper <$> runMessage msg attrs
+    CardSpecific (isTarget attrs -> True) "removeDefeatedSleeper" _ -> do
+      removeMinionFromGameWithoutLeaveWindow (minionId attrs)
+      pure e
     _ -> TheSleeper <$> runMessage msg attrs

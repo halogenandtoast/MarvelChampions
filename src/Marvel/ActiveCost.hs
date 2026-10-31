@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards, ContinuouslyRecalculateResourceCost))
 
 import Control.Monad.State
 import Data.List (partition, nub)
@@ -38,6 +38,7 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
+import Marvel.Resource.Resources.MolecularAcceleration (molecularAccelerationSpent)
 import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
 import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
@@ -81,6 +82,7 @@ payCostPartAs contributing activeCost cost = do
   acid = activeCostId activeCost
   go = \case
     NoCost -> pure ()
+    PlaceIdentityCountersCost n -> placeCounters iid n
     DiscardHandCardsCost n m -> do
       inHand <- projectMap PlayerIdentityHand (fromIntegral . length . unHand) iid
       discardFor iid (ActiveCostRef acid) FromHand n (fromMaybe inHand m)
@@ -329,6 +331,18 @@ payCostPartAs contributing activeCost cost = do
       top <- take 1 <$> getEncounterDeck
       discardTopOfEncounterDeck 1
       for_ top (paid . DiscardedEncounterCardPayment . EncounterCard)
+    LookAtTopEncounterCardsAndDiscardOneCost n -> do
+      cards <- take (fromIntegral n) <$> getEncounterDeck
+      if null cards then abortPayment acid else do
+        showCardsTo iid (map EncounterCard cards)
+        chooseOne iid
+          [ targeting (CardIdRef $ ecCardId card) do
+              hideCardsFrom iid
+              putOnTopOfEncounterDeck [card]
+              discardTopOfEncounterDeck 1
+              paid (DiscardedEncounterCardPayment $ EncounterCard card)
+          | card <- cards
+          ]
     -- added to the resources as the card was played
     TargetPrintedCost -> pure ()
     ChosenHandCardCost -> pure ()
@@ -579,7 +593,33 @@ runActiveCost ::
   Message ->
   ActiveCost ->
   m ActiveCost
-runActiveCost msg activeCost = runQueueT $ case msg of
+runActiveCost msg activeCost = do
+  current <- if refreshStep then refreshContinuousCardCost activeCost else pure activeCost
+  runActiveCostWithCurrentCost msg current
+ where
+  acid = activeCostId activeCost
+  refreshStep = case msg of
+    CheckPayment ident -> ident == acid
+    FinishedPayment ident -> ident == acid
+    AllocatedPayment ident _ -> ident == acid
+    CardSpecific (ActiveCostRef ident) key _ -> ident == acid && key `elem` ["finishSpendingCard", "allocateSyncRatio"]
+    _ -> False
+
+-- Ordinary cards lock in their cost before resource payment. A continuous
+-- cost-setting ability explicitly opts in to reevaluation while paying.
+refreshContinuousCardCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => ActiveCost -> m ActiveCost
+refreshContinuousCardCost activeCost = case activeCostTarget activeCost of
+  ForCard card -> do
+    continuous <- elem ContinuouslyRecalculateResourceCost <$> getModifiers card
+    if not continuous then pure activeCost else do
+      cost <- recalculateCardPaymentCost (activeCostIdentityId activeCost) card (activeCostPayment activeCost)
+      pure activeCost {activeCostCost = cost}
+  _ -> pure activeCost
+
+runActiveCostWithCurrentCost ::
+  (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
+  Message -> ActiveCost -> m ActiveCost
+runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
     CheckWindows windows -> do
       let actual = sum [damageAmount damage | Window After (IdentityTookDamage you source damage) <- windows, you == activeCostIdentityId activeCost, source == activeCostSource activeCost]
           receipt = \case
@@ -657,18 +697,23 @@ runActiveCost msg activeCost = runQueueT $ case msg of
       payCostPart activeCost cost
       pure activeCost
     SpentWithResources ident discard resources printed | ident == activeCostId activeCost -> do
-      paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
+      -- Reserve the card now; its interrupt resolves before any resource from it
+      -- is recorded as spent. The continuation observes the resulting game.
+      molecularAccelerationSpent (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) discard
+      cardSpecific (ActiveCostRef ident) "finishSpendingCard" (discard, resources, printed)
       pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
     Spent ident discard | ident == activeCostId activeCost -> do
       resources <- resourcesFor discard $ case activeCostTarget activeCost of
         ForCard card -> Just card
         _ -> Nothing
       printed <- printedResourcesFor discard
-      paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
-      pure $
-        activeCost
-          { activeCostSpentCards = discard : activeCostSpentCards activeCost
-          }
+      molecularAccelerationSpent (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) discard
+      cardSpecific (ActiveCostRef ident) "finishSpendingCard" (discard, resources, printed)
+      pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
+    CardSpecific (ActiveCostRef ident) "finishSpendingCard" (fromJSON -> Success (discard, resources, printed))
+      | ident == activeCostId activeCost -> do
+          paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
+          pure activeCost
     Paid payment -> do
       let def = case activeCostTarget activeCost of ForCard card -> Just (getCardDef card); _ -> Nothing
       expanded <- for (payments payment) $ \receipt -> (receipt,) <$> case receipt of

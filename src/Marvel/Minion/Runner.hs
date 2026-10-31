@@ -138,6 +138,12 @@ runMinionMessage msg attrs = case msg of
     pure attrs {minionEngagedIdentity = ident}
   -- with victory X, it and an attachment on it with victory X go to the victory display
   MinionDefeated -> do
+    -- A printed When Defeated effect and its interrupts have resolved before
+    -- this base step; the minion still has all its attachments and status cards.
+    checkWindows [W.Window W.Would $ W.MinionLeavingPlay (minionId attrs)]
+    resolveMinionLeavingPlay (minionId attrs)
+    pure attrs
+  MinionLeavesPlay -> do
     for_ (minionUpgrades attrs) removeFromPlay
     for_ (minionAttachments attrs) defeatedLeavesPlay
     defeatedLeavesPlay attrs
@@ -177,12 +183,20 @@ runMinionMessage msg attrs = case msg of
     if forbidden then pure attrs else if stunned
       then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False
       else do
-        keywords <- getModifiedKeywords attrs
-        atk <- getModifiedAttack attrs
-        let attack' = attackWith keywords (toEnemyId attrs) (MinionCharacter $ minionId attrs) atk
-        dealDamage enemy attrs (attackDamageTo attack' atk)
-        unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
+        checkWindows [W.Window W.When $ W.EnemyAttackOnEnemy (toEnemyId attrs) enemy]
+        minionStep (minionId attrs) (MinionAttackEnemyAfterInterrupt enemy)
         pure attrs
+  MinionAttackEnemyAfterInterrupt enemy -> do
+    present <- selectAny (MinionWithId $ minionId attrs)
+    targetPresent <- selectAny (EnemyWithId enemy)
+    when (present && targetPresent) do
+      keywords <- getModifiedKeywords attrs
+      atk <- getModifiedAttack attrs
+      let attack' = attackWith keywords (toEnemyId attrs) (MinionCharacter $ minionId attrs) atk
+      dealDamage enemy attrs (attackDamageTo attack' atk)
+      unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
+      checkWindows [W.Window W.After $ W.EnemyAttackOnEnemy (toEnemyId attrs) enemy]
+    pure attrs
   MinionAttacks ident -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs

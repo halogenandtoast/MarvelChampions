@@ -48,7 +48,10 @@ instance RunMessage Beetle where
       pure e
     CardSpecific (isTarget attrs -> True) "shuffle" _ -> do
       cancelMinionDefeat (minionId attrs)
-      removeFromGame attrs
+      minionLeavingPlayStep (minionId attrs) "shuffleBeetleAfterLeaveWindow"
+      pure e
+    CardSpecific (isTarget attrs -> True) "shuffleBeetleAfterLeaveWindow" _ -> do
+      removeMinionFromGameWithoutLeaveWindow (minionId attrs)
       shuffleIntoEncounterDeck [MkEncounterCard (CardId $ unMinionId $ minionId attrs) (getCardDef attrs)]
       pure e
     _ -> Beetle <$> runMessage msg attrs

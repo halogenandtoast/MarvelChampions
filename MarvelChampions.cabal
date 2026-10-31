@@ -1094,6 +1094,7 @@ library
       Marvel.Resource.Resources.Cyclops
       Marvel.Resource.Resources.MutantGenesis
       Marvel.Resource.Resources.PassionForJustice
+      Marvel.Resource.Resources.MolecularAcceleration
       Marvel.Resource.Resources.PymParticles
       Marvel.Resource.Resources.Salvage
       Marvel.Resource.Types
@@ -2125,6 +2126,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.EngagementWindowSpec
       Marvel.Rules.EventResolutionSpec
       Marvel.Rules.FourHeroMechanicsSpec
+      Marvel.Rules.GambitMechanicsSpec
       Marvel.Rules.GalaxysMostWantedSpec
       Marvel.Rules.IronheartMechanicsSpec
       Marvel.Rules.MutantGenesisLabeledAbilitiesSpec
@@ -2147,6 +2149,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.SupportHeldEventsSpec
       Marvel.Rules.SurgeSpec
       Marvel.Rules.SyncRatioPaymentSpec
+      Marvel.Rules.ThwartInterruptSpec
       Marvel.Rules.TraitExhaustionSpec
       Marvel.Rules.UniqueSpec
       Marvel.Rules.UpgradePlaySpec

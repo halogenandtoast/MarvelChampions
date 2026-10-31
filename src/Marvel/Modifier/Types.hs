@@ -91,6 +91,10 @@ data Modifier
     AttackConsequentialDamageModifier Natural
   | -- | on a source: each instance of damage it deals is increased
     DamageDealtModifier Natural
+  | -- | Charge counters Gambit spent to empower this event.
+    ChargedWithCounters Natural
+  | -- | A continuous cost-setting ability is reapplied during resource payment.
+    ContinuouslyRecalculateResourceCost
   | DamageTakenModifier Int
   | AdditionalActivationBoostIcons Natural
   | -- | on a source: each instance of threat it removes is increased

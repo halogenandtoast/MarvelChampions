@@ -365,14 +365,35 @@ resolveChoice ident = \case
   ChooseOneLabelChoice choicePairs ->
     pure [Ask ident $ ChooseOne $ map (\(t, c) -> Label t [c]) choicePairs]
 
--- | What the source's modifiers add to each instance of what it does.
--- | The threat removed from the scheme, by thwarting or not.
+-- | Open a labeled thwart's interrupt before calculating the amount removed.
+-- Basic thwarts already open their window before choosing a scheme (and before
+-- calculating a divided thwart's total), so they do not open another one here.
 removeThreatFrom :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
-removeThreatFrom basic thwarting target source n' = do
-  -- each instance of threat the source removes may be increased, as by Shrink
+removeThreatFrom basic thwarting target source n = do
+  controller <- getHeroSourceController source
+  begun <- sourceHasBegunLabeledThwart source
+  payer <- fromMaybe <$> getYou <*> getSourceController source
+  let opensWindow = thwarting && not basic && not begun
+      started = [CardSpecific GameRef "markLabeledThwart" (toJSON source) | opensWindow]
+        <> [EventMessage eid EventThwarted | opensWindow, EventRef eid <- [source]]
+      windows = [CheckWindows [Window When $ W.IdentityThwart who source] | opensWindow, Just who <- [controller]]
+      continuation = started <> windows <> [ResolveThreatRemoval basic thwarting payer target source n]
+      canonical = case target of SchemeRef sid -> schemeRef sid; other -> other
+  modifiers <- getModifiers canonical
+  let cost = if thwarting then mconcat [c | AdditionalThwartCost c <- modifiers] else NoCost
+  if cost == NoCost then pure continuation else do
+    payable <- canAffordCost payer (refocus target) cost
+    acid <- getRandom
+    pure [SetActiveCost $ ActiveCost acid payer (ForContinuation (refocus target) continuation) cost NoPayment Nothing mempty Nothing | payable]
+
+-- | Resolve the removal after its interrupt window and additional cost. Reading
+-- modifiers here makes an interrupt apply to the first instance as well as later
+-- instances of the same event.
+resolveThreatRemoval :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
+resolveThreatRemoval basic thwarting target source n' = do
   modifiers <- getModifiers source
   let bonus = if ThreatRemovalBonusInTotal `elem` modifiers then 0 else sum [n | ThreatRemovedModifier n <- modifiers]
-  let n = n' + bonus
+      n = n' + bonus
       side sid = SideSchemeMessage sid $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n
       main mid = MainSchemeMessage mid $ if basic then MainSchemeBasicThwarted source n else if thwarting then MainSchemeThwarted source n else MainSchemeThreatRemoved source n
   heroController <- getHeroSourceController source
@@ -395,14 +416,7 @@ removeThreatFrom basic thwarting target source n' = do
       crises <- if IgnoresCrisis `elem` mods then selectList CrisisSideScheme else pure []
       pure [CheckWindows (map (Window After . W.IgnoredKeyword who) patrols <> map (Window After . W.IgnoredCrisis who) crises) | notNull patrols || notNull crises]
     _ -> pure []
-  let canonical = case target of SchemeRef sid -> schemeRef sid; other -> other
-  modifiers <- getModifiers canonical
-  let cost = if thwarting then mconcat [c | AdditionalThwartCost c <- modifiers] else NoCost
-  if cost == NoCost then pure (ignored <> continuation) else do
-    payer <- fromMaybe <$> getYou <*> getSourceController source
-    payable <- canAffordCost payer (refocus target) cost
-    acid <- getRandom
-    pure [SetActiveCost $ ActiveCost acid payer (ForContinuation (refocus target) continuation) cost NoPayment Nothing mempty Nothing | payable]
+  pure (ignored <> continuation)
 
 sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
 sourceBonus source f = sum . mapMaybe f <$> getModifiers source

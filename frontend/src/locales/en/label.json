@@ -378,5 +378,6 @@
   "phoenixHealTwo": "Heal 2 damage from Jean Grey",
   "phoenixFirebirdReady": "Remove 1 power counter to ready Phoenix",
   "phoenixFirebirdPower": "Place 2 power counters on Phoenix Force",
-  "weatherControl": "Weather Control"
+  "weatherControl": "Weather Control",
+  "molecularAcceleration": "Molecular Acceleration: place 1 charge counter on Gambit"
 }

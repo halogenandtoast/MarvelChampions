@@ -24,10 +24,11 @@ import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerI
 import Marvel.Projection
 
 import Marvel.Ability.Types (Ability)
+import Marvel.Ability.Types qualified as Ability
 import Marvel.I18n (ikeyWith, intVar)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
-import Marvel.Attack (Attack (..))
+import Marvel.Attack (Attack (..), sourceEnemy)
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType))
@@ -392,11 +393,26 @@ thwartSchemeAs you scheme source n = resolveAs you $ ThwartScheme (SchemeRef $ t
 -- chooses: assigned a point at a time, none past a scheme's threat, then each scheme
 -- given its share is thwarted (RR, Wasp rulesheet).
 thwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-thwartDivided you source n matcher = push $ AssignDividedThreat you (toSource source) False False n matcher []
+thwartDivided you source n matcher = prepareDividedThreat you (toSource source) False n matcher
 
 -- | 'thwartDivided', "a total of up to" n: the player may stop short.
 thwartDividedUpTo :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
-thwartDividedUpTo you source n matcher = push $ AssignDividedThreat you (toSource source) False True n matcher []
+thwartDividedUpTo you source n matcher = prepareDividedThreat you (toSource source) True n matcher
+
+-- | The first step of a labeled divided thwart opens its interrupt before
+-- calculating bonuses in the shared total.
+prepareDividedThreat :: ReverseQueue m => IdentityId -> Source -> Bool -> Natural -> SchemeMatcher -> m ()
+prepareDividedThreat you source upTo n matcher = do
+  controller <- getHeroSourceController source
+  labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
+  begun <- sourceHasBegunLabeledThwart source
+  when (labeled && not begun) do
+    cardSpecific GameRef "markLabeledThwart" source
+    case source of
+      EventRef eid -> eventStep eid EventThwarted
+      _ -> pure ()
+    for_ controller $ \ident -> checkWindows [Window When $ W.IdentityThwart ident source]
+  push $ PrepareDividedThreat you source upTo n matcher
 
 -- | The hero's basic thwart divided among the thwartable schemes (Giant Wasp).
 basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
@@ -559,8 +575,10 @@ defeatIdentity ident =
 
 -- | Preserve the cause of lethal damage for interrupts restricted to enemy attacks.
 defeatIdentityFromDamage :: (ReverseQueue m) => IdentityId -> Source -> Damage -> m ()
-defeatIdentityFromDamage ident source damage =
+defeatIdentityFromDamage ident source damage = do
   pushAll [CheckWindows [Window Would $ W.IdentityDefeat ident, Window Would $ W.IdentityDefeatFromDamage ident source damage], IdentityMessage ident IdentityDefeated]
+  when (damageSource damage `elem` [FromAttack, FromOverkill]) $
+    for_ (sourceEnemy source) $ \enemy -> cardSpecific GameRef "enemyDefeatedIdentity" (ident, enemy)
 
 -- | The player's turn is over: what lasts for the turn ends.
 identityEndedTurn :: (ReverseQueue m) => IdentityId -> m ()
@@ -761,6 +779,10 @@ villainActivatesAgainst vid you = do
   checkWindows [Window Would $ W.VillainActivationWouldBegin vid you]
   cardSpecific GameRef "resolveVillainActivation" (vid, you)
 
+-- | A minion activates against the player in their form when activation begins.
+minionActivatesAgainst :: ReverseQueue m => MinionId -> IdentityId -> m ()
+minionActivatesAgainst mid you = cardSpecific GameRef "minionActivatesAgainst" (mid, you)
+
 -- | Resolve a prescribed declaration after its "would activate" window. Internal
 -- aliases use this to preserve the original type without offering that window twice.
 resolveVillainActivationAfterWould :: (ReverseQueue m) => VillainId -> VillainMessage -> m ()
@@ -908,6 +930,21 @@ flipVillain vid = do
 -- loses the confusion, otherwise it schemes ('minionSchemed').
 minionSchemes :: (ReverseQueue m) => MinionId -> m ()
 minionSchemes mid = push $ MinionMessage mid MinionSchemes
+
+-- | A custom minion departure answers replacement interrupts before its own
+-- cleanup step. The step is addressed to the same minion.
+minionLeavingPlayStep :: ReverseQueue m => MinionId -> Text -> m ()
+minionLeavingPlayStep mid key = do
+  checkWindows [Window Would $ W.MinionLeavingPlay mid]
+  push $ ResolveMinionLeavingPlay mid (CardSpecific (MinionRef mid) key $ toJSON ())
+
+-- | The minion already answered its leave-play replacement window.
+removeMinionFromGameWithoutLeaveWindow :: ReverseQueue m => MinionId -> m ()
+removeMinionFromGameWithoutLeaveWindow mid = push $ ResolveMinionLeavingPlay mid (RemoveFromGame $ MinionRef mid)
+
+-- | Continue a defeated minion's departure after its replacement interrupts.
+resolveMinionLeavingPlay :: ReverseQueue m => MinionId -> m ()
+resolveMinionLeavingPlay mid = push $ ResolveMinionLeavingPlay mid (MinionMessage mid MinionLeavesPlay)
 
 healAllDamage :: (ReverseQueue m) => MinionId -> m ()
 healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
@@ -1274,6 +1311,7 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
   matches = \case
     AllyMessage who (AllyAttackLands _ _) -> who == aid
     AllyMessage who (AllyEvenAttackLands _ _) -> who == aid
+    ResolveThreatRemoval True True _ _ (AllyRef who) _ -> who == aid
     MainSchemeMessage _ (MainSchemeBasicThwarted (AllyRef who) _) -> who == aid
     MainSchemeMessage _ (MainSchemeThwarted (AllyRef who) _) -> who == aid
     SideSchemeMessage _ (SideSchemeThwarted (AllyRef who) _) -> who == aid
@@ -1281,6 +1319,7 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
   raise = \case
     AllyMessage who (AllyAttackLands enemy damage) -> [AllyMessage who (AllyAttackLands enemy damage {damageAmount = damageAmount damage + bonus})]
     AllyMessage who (AllyEvenAttackLands damage shares) -> [AllyMessage who (AllyEvenAttackLands damage {damageAmount = damageAmount damage + bonus} shares)]
+    ResolveThreatRemoval basic thwarting who target source amount -> [ResolveThreatRemoval basic thwarting who target source (amount + bonus)]
     MainSchemeMessage sid (MainSchemeBasicThwarted source amount) -> [MainSchemeMessage sid (MainSchemeBasicThwarted source (amount + bonus))]
     MainSchemeMessage sid (MainSchemeThwarted source amount) -> [MainSchemeMessage sid (MainSchemeThwarted source (amount + bonus))]
     SideSchemeMessage sid (SideSchemeThwarted source amount) -> [SideSchemeMessage sid (SideSchemeThwarted source (amount + bonus))]
@@ -2348,11 +2387,7 @@ takeHeldCardIntoPlay you target card = do
   putIntoPlay you card
 
 shuffleMinionIntoEncounterDeck :: (ReverseQueue m) => MinionId -> m ()
-shuffleMinionIntoEncounterDeck mid = do
-  card <- getsGame (\g -> cardInPlay g $ MinionRef mid)
-  for_ card $ \case
-    EncounterCard c -> removeFromPlay mid >> shuffleIntoEncounterDeck [c]
-    _ -> pure ()
+shuffleMinionIntoEncounterDeck mid = cardSpecific GameRef "shuffleMinionIntoEncounterDeck" mid
 
 -- | Replacement of the damage this particular attack would deal, after defense.
 replaceAttackDamageWithThreatRemoval :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()

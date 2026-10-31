@@ -109,6 +109,13 @@ narrationFor = \case
   UsedAbility ident a | narrates a.abilityType -> Just $ whenRef (refocus a.abilitySource) \source -> do
     who <- playerRef' ident
     one $ action [ikeyPart "log.usesAbility" ["player" ~> who, "card" ~> source]]
+  -- Departure wrappers are timing plumbing; the continued message is narrated.
+  ResolveMinionLeavingPlay mid (MinionMessage _ MinionLeavesPlay) -> minionNarration mid MinionLeavesPlay
+  ResolveMinionLeavingPlay mid (CardSpecific _ key _)
+    | key `elem` ["shuffleAfterLeaveWindow", "removeDefeatedSleeper"] -> minionNarration mid MinionLeavesPlay
+  ResolveMinionLeavingPlay {} -> Nothing
+  ResolveThreatRemoval {} -> Nothing
+  PrepareDividedThreat {} -> Nothing
   Simultaneously msgs -> case mapMaybe narrationFor msgs of
     [] -> Nothing
     told -> Just $ concat <$> sequence told
@@ -482,6 +489,7 @@ minionNarration mid = \case
       if stunned
         then toned Good $ mechanic [ikeyPart "log.stunnedInstead" ["enemy" ~> m]]
         else mechanic [ikeyPart "log.attacks" ["enemy" ~> m, "player" ~> e]]
+  MinionAttackEnemyAfterInterrupt {} -> Nothing
   MinionSchemesAgainst {} -> Nothing
   MinionSchemeAgainstEnded -> Nothing
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
@@ -491,7 +499,8 @@ minionNarration mid = \case
     capped <- getsGame $ \g -> maybe (damageAmount dmg) (\m -> minimum (damageAmount dmg : [subtractNatural (Minion.minionDamageThisPhase $ toAttrs m) cap | MaximumDamagePerPhase cap <- modifiers])) (lookup mid $ gameMinions g)
     damaged (MinionRef mid) (tough && preventedByTough dmg) capped
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
-  MinionDefeated -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
+  MinionDefeated -> Nothing
+  MinionLeavesPlay -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]
   MinionStunned _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.stunned" (MinionRef mid)
   MinionConfused _ -> Just $ unlessStalwart (MinionRef mid) $ simply "log.confused" (MinionRef mid)
   MinionBecomeTough -> Just $ simply "log.tough" (MinionRef mid)

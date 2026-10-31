@@ -140,6 +140,7 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
  where
   isDefeat = \case
     MinionMessage mid' MinionDefeated -> mid' == mid
+    ResolveMinionLeavingPlay mid' _ -> mid' == mid
     _ -> False
   -- the excess on to the villain, its "would take damage" window first when it opens
   dropOverkill = \case
@@ -154,6 +155,15 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
   isAfter = \case
     CheckWindows ws -> any (\case Window After (DefeatedMinion mid' _ _ _) -> mid' == mid; _ -> False) ws
     _ -> False
+
+-- | Replace a suspended minion departure. Once cancelled, the would-leave window
+-- is no longer imminent, so another replacement cannot consume itself.
+cancelMinionLeavingPlay :: HasQueue m => MinionId -> m ()
+cancelMinionLeavingPlay mid = do
+  cancelMinionDefeat mid
+  withQueue_ $ filter $ \case
+    ResolveMinionLeavingPlay mid' _ -> mid' /= mid
+    _ -> True
 
 -- | A villain that would be defeated is not ("instead"), as it answers
 -- 'VillainWouldBeDefeated': the window after its defeat is cancelled.
@@ -404,6 +414,12 @@ data Message
   | DealBoost Target
   | -- | The ally's interrupt has finished; perform its departure once, then respond.
     ResolveAllyLeavingPlay IdentityId AllyId CardDef Message
+  | -- | Perform a minion departure only if no interrupt replaced it.
+    ResolveMinionLeavingPlay MinionId Message
+  | -- | Recalculate threat removal after the thwart interrupt resolves.
+    ResolveThreatRemoval Bool Bool IdentityId Target Source Natural
+  | -- | Calculate a divided thwart total after its interrupt.
+    PrepareDividedThreat IdentityId Source Bool Natural SchemeMatcher
   | -- | Move the top encounter card into a player's deck, preserving its card id.
     PutTopEncounterCardInPlayerDeck IdentityId
   | FlipBoostCards Target

@@ -103,6 +103,7 @@ data Cost
     DealEncounterCardCost
   | -- | "discard the top card of the encounter deck" (Leading Blow), the card paid with
     DiscardTopEncounterCardCost
+  | LookAtTopEncounterCardsAndDiscardOneCost Natural
   | -- | the printed resource cost of the card chosen as the card's target
     TargetPrintedCost
   | -- | choose a hand card as a cost; it remains in hand but cannot pay resources
@@ -115,6 +116,7 @@ data Cost
   | -- | so many counters removed from the payer's identity card: "remove 1 growth
     -- counter from him" (Groot)
     IdentityCountersCost Natural
+  | PlaceIdentityCountersCost Natural
   | -- | "exhaust the Milano", whoever controls it (The Galaxy's Most Wanted)
     ExhaustMilanoCost
   | -- | the first cost if the payer controls the Milano, the second if not, decided as it is
@@ -175,6 +177,7 @@ costResources SearchEncounterSideSchemeCost = []
 costResources SearchEncounterMinionCost = []
 costResources DealEncounterCardCost = []
 costResources DiscardTopEncounterCardCost = []
+costResources (LookAtTopEncounterCardsAndDiscardOneCost _) = []
 costResources TargetPrintedCost = []
 costResources ChosenHandCardCost = []
 costResources (ChooseCharacterWithTraitCost _ _) = []
@@ -182,6 +185,7 @@ costResources MayOverpay = []
 costResources (PrintedXCost _ _) = []
 costResources (UpToResourcesCost _) = [Nothing]
 costResources (IdentityCountersCost _) = []
+costResources (PlaceIdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
 costResources (DamageCost _) = []

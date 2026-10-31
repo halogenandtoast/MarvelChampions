@@ -183,6 +183,7 @@ canAffordCost identityId source cost = do
     PlaceThreatOnMainSchemeCost _ -> selectAny MainScheme
     DealEncounterCardCost -> pure True
     DiscardTopEncounterCardCost -> pure True
+    LookAtTopEncounterCardsAndDiscardOneCost n -> (n > 0 &&) . notNull <$> getEncounterDeck
     TargetPrintedCost -> pure True
     ChosenHandCardCost -> pure True
     ChooseCharacterWithTraitCost t matcher -> notNull <$> chooseCharacterTraitCandidates t matcher
@@ -190,6 +191,7 @@ canAffordCost identityId source cost = do
     PrintedXCost _ _ -> pure True
     UpToResourcesCost n -> (n > 0 &&) . notNull <$> availableResources
     IdentityCountersCost n -> member identityId <$> select (IdentityWithCounters $ AtLeast $ Static $ fromIntegral n)
+    PlaceIdentityCountersCost _ -> pure True
     ExhaustMilanoCost -> milanoIsReady
     IfControlsMilanoCost c c' -> controlsMilano identityId >>= \m -> go (if m then c else c')
     ExhaustCost -> case source of
