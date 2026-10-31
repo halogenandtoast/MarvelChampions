@@ -53,6 +53,7 @@ data Criteria
   | -- | another card remains playable after this card exhausts the identity
     CardPlayAfterExhaustingHasTarget Natural
   | PlayCardWithReductionHasTarget CardMatcher Natural
+  | CanPlayAttackEventWithClaws
   | ControlsCardsWithTrait Trait Natural
   | CanCancelRevealedEncounterCard
   | CanCancelRevealedTreachery

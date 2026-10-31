@@ -117,6 +117,7 @@ narrationFor = \case
   EventMessage _ (EventPaidWith _) -> Nothing
   EventMessage _ EventThwarted -> Nothing
   PlayCardWithReduction {} -> Nothing
+  PlayCardIgnoringResourceCost {} -> Nothing
   ContributeResources {} -> Nothing
   DeclareContributionWilds {} -> Nothing
   ContributeCost {} -> Nothing
@@ -481,6 +482,8 @@ minionNarration mid = \case
       if stunned
         then toned Good $ mechanic [ikeyPart "log.stunnedInstead" ["enemy" ~> m]]
         else mechanic [ikeyPart "log.attacks" ["enemy" ~> m, "player" ~> e]]
+  MinionSchemesAgainst {} -> Nothing
+  MinionSchemeAgainstEnded -> Nothing
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions

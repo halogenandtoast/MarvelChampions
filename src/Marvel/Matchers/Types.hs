@@ -36,6 +36,7 @@ data IdentityMatcher
   | ExhaustedIdentity
   | ConfusedIdentity
   | StunnedIdentity
+  | IdentityCanBeHealed
   | IdentityWithoutToughStatus
   | IdentityWithTitle Text
   | -- | the player playing as this identity, whichever face is up
@@ -435,6 +436,7 @@ instance Semigroup ExtendedCardMatcher where
 data AttachmentMatcher
   = AttachmentWithId AttachmentId
   | AttachmentOnEnemyWithHeroAbility EnemyId
+  | AttachmentWithPrintedHeroActionOrResponse
   | AttachmentIs CardDef
   | AttachmentWithTrait Trait
   | -- | attached to the enemy
@@ -472,6 +474,7 @@ data SourceMatcher
   | SourceIs Source
   | -- | the identity itself: its basic powers and its own card's abilities
     SourceIsIdentity IdentityMatcher
+  | SourceIsAlly AllyMatcher
   | -- | an event a player matching played
     EventPlayedBy IdentityMatcher
   | SourceOneOf [SourceMatcher]

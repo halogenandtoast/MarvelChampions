@@ -184,7 +184,7 @@ instance RunMessage (Attrs Hero) where
     attackDamage ident bonus = do
       dmg <- (+ bonus) <$> getModifiedAttack a
       modifiers <- getModifiers a
-      let gains k f = if KeywordModifier k `elem` modifiers then f else id
+      let gains k f = if KeywordModifier k `elem` modifiers || BasicAttackKeyword k `elem` modifiers then f else id
       pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
     attackDamageAgainst ident enemy bonus = do
       targetModifiers <- getModifiers (enemyRef enemy)
@@ -193,7 +193,7 @@ instance RunMessage (Attrs Hero) where
         then getModifiedThwart a
         else getModifiedAttackAgainst a enemy
       modifiers <- getModifiers a
-      let gains k f = if KeywordModifier k `elem` modifiers then f else id
+      let gains k f = if KeywordModifier k `elem` modifiers || BasicAttackKeyword k `elem` modifiers then f else id
       pure $ toDamage dmg (FromPlayerAttack ident) & gains Overkill withOverkill & gains Piercing withPiercing
     -- a scheme's own ref, main or side
     schemeTarget = \case

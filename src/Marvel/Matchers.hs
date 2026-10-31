@@ -123,6 +123,8 @@ sourceMatches matcher source = case matcher of
   AnySource -> pure True
   SourceIs expected -> pure $ expected == source
   SourceIsIdentity m | IdentityRef ident <- source -> identityMatches m ident
+  SourceIsAlly AnyAlly | AllyRef _ <- source -> pure True
+  SourceIsAlly m | AllyRef aid <- source -> allyMatches m aid
   EventPlayedBy m | EventRef _ <- source -> maybe (pure False) (identityMatches m) =<< getSourceController source
   SourceOneOf ms -> anyM (`sourceMatches` source) ms
   _ -> pure False

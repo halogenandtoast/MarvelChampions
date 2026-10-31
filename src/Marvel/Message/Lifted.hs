@@ -269,6 +269,10 @@ chooseUpgrade you matcher = resolveAs you . ChooseUpgrade matcher . toTarget
 dealDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m ()
 dealDamage enemy source = resolve . DamageEnemy (EnemyRef $ toEnemy enemy) (toSource source)
 
+-- | All characters take their damage before any after-damage responses.
+damageCharacters :: (ReverseQueue m, IsRef source) => source -> Damage -> [CharacterId] -> m ()
+damageCharacters source damage characters = pushAll . simultaneousDamage =<< traverse (\c -> capture $ damageCharacter c source damage) characters
+
 -- | Damage dealt to each of the enemies as one effect ('simultaneousDamage').
 dealDamageToEach :: (ReverseQueue m, IsEnemy enemy, IsRef source) => [enemy] -> source -> Damage -> m ()
 dealDamageToEach enemies source damage =
@@ -552,6 +556,11 @@ defenseApplied ident = push . IdentityMessage ident . SideMessage . DefenseAppli
 defeatIdentity :: (ReverseQueue m) => IdentityId -> m ()
 defeatIdentity ident =
   pushAll [CheckWindows [Window Would $ W.IdentityDefeat ident], IdentityMessage ident IdentityDefeated]
+
+-- | Preserve the cause of lethal damage for interrupts restricted to enemy attacks.
+defeatIdentityFromDamage :: (ReverseQueue m) => IdentityId -> Source -> Damage -> m ()
+defeatIdentityFromDamage ident source damage =
+  pushAll [CheckWindows [Window Would $ W.IdentityDefeat ident, Window Would $ W.IdentityDefeatFromDamage ident source damage], IdentityMessage ident IdentityDefeated]
 
 -- | The player's turn is over: what lasts for the turn ends.
 identityEndedTurn :: (ReverseQueue m) => IdentityId -> m ()
@@ -1054,13 +1063,20 @@ defeatSideSchemeBy :: (ReverseQueue m, IsRef source) => SideSchemeId -> source -
 defeatSideSchemeBy sid = defeatSideSchemeWith sid . Just . toSource
 
 defeatSideSchemeWith :: (ReverseQueue m) => SideSchemeId -> Maybe Source -> m ()
-defeatSideSchemeWith sid source = do
+defeatSideSchemeWith sid source = defeatSideSchemeWithThwart sid source False
+
+-- | Defeat attributed to actual thwarting, rather than other threat removal.
+defeatSideSchemeByThwart :: (ReverseQueue m, IsRef source) => SideSchemeId -> source -> m ()
+defeatSideSchemeByThwart sid source = defeatSideSchemeWithThwart sid (Just $ toSource source) True
+
+defeatSideSchemeWithThwart :: (ReverseQueue m) => SideSchemeId -> Maybe Source -> Bool -> m ()
+defeatSideSchemeWithThwart sid source thwart = do
   you <- getYou
   pushAll
     [ CheckWindows [Window When $ W.DefeatedSideScheme sid]
     , SideSchemeMessage sid DefeatSideScheme
     , DefeatedLeavesPlay (toTarget sid)
-    , CheckWindows [Window After $ W.DefeatedSideSchemeBy sid you source]
+    , CheckWindows $ [Window After $ W.DefeatedSideSchemeBy sid you source] <> [Window After $ W.DefeatedSideSchemeByThwart sid s | thwart, Just s <- [source]]
     ]
 
 -- | What the side scheme does once what it revealed is done.
@@ -1327,6 +1343,9 @@ attachPlayableEventToAlly ally card = do
 -- | Play this card normally with a reduction confined to its own play and payment.
 playCardWithReduction :: (ReverseQueue m) => IdentityId -> Natural -> PlayerCard -> m ()
 playCardWithReduction who n card = push $ PlayCardWithReduction who card n
+
+playCardIgnoringResourceCost :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+playCardIgnoringResourceCost who card = push $ PlayCardIgnoringResourceCost who card
 
 -- | The part of the cost is paid ('PayCost').
 payCost :: (ReverseQueue m) => ActiveCostId -> Cost -> m ()
@@ -2206,6 +2225,12 @@ playCardFromSetAside ident code = do
   cards <- getSetAsidePlayerCards
   for_ (headMay [c | c <- cards, toCardCode c == code, pcOwner c == Just ident]) $ \card -> identityStep ident (PlayingCard card Nothing)
 
+-- | Put an owned permanent card directly into play during setup.
+putCardFromSetAsideIntoPlay :: (ReverseQueue m) => IdentityId -> CardCode -> m ()
+putCardFromSetAsideIntoPlay ident code = do
+  cards <- getSetAsidePlayerCards
+  for_ (headMay [c | c <- cards, toCardCode c == code, pcOwner c == Just ident]) $ putIntoPlay ident
+
 -- | Snapshot the upgrades attached to an enemy before its defeat interrupts run.
 -- Pass the same snapshot to the When and After windows.
 enemyDefeatUpgrades :: (HasGame m) => EnemyId -> m [CardDef]
@@ -2336,23 +2361,39 @@ replaceAttackDamageWithThreatRemoval enemy you = cardSpecific GameRef "mgAttackT
 preventEnemyAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
 preventEnemyAttackDamage enemy n = cardSpecific GameRef "mgPartialAttackPrevention" (toEnemy enemy, n)
 
+-- | The source of the attack whose damage is waiting behind its interrupt window.
+currentPlayerAttackSource :: (ReverseQueue m) => IdentityId -> m (Maybe Source)
+currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attackSource q)
+ where
+  attackSource = \case
+    VillainMessage _ (VillainDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
+    MinionMessage _ (MinionDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
+    Simultaneously messages -> concatMap attackSource messages
+    _ -> []
+
 -- | The current attack's pending damage, after its attack window has opened.
 modifyCurrentPlayerAttack :: (ReverseQueue m) => IdentityId -> Natural -> [Keyword] -> m ()
-modifyCurrentPlayerAttack you n keywords = withQueue_ change
+modifyCurrentPlayerAttack you n keywords = do
+  current <- currentPlayerAttackSource you
+  for_ current $ \source -> withQueue_ (map $ change source)
  where
   improve d = foldr apply (d {damageAmount = damageAmount d + n}) keywords
   apply Overkill d = d {damageOverkill = True}
   apply Piercing d = d {damagePiercing = True}
   apply Ranged d = d {damageRanged = True}
   apply _ d = d
-  change [] = []
-  change (VillainMessage v (VillainDamaged source d) : rest) | damageSource d == FromPlayerAttack you = VillainMessage v (VillainDamaged source $ improve d) : rest
-  change (MinionMessage m (MinionDamaged source d) : rest) | damageSource d == FromPlayerAttack you = MinionMessage m (MinionDamaged source $ improve d) : rest
-  change (CheckWindows windows : rest) = CheckWindows (map improveWindow windows) : change rest
-  change (message : rest) = message : change rest
-  improveWindow window = window {windowType = case windowType window of
+  change current = \case
+    VillainMessage v (VillainDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> VillainMessage v (VillainDamaged source $ improve d)
+    MinionMessage m (MinionDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> MinionMessage m (MinionDamaged source $ improve d)
+    Simultaneously messages -> Simultaneously (map (change current) messages)
+    CheckWindows windows | any (fromCurrent current) windows -> CheckWindows (map (improveWindow current) windows)
+    message -> message
+  fromCurrent current window = case windowType window of
+    W.VillainDamageFrom _ source d -> source == current && damageSource d == FromPlayerAttack you
+    _ -> False
+  improveWindow current window = window {windowType = case windowType window of
     W.DamagedVillain v d | damageSource d == FromPlayerAttack you -> W.DamagedVillain v (improve d)
-    W.VillainDamageFrom v source d | damageSource d == FromPlayerAttack you -> W.VillainDamageFrom v source (improve d)
+    W.VillainDamageFrom v source d | source == current && damageSource d == FromPlayerAttack you -> W.VillainDamageFrom v source (improve d)
     other -> other}
 
 healDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> CharacterMatcher -> m ()

@@ -42,7 +42,7 @@ import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
 import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
 import Marvel.Window (windowMatches)
-import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (PlayedCardFromHand, ResolvedAbility, GeneratedResources))
+import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (IdentityTookDamage, PlayedCardFromHand, ResolvedAbility, GeneratedResources))
 
 
 -- | Pay this part of the cost. Resources are paid first, so a cost that cannot be paid
@@ -114,11 +114,10 @@ payCostPartAs contributing activeCost cost = do
       candidates <- selectList matcher
       valid <- filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
       chooseOne iid [targeting (characterRef c) (damageCharacter c (activeCostSource activeCost) (toDamage n FromAbility) >> paid (ChosenCharacterPayment c <> DamagePayment n)) | c <- valid]
-    DamageCost n -> case activeCostTarget activeCost of
-      ForAbility a -> do
-        damageIdentity iid (abilitySource a) (toDamage n FromAbility)
-        paid $ DamagePayment n
-      _ -> error "Unhandled"
+    DamageCost n -> do
+      paid (PendingDamageCostPayment n 0)
+      damageIdentity iid (activeCostSource activeCost) (toDamage n FromAbility)
+      cardSpecific (ActiveCostRef acid) "verifyDamageCost" n
     HealCost n -> do
       heal iid n
       paid $ HealPayment n
@@ -581,6 +580,18 @@ runActiveCost ::
   ActiveCost ->
   m ActiveCost
 runActiveCost msg activeCost = runQueueT $ case msg of
+    CheckWindows windows -> do
+      let actual = sum [damageAmount damage | Window After (IdentityTookDamage you source damage) <- windows, you == activeCostIdentityId activeCost, source == activeCostSource activeCost]
+          receipt = \case
+            PendingDamageCostPayment n taken -> PendingDamageCostPayment n (taken + actual)
+            other -> other
+      pure activeCost {activeCostPayment = mconcat $ map receipt $ payments $ activeCostPayment activeCost}
+    CardSpecific (ActiveCostRef acid) "verifyDamageCost" (fromJSON -> Success (n :: Natural)) | acid == activeCostId activeCost -> do
+      let receipts = payments (activeCostPayment activeCost)
+          taken = sum [actual | PendingDamageCostPayment _ actual <- receipts]
+          keep = \case PendingDamageCostPayment _ _ -> False; _ -> True
+      if taken >= n then paid (DamagePayment n) else abortPayment acid
+      pure activeCost {activeCostPayment = mconcat $ filter keep receipts}
     CreatedActiveCost ident | ident == activeCostId activeCost -> do
       checkPayment ident
       pure activeCost

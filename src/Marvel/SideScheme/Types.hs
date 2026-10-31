@@ -198,7 +198,7 @@ instance RunMessage (Attrs SideScheme) where
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
       thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n
-      attrs' <- removed source n
+      attrs' <- removed True source n
       heroThwartedAllThreat source scheme (sideSchemeThreat attrs) n
       pure attrs'
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
@@ -222,7 +222,7 @@ instance RunMessage (Attrs SideScheme) where
             cardSpecific attrs "resolveThwart" (source, n)
             pure attrs
         -- not thwarting, so "threat cannot be removed by thwarting" does not stop it
-        SideSchemeThreatRemoved source n -> unlessBarred source (removed source n)
+        SideSchemeThreatRemoved source n -> unlessBarred source (removed False source n)
         _ -> pure attrs
     _ -> pure attrs
    where
@@ -231,12 +231,12 @@ instance RunMessage (Attrs SideScheme) where
       onlyBy <- (\ms -> [p | ThreatRemovableOnlyBy p <- ms]) <$> getModifiers attrs
       controller <- getSourceController source
       if any (\p -> maybe False (/= p) controller) onlyBy then pure attrs else body
-    removed source n = do
+    removed thwart source n = do
           heroRemovedLastThreat source (SchemeSideSchemeId $ sideSchemeId attrs) (sideSchemeThreat attrs) n
           modifiers <- getModifiers attrs
           -- a villain's own side scheme is not discarded with no threat on it
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
           let defeated = subtractNatural n (sideSchemeThreat attrs) == 0 && not signature && CannotLeavePlay `notElem` modifiers
-          when defeated $ defeatSideSchemeBy (sideSchemeId attrs) source
+          when defeated $ if thwart then defeatSideSchemeByThwart (sideSchemeId attrs) source else defeatSideSchemeBy (sideSchemeId attrs) source
           defeater <- if defeated then getSourceController source else pure Nothing
           pure $ attrs & threatL %~ subtractNatural n & \a -> a {sideSchemeDefeatedBy = defeater <|> sideSchemeDefeatedBy a}

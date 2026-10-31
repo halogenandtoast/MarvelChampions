@@ -41,7 +41,6 @@ instance RunMessage (Attrs AlterEgo) where
       case msg' of
         Recovered -> do
           heal ident =<< getModifiedRecovery a
-          checkWindows [W.Window W.After $ W.UsedRecovery ident]
           pure a
         _ -> pure a
     _ -> pure a

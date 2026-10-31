@@ -40,6 +40,7 @@ data Payment
   | DiscardedUpgradePayment Card
   | -- | the top card of the encounter deck, discarded to pay
     DiscardedEncounterCardPayment Card
+  | PendingDamageCostPayment Natural Natural
   | DamagePayment Natural
   | HealPayment Natural
   | DamageThisPayment Natural

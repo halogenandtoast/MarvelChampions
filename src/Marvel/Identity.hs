@@ -467,7 +467,7 @@ resourceCostAdjustment :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe T
 resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
-  pure (IgnoresResourceCost `elem` modifiers, sum (map change modifiers <> map changeOn onTarget))
+  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, sum (map change modifiers <> map changeOn onTarget))
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
@@ -1177,7 +1177,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           modifiedHp <- getModifiedHp pid
           -- what answers "would be defeated" may take the defeat off the queue
           attackDealtDamageTo source damage playerIdentityId
-          when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentity playerIdentityId
+          when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentityFromDamage playerIdentityId source damage
           when (damageAmount damage > 0) $
             checkWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
           let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0

@@ -137,6 +137,7 @@ data Trait
   | Interface
   | Pilot
   | Spider
+  | Reaver
   | Restrained
   | Unleashed
   | Phoenix

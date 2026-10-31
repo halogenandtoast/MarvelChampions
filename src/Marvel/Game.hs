@@ -43,6 +43,7 @@ import Marvel.Attack
 import Marvel.Campaign (Campaign, CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
 import Marvel.Card
+import Marvel.Card.AttachmentHeroAbilities (hasPrintedHeroActionOrResponse)
 import Marvel.Card.WhenRevealed (hasWhenRevealed)
 import Marvel.Card.WhenDefeated (hasWhenDefeated)
 import Marvel.Choice (choiceMessages)
@@ -63,7 +64,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment, Field (EnvironmentCounters, EnvironmentOwner))
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith, eventAttacked), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -1807,6 +1808,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- The nested play, including its payment or abort, completes before cleanup.
     disableEffect eid
     pure $ g & entitiesL . effectsL %~ insertMap eid (cardPlayReduction eid ident card reduction)
+  PlayCardIgnoringResourceCost ident card -> do
+    eid <- getRandom
+    identityStep ident (PlayingCard card Nothing)
+    disableEffect eid
+    pure $ g & entitiesL . effectsL %~ insertMap eid (cardPlayIgnoringCost eid ident card)
   SetActiveCost activeCost -> do
     createdActiveCost (activeCostId activeCost)
     pure $ g & activeCostL %~ (activeCost :)
@@ -2513,6 +2519,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- queue: its window then closes, so a second cancel is not offered
     -- likewise damage prevented in full: nothing more answers it
     let open = \case
+          W.Window W.When (W.UsedRecovery iid) -> isQueued (== IdentityMessage iid (SideMessage Recovered))
+          W.Window W.Would (W.IdentityDefeat iid) -> isQueued (== IdentityMessage iid IdentityDefeated)
+          W.Window W.Would (W.IdentityDefeatFromDamage iid _ _) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
             _ -> False
@@ -3599,6 +3608,33 @@ cardController g a = case abilitySource a of
   CardIdRef cid -> fst <$> handCard g cid
   _ -> Nothing
 
+-- | A labeled event is one attack even when it deals several instances of damage.
+sourceHasBegunLabeledAttack :: (HasGame m) => Source -> m Bool
+sourceHasBegunLabeledAttack (EventRef eid) = do
+  labels <- sourceAbilitySubTypes (EventRef eid)
+  attacked <- getsGame $ maybe False (notNull . eventAttacked . toAttrs) . lookup eid . gameEvents
+  pure $ Ability.Attack `elem` labels && attacked
+sourceHasBegunLabeledAttack _ = pure False
+
+-- | Ownership persists when an ally is defeated or temporarily changes controller.
+getCharacterOwner :: (HasGame m) => CharacterId -> m (Maybe IdentityId)
+getCharacterOwner = \case
+  IdentityCharacter ident -> pure (Just ident)
+  AllyCharacter aid -> do
+    ally <- getsGame $ \g -> lookup aid (gameAllies g) <|> lookup aid (entitiesAllies $ gameRemovedEntities g)
+    case ally of
+      Nothing -> pure Nothing
+      Just a -> case toCard a of
+        EncounterCard _ -> pure Nothing
+        PlayerCard card -> do
+          -- Story allies follow the first-player token but belong to the scenario.
+          -- Campaign allies that actually enter a player's deck keep their owner.
+          printed <- if isJust (cdEncounterSet $ getCardDef card)
+            then getModifiersFor GameRef (toRef a) a
+            else pure []
+          pure $ if ControlledByFirstPlayer `elem` printed then Nothing else pcOwner card
+  _ -> pure Nothing
+
 -- | The player controlling the card a source names, if a player does.
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 getSourceController source = getsGame \g ->
@@ -3960,6 +3996,7 @@ gameSelectIdentity m = do
     UnexhaustedIdentity -> pure . not . isExhausted
     Matchers.ExhaustedIdentity -> pure . isExhausted
     ConfusedIdentity -> identityIsConfused
+    IdentityCanBeHealed -> fmap (notElem CannotBeHealedByPlayerCards) . getModifiers
     IdentityWithoutToughStatus -> pure . not . playerIdentityTough . toAttrs
     StunnedIdentity -> identityIsStunned
     IdentityEngagedWith minionMatcher -> \ident -> do
@@ -4330,6 +4367,7 @@ gameSelectAttachment m = do
  where
   matchFilter x = case x of
     AttachmentWithId ident' -> pure . (== ident') . toId
+    AttachmentWithPrintedHeroActionOrResponse -> pure . hasPrintedHeroActionOrResponse . toCardCode . getCardDef
     AttachmentOnEnemyWithHeroAbility enemy -> \attachment ->
       pure $ Attachment.attachmentEnemy (toAttrs attachment) == Just enemy
         && any ((`elem` [Ability.HeroAction, Ability.HeroResponse]) . abilityType) (getAbilities attachment)
@@ -4760,6 +4798,43 @@ cardPlayReduction eid ident card amount = Effect.Effect $ CardPlayReduction Effe
   , Effect.effectModifiers = [ResourceCostReductionForCard (pcCardId card) amount]
   , Effect.effectEnds = Nothing
   }
+
+-- | Cheap hand/trait/payment filters precede isolated play checks in smoke games.
+playableClawsEvents :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Source -> m [PlayerCard]
+playableClawsEvents ident source = do
+  g <- getGame
+  app <- newApp g []
+  runGameApp app do
+    runQueueT $ case source of
+      UpgradeRef uid -> exhaust uid
+      _ -> pure ()
+    runGameMessages
+    cards <- filter (cardMatch (CardWithType EventType <> CardWithTrait Marvel.Trait.Attack)) . unHand . playerIdentityHand . toAttrs <$> getIdentity ident
+    payable <- filterM (\card -> canAffordCost ident source (DamageCost (fromIntegral $ max 0 $ fromMaybe 0 $ cdCost $ getCardDef card))) cards
+    filterM (canPlayCardIgnoringResourceCost ident) payable
+
+cardPlayIgnoringCost :: EffectId -> IdentityId -> PlayerCard -> Effect
+cardPlayIgnoringCost eid ident card = Effect.Effect $ CardPlayReduction Effect.EffectAttrs
+  { Effect.effectId = eid
+  , Effect.effectCardCode = "engine-card-play-reduction"
+  , Effect.effectSource = CardIdRef (pcCardId card)
+  , Effect.effectMatcher = IdentityEntity (IdentityWithId ident)
+  , Effect.effectModifiers = [IgnoresResourceCostForCard (pcCardId card)]
+  , Effect.effectEnds = Nothing
+  }
+
+-- | Validate a nested play with only this card's resource cost ignored.
+canPlayCardIgnoringResourceCost :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+canPlayCardIgnoringResourceCost ident card = do
+  g <- getGame
+  case lookup ident (gamePlayers g) of
+    Nothing -> pure False
+    Just player | card `notElem` unHand (playerIdentityHand $ toAttrs player) -> pure False
+    Just player -> do
+      let eid = EffectId (unCardId $ pcCardId card)
+          ignored = g & entitiesL . effectsL %~ insertMap eid (cardPlayIgnoringCost eid ident card)
+      app <- newApp ignored []
+      runGameApp app (isPlayable player card)
 
 -- | Check the complete ordinary play rules under the same exact-card reduction
 -- that the nested play will receive. Feasibility uses an isolated copy of the game.
@@ -5429,6 +5504,11 @@ modifyEnemyAttack :: EnemyId -> (Attack -> Attack) -> Game -> Game
 modifyEnemyAttack enemy f g = case enemy of
   EnemyVillainId vid -> g & entitiesL . villainsL . ix vid %~ (\(Villain.Villain v) -> Villain.Villain $ Villain.overVillainAttrs (\a -> a {Villain.villainAttacking = f <$> Villain.villainAttacking a}) v)
   EnemyMinionId mid -> g & entitiesL . minionsL . ix mid %~ Minion.overMinion (\a -> a {Minion.minionAttacking = f <$> Minion.minionAttacking a})
+
+getEnemyKeywords :: HasGame m => EnemyId -> m [Keyword]
+getEnemyKeywords enemy = case enemy of
+  EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure []) (Minion.getModifiedKeywords . toAttrs)
+  EnemyVillainId vid -> getsGame (lookup vid . gameVillains) >>= maybe (pure []) (Villain.getModifiedKeywords . toAttrs)
 
 getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
 getEnemyPrintedScheme enemy = getsGame $ \g -> case enemy of

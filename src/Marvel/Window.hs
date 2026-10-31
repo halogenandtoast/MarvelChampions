@@ -332,10 +332,17 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           liftA2 (&&) (defeatedMinionMatches timing minionMatcher minionId) (sourceMatches sourceMatcher source)
     _ -> pure False
+  SideSchemeDefeatedByThwart schemeMatcher sourceMatcher -> case windowType w of
+    DefeatedSideSchemeByThwart sid source | windowTiming w == After ->
+      (&&) <$> defeatedSideSchemeMatches schemeMatcher sid <*> sourceMatches sourceMatcher source
+    _ -> pure False
   SideSchemeDefeatedBy sideSchemeMatcher sourceMatcher -> case windowType w of
     DefeatedSideSchemeBy sideSchemeId _ (Just source)
       | windowTiming w == After ->
           liftA2 (&&) (defeatedSideSchemeMatches sideSchemeMatcher sideSchemeId) (sourceMatches sourceMatcher source)
+    _ -> pure False
+  UsesRecoveryAt timing matcher -> case windowType w of
+    UsedRecovery ident | windowTiming w == timing -> identityMatches matcher ident
     _ -> pure False
   UsesRecovery identityMatcher -> case windowType w of
     UsedRecovery identityId
@@ -383,6 +390,12 @@ windowMatches matcher w source = case matcher of
             (&&)
             (identityMatches identityMatcher identityId)
             (enemyMatches enemyMatcher enemyId)
+    _ -> pure False
+  IdentityWouldBeDefeatedByEnemyAttack matcher -> case windowType w of
+    IdentityDefeatFromDamage ident source damage
+      | windowTiming w == Would
+      , damageSource damage `elem` [FromAttack, FromOverkill]
+      , Just _ <- sourceEnemy source -> identityMatches matcher ident
     _ -> pure False
   IdentityWouldBeDefeated identityMatcher -> case windowType w of
     IdentityDefeat identityId

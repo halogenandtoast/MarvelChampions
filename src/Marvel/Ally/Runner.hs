@@ -108,7 +108,8 @@ instance RunMessage (Attrs Ally) where
         when stillInPlay do
           targetModifiers <- getModifiers (enemyRef enemy)
           modifiers <- getModifiers a
-          amount <- if AttackWithThwart `elem` (targetModifiers <> modifiers) then getModifiedThwart a else pure (damageAmount dmg)
+          let against = sum [n | AttackModifierAgainst target n <- modifiers, target == enemy]
+          amount <- if AttackWithThwart `elem` (targetModifiers <> modifiers) then getModifiedThwart a else pure (damageAmount dmg + against)
           dealDamage enemy a dmg {damageAmount = amount}
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]

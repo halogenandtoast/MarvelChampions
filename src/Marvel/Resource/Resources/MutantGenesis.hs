@@ -19,7 +19,7 @@ mutantEnergySpent :: (ReverseQueue m) => IdentityId -> PlayerCard -> PlayerCard 
 mutantEnergySpent you played spent = do
   hero <- identityMatches HeroIdentity you
   let def = getCardDef played
-      resource = toCardCode spent
+      resource = canonicalCardCode (getCardDef spent)
       matches trait = cdCardType def == EventType && trait `member` cdTraits def
   when hero $ case resource of
     "32018" | matches Trait.Defense -> chooseOne you

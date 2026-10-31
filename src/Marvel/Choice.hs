@@ -165,7 +165,7 @@ resolveChoice ident = \case
           _ -> [Ask who $ ChooseOne choices]
       Nothing -> do
         attackKeywords <- case damageSource damage' of
-          FromPlayerAttack attacker -> getModifiers (IdentityRef attacker)
+          FromPlayerAttack attacker -> (<>) <$> getModifiers (IdentityRef attacker) <*> getModifiers source
           _ -> pure []
         -- each instance of damage the source deals may be increased, as by Embiggen!
         -- (excess damage carried on by overkill has had it already)
@@ -183,10 +183,12 @@ resolveChoice ident = \case
             t -> t
           attackReduction = case enemyAsRef of
             VillainRef _ -> pure 0 -- applied after tough in Villain.reducedDamage
+            MinionRef _ -> pure 0 -- applied after attack interrupts in Minion.Runner
             _ -> sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
           -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
           attackCap = case enemyAsRef of
             VillainRef _ -> pure Nothing -- reduced and capped together after tough
+            MinionRef _ -> pure Nothing
             _ -> (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
           fromAttack = case damageSource damage' of
             FromPlayerAttack _ -> True
@@ -195,8 +197,10 @@ resolveChoice ident = \case
         -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
         -- tough status card: 'Marvel.Villain.Types')
         targetModifiers <- getModifiers enemyAsRef
-        let taken = sum [n | DamageTakenModifier n <- targetModifiers]
-              + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
+        let taken = case enemyAsRef of
+              MinionRef _ -> 0 -- final target modifiers follow attack interrupts
+              _ -> sum [n | DamageTakenModifier n <- targetModifiers]
+                + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
             targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
             attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
         reduction <- if fromAttack then attackReduction else pure 0
@@ -240,8 +244,9 @@ resolveChoice ident = \case
               pure [CheckWindows [Window After $ W.IgnoredKeyword who mid | mid <- minions] | notNull minions]
             else pure []
           _ -> pure []
+        begun <- sourceHasBegunLabeledAttack source
         let attackingWindow = case damageSource damage of
-              FromPlayerAttack who -> [CheckWindows [Window When $ W.IdentityAttack who enemy]]
+              FromPlayerAttack who | not begun -> [CheckWindows [Window When $ W.IdentityAttack who enemy]]
               _ -> []
         pure $ ignored <> attackingWindow <>
           ( case enemy of
@@ -293,7 +298,7 @@ resolveChoice ident = \case
     _ -> error "can not confuse target"
   Recover -> do
     forbidden <- elem CannotRecover <$> getModifiers (IdentityRef ident)
-    pure [IdentityMessage ident $ SideMessage Recovered | not forbidden]
+    pure $ if forbidden then [] else [CheckWindows [Window When $ W.UsedRecovery ident], IdentityMessage ident $ SideMessage Recovered, CheckWindows [Window After $ W.UsedRecovery ident]]
   Heal characterId n -> do
     forbidden <- elem CannotBeHealedByPlayerCards <$> getModifiers (characterRef characterId)
     pure $ if forbidden then [] else case characterId of

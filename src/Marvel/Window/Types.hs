@@ -108,6 +108,7 @@ data WindowMatcher
     EncounterCardRevealedFromDeck WindowTiming BasicEncounterCardMatcher
   | RoundEnds
   | IdentityWouldBeDefeated IdentityMatcher
+  | IdentityWouldBeDefeatedByEnemyAttack IdentityMatcher
   | TurnBegins IdentityMatcher
   | TurnBeginsAt WindowTiming IdentityMatcher
   | -- | a player matching plays an event matching
@@ -165,8 +166,10 @@ data WindowMatcher
   | -- | after a side scheme matching is defeated, its last threat removed by a source
     -- matching
     SideSchemeDefeatedBy SideSchemeMatcher SourceMatcher
+  | SideSchemeDefeatedByThwart SideSchemeMatcher SourceMatcher
   | -- | "after you use your REC"
     UsesRecovery IdentityMatcher
+  | UsesRecoveryAt WindowTiming IdentityMatcher
   | -- | "after you ready <identity>": an exhausted identity matching is readied
     IdentityReadies IdentityMatcher
   | -- | "when your hero's attack deals any amount of excess damage": before it is counted
@@ -267,8 +270,10 @@ data WindowType
   | -- | the side scheme has been defeated, by the player, and by what removed its last
     -- threat when that is known
     DefeatedSideSchemeBy SideSchemeId IdentityId (Maybe Source)
+  | DefeatedSideSchemeByThwart SideSchemeId Source
   | -- | the alter-ego has used their REC
     UsedRecovery IdentityId
+  | IdentityDefeatFromDamage IdentityId Source Damage
   | -- | the identity was exhausted and has been readied
     IdentityReadied IdentityId
   | HeroDefends IdentityId EnemyId

@@ -66,19 +66,31 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL .~ 0
   MinionDamaged source originalDamage -> do
     modifiers <- getModifiers attrs
-    let room = minimum (damageAmount originalDamage : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
+    let attacking = case damageSource originalDamage of
+          FromPlayerAttack _ -> True
+          FromAllyAttack _ -> True
+          FromAttack -> True
+          _ -> False
+        taken = sum [n | DamageTakenModifier n <- modifiers]
+          + if attacking then sum [n | AttackDamageTakenModifier n <- modifiers] else 0
+        incoming = if damageAmount originalDamage == 0 then 0 else fromIntegral (max 0 (fromIntegral (damageAmount originalDamage) + taken))
+        reduction = if attacking then sum [n | AttackDamageReduction n <- modifiers] else 0
+        reduced = subtractNatural reduction incoming
+        caps = [cap | attacking, AttackDamageCap cap <- modifiers]
+        capped = minimum (reduced : caps)
+        room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
         damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
     hitPoints <- getModifiedHitPoints attrs
     cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
     if
       -- already defeated: damage to a minion on its way out of play does nothing
-      | minionDamage attrs >= hitPoints -> pure attrs
+      | minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers -> pure attrs
       | cannotTakeDamage -> pure attrs
-      | minionTough attrs && preventedByTough damage -> pure $ removeOneTough attrs
+      | minionTough attrs && preventedByTough originalDamage -> pure $ removeOneTough attrs
       | otherwise -> do
         when (damageAmount damage > 0) $
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
-        when (damageAmount damage + minionDamage attrs >= hitPoints) do
+        when (damageAmount damage + minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers) do
           let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
           -- "when your hero's attack deals excess damage, increase that amount"
           hero <- heroAttackBy damage source
@@ -89,12 +101,14 @@ runMinionMessage msg attrs = case msg of
   MinionDefeatedWithExcess source damage overkill -> do
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
-    attached <- enemyDefeatUpgrades (toEnemyId attrs)
-    checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
-    defeatMinion (minionId attrs)
-    when (overkill > 0 && damageOverkill damage) do
-      traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
-    checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+    blocked <- elem CannotBeDefeated <$> getModifiers attrs
+    unless blocked do
+      attached <- enemyDefeatUpgrades (toEnemyId attrs)
+      checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+      defeatMinion (minionId attrs)
+      when (overkill > 0 && damageOverkill damage) do
+        traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
+      checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
     pure attrs
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do

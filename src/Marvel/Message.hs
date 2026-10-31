@@ -4,6 +4,8 @@ module Marvel.Message (
 ) where
 
 import Marvel.Prelude
+import Data.List (nub)
+import Marvel.Window.Types qualified as W
 
 import Marvel.Message.Ally as X
 import Marvel.Message.Attachment as X
@@ -218,9 +220,14 @@ attackDealtDamage source damage character =
 -- dealing it ('DamageEnemy'): the interrupts to all of it, then all of the damage at
 -- once, then what answers it.
 simultaneousDamage :: [[Message]] -> [Message]
-simultaneousDamage dealt = concat befores <> [Simultaneously (concat damage) | notNull (concat damage)] <> concat afters
+simultaneousDamage dealt = [CheckWindows attacks | notNull attacks] <> concatMap withoutAttacks (concat befores) <> [Simultaneously (concat damage) | notNull (concat damage)] <> concat afters
  where
   (befores, damage, afters) = unzip3 $ map splitDamage dealt
+  attacks = nub [w | CheckWindows ws <- concat befores, w <- ws, isAttack w]
+  isAttack (Window When (W.IdentityAttack _ _)) = True
+  isAttack _ = False
+  withoutAttacks (CheckWindows ws) = [CheckWindows rest | let rest = filter (not . isAttack) ws, notNull rest]
+  withoutAttacks message = [message]
 
 -- | The messages dealing damage ('DamageEnemy'), split into the windows before it, the
 -- damage, and what answers it.
@@ -348,6 +355,7 @@ data Message
   | WithChosen Target FromZone [Card]
   | -- | one nested normal card play, with a reduction scoped to this exact card
     PlayCardWithReduction IdentityId PlayerCard Natural
+  | PlayCardIgnoringResourceCost IdentityId PlayerCard
   | SetActiveCost ActiveCost
   | CreatedActiveCost ActiveCostId
   | DisableActiveCost ActiveCostId

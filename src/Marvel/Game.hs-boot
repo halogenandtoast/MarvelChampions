@@ -9,6 +9,7 @@ import Marvel.Area (Area, AreaId, DeckKey, Pile)
 import Marvel.Attack (Attack)
 import Marvel.Damage (Damage)
 import Marvel.Card.Code (CardCode)
+import Marvel.Keyword (Keyword)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Campaign (Campaign)
@@ -94,6 +95,10 @@ getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
+sourceHasBegunLabeledAttack :: (HasGame m) => Source -> m Bool
+
+getCharacterOwner :: (HasGame m) => CharacterId -> m (Maybe IdentityId)
+
 getSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 isPlayerCardSource :: (HasGame m) => Source -> m Bool
 cannotTakeDamageFrom :: (HasGame m) => Target -> Source -> m Bool
@@ -262,6 +267,10 @@ effectivePlayerCardDef :: (HasGame m) => IdentityId -> PlayerCard -> m CardDef
 getIdentityAttackAgainst :: (HasGame m) => IdentityId -> EnemyId -> m Natural
 attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
 
+playableClawsEvents :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Source -> m [PlayerCard]
+
+canPlayCardIgnoringResourceCost :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+
 canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
 playableCardsWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Target -> CardMatcher -> Natural -> m [PlayerCard]
 hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
@@ -316,6 +325,7 @@ isIdentityDefending :: (HasGame m) => IdentityId -> m Bool
 
 getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
 
+getEnemyKeywords :: HasGame m => EnemyId -> m [Keyword]
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
 
 getEnemyPrintedAttack :: (HasGame m) => EnemyId -> m Natural

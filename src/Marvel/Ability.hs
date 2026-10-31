@@ -166,6 +166,7 @@ passesCriteria x a =
     AttachmentExists m -> selectAny m
     SideSchemeExists m -> selectAny m
     SupportExists m -> selectAny m
+    CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents x (abilitySource a)
     ExtendedCardExists m -> selectAny m
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
@@ -223,6 +224,7 @@ passesCardCriteria ident card = go
     SupportExists m -> selectAny m
     SchemeExists m -> selectAny m
     -- the card itself, about to leave the hand, is not one of them
+    CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents ident (toSource card)
     ExtendedCardExists m -> selectAny (NotCard card <> m)
     UpgradeExists m -> selectAny m
     EnvironmentExists m -> selectAny m

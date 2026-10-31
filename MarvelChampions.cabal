@@ -340,6 +340,7 @@ library
       Marvel.Campaign.SinisterMotives
       Marvel.Campaign.Steps
       Marvel.Card
+      Marvel.Card.AttachmentHeroAbilities
       Marvel.Card.Builder
       Marvel.Card.Code
       Marvel.Card.Def
@@ -2085,6 +2086,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.VenomRulesSpec
       Marvel.Rules.VisionEngineSpec
       Marvel.Rules.WhenRevealedSpec
+      Marvel.Rules.WolverineEngineSpec
       Marvel.Rules.YouSpec
       Marvel.SmokeSpec
       SmokeMonitor
