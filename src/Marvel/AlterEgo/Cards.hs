@@ -85,6 +85,7 @@ allAlterEgoCards =
   , peniParker
   , piotrRasputin
   , kittyPryde
+  , jeanGrey
   ]
 
 allAlterEgosMap :: HashMap CardCode CardDef
@@ -298,6 +299,12 @@ kittyPryde :: CardDef
 kittyPryde = (alterEgo "32030b" "Kitty Pryde" [Mutant])
   { cdUnique = True
   }
+
+
+-- Phoenix
+
+jeanGrey :: CardDef
+jeanGrey = alterEgo "34001b" "Jean Grey" [Mutant, Psionic]
 
 
 -- Cyclops

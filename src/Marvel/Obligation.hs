@@ -104,6 +104,7 @@ allObligations = fromList $ map
   , SomeObligationCard inheritedBurden
   , SomeObligationCard homesick
   , SomeObligationCard permanentlyPhased
+  , SomeObligationCard burningHunger
   ]
 
 lookupObligation :: CardCode -> ObligationId -> Obligation

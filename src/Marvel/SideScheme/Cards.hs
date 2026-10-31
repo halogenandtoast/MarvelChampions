@@ -246,6 +246,7 @@ allSideSchemes = fromList $ map
   , grandLarceny
   , rampagingJuggernaut
   , theHellfireClub
+  , consumeTheWorld
   ]
 
 sideScheme
@@ -1449,6 +1450,12 @@ mgBastionsMachinations = (smSideSchemeDef "32169" ("Bastion's Machinations") MGS
   , cdAmplify = 1
   , cdKeywords = fromList [MGKeyword.Victory 1]
   }
+
+
+-- Phoenix
+
+consumeTheWorld :: CardDef
+consumeTheWorld = (sideScheme "34030" "Consume the World" [Boost, Boost, Boost] PhoenixNemesis 1) {cdKeywords = fromList [Permanent], cdAmplify = 1}
 
 
 -- Cyclops

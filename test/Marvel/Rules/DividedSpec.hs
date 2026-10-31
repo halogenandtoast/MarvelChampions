@@ -65,7 +65,8 @@ spec = describe "divided damage and threat, and the Wasp pack's mechanics" do
       villainDamageNow `shouldReturn` 2
       minionDamageOf shocker `shouldReturn` Just 1
     attacked <- ranWith tg "Window {windowTiming = When, windowType = IdentityAttack"
-    length attacked `shouldBe` 2
+    -- Simultaneous attacks may share one CheckWindows message.
+    sum (map (T.count "Window {windowTiming = When, windowType = IdentityAttack") attacked) `shouldBe` 2
 
   it "a guard minion keeps the villain out of a divided attack" do
     (tg, p) <- spiderMan

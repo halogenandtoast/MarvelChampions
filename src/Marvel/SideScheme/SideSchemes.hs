@@ -199,3 +199,5 @@ import Marvel.SideScheme.SideSchemes.MutantGenesis as X
 
 -- Cyclops
 import Marvel.SideScheme.SideSchemes.GeneticManipulation as X
+
+import Marvel.SideScheme.SideSchemes.ConsumeTheWorld as X

@@ -301,6 +301,14 @@ allUpgrades = fromList $ concatMap
   , phasedAndConfused
   , attackTraining
   , gatekeeper
+  , phoenixForceRestrained
+  , phoenixForceUnleashed
+  , phoenixSuit
+  , riseFromTheAshes
+  , telekineticShield
+  , mentalParalysis
+  , mindControl
+  , missionTraining
   ]
 
 upgrade
@@ -506,7 +514,7 @@ enhancedReflexes :: CardDef
 enhancedReflexes = reprintedAs ["18032"] $ basicUpgrade "05024" "Enhanced Reflexes" 2 [Condition] [Energy]
 
 downTime :: CardDef
-downTime = limited (MaxPerPlayerUnderAnyControl 1)
+downTime = reprintedAs ["34024"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ basicUpgrade "05033" "Down Time" 1 [Condition] [Physical]
 boundlessRage :: CardDef
 boundlessRage =
@@ -1681,6 +1689,33 @@ mgMentorship = (basicUpgrade "32194" "Mentorship" 0 [MGTrait.Skill, MGTrait.Tact
 
 mgFortitude :: CardDef
 mgFortitude = (basicUpgrade "32195" "Fortitude" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+
+-- Phoenix
+
+phoenixForceRestrained :: CardDef
+phoenixForceRestrained = (identityUpgrade "34002a" "Phoenix Force" 0 [Restrained] [Mental]) {cdDeckLimit = Just 1, cdKeywords = fromList [Permanent], cdCost = Nothing}
+
+phoenixForceUnleashed :: CardDef
+phoenixForceUnleashed = (identityUpgrade "34002b" "Phoenix Force" 0 [Unleashed] [Physical]) {cdDeckLimit = Just 1, cdKeywords = fromList [Permanent], cdCost = Nothing}
+
+phoenixSuit :: CardDef
+phoenixSuit = (identityUpgrade "34005" "Phoenix Suit" 2 [Item] [Physical]) {cdDeckLimit = Just 1, cdUnique = True}
+
+riseFromTheAshes :: CardDef
+riseFromTheAshes = (identityUpgrade "34006" "Rise from the Ashes" 3 [Phoenix] [Energy]) {cdDeckLimit = Just 1}
+
+telekineticShield :: CardDef
+telekineticShield = (identityUpgrade "34007" "Telekinetic Shield" 2 [Psionic] [Physical]) {cdDeckLimit = Just 1}
+
+mentalParalysis :: CardDef
+mentalParalysis = (identityUpgrade "34008" "Mental Paralysis" 2 [Psionic] [Mental]) {cdDeckLimit = Just 1, cdCriteria = InHeroForm}
+
+mindControl :: CardDef
+mindControl = (identityUpgrade "34009" "Mind Control" 4 [Condition, Psionic] [Mental]) {cdDeckLimit = Just 1}
+
+missionTraining :: CardDef
+missionTraining = (upgrade "34016" "Mission Training" 1 [Training] [Mental] Justice) {cdDeckLimit = Just 3}
 
 
 -- Cyclops

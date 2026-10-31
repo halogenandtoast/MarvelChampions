@@ -238,6 +238,7 @@ allMinions =
   , SomeMinionCard juggernaut
   , SomeMinionCard whiteQueenMutantGenesis
   , SomeMinionCard hellfirePawn
+  , SomeMinionCard darkPhoenix
   ]
 
 lookupMinion :: CardCode -> IdentityId -> MinionId -> Minion

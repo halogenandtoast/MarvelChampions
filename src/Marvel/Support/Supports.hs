@@ -143,3 +143,7 @@ import Marvel.Support.Supports.MutantGenesisCampaign as X
 -- Cyclops
 import Marvel.Support.Supports.Utopia as X
 import Marvel.Support.Supports.DangerRoom as X
+
+import Marvel.Support.Supports.WhiteHotRoom as X
+
+import Marvel.Support.Supports.Cerebro as X

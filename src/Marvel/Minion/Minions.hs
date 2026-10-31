@@ -204,3 +204,5 @@ import Marvel.Minion.Minions.MutantGenesis as X
 
 -- Cyclops
 import Marvel.Minion.Minions.MisterSinister as X
+
+import Marvel.Minion.Minions.DarkPhoenix as X

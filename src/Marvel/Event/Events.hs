@@ -423,3 +423,25 @@ import Marvel.Event.Events.FullBlast as X
 import Marvel.Event.Events.RicochetBeam as X
 import Marvel.Event.Events.TacticalBrilliance as X
 import Marvel.Event.Events.GameTime as X
+
+import Marvel.Event.Events.TelekineticAttack as X
+
+import Marvel.Event.Events.PsychicBlast as X
+
+import Marvel.Event.Events.TelepathicTrickery as X
+
+import Marvel.Event.Events.PhoenixFirebird as X
+
+import Marvel.Event.Events.PsychicManipulation as X
+
+import Marvel.Event.Events.MutantPeacekeepers as X
+
+import Marvel.Event.Events.PsychicRapport as X
+
+import Marvel.Event.Events.PsychicAssault as X
+
+import Marvel.Event.Events.PsychicMisdirection as X
+
+import Marvel.Event.Events.PsychicKicker as X
+
+import Marvel.Event.Events.SoulSisters as X

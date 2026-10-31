@@ -365,5 +365,12 @@
   "mgStartingCapturedCards": "Start with {count} captured cards",
   "ready": "Ready your hero",
   "mgChooseAcolyteOrder": "Choose the order to resolve Acolyte defeat abilities",
-  "mgChooseEnemyAttackOrder": "Choose the order of enemy attacks"
+  "mgChooseEnemyAttackOrder": "Choose the order of enemy attacks",
+  "passionForJustice": "Passion for Justice",
+  "psychicRapportReturnCard": "Return a Cyclops card to your hand",
+  "psychicRapportPower": "Place 2 power counters on Phoenix Force",
+  "phoenixPowerOne": "Place 1 power counter on Phoenix Force",
+  "phoenixHealTwo": "Heal 2 damage from Jean Grey",
+  "phoenixFirebirdReady": "Remove 1 power counter to ready Phoenix",
+  "phoenixFirebirdPower": "Place 2 power counters on Phoenix Force"
 }

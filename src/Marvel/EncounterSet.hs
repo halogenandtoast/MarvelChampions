@@ -9,6 +9,7 @@ data EncounterSet
   | MutantGenesisCampaign
   | CyclopsNemesis
   | ColossusNemesis
+  | PhoenixNemesis
   | ShadowcatNemesis
   | Rhino
   | BombScare
@@ -269,6 +270,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "31002" -> SpdrNemesis
   "32001" -> ColossusNemesis
   "32030" -> ShadowcatNemesis
+  "34001" -> PhoenixNemesis
   cCode ->
     error $
       "No nemesis set for "

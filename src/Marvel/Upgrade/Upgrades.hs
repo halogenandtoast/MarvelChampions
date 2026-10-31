@@ -320,3 +320,17 @@ import Marvel.Upgrade.Upgrades.Marked as X
 import Marvel.Upgrade.Upgrades.Befuddle as X
 import Marvel.Upgrade.Upgrades.PinnedDown as X
 import Marvel.Upgrade.Upgrades.HonoraryXMen as X
+
+import Marvel.Upgrade.Upgrades.PhoenixSuit as X
+
+import Marvel.Upgrade.Upgrades.RiseFromTheAshes as X
+
+import Marvel.Upgrade.Upgrades.TelekineticShield as X
+
+import Marvel.Upgrade.Upgrades.MentalParalysis as X
+
+import Marvel.Upgrade.Upgrades.MindControl as X
+
+import Marvel.Upgrade.Upgrades.MissionTraining as X
+
+import Marvel.Upgrade.Upgrades.PhoenixForce as X

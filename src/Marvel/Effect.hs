@@ -6,6 +6,7 @@ import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
 
 import Marvel.Prelude
 import Marvel.Resource.Resources.Cyclops (effectiveLeadershipEffect)
+import Marvel.Resource.Resources.PassionForJustice (passionForJusticeEffect)
 import Marvel.Resource.Resources.MutantGenesis (aggressiveEnergyEffect)
 
 import Marvel.Ally.Allies
@@ -42,6 +43,8 @@ allEffects =
     [ ("33018", SomeCardEffect effectiveLeadershipEffect)
     , ("33016", SomeCardEffect coordinatedAttackEffect)
     , ("33033", SomeCardEffect befuddleEffect)
+    , ("34020", SomeCardEffect passionForJusticeEffect)
+    , ("34034", SomeCardEffect psychicKickerEffect)
     , ("32183", SomeCardEffect mgGroupAssaultEffect)
     , ("32193", SomeCardEffect mgRescueOperationEffect)
     , ("32047", SomeCardEffect aggressiveEnergyEffect)

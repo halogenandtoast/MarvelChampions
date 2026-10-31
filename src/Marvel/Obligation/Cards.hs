@@ -117,6 +117,7 @@ allObligations = fromList $ map
   , inheritedBurden
   , homesick
   , permanentlyPhased
+  , burningHunger
     ]
 
 obligation :: CardCode -> Name -> [BoostIcon] -> CardDef
@@ -430,6 +431,12 @@ mgWarnTheOthers = (smObligationDef "32099" ("Warn the Others") MGSet.ProjectWide
 
 mgReactiveDefense :: CardDef
 mgReactiveDefense = (obligation "32174b" "Reactive Defense" [MGBoost.Boost, MGBoost.Boost]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
+
+
+-- Phoenix
+
+burningHunger :: CardDef
+burningHunger = obligation "34028" "Burning Hunger" [Boost, Boost]
 
 
 -- Cyclops

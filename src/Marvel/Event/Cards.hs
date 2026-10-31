@@ -378,6 +378,17 @@ allEvents = fromList $ concatMap
   , airwalk
   , quickShift
   , teamStrike
+  , telekineticAttack
+  , psychicBlast
+  , telepathicTrickery
+  , phoenixFirebird
+  , psychicManipulation
+  , mutantPeacekeepers
+  , psychicRapport
+  , psychicAssault
+  , psychicMisdirection
+  , psychicKicker
+  , soulSisters
   ]
 
 event
@@ -1280,7 +1291,7 @@ multitasking =
     }
 
 swiftRetribution :: CardDef
-swiftRetribution =
+swiftRetribution = reprintedAs ["34019"] $
   (event "15014" "Swift Retribution" 1 HeroAction [Attack] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Attack]
     , cdCriteria = canAttackVillain
@@ -2513,6 +2524,42 @@ teamStrike = (event "32045" "Team Strike" 1 HeroAction [Attack] [Energy] Aggress
   , cdCriteria = SelfMatches (IdentityWithTrait XMen)
   , cdAbilityCost = ExhaustCost <> ExhaustAlliesWithTraitCost XMen 0 Nothing
   }
+
+
+-- Phoenix
+
+telekineticAttack :: CardDef
+telekineticAttack = (identityEvent "34010" "Telekinetic Attack" 3 HeroAction [Attack, Psionic] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack], cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy]}
+
+psychicBlast :: CardDef
+psychicBlast = (identityEvent "34011" "Psychic Blast" 2 HeroAction [Psionic] [Energy]) {cdDeckLimit = Just 2}
+
+telepathicTrickery :: CardDef
+telepathicTrickery = (identityEvent "34012" "Telepathic Trickery" 2 HeroAction [Psionic, Thwart] [Mental]) {cdDeckLimit = Just 2, cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists (ThwartableScheme <> SchemeWithoutThwartPrevention), SelfMatches (IdentityWithTrait Unleashed) <> AnyCriteria [EnemyExists EnemyCanBeStunned, EnemyExists EnemyCanBeConfused]], cdAbilitySubTypes = [Ability.Thwart]}
+
+phoenixFirebird :: CardDef
+phoenixFirebird = (identityEvent "34013" "Phoenix Firebird" 1 HeroAction [Phoenix] [Energy]) {cdDeckLimit = Just 2}
+
+psychicManipulation :: CardDef
+psychicManipulation = (event "34017" "Psychic Manipulation" 3 Interrupt [Psionic, Thwart] [Energy] Justice) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdResponseWindow = Just (VillainSchemed When AnyVillain), cdCriteria = SelfMatches (IdentityWithTrait Psionic) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists (MainScheme <> SchemeYouCanThwart)]}
+
+mutantPeacekeepers :: CardDef
+mutantPeacekeepers = (event "34018" "Mutant Peacekeepers" 1 HeroAction [Thwart] [Physical] Justice) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdAbilityCost = ExhaustCost <> ExhaustAlliesWithTraitCost XMen 0 Nothing, cdCriteria = SelfMatches (IdentityWithTrait XMen) <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart]}
+
+psychicRapport :: CardDef
+psychicRapport = reprintedAs ["34023"] $ (basicEvent "33023" "Psychic Rapport" 2 HeroAction [] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Cyclops", "Phoenix"), cdCriteria = teamUp "Cyclops" "Phoenix"}
+
+psychicAssault :: CardDef
+psychicAssault = (event "34032" "Psychic Assault" 2 HeroAction [Attack, Psionic] [Energy] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack], cdCriteria = SelfMatches (IdentityWithTrait Psionic) <> AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy]}
+
+psychicMisdirection :: CardDef
+psychicMisdirection = (event "34033" "Psychic Misdirection" 2 HeroInterrupt [Defense, Psionic] [Energy] Protection) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (EnemyAttacked When AnyEnemy You), cdCriteria = SelfMatches (IdentityWithTrait Psionic)}
+
+psychicKicker :: CardDef
+psychicKicker = (event "34034" "Psychic Kicker" 0 HeroAction [Psionic] [Energy] Leadership) {cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Psionic)}
+
+soulSisters :: CardDef
+soulSisters = (basicEvent "34035" "Soul Sisters" 1 HeroAction [] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Phoenix", "Storm"), cdCriteria = teamUp "Phoenix" "Storm"}
 
 
 -- Cyclops

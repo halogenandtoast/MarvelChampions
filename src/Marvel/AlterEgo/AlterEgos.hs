@@ -85,3 +85,5 @@ import Marvel.AlterEgo.AlterEgos.KittyPryde as X
 
 -- Cyclops
 import Marvel.AlterEgo.AlterEgos.ScottSummers as X
+
+import Marvel.AlterEgo.AlterEgos.JeanGrey as X

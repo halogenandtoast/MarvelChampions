@@ -251,6 +251,7 @@ allTreacheries = fromList $ map
   , SomeTreacheryCard feastOnThis
   , SomeTreacheryCard energyDrain
   , SomeTreacheryCard slammed
+  , SomeTreacheryCard fieryRage
   ]
 
 lookupTreachery :: CardCode -> TreacheryId -> Treachery

@@ -138,6 +138,8 @@ allSupports = fromList $ map
   , SomeSupportCard theXjet
   , SomeSupportCard kittysRoom
   , SomeSupportCard xmansion
+  , SomeSupportCard whiteHotRoom
+  , SomeSupportCard cerebro
   ]
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support

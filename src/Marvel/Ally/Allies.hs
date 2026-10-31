@@ -244,8 +244,12 @@ import Marvel.Ally.Allies.Rockslide as X
 import Marvel.Ally.Allies.Blindfold as X
 import Marvel.Ally.Allies.Angel as X
 
+import Marvel.Ally.Allies.CyclopsScottSummers as X
 
+import Marvel.Ally.Allies.Banshee as X
 
+import Marvel.Ally.Allies.MarvelGirl as X
 
+import Marvel.Ally.Allies.StormOroroMunroe as X
 
 import Marvel.Ally.Allies.ControlledMinion as X

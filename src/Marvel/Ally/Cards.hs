@@ -234,6 +234,10 @@ allAllies = fromList $ concatMap
   , wolverine
   , magik
   , colossusPiotrRasputin
+  , cyclopsScottSummers
+  , banshee
+  , marvelGirl
+  , stormOroroMunroe
   , controlledMinion
   ]
 
@@ -1200,7 +1204,22 @@ mgWolfsbane = (baseAlly "32092" ("Wolfsbane" <:> "Rahne Sinclair") 2 [] [] Nothi
   }
 
 
+-- Phoenix
 
+cyclopsScottSummers :: CardDef
+cyclopsScottSummers = (identityAlly "34003" ("Cyclops" <:> "Scott Summers") 3 [XMen] [Wild]) {cdDeckLimit = Just 1}
+
+banshee :: CardDef
+banshee = (ally "34014" ("Banshee" <:> "Sean Cassidy") 4 [Aerial, XMen] [Energy] Justice) {cdDeckLimit = Just 1}
+
+marvelGirl :: CardDef
+marvelGirl = (ally "34015" ("Marvel Girl" <:> "Rachel Summers") 3 [Psionic, XMen] [Mental] Justice) {cdDeckLimit = Just 1}
+
+stormOroroMunroe :: CardDef
+stormOroroMunroe = (basicAlly "34021" ("Storm" <:> "Ororo Munroe") 5 [Aerial, XMen] [Energy]) {cdDeckLimit = Just 1}
+
+
+-- Phoenix
 
 controlledMinion :: CardDef
 controlledMinion = basicAlly "xcontrolledminion" "Controlled minion" 0 [] []

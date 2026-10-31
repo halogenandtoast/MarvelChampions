@@ -376,6 +376,17 @@ allEvents = fromList $ map
   , SomeEventCard airwalk
   , SomeEventCard quickShift
   , SomeEventCard teamStrike
+  , SomeEventCard telekineticAttack
+  , SomeEventCard psychicBlast
+  , SomeEventCard telepathicTrickery
+  , SomeEventCard phoenixFirebird
+  , SomeEventCard psychicManipulation
+  , SomeEventCard mutantPeacekeepers
+  , SomeEventCard psychicRapport
+  , SomeEventCard psychicAssault
+  , SomeEventCard psychicMisdirection
+  , SomeEventCard psychicKicker
+  , SomeEventCard soulSisters
   ]
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event

@@ -225,6 +225,7 @@ allSideSchemes = fromList $ map
   , SomeSideSchemeCard grandLarceny
   , SomeSideSchemeCard rampagingJuggernaut
   , SomeSideSchemeCard theHellfireClub
+  , SomeSideSchemeCard consumeTheWorld
   ]
 
 lookupSideScheme :: CardCode -> SideSchemeId -> SideScheme

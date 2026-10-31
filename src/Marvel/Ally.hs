@@ -228,5 +228,9 @@ allAllies = fromList $ map
   , SomeAllyCard wolverine
   , SomeAllyCard magik
   , SomeAllyCard colossusPiotrRasputin
+  , SomeAllyCard cyclopsScottSummers
+  , SomeAllyCard banshee
+  , SomeAllyCard marvelGirl
+  , SomeAllyCard stormOroroMunroe
   , SomeAllyCard controlledMinion
   ]

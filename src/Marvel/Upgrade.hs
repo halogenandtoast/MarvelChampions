@@ -288,6 +288,14 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard phasedAndConfused
   , SomeUpgradeCard attackTraining
   , SomeUpgradeCard gatekeeper
+  , SomeUpgradeCard phoenixSuit
+  , SomeUpgradeCard riseFromTheAshes
+  , SomeUpgradeCard telekineticShield
+  , SomeUpgradeCard mentalParalysis
+  , SomeUpgradeCard mindControl
+  , SomeUpgradeCard missionTraining
+  , SomeUpgradeCard phoenixForceRestrained
+  , SomeUpgradeCard phoenixForceUnleashed
   ]
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade

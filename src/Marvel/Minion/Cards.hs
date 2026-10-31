@@ -249,6 +249,7 @@ allMinions =
   , juggernaut
   , whiteQueenMutantGenesis
   , hellfirePawn
+  , darkPhoenix
   ]
 
 allSpecialMinions :: HashMap CardCode CardDef
@@ -1493,6 +1494,12 @@ mgBastion = (smMinionDef "32167" ("Bastion") MGSet.FuturePast 1)
   , cdBoostIcons = [MGBoost.Star]
   , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Villainous, MGKeyword.Victory 1]
   }
+
+
+-- Phoenix
+
+darkPhoenix :: CardDef
+darkPhoenix = (minion "34029" "Dark Phoenix" [CosmicEntity, Elite] [Boost, Boost, Boost] PhoenixNemesis 1) {cdUnique = True, cdKeywords = fromList [Steady, Toughness, Villainous]}
 
 
 -- Cyclops

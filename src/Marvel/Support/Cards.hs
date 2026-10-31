@@ -138,6 +138,8 @@ allSupports = fromList $ concatMap
   , theXjet
   , kittysRoom
   , xmansion
+  , whiteHotRoom
+  , cerebro
   ]
 
 support
@@ -593,6 +595,15 @@ xmansion = (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
 
 mgMetroPD :: CardDef
 mgMetroPD = (basicSupport "32171b" "Metro P.D." 0 [MGTrait.Persona] [MGResource.Mental]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdKeywords = fromList [MGKeyword.Permanent]}
+
+
+-- Phoenix
+
+whiteHotRoom :: CardDef
+whiteHotRoom = (identitySupport "34004" "White Hot Room" 2 [Location, Phoenix] [Mental]) {cdDeckLimit = Just 1, cdUnique = True}
+
+cerebro :: CardDef
+cerebro = (basicSupport "34022" "Cerebro" 1 [Location, XMen] [Mental]) {cdDeckLimit = Just 1, cdUnique = True, cdCriteria = SelfMatches (IdentityWithTrait Mutant)}
 
 
 -- Cyclops

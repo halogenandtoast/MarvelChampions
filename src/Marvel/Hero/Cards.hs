@@ -90,6 +90,7 @@ allHeroCards =
   , spdrSuitHero
   , colossusHero
   , shadowcatHero
+  , phoenixHero
   ]
 
 allHeroesMap :: HashMap CardCode CardDef
@@ -323,6 +324,12 @@ shadowcatHero :: CardDef
 shadowcatHero = (hero "32030a" "Shadowcat" [XMen])
   { cdUnique = True
   }
+
+
+-- Phoenix
+
+phoenixHero :: CardDef
+phoenixHero = hero "34001a" "Phoenix" [Psionic, XMen]
 
 
 -- Cyclops

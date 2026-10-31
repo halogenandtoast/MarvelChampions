@@ -265,6 +265,7 @@ allTreacheries = fromList $ map
   , feastOnThis
   , energyDrain
   , slammed
+  , fieryRage
   ]
 
 treachery
@@ -1417,6 +1418,12 @@ mgZealForTheCause = (smTreacheryDef "32164" ("Zeal for the Cause") MGSet.Acolyte
   , cdBoostIcons = [MGBoost.Boost]
   , cdKeywords = fromList []
   }
+
+
+-- Phoenix
+
+fieryRage :: CardDef
+fieryRage = (treachery "34031" "Fiery Rage" [Boost, Boost] PhoenixNemesis 3) {cdKeywords = fromList [Peril]}
 
 
 -- Cyclops
