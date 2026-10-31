@@ -26,7 +26,8 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard weatherGoddess
+  [ SomeEventCard chargedCard, SomeEventCard royalFlush, SomeEventCard naturalAgility, SomeEventCard creoleCharmer, SomeEventCard breakingAndEntering, SomeEventCard beautyAndTheThief, SomeEventCard mutantEducation, SomeEventCard xMenInstruction
+  , SomeEventCard weatherGoddess
   , SomeEventCard torrentialRain
   , SomeEventCard lightningBolt
   , SomeEventCard flashFreeze

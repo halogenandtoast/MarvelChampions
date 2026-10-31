@@ -264,3 +264,8 @@ import Marvel.Ally.Allies.Mirage as X
 import Marvel.Ally.Allies.Gentle as X
 import Marvel.Ally.Allies.Pixie as X
 import Marvel.Ally.Allies.Forge as X
+
+-- Gambit
+import Marvel.Ally.Allies.RogueGambit as X
+import Marvel.Ally.Allies.Bishop as X
+import Marvel.Ally.Allies.Dazzler as X

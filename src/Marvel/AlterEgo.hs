@@ -24,7 +24,8 @@ withAlterEgoCardCode cCode f = case lookup cCode allAlterEgos of
 allAlterEgos :: HashMap CardCode SomeAlterEgoCard
 allAlterEgos = fromList $ map
   (toFst someAlterEgoCardCode)
-  [ SomeAlterEgoCard ororoMunroe
+  [ SomeAlterEgoCard remyLeBeau
+  , SomeAlterEgoCard ororoMunroe
   , SomeAlterEgoCard scottSummers
   , SomeAlterEgoCard logan
   , SomeAlterEgoCard peterParker

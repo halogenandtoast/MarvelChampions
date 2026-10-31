@@ -1525,3 +1525,14 @@ omegaRed = (minion "35028" "Omega Red" [Brute, Elite] [Boost, Boost, Boost] Wolv
 
 ladyDeathstrike :: CardDef
 ladyDeathstrike = (minion "35034" "Lady Deathstrike" [Elite, Trait.Reaver] [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdUnique = True, cdKeywords = fromList [Quickstrike]}
+
+-- Gambit
+
+belladonna :: CardDef
+belladonna = (minion "37026" "Belladonna" [Assassin, Elite] [Boost, Boost, Boost] GambitNemesisSet 1) { cdUnique = True, cdKeywords = fromList [Quickstrike, Toughness] }
+
+guildAssassin :: CardDef
+guildAssassin = (minion "37028" "Guild Assassin" [Assassin] [Boost, Boost] GambitNemesisSet 2) { cdKeywords = fromList [Quickstrike] }
+
+exodus :: CardDef
+exodus = (minion "37032" "Exodus" [Acolyte, Elite, Psionic] [Boost, Boost, Boost] ExodusSet 1) { cdUnique = True, cdKeywords = fromList [Retaliate 1, Villainous] }

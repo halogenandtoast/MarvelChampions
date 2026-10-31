@@ -344,3 +344,8 @@ import Marvel.Upgrade.Upgrades.PhoenixForce as X
 import Marvel.Upgrade.Upgrades.StormsCrown as X
 import Marvel.Upgrade.Upgrades.StormsCape as X
 import Marvel.Upgrade.Upgrades.LeadershipSkill as X
+
+-- Gambit
+import Marvel.Upgrade.Upgrades.GambitsStaff as X
+import Marvel.Upgrade.Upgrades.GambitsGuildArmor as X
+import Marvel.Upgrade.Upgrades.OperativeSkill as X

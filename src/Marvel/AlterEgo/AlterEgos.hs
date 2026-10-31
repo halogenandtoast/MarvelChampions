@@ -91,3 +91,6 @@ import Marvel.AlterEgo.AlterEgos.JeanGrey as X
 
 -- Storm
 import Marvel.AlterEgo.AlterEgos.OroroMunroe as X
+
+-- Gambit
+import Marvel.AlterEgo.AlterEgos.RemyLeBeau as X

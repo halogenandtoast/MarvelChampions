@@ -212,3 +212,8 @@ import Marvel.Minion.Minions.DarkPhoenix as X
 -- Storm
 import Marvel.Minion.Minions.Callisto as X
 import Marvel.Minion.Minions.TheShadowKing as X
+
+-- Gambit
+import Marvel.Minion.Minions.Belladonna as X
+import Marvel.Minion.Minions.GuildAssassin as X
+import Marvel.Minion.Minions.Exodus as X

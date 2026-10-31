@@ -102,3 +102,6 @@ import Marvel.Obligation.Obligations.BurningHunger as X
 
 -- Storm
 import Marvel.Obligation.Obligations.Claustrophobia as X
+
+-- Gambit
+import Marvel.Obligation.Obligations.GuildBusiness as X

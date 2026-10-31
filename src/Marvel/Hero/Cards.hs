@@ -18,7 +18,8 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ stormHero
+  [ gambitHero
+  , stormHero
   , wolverineHero
   , cyclopsHero
   , spiderMan
@@ -349,3 +350,8 @@ stormHero = (hero "36001a" "Storm" [XMen]) { cdUnique = True }
 
 wolverineHero :: CardDef
 wolverineHero = (hero "35001a" "Wolverine" [XMen]) {cdUnique = True}
+
+-- Gambit
+
+gambitHero :: CardDef
+gambitHero = (hero "37001a" "Gambit" [Thief, XMen]) { cdUnique = True }

@@ -30,7 +30,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
+  [ theThievesGuild, warRoom
+  , clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
   , logansCabin, weaponX, commandCenter
   , utopia, dangerRoom
   , mgMetroPD
@@ -590,7 +591,7 @@ kittysRoom = (identitySupport "32033" "Kitty's Room" 1 [Location] [Physical])
 -- Mutant Genesis
 
 xmansion :: CardDef
-xmansion = reprintedAs ["36025"] $ (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
+xmansion = reprintedAs ["37018", "36025"] $ (basicSupport "32049" "X-Mansion" 2 [Location, XMen] [Mental])
   { cdUnique = True
   , cdDeckLimit = Just 1
   }
@@ -650,3 +651,11 @@ weaponX = (basicSupport "35022" "Weapon X" 1 [Location] [Mental]) {cdUnique = Tr
 
 commandCenter :: CardDef
 commandCenter = (support "35032" "Command Center" 1 [Location] [Mental] Justice) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
+
+-- Gambit
+
+theThievesGuild :: CardDef
+theThievesGuild = (identitySupport "37003" "The Thieves Guild" 1 [Guild] [Mental]) { cdDeckLimit = Just 1, cdUnique = True }
+
+warRoom :: CardDef
+warRoom = (support "37030" "War Room" 1 [Location] [Mental] Aggression) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }

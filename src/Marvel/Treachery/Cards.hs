@@ -34,7 +34,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ knifeFight, astralAttack
+  [ assassinationAttempt, acolyteFrenzy
+  , knifeFight, astralAttack
   , tentacleStrike, hackNSlash
   , concussiveForce
   , mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
@@ -1449,3 +1450,11 @@ tentacleStrike = treachery "35031" "Tentacle Strike" [Star] WolverineNemesis 1
 
 hackNSlash :: CardDef
 hackNSlash = treachery "35037" "Hack 'n' Slash" [Star] LadyDeathstrikeSet 2
+
+-- Gambit
+
+assassinationAttempt :: CardDef
+assassinationAttempt = treachery "37029" "Assassination Attempt" [Boost] GambitNemesisSet 1
+
+acolyteFrenzy :: CardDef
+acolyteFrenzy = treachery "37035" "Acolyte Frenzy" [Star] ExodusSet 2

@@ -230,3 +230,7 @@ import Marvel.Treachery.Treacheries.ConcussiveForce as X
 -- Storm
 import Marvel.Treachery.Treacheries.KnifeFight as X
 import Marvel.Treachery.Treacheries.AstralAttack as X
+
+-- Gambit
+import Marvel.Treachery.Treacheries.AssassinationAttempt as X
+import Marvel.Treachery.Treacheries.AcolyteFrenzy as X

@@ -33,7 +33,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ havok, mirage, gentle, pixie, forge
+  [ rogueGambit, bishop, dazzler
+  , havok, mirage, gentle, pixie, forge
   , jubilee, psylocke, sunfire, longshot
   , phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
   , mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
@@ -248,7 +249,8 @@ allAllies = fromList $ concatMap
 -- basic card's Neutral aspect, and could replace this list.
 heroSpecificAllies :: [CardDef]
 heroSpecificAllies =
-  [ blackCatFeliciaHardy
+  [ rogueGambit
+  , blackCatFeliciaHardy
   , spiderWomanJessicaDrew
   , hellcatPatsyWalker
   , warMachineJamesRhodes
@@ -1097,7 +1099,7 @@ polaris = (ally "32012" ("Polaris" <:> "Lorna Dane") 3 [XMen] [Energy] Protectio
 -- Mutant Genesis
 
 professorX :: CardDef
-professorX = (basicAlly "32019" ("Professor X" <:> "Charles Xavier") 3 [Psionic, XMen] [Mental])
+professorX = reprintedAs ["37017"] $ (basicAlly "32019" ("Professor X" <:> "Charles Xavier") 3 [Psionic, XMen] [Mental])
   { cdUnique = True
   , cdDeckLimit = Just 1
   }
@@ -1278,3 +1280,14 @@ sunfire = (ally "35014" ("Sunfire" <:> "Shiro Yoshida") 2 [XMen] [Energy] Aggres
 
 longshot :: CardDef
 longshot = (basicAlly "35033" "Longshot" 4 [XMen] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait XMen)}
+
+-- Gambit
+
+rogueGambit :: CardDef
+rogueGambit = (identityAlly "37002" ("Rogue" <:> "Anna Marie") 4 [Aerial, XMen] [Wild]) { cdDeckLimit = Just 1, cdUnique = True, cdKeywords = fromList [Toughness] }
+
+bishop :: CardDef
+bishop = (ally "37011" ("Bishop" <:> "Lucas Bishop") 3 [XMen] [Energy] Justice) { cdDeckLimit = Just 1, cdUnique = True }
+
+dazzler :: CardDef
+dazzler = (ally "37012" ("Dazzler" <:> "Alison Blaire") 4 [XMen] [Energy] Justice) { cdDeckLimit = Just 1, cdUnique = True }

@@ -40,7 +40,9 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("36019", SomeCardEffect leadershipSkillEffect)
+    [ ("37001a", SomeCardEffect gambitHeroEffect)
+    , ("37013", SomeCardEffect operativeSkillEffect)
+    , ("36019", SomeCardEffect leadershipSkillEffect)
     , ("36020", SomeCardEffect toMeMyXMenEffect)
     , ("36012", SomeCardEffect flashFreezeEffect)
     , ("36005", SomeCardEffect blizzardEffect)

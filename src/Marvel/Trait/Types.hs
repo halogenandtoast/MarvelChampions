@@ -145,5 +145,7 @@ data Trait
   | Weather
   | Morlock
   | XForce
+  | Thief
+  | Guild
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

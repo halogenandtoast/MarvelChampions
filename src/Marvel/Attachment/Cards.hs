@@ -1223,3 +1223,8 @@ deathFactor = attachment "35030" "Death Factor" [] [Boost, Boost] WolverineNemes
 
 adamantiumUpgrades :: CardDef
 adamantiumUpgrades = attachment "35036" "Adamantium Upgrades" [Tech] [Boost, Boost] LadyDeathstrikeSet 2
+
+-- Gambit
+
+psionicShield :: CardDef
+psionicShield = attachment "37034" "Psionic Shield" [Psionic] [Boost, Boost] ExodusSet 2

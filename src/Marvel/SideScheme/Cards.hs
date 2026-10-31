@@ -38,7 +38,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ leaderOfTheMorlocks, rulerOfTheAstralPlane
+  [ theAssassinsGuild, heraldOfAvalon
+  , leaderOfTheMorlocks, rulerOfTheAstralPlane
   , theCarbonadiumSynthesizer, seekingVengeance
   , geneticManipulation
   , mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
@@ -1481,3 +1482,11 @@ theCarbonadiumSynthesizer = (sideScheme "35029" "The Carbonadium Synthesizer" [B
 
 seekingVengeance :: CardDef
 seekingVengeance = (sideScheme "35035" "Seeking Vengeance" [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdAcceleration = 1}
+
+-- Gambit
+
+theAssassinsGuild :: CardDef
+theAssassinsGuild = (sideScheme "37027" "The Assassins Guild" [Boost, Boost, Boost] GambitNemesisSet 1) { cdAcceleration = 1 }
+
+heraldOfAvalon :: CardDef
+heraldOfAvalon = (sideScheme "37033" "Herald of Avalon" [Boost, Boost, Boost] ExodusSet 1) { cdHazards = 1 }

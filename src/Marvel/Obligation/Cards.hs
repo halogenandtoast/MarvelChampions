@@ -456,3 +456,8 @@ claustrophobia = obligation "36030" "Claustrophobia" [Boost, Boost]
 
 pastDemons :: CardDef
 pastDemons = obligation "35027" "Past Demons" [Boost, Boost]
+
+-- Gambit
+
+guildBusiness :: CardDef
+guildBusiness = (obligation "37025" "Guild Business" [Boost, Boost]) { cdHazards = 1 }

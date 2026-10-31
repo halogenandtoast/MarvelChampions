@@ -93,3 +93,6 @@ import Marvel.Hero.Heroes.PhoenixHero as X
 
 -- Storm
 import Marvel.Hero.Heroes.StormHero as X
+
+-- Gambit
+import Marvel.Hero.Heroes.GambitHero as X

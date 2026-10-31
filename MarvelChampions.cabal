@@ -28,6 +28,7 @@ library
       Marvel.Ally.Allies.Banshee
       Marvel.Ally.Allies.Beast
       Marvel.Ally.Allies.BetaRayBill
+      Marvel.Ally.Allies.Bishop
       Marvel.Ally.Allies.BlackCatFeliciaHardy
       Marvel.Ally.Allies.BlackKnightDaneWhitman
       Marvel.Ally.Allies.BlackPantherTChalla
@@ -53,6 +54,7 @@ library
       Marvel.Ally.Allies.CyclopsScottSummers
       Marvel.Ally.Allies.DaredevilMattMurdock
       Marvel.Ally.Allies.DaredevilSpdr
+      Marvel.Ally.Allies.Dazzler
       Marvel.Ally.Allies.Drax
       Marvel.Ally.Allies.DumDumDugan
       Marvel.Ally.Allies.Dust
@@ -133,6 +135,7 @@ library
       Marvel.Ally.Allies.RedDagger
       Marvel.Ally.Allies.RocketRaccoonAlly
       Marvel.Ally.Allies.Rockslide
+      Marvel.Ally.Allies.RogueGambit
       Marvel.Ally.Allies.Ronin
       Marvel.Ally.Allies.ScarletSpider
       Marvel.Ally.Allies.ScarletWitchWandaMaximoff
@@ -228,6 +231,7 @@ library
       Marvel.AlterEgo.AlterEgos.PeterQuill
       Marvel.AlterEgo.AlterEgos.PietroMaximoff
       Marvel.AlterEgo.AlterEgos.PiotrRasputin
+      Marvel.AlterEgo.AlterEgos.RemyLeBeau
       Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion1
       Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion2
       Marvel.AlterEgo.AlterEgos.RiriWilliamsVersion3
@@ -310,6 +314,7 @@ library
       Marvel.Attachment.Attachments.PowerGauntlets
       Marvel.Attachment.Attachments.PowerStone
       Marvel.Attachment.Attachments.ProgramTransmitter
+      Marvel.Attachment.Attachments.PsionicShield
       Marvel.Attachment.Attachments.PumpkinBombs
       Marvel.Attachment.Attachments.RadioactiveBuildup
       Marvel.Attachment.Attachments.RammingSpeed
@@ -430,6 +435,7 @@ library
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.BaitAndSwitch
       Marvel.Event.Events.BeatEmUp
+      Marvel.Event.Events.BeautyAndTheThief
       Marvel.Event.Events.BehindEnemyLines
       Marvel.Event.Events.BerserkerBarrage
       Marvel.Event.Events.BigHands
@@ -437,6 +443,7 @@ library
       Marvel.Event.Events.BlazeOfGlory
       Marvel.Event.Events.BrainsOverBrawn
       Marvel.Event.Events.Brainstorm
+      Marvel.Event.Events.BreakingAndEntering
       Marvel.Event.Events.BringIt
       Marvel.Event.Events.Browbeat
       Marvel.Event.Events.BulletproofProtector
@@ -445,6 +452,7 @@ library
       Marvel.Event.Events.CalculateTheOdds
       Marvel.Event.Events.CallForAid
       Marvel.Event.Events.ChaosMagic
+      Marvel.Event.Events.ChargedCard
       Marvel.Event.Events.ChaseThemDown
       Marvel.Event.Events.ChooserOfTheSlain
       Marvel.Event.Events.ClearTheArea
@@ -460,6 +468,7 @@ library
       Marvel.Event.Events.CounterPunch
       Marvel.Event.Events.CovertOps
       Marvel.Event.Events.CreativeSolution
+      Marvel.Event.Events.CreoleCharmer
       Marvel.Event.Events.CrimsonBandsOfCyttorak
       Marvel.Event.Events.CrisisAverted
       Marvel.Event.Events.CrisisInterdiction
@@ -586,9 +595,11 @@ library
       Marvel.Event.Events.Moxie
       Marvel.Event.Events.Multitasking
       Marvel.Event.Events.MusterCourage
+      Marvel.Event.Events.MutantEducation
       Marvel.Event.Events.MutantPeacekeepers
       Marvel.Event.Events.MutantProtectors
       Marvel.Event.Events.MysticalStudies
+      Marvel.Event.Events.NaturalAgility
       Marvel.Event.Events.NeverBackDown
       Marvel.Event.Events.NewAndImproved
       Marvel.Event.Events.NoQuarter
@@ -651,6 +662,7 @@ library
       Marvel.Event.Events.ReturnTheFavor
       Marvel.Event.Events.RicochetBeam
       Marvel.Event.Events.RootStomp
+      Marvel.Event.Events.RoyalFlush
       Marvel.Event.Events.RunAndGun
       Marvel.Event.Events.RunningInterference
       Marvel.Event.Events.Safeguard
@@ -748,6 +760,7 @@ library
       Marvel.Event.Events.WiggleRoom
       Marvel.Event.Events.WindsOfWatoomb
       Marvel.Event.Events.WingIt
+      Marvel.Event.Events.XMenInstruction
       Marvel.Event.Events.YawAndRoll
       Marvel.Event.Events.YoullPayForThat
       Marvel.Event.Events.YoungLove
@@ -776,6 +789,7 @@ library
       Marvel.Hero.Heroes.CyclopsHero
       Marvel.Hero.Heroes.DoctorStrange
       Marvel.Hero.Heroes.Drax
+      Marvel.Hero.Heroes.GambitHero
       Marvel.Hero.Heroes.Gamora
       Marvel.Hero.Heroes.GhostSpider
       Marvel.Hero.Heroes.Groot
@@ -904,6 +918,7 @@ library
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
+      Marvel.Minion.Minions.Belladonna
       Marvel.Minion.Minions.BerserkMutate
       Marvel.Minion.Minions.BlackjackOHare
       Marvel.Minion.Minions.BlackOrder
@@ -926,6 +941,7 @@ library
       Marvel.Minion.Minions.Enchantress
       Marvel.Minion.Minions.EnragedSymbiote
       Marvel.Minion.Minions.EscapedConvict
+      Marvel.Minion.Minions.Exodus
       Marvel.Minion.Minions.FrostGiant
       Marvel.Minion.Minions.FrostGiants
       Marvel.Minion.Minions.Furnax
@@ -933,6 +949,7 @@ library
       Marvel.Minion.Minions.GoblinKnight
       Marvel.Minion.Minions.GoblinSoldier
       Marvel.Minion.Minions.GoblinThrall
+      Marvel.Minion.Minions.GuildAssassin
       Marvel.Minion.Minions.Hela
       Marvel.Minion.Minions.HellfirePawn
       Marvel.Minion.Minions.HiredGun
@@ -1042,6 +1059,7 @@ library
       Marvel.Obligation.Obligations.ExpertCampaign
       Marvel.Obligation.Obligations.FamilyEmergency
       Marvel.Obligation.Obligations.FearOfKang
+      Marvel.Obligation.Obligations.GuildBusiness
       Marvel.Obligation.Obligations.HomeByDawn
       Marvel.Obligation.Obligations.Homesick
       Marvel.Obligation.Obligations.InferiorityComplex
@@ -1092,9 +1110,9 @@ library
       Marvel.Resource.Resources
       Marvel.Resource.Resources.AdamWarlock
       Marvel.Resource.Resources.Cyclops
+      Marvel.Resource.Resources.MolecularAcceleration
       Marvel.Resource.Resources.MutantGenesis
       Marvel.Resource.Resources.PassionForJustice
-      Marvel.Resource.Resources.MolecularAcceleration
       Marvel.Resource.Resources.PymParticles
       Marvel.Resource.Resources.Salvage
       Marvel.Resource.Types
@@ -1143,6 +1161,7 @@ library
       Marvel.SideScheme.SideSchemes.GoblinReinforcements
       Marvel.SideScheme.SideSchemes.GrandLarceny
       Marvel.SideScheme.SideSchemes.Hela
+      Marvel.SideScheme.SideSchemes.HeraldOfAvalon
       Marvel.SideScheme.SideSchemes.HighwayRobbery
       Marvel.SideScheme.SideSchemes.HitSquad
       Marvel.SideScheme.SideSchemes.HuntingTheSpiderTotems
@@ -1201,6 +1220,7 @@ library
       Marvel.SideScheme.SideSchemes.TestSubjects
       Marvel.SideScheme.SideSchemes.Thanos
       Marvel.SideScheme.SideSchemes.TheAnachronauts
+      Marvel.SideScheme.SideSchemes.TheAssassinsGuild
       Marvel.SideScheme.SideSchemes.TheCarbonadiumSynthesizer
       Marvel.SideScheme.SideSchemes.TheDoomsdayChair
       Marvel.SideScheme.SideSchemes.TheHellfireClub
@@ -1310,6 +1330,7 @@ library
       Marvel.Support.Supports.TheDailyBeagle
       Marvel.Support.Supports.TheGoldenCity
       Marvel.Support.Supports.TheNightNurse
+      Marvel.Support.Supports.TheThievesGuild
       Marvel.Support.Supports.TheTriskellion
       Marvel.Support.Supports.TheXjet
       Marvel.Support.Supports.Thunderstorm
@@ -1318,6 +1339,7 @@ library
       Marvel.Support.Supports.Utopia
       Marvel.Support.Supports.Valhalla
       Marvel.Support.Supports.VigilanteTraining
+      Marvel.Support.Supports.WarRoom
       Marvel.Support.Supports.WeaponX
       Marvel.Support.Supports.WebOfLifeAndDestiny
       Marvel.Support.Supports.WhiteHotRoom
@@ -1328,10 +1350,12 @@ library
       Marvel.Treachery
       Marvel.Treachery.Cards
       Marvel.Treachery.Treacheries
+      Marvel.Treachery.Treacheries.AcolyteFrenzy
       Marvel.Treachery.Treacheries.Advance
       Marvel.Treachery.Treacheries.AllInADaysWork
       Marvel.Treachery.Treacheries.AncientGrudge
       Marvel.Treachery.Treacheries.AndroidEfficiency
+      Marvel.Treachery.Treacheries.AssassinationAttempt
       Marvel.Treachery.Treacheries.Assault
       Marvel.Treachery.Treacheries.AstralAttack
       Marvel.Treachery.Treacheries.BadoonHeadhunter
@@ -1558,6 +1582,8 @@ library
       Marvel.Upgrade.Upgrades.FollowThrough
       Marvel.Upgrade.Upgrades.ForcefieldGenerator
       Marvel.Upgrade.Upgrades.FrictionResistance
+      Marvel.Upgrade.Upgrades.GambitsGuildArmor
+      Marvel.Upgrade.Upgrades.GambitsStaff
       Marvel.Upgrade.Upgrades.Gamma
       Marvel.Upgrade.Upgrades.GamorasSword
       Marvel.Upgrade.Upgrades.Gatekeeper
@@ -1618,6 +1644,7 @@ library
       Marvel.Upgrade.Upgrades.NavigationColumn
       Marvel.Upgrade.Upgrades.NervesOfSteel
       Marvel.Upgrade.Upgrades.NornStone
+      Marvel.Upgrade.Upgrades.OperativeSkill
       Marvel.Upgrade.Upgrades.OrganicSteel
       Marvel.Upgrade.Upgrades.OrganicWebbing
       Marvel.Upgrade.Upgrades.Overwatch
@@ -1914,6 +1941,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.CyclopsPackSpec
       Marvel.Aspect.DoctorStrangePackSpec
       Marvel.Aspect.DraxPackSpec
+      Marvel.Aspect.GambitPackSpec
       Marvel.Aspect.GamoraPackSpec
       Marvel.Aspect.GhostSpiderPackSpec
       Marvel.Aspect.GrootPackSpec
@@ -1974,6 +2002,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.EnchantressSpec
       Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
+      Marvel.Encounter.GambitNemesisSpec
       Marvel.Encounter.GamoraNemesisSpec
       Marvel.Encounter.GhostSpiderNemesisSpec
       Marvel.Encounter.GliderSpec
@@ -2050,6 +2079,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.DoctorStrangeSpec
       Marvel.Hero.DraxSignatureSpec
       Marvel.Hero.DraxSpec
+      Marvel.Hero.GambitSpec
       Marvel.Hero.GamoraSignatureSpec
       Marvel.Hero.GamoraSpec
       Marvel.Hero.GhostSpiderSignatureSpec
@@ -2126,8 +2156,8 @@ test-suite MarvelChampions-test
       Marvel.Rules.EngagementWindowSpec
       Marvel.Rules.EventResolutionSpec
       Marvel.Rules.FourHeroMechanicsSpec
-      Marvel.Rules.GambitMechanicsSpec
       Marvel.Rules.GalaxysMostWantedSpec
+      Marvel.Rules.GambitMechanicsSpec
       Marvel.Rules.IronheartMechanicsSpec
       Marvel.Rules.MutantGenesisLabeledAbilitiesSpec
       Marvel.Rules.MutantGenesisMechanicsSpec

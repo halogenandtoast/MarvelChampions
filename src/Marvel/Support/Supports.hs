@@ -159,3 +159,7 @@ import Marvel.Support.Supports.Blizzard as X
 import Marvel.Support.Supports.OrorosGarden as X
 import Marvel.Support.Supports.UncannyXMen as X
 import Marvel.Support.Supports.HangarBay as X
+
+-- Gambit
+import Marvel.Support.Supports.TheThievesGuild as X
+import Marvel.Support.Supports.WarRoom as X

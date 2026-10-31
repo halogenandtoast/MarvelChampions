@@ -30,7 +30,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard switchblade
+      [ SomeAttachmentCard psionicShield
+  , SomeAttachmentCard switchblade
   , SomeAttachmentCard possessed
   , SomeAttachmentCard geneTherapy
   , SomeAttachmentCard deathFactor, SomeAttachmentCard adamantiumUpgrades

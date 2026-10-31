@@ -38,7 +38,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ stormsCrown, stormsCape, leadershipSkill
+  [ gambitsStaff, gambitsGuildArmor, operativeSkill
+  , stormsCrown, stormsCape, leadershipSkill
   , wolverinesClaws, adamantiumSkeleton, berserkerFrenzy, iGotBetter, warriorSkill
   , rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
   , mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
@@ -1783,3 +1784,14 @@ iGotBetter = (identityUpgrade "35006" "\"I Got Better\"" 4 [Superpower] [Energy]
 
 warriorSkill :: CardDef
 warriorSkill = (upgrade "35016" "Warrior Skill" 2 [Skill] [Mental] Aggression) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
+
+-- Gambit
+
+gambitsStaff :: CardDef
+gambitsStaff = (identityUpgrade "37004" "Gambit's Staff" 1 [Item, Weapon] [Mental]) { cdDeckLimit = Just 1, cdUnique = True }
+
+gambitsGuildArmor :: CardDef
+gambitsGuildArmor = (identityUpgrade "37005" "Gambit's Guild Armor" 1 [Armor, Item] [Mental]) { cdDeckLimit = Just 1, cdUnique = True }
+
+operativeSkill :: CardDef
+operativeSkill = (upgrade "37013" "Operative Skill" 2 [Skill] [Energy] Justice) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }

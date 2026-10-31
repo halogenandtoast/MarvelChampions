@@ -28,7 +28,7 @@ import Marvel.Resource.Cards qualified as Cards
 
 passionForJusticeSpent :: ReverseQueue m => IdentityId -> PlayerCard -> PlayerCard -> m ()
 passionForJusticeSpent you played spent =
-  when (toCardCode spent == "34020" && cdCardType (getCardDef played) == EventType && Trait.Thwart `member` cdTraits (getCardDef played)) $
+  when (getCardDef spent `sameCard` Cards.passionForJustice && cdCardType (getCardDef played) == EventType && Trait.Thwart `member` cdTraits (getCardDef played)) $
     chooseOne you
       [ labeled "$label.passionForJustice" $ createEffect Cards.passionForJustice (CardIdRef $ pcCardId spent) (EventEntity $ EventId $ unCardId $ pcCardId played)
       , labeled "$label.noResponse" (pure ())]

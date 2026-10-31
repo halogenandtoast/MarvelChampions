@@ -29,7 +29,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
+  [ chargedCard, royalFlush, naturalAgility, creoleCharmer, breakingAndEntering, beautyAndTheThief, mutantEducation, xMenInstruction
+  , weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
   , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
   , fullBlast, ricochetBeam, tacticalBrilliance, gameTime
   , backflip
@@ -830,7 +831,7 @@ danceOfDeath =
   identityEvent "08004" "Dance of Death" 3 HeroAction [Attack] [Energy]
 
 stealthStrike :: CardDef
-stealthStrike = (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
+stealthStrike = reprintedAs ["37014"] $ (event "08013" "Stealth Strike" 3 HeroAction [Attack] [Mental] Justice)
   { cdAbilitySubTypes = [Ability.Attack]
   }
 
@@ -1455,7 +1456,7 @@ impede =
     }
 
 hitAndRun :: CardDef
-hitAndRun =
+hitAndRun = reprintedAs ["37020"] $
   (basicEvent "18020" "Hit and Run" 3 HeroAction [Attack, Thwart] [Energy])
     { cdAbilitySubTypes = [Ability.Attack, Ability.Thwart]
     , cdCriteria = canAttack
@@ -2625,3 +2626,29 @@ precisionStrike = (event "35018" "Precision Strike" 1 HeroAction [Attack] [Menta
 
 fastballSpecial :: CardDef
 fastballSpecial = (basicEvent "35023" "Fastball Special" 1 HeroAction [Aerial, Attack] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Colossus", "Wolverine"), cdCriteria = teamUp "Colossus" "Wolverine", cdAbilitySubTypes = [Ability.Attack]}
+
+-- Gambit
+
+chargedCard :: CardDef
+chargedCard = (identityEvent "37006" "Charged Card" 2 HeroAction [Attack, Superpower] [Physical]) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack], cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy] }
+
+royalFlush :: CardDef
+royalFlush = (identityEvent "37007" "Royal Flush" 3 HeroAction [Attack, Superpower] [Energy]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack], cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy] }
+
+naturalAgility :: CardDef
+naturalAgility = (identityEvent "37008" "Natural Agility" 0 HeroInterrupt [Defense, Superpower] [Energy]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Defense], cdAbilityCost = PlaceIdentityCountersCost 1, cdResponseWindow = Just (HeroDefended When You AnyEnemy) }
+
+creoleCharmer :: CardDef
+creoleCharmer = (identityEvent "37009" "Creole Charmer" 2 AlterEgoAction [Thwart] [Energy]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart] }
+
+breakingAndEntering :: CardDef
+breakingAndEntering = (event "37015" "Breaking and Entering" 2 Action [Thwart] [Energy] Justice) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Spy), SelfMatches (IdentityWithTrait Thief)] <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart] }
+
+beautyAndTheThief :: CardDef
+beautyAndTheThief = (basicEvent "37019" "Beauty and the Thief" 2 HeroAction [Attack, Thwart] [Energy]) { cdDeckLimit = Just 1, cdAbilitySubTypes = [Ability.Attack, Ability.Thwart], cdCriteria = teamUp "Gambit" "Rogue", cdTeamUp = Just ("Gambit", "Rogue") }
+
+mutantEducation :: CardDef
+mutantEducation = (basicEvent "37021" "Mutant Education" 0 AlterEgoAction [] [Energy]) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+
+xMenInstruction :: CardDef
+xMenInstruction = (basicEvent "37031" "X-Men Instruction" 0 AlterEgoAction [] [Energy]) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }

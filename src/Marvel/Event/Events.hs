@@ -461,3 +461,13 @@ import Marvel.Event.Events.LightningBolt as X
 import Marvel.Event.Events.FlashFreeze as X
 import Marvel.Event.Events.BlastOfWind as X
 import Marvel.Event.Events.ToMeMyXMen as X
+
+-- Gambit
+import Marvel.Event.Events.ChargedCard as X
+import Marvel.Event.Events.RoyalFlush as X
+import Marvel.Event.Events.NaturalAgility as X
+import Marvel.Event.Events.CreoleCharmer as X
+import Marvel.Event.Events.BreakingAndEntering as X
+import Marvel.Event.Events.BeautyAndTheThief as X
+import Marvel.Event.Events.MutantEducation as X
+import Marvel.Event.Events.XMenInstruction as X

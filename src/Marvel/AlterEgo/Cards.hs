@@ -324,3 +324,8 @@ ororoMunroe = (alterEgo "36001b" "Ororo Munroe" [Mutant]) { cdUnique = True }
 
 logan :: CardDef
 logan = (alterEgo "35001b" "Logan" [Mutant]) {cdUnique = True}
+
+-- Gambit
+
+remyLeBeau :: CardDef
+remyLeBeau = (alterEgo "37001b" "Remy LeBeau" [Mutant, Thief]) { cdUnique = True }

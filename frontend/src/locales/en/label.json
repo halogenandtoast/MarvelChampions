@@ -379,5 +379,8 @@
   "phoenixFirebirdReady": "Remove 1 power counter to ready Phoenix",
   "phoenixFirebirdPower": "Place 2 power counters on Phoenix Force",
   "weatherControl": "Weather Control",
-  "molecularAcceleration": "Molecular Acceleration: place 1 charge counter on Gambit"
+  "molecularAcceleration": "Molecular Acceleration: place 1 charge counter on Gambit",
+  "chargeDeCard": "Charge de Card",
+  "throwDeCard": "Throw de Card",
+  "thiefExtraordinaire": "Thief Extraordinaire"
 }

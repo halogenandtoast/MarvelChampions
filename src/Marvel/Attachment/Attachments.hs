@@ -166,3 +166,6 @@ import Marvel.Attachment.Attachments.GeneTherapy as X
 -- Storm
 import Marvel.Attachment.Attachments.Switchblade as X
 import Marvel.Attachment.Attachments.Possessed as X
+
+-- Gambit
+import Marvel.Attachment.Attachments.PsionicShield as X

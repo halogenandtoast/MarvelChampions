@@ -158,3 +158,83 @@ spec = describe "Gambit general mechanics" do
         resolve [MinionMessage mid $ MinionDamaged (IdentityRef p) (toDamage health $ FromPlayerAttack p)]
         minionDamageOf mid `shouldReturn` Just 0
         encounterDeckSize `shouldReturn` deck
+
+  it "checks each Frenzy activation's form after responses to the previous attack" do
+    tg <- testGame ["gambit", "spider-man"]
+    let p = player1 tg
+    inGame tg do
+      _ <- addMinion p Minions.exodus
+      _ <- addMinion p Minions.mgAmeliaVoght
+      changeForm p
+      pass
+      clearHand p
+      fixture <- putIntoPlay p "01008"
+      attrs <- getsGame (toAttrs . fromMaybe (error "missing form-change fixture") . HashMap.lookup (upgradeIdOf fixture) . gameUpgrades)
+      withGame_ $ entitiesL . upgradesL . at (upgradeIdOf fixture) ?~ Upgrade (ChangeFormAfterAttack attrs)
+      _ <- setEncounterDeck [Treacheries.advance, Treacheries.advance, Treacheries.advance] []
+      before <- mainSchemeThreat
+      _ <- revealNow p Treacheries.acolyteFrenzy
+      settle
+      damageOf p `shouldReturn` 1
+      after <- mainSchemeThreat
+      after `shouldSatisfy` (> before)
+
+  it "can pay Rogue's continuously reduced cost with one initial charge and only Molecular Acceleration" do
+    tg <- testGame ["gambit"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      pass
+      resolve [PlaceCounters (IdentityRef p) 1]
+      clearHand p
+      rogue <- putInHand p "37002"
+      resource <- putInHand p "37010"
+      offers (isPlay rogue) `shouldReturn` True
+      choose "play Rogue" (isPlay rogue)
+      choose "spend Molecular Acceleration" (isPayWith resource)
+      playerIdentityCounters <$> playerAttrs p `shouldReturn` 1
+      choose "place the charge before spending" (isLabel "$label.molecularAcceleration")
+      settle
+      playerIdentityCounters <$> playerAttrs p `shouldReturn` 2
+      alliesWith "37002" >>= (\cards -> length cards `shouldBe` 1)
+      discardOf p >>= (`shouldSatisfy` elem resource)
+
+  it "does not speculate a Molecular Acceleration discount when it still cannot cover Rogue" do
+    tg <- testGame ["gambit"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      pass
+      clearHand p
+      rogue <- putInHand p "37002"
+      _ <- putInHand p "37010"
+      offers (isPlay rogue) `shouldReturn` False
+
+  it "does not give Molecular Acceleration's prospective discount in alter-ego" do
+    tg <- testGame ["gambit"]
+    let p = player1 tg
+    inGame tg do
+      resolve [PlaceCounters (IdentityRef p) 1]
+      clearHand p
+      rogue <- putInHand p "37002"
+      _ <- putInHand p "37010"
+      offers (isPlay rogue) `shouldReturn` False
+
+  it "cannot finish paying Rogue cheaply after declining the spending interrupt" do
+    tg <- testGame ["gambit"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      pass
+      resolve [PlaceCounters (IdentityRef p) 1]
+      clearHand p
+      rogue <- putInHand p "37002"
+      resource <- putInHand p "37010"
+      choose "play Rogue" (isPlay rogue)
+      choose "spend Molecular Acceleration" (isPayWith resource)
+      choose "decline the counter" (isLabel "$label.noResponse")
+      settle
+      alliesWith "37002" `shouldReturn` []
+      playerIdentityCounters <$> playerAttrs p `shouldReturn` 1
+      handOf p >>= (`shouldSatisfy` elem rogue)
+      handOf p >>= (`shouldSatisfy` elem resource)
