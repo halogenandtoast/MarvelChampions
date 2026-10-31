@@ -30,7 +30,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ theThievesGuild, warRoom
+  [ moiraMacTaggert, medLab
+  , theThievesGuild, warRoom
   , clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
   , logansCabin, weaponX, commandCenter
   , utopia, dangerRoom
@@ -659,3 +660,12 @@ theThievesGuild = (identitySupport "37003" "The Thieves Guild" 1 [Guild] [Mental
 
 warRoom :: CardDef
 warRoom = (support "37030" "War Room" 1 [Location] [Mental] Aggression) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }
+
+
+-- Rogue
+
+moiraMacTaggert :: CardDef
+moiraMacTaggert = (basicSupport "38018" "Moira MacTaggert" 2 [Persona] [Mental]) { cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+
+medLab :: CardDef
+medLab = (support "38028" "Med Lab" 1 [Location] [Mental] Leadership) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3 }

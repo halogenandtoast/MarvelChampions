@@ -34,7 +34,7 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard rogueGambit, SomeAllyCard bishop, SomeAllyCard dazzler
+  [ SomeAllyCard gambitRogue, SomeAllyCard iceman, SomeAllyCard karma, SomeAllyCard armor, SomeAllyCard rogueGambit, SomeAllyCard bishop, SomeAllyCard dazzler
   , SomeAllyCard havok
   , SomeAllyCard mirage
   , SomeAllyCard gentle

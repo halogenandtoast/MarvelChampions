@@ -38,7 +38,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ theAssassinsGuild, heraldOfAvalon
+  [ mystiquesManipulations, theReavers
+  , theAssassinsGuild, heraldOfAvalon
   , leaderOfTheMorlocks, rulerOfTheAstralPlane
   , theCarbonadiumSynthesizer, seekingVengeance
   , geneticManipulation
@@ -1490,3 +1491,12 @@ theAssassinsGuild = (sideScheme "37027" "The Assassins Guild" [Boost, Boost, Boo
 
 heraldOfAvalon :: CardDef
 heraldOfAvalon = (sideScheme "37033" "Herald of Avalon" [Boost, Boost, Boost] ExodusSet 1) { cdHazards = 1 }
+
+
+-- Rogue
+
+mystiquesManipulations :: CardDef
+mystiquesManipulations = (sideScheme "38026" "Mystique's Manipulations" [Boost, Boost] RogueNemesisSet 1) { cdTraits = fromList [MGTrait.Shapeshifter], cdAcceleration = 1 }
+
+theReavers :: CardDef
+theReavers = (sideScheme "38034" "The Reavers" [Boost, Boost, Boost] ReaversSet 1) { cdHazards = 1 }

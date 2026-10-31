@@ -40,7 +40,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ switchblade, possessed
+      [ cyberneticEnhancements
+  , switchblade, possessed
   , deathFactor, adamantiumUpgrades
   , geneTherapy
   , mgMagnetosPower
@@ -1228,3 +1229,9 @@ adamantiumUpgrades = attachment "35036" "Adamantium Upgrades" [Tech] [Boost, Boo
 
 psionicShield :: CardDef
 psionicShield = attachment "37034" "Psionic Shield" [Psionic] [Boost, Boost] ExodusSet 2
+
+
+-- Rogue
+
+cyberneticEnhancements :: CardDef
+cyberneticEnhancements = attachment "38035" "Cybernetic Enhancements" [Tech] [Boost, Boost] ReaversSet 2

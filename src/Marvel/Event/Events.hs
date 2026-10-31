@@ -471,3 +471,15 @@ import Marvel.Event.Events.BreakingAndEntering as X
 import Marvel.Event.Events.BeautyAndTheThief as X
 import Marvel.Event.Events.MutantEducation as X
 import Marvel.Event.Events.XMenInstruction as X
+
+import Marvel.Event.Events.GoinRogue as X
+
+import Marvel.Event.Events.SouthernCross as X
+
+import Marvel.Event.Events.EnergyTransfer as X
+
+import Marvel.Event.Events.BulletproofBelle as X
+
+import Marvel.Event.Events.SuperpowerAdaptation as X
+
+import Marvel.Event.Events.NotToday as X

@@ -94,3 +94,5 @@ import Marvel.AlterEgo.AlterEgos.OroroMunroe as X
 
 -- Gambit
 import Marvel.AlterEgo.AlterEgos.RemyLeBeau as X
+
+import Marvel.AlterEgo.AlterEgos.AnnaMarie as X

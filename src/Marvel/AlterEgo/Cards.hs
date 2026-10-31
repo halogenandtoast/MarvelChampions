@@ -18,7 +18,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ ororoMunroe
+    [ annaMarie
+  , ororoMunroe
   , logan
   , scottSummers
   , peterParker
@@ -329,3 +330,9 @@ logan = (alterEgo "35001b" "Logan" [Mutant]) {cdUnique = True}
 
 remyLeBeau :: CardDef
 remyLeBeau = (alterEgo "37001b" "Remy LeBeau" [Mutant, Thief]) { cdUnique = True }
+
+
+-- Rogue
+
+annaMarie :: CardDef
+annaMarie = (alterEgo "38001b" "Anna Marie" [Mutant]) { cdUnique = True }

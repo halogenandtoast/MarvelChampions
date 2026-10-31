@@ -26,7 +26,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard assassinationAttempt, SomeTreacheryCard acolyteFrenzy
+  [ SomeTreacheryCard misled, SomeTreacheryCard assassinationAttempt, SomeTreacheryCard acolyteFrenzy
   , SomeTreacheryCard knifeFight
   , SomeTreacheryCard astralAttack
   , SomeTreacheryCard concussiveForce

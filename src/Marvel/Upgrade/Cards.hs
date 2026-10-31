@@ -38,7 +38,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ gambitsStaff, gambitsGuildArmor, operativeSkill
+  [ touched, roguesJacket, judokaSkill, xGene
+  , gambitsStaff, gambitsGuildArmor, operativeSkill
   , stormsCrown, stormsCape, leadershipSkill
   , wolverinesClaws, adamantiumSkeleton, berserkerFrenzy, iGotBetter, warriorSkill
   , rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
@@ -635,7 +636,7 @@ theEyeOfAgamotto =
   unique $ identityUpgrade "09011" "The Eye of Agamotto" 2 [Artifact, Item] [Energy]
 
 unflappable :: CardDef
-unflappable = limited (MaxPerPlayerUnderAnyControl 1)
+unflappable = reprintedAs ["38013"] $ limited (MaxPerPlayerUnderAnyControl 1)
   $ upgrade "09020" "Unflappable" 1 [Condition] [Mental] Protection
 
 theSorcererSupreme :: CardDef
@@ -1795,3 +1796,18 @@ gambitsGuildArmor = (identityUpgrade "37005" "Gambit's Guild Armor" 1 [Armor, It
 
 operativeSkill :: CardDef
 operativeSkill = (upgrade "37013" "Operative Skill" 2 [Skill] [Energy] Justice) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }
+
+
+-- Rogue
+
+touched :: CardDef
+touched = (identityUpgrade "38002" "Touched" 0 [Condition] [Physical]) { cdCriteria = Never, cdCost = Nothing, cdDeckLimit = Just 1 }
+
+roguesJacket :: CardDef
+roguesJacket = (identityUpgrade "38004" "Rogue's Jacket" 1 [Item] [Energy]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+judokaSkill :: CardDef
+judokaSkill = (upgrade "38014" "Judoka Skill" 2 [Skill] [Physical] Protection) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3 }
+
+xGene :: CardDef
+xGene = (basicUpgrade "38019" "X-Gene" 1 [] [Wild]) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }

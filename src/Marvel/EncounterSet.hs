@@ -7,6 +7,8 @@ import Marvel.Card.Code
 data EncounterSet
   = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
   | MutantGenesisCampaign
+  | RogueNemesisSet
+  | ReaversSet
   | CyclopsNemesis
   | ColossusNemesis
   | PhoenixNemesis
@@ -227,6 +229,7 @@ modularSets =
   , Inheritors
   , IronSpiderSinisterSix
   , LadyDeathstrikeSet
+  , ReaversSet
   -- Mutant Genesis
   , Brotherhood
   , Mystique
@@ -238,6 +241,7 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "38001" -> RogueNemesisSet
   "37001" -> GambitNemesisSet
   "36001" -> StormNemesis
   "33001" -> CyclopsNemesis

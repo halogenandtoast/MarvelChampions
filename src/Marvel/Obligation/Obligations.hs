@@ -105,3 +105,5 @@ import Marvel.Obligation.Obligations.Claustrophobia as X
 
 -- Gambit
 import Marvel.Obligation.Obligations.GuildBusiness as X
+
+import Marvel.Obligation.Obligations.DeadlyTouch as X

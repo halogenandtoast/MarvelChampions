@@ -34,7 +34,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ assassinationAttempt, acolyteFrenzy
+  [ misled
+  , assassinationAttempt, acolyteFrenzy
   , knifeFight, astralAttack
   , tentacleStrike, hackNSlash
   , concussiveForce
@@ -1458,3 +1459,9 @@ assassinationAttempt = treachery "37029" "Assassination Attempt" [Boost] GambitN
 
 acolyteFrenzy :: CardDef
 acolyteFrenzy = treachery "37035" "Acolyte Frenzy" [Star] ExodusSet 2
+
+
+-- Rogue
+
+misled :: CardDef
+misled = treachery "38027" "Misled" [Shapeshifter] [Boost] RogueNemesisSet 3

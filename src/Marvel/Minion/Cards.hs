@@ -38,7 +38,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ callisto, theShadowKing
+      [ rogueMystique, donaldPierce, skullbuster, bonebreaker, wadeCole, murrayReese
+  , callisto, theShadowKing
   , omegaRed, ladyDeathstrike
   , misterSinister
   , mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
@@ -1536,3 +1537,24 @@ guildAssassin = (minion "37028" "Guild Assassin" [Assassin] [Boost, Boost] Gambi
 
 exodus :: CardDef
 exodus = (minion "37032" "Exodus" [Acolyte, Elite, Psionic] [Boost, Boost, Boost] ExodusSet 1) { cdUnique = True, cdKeywords = fromList [Retaliate 1, Villainous] }
+
+
+-- Rogue
+
+rogueMystique :: CardDef
+rogueMystique = (minion "38025" "Mystique" [BrotherhoodOfMutants, Elite] [Boost, Boost, Boost] RogueNemesisSet 1) { cdUnique = True, cdKeywords = fromList [Toughness, Villainous] }
+
+donaldPierce :: CardDef
+donaldPierce = (minion "38029" "Donald Pierce" [Elite, Trait.Reaver] [Boost, Boost, Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver, Villainous] }
+
+skullbuster :: CardDef
+skullbuster = (minion "38030" "Skullbuster" [Trait.Reaver] [Boost, Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver, Toughness] }
+
+bonebreaker :: CardDef
+bonebreaker = (minion "38031" "Bonebreaker" [Trait.Reaver] [Boost, Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver, Toughness] }
+
+wadeCole :: CardDef
+wadeCole = (minion "38032" "Wade Cole" [Trait.Reaver] [Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver] }
+
+murrayReese :: CardDef
+murrayReese = (minion "38033" "Murray Reese" [Trait.Reaver] [Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver] }

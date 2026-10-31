@@ -37,7 +37,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ claustrophobia
+    [ deadlyTouch
+  , claustrophobia
   , pastDemons
   , lostVisor
   , mgReactiveDefense
@@ -461,3 +462,9 @@ pastDemons = obligation "35027" "Past Demons" [Boost, Boost]
 
 guildBusiness :: CardDef
 guildBusiness = (obligation "37025" "Guild Business" [Boost, Boost]) { cdHazards = 1 }
+
+
+-- Rogue
+
+deadlyTouch :: CardDef
+deadlyTouch = obligation "38024" "Deadly Touch" [Boost, Boost]

@@ -217,3 +217,15 @@ import Marvel.Minion.Minions.TheShadowKing as X
 import Marvel.Minion.Minions.Belladonna as X
 import Marvel.Minion.Minions.GuildAssassin as X
 import Marvel.Minion.Minions.Exodus as X
+
+import Marvel.Minion.Minions.RogueMystique as X
+
+import Marvel.Minion.Minions.DonaldPierce as X
+
+import Marvel.Minion.Minions.Skullbuster as X
+
+import Marvel.Minion.Minions.Bonebreaker as X
+
+import Marvel.Minion.Minions.WadeCole as X
+
+import Marvel.Minion.Minions.MurrayReese as X

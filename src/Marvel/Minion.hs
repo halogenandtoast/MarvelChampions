@@ -32,7 +32,7 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard belladonna, SomeMinionCard guildAssassin, SomeMinionCard exodus
+      [ SomeMinionCard rogueMystique, SomeMinionCard donaldPierce, SomeMinionCard skullbuster, SomeMinionCard bonebreaker, SomeMinionCard wadeCole, SomeMinionCard murrayReese, SomeMinionCard belladonna, SomeMinionCard guildAssassin, SomeMinionCard exodus
   , SomeMinionCard callisto
   , SomeMinionCard theShadowKing
   , SomeMinionCard misterSinister

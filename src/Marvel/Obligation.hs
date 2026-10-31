@@ -24,7 +24,7 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard guildBusiness
+  [ SomeObligationCard deadlyTouch, SomeObligationCard guildBusiness
   , SomeObligationCard claustrophobia
   , SomeObligationCard lostVisor
   , SomeObligationCard pastDemons

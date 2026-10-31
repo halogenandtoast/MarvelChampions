@@ -349,3 +349,11 @@ import Marvel.Upgrade.Upgrades.LeadershipSkill as X
 import Marvel.Upgrade.Upgrades.GambitsStaff as X
 import Marvel.Upgrade.Upgrades.GambitsGuildArmor as X
 import Marvel.Upgrade.Upgrades.OperativeSkill as X
+
+import Marvel.Upgrade.Upgrades.Touched as X
+
+import Marvel.Upgrade.Upgrades.RoguesJacket as X
+
+import Marvel.Upgrade.Upgrades.JudokaSkill as X
+
+import Marvel.Upgrade.Upgrades.XGene as X

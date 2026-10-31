@@ -29,7 +29,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ chargedCard, royalFlush, naturalAgility, creoleCharmer, breakingAndEntering, beautyAndTheThief, mutantEducation, xMenInstruction
+  [ goinRogue, southernCross, energyTransfer, bulletproofBelle, superpowerAdaptation, notToday
+  , chargedCard, royalFlush, naturalAgility, creoleCharmer, breakingAndEntering, beautyAndTheThief, mutantEducation, xMenInstruction
   , weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
   , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
   , fullBlast, ricochetBeam, tacticalBrilliance, gameTime
@@ -739,7 +740,7 @@ wiggleRoom =
 
 preemptiveStrike :: CardDef
 preemptiveStrike =
-  (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
+  reprintedAs ["38015"] $ (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
     { cdAbilitySubTypes = [Ability.Defense]
     , cdResponseWindow = Just (BoostCardFlipped When (VillainEnemy <> AttackingEnemy))
     }
@@ -2645,10 +2646,31 @@ breakingAndEntering :: CardDef
 breakingAndEntering = (event "37015" "Breaking and Entering" 2 Action [Thwart] [Energy] Justice) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = AnyCriteria [SelfMatches (IdentityWithTrait Spy), SelfMatches (IdentityWithTrait Thief)] <> AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart] }
 
 beautyAndTheThief :: CardDef
-beautyAndTheThief = (basicEvent "37019" "Beauty and the Thief" 2 HeroAction [Attack, Thwart] [Energy]) { cdDeckLimit = Just 1, cdAbilitySubTypes = [Ability.Attack, Ability.Thwart], cdCriteria = teamUp "Gambit" "Rogue", cdTeamUp = Just ("Gambit", "Rogue") }
+beautyAndTheThief = reprintedAs ["38020"] $ (basicEvent "37019" "Beauty and the Thief" 2 HeroAction [Attack, Thwart] [Energy]) { cdDeckLimit = Just 1, cdAbilitySubTypes = [Ability.Attack, Ability.Thwart], cdCriteria = teamUp "Gambit" "Rogue", cdTeamUp = Just ("Gambit", "Rogue") }
 
 mutantEducation :: CardDef
 mutantEducation = (basicEvent "37021" "Mutant Education" 0 AlterEgoAction [] [Energy]) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
 
 xMenInstruction :: CardDef
 xMenInstruction = (basicEvent "37031" "X-Men Instruction" 0 AlterEgoAction [] [Energy]) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+
+
+-- Rogue
+
+goinRogue :: CardDef
+goinRogue = (identityEvent "38005" "Goin' Rogue" 2 HeroAction [Superpower, Thwart] [Mental]) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Thwart], cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists SchemeYouCanThwart] }
+
+southernCross :: CardDef
+southernCross = (identityEvent "38006" "Southern Cross" 3 HeroAction [Attack, Superpower] [Physical]) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack], cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists AttackableEnemy] }
+
+energyTransfer :: CardDef
+energyTransfer = (identityEvent "38007" "Energy Transfer" 2 HeroAction [Superpower] [Energy]) { cdAbilityCost = TouchedDamageCost 2, cdDeckLimit = Just 2 }
+
+bulletproofBelle :: CardDef
+bulletproofBelle = (identityEvent "38008" "Bulletproof Belle" 1 HeroInterrupt [Defense, Superpower] [Physical]) { cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (EnemyAttacked When (EnemyWithUpgrade $ UpgradeIs Upgrades.touched <> UpgradeControlledBy You) AnyIdentity) }
+
+superpowerAdaptation :: CardDef
+superpowerAdaptation = (identityEvent "38009" "Superpower Adaptation" 0 HeroAction [Superpower] [Mental]) { cdDeckLimit = Just 3 }
+
+notToday :: CardDef
+notToday = (event "38016" "Not Today!" 1 HeroInterrupt [Defense] [Mental] Protection) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (HeroDefended When You AnyEnemy) }

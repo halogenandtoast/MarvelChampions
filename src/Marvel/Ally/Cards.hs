@@ -33,7 +33,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ rogueGambit, bishop, dazzler
+  [ gambitRogue, iceman, karma, armor
+  , rogueGambit, bishop, dazzler
   , havok, mirage, gentle, pixie, forge
   , jubilee, psylocke, sunfire, longshot
   , phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
@@ -1291,3 +1292,18 @@ bishop = (ally "37011" ("Bishop" <:> "Lucas Bishop") 3 [XMen] [Energy] Justice) 
 
 dazzler :: CardDef
 dazzler = (ally "37012" ("Dazzler" <:> "Alison Blaire") 4 [XMen] [Energy] Justice) { cdDeckLimit = Just 1, cdUnique = True }
+
+
+-- Rogue
+
+gambitRogue :: CardDef
+gambitRogue = (identityAlly "38003" ("Gambit" <:> "Remy LeBeau") 3 [XMen] [Wild]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+iceman :: CardDef
+iceman = (ally "38010" ("Iceman" <:> "Bobby Drake") 3 [XMen] [Mental] Protection) { cdUnique = True, cdDeckLimit = Just 1 }
+
+karma :: CardDef
+karma = (ally "38011" ("Karma" <:> "Xi'an Coy Manh") 4 [Psionic, XMen] [Energy] Protection) { cdUnique = True, cdDeckLimit = Just 1 }
+
+armor :: CardDef
+armor = (ally "38012" ("Armor" <:> "Hisako Ichiki") 2 [XMen] [Physical] Protection) { cdUnique = True, cdDeckLimit = Just 1, cdKeywords = fromList [Toughness], cdCriteria = SelfMatches (IdentityWithTrait XMen) }

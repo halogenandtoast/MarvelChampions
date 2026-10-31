@@ -234,3 +234,5 @@ import Marvel.Treachery.Treacheries.AstralAttack as X
 -- Gambit
 import Marvel.Treachery.Treacheries.AssassinationAttempt as X
 import Marvel.Treachery.Treacheries.AcolyteFrenzy as X
+
+import Marvel.Treachery.Treacheries.Misled as X

@@ -25,7 +25,7 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard theAssassinsGuild, SomeSideSchemeCard heraldOfAvalon
+  [ SomeSideSchemeCard mystiquesManipulations, SomeSideSchemeCard theReavers, SomeSideSchemeCard theAssassinsGuild, SomeSideSchemeCard heraldOfAvalon
   , SomeSideSchemeCard leaderOfTheMorlocks
   , SomeSideSchemeCard rulerOfTheAstralPlane
   , SomeSideSchemeCard geneticManipulation

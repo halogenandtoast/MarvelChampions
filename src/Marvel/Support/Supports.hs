@@ -163,3 +163,7 @@ import Marvel.Support.Supports.HangarBay as X
 -- Gambit
 import Marvel.Support.Supports.TheThievesGuild as X
 import Marvel.Support.Supports.WarRoom as X
+
+import Marvel.Support.Supports.MoiraMacTaggert as X
+
+import Marvel.Support.Supports.MedLab as X

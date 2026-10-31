@@ -211,3 +211,7 @@ import Marvel.SideScheme.SideSchemes.RulerOfTheAstralPlane as X
 -- Gambit
 import Marvel.SideScheme.SideSchemes.TheAssassinsGuild as X
 import Marvel.SideScheme.SideSchemes.HeraldOfAvalon as X
+
+import Marvel.SideScheme.SideSchemes.MystiquesManipulations as X
+
+import Marvel.SideScheme.SideSchemes.TheReavers as X

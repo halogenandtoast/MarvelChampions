@@ -269,3 +269,11 @@ import Marvel.Ally.Allies.Forge as X
 import Marvel.Ally.Allies.RogueGambit as X
 import Marvel.Ally.Allies.Bishop as X
 import Marvel.Ally.Allies.Dazzler as X
+
+import Marvel.Ally.Allies.GambitRogue as X
+
+import Marvel.Ally.Allies.Iceman as X
+
+import Marvel.Ally.Allies.Karma as X
+
+import Marvel.Ally.Allies.Armor as X
