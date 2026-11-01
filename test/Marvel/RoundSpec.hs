@@ -6,6 +6,7 @@ import Data.List qualified as List
 import Data.Text qualified as T
 import Marvel.Log.Entry (LogEntry (..), LogPart (..))
 import Marvel.Phase (Phase (..))
+import Marvel.SideScheme.Cards qualified as SideScheme
 import TestImport
 
 -- | The heading an entry opens, if it is one of the round's.
@@ -16,6 +17,18 @@ heading = \case
 
 spec :: Spec
 spec = describe "the round as the board shows it" do
+  it "animates a revealed side scheme only once" do
+    let setup = fromMaybe (error "no setup") (recommendedSetup "01094")
+    told <- newIORef []
+    (app, _) <- dealtGameTelling id setup [starter "spider-man"] 1 \m -> modifyIORef' told (<> [m])
+    card <- runGameApp app do
+      toFirstTurn
+      p <- getsGame (head . gameSeats)
+      liftIO $ writeIORef told []
+      revealNow p SideScheme.crowdControl
+    said <- readIORef told
+    [(cid, code) | Revealing cid code False <- said] `shouldBe` [(ecCardId card, "01108")]
+
   for_ [("01053", IdentityStunned, "stunned"), ("01060", IdentityConfused, "confused")] \(code, status, name) ->
     it ("shows the event and " <> show name <> " status when the event is canceled") do
       let setup = fromMaybe (error "no setup") (recommendedSetup "01094")

@@ -56,11 +56,12 @@ stepBegins = \case
 intoRiver :: Message -> Bool
 intoRiver = \case
   VillainMessage _ (VillainDealtBoost _) -> True
-  RevealEncounterCard {} -> True
   RevealEncounterCardFrom {} -> True
   _ -> False
 
 -- | What the board animates for a message, read before it runs.
+-- RevealEncounterCard delegates to RevealEncounterCardFrom; only the latter cues
+-- the reveal, so the board does not draw the same card twice.
 cue :: Message -> Maybe FrontendMessage
 cue = \case
   ShuffleEncounterDeck -> Just $ Shuffled "deck-encounter"
@@ -69,7 +70,6 @@ cue = \case
   IdentityMessage ident (ShuffleIntoIdentityDeck _) -> Just $ Shuffled ("deck-" <> idText ident)
   IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck -> Just $ Shuffled ("deck-" <> idText ident)
   VillainMessage _ (VillainDealtBoost card) -> Just $ BoostDealt (ecCardId card)
-  RevealEncounterCard _ card -> Just $ Revealing (ecCardId card) (toCardCode card) False
   RevealEncounterCardFrom _ _ card -> Just $ Revealing (ecCardId card) (toCardCode card) False
   RevealBoostCard card _ -> Just $ Revealing (ecCardId card) (toCardCode card) True
   _ -> Nothing
