@@ -106,6 +106,20 @@ spec = describe "Four hero damage timing" do
       map upgradeUses <$> upgradesWith "49006" `shouldReturn` [0]
       playerIdentityTough <$> playerAttrs p `shouldReturn` False
 
+  it "Magneto's Magnetic Bubble receives no damage when its recipient cannot take damage" do
+    tg <- testGame ["magneto"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      _ <- putIntoPlay p "49006"
+      (_, messages) <- L.captureQueueT $ L.lastingModifiers p (IdentityEntity $ IdentityWithId p) [CannotTakeDamage] True
+      runNow messages
+      mid <- addMinion p Minions.laufey
+      runNow [MinionMessage mid $ MinionAttacks p]
+      settle
+      damageOf p `shouldReturn` 0
+      map upgradeUses <$> upgradesWith "49006" `shouldReturn` [0]
+
   it "Iceman's Ice Wall absorbs pending damage inside a simultaneous-attack context wrapper" do
     tg <- testGame ["iceman"]
     inGame tg do

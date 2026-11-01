@@ -12,7 +12,7 @@ import Marvel.Card.Id (CardId (..), HasCardId (toCardId))
 import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
 import Marvel.Status (StatusCard (ToughStatus))
-import Marvel.Modifier.Types (Modifier (DirectedForceApplied))
+import Marvel.Modifier.Types (Modifier (CannotTakeDamage, DirectedForceApplied))
 import Marvel.Damage
 import Marvel.Keyword (Keyword (Ranged))
 import Marvel.Game.Source
@@ -212,7 +212,8 @@ windowMatches matcher w source = case matcher of
       IdentityTakeDamage ident damage
         | damageSource' `elem` [damageSource damage, FromAnyDamageSource] -> do
             tough <- characterMatches (CharacterWithStatus ToughStatus) (IdentityCharacter ident)
-            if tough && preventedByTough damage then pure False else liftA2
+            immune <- elem CannotTakeDamage <$> getModifiers (IdentityRef ident)
+            if immune || (tough && preventedByTough damage) then pure False else liftA2
               (&&)
               (identityMatches identityMatcher ident)
               (gameValueMatches gameValueMatcher (damageAmount damage))
