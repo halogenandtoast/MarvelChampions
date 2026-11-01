@@ -1,5 +1,11 @@
 module Marvel.Environment.Cards where
 
+import Marvel.Hood.Cards (hoodCardDef)
+import Marvel.EncounterSet qualified as HoodSet
+import Marvel.Trait qualified as HoodTrait
+import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Boost qualified as HoodBoost
+import Marvel.GameValue.Types qualified as HoodValue
 
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
@@ -59,7 +65,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
+  [ hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063
+      , ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
   , mojo39003a, mojo39003b, mojo39004a, mojo39004b, mojo39026a, mojo39026b, mojo39035, mojo39041, mojo39047, mojo39053, mojo39060, mojo39066
   , mgProtectTheSenator, mgSaveTheSchool, mgRescueCaptives
   , smCityStreets, smBellTowerA, smBellTowerB, smSkiesOverNewYorkB, smLowerManhattanB, smMidtownManhattanB, smUpperManhattanB, smPublicOutcryA, smPublicOutcryB
@@ -918,3 +925,59 @@ ne40195b = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+hood24049a :: CardDef
+hood24049a = (hoodCardDef "24049a" "Formidable Foe" HoodSet.StandardII EnvironmentType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Permanent, HoodKeyword.Setup]
+  , cdBoostIcons = []
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24060 :: CardDef
+hood24060 = (hoodCardDef "24060" "Back-Alley Enclave" HoodSet.StreetsOfMayhem EnvironmentType 1)
+  { cdTraits = fromList [HoodTrait.Location, HoodTrait.Setting]
+  , cdKeywords = fromList [HoodKeyword.Surge]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24061 :: CardDef
+hood24061 = (hoodCardDef "24061" "Secret Lair" HoodSet.StreetsOfMayhem EnvironmentType 1)
+  { cdTraits = fromList [HoodTrait.Location, HoodTrait.Setting]
+  , cdKeywords = fromList [HoodKeyword.Surge]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24062 :: CardDef
+hood24062 = (hoodCardDef "24062" "Sewer Tunnels" HoodSet.StreetsOfMayhem EnvironmentType 1)
+  { cdTraits = fromList [HoodTrait.Location, HoodTrait.Setting]
+  , cdKeywords = fromList [HoodKeyword.Surge]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24063 :: CardDef
+hood24063 = (hoodCardDef "24063" "Warehouse District" HoodSet.StreetsOfMayhem EnvironmentType 1)
+  { cdTraits = fromList [HoodTrait.Location, HoodTrait.Setting]
+  , cdKeywords = fromList [HoodKeyword.Surge]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24049b :: CardDef
+hood24049b = hood24049a {cdCardCode = "24049b", cdEncounterSetQuantity = Just 0}
+
+hood24049 :: CardDef
+hood24049 = hood24049a {cdCardCode = "24049", cdEncounterSetQuantity = Just 0}

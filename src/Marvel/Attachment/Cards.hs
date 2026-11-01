@@ -1,5 +1,11 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.Hood.Cards (hoodCardDef)
+import Marvel.EncounterSet qualified as HoodSet
+import Marvel.Trait qualified as HoodTrait
+import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Boost qualified as HoodBoost
+import Marvel.GameValue.Types qualified as HoodValue
 
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
@@ -79,7 +85,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173
+      [ hood24019, hood24020, hood24021, hood24022, hood24037, hood24038, hood24039, hood24040
+      , ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173
   , superpowerFeedback
   , cable40034
   , mojo39005, mojo39006, mojo39018, mojo39027, mojo39028, mojo39048, mojo39067
@@ -2218,4 +2225,84 @@ ne40173 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+hood24019 :: CardDef
+hood24019 = (hoodCardDef "24019" "Blackbird Pellets" HoodSet.BrothersGrimm AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item]
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24020 :: CardDef
+hood24020 = (hoodCardDef "24020" "Corrosive Egg Bomb" HoodSet.BrothersGrimm AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24021 :: CardDef
+hood24021 = (hoodCardDef "24021" "Paralytic Stardust" HoodSet.BrothersGrimm AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24022 :: CardDef
+hood24022 = (hoodCardDef "24022" "Unbreakable Thread" HoodSet.BrothersGrimm AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24037 :: CardDef
+hood24037 = (hoodCardDef "24037" "Flamethrower" HoodSet.RansackedArmory AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Tech, HoodTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24038 :: CardDef
+hood24038 = (hoodCardDef "24038" "Holoshield Generator" HoodSet.RansackedArmory AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item, HoodTrait.Tech]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24039 :: CardDef
+hood24039 = (hoodCardDef "24039" "Jetpack" HoodSet.RansackedArmory AttachmentType 1)
+  { cdTraits = fromList [HoodTrait.Item, HoodTrait.Tech]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24040 :: CardDef
+hood24040 = (hoodCardDef "24040" "Tech Gauntlets" HoodSet.RansackedArmory AttachmentType 2)
+  { cdTraits = fromList [HoodTrait.Tech, HoodTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
   }

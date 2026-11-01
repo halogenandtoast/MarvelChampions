@@ -436,6 +436,10 @@ runVillainMessage msg attrs = case msg of
       else attrs <$ villainStep vid VillainBeginScheme
   -- queued after the scheme, everything it leads to runs before the player is forgotten,
   -- whether the scheme resolved, was replaced or was cancelled
+  VillainSchemesWithBonus ident n -> do
+    villainStep vid (VillainSchemesAgainst ident)
+    cardSpecific attrs "clearSchemeBonus" n
+    pure attrs {villainScheme = Sch (unSch (villainScheme attrs) + n)}
   VillainSchemesAgainst ident -> do
     resolveVillainActivationAfterWould vid VillainSchemes
     villainStep vid VillainSchemeAgainstEnded
@@ -580,6 +584,8 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "clearSchemeBonus" (fromJSON -> Success n) | target == toRef attrs ->
+      pure attrs {villainScheme = Sch (subtractNatural n $ unSch $ villainScheme attrs)}
     CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
       pure attrs {villainAttackTarget = Just (AllyCharacter aid), villainAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (villainAttacking attrs)}
     PlaceCounters target n | target == toRef attrs -> pure attrs {villainCounters = villainCounters attrs + n}

@@ -2,6 +2,7 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.HoodPack qualified as HoodPack
 
 import Marvel.Attachment.Attachments.NextEvolutionTelepathySet
 
@@ -52,7 +53,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard ne40082, SomeAttachmentCard ne40083, SomeAttachmentCard ne40090, SomeAttachmentCard ne40091, SomeAttachmentCard ne40092, SomeAttachmentCard ne40105a, SomeAttachmentCard ne40105b, SomeAttachmentCard ne40106, SomeAttachmentCard ne40107, SomeAttachmentCard ne40122a, SomeAttachmentCard ne40122b, SomeAttachmentCard ne40123, SomeAttachmentCard ne40144, SomeAttachmentCard ne40151, SomeAttachmentCard ne40152, SomeAttachmentCard ne40153, SomeAttachmentCard ne40155, SomeAttachmentCard ne40156, SomeAttachmentCard ne40157, SomeAttachmentCard ne40159, SomeAttachmentCard ne40169, SomeAttachmentCard ne40170, SomeAttachmentCard ne40171, SomeAttachmentCard ne40172, SomeAttachmentCard ne40173
+      [ SomeAttachmentCard HoodPack.hood24019, SomeAttachmentCard HoodPack.hood24020, SomeAttachmentCard HoodPack.hood24021, SomeAttachmentCard HoodPack.hood24022, SomeAttachmentCard HoodPack.hood24037, SomeAttachmentCard HoodPack.hood24038, SomeAttachmentCard HoodPack.hood24039, SomeAttachmentCard HoodPack.hood24040
+  , SomeAttachmentCard ne40082, SomeAttachmentCard ne40083, SomeAttachmentCard ne40090, SomeAttachmentCard ne40091, SomeAttachmentCard ne40092, SomeAttachmentCard ne40105a, SomeAttachmentCard ne40105b, SomeAttachmentCard ne40106, SomeAttachmentCard ne40107, SomeAttachmentCard ne40122a, SomeAttachmentCard ne40122b, SomeAttachmentCard ne40123, SomeAttachmentCard ne40144, SomeAttachmentCard ne40151, SomeAttachmentCard ne40152, SomeAttachmentCard ne40153, SomeAttachmentCard ne40155, SomeAttachmentCard ne40156, SomeAttachmentCard ne40157, SomeAttachmentCard ne40159, SomeAttachmentCard ne40169, SomeAttachmentCard ne40170, SomeAttachmentCard ne40171, SomeAttachmentCard ne40172, SomeAttachmentCard ne40173
   , SomeAttachmentCard superpowerFeedback
   , SomeAttachmentCard cable40034
   , SomeAttachmentCard mojo39005, SomeAttachmentCard mojo39006, SomeAttachmentCard mojo39018, SomeAttachmentCard mojo39027, SomeAttachmentCard mojo39028, SomeAttachmentCard mojo39048, SomeAttachmentCard mojo39067

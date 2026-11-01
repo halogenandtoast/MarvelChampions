@@ -116,6 +116,18 @@ windowMatches matcher w source = case matcher of
   HeroThwartsAllThreat identityMatcher -> case windowType w of
     ThwartedAllThreat ident _ -> identityMatches identityMatcher ident
     _ -> pure False
+  CharacterWithConditionWouldTakeDamage statuses -> case windowType w of
+    IdentityTakeDamage you damage | windowTiming w == When, damageAmount damage > 0 ->
+      anyM (\status -> characterHasCondition status $ IdentityCharacter you) statuses
+    AllyTakeDamage aid damage | windowTiming w == When, damageAmount damage > 0 ->
+      anyM (\status -> characterHasCondition status $ AllyCharacter aid) statuses
+    _ -> pure False
+  CharacterWouldTakeAttackDamageFrom enemyMatcher characterMatcher -> case windowType w of
+    IdentityTakeDamageFrom ident source damage | windowTiming w == When, damageAmount damage > 0, damageSource damage == FromAttack, Just enemy <- sourceEnemy source ->
+      (&&) <$> enemyMatches enemyMatcher enemy <*> characterMatches characterMatcher (IdentityCharacter ident)
+    AllyTakeDamageFrom aid source damage | windowTiming w == When, damageAmount damage > 0, damageSource damage == FromAttack, Just enemy <- sourceEnemy source ->
+      (&&) <$> enemyMatches enemyMatcher enemy <*> characterMatches characterMatcher (AllyCharacter aid)
+    _ -> pure False
   CharacterWouldTakeAttackDamage characterMatcher -> case windowType w of
     IdentityTakeDamage ident damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (IdentityCharacter ident)
     AllyTakeDamage aid damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (AllyCharacter aid)

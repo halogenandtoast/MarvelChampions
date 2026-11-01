@@ -508,9 +508,10 @@ minionNarration mid = \case
   MinionEngagedIdentity ident -> Just $ whenRef (MinionRef mid) \m -> do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.engages" ["minion" ~> m, "player" ~> who]]
-  MinionAttacks ident -> Just $ activation (MinionRef mid) ident "log.attacks" =<< getsGame (maybe False ((.minionStunned) . toAttrs) . lookup mid . gameMinions)
+  MinionAttacksWithChange ident _ _ -> Just $ activation (MinionRef mid) ident "log.attacks" =<< selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
+  MinionAttacks ident -> Just $ activation (MinionRef mid) ident "log.attacks" =<< selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
   MinionAttacksEnemy enemy -> Just $ whenRef (MinionRef mid) \m -> do
-    stunned <- getsGame (maybe False ((.minionStunned) . toAttrs) . lookup mid . gameMinions)
+    stunned <- selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
     whenRef (EnemyRef enemy) \e -> one $
       if stunned
         then toned Good $ mechanic [ikeyPart "log.stunnedInstead" ["enemy" ~> m]]
@@ -518,7 +519,7 @@ minionNarration mid = \case
   MinionAttackEnemyAfterInterrupt {} -> Nothing
   MinionSchemesAgainst {} -> Nothing
   MinionSchemeAgainstEnded -> Nothing
-  MinionSchemes -> Just $ schemes (MinionRef mid) =<< getsGame (maybe False ((.minionConfused) . toAttrs) . lookup mid . gameMinions)
+  MinionSchemes -> Just $ schemes (MinionRef mid) =<< selectAny (EnemyWithId (EnemyMinionId mid) <> ConfusedEnemy)
   MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
     modifiers <- getModifiers (MinionRef mid)

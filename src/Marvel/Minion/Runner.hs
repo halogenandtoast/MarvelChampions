@@ -185,6 +185,9 @@ runMinionMessage msg attrs = case msg of
       unless (attackRanged attack') $ enemyRetaliates enemy (MinionCharacter $ minionId attrs)
       checkWindows [W.Window W.After $ W.EnemyAttackOnEnemy (toEnemyId attrs) enemy]
     pure attrs
+  MinionAttacksWithChange ident n keywords -> do
+    updated <- runMinionMessage (MinionAttacks ident) attrs
+    pure updated {minionAttacking = fmap (\a -> (foldr gainKeyword a keywords) {attackChange = attackChange a + n}) (minionAttacking updated)}
   MinionAttacks ident -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs

@@ -10,7 +10,7 @@ import Marvel.Message.Lifted as X
 import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
-import Marvel.Game.Source (getModifiers, isBlanked, cannotTakeDamageFrom, abilityCardDef, getsGame, schemeHasKeyword)
+import Marvel.Game.Source (HasGame, characterHasCondition, getModifiers, isBlanked, cannotTakeDamageFrom, abilityCardDef, getsGame, schemeHasKeyword)
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
@@ -56,8 +56,19 @@ statusL = \case
   ConfusedStatus -> confusedL
   ToughStatus -> toughL
 
+-- Steady permits a second stun/confuse card; stalwart prevents either condition.
+allyGivenStatus :: HasGame m => Attrs Ally -> StatusCard -> m (Attrs Ally)
+allyGivenStatus a status = do
+  mods <- getModifiers a
+  let keywords = toList (cdKeywords $ getCardDef a) <> [k | KeywordModifier k <- mods]
+  pure $ if status /= ToughStatus && Stalwart `elem` keywords then a else case status of
+    StunnedStatus | Steady `elem` keywords && allyStunned a -> a {allyAdditionalStun = True}
+    ConfusedStatus | Steady `elem` keywords && allyConfused a -> a {allyAdditionalConfuse = True}
+    _ -> a & statusL status .~ True
+
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "readyWithCostPaid" _ -> pure a {allyExhausted = False}
     CardSpecific (isTarget a -> True) "defeatedByConsequential" _ -> do
       present <- selectAny (AllyWithId $ allyId a)
       when present $ allyStep (allyId a) AllyDefeatedByDamage
@@ -77,44 +88,47 @@ instance RunMessage (Attrs Ally) where
       -- "allies cannot be readied by player card effects" (Unnatural Storm)
       ReadiedAlly -> do
         modifiers <- getModifiers a
-        let readies = CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
+        let allowed = CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
+        readies <- if allowed && allyExhausted a then payAdditionalReadyCost (allyController a) (toRef a) else pure False
         pure $ a & exhaustedL %~ (&& not readies)
       ReadiedAllyByGame -> do
-        readies <- notElem CannotReady <$> getModifiers a
+        allowed <- notElem CannotReady <$> getModifiers a
+        readies <- if allowed && allyExhausted a then payAdditionalReadyCost (allyController a) (toRef a) else pure False
         pure $ a & exhaustedL %~ (&& not readies)
       ExhaustedAlly -> do
         pure $ a & exhaustedL .~ True
-      AllyStunned -> do
-        pure $ a & stunnedL .~ True
-      AllyAttacked -> if allyStunned a
-        then pure $ a {allyAdditionalStun = False} & stunnedL .~ False
-        else do
-          enemies <- selectList $ AttackableByAlly $ allyId a
-          -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally, or
-          -- one it gains ("its attacks gain overkill")
-          modifiers <- getModifiers a
-          let keywords = toList (cdKeywords $ allyCardDef a) <> [k | KeywordModifier k <- modifiers]
-              gains =
-                [withPiercing | Piercing `elem` keywords]
-                  <> [withRanged | Ranged `elem` keywords]
-                  <> [withOverkill | Overkill `elem` keywords]
-          dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
-          if DividesBasicAttackEvenly `elem` modifiers
-            then unless (null enemies) do
-              let count = fromIntegral $ length enemies
-                  (base, extra) = damageAmount dmg `divMod` count
-              allyStep ident (AllyAssignEvenAttack dmg extra [(enemy, base) | enemy <- enemies] enemies [])
-            else chooseOne (allyController a)
-              [ targeting (enemyRef enemy) do
-                  checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
-                  allyAttackLands (allyId a) enemy dmg
-              | enemy <- enemies
-              ]
-          pure a
+      AllyStunned -> allyGivenStatus a StunnedStatus
+      AllyAttacked -> do
+        affected <- characterHasCondition StunnedStatus (AllyCharacter ident)
+        if affected
+          then pure $ a {allyAdditionalStun = False} & stunnedL .~ False
+          else do
+            enemies <- selectList $ AttackableByAlly $ allyId a
+            -- "[star] its basic attack gains piercing (ranged)": the keyword on the ally, or
+            -- one it gains ("its attacks gain overkill")
+            modifiers <- getModifiers a
+            let keywords = toList (cdKeywords $ allyCardDef a) <> [k | KeywordModifier k <- modifiers]
+                gains =
+                  [withPiercing | Piercing `elem` keywords]
+                    <> [withRanged | Ranged `elem` keywords]
+                    <> [withOverkill | Overkill `elem` keywords]
+            dmg <- foldr ($) <$> (toDamage <$> getModifiedAttack a <*> pure (FromAllyAttack $ allyId a)) <*> pure gains
+            if DividesBasicAttackEvenly `elem` modifiers
+              then unless (null enemies) do
+                let count = fromIntegral $ length enemies
+                    (base, extra) = damageAmount dmg `divMod` count
+                allyStep ident (AllyAssignEvenAttack dmg extra [(enemy, base) | enemy <- enemies] enemies [])
+              else chooseOne (allyController a)
+                [ targeting (enemyRef enemy) do
+                    checkWindows [W.Window W.When $ W.AllyAttack (allyId a) enemy]
+                    allyAttackLands (allyId a) enemy dmg
+                | enemy <- enemies
+                ]
+            pure a
       -- an interrupt that defeats the enemy aborts the attack: no damage and no
       -- consequential damage (RR, Consequential Damage)
       AllyAttackLands enemy dmg -> do
-        stillInPlay <- selectAny (EnemyWithId enemy)
+        stillInPlay <- (&&) <$> selectAny (AllyWithId ident) <*> selectAny (EnemyWithId enemy)
         when stillInPlay do
           targetModifiers <- getModifiers (enemyRef enemy)
           modifiers <- getModifiers a
@@ -207,31 +221,33 @@ instance RunMessage (Attrs Ally) where
           consequential <- getModifiedAttackConsequentialDamage a
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
-      AllyThwarted -> if allyConfused a
-        then pure $ a {allyAdditionalConfuse = False} & confusedL .~ False
-        else do
-          -- "ignore any crisis icons in play" as it thwarts (Fandral)
-          ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
-          schemes <- selectList (SchemeAnAllyCanThwart (allyId a) ignoresCrisis)
-          thw <- getModifiedThwart a
-          atk <- getModifiedAttack a
-          -- a scheme thwarted with ATK instead of THW, as The Red House allows
-          choices <- for schemes \scheme -> do
-            withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
-            assault <- schemeHasKeyword scheme Assault
-            let thwartWith n = do
-                  checkWindows [W.Window W.When $ W.AllyThwart (allyId a) scheme]
-                  basicThwartOf scheme a n
-                  checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
-                  allyStep ident (if assault then AllyAttackConsequential else AllyThwartConsequentialOn scheme)
-            pure $ targeting (schemeRef scheme) $
-              if assault then thwartWith atk else if withAttack && atk /= thw
-                then
-                  chooseOne (allyController a)
-                    [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
-                else thwartWith thw
-          chooseOne (allyController a) choices
-          pure a
+      AllyThwarted -> do
+        affected <- characterHasCondition ConfusedStatus (AllyCharacter ident)
+        if affected
+          then pure $ a {allyAdditionalConfuse = False} & confusedL .~ False
+          else do
+            -- "ignore any crisis icons in play" as it thwarts (Fandral)
+            ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
+            schemes <- selectList (SchemeAnAllyCanThwart (allyId a) ignoresCrisis)
+            thw <- getModifiedThwart a
+            atk <- getModifiedAttack a
+            -- a scheme thwarted with ATK instead of THW, as The Red House allows
+            choices <- for schemes \scheme -> do
+              withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
+              assault <- schemeHasKeyword scheme Assault
+              let thwartWith n = do
+                    checkWindows [W.Window W.When $ W.AllyThwart (allyId a) scheme]
+                    basicThwartOf scheme a n
+                    checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
+                    allyStep ident (if assault then AllyAttackConsequential else AllyThwartConsequentialOn scheme)
+              pure $ targeting (schemeRef scheme) $
+                if assault then thwartWith atk else if withAttack && atk /= thw
+                  then
+                    chooseOne (allyController a)
+                      [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
+                  else thwartWith thw
+            chooseOne (allyController a) choices
+            pure a
       AllyThwartConsequentialOn scheme -> do
         consequential <- getModifiedThwartConsequentialDamage a
         modifiers <- getModifiers a
@@ -340,7 +356,7 @@ instance RunMessage (Attrs Ally) where
     -- counters on the ally, the uses its abilities spend (Jack Flag's ammo)
     PlaceCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL +~ n
     RemoveCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL %~ subtractNatural n
-    GiveStatus (AllyRef ident) s | ident == allyId a -> pure $ a & statusL s .~ True
+    GiveStatus (AllyRef ident) s | ident == allyId a -> allyGivenStatus a s
     -- "the first player gains control of <this ally>" (Odin): it follows the first
     -- player token as it passes, or as the first player is chosen or eliminated
     PassFirstPlayer -> followFirstPlayer

@@ -154,7 +154,7 @@ data TestGame = TestGame {app :: GameApp, ran :: IORef [Text], logged :: IORef [
 -- This fixture is deliberately separate from recommendations exposed to players.
 withTestModulars :: ScenarioSetup -> ScenarioSetup
 withTestModulars setup
-  | setup.scenarioCode == "24001" = setup {modulars = take 7 $ nub (setup.modulars <> chosen)}
+  | setup.scenarioCode == "24001" = setup {modulars = take 7 (nub (filter (`elem` EncounterSet.modularSets) setup.modulars <> chosen)) <> filter (`notElem` EncounterSet.modularSets) setup.modulars}
   | otherwise = setup
  where
   chosen = [EncounterSet.BombScare, EncounterSet.MastersOfEvil, EncounterSet.UnderAttack, EncounterSet.GoblinGimmicks, EncounterSet.Temporal, EncounterSet.Anachronauts, EncounterSet.MasterOfTime]

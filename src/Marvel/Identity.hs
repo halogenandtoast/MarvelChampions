@@ -885,10 +885,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ (HashSet.toList playerIdentityAllies) readyByGame
       for_ (HashSet.toList playerIdentitySupports) ready
       for_ (HashSet.toList playerIdentityUpgrades) ready
-      readies <- notElem CannotReady <$> getModifiers pid
-      when (readies && playerIdentityExhausted) $
-        checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
-      pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
+      runIdentityMessage ReadiedIdentityByGame pid
     -- an identity that cannot change form stays as it is, whatever would change it
     ChooseOtherForm -> do
       canChange <- identityMatches IdentityCanChangeForm playerIdentityId
@@ -1131,9 +1128,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       storm <- elem CannotBeReadiedByPlayerCards <$> getModifiers pid
       if storm && isHero pid then pure pid else runIdentityMessage ReadiedIdentityByGame pid
     ReadiedIdentityByGame -> do
-      readies <- notElem CannotReady <$> getModifiers pid
-      when (readies && playerIdentityExhausted) $
-        checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
+      allowed <- notElem CannotReady <$> getModifiers pid
+      readies <- if allowed && playerIdentityExhausted then payAdditionalReadyCost playerIdentityId (toRef pid) else pure False
+      when readies $ checkWindows [W.Window W.After $ W.IdentityReadied playerIdentityId]
       pure $ PlayerIdentity $ attrs & exhaustedL %~ (&& not readies)
     ExhaustedIdentity -> pure $ PlayerIdentity $ attrs & exhaustedL .~ True
     -- the active villain of the player's area, if it has one, then their minions
@@ -1420,6 +1417,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       | ident == playerIdentityId attrs, card `elem` unHand (playerIdentityHand attrs)
       , top : rest <- unDiscard (playerIdentityDiscard attrs) -> pure $ PlayerIdentity attrs
           {playerIdentityHand = Hand (map (\c -> if c == card then top else c) (unHand $ playerIdentityHand attrs)), playerIdentityDiscard = Discard (card : rest)}
+    CardSpecific (IdentityRef ident) "readyWithCostPaid" _ | ident == playerIdentityId attrs -> do
+      checkWindows [W.Window W.After $ W.IdentityReadied ident]
+      pure $ PlayerIdentity attrs {playerIdentityExhausted = False}
     CardSpecific (IdentityRef ident) "discardToughForPiercing" (fromJSON -> Success (source :: Source, damage :: Damage)) | ident == playerIdentityId attrs -> do
       immune <- cannotTakeDamageFrom (IdentityRef ident) source
       let count = if playerIdentityTough attrs && not immune then 1 + playerIdentityAdditionalTough attrs else 0

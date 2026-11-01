@@ -40,6 +40,7 @@ data VillainMessage
   | VillainBeginAttackWithoutBoost IdentityId
   | VillainEndAttack
   | VillainAttacked
+  | VillainSchemesWithBonus IdentityId Natural
   | VillainSchemes
   | -- | its coming scheme is against this player, not the active player's: a card one
     -- reveals outside their activation (Avatar of Death)

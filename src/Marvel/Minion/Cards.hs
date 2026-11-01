@@ -1,5 +1,11 @@
 module Marvel.Minion.Cards where
 
+import Marvel.Hood.Cards (hoodCardDef)
+import Marvel.EncounterSet qualified as HoodSet
+import Marvel.Trait qualified as HoodTrait
+import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Boost qualified as HoodBoost
+import Marvel.GameValue.Types qualified as HoodValue
 
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
@@ -77,7 +83,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ ne40094, ne40095, ne40096, ne40097, ne40098, ne40099, ne40100, ne40112, ne40113, ne40114, ne40115, ne40116, ne40132, ne40133, ne40145, ne40174, ne40180, ne40181, ne40182, ne40183, ne40185, ne40186, ne40187, ne40188, ne40198, ne40199, ne40200, ne40201
+      [ hood24015, hood24016, hood24018, hood24024, hood24025, hood24026, hood24027, hood24034, hood24035, hood24041, hood24043, hood24044, hood24045, hood24046, hood24047, hood24065, hood24066, hood24067, hood24068
+      , ne40094, ne40095, ne40096, ne40097, ne40098, ne40099, ne40100, ne40112, ne40113, ne40114, ne40115, ne40116, ne40132, ne40133, ne40145, ne40174, ne40180, ne40181, ne40182, ne40183, ne40185, ne40186, ne40187, ne40188, ne40198, ne40199, ne40200, ne40201
   , prototype
   , topaz
   , cable40032
@@ -2727,4 +2734,194 @@ ne40201 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+hood24015 :: CardDef
+hood24015 = (hoodCardDef "24015" "Griffin" HoodSet.BeastyBoys MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList [HoodKeyword.Quickstrike]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24016 :: CardDef
+hood24016 = (hoodCardDef "24016" "Mandrill" HoodSet.BeastyBoys MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.CrossfiresCrew]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24018 :: CardDef
+hood24018 = (hoodCardDef "24018" "Brothers Grimm" HoodSet.BrothersGrimm MinionType 1)
+  { cdTraits = fromList [HoodTrait.MastersOfEvil, HoodTrait.Mystic]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24024 :: CardDef
+hood24024 = (hoodCardDef "24024" "Controller" HoodSet.CrossfiresCrew MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.CrossfiresCrew]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24025 :: CardDef
+hood24025 = (hoodCardDef "24025" "Corruptor" HoodSet.CrossfiresCrew MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal, HoodTrait.CrossfiresCrew]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24026 :: CardDef
+hood24026 = (hoodCardDef "24026" "Crossfire" HoodSet.CrossfiresCrew MinionType 1)
+  { cdTraits = fromList [HoodTrait.CrossfiresCrew, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList [HoodKeyword.Quickstrike]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24027 :: CardDef
+hood24027 = (hoodCardDef "24027" "Mister Fear" HoodSet.CrossfiresCrew MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal, HoodTrait.CrossfiresCrew]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24034 :: CardDef
+hood24034 = (hoodCardDef "24034" "Calvin Zabo" HoodSet.MisterHydeSet MinionType 1)
+  { cdTraits = fromList [HoodTrait.Elite, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24035 :: CardDef
+hood24035 = (hoodCardDef "24035" "Mister Hyde" HoodSet.MisterHydeSet MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.Elite, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24041 :: CardDef
+hood24041 = (hoodCardDef "24041" "Armored Guard" HoodSet.RansackedArmory MinionType 2)
+  { cdTraits = fromList [HoodTrait.Mercenary]
+  , cdKeywords = fromList [HoodKeyword.Guard, HoodKeyword.Toughness]
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24043 :: CardDef
+hood24043 = (hoodCardDef "24043" "Beetle" HoodSet.SinisterSyndicate MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24044 :: CardDef
+hood24044 = (hoodCardDef "24044" "Boomerang" HoodSet.SinisterSyndicate MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24045 :: CardDef
+hood24045 = (hoodCardDef "24045" "Shocker" HoodSet.SinisterSyndicate MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal, HoodTrait.MastersOfEvil]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24046 :: CardDef
+hood24046 = (hoodCardDef "24046" "Speed Demon" HoodSet.SinisterSyndicate MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24047 :: CardDef
+hood24047 = (hoodCardDef "24047" "White Rabbit" HoodSet.SinisterSyndicate MinionType 1)
+  { cdTraits = fromList [HoodTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24065 :: CardDef
+hood24065 = (hoodCardDef "24065" "Wrecker" HoodSet.WreckingCrewModular MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.Elite]
+  , cdKeywords = fromList [HoodKeyword.Villainous]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24066 :: CardDef
+hood24066 = (hoodCardDef "24066" "Bulldozer" HoodSet.WreckingCrewModular MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.Elite]
+  , cdKeywords = fromList [HoodKeyword.Villainous]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24067 :: CardDef
+hood24067 = (hoodCardDef "24067" "Piledriver" HoodSet.WreckingCrewModular MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.Elite]
+  , cdKeywords = fromList [HoodKeyword.Villainous, HoodKeyword.Retaliate 1]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24068 :: CardDef
+hood24068 = (hoodCardDef "24068" "Thunderball" HoodSet.WreckingCrewModular MinionType 1)
+  { cdTraits = fromList [HoodTrait.Brute, HoodTrait.Elite]
+  , cdKeywords = fromList [HoodKeyword.Villainous]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = True
+  , cdAcceleration = 0
+  , cdHazards = 0
   }

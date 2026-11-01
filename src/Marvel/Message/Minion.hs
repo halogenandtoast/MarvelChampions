@@ -27,6 +27,7 @@ data MinionMessage
     MinionDefeatedWithExcess Source Damage Natural
   | MinionHealed Natural
   | MinionHealAllDamage
+  | MinionAttacksWithChange IdentityId Int [Keyword]
   | MinionAttacks IdentityId
   | -- | its attack by the character resolved: retaliate answers it
     MinionRetaliates CharacterId

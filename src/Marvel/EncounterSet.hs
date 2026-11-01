@@ -145,6 +145,7 @@ data EncounterSet
   | NebulaNemesis
   | WarMachineNemesis
   | ValkyrieNemesis
+  | BeastyBoys | BrothersGrimm | CrossfiresCrew | MisterHydeSet | RansackedArmory | SinisterSyndicate | StateOfEmergency | StreetsOfMayhem | WreckingCrewModular | StandardII | ExpertII
   | TheHood
   | VisionNemesis
   | GhostSpiderNemesis
@@ -253,6 +254,8 @@ modularSets =
   , ShadowKingSet
   , ReaversSet
   , ExodusSet
+  -- The Hood
+  , BeastyBoys, BrothersGrimm, CrossfiresCrew, MisterHydeSet, RansackedArmory, SinisterSyndicate, StateOfEmergency, StreetsOfMayhem, WreckingCrewModular
   -- Mutant Genesis
   , Brotherhood
   , Mystique

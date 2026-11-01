@@ -1,5 +1,11 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.Hood.Cards (hoodCardDef)
+import Marvel.EncounterSet qualified as HoodSet
+import Marvel.Trait qualified as HoodTrait
+import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Boost qualified as HoodBoost
+import Marvel.GameValue.Types qualified as HoodValue
 
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
@@ -77,7 +83,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202
+  [ hood24014, hood24023, hood24033, hood24042, hood24055, hood24056, hood24057, hood24058, hood24064
+      , ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202
   , notMyLuckyDay
   , superpowerTraining
   , takeOuttheGuards
@@ -2571,3 +2578,98 @@ ne40202 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+hood24014 :: CardDef
+hood24014 = (hoodCardDef "24014" "Beast Mode" HoodSet.BeastyBoys SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24023 :: CardDef
+hood24023 = (hoodCardDef "24023" "Out for Blood" HoodSet.CrossfiresCrew SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 1
+  }
+
+hood24033 :: CardDef
+hood24033 = (hoodCardDef "24033" "Self-Experimentation" HoodSet.MisterHydeSet SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24042 :: CardDef
+hood24042 = (hoodCardDef "24042" "Crime Pays" HoodSet.SinisterSyndicate SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 1
+  , cdHazards = 0
+  }
+
+hood24055 :: CardDef
+hood24055 = (hoodCardDef "24055" "Feisty Heist" HoodSet.StateOfEmergency SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 1
+  , cdHazards = 0
+  }
+
+hood24056 :: CardDef
+hood24056 = (hoodCardDef "24056" "Disaster at the Docks" HoodSet.StateOfEmergency SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 1
+  , cdHazards = 0
+  }
+
+hood24057 :: CardDef
+hood24057 = (hoodCardDef "24057" "Offshore Inferno" HoodSet.StateOfEmergency SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 1
+  , cdHazards = 0
+  }
+
+hood24058 :: CardDef
+hood24058 = (hoodCardDef "24058" "Hot Pursuit" HoodSet.StateOfEmergency SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 1
+  , cdHazards = 0
+  }
+
+hood24064 :: CardDef
+hood24064 = (hoodCardDef "24064" "Top Talent" HoodSet.WreckingCrewModular SideSchemeType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Hinder (HoodValue.PerPlayer 2)]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+-- Side schemes whose printed text has a When Revealed ability, for Citywide Crisis.
+hasWhenRevealed :: HasCardCode a => a -> Bool
+hasWhenRevealed card = toCardCode card `elem`
+  ["01107", "01109", "01125", "01126", "01128", "01148", "01149", "01150", "01151", "01161", "01166", "01171", "01176", "01180", "01183", "02010", "02026", "02037", "02046", "03027", "05026", "06027", "08027", "09029", "04028", "04055", "04071", "04091", "04107", "04122", "04140", "04144", "11022", "11024", "16099", "16113", "21084", "21124", "21155", "21181", "24023", "24033", "24042", "24055", "24056", "24057", "24058", "26030", "27057", "27069", "27079", "27125", "27156", "27173", "29036", "32027", "32137", "32157", "32158", "32169", "32173a", "35035", "39008", "40067", "40084", "40085", "40086", "40087", "40101", "40117", "40131", "40168b", "40175", "40176", "40189", "41027", "44039", "45055", "45117", "47025", "49041", "50031", "50095", "50101", "50121", "50127", "50135", "50136", "50150", "50180", "51033", "52030", "52036", "53041", "55006", "55021", "55022", "55045", "56167", "56183", "57068", "59038", "60062", "61032"]

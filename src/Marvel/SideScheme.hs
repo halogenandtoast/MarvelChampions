@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.HoodPack qualified as HoodPack
 
 import Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe
 
@@ -55,7 +56,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard ne40084, SomeSideSchemeCard ne40085, SomeSideSchemeCard ne40086, SomeSideSchemeCard ne40087, SomeSideSchemeCard ne40093, SomeSideSchemeCard ne40101, SomeSideSchemeCard ne40108, SomeSideSchemeCard ne40109, SomeSideSchemeCard ne40117, SomeSideSchemeCard ne40124, SomeSideSchemeCard ne40131, SomeSideSchemeCard ne40134, SomeSideSchemeCard ne40146, SomeSideSchemeCard ne40168a, SomeSideSchemeCard ne40168b, SomeSideSchemeCard ne40175, SomeSideSchemeCard ne40176, SomeSideSchemeCard ne40184, SomeSideSchemeCard ne40189, SomeSideSchemeCard ne40190a, SomeSideSchemeCard ne40191a, SomeSideSchemeCard ne40192a, SomeSideSchemeCard ne40193a, SomeSideSchemeCard ne40194a, SomeSideSchemeCard ne40195a, SomeSideSchemeCard ne40202
+  [ SomeSideSchemeCard HoodPack.hood24014, SomeSideSchemeCard HoodPack.hood24023, SomeSideSchemeCard HoodPack.hood24033, SomeSideSchemeCard HoodPack.hood24042, SomeSideSchemeCard HoodPack.hood24055, SomeSideSchemeCard HoodPack.hood24056, SomeSideSchemeCard HoodPack.hood24057, SomeSideSchemeCard HoodPack.hood24058, SomeSideSchemeCard HoodPack.hood24064
+  , SomeSideSchemeCard ne40084, SomeSideSchemeCard ne40085, SomeSideSchemeCard ne40086, SomeSideSchemeCard ne40087, SomeSideSchemeCard ne40093, SomeSideSchemeCard ne40101, SomeSideSchemeCard ne40108, SomeSideSchemeCard ne40109, SomeSideSchemeCard ne40117, SomeSideSchemeCard ne40124, SomeSideSchemeCard ne40131, SomeSideSchemeCard ne40134, SomeSideSchemeCard ne40146, SomeSideSchemeCard ne40168a, SomeSideSchemeCard ne40168b, SomeSideSchemeCard ne40175, SomeSideSchemeCard ne40176, SomeSideSchemeCard ne40184, SomeSideSchemeCard ne40189, SomeSideSchemeCard ne40190a, SomeSideSchemeCard ne40191a, SomeSideSchemeCard ne40192a, SomeSideSchemeCard ne40193a, SomeSideSchemeCard ne40194a, SomeSideSchemeCard ne40195a, SomeSideSchemeCard ne40202
   , SomeSideSchemeCard notMyLuckyDay
   , SomeSideSchemeCard superpowerTraining
   , SomeSideSchemeCard takeOuttheGuards

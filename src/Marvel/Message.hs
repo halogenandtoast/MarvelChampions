@@ -44,6 +44,7 @@ import {-# SOURCE #-} Marvel.Question
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Status as X
+import Marvel.Window.Types qualified
 import Marvel.Window.Types (RevealSource, ThreatSource (ThreatFromAbility), Window (..), WindowTiming (After, When, Would), WindowType (EngagedMinion, AllyTakeDamage, DamagedVillain, DefeatedMinion, DefeatedVillain, EnemyAttack, EnemyAttacksAndDamages, IdentityTakeDamage, IdentityTakeDamageFrom, ThreatPlaced))
 
 class RunMessage a where
@@ -63,7 +64,7 @@ damageIdentity ident source damage
 -- damage", then the damage.
 damageAlly :: AllyId -> Source -> Damage -> [Message]
 damageAlly aid source damage =
-  [ CheckWindows [Window When $ AllyTakeDamage aid damage]
+  [ CheckWindows [Window When $ AllyTakeDamage aid damage, Window When $ Marvel.Window.Types.AllyTakeDamageFrom aid source damage]
   , AllyMessage aid $ AllyDamaged source damage
   ]
 

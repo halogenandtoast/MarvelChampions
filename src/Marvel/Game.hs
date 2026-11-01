@@ -2111,7 +2111,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     modifiers <- getModifiers ref
     stunned <- case attacker of
       IdentityCharacter ident -> identityMatches StunnedIdentity ident
-      AllyCharacter aid -> getsGame (maybe False (Ally.allyStunned . toAttrs) . lookup aid . gameAllies)
+      AllyCharacter aid -> characterHasCondition StunnedStatus (AllyCharacter aid)
       _ -> pure False
     -- A prohibition is stronger than a request to attack; a stun replaces the attack.
     unless (CannotAttack `elem` modifiers) $
@@ -6493,3 +6493,12 @@ getControlledPlayerSideSchemes you onlyReady = getsGame $ \g ->
   [toId scheme | scheme <- HashMap.elems (gameSideSchemes g), let a = toAttrs scheme,
    maybe False ((== Just you) . pcController) (SideScheme.sideSchemePlayerCard a),
    not onlyReady || not (SideScheme.sideSchemeExhausted a)]
+
+-- | Steady requires two matching status cards before the character is stunned/confused.
+characterHasCondition :: HasGame m => StatusCard -> CharacterId -> m Bool
+characterHasCondition status c = do
+  n <- getCharacterStatusCount c status
+  mods <- getModifiers (characterRef c)
+  def <- getsGame (`abilityCardDef` characterRef c)
+  let keywords = maybe [] (toList . cdKeywords) def <> [k | KeywordModifier k <- mods]
+  pure $ n >= if Steady `elem` keywords && status /= ToughStatus then 2 else 1

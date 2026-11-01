@@ -106,6 +106,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-war-machine.md](hero-war-machine.md) | War Machine: Alliance, ammo, current errata and starter deck |
 | [hero-valkyrie.md](hero-valkyrie.md) | Valkyrie: Alliance, Hinder, Death-Glow, current errata and starter deck |
 | [hero-vision.md](hero-vision.md) | Vision: additional mass forms, Alliance, piercing, stalwart and Machine Man errata |
+| [encounter-the-hood-modulars.md](encounter-the-hood-modulars.md) | The Hood’s nine modular sets and optional Standard II / Expert II sets |
 | [scenario-the-hood.md](scenario-the-hood.md) | The Hood: recruitment, Foul Play, steady; implementation notes and sources |
 | [campaign-sinister-motives.md](campaign-sinister-motives.md) | Sinister Motives campaign, reputation, rewards and campaign cards |
 | [scenario-sinister-motives.md](scenario-sinister-motives.md) | Sinister Motives scenarios, modular sets and recorded rulings |

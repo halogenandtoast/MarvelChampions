@@ -5,6 +5,7 @@ import Data.Text (unpack)
 import Control.Monad.IO.Class (liftIO)
 import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
+import Marvel.EncounterSet qualified as Encounter
 import System.Environment (lookupEnv)
 import GHC.Clock (getMonotonicTimeNSec)
 import Data.Set qualified as Set
@@ -102,6 +103,11 @@ spec = parallel do
     for_ modulars $ \(name, villain, modular) ->
       when (selectedCase name) $ it name do
         playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
+    describe "The Hood alternate encounter sets" do
+      for_ ["01094", "24001"] $ \villain ->
+        for_ [(Normal,[Encounter.StandardII]), (Expert,[Encounter.StandardII,Encounter.ExpertII]), (Expert,[Encounter.ExpertII])] $ \(mode,sets) ->
+          it (show villain <> " with " <> show sets <> " on " <> show mode) $
+            playSetup (ScenarioSetup villain (sets <> [Encounter.BeastyBoys,Encounter.BrothersGrimm,Encounter.CrossfiresCrew,Encounter.MisterHydeSet,Encounter.RansackedArmory,Encounter.SinisterSyndicate,Encounter.StateOfEmergency]) mode) ["spider-man","she-hulk"]
     -- each scenario of The Mad Titan's Shadow as a campaign game, every box of its log
     -- checked so each campaign card comes in, expert with the hit points recorded (one
     -- player hurt, one defeated last scenario)

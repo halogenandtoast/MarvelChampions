@@ -181,9 +181,9 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
             , scenarioEncounterSets =
                 HashSet.fromList $
                   encounterSets
-                    <> setup.modulars
-                    <> [EncounterSet.Standard]
-                    <> [EncounterSet.ExpertSet | setup.difficulty == Expert]
+                    <> filter (\s -> s /= EncounterSet.ExpertII || setup.difficulty == Expert) setup.modulars
+                    <> [EncounterSet.Standard | EncounterSet.StandardII `notElem` setup.modulars]
+                    <> [EncounterSet.ExpertSet | setup.difficulty == Expert, EncounterSet.ExpertII `notElem` setup.modulars]
             , scenarioSetAsideCards = mempty
             , scenarioReshufflesThisRound = 0
             , scenarioDecks = mempty

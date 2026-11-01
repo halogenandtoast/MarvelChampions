@@ -16,6 +16,7 @@ data Trait
   | Cornered
   | Escaped
   | Program
+  | CrossfiresCrew
   | Setting
   | Show
   | Spineless

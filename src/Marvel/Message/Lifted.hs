@@ -37,6 +37,7 @@ import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Card.PlayerCard.Types (PlayerCard (..), encounterCardInPlayerDeck)
 import Marvel.Card.Side (Side (..))
 import Marvel.Card.Types (Card (..), IsCard (..))
+import Marvel.Cost qualified as Cost
 import Marvel.Cost.Types (Cost)
 import Marvel.Choice qualified as Choice
 import Marvel.Damage
@@ -45,7 +46,7 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Modifier.Types (Modifier (AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -570,6 +571,17 @@ instance Readyable SupportId where
 
 instance Readyable UpgradeId where
   readied upgrade = UpgradeMessage upgrade ReadiedUpgrade
+
+-- | An additional ready cost is optional: declining it leaves the card exhausted.
+payAdditionalReadyCost :: ReverseQueue m => IdentityId -> Target -> m Bool
+payAdditionalReadyCost you target = do
+  costs <- mapMaybe (\case AdditionalReadyCost cost -> Just cost; _ -> Nothing) <$> getModifiers target
+  if null costs then pure True else do
+    let cost = mconcat costs
+    canPay <- asYou you $ Cost.canAffordCost you (toSource target) cost
+    chooseOne you $ [labeled "$label.payToReady" (payForTreachery you cost >> cardSpecific target "readyWithCostPaid" ()) | canPay]
+      <> [labeled "$label.leaveExhausted" (pure ())]
+    pure False
 
 ready :: (ReverseQueue m, Readyable a) => a -> m ()
 ready = push . readied
@@ -2721,3 +2733,20 @@ removeAllTough character = do
 -- | Redirect the existing attack without creating a second activation.
 redirectVillainAttackToCharacter :: ReverseQueue m => VillainId -> CharacterId -> m ()
 redirectVillainAttackToCharacter vid character = cardSpecific GameRef "redirectVillainAttackToCharacter" (vid, character)
+
+-- | Increase the imminent damage instance after its would-take-damage window opens.
+increasePendingCharacterDamage :: (HasQueue m, IsCharacter c) => c -> Natural -> m ()
+increasePendingCharacterDamage (toCharacter -> character) n = replaceMatchingMessage raise matchesDamage
+ where
+  matchesDamage = \case
+    IdentityMessage you (IdentityDamaged _ _) -> character == IdentityCharacter you
+    AllyMessage aid (AllyDamaged _ _) -> character == AllyCharacter aid
+    _ -> False
+  raise = \case
+    IdentityMessage you (IdentityDamaged source damage) -> [IdentityMessage you (IdentityDamaged source damage {damageAmount = damageAmount damage + n})]
+    AllyMessage aid (AllyDamaged source damage) -> [AllyMessage aid (AllyDamaged source damage {damageAmount = damageAmount damage + n})]
+    msg -> [msg]
+
+-- | A minion's attack with its own ATK change and gained keywords.
+minionAttacksWithChange :: ReverseQueue m => MinionId -> IdentityId -> Int -> [Keyword] -> m ()
+minionAttacksWithChange mid you n keywords = minionStep mid (MinionAttacksWithChange you n keywords)

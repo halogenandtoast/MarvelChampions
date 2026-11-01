@@ -15,6 +15,7 @@ import Marvel.Trait.Types
 
 data Modifier
   = BaseAttack Natural
+  | AdditionalReadyCost Cost
   | BaseThwart Natural
   | DamageTakenFromPrintedResource Resource Int
   | AmplifyIconModifier Natural

@@ -1,5 +1,11 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.Hood.Cards (hoodCardDef)
+import Marvel.EncounterSet qualified as HoodSet
+import Marvel.Trait qualified as HoodTrait
+import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Boost qualified as HoodBoost
+import Marvel.GameValue.Types qualified as HoodValue
 
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
@@ -67,7 +73,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ ne40154
+  [ hood24017, hood24028, hood24029, hood24030, hood24031, hood24032, hood24036, hood24048, hood24050, hood24051, hood24052, hood24053, hood24054, hood24059, hood24069, hood24070
+      , ne40154
   , ne40080, ne40088, ne40089, ne40102, ne40110, ne40111, ne40125, ne40126, ne40127, ne40128, ne40129, ne40135, ne40147, ne40148, ne40149, ne40150, ne40158, ne40162, ne40177, ne40178, ne40179, ne40203
   , cable40035, cable40036
   , mojo39009, mojo39010, mojo39011, mojo39017, mojo39019, mojo39020, mojo39021, mojo39032, mojo39033, mojo39034, mojo39040, mojo39046, mojo39070
@@ -2410,4 +2417,164 @@ ne40154 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+hood24017 :: CardDef
+hood24017 = (hoodCardDef "24017" "Double Trouble" HoodSet.BeastyBoys TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24028 :: CardDef
+hood24028 = (hoodCardDef "24028" "Caught in the Crossfire" HoodSet.CrossfiresCrew TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24029 :: CardDef
+hood24029 = (hoodCardDef "24029" "Cruel Intentions" HoodSet.ExpertII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Surge, HoodKeyword.Peril]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24030 :: CardDef
+hood24030 = (hoodCardDef "24030" "Ruination" HoodSet.ExpertII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Peril, HoodKeyword.Incite 1]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24031 :: CardDef
+hood24031 = (hoodCardDef "24031" "Seek and Destroy" HoodSet.ExpertII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Peril, HoodKeyword.Incite 1]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24032 :: CardDef
+hood24032 = (hoodCardDef "24032" "Slug It Out" HoodSet.ExpertII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Surge, HoodKeyword.Peril]
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24036 :: CardDef
+hood24036 = (hoodCardDef "24036" "Hyde Formula" HoodSet.MisterHydeSet TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24048 :: CardDef
+hood24048 = (hoodCardDef "24048" "Sinister Onslaught" HoodSet.SinisterSyndicate TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24050 :: CardDef
+hood24050 = (hoodCardDef "24050" "Dark Dealings" HoodSet.StandardII TreacheryType 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24051 :: CardDef
+hood24051 = (hoodCardDef "24051" "Mob Mentality" HoodSet.StandardII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24052 :: CardDef
+hood24052 = (hoodCardDef "24052" "Overwhelming Force" HoodSet.StandardII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24053 :: CardDef
+hood24053 = (hoodCardDef "24053" "Shadow of the Past" HoodSet.StandardII TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24054 :: CardDef
+hood24054 = (hoodCardDef "24054" "Total Annihilation" HoodSet.StandardII TreacheryType 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList [HoodKeyword.Surge]
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24059 :: CardDef
+hood24059 = (hoodCardDef "24059" "Citywide Crisis" HoodSet.StateOfEmergency TreacheryType 2)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24069 :: CardDef
+hood24069 = (hoodCardDef "24069" "Combined Effort" HoodSet.WreckingCrewModular TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Star]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
+  }
+
+hood24070 :: CardDef
+hood24070 = (hoodCardDef "24070" "Magic Muscle" HoodSet.WreckingCrewModular TreacheryType 1)
+  { cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdBoostIcons = [HoodBoost.Boost, HoodBoost.Boost]
+  , cdUnique = False
+  , cdAcceleration = 0
+  , cdHazards = 0
   }

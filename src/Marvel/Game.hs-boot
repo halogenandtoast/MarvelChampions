@@ -401,3 +401,5 @@ getControlledPlayerSideSchemes :: HasGame m => IdentityId -> Bool -> m [SideSche
 getIdentityAttackedAndThwartedThisPhase :: HasGame m => IdentityId -> m Bool
 
 schemeHasKeyword :: HasGame m => SchemeId -> Keyword -> m Bool
+
+characterHasCondition :: HasGame m => StatusCard -> CharacterId -> m Bool

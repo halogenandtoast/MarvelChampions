@@ -8,6 +8,7 @@ import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
 import Marvel.Damage
+import Marvel.Status (StatusCard)
 import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Ref (Source)
@@ -61,6 +62,8 @@ data WindowMatcher
   | EnemyWouldBeDealtDamage EnemyMatcher
   | EnemyWouldBeDealtDamageBy EnemyMatcher DamageMatcher
   | EnemyWouldTakeDamage EnemyMatcher
+  | CharacterWithConditionWouldTakeDamage [StatusCard]
+  | CharacterWouldTakeAttackDamageFrom EnemyMatcher CharacterMatcher
   | CharacterWouldTakeAttackDamage CharacterMatcher
   | -- | an ally matching would take damage exactly equal to its remaining hit points
     AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
@@ -242,6 +245,7 @@ data WindowType
   | IdentityTakeDamageFrom IdentityId Source Damage
   | EnemyDamageWouldBeDealt EnemyId Source Damage
   | EnemyWouldBeDamaged EnemyId Source Damage
+  | AllyTakeDamageFrom AllyId Source Damage
   | AllyTakeDamage AllyId Damage
   | -- | the player's hero thwarted the scheme, removing all its threat
     ThwartedAllThreat IdentityId SchemeId
