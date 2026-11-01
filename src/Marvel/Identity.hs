@@ -1248,6 +1248,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ playerIdentityEncounterCards discardCard
       -- and the encounter cards in their play area (Ebony Maw's Spells)
       traverse_ removeFromPlay =<< selectList (EnvironmentInPlayAreaOf playerIdentityId)
+      traverse_ (removeFromPlay . ObligationRef) =<< getObligationsOf playerIdentityId
       case ps of
         [x] | x /= playerIdentityId -> for_ (toList playerIdentityMinions) (`engageMinion` x)
         _ -> pure ()

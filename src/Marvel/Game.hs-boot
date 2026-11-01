@@ -229,6 +229,7 @@ getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
 getMainSchemesIn :: (HasGame m) => AreaId -> m [MainSchemeId]
 getMinionsIn :: (HasGame m) => AreaId -> m [MinionId]
 getObligationsIn :: (HasGame m) => AreaId -> m [ObligationId]
+getObligationsOf :: HasGame m => IdentityId -> m [ObligationId]
 getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
 getMainSchemeCode :: (HasGame m) => MainSchemeId -> m (Maybe CardCode)
 getNemesisMinionsOutOfPlay :: (HasGame m) => IdentityId -> m [EncounterCard]

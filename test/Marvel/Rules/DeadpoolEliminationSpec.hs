@@ -10,6 +10,7 @@ import Marvel.Keyword (Keyword (..))
 import Marvel.Matchers
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Modifier
 import Marvel.Upgrade.Types qualified as Upgrade
 import Marvel.Window qualified as W
@@ -305,3 +306,20 @@ spec = describe "Deadpool multiplayer attack regression" do
       pass
       damageOf attacked `shouldReturn` 0
       damageOf defender `shouldReturn` 2
+
+  it "discards The Merc with the Mouth when its owner is eliminated, before surviving players are queried" do
+    tg <- testGame ["deadpool", "captain-marvel"]
+    inGame tg do
+      let victim = player1 tg
+          survivor = player2 tg
+      clearHand victim
+      merc <- revealNow victim Obligations.theMercWithTheMouth
+      pass
+      setDamage victim 8
+      minion <- addMinion victim Minions.hydraMercenary
+      runNow [MinionMessage minion (MinionAttacks victim)]
+      pass
+      getModifiers (IdentityRef survivor) >>= (`shouldSatisfy` notElem CannotResolvePlayerCardAbilities)
+      getsGame (HashMap.member victim . gamePlayers) `shouldReturn` False
+      getsGame (HashMap.null . gameObligations) `shouldReturn` True
+      encounterDiscardNow >>= (`shouldSatisfy` elem merc)

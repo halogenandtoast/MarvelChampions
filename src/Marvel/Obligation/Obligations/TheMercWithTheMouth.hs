@@ -30,18 +30,20 @@ newtype TheMercWithTheMouth = TheMercWithTheMouth (Attrs Obligation)
 instance HasModifiersFor TheMercWithTheMouth where
   getModifiersFor _ target (TheMercWithTheMouth attrs) = case obligationOwner attrs of
     Nothing -> pure []
-    Just owner -> case target of
-      AllyRef aid -> do
-        yours <- allyMatches (AllyControlledBy $ IdentityWithId owner) aid
-        pure [CannotReady | yours]
-      IdentityRef who | who /= owner -> do
-        active <- getActivePlayerId
-        phase <- getPhase
-        passed <- project PlayerIdentityPassed owner
-        windows <- getCurrentWindows
-        let ending = W.Window W.When (W.TurnEnded owner) `elem` windows
-        pure [CannotResolvePlayerCardAbilities | active == owner, phase == PlayerPhase, not passed || ending]
-      _ -> pure []
+    Just owner -> do
+      present <- selectAny (IdentityWithId owner)
+      if not present then pure [] else case target of
+        AllyRef aid -> do
+          yours <- allyMatches (AllyControlledBy $ IdentityWithId owner) aid
+          pure [CannotReady | yours]
+        IdentityRef who | who /= owner -> do
+          active <- getActivePlayerId
+          phase <- getPhase
+          passed <- project PlayerIdentityPassed owner
+          windows <- getCurrentWindows
+          let ending = W.Window W.When (W.TurnEnded owner) `elem` windows
+          pure [CannotResolvePlayerCardAbilities | active == owner, phase == PlayerPhase, not passed || ending]
+        _ -> pure []
 
 instance HasAbilities TheMercWithTheMouth where
   getAbilities (TheMercWithTheMouth attrs) =

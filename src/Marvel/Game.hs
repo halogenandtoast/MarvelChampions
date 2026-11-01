@@ -672,6 +672,13 @@ getMinionsIn = keysInArea MinionRef gameMinions
 getObligationsIn :: (HasGame m) => AreaId -> m [ObligationId]
 getObligationsIn = keysInArea ObligationRef gameObligations
 
+-- | Obligations in this player's play area. An obligation attached to an
+-- encounter-area side scheme stays with that scheme when the player leaves.
+getObligationsOf :: HasGame m => IdentityId -> m [ObligationId]
+getObligationsOf ident = getsGame $ map toId . filter (\obligation ->
+  let attrs = toAttrs obligation
+   in Obligation.obligationOwner attrs == Just ident && isNothing (Obligation.obligationSideScheme attrs)) . HashMap.elems . gameObligations
+
 getSideSchemesIn :: (HasGame m) => AreaId -> m [SideSchemeId]
 getSideSchemesIn = keysInArea SideSchemeRef gameSideSchemes
 
