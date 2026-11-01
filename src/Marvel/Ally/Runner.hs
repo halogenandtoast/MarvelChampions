@@ -79,7 +79,7 @@ instance RunMessage (Attrs Ally) where
       present <- selectAny (AllyWithId $ allyId a)
       when present $ allyStep (allyId a) AllyDefeatedByDamage
       pure a {allyDefeatedByConsequential = present}
-    RemovePlayerCardFromHeldZones cid -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a)}
+    RemovePlayerCardFromHeldZones cid -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a), allyHeldTreacheries = filter ((/= cid) . ecCardId) (allyHeldTreacheries a)}
     ReserveAllyHeldCard ident card | ident == allyId a ->
       pure $ a & heldCardsL %~ filter (/= card)
     AttachPlayableEventToAlly ident card | ident == allyId a ->
@@ -394,7 +394,8 @@ instance RunMessage (Attrs Ally) where
             Just (EncounterCard encounter) -> encounterCardInPlayerDeck (allyController a) encounter
             Just (PlayerCard original) -> original
             Nothing -> card
-      checkWindows $ W.Window W.After (W.AllyCardDefeated (allyController a) card)
+      checkWindows $ W.Window W.After (W.DefeatedAlly (allyId a) byAttack)
+        : W.Window W.After (W.AllyCardDefeated (allyController a) card)
         : [W.Window W.After (W.AllyCardDefeatedByConsequentialDamage (allyController a) physicalCard) | allyDefeatedByConsequential a]
       pure a {allyDefeatedByConsequential = False}
 

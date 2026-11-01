@@ -38,7 +38,7 @@ heroAction = CardWithType EventType <> CardWithAbilityType HeroAction
 instance RunMessage Warpath where
   runMessage msg a@(Warpath attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      hand <- selectList (InHandOf (IdentityWithId you) $ BasicCardMatches heroAction)
+      hand <- selectList (PlayableFromHandOf (IdentityWithId you) $ BasicCardMatches heroAction)
       cards <- filterM (canPlayCardWithReduction you 0) hand
       chooseOne you [targeting card (playCardWithReduction you 0 card) | card <- cards]
       pure a

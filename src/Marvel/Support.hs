@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Support where
 
+import Marvel.Support.Supports.AgeOfApocalypseBasicCampaign
+
 import Marvel.Support.Supports.NextEvolutionNextEvolutionCampaign
 
 import Marvel.Support.Supports.MutantGenesisCampaign
@@ -29,7 +31,10 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard chimichangaTruck, SomeSupportCard deadpoolCorpsShip, SomeSupportCard plotConvenience
+  [ SomeSupportCard missionTeamFront, SomeSupportCard missionTeamFinished
+  , SomeSupportCard stepfordCuckoos
+  , SomeSupportCard limbo
+  , SomeSupportCard chimichangaTruck, SomeSupportCard deadpoolCorpsShip, SomeSupportCard plotConvenience
   , SomeSupportCard sisterhood
   , SomeSupportCard worthingtonIndustries, SomeSupportCard angelsAerie
   , SomeSupportCard trainingRegimen, SomeSupportCard ipac, SomeSupportCard xBunker

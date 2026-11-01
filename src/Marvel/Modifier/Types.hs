@@ -15,6 +15,7 @@ import Marvel.Trait.Types
 
 data Modifier
   = OnlyIdentityCanDefend IdentityId
+  | QuickstrikeWhenEngaging IdentityId
   | IgnoreBoostCards
   | MinionAttackConsequentialDamageReduction Natural
   | BaseAttack Natural
@@ -57,6 +58,7 @@ data Modifier
   | NoAttackConsequentialDamage
   | SideSchemeThwartConsequentialReduction Natural
   | NoThwartConsequentialDamage
+  | PlayTopOfDeckAsHand
   | CanLookAtTopOfEncounterDeck
   | PrintedResourcesAs Resource
   | DividesBasicAttackEvenly

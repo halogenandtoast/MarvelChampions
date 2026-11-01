@@ -1,5 +1,15 @@
 module Marvel.Support.Cards where
 
+import Marvel.Card.Def ()
+
+import Marvel.Criteria ()
+
+import Marvel.Cost.Types ()
+
+import Marvel.Matchers qualified as AoaMM
+import Marvel.Aspect qualified as AoaMA
+import Marvel.Resource.Types qualified as AoaMR
+import Marvel.Trait qualified as AoaMT
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect
 import Marvel.Boost qualified as DpBoost ()
@@ -46,17 +56,17 @@ import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Resource.Types qualified as NEResource
 
-import Marvel.Boost qualified as NEBoost ()
+import Marvel.Boost ()
 
 import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword ()
+import Marvel.Keyword ()
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect ()
+import Marvel.Aspect qualified as NEAspect
 
 import Marvel.Boost qualified as NEB ()
 import Marvel.EncounterSet qualified as NES ()
@@ -66,10 +76,10 @@ import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE ()
-import Marvel.Boost qualified as NE ()
+import Marvel.Keyword ()
+import Marvel.Boost ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE ()
+import Marvel.Card.Def ()
 import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.EncounterSet qualified as MGSet
@@ -81,7 +91,7 @@ import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.Keyword
 import Marvel.EncounterSet
-import Marvel.Ability.Types qualified as Ability ()
+import Marvel.Ability.Types ()
 import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.Prelude
@@ -99,7 +109,10 @@ import Marvel.Matchers
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ chimichangaTruck, deadpoolCorpsShip, plotConvenience
+  [ missionTeamFront, missionTeamFinished
+  , stepfordCuckoos
+  , limbo
+  , chimichangaTruck, deadpoolCorpsShip, plotConvenience
   , sisterhood
   , worthingtonIndustries, angelsAerie
   , trainingRegimen, ipac, xBunker
@@ -379,7 +392,7 @@ theNightNurse =
   unique $ support "09019" "The Night Nurse" 1 [Persona] [Mental] Protection
 
 teamTraining :: CardDef
-teamTraining =
+teamTraining = reprintedAs ["45013"] $
   limited (MaxPerPlayerUnderAnyControl 1) $
     support "04016" "Team Training" 2 [Condition] [Physical] Leadership
 
@@ -1072,6 +1085,142 @@ plotConvenience = DpCard.CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Age of Apocalypse: Magik
+limbo :: CardDef
+limbo = CardDef
+  { cdCardCode = "45032"
+  , cdName = "Limbo"
+  , cdCost = Just 1
+  , cdTraits = fromList [AoaMT.Dimension]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+stepfordCuckoos :: CardDef
+stepfordCuckoos = CardDef
+  { cdCardCode = "45049"
+  , cdName = "Stepford Cuckoos"
+  , cdCost = Just 3
+  , cdTraits = fromList [AoaMT.Persona, AoaMT.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AoaMA.Neutral
+  , cdCriteria = SelfMatches (AoaMM.IdentityWithTrait AoaMT.XMen)
+  , cdResources = [(PrintedResource, AoaMR.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse campaign and scenarios
+
+missionTeamFront :: CardDef
+missionTeamFront = CardDef
+  { cdCardCode = "45171a"
+  , cdName = "Mission Team"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mission]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+missionTeamFinished :: CardDef
+missionTeamFinished = CardDef
+  { cdCardCode = "45171b"
+  , cdName = "Mission Team"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Finished]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

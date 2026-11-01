@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Upgrade where
 
+import Marvel.Upgrade.Upgrades.AgeOfApocalypseBasicCampaign
 import Marvel.Upgrade.Upgrades.MutantGenesisCampaign
 import Marvel.Prelude
 
@@ -25,7 +26,14 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard armedToTheTeeth, SomeUpgradeCard deadpoolsKatana, SomeUpgradeCard itAintOver, SomeUpgradeCard gitGud, SomeUpgradeCard healingFactor, SomeUpgradeCard stickToItiveness, SomeUpgradeCard ambush, SomeUpgradeCard bazooka, SomeUpgradeCard blackout, SomeUpgradeCard distraction, SomeUpgradeCard laserSwords, SomeUpgradeCard rockPaperScissors, SomeUpgradeCard ticTacToe, SomeUpgradeCard war
+  [ SomeUpgradeCard desperateMeasures, SomeUpgradeCard bloodgem
+  , SomeUpgradeCard testTheDefense
+  , SomeUpgradeCard bloodRage
+  , SomeUpgradeCard mysticalArmor
+  , SomeUpgradeCard soulsword
+  , SomeUpgradeCard magiksCrown
+  , SomeUpgradeCard bishopsRifle, SomeUpgradeCard bishopsUniform, SomeUpgradeCard superCharged, SomeUpgradeCard advancedSuit, SomeUpgradeCard sidekick
+  , SomeUpgradeCard armedToTheTeeth, SomeUpgradeCard deadpoolsKatana, SomeUpgradeCard itAintOver, SomeUpgradeCard gitGud, SomeUpgradeCard healingFactor, SomeUpgradeCard stickToItiveness, SomeUpgradeCard ambush, SomeUpgradeCard bazooka, SomeUpgradeCard blackout, SomeUpgradeCard distraction, SomeUpgradeCard laserSwords, SomeUpgradeCard rockPaperScissors, SomeUpgradeCard ticTacToe, SomeUpgradeCard war
   , SomeUpgradeCard x23sClaws, SomeUpgradeCard adamantiumLacing, SomeUpgradeCard grimResolve, SomeUpgradeCard painTolerance, SomeUpgradeCard punctureWound, SomeUpgradeCard nowImMad, SomeUpgradeCard theDirectApproach, SomeUpgradeCard combatSpecialist, SomeUpgradeCard defenseSpecialist, SomeUpgradeCard frontLineSpecialist, SomeUpgradeCard surveillanceSpecialist
   , SomeUpgradeCard technoOrganicWings, SomeUpgradeCard containmentStrategy, SomeUpgradeCard soaringAcrobatics, SomeUpgradeCard eyesInTheSky, SomeUpgradeCard xForceRecruit
   , SomeUpgradeCard psiKnife, SomeUpgradeCard psiKatana, SomeUpgradeCard martialArtsTraining, SomeUpgradeCard psionicTraining, SomeUpgradeCard weaponsTraining, SomeUpgradeCard floatLikeAButterfly, SomeUpgradeCard telepathy, SomeUpgradeCard telekinesis

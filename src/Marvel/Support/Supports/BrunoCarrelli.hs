@@ -41,9 +41,10 @@ instance RunMessage BrunoCarrelli where
       hand <- projectMap PlayerIdentityHand unHand ident
       chooseOne ident [targeting c (cardSpecific a "hold" c) | c <- hand]
       pure a
-    CardSpecific (isTarget a -> True) "hold" (fromJSON -> Success c) -> do
+    CardSpecific (isTarget a -> True) "hold" (fromJSON -> Success (c :: PlayerCard)) -> do
       removeFromGame c
-      pure . BrunoCarrelli $ attrs & heldCardsL <>~ [c]
+      cardSpecific attrs "holdAfterRemoval" c
+      pure a
     RanAbility ident (isTarget a -> True) 2 _ _ -> do
       cardSpecific a "take" (ident, 3 :: Natural)
       pure a
@@ -59,6 +60,8 @@ instance RunMessage BrunoCarrelli where
               | c <- held
               ]
       pure a
+    CardSpecific (isTarget attrs -> True) "holdAfterRemoval" (fromJSON -> Success c) ->
+      pure . BrunoCarrelli $ attrs & heldCardsL <>~ [c]
     IdentityMessage _ (AddToHand c) ->
       pure . BrunoCarrelli $ attrs & heldCardsL %~ filter (/= c)
     _ -> BrunoCarrelli <$> runMessage msg attrs

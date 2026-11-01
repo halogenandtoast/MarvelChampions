@@ -38,7 +38,10 @@ instance RunMessage StolenMemories where
       attrs' <- runMessage msg attrs
       cards <- take 8 . unDeck <$> project PlayerIdentityDeck you
       for_ cards (removeFromGame . CardIdRef . pcCardId)
-      pure . StolenMemories $ attrs' & heldCardsL <>~ cards
+      cardSpecific attrs "holdAfterRemoval" cards
+      pure $ StolenMemories attrs'
+    CardSpecific (isTarget attrs -> True) "holdAfterRemoval" (fromJSON -> Success cards) ->
+      pure . StolenMemories $ attrs & heldCardsL <>~ cards
     ObligationMessage ident (ResolvedObligation _) | ident == obligationId attrs -> pure o
     RanAbility you (isTarget attrs -> True) 1 _ _ -> o <$ discardToDiscard attrs you (withResource Mental)
     _ -> StolenMemories <$> runMessage msg attrs

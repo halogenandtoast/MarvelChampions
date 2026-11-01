@@ -15,6 +15,8 @@ data Payment
   | -- | an ally-held event detached for payment, restored on abort
     ReservedAllyCardPayment AllyId PlayerCard
   | ReservedSupportCardPayment SupportId PlayerCard
+  | -- | a faceup deck card reserved as if played from hand, restored on abort
+    ReservedTopDeckCardPayment PlayerCard
   | -- | all non-resource alliance contributions approved before any is committed
     ApprovedAlliancePayment [(IdentityId, Cost)]
   | -- | resources actually spent after surplus generation is discarded; raw receipts remain
@@ -36,6 +38,8 @@ data Payment
     ContributedWildPayment IdentityId Resource
   | ResourcePaymentFromCard ExtendedCardMatcher
   | DiscardHandCardPayment Card
+  | -- | A physical card spent to generate resources, separate from discard costs.
+    SpentCardPayment PlayerCard
   | -- | the printed ally card sacrificed to pay, even after it leaves play
     DiscardedAllyPayment Card
   | DiscardedUpgradePayment Card
@@ -55,6 +59,7 @@ data Payment
   | UsePayment
   | -- | an ally exhausted to pay
     ExhaustedAllyPayment AllyId
+  | ReadiedAllyPayment AllyId
   | ExhaustedCardPayment Target
   | -- | a character exhausted to pay
     ExhaustedCharacterPayment CharacterId
@@ -133,6 +138,9 @@ paymentX p = sum [x | XPayment x <- payments p]
 paymentDiscards :: Payment -> [Card]
 paymentDiscards p = [c | DiscardHandCardPayment c <- payments p]
 
+paymentSpentCards :: Payment -> [PlayerCard]
+paymentSpentCards p = [c | SpentCardPayment c <- payments p]
+
 -- | The encounter cards discarded from the top of the deck to pay.
 paymentEncounterDiscards :: Payment -> [Card]
 paymentEncounterDiscards p = [c | DiscardedEncounterCardPayment c <- payments p]
@@ -167,6 +175,9 @@ paymentActualResources p = lastMay [rs | ActualResourcesPayment rs <- payments p
 -- | Support-held events detached while paying, restored on abort.
 paymentReservedSupportCards :: Payment -> [(SupportId, PlayerCard)]
 paymentReservedSupportCards p = [(s, c) | ReservedSupportCardPayment s c <- payments p]
+
+paymentReservedTopDeckCards :: Payment -> [PlayerCard]
+paymentReservedTopDeckCards p = [c | ReservedTopDeckCardPayment c <- payments p]
 
 paymentExhaustedCards :: Payment -> [Target]
 paymentExhaustedCards p = [t | ExhaustedCardPayment t <- payments p]

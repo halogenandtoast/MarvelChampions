@@ -127,6 +127,8 @@ instance Entity Villain where
     , villainBoostCards :: [EncounterCard]
     , villainBoost :: Natural
     , villainPendingAttackBoostCards :: Natural
+    , villainSchemeWithoutBoost :: Bool
+    , villainPendingSchemeBoostCards :: Natural
     , villainAttackAdditionalBoostCards :: Natural
     , villainAttackGrantedKeywords :: [Keyword]
     , villainAttacking :: Maybe Attack
@@ -235,6 +237,8 @@ villain f cardDef sch atk startingHp =
             , villainBoostCards = mempty
             , villainBoost = 0
             , villainPendingAttackBoostCards = 0
+            , villainSchemeWithoutBoost = False
+            , villainPendingSchemeBoostCards = 0
             , villainAttackAdditionalBoostCards = 0
             , villainAttackGrantedKeywords = []
             , villainAttacking = Nothing
@@ -446,7 +450,7 @@ runVillainMessage msg attrs = case msg of
     resolveVillainActivationAfterWould vid VillainSchemes
     villainStep vid VillainSchemeAgainstEnded
     pure attrs {villainActivationPlayer = Just ident}
-  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing}
+  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing, villainSchemeWithoutBoost = False, villainPendingSchemeBoostCards = 0, villainPendingAttackBoostCards = 0}
   VillainBeginScheme -> do
     -- against the player it was said to be against, or the active player
     player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
@@ -454,7 +458,8 @@ runVillainMessage msg attrs = case msg of
     when (isNothing $ villainAttacking attrs) $ checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
     checkWindows [W.Window W.When $ W.Schemed vid]
     modifiers <- getModifiers attrs
-    unless (SchemesWithoutBoost `elem` modifiers) dealActivationBoost
+    unless (villainSchemeWithoutBoost attrs || SchemesWithoutBoost `elem` modifiers) dealActivationBoost
+    replicateM_ (fromIntegral $ villainPendingSchemeBoostCards attrs) (dealBoost attrs)
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainSchemed
     clearBoosts
@@ -474,7 +479,7 @@ runVillainMessage msg attrs = case msg of
   VillainAttacksGaining ident keywords -> attacks (VillainBeginAttack ident) ident keywords
   VillainBeginAttack ident -> beginAttack True ident
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
-  VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
+  VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
   VillainAttackGains k -> pure $ attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainSchemeRemovesThreat you source -> pure attrs {villainSchemeRemoval = Just (you, source)}
@@ -545,7 +550,7 @@ runVillainMessage msg attrs = case msg of
   attacks begin ident keywords = do
     stunned <- isStunned attrs
     if stunned
-      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainAttackAdditionalBoostCards = 0}
+      then pure $ attrs & stunnedL .~ False & boostL .~ 0 & \a -> a {villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0}
       else do
         -- the attack is his activation against the player, from start to end
         checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
@@ -590,6 +595,10 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "schemeWithoutBoost" (fromJSON -> Success flag) | target == toRef attrs ->
+      pure attrs {villainSchemeWithoutBoost = flag}
+    CardSpecific target "additionalActivationBoost" (fromJSON -> Success n) | target == toRef attrs ->
+      pure attrs {villainPendingAttackBoostCards = n, villainPendingSchemeBoostCards = n}
     CardSpecific target "clearSchemeBonus" (fromJSON -> Success n) | target == toRef attrs ->
       pure attrs {villainScheme = Sch (subtractNatural n $ unSch $ villainScheme attrs)}
     CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
@@ -654,7 +663,7 @@ carryOver VillainAttrs {..} = update
       & (upgradesL .~ villainUpgrades)
       & (boostCardsL .~ villainBoostCards)
       & (boostL .~ villainBoost)
-      & (\a -> a {villainAttackGrantedKeywords = villainAttackGrantedKeywords, villainPendingAttackBoostCards = villainPendingAttackBoostCards, villainAttackAdditionalBoostCards = villainAttackAdditionalBoostCards})
+      & (\a -> a {villainCounters = villainCounters, villainSchemeWithoutBoost = villainSchemeWithoutBoost, villainPendingSchemeBoostCards = villainPendingSchemeBoostCards, villainAttackGrantedKeywords = villainAttackGrantedKeywords, villainPendingAttackBoostCards = villainPendingAttackBoostCards, villainAttackAdditionalBoostCards = villainAttackAdditionalBoostCards})
       & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
       & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer, villainPreventedAttack = villainPreventedAttack}
   restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
@@ -723,6 +732,8 @@ instance FromJSON (Attrs Villain) where
       KeyMap.insertWith (\_ old -> old) "villainCounters" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainSchemeRemoval" (toJSON (Nothing :: Maybe (IdentityId, Source))) $
       KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
+      KeyMap.insertWith (\_ old -> old) "villainSchemeWithoutBoost" (Bool False) $
+      KeyMap.insertWith (\_ old -> old) "villainPendingSchemeBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackAdditionalBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackGrantedKeywords" (toJSON ([] :: [Keyword])) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalStun" (Bool False) $

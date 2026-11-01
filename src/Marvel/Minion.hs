@@ -2,6 +2,28 @@
 
 module Marvel.Minion where
 
+import Marvel.Minion.Minions.AgeOfApocalypseUnus
+
+import Marvel.Minion.Minions.AgeOfApocalypseSavageLand
+
+import Marvel.Minion.Minions.AgeOfApocalypsePrelates
+
+import Marvel.Minion.Minions.AgeOfApocalypseOverseer
+
+import Marvel.Minion.Minions.AgeOfApocalypseInfinites
+
+import Marvel.Minion.Minions.AgeOfApocalypseHounds
+
+import Marvel.Minion.Minions.AgeOfApocalypseGenosha
+
+import Marvel.Minion.Minions.AgeOfApocalypseDarkRiders
+
+import Marvel.Minion.Minions.AgeOfApocalypseClanAkkaba
+
+import Marvel.Minion.Minions.AgeOfApocalypseBlueMoon
+
+import Marvel.Minion.Minions.AgeOfApocalypseAgeOfApocalypse
+
 import Marvel.Minion.Minions.HoodPack qualified as HoodPack
 
 import Marvel.Minion.Minions.NextEvolutionNeStryfe
@@ -52,7 +74,12 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard butler, SomeMinionCard mutatedSoldier, SomeMinionCard dreadpool
+      [ SomeMinionCard infiniteHunter, SomeMinionCard infiniteSoldier, SomeMinionCard ahab, SomeMinionCard hound, SomeMinionCard gauntlet, SomeMinionCard barrage, SomeMinionCard hardDrive, SomeMinionCard tusk, SomeMinionCard psynapse, SomeMinionCard pterosaur, SomeMinionCard velociraptor, SomeMinionCard giantApe, SomeMinionCard magistrate, SomeMinionCard armoredUnibike, SomeMinionCard genoshanMech, SomeMinionCard gladiator, SomeMinionCard oracle, SomeMinionCard manta, SomeMinionCard earthquake, SomeMinionCard warstar, SomeMinionCard ozymandias, SomeMinionCard scarab, SomeMinionCard clanAkkabaZealot, SomeMinionCard agentOfApocalypse, SomeMinionCard misterSinisterMinion, SomeMinionCard misterSinisterOverseer, SomeMinionCard theShadowKingMinion, SomeMinionCard theShadowKingOverseer, SomeMinionCard abyssMinion, SomeMinionCard abyssOverseer, SomeMinionCard sugarManMinion, SomeMinionCard sugarManOverseer, SomeMinionCard mikhailRasputinMinion, SomeMinionCard mikhailRasputinOverseer
+  , SomeMinionCard witchfire
+  , SomeMinionCard sym
+  , SomeMinionCard belasco
+  , SomeMinionCard trevorFitzroy, SomeMinionCard bantam
+  , SomeMinionCard butler, SomeMinionCard mutatedSoldier, SomeMinionCard dreadpool
   , SomeMinionCard ladyDeathstrikeX23
   , SomeMinionCard harpoon
   , SomeMinionCard chimera

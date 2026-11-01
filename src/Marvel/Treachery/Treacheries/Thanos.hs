@@ -111,7 +111,7 @@ instance RunMessage TheMadTitan where
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> pure $ TheMadTitan (attrs `With` Meta (Just enemy))
     Boost (CheckWindows ws)
       | Just enemy <- boosting meta
-      , notNull [() | W.Window _ (W.DefeatedAlly _ (Just e)) <- ws, e == enemy] -> do
+      , notNull [() | W.Window W.After (W.DefeatedAlly _ (Just e)) <- ws, e == enemy] -> do
           putTopInfinityStoneIntoPlay =<< getBoostedPlayer enemy
           pure t
     _ -> TheMadTitan . (`With` meta) <$> runMessage msg attrs

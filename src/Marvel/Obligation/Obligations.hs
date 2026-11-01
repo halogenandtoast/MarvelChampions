@@ -1,5 +1,12 @@
 module Marvel.Obligation.Obligations (module X) where
 
+import Marvel.Obligation.Obligations.AgeOfApocalypseStandardIII as X
+
+import Marvel.Obligation.Obligations.AgeOfApocalypseDystopianNightmare as X
+
+import Marvel.Obligation.Obligations.AgeOfApocalypseCampaign as X
+
+import Marvel.Obligation.Obligations.Darkchilde as X
 import Marvel.Obligation.Obligations.NextEvolutionTelepathySet as X
 
 import Marvel.Obligation.Obligations.MemoriesofArmageddon as X
@@ -124,3 +131,6 @@ import Marvel.Obligation.Obligations.ApocalypticInfluence as X
 import Marvel.Obligation.Obligations.SelfIsolation as X
 
 import Marvel.Obligation.Obligations.TheMercWithTheMouth as X
+
+-- Bishop
+import Marvel.Obligation.Obligations.FearTheFuture as X

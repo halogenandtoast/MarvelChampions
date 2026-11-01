@@ -6,8 +6,33 @@ import Marvel.Card.Code
 
 data EncounterSet
   = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
+  | AoaCampaign
+  | AoaBasicCampaign
+  | AoaOverseer
+  | AoaMission
+  | AgeOfApocalypse
+  | StandardIII
+  | AoaClanAkkaba
+  | AoaCelestialTech
+  | AoaEnSabahNur
+  | AoaSavageLand
+  | AoaGenosha
+  | AoaBlueMoon
+  | AoaDarkBeast
+  | AoaDarkRiders
+  | AoaPrelates
+  | AoaApocalypse
+  | AoaHounds
+  | AoaFourHorsemen
+  | AoaDystopianNightmare
+  | AoaInfinites
+  | AoaUnus
   | NextEvolutionCampaign
   | AngelNemesis
+  | MagikNemesis
+  | BishopNemesis
+  | BishopObligation
+  | MagikObligation
   | PsylockeNemesis
   | CableNemesis
   | DominoNemesis
@@ -195,7 +220,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
+  [ AoaInfinites, AoaDystopianNightmare, AoaHounds, AoaPrelates, AoaDarkRiders, AoaBlueMoon, AoaGenosha, AoaSavageLand, AoaCelestialTech, AoaClanAkkaba
+  , MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
   , Crime, Fantasy, Horror, SciFi, Sitcom, Western, LongshotSet
   , BombScare
   , MastersOfEvil
@@ -272,6 +298,8 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "45030" -> MagikNemesis
+  "45001" -> BishopNemesis
   "44001" -> DeadpoolNemesis
   "43001" -> X23Nemesis
   "42001" -> AngelNemesis

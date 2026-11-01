@@ -199,6 +199,7 @@ passesCriteria x a =
     PlayedEventInDiscard -> playedEventInDiscard
     HeldAllyPlayable sid -> heldAllyPlayable x sid
     CanFindTouched -> canFindTouched x
+    CanResolveSettingSpecial -> canResolveSettingSpecial x
     MedLabCaptureAvailable -> medLabCaptureAvailable
     VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
     CollectionHasCards -> notNull <$> getCollection
@@ -263,6 +264,7 @@ passesCardCriteria ident card = go
     PlayedEventInDiscard -> playedEventInDiscard
     HeldAllyPlayable _ -> pure False
     CanFindTouched -> pure False
+    CanResolveSettingSpecial -> canResolveSettingSpecial ident
     MedLabCaptureAvailable -> pure False
     VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
     CollectionHasCards -> notNull <$> getCollection

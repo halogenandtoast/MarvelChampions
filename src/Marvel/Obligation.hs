@@ -1,6 +1,12 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Obligation where
 
+import Marvel.Obligation.Obligations.AgeOfApocalypseStandardIII
+
+import Marvel.Obligation.Obligations.AgeOfApocalypseDystopianNightmare
+
+import Marvel.Obligation.Obligations.AgeOfApocalypseCampaign
+
 import Marvel.Obligation.Obligations.NextEvolutionTelepathySet
 
 import Marvel.Obligation.Obligations.Mojo
@@ -28,7 +34,10 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard theMercWithTheMouth
+  [ SomeObligationCard hunted, SomeObligationCard drawingNear, SomeObligationCard panickedRefugees
+  , SomeObligationCard darkchilde
+  , SomeObligationCard fearTheFuture
+  , SomeObligationCard theMercWithTheMouth
   , SomeObligationCard selfIsolation
   , SomeObligationCard apocalypticInfluence
   , SomeObligationCard bodySwapped

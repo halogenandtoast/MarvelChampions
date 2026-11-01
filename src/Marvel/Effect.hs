@@ -8,6 +8,7 @@ import Marvel.Attachment.Attachments.MojoGenres (mojoStakeEffect)
 import Marvel.Event.Events.Cable ()
 import Marvel.Minion.Minions.NextEvolutionMisterSinister (ne40145BoostEffect)
 import Marvel.Resource.Resources.AvianAnatomy (avianAnatomyEffect)
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen (aoaHorsemenBlankEffect)
 import Marvel.Prelude
 import Marvel.Resource.Resources.Cyclops (effectiveLeadershipEffect)
 import Marvel.Resource.Resources.PassionForJustice (passionForJusticeEffect)
@@ -44,7 +45,8 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("44020", SomeCardEffect getRageYEffect)
+    [ ("45085", SomeCardEffect aoaHorsemenBlankEffect)
+    , ("44020", SomeCardEffect getRageYEffect)
     , ("43002", SomeCardEffect x23sClawsEffect)
     , ("43004", SomeCardEffect animalInstinctEffect)
     , ("43005", SomeCardEffect clawMasteryEffect)

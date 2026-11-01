@@ -2,14 +2,17 @@
 module Marvel.Ally
 
 
+
   ( module Marvel.Ally
   , module X
   ) where
 
+import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign
 import Marvel.Ally.Allies.NextEvolutionMorlockSiege
 import Marvel.Ally.Allies.NextEvolutionHopeSummersSet
 
 import Marvel.Ally.Allies.MutantGenesisCampaign
+import Marvel.Ally.Allies.MissionAlly (MissionAlly(..))
 import Marvel.Prelude
 import Data.Aeson.Types (Parser)
 
@@ -22,7 +25,8 @@ instance FromJSON Ally where
   parseJSON = withObject "Ally" $ \o -> do
     cardDef <- o .: "allyCardDef"
     originalMinion <- o .:? "allyOriginalMinion" :: Parser (Maybe Value)
-    withAllyCardCode (if isJust originalMinion then "xcontrolledminion" else cdCardCode cardDef)
+    mission <- o .:? "missionAlly" .!= False
+    if mission then Ally . MissionAlly <$> parseJSON (Object o) else withAllyCardCode (if isJust originalMinion then "xcontrolledminion" else cdCardCode cardDef)
       $ \(_ :: AllyCard a) -> Ally <$> parseJSON @a (Object o)
 
 withAllyCardCode :: CardCode -> (forall a . IsAlly a => AllyCard a -> r) -> r
@@ -39,7 +43,13 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard cableDeadpool, SomeAllyCard dogpool, SomeAllyCard headpool, SomeAllyCard kidpool, SomeAllyCard ladyDeadpool, SomeAllyCard bobAgentOfHydra, SomeAllyCard negasonicTeenageWarhead, SomeAllyCard pandapool
+  [ SomeAllyCard destiny, SomeAllyCard blink, SomeAllyCard morph, SomeAllyCard xMan
+  , SomeAllyCard triage
+  , SomeAllyCard tempus
+  , SomeAllyCard goldballs
+  , SomeAllyCard colossusMagik
+  , SomeAllyCard malcolm, SomeAllyCard randall, SomeAllyCard cableBishop, SomeAllyCard x23Bishop, SomeAllyCard legionBishop, SomeAllyCard marrow
+  , SomeAllyCard cableDeadpool, SomeAllyCard dogpool, SomeAllyCard headpool, SomeAllyCard kidpool, SomeAllyCard ladyDeadpool, SomeAllyCard bobAgentOfHydra, SomeAllyCard negasonicTeenageWarhead, SomeAllyCard pandapool
   , SomeAllyCard honeyBadger, SomeAllyCard boomBoom, SomeAllyCard rictor, SomeAllyCard shatterstar
   , SomeAllyCard psylockeAngel, SomeAllyCard elixir, SomeAllyCard siryn, SomeAllyCard warpath, SomeAllyCard cannonball
   , SomeAllyCard angelPsylocke, SomeAllyCard captainBritain, SomeAllyCard cypher, SomeAllyCard peteWisdom, SomeAllyCard dominoPsylocke

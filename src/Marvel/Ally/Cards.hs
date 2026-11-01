@@ -1,5 +1,23 @@
 module Marvel.Ally.Cards where
 
+
+
+
+import Marvel.Window.Types qualified as AoaMW
+import Marvel.Matchers qualified as AoaMM
+import Marvel.Aspect qualified as AoaMA
+import Marvel.Resource.Types qualified as AoaMR
+import Marvel.Keyword qualified as AoaMK
+import Marvel.Trait qualified as AoaMT
+import Marvel.Aspect qualified as BpAspect
+import Marvel.Card.Def qualified as BpCard
+import Marvel.Cost.Types qualified as BpCost
+import Marvel.Criteria qualified as BpCriteria
+import Marvel.Matchers qualified as BpMatch
+import Marvel.Name qualified as BpName
+import Marvel.Resource.Types qualified as BpResource
+import Marvel.Trait qualified as BpTrait
+
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect
 import Marvel.Boost qualified as DpBoost ()
@@ -57,7 +75,7 @@ import Marvel.Keyword qualified as NEKeyword
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect ()
+import Marvel.Aspect qualified as NEAspect
 
 import Marvel.Boost qualified as NEB ()
 import Marvel.EncounterSet qualified as NES ()
@@ -67,10 +85,7 @@ import Marvel.Keyword qualified as NEK
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE ()
-import Marvel.Boost qualified as NE ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Trait qualified as MojoTrait
@@ -85,7 +100,6 @@ import Marvel.Trait qualified as MGTrait
 import Marvel.Resource qualified as MGResource
 import Marvel.Boost qualified as MGBoost ()
 import Marvel.EncounterSet ()
-import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.GameValue.Types qualified as MGValue ()
@@ -107,7 +121,13 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ cableDeadpool, dogpool, headpool, kidpool, ladyDeadpool, bobAgentOfHydra, negasonicTeenageWarhead, pandapool
+  [ destiny, blink, morph, xMan
+  , triage
+  , tempus
+  , goldballs
+  , colossusMagik
+  , malcolm, randall, cableBishop, x23Bishop, legionBishop, marrow
+  , cableDeadpool, dogpool, headpool, kidpool, ladyDeadpool, bobAgentOfHydra, negasonicTeenageWarhead, pandapool
   , honeyBadger, boomBoom, rictor, shatterstar
   , psylockeAngel, elixir, siryn, warpath, cannonball
   , angelPsylocke, captainBritain, cypher, peteWisdom, dominoPsylocke
@@ -2256,6 +2276,476 @@ pandapool = DpCard.CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Bishop
+
+malcolm :: CardDef
+malcolm = CardDef
+  { cdCardCode = "45002"
+  , cdName = "Malcolm"
+  , cdCost = Just 3
+  , cdTraits = fromList [BpTrait.Temporal, BpTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+randall :: CardDef
+randall = CardDef
+  { cdCardCode = "45003"
+  , cdName = "Randall"
+  , cdCost = Just 3
+  , cdTraits = fromList [BpTrait.Temporal, BpTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+cableBishop :: CardDef
+cableBishop = CardDef
+  { cdCardCode = "45011"
+  , cdName = BpName.Name "Cable" (Just "Nathan Summers")
+  , cdCost = Just 4
+  , cdTraits = fromList [BpTrait.Psionic, BpTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just BpAspect.Leadership
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+x23Bishop :: CardDef
+x23Bishop = CardDef
+  { cdCardCode = "45012"
+  , cdName = BpName.Name "X-23" (Just "Laura Kinney")
+  , cdCost = Just 3
+  , cdTraits = fromList [BpTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just BpAspect.Leadership
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+legionBishop :: CardDef
+legionBishop = CardDef
+  { cdCardCode = "45020"
+  , cdName = BpName.Name "Legion" (Just "David Haller")
+  , cdCost = Just 3
+  , cdTraits = fromList [BpTrait.Psionic, BpTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just BpAspect.Neutral
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+marrow :: CardDef
+marrow = CardDef
+  { cdCardCode = "45021"
+  , cdName = BpName.Name "Marrow" (Just "Sarah")
+  , cdCost = Just 2
+  , cdTraits = fromList [BpTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just BpAspect.Neutral
+  , cdCriteria = BpCriteria.AnyCriteria [BpCriteria.SelfMatches (BpMatch.IdentityWithTrait BpTrait.XForce), BpCriteria.SelfMatches (BpMatch.IdentityWithTrait BpTrait.XMen)]
+  , cdResources = [(BpCard.PrintedResource, BpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Age of Apocalypse: Magik
+colossusMagik :: CardDef
+colossusMagik = CardDef
+  { cdCardCode = "45031"
+  , cdName = "Colossus" <:> "Piotr Rasputin"
+  , cdCost = Just 3
+  , cdTraits = fromList [AoaMT.XMen]
+  , cdKeywords = fromList [AoaMK.Toughness]
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AoaMW.EnemyAttacked AoaMW.When AoaMM.AnyEnemy AoaMM.You)
+  , cdActionCriteria = Just NoCriteria
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+goldballs :: CardDef
+goldballs = CardDef
+  { cdCardCode = "45041"
+  , cdName = "Goldballs" <:> "Fabio Medina"
+  , cdCost = Just 3
+  , cdTraits = fromList [AoaMT.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AoaMA.Aggression
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+tempus :: CardDef
+tempus = CardDef
+  { cdCardCode = "45042"
+  , cdName = "Tempus" <:> "Eva Bell"
+  , cdCost = Just 2
+  , cdTraits = fromList [AoaMT.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AoaMA.Aggression
+  , cdCriteria = SelfMatches (AoaMM.IdentityWithTrait AoaMT.XMen)
+  , cdResources = [(PrintedResource, AoaMR.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+triage :: CardDef
+triage = CardDef
+  { cdCardCode = "45048"
+  , cdName = "Triage" <:> "Christopher Muse"
+  , cdCost = Just 2
+  , cdTraits = fromList [AoaMT.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AoaMA.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse campaign and scenarios
+
+destiny :: CardDef
+destiny = CardDef
+  { cdCardCode = "45172"
+  , cdName = "Destiny"
+  , cdCost = Just 4
+  , cdTraits = fromList [NETrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+blink :: CardDef
+blink = CardDef
+  { cdCardCode = "45173"
+  , cdName = "Blink"
+  , cdCost = Just 4
+  , cdTraits = fromList [NETrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+morph :: CardDef
+morph = CardDef
+  { cdCardCode = "45174"
+  , cdName = "Morph"
+  , cdCost = Just 4
+  , cdTraits = fromList [NETrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+xMan :: CardDef
+xMan = CardDef
+  { cdCardCode = "45175"
+  , cdName = "X-Man"
+  , cdCost = Just 4
+  , cdTraits = fromList [NETrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

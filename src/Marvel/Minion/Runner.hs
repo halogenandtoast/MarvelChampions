@@ -123,7 +123,9 @@ runMinionMessage msg attrs = case msg of
     let previous = minionEngagedIdentity attrs
     when (previous /= ident) $ minionDisengages previous (minionId attrs)
     keywords <- getModifiedKeywords attrs
-    when (isHero && Quickstrike `elem` keywords) $ enemyActivationAfterCurrent (minionId attrs) (enemyAttacks (minionId attrs) ident)
+    modifiers <- getModifiers attrs
+    when (isHero && (Quickstrike `elem` keywords || QuickstrikeWhenEngaging ident `elem` modifiers)) $
+      enemyActivationAfterCurrent (minionId attrs) (enemyAttacks (minionId attrs) ident)
     checkWindows [W.Window W.After $ W.EngagedMinion ident (minionId attrs)]
     pure attrs {minionEngagedIdentity = ident}
   -- with victory X, it and an attachment on it with victory X go to the victory display
@@ -282,7 +284,7 @@ instance RunMessage (Attrs Minion) where
     updated <- case msg of
       CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
         pure attrs {minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
-      RemovePlayerCardFromHeldZones cid -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs)}
+      RemovePlayerCardFromHeldZones cid -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs), minionHeldTreacheries = filter ((/= cid) . ecCardId) (minionHeldTreacheries attrs)}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
         let ident = minionEngagedIdentity attrs

@@ -1,5 +1,15 @@
 module Marvel.MainScheme.MainSchemes (module X) where
 
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus as X
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen as X
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseEnSabahNur as X
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseDarkBeast as X
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseApocalypse as X
+
 import Marvel.MainScheme.MainSchemes.NextEvolutionNeStryfe as X
 
 import Marvel.MainScheme.MainSchemes.NextEvolutionOnTheRun as X

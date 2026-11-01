@@ -1,5 +1,36 @@
 module Marvel.SideScheme.SideSchemes (module X) where
 
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseInfinites as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseHounds as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseGenosha as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseFourHorsemen as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseEnSabahNur as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDystopianNightmare as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkRiders as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkBeast as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseClanAkkaba as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseBlueMoon as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseApocalypse as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseMission as X
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseCampaign as X
+
+import Marvel.SideScheme.SideSchemes.RulerOfLimbo as X
 import Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe as X
 
 import Marvel.SideScheme.SideSchemes.NextEvolutionOnTheRun as X
@@ -266,3 +297,6 @@ import Marvel.SideScheme.SideSchemes.RallyTheTroops as X
 import Marvel.SideScheme.SideSchemes.LiveDangerously as X
 import Marvel.SideScheme.SideSchemes.InvoluntaryProcedures as X
 import Marvel.SideScheme.SideSchemes.DreadfulDeeds as X
+
+-- Bishop
+import Marvel.SideScheme.SideSchemes.PortalThroughTime as X

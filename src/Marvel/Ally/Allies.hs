@@ -1,5 +1,11 @@
 module Marvel.Ally.Allies (module X) where
 
+import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign as X
+
+import Marvel.Ally.Allies.Triage as X
+import Marvel.Ally.Allies.Tempus as X
+import Marvel.Ally.Allies.Goldballs as X
+import Marvel.Ally.Allies.ColossusMagik as X
 import Marvel.Ally.Allies.NextEvolutionMorlockSiege as X
 
 import Marvel.Ally.Allies.NextEvolutionHopeSummersSet as X
@@ -323,3 +329,11 @@ import Marvel.Ally.Allies.LadyDeadpool as X
 import Marvel.Ally.Allies.BobAgentOfHydra as X
 import Marvel.Ally.Allies.NegasonicTeenageWarhead as X
 import Marvel.Ally.Allies.Pandapool as X
+
+-- Bishop
+import Marvel.Ally.Allies.Malcolm as X
+import Marvel.Ally.Allies.Randall as X
+import Marvel.Ally.Allies.CableBishop as X
+import Marvel.Ally.Allies.X23Bishop as X
+import Marvel.Ally.Allies.LegionBishop as X
+import Marvel.Ally.Allies.Marrow as X

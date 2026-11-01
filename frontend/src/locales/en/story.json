@@ -1041,5 +1041,27 @@
         ]
       }
     }
+  },
+  "ageOfApocalypse": {
+    "unus": {
+      "setup": "Unus: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
+      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+    },
+    "fourHorsemen": {
+      "setup": "The Four Horsemen: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
+      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+    },
+    "apocalypse": {
+      "setup": "Apocalypse: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
+      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+    },
+    "darkBeast": {
+      "setup": "Dark Beast: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
+      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+    },
+    "enSabahNur": {
+      "setup": "En Sabah Nur: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
+      "victory": "Complete Protect the Professor to win the campaign. Winning this scenario without completing that mission loses the campaign."
+    }
   }
 }

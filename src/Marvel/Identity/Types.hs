@@ -26,6 +26,10 @@ instance Entity PlayerIdentity where
     -- ^ who plays it, as the table knows them
     , playerIdentityChosenAspects :: [Aspect]
     , playerIdentityPreviousGameWon :: Maybe Bool
+    , playerIdentityTopDeckPlayUsed :: Bool
+    -- ^ the once-per-phase permission to play the top card as if in hand
+    , playerIdentityPendingTopDeckPlay :: Maybe PlayerCard
+    -- ^ reserved before payment, so the next card is already faceup
     , playerIdentitySearching :: Bool
     -- ^ whether the deck's cards are out being searched
     , playerIdentitySide :: Side

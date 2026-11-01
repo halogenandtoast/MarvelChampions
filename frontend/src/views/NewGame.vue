@@ -140,7 +140,7 @@ const create = async () => {
   try {
     const { id } = await createGame({
       name: gameName.value.trim() || defaultName.value,
-      scenario: { scenarioCode: scenario.value.code, modulars: [...modulars.value, ...(modularGuidance.value?.usesModulars && standardSet.value === 'StandardII' ? ['StandardII'] : []), ...(modularGuidance.value?.usesModulars && difficulty.value === 'Expert' && expertSet.value === 'ExpertII' ? ['ExpertII'] : [])], difficulty: difficulty.value },
+      scenario: { scenarioCode: scenario.value.code, modulars: [...modulars.value, ...(modularGuidance.value?.usesModulars && standardSet.value !== 'Standard' ? [standardSet.value] : []), ...(modularGuidance.value?.usesModulars && difficulty.value === 'Expert' && expertSet.value === 'ExpertII' ? ['ExpertII'] : [])], difficulty: difficulty.value },
       decks: [],
       seats: seatCount.value,
       allowSpectators: allowSpectators.value,
@@ -163,7 +163,7 @@ const kindOptions = computed(() => [
 const campaignMode = ref<CampaignMode>('StandardCampaign')
 // which box's campaign
 const campaignKind = ref<CampaignKind>()
-const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow', 'SinisterMotives', 'MutantGenesis', 'NextEvolution']
+const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow', 'SinisterMotives', 'MutantGenesis', 'NextEvolution', 'AgeOfApocalypseCampaign']
 const campaignTitle = computed(() => campaignKind.value ? t(`campaign.${campaignKind.value}`) : '')
 const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
@@ -381,6 +381,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
               <select v-model="standardSet" class="input" :aria-label="$t('newGame.standardSet')">
                 <option value="Standard">{{ $t('newGame.standardOriginal') }}</option>
                 <option value="StandardII">{{ $t('newGame.standardII') }}</option>
+                <option value="StandardIII">{{ $t('newGame.standardIII') }}</option>
               </select>
             </label>
             <label v-if="difficulty === 'Expert'" class="field">
@@ -440,7 +441,12 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .art-strip .art[data-code='40137'],
 .art-strip .art[data-code='40138'] { background-position: 95% calc(19% + 16px); }
 .art-strip .art[data-code='16103'] { background-position: 95% 12%; }
+.art-strip .art[data-code='45101b'] { background-position: 95% calc(19% + 16px); }
 .art-strip .art:not(:only-child) { background-size: auto 210%; background-position: 72% 12%; }
+.art-strip .art[data-code='45081a'] { background-position: calc(72% - 24px) calc(12% - 8px); }
+.art-strip .art[data-code='45082a'] { background-position: calc(72% + 24px) calc(12% - 8px); }
+.art-strip .art[data-code='45083a'],
+.art-strip .art[data-code='45084a'] { background-position: 72% calc(12% - 8px); }
 .art-strip .art[data-code='27096'],
 .art-strip .art[data-code='27098'] { background-position: 72% calc(12% - 16px); }
 .art-strip .art[data-code='27099'],

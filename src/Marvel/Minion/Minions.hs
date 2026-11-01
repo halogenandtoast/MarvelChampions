@@ -1,5 +1,30 @@
 module Marvel.Minion.Minions (module X) where
 
+import Marvel.Minion.Minions.AgeOfApocalypseUnus as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseSavageLand as X
+
+import Marvel.Minion.Minions.AgeOfApocalypsePrelates as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseOverseer as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseInfinites as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseHounds as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseGenosha as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseDarkRiders as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseClanAkkaba as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseBlueMoon as X
+
+import Marvel.Minion.Minions.AgeOfApocalypseAgeOfApocalypse as X
+
+import Marvel.Minion.Minions.Witchfire as X
+import Marvel.Minion.Minions.Sym as X
+import Marvel.Minion.Minions.Belasco as X
 import Marvel.Minion.Minions.NextEvolutionNeStryfe as X
 
 import Marvel.Minion.Minions.NextEvolutionNextEvolutionCampaign as X
@@ -264,3 +289,7 @@ import Marvel.Minion.Minions.LadyDeathstrikeX23 as X
 import Marvel.Minion.Minions.Butler as X
 import Marvel.Minion.Minions.MutatedSoldier as X
 import Marvel.Minion.Minions.Dreadpool as X
+
+-- Bishop
+import Marvel.Minion.Minions.TrevorFitzroy as X
+import Marvel.Minion.Minions.Bantam as X

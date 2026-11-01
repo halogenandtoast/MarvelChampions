@@ -47,7 +47,7 @@ instance RunMessage TeamBuildingExercise where
       traits <- filterM (\t -> identityMatches (HeroIdentity <> IdentityWithTrait t) you) [minBound .. maxBound]
       cards <-
         selectList $
-          InHandOf (IdentityWithId you) $
+          PlayableFromHandOf (IdentityWithId you) $
             AffordableCardBy (IdentityWithId you) $
               BasicCardMatches (CardMatchesAny $ map CardWithTrait traits)
       chooseOne you $

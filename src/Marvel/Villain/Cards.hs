@@ -2,6 +2,8 @@ module Marvel.Villain.Cards where
 
 
 
+
+
 import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost ()
@@ -10,7 +12,7 @@ import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword ()
+import Marvel.Keyword qualified as NEKeyword
 
 import Marvel.Trait qualified as NETrait
 
@@ -48,7 +50,8 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
-  [ ne40070a, ne40070b, ne40071a, ne40071b, ne40072a, ne40072b, ne40073a, ne40073b, ne40074a, ne40074b, ne40075a, ne40075b, ne40076a, ne40076b, ne40118, ne40119, ne40120, ne40136, ne40137, ne40138, ne40163, ne40164, ne40165
+  [ unus1, unus2, unus3, warA, warB, famineA, famineB, pestilenceA, pestilenceB, deathA, deathB, apocalypse1, apocalypse2, apocalypse3, apocalypse4, darkBeast1, darkBeast2, darkBeast3, enSabahNurBiomorph1, enSabahNurCyberpath1, enSabahNurGiant1, enSabahNurBiomorph2, enSabahNurCyberpath2, enSabahNurGiant2, enSabahNurBiomorph3, enSabahNurCyberpath3, enSabahNurGiant3
+  , ne40070a, ne40070b, ne40071a, ne40071b, ne40072a, ne40072b, ne40073a, ne40073b, ne40074a, ne40074b, ne40075a, ne40075b, ne40076a, ne40076b, ne40118, ne40119, ne40120, ne40136, ne40137, ne40138, ne40163, ne40164, ne40165
   , mojo39001a, mojo39001b, mojo39012a, mojo39012b, mojo39013a, mojo39013b, mojo39014a, mojo39014b, mojo39022, mojo39023, mojo39024
   , mgSabretooth60, mgSabretooth61, mgSabretooth62, mgSentinel84, mgSentinel85, mgSentinel86, mgMasterMold09, mgMasterMold10, mgMasterMold11, mgAvalancheA, mgAvalancheB, mgBlobA, mgBlobB, mgPyroA, mgPyroB, mgToadA, mgToadB, mgMagneto38, mgMagneto39, mgMagneto40, smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
   , theHood1
@@ -1803,6 +1806,899 @@ ne40165 = CardDef
   , cdBoostIcons = []
   , cdEncounterSet = Just NESet.NeStryfe
   , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Age of Apocalypse campaign and scenarios
+
+unus1 :: CardDef
+unus1 = CardDef
+  { cdCardCode = "45059"
+  , cdName = "Unus"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Prelate]
+  , cdKeywords = fromList [NEKeyword.Toughness]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaUnus
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+unus2 :: CardDef
+unus2 = CardDef
+  { cdCardCode = "45060"
+  , cdName = "Unus"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Prelate]
+  , cdKeywords = fromList [NEKeyword.Toughness]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaUnus
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+unus3 :: CardDef
+unus3 = CardDef
+  { cdCardCode = "45061"
+  , cdName = "Unus"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Prelate]
+  , cdKeywords = fromList [NEKeyword.Toughness]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaUnus
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+warA :: CardDef
+warA = CardDef
+  { cdCardCode = "45081a"
+  , cdName = "War"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+warB :: CardDef
+warB = CardDef
+  { cdCardCode = "45081b"
+  , cdName = "War"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+famineA :: CardDef
+famineA = CardDef
+  { cdCardCode = "45082a"
+  , cdName = "Famine"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+famineB :: CardDef
+famineB = CardDef
+  { cdCardCode = "45082b"
+  , cdName = "Famine"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+pestilenceA :: CardDef
+pestilenceA = CardDef
+  { cdCardCode = "45083a"
+  , cdName = "Pestilence"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+pestilenceB :: CardDef
+pestilenceB = CardDef
+  { cdCardCode = "45083b"
+  , cdName = "Pestilence"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+deathA :: CardDef
+deathA = CardDef
+  { cdCardCode = "45084a"
+  , cdName = "Death"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Aerial, NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+deathB :: CardDef
+deathB = CardDef
+  { cdCardCode = "45084b"
+  , cdName = "Death"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Aerial, NETrait.Horsemen]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+apocalypse1 :: CardDef
+apocalypse1 = CardDef
+  { cdCardCode = "45101a"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant]
+  , cdKeywords = fromList [NEKeyword.Toughness]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaApocalypse
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+apocalypse2 :: CardDef
+apocalypse2 = CardDef
+  { cdCardCode = "45101b"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant]
+  , cdKeywords = fromList [NEKeyword.Toughness, NEKeyword.Steady]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaApocalypse
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+apocalypse3 :: CardDef
+apocalypse3 = CardDef
+  { cdCardCode = "45102a"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant]
+  , cdKeywords = fromList [NEKeyword.Toughness, NEKeyword.Steady]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaApocalypse
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+apocalypse4 :: CardDef
+apocalypse4 = CardDef
+  { cdCardCode = "45102b"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant]
+  , cdKeywords = fromList [NEKeyword.Toughness, NEKeyword.Stalwart]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaApocalypse
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+darkBeast1 :: CardDef
+darkBeast1 = CardDef
+  { cdCardCode = "45118"
+  , cdName = "Dark Beast"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Brute, NETrait.Genius]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaDarkBeast
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+darkBeast2 :: CardDef
+darkBeast2 = CardDef
+  { cdCardCode = "45119"
+  , cdName = "Dark Beast"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Brute, NETrait.Genius]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaDarkBeast
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+darkBeast3 :: CardDef
+darkBeast3 = CardDef
+  { cdCardCode = "45120"
+  , cdName = "Dark Beast"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Brute, NETrait.Genius]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaDarkBeast
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurBiomorph1 :: CardDef
+enSabahNurBiomorph1 = CardDef
+  { cdCardCode = "45184a"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Biomorph]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurCyberpath1 :: CardDef
+enSabahNurCyberpath1 = CardDef
+  { cdCardCode = "45184b"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Cyberpath]
+  , cdKeywords = fromList [NEKeyword.Retaliate (1)]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurGiant1 :: CardDef
+enSabahNurGiant1 = CardDef
+  { cdCardCode = "45184c"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Giant]
+  , cdKeywords = fromList [NEKeyword.Stalwart]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurBiomorph2 :: CardDef
+enSabahNurBiomorph2 = CardDef
+  { cdCardCode = "45185a"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Biomorph]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurCyberpath2 :: CardDef
+enSabahNurCyberpath2 = CardDef
+  { cdCardCode = "45185b"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Cyberpath]
+  , cdKeywords = fromList [NEKeyword.Retaliate (1)]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurGiant2 :: CardDef
+enSabahNurGiant2 = CardDef
+  { cdCardCode = "45185c"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Giant]
+  , cdKeywords = fromList [NEKeyword.Stalwart]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurBiomorph3 :: CardDef
+enSabahNurBiomorph3 = CardDef
+  { cdCardCode = "45186a"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Biomorph]
+  , cdKeywords = fromList []
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurCyberpath3 :: CardDef
+enSabahNurCyberpath3 = CardDef
+  { cdCardCode = "45186b"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Cyberpath]
+  , cdKeywords = fromList [NEKeyword.Retaliate (1)]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNurGiant3 :: CardDef
+enSabahNurGiant3 = CardDef
+  { cdCardCode = "45186c"
+  , cdName = "Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Mutant, NETrait.Giant]
+  , cdKeywords = fromList [NEKeyword.Stalwart]
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
   , cdResponseWindow = Nothing
   , cdActionCriteria = Nothing
   , cdHazards = 0

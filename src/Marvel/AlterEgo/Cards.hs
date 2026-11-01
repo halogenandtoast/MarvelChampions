@@ -1,5 +1,11 @@
 module Marvel.AlterEgo.Cards where
 
+import Marvel.Trait qualified as AoaMT
+import Marvel.Card.Def qualified as BpCard
+import Marvel.Cost.Types qualified as BpCost
+import Marvel.Criteria qualified as BpCriteria
+import Marvel.Trait qualified as BpTrait
+
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect ()
 import Marvel.Boost qualified as DpBoost ()
@@ -43,11 +49,6 @@ import Marvel.Trait qualified as PsyTrait
 import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Trait qualified as NE
-import Marvel.Resource qualified as NE ()
-import Marvel.Keyword qualified as NE ()
-import Marvel.Boost qualified as NE ()
-import Marvel.Aspect qualified as NE ()
-import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Boost qualified as NEB ()
@@ -74,7 +75,9 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ wadeWilson
+    [ illyanaRasputin
+  , lucasBishop
+  , wadeWilson
   , lauraKinney
   , warrenWorthingtonIII
   , betsyBraddock
@@ -540,4 +543,73 @@ wadeWilson = DpCard.CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Bishop
+
+lucasBishop :: CardDef
+lucasBishop = CardDef
+  { cdCardCode = "45001b"
+  , cdName = "Lucas Bishop"
+  , cdCost = Nothing
+  , cdTraits = fromList [BpTrait.Mutant, BpTrait.Temporal]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Age of Apocalypse: Magik
+illyanaRasputin :: CardDef
+illyanaRasputin = CardDef
+  { cdCardCode = "45030b"
+  , cdName = "Illyana Rasputin"
+  , cdCost = Nothing
+  , cdTraits = fromList [AoaMT.Mutant, AoaMT.Mystic]
+  , cdKeywords = fromList []
+  , cdCardType = AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
   }

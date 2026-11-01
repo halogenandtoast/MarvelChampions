@@ -2,6 +2,7 @@ module Marvel.Scenario.Types where
 
 import Marvel.Trait qualified as MojoTrait
 import Marvel.Prelude
+import Marvel.AgeOfApocalypse.MissionTypes
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
@@ -37,6 +38,10 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsScenar
   toScenarioAttrs :: a -> Attrs Scenario
   default toScenarioAttrs :: (Coercible a (Attrs Scenario)) => a -> Attrs Scenario
   toScenarioAttrs = coerce
+
+  overScenarioAttrs :: (Attrs Scenario -> Attrs Scenario) -> a -> a
+  default overScenarioAttrs :: Coercible a (Attrs Scenario) => (Attrs Scenario -> Attrs Scenario) -> a -> a
+  overScenarioAttrs f = coerce . f . coerce
 
 instance Show Scenario where
   show (Scenario a) = show a
@@ -95,6 +100,7 @@ instance Entity Scenario where
     -- ^ the decks besides the encounter deck, each with its discard pile
     , scenarioCardDecks :: HashMap CardId DeckKey
     -- ^ the deck a card of another deck than the encounter deck is discarded to
+    , scenarioMission :: Maybe MissionState
     , scenarioVictoryCondition :: Maybe Natural
     -- ^ how many of the villain's versions in the victory display win the game, when the
     -- players choose it (Loki)
@@ -181,12 +187,13 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
                 HashSet.fromList $
                   encounterSets
                     <> filter (\s -> s /= EncounterSet.ExpertII || setup.difficulty == Expert) setup.modulars
-                    <> [EncounterSet.Standard | EncounterSet.StandardII `notElem` setup.modulars]
+                    <> [EncounterSet.Standard | all (`notElem` setup.modulars) [EncounterSet.StandardII, EncounterSet.StandardIII]]
                     <> [EncounterSet.ExpertSet | setup.difficulty == Expert, EncounterSet.ExpertII `notElem` setup.modulars]
             , scenarioSetAsideCards = mempty
             , scenarioReshufflesThisRound = 0
             , scenarioDecks = mempty
             , scenarioCardDecks = mempty
+            , scenarioMission = Nothing
             , scenarioVictoryCondition = Nothing
             }
     }
@@ -291,6 +298,7 @@ runOnDeck key msg attrs
 
 runScenarioMessage :: (HasCallStack, ReverseQueue m) => Message -> Attrs Scenario -> m (Attrs Scenario)
 runScenarioMessage msg attrs = case msg of
+  CardSpecific GameRef "aoaSetMission" (fromJSON -> Success mission) -> pure attrs {scenarioMission = Just mission}
   UsingDeck key inner -> runOnDeck key inner attrs
   _ | Just mIdent <- deckMessage msg -> do
     key <- getDeckKeyFor =<< maybe getYou pure mIdent

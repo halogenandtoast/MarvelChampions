@@ -121,6 +121,9 @@ cancelWhenRevealed :: (HasQueue m, HasGame m) => TreacheryId -> m ()
 cancelWhenRevealed tid = do
   forbidden <- elem CannotBeCanceled <$> getModifiers (TreacheryRef tid)
   resolvedPart <- treacheryHasResolvedPart tid
+  unless forbidden $ cancelMatchingMessage $ \case
+    CardSpecific GameRef "grantedSurge" (fromJSON -> Success (_ :: IdentityId, cid :: CardId)) -> cid == CardId (unTreacheryId tid)
+    _ -> False
   unless forbidden $ withQueue_ $ mapMaybe $ \case
     Ask _ q | asksToResolveWhenRevealed (TreacheryRef tid) q -> Nothing
     TreacheryMessage tid' msg | tid' == tid -> case msg of

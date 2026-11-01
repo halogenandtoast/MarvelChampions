@@ -54,8 +54,11 @@ instance RunMessage TimeTravelHijinks where
       case filter ((== cid) . pcCardId) discards of
         card : _ -> do
           removeFromGame (CardIdRef cid)
-          pure . TimeTravelHijinks $ attrs & heldCardsL <>~ [card]
+          cardSpecific attrs "holdAfterRemoval" card
+          pure o
         [] -> pure o
+    CardSpecific (isTarget attrs -> True) "holdAfterRemoval" (fromJSON -> Success card) ->
+      pure . TimeTravelHijinks $ attrs & heldCardsL <>~ [card]
     ObligationMessage ident (ResolvedObligation _) | ident == obligationId attrs -> pure o
     RanAbility you (isTarget attrs -> True) 1 _ _ -> o <$ discardToDiscard attrs you (withResource Energy)
     _ -> TimeTravelHijinks <$> runMessage msg attrs

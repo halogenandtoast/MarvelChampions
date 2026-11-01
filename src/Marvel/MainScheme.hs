@@ -1,6 +1,16 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.MainScheme where
 
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseEnSabahNur
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseDarkBeast
+
+import Marvel.MainScheme.MainSchemes.AgeOfApocalypseApocalypse
+
 import Marvel.MainScheme.MainSchemes.NextEvolutionNeStryfe
 
 import Marvel.MainScheme.MainSchemes.NextEvolutionOnTheRun
@@ -36,7 +46,8 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
 allMainSchemes = fromList $ [("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
   (toFst someMainSchemeCardCode)
-  [ SomeMainSchemeCard ne40077, SomeMainSchemeCard ne40078, SomeMainSchemeCard ne40103, SomeMainSchemeCard ne40104, SomeMainSchemeCard ne40121, SomeMainSchemeCard ne40139, SomeMainSchemeCard ne40140, SomeMainSchemeCard ne40141, SomeMainSchemeCard ne40142, SomeMainSchemeCard ne40143, SomeMainSchemeCard ne40166, SomeMainSchemeCard ne40167
+  [ SomeMainSchemeCard huntingGeneTraitors, SomeMainSchemeCard theHorsemenOfApocalypse, SomeMainSchemeCard theAgeOfApocalypse, SomeMainSchemeCard darkBeastsBogusJourney, SomeMainSchemeCard enSabahNursPyramid, SomeMainSchemeCard theRiseOfApocalypse
+  , SomeMainSchemeCard ne40077, SomeMainSchemeCard ne40078, SomeMainSchemeCard ne40103, SomeMainSchemeCard ne40104, SomeMainSchemeCard ne40121, SomeMainSchemeCard ne40139, SomeMainSchemeCard ne40140, SomeMainSchemeCard ne40141, SomeMainSchemeCard ne40142, SomeMainSchemeCard ne40143, SomeMainSchemeCard ne40166, SomeMainSchemeCard ne40167
   , SomeMainSchemeCard mojo39002b, SomeMainSchemeCard mojo39015b, SomeMainSchemeCard mojo39025b
   , SomeMainSchemeCard mgStalkedBySabretooth, SomeMainSchemeCard mgTheInjuredSenator, SomeMainSchemeCard mgNightOfTheSentinels, SomeMainSchemeCard mgTheSentinelFactory, SomeMainSchemeCard mgMasterMoldsAgenda, SomeMainSchemeCard mgTheBrotherhoodStrikes, SomeMainSchemeCard mgTheAtrium, SomeMainSchemeCard mgTheCafeteria, SomeMainSchemeCard mgTheBasketballCourt, SomeMainSchemeCard mgTheCourtyard, SomeMainSchemeCard mgAsteroidM, SomeMainSchemeCard mgFactoryOnline, SomeMainSchemeCard mgTheRuleOfMagnus, SomeMainSchemeCard smHaplessPedestrians, SomeMainSchemeCard smLeaveUsAlone, SomeMainSchemeCard smMazeOfMirrors, SomeMainSchemeCard smEdgeOfReality, SomeMainSchemeCard smSinisterSynchronization, SomeMainSchemeCard smSinisterBeatdown, SomeMainSchemeCard smSkiesOverNewYork, SomeMainSchemeCard smLowerManhattan, SomeMainSchemeCard smMidtownManhattan, SomeMainSchemeCard smUpperManhattan
   , SomeMainSchemeCard Hood.makingConnections

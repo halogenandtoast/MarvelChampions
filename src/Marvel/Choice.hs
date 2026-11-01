@@ -145,7 +145,7 @@ resolveChoice ident = \case
     pure [RanAbility ident target n (map windowType windows) payment, ClearRemoved]
   ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
-  PlayCard x mWindow -> pure [IdentityMessage ident $ PlayingCard x mWindow]
+  PlayCard x mWindow -> pure [CardSpecific (IdentityRef ident) "playFromHand" (toJSON (x, mWindow))]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]
   FinishPayment -> do
     mcost <- getActiveCost
@@ -347,7 +347,9 @@ resolveChoice ident = \case
         reduction = if isAttack then sum [n | AttackDamageReduction n <- modifiers] else 0
         reduced = damage {damageAmount = subtractNatural reduction (damageAmount damage)}
     case characterId of
-      IdentityCharacter ident' -> pure $ damageIdentity ident' source reduced
+      IdentityCharacter ident' -> do
+        capped <- capIdentityAttackDamage ident' source reduced
+        pure $ damageIdentity ident' source capped
       AllyCharacter ident' -> pure $ damageAlly ident' source reduced
       -- enemy reductions are applied by their own damage pipeline
       VillainCharacter ident' -> choiceMessages ident (DamageEnemy (VillainRef ident') source damage)

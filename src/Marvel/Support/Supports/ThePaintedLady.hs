@@ -57,8 +57,11 @@ instance RunMessage ThePaintedLady where
           case pcOwner card of
             Nothing -> removeFromGame (CardIdRef $ pcCardId card)
             Just _ -> removeFromGame card
-          pure $ ThePaintedLady attrs {supportHeldCards = supportHeldCards attrs <> [card]}
+          cardSpecific attrs "holdAfterRemoval" card
+          pure a
         else pure a
+    CardSpecific (isTarget attrs -> True) "holdAfterRemoval" (fromJSON -> Success card) ->
+      pure $ ThePaintedLady attrs {supportHeldCards = supportHeldCards attrs <> [card]}
     RanAbility you (isTarget attrs -> True) 2 _ _ -> do
       chooseOne you [targeting card (addToHand you card) | card <- supportHeldCards attrs]
       pure a

@@ -56,11 +56,14 @@ instance RunMessage MarkedForDeath where
           for_ cards \c -> removeFromGame (CardIdRef $ pcCardId c)
           shuffleDeck p
           pure cards
-        pure . MarkedForDeath $ attrs & heldCardsL <>~ concat tucked
+        cardSpecific attrs "holdMockingbirds" (concat tucked)
+        pure s
       DefeatSideScheme -> do
         for_ [(owner, c) | c <- sideSchemeHeldCards attrs, Just owner <- [pcOwner c]] (uncurry addToHand)
         pure s
       _ -> MarkedForDeath <$> runMessage msg attrs
+    CardSpecific (isTarget attrs -> True) "holdMockingbirds" (fromJSON -> Success cards) ->
+      pure . MarkedForDeath $ attrs & heldCardsL <>~ cards
     _ -> MarkedForDeath <$> runMessage msg attrs
    where
     isMockingbird = cardMatch (CardMatchesAny [CardIs Allies.mockingbird, CardIs Allies.mockingbirdBobbiMorse])

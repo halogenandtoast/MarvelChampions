@@ -26,7 +26,15 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard exhaustingPersonality, SomeEventCard maximumEffort, SomeEventCard metaknowledge, SomeEventCard yooHoo, SomeEventCard thisCardIsFire, SomeEventCard barelyAScratch, SomeEventCard cutupper, SomeEventCard daBomb, SomeEventCard getRageY, SomeEventCard iGotThis, SomeEventCard notMyResponsibility, SomeEventCard poolInspection, SomeEventCard breakTime, SomeEventCard getInFrontOfMe, SomeEventCard mulligan
+  [ SomeEventCard basicSpell
+  , SomeEventCard fullBodyCharge
+  , SomeEventCard magicBarrier
+  , SomeEventCard soulStrike
+  , SomeEventCard exorcism
+  , SomeEventCard steppingDisc
+  , SomeEventCard scrying
+  , SomeEventCard concussiveBlast, SomeEventCard commandAuthority, SomeEventCard energyConversion, SomeEventCard sideBySide, SomeEventCard suitUp
+  , SomeEventCard exhaustingPersonality, SomeEventCard maximumEffort, SomeEventCard metaknowledge, SomeEventCard yooHoo, SomeEventCard thisCardIsFire, SomeEventCard barelyAScratch, SomeEventCard cutupper, SomeEventCard daBomb, SomeEventCard getRageY, SomeEventCard iGotThis, SomeEventCard notMyResponsibility, SomeEventCard poolInspection, SomeEventCard breakTime, SomeEventCard getInFrontOfMe, SomeEventCard mulligan
   , SomeEventCard animalInstinct, SomeEventCard clawMastery, SomeEventCard regenerativeLongevity, SomeEventCard sisterlyBond, SomeEventCard criticalHit, SomeEventCard predictablePloy, SomeEventCard anticipatedAttack
   , SomeEventCard adaptivePlumage, SomeEventCard aerialAgility, SomeEventCard metamorphosis, SomeEventCard naturalFlight, SomeEventCard razorDive, SomeEventCard aerialIntervention, SomeEventCard taunt, SomeEventCard bombsAway, SomeEventCard flyingFormation
   , SomeEventCard flurryOfBlades, SomeEventCard mentalDetection, SomeEventCard psionicRedirect, SomeEventCard telepathicSuggestion, SomeEventCard upsideTheHead, SomeEventCard directedForce, SomeEventCard soaringHearts, SomeEventCard psiBowAttack, SomeEventCard psiFlailStrike

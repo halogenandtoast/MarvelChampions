@@ -1,5 +1,7 @@
 module Marvel.Environment.Cards where
 
+
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -11,15 +13,15 @@ import Marvel.GameValue.Types qualified as HoodValue ()
 
 import Marvel.Resource.Types qualified as NEResource ()
 
-import Marvel.Boost qualified as NEBoost ()
+import Marvel.Boost qualified as NEBoost
 
 import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword ()
+import Marvel.Keyword qualified as NEKeyword
 
-import Marvel.Trait qualified as NETrait ()
+import Marvel.Trait qualified as NETrait
 
 import Marvel.Aspect qualified as NEAspect ()
 
@@ -59,7 +61,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063
+  [ pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
+  , hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063
       , ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
   , mojo39003a, mojo39003b, mojo39004a, mojo39004b, mojo39026a, mojo39026b, mojo39035, mojo39041, mojo39047, mojo39053, mojo39060, mojo39066
   , mgProtectTheSenator, mgSaveTheSchool, mgRescueCaptives
@@ -975,3 +978,170 @@ hood24049b = hood24049a {cdCardCode = "24049b", cdEncounterSetQuantity = Just 0}
 
 hood24049 :: CardDef
 hood24049 = hood24049a {cdCardCode = "24049", cdEncounterSetQuantity = Just 0}
+
+-- Age of Apocalypse campaign and scenarios
+
+pursuedByThePastFront :: CardDef
+pursuedByThePastFront = CardDef
+  { cdCardCode = "45075a"
+  , cdName = "Pursued by the Past"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList [NEKeyword.Permanent, NEKeyword.Setup]
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.StandardIII
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+pursuedByThePastBack :: CardDef
+pursuedByThePastBack = CardDef
+  { cdCardCode = "45075b"
+  , cdName = "Pursued by the Past"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList [NEKeyword.Permanent]
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.StandardIII
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+theSavageLand :: CardDef
+theSavageLand = CardDef
+  { cdCardCode = "45127"
+  , cdName = "The Savage Land"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Location, NETrait.Setting]
+  , cdKeywords = fromList [NEKeyword.Setup]
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.AoaSavageLand
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+genosha :: CardDef
+genosha = CardDef
+  { cdCardCode = "45133"
+  , cdName = "Genosha"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Location, NETrait.Setting]
+  , cdKeywords = fromList [NEKeyword.Setup]
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.AoaGenosha
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+blueAreaOfTheMoon :: CardDef
+blueAreaOfTheMoon = CardDef
+  { cdCardCode = "45139"
+  , cdName = "Blue Area of the Moon"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Location, NETrait.Setting]
+  , cdKeywords = fromList [NEKeyword.Setup]
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.AoaBlueMoon
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

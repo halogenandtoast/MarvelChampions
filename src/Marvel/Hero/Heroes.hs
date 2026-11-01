@@ -1,5 +1,6 @@
 module Marvel.Hero.Heroes (module X) where
 
+import Marvel.Hero.Heroes.MagikHero as X
 import Marvel.Hero.Heroes.DominoHero as X
 import Marvel.Hero.Heroes.BlackPanther as X
 import Marvel.Hero.Heroes.CaptainMarvel as X
@@ -116,3 +117,6 @@ import Marvel.Hero.Heroes.ArchangelHero as X
 import Marvel.Hero.Heroes.X23 as X
 
 import Marvel.Hero.Heroes.Deadpool as X
+
+-- Bishop
+import Marvel.Hero.Heroes.BishopHero as X

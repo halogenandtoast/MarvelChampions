@@ -26,6 +26,7 @@ import SetupBar from '../components/SetupBar.vue'
 import StoryReading from '../components/StoryReading.vue'
 import CardPick from '../components/CardPick.vue'
 import { searchedCards, searchCardIds } from '../composables/cardSearch'
+import MissionArea from '../components/MissionArea.vue'
 import VillainArea from '../components/VillainArea.vue'
 
 const route = useRoute()
@@ -358,6 +359,7 @@ const resetGame = () => {
           <div class="half villain-half">
             <AreaTabs v-if="splitAreas" :areas="orderedAreas" :numbers="Object.fromEntries(areas.map((a, n) => [a.id, n + 1]))" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
             <VillainArea :game="game" :area="shownArea" />
+            <MissionArea v-if="game.mission" :mission="game.mission" />
           </div>
 
           <River class="river" :cards="riverCards" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">

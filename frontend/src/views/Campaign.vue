@@ -85,6 +85,7 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const apocalypse = computed(() => view.value?.campaign.kind === 'AgeOfApocalypseCampaign')
 const nextEvolution = computed(() => view.value?.campaign.kind === 'NextEvolution')
 const mutant = computed(() => view.value?.campaign.kind === 'MutantGenesis')
 const mutantPlayer = (identity: string) => log.value?.mutantGenesis?.mutantPlayers.find((p) => p.identity === identity) ?? null
@@ -264,6 +265,18 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="apocalypse && log.apocalypse" class="scenario-log">
+          <dt>{{ $t('campaign.aoaMissions') }}</dt>
+          <dd>{{ names(log.apocalypse.missions.map(([, code]) => code)) }}</dd>
+          <dt>{{ $t('campaign.aoaSuccesses') }}</dt>
+          <dd>{{ names(log.apocalypse.successfulMissions) }}</dd>
+          <dt>{{ $t('campaign.aoaOverseers') }}</dt>
+          <dd>{{ names(log.apocalypse.defeatedOverseers) }}</dd>
+          <template v-for="[hero, rewards] in log.apocalypse.apocalypseRewards" :key="hero">
+            <dt>{{ name(hero) }} · {{ $t('campaign.aoaRewards') }}</dt>
+            <dd>{{ names(rewards) }}</dd>
+          </template>
         </dl>
         <dl v-else-if="nextEvolution && log.nextEvolution" class="scenario-log">
           <template v-for="[n, code] in log.nextEvolution.chosenSchemes" :key="n">

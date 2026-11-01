@@ -1,5 +1,21 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Aspect qualified as NEAspect
+import Marvel.Resource.Types qualified as NEResource
+import Marvel.EncounterSet qualified as NESet
+import Marvel.Matchers qualified as AoaMM
+import Marvel.Aspect qualified as AoaMA
+import Marvel.Resource.Types qualified as AoaMR
+import Marvel.Keyword qualified as AoaMK
+import Marvel.Trait qualified as AoaMT
+import Marvel.Aspect qualified as BpAspect
+import Marvel.Card.Def qualified as BpCard
+import Marvel.Cost.Types qualified as BpCost
+import Marvel.Criteria qualified as BpCriteria
+import Marvel.Keyword qualified as BpKeyword
+import Marvel.Resource.Types qualified as BpResource
+import Marvel.Trait qualified as BpTrait
+
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect
 import Marvel.Boost qualified as DpBoost ()
@@ -51,9 +67,7 @@ import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
 import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility
 
 import Marvel.EncounterSet qualified as MGSet
@@ -92,7 +106,14 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ armedToTheTeeth, deadpoolsKatana, itAintOver, gitGud, healingFactor, stickToItiveness, ambush, bazooka, blackout, distraction, laserSwords, rockPaperScissors, ticTacToe, war
+  [ desperateMeasures, bloodgem
+  , testTheDefense
+  , bloodRage
+  , mysticalArmor
+  , soulsword
+  , magiksCrown
+  , bishopsRifle, bishopsUniform, superCharged, advancedSuit, sidekick
+  , armedToTheTeeth, deadpoolsKatana, itAintOver, gitGud, healingFactor, stickToItiveness, ambush, bazooka, blackout, distraction, laserSwords, rockPaperScissors, ticTacToe, war
   , x23sClaws, adamantiumLacing, grimResolve, painTolerance, punctureWound, nowImMad, theDirectApproach, combatSpecialist, defenseSpecialist, frontLineSpecialist, surveillanceSpecialist
   , technoOrganicWings, containmentStrategy, soaringAcrobatics, eyesInTheSky, xForceRecruit
   , psiKnife, psiKatana, martialArtsTraining, psionicTraining, weaponsTraining, floatLikeAButterfly, telepathy, telekinesis
@@ -3087,6 +3108,411 @@ war = DpCard.CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Bishop
+
+bishopsRifle :: CardDef
+bishopsRifle = CardDef
+  { cdCardCode = "45004"
+  , cdName = "Bishop's Rifle"
+  , cdCost = Just 2
+  , cdTraits = fromList [BpTrait.Temporal, BpTrait.Weapon]
+  , cdKeywords = fromList [BpKeyword.Restricted]
+  , cdCardType = BpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+bishopsUniform :: CardDef
+bishopsUniform = CardDef
+  { cdCardCode = "45005"
+  , cdName = "Bishop's Uniform"
+  , cdCost = Just 2
+  , cdTraits = fromList [BpTrait.Item, BpTrait.Temporal]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+superCharged :: CardDef
+superCharged = CardDef
+  { cdCardCode = "45006"
+  , cdName = "Super-Charged"
+  , cdCost = Just 0
+  , cdTraits = fromList [BpTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+advancedSuit :: CardDef
+advancedSuit = CardDef
+  { cdCardCode = "45014"
+  , cdName = "Advanced Suit"
+  , cdCost = Just 0
+  , cdTraits = fromList [BpTrait.Armor, BpTrait.Item]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just BpAspect.Leadership
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (BpCard.MaxPerAlly 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+sidekick :: CardDef
+sidekick = CardDef
+  { cdCardCode = "45015"
+  , cdName = "Sidekick"
+  , cdCost = Just 1
+  , cdTraits = fromList [BpTrait.Title]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just BpAspect.Leadership
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = [(BpCard.PrintedResource, BpResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Age of Apocalypse: Magik
+magiksCrown :: CardDef
+magiksCrown = CardDef
+  { cdCardCode = "45033"
+  , cdName = "Magik's Crown"
+  , cdCost = Just 2
+  , cdTraits = fromList [AoaMT.Item]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+soulsword :: CardDef
+soulsword = CardDef
+  { cdCardCode = "45034"
+  , cdName = "Soulsword"
+  , cdCost = Just 1
+  , cdTraits = fromList [AoaMT.Weapon]
+  , cdKeywords = fromList [AoaMK.Restricted]
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+mysticalArmor :: CardDef
+mysticalArmor = CardDef
+  { cdCardCode = "45035"
+  , cdName = "Mystical Armor"
+  , cdCost = Just 1
+  , cdTraits = fromList [AoaMT.Armor]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+bloodRage :: CardDef
+bloodRage = CardDef
+  { cdCardCode = "45043"
+  , cdName = "Blood Rage"
+  , cdCost = Just 1
+  , cdTraits = fromList [AoaMT.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AoaMA.Aggression
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MaxPerPlayer 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+testTheDefense :: CardDef
+testTheDefense = CardDef
+  { cdCardCode = "45044"
+  , cdName = "Test the Defense"
+  , cdCost = Just 1
+  , cdTraits = fromList [AoaMT.Skill]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AoaMA.Aggression
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, AoaMR.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MaxPerPlayer 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse: Magik
+bloodgem :: CardDef
+bloodgem = CardDef
+  { cdCardCode = "45050"
+  , cdName = "Bloodgem"
+  , cdCost = Just 0
+  , cdTraits = fromList [AoaMT.Item]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AoaMA.Neutral
+  , cdCriteria = SelfMatches (AoaMM.IdentityWithTrait AoaMT.Mystic)
+  , cdResources = [(PrintedResource, AoaMR.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+
+desperateMeasures :: CardDef
+desperateMeasures = CardDef
+  { cdCardCode = "45176"
+  , cdName = "Desperate Measures"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaBasicCampaign
+  , cdEncounterSetQuantity = Just 4
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

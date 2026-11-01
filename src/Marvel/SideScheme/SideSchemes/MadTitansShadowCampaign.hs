@@ -103,11 +103,14 @@ instance RunMessage SecurityBreach where
         players <- getPlayers
         taken <- concat <$> for players \p -> take 1 <$> (shuffleM =<< projectMap PlayerIdentityHand unHand p)
         for_ taken (removeFromGame . CardIdRef . pcCardId)
-        pure . SecurityBreach $ attrs & heldCardsL <>~ taken
+        cardSpecific attrs "holdTakenCards" taken
+        pure $ SecurityBreach attrs
       DefeatSideScheme -> do
         for_ [(owner, c) | c <- sideSchemeHeldCards attrs, Just owner <- [pcOwner c]] (uncurry addToHand)
         pure . SecurityBreach $ attrs & heldCardsL .~ []
       _ -> SecurityBreach <$> runMessage msg attrs
+    CardSpecific (isTarget attrs -> True) "holdTakenCards" (fromJSON -> Success cards) ->
+      pure . SecurityBreach $ attrs & heldCardsL <>~ cards
     _ -> SecurityBreach <$> runMessage msg attrs
 
 saveTheShawarmaPlace :: SideSchemeCard SaveTheShawarmaPlace

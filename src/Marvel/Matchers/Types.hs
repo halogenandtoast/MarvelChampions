@@ -439,6 +439,8 @@ data ExtendedCardMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
   | NotCard PlayerCard
   | InHandOf IdentityMatcher ExtendedCardMatcher
+  | -- | a play opportunity from hand, including an explicit as-if-in-hand permission
+    PlayableFromHandOf IdentityMatcher ExtendedCardMatcher
   | -- | not a unique card whose title is already in play
     CanEnterPlay
   deriving stock (Show, Eq, Generic)

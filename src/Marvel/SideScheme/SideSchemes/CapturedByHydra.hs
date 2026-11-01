@@ -33,11 +33,14 @@ instance RunMessage CapturedByHydra where
       RevealSideScheme -> do
         captives <- shuffleM . filter (cardMatch $ CardWithTrait Captive) =<< getSetAsidePlayerCards
         for_ (take 1 captives) \c -> removeFromGame (CardIdRef $ pcCardId c)
-        pure . CapturedByHydra $ attrs & heldCardsL <>~ take 1 captives
+        cardSpecific attrs "holdTakenCards" (take 1 captives)
+        pure s
       DefeatSideScheme -> do
         rescuer <- getDefeatedBy attrs
         for_ (sideSchemeHeldCards attrs) (takeControlOf rescuer)
         removeFromGame attrs
         pure s
       _ -> CapturedByHydra <$> runMessage msg attrs
+    CardSpecific (isTarget attrs -> True) "holdTakenCards" (fromJSON -> Success cards) ->
+      pure . CapturedByHydra $ attrs & heldCardsL <>~ cards
     _ -> CapturedByHydra <$> runMessage msg attrs

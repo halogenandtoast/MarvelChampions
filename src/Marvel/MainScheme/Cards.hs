@@ -2,6 +2,8 @@ module Marvel.MainScheme.Cards where
 
 
 
+
+
 import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost ()
@@ -46,7 +48,8 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ ne40077, ne40078, ne40103, ne40104, ne40121, ne40139, ne40140, ne40141, ne40142, ne40143, ne40166, ne40167
+    [ huntingGeneTraitors, theHorsemenOfApocalypse, theAgeOfApocalypse, darkBeastsBogusJourney, enSabahNursPyramid, theRiseOfApocalypse
+  , ne40077, ne40078, ne40103, ne40104, ne40121, ne40139, ne40140, ne40141, ne40142, ne40143, ne40166, ne40167
   , mojo39002a, mojo39002b, mojo39015a, mojo39015b, mojo39025a, mojo39025b
   , mgStalkedBySabretooth, mgTheInjuredSenator, mgNightOfTheSentinels, mgTheSentinelFactory, mgMasterMoldsAgenda, mgTheBrotherhoodStrikes, mgTheAtrium, mgTheCafeteria, mgTheBasketballCourt, mgTheCourtyard, mgAsteroidM, mgFactoryOnline, mgTheRuleOfMagnus, smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
   , makingConnections
@@ -1057,6 +1060,206 @@ ne40167 = CardDef
   , cdBoostIcons = []
   , cdEncounterSet = Just NESet.NeStryfe
   , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Age of Apocalypse campaign and scenarios
+
+huntingGeneTraitors :: CardDef
+huntingGeneTraitors = CardDef
+  { cdCardCode = "45062"
+  , cdName = "Hunting Gene Traitors"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaUnus
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+theHorsemenOfApocalypse :: CardDef
+theHorsemenOfApocalypse = CardDef
+  { cdCardCode = "45085"
+  , cdName = "The Horsemen of Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaFourHorsemen
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+theAgeOfApocalypse :: CardDef
+theAgeOfApocalypse = CardDef
+  { cdCardCode = "45103"
+  , cdName = "The Age of Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaApocalypse
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+darkBeastsBogusJourney :: CardDef
+darkBeastsBogusJourney = CardDef
+  { cdCardCode = "45121"
+  , cdName = "Dark Beast's Bogus Journey"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaDarkBeast
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+enSabahNursPyramid :: CardDef
+enSabahNursPyramid = CardDef
+  { cdCardCode = "45147"
+  , cdName = "En Sabah Nur's Pyramid"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+theRiseOfApocalypse :: CardDef
+theRiseOfApocalypse = CardDef
+  { cdCardCode = "45148"
+  , cdName = "The Rise of Apocalypse"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaEnSabahNur
+  , cdEncounterSetQuantity = Just 0
   , cdResponseWindow = Nothing
   , cdActionCriteria = Nothing
   , cdHazards = 0

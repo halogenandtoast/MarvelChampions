@@ -3,32 +3,110 @@
     "campaign": "The Rise of Red Skull",
     "source": "https://steamusercontent-a.akamaihd.net/ugc/1625192833983660998/73C257EF31D218E09E65415DE0943799F624FD02/",
     "workshopId": "2222049059",
-    "crop": { "x": 424, "y": 384, "width": 771, "height": 827 }
+    "crop": {
+      "x": 424,
+      "y": 384,
+      "width": 771,
+      "height": 827
+    }
   },
   "galaxys-most-wanted.webp": {
     "campaign": "The Galaxy's Most Wanted",
     "source": "https://steamusercontent-a.akamaihd.net/ugc/1804230114517001440/A6F7BB9D8200586DBDB3BBAEA2B1E0B1FC4BC492/",
     "workshopId": "2222049059",
-    "crop": { "x": 424, "y": 384, "width": 771, "height": 827 }
+    "crop": {
+      "x": 424,
+      "y": 384,
+      "width": 771,
+      "height": 827
+    }
   },
   "mad-titans-shadow.webp": {
     "campaign": "The Mad Titan's Shadow",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21en-box-left500.png",
-    "perspective": { "from": [[77.5, 60], [483, 16], [437, 366], [122.5, 498]], "width": 771, "height": 827 }
+    "perspective": {
+      "from": [
+        [
+          77.5,
+          60
+        ],
+        [
+          483,
+          16
+        ],
+        [
+          437,
+          366
+        ],
+        [
+          122.5,
+          498
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    }
   },
   "sinister-motives.webp": {
     "campaign": "Sinister Motives",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc27en-sinistermotives_boxfront_right.webp",
-    "perspective": { "from": [[145, 0], [479, 21], [479, 430], [145, 497]], "width": 771, "height": 827 }
+    "perspective": {
+      "from": [
+        [
+          145,
+          0
+        ],
+        [
+          479,
+          21
+        ],
+        [
+          479,
+          430
+        ],
+        [
+          145,
+          497
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    }
   },
   "mutant-genesis.webp": {
     "campaign": "Mutant Genesis",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/FFG_MC32_Product-Image-1.webp",
-    "perspective": { "from": [[215, 147], [936, 48], [878, 750], [261, 984]], "width": 771, "height": 827 }
+    "perspective": {
+      "from": [
+        [
+          215,
+          147
+        ],
+        [
+          936,
+          48
+        ],
+        [
+          878,
+          750
+        ],
+        [
+          261,
+          984
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    }
   },
   "next-evolution.webp": {
     "campaign": "NeXt Evolution",
     "source": "https://cdn.shopify.com/s/files/1/0825/8866/4142/files/pic8711163.jpg?v=1752589376",
     "original": "https://boardgamegeek.com/image/8711163/marvel-champions-the-card-game-next-evolution"
+  },
+  "age-of-apocalypse.webp": {
+    "campaign": "Age of Apocalypse",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc45-image0500.webp",
+    "product": "https://www.fantasyflightgames.com/product/age-of-apocalypse/"
   }
 }

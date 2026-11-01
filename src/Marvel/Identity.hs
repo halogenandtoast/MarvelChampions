@@ -5,7 +5,9 @@ module Marvel.Identity (
   module Marvel.Identity.Types,
 ) where
 
+import Data.List qualified
 import Marvel.Prelude
+import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Aspect (Aspect)
 import Control.Monad (replicateM_)
 
@@ -244,6 +246,8 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentitySides = fromList [(A, heroSide), (B, alterEgoSide)]
       , playerIdentityId = ident
       , playerIdentityName = ""
+      , playerIdentityTopDeckPlayUsed = False
+      , playerIdentityPendingTopDeckPlay = Nothing
       , playerIdentitySearching = False
       , playerIdentityHP = HP . fromIntegral $ gameValue (unHp hp) 0
       , playerIdentityDamage = 0
@@ -332,7 +336,7 @@ isPlayable = isPlayableWith False
 
 playableCardsWithReduction :: (ReverseQueue m) => IdentityId -> Natural -> CardMatcher -> m [PlayerCard]
 playableCardsWithReduction you reduction matcher = do
-  cards <- filter (cardMatch matcher) <$> projectMap PlayerIdentityHand unHand you
+  cards <- filter (cardMatch matcher) <$> getPlayableHandCards you
   filterM (canPlayCardWithReduction you reduction) cards
 
 -- | Mysterio's encounter cards keep their encounter identity in a player's deck.
@@ -355,6 +359,7 @@ discardPlayerDeckEncounters you cards = do
 -- your hand, ignoring its resource cost").
 isPlayableWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
 isPlayableWith ignoringCost attrs c = do
+  entryAllowed <- playerCardEntryAllowed c
   effectiveDef <- effectivePlayerCardDef ident c
   affordable <- notNull <$> playableTargetsWith ignoringCost attrs c
   -- a card with a window is played as an action only if it says so, under its criteria
@@ -367,7 +372,7 @@ isPlayableWith ignoringCost attrs c = do
       else pure False
   permitted <- if cdCardType def == EventType then canResolvePlayerCardAbilities ident else pure True
   pure $
-    permitted && affordable
+    entryAllowed && permitted && affordable
       && passedCriteria
       && passedPlayLimits
       && not matchesUnique
@@ -378,6 +383,23 @@ isPlayableWith ignoringCost attrs c = do
  where
   ident = toId attrs
   def = getCardDef c
+
+-- | Feasibility for an explicit hand-play opportunity. The preview retains the
+-- actual deck and resources, but gives this card its as-if-in-hand cost text.
+previewHandPlay :: HasGame m => PlayerIdentity -> PlayerCard -> m PlayerIdentity
+previewHandPlay player card = do
+  available <- getPlayableHandCards (toId player)
+  let attrs = toAttrs player
+      top = card `notElem` unHand (playerIdentityHand attrs) && card `elem` available
+  pure $ if top then PlayerIdentity attrs {playerIdentityPendingTopDeckPlay = Just card} else player
+
+isPlayableFromHand :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
+isPlayableFromHand = isPlayableFromHandWith False
+
+isPlayableFromHandWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
+isPlayableFromHandWith ignoringCost player card = do
+  preview <- previewHandPlay player card
+  isPlayableWith ignoringCost preview card
 
 -- \^ this is critical and order matters to avoid infinite recursionl
 
@@ -472,15 +494,19 @@ resourceCostAdjustment :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe T
 resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
+  missionReduction <- missionAllyReduction c
   soldier <- if toCardCode c == "40023" then selectAny (IdentityWithId (toId attrs) <> IdentityWithTrait Soldier) else pure False
-  let intrinsic = if soldier then -1 else 0
-  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic + sum (map change modifiers <> map changeOn onTarget))
+  let pending = playerIdentityPendingTopDeckPlay (toAttrs attrs) == Just c
+      asHand = c `elem` unHand (playerIdentityHand $ toAttrs attrs) || pending
+      topDiscount = if pending then 1 else 0 :: Natural
+  let intrinsic = (if soldier then -1 else 0) - fromIntegral topDiscount
+  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic - fromIntegral missionReduction + sum (map (change asHand) modifiers <> map changeOn onTarget))
  where
-  change = \case
+  change asHand = \case
     ResourceCostReduction n -> negate (fromIntegral n)
     ResourceCostReductionForCard cid n | cid == pcCardId c -> negate (fromIntegral n)
     ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
-    ResourceCostReductionForHandCard matcher n | cardMatch matcher c, c `elem` unHand (playerIdentityHand $ toAttrs attrs) -> negate (fromIntegral n)
+    ResourceCostReductionForHandCard matcher n | cardMatch matcher c, asHand -> negate (fromIntegral n)
     AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
     _ -> 0
   changeOn = \case
@@ -506,7 +532,7 @@ printedXChoices ignoringCost attrs c mTarget = do
     doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
   (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
   modifiers <- getModifiers attrs
-  inHand <- projectP PlayerIdentityHand (elem c . unHand) ident
+  let inHand = c `elem` unHand (playerIdentityHand $ toAttrs attrs) || playerIdentityPendingTopDeckPlay (toAttrs attrs) == Just c
   let potentialReduction = if inHand then sum [fromIntegral n | MayReduceCostToPlay n <- modifiers] else 0
       upperPaid = max 0 (length resources - adjustment + potentialReduction)
   upperEffect <- selectListCount meaningful
@@ -558,6 +584,22 @@ playableTargetsWith ::
   PlayerCard ->
   m [Maybe Target]
 playableTargetsWith ignoringCost attrs c = do
+  own <- playableTargetsAtDestination ignoringCost attrs c
+  preview <- missionDestinationPreview
+  mission <- getMission
+  if not preview && cdCardType (getCardDef c) == AllyType && maybe False (not . missionFinished) mission
+    then do
+      other <- withMissionPlayDestination True $ playableTargetsAtDestination ignoringCost attrs c
+      pure $ Data.List.nub (own <> other)
+    else pure own
+
+playableTargetsAtDestination ::
+  (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  Bool ->
+  PlayerIdentity ->
+  PlayerCard ->
+  m [Maybe Target]
+playableTargetsAtDestination ignoringCost attrs c = do
   targets <- maybe [Nothing] (map Just) <$> getPlayTargets (toId attrs) c
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
@@ -636,21 +678,19 @@ canAffordCardOtherCosts ident payers card cost = do
 -- | How much less a card from hand could cost through an interrupt as it is played
 -- ('MayReduceCostToPlay'), no more than its resource cost.
 mayReduceCostToPlay :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m Int
-mayReduceCostToPlay attrs c mTarget
-  | c `notElem` unHand (playerIdentityHand $ toAttrs attrs) = pure 0
-  | otherwise = do
-      reductions <- sum . map fromIntegral . (\ms -> [n | MayReduceCostToPlay n <- ms]) <$> getModifiers attrs
-      min reductions <$> getModifiedCost attrs c mTarget
+mayReduceCostToPlay attrs c mTarget = do
+  let inHand = c `elem` unHand (playerIdentityHand $ toAttrs attrs) || playerIdentityPendingTopDeckPlay (toAttrs attrs) == Just c
+  if not inHand then pure 0 else do
+    reductions <- sum . map fromIntegral . (\ms -> [n | MayReduceCostToPlay n <- ms]) <$> getModifiers attrs
+    min reductions <$> getModifiedCost attrs c mTarget
 
 getPlayableCards :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> m [PlayerCard]
 getPlayableCards player = do
   held <- getHeldPlayableCards (toId player)
-  filterM (isPlayable player) (cards <> held)
- where
-  attrs = toAttrs player
-  cards =
-    unHand (playerIdentityHand attrs)
-      <> filter (cdPlayableFromDiscard . getCardDef) (unDiscard $ playerIdentityDiscard attrs)
+  hand <- getPlayableHandCards (toId player)
+  let discarded = filter (cdPlayableFromDiscard . getCardDef) (unDiscard $ playerIdentityDiscard $ toAttrs player)
+  filterM (isPlayableFromHand player) hand >>= \playable ->
+    (playable <>) <$> filterM (isPlayable player) (discarded <> held)
 
 getChoices ::
   (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
@@ -719,7 +759,7 @@ beginCardPayment chosenX pid card mWindow mTarget = do
         (toId pid)
         (ForCard card)
         cost
-        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder <> maybe NoPayment (\sid -> ReservedSupportCardPayment sid card) supportHolder)
+        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder <> maybe NoPayment (\sid -> ReservedSupportCardPayment sid card) supportHolder <> (if playerIdentityPendingTopDeckPlay (toAttrs pid) == Just card then ReservedTopDeckCardPayment card else NoPayment))
         mWindow
         mempty
         Nothing
@@ -875,6 +915,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         for_ (filter (cardMatch $ CardWithTrait Shapeshifter) ordinary) (\card -> cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,card))
         let (obligations, drawn) = partition (\c -> cdCardType (getCardDef c) == ObligationType && not (staysInHand c)) ordinary
         for_ obligations (putObligationIntoPlay playerIdentityId)
+        for_ (filter (\c -> toCardCode c `elem` ["45172", "45173", "45174", "45175"]) drawn) \card ->
+          cardSpecific GameRef "aoaMissionCampaignAllyEnteredHand" (playerIdentityId, card)
         pure $
           PlayerIdentity $
             attrs
@@ -907,20 +949,18 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     ChangedToForm side -> do
       modifiers <- getModifiers pid
       let toHero = case HashMap.lookup side playerIdentitySides of Just (HeroSide _) -> True; _ -> False
-          canChange = CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
-      if canChange
-        then do
-          when (side /= playerIdentitySide) $ transferMojoThreat (IdentityCharacter playerIdentityId)
-          oldTraits <- getTraits pid
-          let fromAlterEgo = case currentIdentity pid of AlterEgoSide _ -> True; _ -> False
-          checkWindows $ W.Window W.After (W.IdentityChangesForm playerIdentityId)
-            : [W.Window W.After (W.MutantChangedToHero playerIdentityId) | fromAlterEgo && toHero && Mutant `member` oldTraits]
-          pure $ PlayerIdentity $ attrs & sideL .~ side
-        else pure pid
+          canChange = side /= playerIdentitySide && CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
+      when canChange do
+        checkWindows [W.Window W.When $ W.IdentityChangesForm playerIdentityId]
+        cardSpecific pid "completeChangeForm" side
+      pure pid
     PlayingCard card mWindow -> do
       targets <- playableTargets pid card
+      when (null targets && playerIdentityPendingTopDeckPlay == Just card) $
+        cardSpecific pid "restoreTopDeckPlay" card
       -- "when you play a card from your hand" is answered before its cost is worked out
-      let fromHand = card `elem` unHand playerIdentityHand
+      let fromHand = card `elem` unHand playerIdentityHand || playerIdentityPendingTopDeckPlay == Just card
+          payFor :: ReverseQueue n => Maybe Target -> n ()
           payFor mTarget =
             if cdCost (getCardDef card) == Just (-1)
               then do
@@ -943,7 +983,16 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             _ -> False
       case targets of
         -- a card played on something is played on the one the player picks, even of one
-        [Nothing] -> payFor Nothing
+        [Nothing] -> do
+          mission <- getMission
+          case mission of
+            Just m | not (missionFinished m), cdCardType (getCardDef card) == AllyType -> do
+              own <- withMissionPlayDestination False $ notNull <$> playableTargetsAtDestination False pid card
+              atMission <- withMissionPlayDestination True $ notNull <$> playableTargetsAtDestination False pid card
+              chooseOnePrompted playerIdentityId "$label.aoaAllyDestination" $
+                [labeled "$label.aoaAllyOwnArea" (withMissionPlayDestination False $ runQueueT $ cardSpecific GameRef "aoaSetMission" m {missionPendingAlly = Nothing} >> payFor Nothing) | own]
+                <> [labeled "$label.aoaAllyMission" (withMissionPlayDestination True $ runQueueT $ cardSpecific GameRef "aoaSetMission" m {missionPendingAlly = Just $ pcCardId card} >> payFor Nothing) | atMission]
+            _ -> payFor Nothing
         -- whose control a card is played under, with only one player to take it, is not
         -- asked (left for the owner to decide)
         [mTarget] | underAnyControl -> payFor mTarget
@@ -954,7 +1003,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     -- a card played from a discard pile is left there until it is played, so that
     -- giving it up leaves it where it was
     PayForCard card mWindow mTarget -> beginCardPayment Nothing pid card mWindow mTarget
-    PlayedCard {} -> pure pid
+    PlayedCard card _ -> pure $ PlayerIdentity attrs
+      {playerIdentityPendingTopDeckPlay = if playerIdentityPendingTopDeckPlay == Just card then Nothing else playerIdentityPendingTopDeckPlay}
     PaidWithCard card -> do
       mActiveCost <- getActiveCost
       case mActiveCost of
@@ -1019,14 +1069,23 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     AllyRemoved allyId -> do
       pure $ PlayerIdentity $ attrs & alliesL %~ HashSet.delete allyId
     MinionEngaged minionId -> do
-      pure $ PlayerIdentity $ attrs & minionsL %~ HashSet.insert minionId
+      mission <- getMission
+      pure $ if maybe False (elem minionId . missionMinions) mission then pid
+        else PlayerIdentity $ attrs & minionsL %~ HashSet.insert minionId
     MinionDisengaged minionId -> do
       pure $ PlayerIdentity $ attrs & minionsL %~ HashSet.delete minionId
     SupportCreated supportId -> do
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.insert supportId
     SupportRemoved supportId -> do
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.delete supportId
+    AddToHand card | toCardCode card == "45178" -> do
+      putObligationIntoPlay playerIdentityId card
+      pure $ PlayerIdentity $ attrs
+        & deckL %~ Deck . filter ((/= pcCardId card) . pcCardId) . unDeck
+        & discardL %~ Discard . filter ((/= pcCardId card) . pcCardId) . unDiscard
     AddToHand card -> do
+      when (toCardCode card `elem` ["45172", "45173", "45174", "45175"]) $
+        cardSpecific GameRef "aoaMissionCampaignAllyEnteredHand" (playerIdentityId, card)
       let received = card {pcController = Just playerIdentityId}
           other c = pcCardId c /= pcCardId card
       when (cardMatch (CardWithTrait Shapeshifter) received) $ cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,received)
@@ -1207,30 +1266,33 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage playerIdentityDefended
       let final = attrs & damageReductionL .~ 0 & defendedL .~ False
       pure $ PlayerIdentity $ if stripped > 0 then final {playerIdentityTough = False, playerIdentityAdditionalTough = 0} else final
-    IdentityDamaged source damage | damagePiercing damage && damageAmount damage > 0 -> do
-      cardSpecific playerIdentityId "discardToughForPiercing" (source, damage)
-      pure pid
-    IdentityDamaged source damage -> do
-      immune <- cannotTakeDamageFrom (IdentityRef playerIdentityId) source
-      if immune then pure pid
-      else if playerIdentityTough && damageAmount damage > 0 && preventedByTough damage
-        then do
-          checkWindows [W.Window W.After $ W.IdentityDiscardedTough playerIdentityId]
-          pure $ PlayerIdentity $ removeOneIdentityTough attrs
-        else do
-          modifiedHp <- getModifiedHp pid
-          -- what answers "would be defeated" may take the defeat off the queue
-          attackDealtDamageTo source damage playerIdentityId
-          when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentityFromDamage playerIdentityId source damage
-          when (damageAmount damage > 0) $
-            checkWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
-          let fromAttack = if damageSource damage == FromAttack then damageAmount damage else 0
-          pure $
-            PlayerIdentity $
-              attrs
-                & damageL +~ damageAmount damage
-                & toughL %~ (&& not (piercesTough damage))
-                & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + fromAttack, playerIdentityAdditionalTough = if piercesTough damage then 0 else playerIdentityAdditionalTough}
+    IdentityDamaged source incoming -> do
+      damage <- capIdentityAttackDamage playerIdentityId source incoming
+      if damagePiercing damage && damageAmount damage > 0 then do
+        cardSpecific playerIdentityId "discardToughForPiercing" (source, damage)
+        pure pid
+      else do
+        immune <- cannotTakeDamageFrom (IdentityRef playerIdentityId) source
+        if immune then pure pid
+        else if playerIdentityTough && damageAmount damage > 0 && preventedByTough damage
+          then do
+            checkWindows [W.Window W.After $ W.IdentityDiscardedTough playerIdentityId]
+            pure $ PlayerIdentity $ removeOneIdentityTough attrs
+          else do
+            modifiedHp <- getModifiedHp pid
+            -- Caps count actual damage after prevention and tough, including each
+            -- indirect/overkill share of the same attack, before its responses.
+            let fromAttack = damageSource damage `elem` [FromAttack, FromOverkill]
+            when fromAttack $ for_ (sourceEnemy source) \enemy ->
+              cardSpecific GameRef "aoaRecordAttackDamage" (enemy, playerIdentityId, damageAmount damage)
+            attackDealtDamageTo source damage playerIdentityId
+            when (playerIdentityDamage + damageAmount damage >= modifiedHp) $ defeatIdentityFromDamage playerIdentityId source damage
+            when (damageAmount damage > 0) $
+              checkWindows [W.Window W.After $ W.IdentityTookDamage playerIdentityId source damage]
+            pure $ PlayerIdentity $ attrs
+              & damageL +~ damageAmount damage
+              & toughL %~ (&& not (piercesTough damage))
+              & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + if fromAttack then damageAmount damage else 0, playerIdentityAdditionalTough = if piercesTough damage then 0 else playerIdentityAdditionalTough}
     IdentityDefeated -> do
       players <- getAllPlayers
       let
@@ -1252,6 +1314,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       case ps of
         [x] | x /= playerIdentityId -> for_ (toList playerIdentityMinions) (`engageMinion` x)
         _ -> pure ()
+      cardSpecific GameRef "aoaMissionEliminateOwner" playerIdentityId
       removeFromPlay playerIdentityId
       pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
     AttackDefended enemy damageBefore basic -> do
@@ -1416,12 +1479,52 @@ instance RunMessage PlayerIdentity where
           }
     pure $ PlayerIdentity updated
 
+completeIdentityFormChange :: ReverseQueue m => PlayerIdentity -> Side -> m PlayerIdentity
+completeIdentityFormChange pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) side = do
+  let toHero = case HashMap.lookup side playerIdentitySides of Just (HeroSide _) -> True; _ -> False
+  when (side /= playerIdentitySide) $ transferMojoThreat (IdentityCharacter playerIdentityId)
+  oldTraits <- getTraits pid
+  let fromAlterEgo = case currentIdentity pid of AlterEgoSide _ -> True; _ -> False
+  checkWindows $ W.Window W.After (W.IdentityChangesForm playerIdentityId)
+    : [W.Window W.After (W.MutantChangedToHero playerIdentityId) | fromAlterEgo && toHero && Mutant `member` oldTraits]
+  pure $ PlayerIdentity $ attrs & sideL .~ side
+
 runPlayerMessage ::
   (ReverseQueue m) =>
   Message ->
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific (IdentityRef who) "completeChangeForm" (fromJSON -> Success side)
+      | who == playerIdentityId attrs -> completeIdentityFormChange pid side
+    BeginPhase _ -> do
+      next <- passToSide
+      pure $ PlayerIdentity (toAttrs next) {playerIdentityTopDeckPlayUsed = False}
+    CardSpecific (IdentityRef who) "playFromHand" (fromJSON -> Success (card, window :: Maybe W.Window))
+      | who == playerIdentityId attrs -> do
+          permitted <- getPlayableHandCards who
+          let actualHand = card `elem` unHand (playerIdentityHand attrs)
+              topPlay = not actualHand && card `elem` permitted
+          -- Held events and ordinary hand cards retain their existing source. Only
+          -- an explicit top-card hand play reserves the deck's current card here.
+          when (actualHand || topPlay) $ identityStep who (PlayingCard card window)
+          unless (actualHand || topPlay) do
+            held <- getHeldPlayableCards who
+            when (card `elem` held || (cdPlayableFromDiscard (getCardDef card) && card `elem` unDiscard (playerIdentityDiscard attrs))) $
+              identityStep who (PlayingCard card window)
+          pure $ if topPlay then PlayerIdentity attrs
+            { playerIdentityDeck = Deck (filter (/= card) $ unDeck $ playerIdentityDeck attrs)
+            , playerIdentityTopDeckPlayUsed = True
+            , playerIdentityPendingTopDeckPlay = Just card
+            } else pid
+    CardSpecific (IdentityRef who) "restoreTopDeckPlay" (fromJSON -> Success card)
+      | who == playerIdentityId attrs -> pure $ PlayerIdentity attrs
+          { playerIdentityDeck = Deck (card : filter (/= card) (unDeck $ playerIdentityDeck attrs))
+          , playerIdentityHand = Hand (filter (/= card) $ unHand $ playerIdentityHand attrs)
+          , playerIdentityDiscard = Discard (filter (/= card) $ unDiscard $ playerIdentityDiscard attrs)
+          , playerIdentityTopDeckPlayUsed = False
+          , playerIdentityPendingTopDeckPlay = Nothing
+          }
     CardSpecific (IdentityRef who) "previousGameWon" (fromJSON -> Success won) | who == playerIdentityId attrs ->
       pure $ PlayerIdentity attrs {playerIdentityPreviousGameWon = Just won}
     CardSpecific (IdentityRef ident) "swapHandWithDeckTop" (fromJSON -> Success card)
@@ -1445,7 +1548,7 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
     CardSpecific target "playChosenX" (fromJSON -> Success (card, mWindow :: Maybe W.Window, mTarget, n :: Natural))
       | target == toRef pid -> do
           costly <- (> 0) <$> getModifiedCostWithBase pid card mTarget (Just $ fromIntegral n)
-          when (card `elem` unHand (playerIdentityHand attrs) && costly) $
+          when ((card `elem` unHand (playerIdentityHand attrs) || playerIdentityPendingTopDeckPlay attrs == Just card) && costly) $
             checkWindows [W.Window W.When $ W.PlayingCardFromHand (toId pid) card]
           cardSpecific pid "payForChosenX" (card, mWindow, mTarget, n)
           pure pid
@@ -1610,7 +1713,7 @@ instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
       KeyMap.union o $ KeyMap.fromList
-        [("chosenAspects", toJSON ([] :: [Aspect])), ("previousGameWon", Null), ("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
+        [("topDeckPlayUsed", Bool False), ("pendingTopDeckPlay", Null), ("chosenAspects", toJSON ([] :: [Aspect])), ("previousGameWon", Null), ("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity

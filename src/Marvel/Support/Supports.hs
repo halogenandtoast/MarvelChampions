@@ -1,5 +1,9 @@
 module Marvel.Support.Supports (module X) where
 
+import Marvel.Support.Supports.AgeOfApocalypseBasicCampaign as X
+
+import Marvel.Support.Supports.StepfordCuckoos as X
+import Marvel.Support.Supports.Limbo as X
 import Marvel.Support.Supports.NextEvolutionNextEvolutionCampaign as X
 
 import Marvel.Support.Supports.ThePaintedLady as X

@@ -1,5 +1,6 @@
 module Marvel.AlterEgo.AlterEgos (module X) where
 
+import Marvel.AlterEgo.AlterEgos.IllyanaRasputin as X
 import Marvel.AlterEgo.AlterEgos.NeenaThurman as X
 import Marvel.AlterEgo.AlterEgos.CarolDanvers as X
 import Marvel.AlterEgo.AlterEgos.JenniferWalters as X
@@ -111,3 +112,6 @@ import Marvel.AlterEgo.AlterEgos.WarrenWorthingtonIII as X
 import Marvel.AlterEgo.AlterEgos.LauraKinney as X
 
 import Marvel.AlterEgo.AlterEgos.WadeWilson as X
+
+-- Bishop
+import Marvel.AlterEgo.AlterEgos.LucasBishop as X

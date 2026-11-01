@@ -1,5 +1,12 @@
 module Marvel.Event.Events (module X) where
 
+import Marvel.Event.Events.BasicSpell as X
+import Marvel.Event.Events.FullBodyCharge as X
+import Marvel.Event.Events.MagicBarrier as X
+import Marvel.Event.Events.SoulStrike as X
+import Marvel.Event.Events.Exorcism as X
+import Marvel.Event.Events.SteppingDisc as X
+import Marvel.Event.Events.Scrying as X
 import Marvel.Event.Events.ThePosse as X
 import Marvel.Event.Events.TeamInvestigation as X
 import Marvel.Event.Events.RightPlaceRightTime as X
@@ -545,3 +552,10 @@ import Marvel.Event.Events.PoolInspection as X hiding (Meta)
 import Marvel.Event.Events.BreakTime as X
 import Marvel.Event.Events.GetInFrontOfMe as X
 import Marvel.Event.Events.Mulligan as X
+
+-- Bishop
+import Marvel.Event.Events.ConcussiveBlast as X
+import Marvel.Event.Events.CommandAuthority as X
+import Marvel.Event.Events.EnergyConversion as X
+import Marvel.Event.Events.SideBySide as X
+import Marvel.Event.Events.SuitUp as X

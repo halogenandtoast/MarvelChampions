@@ -51,7 +51,7 @@ import Marvel.Modifier.Types
                CannotChangeEnergyForm, CannotChangeMassForm,
                AttacksCannotBeDefended, OnlyIdentityCanDefend,
                PlayersChooseTheVillain, CannotBeDefeated, CannotBeDiscarded) )
-import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
+import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat, placeThreatOn)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase, VillainPhaseStep)
@@ -62,6 +62,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged, Assault))
+import Marvel.Keyword qualified as Keyword
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage, isQueued)
 import Marvel.Ref
 import Marvel.Resource.Types (Resource)
@@ -537,6 +538,9 @@ removeThreat you source n = resolveAs you . RemoveThreat (toSource source) n
 placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreat = placeThreatFrom ThreatFromAbility
 
+placeThreatOn :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> scheme -> Natural -> m ()
+placeThreatOn source scheme n = toSource source `seq` placeThreat scheme n
+
 -- | Threat placed on the scheme by what the window says, the window first.
 placeThreatFrom :: (ReverseQueue m, IsScheme scheme) => ThreatSource -> scheme -> Natural -> m ()
 placeThreatFrom from (toScheme -> scheme) n =
@@ -887,6 +891,11 @@ villainSchemes vid = push $ VillainMessage vid VillainSchemes
 villainSchemesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
 villainSchemesAgainst vid = push . VillainMessage vid . VillainSchemesAgainst
 
+villainSchemesWithoutBoostAgainst :: ReverseQueue m => VillainId -> IdentityId -> m ()
+villainSchemesWithoutBoostAgainst vid you = do
+  cardSpecific vid "schemeWithoutBoost" True
+  villainSchemesAgainst vid you
+
 advanceVillain :: (ReverseQueue m) => VillainId -> m ()
 advanceVillain vid = villainStep vid VillainAdvanced
 
@@ -918,6 +927,10 @@ villainActivatesAgainst :: (ReverseQueue m) => VillainId -> IdentityId -> m ()
 villainActivatesAgainst vid you = do
   checkWindows [Window Would $ W.VillainActivationWouldBegin vid you]
   cardSpecific GameRef "resolveVillainActivation" (vid, you)
+
+-- | Give the coming activation one extra boost card; status cancellation consumes it.
+additionalActivationBoost :: ReverseQueue m => VillainId -> IdentityId -> m ()
+additionalActivationBoost vid _you = cardSpecific vid "additionalActivationBoost" (1 :: Natural)
 
 -- | A minion activates against the player in their form when activation begins.
 minionActivatesAgainst :: ReverseQueue m => MinionId -> IdentityId -> m ()
@@ -1096,6 +1109,20 @@ healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinion minion = pushAll . Msg.engageMinion minion
+
+-- | Replace an engagement whose before-engagement interrupt is resolving.
+redirectPendingMinionEngagement :: ReverseQueue m => MinionId -> IdentityId -> m ()
+redirectPendingMinionEngagement mid you = do
+  cardSpecific GameRef "aoaRedirectEngagementWindow" (mid, you)
+  withQueue_ $ map redirect
+ where
+  redirect = \case
+    CheckWindows windows -> CheckWindows $ map (\case
+      Window When (W.EngagedMinion _ other) | other == mid -> Window When (W.EngagedMinion you mid)
+      window -> window) windows
+    IdentityMessage _ (MinionEngaged other) | other == mid -> IdentityMessage you (MinionEngaged mid)
+    MinionMessage other (MinionEngagedIdentity _) | other == mid -> MinionMessage mid (MinionEngagedIdentity you)
+    msg -> msg
 
 -- | Continue engagement only if the minion survived a preceding check.
 engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
@@ -1671,9 +1698,30 @@ surge = push . Surge
 gainSurge :: (ReverseQueue m, IsRef a) => a -> m ()
 gainSurge = push . GainSurge . toTarget
 
+-- | Grant surge before the revealing entity exists, resolving it after that reveal.
+giveRevealedCardSurge :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+giveRevealedCardSurge you card = do
+  pending <- isQueued $ grantedSurgeFor $ ecCardId card
+  unless (pending || Keyword.Surge `member` cdKeywords (ecCardDef card)) $
+    replaceMatchingMessage (\msg -> [msg, Msg.cardSpecific GameRef "grantedSurge" (you, ecCardId card)]) revealing
+ where
+  revealing = \case
+    RevealedEncounterCard _ other -> ecCardId other == ecCardId card
+    RevealedEncounterCardFrom _ _ other -> ecCardId other == ecCardId card
+    _ -> False
+
+grantedSurgeFor :: CardId -> Message -> Bool
+grantedSurgeFor cid = \case
+  CardSpecific GameRef "grantedSurge" (fromJSON -> Success (_ :: IdentityId, other :: CardId)) -> cid == other
+  _ -> False
+
 -- | The player reveals the encounter card, its "when revealed" windows answered.
 revealEncounterCard :: (ReverseQueue m) => IdentityId -> EncounterCard -> m ()
 revealEncounterCard ident = push . RevealEncounterCard ident
+
+-- | Reveal a found physical card after detaching it from eligible holding zones.
+revealFoundEncounterCard :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+revealFoundEncounterCard you card = cardSpecific GameRef "aoaRevealFoundEncounter" (you, card)
 
 revealEncounterCardFrom :: (ReverseQueue m) => W.RevealSource -> IdentityId -> EncounterCard -> m ()
 revealEncounterCardFrom source ident = push . RevealEncounterCardFrom source ident
@@ -2186,6 +2234,7 @@ searchFoundCards target = push . SearchFoundCards (toTarget target)
 cancelEncounterWhenRevealed :: (HasQueue m, HasGame m) => EncounterCard -> m ()
 cancelEncounterWhenRevealed card = do
   allowed <- encounterCardCanBeCanceled card
+  when allowed $ cancelMatchingMessage $ grantedSurgeFor $ ecCardId card
   when allowed $ replaceMatchingMessage replace $ \case
     RevealedEncounterCard _ other -> ecCardId other == ecCardId card
     RevealedEncounterCardFrom _ _ other -> ecCardId other == ecCardId card
@@ -2202,6 +2251,7 @@ cancelEncounterWhenRevealed card = do
 cancelEncounterCard :: (HasQueue m, HasGame m) => EncounterCard -> m ()
 cancelEncounterCard card = do
   allowed <- encounterCardCanBeCanceled card
+  when allowed $ cancelMatchingMessage $ grantedSurgeFor $ ecCardId card
   when allowed $ replaceMatchingMessage (const [DiscardedCard $ toCard card]) $ \case
     RevealedEncounterCard _ other -> other == card
     RevealedEncounterCardFrom _ _ other -> other == card
@@ -2590,6 +2640,22 @@ replaceAttackDamageWithThreatRemoval enemy you = cardSpecific GameRef "mgAttackT
 preventEnemyAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
 preventEnemyAttackDamage enemy n = cardSpecific GameRef "mgPartialAttackPrevention" (toEnemy enemy, n)
 
+-- | Limit the damage this identity can take from the attack currently resolving.
+capEnemyAttackDamage :: ReverseQueue m => EnemyId -> IdentityId -> Natural -> m ()
+capEnemyAttackDamage enemy you n = cardSpecific GameRef "aoaCapAttackDamage" (enemy, you, n)
+
+-- | Turn the same physical side scheme into its attachment face without discarding it.
+transformSideSchemeToAttachment :: ReverseQueue m => SideSchemeId -> CardCode -> IdentityId -> m ()
+transformSideSchemeToAttachment sid code you = do
+  cancelMatchingMessage (== DefeatedLeavesPlay (SideSchemeRef sid))
+  cardSpecific GameRef "aoaTransformSchemeToAttachment" (sid, code, you)
+
+-- | Increase the enemy's current activation, whether it is attacking or scheming.
+enemyActivationBonus :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
+enemyActivationBonus enemy n = case toEnemy enemy of
+  EnemyVillainId vid -> villainStep vid (VillainActivationBonus n)
+  EnemyMinionId mid -> minionStep mid (MinionAddBoost n)
+
 -- | The source of the attack whose damage is waiting behind its interrupt window.
 currentPlayerAttackSource :: (ReverseQueue m) => IdentityId -> m (Maybe Source)
 currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attackSource $ concatMap queuedMessageLeaves q)
@@ -2965,7 +3031,10 @@ moveDamageToUpgradeSlot uid character slot = cardSpecific GameRef "moveDamageToU
 
 -- | Store a physical card facedown, with no permission to play it from there.
 holdFacedownCard :: (ReverseQueue m, IsRef host) => host -> PlayerCard -> m ()
-holdFacedownCard host card = removeFromGame card >> cardSpecific host "holdFacedownCard" card
+holdFacedownCard host card = do
+  push $ RemovePlayerCardFromHeldZones (pcCardId card)
+  removeFromGame card
+  cardSpecific host "holdFacedownCard" card
 
 releaseHeldCard :: (ReverseQueue m, IsRef host) => host -> IdentityId -> PlayerCard -> m ()
 releaseHeldCard host you card = cardSpecific host "releaseHeldCard" card >> addToHand you card

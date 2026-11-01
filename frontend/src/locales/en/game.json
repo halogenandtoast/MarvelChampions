@@ -249,5 +249,9 @@
   },
   "facedownCard": "Facedown card",
   "glider": "Glider",
-  "bombsOn": "{count} bomb counters"
+  "bombsOn": "{count} bomb counters",
+  "missionArea": "Mission area",
+  "missionSucceeded": "Mission completed",
+  "missionFailed": "Mission failed",
+  "missionAttempts": "Attempts: {count}/4"
 }

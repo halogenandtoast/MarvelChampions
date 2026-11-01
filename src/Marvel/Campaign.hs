@@ -66,6 +66,7 @@ data CampaignLog = CampaignLog
   , titan :: TitanLog
   -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
   , mutantGenesis :: MutantGenesisLog
+  , apocalypse :: ApocalypseLog
   , nextEvolution :: NextEvolutionLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
@@ -187,6 +188,37 @@ noSinisterLog = SinisterLog [] 0 [] [] Nothing [] Nothing
 -- | Chosen fronts retain the scenario number so a lost game can retry its choice.
 -- Earned environments are recorded only at victory. Cards granted by their actions
 -- are temporary additions to the current game.
+-- | Mission results persist even when the scenario has to be replayed. A selected
+-- mission is recorded by scenario number so retries cannot reroll it.
+data ApocalypseLog = ApocalypseLog
+  { missions :: [(Int, CardCode)]
+  , successfulMissions :: [CardCode]
+  , defeatedOverseers :: [CardCode]
+  , apocalypseRewards :: [(CardCode, [CardCode])]
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass ToJSON
+
+instance FromJSON ApocalypseLog where
+  parseJSON = withObject "ApocalypseLog" \o -> ApocalypseLog
+    <$> o .:? "missions" .!= []
+    <*> o .:? "successfulMissions" .!= []
+    <*> o .:? "defeatedOverseers" .!= []
+    <*> o .:? "apocalypseRewards" .!= []
+  omittedField = Just noApocalypseLog
+
+noApocalypseLog :: ApocalypseLog
+noApocalypseLog = ApocalypseLog [] [] [] []
+
+apocalypseMissionCards :: [CardCode]
+apocalypseMissionCards = ["45166a", "45167a", "45168a", "45169a"]
+
+apocalypseOverseers :: [CardCode]
+apocalypseOverseers = ["45179a", "45180a", "45181a", "45182a", "45183a"]
+
+apocalypseRewardsFor :: CardCode -> Campaign -> [CardCode]
+apocalypseRewardsFor ident c = fromMaybe [] (List.lookup (toHeroCardCode ident) c.campaignLog.apocalypse.apocalypseRewards)
+
 data NextEvolutionLog = NextEvolutionLog
   { chosenSchemes :: [(Int, CardCode)]
   , earnedEnvironments :: [CardCode]
@@ -219,6 +251,12 @@ nextEvolutionSchemes =
 -- It must be chosen again on replay even if its reverse was earned in the lost game.
 retainNextEvolutionRetryChoice :: Campaign -> Campaign -> Campaign
 retainNextEvolutionRetryChoice previous current
+  | previous.kind == AgeOfApocalypseCampaign, current.kind == AgeOfApocalypseCampaign =
+      let n = previous.completed + 1
+          chosen = filter ((== n) . fst) current.campaignLog.apocalypse.missions
+      in previous {campaignLog = previous.campaignLog
+        {apocalypse = previous.campaignLog.apocalypse
+          {missions = filter ((/= n) . fst) previous.campaignLog.apocalypse.missions <> chosen}}}
   | previous.kind == NextEvolution, current.kind == NextEvolution
   , previous.completed == current.completed =
       let n = scenarioNumber previous
@@ -274,7 +312,7 @@ mutantRoleAspects = \case
   Peacekeeper -> [Justice, Leadership]
 
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -350,6 +388,12 @@ data CampaignRecord
   | RecordWakingNightmare Natural
   | RecordLastOnesStanding [CardCode]
   | RecordFinalReputation
+  | RecordApocalypseMission Int CardCode
+  | RecordApocalypseMissionSuccess CardCode
+  | RecordApocalypseOverseer CardCode
+  | RecordApocalypseReward CardCode CardCode
+  | RemoveApocalypseReward CardCode
+  | RecordCampaignLost
   | RecordNextEvolutionScheme Int CardCode
   | RecordNextEvolutionEnvironment CardCode
   | RecordNextEvolutionMarauders [CardCode]
@@ -393,6 +437,7 @@ campaignScenarios = \case
   SinisterMotives -> sinisterMotives
   MutantGenesis -> ["32060", "32084", "32109", "32121a", "32138"]
   NextEvolution -> ["40077", "40103", "40118", "40136", "40163"]
+  AgeOfApocalypseCampaign -> ["45059", "45081a", "45101b", "45118", "45184a"]
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -453,6 +498,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , apocalypse = noApocalypseLog
           , nextEvolution = noNextEvolutionLog
           , mutantGenesis = noMutantGenesisLog {mutantPlayers = [MutantPlayer (toHeroCardCode i) Nothing | kind == MutantGenesis, i <- identities]}
           , sinister = noSinisterLog {sinisterPlayers = [SinisterPlayer (toHeroCardCode i) Nothing Nothing Nothing | kind == SinisterMotives, i <- identities]}
@@ -491,6 +537,7 @@ campaignCardsOf ident c =
   foldMap campaignCards (campaignPlayer ident c)
     <> foldMap (.marketCards) (galaxyPlayer ident c)
     <> foldMap sinisterCampaignCards (sinisterPlayer ident c)
+    <> apocalypseRewardsFor ident c
 
 -- | Tech and Aspect Advantage are extra deck cards. Planning Ahead only names a
 -- card already in the deck; retrieving it does not add another copy.
@@ -544,6 +591,15 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
 recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordCampaignLost -> c {lost = True}
+  RecordApocalypseMission n code -> aoa \l -> l {missions = filter ((/= n) . fst) l.missions <> [(n, code)]}
+  RecordApocalypseMissionSuccess code -> aoa \l -> l {successfulMissions = nub (l.successfulMissions <> [code])}
+  RecordApocalypseOverseer code -> aoa \l -> l {defeatedOverseers = nub (l.defeatedOverseers <> [code])}
+  RecordApocalypseReward ident code -> aoa \l ->
+    let hero = toHeroCardCode ident
+        previous = fromMaybe [] (List.lookup hero l.apocalypseRewards)
+    in l {apocalypseRewards = filter ((/= hero) . fst) l.apocalypseRewards <> [(hero, nub (previous <> [code]))]}
+  RemoveApocalypseReward code -> aoa \l -> l {apocalypseRewards = [(hero, filter (/= code) cards) | (hero, cards) <- l.apocalypseRewards]}
   RecordNextEvolutionScheme n code -> ne \l -> l {chosenSchemes = filter ((/= n) . fst) l.chosenSchemes <> [(n, code)]}
   RecordNextEvolutionEnvironment code -> ne \l -> l {earnedEnvironments = nub (l.earnedEnvironments <> [code])}
   RecordNextEvolutionMarauders codes -> ne \l -> l {maraudersDefeated = codes}
@@ -611,6 +667,7 @@ recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis =
   RecordFinalReputation -> sinisterL \s -> s {finalReputation = Just s.reputation}
  where
   logged f = c {campaignLog = f c.campaignLog}
+  aoa f = logged \l -> l {apocalypse = f l.apocalypse}
   ne f = logged \l -> l {nextEvolution = f l.nextEvolution}
   sinisterL f = logged \l -> l {sinister = f l.sinister}
   sinisterP ident f = sinisterL \s -> s {sinisterPlayers = [if p.identity == toHeroCardCode ident then f p else p | p <- s.sinisterPlayers]}

@@ -14,6 +14,8 @@ import Marvel.Trait.Types (Trait)
 data Criteria
   = IsSelf
   | CanFindTouched
+  | -- | the acting player can resolve the current unblanked Setting Special as a cost
+    CanResolveSettingSpecial
   | NoCriteria
   | InHeroForm
   | InAlterEgoForm

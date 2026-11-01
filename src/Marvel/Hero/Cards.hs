@@ -1,5 +1,11 @@
 module Marvel.Hero.Cards where
 
+import Marvel.Trait qualified as AoaMT
+import Marvel.Card.Def qualified as BpCard
+import Marvel.Cost.Types qualified as BpCost
+import Marvel.Criteria qualified as BpCriteria
+import Marvel.Trait qualified as BpTrait
+
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect ()
 import Marvel.Boost qualified as DpBoost ()
@@ -49,11 +55,6 @@ import Marvel.Resource.Types qualified as NER ()
 import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
-import Marvel.Resource qualified as NE ()
-import Marvel.Keyword qualified as NE ()
-import Marvel.Boost qualified as NE ()
-import Marvel.Aspect qualified as NE ()
-import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Prelude
@@ -74,7 +75,9 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ deadpool
+  [ magikHero
+  , bishopHero
+  , deadpool
   , x23
   , angelHero, archangelHero
   , psylockeHero
@@ -598,4 +601,73 @@ deadpool = DpCard.CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Bishop
+
+bishopHero :: CardDef
+bishopHero = CardDef
+  { cdCardCode = "45001a"
+  , cdName = "Bishop"
+  , cdCost = Nothing
+  , cdTraits = fromList [BpTrait.Temporal, BpTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.HeroType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Age of Apocalypse: Magik
+magikHero :: CardDef
+magikHero = CardDef
+  { cdCardCode = "45030a"
+  , cdName = "Magik"
+  , cdCost = Nothing
+  , cdTraits = fromList [AoaMT.Mystic, AoaMT.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = HeroType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
   }

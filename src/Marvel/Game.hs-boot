@@ -1,6 +1,7 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+import Marvel.AgeOfApocalypse.MissionTypes (MissionState)
 import Marvel.Aspect (Aspect)
 import Marvel.Status (StatusCard)
 import Marvel.Card.Id (CardId)
@@ -430,3 +431,28 @@ prepareEnemyAttack :: HasGame m => EnemyId -> Attack -> m Attack
 
 controlsAspectCard :: HasGame m => IdentityId -> Aspect -> m Bool
 characterHasAttachment :: HasGame m => CharacterId -> CardDef -> m Bool
+
+getPlayableHandCards :: HasGame m => IdentityId -> m [PlayerCard]
+isPlayableHandCard :: HasGame m => IdentityId -> PlayerCard -> m Bool
+
+capIdentityAttackDamage :: HasGame m => IdentityId -> Source -> Damage -> m Damage
+
+getMission :: HasGame m => m (Maybe MissionState)
+
+findOwnedPlayerCard :: HasGame m => IdentityId -> CardCode -> m (Maybe PlayerCard)
+
+withMissionPlayDestination :: HasGame m => Bool -> ReaderT Game m a -> m a
+missionDestinationPreview :: HasGame m => m Bool
+missionAllyReduction :: HasGame m => PlayerCard -> m Natural
+
+getSchemeThreatAmount :: HasGame m => SchemeId -> m Natural
+getMissionAllyStats :: HasGame m => AllyId -> m (Natural, Natural)
+getAllyAttachedUpgrades :: HasGame m => AllyId -> m [UpgradeId]
+
+playerCardEntryAllowed :: HasGame m => PlayerCard -> m Bool
+
+findEncounterCards :: HasGame m => CardMatcher -> m [EncounterCard]
+
+canResolveSettingSpecial :: HasGame m => IdentityId -> m Bool
+
+getStartingHeroCodes :: HasGame m => m [CardCode]

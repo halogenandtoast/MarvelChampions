@@ -38,7 +38,7 @@ instance RunMessage ChaosMagic where
       cardSpecific attrs "play" you
       pure e
     CardSpecific (isTarget attrs -> True) "play" (fromJSON -> Success you) -> do
-      cards <- selectList $ InHandOf (IdentityWithId you) $ AffordableCardBy (IdentityWithId you) (BasicCardMatches AnyCard)
+      cards <- selectList $ PlayableFromHandOf (IdentityWithId you) $ AffordableCardBy (IdentityWithId you) (BasicCardMatches AnyCard)
       chooseOne
         you
         [ do

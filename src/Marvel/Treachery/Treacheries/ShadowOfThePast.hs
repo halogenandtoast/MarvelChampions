@@ -1,5 +1,6 @@
 module Marvel.Treachery.Treacheries.ShadowOfThePast (
   shadowOfThePast,
+  partitionNemesisSet,
   ShadowOfThePast (..),
 ) where
 

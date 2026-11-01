@@ -14,12 +14,17 @@ library
       Marvel.Ability.Types
       Marvel.ActiveCost
       Marvel.ActiveCost.Types
+      Marvel.AgeOfApocalypse.Mission
+      Marvel.AgeOfApocalypse.MissionTypes
+      Marvel.AgeOfApocalypse.Settings
+      Marvel.AgeOfApocalypse.StandardIII
       Marvel.Ally
       Marvel.Ally.Allies
       Marvel.Ally.Allies.AdamWarlock
       Marvel.Ally.Allies.Agent13SharonCarter
       Marvel.Ally.Allies.Agent13SharonCarterSinisterMotives
       Marvel.Ally.Allies.AgentCoulson
+      Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign
       Marvel.Ally.Allies.Angel
       Marvel.Ally.Allies.AngelaAldrifOdinsdottir
       Marvel.Ally.Allies.AngelPsylocke
@@ -47,6 +52,7 @@ library
       Marvel.Ally.Allies.BrotherVoodooJerichoDrumm
       Marvel.Ally.Allies.Bug
       Marvel.Ally.Allies.Cable
+      Marvel.Ally.Allies.CableBishop
       Marvel.Ally.Allies.CableDeadpool
       Marvel.Ally.Allies.Cannonball
       Marvel.Ally.Allies.CaptainAmericaSteveRogers
@@ -57,6 +63,7 @@ library
       Marvel.Ally.Allies.Charlie27
       Marvel.Ally.Allies.Clea
       Marvel.Ally.Allies.Cloud9
+      Marvel.Ally.Allies.ColossusMagik
       Marvel.Ally.Allies.ColossusPiotrRasputin
       Marvel.Ally.Allies.ControlledMinion
       Marvel.Ally.Allies.Cosmo
@@ -84,6 +91,7 @@ library
       Marvel.Ally.Allies.Gentle
       Marvel.Ally.Allies.GhostSpiderGwenStacy
       Marvel.Ally.Allies.GiantMan
+      Marvel.Ally.Allies.Goldballs
       Marvel.Ally.Allies.GoliathBillFoster
       Marvel.Ally.Allies.GrootAlly
       Marvel.Ally.Allies.Havok
@@ -110,6 +118,7 @@ library
       Marvel.Ally.Allies.LadyDeadpool
       Marvel.Ally.Allies.LadySif
       Marvel.Ally.Allies.LadySpider
+      Marvel.Ally.Allies.LegionBishop
       Marvel.Ally.Allies.Lockheed
       Marvel.Ally.Allies.Lockjaw
       Marvel.Ally.Allies.Longshot
@@ -119,13 +128,16 @@ library
       Marvel.Ally.Allies.MadTitansShadowCampaign
       Marvel.Ally.Allies.Magik
       Marvel.Ally.Allies.MajorVictoryVanceAstro
+      Marvel.Ally.Allies.Malcolm
       Marvel.Ally.Allies.Mantis
       Marvel.Ally.Allies.MariaHill
+      Marvel.Ally.Allies.Marrow
       Marvel.Ally.Allies.MartinexTNaga
       Marvel.Ally.Allies.MartyrPhylaVell
       Marvel.Ally.Allies.MarvelBoyNohVarr
       Marvel.Ally.Allies.MarvelGirl
       Marvel.Ally.Allies.Mirage
+      Marvel.Ally.Allies.MissionAlly
       Marvel.Ally.Allies.Mockingbird
       Marvel.Ally.Allies.MockingbirdBobbiMorse
       Marvel.Ally.Allies.MonicaChang
@@ -162,6 +174,7 @@ library
       Marvel.Ally.Allies.QuakeDaisyJohnson
       Marvel.Ally.Allies.QuasarWendellVaughn
       Marvel.Ally.Allies.QuicksilverPietroMaximoff
+      Marvel.Ally.Allies.Randall
       Marvel.Ally.Allies.RedDagger
       Marvel.Ally.Allies.Rictor
       Marvel.Ally.Allies.RocketRaccoonAlly
@@ -200,11 +213,13 @@ library
       Marvel.Ally.Allies.StingerCassieLang
       Marvel.Ally.Allies.StormOroroMunroe
       Marvel.Ally.Allies.Sunfire
+      Marvel.Ally.Allies.Tempus
       Marvel.Ally.Allies.TheLocustFernandaRodriguez
       Marvel.Ally.Allies.ThorJaneFoster
       Marvel.Ally.Allies.ThorOdinson
       Marvel.Ally.Allies.ThrogPuddlegulp
       Marvel.Ally.Allies.TigraGreerGrantNelson
+      Marvel.Ally.Allies.Triage
       Marvel.Ally.Allies.UsAgentJohnWalker
       Marvel.Ally.Allies.Valkyrie
       Marvel.Ally.Allies.VenmAddyBrock
@@ -231,6 +246,7 @@ library
       Marvel.Ally.Allies.WonderManSimonWilliams
       Marvel.Ally.Allies.Wong
       Marvel.Ally.Allies.WraithZakDel
+      Marvel.Ally.Allies.X23Bishop
       Marvel.Ally.Allies.Yondu
       Marvel.Ally.Cards
       Marvel.Ally.Runner
@@ -250,6 +266,7 @@ library
       Marvel.AlterEgo.AlterEgos.GamoraAlterEgo
       Marvel.AlterEgo.AlterEgos.GrootAlterEgo
       Marvel.AlterEgo.AlterEgos.GwenStacy
+      Marvel.AlterEgo.AlterEgos.IllyanaRasputin
       Marvel.AlterEgo.AlterEgos.JamesRhodes
       Marvel.AlterEgo.AlterEgos.JeanGrey
       Marvel.AlterEgo.AlterEgos.JenniferWalters
@@ -258,6 +275,7 @@ library
       Marvel.AlterEgo.AlterEgos.KittyPryde
       Marvel.AlterEgo.AlterEgos.LauraKinney
       Marvel.AlterEgo.AlterEgos.Logan
+      Marvel.AlterEgo.AlterEgos.LucasBishop
       Marvel.AlterEgo.AlterEgos.MilesMorales
       Marvel.AlterEgo.AlterEgos.MonicaRambeau
       Marvel.AlterEgo.AlterEgos.NadiaVanDyne
@@ -297,6 +315,15 @@ library
       Marvel.Attachment.Attachments
       Marvel.Attachment.Attachments.AbsorbingMansBallAndChain
       Marvel.Attachment.Attachments.AdamantiumUpgrades
+      Marvel.Attachment.Attachments.AgeOfApocalypseApocalypse
+      Marvel.Attachment.Attachments.AgeOfApocalypseBlueMoon
+      Marvel.Attachment.Attachments.AgeOfApocalypseCelestialTech
+      Marvel.Attachment.Attachments.AgeOfApocalypseDarkBeast
+      Marvel.Attachment.Attachments.AgeOfApocalypseEnSabahNur
+      Marvel.Attachment.Attachments.AgeOfApocalypseFourHorsemen
+      Marvel.Attachment.Attachments.AgeOfApocalypseGenosha
+      Marvel.Attachment.Attachments.AgeOfApocalypseHounds
+      Marvel.Attachment.Attachments.AgeOfApocalypseUnus
       Marvel.Attachment.Attachments.AllTiedUp
       Marvel.Attachment.Attachments.AllyAsMinion
       Marvel.Attachment.Attachments.AntiRegenerationRay
@@ -420,6 +447,7 @@ library
       Marvel.Attack
       Marvel.Boost
       Marvel.Campaign
+      Marvel.Campaign.AgeOfApocalypse
       Marvel.Campaign.GalaxysMostWanted
       Marvel.Campaign.MadTitansShadow
       Marvel.Campaign.MutantGenesis
@@ -460,6 +488,10 @@ library
       Marvel.Environment
       Marvel.Environment.Cards
       Marvel.Environment.Environments.AbsorbingMan
+      Marvel.Environment.Environments.AgeOfApocalypseBlueMoon
+      Marvel.Environment.Environments.AgeOfApocalypseGenosha
+      Marvel.Environment.Environments.AgeOfApocalypseSavageLand
+      Marvel.Environment.Environments.AgeOfApocalypseStandardIII
       Marvel.Environment.Environments.AirStatic
       Marvel.Environment.Environments.AvengersTower
       Marvel.Environment.Environments.BadoonShip
@@ -515,6 +547,7 @@ library
       Marvel.Event.Events.Backflip
       Marvel.Event.Events.BaitAndSwitch
       Marvel.Event.Events.BarelyAScratch
+      Marvel.Event.Events.BasicSpell
       Marvel.Event.Events.BeatEmUp
       Marvel.Event.Events.BeautyAndTheThief
       Marvel.Event.Events.BehindEnemyLines
@@ -545,6 +578,8 @@ library
       Marvel.Event.Events.Clobber
       Marvel.Event.Events.CloseCall
       Marvel.Event.Events.CombatReady
+      Marvel.Event.Events.CommandAuthority
+      Marvel.Event.Events.ConcussiveBlast
       Marvel.Event.Events.ConcussiveBlow
       Marvel.Event.Events.ContaminantImmunity
       Marvel.Event.Events.ContingencyPlan
@@ -580,11 +615,13 @@ library
       Marvel.Event.Events.EarthsMightiestHeroes
       Marvel.Event.Events.ElectricArrow
       Marvel.Event.Events.Emergency
+      Marvel.Event.Events.EnergyConversion
       Marvel.Event.Events.EnergyTransfer
       Marvel.Event.Events.EnhancedSpiderSense
       Marvel.Event.Events.EvenTheOdds
       Marvel.Event.Events.EverVigilant
       Marvel.Event.Events.ExhaustingPersonality
+      Marvel.Event.Events.Exorcism
       Marvel.Event.Events.ExpertDefense
       Marvel.Event.Events.ExplosiveArrow
       Marvel.Event.Events.FastballSpecial
@@ -606,6 +643,7 @@ library
       Marvel.Event.Events.Fruition
       Marvel.Event.Events.FullAuto
       Marvel.Event.Events.FullBlast
+      Marvel.Event.Events.FullBodyCharge
       Marvel.Event.Events.Fusillade
       Marvel.Event.Events.GameTime
       Marvel.Event.Events.GammaBlast
@@ -677,6 +715,7 @@ library
       Marvel.Event.Events.LungingStrike
       Marvel.Event.Events.MadeOfRage
       Marvel.Event.Events.MagicAttack
+      Marvel.Event.Events.MagicBarrier
       Marvel.Event.Events.MagicBlast
       Marvel.Event.Events.MakeTheCall
       Marvel.Event.Events.MakingAnEntrance
@@ -786,6 +825,7 @@ library
       Marvel.Event.Events.ScareTactic
       Marvel.Event.Events.Schadenfreude
       Marvel.Event.Events.ScorchedEarth
+      Marvel.Event.Events.Scrying
       Marvel.Event.Events.SecondWind
       Marvel.Event.Events.SectorScan
       Marvel.Event.Events.SelfPropelledGlide
@@ -798,6 +838,7 @@ library
       Marvel.Event.Events.Shieldmaiden
       Marvel.Event.Events.ShieldSpell
       Marvel.Event.Events.ShieldToss
+      Marvel.Event.Events.SideBySide
       Marvel.Event.Events.SideStep
       Marvel.Event.Events.SisterlyBond
       Marvel.Event.Events.SkilledStrike
@@ -810,6 +851,7 @@ library
       Marvel.Event.Events.SolarBeam
       Marvel.Event.Events.SonicArrow
       Marvel.Event.Events.SoulSisters
+      Marvel.Event.Events.SoulStrike
       Marvel.Event.Events.SouthernCross
       Marvel.Event.Events.SpeedCyclone
       Marvel.Event.Events.SpeedOfLight
@@ -818,9 +860,11 @@ library
       Marvel.Event.Events.StandTogether
       Marvel.Event.Events.StealthStrike
       Marvel.Event.Events.SteelFist
+      Marvel.Event.Events.SteppingDisc
       Marvel.Event.Events.StrengthInNumbers
       Marvel.Event.Events.Subdue
       Marvel.Event.Events.SubOrbitalLeap
+      Marvel.Event.Events.SuitUp
       Marvel.Event.Events.SummoningSpell
       Marvel.Event.Events.SuperdenseStrike
       Marvel.Event.Events.SuperpowerAdaptation
@@ -909,6 +953,7 @@ library
       Marvel.Hero.Heroes.AntManGiant
       Marvel.Hero.Heroes.AntManTiny
       Marvel.Hero.Heroes.ArchangelHero
+      Marvel.Hero.Heroes.BishopHero
       Marvel.Hero.Heroes.BlackPanther
       Marvel.Hero.Heroes.BlackWidow
       Marvel.Hero.Heroes.Cable
@@ -930,6 +975,7 @@ library
       Marvel.Hero.Heroes.IronheartVersion2
       Marvel.Hero.Heroes.IronheartVersion3
       Marvel.Hero.Heroes.IronMan
+      Marvel.Hero.Heroes.MagikHero
       Marvel.Hero.Heroes.MsMarvel
       Marvel.Hero.Heroes.NebulaHero
       Marvel.Hero.Heroes.NovaHero
@@ -975,6 +1021,11 @@ library
       Marvel.MainScheme
       Marvel.MainScheme.Cards
       Marvel.MainScheme.MainSchemes
+      Marvel.MainScheme.MainSchemes.AgeOfApocalypseApocalypse
+      Marvel.MainScheme.MainSchemes.AgeOfApocalypseDarkBeast
+      Marvel.MainScheme.MainSchemes.AgeOfApocalypseEnSabahNur
+      Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen
+      Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus
       Marvel.MainScheme.MainSchemes.AssaultOnNorad
       Marvel.MainScheme.MainSchemes.AttackOnMountAthena
       Marvel.MainScheme.MainSchemes.Breakout
@@ -1050,6 +1101,17 @@ library
       Marvel.Minion.Minions.Abomination
       Marvel.Minion.Minions.AdamWarlockNemesis
       Marvel.Minion.Minions.AdvancedUltronDrone
+      Marvel.Minion.Minions.AgeOfApocalypseAgeOfApocalypse
+      Marvel.Minion.Minions.AgeOfApocalypseBlueMoon
+      Marvel.Minion.Minions.AgeOfApocalypseClanAkkaba
+      Marvel.Minion.Minions.AgeOfApocalypseDarkRiders
+      Marvel.Minion.Minions.AgeOfApocalypseGenosha
+      Marvel.Minion.Minions.AgeOfApocalypseHounds
+      Marvel.Minion.Minions.AgeOfApocalypseInfinites
+      Marvel.Minion.Minions.AgeOfApocalypseOverseer
+      Marvel.Minion.Minions.AgeOfApocalypsePrelates
+      Marvel.Minion.Minions.AgeOfApocalypseSavageLand
+      Marvel.Minion.Minions.AgeOfApocalypseUnus
       Marvel.Minion.Minions.AllyMinion
       Marvel.Minion.Minions.AncientWarrior
       Marvel.Minion.Minions.Apocryphus
@@ -1058,9 +1120,11 @@ library
       Marvel.Minion.Minions.Avalanche
       Marvel.Minion.Minions.BadoonHeadhunter
       Marvel.Minion.Minions.BandOfBadoon
+      Marvel.Minion.Minions.Bantam
       Marvel.Minion.Minions.BaronMordo
       Marvel.Minion.Minions.BaronZemo
       Marvel.Minion.Minions.Beetle
+      Marvel.Minion.Minions.Belasco
       Marvel.Minion.Minions.Belladonna
       Marvel.Minion.Minions.BerserkMutate
       Marvel.Minion.Minions.BlackjackOHare
@@ -1173,6 +1237,7 @@ library
       Marvel.Minion.Minions.Solus
       Marvel.Minion.Minions.SpacePirates
       Marvel.Minion.Minions.Spot
+      Marvel.Minion.Minions.Sym
       Marvel.Minion.Minions.Taskmaster
       Marvel.Minion.Minions.Terminatrix
       Marvel.Minion.Minions.TheGreenGobbler
@@ -1187,6 +1252,7 @@ library
       Marvel.Minion.Minions.Titania
       Marvel.Minion.Minions.Tombstone
       Marvel.Minion.Minions.Topaz
+      Marvel.Minion.Minions.TrevorFitzroy
       Marvel.Minion.Minions.TyrannosaurusRex
       Marvel.Minion.Minions.UltimateBioServant
       Marvel.Minion.Minions.UltronNemesis
@@ -1199,6 +1265,7 @@ library
       Marvel.Minion.Minions.Whirlwind
       Marvel.Minion.Minions.WhiteQueenMutantGenesis
       Marvel.Minion.Minions.Wildrun
+      Marvel.Minion.Minions.Witchfire
       Marvel.Minion.Minions.Yellowjacket
       Marvel.Minion.Minions.YonRogg
       Marvel.Minion.Minions.YotatTheDestroyer
@@ -1221,6 +1288,9 @@ library
       Marvel.Obligation.Cards
       Marvel.Obligation.Obligations
       Marvel.Obligation.Obligations.AffairsOfState
+      Marvel.Obligation.Obligations.AgeOfApocalypseCampaign
+      Marvel.Obligation.Obligations.AgeOfApocalypseDystopianNightmare
+      Marvel.Obligation.Obligations.AgeOfApocalypseStandardIII
       Marvel.Obligation.Obligations.AMinorSetback
       Marvel.Obligation.Obligations.ApocalypticInfluence
       Marvel.Obligation.Obligations.Banishment
@@ -1234,6 +1304,7 @@ library
       Marvel.Obligation.Obligations.CorruptedProgramming
       Marvel.Obligation.Obligations.CriminalPast
       Marvel.Obligation.Obligations.CrisisOnHalfworld
+      Marvel.Obligation.Obligations.Darkchilde
       Marvel.Obligation.Obligations.DeadlyTouch
       Marvel.Obligation.Obligations.Depowered
       Marvel.Obligation.Obligations.EquipmentMalfunction
@@ -1241,6 +1312,7 @@ library
       Marvel.Obligation.Obligations.ExpertCampaign
       Marvel.Obligation.Obligations.FamilyEmergency
       Marvel.Obligation.Obligations.FearOfKang
+      Marvel.Obligation.Obligations.FearTheFuture
       Marvel.Obligation.Obligations.GuildBusiness
       Marvel.Obligation.Obligations.HomeByDawn
       Marvel.Obligation.Obligations.Homesick
@@ -1307,6 +1379,11 @@ library
       Marvel.Resource.Resources.Salvage
       Marvel.Resource.Types
       Marvel.Scenario
+      Marvel.Scenario.AgeOfApocalypseApocalypse
+      Marvel.Scenario.AgeOfApocalypseDarkBeast
+      Marvel.Scenario.AgeOfApocalypseEnSabahNur
+      Marvel.Scenario.AgeOfApocalypseFourHorsemen
+      Marvel.Scenario.AgeOfApocalypseUnus
       Marvel.Scenario.Mojo
       Marvel.Scenario.MojoOpening
       Marvel.Scenario.MutantGenesis
@@ -1316,6 +1393,21 @@ library
       Marvel.SideScheme
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseApocalypse
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseBlueMoon
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseCampaign
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseClanAkkaba
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkBeast
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkRiders
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseDystopianNightmare
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseEnSabahNur
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseFourHorsemen
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseGenosha
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseHounds
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseInfinites
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseMission
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand
+      Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus
       Marvel.SideScheme.SideSchemes.AMessOfThings
       Marvel.SideScheme.SideSchemes.ArmoredAssault
       Marvel.SideScheme.SideSchemes.Avalanche
@@ -1415,6 +1507,7 @@ library
       Marvel.SideScheme.SideSchemes.PersonalChallenge
       Marvel.SideScheme.SideSchemes.PileItOn
       Marvel.SideScheme.SideSchemes.PinnedDown
+      Marvel.SideScheme.SideSchemes.PortalThroughTime
       Marvel.SideScheme.SideSchemes.PowerDrain
       Marvel.SideScheme.SideSchemes.PowerfulEnchantments
       Marvel.SideScheme.SideSchemes.PrisonCamps
@@ -1426,6 +1519,7 @@ library
       Marvel.SideScheme.SideSchemes.RenderMedicalAid
       Marvel.SideScheme.SideSchemes.Ronan
       Marvel.SideScheme.SideSchemes.RuleByForce
+      Marvel.SideScheme.SideSchemes.RulerOfLimbo
       Marvel.SideScheme.SideSchemes.RulerOfTheAstralPlane
       Marvel.SideScheme.SideSchemes.RunningInterference
       Marvel.SideScheme.SideSchemes.SeekingVengeance
@@ -1479,6 +1573,7 @@ library
       Marvel.Support.Supports
       Marvel.Support.Supports.AamirKhan
       Marvel.Support.Supports.AgathaHarkness
+      Marvel.Support.Supports.AgeOfApocalypseBasicCampaign
       Marvel.Support.Supports.AlphaFlightStation
       Marvel.Support.Supports.AngelsAerie
       Marvel.Support.Supports.ArmyOfAnts
@@ -1527,6 +1622,7 @@ library
       Marvel.Support.Supports.KittysRoom
       Marvel.Support.Supports.Knowhere
       Marvel.Support.Supports.LeadershipTraining
+      Marvel.Support.Supports.Limbo
       Marvel.Support.Supports.LogansCabin
       Marvel.Support.Supports.MedLab
       Marvel.Support.Supports.MedTeam
@@ -1558,6 +1654,7 @@ library
       Marvel.Support.Supports.SpdrCommand
       Marvel.Support.Supports.SpdrSuitInactive
       Marvel.Support.Supports.StarkTower
+      Marvel.Support.Supports.StepfordCuckoos
       Marvel.Support.Supports.StevesApartment
       Marvel.Support.Supports.SuperhumanLawDivision
       Marvel.Support.Supports.SurveillanceTeam
@@ -1595,6 +1692,18 @@ library
       Marvel.Treachery.Treacheries
       Marvel.Treachery.Treacheries.AcolyteFrenzy
       Marvel.Treachery.Treacheries.Advance
+      Marvel.Treachery.Treacheries.AgeOfApocalypseAgeOfApocalypse
+      Marvel.Treachery.Treacheries.AgeOfApocalypseApocalypse
+      Marvel.Treachery.Treacheries.AgeOfApocalypseCelestialTech
+      Marvel.Treachery.Treacheries.AgeOfApocalypseClanAkkaba
+      Marvel.Treachery.Treacheries.AgeOfApocalypseDarkBeast
+      Marvel.Treachery.Treacheries.AgeOfApocalypseDystopianNightmare
+      Marvel.Treachery.Treacheries.AgeOfApocalypseEnSabahNur
+      Marvel.Treachery.Treacheries.AgeOfApocalypseFourHorsemen
+      Marvel.Treachery.Treacheries.AgeOfApocalypseInfinites
+      Marvel.Treachery.Treacheries.AgeOfApocalypseSavageLand
+      Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII
+      Marvel.Treachery.Treacheries.AgeOfApocalypseUnus
       Marvel.Treachery.Treacheries.AllInADaysWork
       Marvel.Treachery.Treacheries.AncientGrudge
       Marvel.Treachery.Treacheries.AndroidEfficiency
@@ -1602,6 +1711,7 @@ library
       Marvel.Treachery.Treacheries.Assault
       Marvel.Treachery.Treacheries.AstralAttack
       Marvel.Treachery.Treacheries.BadoonHeadhunter
+      Marvel.Treachery.Treacheries.BattleForLimbo
       Marvel.Treachery.Treacheries.BeetleMania
       Marvel.Treachery.Treacheries.BitterRival
       Marvel.Treachery.Treacheries.BuddySystem
@@ -1740,6 +1850,7 @@ library
       Marvel.Treachery.Treacheries.TailSweep
       Marvel.Treachery.Treacheries.TechnologicalEnhancements
       Marvel.Treachery.Treacheries.TelekineticDragon
+      Marvel.Treachery.Treacheries.TemporalTrickery
       Marvel.Treachery.Treacheries.TentacleStrike
       Marvel.Treachery.Treacheries.Thanos
       Marvel.Treachery.Treacheries.TheHood
@@ -1772,6 +1883,8 @@ library
       Marvel.Upgrade.Upgrades.AdamantiumLacing
       Marvel.Upgrade.Upgrades.AdamantiumSkeleton
       Marvel.Upgrade.Upgrades.AdrenalineRush
+      Marvel.Upgrade.Upgrades.AdvancedSuit
+      Marvel.Upgrade.Upgrades.AgeOfApocalypseBasicCampaign
       Marvel.Upgrade.Upgrades.Ambush
       Marvel.Upgrade.Upgrades.Anticipation
       Marvel.Upgrade.Upgrades.AntMansHelmet
@@ -1789,8 +1902,12 @@ library
       Marvel.Upgrade.Upgrades.BerserkerFrenzy
       Marvel.Upgrade.Upgrades.BiokineticPolymerSuit
       Marvel.Upgrade.Upgrades.BioSyntheticWings
+      Marvel.Upgrade.Upgrades.BishopsRifle
+      Marvel.Upgrade.Upgrades.BishopsUniform
       Marvel.Upgrade.Upgrades.Blackout
       Marvel.Upgrade.Upgrades.BlackWidowsGauntlet
+      Marvel.Upgrade.Upgrades.Bloodgem
+      Marvel.Upgrade.Upgrades.BloodRage
       Marvel.Upgrade.Upgrades.BoosterBoots
       Marvel.Upgrade.Upgrades.BoundlessRage
       Marvel.Upgrade.Upgrades.BruteForce
@@ -1916,6 +2033,7 @@ library
       Marvel.Upgrade.Upgrades.LuckyBreak
       Marvel.Upgrade.Upgrades.MagicalEnhancements
       Marvel.Upgrade.Upgrades.MagicShield
+      Marvel.Upgrade.Upgrades.MagiksCrown
       Marvel.Upgrade.Upgrades.Marked
       Marvel.Upgrade.Upgrades.MarkVArmor
       Marvel.Upgrade.Upgrades.MarkVHelmet
@@ -1929,6 +2047,7 @@ library
       Marvel.Upgrade.Upgrades.MountedLaser
       Marvel.Upgrade.Upgrades.MultiGun
       Marvel.Upgrade.Upgrades.MutantGenesisCampaign
+      Marvel.Upgrade.Upgrades.MysticalArmor
       Marvel.Upgrade.Upgrades.MysticSenses
       Marvel.Upgrade.Upgrades.NavigationColumn
       Marvel.Upgrade.Upgrades.NervesOfSteel
@@ -1986,6 +2105,7 @@ library
       Marvel.Upgrade.Upgrades.Shrink
       Marvel.Upgrade.Upgrades.Sidearm
       Marvel.Upgrade.Upgrades.SideHolster
+      Marvel.Upgrade.Upgrades.Sidekick
       Marvel.Upgrade.Upgrades.SkilledInvestigator
       Marvel.Upgrade.Upgrades.SkyCycle
       Marvel.Upgrade.Upgrades.SmCampaign
@@ -1993,6 +2113,7 @@ library
       Marvel.Upgrade.Upgrades.SolarGem
       Marvel.Upgrade.Upgrades.Solid
       Marvel.Upgrade.Upgrades.SonicRifle
+      Marvel.Upgrade.Upgrades.Soulsword
       Marvel.Upgrade.Upgrades.SpdrPilot
       Marvel.Upgrade.Upgrades.SpeedMetalAlloy
       Marvel.Upgrade.Upgrades.SpiderSense
@@ -2003,6 +2124,7 @@ library
       Marvel.Upgrade.Upgrades.StickToItiveness
       Marvel.Upgrade.Upgrades.StormsCape
       Marvel.Upgrade.Upgrades.StormsCrown
+      Marvel.Upgrade.Upgrades.SuperCharged
       Marvel.Upgrade.Upgrades.SuperhumanStrength
       Marvel.Upgrade.Upgrades.SupernovaHelmet
       Marvel.Upgrade.Upgrades.SuperSoldierSerum
@@ -2017,6 +2139,7 @@ library
       Marvel.Upgrade.Upgrades.TelekineticShield
       Marvel.Upgrade.Upgrades.Telepathy
       Marvel.Upgrade.Upgrades.Tenacity
+      Marvel.Upgrade.Upgrades.TestTheDefense
       Marvel.Upgrade.Upgrades.TheDirectApproach
       Marvel.Upgrade.Upgrades.TheEyeOfAgamotto
       Marvel.Upgrade.Upgrades.TheSorcererSupreme
@@ -2061,6 +2184,11 @@ library
       Marvel.Villain.Cards
       Marvel.Villain.Types
       Marvel.Villain.Villains.AbsorbingMan
+      Marvel.Villain.Villains.AgeOfApocalypseApocalypse
+      Marvel.Villain.Villains.AgeOfApocalypseDarkBeast
+      Marvel.Villain.Villains.AgeOfApocalypseEnSabahNur
+      Marvel.Villain.Villains.AgeOfApocalypseFourHorsemen
+      Marvel.Villain.Villains.AgeOfApocalypseUnus
       Marvel.Villain.Villains.Bulldozer
       Marvel.Villain.Villains.Collector
       Marvel.Villain.Villains.CollectorEscape
@@ -2255,6 +2383,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.AggressionSpec
       Marvel.Aspect.AngelPackSpec
       Marvel.Aspect.BasicSpec
+      Marvel.Aspect.BishopPackSpec
       Marvel.Aspect.BlackWidowPackSpec
       Marvel.Aspect.CablePackSpec
       Marvel.Aspect.CaptainAmericaPackSpec
@@ -2278,6 +2407,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.LeadershipSpec
       Marvel.Aspect.MadTitansShadowAspectSpec
       Marvel.Aspect.MadTitansShadowLeadershipSpec
+      Marvel.Aspect.MagikPackSpec
       Marvel.Aspect.MilesMoralesPackSpec
       Marvel.Aspect.MsMarvelPackSpec
       Marvel.Aspect.MutantGenesisPackSpec
@@ -2312,6 +2442,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.WebWarriorSpec
       Marvel.Aspect.WolverinePackSpec
       Marvel.Aspect.X23PackSpec
+      Marvel.Campaign.AgeOfApocalypseSpec
       Marvel.Campaign.GalaxysMostWantedSpec
       Marvel.Campaign.MadTitansShadowSpec
       Marvel.Campaign.MarketCheapEventsSpec
@@ -2321,7 +2452,15 @@ test-suite MarvelChampions-test
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec
+      Marvel.Encounter.AgeOfApocalypseApocalypseSpec
+      Marvel.Encounter.AgeOfApocalypseCampaignCardsSpec
+      Marvel.Encounter.AgeOfApocalypseDarkBeastSpec
+      Marvel.Encounter.AgeOfApocalypseEnSabahNurSpec
+      Marvel.Encounter.AgeOfApocalypseFourHorsemenSpec
+      Marvel.Encounter.AgeOfApocalypseStandardIIISpec
+      Marvel.Encounter.AgeOfApocalypseUnusSpec
       Marvel.Encounter.AngelNemesisSpec
+      Marvel.Encounter.BishopNemesisSpec
       Marvel.Encounter.BlackWidowNemesisSpec
       Marvel.Encounter.BrotherhoodOfBadoonSpec
       Marvel.Encounter.CableNemesisSpec
@@ -2354,6 +2493,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.LokiSpec
       Marvel.Encounter.LongshotEncounterSpec
       Marvel.Encounter.MadTitansShadowCampaignSpec
+      Marvel.Encounter.MagikNemesisSpec
       Marvel.Encounter.MilesMoralesNemesisSpec
       Marvel.Encounter.MisterSinisterSpec
       Marvel.Encounter.ModularsSpec
@@ -2421,6 +2561,8 @@ test-suite MarvelChampions-test
       Marvel.Hero.AngelSignatureSpec
       Marvel.Hero.AngelSpec
       Marvel.Hero.AntManSpec
+      Marvel.Hero.BishopSignatureSpec
+      Marvel.Hero.BishopSpec
       Marvel.Hero.BlackPantherSpec
       Marvel.Hero.BlackWidowSpec
       Marvel.Hero.CableSignatureSpec
@@ -2448,6 +2590,8 @@ test-suite MarvelChampions-test
       Marvel.Hero.IronheartSignatureSpec
       Marvel.Hero.IronheartSpec
       Marvel.Hero.IronManSpec
+      Marvel.Hero.MagikSignatureSpec
+      Marvel.Hero.MagikSpec
       Marvel.Hero.MilesMoralesSignatureSpec
       Marvel.Hero.MilesMoralesSpec
       Marvel.Hero.MsMarvelSpec
@@ -2497,6 +2641,9 @@ test-suite MarvelChampions-test
       Marvel.RoundSpec
       Marvel.Rules.AbilityWindowSnapshotSpec
       Marvel.Rules.ActualResourcesSpec
+      Marvel.Rules.AgeOfApocalypseCampaignSpec
+      Marvel.Rules.AgeOfApocalypseGrantedSurgeSpec
+      Marvel.Rules.AgeOfApocalypseMissionSpec
       Marvel.Rules.AllianceSpec
       Marvel.Rules.AllyDiscardCostSpec
       Marvel.Rules.AllyHeldCardsSpec
@@ -2532,6 +2679,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.GalaxysMostWantedSpec
       Marvel.Rules.GambitMechanicsSpec
       Marvel.Rules.IronheartMechanicsSpec
+      Marvel.Rules.MagikTopDeckSpec
       Marvel.Rules.MutantGenesisLabeledAbilitiesSpec
       Marvel.Rules.MutantGenesisMechanicsSpec
       Marvel.Rules.NextEvolutionMechanicsSpec

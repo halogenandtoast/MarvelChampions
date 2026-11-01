@@ -8,6 +8,7 @@
 -- Stored games and exports keep the engine's own JSON; this is only ever sent.
 module Marvel.Game.Public (publicGame, publicGameFor, owedFor, describeChoice, GameView (..), ChoiceView (..)) where
 
+import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Prelude
 import Control.Monad.Reader (runReaderT)
 import Data.Functor.Identity (runIdentity)
@@ -49,7 +50,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
-import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, CanLookAtTopOfEncounterDeck))
+import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, CanLookAtTopOfEncounterDeck, PlayTopOfDeckAsHand))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -66,6 +67,19 @@ import Marvel.Villain.Types qualified as Villain
 import Marvel.Window.Types (ThreatSource)
 import Marvel.Window.Types qualified as W
 
+data MissionView = MissionView
+  { scheme :: Maybe SchemeView
+  , allies :: [AllyView]
+  , minions :: [MinionView]
+  , attempts :: Natural
+  , finished :: Bool
+  , succeeded :: Bool
+  , participants :: [AllyId]
+  , assignments :: [(AllyId, CardView)]
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
 data GameView = GameView
   { round :: Int
   , phase :: Phase
@@ -80,6 +94,7 @@ data GameView = GameView
   , mainSchemes :: [SchemeView]
   , sideSchemes :: [SchemeView]
   , minions :: [MinionView]
+  , mission :: Maybe MissionView
   , uncontrolledAllies :: [AllyView]
   , environments :: [EnvironmentView]
   , futurePastDeckCount :: Maybe Int
@@ -203,6 +218,8 @@ data PlayerView = PlayerView
   , hand :: Maybe [CardView]
   -- ^ only when the viewer may see it
   , deckSize :: Int
+  , deckTop :: Maybe CardView
+  -- ^ publicly faceup while the hero grants that permission
   , discard :: [CardView]
   , dealtEncounterCards :: Int
   , identityBoostCards :: Int
@@ -435,9 +452,19 @@ gameView :: (IdentityId -> Bool) -> Game -> GameAppT GameView
 gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
-  schemes <- traverse sideSchemeView (HashMap.elems $ gameSideSchemes g)
-  minions <- traverse minionView (HashMap.elems $ gameMinions g)
-  uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g]
+  let missionState = scenarioMission (toAttrs $ gameScenario g)
+      missionAllyIds = maybe [] missionAllies missionState
+      missionMinionIds = maybe [] missionMinions missionState
+      missionSchemeId = missionScheme <$> missionState
+  schemes <- traverse sideSchemeView [x | x <- HashMap.elems $ gameSideSchemes g, Just (toId x) /= missionSchemeId]
+  minions <- traverse minionView [x | x <- HashMap.elems $ gameMinions g, toId x `notElem` missionMinionIds]
+  uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g, toId a `notElem` missionAllyIds]
+  mission <- for missionState \m -> do
+    scheme <- traverse sideSchemeView (HashMap.lookup (missionScheme m) $ gameSideSchemes g)
+    allies <- traverse allyView [a | aid <- missionAllies m, Just a <- [HashMap.lookup aid $ gameAllies g]]
+    missionMinions <- traverse minionView [a | mid <- missionMinions m, Just a <- [HashMap.lookup mid $ gameMinions g]]
+    pure $ MissionView scheme allies missionMinions (missionAttempts m) (missionFinished m) (missionSucceeded m)
+      (missionParticipants m) [(aid, cardView $ PlayerCard card) | (aid, card) <- missionAssignments m]
   mayLook <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
   threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
     threshold <- case sid of
@@ -488,6 +515,7 @@ gameView seesHand g = do
       , mainSchemes = map mainSchemeView (HashMap.elems $ gameMainSchemes g)
       , sideSchemes = schemes
       , minions
+      , mission
       , uncontrolledAllies
       , environments =
           [ EnvironmentView a.environmentId (toCardCode a.environmentCardDef) (display $ cdName a.environmentCardDef) (attachmentsIn a.environmentAttachments) a.environmentCounters a.environmentOwner a.environmentDamage (fromIntegral $ length a.environmentHeldCards)
@@ -578,6 +606,10 @@ gameView seesHand g = do
         let ha = toAttrs h
         (,,,) <$> (Just <$> Hero.getModifiedThwart ha) <*> (Just <$> Hero.getModifiedAttack ha) <*> (Just <$> Hero.getModifiedDefense ha) <*> pure Nothing
       AlterEgoSide ae -> (Nothing,Nothing,Nothing,) . Just <$> AlterEgo.getModifiedRecovery (toAttrs ae)
+    modifiers <- getModifiers p
+    blanked <- isBlanked p
+    let visibleTop = if PlayTopOfDeckAsHand `elem` modifiers && not blanked
+          then cardView . PlayerCard <$> headMay (unDeck a.playerIdentityDeck) else Nothing
     stunnedNow <- identityIsStunned p
     confusedNow <- identityIsConfused p
     allies <- traverse allyView [ally | ally <- HashMap.elems (gameAllies g), toId ally `HashSet.member` a.playerIdentityAllies]
@@ -608,6 +640,7 @@ gameView seesHand g = do
         , handCount = length handCards
         , hand = guard (seesHand (toId p)) $> map (cardView . PlayerCard) handCards
         , deckSize = length (unDeck a.playerIdentityDeck)
+        , deckTop = visibleTop
         , discard = map (cardView . PlayerCard) (unDiscard a.playerIdentityDiscard)
         , dealtEncounterCards = length a.playerIdentityEncounterCards
         , identityBoostCards = length a.playerIdentityBoostCards
@@ -700,7 +733,7 @@ gameView seesHand g = do
         }
   minionView (m :: Minion) = do
     let a = toAttrs m
-        hiddenHeldCards = toCardCode a `elem` ["39052", "39058"]
+        hiddenHeldCards = toCardCode a `elem` ["39052", "39058", "45181a", "45181b"]
     hp <- Minion.getModifiedHitPoints a
     atk <- Minion.getModifiedAttack a
     sch <- Minion.getModifiedScheme a

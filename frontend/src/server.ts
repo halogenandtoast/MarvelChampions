@@ -96,6 +96,8 @@ export interface PlayerView {
   handCount: number
   hand: CardView[] | null
   deckSize: number
+  /** Publicly faceup player-deck card, when a hero grants that permission. */
+  deckTop?: CardView | null
   discard: CardView[]
   /** Facedown boost cards waiting on this identity (Venom). */
   identityBoostCards?: number
@@ -275,7 +277,19 @@ export interface BoostView {
   name: string | null
 }
 
+export interface MissionView {
+  scheme: SchemeView | null
+  allies: AllyView[]
+  minions: MinionView[]
+  attempts: number
+  finished: boolean
+  succeeded: boolean
+  participants: string[]
+  assignments: [string, CardView][]
+}
+
 export interface GameView {
+  mission: MissionView | null
   uncontrolledAllies?: AllyView[]
   futurePastDeckCount?: number | null
   round: number
@@ -433,6 +447,7 @@ export interface CampaignLog {
   titan: TitanLog
   sinister: SinisterLog
   mutantGenesis: MutantGenesisLog
+  apocalypse: ApocalypseLog
   nextEvolution: NextEvolutionLog
 }
 
@@ -441,6 +456,13 @@ export type MutantRole = 'Brawler' | 'Commander' | 'Defender' | 'Peacekeeper'
 export interface MutantPlayer {
   identity: string
   role: MutantRole | null
+}
+
+export interface ApocalypseLog {
+  missions: [number, string][]
+  successfulMissions: string[]
+  defeatedOverseers: string[]
+  apocalypseRewards: [string, string[]][]
 }
 
 export interface NextEvolutionLog {
@@ -514,7 +536,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

@@ -54,7 +54,10 @@ instance RunMessage WorriedFather where
           c : _ -> removeFromGame c >> pure [c]
           [] -> pure []
       shuffleDeck you
-      pure $ WorriedFather $ attrs' & heldCardsL <>~ held
+      cardSpecific attrs "holdAfterRemoval" held
+      pure $ WorriedFather attrs'
+    CardSpecific (isTarget attrs -> True) "holdAfterRemoval" (fromJSON -> Success cards) ->
+      pure $ WorriedFather $ attrs & heldCardsL <>~ cards
     -- The obligation stays in the player's play area, with George attached facedown.
     ObligationMessage oid (ResolvedObligation _) | oid == obligationId attrs -> pure o
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do

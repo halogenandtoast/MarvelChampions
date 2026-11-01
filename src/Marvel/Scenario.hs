@@ -1,6 +1,11 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.AgeOfApocalypseDarkBeast
+import Marvel.Scenario.AgeOfApocalypseEnSabahNur
+import Marvel.Scenario.AgeOfApocalypseApocalypse
+import Marvel.Scenario.AgeOfApocalypseFourHorsemen
+import Marvel.Scenario.AgeOfApocalypseUnus
 import Marvel.Scenario.NextEvolution
 
 import Marvel.Scenario.Mojo
@@ -59,7 +64,8 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
+    [ SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
+    , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
     , SomeScenarioCard mojoScenario
     , SomeScenarioCard mojoMagogScenario
     , SomeScenarioCard mojoSpiralScenario
@@ -136,7 +142,12 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("40077", [EncounterSet.MilitaryGrade, EncounterSet.MutantSlayers]), ("40103", [EncounterSet.MilitaryGrade, EncounterSet.NastyBoys]), ("40118", [EncounterSet.BlackTomCassidy]), ("40136", [EncounterSet.NastyBoys]), ("40163", [EncounterSet.ExtremeMeasures, EncounterSet.MutantInsurrection])
+    [ ("45118", [EncounterSet.AoaDystopianNightmare])
+    , ("45184a", [EncounterSet.AoaCelestialTech, EncounterSet.AoaClanAkkaba])
+    , ("45101b", [EncounterSet.AoaDarkRiders, EncounterSet.AoaInfinites])
+    , ("45081a", [EncounterSet.AoaDystopianNightmare, EncounterSet.AoaHounds])
+    , ("45059", [EncounterSet.AoaDystopianNightmare])
+    , ("40077", [EncounterSet.MilitaryGrade, EncounterSet.MutantSlayers]), ("40103", [EncounterSet.MilitaryGrade, EncounterSet.NastyBoys]), ("40118", [EncounterSet.BlackTomCassidy]), ("40136", [EncounterSet.NastyBoys]), ("40163", [EncounterSet.ExtremeMeasures, EncounterSet.MutantInsurrection])
     , ("32060", [EncounterSet.Brotherhood, EncounterSet.Mystique])
     , ("32084", [EncounterSet.Sentinels])
     , ("32109", [EncounterSet.ZeroTolerance])

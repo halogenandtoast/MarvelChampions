@@ -24,7 +24,7 @@ import Data.List (find, nub)
 import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
 import Marvel.Aspect (Aspect (..))
-import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
+import Marvel.Campaign (Campaign (..), CampaignLog (..), CampaignKind (AgeOfApocalypseCampaign), apocalypseRewardsFor, campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
@@ -203,7 +203,7 @@ campaignDeck c d =
   d
     { cards =
         [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved]
-          <> [(code, 1) | code <- campaignCardsOf d.hero c]
+          <> [(code, 1) | code <- campaignCardsOf d.hero c, c.kind /= AgeOfApocalypseCampaign || not (any (sameCampaignCard code . fst) d.cards)]
     }
 
 {- | How many cards the player must add to the deck they began the campaign with, once the
@@ -222,7 +222,14 @@ campaignDeckShortBy c d = max 0 (40 - counted)
       , code `notElem` c.campaignLog.alliesRemoved
       , Just def <- [HashMap.lookup code allPlayerCards]
       , Permanent `notElem` cdKeywords def
-      ]
+      ] - length
+      [reward | reward <- apocalypseRewardsFor d.hero c, any (\(code,n) -> n > 0 && sameCampaignCard code reward) d.cards]
+
+sameCampaignCard :: CardCode -> CardCode -> Bool
+sameCampaignCard left right = case (HashMap.lookup left allPlayerCards, HashMap.lookup right allPlayerCards) of
+  (Just a, Just b) -> sameCard a b
+  _ -> left == right
+
 
 {- | The cards of The Market in the deck: bought with units in The Galaxy's Most Wanted
 campaign, they "cannot be included in a deck unless players are playing" it (rulebook
@@ -330,6 +337,8 @@ starterDecks =
   , ("angel", DeckList "42001a" ["protection"] $ tally ["42002", "42003", "42003", "42004", "42004", "42005", "42005", "42006", "42006", "42007", "42007", "42008", "42008", "42009", "42010", "42011", "42012", "42013", "42014", "42014", "42014", "42015", "42015", "42015", "42016", "42016", "42016", "42017", "42018", "42019", "42019", "42019", "42020", "42021", "42022", "42022", "42022", "42023", "42023", "42023"])
   , ("x-23", DeckList "43001a" ["aggression"] $ tally ["43002", "43003", "43004", "43004", "43005", "43005", "43005", "43006", "43006", "43007", "43008", "43009", "43010", "43011", "43012", "43012", "43013", "43014", "43015", "43016", "43016", "43016", "43017", "43017", "43017", "43018", "43019", "43019", "43019", "43020", "43020", "43020", "43021", "43022", "43023", "43024", "43025", "43026", "43027", "43027", "43027"])
   , ("deadpool", DeckList "44001a" ["pool"] $ tally ["44002", "44003", "44004", "44004", "44005", "44006", "44006", "44007", "44008", "44009", "44010", "44010", "44011", "44012", "44012", "44013", "44014", "44015", "44016", "44017", "44017", "44017", "44018", "44019", "44020", "44021", "44021", "44021", "44022", "44023", "44024", "44025", "44026", "44027", "44028", "44029", "44029", "44029", "44030", "44031"])
+  , ("bishop", DeckList "45001a" ["leadership"] $ tally ["45002", "45003", "45004", "45005", "45006", "45006", "45007", "45007", "45008", "45008", "45009", "45009", "45010", "45010", "45010", "45011", "45012", "45013", "45013", "45013", "45014", "45014", "45014", "45015", "45016", "45016", "45016", "45017", "45017", "45017", "45018", "45018", "45018", "45019", "45019", "45020", "45021", "45022", "45023", "45024"])
+  , ("magik", DeckList "45030a" ["aggression"] $ tally ["45031", "45032", "45033", "45034", "45035", "45036", "45037", "45037", "45037", "45038", "45038", "45039", "45039", "45040", "45040", "45041", "45042", "45043", "45043", "45043", "45044", "45044", "45044", "45045", "45045", "45045", "45046", "45046", "45046", "45047", "45047", "45048", "45049", "45050", "45051", "45051", "45051", "45052", "45052", "45052"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

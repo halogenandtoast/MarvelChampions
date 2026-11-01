@@ -12,7 +12,7 @@ import Marvel.NextEvolution.Sinister (superpowers)
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Query
-import Marvel.Trait (Trait (..))
+import Marvel.Trait hiding (Finished)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
 import TestImport

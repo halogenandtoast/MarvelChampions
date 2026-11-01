@@ -23,6 +23,12 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  EnemyDefeatedByBasicAttack identityMatcher -> case windowType w of
+    DefeatedMinion _ damage (IdentityRef you) _
+      | windowTiming w == After, damageSource damage == FromPlayerAttack you -> identityMatches identityMatcher you
+    DefeatedVillain _ damage (IdentityRef you) _
+      | windowTiming w == After, damageSource damage == FromPlayerAttack you -> identityMatches identityMatcher you
+    _ -> pure False
   CharacterTookIndirectDamage characterMatcher -> case windowType w of
     IdentityTookDamage ident _ damage | windowTiming w == After, damageIndirect damage, damageAmount damage > 0 -> characterMatches characterMatcher (IdentityCharacter ident)
     AllyTookDamage aid _ damage | windowTiming w == After, damageIndirect damage, damageAmount damage > 0 -> characterMatches characterMatcher (AllyCharacter aid)
@@ -108,6 +114,11 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   IdentityDamaged timing identityMatcher -> case windowType w of
     IdentityTookDamage ident _ damage | windowTiming w == timing && damageAmount damage > 0 -> identityMatches identityMatcher ident
+    _ -> pure False
+  IdentityDamagedByAttack timing identityMatcher -> case windowType w of
+    IdentityTookDamage ident _ damage
+      | windowTiming w == timing, damageAmount damage > 0
+      , damageSource damage `elem` [FromAttack, FromOverkill] -> identityMatches identityMatcher ident
     _ -> pure False
   ThreatRemovedByThwart timing sourceMatcher schemeMatcher -> case windowType w of
     ThwartRemovedThreat from scheme _ removed | windowTiming w == timing && removed > 0 ->
@@ -205,7 +216,7 @@ windowMatches matcher w source = case matcher of
             (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
     _ -> pure False
   EnemyAttacked timing enemyMatcher identityMatcher -> case windowType w of
-    EnemyAttackAlly enemyId _ ident | timing == After, windowTiming w == After ->
+    EnemyAttackAlly enemyId _ ident | windowTiming w == timing ->
       (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
     EnemyAttack enemyId ident
       | windowTiming w == timing ->

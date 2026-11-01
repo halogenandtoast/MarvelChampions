@@ -1,5 +1,30 @@
 module Marvel.Treachery.Treacheries (module X) where
 
+import Marvel.Treachery.Treacheries.AgeOfApocalypseUnus as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseSavageLand as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseInfinites as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseFourHorsemen as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseEnSabahNur as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseDystopianNightmare as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseDarkBeast as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseClanAkkaba as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseCelestialTech as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseApocalypse as X
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseAgeOfApocalypse as X
+
+import Marvel.Treachery.Treacheries.BattleForLimbo as X
 import Marvel.Treachery.Treacheries.NextEvolutionFlightSet as X
 
 import Marvel.Treachery.Treacheries.NextEvolutionTelepathySet as X
@@ -272,3 +297,6 @@ import Marvel.Treachery.Treacheries.HackNSlashX23 as X
 
 import Marvel.Treachery.Treacheries.CrisisOfInfiniteDeadpools as X
 import Marvel.Treachery.Treacheries.MetacidalTendencies as X
+
+-- Bishop
+import Marvel.Treachery.Treacheries.TemporalTrickery as X

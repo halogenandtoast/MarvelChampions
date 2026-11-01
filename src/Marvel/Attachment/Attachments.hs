@@ -1,5 +1,23 @@
 module Marvel.Attachment.Attachments (module X) where
 
+import Marvel.Attachment.Attachments.AgeOfApocalypseUnus as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseHounds as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseGenosha as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseFourHorsemen as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseEnSabahNur as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseDarkBeast as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseCelestialTech as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseBlueMoon as X
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseApocalypse as X
+
 import Marvel.Attachment.Attachments.NextEvolutionTelepathySet as X
 
 import Marvel.Attachment.Attachments.NextEvolutionSuperStrengthSet as X

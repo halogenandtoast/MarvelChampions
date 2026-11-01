@@ -73,13 +73,14 @@ spec = parallel do
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
-      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
                <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
-               <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases)) | name <- campaigns]
+               <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases) || (any (`elem` focusHeroes) ["bishop", "magik"] && name `elem` apocalypseCampaignCases)) | name <- campaigns]
       mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
       nextEvolutionCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios NextEvolution), mode <- [StandardCampaign, ExpertCampaign]]
+      apocalypseCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios AgeOfApocalypseCampaign), mode <- [StandardCampaign, ExpertCampaign]]
   selected <- if not focused then pure Nothing else runIO do
     for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
     for_ focusModulars $ \modular -> unless (any ((== Text.toCaseFold modular) . Text.toCaseFold . Text.pack . show) modularSets) $
@@ -106,6 +107,12 @@ spec = parallel do
         for_ [(Normal,[Encounter.StandardII]), (Expert,[Encounter.StandardII,Encounter.ExpertII]), (Expert,[Encounter.ExpertII])] $ \(mode,sets) ->
           it (show villain <> " with " <> show sets <> " on " <> show mode) $
             playSetup (ScenarioSetup villain (sets <> [Encounter.BeastyBoys,Encounter.BrothersGrimm,Encounter.CrossfiresCrew,Encounter.MisterHydeSet,Encounter.RansackedArmory,Encounter.SinisterSyndicate,Encounter.StateOfEmergency]) mode) ["spider-man","she-hulk"]
+    describe "Age of Apocalypse with Standard III" do
+      for_ (campaignScenarios AgeOfApocalypseCampaign) \villain ->
+        for_ [Normal, Expert] \mode ->
+          it (show villain <> " with Standard III on " <> show mode) do
+            let setup = fromMaybe (error "no setup") (recommendedSetup villain)
+            playSetup setup {difficulty = mode, modulars = Encounter.StandardIII : setup.modulars} ["bishop", "magik"]
     -- each scenario of The Mad Titan's Shadow as a campaign game, every box of its log
     -- checked so each campaign card comes in, expert with the hit points recorded (one
     -- player hurt, one defeated last scenario)
@@ -172,6 +179,31 @@ spec = parallel do
                   <> zipWith RecordHitPoints identities [5, 0]
                 c = foldl' (flip recordInLog) base records
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+    describe "Age of Apocalypse campaign" do
+      for_ (zip [0 ..] $ campaignScenarios AgeOfApocalypseCampaign) \(n, villain) ->
+        for_ [StandardCampaign, ExpertCampaign] \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
+            let heroes' = ["bishop", "magik"]
+                identities = map ((.hero) . starter) heroes'
+                base = (newCampaignOf AgeOfApocalypseCampaign mode identities) {completed = n}
+                previous = take n apocalypseMissionCards
+                succeeded mission = mode == StandardCampaign || mission `elem` ["45166a", "45169a"]
+                rewards mission = case mission of
+                  "45166a" -> zipWith RecordApocalypseReward identities ["45176", "45176"]
+                  "45167a" -> zipWith RecordApocalypseReward identities $
+                    if succeeded mission then ["01093", "01093"] else ["45178", "45178"]
+                  "45168a" -> [RecordApocalypseReward identity "01091" | succeeded mission, identity <- identities]
+                  "45169a" -> zipWith RecordApocalypseReward identities ["45172", "45173"]
+                  _ -> []
+                records = zipWith RecordApocalypseMission [1..] previous
+                  <> [RecordApocalypseMissionSuccess mission | mission <- previous, succeeded mission]
+                  <> map RecordApocalypseOverseer (take n apocalypseOverseers)
+                  <> concatMap rewards previous
+                  <> [RecordHitPoints identity hp | n > 0, (identity, hp) <- zip identities [5, 0]]
+                c = foldl' (flip recordInLog) base records
+            playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+
  where
   csvEnv name = maybe [] (filter (not . Text.null) . map Text.strip . Text.splitOn "," . Text.pack) <$> lookupEnv name
   playSetup = playWith id

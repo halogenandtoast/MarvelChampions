@@ -1,6 +1,30 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.Treachery.Treacheries.AgeOfApocalypseUnus
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseSavageLand
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseInfinites
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseFourHorsemen
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseEnSabahNur
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseDystopianNightmare
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseDarkBeast
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseClanAkkaba
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseCelestialTech
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseApocalypse
+
+import Marvel.Treachery.Treacheries.AgeOfApocalypseAgeOfApocalypse
+
 import Marvel.Treachery.Treacheries.HoodPack qualified as HoodPack
 
 import Marvel.Treachery.Treacheries.NextEvolutionTelepathySet
@@ -50,7 +74,10 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard crisisOfInfiniteDeadpools, SomeTreacheryCard metacidalTendencies
+  [ SomeTreacheryCard infinitePrelate, SomeTreacheryCard cullingTheWeak, SomeTreacheryCard warWearyDystopianNightmare, SomeTreacheryCard darkDesigns, SomeTreacheryCard sinisterStrike, SomeTreacheryCard evilAlliance, SomeTreacheryCard nowhereIsSafe, SomeTreacheryCard horsemanOfWar, SomeTreacheryCard horsemanOfFamine, SomeTreacheryCard horsemanOfPestilence, SomeTreacheryCard horsemanOfDeath, SomeTreacheryCard roughRiders, SomeTreacheryCard wolfAmongSheep, SomeTreacheryCard evilGenius, SomeTreacheryCard landOutOfTime, SomeTreacheryCard biomorphicBlast, SomeTreacheryCard technologicalInterface, SomeTreacheryCard giantSizedDespot, SomeTreacheryCard celestialTech, SomeTreacheryCard tyrantWorship, SomeTreacheryCard worldwideCrisis
+  , SomeTreacheryCard battleForLimbo
+  , SomeTreacheryCard temporalTrickery
+  , SomeTreacheryCard crisisOfInfiniteDeadpools, SomeTreacheryCard metacidalTendencies
   , SomeTreacheryCard hackNSlashX23
   , SomeTreacheryCard spearShot
   , SomeTreacheryCard telekineticDragon

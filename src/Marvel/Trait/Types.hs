@@ -4,6 +4,20 @@ import Marvel.Prelude
 
 data Trait
   = BooingCrowd
+  | Dimension
+  | Tracker
+  | Prelate
+  | Overseer
+  | Infinite
+  | ImperialGuard
+  | Horsemen
+  | Genosha
+  | Finished
+  | DarkRiders
+  | Cyberpath
+  | ClanAkkaba
+  | Celestial
+  | Biomorph
   | Possessed
   | Posse
   | NastyBoy
@@ -176,5 +190,6 @@ data Trait
   | Zombie
   | Metagame
   | Pool
+  | Limbo
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

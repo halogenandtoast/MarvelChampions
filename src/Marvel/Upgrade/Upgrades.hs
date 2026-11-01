@@ -1,5 +1,12 @@
 module Marvel.Upgrade.Upgrades (module X) where
 
+import Marvel.Upgrade.Upgrades.AgeOfApocalypseBasicCampaign as X
+import Marvel.Upgrade.Upgrades.Bloodgem as X
+import Marvel.Upgrade.Upgrades.TestTheDefense as X
+import Marvel.Upgrade.Upgrades.BloodRage as X
+import Marvel.Upgrade.Upgrades.MysticalArmor as X
+import Marvel.Upgrade.Upgrades.Soulsword as X
+import Marvel.Upgrade.Upgrades.MagiksCrown as X
 import Marvel.Upgrade.Upgrades.Sharpshooter as X
 import Marvel.Upgrade.Upgrades.ProbabilityField as X
 import Marvel.Upgrade.Upgrades.LuckyBreak as X
@@ -414,3 +421,10 @@ import Marvel.Upgrade.Upgrades.LaserSwords as X
 import Marvel.Upgrade.Upgrades.RockPaperScissors as X
 import Marvel.Upgrade.Upgrades.TicTacToe as X
 import Marvel.Upgrade.Upgrades.War as X
+
+-- Bishop
+import Marvel.Upgrade.Upgrades.BishopsRifle as X
+import Marvel.Upgrade.Upgrades.BishopsUniform as X
+import Marvel.Upgrade.Upgrades.SuperCharged as X
+import Marvel.Upgrade.Upgrades.AdvancedSuit as X
+import Marvel.Upgrade.Upgrades.Sidekick as X

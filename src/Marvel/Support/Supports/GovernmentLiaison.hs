@@ -12,10 +12,10 @@ import Marvel.Support.Types
 import Marvel.Card
 import Marvel.Cost.Types
 import Marvel.Criteria
-import Marvel.Game.Source (canPlayCardWithReduction)
-import Marvel.Hand
-import Marvel.Identity.Types (Field (PlayerIdentityHand))
-import Marvel.Projection
+import Marvel.Game.Source (canPlayCardWithReduction, getPlayableHandCards)
+import Marvel.Hand ()
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
 import Marvel.Matchers ()
 import Marvel.Query ()
 import Marvel.Question (runAbility)
@@ -34,7 +34,7 @@ instance HasAbilities GovernmentLiaison where
 instance RunMessage GovernmentLiaison where
   runMessage msg s@(GovernmentLiaison attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      hand <- projectMap PlayerIdentityHand unHand you
+      hand <- getPlayableHandCards you
       cards <- filterM (canPlayCardWithReduction you 1) (filter (cardMatch $ CardWithTrait Shield) hand)
       unless (null cards) $ chooseOne you [targeting card (playCardWithReduction you 1 card) | card <- cards]
       pure s

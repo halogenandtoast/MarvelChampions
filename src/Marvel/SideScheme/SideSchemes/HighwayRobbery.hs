@@ -42,9 +42,12 @@ instance RunMessage HighwayRobbery where
           headMay <$> (shuffleM =<< projectMap PlayerIdentityHand unHand identityId)
         let cards = catMaybes taken
         for_ cards \c -> removeFromGame (CardIdRef $ pcCardId c)
-        pure . HighwayRobbery $ attrs & heldCardsL <>~ cards
+        cardSpecific attrs "holdTakenCards" cards
+        pure s
       DefeatSideScheme -> do
         for_ (sideSchemeHeldCards attrs) \c -> addToHand (getCardOwner c) c
         pure s
       _ -> HighwayRobbery <$> runMessage msg attrs
+    CardSpecific (isTarget attrs -> True) "holdTakenCards" (fromJSON -> Success cards) ->
+      pure . HighwayRobbery $ attrs & heldCardsL <>~ cards
     _ -> HighwayRobbery <$> runMessage msg attrs

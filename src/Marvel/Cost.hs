@@ -13,7 +13,7 @@ import Marvel.Card.Def
       CardType(MinionType, SideSchemeType),
       HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
 import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
@@ -225,6 +225,12 @@ canAffordCost identityId source cost = do
     ExhaustAlliesMatchingCost matcher n ->
       (>= n) <$> selectListCount (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     ExhaustCharacterCost matcher -> notNull <$> readyCharacterCandidates identityId matcher
+    ResolveSettingSpecialCost -> canResolveSettingSpecial identityId
+    ReadyAllyCost matcher -> do
+      allies <- selectList (matcher <> ExhaustedAlly <> AllyCanReady <> AllyControlledBy (IdentityWithId identityId))
+      anyM (\ally -> do
+        extra <- mconcat . mapMaybe (\case AdditionalReadyCost c -> Just c; _ -> Nothing) <$> getModifiers ally
+        canAffordCost identityId (toSource ally) extra) allies
     ExhaustCharacterWithTraitCost t ->
       orM
         [ selectAny (IdentityWithId identityId <> UnexhaustedIdentity <> IdentityWithTrait t)

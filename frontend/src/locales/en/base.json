@@ -149,7 +149,8 @@
       "other": "You can swap the recommended modular sets for others. Required sets are included automatically. If no sets are recommended, choose the sets you want to use.",
       "mut_gen": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "sm": "You can swap the recommended modular sets for others. Required sets are included automatically.",
-      "next_evol": "You can swap the recommended modular sets for others. Required sets are included automatically."
+      "next_evol": "You can swap the recommended modular sets for others. Required sets are included automatically.",
+      "aoa": "Use the required encounter sets and the recommended modular sets shown, or replace modular sets to customize the scenario. Standard III may replace the core Standard set."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",
@@ -198,7 +199,8 @@
       "mixed": "Choose A or B",
       "hint": "Standard puts each villain's version A into play, expert its version B. Extreme starts each version A with its version B under it, entering play when it is defeated. Or the players choose version A or B for each villain."
     },
-    "change": "Change"
+    "change": "Change",
+    "standardIII": "Standard III"
   },
   "campaign": {
     "riseOfRedSkull": "The Rise of Red Skull",
@@ -301,7 +303,12 @@
     "earnedEnvironments": "Earned environments",
     "maraudersDefeated": "Marauders defeated",
     "morlocksSaved": "Morlocks saved",
-    "hopeDamage": "Damage on Hope Summers"
+    "hopeDamage": "Damage on Hope Summers",
+    "AgeOfApocalypseCampaign": "Age of Apocalypse",
+    "aoaMissions": "Missions attempted",
+    "aoaSuccesses": "Missions completed",
+    "aoaOverseers": "Overseers defeated",
+    "aoaRewards": "Campaign rewards"
   },
   "settings": {
     "title": "Settings",

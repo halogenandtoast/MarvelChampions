@@ -2,6 +2,24 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.AgeOfApocalypseUnus
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseHounds
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseGenosha
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseFourHorsemen
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseEnSabahNur
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseDarkBeast
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseCelestialTech
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseBlueMoon
+
+import Marvel.Attachment.Attachments.AgeOfApocalypseApocalypse
+
 import Marvel.Attachment.Attachments.HoodPack qualified as HoodPack
 
 import Marvel.Attachment.Attachments.NextEvolutionTelepathySet
@@ -53,7 +71,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard tabulaRasa16, SomeAttachmentCard antiRegenerationRay, SomeAttachmentCard poolIzed
+      [ SomeAttachmentCard prelateSidearm, SomeAttachmentCard prelateArmor, SomeAttachmentCard geneticExperiments, SomeAttachmentCard goldenHorse, SomeAttachmentCard metalWings, SomeAttachmentCard ahabsEnergySpear, SomeAttachmentCard noLongerWorthy, SomeAttachmentCard cyberpathy, SomeAttachmentCard biomorphing, SomeAttachmentCard molecularControl, SomeAttachmentCard theFittest, SomeAttachmentCard highTechGoggles, SomeAttachmentCard geneticEnhancement, SomeAttachmentCard cruelExperiment, SomeAttachmentCard escapedMutant, SomeAttachmentCard imperialGuardsman, SomeAttachmentCard staggeringStrength, SomeAttachmentCard celestialArmor, SomeAttachmentCard celestialWeapon
+  , SomeAttachmentCard tabulaRasa16, SomeAttachmentCard antiRegenerationRay, SomeAttachmentCard poolIzed
   , SomeAttachmentCard cybermods, SomeAttachmentCard criticalWound
   , SomeAttachmentCard harpoonsHarpoon
   , SomeAttachmentCard psionicIllusion

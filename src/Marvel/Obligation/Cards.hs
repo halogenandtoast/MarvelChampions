@@ -1,5 +1,16 @@
 module Marvel.Obligation.Cards where
 
+
+
+
+import Marvel.Boost qualified as AoaMB
+import Marvel.EncounterSet qualified as AoaMS
+import Marvel.Boost qualified as BpBoost
+import Marvel.Card.Def qualified as BpCard
+import Marvel.Cost.Types qualified as BpCost
+import Marvel.Criteria qualified as BpCriteria
+import Marvel.EncounterSet qualified as BpSet
+
 import Marvel.Ability.Types qualified as DpAbility ()
 import Marvel.Aspect qualified as DpAspect ()
 import Marvel.Boost qualified as DpBoost
@@ -64,12 +75,7 @@ import Marvel.Aspect qualified as NEA ()
 import Marvel.Resource.Types qualified as NER ()
 import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET ()
-import Marvel.Trait qualified as NE ()
-import Marvel.Resource qualified as NE ()
-import Marvel.Keyword qualified as NE ()
 import Marvel.Boost qualified as NE
-import Marvel.Aspect qualified as NE ()
-import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Trait qualified as MojoTrait ()
@@ -91,7 +97,6 @@ import Marvel.Boost qualified as SMBoost
 
 import Marvel.Keyword ()
 import Marvel.EncounterSet
-import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.Matchers ()
@@ -109,7 +114,10 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ theMercWithTheMouth
+    [ hunted, drawingNear, panickedRefugees
+  , darkchilde
+  , fearTheFuture
+  , theMercWithTheMouth
   , selfIsolation
   , apocalypticInfluence
   , bodySwapped
@@ -286,7 +294,7 @@ antiHeroPropaganda = obligation "04166" "Anti-Hero Propaganda" []
 
 -- | The obligations that go into a player's deck, not the encounter deck.
 playerDeckObligations :: HashMap CardCode CardDef
-playerDeckObligations = fromList $ map (toFst toCardCode) [zolasAlgorithm, medicalEmergency, martialLaw, antiHeroPropaganda, systemShock]
+playerDeckObligations = fromList $ map (toFst toCardCode) [zolasAlgorithm, medicalEmergency, martialLaw, antiHeroPropaganda, systemShock, panickedRefugees]
 criminalPast :: CardDef
 criminalPast = obligation "04026" "Criminal Past" [Boost, Boost]
 
@@ -849,6 +857,176 @@ theMercWithTheMouth = DpCard.CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Bishop
+
+fearTheFuture :: CardDef
+fearTheFuture = CardDef
+  { cdCardCode = "45025"
+  , cdName = "Fear the Future"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = BpCard.ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = BpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [BpBoost.Boost, BpBoost.Boost]
+  , cdEncounterSet = Just BpSet.BishopObligation
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Age of Apocalypse: Magik
+darkchilde :: CardDef
+darkchilde = CardDef
+  { cdCardCode = "45053"
+  , cdName = "Darkchilde"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AoaMB.Boost, AoaMB.Boost]
+  , cdEncounterSet = Just AoaMS.MagikObligation
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+-- Age of Apocalypse campaign and scenarios
+
+hunted :: CardDef
+hunted = CardDef
+  { cdCardCode = "45072"
+  , cdName = "Hunted"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.AoaDystopianNightmare
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+drawingNear :: CardDef
+drawingNear = CardDef
+  { cdCardCode = "45080"
+  , cdName = "Drawing Near"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.StandardIII
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+panickedRefugees :: CardDef
+panickedRefugees = CardDef
+  { cdCardCode = "45178"
+  , cdName = "Panicked Refugees"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.AoaCampaign
+  , cdEncounterSetQuantity = Just 4
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

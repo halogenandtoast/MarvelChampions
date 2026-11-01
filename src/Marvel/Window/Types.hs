@@ -55,6 +55,8 @@ data WindowMatcher
   | TreacheryResolvedBy IdentityMatcher
   | HeroThwarted WindowTiming IdentityMatcher
   | IdentityDamaged WindowTiming IdentityMatcher
+  | IdentityDamagedByAttack WindowTiming IdentityMatcher
+  | EnemyDefeatedByBasicAttack IdentityMatcher
   | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
   | RemovesLastThreat IdentityMatcher
   | -- | "after you play <this card>": played, not only put into play

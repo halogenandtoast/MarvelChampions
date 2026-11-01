@@ -1,6 +1,36 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseInfinites
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseHounds
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseGenosha
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseFourHorsemen
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseEnSabahNur
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDystopianNightmare
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkRiders
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseDarkBeast
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseClanAkkaba
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseBlueMoon
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseApocalypse
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseMission
+
+import Marvel.SideScheme.SideSchemes.AgeOfApocalypseCampaign
+
 import Marvel.SideScheme.SideSchemes.HoodPack qualified as HoodPack
 
 import Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe
@@ -56,7 +86,10 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard liveDangerously, SomeSideSchemeCard involuntaryProcedures, SomeSideSchemeCard dreadfulDeeds
+  [ SomeSideSchemeCard endlessRanks, SomeSideSchemeCard genePool, SomeSideSchemeCard targetedForExtermination, SomeSideSchemeCard theRavagesOfWar, SomeSideSchemeCard aTimeOfFamine, SomeSideSchemeCard plagueAndPestilence, SomeSideSchemeCard theSpecterOfDeath, SomeSideSchemeCard releaseTheHounds, SomeSideSchemeCard heartOfTheEmpire, SomeSideSchemeCard theToweringCitadel, SomeSideSchemeCard theTyrantsThrone, SomeSideSchemeCard theApocalypseSolution, SomeSideSchemeCard theDarkRiders, SomeSideSchemeCard timeTravelShenanigans, SomeSideSchemeCard villageUnderAttack, SomeSideSchemeCard policeState, SomeSideSchemeCard trialByCombat, SomeSideSchemeCard sourceOfPower, SomeSideSchemeCard pluggedIn, SomeSideSchemeCard giantGrowth, SomeSideSchemeCard ancientRitual, SomeSideSchemeCard liberateTheSeattleCoreFront, SomeSideSchemeCard liberateTheSeattleCoreFinished, SomeSideSchemeCard evacuateSurvivorsFront, SomeSideSchemeCard evacuateSurvivorsFinished, SomeSideSchemeCard sabotageTheSeaWallFront, SomeSideSchemeCard sabotageTheSeaWallFinished, SomeSideSchemeCard findLostMutantsFront, SomeSideSchemeCard findLostMutantsFinished, SomeSideSchemeCard protectTheProfessorFront, SomeSideSchemeCard protectTheProfessorFinished, SomeSideSchemeCard northAmericanSeaWall
+  , SomeSideSchemeCard rulerOfLimbo
+  , SomeSideSchemeCard portalThroughTime
+  , SomeSideSchemeCard liveDangerously, SomeSideSchemeCard involuntaryProcedures, SomeSideSchemeCard dreadfulDeeds
   , SomeSideSchemeCard keepThemBusy, SomeSideSchemeCard specializedTraining, SomeSideSchemeCard inTheNameOfVengeance, SomeSideSchemeCard rallyTheTroops
   , SomeSideSchemeCard renderMedicalAid, SomeSideSchemeCard hookLineAndSinker
   , SomeSideSchemeCard layTheTrap, SomeSideSchemeCard interdimensionalPlunder

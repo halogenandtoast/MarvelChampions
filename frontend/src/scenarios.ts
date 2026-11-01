@@ -10,12 +10,13 @@ import type { ScenarioOption } from './server'
 export interface Release { code: string; name: string; order: number }
 const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
-const SET_CODES: Record<string, string> = { CrossfiresCrew: 'crossfire_crew', MisterHydeSet: 'mister_hyde', WreckingCrewModular: 'wrecking_crew_modular', StandardII: 'standard_ii', ExpertII: 'expert_ii', ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers', SciFi: 'sci-fi', LongshotSet: 'longshot', NeMarauders: 'marauders', NeJuggernaut: 'juggernaut', NeStryfe: 'stryfe', HopeSummersSet: 'hope_summers', FlightSet: 'flight', SuperStrengthSet: 'super_strength', TelepathySet: 'telepathy', NextEvolutionCampaign: 'next_evol_campaign' }
+const SET_CODES: Record<string, string> = { StandardIII: 'standard_iii', AoaUnus: 'unus', AoaInfinites: 'infinites', AoaDystopianNightmare: 'dystopian_nightmare', AoaFourHorsemen: 'four_horsemen', AoaHounds: 'hounds', AoaApocalypse: 'apocalypse', AoaPrelates: 'prelates', AoaDarkRiders: 'dark_riders', AoaDarkBeast: 'dark_beast', AoaBlueMoon: 'blue_moon', AoaGenosha: 'genosha', AoaSavageLand: 'savage_land', AoaEnSabahNur: 'en_sabah_nur', AoaCelestialTech: 'celestial_tech', AoaClanAkkaba: 'clan_akkaba', CrossfiresCrew: 'crossfire_crew', MisterHydeSet: 'mister_hyde', WreckingCrewModular: 'wrecking_crew_modular', StandardII: 'standard_ii', ExpertII: 'expert_ii', ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers', SciFi: 'sci-fi', LongshotSet: 'longshot', NeMarauders: 'marauders', NeJuggernaut: 'juggernaut', NeStryfe: 'stryfe', HopeSummersSet: 'hope_summers', FlightSet: 'flight', SuperStrengthSet: 'super_strength', TelepathySet: 'telepathy', NextEvolutionCampaign: 'next_evol_campaign' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
 const RULEBOOK_ROOT = 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/'
 const MODULAR_RULEBOOKS: Record<string, string> = {
+  aoa: `${RULEBOOK_ROOT}mc45_age_of_apocalypse_rulebook.pdf`,
   mojo: `${RULEBOOK_ROOT}mc39_mojomania_rules_insert-compressed.pdf`,
   core: `${RULEBOOK_ROOT}mvc01_learn_to_play_eng-compressed.pdf`,
   gob: `${RULEBOOK_ROOT}mc02_green_goblin_rules_insert.pdf`,
@@ -31,6 +32,7 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {
+  '45081': ['45081a', '45082a', '45083a', '45084a'],
   '40077': ['40080'],
   '40103': ['40102'],
   '07001': ['07002', '07017', '07032', '07046'],

@@ -175,7 +175,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 
     <div class="side">
       <div class="piles">
-        <Pile :label="t('game.piles.deck')" back="player" :count="player.deckSize" :pile="`deck-${player.id}`" />
+        <Pile :label="t('game.piles.deck')" :back="player.deckTop ? null : 'player'" :cards="player.deckTop ? [player.deckTop] : null" :count="player.deckSize" :pile="`deck-${player.id}`" />
         <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
         <Pile v-if="player.weatherDeckSize != null" :label="t('game.piles.weather')" back="player" :count="player.weatherDeckSize" />
         <template v-if="player.invocation">

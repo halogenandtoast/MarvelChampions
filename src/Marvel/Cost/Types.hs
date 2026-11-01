@@ -89,6 +89,8 @@ data Cost
     ExhaustAlliesCost Natural (Maybe Natural)
   | -- | exhaust exactly so many allies the payer controls matching (Mass Attack)
     ExhaustAlliesMatchingCost AllyMatcher Natural
+  | ReadyAllyCost AllyMatcher
+  | ResolveSettingSpecialCost
   | -- | "discard any number of counters from <this card>": at least so many, the payer
     -- choosing how many, paid as 'CountersPayment' (Power Man)
     CountersFromThisCost Natural
@@ -187,6 +189,8 @@ costResources DiscardTopOfDeckForSupportsCost = []
 costResources DiscardTopOfDeckForDamageCost = []
 costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustAlliesMatchingCost _ _) = []
+costResources (ReadyAllyCost _) = []
+costResources ResolveSettingSpecialCost = []
 costResources (ResourcesFromHandCost c) = costResources c
 costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []

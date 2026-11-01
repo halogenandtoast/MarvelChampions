@@ -61,5 +61,8 @@ instance RunMessage HydraPrison where
       _ -> HydraPrison <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "imprison" (fromJSON -> Success card) -> do
       removeFromGame (CardIdRef $ pcCardId card)
-      pure . HydraPrison $ attrs & heldCardsL <>~ [card]
+      cardSpecific attrs "holdTakenCards" [card]
+      pure s
+    CardSpecific (isTarget attrs -> True) "holdTakenCards" (fromJSON -> Success cards) ->
+      pure . HydraPrison $ attrs & heldCardsL <>~ cards
     _ -> HydraPrison <$> runMessage msg attrs
