@@ -120,7 +120,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       :class="{ active, exhausted, landscape, unfolded, source }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
-      :title="title"
+      :aria-label="title"
       @pointerenter="$event.pointerType === 'mouse' && el && preview(el)"
       @pointerleave="$event.pointerType === 'mouse' && overlay.hide()"
       @pointerdown="press"
@@ -138,11 +138,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
-      <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :title="$t('game.threatOn', { count: threat })" />
-      <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :title="$t('game.damageOn', { count: displayedDamage })" />
-      <TokenStack v-if="bombCounters" class="token bombs" kind="generic" :count="bombCounters" :title="$t('game.bombsOn', { count: bombCounters })" />
-      <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :title="$t('game.countersOn', { count: counters })" />
-      <span v-if="held" class="held" :title="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
+      <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :aria-label="$t('game.threatOn', { count: threat })" />
+      <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :aria-label="$t('game.damageOn', { count: displayedDamage })" />
+      <TokenStack v-if="bombCounters" class="token bombs" kind="generic" :count="bombCounters" :aria-label="$t('game.bombsOn', { count: bombCounters })" />
+      <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :aria-label="$t('game.countersOn', { count: counters })" />
+      <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
         <button v-for="chip in chips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
       </div>

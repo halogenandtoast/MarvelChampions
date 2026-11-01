@@ -3,6 +3,7 @@
 // card that has nothing on screen at one end; the view transition morphs one into the other.
 import { BACKS, useCards } from '../cards'
 import type { GameView } from '../server'
+import { searchCardIds } from './cardSearch'
 
 const DEAL_MS = 520
 const STAGGER_MS = 90
@@ -146,7 +147,8 @@ const shown = (view: GameView) => {
   }
   add(view.sideSchemes)
   add(view.environments)
-  add(view.focusedCards)
+  const searching = searchCardIds(view)
+  add(view.focusedCards?.filter((card) => !searching.has(card.id)))
   add(view.boostCards)
   if (view.activeCost) {
     add(view.activeCost.card ? [view.activeCost.card] : [])

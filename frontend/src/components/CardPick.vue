@@ -58,41 +58,48 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 </script>
 
 <template>
-  <div class="pick-backdrop" @click.self="close">
-    <article class="pick" role="dialog" aria-modal="true" :aria-label="title">
-      <header>
-        <h2>{{ title }}</h2>
-        <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
-      </header>
-      <section v-for="g in groups" :key="g.place ?? ''" class="group">
-        <h3 v-if="g.place">{{ keyed(g.place) }}</h3>
-        <div class="cards">
-          <button v-for="c in g.picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
-            @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
-            @pointerleave="cancelPress(); overlay.hide()"
-            @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
-            @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
-            <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
-            <span class="name">{{ cards.name(c.code, c.code) }}</span>
-          </button>
+  <Teleport to="body">
+    <div class="pick-backdrop" @click.self="close">
+      <article class="pick" role="dialog" aria-modal="true" :aria-label="title">
+        <header>
+          <h2>{{ title }}</h2>
+          <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
+        </header>
+        <div class="pick-content" @scroll="overlay.hide()">
+          <section v-for="g in groups" :key="g.place ?? ''" class="group">
+            <h3 v-if="g.place">{{ keyed(g.place) }}</h3>
+            <div class="cards">
+              <button v-for="c in g.picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
+                @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
+                @pointerleave="cancelPress(); overlay.hide()"
+                @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
+                @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
+                <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
+                <span class="name">{{ cards.name(c.code, c.code) }}</span>
+              </button>
+            </div>
+          </section>
         </div>
-      </section>
-      <footer>
-        <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="emit('choose', c.index)">{{ label(c) }}</button>
-        <p v-if="!canChoose" class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
-      </footer>
-    </article>
-  </div>
+        <footer>
+          <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="emit('choose', c.index)">{{ label(c) }}</button>
+          <p v-if="!canChoose" class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
+        </footer>
+      </article>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
 .pick-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 0.6); }
 .pick {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  box-sizing: border-box;
+  min-width: 0;
   width: min(60rem, 100%);
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: min(80dvh, calc(100dvh - 32px));
+  overflow: hidden;
   padding: 20px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
@@ -100,14 +107,17 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
   color: var(--text);
   box-shadow: 0 8px 24px var(--shadow);
 }
+.pick-content { min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; padding: 4px; }
+.pick-content .group + .group { margin-top: 16px; }
+header, footer { flex-shrink: 0; }
 header { display: flex; align-items: center; gap: 12px; }
-h2 { margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: var(--title); }
-.close { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+h2 { overflow-wrap: anywhere; min-width: 0; margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: var(--title); }
+.close { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
 .close:hover { background: var(--hover-tint); color: var(--text); }
 .close svg { width: 20px; height: 20px; }
 .group { display: grid; gap: 8px; }
 h3 { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, 150px); justify-content: center; gap: 14px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 150px)); justify-content: center; gap: 14px; }
 .card { display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
 .card:disabled { cursor: default; }
 .unmatched .face { filter: grayscale(0.85) brightness(0.6); }

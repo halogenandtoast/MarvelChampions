@@ -42,7 +42,7 @@ const close = () => dialog.value?.close()
       type="button"
       class="stack"
       :disabled="!cards?.length"
-      :title="label"
+      :aria-label="label"
       @click="open"
       @pointerenter="$event.pointerType === 'mouse' && top && overlay.show({ code: top.code, name: top.name }, $event.currentTarget as HTMLElement)"
       @pointerleave="overlay.hide()"
@@ -55,7 +55,7 @@ const close = () => dialog.value?.close()
       <span class="count">{{ total }}</span>
     </button>
     <span class="label">{{ label }}</span>
-    <dialog ref="dialog" class="pile-dialog" @click="$event.target === dialog && close()">
+    <dialog ref="dialog" class="pile-dialog" @close="overlay.hide()" @click="$event.target === dialog && close()">
       <header>
         <h2>{{ label }} <small>{{ total }}</small></h2>
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>

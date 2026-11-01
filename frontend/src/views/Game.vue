@@ -25,6 +25,7 @@ import SeatTabs from '../components/SeatTabs.vue'
 import SetupBar from '../components/SetupBar.vue'
 import StoryReading from '../components/StoryReading.vue'
 import CardPick from '../components/CardPick.vue'
+import { searchedCards, searchCardIds } from '../composables/cardSearch'
 import VillainArea from '../components/VillainArea.vue'
 
 const route = useRoute()
@@ -110,10 +111,11 @@ const showArea = (id: number) => {
 }
 // what is happening now: cards revealed, boost cards dealt and turned up, and those the
 // server has told of before the state that follows
+const searchIds = computed(() => game.value ? searchCardIds(game.value) : new Set<string>())
 const riverCards = computed<RiverCard[]>(() => {
   const cards = new Map<string, RiverCard>()
   if (!riverCleared.value) {
-    for (const c of game.value?.focusedCards ?? []) cards.set(c.id, c)
+    for (const c of game.value?.focusedCards ?? []) if (!searchIds.value.has(c.id)) cards.set(c.id, c)
     for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
   }
   for (const c of river.value) cards.set(c.id, { ...cards.get(c.id), ...c })
@@ -245,7 +247,7 @@ const choose = (index: number) => {
 // a campaign scenario's story and rules, read by everyone before its player goes on
 const reading = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.reading?.length) ?? null)
 // a question answered by picking a card in no play area, as a campaign's Tech upgrade
-const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.searched?.length || q?.choices?.some((c) => c.kind === 'card')) ?? null)
+const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q && (searchedCards(game.value, q).length || q.choices.some((c) => c.kind === 'card'))) ?? null)
 // either pops out over the board; closed, the question box opens it again
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
@@ -329,7 +331,7 @@ const resetGame = () => {
       v-else-if="picking && popOut === 'open'"
       :prompt="picking[1].prompt ?? null"
       :choices="picking[1].choices"
-      :searched="picking[1].searched ?? []"
+      :searched="searchedCards(game, picking[1])"
       :can-choose="answering === picking[0]"
       :waiting-on="playerName[picking[0]] ?? null"
       @choose="choose"

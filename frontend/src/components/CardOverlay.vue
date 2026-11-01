@@ -3,12 +3,12 @@ import { useI18n } from 'vue-i18n'
 import { STATUS_WIDTH, useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
 
-const { card, sideways, side, placement, visible } = useCardOverlay()
+const { card, sideways, side, placement, visible, teleportTarget } = useCardOverlay()
 const { t } = useI18n()
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport :to="teleportTarget">
     <div
       v-if="visible && card"
       class="card-overlay"

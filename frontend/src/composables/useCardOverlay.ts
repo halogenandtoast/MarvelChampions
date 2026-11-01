@@ -130,6 +130,8 @@ export const useCardOverlay = () => (listen(), {
   sideways: readonly(sideways),
   side: readonly(side),
   placement,
+  // Native modal dialogs live above the document regardless of z-index.
+  teleportTarget: computed(() => anchor.value?.closest('dialog[open]') ?? 'body'),
   visible: computed(() => card.value !== null),
   canHover,
   show: (shown: Preview, element: HTMLElement, rotated = false, touched = false) => {
