@@ -8,6 +8,7 @@ import Marvel.Matchers ()
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as Schemes
+import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Window ()
 import TestImport
 
@@ -381,3 +382,45 @@ spec = describe "Nightcrawler" do
           other = player2 tg
       _ <- putIntoPlay other "48003"
       getModifiers p >>= (`shouldSatisfy` elem (RecoveryModifier 1))
+
+  it "Port Away still readies Kurt when Threat or Menace prevents changing forms" do
+    tg <- testGame ["nightcrawler"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      _ <- revealNow p Treacheries.smThreatOrMenace
+      choose "remain Kurt" (isLabel "$label.doNotChangeForm")
+      pass
+      runNow [IdentityMessage p BeginTurn]
+      pass
+      getModifiers p >>= (`shouldSatisfy` elem CannotChangeForm)
+      setDamage p 3
+      choose "recover and exhaust Kurt" (\case UseAbility a -> Recover `elem` abilityChoices a; _ -> False)
+      pass
+      isExhaustedPlayer p `shouldReturn` True
+      bamf <- putInHand p "48006"
+      event <- putInHand p "48010"
+      offers (isPlay event) `shouldReturn` True
+      playWith event []
+      whenM (offers $ isTargetChoice bamf) $ choose "discard Bamf" (isTargetChoice bamf)
+      pass
+      playerIdentitySide <$> playerAttrs p `shouldReturn` B
+      isExhaustedPlayer p `shouldReturn` False
+      discardOf p >>= (`shouldSatisfy` elem bamf)
+
+  it "Port Away is not playable when form-locked Kurt is already ready" do
+    tg <- testGame ["nightcrawler"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      _ <- revealNow p Treacheries.smThreatOrMenace
+      choose "remain Kurt" (isLabel "$label.doNotChangeForm")
+      pass
+      runNow [IdentityMessage p BeginTurn]
+      pass
+      getModifiers p >>= (`shouldSatisfy` elem CannotChangeForm)
+      isExhaustedPlayer p `shouldReturn` False
+      bamf <- putInHand p "48006"
+      event <- putInHand p "48010"
+      offers (isPlay event) `shouldReturn` False
+      handOf p >>= (`shouldSatisfy` (\cards -> bamf `elem` cards && event `elem` cards))
