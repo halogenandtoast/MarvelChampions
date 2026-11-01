@@ -34,7 +34,6 @@ import Marvel.Id
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Treachery.Treacheries
-import Marvel.Treachery.Cards qualified as Cards
 
 instance FromJSON Treachery where
   parseJSON = withObject "Treachery" $ \o -> do
@@ -51,7 +50,8 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard hackNSlashX23
+  [ SomeTreacheryCard crisisOfInfiniteDeadpools, SomeTreacheryCard metacidalTendencies
+  , SomeTreacheryCard hackNSlashX23
   , SomeTreacheryCard spearShot
   , SomeTreacheryCard telekineticDragon
   , SomeTreacheryCard HoodPack.hood24017, SomeTreacheryCard HoodPack.hood24028, SomeTreacheryCard HoodPack.hood24029, SomeTreacheryCard HoodPack.hood24030, SomeTreacheryCard HoodPack.hood24031, SomeTreacheryCard HoodPack.hood24032, SomeTreacheryCard HoodPack.hood24036, SomeTreacheryCard HoodPack.hood24048, SomeTreacheryCard HoodPack.hood24050, SomeTreacheryCard HoodPack.hood24051, SomeTreacheryCard HoodPack.hood24052, SomeTreacheryCard HoodPack.hood24053, SomeTreacheryCard HoodPack.hood24054, SomeTreacheryCard HoodPack.hood24059, SomeTreacheryCard HoodPack.hood24069, SomeTreacheryCard HoodPack.hood24070

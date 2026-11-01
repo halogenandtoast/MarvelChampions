@@ -56,7 +56,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard keepThemBusy, SomeSideSchemeCard specializedTraining, SomeSideSchemeCard inTheNameOfVengeance, SomeSideSchemeCard rallyTheTroops
+  [ SomeSideSchemeCard liveDangerously, SomeSideSchemeCard involuntaryProcedures, SomeSideSchemeCard dreadfulDeeds
+  , SomeSideSchemeCard keepThemBusy, SomeSideSchemeCard specializedTraining, SomeSideSchemeCard inTheNameOfVengeance, SomeSideSchemeCard rallyTheTroops
   , SomeSideSchemeCard renderMedicalAid, SomeSideSchemeCard hookLineAndSinker
   , SomeSideSchemeCard layTheTrap, SomeSideSchemeCard interdimensionalPlunder
   , SomeSideSchemeCard HoodPack.hood24014, SomeSideSchemeCard HoodPack.hood24023, SomeSideSchemeCard HoodPack.hood24033, SomeSideSchemeCard HoodPack.hood24042, SomeSideSchemeCard HoodPack.hood24055, SomeSideSchemeCard HoodPack.hood24056, SomeSideSchemeCard HoodPack.hood24057, SomeSideSchemeCard HoodPack.hood24058, SomeSideSchemeCard HoodPack.hood24064

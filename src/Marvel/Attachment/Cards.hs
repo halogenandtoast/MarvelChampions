@@ -1,49 +1,61 @@
 module Marvel.Attachment.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
-import Marvel.Aspect qualified as AnAspect
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect ()
+import Marvel.Boost qualified as DpBoost
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet
+import Marvel.Keyword qualified as DpKeyword ()
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource ()
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
+import Marvel.Aspect qualified as AnAspect ()
 import Marvel.Boost qualified as AnBoost
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
 import Marvel.EncounterSet qualified as AnSet
-import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
-import Marvel.Resource.Types qualified as AnResource
+import Marvel.Keyword qualified as AnKeyword ()
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
+import Marvel.Resource.Types qualified as AnResource ()
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
-import Marvel.Aspect qualified as PsyAspect
+import Marvel.Ability.Types qualified as PsyAbility ()
+import Marvel.Aspect qualified as PsyAspect ()
 import Marvel.Boost qualified as PsyBoost
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
 import Marvel.EncounterSet qualified as PsySet
-import Marvel.Keyword qualified as PsyKeyword
-import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
-import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Keyword qualified as PsyKeyword ()
+import Marvel.Matchers qualified as PsyMatch ()
+import Marvel.Name qualified as PsyName ()
+import Marvel.Resource.Types qualified as PsyResource ()
 import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
-import Marvel.Keyword qualified as HoodKeyword
+import Marvel.Keyword qualified as HoodKeyword ()
 import Marvel.Boost qualified as HoodBoost
-import Marvel.GameValue.Types qualified as HoodValue
+import Marvel.GameValue.Types qualified as HoodValue ()
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
-import Marvel.Resource.Types qualified as NEResource
+import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
@@ -51,51 +63,46 @@ import Marvel.Keyword qualified as NEKeyword
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
 import Marvel.Boost qualified as NEB
 import Marvel.EncounterSet qualified as NES
-import Marvel.Aspect qualified as NEA
-import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
+import Marvel.Aspect qualified as NEA ()
+import Marvel.Resource.Types qualified as NER ()
+import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
-import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE
+import Marvel.Resource qualified as NE ()
+import Marvel.Keyword qualified as NE ()
 import Marvel.Boost qualified as NE
-import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Aspect qualified as NE ()
+import Marvel.Card.Def qualified as NE ()
+import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Trait qualified as MojoTrait
 import Marvel.EncounterSet qualified as MojoSet
 import Marvel.Keyword qualified as MojoKeyword
-import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.GameValue.Types qualified as MojoValue ()
 import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
-import Marvel.Resource qualified as MGResource
+import Marvel.Resource qualified as MGResource ()
 import Marvel.Boost qualified as MGBoost
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
-import Marvel.GameValue.Types qualified as SMValue
+import Marvel.GameValue.Types qualified as SMValue ()
 import Marvel.Boost qualified as SMBoost
 
-import Marvel.Ability.Types qualified as Ability
+import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
-import Marvel.Window
-import Marvel.Matchers
-import Marvel.Trait qualified as MGTrait
-import Marvel.EncounterSet qualified as MGSet
-import Marvel.Keyword qualified as MGKeyword
-import Marvel.GameValue.Types qualified as MGValue
-import Marvel.Boost qualified as MGBoost
+import Marvel.Window ()
+import Marvel.Matchers ()
+import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Marvel.Boost
 import Marvel.Card.Code
@@ -113,7 +120,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ cybermods, criticalWound
+      [ tabulaRasa16, antiRegenerationRay, poolIzed
+  , cybermods, criticalWound
   , harpoonsHarpoon
   , psionicIllusion
   , hood24019, hood24020, hood24021, hood24022, hood24037, hood24038, hood24039, hood24040
@@ -2456,4 +2464,105 @@ criticalWound = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+tabulaRasa16 :: CardDef
+tabulaRasa16 = DpCard.CardDef
+  { cdCardCode = "44035"
+  , cdName = DpName.Name "Tabula Rasa 16" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Star]
+  , cdEncounterSet = Just DpSet.DeadpoolNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+antiRegenerationRay :: CardDef
+antiRegenerationRay = DpCard.CardDef
+  { cdCardCode = "44040"
+  , cdName = DpName.Name "Anti-Regeneration Ray" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList [DpTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DreadpoolSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+poolIzed :: CardDef
+poolIzed = DpCard.CardDef
+  { cdCardCode = "44041"
+  , cdName = DpName.Name "'Pool-ized" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost, DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DreadpoolSet
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

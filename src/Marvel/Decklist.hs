@@ -31,7 +31,7 @@ import Marvel.Deck
 import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesisCampaign, NextEvolutionCampaign, TheMarket))
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
-import Marvel.Identity (PlayerIdentity)
+import Marvel.Identity.Types (PlayerIdentity (..), playerIdentityChosenAspects)
 import Marvel.Keyword (Keyword (Permanent, Linked))
 import Marvel.Name
 import Marvel.PlayerCard
@@ -100,7 +100,7 @@ deckBuildingError d
   cyclopsAspects = case map T.toLower d.aspects of
     [] -> all (cyclopsCardAllowed Nothing) includedDefs
     [chosen]
-      | chosen `elem` ["aggression", "justice", "leadership", "protection"] ->
+      | chosen `elem` ["aggression", "justice", "leadership", "protection", "pool"] ->
           all (cyclopsCardAllowed $ Just chosen) includedDefs
     _ -> False
   cableAspects = case map T.toLower d.aspects of
@@ -117,11 +117,16 @@ deckBuildingError d
         || (cdCardType def == AllyType && Trait.XMen `member` cdTraits def)
   defs = [(def, n) | (c, n) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards]]
   ofAspect a = sum [n | (def, n) <- defs, cdAspect def == Just a]
-  perAspect = map ofAspect [Aggression, Justice, Leadership, Protection]
+  warlockAspects = chosenDeckAspects d
+  perAspect = map ofAspect warlockAspects
   -- his own cards are those of his hero set: no aspect, not basic
   notHisOwn def = isJust (cdAspect def)
   copies = HashMap.fromListWith (+) [(canonicalCardCode def, n) | (def, n) <- defs, notHisOwn def]
-  avatarOfLife = all (> 0) perAspect && length (nub perAspect) == 1 && all (<= 1) (HashMap.elems copies)
+  avatarOfLife = length warlockAspects == 4
+    && length (nub warlockAspects) == 4
+    && (null d.aspects || length d.aspects == 4)
+    && all (\(def, n) -> n <= 0 || maybe True (\a -> a == Neutral || a `elem` warlockAspects) (cdAspect def)) defs
+    && all (> 0) perAspect && length (nub perAspect) == 1 && all (<= 1) (HashMap.elems copies)
   -- The copies of reprints are one card. Old identity-specific definitions had
   -- no copy metadata; keep those legacy decks compatible until annotated.
   deckCopies = HashMap.fromListWith (+) [(canonicalCardCode def, n) | (def, n) <- defs, n > 0]
@@ -156,6 +161,28 @@ checkedDeckList d = case missingCards d of
   [] -> Right d
   missing -> Left missing
 
+-- | MarvelCDB's aspect codes, including the fifth aspect introduced by Deadpool.
+aspectFromText :: Text -> Maybe Aspect
+aspectFromText text = lookup (T.toLower text) $ fromList
+  [("aggression", Aggression), ("justice", Justice), ("leadership", Leadership), ("protection", Protection), ("pool", Pool)]
+
+-- | MarvelCDB omits Adam Warlock's chosen aspects from its deck metadata. His
+-- Avatar of Life makes the four aspects present in his deck exactly those chosen.
+-- Other heroes can include off-aspect cards, so their card colours cannot establish
+-- a chosen aspect (in particular, they must not spuriously add the Dreadpool set).
+chosenDeckAspects :: DeckList -> [Aspect]
+chosenDeckAspects d
+  | toBaseCardCode d.hero == "21031", null d.aspects =
+      nub
+        [ aspect
+        | (code, n) <- d.cards
+        , n > 0
+        , Just def <- [HashMap.lookup code allPlayerCards]
+        , Just aspect <- [cdAspect def]
+        , aspect /= Neutral
+        ]
+  | otherwise = mapMaybe aspectFromText d.aspects
+
 -- | A player for the deck, its cards given ids from the generator.
 loadPlayer :: (MonadRandom m) => DeckList -> m (Either [CardCode] PlayerIdentity)
 loadPlayer d = case checkedDeckList d of
@@ -164,7 +191,8 @@ loadPlayer d = case checkedDeckList d of
     cards <- for (concatMap (\(c, n) -> replicate n c) d.cards) \code -> do
       cardId <- getRandom
       pure $ MkPlayerCard cardId (lookupPlayerCard code) Nothing Nothing
-    Right <$> initPlayer (toHeroCardCode d.hero) (Deck cards)
+    PlayerIdentity attrs <- initPlayer (toHeroCardCode d.hero) (Deck cards)
+    pure $ Right $ PlayerIdentity attrs {playerIdentityChosenAspects = chosenDeckAspects d}
 
 {- | The deck a player brings to a campaign's next game: the one they began it with, the
 cards the campaign log adds to it (the Market cards they bought among them), and without the allies removed from the campaign.
@@ -298,9 +326,10 @@ starterDecks =
   , ("rogue", DeckList "38001a" ["protection"] $ tally ["38002", "38003", "38004", "38005", "38005", "38005", "38006", "38006", "38006", "38007", "38007", "38008", "38008", "38009", "38009", "38009", "38010", "38011", "38012", "38013", "38013", "38013", "38014", "38014", "38014", "38015", "38015", "38015", "38016", "38016", "38016", "38017", "38017", "38018", "38019", "38019", "38019", "38020", "38021", "38022", "38023"])
   , ("cable", DeckList "40001a" ["leadership"] $ tally ["40002", "40003", "40003", "40003", "40004", "40005", "40005", "40006", "40007", "40008", "40009", "40010", "40011", "40012", "40013", "40014", "40015", "40016", "40017", "40017", "40017", "40018", "40019", "40020", "40021", "40022", "40022", "40022", "40023", "40024", "40025", "40026", "40027", "40028", "40028", "40028", "40029", "40030", "40030", "40030"])
   , ("domino", DeckList "40037a" ["justice"] $ tally ["40038", "40039", "40040", "40040", "40041", "40042", "40042", "40043", "40044", "40045", "40046", "40046", "40047", "40048", "40049", "40050", "40051", "40052", "40052", "40052", "40053", "40053", "40053", "40054", "40055", "40055", "40055", "40056", "40057", "40058", "40059", "40060", "40060", "40060", "40061", "40062", "40063", "40064", "40064", "40064"])
+  , ("psylocke", DeckList "41001a" ["justice"] $ tally ["41002a", "41002a", "41003", "41004", "41004", "41004", "41005", "41005", "41005", "41006", "41006", "41007", "41007", "41008", "41009", "41010", "41011", "41012", "41013", "41014", "41014", "41014", "41015", "41015", "41015", "41016", "41017", "41017", "41017", "41018", "41019", "41019", "41019", "41020", "41021", "41021", "41021", "41022", "41023", "41024", "41024", "41024"])
   , ("angel", DeckList "42001a" ["protection"] $ tally ["42002", "42003", "42003", "42004", "42004", "42005", "42005", "42006", "42006", "42007", "42007", "42008", "42008", "42009", "42010", "42011", "42012", "42013", "42014", "42014", "42014", "42015", "42015", "42015", "42016", "42016", "42016", "42017", "42018", "42019", "42019", "42019", "42020", "42021", "42022", "42022", "42022", "42023", "42023", "42023"])
   , ("x-23", DeckList "43001a" ["aggression"] $ tally ["43002", "43003", "43004", "43004", "43005", "43005", "43005", "43006", "43006", "43007", "43008", "43009", "43010", "43011", "43012", "43012", "43013", "43014", "43015", "43016", "43016", "43016", "43017", "43017", "43017", "43018", "43019", "43019", "43019", "43020", "43020", "43020", "43021", "43022", "43023", "43024", "43025", "43026", "43027", "43027", "43027"])
-  , ("psylocke", DeckList "41001a" ["justice"] $ tally ["41002a", "41002a", "41003", "41004", "41004", "41004", "41005", "41005", "41005", "41006", "41006", "41007", "41007", "41008", "41009", "41010", "41011", "41012", "41013", "41014", "41014", "41014", "41015", "41015", "41015", "41016", "41017", "41017", "41017", "41018", "41019", "41019", "41019", "41020", "41021", "41021", "41021", "41022", "41023", "41024", "41024", "41024"])
+  , ("deadpool", DeckList "44001a" ["pool"] $ tally ["44002", "44003", "44004", "44004", "44005", "44006", "44006", "44007", "44008", "44009", "44010", "44010", "44011", "44012", "44012", "44013", "44014", "44015", "44016", "44017", "44017", "44017", "44018", "44019", "44020", "44021", "44021", "44021", "44022", "44023", "44024", "44025", "44026", "44027", "44028", "44029", "44029", "44029", "44030", "44031"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

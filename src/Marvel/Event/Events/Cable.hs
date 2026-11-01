@@ -1,24 +1,23 @@
 module Marvel.Event.Events.Cable where
 
-import Marvel.Hero.Cards qualified as HeroCards
 import Marvel.Prelude
 import Data.List (delete)
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Damage
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
-import Marvel.Resource
-import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
+import Marvel.Resource ()
+import Marvel.Trait qualified as Trait ()
+import Marvel.Window qualified as W ()
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Effect.Types
 import Marvel.Card.Side
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import {-# SOURCE #-} Marvel.Game ()
 
 import Marvel.Ability
 import Marvel.Modifier
@@ -28,9 +27,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Stats ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 
 cable40002 :: EventCard Cable40002
 cable40002 = event Cable40002 Cards.cable40002
@@ -138,10 +137,10 @@ newtype Cable40026 = Cable40026 (Attrs Event)
 instance RunMessage Cable40026 where
   runMessage msg a@(Cable40026 attrs) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ _) | eid == eventId attrs -> do
-      cable <- selectList (IdentityIs HeroCards.cable40001a)
-      deadpool <- selectList (AllyWithTitle "Deadpool")
-      for_ cable \p -> damageIdentity p attrs (toDamage 1 FromAbility)
-      for_ deadpool \aid -> damageCharacter aid attrs (toDamage 1 FromAbility)
+      identities <- concatMapM (selectList . IdentityWithTitle) ["Cable", "Deadpool"]
+      allies <- concatMapM (selectList . AllyWithTitle) ["Cable", "Deadpool"]
+      for_ identities \p -> damageIdentity p attrs (toDamage 1 FromAbility)
+      for_ allies \aid -> damageCharacter aid attrs (toDamage 1 FromAbility)
       schemes <- selectList SchemeYouCanThwart
       chooseOne you [targeting (schemeRef sid) $
         cardSpecific attrs "second" (you, sid, delete sid schemes) | sid <- schemes]

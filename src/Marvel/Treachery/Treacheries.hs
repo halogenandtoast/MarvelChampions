@@ -269,3 +269,6 @@ import Marvel.Treachery.Treacheries.SpearShot as X
 
 -- X-23
 import Marvel.Treachery.Treacheries.HackNSlashX23 as X
+
+import Marvel.Treachery.Treacheries.CrisisOfInfiniteDeadpools as X
+import Marvel.Treachery.Treacheries.MetacidalTendencies as X

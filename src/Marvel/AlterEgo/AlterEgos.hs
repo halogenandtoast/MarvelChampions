@@ -109,3 +109,5 @@ import Marvel.AlterEgo.AlterEgos.WarrenWorthingtonIII as X
 
 -- X-23
 import Marvel.AlterEgo.AlterEgos.LauraKinney as X
+
+import Marvel.AlterEgo.AlterEgos.WadeWilson as X

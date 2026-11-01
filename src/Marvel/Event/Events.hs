@@ -529,3 +529,19 @@ import Marvel.Event.Events.SisterlyBond as X
 import Marvel.Event.Events.CriticalHit as X
 import Marvel.Event.Events.PredictablePloy as X
 import Marvel.Event.Events.AnticipatedAttack as X
+
+import Marvel.Event.Events.ExhaustingPersonality as X
+import Marvel.Event.Events.MaximumEffort as X
+import Marvel.Event.Events.Metaknowledge as X
+import Marvel.Event.Events.YooHoo as X
+import Marvel.Event.Events.ThisCardIsFire as X
+import Marvel.Event.Events.BarelyAScratch as X
+import Marvel.Event.Events.Cutupper as X
+import Marvel.Event.Events.DaBomb as X
+import Marvel.Event.Events.GetRageY as X
+import Marvel.Event.Events.IGotThis as X
+import Marvel.Event.Events.NotMyResponsibility as X
+import Marvel.Event.Events.PoolInspection as X hiding (Meta)
+import Marvel.Event.Events.BreakTime as X
+import Marvel.Event.Events.GetInFrontOfMe as X
+import Marvel.Event.Events.Mulligan as X

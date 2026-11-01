@@ -26,14 +26,13 @@ import Marvel.Minion.Minions.MojoOpening
 import Marvel.Minion.Minions.TheHood qualified as Hood
 import Marvel.Prelude
 
-import Marvel.Card.Builder (reprintAs)
+import Marvel.Card.Builder ()
 
 import Marvel.Card
 import Marvel.Id
 import Marvel.Minion.Minions
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
-import Marvel.Minion.Cards qualified as Cards
 
 instance FromJSON Minion where
   parseJSON = withObject "Minion" $ \o -> do
@@ -53,7 +52,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard ladyDeathstrikeX23
+      [ SomeMinionCard butler, SomeMinionCard mutatedSoldier, SomeMinionCard dreadpool
+  , SomeMinionCard ladyDeathstrikeX23
   , SomeMinionCard harpoon
   , SomeMinionCard chimera
   , SomeMinionCard HoodPack.hood24015, SomeMinionCard HoodPack.hood24016, SomeMinionCard HoodPack.hood24018, SomeMinionCard HoodPack.hood24024, SomeMinionCard HoodPack.hood24025, SomeMinionCard HoodPack.hood24026, SomeMinionCard HoodPack.hood24027, SomeMinionCard HoodPack.hood24034, SomeMinionCard HoodPack.hood24035, SomeMinionCard HoodPack.hood24041, SomeMinionCard HoodPack.hood24043, SomeMinionCard HoodPack.hood24044, SomeMinionCard HoodPack.hood24045, SomeMinionCard HoodPack.hood24046, SomeMinionCard HoodPack.hood24047, SomeMinionCard HoodPack.hood24065, SomeMinionCard HoodPack.hood24066, SomeMinionCard HoodPack.hood24067, SomeMinionCard HoodPack.hood24068

@@ -299,7 +299,7 @@ import Marvel.Upgrade.Upgrades.ProtectiveTraining as X
 
 import Marvel.Upgrade.Upgrades.Solid as X
 
-import Marvel.Upgrade.Upgrades.Phased as X
+import Marvel.Upgrade.Upgrades.Phased as X ()
 
 import Marvel.Upgrade.Upgrades.AcuteControl as X
 
@@ -399,3 +399,18 @@ import Marvel.Upgrade.Upgrades.CombatSpecialist as X
 import Marvel.Upgrade.Upgrades.DefenseSpecialist as X
 import Marvel.Upgrade.Upgrades.FrontLineSpecialist as X
 import Marvel.Upgrade.Upgrades.SurveillanceSpecialist as X
+
+import Marvel.Upgrade.Upgrades.ArmedToTheTeeth as X
+import Marvel.Upgrade.Upgrades.DeadpoolsKatana as X
+import Marvel.Upgrade.Upgrades.ItAintOver as X
+import Marvel.Upgrade.Upgrades.GitGud as X
+import Marvel.Upgrade.Upgrades.HealingFactor as X
+import Marvel.Upgrade.Upgrades.StickToItiveness as X
+import Marvel.Upgrade.Upgrades.Ambush as X
+import Marvel.Upgrade.Upgrades.Bazooka as X
+import Marvel.Upgrade.Upgrades.Blackout as X
+import Marvel.Upgrade.Upgrades.Distraction as X
+import Marvel.Upgrade.Upgrades.LaserSwords as X
+import Marvel.Upgrade.Upgrades.RockPaperScissors as X
+import Marvel.Upgrade.Upgrades.TicTacToe as X
+import Marvel.Upgrade.Upgrades.War as X

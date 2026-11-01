@@ -172,5 +172,9 @@ data Trait
   | Thief
   | Guild
   | Specialization
+  | DeadpoolCorps
+  | Zombie
+  | Metagame
+  | Pool
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

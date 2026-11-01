@@ -1,53 +1,67 @@
 module Marvel.Event.Cards where
 
+import Marvel.Ability.Types qualified as DpAbility
+import Marvel.Aspect qualified as DpAspect
+import Marvel.Boost qualified as DpBoost ()
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet ()
+import Marvel.Keyword qualified as DpKeyword
+import Marvel.Matchers qualified as DpMatch
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow
+import Marvel.Damage qualified as DpDamage
+
 import Marvel.Ability.Types qualified as AnAbility
 import Marvel.Aspect qualified as AnAspect
-import Marvel.Boost qualified as AnBoost
+import Marvel.Boost qualified as AnBoost ()
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
-import Marvel.EncounterSet qualified as AnSet
+import Marvel.EncounterSet qualified as AnSet ()
 import Marvel.Keyword qualified as AnKeyword
 import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
+import Marvel.Name qualified as AnName ()
 import Marvel.Resource.Types qualified as AnResource
 import Marvel.Trait qualified as AnTrait
 import Marvel.Window.Types qualified as AnWindow
 
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
-import Marvel.Boost qualified as PsyBoost
+import Marvel.Boost qualified as PsyBoost ()
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
-import Marvel.EncounterSet qualified as PsySet
+import Marvel.EncounterSet qualified as PsySet ()
 import Marvel.Keyword qualified as PsyKeyword
 import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
+import Marvel.Name qualified as PsyName ()
 import Marvel.Resource.Types qualified as PsyResource
 import Marvel.Trait qualified as PsyTrait
 import Marvel.Window.Types qualified as PsyWindow
 
-import Marvel.Boost qualified as NEB
-import Marvel.EncounterSet qualified as NES
+import Marvel.Boost qualified as NEB ()
+import Marvel.EncounterSet qualified as NES ()
 import Marvel.Aspect qualified as NEA
 import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
+import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE
+import Marvel.Keyword qualified as NE ()
+import Marvel.Boost qualified as NE ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
+import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility
 
 import Marvel.Keyword
-import Marvel.Boost
+import Marvel.Boost ()
 import Marvel.EncounterSet
 import Marvel.Prelude
 
-import Marvel.Keyword (Keyword (Alliance, Requirement))
 import Marvel.Cost.Types
 
 import Marvel.Ability.Types (AbilityType(..))
@@ -58,7 +72,6 @@ import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Status (StatusCard (StunnedStatus, ConfusedStatus))
 import Marvel.Damage
-import Marvel.EncounterSet (EncounterSet (TheMarket))
 import Marvel.GameValue.Types
 import Marvel.Matchers
 import Marvel.Name
@@ -71,7 +84,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ animalInstinct, clawMastery, regenerativeLongevity, sisterlyBond, criticalHit, predictablePloy, anticipatedAttack
+  [ exhaustingPersonality, maximumEffort, metaknowledge, yooHoo, thisCardIsFire, barelyAScratch, cutupper, daBomb, getRageY, iGotThis, notMyResponsibility, poolInspection, breakTime, getInFrontOfMe, mulligan
+  , animalInstinct, clawMastery, regenerativeLongevity, sisterlyBond, criticalHit, predictablePloy, anticipatedAttack
   , adaptivePlumage, aerialAgility, metamorphosis, naturalFlight, razorDive, aerialIntervention, taunt, bombsAway, flyingFormation
   , flurryOfBlades, mentalDetection, psionicRedirect, telepathicSuggestion, upsideTheHead, directedForce, soaringHearts, psiBowAttack, psiFlailStrike
   , thePosse
@@ -2744,7 +2758,7 @@ cable40017 :: CardDef
 cable40017 = (event "40017" "Mission Planning" 2 NEAbility.HeroAction [] [NE.Mental] NE.Leadership) { cdUnique = False, cdDeckLimit = Just 3 , cdCriteria = VictoryDisplayHasSideScheme }
 
 cable40026 :: CardDef
-cable40026 = (basicEvent "40026" "Frenemies" 1 NEAbility.HeroAction [NE.Thwart] [NE.Wild]) { cdUnique = False, cdDeckLimit = Just 1 , cdAbilitySubTypes = [NEAbility.Thwart] , cdTeamUp = Just ("Cable", "Deadpool") , cdCriteria = teamUp "Cable" "Deadpool" <> SchemeExists (SchemeWithThreat (GreaterThan (Static 0))) }
+cable40026 = reprintedAs ["44031"] $ (basicEvent "40026" "Frenemies" 1 NEAbility.HeroAction [NE.Thwart] [NE.Wild]) { cdUnique = False, cdDeckLimit = Just 1 , cdAbilitySubTypes = [NEAbility.Thwart] , cdTeamUp = Just ("Cable", "Deadpool") , cdCriteria = teamUp "Cable" "Deadpool" <> SchemeExists (SchemeWithThreat (GreaterThan (Static 0))) }
 
 -- NeXt Evolution: Domino
 aGoodWorkout :: CardDef
@@ -3488,4 +3502,501 @@ anticipatedAttack = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+exhaustingPersonality :: CardDef
+exhaustingPersonality = DpCard.CardDef
+  { cdCardCode = "44003"
+  , cdName = DpName.Name "Exhausting Personality" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+maximumEffort :: CardDef
+maximumEffort = DpCard.CardDef
+  { cdCardCode = "44004"
+  , cdName = DpName.Name "Maximum Effort" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList [DpTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = [DpAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.EnemyExists DpMatch.AttackableEnemy
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.UpToRemainingHitPointsDamageCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+metaknowledge :: CardDef
+metaknowledge = DpCard.CardDef
+  { cdCardCode = "44005"
+  , cdName = DpName.Name "Metaknowledge" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroInterrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.CanCancelRevealedEncounterCard
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (DpWindow.EncounterCardRevealedBy DpWindow.When DpMatch.AnyIdentity DpMatch.AnyEncounterCard)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+yooHoo :: CardDef
+yooHoo = DpCard.CardDef
+  { cdCardCode = "44006"
+  , cdName = DpName.Name "\"Yoo-Hoo!\"" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = [DpAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.SchemeExists DpMatch.ThwartableScheme
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.UpToRemainingHitPointsDamageCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+thisCardIsFire :: CardDef
+thisCardIsFire = DpCard.CardDef
+  { cdCardCode = "44012"
+  , cdName = DpName.Name "This Card is Fire" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList [DpTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = [DpAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.EnemyExists DpMatch.AttackableEnemy
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+barelyAScratch :: CardDef
+barelyAScratch = DpCard.CardDef
+  { cdCardCode = "44017"
+  , cdName = DpName.Name "Barely a Scratch" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList [DpTrait.Defense]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroInterrupt
+  , cdAbilitySubTypes = [DpAbility.Defense]
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.EncounterIconExists
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (DpWindow.WouldTakeDamage DpMatch.You DpDamage.FromAttack DpMatch.AnyValue)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+cutupper :: CardDef
+cutupper = DpCard.CardDef
+  { cdCardCode = "44018"
+  , cdName = DpName.Name "Cutupper" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList [DpTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = [DpAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.EnemyExists DpMatch.AttackableEnemy
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+daBomb :: CardDef
+daBomb = DpCard.CardDef
+  { cdCardCode = "44019"
+  , cdName = DpName.Name "Da Bomb" (Nothing)
+  , cdCost = Just 6
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+getRageY :: CardDef
+getRageY = DpCard.CardDef
+  { cdCardCode = "44020"
+  , cdName = DpName.Name "Get Rage-y" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.AllyExists DpMatch.AnyAlly
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+iGotThis :: CardDef
+iGotThis = DpCard.CardDef
+  { cdCardCode = "44021"
+  , cdName = DpName.Name "\"I Got This\"" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.PoolIconEffectsCanResolve
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+notMyResponsibility :: CardDef
+notMyResponsibility = DpCard.CardDef
+  { cdCardCode = "44022"
+  , cdName = DpName.Name "Not my Responsibility" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.Interrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (DpWindow.ThreatWouldBePlaced DpWindow.AnyThreatSource DpMatch.AnyScheme)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+poolInspection :: CardDef
+poolInspection = DpCard.CardDef
+  { cdCardCode = "44023"
+  , cdName = DpName.Name "'Pool Inspection" (Nothing)
+  , cdCost = Just 6
+  , cdTraits = fromList [DpTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroAction
+  , cdAbilitySubTypes = [DpAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.SchemeExists DpMatch.ThwartableSchemeIgnoringCrisis
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+breakTime :: CardDef
+breakTime = DpCard.CardDef
+  { cdCardCode = "44046"
+  , cdName = DpName.Name "Break Time" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList []
+  , cdKeywords = fromList [DpKeyword.Alliance, DpKeyword.PerPlayerResourceCost 3]
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.AlterEgoAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+getInFrontOfMe :: CardDef
+getInFrontOfMe = DpCard.CardDef
+  { cdCardCode = "44047"
+  , cdName = DpName.Name "Get in Front of Me!" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.HeroInterrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.CanCancelRevealedTreachery
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (DpWindow.TreacheryRevealed DpWindow.When DpMatch.AnyTreachery DpWindow.RevealedFromEncounterDeck)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+mulligan :: CardDef
+mulligan = DpCard.CardDef
+  { cdCardCode = "44048"
+  , cdName = DpName.Name "Mulligan" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.EventType
+  , cdAbilityType = Just DpAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCardsPlayedThisPhase
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

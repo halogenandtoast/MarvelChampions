@@ -260,3 +260,7 @@ import Marvel.Minion.Minions.Harpoon as X
 
 -- X-23
 import Marvel.Minion.Minions.LadyDeathstrikeX23 as X
+
+import Marvel.Minion.Minions.Butler as X
+import Marvel.Minion.Minions.MutatedSoldier as X
+import Marvel.Minion.Minions.Dreadpool as X

@@ -188,3 +188,7 @@ import Marvel.Support.Supports.AngelsAerie as X
 
 -- X-23
 import Marvel.Support.Supports.Sisterhood as X
+
+import Marvel.Support.Supports.ChimichangaTruck as X
+import Marvel.Support.Supports.DeadpoolCorpsShip as X
+import Marvel.Support.Supports.PlotConvenience as X

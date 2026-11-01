@@ -1,54 +1,67 @@
 module Marvel.AlterEgo.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
-import Marvel.Aspect qualified as AnAspect
-import Marvel.Boost qualified as AnBoost
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect ()
+import Marvel.Boost qualified as DpBoost ()
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet ()
+import Marvel.Keyword qualified as DpKeyword ()
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource ()
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
+import Marvel.Aspect qualified as AnAspect ()
+import Marvel.Boost qualified as AnBoost ()
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
-import Marvel.EncounterSet qualified as AnSet
-import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
-import Marvel.Resource.Types qualified as AnResource
+import Marvel.EncounterSet qualified as AnSet ()
+import Marvel.Keyword qualified as AnKeyword ()
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
+import Marvel.Resource.Types qualified as AnResource ()
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
-import Marvel.Aspect qualified as PsyAspect
-import Marvel.Boost qualified as PsyBoost
+import Marvel.Ability.Types qualified as PsyAbility ()
+import Marvel.Aspect qualified as PsyAspect ()
+import Marvel.Boost qualified as PsyBoost ()
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
-import Marvel.EncounterSet qualified as PsySet
-import Marvel.Keyword qualified as PsyKeyword
-import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
-import Marvel.Resource.Types qualified as PsyResource
+import Marvel.EncounterSet qualified as PsySet ()
+import Marvel.Keyword qualified as PsyKeyword ()
+import Marvel.Matchers qualified as PsyMatch ()
+import Marvel.Name qualified as PsyName ()
+import Marvel.Resource.Types qualified as PsyResource ()
 import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Trait qualified as NE
-import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE
-import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Resource qualified as NE ()
+import Marvel.Keyword qualified as NE ()
+import Marvel.Boost qualified as NE ()
+import Marvel.Aspect qualified as NE ()
+import Marvel.Card.Def qualified as NE ()
+import Marvel.Ability.Types qualified as NEAbility ()
 
-import Marvel.Ability.Types qualified as NEAbility
-import Marvel.Boost qualified as NEB
-import Marvel.EncounterSet qualified as NES
-import Marvel.Aspect qualified as NEA
-import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
+import Marvel.Boost qualified as NEB ()
+import Marvel.EncounterSet qualified as NES ()
+import Marvel.Aspect qualified as NEA ()
+import Marvel.Resource.Types qualified as NER ()
+import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Prelude
-import Marvel.Matchers
-import Marvel.Resource
-import Marvel.Keyword
-import Marvel.EncounterSet
-import Marvel.Boost
+import Marvel.Matchers ()
+import Marvel.Resource ()
+import Marvel.Keyword ()
+import Marvel.EncounterSet ()
+import Marvel.Boost ()
 
 import Marvel.Cost.Types (Cost (NoCost))
 
@@ -61,7 +74,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ lauraKinney
+    [ wadeWilson
+  , lauraKinney
   , warrenWorthingtonIII
   , betsyBraddock
   , cable40001b
@@ -491,4 +505,39 @@ lauraKinney = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+wadeWilson :: CardDef
+wadeWilson = DpCard.CardDef
+  { cdCardCode = "44001b"
+  , cdName = DpName.Name "Wade Wilson" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList [DpTrait.Mercenary, DpTrait.Mutant]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

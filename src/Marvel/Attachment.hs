@@ -31,7 +31,7 @@ import Marvel.Prelude
 
 import Marvel.Attachment.Attachments
 import Marvel.Attachment.Cards qualified as Cards
-import Marvel.Card.Builder (reprintAs)
+import Marvel.Card.Builder ()
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Id
@@ -53,7 +53,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard cybermods, SomeAttachmentCard criticalWound
+      [ SomeAttachmentCard tabulaRasa16, SomeAttachmentCard antiRegenerationRay, SomeAttachmentCard poolIzed
+  , SomeAttachmentCard cybermods, SomeAttachmentCard criticalWound
   , SomeAttachmentCard harpoonsHarpoon
   , SomeAttachmentCard psionicIllusion
   , SomeAttachmentCard HoodPack.hood24019, SomeAttachmentCard HoodPack.hood24020, SomeAttachmentCard HoodPack.hood24021, SomeAttachmentCard HoodPack.hood24022, SomeAttachmentCard HoodPack.hood24037, SomeAttachmentCard HoodPack.hood24038, SomeAttachmentCard HoodPack.hood24039, SomeAttachmentCard HoodPack.hood24040

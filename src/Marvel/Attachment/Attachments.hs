@@ -204,3 +204,7 @@ import Marvel.Attachment.Attachments.HarpoonsHarpoon as X
 -- X-23
 import Marvel.Attachment.Attachments.Cybermods as X
 import Marvel.Attachment.Attachments.CriticalWound as X
+
+import Marvel.Attachment.Attachments.TabulaRasa16 as X
+import Marvel.Attachment.Attachments.AntiRegenerationRay as X
+import Marvel.Attachment.Attachments.PoolIzed as X

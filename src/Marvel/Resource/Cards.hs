@@ -1,61 +1,72 @@
 module Marvel.Resource.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect
+import Marvel.Boost qualified as DpBoost ()
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet ()
+import Marvel.Keyword qualified as DpKeyword ()
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource
+import Marvel.Trait qualified as DpTrait ()
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
 import Marvel.Aspect qualified as AnAspect
-import Marvel.Boost qualified as AnBoost
+import Marvel.Boost qualified as AnBoost ()
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
-import Marvel.EncounterSet qualified as AnSet
-import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
+import Marvel.EncounterSet qualified as AnSet ()
+import Marvel.Keyword qualified as AnKeyword ()
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
 import Marvel.Resource.Types qualified as AnResource
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
 import Marvel.Resource.Types qualified as NEResource
 
-import Marvel.Boost qualified as NEBoost
+import Marvel.Boost qualified as NEBoost ()
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword
+import Marvel.Keyword qualified as NEKeyword ()
 
-import Marvel.Trait qualified as NETrait
+import Marvel.Trait qualified as NETrait ()
 
 import Marvel.Aspect qualified as NEAspect
 
-import Marvel.Boost qualified as NEB
-import Marvel.EncounterSet qualified as NES
+import Marvel.Boost qualified as NEB ()
+import Marvel.EncounterSet qualified as NES ()
 import Marvel.Aspect qualified as NEA
 import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
-import Marvel.Trait qualified as NET
+import Marvel.Keyword qualified as NEK ()
+import Marvel.Trait qualified as NET ()
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE
-import Marvel.Aspect qualified as NE
+import Marvel.Keyword qualified as NE ()
+import Marvel.Boost qualified as NE ()
+import Marvel.Aspect qualified as NE ()
 import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Ability.Types qualified as NEAbility ()
 
-import Marvel.Matchers
-import Marvel.Boost
-import Marvel.Keyword
-import Marvel.EncounterSet
-import Marvel.Ability.Types qualified as Ability
+import Marvel.Matchers ()
+import Marvel.Boost ()
+import Marvel.Keyword ()
+import Marvel.EncounterSet ()
+import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
-import Marvel.Window
+import Marvel.Window ()
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Marvel.Aspect
 import Marvel.Card.Code
@@ -69,7 +80,8 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ concatMap
   toCardCodePairs
-  [ avianAnatomy, thePowerOfFlight
+  [ montage, selfConfidence, selfControl, selfPreservation
+  , avianAnatomy, thePowerOfFlight
   , ne40196
   , diggingDeep
   , jackpot
@@ -458,4 +470,138 @@ thePowerOfFlight = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+montage :: CardDef
+montage = DpCard.CardDef
+  { cdCardCode = "44007"
+  , cdName = DpName.Name "Montage" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Wild), (DpCard.ForEachMainSchemeAccelerationToken 3, DpResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+selfConfidence :: CardDef
+selfConfidence = DpCard.CardDef
+  { cdCardCode = "44025"
+  , cdName = DpName.Name "Self Confidence" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical), (DpCard.ResourceIfIdentityDamageLessThan 5, DpResource.Physical), (DpCard.ResourceIfIdentityDamageLessThan 1, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+selfControl :: CardDef
+selfControl = DpCard.CardDef
+  { cdCardCode = "44026"
+  , cdName = DpName.Name "Self Control" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental), (DpCard.ResourceIfIdentityDamageLessThan 5, DpResource.Mental), (DpCard.ResourceIfIdentityDamageLessThan 1, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+selfPreservation :: CardDef
+selfPreservation = DpCard.CardDef
+  { cdCardCode = "44027"
+  , cdName = DpName.Name "Self Preservation" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy), (DpCard.ResourceIfIdentityDamageLessThan 5, DpResource.Energy), (DpCard.ResourceIfIdentityDamageLessThan 1, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

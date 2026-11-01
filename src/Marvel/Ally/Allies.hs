@@ -314,3 +314,12 @@ import Marvel.Ally.Allies.HoneyBadger as X
 import Marvel.Ally.Allies.BoomBoom as X
 import Marvel.Ally.Allies.Rictor as X
 import Marvel.Ally.Allies.Shatterstar as X
+
+import Marvel.Ally.Allies.CableDeadpool as X
+import Marvel.Ally.Allies.Dogpool as X
+import Marvel.Ally.Allies.Headpool as X
+import Marvel.Ally.Allies.Kidpool as X
+import Marvel.Ally.Allies.LadyDeadpool as X
+import Marvel.Ally.Allies.BobAgentOfHydra as X
+import Marvel.Ally.Allies.NegasonicTeenageWarhead as X
+import Marvel.Ally.Allies.Pandapool as X

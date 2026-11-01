@@ -1,80 +1,91 @@
 module Marvel.Support.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect
+import Marvel.Boost qualified as DpBoost ()
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet ()
+import Marvel.Keyword qualified as DpKeyword ()
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
 import Marvel.Aspect qualified as AnAspect
-import Marvel.Boost qualified as AnBoost
+import Marvel.Boost qualified as AnBoost ()
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
-import Marvel.EncounterSet qualified as AnSet
-import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
+import Marvel.EncounterSet qualified as AnSet ()
+import Marvel.Keyword qualified as AnKeyword ()
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
 import Marvel.Resource.Types qualified as AnResource
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Ability.Types qualified as PsyAbility ()
 import Marvel.Aspect qualified as PsyAspect
-import Marvel.Boost qualified as PsyBoost
+import Marvel.Boost qualified as PsyBoost ()
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
-import Marvel.EncounterSet qualified as PsySet
-import Marvel.Keyword qualified as PsyKeyword
+import Marvel.EncounterSet qualified as PsySet ()
+import Marvel.Keyword qualified as PsyKeyword ()
 import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
+import Marvel.Name qualified as PsyName ()
 import Marvel.Resource.Types qualified as PsyResource
 import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Window.Types qualified as PsyWindow ()
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
 import Marvel.Resource.Types qualified as NEResource
 
-import Marvel.Boost qualified as NEBoost
+import Marvel.Boost qualified as NEBoost ()
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword
+import Marvel.Keyword qualified as NEKeyword ()
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
-import Marvel.Boost qualified as NEB
-import Marvel.EncounterSet qualified as NES
-import Marvel.Aspect qualified as NEA
+import Marvel.Boost qualified as NEB ()
+import Marvel.EncounterSet qualified as NES ()
+import Marvel.Aspect qualified as NEA ()
 import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
+import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
-import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE
+import Marvel.Keyword qualified as NE ()
+import Marvel.Boost qualified as NE ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Card.Def qualified as NE ()
+import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
 import Marvel.Resource qualified as MGResource
-import Marvel.Boost qualified as MGBoost
+import Marvel.Boost qualified as MGBoost ()
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.Keyword
 import Marvel.EncounterSet
-import Marvel.Ability.Types qualified as Ability
+import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
-import Marvel.Window
+import Marvel.Window ()
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Marvel.Aspect
 import Marvel.Card.Code
@@ -84,13 +95,12 @@ import Marvel.Name
 import Marvel.Resource
 import Marvel.Trait
 import Marvel.Matchers
-import Marvel.EncounterSet (EncounterSet (ShipCommand))
-import Marvel.Keyword (Keyword (Permanent, Setup))
 
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ sisterhood
+  [ chimichangaTruck, deadpoolCorpsShip, plotConvenience
+  , sisterhood
   , worthingtonIndustries, angelsAerie
   , trainingRegimen, ipac, xBunker
   , ne40197
@@ -964,4 +974,105 @@ sisterhood = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+chimichangaTruck :: CardDef
+chimichangaTruck = DpCard.CardDef
+  { cdCardCode = "44008"
+  , cdName = DpName.Name "Chimichanga Truck" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList [DpTrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+deadpoolCorpsShip :: CardDef
+deadpoolCorpsShip = DpCard.CardDef
+  { cdCardCode = "44049"
+  , cdName = DpName.Name "Deadpool Corps Ship" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+plotConvenience :: CardDef
+plotConvenience = DpCard.CardDef
+  { cdCardCode = "44050"
+  , cdName = DpName.Name "Plot Convenience" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

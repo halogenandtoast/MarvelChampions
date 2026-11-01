@@ -1,49 +1,61 @@
 module Marvel.Minion.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
-import Marvel.Aspect qualified as AnAspect
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect ()
+import Marvel.Boost qualified as DpBoost
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet
+import Marvel.Keyword qualified as DpKeyword
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource ()
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
+import Marvel.Aspect qualified as AnAspect ()
 import Marvel.Boost qualified as AnBoost
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
 import Marvel.EncounterSet qualified as AnSet
-import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
-import Marvel.Resource.Types qualified as AnResource
+import Marvel.Keyword qualified as AnKeyword ()
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
+import Marvel.Resource.Types qualified as AnResource ()
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
-import Marvel.Aspect qualified as PsyAspect
+import Marvel.Ability.Types qualified as PsyAbility ()
+import Marvel.Aspect qualified as PsyAspect ()
 import Marvel.Boost qualified as PsyBoost
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
 import Marvel.EncounterSet qualified as PsySet
-import Marvel.Keyword qualified as PsyKeyword
-import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
-import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Keyword qualified as PsyKeyword ()
+import Marvel.Matchers qualified as PsyMatch ()
+import Marvel.Name qualified as PsyName ()
+import Marvel.Resource.Types qualified as PsyResource ()
 import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
 import Marvel.Keyword qualified as HoodKeyword
 import Marvel.Boost qualified as HoodBoost
-import Marvel.GameValue.Types qualified as HoodValue
+import Marvel.GameValue.Types qualified as HoodValue ()
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
-import Marvel.Resource.Types qualified as NEResource
+import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
@@ -51,49 +63,48 @@ import Marvel.Keyword qualified as NEKeyword
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
 import Marvel.Boost qualified as NEB
 import Marvel.EncounterSet qualified as NES
-import Marvel.Aspect qualified as NEA
-import Marvel.Resource.Types qualified as NER
-import Marvel.Keyword qualified as NEK
+import Marvel.Aspect qualified as NEA ()
+import Marvel.Resource.Types qualified as NER ()
+import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
-import Marvel.Resource qualified as NE
+import Marvel.Resource qualified as NE ()
 import Marvel.Keyword qualified as NE
 import Marvel.Boost qualified as NE
-import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Aspect qualified as NE ()
+import Marvel.Card.Def qualified as NE ()
+import Marvel.Ability.Types qualified as NEAbility ()
 
 import Marvel.Trait qualified as MojoTrait
 import Marvel.EncounterSet qualified as MojoSet
 import Marvel.Keyword qualified as MojoKeyword
-import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.GameValue.Types qualified as MojoValue ()
 import Marvel.Boost qualified as MojoBoost
 
 import Marvel.Keyword qualified as SpdrKeyword
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
-import Marvel.GameValue.Types qualified as SMValue
+import Marvel.GameValue.Types qualified as SMValue ()
 import Marvel.Boost qualified as SMBoost
 
-import Marvel.Ability.Types qualified as Ability
+import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
-import Marvel.Window
-import Marvel.Matchers
+import Marvel.Window ()
+import Marvel.Matchers ()
 import Marvel.Trait qualified as MGTrait
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
-import Marvel.GameValue.Types qualified as MGValue
+import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Data.HashSet (singleton)
 import Marvel.Boost
@@ -111,7 +122,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ ladyDeathstrikeX23
+      [ butler, mutatedSoldier, dreadpool
+  , ladyDeathstrikeX23
   , harpoon
   , chimera
   , hood24015, hood24016, hood24018, hood24024, hood24025, hood24026, hood24027, hood24034, hood24035, hood24041, hood24043, hood24044, hood24045, hood24046, hood24047, hood24065, hood24066, hood24067, hood24068
@@ -3042,4 +3054,105 @@ ladyDeathstrikeX23 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+butler :: CardDef
+butler = DpCard.CardDef
+  { cdCardCode = "44033"
+  , cdName = DpName.Name "Butler" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList [DpTrait.Scientist]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Star]
+  , cdEncounterSet = Just DpSet.DeadpoolNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+mutatedSoldier :: CardDef
+mutatedSoldier = DpCard.CardDef
+  { cdCardCode = "44036"
+  , cdName = DpName.Name "Mutated Soldier" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList [DpTrait.Mutate, DpTrait.Soldier]
+  , cdKeywords = fromList [DpKeyword.Toughness]
+  , cdCardType = DpCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost, DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DeadpoolNemesis
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+dreadpool :: CardDef
+dreadpool = DpCard.CardDef
+  { cdCardCode = "44038"
+  , cdName = DpName.Name "Dreadpool" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList [DpTrait.Assassin, DpTrait.Elite]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost, DpBoost.Boost, DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DreadpoolSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

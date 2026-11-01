@@ -1,6 +1,20 @@
 module Marvel.SideScheme.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect
+import Marvel.Boost qualified as DpBoost
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet
+import Marvel.Keyword qualified as DpKeyword
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource
+import Marvel.Trait qualified as DpTrait ()
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
 import Marvel.Aspect qualified as AnAspect
 import Marvel.Boost qualified as AnBoost
 import Marvel.Card.Def qualified as AnCard
@@ -8,13 +22,13 @@ import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
 import Marvel.EncounterSet qualified as AnSet
 import Marvel.Keyword qualified as AnKeyword
-import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
+import Marvel.Matchers qualified as AnMatch ()
+import Marvel.Name qualified as AnName ()
 import Marvel.Resource.Types qualified as AnResource
-import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Trait qualified as AnTrait ()
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Ability.Types qualified as PsyAbility ()
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
 import Marvel.Card.Def qualified as PsyCard
@@ -22,24 +36,22 @@ import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
 import Marvel.EncounterSet qualified as PsySet
 import Marvel.Keyword qualified as PsyKeyword
-import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
+import Marvel.Matchers qualified as PsyMatch ()
+import Marvel.Name qualified as PsyName ()
 import Marvel.Resource.Types qualified as PsyResource
-import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Trait qualified as PsyTrait ()
+import Marvel.Window.Types qualified as PsyWindow ()
 
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
-import Marvel.Trait qualified as HoodTrait
+import Marvel.Trait qualified as HoodTrait ()
 import Marvel.Keyword qualified as HoodKeyword
 import Marvel.Boost qualified as HoodBoost
 import Marvel.GameValue.Types qualified as HoodValue
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
-import Marvel.Resource.Types qualified as NEResource
+import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost
 
@@ -49,25 +61,25 @@ import Marvel.EncounterSet qualified as NESet
 
 import Marvel.Keyword qualified as NEKeyword
 
-import Marvel.Trait qualified as NETrait
+import Marvel.Trait qualified as NETrait ()
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
 import Marvel.Boost qualified as NEB
 import Marvel.EncounterSet qualified as NES
 import Marvel.Aspect qualified as NEA
 import Marvel.Resource.Types qualified as NER
 import Marvel.Keyword qualified as NEK
-import Marvel.Trait qualified as NET
-import Marvel.Trait qualified as NE
+import Marvel.Trait qualified as NET ()
+import Marvel.Trait qualified as NE ()
 import Marvel.Resource qualified as NE
 import Marvel.Keyword qualified as NE
 import Marvel.Boost qualified as NE
 import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
-import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Ability.Types qualified as NEAbility ()
 
-import Marvel.Trait qualified as MojoTrait
+import Marvel.Trait qualified as MojoTrait ()
 import Marvel.EncounterSet qualified as MojoSet
 import Marvel.Keyword qualified as MojoKeyword
 import Marvel.GameValue.Types qualified as MojoValue
@@ -76,7 +88,7 @@ import Marvel.Boost qualified as MojoBoost
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
-import Marvel.Resource qualified as MGResource
+import Marvel.Resource qualified as MGResource ()
 import Marvel.Boost qualified as MGBoost
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
@@ -85,18 +97,13 @@ import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
 import Marvel.Boost qualified as SMBoost
 
-import Marvel.Ability.Types qualified as Ability
+import Marvel.Ability.Types qualified as Ability ()
 import Marvel.Cost.Types
-import Marvel.Window
-import Marvel.Matchers
-import Marvel.Trait qualified as MGTrait
-import Marvel.EncounterSet qualified as MGSet
-import Marvel.Keyword qualified as MGKeyword
+import Marvel.Window ()
+import Marvel.Matchers ()
 import Marvel.GameValue.Types qualified as MGValue
-import Marvel.Boost qualified as MGBoost
 import Marvel.Prelude
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Marvel.Boost
 import Marvel.Card.Code
@@ -111,7 +118,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ keepThemBusy, specializedTraining, inTheNameOfVengeance, rallyTheTroops
+  [ liveDangerously, involuntaryProcedures, dreadfulDeeds
+  , keepThemBusy, specializedTraining, inTheNameOfVengeance, rallyTheTroops
   , renderMedicalAid, hookLineAndSinker
   , layTheTrap, interdimensionalPlunder
   , hood24014, hood24023, hood24033, hood24042, hood24055, hood24056, hood24057, hood24058, hood24064
@@ -2937,4 +2945,105 @@ rallyTheTroops = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+liveDangerously :: CardDef
+liveDangerously = DpCard.CardDef
+  { cdCardCode = "44024"
+  , cdName = DpName.Name "Live Dangerously" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList [DpKeyword.Victory 0]
+  , cdCardType = DpCard.PlayerSideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 1
+  , cdAcceleration = 1
+  , cdAmplify = 1
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+involuntaryProcedures :: CardDef
+involuntaryProcedures = DpCard.CardDef
+  { cdCardCode = "44034"
+  , cdName = DpName.Name "Involuntary Procedures" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost, DpBoost.Boost, DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DeadpoolNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 1
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+dreadfulDeeds :: CardDef
+dreadfulDeeds = DpCard.CardDef
+  { cdCardCode = "44039"
+  , cdName = DpName.Name "Dreadful Deeds" (Nothing)
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [DpBoost.Boost, DpBoost.Boost, DpBoost.Boost]
+  , cdEncounterSet = Just DpSet.DreadpoolSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 1
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

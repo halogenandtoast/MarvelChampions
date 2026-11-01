@@ -33,6 +33,6 @@ instance HasAbilities JessicaDrewsApartment where
 instance RunMessage JessicaDrewsApartment where
   runMessage msg s@(JessicaDrewsApartment attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      search ident (SearchIdentityDeck ident $ TopOfDeck 5) (CardMatchesAny $ map CardWithAspect [Aggression, Justice, Leadership, Protection]) SearchDrawOne ShuffleBackIn
+      search ident (SearchIdentityDeck ident $ TopOfDeck 5) (CardMatchesAny $ map CardWithAspect [Aggression, Justice, Leadership, Protection, Pool]) SearchDrawOne ShuffleBackIn
       pure s
     _ -> JessicaDrewsApartment <$> runMessage msg attrs

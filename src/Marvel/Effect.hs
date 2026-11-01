@@ -2,10 +2,10 @@
 
 module Marvel.Effect where
 
-import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
+import Marvel.Event.Events.SneakAttack ()
 
 import Marvel.Attachment.Attachments.MojoGenres (mojoStakeEffect)
-import Marvel.Event.Events.Cable (cableMissionPlanningEffect)
+import Marvel.Event.Events.Cable ()
 import Marvel.Minion.Minions.NextEvolutionMisterSinister (ne40145BoostEffect)
 import Marvel.Resource.Resources.AvianAnatomy (avianAnatomyEffect)
 import Marvel.Prelude
@@ -44,7 +44,8 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("43002", SomeCardEffect x23sClawsEffect)
+    [ ("44020", SomeCardEffect getRageYEffect)
+    , ("43002", SomeCardEffect x23sClawsEffect)
     , ("43004", SomeCardEffect animalInstinctEffect)
     , ("43005", SomeCardEffect clawMasteryEffect)
     , ("43007", SomeCardEffect sisterlyBondEffect)

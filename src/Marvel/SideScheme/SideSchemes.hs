@@ -262,3 +262,7 @@ import Marvel.SideScheme.SideSchemes.KeepThemBusy as X
 import Marvel.SideScheme.SideSchemes.SpecializedTraining as X
 import Marvel.SideScheme.SideSchemes.InTheNameOfVengeance as X
 import Marvel.SideScheme.SideSchemes.RallyTheTroops as X
+
+import Marvel.SideScheme.SideSchemes.LiveDangerously as X
+import Marvel.SideScheme.SideSchemes.InvoluntaryProcedures as X
+import Marvel.SideScheme.SideSchemes.DreadfulDeeds as X

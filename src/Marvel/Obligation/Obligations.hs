@@ -122,3 +122,5 @@ import Marvel.Obligation.Obligations.ApocalypticInfluence as X
 
 -- X-23
 import Marvel.Obligation.Obligations.SelfIsolation as X
+
+import Marvel.Obligation.Obligations.TheMercWithTheMouth as X

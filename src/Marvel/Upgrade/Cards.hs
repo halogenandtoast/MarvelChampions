@@ -1,35 +1,49 @@
 module Marvel.Upgrade.Cards where
 
-import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Ability.Types qualified as DpAbility ()
+import Marvel.Aspect qualified as DpAspect
+import Marvel.Boost qualified as DpBoost ()
+import Marvel.Card.Def qualified as DpCard
+import Marvel.Cost.Types qualified as DpCost
+import Marvel.Criteria qualified as DpCriteria
+import Marvel.EncounterSet qualified as DpSet ()
+import Marvel.Keyword qualified as DpKeyword
+import Marvel.Matchers qualified as DpMatch ()
+import Marvel.Name qualified as DpName
+import Marvel.Resource.Types qualified as DpResource
+import Marvel.Trait qualified as DpTrait
+import Marvel.Window.Types qualified as DpWindow ()
+
+import Marvel.Ability.Types qualified as AnAbility ()
 import Marvel.Aspect qualified as AnAspect
-import Marvel.Boost qualified as AnBoost
+import Marvel.Boost qualified as AnBoost ()
 import Marvel.Card.Def qualified as AnCard
 import Marvel.Cost.Types qualified as AnCost
 import Marvel.Criteria qualified as AnCriteria
-import Marvel.EncounterSet qualified as AnSet
+import Marvel.EncounterSet qualified as AnSet ()
 import Marvel.Keyword qualified as AnKeyword
 import Marvel.Matchers qualified as AnMatch
-import Marvel.Name qualified as AnName
+import Marvel.Name qualified as AnName ()
 import Marvel.Resource.Types qualified as AnResource
 import Marvel.Trait qualified as AnTrait
-import Marvel.Window.Types qualified as AnWindow
+import Marvel.Window.Types qualified as AnWindow ()
 
-import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Ability.Types qualified as PsyAbility ()
 import Marvel.Aspect qualified as PsyAspect
-import Marvel.Boost qualified as PsyBoost
+import Marvel.Boost qualified as PsyBoost ()
 import Marvel.Card.Def qualified as PsyCard
 import Marvel.Cost.Types qualified as PsyCost
 import Marvel.Criteria qualified as PsyCriteria
-import Marvel.EncounterSet qualified as PsySet
+import Marvel.EncounterSet qualified as PsySet ()
 import Marvel.Keyword qualified as PsyKeyword
 import Marvel.Matchers qualified as PsyMatch
-import Marvel.Name qualified as PsyName
+import Marvel.Name qualified as PsyName ()
 import Marvel.Resource.Types qualified as PsyResource
 import Marvel.Trait qualified as PsyTrait
-import Marvel.Window.Types qualified as PsyWindow
+import Marvel.Window.Types qualified as PsyWindow ()
 
-import Marvel.Boost qualified as NEB
-import Marvel.EncounterSet qualified as NES
+import Marvel.Boost qualified as NEB ()
+import Marvel.EncounterSet qualified as NES ()
 import Marvel.Aspect qualified as NEA
 import Marvel.Resource.Types qualified as NER
 import Marvel.Keyword qualified as NEK
@@ -37,40 +51,38 @@ import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
 import Marvel.Keyword qualified as NE
-import Marvel.Boost qualified as NE
+import Marvel.Boost qualified as NE ()
 import Marvel.Aspect qualified as NE
-import Marvel.Card.Def qualified as NE
+import Marvel.Card.Def qualified as NE ()
 import Marvel.Ability.Types qualified as NEAbility
 
 import Marvel.EncounterSet qualified as MGSet
-import Marvel.Keyword qualified as MGKeyword
+import Marvel.Keyword qualified as MGKeyword ()
 import Marvel.Trait qualified as MGTrait
 import Marvel.Resource qualified as MGResource
-import Marvel.Boost qualified as MGBoost
+import Marvel.Boost qualified as MGBoost ()
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
 import Marvel.GameValue.Types qualified as SMValue
-import Marvel.Boost qualified as SMBoost
+import Marvel.Boost qualified as SMBoost ()
 
 import Marvel.Ability.Types qualified as Ability
 
 import Marvel.EncounterSet
 import Marvel.Cost.Types
-import Marvel.Window
+import Marvel.Window ()
 import Marvel.Prelude
 
-import Marvel.GameValue.Types (GameValue (PerPlayer))
+import Marvel.GameValue.Types ()
 
-import Marvel.Cost.Types (Cost (NoCost))
 
 import Marvel.Aspect
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Data.HashSet (singleton)
 import Marvel.Criteria
-import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, TheMarket))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Name
@@ -80,7 +92,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ x23sClaws, adamantiumLacing, grimResolve, painTolerance, punctureWound, nowImMad, theDirectApproach, combatSpecialist, defenseSpecialist, frontLineSpecialist, surveillanceSpecialist
+  [ armedToTheTeeth, deadpoolsKatana, itAintOver, gitGud, healingFactor, stickToItiveness, ambush, bazooka, blackout, distraction, laserSwords, rockPaperScissors, ticTacToe, war
+  , x23sClaws, adamantiumLacing, grimResolve, painTolerance, punctureWound, nowImMad, theDirectApproach, combatSpecialist, defenseSpecialist, frontLineSpecialist, surveillanceSpecialist
   , technoOrganicWings, containmentStrategy, soaringAcrobatics, eyesInTheSky, xForceRecruit
   , psiKnife, psiKatana, martialArtsTraining, psionicTraining, weaponsTraining, floatLikeAButterfly, telepathy, telekinesis
   , sharpshooter
@@ -2613,4 +2626,468 @@ surveillanceSpecialist = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = AnCost.NoCost
+  }
+
+-- Deadpool
+
+armedToTheTeeth :: CardDef
+armedToTheTeeth = DpCard.CardDef
+  { cdCardCode = "44009"
+  , cdName = DpName.Name "Armed to the Teeth" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+deadpoolsKatana :: CardDef
+deadpoolsKatana = DpCard.CardDef
+  { cdCardCode = "44010"
+  , cdName = DpName.Name "Deadpool's Katana" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList [DpTrait.Weapon]
+  , cdKeywords = fromList [DpKeyword.Restricted]
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+itAintOver :: CardDef
+itAintOver = DpCard.CardDef
+  { cdCardCode = "44011"
+  , cdName = DpName.Name "It Ain't Over..." (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+gitGud :: CardDef
+gitGud = DpCard.CardDef
+  { cdCardCode = "44028"
+  , cdName = DpName.Name "Git Gud" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+healingFactor :: CardDef
+healingFactor = DpCard.CardDef
+  { cdCardCode = "44029"
+  , cdName = DpName.Name "Healing Factor" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList [DpTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (DpCard.MaxPerPlayer 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+stickToItiveness :: CardDef
+stickToItiveness = DpCard.CardDef
+  { cdCardCode = "44030"
+  , cdName = DpName.Name "Stick-To-Itiveness" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList [DpTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ambush :: CardDef
+ambush = DpCard.CardDef
+  { cdCardCode = "44051"
+  , cdName = DpName.Name "Ambush" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (DpCard.MaxPerScheme 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+bazooka :: CardDef
+bazooka = DpCard.CardDef
+  { cdCardCode = "44052"
+  , cdName = DpName.Name "Bazooka" (Nothing)
+  , cdCost = Just 2
+  , cdTraits = fromList [DpTrait.Weapon]
+  , cdKeywords = fromList [DpKeyword.Restricted]
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+blackout :: CardDef
+blackout = DpCard.CardDef
+  { cdCardCode = "44053"
+  , cdName = DpName.Name "Blackout" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList [DpTrait.Metagame]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+distraction :: CardDef
+distraction = DpCard.CardDef
+  { cdCardCode = "44054"
+  , cdName = DpName.Name "Distraction" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (DpCard.MaxPerEnemy 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+laserSwords :: CardDef
+laserSwords = DpCard.CardDef
+  { cdCardCode = "44055"
+  , cdName = DpName.Name "Laser Swords" (Nothing)
+  , cdCost = Just 3
+  , cdTraits = fromList [DpTrait.Weapon]
+  , cdKeywords = fromList [DpKeyword.Restricted]
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+rockPaperScissors :: CardDef
+rockPaperScissors = DpCard.CardDef
+  { cdCardCode = "44056"
+  , cdName = DpName.Name "Rock, Paper, Scissors" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Metagame]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ticTacToe :: CardDef
+ticTacToe = DpCard.CardDef
+  { cdCardCode = "44057"
+  , cdName = DpName.Name "Tic-Tac-Toe" (Nothing)
+  , cdCost = Just 0
+  , cdTraits = fromList [DpTrait.Metagame]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+war :: CardDef
+war = DpCard.CardDef
+  { cdCardCode = "44058"
+  , cdName = DpName.Name "War" (Nothing)
+  , cdCost = Just 1
+  , cdTraits = fromList [DpTrait.Metagame]
+  , cdKeywords = fromList []
+  , cdCardType = DpCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just DpAspect.Pool
+  , cdCriteria = DpCriteria.NoCriteria
+  , cdResources = [(DpCard.PrintedResource, DpResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = DpCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

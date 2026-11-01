@@ -52,7 +52,7 @@ instance HasAbilities SpiderWoman where
             IsSelf
             NoCost
             (runAbility a n)
-    | (n, aspect) <- zip [1 ..] [Aggression, Justice, Leadership, Protection]
+    | (n, aspect) <- zip [1 ..] [Aggression, Justice, Leadership, Protection, Pool]
     ]
 
 newtype SpiderWoman = SpiderWoman (Attrs Hero)
@@ -61,7 +61,7 @@ newtype SpiderWoman = SpiderWoman (Attrs Hero)
 
 instance RunMessage SpiderWoman where
   runMessage msg h@(SpiderWoman attrs) = runQueueT $ case msg of
-    RanAbility ident (isTarget attrs -> True) n _ _ | n <= 4 -> do
+    RanAbility ident (isTarget attrs -> True) n _ _ | n <= 5 -> do
       createEffect Cards.spiderWoman attrs (IdentityEntity $ IdentityWithId ident)
       pure h
     _ -> SpiderWoman <$> runMessage msg attrs
